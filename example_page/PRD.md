@@ -28,6 +28,8 @@ Saat ini, petugas medis dan administrasi sering kali harus mencetak dokumen reka
 * Refaktor struktur HTML pada halaman peninjauan dokumen cetak gabungan.
 * Standardisasi pemanggilan library `pdf.js` untuk merender PDF menjadi `<canvas>`.
 * Menyembunyikan elemen UI (tombol, panel navigasi, checkbox) saat dokumen dicetak.
+* Penambahan fungsionalitas JavaScript untuk memanipulasi status *checked*/*unchecked* secara massal pada seluruh opsi cetak dokumen.
+* Penyesuaian nilai *default* *checkbox* saat halaman pertama kali dimuat (opsional: *unchecked* secara *default* untuk mencegah cetak berlebih yang tidak disengaja).
 
 **Out-of-Scope:**
 * Perubahan logika *backend* dalam menarik data rekam medis pasien.
@@ -37,6 +39,7 @@ Saat ini, petugas medis dan administrasi sering kali harus mencetak dokumen reka
 * **Sebagai** perawat/staf administrasi, **saya ingin** menekan satu tombol "Cetak" dan mendapatkan seluruh dokumen rekam medis pasien (SBPK, Resume, PDF rujukan) tercetak rapi, **sehingga** saya tidak perlu membuang waktu mengatur margin *browser* secara manual atau mencetak dokumen satu per satu.
 * **Sebagai** Dokter DPJP, **saya ingin** hasil cetak resume medis dan hasil lab PDF terhindar dari potongan halaman di tengah-tengah teks, **sehingga** rekam jejak pasien mudah dibaca dan valid secara hukum.
 * **Sebagai** manajemen RS, **saya ingin** sistem cetak tidak membuang-buang kertas untuk form kosong, **sehingga** biaya operasional rumah sakit lebih efisien.
+* **Sebagai** petugas medis di unit dengan ritme cepat (seperti IGD atau Ranap Anak), **saya ingin** dapat membatalkan semua centang dokumen (*uncheck all*) dengan satu klik, **sehingga** saya bisa lebih cepat memilih 1 atau 2 dokumen spesifik saja yang benar-benar butuh dicetak.
 
 ## 6. Spesifikasi Teknis
 Tim developer harus mengimplementasikan solusi berikut:
@@ -49,12 +52,19 @@ Tim developer harus mengimplementasikan solusi berikut:
    * Gunakan skrip JavaScript berbasis `pdf.js` yang melakukan iterasi pada objek PDF dan menggambarnya ke elemen `<canvas>` per halaman.
 3. **Pembersihan DOM HTML:**
    * Hapus *tag* `<style>` yang di-*hardcode* di dalam tubuh tabel HTML dan pindahkan ke CSS eksternal atau *header* untuk mencegah konflik pewarisan atribut (CSS *inheritance conflicts*).
+4. **Implementasi Master Toggle Checkbox:**
+   * Buat satu tombol/opsi *master toggle* (misal: `<input type="checkbox" id="check-all"> Pilih Semua Cetakan`).
+   * Tulis fungsi jQuery ringan yang akan menghapus atribut `checked` (`prop('checked', false)`) pada semua elemen `.panel-heading input[type="checkbox"]` jika *master toggle* di-klik, dan sebaliknya.
+   * Jika *default* sistem diminta *unchecked* dari awal, pastikan tidak ada atribut `checked=""` yang di-*hardcode* di HTML aslinya, atau paksa *unchecked* melalui fungsi `$(document).ready()`.
 
 ## 7. Kriteria Penerimaan (Acceptance Criteria / Definition of Done)
 1. [ ] Jika diuji coba fitur cetak (Ctrl+P) pada *browser* Chrome, Firefox, dan Edge, seluruh dokumen ter-Batas di dalam area kertas A4 (tidak ada tabel atau gambar melebar keluar batas).
 2. [ ] File PDF yang dilampirkan dapat dicetak semua halamannya (misal: jika PDF 3 halaman, ketiga halamannya akan tercetak sempurna ke kertas melalui tag `<canvas>`).
 3. [ ] Jika pasien tidak memiliki data tindakan operasi atau hemodialisa, kertas kosong tidak ikut tercetak di bagian akhir atau tengah dokumen.
 4. [ ] UI penayangan di layar (sebelum di-print) tetap utuh dan tidak terpengaruh oleh perubahan logika CSS cetak.
+5. [ ] Terdapat tombol/opsi untuk "Batalkan Semua Pilihan" (*Uncheck All*).
+6. [ ] Saat tombol tersebut diklik, semua *checkbox* pada panel dokumen (SBPK, Resume, Surat Kontrol, dll) otomatis kehilangan tanda centangnya.
+7. [ ] Dokumen yang tidak dicentang tidak akan muncul dalam pratinjau cetak (*print preview* browser).
 
 ## 8. Rencana Implementasi Redmine (Task Breakdown)
 *Panduan pembuatan tiket untuk sprint:*
@@ -62,5 +72,7 @@ Tim developer harus mengimplementasikan solusi berikut:
 * **[Task]** Refaktor form HTML (bersihkan inline CSS dan perbaiki indentasi) pada *view* rekam medis gabungan.
 * **[Task]** Standarkan *script* `pdf.js` untuk menggantikan tag `<embed>` pada lampiran dokumen.
 * **[Bug/QA]** Lakukan UAT (User Acceptance Testing) pada fitur *print* di skenario data penuh dan data kosong.
+* **[Task]** Buat tombol *Toggle Check/Uncheck All* di bagian atas halaman (sebelum *list* dokumen).
+* **[Task]** Tulis dan implementasikan *script* DOM manipulation (JavaScript/jQuery) untuk memaksa perubahan atribut `checked` pada form.
 
 ---
