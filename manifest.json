@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "SIMRS Print Fixer",
+  "version": "1.0",
+  "description": "Memaksa layout dokumen, gambar, dan PDF menyesuaikan ukuran kertas saat diprint.",
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "css": ["print_layout.css"]
+    }
+  ]
+}

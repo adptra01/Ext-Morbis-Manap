@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dokumen Rekam Medis Gabungan</title>
+
+    <!-- Print Layout CSS -->
+    <link rel="stylesheet" href="../css/print-layout.css">
+
+    <!-- Additional styles for screen display -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+
+        .print-container {
+            max-width: 210mm; /* A4 width */
+            margin: 0 auto;
+            background: #fff;
+            padding: 10mm;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .no-print {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .no-print button {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 0 5px;
+        }
+
+        .no-print button:hover {
+            background: #1565c0;
+        }
+
+        .section-indicator {
+            display: inline-block;
+            padding: 3px 8px;
+            background: #4caf50;
+            color: white;
+            border-radius: 3px;
+            font-size: 10pt;
+            margin-left: 10px;
+        }
+
+        .section-indicator.empty {
+            background: #ff5722;
+        }
+
+        .placeholder {
+            background: #fffbf0;
+            border: 1px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================
+         UI Controls (tidak tercetak)
+         ============================================ -->
+    <div class="no-print">
+        <h2>Panel Kontrol Cetak Dokumen</h2>
+        <button onclick="window.print()">Cetak Dokumen (Ctrl+P)</button>
+        <button onclick="PDFRenderer.renderAll()">Render Semua PDF</button>
+        <button onclick="window.location.reload()">Refresh Halaman</button>
+        <p class="hint">Tekan Ctrl+P untuk mencetak semua dokumen dalam satu file</p>
+    </div>
+
+    <!-- ============================================
+         Container Utama Cetak
+         ============================================ -->
+    <div class="print-container">
+
+        <!-- ============================================
+             1. Kop Surat / Header Dokumen
+             ============================================ -->
+        <div class="isidalam header-dokumen" id="section-header">
+            <div class="section-title">
+                Kop Surat Dokumen
+                <span class="section-indicator">Selalu Ditampilkan</span>
+            </div>
+            <table class="tabel-data-pasien" style="width: 100%;">
+                <tr>
+                    <td colspan="3" style="text-align: center; font-weight: bold; font-size: 14pt;">
+                        RUMAH SAKIT UMUM CONTOH
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3" style="text-align: center; font-size: 10pt;">
+                        Jl. Contoh No. 123, Kota - Telp: (021) 1234567
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3" style="border-bottom: 2px solid #000;"></td>
+                </tr>
+            </table>
+            <br>
+            <table class="tabel-data-pasien" style="width: 100%;">
+                <tr>
+                    <td style="width: 15%;"><strong>No. RM:</strong></td>
+                    <td style="width: 35%;">1234567</td>
+                    <td style="width: 15%;"><strong>Tanggal:</strong></td>
+                    <td style="width: 35%;">01-04-2026</td>
+                </tr>
+                <tr>
+                    <td><strong>Nama Pasien:</strong></td>
+                    <td>NAMA PASIEN CONTOH</td>
+                    <td><strong>No. Registrasi:</strong></td>
+                    <td>REG-20260401-001</td>
+                </tr>
+                <tr>
+                    <td><strong>Jenis Kelamin:</strong></td>
+                    <td>Laki-laki</td>
+                    <td><strong>Poliklinik:</strong></td>
+                    <td>Poli Penyakit Dalam</td>
+                </tr>
+                <tr>
+                    <td><strong>Umur:</strong></td>
+                    <td>45 Tahun</td>
+                    <td><strong>Dokter DPJP:</strong></td>
+                    <td>Dr. Contoh, Sp.PD</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- ============================================
+             2. Modul SBPK (Surat Bukti Pelayanan Kelas)
+             ============================================ -->
+        <div class="isidalam modul-sbpk" id="section-sbpk">
+            <div class="section-title">
+                Surat Bukti Pelayanan Kelas (SBPK)
+                <span class="section-indicator">Data Ada</span>
+            </div>
+
+            <!-- Tabel tindakan medis -->
+            <table class="tabel-data-pasien">
+                <thead>
+                    <tr style="background: #f0f0f0;">
+                        <th style="width: 5%;">No</th>
+                        <th style="width: 30%;">Tindakan / Pelayanan</th>
+                        <th style="width: 10%;">Kelas</th>
+                        <th style="width: 15%;">Tanggal</th>
+                        <th style="width: 10%;">Jumlah</th>
+                        <th style="width: 10%;">Tarif</th>
+                        <th style="width: 20%;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="text-align: center;">1</td>
+                        <td>Konsultasi Dokter Spesialis</td>
+                        <td style="text-align: center;">Kelas 1</td>
+                        <td style="text-align: center;">01-04-2026</td>
+                        <td style="text-align: center;">1</td>
+                        <td style="text-align: right;">Rp 150.000</td>
+                        <td style="text-align: right;">Rp 150.000</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;">2</td>
+                        <td>Pemeriksaan Laboratorium Darah Lengkap</td>
+                        <td style="text-align: center;">Kelas 1</td>
+                        <td style="text-align: center;">01-04-2026</td>
+                        <td style="text-align: center;">1</td>
+                        <td style="text-align: right;">Rp 200.000</td>
+                        <td style="text-align: right;">Rp 200.000</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr style="font-weight: bold;">
+                        <td colspan="6" style="text-align: right;">Total:</td>
+                        <td style="text-align: right;">Rp 350.000</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- ============================================
+             3. Modul Resume Medis
+             ============================================ -->
+        <div class="isidalam modul-resume" id="section-resume">
+            <div class="section-title">
+                Resume Medis Pasien
+                <span class="section-indicator">Data Ada</span>
+            </div>
+
+            <table class="tabel-data-pasien">
+                <tr>
+                    <td style="width: 20%; vertical-align: top;"><strong>Anamnesis:</strong></td>
+                    <td>Pasien datang dengan keluhan nyeri dada sejak 3 hari lalu. Nyeri dirasakan seperti tertindih beban berat. Pasien mengeluh sesak nafas dan berkeringat dingin.</td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: top;"><strong>Pemeriksaan Fisik:</strong></td>
+                    <td>
+                        <table style="width: 100%;">
+                            <tr>
+                                <td>TD: 140/90 mmHg</td>
+                                <td>N: 88 x/menit</td>
+                                <td>R: 20 x/menit</td>
+                                <td>S: 36.5°C</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4">Thorax: Jantung: S1-S2 reguler, tidak ada murmur. Paru: Vesikuler kedua lapang, tidak ada ronchi.</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: top;"><strong>Diagnosis:</strong></td>
+                    <td>I25.1 - Atherosclerotic heart disease of native coronary artery</td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: top;"><strong>Tatalaksana:</strong></td>
+                    <td>
+                        <ul>
+                            <li>Rawat inap di ICCU</li>
+                            <li>Oksigen 2 lpm</li>
+                            <li>IVFD RL 20 tpm</li>
+                            <li>Analgetik: Tramadol inj</li>
+                            <li>Antiplatelet: Aspirin 100 mg 1x sehari</li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Tanda Tangan Dokter -->
+            <div class="tanda-tangan" style="margin-top: 30px;">
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="text-align: center; padding: 20px;">
+                            <strong>Mengetahui,</strong><br><br><br><br>
+                            (..................................)<br>
+                            Dokter DPJP
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- ============================================
+             4. Modul Hasil Radiologi (dengan PDF Canvas)
+             ============================================ -->
+        <div class="isidalam modul-radiologi" id="section-radiologi">
+            <div class="section-title">
+                Hasil Pemeriksaan Radiologi
+                <span class="section-indicator">PDF via Canvas</span>
+            </div>
+
+            <!-- PDF akan dirender ke sini menggunakan pdf.js -->
+            <!-- data-pdf-url: URL file PDF -->
+            <!-- data-show-page-numbers: tampilkan nomor halaman -->
+            <div class="pdf-placeholder"
+                 data-pdf-url="/path/to/radiology-report.pdf"
+                 data-show-page-numbers="true">
+                <div class="placeholder">
+                    PDF Radiologi akan dirender di sini<br>
+                    <em>Klik "Render Semua PDF" untuk memuat</em>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================
+             5. Modul Hasil Laboratorium
+             ============================================ -->
+        <div class="isidalam modul-laboratorium" id="section-laboratorium">
+            <div class="section-title">
+                Hasil Pemeriksaan Laboratorium
+                <span class="section-indicator">Data Ada</span>
+            </div>
+
+            <table class="tabel-data-pasien">
+                <thead>
+                    <tr style="background: #f0f0f0;">
+                        <th style="width: 5%;">No</th>
+                        <th style="width: 35%;">Pemeriksaan</th>
+                        <th style="width: 20%;">Nilai Hasil</th>
+                        <th style="width: 20%;">Nilai Rujukan</th>
+                        <th style="width: 20%;">Satuan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="5" style="font-weight: bold;">Hematologi</td></tr>
+                    <tr>
+                        <td style="text-align: center;">1</td>
+                        <td>Hemoglobin</td>
+                        <td>14.5</td>
+                        <td>13.0 - 17.0</td>
+                        <td>g/dL</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;">2</td>
+                        <td>Hematokrit</td>
+                        <td>42.0</td>
+                        <td>40.0 - 52.0</td>
+                        <td>%</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;">3</td>
+                        <td>Lekosit</td>
+                        <td>8.500</td>
+                        <td>4.500 - 11.000</td>
+                        <td>/uL</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;">4</td>
+                        <td>Trombosit</td>
+                        <td>250.000</td>
+                        <td>150.000 - 400.000</td>
+                        <td>/uL</td>
+                    </tr>
+                    <tr><td colspan="5" style="font-weight: bold;">Kimia Klinik</td></tr>
+                    <tr>
+                        <td style="text-align: center;">5</td>
+                        <td>Gula Darah Sewaktu</td>
+                        <td>110</td>
+                        <td>70 - 140</td>
+                        <td>mg/dL</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;">6</td>
+                        <td>Kolesterol Total</td>
+                        <td>220</td>
+                        <td>&lt;200</td>
+                        <td>mg/dL</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;">7</td>
+                        <td>Ureum</td>
+                        <td>28</td>
+                        <td>17 - 43</td>
+                        <td>mg/dL</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;">8</td>
+                        <td>Kreatinin</td>
+                        <td>1.0</td>
+                        <td>0.6 - 1.2</td>
+                        <td>mg/dL</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ============================================
+             6. Modul Anestesi (Kosong - Tidak Akan Ter-cetak)
+             ============================================ -->
+        <div class="isidalam modul-anestesi" id="section-anestesi">
+            <!-- Ini kosong, akan disembunyikan saat cetak -->
+        </div>
+
+        <!-- ============================================
+             7. Modul Fisioterapi (Kosong - Tidak Akan Ter-cetak)
+             ============================================ -->
+        <div class="isidalam modul-fisio" id="section-fisioterapi">
+            <!-- Ini kosong, akan disembunyikan saat cetak -->
+        </div>
+
+        <!-- ============================================
+             8. Modul Hemodialisa (Kosong - Tidak Akan Ter-cetak)
+             ============================================ -->
+        <div class="isidalam modul-hemodialisa" id="section-hemodialisa">
+            <!-- Ini kosong, akan disembunyikan saat cetak -->
+        </div>
+
+        <!-- ============================================
+             9. Rincian Biaya (Billing)
+             ============================================ -->
+        <div class="isidalam modul-billing" id="section-billing">
+            <div class="section-title">
+                Rincian Biaya Perawatan
+                <span class="section-indicator">Data Ada</span>
+            </div>
+
+            <table class="tabel-data-pasien">
+                <thead>
+                    <tr style="background: #f0f0f0;">
+                        <th style="width: 5%;">No</th>
+                        <th style="width: 40%;">Kategori / Pelayanan</th>
+                        <th style="width: 15%;">Tanggal</th>
+                        <th style="width: 20%;">Jumlah</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="4" style="font-weight: bold;">Biaya Kamar</td></tr>
+                    <tr>
+                        <td style="text-align: center;">1</td>
+                        <td>Kamar Rawat Inap Kelas 1 (1 malam)</td>
+                        <td style="text-align: center;">01-04-2026</td>
+                        <td style="text-align: right;">Rp 500.000</td>
+                    </tr>
+                    <tr><td colspan="4" style="font-weight: bold;">Biaya Pelayanan Medis</td></tr>
+                    <tr>
+                        <td style="text-align: center;">2</td>
+                        <td>Konsultasi Dokter Spesialis</td>
+                        <td style="text-align: center;">01-04-2026</td>
+                        <td style="text-align: right;">Rp 150.000</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;">3</td>
+                        <td>Tindakan ECG 12 Lead</td>
+                        <td style="text-align: center;">01-04-2026</td>
+                        <td style="text-align: right;">Rp 75.000</td>
+                    </tr>
+                    <tr><td colspan="4" style="font-weight: bold;">Biaya Penunjang</td></tr>
+                    <tr>
+                        <td style="text-align: center;">4</td>
+                        <td>Laboratorium Darah Lengkap</td>
+                        <td style="text-align: center;">01-04-2026</td>
+                        <td style="text-align: right;">Rp 200.000</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;">5</td>
+                        <td>Radiologi Foto Thorax PA/Lat</td>
+                        <td style="text-align: center;">01-04-2026</td>
+                        <td style="text-align: right;">Rp 150.000</td>
+                    </tr>
+                    <tr><td colspan="4" style="font-weight: bold;">Biaya Obat & Alkes</td></tr>
+                    <tr>
+                        <td style="text-align: center;">6</td>
+                        <td>Obat-obatan</td>
+                        <td style="text-align: center;">01-04-2026</td>
+                        <td style="text-align: right;">Rp 125.000</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;">7</td>
+                        <td>Alat Kesehatan</td>
+                        <td style="text-align: center;">01-04-2026</td>
+                        <td style="text-align: right;">Rp 25.000</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr style="background: #f0f0f0; font-weight: bold;">
+                        <td colspan="3" style="text-align: right;">Total Seluruh Biaya:</td>
+                        <td style="text-align: right;">Rp 1.225.000</td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <!-- QR Code Pembayaran -->
+            <div style="text-align: center; margin-top: 20px;">
+                <div class="qr-code" style="margin: 0 auto; width: 100px; height: 100px; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center;">
+                    <small style="color: #999;">QR Code</small>
+                </div>
+                <p style="font-size: 10pt; margin-top: 5px;">Scan untuk pembayaran</p>
+            </div>
+        </div>
+
+        <!-- ============================================
+             10. Footer Dokumen
+             ============================================ -->
+        <div class="isidalam" id="section-footer">
+            <div class="section-title">
+                Footer Dokumen
+                <span class="section-indicator">Selalu Ditampilkan</span>
+            </div>
+
+            <table class="tabel-data-pasien" style="width: 100%;">
+                <tr>
+                    <td style="text-align: center;">
+                        <strong>Catatan:</strong><br>
+                        Dokumen ini dibuat secara elektronik dan sah tanpa tanda tangan manual<br>
+                        sesuai dengan Peraturan Menteri Kesehatan Republik Indonesia No. 269/Menkes/Per/III/2008<br>
+                        tentang Penerapan Sistem Informasi Rumah Sakit.
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: center; padding-top: 20px;">
+                        <small>Dokumen ini dicetak pada: <span id="print-date"></span></small>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+    </div> <!-- End print-container -->
+
+    <!-- PDF Renderer Script -->
+    <script src="../js/pdf-renderer.js"></script>
+
+    <!-- Initialization Script -->
+    <script>
+        // Set print date
+        document.addEventListener('DOMContentLoaded', function() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            document.getElementById('print-date').textContent = now.toLocaleDateString('id-ID', options);
+
+            // Render PDFs automatically
+            PDFRenderer.renderAll().catch(console.error);
+        });
+
+        // Print handler
+        function handlePrint() {
+            window.print();
+        }
+
+        // Check for empty sections and add indicator
+        function checkEmptySections() {
+            const sections = document.querySelectorAll('.isidalam');
+            sections.forEach(section => {
+                const indicator = section.querySelector('.section-indicator');
+                if (indicator && section.innerHTML.trim() === '') {
+                    indicator.classList.add('empty');
+                }
+            });
+        }
+
+        checkEmptySections();
+    </script>
+
+</body>
+</html>

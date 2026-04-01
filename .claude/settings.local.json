@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -o \"class=\\\\\"isidalam\"[^\\\\\"]* \"D:\\\\laragon\\\\www\\\\SIMRS-Print-Fixer\\\\example_page\\\\view-source_103.147.236.140_v2_m-klaim_detail-v2-refaktor_id_visit=162515&tanggalAwal=01-04-2026&tanggalAkhir=01-04-2026&norm=&nama=&reg=&billing=all&status=all&id_poli_cari=&poli_cari=.html\")"
+    ]
+  }
+}
