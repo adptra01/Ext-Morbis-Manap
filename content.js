@@ -6,6 +6,11 @@
  * Konfigurasi URL pattern di bawah sesuaikan dengan endpoint asli
  */
 
+const STORAGE_KEY = 'extensionEnabled';
+const DEFAULT_ENABLED = true;
+
+let isExtensionEnabled = true;
+
 // ========================================
 // KONFIGURASI - Sesuaikan dengan kebutuhan
 // ========================================
@@ -189,32 +194,79 @@ function overrideButtonsByText() {
 }
 
 // ========================================
+// STORAGE HANDLING
+// ========================================
+
+/**
+ * Load status ekstensi dari storage
+ */
+async function loadExtensionStatus() {
+  try {
+    const result = await chrome.storage.sync.get(STORAGE_KEY);
+    isExtensionEnabled = result[STORAGE_KEY] !== undefined ? result[STORAGE_KEY] : DEFAULT_ENABLED;
+    log(`Extension status loaded: ${isExtensionEnabled}`);
+    return isExtensionEnabled;
+  } catch (error) {
+    console.error('[OpenDetail Extension] Error loading extension status:', error);
+    isExtensionEnabled = DEFAULT_ENABLED;
+    return isExtensionEnabled;
+  }
+}
+
+/**
+ * Listen untuk perubahan storage
+ */
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (namespace === 'sync' && changes[STORAGE_KEY]) {
+    isExtensionEnabled = changes[STORAGE_KEY].newValue;
+    log(`Extension status changed to: ${isExtensionEnabled}`);
+
+    // Reload halaman jika status berubah
+    if (changes[STORAGE_KEY].oldValue !== changes[STORAGE_KEY].newValue) {
+      window.location.reload();
+    }
+  }
+});
+
+// ========================================
 // INITIALIZATION
 // ========================================
 
 /**
  * Inisialisasi saat DOM ready
  */
-function init() {
+async function init() {
   log('Menginisialisasi Open Detail in New Tab Extension');
-  overrideDetailButtons();
 
-  // Fallback untuk tombol berdasarkan text
-  setTimeout(() => overrideButtonsByText(), 500);
+  // Load status extension dulu
+  await loadExtensionStatus();
 
-  // Periodik check (untuk konten dinamis)
-  setInterval(() => overrideDetailButtons(), 2000);
+  // Hanya jalankan override jika extension enabled
+  if (isExtensionEnabled) {
+    overrideDetailButtons();
+
+    // Fallback untuk tombol berdasarkan text
+    setTimeout(() => overrideButtonsByText(), 500);
+
+    // Periodik check (untuk konten dinamis)
+    setInterval(() => overrideDetailButtons(), 2000);
+  } else {
+    log('Extension disabled, skipping initialization');
+  }
 }
 
 // Jalankan saat DOM ready
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('DOMContentLoaded', () => init());
 } else {
   init();
 }
 
 // Observer untuk perubahan DOM (DataTables, dll)
 const observer = new MutationObserver((mutations) => {
+  // Hanya update jika extension enabled
+  if (!isExtensionEnabled) return;
+
   let shouldUpdate = false;
 
   for (const mutation of mutations) {
@@ -239,8 +291,17 @@ observer.observe(document.body, {
 // ========================================
 
 window.OpenDetailExtension = {
+  // Cek apakah extension enabled
+  isEnabled: () => isExtensionEnabled,
+
   // Override semua tombol detail
-  refresh: overrideDetailButtons,
+  refresh: () => {
+    if (isExtensionEnabled) {
+      overrideDetailButtons();
+    } else {
+      log('Extension disabled, refresh skipped');
+    }
+  },
 
   // Override tombol spesifik
   override: overrideDetailButton,

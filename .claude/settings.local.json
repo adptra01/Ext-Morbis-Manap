@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(curl -o d:/laragon/www/open-detail-new-tab/icons/bluemorbis.svg https://morbis.id/assets/images/bluemorbis.svg)",
+      "Bash(npm install:*)",
+      "Bash(node convert-icons.js)",
+      "Bash(cp bluemorbis16.png icon16.png)",
+      "Bash(cp bluemorbis48.png icon48.png)",
+      "Bash(cp bluemorbis128.png icon128.png)",
+      "Bash(ls -la bluemorbis*.png)",
+      "Bash(ls -la *.png)",
+      "Bash(rm -f convert-icons.js)",
+      "Bash(rm -rf node_modules package-lock.json)"
+    ]
+  }
+}
