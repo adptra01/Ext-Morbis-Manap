@@ -21,6 +21,11 @@ const DEFAULT_CONFIG = {
       enabled: true,
       name: 'Filter Persistence State',
       description: 'Simpan otomatis kolom pencarian agar tidak perlu diketik ulang'
+    },
+    simplifyBilling: {
+      enabled: true,
+      name: 'Ringkas Rincian Biaya',
+      description: 'Ringkaskan tabel cetak rincian biaya menjadi tampilan rekap per unit'
     }
   }
 };

@@ -21,6 +21,7 @@
         "features/openDetail.js",
         "features/shortcutButtons.js",
         "features/filterPersistence.js",
+        "features/simplifyBilling.js",
         "init.js"
       ],
       "run_at": "document_end"
