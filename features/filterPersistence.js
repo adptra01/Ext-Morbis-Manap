@@ -54,9 +54,17 @@ function restoreFilter() {
         if (el && filterState[fieldId] !== undefined) {
           el.value = filterState[fieldId];
           
-          // Trigger event change (dibutuhkan untuk dropdown / autocomplete library)
-          const event = new Event('change', { bubbles: true });
-          el.dispatchEvent(event);
+          // Trigger native events agar dicatch oleh jQuery plugins
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+          el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
+          
+          // Trik UI: focus dan blur seringkali memaksa re-kalkulasi kalender datepicker
+          setTimeout(() => {
+            if(fieldId === 'tanggalAwal' || fieldId === 'tanggalAkhir') {
+                el.dispatchEvent(new Event('blur', { bubbles: true }));
+            }
+          }, 50);
         }
       });
       
