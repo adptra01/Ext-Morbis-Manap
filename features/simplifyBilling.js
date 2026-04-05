@@ -79,12 +79,46 @@ if (!document.getElementById('ext-billing-style')) {
             padding: 0 !important;
         }
     }
+
+    /* 7. Styling tambahan untuk tabel judul top only */
+    .tabel-judul-top-only {
+        width: 100% !important;
+    }
+
+    /* 8. Paksa lebar auto pada td pertama untuk mengoverride style lain */
+    table tr td:first-child {
+        width: revert-layer !important;
+    }
+
   `;
   document.head.appendChild(style);
 }
 
 function isMklaimDetailPage() {
   return window.location.pathname.includes(SIMPLIFY_BILLING_CONFIG.detailUrlPattern);
+}
+
+function getTargetSection() {
+  const section = document.getElementById('rincian-biaya-view');
+  if (section) return section;
+
+  const sectionPembayaran = document.getElementById('pembayaran-gabung');
+  if (sectionPembayaran) return sectionPembayaran;
+
+  return null;
+}
+
+function getAllBillingTbodies() {
+  const section = getTargetSection();
+  if (!section) return null;
+
+  const tTindakan = Array.from(section.querySelectorAll('table')).find(t => t.textContent.includes('RINCIAN BIAYA'));
+  const tObat = Array.from(section.querySelectorAll('table')).find(t => t.textContent.includes('Nama Obat'));
+
+  return {
+    tindakan: tTindakan ? tTindakan.querySelector('tbody') : null,
+    obat: tObat ? tObat.querySelector('tbody') : null
+  };
 }
 
 /**
@@ -232,7 +266,8 @@ function applyRingkasMode(tbodies) {
   Array.from(document.querySelectorAll('.ext-header-hidden')).forEach(el => el.classList.remove('ext-header-hidden'));
   if (!tbodies) return;
 
-  const section = document.getElementById(SIMPLIFY_BILLING_CONFIG.targetSectionId);
+  const section = getTargetSection();
+  if (!section) return;
 
   // Reset semua baris agar tidak tersembunyi dulu
   Array.from(section.querySelectorAll('tr.ext-billing-hidden')).forEach(r => {
@@ -367,7 +402,7 @@ function applyRingkasMode(tbodies) {
 function applyPenuhMode() {
   Array.from(document.querySelectorAll('[data-ext-summary]')).forEach(el => el.remove());
   Array.from(document.querySelectorAll('.ext-header-hidden')).forEach(el => el.classList.remove('ext-header-hidden'));
-  const section = document.getElementById(SIMPLIFY_BILLING_CONFIG.targetSectionId);
+  const section = getTargetSection();
   if (section) {
     // Kembalikan Judul
     const titleEl = section.querySelector('u');
@@ -377,21 +412,6 @@ function applyPenuhMode() {
       r.classList.remove('ext-billing-hidden');
     });
   }
-}
-
-function findTableByContent(section, keyword) {
-  return Array.from(section.querySelectorAll('table')).find(t => t.textContent.includes(keyword));
-}
-
-function getAllBillingTbodies() {
-  const section = document.getElementById(SIMPLIFY_BILLING_CONFIG.targetSectionId);
-  if (!section) return null;
-  const tTindakan = findTableByContent(section, 'RINCIAN BIAYA');
-  const tObat = findTableByContent(section, 'Nama Obat');
-  return {
-    tindakan: tTindakan ? tTindakan.querySelector('tbody') : null,
-    obat: tObat ? tObat.querySelector('tbody') : null
-  };
 }
 
 function renderToggleButton(section) {
@@ -437,7 +457,7 @@ function runSimplifyBillingFeature() {
   if (saved) billingViewMode = saved;
 
   function tryApply() {
-    const section = document.getElementById(SIMPLIFY_BILLING_CONFIG.targetSectionId);
+    const section = getTargetSection();
     if (!section) return false;
     const tbodies = getAllBillingTbodies();
     if (!tbodies || (!tbodies.tindakan && !tbodies.obat)) return false;
