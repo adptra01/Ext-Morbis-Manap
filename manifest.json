@@ -20,6 +20,7 @@
         "core.js",
         "features/openDetail.js",
         "features/shortcutButtons.js",
+        "features/filterPersistence.js",
         "init.js"
       ],
       "run_at": "document_end"

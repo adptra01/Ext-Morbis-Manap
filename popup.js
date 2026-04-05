@@ -17,6 +17,11 @@ const DEFAULT_CONFIG = {
       enabled: true,
       name: 'Shortcut Buttons',
       description: 'Tampilkan tombol shortcut ke pelaksanaan Rajal/Ranap'
+    },
+    filterPersistence: {
+      enabled: true,
+      name: 'Filter Persistence State',
+      description: 'Simpan otomatis kolom pencarian agar tidak perlu diketik ulang'
     }
   }
 };

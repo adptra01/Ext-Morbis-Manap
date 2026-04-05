@@ -20,6 +20,12 @@ const SHORTCUT_CONFIG = {
       text: 'Pelayanan Rawat Inap',
       bgColor: '#10b981',
       hoverColor: '#059669'
+    },
+    backMklaim: {
+      text: '← Kembali ke M-KLAIM',
+      bgColor: '#ef4444',
+      hoverColor: '#dc2626',
+      url: 'http://103.147.236.140/v2/m-klaim'
     }
   }
 };
@@ -123,7 +129,7 @@ function renderShortcutButtons() {
   const rajalUrl = generatePelaksanaanUrl('rajal');
   const ranapUrl = generatePelaksanaanUrl('ranap');
 
-  const createButton = (url, style) => {
+  const createButton = (url, style, openInSameTab = false) => {
     const btn = document.createElement('a');
     btn.href = url;
     btn.textContent = style.text;
@@ -158,7 +164,11 @@ function renderShortcutButtons() {
 
     btn.addEventListener('click', (e) => {
       e.preventDefault();
-      window.open(url, '_blank');
+      if (openInSameTab) {
+        window.location.href = url;
+      } else {
+        window.open(url, '_blank');
+      }
     });
 
     return btn;
@@ -166,6 +176,14 @@ function renderShortcutButtons() {
 
   const isRajal = isRawatJalan();
   const isRanap = isRawatInap();
+  
+  const openDetailEnabled = currentConfig?.features?.openDetailInNewTab?.enabled ?? true;
+  const extensionEnabled = currentConfig?.extensionEnabled ?? true;
+
+  // Jika openDetail dimatikan secara global/fitur, tambahkan tombol Kembali di awal
+  if (!openDetailEnabled && extensionEnabled) {
+    container.appendChild(createButton(SHORTCUT_CONFIG.buttonStyles.backMklaim.url, SHORTCUT_CONFIG.buttonStyles.backMklaim, true));
+  }
 
   if ((isRajal || isRanap) && rajalUrl) {
     container.appendChild(createButton(rajalUrl, SHORTCUT_CONFIG.buttonStyles.rajal));
@@ -213,8 +231,25 @@ function runShortcutButtonsFeature() {
   }
 
   const observer = new MutationObserver(() => {
-    const stillEnabled = currentConfig?.features?.shortcutButtons?.enabled ?? true;
-    if (stillEnabled && !shortcutButtonsExist()) renderShortcutButtons();
+    // Rendernya dikontrol penuh dari dalam renderShortcutButtons (semua ada di renderShortcutButtons)
+    const stillShortcutEnabled = currentConfig?.features?.shortcutButtons?.enabled ?? true;
+    if (stillShortcutEnabled && !shortcutButtonsExist()) {
+      renderShortcutButtons();
+    } else if (stillShortcutEnabled && shortcutButtonsExist()) {
+      // Tombol shortcut mungkin perlu diupdate jika state global openDetail berubah.
+      // Kita hapus kontainer lama dan minta render ulang saja.
+      const openDetailEnabled = currentConfig?.features?.openDetailInNewTab?.enabled ?? true;
+      const btnBackMklaimExists = document.querySelector('[data-shortcut-buttons] a[href="http://103.147.236.140/v2/m-klaim"]') !== null;
+      
+      // Jika config openDetail berubah (beda sama status tombol di DOM), maksa re-render
+      if (!openDetailEnabled && !btnBackMklaimExists) {
+        document.querySelector('[data-shortcut-buttons]').remove();
+        renderShortcutButtons();
+      } else if (openDetailEnabled && btnBackMklaimExists) {
+        document.querySelector('[data-shortcut-buttons]').remove();
+        renderShortcutButtons();
+      }
+    }
   });
   observer.observe(document.body, { childList: true, subtree: true });
 }

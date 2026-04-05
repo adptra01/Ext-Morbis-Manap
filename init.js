@@ -15,7 +15,7 @@ async function initExtension() {
   for (const [key, module] of Object.entries(featureModules)) {
     const featureConfig = currentConfig?.features?.[key];
     
-    if (featureConfig?.enabled) {
+    if (featureConfig === undefined || featureConfig?.enabled) {
       log(`Running feature: ${module.name}`);
       try {
         module.run();
