@@ -21,6 +21,12 @@ const DEFAULT_CONFIG = {
       enabled: true,
       name: 'Open Detail in New Tab',
       description: 'Override tombol detail agar buka tab baru'
+    },
+    // Fitur: Shortcut Buttons
+    shortcutButtons: {
+      enabled: true,
+      name: 'Shortcut Buttons',
+      description: 'Tampilkan shortcut buttons ke halaman pelaksanaan Rajal/Ranap'
     }
   }
 };
@@ -345,6 +351,559 @@ function runOpenDetailInNewTabFeature() {
 }
 
 // ========================================
+// FEATURE: Shortcut Buttons
+// ========================================
+
+const SHORTCUT_CONFIG = {
+  // URL yang harus cocok untuk mengaktifkan fitur
+  targetUrlPattern: 'http://103.147.236.140/v2/m-klaim/detail-v2-refaktor',
+
+  // Parameter URL yang harus ada
+  requiredParams: ['id_visit', 'tanggalAwal', 'tanggalAkhir'],
+
+  // URL patterns untuk shortcut buttons
+  shortcutUrls: {
+    rajal: '/admisi/pelaksanaan_pelayanan/halaman-utama',
+    ranap: '/admisi/detail-rawat-inap/input-tindakan'
+  },
+
+  // Detail URL patterns (for new feature to open detail from execution pages)
+  detailUrlPattern: '/v2/m-klaim/detail-v2-refaktor',
+
+  // Button styles - Blue and Green
+  buttonStyles: {
+    rajal: {
+      text: 'Pelayanan Rawat Jalan',
+      bgColor: '#3b82f6',
+      hoverColor: '#2563eb'
+    },
+    ranap: {
+      text: 'Pelayanan Rawat Inap',
+      bgColor: '#10b981',
+      hoverColor: '#059669'
+    }
+  }
+};
+
+/**
+ * Ambil nilai Jenis Kunjungan dari form
+ */
+function getJenisKunjungan() {
+  const jenisInput = document.querySelector('input[name="jenis"]');
+  if (jenisInput) {
+    const value = jenisInput.value.trim().toUpperCase();
+    log('Jenis Kunjungan value:', value);
+    return value;
+  }
+  
+  const jenisSelect = document.querySelector('select[name="jenis"]');
+  if (jenisSelect) {
+    const value = jenisSelect.value.trim().toUpperCase();
+    log('Jenis Kunjungan select value:', value);
+    return value;
+  }
+  
+  log('Jenis Kunjungan not found');
+  return null;
+}
+
+/**
+ * Cek apakah jenis kunjungan adalah RAWAT JALAN
+ */
+function isRawatJalan() {
+  const jenis = getJenisKunjungan();
+  return jenis && (jenis.includes('JALAN') || jenis === 'RAWAT JALAN');
+}
+
+/**
+ * Cek apakah jenis kunjungan adalah RAWAT INAP
+ */
+function isRawatInap() {
+  const jenis = getJenisKunjungan();
+  return jenis && (jenis.includes('INAP') || jenis === 'RAWAT INAP');
+}
+
+/**
+ * Cek apakah URL saat ini cocok dengan konfigurasi
+ */
+function isTargetPage() {
+  const url = window.location.href;
+  
+  log('Checking URL:', url);
+  log('Target pattern:', SHORTCUT_CONFIG.targetUrlPattern);
+  
+  if (!url.includes(SHORTCUT_CONFIG.targetUrlPattern)) {
+    log('URL does not include target pattern');
+    return false;
+  }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  log('URL params:', Object.fromEntries(urlParams));
+  
+  for (const param of SHORTCUT_CONFIG.requiredParams) {
+    if (!urlParams.has(param)) {
+      log('Missing required param:', param);
+      return false;
+    }
+  }
+
+  log('All checks passed, target page confirmed');
+  return true;
+}
+
+/**
+ * Ekstrak id_visit dari URL
+ */
+function extractIdVisit() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get('id_visit');
+}
+
+/**
+ * Generate URL pelaksanaan berdasarkan id_visit
+ */
+function generatePelaksanaanUrl(type) {
+  const baseUrl = window.location.origin;
+  const idVisit = extractIdVisit();
+  
+  if (type === 'rajal') {
+    return `${baseUrl}${SHORTCUT_CONFIG.shortcutUrls.rajal}?id_visit=${idVisit}&page=101&status_periksa=belum`;
+  } else if (type === 'ranap') {
+    return `${baseUrl}${SHORTCUT_CONFIG.shortcutUrls.ranap}?idVisit=${idVisit}`;
+  }
+  return null;
+}
+
+/**
+ * Cek apakah shortcut buttons sudah ada
+ */
+function shortcutButtonsExist() {
+  return document.querySelector('[data-shortcut-buttons]') !== null;
+}
+
+/**
+ * Render shortcut buttons
+ */
+function renderShortcutButtons() {
+  const featureEnabled = currentConfig?.features?.shortcutButtons?.enabled ?? true;
+  
+  log('Checking feature enabled:', featureEnabled);
+  
+  if (!featureEnabled) {
+    log('Shortcut Buttons feature disabled, skipping');
+    return;
+  }
+
+  const isTarget = isTargetPage();
+  log('Is target page:', isTarget);
+  
+  if (!isTarget) {
+    log('Not on target page, skipping shortcut buttons');
+    return;
+  }
+
+  if (shortcutButtonsExist()) {
+    log('Shortcut buttons already exist, skipping');
+    return;
+  }
+
+  const idVisit = extractIdVisit();
+  log('Extracted id_visit:', idVisit);
+  
+  if (!idVisit) {
+    log('No id_visit found in URL, skipping shortcut buttons');
+    return;
+  }
+
+  log(`Rendering shortcut buttons for id_visit: ${idVisit}`);
+
+  const container = document.createElement('div');
+  container.dataset.shortcutButtons = 'true';
+  container.style.cssText = `
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    margin: 15px 0;
+    background: #eee;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  `;
+
+  const label = document.createElement('span');
+  label.textContent = 'Shortcut:';
+  label.style.cssText = `
+    color: #374151;
+    font-weight: 600;
+    font-size: 14px;
+  `;
+  container.appendChild(label);
+
+  const rajalUrl = generatePelaksanaanUrl('rajal');
+  const ranapUrl = generatePelaksanaanUrl('ranap');
+
+  const createButton = (url, style) => {
+    const btn = document.createElement('a');
+    btn.href = url;
+    btn.textContent = style.text;
+    btn.style.cssText = `
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 20px;
+      background-color: ${style.bgColor};
+      color: white;
+      border: none;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    `;
+
+    btn.addEventListener('mouseenter', () => {
+      btn.style.backgroundColor = style.hoverColor;
+      btn.style.transform = 'translateY(-2px)';
+      btn.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+    });
+
+    btn.addEventListener('mouseleave', () => {
+      btn.style.backgroundColor = style.bgColor;
+      btn.style.transform = 'translateY(0)';
+      btn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+    });
+
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.open(url, '_blank');
+    });
+
+    return btn;
+  };
+
+  const isRajal = isRawatJalan();
+  const isRanap = isRawatInap();
+  
+  log('Showing buttons - Rawat Jalan:', isRajal, 'Rawat Inap:', isRanap);
+
+  // Jika Rawat Inap, maka tampilkan keduanya. Jika Rawat Jalan, hanya tampilkan Rajal.
+  if ((isRajal || isRanap) && rajalUrl) {
+    container.appendChild(createButton(rajalUrl, SHORTCUT_CONFIG.buttonStyles.rajal));
+  }
+  if (isRanap && ranapUrl) {
+    container.appendChild(createButton(ranapUrl, SHORTCUT_CONFIG.buttonStyles.ranap));
+  }
+
+  const selectors = [
+    '.form-horizontal',
+    'form', 
+    '.container-fluid',
+    '.container',
+    '.content',
+    '.main-content',
+    '#content',
+    '.page-content'
+  ];
+  
+  let targetContainer = null;
+  
+  for (const selector of selectors) {
+    const found = document.querySelector(selector);
+    if (found) {
+      targetContainer = found;
+      log('Found target container:', selector);
+      break;
+    }
+  }
+  
+  if (!targetContainer) {
+    targetContainer = document.body;
+    log('No specific container found, using document.body');
+  }
+  
+  if (targetContainer === document.body) {
+    // Insert after any header or navigation
+    const header = document.querySelector('header, nav, .navbar, .header');
+    if (header && header.nextSibling) {
+      targetContainer.insertBefore(container, header.nextSibling);
+    } else if (targetContainer.firstChild) {
+      targetContainer.insertBefore(container, targetContainer.firstChild);
+    } else {
+      targetContainer.appendChild(container);
+    }
+  } else {
+    if (targetContainer.firstChild) {
+      targetContainer.insertBefore(container, targetContainer.firstChild);
+    } else {
+      targetContainer.appendChild(container);
+    }
+  }
+
+  log('Shortcut buttons rendered successfully');
+}
+
+/**
+ * Jalankan fitur Shortcut Buttons
+ */
+function runShortcutButtonsFeature() {
+  const featureEnabled = currentConfig?.features?.shortcutButtons?.enabled ?? true;
+  
+  log('Running Shortcut Buttons feature, enabled:', featureEnabled);
+  
+  if (!featureEnabled) {
+    log('Shortcut Buttons feature disabled, skipping');
+    return;
+  }
+
+  log('Current URL:', window.location.href);
+  
+  try {
+    log('Is target page:', isTargetPage());
+  } catch (e) {
+    log('Error checking target page:', e.message);
+  }
+
+  if (document.readyState === 'complete') {
+    log('Document already complete, rendering immediately');
+    setTimeout(() => {
+      log('Executing renderShortcutButtons after timeout');
+      renderShortcutButtons();
+    }, 500);
+  } else {
+    window.addEventListener('load', () => {
+      log('Document loaded, rendering shortcut buttons');
+      setTimeout(() => {
+        log('Executing renderShortcutButtons after load timeout');
+        renderShortcutButtons();
+      }, 500);
+    });
+  }
+
+  const observer = new MutationObserver((mutations) => {
+    const stillEnabled = currentConfig?.features?.shortcutButtons?.enabled ?? true;
+    if (!stillEnabled) {
+      return;
+    }
+
+    if (!shortcutButtonsExist()) {
+      log('Mutation detected, rendering shortcut buttons');
+      renderShortcutButtons();
+    }
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+}
+
+// ========================================
+// FEATURE: Back to Detail from Execution Pages
+// ========================================
+
+const BACK_TO_DETAIL_CONFIG = {
+  // URL patterns untuk deteksi halaman execution
+  executionUrlPatterns: {
+    rajal: '/admisi/pelaksanaan_pelayanan/',
+    ranap: '/admisi/detail-rawat-inap/'
+  },
+
+  // Button style
+  buttonStyle: {
+    text: 'Kembali ke Detail Klaim',
+    bgColor: '#6366f1',
+    hoverColor: '#4f46e5'
+  }
+};
+
+/**
+ * Cek apakah kita di halaman pelaksanaan Rajal
+ */
+function isExecutionRajalPage() {
+  return window.location.pathname.includes(BACK_TO_DETAIL_CONFIG.executionUrlPatterns.rajal);
+}
+
+/**
+ * Cek apakah kita di halaman pelaksanaan Ranap
+ */
+function isExecutionRanapPage() {
+  return window.location.pathname.includes(BACK_TO_DETAIL_CONFIG.executionUrlPatterns.ranap);
+}
+
+/**
+ * Cek apakah kita di halaman pelaksanaan (Rajal atau Ranap)
+ */
+function isExecutionPage() {
+  return isExecutionRajalPage() || isExecutionRanapPage();
+}
+
+/**
+ * Ekstrak id_visit dari URL (bisa id_visit atau idVisit)
+ */
+function extractIdVisitFromExecution() {
+  const urlParams = new URLSearchParams(window.location.search);
+  let id = urlParams.get('id_visit');
+  if (id) return id;
+  
+  id = urlParams.get('idVisit');
+  if (id) return id;
+  
+  return null;
+}
+
+/**
+ * Generate URL ke halaman detail klaim
+ */
+function generateDetailUrlFromExecution(idVisit) {
+  const baseUrl = window.location.origin;
+  const today = formatDate(new Date());
+  
+  return `${baseUrl}/v2/m-klaim/detail-v2-refaktor?id_visit=${idVisit}&tanggalAwal=${today}&tanggalAkhir=${today}&norm=&nama=&reg=&billing=all&status=all&id_poli_cari=&poli_cari=`;
+}
+
+/**
+ * Cek apakah back to detail button sudah ada
+ */
+function backToDetailButtonExist() {
+  return document.querySelector('[data-back-to-detail-klaim]') !== null;
+}
+
+/**
+ * Render back to detail button
+ */
+function renderBackToDetailButton() {
+  if (!currentConfig?.features?.shortcutButtons?.enabled) {
+    return;
+  }
+
+  if (!isExecutionPage()) {
+    log('Not on execution page, skipping back to detail button');
+    return;
+  }
+
+  if (backToDetailButtonExist()) {
+    log('Back to detail button already exist, skipping');
+    return;
+  }
+
+  const idVisit = extractIdVisitFromExecution();
+  if (!idVisit) {
+    log('No id_visit found in URL, skipping back to detail button');
+    return;
+  }
+
+  log(`Rendering back to detail button for id_visit: ${idVisit}`);
+
+  const detailUrl = generateDetailUrlFromExecution(idVisit);
+
+  const container = document.createElement('div');
+  container.dataset.backToDetailKlaim = 'true';
+  container.style.cssText = `
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    margin: 15px;
+    background: #eee;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    z-index: 9999;
+  `;
+
+  const label = document.createElement('span');
+  label.textContent = '← Detail Klaim';
+  label.style.cssText = `
+    color: #374151;
+    font-weight: 600;
+    font-size: 14px;
+  `;
+  container.appendChild(label);
+
+  const btn = document.createElement('a');
+  btn.href = detailUrl;
+  btn.style.cssText = `
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    background-color: ${BACK_TO_DETAIL_CONFIG.buttonStyle.bgColor};
+    color: white;
+    border: none;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  `;
+
+  btn.addEventListener('mouseenter', () => {
+    btn.style.backgroundColor = BACK_TO_DETAIL_CONFIG.buttonStyle.hoverColor;
+    btn.style.transform = 'translateY(-2px)';
+    btn.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+  });
+
+  btn.addEventListener('mouseleave', () => {
+    btn.style.backgroundColor = BACK_TO_DETAIL_CONFIG.buttonStyle.bgColor;
+    btn.style.transform = 'translateY(0)';
+    btn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+  });
+
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.open(detailUrl, '_blank');
+  });
+
+  container.appendChild(btn);
+
+  document.body.appendChild(container);
+  log('Back to detail button rendered');
+}
+
+/**
+ * Jalankan fitur Back to Detail dari Execution Pages
+ */
+function runBackToDetailFromExecutionFeature() {
+  if (!currentConfig?.features?.shortcutButtons?.enabled) {
+    log('Shortcut Buttons feature disabled, skipping back to detail');
+    return;
+  }
+
+  log('Running Back to Detail from Execution feature');
+  log('Current URL:', window.location.href);
+  log('Is execution page:', isExecutionPage());
+
+  if (document.readyState === 'complete') {
+    setTimeout(() => renderBackToDetailButton(), 500);
+  } else {
+    window.addEventListener('load', () => {
+      setTimeout(() => renderBackToDetailButton(), 500);
+    });
+  }
+
+  const observer = new MutationObserver((mutations) => {
+    if (!currentConfig?.features?.shortcutButtons?.enabled) {
+      return;
+    }
+
+    if (!backToDetailButtonExist()) {
+      renderBackToDetailButton();
+    }
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+}
+
+// ========================================
 // FEATURE MODULES
 // ========================================
 
@@ -354,6 +913,16 @@ const featureModules = {
     name: 'Open Detail in New Tab',
     description: 'Override tombol detail agar buka tab baru',
     run: runOpenDetailInNewTabFeature
+  },
+
+  // Fitur: Shortcut Buttons
+  shortcutButtons: {
+    name: 'Shortcut Buttons',
+    description: 'Tampilkan shortcut buttons ke halaman pelaksanaan Rajal/Ranap',
+    run: () => {
+      runShortcutButtonsFeature();
+      runBackToDetailFromExecutionFeature();
+    }
   }
 };
 
@@ -369,6 +938,9 @@ async function init() {
 
   // Load config dulu
   await loadConfig();
+  
+  log('Current config:', currentConfig);
+  log('Extension enabled:', isExtensionEnabled);
 
   // Cek apakah extension enabled secara global
   if (!isExtensionEnabled) {
@@ -379,6 +951,8 @@ async function init() {
   // Jalankan fitur yang enabled
   for (const [key, module] of Object.entries(featureModules)) {
     const featureConfig = currentConfig?.features?.[key];
+    
+    log(`Checking feature: ${key}, config:`, featureConfig);
 
     if (featureConfig?.enabled) {
       log(`Running feature: ${module.name}`);

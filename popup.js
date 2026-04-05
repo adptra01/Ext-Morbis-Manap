@@ -12,6 +12,11 @@ const DEFAULT_CONFIG = {
       enabled: true,
       name: 'Open Detail in New Tab',
       description: 'Override tombol detail agar buka tab baru'
+    },
+    shortcutButtons: {
+      enabled: true,
+      name: 'Shortcut Buttons',
+      description: 'Tampilkan tombol shortcut ke pelaksanaan Rajal/Ranap'
     }
   }
 };
