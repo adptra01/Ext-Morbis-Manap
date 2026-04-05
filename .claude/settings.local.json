@@ -11,7 +11,8 @@
       "Bash(ls -la bluemorbis*.png)",
       "Bash(ls -la *.png)",
       "Bash(rm -f convert-icons.js)",
-      "Bash(rm -rf node_modules package-lock.json)"
+      "Bash(rm -rf node_modules package-lock.json)",
+      "Bash(ls -la *.html *.js *.json)"
     ]
   }
 }

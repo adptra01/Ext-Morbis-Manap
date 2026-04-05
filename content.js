@@ -1,25 +1,138 @@
 /**
  * Open Detail in New Tab - Chrome Extension
- * Content Script
+ * Content Script - Modular Architecture
  *
- * Override tombol detail() untuk membuka di tab baru
- * Konfigurasi URL pattern di bawah sesuaikan dengan endpoint asli
+ * Extension dengan fitur yang dapat diaktifkan/nonaktifkan per fitur
  */
 
-const STORAGE_KEY = 'extensionEnabled';
-const DEFAULT_ENABLED = true;
+// ========================================
+// CONFIG & CONSTANTS
+// ========================================
 
+const STORAGE_KEY = 'extensionConfig';
+const DEFAULT_CONFIG = {
+  // Extension status global
+  extensionEnabled: true,
+
+  // Konfigurasi per fitur
+  features: {
+    // Fitur: Open Detail in New Tab
+    openDetailInNewTab: {
+      enabled: true,
+      name: 'Open Detail in New Tab',
+      description: 'Override tombol detail agar buka tab baru'
+    }
+  }
+};
+
+// ========================================
+// STATE MANAGEMENT
+// ========================================
+
+let currentConfig = null;
 let isExtensionEnabled = true;
 
 // ========================================
-// KONFIGURASI - Sesuaikan dengan kebutuhan
+// UTILITY FUNCTIONS
 // ========================================
 
-const CONFIG = {
+/**
+ * Log debug jika debug mode aktif
+ */
+function log(...args) {
+  console.log('[OpenDetail Extension]', ...args);
+}
+
+/**
+ * Load konfigurasi dari storage
+ */
+async function loadConfig() {
+  try {
+    const result = await chrome.storage.sync.get(STORAGE_KEY);
+
+    // Jika belum ada config, gunakan default
+    if (!result[STORAGE_KEY]) {
+      currentConfig = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+    } else {
+      currentConfig = result[STORAGE_KEY];
+
+      // Bersihkan features yang tidak ada di DEFAULT_CONFIG (migrasi)
+      const validFeatures = Object.keys(DEFAULT_CONFIG.features);
+      const newFeatures = {};
+
+      for (const key of validFeatures) {
+        if (currentConfig.features[key]) {
+          newFeatures[key] = currentConfig.features[key];
+        } else {
+          newFeatures[key] = JSON.parse(JSON.stringify(DEFAULT_CONFIG.features[key]));
+        }
+      }
+
+      currentConfig.features = newFeatures;
+    }
+
+    isExtensionEnabled = currentConfig.extensionEnabled;
+    log('Config loaded:', isExtensionEnabled);
+    return currentConfig;
+  } catch (error) {
+    console.error('[OpenDetail Extension] Error loading config:', error);
+    currentConfig = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+    isExtensionEnabled = DEFAULT_CONFIG.extensionEnabled;
+    return currentConfig;
+  }
+}
+
+/**
+ * Simpan konfigurasi ke storage
+ */
+async function saveConfig(config) {
+  try {
+    currentConfig = config;
+    await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+    log('Config saved');
+  } catch (error) {
+    console.error('[OpenDetail Extension] Error saving config:', error);
+  }
+}
+
+/**
+ * Listen untuk perubahan storage
+ */
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (namespace === 'sync' && changes[STORAGE_KEY]) {
+    const newConfig = changes[STORAGE_KEY].newValue;
+    const oldConfig = changes[STORAGE_KEY].oldValue;
+
+    // Cek perubahan global enabled
+    if (newConfig.extensionEnabled !== oldConfig?.extensionEnabled) {
+      isExtensionEnabled = newConfig.extensionEnabled;
+      log(`Extension enabled changed to: ${isExtensionEnabled}`);
+
+      // Reload halaman jika status global berubah
+      window.location.reload();
+    }
+
+    // Cek perubahan per fitur
+    for (const featureKey of Object.keys(newConfig.features || {})) {
+      const newEnabled = newConfig.features[featureKey]?.enabled;
+      const oldEnabled = oldConfig?.features[featureKey]?.enabled;
+
+      if (newEnabled !== oldEnabled) {
+        log(`Feature ${featureKey} changed to: ${newEnabled}`);
+        // Reload halaman jika status fitur berubah
+        window.location.reload();
+      }
+    }
+  }
+});
+
+// ========================================
+// FEATURE: Open Detail in New Tab
+// ========================================
+
+const OPEN_DETAIL_CONFIG = {
   // URL Pattern untuk detail
-  // Gunakan {id} sebagai placeholder untuk ID, {tanggal} untuk tanggal otomatis
   urlPatterns: [
-    // Default untuk aplikasi klaim
     'http://103.147.236.140/v2/m-klaim/detail-v2-refaktor?id_visit={id}&tanggalAwal={tanggalAwal}&tanggalAkhir={tanggalAkhir}&norm=&nama=&reg=&billing=all&status=all&id_poli_cari=&poli_cari=',
   ],
 
@@ -43,19 +156,6 @@ const CONFIG = {
   debug: false
 };
 
-// ========================================
-// UTILITY FUNCTIONS
-// ========================================
-
-/**
- * Log debug jika debug mode aktif
- */
-function log(...args) {
-  if (CONFIG.debug) {
-    console.log('[OpenDetail Extension]', ...args);
-  }
-}
-
 /**
  * Ekstrak ID dari onclick attribute
  * Support format: detail(162301), detail('162301'), detail("162301")
@@ -77,13 +177,13 @@ function extractIdFromOnclick(onclickAttr) {
  * Generate URL berdasarkan ID dan konfigurasi
  */
 function generateUrl(id) {
-  let url = CONFIG.urlPatterns[0];
+  let url = OPEN_DETAIL_CONFIG.urlPatterns[0];
 
   // Ganti placeholder ID
   url = url.replace('{id}', id);
 
   // Auto fill tanggal jika diaktifkan
-  if (CONFIG.autoDate) {
+  if (OPEN_DETAIL_CONFIG.autoDate) {
     const today = formatDate(new Date());
     url = url.replace('{tanggalAwal}', today).replace('{tanggalAkhir}', today);
   }
@@ -118,10 +218,6 @@ function markAsModified(element) {
   element.dataset.detailModified = 'true';
 }
 
-// ========================================
-// CORE FUNCTIONALITY
-// ========================================
-
 /**
  * Override satu tombol detail
  */
@@ -136,7 +232,9 @@ function overrideDetailButton(btn) {
   // Ekstrak ID
   const id = extractIdFromOnclick(onclickAttr);
   if (!id) {
-    log('Gagal mengekstrak ID dari:', onclickAttr);
+    if (OPEN_DETAIL_CONFIG.debug) {
+      log('Gagal mengekstrak ID dari:', onclickAttr);
+    }
     return;
   }
 
@@ -146,7 +244,7 @@ function overrideDetailButton(btn) {
   // Hapus onclick lama sebelum menambah event baru
   btn.removeAttribute('onclick');
 
-  // Tambahkan event listener baru dengan capture phase untuk menangkap event lebih awal
+  // Tambahkan event listener baru
   btn.addEventListener('click', function (e) {
     e.preventDefault();
     e.stopPropagation();
@@ -155,27 +253,32 @@ function overrideDetailButton(btn) {
     const url = generateUrl(id);
     log(`Membuka detail ID: ${id}, URL: ${url}`);
 
-    if (CONFIG.openMode === 'new-tab') {
+    if (OPEN_DETAIL_CONFIG.openMode === 'new-tab') {
       window.open(url, '_blank', 'noopener,noreferrer');
     } else {
       window.location.href = url;
     }
 
-    // Return false untuk mencegah default behavior tambahan
     return false;
-  }, true);  // true = use capture phase
+  }, true);
 
-  // Tambahkan indicator visual (optional)
+  // Tambahkan indicator visual
   btn.dataset.detailNewTab = 'true';
 
-  log(`Tombol detail ID: ${id} berhasil di-override`);
+  if (OPEN_DETAIL_CONFIG.debug) {
+    log(`Tombol detail ID: ${id} berhasil di-override`);
+  }
 }
 
 /**
  * Cari dan override semua tombol detail
  */
 function overrideDetailButtons() {
-  for (const selector of CONFIG.buttonSelectors) {
+  if (!currentConfig?.features?.openDetailInNewTab?.enabled) {
+    return;
+  }
+
+  for (const selector of OPEN_DETAIL_CONFIG.buttonSelectors) {
     const buttons = document.querySelectorAll(selector);
     buttons.forEach(btn => overrideDetailButton(btn));
   }
@@ -185,6 +288,10 @@ function overrideDetailButtons() {
  * Cari tombol dengan text "Detail" (fallback)
  */
 function overrideButtonsByText() {
+  if (!currentConfig?.features?.openDetailInNewTab?.enabled) {
+    return;
+  }
+
   const buttons = document.querySelectorAll('button, a');
   buttons.forEach(btn => {
     if (btn.textContent.trim().toLowerCase() === 'detail' && !isModified(btn)) {
@@ -193,40 +300,62 @@ function overrideButtonsByText() {
   });
 }
 
-// ========================================
-// STORAGE HANDLING
-// ========================================
-
 /**
- * Load status ekstensi dari storage
+ * Jalankan fitur Open Detail in New Tab
  */
-async function loadExtensionStatus() {
-  try {
-    const result = await chrome.storage.sync.get(STORAGE_KEY);
-    isExtensionEnabled = result[STORAGE_KEY] !== undefined ? result[STORAGE_KEY] : DEFAULT_ENABLED;
-    log(`Extension status loaded: ${isExtensionEnabled}`);
-    return isExtensionEnabled;
-  } catch (error) {
-    console.error('[OpenDetail Extension] Error loading extension status:', error);
-    isExtensionEnabled = DEFAULT_ENABLED;
-    return isExtensionEnabled;
+function runOpenDetailInNewTabFeature() {
+  if (!currentConfig?.features?.openDetailInNewTab?.enabled) {
+    log('Open Detail in New Tab feature disabled, skipping');
+    return;
   }
+
+  log('Running Open Detail in New Tab feature');
+  overrideDetailButtons();
+
+  // Fallback untuk tombol berdasarkan text
+  setTimeout(() => overrideButtonsByText(), 500);
+
+  // Periodik check (untuk konten dinamis)
+  setInterval(() => overrideDetailButtons(), 2000);
+
+  // Observer untuk perubahan DOM
+  const observer = new MutationObserver((mutations) => {
+    if (!currentConfig?.features?.openDetailInNewTab?.enabled) {
+      return;
+    }
+
+    let shouldUpdate = false;
+
+    for (const mutation of mutations) {
+      if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+        shouldUpdate = true;
+        break;
+      }
+    }
+
+    if (shouldUpdate) {
+      overrideDetailButtons();
+    }
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
 }
 
-/**
- * Listen untuk perubahan storage
- */
-chrome.storage.onChanged.addListener((changes, namespace) => {
-  if (namespace === 'sync' && changes[STORAGE_KEY]) {
-    isExtensionEnabled = changes[STORAGE_KEY].newValue;
-    log(`Extension status changed to: ${isExtensionEnabled}`);
+// ========================================
+// FEATURE MODULES
+// ========================================
 
-    // Reload halaman jika status berubah
-    if (changes[STORAGE_KEY].oldValue !== changes[STORAGE_KEY].newValue) {
-      window.location.reload();
-    }
+const featureModules = {
+  // Fitur: Open Detail in New Tab
+  openDetailInNewTab: {
+    name: 'Open Detail in New Tab',
+    description: 'Override tombol detail agar buka tab baru',
+    run: runOpenDetailInNewTabFeature
   }
-});
+};
 
 // ========================================
 // INITIALIZATION
@@ -236,23 +365,34 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
  * Inisialisasi saat DOM ready
  */
 async function init() {
-  log('Menginisialisasi Open Detail in New Tab Extension');
+  log('Menginisialisasi Open Detail Extension (Modular)');
 
-  // Load status extension dulu
-  await loadExtensionStatus();
+  // Load config dulu
+  await loadConfig();
 
-  // Hanya jalankan override jika extension enabled
-  if (isExtensionEnabled) {
-    overrideDetailButtons();
-
-    // Fallback untuk tombol berdasarkan text
-    setTimeout(() => overrideButtonsByText(), 500);
-
-    // Periodik check (untuk konten dinamis)
-    setInterval(() => overrideDetailButtons(), 2000);
-  } else {
-    log('Extension disabled, skipping initialization');
+  // Cek apakah extension enabled secara global
+  if (!isExtensionEnabled) {
+    log('Extension disabled globally, skipping all features');
+    return;
   }
+
+  // Jalankan fitur yang enabled
+  for (const [key, module] of Object.entries(featureModules)) {
+    const featureConfig = currentConfig?.features?.[key];
+
+    if (featureConfig?.enabled) {
+      log(`Running feature: ${module.name}`);
+      try {
+        module.run();
+      } catch (error) {
+        console.error(`[OpenDetail Extension] Error running feature ${key}:`, error);
+      }
+    } else {
+      log(`Feature disabled: ${module.name}`);
+    }
+  }
+
+  log('Extension initialized successfully');
 }
 
 // Jalankan saat DOM ready
@@ -262,60 +402,44 @@ if (document.readyState === 'loading') {
   init();
 }
 
-// Observer untuk perubahan DOM (DataTables, dll)
-const observer = new MutationObserver((mutations) => {
-  // Hanya update jika extension enabled
-  if (!isExtensionEnabled) return;
-
-  let shouldUpdate = false;
-
-  for (const mutation of mutations) {
-    if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-      shouldUpdate = true;
-      break;
-    }
-  }
-
-  if (shouldUpdate) {
-    overrideDetailButtons();
-  }
-});
-
-observer.observe(document.body, {
-  childList: true,
-  subtree: true
-});
-
 // ========================================
 // PUBLIC API (untuk penggunaan manual)
 // ========================================
 
 window.OpenDetailExtension = {
-  // Cek apakah extension enabled
+  // Get current config
+  getConfig: () => currentConfig,
+
+  // Get all features
+  getFeatures: () => featureModules,
+
+  // Check if extension enabled
   isEnabled: () => isExtensionEnabled,
 
-  // Override semua tombol detail
-  refresh: () => {
-    if (isExtensionEnabled) {
-      overrideDetailButtons();
+  // Enable/disable feature
+  setFeatureEnabled: async (featureKey, enabled) => {
+    if (!currentConfig.features[featureKey]) {
+      throw new Error(`Feature ${featureKey} not found`);
+    }
+    currentConfig.features[featureKey].enabled = enabled;
+    await saveConfig(currentConfig);
+  },
+
+  // Refresh all features
+  refresh: async () => {
+    await loadConfig();
+    init();
+  },
+
+  // Manually run a specific feature
+  runFeature: (featureKey) => {
+    const module = featureModules[featureKey];
+    if (module) {
+      module.run();
     } else {
-      log('Extension disabled, refresh skipped');
+      console.error(`Feature ${featureKey} not found`);
     }
-  },
-
-  // Override tombol spesifik
-  override: overrideDetailButton,
-
-  // Set konfigurasi baru
-  setConfig: (key, value) => {
-    if (CONFIG.hasOwnProperty(key)) {
-      CONFIG[key] = value;
-      log(`Config ${key} diubah menjadi:`, value);
-    }
-  },
-
-  // Ambil konfigurasi
-  getConfig: () => ({ ...CONFIG })
+  }
 };
 
-log('Extension loaded! Gunakan window.OpenDetailExtension untuk kontrol manual.');
+log('Extension loaded! Use window.OpenDetailExtension for manual control.');

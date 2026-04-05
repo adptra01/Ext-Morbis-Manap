@@ -12,11 +12,27 @@
     }
 
     body {
-      width: 300px;
+      width: 340px;
+      max-height: 600px;
+      overflow-y: auto;
       padding: 16px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-      font-size: 14px;
+      font-size: 13px;
       background: #ffffff;
+    }
+
+    /* Scrollbar styling */
+    body::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    body::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    body::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 3px;
     }
 
     .header {
@@ -33,19 +49,32 @@
     }
 
     .header p {
-      font-size: 12px;
+      font-size: 11px;
       color: #6b7280;
+    }
+
+    .section {
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .toggle-container {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px;
+      padding: 10px 12px;
       background: #f9fafb;
       border-radius: 8px;
       border: 1px solid #e5e7eb;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
 
     .toggle-label {
@@ -57,10 +86,11 @@
     .toggle-label .title {
       font-weight: 500;
       color: #374151;
+      font-size: 13px;
     }
 
     .toggle-label .subtitle {
-      font-size: 11px;
+      font-size: 10px;
       color: #6b7280;
     }
 
@@ -70,12 +100,12 @@
     }
 
     .toggle-checkbox {
-      width: 48px;
-      height: 24px;
+      width: 40px;
+      height: 20px;
       -webkit-appearance: none;
       appearance: none;
       background: #d1d5db;
-      border-radius: 12px;
+      border-radius: 10px;
       position: relative;
       cursor: pointer;
       transition: background 0.2s;
@@ -84,8 +114,8 @@
     .toggle-checkbox::before {
       content: '';
       position: absolute;
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
       background: white;
       top: 2px;
@@ -99,7 +129,7 @@
     }
 
     .toggle-checkbox:checked::before {
-      transform: translateX(24px);
+      transform: translateX(20px);
     }
 
     .status-badge {
@@ -110,7 +140,7 @@
       border-radius: 4px;
       font-size: 11px;
       font-weight: 500;
-      margin-top: 8px;
+      margin-bottom: 12px;
     }
 
     .status-badge.active {
@@ -141,48 +171,95 @@
       margin-top: 16px;
       padding-top: 12px;
       border-top: 1px solid #e5e7eb;
-      text-align: center;
+      display: flex;
+      gap: 8px;
     }
 
     .footer button {
-      background: #3b82f6;
-      color: white;
-      border: none;
-      padding: 8px 16px;
+      flex: 1;
+      padding: 8px 12px;
       border-radius: 6px;
-      font-size: 13px;
+      font-size: 12px;
       cursor: pointer;
       transition: background 0.2s;
+      border: none;
     }
 
-    .footer button:hover {
+    .btn-reload {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .btn-reload:hover {
       background: #2563eb;
+    }
+
+    .btn-reset {
+      background: #6b7280;
+      color: white;
+    }
+
+    .btn-reset:hover {
+      background: #4b5563;
+    }
+
+    .feature-count {
+      font-size: 10px;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #6b7280;
+    }
+
+    .hidden {
+      display: none;
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>Open Detail in New Tab</h1>
-    <p>Buka tombol detail di tab baru</p>
-  </div>
+  <div id="loading" class="loading">Memuat...</div>
 
-  <div class="toggle-container">
-    <div class="toggle-label">
-      <span class="title">Aktifkan Ekstensi</span>
-      <span class="subtitle">Override tombol detail</span>
+  <div id="mainContent" class="hidden">
+    <div class="header">
+      <h1>Open Detail Extension</h1>
+      <p>Buka tombol detail di tab baru untuk SIMRS</p>
     </div>
-    <div class="checkbox-wrapper">
-      <input type="checkbox" id="toggleExtension" class="toggle-checkbox">
+
+    <div class="section">
+      <div class="section-title">Status Extension</div>
+
+      <div class="toggle-container">
+        <div class="toggle-label">
+          <span class="title">Aktifkan Extension</span>
+          <span class="subtitle">Enable/disable semua fitur</span>
+        </div>
+        <div class="checkbox-wrapper">
+          <input type="checkbox" id="toggleExtension" class="toggle-checkbox">
+        </div>
+      </div>
+
+      <div id="statusBadge" class="status-badge">
+        <span class="status-dot"></span>
+        <span id="statusText">Memuat...</span>
+      </div>
     </div>
-  </div>
 
-  <div id="statusBadge" class="status-badge">
-    <span class="status-dot"></span>
-    <span id="statusText">Memuat...</span>
-  </div>
+    <div class="section">
+      <div class="section-title">Fitur Tersedia</div>
+      <div class="feature-count">
+        <span id="enabledCount">0</span> dari <span id="totalCount">0</span> fitur aktif
+      </div>
+      <div id="featuresList"></div>
+    </div>
 
-  <div class="footer">
-    <button id="reloadBtn">Reload Halaman</button>
+    <div class="footer">
+      <button id="reloadBtn" class="btn-reload">Reload Halaman</button>
+      <button id="resetBtn" class="btn-reset">Reset Default</button>
+    </div>
   </div>
 
   <script src="popup.js"></script>
