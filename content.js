@@ -815,17 +815,9 @@ function renderBackToDetailButton() {
     z-index: 9999;
   `;
 
-  const label = document.createElement('span');
-  label.textContent = '← Detail Klaim';
-  label.style.cssText = `
-    color: #374151;
-    font-weight: 600;
-    font-size: 14px;
-  `;
-  container.appendChild(label);
-
   const btn = document.createElement('a');
   btn.href = detailUrl;
+  btn.textContent = 'Kembali ke Detail Klaim';
   btn.style.cssText = `
     display: inline-flex;
     align-items: center;
@@ -857,11 +849,16 @@ function renderBackToDetailButton() {
 
   btn.addEventListener('click', (e) => {
     e.preventDefault();
-    window.open(detailUrl, '_blank');
+    // Tutup tab untuk kembali ke tab sebelumnya
+    window.close();
+    
+    // Fallback jika window.close() diblokir oleh browser
+    setTimeout(() => {
+      window.location.href = detailUrl;
+    }, 300);
   });
 
   container.appendChild(btn);
-
   document.body.appendChild(container);
   log('Back to detail button rendered');
 }
