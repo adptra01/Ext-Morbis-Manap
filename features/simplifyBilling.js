@@ -90,6 +90,12 @@ if (!document.getElementById('ext-billing-style')) {
         width: revert-layer !important;
     }
 
+    /* 9. Paksa align right pada semua td di baris footer (Total Resep, Jasa Pelayanan) */
+    .ext-footer-left td {
+        text-align: right !important;
+        text-align-last: right;
+    }
+
   `;
   document.head.appendChild(style);
 }
@@ -397,11 +403,36 @@ function applyRingkasMode(tbodies) {
       tbodies.obat.appendChild(frag);
     }
   }
+
+  // 0.6. Sembunyikan baris Total Resep duplikat (value 0) dan align right pada baris Total Resep utama
+  Array.from(section.querySelectorAll('tr')).forEach(r => {
+    const txt = r.textContent.trim();
+    const tds = r.querySelectorAll('td');
+    const firstTd = tds[0];
+    
+    // Jika txt termasuk Total Resep
+    if (txt.includes('Total Resep')) {
+      // Cek jika baris dengan td pertama kosong (menandakan ini baris utama/tengah)
+      if (firstTd && firstTd.textContent.trim() === '') {
+        // Ini baris utama - keep dan tambah styling border atas
+        r.classList.add('ext-footer-left', 'ext-summary-total');
+      } else {
+        // Ini baris duplikat di awal (td pertama tidak kosong) - hide
+        r.classList.add('ext-billing-hidden');
+      }
+    }
+    
+    // Jasa Pelayanan tetap left
+    if (txt.includes('Jasa Pelayanan')) {
+      r.classList.add('ext-footer-left');
+    }
+  });
 }
 
 function applyPenuhMode() {
   Array.from(document.querySelectorAll('[data-ext-summary]')).forEach(el => el.remove());
   Array.from(document.querySelectorAll('.ext-header-hidden')).forEach(el => el.classList.remove('ext-header-hidden'));
+  Array.from(document.querySelectorAll('tr.ext-billing-hidden')).forEach(el => el.classList.remove('ext-billing-hidden'));
   const section = getTargetSection();
   if (section) {
     // Kembalikan Judul
