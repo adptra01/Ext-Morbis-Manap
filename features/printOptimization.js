@@ -1,17 +1,17 @@
 /**
  * FEATURE: Print Optimization (Hide Empty Sections & Auto-Sync)
- * Deskripsi: Menyembunyikan bagian kosong saat cetak dan otomatis uncheck pilihan jika data kosong.
+ * Deskripsi: Menyembunyikan bagian kosong saat cetak, menghilangkan whitespace, dan auto-uncheck secara cerdas.
  */
 
 const PRINT_OPT_CONFIG = {
-  // Selector untuk kontainer yang berisi pilihan cetak (checklist)
+  // Selector untuk kontainer utama
   selectors: '.isidalam, #pembayaran-gabung, #section-to-print > div',
   emptyTableThreshold: 3, // Minimal baris tabel agar tidak dianggap kosong
   autoSyncDelay: 2000,    // Delay sebelum menjalankan sync pertama kali
 };
 
 /**
- * Injeksi CSS Khusus untuk Print (Overriding visibility: hidden)
+ * Injeksi CSS Khusus untuk Print (Overriding visibility: hidden & whitespace)
  */
 function injectPrintOptimizationStyles() {
   if (document.getElementById('ext-print-opt-style')) return;
@@ -20,29 +20,46 @@ function injectPrintOptimizationStyles() {
   style.id = 'ext-print-opt-style';
   style.textContent = `
     @media print {
-        /* 1. Paksa sembunyikan semua elemen yang di-flag, override visibility: hidden */
-        .hilang-saat-print, .no-print, [style*="visibility: hidden"] {
+        /* 1. Paksa sembunyikan semua elemen yang di-flag, hilangkan SEMUA ruang fisik */
+        .hilang-saat-print, 
+        .no-print, 
+        #section-to-print > div:empty,
+        [style*="visibility: hidden"] {
             display: none !important; 
             height: 0 !important;
+            min-height: 0 !important;
             margin: 0 !important;
             padding: 0 !important;
+            border: none !important;
             overflow: hidden !important;
-            page-break-after: auto !important;
-            page-break-before: auto !important;
+            page-break-after: avoid !important;
+            page-break-before: avoid !important;
+            position: absolute !important; /* Geser keluar dari flow layout agar tidak memakan ruang */
+            top: -10000px !important;
         }
 
-        /* 2. Tata letak section yang BERISI data (@section-to-print > div) */
-        #section-to-print > div:not(.hilang-saat-print):not(.no-print) {
+        /* 2. Tata letak section yang BERISI data (@section-to-print > div atau .isidalam) */
+        #section-to-print > div:not(.hilang-saat-print):not(.no-print),
+        .isidalam:not(.hilang-saat-print):not(.no-print) {
             page-break-before: always !important;
             page-break-inside: avoid !important;
             display: block !important;
-            visibility: visible !important; /* Paksa muncul jika punya data */
-            margin-bottom: 20px !important;
+            visibility: visible !important;
+            margin: 10mm auto !important; /* Gunakan margin standart */
+            padding: 15mm !important;     /* Kurangi sedikit padding agar lebih hemat kertas */
+            border: 1px solid #eee !important;
         }
 
-        /* Hilangkan page-break pada div pertama agar rapi */
-        #section-to-print > div:not(.hilang-saat-print):not(.no-print):first-child {
+        /* Hilangkan page-break pada seksi pertama yang dicetak agar tidak ada blank page di awal */
+        #section-to-print > div:not(.hilang-saat-print):not(.no-print):first-of-type,
+        .isidalam:not(.hilang-saat-print):not(.no-print):first-of-type {
             page-break-before: auto !important;
+        }
+
+        /* Form perbaikan untuk container yang punya inline page-break */
+        div[style*="page-break-after: always"].no-print,
+        div[style*="page-break-after: always"].hilang-saat-print {
+            page-break-after: auto !important;
         }
     }
   `;
@@ -60,47 +77,61 @@ function isEffectivelyEmpty(section) {
   const rows = section.querySelectorAll('table tbody tr');
   const hasSubstantialTable = rows.length >= PRINT_OPT_CONFIG.emptyTableThreshold;
 
-  // 3. Deteksi teks bermakna (abaikan teks judul section)
-  // Cara: hitung semua teks, lalu kurangi teks dari panel-heading
-  const fullText = section.innerText.trim();
-  const headingText = section.querySelector('.panel-heading')?.innerText?.trim() || "";
-  const actualContentText = fullText.replace(headingText, "").trim();
+  // 3. Kloning section untuk memanipulasi DOM tanpa mengubah tampilan asli
+  const clone = section.cloneNode(true);
+  
+  // Hapus panel-heading atau tombol-tombol cetak dari hasil kloning
+  const heading = clone.querySelector('.panel-heading');
+  const checkboxes = clone.querySelectorAll('label, input, button');
+  if (heading) heading.remove();
+  checkboxes.forEach(cb => cb.remove());
+
+  // Bersihkan teks dari spasi kosong ekstra atau enter
+  const actualContentText = clone.innerText.replace(/\s+/g, '').trim();
 
   // 4. Deteksi elemen visual (gambar lab, dll)
   const hasVisuals = section.querySelector('img, canvas, svg, iframe') !== null;
 
-  // Jika tidak ada teks konten, tidak ada visual, dan tidak ada tabel substansial -> KOSONG
-  return actualContentText === '' && !hasVisuals && !hasSubstantialTable;
+  // Jika tidak ada data tabel, tidak ada visual, dan tidak ada teks konten substansial -> KOSONG
+  if (actualContentText === "" && !hasVisuals && !hasSubstantialTable) {
+      return true;
+  }
+
+  return false;
 }
 
 /**
  * Otomatis sinkronisasi Checkbox dengan ketersediaan konten (AJAX Friendly)
  */
 function syncCheckboxesWithContent() {
-  // Cari semua checkbox yang mengontrol cetak (pola umum di sistem ini)
   const printCheckboxes = document.querySelectorAll('input[type="checkbox"][onclick*="checkedPrint"]');
   
   printCheckboxes.forEach(cb => {
-    // Ambil ID target dari atribut onclick: checkedPrint(this, 'id-target')
-    const match = cb.getAttribute('onclick')?.match(/['"](.*?)['"]/);
+    const match = cb.getAttribute('onclick')?.match(/checkedPrint\s*\([^,]+,\s*['"]([^'"]+)['"]/);
     if (!match) return;
 
     const targetId = match[1];
     const targetEl = document.getElementById(targetId);
 
-    if (targetEl && isEffectivelyEmpty(targetEl)) {
-      // Jika kosong: UNCHECK dan tambahkan class no-print
-      if (cb.checked) {
-        cb.checked = false;
-        targetEl.classList.add('no-print');
-        targetEl.classList.add('hilang-saat-print');
-      }
-    } else if (targetEl) {
-        // Jika ada isinya dan user sudah centang (atau default centang): PASTIKAN tampil
+    if (targetEl) {
+      const isEmpty = isEffectivelyEmpty(targetEl);
+      
+      if (isEmpty) {
+        // Jika kosong: UNCHECK dan tambahkan class penyembunyi
         if (cb.checked) {
-            targetEl.classList.remove('no-print');
-            targetEl.classList.remove('hilang-saat-print');
+          cb.checked = false; 
         }
+        targetEl.classList.add('hilang-saat-print');
+        targetEl.classList.add('no-print');
+      } else {
+        // Jika ADA ISINYA: pastikan checkbox NYALA (karena user ingin auto)
+        // dan pastikan tidak tersembunyi
+        if (!cb.checked) {
+          cb.checked = true;
+        }
+        targetEl.classList.remove('hilang-saat-print');
+        targetEl.classList.remove('no-print');
+      }
     }
   });
 }
@@ -113,10 +144,10 @@ function sembunyikanSectionKosong() {
   sections.forEach(section => {
     if (isEffectivelyEmpty(section)) {
       section.classList.add('hilang-saat-print');
+      section.classList.add('no-print');
     }
   });
   
-  // Pastikan checkbox tersinkronisasi sesaat sebelum cetak
   syncCheckboxesWithContent();
 }
 
@@ -126,7 +157,14 @@ function sembunyikanSectionKosong() {
 function kembalikanSectionKosong() {
   const hiddenSections = document.querySelectorAll('.hilang-saat-print');
   hiddenSections.forEach(section => {
+    // Jangan hapus no-print jika checkbox memang tidak dicentang oleh user/auto-sync
+    const id = section.id;
+    const cb = document.querySelector(`input[onclick*="'${id}'"], input[onclick*='"${id}"']`);
+    
     section.classList.remove('hilang-saat-print');
+    if (cb && cb.checked) {
+        section.classList.remove('no-print');
+    }
   });
 }
 
@@ -134,21 +172,22 @@ function kembalikanSectionKosong() {
  * Inisialisasi Fitur
  */
 function runPrintOptimization() {
-  const featureEnabled = currentConfig?.features?.printOptimization?.enabled ?? true;
+  if (typeof window.currentConfig === 'undefined' || typeof window.featureModules === 'undefined') return;
+
+  const featureEnabled = window.currentConfig?.features?.printOptimization?.enabled ?? true;
   if (!featureEnabled) return;
 
   injectPrintOptimizationStyles();
 
-  // 1. Sinkronisasi pertama saat fitur dijalankan (delay agar AJAX mulai loading)
+  // 1. Jalankan sync awal
   setTimeout(syncCheckboxesWithContent, PRINT_OPT_CONFIG.autoSyncDelay);
 
-  // 2. Gunakan MutationObserver untuk memantau perubahan AJAX di kontainer print
-  const observerTarget = document.getElementById('section-to-print');
+  // 2. Observer untuk AJAX
+  const observerTarget = document.getElementById('section-to-print') || document.body;
   if (observerTarget) {
     const observer = new MutationObserver(() => {
-        // Debounce sync agar tidak terlalu sering jalan saat AJAX mengisi data
         clearTimeout(window._extPrintSyncTimer);
-        window._extPrintSyncTimer = setTimeout(syncCheckboxesWithContent, 500);
+        window._extPrintSyncTimer = setTimeout(syncCheckboxesWithContent, 1000);
     });
     observer.observe(observerTarget, { childList: true, subtree: true, characterData: true });
   }
@@ -159,8 +198,10 @@ function runPrintOptimization() {
 }
 
 // Register Module
-featureModules.printOptimization = {
-  name: 'Optimasi Cetak',
-  description: 'Sembunyikan section kosong & Auto-Uncheck secara cerdas.',
-  run: runPrintOptimization
-};
+if (typeof window.featureModules !== 'undefined') {
+  window.featureModules.printOptimization = {
+    name: 'Optimasi Cetak',
+    description: 'Sembunyikan section kosong & Auto-Uncheck secara cerdas.',
+    run: runPrintOptimization
+  };
+}

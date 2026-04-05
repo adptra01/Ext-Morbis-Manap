@@ -53,7 +53,12 @@ function injectPrintStyles() {
     @media print {
       [data-shortcut-buttons],
       [data-back-to-detail-klaim] {
-        display: none !important;
+        display: none !important; 
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        visibility: hidden !important;
       }
     }
   `;
@@ -124,6 +129,7 @@ function renderShortcutButtons() {
 
   const container = document.createElement('div');
   container.dataset.shortcutButtons = 'true';
+  container.classList.add('no-print', 'hilang-saat-print');
   container.style.cssText = `
     display: flex;
     align-items: center;
@@ -309,6 +315,7 @@ function renderBackToDetailButton() {
 
   const container = document.createElement('div');
   container.dataset.backToDetailKlaim = 'true';
+  container.classList.add('no-print', 'hilang-saat-print');
   container.style.cssText = `
     display: inline-flex;
     align-items: center;
