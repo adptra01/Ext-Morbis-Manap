@@ -1,12 +1,21 @@
 {
   "manifest_version": 3,
-  "name": "SIMRS Print Fixer",
-  "version": "1.0",
-  "description": "Memaksa layout dokumen, gambar, dan PDF menyesuaikan ukuran kertas saat diprint.",
+  "name": "Open Detail in New Tab",
+  "version": "1.0.0",
+  "description": "Override tombol detail agar buka tab baru untuk semua website",
+  "author": "Your Name",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "css": ["print_layout.css"]
+      "js": ["content.js"],
+      "run_at": "document_end"
     }
-  ]
+  ],
+  "permissions": ["activeTab"],
+  "host_permissions": ["<all_urls>"]
 }
