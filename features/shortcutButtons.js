@@ -22,7 +22,7 @@ const SHORTCUT_CONFIG = {
       hoverColor: '#059669'
     },
     backMklaim: {
-      text: '← Kembali ke M-KLAIM',
+      text: 'Kembali ke M-KLAIM',
       bgColor: '#ef4444',
       hoverColor: '#dc2626',
       url: 'http://103.147.236.140/v2/m-klaim'
