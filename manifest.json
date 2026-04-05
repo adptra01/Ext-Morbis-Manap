@@ -16,7 +16,12 @@
   "content_scripts": [
     {
       "matches": ["http://192.168.8.4/*", "http://103.147.236.140/*"],
-      "js": ["content.js"],
+      "js": [
+        "core.js",
+        "features/openDetail.js",
+        "features/shortcutButtons.js",
+        "init.js"
+      ],
       "run_at": "document_end"
     }
   ],
