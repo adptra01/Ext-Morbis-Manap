@@ -23,6 +23,7 @@
         "features/filterPersistence.js",
         "features/simplifyBilling.js",
         "features/scrollButtons.js",
+        "features/printOptimization.js",
         "init.js"
       ],
       "run_at": "document_end"

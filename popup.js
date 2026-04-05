@@ -34,9 +34,10 @@ const DEFAULT_CONFIG = {
       description: 'Tombol scroll otomatis ke atas dan bawah halaman detail'
     },
     printOptimization: {
-      enabled: true,
+      enabled: false,
       name: 'Optimasi Cetak',
-      description: 'Sembunyikan section kosong & Auto-Uncheck secara cerdas.'
+      description: 'Sembunyikan section kosong & Auto-Uncheck secara cerdas.',
+      comingSoon: true
     }
   }
 };
@@ -115,26 +116,37 @@ function renderFeatures() {
   let total = 0;
 
   for (const [key, feature] of Object.entries(features)) {
-    total++;
-
-    if (feature.enabled) {
-      enabled++;
+    // Jangan hitung fitur coming soon ke total aktif
+    if (!feature.comingSoon) {
+      total++;
+      if (feature.enabled) {
+        enabled++;
+      }
     }
 
-    const isDisabledClass = !globalEnabled ? 'feature-disabled' : '';
-    const isDisabledAttr = !globalEnabled ? 'disabled' : '';
+    const isComingSoon = feature.comingSoon === true;
+    const isDisabledClass = (!globalEnabled || isComingSoon) ? 'feature-disabled' : '';
+    const isDisabledAttr = (!globalEnabled || isComingSoon) ? 'disabled' : '';
+    
+    const titleText = isComingSoon ? `${feature.name || key} <span style="color: #ef4444; font-size: 9px; font-weight: bold;">(COMING SOON)</span>` : (feature.name || key);
 
     // Create feature toggle element
     const featureDiv = document.createElement('div');
     featureDiv.className = `toggle-container ${isDisabledClass}`;
-    featureDiv.innerHTML = `
-      <div class="toggle-label">
-        <span class="title">${feature.name || key}</span>
-        <span class="subtitle">${feature.description || ''}</span>
-      </div>
+    
+    // Only show checkbox if NOT coming soon
+    const checkboxHtml = isComingSoon ? '' : `
       <div class="checkbox-wrapper">
         <input type="checkbox" class="toggle-checkbox feature-toggle" data-feature="${key}" ${feature.enabled ? 'checked' : ''} ${isDisabledAttr}>
       </div>
+    `;
+
+    featureDiv.innerHTML = `
+      <div class="toggle-label">
+        <span class="title">${titleText}</span>
+        <span class="subtitle">${feature.description || ''}</span>
+      </div>
+      ${checkboxHtml}
     `;
 
     featuresList.appendChild(featureDiv);

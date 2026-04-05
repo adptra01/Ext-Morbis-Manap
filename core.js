@@ -33,9 +33,10 @@ const DEFAULT_CONFIG = {
       description: 'Tombol scroll otomatis ke atas dan bawah halaman detail'
     },
     printOptimization: {
-      enabled: true,
+      enabled: false,
       name: 'Optimasi Cetak',
-      description: 'Sembunyikan section kosong & Auto-Uncheck secara cerdas.'
+      description: 'Sembunyikan section kosong & Auto-Uncheck secara cerdas.',
+      comingSoon: true
     }
   }
 };
