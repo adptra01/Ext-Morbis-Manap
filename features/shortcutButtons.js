@@ -42,6 +42,24 @@ const BACK_TO_DETAIL_CONFIG = {
   }
 };
 
+// --- PRINT STYLES ---
+
+function injectPrintStyles() {
+  const styleId = 'shortcut-buttons-print-styles';
+  if (document.getElementById(styleId)) return;
+  const style = document.createElement('style');
+  style.id = styleId;
+  style.textContent = `
+    @media print {
+      [data-shortcut-buttons],
+      [data-back-to-detail-klaim] {
+        display: none !important;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 // --- SHORTCUT BUTTONS LOGIC ---
 
 function getJenisKunjungan() {
@@ -370,6 +388,7 @@ featureModules.shortcutButtons = {
   name: 'Shortcut Buttons',
   description: 'Tampilkan shortcut buttons ke halaman pelaksanaan Rajal/Ranap',
   run: () => {
+    injectPrintStyles();
     runShortcutButtonsFeature();
     runBackToDetailFromExecutionFeature();
   }
