@@ -26,6 +26,16 @@ const DEFAULT_CONFIG = {
       enabled: true,
       name: 'Ringkas Rincian Biaya',
       description: 'Ringkaskan tabel cetak rincian biaya menjadi tampilan rekap per unit'
+    },
+    scrollButtons: {
+      enabled: true,
+      name: 'Scroll Buttons (Top/Bottom)',
+      description: 'Tombol scroll otomatis ke atas dan bawah halaman detail'
+    },
+    printOptimization: {
+      enabled: true,
+      name: 'Optimasi Cetak',
+      description: 'Sembunyikan section kosong & Auto-Uncheck secara cerdas.'
     }
   }
 };

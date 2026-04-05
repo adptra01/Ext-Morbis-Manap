@@ -22,6 +22,7 @@
         "features/shortcutButtons.js",
         "features/filterPersistence.js",
         "features/simplifyBilling.js",
+        "features/scrollButtons.js",
         "init.js"
       ],
       "run_at": "document_end"
