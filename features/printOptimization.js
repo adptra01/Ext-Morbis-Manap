@@ -8,6 +8,7 @@ const PRINT_OPT_CONFIG = {
   selectors: '.isidalam, #pembayaran-gabung, #section-to-print > div',
   emptyTableThreshold: 3, // Minimal baris tabel agar tidak dianggap kosong
   autoSyncDelay: 2000,    // Delay sebelum menjalankan sync pertama kali
+  syncDebounce: 500       // Debounce untuk sync setelah AJAX change
 };
 
 /**
@@ -36,6 +37,7 @@ function injectPrintOptimizationStyles() {
             page-break-before: avoid !important;
             position: absolute !important; /* Geser keluar dari flow layout agar tidak memakan ruang */
             top: -10000px !important;
+            left: -10000px !important;
         }
 
         /* 2. Tata letak section yang BERISI data (@section-to-print > div atau .isidalam) */
@@ -187,7 +189,7 @@ function runPrintOptimization() {
   if (observerTarget) {
     const observer = new MutationObserver(() => {
         clearTimeout(window._extPrintSyncTimer);
-        window._extPrintSyncTimer = setTimeout(syncCheckboxesWithContent, 1000);
+        window._extPrintSyncTimer = setTimeout(syncCheckboxesWithContent, PRINT_OPT_CONFIG.syncDebounce);
     });
     observer.observe(observerTarget, { childList: true, subtree: true, characterData: true });
   }
