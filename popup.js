@@ -90,6 +90,7 @@ function renderFeatures() {
   featuresList.innerHTML = '';
 
   const features = currentConfig?.features || {};
+  const globalEnabled = currentConfig?.extensionEnabled ?? true;
   let enabled = 0;
   let total = 0;
 
@@ -100,16 +101,19 @@ function renderFeatures() {
       enabled++;
     }
 
+    const isDisabledClass = !globalEnabled ? 'feature-disabled' : '';
+    const isDisabledAttr = !globalEnabled ? 'disabled' : '';
+
     // Create feature toggle element
     const featureDiv = document.createElement('div');
-    featureDiv.className = 'toggle-container';
+    featureDiv.className = `toggle-container ${isDisabledClass}`;
     featureDiv.innerHTML = `
       <div class="toggle-label">
         <span class="title">${feature.name || key}</span>
         <span class="subtitle">${feature.description || ''}</span>
       </div>
       <div class="checkbox-wrapper">
-        <input type="checkbox" class="toggle-checkbox feature-toggle" data-feature="${key}" ${feature.enabled ? 'checked' : ''}>
+        <input type="checkbox" class="toggle-checkbox feature-toggle" data-feature="${key}" ${feature.enabled ? 'checked' : ''} ${isDisabledAttr}>
       </div>
     `;
 
