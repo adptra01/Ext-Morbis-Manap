@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M-KLAIM Extension Helper Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #0dcaf0;
+            --light-bg: #f8f9fa;
+            --dark-text: #212529;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .header-section h1 {
+            color: var(--dark-text);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header-section p {
+            color: var(--secondary-color);
+            margin: 0;
+        }
+
+        .tool-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .tool-section h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tool-section h2 i {
+            font-size: 1.5rem;
+        }
+
+        .nav-tabs {
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 25px;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            color: var(--secondary-color);
+            font-weight: 500;
+            padding: 12px 25px;
+            border-radius: 10px 10px 0 0;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: var(--primary-color);
+            background: rgba(13, 110, 253, 0.05);
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            background: white;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: var(--dark-text);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            padding: 12px 30px;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: #0b5ed7;
+            border-color: #0a58ca;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+        }
+
+        .btn-secondary {
+            padding: 12px 30px;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+
+        .url-output {
+            background: var(--light-bg);
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .url-output pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: var(--dark-text);
+        }
+
+        .bookmarklet-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .bookmarklet-btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: white;
+            color: #667eea;
+            font-weight: 600;
+            border-radius: 8px;
+            text-decoration: none;
+            cursor: move;
+            user-select: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .bookmarklet-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .info-card {
+            background: rgba(13, 202, 240, 0.1);
+            border: 1px solid rgba(13, 202, 240, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .info-card i {
+            color: var(--info-color);
+        }
+
+        .feature-card {
+            background: var(--light-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary-color);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .feature-card.active {
+            background: rgba(25, 135, 84, 0.1);
+            border-left-color: var(--success-color);
+        }
+
+        .feature-card h4 {
+            color: var(--dark-text);
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-working {
+            background: rgba(25, 135, 84, 0.2);
+            color: var(--success-color);
+        }
+
+        .status-issue {
+            background: rgba(220, 53, 69, 0.2);
+            color: var(--danger-color);
+        }
+
+        .code-snippet {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border-radius: 8px;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .copy-btn.copied {
+            background: var(--success-color);
+        }
+
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast {
+            background: white;
+            border-radius: 10px;
+            padding: 15px 25px;
+            margin-top: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            padding: 20px;
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header Section -->
+        <div class="header-section">
+            <h1><i class="bi bi-gear-fill"></i> M-KLAIM Extension Helper Tool</h1>
+            <p>Website tool untuk membantu menyesuaikan fitur extension dengan sistem M-KLAIM</p>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" id="url-builder-tab" data-bs-toggle="tab" data-bs-target="#url-builder" type="button">
+                    <i class="bi bi-link-45deg"></i> URL Builder
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="bookmarklet-tab" data-bs-toggle="tab" data-bs-target="#bookmarklet" type="button">
+                    <i class="bi bi-bookmark-star"></i> Bookmarklet
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="testing-tab" data-bs-toggle="tab" data-bs-target="#testing" type="button">
+                    <i class="bi bi-check-circle"></i> Testing
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="guide-tab" data-bs-toggle="tab" data-bs-target="#guide" type="button">
+                    <i class="bi bi-book"></i> Panduan
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- URL Builder Tab -->
+            <div class="tab-pane fade show active" id="url-builder">
+                <div class="tool-section">
+                    <h2><i class="bi bi-link-45deg"></i> URL Builder</h2>
+                    <p class="text-muted">Generate URL yang benar untuk navigasi antara halaman M-KLAIM dengan filter yang terjaga.</p>
+
+                    <form id="urlBuilderForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Base URL Website</label>
+                                <input type="text" class="form-control" id="baseUrl" value="http://103.147.236.140" placeholder="http://103.147.236.140">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">ID Visit</label>
+                                <input type="number" class="form-control" id="idVisit" placeholder="Contoh: 162524">
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Tanggal Awal</label>
+                                <input type="date" class="form-control" id="tanggalAwal">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Tanggal Akhir</label>
+                                <input type="date" class="form-control" id="tanggalAkhir">
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <label class="form-label">No RM</label>
+                                <input type="text" class="form-control" id="norm" placeholder="00043117">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Nama Pasien</label>
+                                <input type="text" class="form-control" id="nama" placeholder="Nama pasien">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">No Registrasi</label>
+                                <input type="text" class="form-control" id="reg" placeholder="No registrasi">
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Unit (ID Poli)</label>
+                                <input type="text" class="form-control" id="idPoliCari" placeholder="4017">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Status Billing</label>
+                                <select class="form-control" id="billing">
+                                    <option value="all">Semua</option>
+                                    <option value="valid">Valid</option>
+                                    <option value="belum">Belum Valid</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Status Pasien</label>
+                                <select class="form-control" id="status">
+                                    <option value="all">Semua</option>
+                                    <option value="rj">Rawat Jalan</option>
+                                    <option value="ri">Rawat Inap</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="button" class="btn btn-primary" id="generateUrlBtn">
+                                <i class="bi bi-gear"></i> Generate URL
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="clearFormBtn">
+                                <i class="bi bi-x-circle"></i> Reset Form
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="url-output" id="urlOutput" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0"><i class="bi bi-link"></i> Generated URLs</h6>
+                            <span class="status-badge status-working" id="urlStatus">Ready</span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label"><strong>URL Halaman List:</strong></label>
+                            <div class="position-relative">
+                                <pre id="listUrl"></pre>
+                                <button class="copy-btn" onclick="copyToClipboard('listUrl')">
+                                    <i class="bi bi-clipboard"></i> Copy
+                                </button>
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary mt-2" onclick="openUrl('listUrl')">
+                                <i class="bi bi-box-arrow-up-right"></i> Buka di Tab Baru
+                            </button>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label"><strong>URL Halaman Detail:</strong></label>
+                            <div class="position-relative">
+                                <pre id="detailUrl"></pre>
+                                <button class="copy-btn" onclick="copyToClipboard('detailUrl')">
+                                    <i class="bi bi-clipboard"></i> Copy
+                                </button>
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary mt-2" onclick="openUrl('detailUrl')">
+                                <i class="bi bi-box-arrow-up-right"></i> Buka di Tab Baru
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bookmarklet Tab -->
+            <div class="tab-pane fade" id="bookmarklet">
+                <div class="tool-section">
+                    <h2><i class="bi bi-bookmark-star"></i> Bookmarklet Fix</h2>
+                    <p class="text-muted">Drag bookmarklet ini ke browser bookmarks, lalu klik saat di halaman M-KLAIM untuk memperbaiki fungsi navigasi.</p>
+
+                    <div class="info-card">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        <strong>Cara Penggunaan:</strong>
+                        <ol class="mb-0 mt-2">
+                            <li>Drag tombol bookmarklet di bawah ke bookmarks bar browser Anda</li>
+                            <li>Buka halaman M-KLAIM (list atau detail)</li>
+                            <li>Klik bookmarklet yang sudah disimpan</li>
+                            <li>Fungsi navigasi akan diperbaiki secara otomatis</li>
+                        </ol>
+                    </div>
+
+                    <div class="bookmarklet-container">
+                        <h5 class="text-white mb-3"><i class="bi bi-bookmark-star-fill"></i> Bookmarklet Fix M-KLAIM</h5>
+                        <a href="javascript:(function(){const fixMklaim=function(){'use strict';const getFilterParams=function(){const a=new URLSearchParams(window.location.search);return{id_visit:a.get('id_visit'),tanggalAwal:a.get('tanggalAwal')||'',tanggalAkhir:a.get('tanggalAkhir')||'',norm:a.get('norm')||'',nama:a.get('nama')||'',reg:a.get('reg')||'',billing:a.get('billing')||'all',status:a.get('status')||'all',id_poli_cari:a.get('id_poli_cari')||'',poli_cari:a.get('poli_cari')||''}},getIdVisit=function(){return getFilterParams().id_visit},buildBackUrl=function(){const a=getFilterParams(),{id_visit:b,...c}=a;let d='/v2/m-klaim',e=[];for(const[f,g]of Object.entries(c))g&&'undefined'!==g&&e.push(f+'='+encodeURIComponent(g));return e.length>0&&(d+='?'+e.join('&')),d},buildDetailUrl=function(){const a=getFilterParams(),{id_visit:b}=a;let c='/v2/m-klaim/detail-v2-refaktor?id_visit='+b,d=[];for(const[e,f]of Object.entries(a))f&&'undefined'!==f&&'id_visit'!==e&&d.push(e+'='+encodeURIComponent(f));return d.length>0&&(c+='&'+d.join('&')),c},originalKembali=window.kembali,window.kembali=function(){const a=buildBackUrl();window.location=a},window.buildBackUrl=buildBackUrl,window.buildDetailUrl=buildDetailUrl,window.getIdVisit=getIdVisit,window.getFilterParams=getFilterParams,console.log('[M-KLAIM Fix] Navigation functions patched successfully!'),alert('✓ M-KLAIM Fix berhasil diterapkan!\\n\\nFungsi navigasi telah diperbaiki:\\n- Tombol Kembali sekarang menjaga filter\\n- Redirect setelah verifikasi benar\\n- ID Visit dibaca secara dinamis')};try{if(window.location.href.includes('/v2/m-klaim')){fixMklaim()}else{alert('⚠️ Bookmarklet harus dijalankan di halaman M-KLAIM!\\n\\nNavigasikan ke:\\nhttp://103.147.236.140/v2/m-klaim')}}catch(a){console.error('[M-KLAIM Fix] Error:',a),alert('✗ Terjadi kesalahan saat menerapkan fix:\\n'+a.message)}})();" class="bookmarklet-btn">
+                            <i class="bi bi-gear-fill"></i> Fix M-KLAIM
+                        </a>
+                    </div>
+
+                    <div class="info-card mt-3">
+                        <i class="bi bi-lightbulb-fill me-2"></i>
+                        <strong>Fitur yang Diperbaiki:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Fungsi tombol <strong>Kembali</strong> - Menjaga filter pencarian</li>
+                            <li>Redirect setelah <strong>Verifikasi</strong> - Filter tetap terjaga</li>
+                            <li>ID Visit dinamis - Tidak hardcoded lagi</li>
+                            <li>URL parameters handling - Semua parameter terjaga</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Testing Tab -->
+            <div class="tab-pane fade" id="testing">
+                <div class="tool-section">
+                    <h2><i class="bi bi-check-circle"></i> Testing Extension</h2>
+                    <p class="text-muted">Cek status fitur extension dan test fungsionalitasnya.</p>
+
+                    <div class="row" id="featureStatus">
+                        <div class="col-md-6">
+                            <div class="feature-card" id="feature-openDetail">
+                                <div class="d-flex justify-content-between">
+                                    <h4><i class="bi bi-box-arrow-up-right"></i> Open Detail in New Tab</h4>
+                                    <span class="status-badge" data-status="unknown">Checking...</span>
+                                </div>
+                                <p class="mb-0 mt-2 text-muted small">Override tombol detail agar buka tab baru</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card" id="feature-shortcutButtons">
+                                <div class="d-flex justify-content-between">
+                                    <h4><i class="bi bi-lightning-fill"></i> Shortcut Buttons</h4>
+                                    <span class="status-badge" data-status="unknown">Checking...</span>
+                                </div>
+                                <p class="mb-0 mt-2 text-muted small">Tampilkan shortcut ke halaman pelaksanaan</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card" id="feature-filterPersistence">
+                                <div class="d-flex justify-content-between">
+                                    <h4><i class="bi bi-floppy-fill"></i> Filter Persistence</h4>
+                                    <span class="status-badge" data-status="unknown">Checking...</span>
+                                </div>
+                                <p class="mb-0 mt-2 text-muted small">Simpan filter pencarian secara otomatis</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card" id="feature-scrollButtons">
+                                <div class="d-flex justify-content-between">
+                                    <h4><i class="bi bi-arrow-up-down"></i> Scroll Buttons</h4>
+                                    <span class="status-badge" data-status="unknown">Checking...</span>
+                                </div>
+                                <p class="mb-0 mt-2 text-muted small">Tombol scroll otomatis atas/bawah</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card" id="feature-simplifyBilling">
+                                <div class="d-flex justify-content-between">
+                                    <h4><i class="bi bi-file-earmark-text"></i> Simplify Billing</h4>
+                                    <span class="status-badge" data-status="unknown">Checking...</span>
+                                </div>
+                                <p class="mb-0 mt-2 text-muted small">Ringkas tampilan rincian biaya</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card" id="feature-printOptimization">
+                                <div class="d-flex justify-content-between">
+                                    <h4><i class="bi bi-printer"></i> Print Optimization</h4>
+                                    <span class="status-badge" data-status="unknown">Checking...</span>
+                                </div>
+                                <p class="mb-0 mt-2 text-muted small">Optimasi tampilan cetak</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button class="btn btn-primary" id="runTestsBtn">
+                            <i class="bi bi-play-circle"></i> Jalankan Testing
+                        </button>
+                        <button class="btn btn-secondary" id="resetTestsBtn">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset Status
+                        </button>
+                    </div>
+
+                    <div class="mt-4" id="testResults" style="display: none;">
+                        <h6><i class="bi bi-list-check"></i> Test Results</h6>
+                        <div class="code-snippet position-relative" id="testResultsContent">
+                            <button class="copy-btn" onclick="copyTestResults()">
+                                <i class="bi bi-clipboard"></i> Copy
+                            </button>
+                            <pre id="testResultsText"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Guide Tab -->
+            <div class="tab-pane fade" id="guide">
+                <div class="tool-section">
+                    <h2><i class="bi bi-book"></i> Panduan Penggunaan</h2>
+
+                    <div class="accordion" id="guideAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingOne">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                    <i class="bi bi-1-circle-fill me-2"></i> Persiapan Awal
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#guideAccordion">
+                                <div class="accordion-body">
+                                    <ol>
+                                        <li>Pastikan Chrome Extension sudah terinstall di browser</li>
+                                        <li>Buka halaman M-KLAIM: <code>http://103.147.236.140/v2/m-klaim</code></li>
+                                        <li>Login dengan akun Anda</li>
+                                        <li>Buka tool ini di tab terpisah</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingTwo">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                                    <i class="bi bi-2-circle-fill me-2"></i> Cara Menggunakan URL Builder
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#guideAccordion">
+                                <div class="accordion-body">
+                                    <ol>
+                                        <li>Isi form URL Builder dengan parameter yang diinginkan</li>
+                                        <li>Klik tombol "Generate URL"</li>
+                                        <li>Copy URL yang dihasilkan</li>
+                                        <li>Buka URL di browser baru</li>
+                                        <li>Halaman akan terbuka dengan filter yang benar</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingThree">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                                    <i class="bi bi-3-circle-fill me-2"></i> Cara Menggunakan Bookmarklet
+                                </button>
+                            </h2>
+                            <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#guideAccordion">
+                                <div class="accordion-body">
+                                    <ol>
+                                        <li>Buka tab "Bookmarklet" di tool ini</li>
+                                        <li>Drag tombol "Fix M-KLAIM" ke bookmarks bar browser Anda</li>
+                                        <li>Buka halaman M-KLAIM (list atau detail)</li>
+                                        <li>Klik bookmarklet yang sudah disimpan</li>
+                                        <li>Popup konfirmasi akan muncul - klik OK</li>
+                                        <li>Fungsi navigasi sekarang sudah diperbaiki!</li>
+                                    </ol>
+                                    <div class="alert alert-warning mt-3">
+                                        <i class="bi bi-exclamation-triangle-fill"></i>
+                                        <strong>Catatan:</strong> Bookmarklet harus diklik setiap kali halaman M-KLAIM dimuat ulang.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingFour">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">
+                                    <i class="bi bi-4-circle-fill me-2"></i> Cara Testing Extension
+                                </button>
+                            </h2>
+                            <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#guideAccordion">
+                                <div class="accordion-body">
+                                    <ol>
+                                        <li>Buka tab "Testing" di tool ini</li>
+                                        <li>Klik tombol "Jalankan Testing"</li>
+                                        <li>Tool akan mengecek status semua fitur extension</li>
+                                        <li>Hasil test akan ditampilkan di bawah tombol</li>
+                                        <li>Copy hasil test jika perlu untuk pelaporan</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingFive">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive">
+                                    <i class="bi bi-5-circle-fill me-2"></i> Troubleshooting
+                                </button>
+                            </h2>
+                            <div id="collapseFive" class="accordion-collapse collapse" data-bs-parent="#guideAccordion">
+                                <div class="accordion-body">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Masalah</th>
+                                                <th>Solusi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Tombol Kembali reset filter</td>
+                                                <td>Gunakan Bookmarklet Fix</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Extension tidak merespon</td>
+                                                <td>Refresh halaman atau restart browser</td>
+                                            </tr>
+                                            <tr>
+                                                <td>URL error setelah verifikasi</td>
+                                                <td>Gunakan Bookmarklet Fix sebelum verifikasi</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Bookmarklet tidak bisa didrag</td>
+                                                <td>Copy kode bookmarklet dan buat bookmark manual</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>M-KLAIM Extension Helper Tool &copy; 2026 | <a href="https://github.com" target="_blank">GitHub</a></p>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // ===== Global Variables =====
+        let generatedUrls = {
+            list: '',
+            detail: ''
+        };
+
+        // ===== Utility Functions =====
+        function formatDateForUrl(date) {
+            const d = new Date(date);
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            return `${day}-${month}-${year}`;
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <i class="bi bi-${type === 'success' ? 'check-circle-fill text-success' : 'x-circle-fill text-danger'}"></i>
+                <span class="ms-2">${message}</span>
+            `;
+            document.getElementById('toastContainer').appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('URL berhasil di-copy ke clipboard!', 'success');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showToast('URL berhasil di-copy ke clipboard!', 'success');
+            });
+        }
+
+        function openUrl(elementId) {
+            const url = document.getElementById(elementId).textContent;
+            window.open(url, '_blank');
+        }
+
+        function copyTestResults() {
+            const text = document.getElementById('testResultsText').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Test results berhasil di-copy!', 'success');
+            });
+        }
+
+        // ===== URL Builder Functions =====
+        function generateUrls() {
+            const baseUrl = document.getElementById('baseUrl').value.replace(/\/$/, '');
+            const idVisit = document.getElementById('idVisit').value;
+            const tanggalAwal = document.getElementById('tanggalAwal').value ? formatDateForUrl(document.getElementById('tanggalAwal').value) : '';
+            const tanggalAkhir = document.getElementById('tanggalAkhir').value ? formatDateForUrl(document.getElementById('tanggalAkhir').value) : '';
+            const norm = document.getElementById('norm').value;
+            const nama = document.getElementById('nama').value;
+            const reg = document.getElementById('reg').value;
+            const idPoliCari = document.getElementById('idPoliCari').value;
+            const billing = document.getElementById('billing').value;
+            const status = document.getElementById('status').value;
+
+            // Build query parameters
+            const params = [];
+            if (tanggalAwal) params.push(`tanggalAwal=${encodeURIComponent(tanggalAwal)}`);
+            if (tanggalAkhir) params.push(`tanggalAkhir=${encodeURIComponent(tanggalAkhir)}`);
+            if (norm) params.push(`norm=${encodeURIComponent(norm)}`);
+            if (nama) params.push(`nama=${encodeURIComponent(nama)}`);
+            if (reg) params.push(`reg=${encodeURIComponent(reg)}`);
+            if (billing !== 'all') params.push(`billing=${encodeURIComponent(billing)}`);
+            if (status !== 'all') params.push(`status=${encodeURIComponent(status)}`);
+            if (idPoliCari) params.push(`id_poli_cari=${encodeURIComponent(idPoliCari)}`);
+
+            const queryString = params.length > 0 ? '?' + params.join('&') : '';
+
+            // Generate List URL
+            generatedUrls.list = `${baseUrl}/v2/m-klaim${queryString}`;
+
+            // Generate Detail URL
+            if (idVisit) {
+                generatedUrls.detail = `${baseUrl}/v2/m-klaim/detail-v2-refaktor?id_visit=${idVisit}`;
+                if (params.length > 0) {
+                    generatedUrls.detail += '&' + params.join('&');
+                }
+                generatedUrls.detail += '&poli_cari=';
+
+                document.getElementById('urlStatus').textContent = 'Ready';
+                document.getElementById('urlStatus').className = 'status-badge status-working';
+            } else {
+                generatedUrls.detail = 'ID Visit harus diisi untuk generate URL Detail';
+                document.getElementById('urlStatus').textContent = 'Missing ID';
+                document.getElementById('urlStatus').className = 'status-badge status-issue';
+            }
+
+            // Display URLs
+            document.getElementById('listUrl').textContent = generatedUrls.list;
+            document.getElementById('detailUrl').textContent = generatedUrls.detail;
+            document.getElementById('urlOutput').style.display = 'block';
+        }
+
+        function clearForm() {
+            document.getElementById('urlBuilderForm').reset();
+            document.getElementById('urlOutput').style.display = 'none';
+            generatedUrls = { list: '', detail: '' };
+        }
+
+        // ===== Testing Functions =====
+        function runTests() {
+            const results = {
+                timestamp: new Date().toISOString(),
+                extensionInstalled: typeof chrome !== 'undefined' && chrome.storage,
+                features: {}
+            };
+
+            // Check each feature
+            const features = [
+                { id: 'openDetail', name: 'Open Detail in New Tab', test: checkOpenDetail },
+                { id: 'shortcutButtons', name: 'Shortcut Buttons', test: checkShortcutButtons },
+                { id: 'filterPersistence', name: 'Filter Persistence', test: checkFilterPersistence },
+                { id: 'scrollButtons', name: 'Scroll Buttons', test: checkScrollButtons },
+                { id: 'simplifyBilling', name: 'Simplify Billing', test: checkSimplifyBilling },
+                { id: 'printOptimization', name: 'Print Optimization', test: checkPrintOptimization }
+            ];
+
+            features.forEach(feature => {
+                const result = feature.test();
+                results.features[feature.id] = {
+                    name: feature.name,
+                    status: result.status,
+                    message: result.message,
+                    details: result.details
+                };
+
+                // Update UI
+                const card = document.getElementById(`feature-${feature.id}`);
+                const badge = card.querySelector('.status-badge');
+                badge.textContent = result.status;
+                badge.dataset.status = result.status;
+
+                if (result.status === 'Working') {
+                    badge.className = 'status-badge status-working';
+                    card.classList.add('active');
+                } else {
+                    badge.className = 'status-badge status-issue';
+                    card.classList.remove('active');
+                }
+            });
+
+            // Display results
+            document.getElementById('testResultsText').textContent = JSON.stringify(results, null, 2);
+            document.getElementById('testResults').style.display = 'block';
+
+            showToast('Testing selesai!', 'success');
+        }
+
+        function resetTests() {
+            document.querySelectorAll('.feature-card').forEach(card => {
+                card.classList.remove('active');
+                const badge = card.querySelector('.status-badge');
+                badge.textContent = 'Checking...';
+                badge.className = 'status-badge';
+                badge.dataset.status = 'unknown';
+            });
+            document.getElementById('testResults').style.display = 'none';
+        }
+
+        // Feature Check Functions
+        function checkOpenDetail() {
+            const detailButtons = document.querySelectorAll('button[onclick^="detail("], a[onclick^="detail("]');
+            return {
+                status: 'Checking',
+                message: 'Perlu buka halaman M-KLAIM',
+                details: { buttonsFound: detailButtons.length }
+            };
+        }
+
+        function checkShortcutButtons() {
+            const shortcutContainer = document.querySelector('[data-shortcut-buttons]');
+            return {
+                status: shortcutContainer ? 'Working' : 'Not Found',
+                message: shortcutContainer ? 'Shortcut buttons terdeteksi' : 'Shortcut buttons tidak ditemukan',
+                details: { containerFound: !!shortcutContainer }
+            };
+        }
+
+        function checkFilterPersistence() {
+            const savedFilter = localStorage.getItem('mklaim_filter');
+            return {
+                status: savedFilter ? 'Working' : 'Not Set',
+                message: savedFilter ? 'Filter tersimpan di localStorage' : 'Belum ada filter tersimpan',
+                details: { hasSavedFilter: !!savedFilter }
+            };
+        }
+
+        function checkScrollButtons() {
+            const scrollButtons = document.querySelectorAll('[data-scroll-buttons]');
+            return {
+                status: scrollButtons.length > 0 ? 'Working' : 'Not Found',
+                message: scrollButtons.length > 0 ? 'Scroll buttons terdeteksi' : 'Scroll buttons tidak ditemukan',
+                details: { buttonsFound: scrollButtons.length }
+            };
+        }
+
+        function checkSimplifyBilling() {
+            return {
+                status: 'Checking',
+                message: 'Perlu buka halaman dengan billing',
+                details: {}
+            };
+        }
+
+        function checkPrintOptimization() {
+            return {
+                status: 'Checking',
+                message: 'Perlu buka halaman detail',
+                details: {}
+            };
+        }
+
+        // ===== Initialize =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default dates
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            document.getElementById('tanggalAwal').value = firstDay.toISOString().split('T')[0];
+            document.getElementById('tanggalAkhir').value = today.toISOString().split('T')[0];
+
+            // Event Listeners
+            document.getElementById('generateUrlBtn').addEventListener('click', generateUrls);
+            document.getElementById('clearFormBtn').addEventListener('click', clearForm);
+            document.getElementById('runTestsBtn').addEventListener('click', runTests);
+            document.getElementById('resetTestsBtn').addEventListener('click', resetTests);
+
+            // Auto-generate on form change
+            document.querySelectorAll('#urlBuilderForm input, #urlBuilderForm select').forEach(el => {
+                el.addEventListener('change', generateUrls);
+            });
+
+            console.log('[M-KLAIM Helper Tool] Initialized successfully!');
+        });
+    </script>
+</body>
+</html>

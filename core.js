@@ -4,13 +4,24 @@
  */
 
 const STORAGE_KEY = 'extensionConfig';
+const URLS_STORAGE_KEY = 'extensionCustomUrls';
+
+const DEFAULT_CUSTOM_URLS = [
+  { id: 'default-1', url: 'http://192.168.8.4', enabled: true, isDefault: true },
+  { id: 'default-2', url: 'http://103.147.236.140', enabled: true, isDefault: true }
+];
 const DEFAULT_CONFIG = {
   extensionEnabled: true,
   features: {
     openDetailInNewTab: {
       enabled: true,
-      name: 'Open Detail in New Tab',
-      description: 'Override tombol detail agar buka tab baru'
+      name: 'Open Detail Mode',
+      description: 'Pilih mode buka detail: tab baru / tab sama',
+      mode: 'same-tab', // 'new-tab' or 'same-tab'
+      modes: {
+        'same-tab': 'Buka di Tab Sama (Default)',
+        'new-tab': 'Buka di Tab Baru'
+      }
     },
     shortcutButtons: {
       enabled: true,
@@ -85,9 +96,69 @@ async function loadConfig() {
   } catch (error) {
     console.error('[OpenDetail Extension] Error loading config:', error);
     currentConfig = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
-    isExtensionEnabled = DEFAULT_CONFIG.extensionEnabled;
+    isExtensionEnabled = currentConfig.extensionEnabled;
     return currentConfig;
   }
+}
+
+/**
+ * Load custom URLs dari storage
+ */
+async function loadCustomUrls() {
+  try {
+    const result = await chrome.storage.sync.get(URLS_STORAGE_KEY);
+    
+    if (!result[URLS_STORAGE_KEY]) {
+      return JSON.parse(JSON.stringify(DEFAULT_CUSTOM_URLS));
+    }
+    
+    // Gabungkan dengan default URLs jika ada yang hilang
+    const savedUrls = result[URLS_STORAGE_KEY];
+    const defaultUrls = JSON.parse(JSON.stringify(DEFAULT_CUSTOM_URLS));
+    
+    const mergedUrls = [...defaultUrls];
+    savedUrls.forEach(savedUrl => {
+      if (!savedUrl.isDefault) {
+        mergedUrls.push(savedUrl);
+      }
+    });
+    
+    // Update status enabled untuk default URLs
+    mergedUrls.forEach(url => {
+      const savedMatch = savedUrls.find(s => s.id === url.id);
+      if (savedMatch && url.isDefault) {
+        url.enabled = savedMatch.enabled;
+      }
+    });
+    
+    return mergedUrls;
+  } catch (error) {
+    console.error('[OpenDetail Extension] Error loading custom URLs:', error);
+    return JSON.parse(JSON.stringify(DEFAULT_CUSTOM_URLS));
+  }
+}
+
+/**
+ * Simpan custom URLs ke storage
+ */
+async function saveCustomUrls(urls) {
+  try {
+    await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
+    log('Custom URLs saved');
+  } catch (error) {
+    console.error('[OpenDetail Extension] Error saving custom URLs:', error);
+  }
+}
+
+/**
+ * Generate match patterns untuk manifest
+ */
+function getActiveUrlPatterns() {
+  return loadCustomUrls().then(urls => {
+    return urls
+      .filter(u => u.enabled)
+      .map(u => `${u.url}/*`);
+  });
 }
 
 /**

@@ -6,9 +6,21 @@ async function initExtension() {
   log('Menginisialisasi Open Detail Extension (Modular)');
 
   await loadConfig();
+  const customUrls = await loadCustomUrls();
   
   if (!isExtensionEnabled) {
     log('Extension disabled globally, skipping all features');
+    return;
+  }
+
+  // Check if current hostname is in allowed URLs
+  const currentHost = window.location.origin;
+  const isAllowedUrl = customUrls.some(url => 
+    url.enabled && currentHost.startsWith(url.url)
+  );
+  
+  if (!isAllowedUrl) {
+    log('URL tidak ada dalam daftar diizinkan, skip semua fitur');
     return;
   }
 

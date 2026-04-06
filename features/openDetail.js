@@ -4,16 +4,21 @@
 
 const OPEN_DETAIL_CONFIG = {
   urlPatterns: [
-    'http://103.147.236.140/v2/m-klaim/detail-v2-refaktor?id_visit={id}&tanggalAwal={tanggalAwal}&tanggalAkhir={tanggalAkhir}&norm=&nama=&reg=&billing=all&status=all&id_poli_cari=&poli_cari=',
+    '/v2/m-klaim/detail-v2-refaktor?id_visit={id}&tanggalAwal={tanggalAwal}&tanggalAkhir={tanggalAkhir}&norm=&nama=&reg=&billing=all&status=all&id_poli_cari=&poli_cari=',
   ],
   autoDate: true,
   dateFormat: 'id',
   buttonSelectors: [
     'button[onclick^="detail("]',
     'a[onclick^="detail("]',
-    '[data-action="detail"]'
+    '[data-action="detail"]',
+    '[data-id-visit]',
+    'td:last-child button:contains("Detail")',
+    'td:last-child a:contains("Detail")',
+    '.btn-detail',
+    '[data-toggle="detail"]'
   ],
-  openMode: 'new-tab',
+  openMode: 'same-tab',
   debug: false
 };
 
@@ -30,14 +35,61 @@ function extractIdFromOnclick(onclickAttr) {
   return null;
 }
 
+function extractIdFromElement(element) {
+  // Check for data attributes first
+  if (element.dataset.idVisit) return element.dataset.idVisit;
+  if (element.dataset.idvisit) return element.dataset.idvisit;
+  if (element.dataset.id) return element.dataset.id;
+  
+  // Check onclick attribute
+  const onclickAttr = element.getAttribute('onclick');
+  if (onclickAttr) {
+    const id = extractIdFromOnclick(onclickAttr);
+    if (id) return id;
+  }
+  
+  // Check parent elements
+  let parent = element.parentElement;
+  for (let i = 0; i < 5 && parent; i++) {
+    if (parent.dataset.idVisit) return parent.dataset.idVisit;
+    if (parent.dataset.idvisit) return parent.dataset.idvisit;
+    const parentOnclick = parent.getAttribute('onclick');
+    if (parentOnclick) {
+      const id = extractIdFromOnclick(parentOnclick);
+      if (id) return id;
+    }
+    parent = parent.parentElement;
+  }
+  
+  return null;
+}
+
 function generateUrl(id) {
-  let url = OPEN_DETAIL_CONFIG.urlPatterns[0];
+  let url = window.location.origin + OPEN_DETAIL_CONFIG.urlPatterns[0];
   url = url.replace('{id}', id);
 
   if (OPEN_DETAIL_CONFIG.autoDate) {
-    const today = formatDateOpenDetail(new Date());
-    url = url.replace('{tanggalAwal}', today).replace('{tanggalAkhir}', today);
+    // Try to get dates from current page first
+    const tanggalAwal = document.getElementById('tanggalAwal')?.value;
+    const tanggalAkhir = document.getElementById('tanggalAkhir')?.value;
+    
+    if (tanggalAwal && tanggalAkhir) {
+      url = url.replace('{tanggalAwal}', encodeURIComponent(tanggalAwal)).replace('{tanggalAkhir}', encodeURIComponent(tanggalAkhir));
+    } else {
+      // Fallback to today
+      const today = formatDateOpenDetail(new Date());
+      url = url.replace('{tanggalAwal}', today).replace('{tanggalAkhir}', today);
+    }
   }
+
+  // Keep other existing parameters from current URL
+  const currentParams = new URLSearchParams(window.location.search);
+  ['norm', 'nama', 'reg', 'billing', 'status', 'id_poli_cari', 'poli_cari'].forEach(param => {
+    const value = currentParams.get(param);
+    if (value) {
+      url = url.replace(`{${param}}`, encodeURIComponent(value));
+    }
+  });
 
   url = url.replace(/{\w+}/g, '');
   return url;
@@ -57,18 +109,16 @@ function isModifiedEvent(element) {
 function overrideDetailButton(btn) {
   if (isModifiedEvent(btn)) return;
 
-  const onclickAttr = btn.getAttribute('onclick');
-  if (!onclickAttr) return;
-
-  const id = extractIdFromOnclick(onclickAttr);
+  const id = extractIdFromElement(btn);
   if (!id) {
     if (OPEN_DETAIL_CONFIG.debug) {
-      log('Gagal mengekstrak ID dari:', onclickAttr);
+      log('Gagal mengekstrak ID dari elemen:', btn);
     }
     return;
   }
 
   btn.dataset.detailModified = 'true';
+  // HAPUS onclick ASLI (yang melakukan window.open/_blank)
   btn.removeAttribute('onclick');
 
   btn.addEventListener('click', function (e) {
@@ -79,9 +129,25 @@ function overrideDetailButton(btn) {
     const url = generateUrl(id);
     log(`Membuka detail ID: ${id}, URL: ${url}`);
 
-    if (OPEN_DETAIL_CONFIG.openMode === 'new-tab') {
+    // Gunakan mode dari setting user
+    const openMode = currentConfig?.features?.openDetailInNewTab?.mode || 'same-tab';
+    
+    // Override dengan keyboard shortcuts
+    if (e.ctrlKey || e.metaKey) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+      return false;
+    }
+    
+    if (e.shiftKey) {
+      window.location.href = url;
+      return false;
+    }
+    
+    // Default sesuai setting user
+    if (openMode === 'new-tab') {
       window.open(url, '_blank', 'noopener,noreferrer');
     } else {
+      // SAME TAB: override default _blank website
       window.location.href = url;
     }
 
@@ -111,6 +177,20 @@ function overrideButtonsByText() {
   buttons.forEach(btn => {
     if (btn.textContent.trim().toLowerCase() === 'detail' && !isModifiedEvent(btn)) {
       overrideDetailButton(btn);
+    }
+  });
+
+  // Also check all table cells for detail elements
+  const tableCells = document.querySelectorAll('td');
+  tableCells.forEach(cell => {
+    if (cell.textContent.trim().toLowerCase().includes('detail')) {
+      const elements = cell.querySelectorAll('button, a, span, div');
+      elements.forEach(el => {
+        if (!isModifiedEvent(el) && (
+          el.textContent.trim().toLowerCase() === 'detail' || el.textContent.trim().toLowerCase() === 'view' || el.textContent.trim().toLowerCase() === 'lihat') {
+          overrideDetailButton(el);
+        }
+      });
     }
   });
 }
@@ -144,9 +224,13 @@ function runOpenDetailInNewTabFeature() {
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
-// Register Module
-featureModules.openDetailInNewTab = {
-  name: 'Open Detail in New Tab',
-  description: 'Override tombol detail agar buka tab baru',
-  run: runOpenDetailInNewTabFeature
-};
+// Register Module - Safe with defensive checks
+if (typeof featureModules !== 'undefined') {
+  featureModules.openDetailInNewTab = {
+    name: 'Open Detail in New Tab',
+    description: 'Override tombol detail agar buka tab baru',
+    run: runOpenDetailInNewTabFeature
+  };
+} else {
+  console.warn('[Open Detail] featureModules not defined, module registration skipped');
+}

@@ -505,8 +505,13 @@ function runSimplifyBillingFeature() {
   }
 }
 
-featureModules.simplifyBilling = {
-  name: 'Ringkas Rincian Biaya',
-  description: 'Ringkaskan tabel rincian biaya menjadi tampilan rekapituluasi yang rapi.',
-  run: runSimplifyBillingFeature
-};
+// Register Module - Safe with defensive checks
+if (typeof featureModules !== 'undefined') {
+  featureModules.simplifyBilling = {
+    name: 'Ringkas Rincian Biaya',
+    description: 'Ringkaskan tabel rincian biaya menjadi tampilan rekapituluasi yang rapi.',
+    run: runSimplifyBillingFeature
+  };
+} else {
+  console.warn('[Simplify Billing] featureModules not defined, module registration skipped');
+}

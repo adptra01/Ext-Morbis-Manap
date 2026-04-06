@@ -153,9 +153,13 @@ function runFilterPersistenceFeature() {
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
-// Register Module
-featureModules.filterPersistence = {
-  name: 'Filter Persistence State',
-  description: 'Simpan otomatis kolom pencarian agar tidak perlu diketik ulang',
-  run: runFilterPersistenceFeature
-};
+// Register Module - Safe with defensive checks
+if (typeof featureModules !== 'undefined') {
+  featureModules.filterPersistence = {
+    name: 'Filter Persistence State',
+    description: 'Simpan otomatis kolom pencarian agar tidak perlu diketik ulang',
+    run: runFilterPersistenceFeature
+  };
+} else {
+  console.warn('[Filter Persistence] featureModules not defined, module registration skipped');
+}

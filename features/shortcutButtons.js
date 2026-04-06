@@ -188,7 +188,10 @@ function renderShortcutButtons() {
 
     btn.addEventListener('click', (e) => {
       e.preventDefault();
-      if (openInSameTab) {
+      // Respect global open mode setting unless explicitly overridden
+      const openMode = currentConfig?.features?.openDetailInNewTab?.mode || 'new-tab';
+      
+      if (openInSameTab || openMode === 'same-tab') {
         window.location.href = url;
       } else {
         window.open(url, '_blank');
@@ -300,8 +303,13 @@ function formatDateDetail(date) {
 
 function generateDetailUrlFromExecution(idVisit) {
   const baseUrl = window.location.origin;
-  const today = formatDateDetail(new Date());
-  return `${baseUrl}/v2/m-klaim/detail-v2-refaktor?id_visit=${idVisit}&tanggalAwal=${today}&tanggalAkhir=${today}&norm=&nama=&reg=&billing=all&status=all&id_poli_cari=&poli_cari=`;
+  // Try to get dates from current page first
+  const tanggalAwal = document.getElementById('tanggalAwal')?.value;
+  const tanggalAkhir = document.getElementById('tanggalAkhir')?.value;
+  const startDate = tanggalAwal || formatDateDetail(new Date());
+  const endDate = tanggalAkhir || formatDateDetail(new Date());
+  
+  return `${baseUrl}/v2/m-klaim/detail-v2-refaktor?id_visit=${idVisit}&tanggalAwal=${encodeURIComponent(startDate)}&tanggalAkhir=${encodeURIComponent(endDate)}&norm=&nama=&reg=&billing=all&status=all&id_poli_cari=&poli_cari=`;
 }
 
 function renderBackToDetailButton() {
@@ -390,13 +398,17 @@ function runBackToDetailFromExecutionFeature() {
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
-// Register Module
-featureModules.shortcutButtons = {
-  name: 'Shortcut Buttons',
-  description: 'Tampilkan shortcut buttons ke halaman pelaksanaan Rajal/Ranap',
-  run: () => {
-    injectPrintStyles();
-    runShortcutButtonsFeature();
-    runBackToDetailFromExecutionFeature();
-  }
-};
+// Register Module - Safe with defensive checks
+if (typeof featureModules !== 'undefined') {
+  featureModules.shortcutButtons = {
+    name: 'Shortcut Buttons',
+    description: 'Tampilkan shortcut buttons ke halaman pelaksanaan Rajal/Ranap',
+    run: () => {
+      injectPrintStyles();
+      runShortcutButtonsFeature();
+      runBackToDetailFromExecutionFeature();
+    }
+  };
+} else {
+  console.warn('[Shortcut Buttons] featureModules not defined, module registration skipped');
+}

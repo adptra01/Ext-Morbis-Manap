@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Open Detail in New Tab",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Override tombol detail agar buka tab baru untuk SIMRS Klaim",
   "author": "Your Name",
   "icons": {
@@ -15,7 +15,10 @@
   },
   "content_scripts": [
     {
-      "matches": ["http://192.168.8.4/*", "http://103.147.236.140/*"],
+      "matches": [
+        "http://192.168.8.4/v2/m-klaim/*",
+        "http://103.147.236.140/v2/m-klaim/*"
+      ],
       "js": [
         "core.js",
         "features/openDetail.js",
@@ -26,9 +29,13 @@
         "features/printOptimization.js",
         "init.js"
       ],
-      "run_at": "document_end"
+      "run_at": "document_end",
+      "all_frames": false
     }
   ],
-  "permissions": ["activeTab", "storage"],
-  "host_permissions": ["http://192.168.8.4/*", "http://103.147.236.140/*"]
+  "permissions": ["activeTab", "storage", "scripting"],
+  "host_permissions": [
+    "http://192.168.8.4/*",
+    "http://103.147.236.140/*"
+  ]
 }
