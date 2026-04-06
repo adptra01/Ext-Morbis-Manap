@@ -14,7 +14,9 @@
       "Bash(rm -rf node_modules package-lock.json)",
       "Bash(ls -la *.html *.js *.json)",
       "Bash(npx playwright:*)",
-      "Bash(node -c features/simplifyBilling.js)"
+      "Bash(node -c features/simplifyBilling.js)",
+      "Bash(node -c features/openDetail.js)",
+      "Bash(node -c features/shortcutButtons.js)"
     ]
   }
 }

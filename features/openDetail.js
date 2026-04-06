@@ -186,8 +186,8 @@ function overrideButtonsByText() {
     if (cell.textContent.trim().toLowerCase().includes('detail')) {
       const elements = cell.querySelectorAll('button, a, span, div');
       elements.forEach(el => {
-        if (!isModifiedEvent(el) && (
-          el.textContent.trim().toLowerCase() === 'detail' || el.textContent.trim().toLowerCase() === 'view' || el.textContent.trim().toLowerCase() === 'lihat') {
+        const text = el.textContent.trim().toLowerCase();
+        if (!isModifiedEvent(el) && (text === 'detail' || text === 'view' || text === 'lihat')) {
           overrideDetailButton(el);
         }
       });

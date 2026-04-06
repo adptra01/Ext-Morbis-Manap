@@ -52,13 +52,27 @@ function injectPrintStyles() {
   style.textContent = `
     @media print {
       [data-shortcut-buttons],
-      [data-back-to-detail-klaim] {
-        display: none !important; 
+      [data-back-to-detail-klaim],
+      .no-print,
+      .hilang-saat-print {
+        display: none !important;
         height: 0 !important;
+        width: 0 !important;
         margin: 0 !important;
         padding: 0 !important;
         overflow: hidden !important;
         visibility: hidden !important;
+        position: absolute !important;
+        top: -9999px !important;
+        left: -9999px !important;
+        opacity: 0 !important;
+      }
+
+      [data-shortcut-buttons] a,
+      [data-shortcut-buttons] button,
+      [data-back-to-detail-klaim] a,
+      [data-back-to-detail-klaim] button {
+        display: none !important;
       }
     }
   `;
