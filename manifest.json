@@ -27,6 +27,12 @@
         "features/simplifyBilling.js",
         "features/scrollButtons.js",
         "features/printOptimization.js",
+        "features/batchUploadProcessor.js",
+        "features/batchValidationEngine.js",
+        "features/batchProgressUI.js",
+        "features/batchRollbackMechanism.js",
+        "features/batchReportGenerator.js",
+        "features/batchUploadOrchestrator.js",
         "init.js"
       ],
       "run_at": "document_end",

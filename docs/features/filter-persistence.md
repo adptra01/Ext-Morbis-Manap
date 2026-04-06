@@ -1,86 +1,86 @@
-# Filter Persistence
+# Persistensi Filter
 
-## Feature Overview and Purpose
+## Gambaran Fitur dan Tujuan
 
-The Filter Persistence feature automatically saves and restores M-KLAIM search filter values to localStorage, eliminating the need to re-enter search criteria when returning from detail pages.
+Fitur Persistensi Filter secara otomatis menyimpan dan memulihkan nilai filter pencarian M-KLAIM ke localStorage, menghilangkan kebutuhan untuk memasukkan ulang kriteria pencarian saat kembali dari halaman detail.
 
-## Problem it Solves for Users
+## Masalah yang Diselesaikan untuk Pengguna
 
-Users frequently lose their search filters when navigating to patient detail pages and back, requiring them to re-enter dates, patient names, registration numbers, and other search criteria. This feature solves the problem by:
+Pengguna sering kehilangan filter pencarian mereka saat navigasi ke halaman detail pasien dan kembali, yang memerlukan penginputan ulang tanggal, nama pasien, nomor registrasi, dan kriteria pencarian lainnya. Fitur ini menyelesaikan masalah dengan:
 
-- Automatically saving filter state before navigation
-- Restoring filters when returning to search page
-- Preserving user workflow continuity
-- Reducing repetitive data entry tasks
+- Secara otomatis menyimpan state filter sebelum navigasi
+- Memulihkan filter saat kembali ke halaman pencarian
+- Mempertahankan kontinuitas alur kerja pengguna
+- Mengurangi tugas entri data berulang
 
-## Technical Implementation Details
+## Detail Implementasi Teknis
 
-The feature monitors search and reset buttons, saving filter values to localStorage when searches are performed and clearing when filters are reset. It restores saved values on page load with proper event triggering for UI compatibility.
+Fitur ini memantau tombol pencarian dan reset, menyimpan nilai filter ke localStorage saat pencarian dilakukan dan menghapus saat filter direset. Fitur ini memulihkan nilai yang disimpan saat pemuatan halaman dengan pemicu event yang tepat untuk kompatibilitas UI.
 
-**Key Technologies:**
-- localStorage API for persistent data storage
-- DOM event simulation for UI compatibility
-- MutationObserver for dynamic button detection
-- Form field monitoring and restoration
+**Teknologi Utama:**
+- API localStorage untuk penyimpanan data persisten
+- Simulasi event DOM untuk kompatibilitas UI
+- MutationObserver untuk deteksi tombol dinamis
+- Pemantauan field form dan pemulihan
 
-## Step-by-Step User Usage Guide
+## Panduan Penggunaan Langkah demi Langkah
 
-1. **Enter Search Criteria**: Fill in any combination of filter fields (dates, patient name, registration number, etc.)
-2. **Perform Search**: Click the search button (magnifying glass icon or "Cari" button)
-3. **Navigate to Detail**: Click any patient's detail link
-4. **Return to Search**: Use browser back button or navigation shortcuts
-5. **Automatic Restoration**: Filter fields are automatically populated with previous values
-6. **Clear Filters**: Use the reset/clear button to remove saved filters and start fresh
+1. **Masukkan Kriteria Pencarian**: Isi field filter mana pun (tanggal, nama pasien, nomor registrasi, dll.)
+2. **Lakukan Pencarian**: Klik tombol pencarian (ikon kaca pembesar atau tombol "Cari")
+3. **Navigasi ke Detail**: Klik tautan detail pasien mana pun
+4. **Kembali ke Pencarian**: Gunakan tombol kembali browser atau shortcut navigasi
+5. **Pemulihan Otomatis**: Field filter secara otomatis diisi dengan nilai sebelumnya
+6. **Hapus Filter**: Gunakan tombol reset/hapus untuk menghapus filter yang disimpan dan memulai pencarian baru
 
-## Code Analysis
+## Analisis Kode
 
-### Key Functions
+### Fungsi Utama
 
 **`saveFilter()`**
-- Collects values from all configured form fields
-- Stores filter state as JSON in localStorage
-- Uses `FILTER_PERSISTENCE_CONFIG.storageKey` for consistent storage location
-- Logs saved state for debugging
+- Mengumpulkan nilai dari semua field form yang dikonfigurasi
+- Menyimpan state filter sebagai JSON di localStorage
+- Menggunakan `FILTER_PERSISTENCE_CONFIG.storageKey` untuk lokasi penyimpanan yang konsisten
+- Log state yang disimpan untuk debugging
 
 **`restoreFilter()`**
-- Retrieves saved filter data from localStorage
-- Parses JSON and populates form fields
-- Triggers native events (`input`, `change`, `keyup`) for UI compatibility
-- Includes special handling for date picker fields with blur events
+- Mengambil data filter yang disimpan dari localStorage
+- Mengurai JSON dan mengisi field form
+- Memicu event native (`input`, `change`, `keyup`) untuk kompatibilitas UI
+- Termasuk penanganan khusus untuk field date picker dengan event blur
 
 **`clearFilter()`**
-- Removes filter data from localStorage
-- Clears all form field values
-- Provides clean slate for new searches
+- Menghapus data filter dari localStorage
+- Menghapus semua nilai field form
+- Menyediakan lembar bersih untuk pencarian baru
 
 **`attachFilterListeners()`**
-- Attaches click event listeners to search and reset buttons
-- Uses `dataset.filterBound` to prevent duplicate listeners
-- Handles both icon buttons (fa-search) and standard buttons
-- Searches parent elements for button containers
+- Melampirkan event listener klik ke tombol pencarian dan reset
+- Menggunakan `dataset.filterBound` untuk mencegah listener ganda
+- Menangani tombol ikon (fa-search) dan tombol standar
+- Mencari elemen induk untuk kontainer tombol
 
-### Detection Methods
+### Metode Deteksi
 
-1. **Button Detection**:
-   - Search buttons: `button[onclick*="cari()"]`, `.btn-primary i.fa-search`
-   - Reset buttons: `button[onclick*="batal()"]`, `button[onclick*="reset"]`, `.btn-default i.fa-refresh`
+1. **Deteksi Tombol**:
+    - Tombol pencarian: `button[onclick*="cari()"]`, `.btn-primary i.fa-search`
+    - Tombol reset: `button[onclick*="batal()"]`, `button[onclick*="reset"]`, `.btn-default i.fa-refresh`
 
-2. **Field Detection**:
-   - Uses `document.getElementById(fieldId)` for each configured field
-   - Supports all standard form input types
+2. **Deteksi Field**:
+    - Menggunakan `document.getElementById(fieldId)` untuk setiap field yang dikonfigurasi
+    - Mendukung semua tipe input form standar
 
-3. **Page Context**:
-   - Only activates on M-KLAIM main search page (`/v2/m-klaim` without `/detail`)
-   - Prevents interference with detail page functionality
+3. **Konteks Halaman**:
+    - Hanya aktif di halaman utama pencarian M-KLAIM (`/v2/m-klaim` tanpa `/detail`)
+    - Mencegah gangguan pada fungsionalitas halaman detail
 
-### Modification Techniques
+### Teknik Modifikasi
 
-- **Event Listener Attachment**: Adds click handlers to existing buttons without removing original functionality
-- **Form Field Manipulation**: Direct value assignment with event simulation
-- **Storage Management**: JSON serialization/deserialization for complex data
-- **MutationObserver**: Monitors DOM changes to re-attach listeners to dynamically added buttons
+- **Lampiran Event Listener**: Menambahkan handler klik ke tombol yang ada tanpa menghapus fungsionalitas asli
+- **Manipulasi Field Form**: Penugasan nilai langsung dengan simulasi event
+- **Manajemen Storage**: Serialisasi/deserialisasi JSON untuk data kompleks
+- **MutationObserver**: Memantau perubahan DOM untuk melampirkan ulang listener ke tombol yang ditambahkan via AJAX
 
-## Configuration Options
+## Opsi Konfigurasi
 
 ```javascript
 const FILTER_PERSISTENCE_CONFIG = {
@@ -102,59 +102,59 @@ const FILTER_PERSISTENCE_CONFIG = {
 };
 ```
 
-- **targetUrlPattern**: URL pattern for the main search page
-- **storageKey**: localStorage key for filter data
-- **fields**: Array of form field IDs to monitor and restore
-- **cariButtonSelectors**: CSS selectors for search buttons
-- **batalButtonSelectors**: CSS selectors for reset/clear buttons
+- **targetUrlPattern**: Pola URL untuk halaman pencarian utama
+- **storageKey**: Kunci localStorage untuk data filter
+- **fields**: Array ID field form untuk dipantau dan dipulihkan
+- **cariButtonSelectors**: Selector CSS untuk tombol pencarian
+- **batalButtonSelectors**: Selector CSS untuk tombol reset/hapus
 
-## Edge Cases and Limitations
+## Edge Cases dan Keterbatasan
 
-### Edge Cases Handled
-- **Dynamic Buttons**: MutationObserver re-attaches listeners when buttons are added via AJAX
-- **Multiple Button Types**: Handles both icon buttons and text buttons
-- **UI Framework Compatibility**: Triggers multiple events for jQuery plugins and date pickers
-- **Date Picker Integration**: Special handling for date field updates and calendar refresh
+### Edge Cases yang Ditangani
+- **Tombol Dinamis**: MutationObserver melampirkan ulang listener saat tombol ditambahkan via AJAX
+- **Jenis Tombol Ganda**: Menangani tombol ikon dan tombol teks
+- **Kompatibilitas Framework UI**: Memicu event ganda untuk plugin jQuery dan date picker
+- **Integrasi Date Picker**: Penanganan khusus untuk update field tanggal dan refresh kalender
 
-### Limitations
-- **Browser Storage Limits**: Subject to localStorage size limitations
-- **Cross-Origin Issues**: Only works within same origin (M-KLAIM domain)
-- **Field ID Dependencies**: Requires specific field IDs to be present
-- **Event Simulation**: May not work perfectly with all custom UI frameworks
-- **Privacy Concerns**: Stores search data locally (no external transmission)
+### Keterbatasan
+- **Batas Storage Browser**: Tunduk pada batas ukuran localStorage
+- **Masalah Cross-Origin**: Hanya bekerja dalam origin M-KLAIM (domain)
+- **Ketergantungan ID Field**: Memerlukan ID field spesifik yang ada
+- **Simulasi Event**: Mungkin tidak bekerja sempurna dengan semua framework UI kustom
+- **Kekhawatiran Privasi**: Menyimpan data pencarian secara lokal (tidak ada transmisi eksternal)
 
-## Examples of DOM Changes
+## Contoh Perubahan DOM
 
-### Original Search Button
+### Tombol Pencarian Asli
 ```html
 <button onclick="cari()" class="btn btn-primary">
     <i class="fa fa-search"></i>
 </button>
 ```
 
-### Modified Search Button (with listener attached)
+### Tombol Pencarian yang Dimodifikasi (dengan listener terlampir)
 ```html
 <button onclick="cari()" class="btn btn-primary" data-filter-bound="true">
     <i class="fa fa-search"></i>
 </button>
 ```
 
-### Form Field Restoration Process
+### Proses Pemulihan Field Form
 ```javascript
-// Before restoration
+// Sebelum pemulihan
 <input id="tanggalAwal" value="">
 
-// After restoration
+// Setelah pemulihan
 <input id="tanggalAwal" value="01-12-2024">
 
-// Events triggered for UI compatibility
+// Event yang dipicu untuk kompatibilitas UI
 element.dispatchEvent(new Event('input', { bubbles: true }));
 element.dispatchEvent(new Event('change', { bubbles: true }));
 element.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
 setTimeout(() => element.dispatchEvent(new Event('blur', { bubbles: true })), 50);
 ```
 
-### localStorage Structure
+### Struktur localStorage
 ```json
 {
   "mklaim_filter": {
@@ -167,5 +167,4 @@ setTimeout(() => element.dispatchEvent(new Event('blur', { bubbles: true })), 50
     "status": "all"
   }
 }
-```</content>
-<parameter name="filePath">D:\laragon\www\open-detail-new-tab\docs\features\filter-persistence.md
+```

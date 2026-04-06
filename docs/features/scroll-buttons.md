@@ -1,90 +1,90 @@
-# Scroll Buttons
+# Tombol Scroll
 
-## Feature Overview and Purpose
+## Gambaran Fitur dan Tujuan
 
-The Scroll Buttons feature provides floating navigation controls on M-KLAIM detail pages, allowing users to smoothly scroll to the top or bottom of long patient records with a single click.
+Fitur Tombol Scroll menyediakan kontrol navigasi mengambang di halaman detail M-KLAIM, memungkinkan pengguna menggulir dengan lancar ke atas atau bawah catatan pasien yang panjang dengan satu klik.
 
-## Problem it Solves for Users
+## Masalah yang Diselesaikan untuk Pengguna
 
-Medical records often contain extensive information that requires scrolling through long documents. Staff need to quickly navigate between different sections of patient records without manual scrolling. This feature solves the problem by:
+Catatan medis sering berisi informasi ekstensif yang memerlukan pengguliran melalui dokumen panjang. Staf membutuhkan navigasi cepat antara berbagai bagian catatan pasien tanpa pengguliran manual. Fitur ini menyelesaikan masalah dengan:
 
-- Providing instant navigation to document extremities
-- Reducing physical scrolling effort for long records
-- Improving workflow efficiency during patient review
-- Maintaining user focus on patient care tasks
+- Menyediakan navigasi instan ke ekstremitas dokumen
+- Mengurangi upaya pengguliran fisik untuk catatan panjang
+- Meningkatkan efisiensi alur kerja selama tinjauan pasien
+- Mempertahankan fokus pengguna pada tugas perawatan pasien
 
-## Technical Implementation Details
+## Detail Implementasi Teknis
 
-The feature adds floating circular buttons positioned at the bottom-right of detail pages. Buttons use smooth easing animations for natural scrolling behavior and dynamically show/hide based on scroll position.
+Fitur ini menambahkan tombol melingkar mengambang yang diposisikan di kanan bawah halaman detail. Tombol menggunakan animasi easing cubic-bezier untuk perilaku pengguliran yang alami dan menampilkan/menyembunyikan secara dinamis berdasarkan posisi pengguliran.
 
-**Key Technologies:**
-- Smooth scrolling with cubic-bezier easing functions
-- Dynamic button visibility based on scroll position
-- Fixed positioning with high z-index
-- Debounced scroll event handling
-- Print style hiding for clean documents
+**Teknologi Utama:**
+- Pengguliran halus dengan fungsi easing cubic-bezier
+- Visibilitas tombol dinamis berdasarkan posisi pengguliran
+- Positioning tetap dengan z-index tinggi
+- Penanganan event pengguliran yang didebounced
+- Penyembunyian gaya cetak untuk dokumen bersih
 
-## Step-by-Step User Usage Guide
+## Panduan Penggunaan Langkah demi Langkah
 
-1. **Open Detail Page**: Navigate to any patient's detail page in M-KLAIM
-2. **Scroll Down**: Scroll down the page to trigger button appearance
-3. **Use Up Button**: Click the upward arrow (↑) to smoothly scroll to top
-4. **Use Down Button**: Click the downward arrow (↓) to smoothly scroll to bottom
-5. **Auto-Hide**: Buttons automatically hide when at page extremities
-6. **Print Safety**: Buttons are automatically hidden when printing
+1. **Buka Halaman Detail**: Navigasi ke halaman detail pasien mana pun di M-KLAIM
+2. **Pengguliran ke Bawah**: Gulir ke bawah halaman untuk memicu tampilan tombol
+3. **Gunakan Tombol Atas**: Klik panah ke atas (↑) untuk menggulir ke atas dengan lancar
+4. **Gunakan Tombol Bawah**: Klik panah ke bawah (↓) untuk menggulir ke bawah
+5. **Sembunyi Otomatis**: Tombol secara otomatis menyembunyi saat di ekstremitas halaman
+6. **Keamanan Cetak**: Tombol secara otomatis disembunyikan saat mencetak
 
-## Code Analysis
+## Analisis Kode
 
-### Key Functions
+### Fungsi Utama
 
 **`easeInOutCubic(t)`**
-- Implements cubic-bezier easing for smooth scroll animation
+- Mengimplementasikan easing cubic-bezier untuk animasi pengguliran halus
 - Formula: `t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2`
-- Provides natural acceleration/deceleration curve
+- Menyediakan kurva akselerasi/deselerasi yang alami
 
 **`smoothScrollTo(targetY, duration)`**
-- Calculates scroll distance and start position
-- Uses requestAnimationFrame for smooth 60fps animation
-- Applies easing function to each frame
-- Default duration: 800ms for optimal user experience
+- Menghitung jarak pengguliran dan posisi awal
+- Menggunakan requestAnimationFrame untuk animasi 60fps yang halus
+- Menerapkan fungsi easing ke setiap frame
+- Durasi default: 800ms untuk pengalaman pengguna optimal
 
 **`scrollToTop()` / `scrollToBottom()`**
-- Top: Scrolls to position 0
-- Bottom: Scrolls to `scrollHeight - window.innerHeight`
-- Accounts for viewport height to show full content
+- Atas: Menggulir ke posisi 0
+- Bawah: Menggulir ke `scrollHeight - window.innerHeight`
+- Memperhitungkan tinggi viewport untuk menampilkan konten penuh
 
 **`updateButtonVisibility(container)`**
-- Monitors scroll position against threshold (200px)
-- Shows up button when scrolled down, down button when content remains
-- Uses opacity and transform for smooth show/hide transitions
-- Debounced execution (50ms) for performance
+- Memantau posisi pengguliran terhadap threshold (200px)
+- Menampilkan tombol atas saat digulir ke bawah, tombol bawah saat konten tersisa
+- Menggunakan opacity dan transform untuk transisi show/hide yang halus
+- Eksekusi didebounced (50ms) untuk performa
 
-### Detection Methods
+### Metode Deteksi
 
-1. **Page Context Detection**:
-   - URL pattern matching: `/v2/m-klaim/detail-v2-refaktor`
-   - Required parameters: `id_visit`, `tanggalAwal`, `tanggalAkhir`
-   - Early return prevents execution on non-target pages
+1. **Deteksi Konteks Halaman**:
+    - Pola URL pencocokan: `/v2/m-klaim/detail-v2-refaktor`
+    - Parameter yang diperlukan: `id_visit`, `tanggalAwal`, `tanggalAkhir`
+    - Return awal mencegah eksekusi di halaman non-target
 
-2. **Scroll Position Detection**:
-   - `window.pageYOffset` or `document.documentElement.scrollTop`
-   - Compares against `SCROLL_CONFIG.showScrollThreshold`
-   - Calculates remaining scroll distance for down button
+2. **Deteksi Posisi Pengguliran**:
+    - `window.pageYOffset` atau `document.documentElement.scrollTop`
+    - Dibandingkan dengan `SCROLL_CONFIG.showScrollThreshold`
+    - Menghitung jarak pengguliran tersisa untuk tombol bawah
 
-3. **Content Boundary Detection**:
-   - Total scroll height: `Math.max(document.body.scrollHeight, document.documentElement.scrollHeight)`
-   - Viewport height: `window.innerHeight`
-   - Remaining content calculation
+3. **Deteksi Batas Konten**:
+    - Tinggi pengguliran total: `Math.max(document.body.scrollHeight, document.documentElement.scrollHeight)`
+    - Tinggi viewport: `window.innerHeight`
+    - Perhitungan konten tersisa
 
-### Modification Techniques
+### Teknik Modifikasi
 
-- **Button Injection**: Creates SVG-free Unicode arrow buttons
-- **CSS-in-JS Styling**: Inline styles with hover effects and transitions
-- **Event Management**: Debounced scroll listeners for performance
-- **Positioning**: Fixed positioning with configurable offsets
-- **Accessibility**: Proper cursor and focus management
+- **Injeksi Tombol**: Membuat tombol panah Unicode tanpa SVG
+- **Styling CSS-in-JS**: Gaya inline dengan efek hover dan transisi
+- **Manajemen Event**: Listener pengguliran didebounced untuk performa
+- **Positioning**: Positioning tetap dengan offset yang dapat dikonfigurasi
+- **Aksesibilitas**: Kursor dan manajemen fokus yang tepat
 
-## Configuration Options
+## Opsi Konfigurasi
 
 ```javascript
 const SCROLL_CONFIG = {
@@ -100,29 +100,29 @@ const SCROLL_CONFIG = {
 };
 ```
 
-- **targetUrlPattern(s)**: Multiple URL patterns for different server environments
-- **requiredParams**: Required URL parameters for valid detail pages
-- **buttonPosition**: CSS positioning offsets from viewport edges
-- **scrollDuration**: Animation duration in milliseconds
-- **showScrollThreshold**: Minimum scroll distance to show buttons
+- **targetUrlPattern(s)**: Pola URL ganda untuk environment server berbeda
+- **requiredParams**: Parameter URL yang diperlukan untuk halaman detail yang valid
+- **buttonPosition**: Offset positioning CSS dari tepi viewport
+- **scrollDuration**: Durasi animasi dalam milidetik
+- **showScrollThreshold**: Jarak pengguliran minimum untuk menampilkan tombol
 
-## Edge Cases and Limitations
+## Edge Cases dan Keterbatasan
 
-### Edge Cases Handled
-- **Multiple Server URLs**: Supports different hospital server addresses
-- **Dynamic Content**: MutationObserver re-renders buttons if removed
-- **Scroll Performance**: Debounced event handling prevents excessive updates
-- **Page Load Timing**: Waits for complete page load before initialization
+### Edge Cases yang Ditangani
+- **URL Server Ganda**: Mendukung alamat server rumah sakit berbeda
+- **Konten Dinamis**: MutationObserver me-render ulang tombol jika dihapus
+- **Performa Pengguliran**: Penanganan event didebounced mencegah update berlebihan
+- **Timing Pemuatan Halaman**: Menunggu pemuatan halaman lengkap sebelum inisialisasi
 
-### Limitations
-- **Browser Compatibility**: Requires modern browsers with requestAnimationFrame
-- **Mobile Considerations**: Fixed positioning may need mobile-specific adjustments
-- **Content Changes**: Dynamic content loading may affect scroll calculations
-- **Performance Impact**: Continuous scroll monitoring consumes minimal resources
+### Keterbatasan
+- **Kompatibilitas Browser**: Memerlukan browser modern dengan requestAnimationFrame
+- **Pertimbangan Mobile**: Positioning tetap mungkin memerlukan penyesuaian mobile-spesifik
+- **Perubahan Konten**: Pemuatan konten dinamis dapat memengaruhi perhitungan pengguliran
+- **Dampak Performa**: Pemantauan pengguliran berkelanjutan mengkonsumsi sumber daya minimal
 
-## Examples of DOM Changes
+## Contoh Perubahan DOM
 
-### Scroll Buttons Container
+### Kontainer Tombol Scroll
 ```html
 <div data-scroll-buttons style="position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 9999;">
   <button data-scroll-up style="width: 48px; height: 48px; background-color: rgba(59, 130, 246, 0.9); color: white; border: none; border-radius: 50%; font-size: 18px;">
@@ -134,7 +134,7 @@ const SCROLL_CONFIG = {
 </div>
 ```
 
-### Button Hover Effects
+### Efek Hover Tombol
 ```css
 button:hover {
   background-color: #2563eb;
@@ -143,20 +143,20 @@ button:hover {
 }
 ```
 
-### Visibility States
+### State Visibilitas
 ```javascript
-// When scrolled down (> 200px)
+// Saat digulir ke bawah (> 200px)
 upBtn.style.opacity = '1';
 upBtn.style.transform = 'scale(1)';
 upBtn.style.pointerEvents = 'auto';
 
-// When at top (< 200px)
+// Saat di atas (< 200px)
 upBtn.style.opacity = '0';
 upBtn.style.transform = 'scale(0.8)';
 upBtn.style.pointerEvents = 'none';
 ```
 
-### Print Hiding
+### Penyembunyian Cetak
 ```css
 @media print {
   [data-scroll-buttons] {
@@ -165,7 +165,7 @@ upBtn.style.pointerEvents = 'none';
 }
 ```
 
-### Smooth Scroll Implementation
+### Implementasi Pengguliran Halus
 ```javascript
 function smoothScrollTo(targetY, duration = 800) {
   const startY = window.pageYOffset;
@@ -181,5 +181,4 @@ function smoothScrollTo(targetY, duration = 800) {
   }
   requestAnimationFrame(animation);
 }
-```</content>
-<parameter name="filePath">D:\laragon\www\open-detail-new-tab\docs\features\scroll-buttons.md
+```

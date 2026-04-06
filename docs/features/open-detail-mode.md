@@ -1,85 +1,86 @@
-# Open Detail Mode
+# Mode Open Detail
 
-## Feature Overview and Purpose
+## Gambaran Fitur dan Tujuan
 
-The Open Detail Mode feature (also known as "Do Not Open Detail in New Tab") prevents detail pages from opening in new browser tabs. Instead, it forces all detail links to open in the same tab, providing a more streamlined navigation experience.
+Fitur Mode Open Detail (juga dikenal sebagai "Do Not Open Detail in New Tab") mencegah halaman detail terbuka di tab browser baru. Sebaliknya, fitur ini memaksa semua tautan detail terbuka di tab yang sama, menyediakan pengalaman navigasi yang lebih streamlined.
 
-## Problem it Solves for Users
+## Masalah yang Diselesaikan untuk Pengguna
 
-Hospital staff often experience frustration when clicking detail buttons that open numerous new tabs, cluttering their browser and making it difficult to navigate between patient records. This feature solves the problem by:
+Staf rumah sakit sering mengalami frustrasi saat mengklik tombol detail yang membuka tab baru yang banyak, mencemari browser mereka dan membuat sulit untuk navigasi antara catatan pasien. Fitur ini menyelesaikan masalah dengan:
 
-- Preventing unwanted new tab proliferation
-- Maintaining focus on the current patient record
-- Reducing browser resource consumption
-- Simplifying navigation workflow
+- Mencegah proliferasi tab baru yang tidak diinginkan
+- Mempertahankan fokus pada catatan pasien saat ini
+- Mengurangi konsumsi sumber daya browser
+- Menyederhanakan alur kerja navigasi
 
-## Technical Implementation Details
+## Detail Implementasi Teknis
 
-The feature works by intercepting click events on detail buttons and overriding their default behavior. It uses multiple detection methods to identify detail elements and replaces their onclick handlers with custom logic that navigates to the same tab.
+Fitur ini bekerja dengan mencegat event klik pada tombol detail dan mengganti perilaku default mereka. Fitur ini menggunakan beberapa metode deteksi untuk mengidentifikasi elemen detail dan mengganti handler onclick mereka dengan logika kustom yang menavigasi ke tab yang sama.
 
-**Key Technologies:**
-- DOM manipulation and event handling
-- MutationObserver for dynamic content
-- URL parameter extraction and generation
-- Element attribute preservation for restoration
+**Teknologi Utama:**
+- Manipulasi DOM dan penanganan event
+- MutationObserver untuk konten dinamis
+- Ekstraksi parameter URL dan generasi
+- Pelestarian atribut elemen untuk pemulihan
 
-## Step-by-Step User Usage Guide
+## Panduan Penggunaan Langkah demi Langkah
 
-1. **Enable the Feature**: The feature is enabled by default in the extension configuration
-2. **Navigate to M-KLAIM**: Go to the main M-KLAIM search page
-3. **Click Detail Buttons**: Click any patient detail button normally
-4. **Same-Tab Navigation**: The detail page opens in the same tab instead of a new one
-5. **Keyboard Shortcuts**: Hold Ctrl/Cmd while clicking to force new tab opening if needed
+1. **Aktifkan Fitur**: Fitur diaktifkan secara default di konfigurasi ekstensi
+2. **Navigasi ke M-KLAIM**: Pergi ke halaman pencarian utama M-KLAIM
+3. **Klik Tombol Detail**: Klik tombol detail pasien seperti biasa
+4. **Navigasi Same-Tab**: Halaman detail terbuka di tab yang sama alih-alih tab baru
+5. **Shortcut Keyboard**: Tahan Ctrl/Cmd saat mengklik untuk memaksa pembukaan tab baru jika diperlukan
 
-## Code Analysis
+## Analisis Kode
 
-### Key Functions
+### Fungsi Utama
 
 **`extractIdFromOnclick(onclickAttr)`**
-- Parses onclick attributes to extract patient visit IDs
-- Supports multiple onclick patterns: `detail(162301)` and `detail('162301')`
-- Returns the extracted ID or null if not found
+- Mengurai atribut onclick untuk mengekstrak ID kunjungan pasien
+- Mendukung pola onclick ganda: `detail(162301)` dan `detail('162301')`
+- Mengembalikan ID yang diekstrak atau null jika tidak ditemukan
 
 **`extractIdFromElement(element)`**
-- Extracts ID from multiple sources: data attributes, onclick, and parent elements
-- Checks `dataset.idVisit`, `dataset.idvisit`, `dataset.id`
-- Traverses up to 5 parent elements for onclick patterns
-- Returns the first valid ID found
+- Mengekstrak ID dari berbagai sumber: atribut data, onclick, dan elemen induk
+- Memeriksa `dataset.idVisit`, `dataset.idvisit`, `dataset.id`
+- Melintasi hingga 5 elemen induk untuk pola onclick
+- Mengembalikan ID valid pertama yang ditemukan
 
 **`generateUrl(id)`**
-- Constructs detail page URLs with required parameters
-- Includes auto-date functionality using current page dates or today's date
-- Preserves existing URL parameters (norm, nama, reg, billing, status, etc.)
-- Handles date formatting for Indonesian locale
+- Membuat URL halaman detail dengan parameter yang diperlukan
+- Termasuk fungsionalitas tanggal otomatis menggunakan tanggal halaman saat ini atau hari ini
+- Mempertahankan parameter URL yang ada (norm, nama, reg, billing, status, dll.)
+- Menangani pemformatan tanggal untuk lokal Indonesia
 
 **`overrideDetailButton(btn)`**
-- Saves original onclick handler for restoration
-- Removes original onclick to prevent new tab behavior
-- Adds custom click event listener that navigates to same tab
-- Marks element as modified for tracking
+- Menyimpan handler onclick asli untuk pemulihan
+- Menghapus onclick asli untuk mencegah perilaku tab baru
+- Menambahkan event listener klik kustom yang menavigasi ke tab yang sama
+- Menandai elemen sebagai dimodifikasi untuk pelacakan
 
-### Detection Methods
+### Metode Deteksi
 
-1. **CSS Selectors**: Multiple selectors target different button types
-   - `button[onclick^="detail("]` - Standard detail buttons
-   - `a[onclick^="detail("]` - Link-style detail buttons
-   - `[data-action="detail"]` - Data attribute buttons
-   - `[data-id-visit]` - Visit ID data attributes
-   - `.btn-detail` - CSS class buttons
-   - `[data-toggle="detail"]` - Bootstrap-style toggles
+1. **Selector CSS**: Beberapa selector menargetkan berbagai jenis tombol
+    - `button[onclick^="detail("]` - Tombol detail standar
+    - `a[onclick^="detail("]` - Tautan gaya tombol detail
+    - `[data-action="detail"]` - Tombol atribut data
+    - `[data-id-visit]` - Atribut data ID kunjungan
+    - `.btn-detail` - Tombol kelas CSS
+    - `[data-toggle="detail"]` - Toggle gaya Bootstrap
 
-2. **Text Content Detection**: Fallback method searches table cells for "detail" text
-   - Scans `button, a, span, div` elements in table cells
-   - Matches case-insensitive "detail", "view", or "lihat" text
+2. **Deteksi Konten Teks**: Metode fallback mencari elemen dalam sel tabel untuk teks "detail"
+    - Memindai `button, a, span, div` dalam sel tabel
+    - Mencocokkan teks "detail", "view", atau "lihat" case-insensitive
 
-### Modification Techniques
+### Teknik Modifikasi
 
-- **Event Prevention**: Uses `preventDefault()`, `stopPropagation()`, and `stopImmediatePropagation()`
-- **Attribute Preservation**: Stores original onclick in `dataset.originalOnclick`
-- **Element Cloning**: Uses clone-and-replace for event listener removal
-- **MutationObserver**: Monitors DOM changes to re-apply overrides
+- **Pencegahan Event**: Menggunakan `preventDefault()`, `stopPropagation()`, dan `stopImmediatePropagation()`
+- **Pelestarian Atribut**: Menyimpan onclick asli di `dataset.originalOnclick`
+- **Kloning Elemen**: Menggunakan clone-and-replace untuk penghapusan event listener
+- **MutationObserver**: Memantau perubahan DOM untuk menerapkan ulang override
+- **Pelestarian Elemen**: Menyimpan atribut asli untuk pemulihan
 
-## Configuration Options
+## Opsi Konfigurasi
 
 ```javascript
 const OPEN_DETAIL_CONFIG = {
@@ -100,44 +101,43 @@ const OPEN_DETAIL_CONFIG = {
 };
 ```
 
-- **urlPatterns**: Template URLs for detail pages
-- **autoDate**: Whether to automatically populate date parameters
-- **dateFormat**: Date format ('id' for Indonesian)
-- **buttonSelectors**: Array of CSS selectors for detail buttons
-- **debug**: Enables console logging for troubleshooting
+- **urlPatterns**: Template URL untuk halaman detail
+- **autoDate**: Apakah secara otomatis mengisi parameter tanggal
+- **dateFormat**: Format tanggal ('id' untuk Indonesia)
+- **buttonSelectors**: Array selector CSS untuk tombol detail
+- **debug**: Mengaktifkan logging konsol untuk troubleshooting
 
-## Edge Cases and Limitations
+## Edge Cases dan Keterbatasan
 
-### Edge Cases Handled
-- **Dynamic Content**: MutationObserver re-applies overrides when new buttons are added
-- **Multiple ID Sources**: Checks data attributes, onclick, and parent elements
-- **Keyboard Shortcuts**: Ctrl/Cmd+click still opens in new tab
-- **AJAX Updates**: Periodic re-application every 2 seconds
+### Edge Cases yang Ditangani
+- **Konten Dinamis**: MutationObserver menerapkan ulang override saat tombol baru ditambahkan
+- **Sumber ID Ganda**: Memeriksa atribut data, onclick, dan elemen induk
+- **Shortcut Keyboard**: Ctrl/Cmd+klik masih membuka di tab baru
+- **Update AJAX**: Penerapan ulang setiap 2 detik
 
-### Limitations
-- **URL Pattern Dependency**: Requires specific URL structure matching
-- **Date Parameter Assumption**: Assumes date fields exist on current page
-- **Selector Maintenance**: May need updates if page HTML structure changes
-- **Performance Impact**: MutationObserver and periodic checks consume resources
+### Keterbatasan
+- **Ketergantungan Pola URL**: Memerlukan struktur URL yang cocok spesifik
+- **Asumsi Parameter Tanggal**: Mengasumsikan field tanggal ada di halaman saat ini
+- **Maintenance Selector**: Mungkin memerlukan update jika struktur HTML halaman berubah
+- **Dampak Performa**: MutationObserver dan pemeriksaan berkala mengkonsumsi sumber daya
 
-## Examples of DOM Changes
+## Contoh Perubahan DOM
 
-### Before (Original Button)
+### Tombol Asli (Sebelum)
 ```html
 <button onclick="detail(162301)" class="btn btn-primary">
     Detail
 </button>
 ```
 
-### After (Modified Button)
+### Tombol yang Dimodifikasi (Sesudah)
 ```html
 <button data-detail-modified="true" data-original-onclick="detail(162301)" class="btn btn-primary">
     Detail
 </button>
 ```
 
-### Event Handler Changes
-- **Original**: Opens `window.open(url, '_blank')` (new tab)
-- **Modified**: Uses `window.location.href = url` (same tab)
-- **Keyboard Override**: Ctrl+click uses `window.open(url, '_blank')`</content>
-<parameter name="filePath">D:\laragon\www\open-detail-new-tab\docs\features\open-detail-mode.md
+### Perubahan Event Handler
+- **Asli**: Membuka `window.open(url, '_blank')` (tab baru)
+- **Dimodifikasi**: Menggunakan `window.location.href = url` (tab yang sama)
+- **Override Keyboard**: Ctrl+klik menggunakan `window.open(url, '_blank')`

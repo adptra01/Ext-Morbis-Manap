@@ -1,89 +1,89 @@
-# Simplify Billing
+# Sederhanakan Penagihan
 
-## Feature Overview and Purpose
+## Gambaran Fitur dan Tujuan
 
-The Simplify Billing feature (Ringkas Rincian Biaya) transforms detailed billing tables into clean summary views, hiding individual line items and showing only section totals for procedures and medications.
+Fitur Sederhanakan Penagihan (Ringkas Rincian Biaya) mengubah tabel penagihan detail menjadi tampilan ringkasan, menyembunyikan item baris individu dan menampilkan hanya total bagian untuk prosedur dan obat.
 
-## Problem it Solves for Users
+## Masalah yang Diselesaikan untuk Pengguna
 
-Hospital billing documents contain extensive detail tables that make printed documents lengthy and difficult to read. Medical staff and patients need quick overviews of costs without getting lost in transaction details. This feature solves the problem by:
+Dokumen penagihan M-KLAIM berisi tabel detail yang ekstensif yang membuat dokumen tercetak panjang dan sulit dibaca. Staf medis dan pasien membutuhkan ringkasan cepat dari biaya tanpa tersesat dalam detail transaksi. Fitur ini menyelesaikan masalah dengan:
 
-- Creating concise billing summaries for printing
-- Reducing document length while preserving essential cost information
-- Improving readability of billing statements
-- Maintaining detailed data access when needed
+- Membuat ringkasan penagihan ringkas untuk pencetakan
+- Mengurangi panjang dokumen sambil mempertahankan informasi biaya penting
+- Meningkatkan keterbacaan pernyataan penagihan
+- Mempertahankan akses data detail saat diperlukan
 
-## Technical Implementation Details
+## Detail Implementasi Teknis
 
-The feature parses billing tables to identify sections and subtotals, then hides detailed rows while displaying summary rows with calculated totals. It provides a toggle button to switch between detailed and summary views.
+Fitur ini mengurai tabel penagihan untuk mengidentifikasi bagian dan subtotal, kemudian menyembunyikan baris detail sambil menampilkan baris ringkasan dengan total yang dihitung. Fitur ini menyediakan tombol toggle untuk beralih antara tampilan detail dan ringkasan.
 
-**Key Technologies:**
-- DOM parsing and table manipulation
-- Currency parsing and formatting (Indonesian Rupiah)
-- Dynamic row insertion and CSS class management
-- Session storage for view mode persistence
-- Print-specific CSS for clean document output
+**Teknologi Utama:**
+- Parsing DOM dan manipulasi tabel
+- Parsing dan pemformatan mata uang (Rupiah Indonesia)
+- Injeksi baris dinamis dan manajemen kelas CSS
+- Storage sesi untuk persistensi mode tampilan
+- CSS spesifik cetak untuk output dokumen bersih
 
-## Step-by-Step User Usage Guide
+## Panduan Penggunaan Langkah demi Langkah
 
-1. **Open Patient Detail**: Navigate to any patient's billing detail page
-2. **Find Billing Section**: Look for the "RINCIAN BIAYA" section with detailed tables
-3. **Use Toggle Button**: Click "Ringkaskan Rincian Biaya" button in the section header
-4. **View Summary**: Detailed rows are hidden, showing only section summaries and totals
-5. **Print Document**: Print the page with clean summary format
-6. **Switch Back**: Click "Tampilkan Rincian Penuh" to restore detailed view
+1. **Buka Detail Penagihan Pasien**: Navigasi ke halaman detail penagihan pasien mana pun
+2. **Temukan Bagian Rincian Biaya**: Cari bagian "RINCIAN BIAYA" dengan tabel detail
+3. **Gunakan Tombol Toggle**: Klik tombol "Ringkaskan Rincian Biaya" di header bagian
+4. **Lihat Ringkasan**: Baris detail disembunyikan, menampilkan hanya ringkasan bagian dan total
+5. **Cetak Dokumen**: Cetak halaman dengan format ringkasan bersih
+6. **Beralih Kembali**: Klik "Tampilkan Rincian Penuh" untuk memulihkan tampilan detail
 
-## Code Analysis
+## Analisis Kode
 
-### Key Functions
+### Fungsi Utama
 
 **`parseTindakanSections(tbody)`**
-- Analyzes procedure tables for section headers and subtotals
-- Identifies colspan patterns for unit headers (e.g., "A. UNIT BEDAH")
-- Extracts subtotal rows with tarif/tunai/jaminan values
-- Returns array of section objects with names and totals
+- Menganalisis tabel prosedur untuk header bagian dan subtotal
+- Mengidentifikasi pola colspan untuk header unit (mis., "A. UNIT BEDAH")
+- Mengekstrak baris subtotal dengan nilai tarif/tunai/jaminan
+- Mengembalikan array objek bagian dengan nama dan total
 
 **`parseResepSections(tbody)`**
-- Processes medication tables with different structure
-- Matches date-based prescription headers (DD-MM-YYYY format)
-- Extracts prescription subtotals with three-column format
-- Returns prescription objects with labels and totals
+- Memproses tabel obat dengan struktur berbeda
+- Mencocokkan header resep berbasis tanggal (format DD-MM-YYYY)
+- Mengekstrak subtotal resep dengan format kolom tiga
+- Mengembalikan objek resep dengan label dan total
 
 **`createSummaryRow(no, label, subtotal, isObat)`**
-- Generates summary table rows for display
-- Handles different column layouts (7 vs 8 columns)
-- Formats currency values with Indonesian number formatting
-- Applies consistent styling with data attributes
+- Menghasilkan baris tabel ringkasan untuk tampilan
+- Menangani layout kolom berbeda (7 vs 8 kolom)
+- Memformat nilai mata uang dengan pemformatan angka lokal Indonesia
+- Menerapkan styling konsisten dengan atribut data
 
 **`applyRingkasMode(tbodies)`**
-- Hides all detailed rows using `ext-billing-hidden` class
-- Inserts summary rows with section totals
-- Updates page title to include "(REKAPITULASI)"
-- Handles both procedure and medication tables
+- Menyembunyikan semua baris detail menggunakan kelas `ext-billing-hidden`
+- Memasukkan baris ringkasan dengan total bagian
+- Memperbarui judul halaman untuk menyertakan "(REKAPITULASI)"
+- Menangani tabel prosedur dan obat
 
-### Detection Methods
+### Metode Deteksi
 
-1. **Table Identification**:
-   - Procedure tables: Text content includes "RINCIAN BIAYA"
-   - Medication tables: Text content includes "Nama Obat"
+1. **Identifikasi Tabel**:
+    - Tabel prosedur: Konten teks menyertakan "RINCIAN BIAYA"
+    - Tabel obat: Konten teks menyertakan "Nama Obat"
 
-2. **Section Detection**:
-   - Procedure sections: `td[colspan="7"], td[colspan="8"]` with unit names
-   - Prescription sections: `td[colspan="6"]` with date-based headers
+2. **Deteksi Bagian**:
+    - Bagian prosedur: `td[colspan="7"]`, `td[colspan="8"]` dengan nama unit
+    - Bagian resep: `td[colspan="6"]` dengan header berbasis tanggal
 
-3. **Subtotal Detection**:
-   - Procedure subtotals: `td[colspan="5"]` with subtotal text
-   - Prescription subtotals: `td[colspan="4"]` with "sub total" text
+3. **Deteksi Subtotal**:
+    - Subtotal prosedur: `td[colspan="5"]` dengan teks subtotal
+    - Subtotal resep: `td[colspan="4"]` dengan teks "sub total"
 
-### Modification Techniques
+### Teknik Modifikasi
 
-- **Row Hiding**: CSS class `ext-billing-hidden` with `display: none`
-- **Dynamic Insertion**: DocumentFragment for efficient DOM updates
-- **CSS Injection**: Style element with print media queries
-- **Attribute Management**: Data attributes for tracking and restoration
-- **Currency Formatting**: Indonesian locale number formatting with dot separators
+- **Penyembunyian Baris**: Kelas CSS `ext-billing-hidden` dengan `display: none`
+- **Injeksi Dinamis**: DocumentFragment untuk update DOM yang efisien
+- **Injeksi CSS**: Elemen style dengan query media cetak
+- **Manajemen Atribut**: Atribut data untuk pelacakan dan pemulihan
+- **Pemformatan Mata Uang**: Pemformatan angka lokal Indonesia dengan pemisah titik
 
-## Configuration Options
+## Opsi Konfigurasi
 
 ```javascript
 const SIMPLIFY_BILLING_CONFIG = {
@@ -94,28 +94,28 @@ const SIMPLIFY_BILLING_CONFIG = {
 };
 ```
 
-- **detailUrlPattern**: URL pattern for detail pages
-- **targetSectionId**: Container element ID for billing tables
-- **toggleButtonId**: ID for the toggle button element
-- **storageKey**: Session storage key for view mode persistence
+- **detailUrlPattern**: Pola URL untuk halaman detail
+- **targetSectionId**: ID elemen kontainer untuk tabel penagihan
+- **toggleButtonId**: ID untuk elemen tombol toggle
+- **storageKey**: Kunci storage sesi untuk persistensi mode tampilan
 
-## Edge Cases and Limitations
+## Edge Cases dan Keterbatasan
 
-### Edge Cases Handled
-- **Mixed Table Types**: Handles both procedure and medication tables
-- **Dynamic Content**: MutationObserver waits for content to load
-- **Print Optimization**: CSS media queries hide UI elements during printing
-- **View Persistence**: Remembers user's choice across page refreshes
+### Edge Cases yang Ditangani
+- **Jenis Tabel Campuran**: Menangani tabel prosedur dan obat
+- **Konten Dinamis**: MutationObserver menunggu konten dimuat
+- **Optimisasi Cetak**: Query media CSS menyembunyikan elemen UI saat mencetak
+- **Persistensi Tampilan**: Mengingat pilihan pengguna di seluruh refresh halaman
 
-### Limitations
-- **Table Structure Assumptions**: Depends on specific colspan patterns and text content
-- **Currency Parsing**: May not handle all currency formatting variations
-- **Layout Constraints**: Summary format may not fit all billing table variations
-- **JavaScript Dependency**: Requires JavaScript for toggle functionality
+### Keterbatasan
+- **Asumsi Struktur Tabel**: Bergantung pada pola colspan spesifik dan konten teks
+- **Parsing Mata Uang**: Mungkin tidak menangani semua variasi pemformatan mata uang
+- **Kendala Layout**: Format ringkasan mungkin tidak pas dengan semua variasi tabel penagihan
+- **Ketergantungan JavaScript**: Memerlukan JavaScript untuk fungsionalitas toggle
 
-## Examples of DOM Changes
+## Contoh Perubahan DOM
 
-### Original Detailed Table Section
+### Bagian Tabel Detail Asli
 ```html
 <table>
   <tbody>
@@ -135,7 +135,7 @@ const SIMPLIFY_BILLING_CONFIG = {
       <td>0</td>
       <td>0</td>
     </tr>
-    <!-- More detailed rows... -->
+    <!-- Baris detail lainnya... -->
     <tr>
       <td colspan="5" align="right"><b>Sub Total Tindakan A. UNIT BEDAH Rp.</b></td>
       <td align="right"><b>2.500.000</b></td>
@@ -146,7 +146,7 @@ const SIMPLIFY_BILLING_CONFIG = {
 </table>
 ```
 
-### Simplified Summary View
+### Tampilan Ringkasan yang Disederhanakan
 ```html
 <table>
   <tbody>
@@ -164,12 +164,12 @@ const SIMPLIFY_BILLING_CONFIG = {
       <td align="right">2.500.000</td>
       <td align="right">0</td>
     </tr>
-    <!-- Hidden detailed rows with class="ext-billing-hidden" -->
+    <!-- Baris detail tersembunyi dengan class="ext-billing-hidden" -->
   </tbody>
 </table>
 ```
 
-### Toggle Button
+### Tombol Toggle
 ```html
 <div class="panel-heading" style="display: flex; align-items: center;">
   <button id="ext-billing-toggle-btn" style="margin: 8px 0 4px 10px; background: #6366f1; color: white;">
@@ -178,7 +178,7 @@ const SIMPLIFY_BILLING_CONFIG = {
 </div>
 ```
 
-### Print-Specific CSS
+### CSS Spesifik Cetak
 ```css
 @media print {
   .ext-billing-hidden {
@@ -188,5 +188,4 @@ const SIMPLIFY_BILLING_CONFIG = {
     display: none !important;
   }
 }
-```</content>
-<parameter name="filePath">D:\laragon\www\open-detail-new-tab\docs\features\scroll-buttons.md
+```

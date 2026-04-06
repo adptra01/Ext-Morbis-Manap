@@ -1,36 +1,36 @@
-# Open Detail in New Tab - Browser Extension Documentation
+# Open Detail in New Tab - Dokumentasi Ekstensi Browser
 
-## Overview
+## Gambaran Umum
 
-**Open Detail in New Tab** is a Chrome browser extension designed to enhance the user experience of the SIMRS Klaim system. The extension provides multiple features to improve productivity and usability when working with medical claim details, billing, and execution workflows.
+**Open Detail in New Tab** adalah ekstensi browser Chrome yang dirancang untuk meningkatkan pengalaman pengguna sistem SIMRS Klaim. Ekstensi ini menyediakan berbagai fitur untuk meningkatkan produktivitas dan kegunaan saat bekerja dengan detail klaim medis, penagihan, dan alur kerja eksekusi.
 
-### Primary Purpose
-The extension intercepts and modifies the behavior of "Detail" buttons in the SIMRS Klaim interface, allowing users to configure whether detail pages open in the same tab or a new tab. Additionally, it provides several auxiliary features to streamline workflows for medical billing and patient care execution.
+### Tujuan Utama
+Ekstensi ini mencegat dan memodifikasi perilaku tombol "Detail" di antarmuka SIMRS Klaim, memungkinkan pengguna mengonfigurasi apakah halaman detail terbuka di tab yang sama atau tab baru. Selain itu, ekstensi ini menyediakan beberapa fitur tambahan untuk merampingkan alur kerja penagihan medis dan eksekusi perawatan pasien.
 
-### Target System
+### Sistem Target
 - **SIMRS Klaim** (Sistem Informasi Manajemen Rumah Sakit - Klaim)
-- Specific URL patterns: `http://192.168.8.4/v2/m-klaim/*` and `http://103.147.236.140/v2/m-klaim/*`
-- Compatible with both local network (192.168.8.4) and public (103.147.236.140) deployments
+- Pola URL spesifik: `http://192.168.8.4/v2/m-klaim/*` dan `http://103.147.236.140/v2/m-klaim/*`
+- Kompatibel dengan deployment jaringan lokal (192.168.8.4) dan publik (103.147.236.140)
 
-## Features
+## Fitur
 
-### 1. Open Detail Mode
+### 1. Mode Open Detail
 **File:** `features/openDetail.js`
 
-**Description:** Controls how detail pages are opened when clicking detail buttons.
+**Deskripsi:** Mengontrol cara halaman detail dibuka saat mengklik tombol detail.
 
-**Configuration Options:**
-- **Same Tab (Default):** Detail pages open in the current tab
-- **New Tab:** Detail pages open in a new tab
+**Opsi Konfigurasi:**
+- **Same Tab (Default):** Halaman detail terbuka di tab saat ini
+- **New Tab:** Halaman detail terbuka di tab baru
 
-**Technical Implementation:**
-- Overrides `onclick` handlers for buttons matching patterns like `detail(id)`
-- Extracts ID from button attributes (data-id-visit, onclick, etc.)
-- Generates URLs with proper parameters (id_visit, tanggalAwal, tanggalAkhir, etc.)
-- Supports keyboard shortcuts (Ctrl/Cmd + Click for opposite behavior)
-- Uses MutationObserver to handle dynamically loaded content
+**Implementasi Teknis:**
+- Mengganti handler `onclick` untuk tombol yang cocok dengan pola seperti `detail(id)`
+- Mengekstrak ID dari atribut tombol (data-id-visit, onclick, dll.)
+- Menghasilkan URL dengan parameter yang tepat (id_visit, tanggalAwal, tanggalAkhir, dll.)
+- Mendukung shortcut keyboard (Ctrl/Cmd + Klik untuk perilaku sebaliknya)
+- Menggunakan MutationObserver untuk menangani konten yang dimuat secara dinamis
 
-**Selectors Supported:**
+**Selector yang Didukung:**
 ```javascript
 buttonSelectors: [
   'button[onclick^="detail("]',
@@ -42,68 +42,68 @@ buttonSelectors: [
 ]
 ```
 
-### 2. Shortcut Buttons
+### 2. Tombol Shortcut
 **File:** `features/shortcutButtons.js`
 
-**Description:** Adds navigation shortcuts on detail pages to quickly access patient execution pages.
+**Deskripsi:** Menambahkan shortcut navigasi di halaman detail untuk mengakses halaman eksekusi pasien dengan cepat.
 
-**Features:**
-- **Rajal (Rawat Jalan):** Direct link to outpatient execution page
-- **Ranap (Rawat Inap):** Direct link to inpatient execution page
-- **Back to M-KLAIM:** Return to main search page
-- **Back to Detail:** From execution pages back to detail (fixed position button)
+**Fitur:**
+- **Rajal (Rawat Jalan):** Tautan langsung ke halaman eksekusi rawat jalan
+- **Ranap (Rawat Inap):** Tautan langsung ke halaman eksekusi rawat inap
+- **Back to M-KLAIM:** Kembali ke halaman pencarian utama
+- **Back to Detail:** Dari halaman eksekusi kembali ke detail (tombol posisi tetap)
 
-**URL Generation:**
+**Generasi URL:**
 ```javascript
 // Rajal: {baseUrl}/admisi/pelaksanaan_pelayanan/halaman-utama?id_visit={id}&page=101&status_periksa=belum
 // Ranap: {baseUrl}/admisi/detail-rawat-inap/input-tindakan?idVisit={id}
 ```
 
-**UI Elements:**
-- Styled buttons in a gray container at page top
-- Fixed-position "Back to Detail" button on execution pages
-- Print-safe (hidden during printing)
+**Elemen UI:**
+- Tombol bergaya dalam kontainer abu-abu di bagian atas halaman
+- Tombol "Back to Detail" posisi tetap di halaman eksekusi
+- Aman untuk cetak (tersembunyi saat mencetak)
 
-### 3. Filter Persistence State
+### 3. Persistensi Filter State
 **File:** `features/filterPersistence.js`
 
-**Description:** Automatically saves and restores search filter values to prevent re-entry when returning from detail pages.
+**Deskripsi:** Secara otomatis menyimpan dan memulihkan nilai filter pencarian untuk mencegah penginputan ulang saat kembali dari halaman detail.
 
-**Persisted Fields:**
-- `tanggalAwal` (start date)
-- `tanggalAkhir` (end date)
-- `norm` (medical record number)
-- `nama` (patient name)
-- `reg` (registration number)
-- `poli_cari` (clinic search)
-- `id_poli_cari` (clinic ID)
-- `billing` (billing status)
-- `status` (claim status)
+**Field yang Dipertahankan:**
+- `tanggalAwal` (tanggal awal)
+- `tanggalAkhir` (tanggal akhir)
+- `norm` (nomor rekam medis)
+- `nama` (nama pasien)
+- `reg` (nomor registrasi)
+- `poli_cari` (pencarian poli)
+- `id_poli_cari` (ID poli)
+- `billing` (status penagihan)
+- `status` (status klaim)
 
-**Implementation:**
-- Saves to `localStorage` when search buttons are clicked
-- Restores on page load
-- Triggers native events (input, change, keyup) for datepickers
-- Attaches listeners to "Cari" (search) and "Batal" (reset) buttons
+**Implementasi:**
+- Menyimpan ke `localStorage` saat tombol pencarian diklik
+- Memulihkan saat pemuatan halaman
+- Memicu event native (input, change, keyup) untuk datepicker
+- Melampirkan listener ke tombol "Cari" (cari) dan "Batal" (reset)
 
-### 4. Simplify Billing (Ringkas Rincian Biaya)
+### 4. Sederhanakan Penagihan (Ringkas Rincian Biaya)
 **File:** `features/simplifyBilling.js`
 
-**Description:** Transforms detailed billing tables into summarized views grouped by medical units.
+**Deskripsi:** Mengubah tabel penagihan detail menjadi tampilan ringkasan yang dikelompokkan berdasarkan unit medis.
 
-**Functionality:**
-- **Ringkas Mode:** Shows summary per unit with subtotals
-- **Penuh Mode:** Shows original detailed view
-- Toggle button to switch between modes
-- Preserves original data integrity
+**Fungsionalitas:**
+- **Mode Ringkas:** Menampilkan ringkasan per unit dengan subtotal
+- **Mode Penuh:** Menampilkan tampilan detail asli
+- Tombol toggle untuk beralih antara mode
+- Mempertahankan integritas data asli
 
-**Summarization Logic:**
-- Groups tindakan (procedures) by unit name
-- Groups resep (prescriptions) by date and number
-- Calculates subtotals for tarif, tunai, and jaminan columns
-- Hides detailed rows while keeping headers and footers
+**Logika Ringkasan:**
+- Mengelompokkan tindakan berdasarkan nama unit
+- Mengelompokkan resep berdasarkan tanggal dan nomor
+- Menghitung subtotal untuk kolom tarif, tunai, dan jaminan
+- Menyembunyikan baris detail sambil mempertahankan header dan footer
 
-**Table Structure:**
+**Struktur Tabel:**
 ```
 A. TOTAL TINDAKAN PER UNIT
   1. Sub Total Tindakan Unit A | Tarif | Tunai | Jaminan
@@ -116,55 +116,55 @@ B. TOTAL PEMAKAIAN OBAT & ALKES PER RESEP
   Total Resep Obat & Alkes Rp. | ...
 ```
 
-### 5. Scroll Buttons (Top/Bottom)
+### 5. Tombol Scroll (Atas/Bawah)
 **File:** `features/scrollButtons.js`
 
-**Description:** Provides floating scroll buttons for easy navigation on long detail pages.
+**Deskripsi:** Menyediakan tombol scroll mengambang untuk navigasi mudah di halaman detail yang panjang.
 
-**Features:**
-- **Up Button:** Scroll to top (smooth animation)
-- **Down Button:** Scroll to bottom
-- Auto-hide when at respective page positions
-- Positioned at bottom-right corner
-- Print-safe (hidden during printing)
+**Fitur:**
+- **Tombol Atas:** Scroll ke atas (animasi halus)
+- **Tombol Bawah:** Scroll ke bawah
+- Sembunyi otomatis saat di posisi halaman masing-masing
+- Diposisikan di sudut kanan bawah
+- Aman untuk cetak (tersembunyi saat mencetak)
 
-**Technical Details:**
-- Uses `easeInOutCubic` easing function for smooth scrolling
-- 800ms duration with 60fps animation
-- Visibility threshold: 200px from top/bottom
-- Debounced scroll event handling
+**Detail Teknis:**
+- Menggunakan fungsi easing `easeInOutCubic` untuk scroll halus
+- Durasi 800ms dengan animasi 60fps
+- Ambang visibilitas: 200px dari atas/bawah
+- Penanganan event scroll yang didebounced
 
-### 6. Print Optimization
+### 6. Optimisasi Cetak
 **File:** `features/printOptimization.js`
 
-**Description:** Optimizes print output by hiding empty sections and auto-managing print checkboxes.
+**Deskripsi:** Mengoptimalkan output cetak dengan menyembunyikan bagian kosong dan mengelola checkbox cetak secara otomatis.
 
-**Features:**
-- **Auto-Hide Empty Sections:** Detects and hides sections without substantial content
-- **Smart Checkbox Sync:** Automatically checks/unchecks print options based on content availability
-- **Print Event Handling:** Applies optimizations before printing, restores after
-- **AJAX-Friendly:** Re-syncs when content loads dynamically
+**Fitur:**
+- **Sembunyi Otomatis Bagian Kosong:** Mendeteksi dan menyembunyikan bagian tanpa konten substansial
+- **Sinkronisasi Checkbox Pintar:** Secara otomatis mencentang/menghilangkan centang opsi cetak berdasarkan ketersediaan konten
+- **Penanganan Event Cetak:** Menerapkan optimisasi sebelum mencetak, memulihkan setelahnya
+- **Ramah AJAX:** Sinkronisasi ulang saat konten dimuat secara dinamis
 
-**Empty Detection Logic:**
-- Checks for substantial table content (≥3 rows)
-- Analyzes text content after removing UI elements
-- Detects visual elements (images, charts)
-- Considers section as empty if no meaningful data
+**Logika Deteksi Kosong:**
+- Memeriksa konten tabel substansial (≥3 baris)
+- Menganalisis konten teks setelah menghapus elemen UI
+- Mendeteksi elemen visual (gambar, grafik)
+- Menganggap bagian kosong jika tidak ada data bermakna
 
-## Technical Architecture
+## Arsitektur Teknis
 
-### Extension Structure
+### Struktur Ekstensi
 ```
 open-detail-new-tab/
-├── manifest.json          # Extension manifest (v3)
-├── popup.html            # Configuration popup UI
-├── popup.js              # Popup logic and configuration
-├── core.js               # Configuration management and state
-├── init.js               # Feature initialization
-├── content.js            # (Legacy, replaced by features/)
-├── background.js         # Background service worker
-├── icons/                # Extension icons
-├── features/             # Modular feature implementations
+├── manifest.json          # Manifest ekstensi (v3)
+├── popup.html            # UI popup konfigurasi
+├── popup.js              # Logika popup dan konfigurasi
+├── core.js               # Manajemen konfigurasi dan state
+├── init.js               # Inisialisasi fitur
+├── content.js            # (Legacy, digantikan oleh features/)
+├── background.js         # Service worker background
+├── icons/                # Ikon ekstensi
+├── features/             # Implementasi fitur modular
 │   ├── openDetail.js
 │   ├── shortcutButtons.js
 │   ├── filterPersistence.js
@@ -174,7 +174,7 @@ open-detail-new-tab/
 └── README.md
 ```
 
-### Manifest Configuration
+### Konfigurasi Manifest
 ```json
 {
   "manifest_version": 3,
@@ -192,222 +192,221 @@ open-detail-new-tab/
 }
 ```
 
-### Configuration System
-- **Storage:** Uses `chrome.storage.sync` for cross-device synchronization
-- **State Management:** Global `currentConfig` and `isExtensionEnabled` variables
-- **Dynamic URLs:** Customizable target URLs with enable/disable toggles
-- **Feature Toggles:** Individual enable/disable for each feature
-- **Real-time Updates:** Configuration changes trigger page reload
+### Sistem Konfigurasi
+- **Storage:** Menggunakan `chrome.storage.sync` untuk sinkronisasi lintas perangkat
+- **Manajemen State:** Variabel global `currentConfig` dan `isExtensionEnabled`
+- **URL Dinamis:** URL target yang dapat dikustomisasi dengan toggle aktif/nonaktif
+- **Toggle Fitur:** Aktif/nonaktif individu untuk setiap fitur
+- **Update Real-time:** Perubahan konfigurasi memicu reload halaman
 
-### Content Script Architecture
-- **Modular Design:** Each feature is self-contained in separate files
-- **Safe Registration:** Features register themselves in `featureModules` object
-- **Defensive Programming:** Checks for required globals before execution
-- **Error Handling:** Individual feature failures don't break others
+### Arsitektur Content Script
+- **Desain Modular:** Setiap fitur mandiri dalam file terpisah
+- **Registrasi Aman:** Fitur mendaftarkan diri di objek `featureModules`
+- **Program Defensif:** Memeriksa global yang diperlukan sebelum eksekusi
+- **Penanganan Error:** Kegagalan fitur individu tidak merusak yang lain
 
-## Installation & Setup
+## Instalasi & Setup
 
-### 1. Extension Installation
-1. Download/clone the extension source code
-2. Open Chrome and navigate to `chrome://extensions/`
-3. Enable "Developer mode" (toggle in top-right)
-4. Click "Load unpacked"
-5. Select the `open-detail-new-tab` folder
-6. Extension appears in toolbar with blue medical cross icon
+### 1. Instalasi Ekstensi
+1. Unduh/klon kode sumber ekstensi
+2. Buka Chrome dan navigasi ke `chrome://extensions/`
+3. Aktifkan "Developer mode" (toggle di kanan atas)
+4. Klik "Load unpacked"
+5. Pilih folder `open-detail-new-tab`
+6. Ekstensi muncul di toolbar dengan ikon salib medis biru
 
-### 2. Initial Configuration
-1. Click the extension icon in toolbar
-2. Configure target URLs (defaults provided for both environments)
-3. Toggle extension on/off
-4. Enable/disable individual features as needed
-5. Set detail opening mode (same tab vs new tab)
+### 2. Konfigurasi Awal
+1. Klik ikon ekstensi di toolbar
+2. Konfigurasikan URL target (default disediakan untuk kedua environment)
+3. Toggle ekstensi aktif/nonaktif
+4. Aktifkan/nonaktifkan fitur individu sesuai kebutuhan
+5. Atur mode pembukaan detail (same tab vs new tab)
 
-### 3. URL Management
-- **Default URLs:** Pre-configured for standard deployments
-- **Custom URLs:** Add additional SIMRS instances
-- **Enable/Disable:** Control which URLs the extension activates on
-- **Validation:** Only enabled URLs trigger extension features
+### 3. Manajemen URL
+- **URL Default:** Pra-dikonfigurasi untuk deployment standar
+- **URL Kustom:** Tambahkan instance SIMRS tambahan
+- **Aktifkan/Nonaktifkan:** Kontrol URL mana yang mengaktifkan ekstensi
+- **Validasi:** Hanya URL yang diaktifkan memicu fitur ekstensi
 
-## Configuration Options
+## Opsi Konfigurasi
 
-### Extension-Level Settings
-- **Extension Enabled:** Master toggle for all features
-- **Custom URLs:** List of allowed SIMRS instances
+### Pengaturan Tingkat Ekstensi
+- **Ekstensi Diaktifkan:** Toggle master untuk semua fitur
+- **URL Kustom:** Daftar instance SIMRS yang diizinkan
 
-### Feature-Specific Settings
-1. **Open Detail Mode**
-   - Enabled/Disabled
-   - Mode: Same Tab / New Tab
+### Pengaturan Spesifik Fitur
+1. **Mode Open Detail**
+    - Diaktifkan/Dinonaktifkan
+    - Mode: Same Tab / New Tab
 
-2. **Shortcut Buttons**
-   - Enabled/Disabled
-   - Automatic placement and styling
+2. **Tombol Shortcut**
+    - Diaktifkan/Dinonaktifkan
+    - Penempatan dan styling otomatis
 
-3. **Filter Persistence**
-   - Enabled/Disabled
-   - Automatic save/restore
+3. **Persentensi Filter**
+    - Diaktifkan/Dinonaktifkan
+    - Simpan/mulihkan otomatis
 
-4. **Simplify Billing**
-   - Enabled/Disabled
-   - Session-based mode toggle
+4. **Sederhanakan Penagihan**
+    - Diaktifkan/Dinonaktifkan
+    - Toggle mode berbasis sesi
 
-5. **Scroll Buttons**
-   - Enabled/Disabled
-   - Fixed positioning
+5. **Tombol Scroll**
+    - Diaktifkan/Dinonaktifkan
+    - Posisi tetap
 
-6. **Print Optimization**
-   - Enabled/Disabled (marked as coming soon)
-   - Auto-sync behavior
+6. **Optimisasi Cetak**
+    - Diaktifkan/Dinonaktifkan (ditandai sebagai coming soon)
+    - Perilaku sync otomatis
 
-## Usage Guide
+## Panduan Penggunaan
 
-### Basic Operation
-1. **Navigate to SIMRS Klaim:** Access the system at configured URLs
-2. **Search Patients:** Use filters as normal
-3. **Click Detail:** Buttons now respect configured opening mode
-4. **Use Shortcuts:** Navigate quickly between detail and execution pages
-5. **Simplify Billing:** Toggle between detailed and summary views
-6. **Print Documents:** Empty sections automatically hidden
+### Operasi Dasar
+1. **Navigasi ke SIMRS Klaim:** Akses sistem di URL yang dikonfigurasi
+2. **Cari Pasien:** Gunakan filter seperti biasa
+3. **Klik Detail:** Tombol sekarang menghormati mode pembukaan yang dikonfigurasi
+4. **Gunakan Shortcut:** Navigasi cepat antara halaman detail dan eksekusi
+5. **Sederhanakan Penagihan:** Toggle antara tampilan detail dan ringkasan
+6. **Cetak Dokumen:** Bagian kosong secara otomatis tersembunyi
 
-### Advanced Features
-- **Keyboard Shortcuts:** Ctrl/Cmd + Click for opposite tab behavior
-- **Filter Memory:** Search terms persist between sessions
-- **Smart Scrolling:** Auto-hide scroll buttons when not needed
-- **Print Optimization:** Automatic checkbox management
+### Fitur Lanjutan
+- **Shortcut Keyboard:** Ctrl/Cmd + Klik untuk perilaku tab sebaliknya
+- **Memori Filter:** Istilah pencarian bertahan antar sesi
+- **Scroll Pintar:** Sembunyi otomatis tombol scroll saat tidak diperlukan
+- **Optimisasi Cetak:** Pengelolaan checkbox otomatis
 
-### Troubleshooting
-- **Features Not Working:** Check if URL is in allowed list
-- **Configuration Not Saving:** Verify Chrome storage permissions
-- **Dynamic Content Issues:** Features use MutationObserver for AJAX-loaded content
-- **Performance:** Disable unused features for better performance
+### Pemecahan Masalah
+- **Fitur Tidak Berfungsi:** Periksa apakah URL ada di daftar yang diizinkan
+- **Konfigurasi Tidak Tersimpan:** Verifikasi izin storage Chrome
+- **Masalah Konten Dinamis:** Fitur menggunakan MutationObserver untuk konten yang dimuat AJAX
+- **Performa:** Nonaktifkan fitur yang tidak digunakan untuk performa yang lebih baik
 
-## Development & Customization
+## Pengembangan & Kustomisasi
 
-### Adding New Features
-1. Create new file in `features/` directory
-2. Implement feature logic with defensive checks
-3. Register in `featureModules` object
-4. Add configuration to `DEFAULT_CONFIG.features`
-5. Update popup UI if needed
+### Menambahkan Fitur Baru
+1. Buat file baru di direktori `features/`
+2. Implementasikan logika fitur dengan pemeriksaan defensif
+3. Daftarkan di objek `featureModules`
+4. Tambahkan konfigurasi ke `DEFAULT_CONFIG.features`
+5. Update UI popup jika diperlukan
 
-### URL Pattern Customization
+### Kustomisasi Pola URL
 ```javascript
-// In features/openDetail.js
+// Di features/openDetail.js
 const OPEN_DETAIL_CONFIG = {
   urlPatterns: [
     'http://your-domain.com/path/to/detail?id={id}&params...'
   ],
-  // ... other config
+  // ... config lainnya
 };
 ```
 
-### Selector Customization
-Add new button selectors to match different UI implementations:
+### Kustomisasi Selector
+Tambahkan selector tombol baru untuk mencocokkan implementasi UI berbeda:
 ```javascript
 buttonSelectors: [
   'button[onclick^="detail("]',
   'a[href*="detail"]',
-  // Add custom selectors here
+  // Tambahkan selector kustom di sini
 ]
 ```
 
-### Building & Deployment
-- **Development:** Load unpacked in Chrome developer mode
-- **Testing:** Use different SIMRS environments
-- **Deployment:** Package as .crx for distribution
-- **Versioning:** Update manifest.json version numbers
+### Build & Deployment
+- **Pengembangan:** Load unpacked di mode developer Chrome
+- **Testing:** Gunakan environment SIMRS berbeda
+- **Deployment:** Package sebagai .crx untuk distribusi
+- **Versioning:** Update nomor versi manifest.json
 
-## Security & Privacy
+## Keamanan & Privasi
 
-### Permissions Used
-- **activeTab:** Access current tab for content modification
-- **storage:** Save configuration and filter data
+### Izin yang Digunakan
+- **activeTab:** Akses tab saat ini untuk modifikasi konten
+- **storage:** Simpan data konfigurasi dan filter
 - **scripting:** Inject content scripts
-- **host_permissions:** Access specific SIMRS URLs only
+- **host_permissions:** Akses URL SIMRS spesifik saja
 
-### Data Handling
-- **Configuration:** Stored locally via Chrome storage API
-- **Filter Data:** Saved to localStorage on target pages
-- **No External Data:** Extension operates entirely client-side
-- **No Sensitive Data:** Only stores UI preferences and search filters
+### Penanganan Data
+- **Konfigurasi:** Disimpan secara lokal via Chrome storage API
+- **Data Filter:** Disimpan ke localStorage di halaman target
+- **Tidak Ada Data Eksternal:** Ekstensi beroperasi sepenuhnya client-side
+- **Tidak Ada Data Sensitif:** Hanya menyimpan preferensi UI dan filter pencarian
 
-### Safety Features
-- **URL Whitelisting:** Only activates on specified domains
-- **Defensive Coding:** Extensive error handling and checks
-- **No Network Requests:** Pure client-side functionality
-- **Print Safety:** UI elements hidden during printing
+### Fitur Keamanan
+- **URL Whitelisting:** Hanya aktif di domain yang ditentukan
+- **Coding Defensif:** Penanganan error dan pemeriksaan ekstensif
+- **Tidak Ada Permintaan Jaringan:** Fungsi client-side murni
+- **Keamanan Cetak:** Elemen UI tersembunyi saat mencetak
 
-## Compatibility
+## Kompatibilitas
 
-### Browser Support
-- **Chrome:** Full support (Manifest V3)
-- **Edge:** Compatible (Chromium-based)
-- **Firefox:** Not supported (Manifest V3 differences)
-- **Safari:** Not supported
+### Dukungan Browser
+- **Chrome:** Dukungan penuh (Manifest V3)
+- **Edge:** Kompatibel (berbasis Chromium)
+- **Firefox:** Tidak didukung (perbedaan Manifest V3)
+- **Safari:** Tidak didukung
 
-### SIMRS Version Compatibility
-- **Tested Environments:**
-  - `http://192.168.8.4/v2/m-klaim/` (Local network)
-  - `http://103.147.236.140/v2/m-klaim/` (Public access)
-- **Dynamic Content:** Handles AJAX-loaded content via MutationObserver
-- **UI Variations:** Flexible selectors for different implementations
+### Kompatibilitas Versi SIMRS
+- **Environment yang Diuji:**
+  - `http://192.168.8.4/v2/m-klaim/` (Jaringan lokal)
+  - `http://103.147.236.140/v2/m-klaim/` (Akses publik)
+- **Konten Dinamis:** Menangani konten yang dimuat AJAX via MutationObserver
+- **Variasi UI:** Selector fleksibel untuk implementasi berbeda
 
-### System Requirements
-- **Chrome Version:** 88+ (Manifest V3 support)
-- **Storage:** ~1KB for configuration
-- **Memory:** Minimal impact (< 50MB additional)
-- **Network:** No additional bandwidth usage
+### Persyaratan Sistem
+- **Versi Chrome:** 88+ (dukungan Manifest V3)
+- **Storage:** ~1KB untuk konfigurasi
+- **Memori:** Dampak minimal (< 50MB tambahan)
+- **Jaringan:** Tidak ada penggunaan bandwidth tambahan
 
 ## Changelog
 
-### Version 1.2.0
-- Added Print Optimization feature (experimental)
-- Improved Simplify Billing with better table parsing
-- Enhanced Scroll Buttons with smooth animations
-- Added comprehensive configuration UI
-- Modular architecture for better maintainability
+### Versi 1.2.0
+- Menambahkan fitur Optimisasi Cetak (eksperimental)
+- Meningkatkan Sederhanakan Penagihan dengan parsing tabel yang lebih baik
+- Meningkatkan Tombol Scroll dengan animasi halus
+- Menambahkan UI konfigurasi komprehensif
+- Arsitektur modular untuk maintainability yang lebih baik
 
-### Version 1.1.0
-- Added Simplify Billing feature
-- Added Scroll Buttons feature
-- Improved Filter Persistence
-- Enhanced Shortcut Buttons with Back to Detail
+### Versi 1.1.0
+- Menambahkan fitur Sederhanakan Penagihan
+- Menambahkan fitur Tombol Scroll
+- Meningkatkan Persistensi Filter
+- Meningkatkan Tombol Shortcut dengan Back to Detail
 
-### Version 1.0.0
-- Initial release with core features
-- Open Detail mode configuration
-- Shortcut Buttons
-- Filter Persistence
-- Basic popup configuration
+### Versi 1.0.0
+- Rilis awal dengan fitur inti
+- Konfigurasi mode Open Detail
+- Tombol Shortcut
+- Persistensi Filter
+- Konfigurasi popup dasar
 
-## Support & Maintenance
+## Dukungan & Maintenance
 
-### Issue Reporting
-- Report bugs via GitHub Issues
-- Include SIMRS version and Chrome version
-- Provide console error messages when available
-- Describe exact steps to reproduce
+### Pelaporan Issue
+- Laporkan bug via GitHub Issues
+- Sertakan versi SIMRS dan Chrome
+- Berikan pesan error console jika tersedia
+- Deskripsikan langkah-langkah tepat untuk mereproduksi
 
-### Feature Requests
-- Submit enhancement requests via GitHub Issues
-- Include use case and expected behavior
-- Consider impact on existing functionality
+### Permintaan Fitur
+- Ajukan permintaan peningkatan via GitHub Issues
+- Sertakan use case dan perilaku yang diharapkan
+- Pertimbangkan dampak pada fungsionalitas yang ada
 
-### Contributing
-1. Fork the repository
-2. Create feature branch
-3. Implement changes with tests
-4. Submit pull request with detailed description
-5. Follow existing code style and patterns
+### Berkontribusi
+1. Fork repositori
+2. Buat branch fitur
+3. Implementasikan perubahan dengan tes
+4. Ajukan pull request dengan deskripsi detail
+5. Ikuti pola dan gaya kode yang ada
 
-## License
+## Lisensi
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+Proyek ini dilisensikan di bawah Lisensi MIT - lihat file LICENSE untuk detail.
 
-## Acknowledgments
+## Ucapan Terima Kasih
 
-- Developed for SIMRS Klaim system users
-- Designed to improve healthcare administration efficiency
-- Built with modern web extension APIs
-- Tested in real healthcare environments</content>
-<parameter name="filePath">docs/README.md
+- Dikembangkan untuk pengguna sistem SIMRS Klaim
+- Dirancang untuk meningkatkan efisiensi administrasi kesehatan
+- Dibangun dengan web extension API modern
+- Diuji di environment kesehatan nyata

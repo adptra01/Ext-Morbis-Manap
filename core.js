@@ -48,6 +48,11 @@ const DEFAULT_CONFIG = {
       name: 'Optimasi Cetak',
       description: 'Sembunyikan section kosong & Auto-Uncheck secara cerdas.',
       comingSoon: true
+    },
+    batchUploadProcessor: {
+      enabled: true,
+      name: 'Batch Upload Dokumen',
+      description: 'Sistem batch upload dokumen dengan queue management, metadata extraction, dan validation'
     }
   }
 };

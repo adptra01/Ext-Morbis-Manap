@@ -1,95 +1,95 @@
-# Shortcut Buttons
+# Tombol Shortcut
 
-## Feature Overview and Purpose
+## Gambaran Fitur dan Tujuan
 
-The Shortcut Buttons feature provides quick navigation shortcuts on M-KLAIM detail pages, allowing users to jump directly to patient execution pages (Rawat Jalan/Rawat Inap) without manual navigation. It also includes a "Back to Detail" button on execution pages for easy return navigation.
+Fitur Tombol Shortcut menyediakan shortcut navigasi di halaman detail M-KLAIM, memungkinkan pengguna melompat langsung ke halaman eksekusi pasien (Rawat Jalan/Rawat Inap) tanpa navigasi manual. Fitur ini juga menyertakan tombol "Back to Detail" di halaman eksekusi untuk navigasi kembali yang mudah.
 
-## Problem it Solves for Users
+## Masalah yang Diselesaikan untuk Pengguna
 
-Hospital staff waste time navigating through multiple menu levels to reach patient treatment execution pages. This feature solves the problem by:
+Staf rumah sakit membuang waktu untuk bernavigasi melalui banyak level menu untuk mencapai halaman perawatan eksekusi pasien. Fitur ini menyelesaikan masalah dengan:
 
-- Providing one-click access to treatment execution pages
-- Eliminating the need to search for patient records again
-- Reducing navigation time during patient care workflows
-- Maintaining context when switching between detail and execution views
+- Menyediakan akses satu klik ke halaman eksekusi perawatan
+- Menghilangkan kebutuhan untuk mencari catatan pasien lagi
+- Mengurangi waktu navigasi selama alur kerja perawatan pasien
+- Mempertahankan konteks saat beralih antara tampilan detail dan eksekusi
 
-## Technical Implementation Details
+## Detail Implementasi Teknis
 
-The feature detects the current page type (detail or execution) and renders appropriate shortcut buttons. It extracts patient visit IDs from URL parameters and generates direct links to execution pages with proper parameters.
+Fitur ini mendeteksi jenis halaman saat ini (detail atau eksekusi) dan merender tombol shortcut yang sesuai. Fitur ini mengekstrak ID kunjungan pasien dari parameter URL dan menghasilkan tautan langsung ke halaman eksekusi dengan parameter yang tepat.
 
-**Key Technologies:**
-- URL parameter parsing and generation
-- DOM manipulation for button injection
-- Patient type detection (Rawat Jalan vs Rawat Inap)
-- Responsive button styling with hover effects
-- Print style hiding for clean document printing
+**Teknologi Utama:**
+- Parsing parameter URL dan generasi
+- Manipulasi DOM untuk injeksi tombol
+- Deteksi jenis pasien (Rawat Jalan vs Rawat Inap)
+- Styling tombol responsif dengan efek hover
+- Penyembunyian gaya cetak untuk dokumen cetak yang bersih
 
-## Step-by-Step User Usage Guide
+## Panduan Penggunaan Langkah demi Langkah
 
-### On Detail Pages
+### Di Halaman Detail
 
-1. **Open Patient Detail**: Navigate to any patient's detail page in M-KLAIM
-2. **View Shortcut Bar**: Look for the shortcut buttons container at the top of the page
-3. **Choose Treatment Type**:
-   - Click "Pelayanan Rawat Jalan" for outpatient services
-   - Click "Pelayanan Rawat Inap" for inpatient services
-4. **Quick Navigation**: Button automatically opens the execution page in the appropriate tab mode
+1. **Buka Detail Pasien**: Navigasi ke halaman detail pasien mana pun di M-KLAIM
+2. **Lihat Bilah Shortcut**: Cari kontainer tombol shortcut di bagian atas halaman
+3. **Pilih Jenis Perawatan**:
+    - Klik "Pelayanan Rawat Jalan" untuk layanan rawat jalan
+    - Klik "Pelayanan Rawat Inap" untuk layanan rawat inap
+4. **Navigasi Cepat**: Tombol secara otomatis membuka halaman eksekusi di mode tab yang sesuai
 
-### On Execution Pages
+### Di Halaman Eksekusi
 
-1. **During Treatment**: When on a Rawat Jalan or Rawat Inap execution page
-2. **Find Back Button**: Look for the floating "Kembali ke Detail Klaim" button (bottom-right)
-3. **Return to Detail**: Click to return to the patient's detail page
-4. **Window Management**: Button attempts to close current tab and open detail in same window
+1. **Selama Perawatan**: Saat di halaman Rawat Jalan atau Rawat Inap eksekusi
+2. **Temukan Tombol Kembali**: Cari tombol floating "Kembali ke Detail Klaim" (kanan bawah)
+3. **Kembali ke Detail**: Klik untuk kembali ke halaman detail pasien
+4. **Manajemen Window**: Tombol mencoba menutup tab saat ini dan membuka detail di window yang sama
 
-## Code Analysis
+## Analisis Kode
 
-### Key Functions
+### Fungsi Utama
 
 **`getJenisKunjungan()`**
-- Extracts visit type from form inputs or select elements
-- Checks both `input[name="jenis"]` and `select[name="jenis"]`
-- Returns uppercase visit type string
+- Mengekstrak jenis kunjungan dari input form atau elemen select
+- Memeriksa baik `input[name="jenis"]` dan `select[name="jenis"]`
+- Mengembalikan string jenis kunjungan uppercase
 
 **`isRawatJalan()` / `isRawatInap()`**
-- Determines treatment type from visit classification
-- Matches "JALAN"/"RAWAT JALAN" or "INAP"/"RAWAT INAP" patterns
-- Returns boolean indicating treatment category
+- Menentukan jenis perawatan dari klasifikasi kunjungan
+- Mencocokkan pola "JALAN"/"RAWAT JALAN" atau "INAP"/"RAWAT INAP"
+- Mengembalikan boolean yang menunjukkan kategori perawatan
 
 **`generatePelaksanaanUrl(type)`**
-- Constructs execution page URLs for specific treatment types
+- Membuat URL halaman eksekusi untuk jenis perawatan spesifik
 - Rajal: `/admisi/pelaksanaan_pelayanan/halaman-utama?id_visit={id}&page=101&status_periksa=belum`
 - Ranap: `/admisi/detail-rawat-inap/input-tindakan?idVisit={id}`
-- Returns complete URL or null if invalid type
+- Mengembalikan URL lengkap atau null jika tipe tidak valid
 
 **`generateDetailUrlFromExecution(idVisit)`**
-- Reconstructs detail page URL from execution context
-- Extracts dates from current page or uses current date
-- Includes all required parameters for proper detail page loading
+- Merekonstruksi URL halaman detail dari konteks eksekusi
+- Mengekstrak tanggal dari halaman saat ini atau menggunakan tanggal saat ini
+- Termasuk semua parameter yang diperlukan untuk pemuatan halaman detail yang tepat
 
-### Detection Methods
+### Metode Deteksi
 
-1. **Page Type Detection**:
-   - Detail pages: URL contains `/v2/m-klaim/detail-v2-refaktor` with required parameters
-   - Execution pages: URL contains `/admisi/pelaksanaan_pelayanan/` or `/admisi/detail-rawat-inap/`
+1. **Deteksi Jenis Halaman**:
+    - Halaman detail: URL berisi `/v2/m-klaim/detail-v2-refaktor` dengan parameter yang diperlukan
+    - Halaman eksekusi: URL berisi `/admisi/pelaksanaan_pelayanan/` atau `/admisi/detail-rawat-inap/`
 
-2. **Patient Type Detection**:
-   - Form input analysis for visit classification
-   - Case-insensitive matching for "Rawat Jalan" or "Rawat Inap"
+2. **Deteksi Jenis Pasien**:
+    - Analisis input form untuk klasifikasi kunjungan
+    - Pencocokan case-insensitive untuk "Rawat Jalan" atau "Rawat Inap"
 
-3. **ID Extraction**:
-   - URL parameters: `id_visit` or `idVisit`
-   - Automatic fallback between parameter names
+3. **Ekstraksi ID**:
+    - Parameter URL: `id_visit` atau `idVisit`
+    - Fallback otomatis antara nama parameter
 
-### Modification Techniques
+### Teknik Modifikasi
 
-- **Button Injection**: Creates styled button containers with hover effects
-- **Positioning**: Fixed positioning for back button, relative for shortcut bar
-- **Event Handling**: Click prevention and custom navigation logic
-- **Styling**: CSS-in-JS with transitions and responsive design
-- **Print Hiding**: CSS media queries hide buttons during printing
+- **Injeksi Tombol**: Membuat kontainer tombol bergaya dengan efek hover
+- **Positioning**: Positioning tetap untuk tombol kembali, relatif untuk bilah shortcut
+- **Penanganan Event**: Pencegahan klik dan logika navigasi kustom
+- **Styling**: CSS-in-JS dengan transisi dan desain responsif
+- **Penyembunyian Cetak**: Query media CSS menyembunyikan tombol saat mencetak
 
-## Configuration Options
+## Opsi Konfigurasi
 
 ```javascript
 const SHORTCUT_CONFIG = {
@@ -108,50 +108,50 @@ const SHORTCUT_CONFIG = {
 };
 ```
 
-- **targetUrlPattern**: URL pattern for detail pages
-- **requiredParams**: Required URL parameters for valid detail pages
-- **shortcutUrls**: Base URLs for different execution page types
-- **buttonStyles**: Color schemes and text for different button types
+- **targetUrlPattern**: Pola URL untuk halaman detail
+- **requiredParams**: Parameter URL yang diperlukan untuk halaman detail yang valid
+- **shortcutUrls**: URL dasar untuk berbagai jenis halaman eksekusi
+- **buttonStyles**: Skema warna dan teks untuk berbagai jenis tombol
 
-## Edge Cases and Limitations
+## Edge Cases dan Keterbatasan
 
-### Edge Cases Handled
-- **Dynamic Content**: MutationObserver re-renders buttons if removed
-- **Multiple Patient Types**: Conditional display based on Rawat Jalan/Inap classification
-- **URL Parameter Variations**: Handles both `id_visit` and `idVisit` parameters
-- **Date Preservation**: Maintains date context when navigating between pages
+### Edge Cases yang Ditangani
+- **Konten Dinamis**: MutationObserver me-render ulang tombol jika dihapus
+- **Jenis Pasien Ganda**: Tampilan kondisional berdasarkan klasifikasi Rawat Jalan/Inap
+- **Variasi Parameter URL**: Menangani kedua parameter `id_visit` dan `idVisit`
+- **Pelestarian Tanggal**: Mempertahankan konteks tanggal saat navigasi antar halaman
 
-### Limitations
-- **Page Structure Dependency**: Relies on specific form input names for type detection
-- **URL Pattern Matching**: May not work with significantly changed URL structures
-- **Browser Compatibility**: Window close functionality may be restricted in some browsers
-- **Parameter Availability**: Requires visit ID to be present in URL parameters
+### Keterbatasan
+- **Ketergantungan Struktur Halaman**: Mengandalkan nama input form spesifik untuk deteksi tipe
+- **Pencocokan Pola URL**: Mungkin tidak bekerja dengan struktur URL yang sangat berubah
+- **Kompatibilitas Browser**: Fungsi penutupan window mungkin dibatasi di beberapa browser
+- **Ketersediaan Parameter**: Memerlukan ID kunjungan yang ada di parameter URL
 
-## Examples of DOM Changes
+## Contoh Perubahan DOM
 
-### Shortcut Buttons Container (Detail Page)
+### Kontainer Tombol Shortcut (Halaman Detail)
 ```html
 <div data-shortcut-buttons style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #eee; border-radius: 8px;">
   <span style="color: #374151; font-weight: 600;">Shortcut:</span>
-  <a href="http://103.147.236.140/admisi/pelaksanaan_pelayanan/halaman-utama?id_visit=162301&page=101&status_periksa=belum" style="/* button styles */">
+  <a href="http://103.147.236.140/admisi/pelaksanaan_pelayanan/halaman-utama?id_visit=162301&page=101&status_periksa=belum" style="/* gaya tombol */">
     Pelayanan Rawat Jalan
   </a>
-  <a href="http://103.147.236.140/admisi/detail-rawat-inap/input-tindakan?idVisit=162301" style="/* button styles */">
+  <a href="http://103.147.236.140/admisi/detail-rawat-inap/input-tindakan?idVisit=162301" style="/* gaya tombol */">
     Pelayanan Rawat Inap
   </a>
 </div>
 ```
 
-### Back to Detail Button (Execution Page)
+### Tombol Back to Detail (Halaman Eksekusi)
 ```html
-<div data-back-to-detail-klaim style="position: fixed; top: 100px; right: 20px; /* container styles */">
-  <a href="/v2/m-klaim/detail-v2-refaktor?id_visit=162301&tanggalAwal=01-12-2024&tanggalAkhir=01-12-2024&..." style="/* button styles */">
+<div data-back-to-detail-klaim style="position: fixed; top: 100px; right: 20px; /* gaya kontainer */">
+  <a href="/v2/m-klaim/detail-v2-refaktor?id_visit=162301&tanggalAwal=01-12-2024&tanggalAkhir=01-12-2024&..." style="/* gaya tombol */">
     Kembali ke Detail Klaim
   </a>
 </div>
 ```
 
-### Print Styles
+### Gaya Cetak
 ```css
 @media print {
   [data-shortcut-buttons],
@@ -159,5 +159,4 @@ const SHORTCUT_CONFIG = {
     display: none !important;
   }
 }
-```</content>
-<parameter name="filePath">D:\laragon\www\open-detail-new-tab\docs\features\shortcut-buttons.md
+```
