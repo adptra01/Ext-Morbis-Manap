@@ -1,5 +1,5 @@
 /**
- * FEATURE: Open Detail in New Tab
+ * FEATURE: Do Not Open Detail in New Tab (Buka di Tab Sama)
  */
 
 const OPEN_DETAIL_CONFIG = {
@@ -13,12 +13,9 @@ const OPEN_DETAIL_CONFIG = {
     'a[onclick^="detail("]',
     '[data-action="detail"]',
     '[data-id-visit]',
-    'td:last-child button:contains("Detail")',
-    'td:last-child a:contains("Detail")',
     '.btn-detail',
     '[data-toggle="detail"]'
   ],
-  openMode: 'same-tab',
   debug: false
 };
 
@@ -117,47 +114,40 @@ function overrideDetailButton(btn) {
     return;
   }
 
+  // SIMPAN onclick ASLI sebelum dihapus (untuk restore nanti)
+  const originalOnclick = btn.getAttribute('onclick');
+  btn.dataset.originalOnclick = originalOnclick || '';
+
   btn.dataset.detailModified = 'true';
-  // HAPUS onclick ASLI (yang melakukan window.open/_blank)
+
+  // Hapus onclick ASLI (yang mungkin melakukan window.open/_blank)
   btn.removeAttribute('onclick');
 
+  // Tambahkan click handler baru untuk buka di TAB YANG SAMA
   btn.addEventListener('click', function (e) {
     e.preventDefault();
     e.stopPropagation();
     e.stopImmediatePropagation();
 
     const url = generateUrl(id);
-    log(`Membuka detail ID: ${id}, URL: ${url}`);
+    log(`[Do Not Open New Tab] Membuka detail ID: ${id}, URL: ${url}`);
 
-    // Gunakan mode dari setting user
-    const openMode = currentConfig?.features?.openDetailInNewTab?.mode || 'same-tab';
-    
-    // Override dengan keyboard shortcuts
+    // Keyboard shortcuts tetap berfungsi
     if (e.ctrlKey || e.metaKey) {
+      // Ctrl/Cmd + Click = buka di new tab
       window.open(url, '_blank', 'noopener,noreferrer');
       return false;
-    }
-    
-    if (e.shiftKey) {
-      window.location.href = url;
-      return false;
-    }
-    
-    // Default sesuai setting user
-    if (openMode === 'new-tab') {
-      window.open(url, '_blank', 'noopener,noreferrer');
-    } else {
-      // SAME TAB: override default _blank website
-      window.location.href = url;
     }
 
+    // Default: BUKA DI TAB YANG SAMA (mencegah new tab)
+    window.location.href = url;
     return false;
   }, true);
 
   btn.dataset.detailNewTab = 'true';
 
   if (OPEN_DETAIL_CONFIG.debug) {
-    log(`Tombol detail ID: ${id} berhasil di-override`);
+    log(`Tombol detail ID: ${id} berhasil di-override untuk buka di tab yang sama`);
   }
 }
 
@@ -165,9 +155,41 @@ function overrideDetailButtons() {
   if (!currentConfig?.features?.openDetailInNewTab?.enabled) return;
 
   for (const selector of OPEN_DETAIL_CONFIG.buttonSelectors) {
-    const buttons = document.querySelectorAll(selector);
-    buttons.forEach(btn => overrideDetailButton(btn));
+    try {
+      const buttons = document.querySelectorAll(selector);
+      buttons.forEach(btn => overrideDetailButton(btn));
+    } catch (e) {
+      // Skip invalid selectors silently
+      if (OPEN_DETAIL_CONFIG.debug) {
+        console.warn(`[OpenDetail] Invalid selector skipped: ${selector}`, e);
+      }
+    }
   }
+}
+
+// Restore tombol ke behavior asli (ketika fitur dinonaktifkan)
+function restoreDetailButtons() {
+  const modifiedButtons = document.querySelectorAll('[data-detail-modified="true"]');
+  modifiedButtons.forEach(btn => {
+    // Restore onclick asli jika ada
+    const originalOnclick = btn.dataset.originalOnclick;
+    if (originalOnclick && originalOnclick !== '') {
+      btn.setAttribute('onclick', originalOnclick);
+    }
+
+    // Remove dataset flags
+    delete btn.dataset.detailModified;
+    delete btn.dataset.detailNewTab;
+    delete btn.dataset.originalOnclick;
+
+    // Clone untuk remove event listener yang ditambahkan
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+
+    if (OPEN_DETAIL_CONFIG.debug) {
+      log(`Tombol detail berhasil di-restore ke behavior asli`);
+    }
+  });
 }
 
 function overrideButtonsByText() {
@@ -196,41 +218,50 @@ function overrideButtonsByText() {
 }
 
 function runOpenDetailInNewTabFeature() {
-  if (!currentConfig?.features?.openDetailInNewTab?.enabled) {
-    log('Open Detail in New Tab feature disabled, skipping');
-    return;
-  }
+  const isEnabled = currentConfig?.features?.openDetailInNewTab?.enabled;
 
-  log('Running Open Detail in New Tab feature');
-  overrideDetailButtons();
-
-  setTimeout(() => overrideButtonsByText(), 500);
-  setInterval(() => overrideDetailButtons(), 2000);
-
-  const observer = new MutationObserver((mutations) => {
-    if (!currentConfig?.features?.openDetailInNewTab?.enabled) return;
-
-    let shouldUpdate = false;
-    for (const mutation of mutations) {
-      if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-        shouldUpdate = true;
-        break;
-      }
+  try {
+    if (isEnabled) {
+      log('[Do Not Open New Tab] Feature ENABLED - Override tombol detail untuk buka di tab yang sama');
+      overrideDetailButtons();
+      setTimeout(() => overrideButtonsByText(), 500);
+      setInterval(() => overrideDetailButtons(), 2000);
+    } else {
+      log('[Do Not Open New Tab] Feature DISABLED - Restore tombol detail ke behavior asli (new tab)');
+      restoreDetailButtons();
     }
 
-    if (shouldUpdate) overrideDetailButtons();
-  });
+    const observer = new MutationObserver((mutations) => {
+      try {
+        let shouldUpdate = false;
+        for (const mutation of mutations) {
+          if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+            shouldUpdate = true;
+            break;
+          }
+        }
 
-  observer.observe(document.body, { childList: true, subtree: true });
+        if (shouldUpdate && isEnabled) {
+          overrideDetailButtons();
+        }
+      } catch (e) {
+        console.warn('[OpenDetail] MutationObserver error:', e);
+      }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+  } catch (e) {
+    console.error('[OpenDetail] Error running feature:', e);
+  }
 }
 
 // Register Module - Safe with defensive checks
 if (typeof featureModules !== 'undefined') {
   featureModules.openDetailInNewTab = {
-    name: 'Open Detail in New Tab',
-    description: 'Override tombol detail agar buka tab baru',
+    name: 'Do Not Open Detail in New Tab',
+    description: 'Override tombol detail agar buka di tab yang sama (mencegah new tab)',
     run: runOpenDetailInNewTabFeature
   };
 } else {
-  console.warn('[Open Detail] featureModules not defined, module registration skipped');
+  console.warn('[Do Not Open New Tab] featureModules not defined, module registration skipped');
 }
