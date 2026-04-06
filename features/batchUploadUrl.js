@@ -34,6 +34,26 @@ function getTodayFormatted() {
   return formatDateYMD(new Date());
 }
 
+/**
+ * Helper: Baca tanggal masuk dari DOM input #tgl
+ * Format input: dd/mm/yyyy (contoh: 17/03/2026)
+ * Output: yyyy-mm-dd (contoh: 2026-03-17)
+ */
+function getTanggalMasukFromPage() {
+  const tglInput = document.getElementById('tgl');
+
+  if (tglInput && tglInput.value) {
+    const parts = tglInput.value.split('/');
+    if (parts.length === 3) {
+      const [dd, mm, yyyy] = parts;
+      return `${yyyy}-${mm}-${dd}`;
+    }
+  }
+
+  console.warn('[Batch Upload] Input #tgl tidak ditemukan, pakai tanggal hari ini');
+  return getTodayFormatted();
+}
+
 // State management untuk batch process
 let batchQueue = [];
 let currentBatchProcess = null;
@@ -72,7 +92,7 @@ function parseMetadataFromUrl(url) {
     const parts = nameWithoutExt.split(/[-_\s]+/);
 
     let norm = '';
-    let tanggal = getTodayFormatted(); // default hari ini dalam format yyyy-mm-dd
+    let tanggal = getTanggalMasukFromPage(); // baca dari DOM input #tgl (dd/mm/yyyy → yyyy-mm-dd)
 
     // Cari NORM: 6-9 digit (bukan 10 digit timestamp)
     const normIndex = parts.findIndex(p => /^\d{6,9}$/.test(p));
@@ -111,7 +131,7 @@ function parseMetadataFromUrl(url) {
     return {
       filename: 'error',
       norm: '',
-      tanggal: getTodayFormatted(),
+      tanggal: getTanggalMasukFromPage(),
       url,
       status: 'error',
       error: 'Invalid URL format'
