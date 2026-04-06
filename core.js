@@ -49,10 +49,10 @@ const DEFAULT_CONFIG = {
       description: 'Sembunyikan section kosong & Auto-Uncheck secara cerdas.',
       comingSoon: true
     },
-    batchUploadProcessor: {
-      enabled: true,
+    batchUpload: {
+      enabled: false,
       name: 'Batch Upload Dokumen',
-      description: 'Sistem batch upload dokumen dengan queue management, metadata extraction, dan validation'
+      description: 'Upload batch dokumen via paste URL dengan metadata extraction otomatis'
     }
   }
 };

@@ -176,7 +176,7 @@ function kembalikanSectionKosong() {
  */
 function runPrintOptimization() {
   // Early return if config not available
-  if (typeof window.currentConfig === 'undefined' || typeof window.featureModules === 'undefined') return;
+  if (typeof currentConfig === 'undefined' || typeof featureModules === 'undefined') return;
 
   const featureEnabled = window.currentConfig?.features?.printOptimization?.enabled ?? true;
   if (!featureEnabled) return;
@@ -202,12 +202,12 @@ function runPrintOptimization() {
 }
 
 // Register Module - Safe with defensive checks
-if (typeof window.featureModules !== 'undefined') {
-  window.featureModules.printOptimization = {
+if (typeof featureModules !== 'undefined') {
+  featureModules.printOptimization = {
     name: 'Optimasi Cetak',
     description: 'Sembunyikan section kosong & Auto-Uncheck secara cerdas.',
     run: runPrintOptimization
   };
 } else {
-  console.warn('[Print Optimization] window.featureModules not defined, module registration skipped');
+  console.warn('[Print Optimization] featureModules not defined, module registration skipped');
 }
