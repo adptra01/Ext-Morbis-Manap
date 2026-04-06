@@ -217,12 +217,15 @@ function renderShortcutButtons() {
 
   const isRajal = isRawatJalan();
   const isRanap = isRawatInap();
-  
+
   const openDetailEnabled = currentConfig?.features?.openDetailInNewTab?.enabled ?? true;
   const extensionEnabled = currentConfig?.extensionEnabled ?? true;
 
-  // Jika openDetail dimatikan secara global/fitur, tambahkan tombol Kembali di awal
-  if (!openDetailEnabled && extensionEnabled) {
+  // Karena fitur sekarang adalah "Do Not Open Detail in New Tab"
+  // Ketika fitur ENABLED: detail buka di tab sama → tombol Kembali berguna untuk navigasi cepat
+  // Ketika fitur DISABLED: detail buka di tab baru → tombol Kembali berguna untuk kembali ke M-KLAIM
+  // Jadi, TOMBOL KEMBALI SELALU DITAMPILKAN ketika extension enabled
+  if (extensionEnabled) {
     container.appendChild(createButton(SHORTCUT_CONFIG.buttonStyles.backMklaim.url, SHORTCUT_CONFIG.buttonStyles.backMklaim, true));
   }
 
@@ -272,24 +275,10 @@ function runShortcutButtonsFeature() {
   }
 
   const observer = new MutationObserver(() => {
-    // Rendernya dikontrol penuh dari dalam renderShortcutButtons (semua ada di renderShortcutButtons)
+    // Render tombol shortcut jika belum ada dan fitur shortcut enabled
     const stillShortcutEnabled = currentConfig?.features?.shortcutButtons?.enabled ?? true;
     if (stillShortcutEnabled && !shortcutButtonsExist()) {
       renderShortcutButtons();
-    } else if (stillShortcutEnabled && shortcutButtonsExist()) {
-      // Tombol shortcut mungkin perlu diupdate jika state global openDetail berubah.
-      // Kita hapus kontainer lama dan minta render ulang saja.
-      const openDetailEnabled = currentConfig?.features?.openDetailInNewTab?.enabled ?? true;
-      const btnBackMklaimExists = document.querySelector('[data-shortcut-buttons] a[href="http://103.147.236.140/v2/m-klaim"]') !== null;
-      
-      // Jika config openDetail berubah (beda sama status tombol di DOM), maksa re-render
-      if (!openDetailEnabled && !btnBackMklaimExists) {
-        document.querySelector('[data-shortcut-buttons]').remove();
-        renderShortcutButtons();
-      } else if (openDetailEnabled && btnBackMklaimExists) {
-        document.querySelector('[data-shortcut-buttons]').remove();
-        renderShortcutButtons();
-      }
     }
   });
   observer.observe(document.body, { childList: true, subtree: true });
