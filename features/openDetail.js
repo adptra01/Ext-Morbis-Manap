@@ -19,14 +19,17 @@ const OPEN_DETAIL_CONFIG = {
   debug: false
 };
 
-function extractIdFromOnclick(onclickAttr) {
+function extractIdFromOnclick(attrValue) {
+  if (!attrValue) return null;
   const patterns = [
-    /detail\((\d+)\)/,              // detail(162301)
-    /detail\(['"](\d+)['"]\)/       // detail('162301') atau detail("162301")
+    /detail\((\d+)\)/,              // Menangkap: detail(162301)
+    /detail\(['"](\d+)['"]\)/,      // Menangkap: detail('162301')
+    /id_visit=(\d+)/,               // Menangkap: id_visit=162301 (di URL/Href)
+    /id=(\d+)/                      // Menangkap: id=162301
   ];
 
   for (const pattern of patterns) {
-    const match = onclickAttr.match(pattern);
+    const match = attrValue.match(pattern);
     if (match) return match[1];
   }
   return null;
@@ -37,19 +40,33 @@ function extractIdFromElement(element) {
   if (element.dataset.idVisit) return element.dataset.idVisit;
   if (element.dataset.idvisit) return element.dataset.idvisit;
   if (element.dataset.id) return element.dataset.id;
-  
+
+  // Check href attribute (Sangat sering digunakan pada tag <a>)
+  const hrefAttr = element.getAttribute('href');
+  if (hrefAttr) {
+    const id = extractIdFromOnclick(hrefAttr);
+    if (id) return id;
+  }
+
   // Check onclick attribute
   const onclickAttr = element.getAttribute('onclick');
   if (onclickAttr) {
     const id = extractIdFromOnclick(onclickAttr);
     if (id) return id;
   }
-  
+
   // Check parent elements
   let parent = element.parentElement;
   for (let i = 0; i < 5 && parent; i++) {
     if (parent.dataset.idVisit) return parent.dataset.idVisit;
     if (parent.dataset.idvisit) return parent.dataset.idvisit;
+
+    const parentHref = parent.getAttribute('href');
+    if (parentHref) {
+      const id = extractIdFromOnclick(parentHref);
+      if (id) return id;
+    }
+
     const parentOnclick = parent.getAttribute('onclick');
     if (parentOnclick) {
       const id = extractIdFromOnclick(parentOnclick);
@@ -57,7 +74,7 @@ function extractIdFromElement(element) {
     }
     parent = parent.parentElement;
   }
-  
+
   return null;
 }
 
@@ -114,17 +131,32 @@ function overrideDetailButton(btn) {
     return;
   }
 
-  // SIMPAN onclick ASLI sebelum dihapus (untuk restore nanti)
+  // SIMPAN atribut asli sebelum dihapus (untuk restore nanti)
   const originalOnclick = btn.getAttribute('onclick');
+  const originalTarget = btn.getAttribute('target');
+
   btn.dataset.originalOnclick = originalOnclick || '';
+  if (originalTarget) btn.dataset.originalTarget = originalTarget;
 
   btn.dataset.detailModified = 'true';
 
-  // Hapus onclick ASLI (yang mungkin melakukan window.open/_blank)
+  // Hapus atribut yang memicu new tab bawaan HTML
   btn.removeAttribute('onclick');
+  btn.removeAttribute('target'); // SANGAT PENTING: Mencegah <a target="_blank">
+
+  // Jika tombol ini berupa tag <a>, kita arahkan href-nya langsung ke tab ini
+  if (btn.tagName.toLowerCase() === 'a') {
+    const url = generateUrl(id);
+    btn.setAttribute('href', url);
+  }
 
   // Tambahkan click handler baru untuk buka di TAB YANG SAMA
   btn.addEventListener('click', function (e) {
+    // Keyboard shortcuts (Tahan CTRL + Klik) tetap buka tab baru
+    if (e.ctrlKey || e.metaKey) {
+      return true; // Biarkan default browser berjalan
+    }
+
     e.preventDefault();
     e.stopPropagation();
     e.stopImmediatePropagation();
@@ -132,17 +164,10 @@ function overrideDetailButton(btn) {
     const url = generateUrl(id);
     log(`[Do Not Open New Tab] Membuka detail ID: ${id}, URL: ${url}`);
 
-    // Keyboard shortcuts tetap berfungsi
-    if (e.ctrlKey || e.metaKey) {
-      // Ctrl/Cmd + Click = buka di new tab
-      window.open(url, '_blank', 'noopener,noreferrer');
-      return false;
-    }
-
-    // Default: BUKA DI TAB YANG SAMA (mencegah new tab)
+    // BUKA DI TAB YANG SAMA (Mencegah new tab mutlak)
     window.location.href = url;
     return false;
-  }, true);
+  }, true); // true = Use Capture Phase
 
   btn.dataset.detailNewTab = 'true';
 
@@ -177,14 +202,23 @@ function restoreDetailButtons() {
       btn.setAttribute('onclick', originalOnclick);
     }
 
+    // Restore target asli (misal: _blank)
+    const originalTarget = btn.dataset.originalTarget;
+    if (originalTarget) {
+      btn.setAttribute('target', originalTarget);
+    }
+
     // Remove dataset flags
     delete btn.dataset.detailModified;
     delete btn.dataset.detailNewTab;
     delete btn.dataset.originalOnclick;
+    delete btn.dataset.originalTarget;
 
     // Clone untuk remove event listener yang ditambahkan
     const newBtn = btn.cloneNode(true);
-    btn.parentNode.replaceChild(newBtn, btn);
+    if (btn.parentNode) {
+      btn.parentNode.replaceChild(newBtn, btn);
+    }
 
     if (OPEN_DETAIL_CONFIG.debug) {
       log(`Tombol detail berhasil di-restore ke behavior asli`);

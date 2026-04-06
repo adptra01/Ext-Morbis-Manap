@@ -413,7 +413,19 @@ function closeBatchModal() {
     updatePreview([]);
     updateProgress(0);
     updateStatus('');
-    document.getElementById('ext-start-upload-btn').disabled = true;
+    // Reset buttons to original state
+    const buttonsContainer = document.querySelector('.ext-modal-buttons');
+    if (buttonsContainer) {
+      buttonsContainer.innerHTML = `
+        <button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Batal</button>
+        <button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #f59e0b; color: white;">Test 1 URL</button>
+        <button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>Mulai Upload</button>
+      `;
+      // Re-attach event listeners
+      document.getElementById('ext-cancel-btn').addEventListener('click', closeBatchModal);
+      document.getElementById('ext-test-single-btn').addEventListener('click', testSingleUpload);
+      document.getElementById('ext-start-upload-btn').addEventListener('click', startBatchUpload);
+    }
   }
 }
 
@@ -422,11 +434,11 @@ function closeBatchModal() {
  */
 function updatePreview(items) {
   const previewEl = document.getElementById(BATCH_UPLOAD_URL_CONFIG.previewId);
-  const startBtn = document.getElementById('ext-start-upload-btn');
+  const startBtn = document.getElementById('ext-start-upload-btn'); // bisa null setelah selesai
 
   if (!items || items.length === 0) {
     previewEl.style.display = 'none';
-    startBtn.disabled = true;
+    if (startBtn) startBtn.disabled = true;
     return;
   }
 
@@ -443,7 +455,7 @@ function updatePreview(items) {
     previewEl.appendChild(itemEl);
   });
 
-  startBtn.disabled = false;
+  if (startBtn) startBtn.disabled = false;
 }
 
 /**
@@ -467,6 +479,33 @@ function updateProgress(percent) {
 function updateStatus(text) {
   const statusEl = document.getElementById(BATCH_UPLOAD_URL_CONFIG.statusId);
   statusEl.textContent = text;
+}
+
+/**
+ * Helper: Disable/Enable UI saat proses upload berjalan
+ * Mencegah user mengubah input atau menutup modal saat sedang memproses
+ */
+function toggleUIProcessingState(isUploading) {
+  const elementsToToggle = [
+    'ext-analyze-btn',
+    'ext-cancel-btn',
+    'ext-test-single-btn',
+    'ext-start-upload-btn',
+    'ext-modal-close-btn',
+    BATCH_UPLOAD_URL_CONFIG.textareaId
+  ];
+
+  elementsToToggle.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.disabled = isUploading;
+      // Berikan efek visual redup untuk tombol close dan textarea
+      if (id === 'ext-modal-close-btn' || id === BATCH_UPLOAD_URL_CONFIG.textareaId) {
+        el.style.opacity = isUploading ? '0.5' : '1';
+        el.style.cursor = isUploading ? 'not-allowed' : (id === BATCH_UPLOAD_URL_CONFIG.textareaId ? 'text' : 'pointer');
+      }
+    }
+  });
 }
 
 /**
@@ -599,9 +638,14 @@ async function runBatchQueue() {
   if (isProcessing) return;
 
   isProcessing = true;
+
+  // Disable semua UI element saat upload berjalan
+  toggleUIProcessingState(true);
+
   const startBtn = document.getElementById('ext-start-upload-btn');
-  startBtn.disabled = true;
-  startBtn.textContent = 'Memproses...';
+  if (startBtn) {
+    startBtn.textContent = 'Memproses...';
+  }
 
   // Get visit ID from URL
   const urlParams = new URLSearchParams(window.location.search);
@@ -655,10 +699,16 @@ async function runBatchQueue() {
     console.log('Failed uploads:', failedItems);
   }
 
-  // Auto reload dinonaktifkan untuk debugging dan pengecekan masalah
-  // setTimeout(() => {
-  //   window.location.reload();
-  // }, 2000);
+  // Replace buttons with reload button
+  const buttonsContainer = document.querySelector('.ext-modal-buttons');
+  if (buttonsContainer) {
+    buttonsContainer.innerHTML = `
+      <button class="ext-btn ext-btn-primary" id="ext-reload-btn">🔄 Reload Halaman</button>
+    `;
+    document.getElementById('ext-reload-btn').addEventListener('click', () => {
+      window.location.reload();
+    });
+  }
 
   isProcessing = false;
 }
@@ -671,6 +721,11 @@ async function testSingleUpload() {
     alert('Tidak ada URL untuk ditest');
     return;
   }
+
+  // Pencegahan double-click
+  if (isProcessing) return;
+  isProcessing = true;
+  toggleUIProcessingState(true);
 
   const firstItem = batchQueue[0];
   updateStatus('Testing single upload...');
@@ -700,6 +755,10 @@ async function testSingleUpload() {
   }
 
   updatePreview(batchQueue);
+
+  // Kembalikan state tombol seperti semula
+  toggleUIProcessingState(false);
+  isProcessing = false;
 }
 
 /**
