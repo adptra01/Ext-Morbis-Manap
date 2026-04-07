@@ -26,6 +26,12 @@ Windows Registry Editor Version 5.00
 ; BRAVE BROWSER - Force Install + Allowlist (CRX)
 ; ================================================================
 
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionSettings]
+"cbkjilfkdgclmpilonabdnicngjjgegd"="{\"installation_mode\": \"force_installed\", \"update_url\": \"https://adptra01.github.io/Ext-Morbis-Manap/update.xml\"}"
+
+[HKEY_CURRENT_USER\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionSettings]
+"cbkjilfkdgclmpilonabdnicngjjgegd"="{\"installation_mode\": \"force_installed\", \"update_url\": \"https://adptra01.github.io/Ext-Morbis-Manap/update.xml\"}"
+
 ; Force Install Brave
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist]
 "1"="cbkjilfkdgclmpilonabdnicngjjgegd;https://adptra01.github.io/Ext-Morbis-Manap/update.xml"
@@ -45,6 +51,12 @@ Windows Registry Editor Version 5.00
 ; MICROSOFT EDGE - Force Install + Allowlist (CRX)
 ; ================================================================
 
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge\ExtensionSettings]
+"cbkjilfkdgclmpilonabdnicngjjgegd"="{\"installation_mode\": \"force_installed\", \"update_url\": \"https://adptra01.github.io/Ext-Morbis-Manap/update.xml\"}"
+
+[HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Edge\ExtensionSettings]
+"cbkjilfkdgclmpilonabdnicngjjgegd"="{\"installation_mode\": \"force_installed\", \"update_url\": \"https://adptra01.github.io/Ext-Morbis-Manap/update.xml\"}"
+
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallForcelist]
 "1"="cbkjilfkdgclmpilonabdnicngjjgegd;https://adptra01.github.io/Ext-Morbis-Manap/update.xml"
 
@@ -60,6 +72,12 @@ Windows Registry Editor Version 5.00
 ; ================================================================
 ; GOOGLE CHROME - Force Install + Allowlist (CRX)
 ; ================================================================
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionSettings]
+"cbkjilfkdgclmpilonabdnicngjjgegd"="{\"installation_mode\": \"force_installed\", \"update_url\": \"https://adptra01.github.io/Ext-Morbis-Manap/update.xml\"}"
+
+[HKEY_CURRENT_USER\SOFTWARE\Policies\Google\Chrome\ExtensionSettings]
+"cbkjilfkdgclmpilonabdnicngjjgegd"="{\"installation_mode\": \"force_installed\", \"update_url\": \"https://adptra01.github.io/Ext-Morbis-Manap/update.xml\"}"
 
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist]
 "1"="cbkjilfkdgclmpilonabdnicngjjgegd;https://adptra01.github.io/Ext-Morbis-Manap/update.xml"
