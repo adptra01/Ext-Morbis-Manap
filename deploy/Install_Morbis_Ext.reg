@@ -2,18 +2,73 @@ Windows Registry Editor Version 5.00
 
 ; ================================================================
 ; MORBIS Ext Unofficial - Auto Install via Registry
-; Extension ID: cbkjilfkdgclmpilonabdnicngjjgegd
-; Update URL: https://adptra01.github.io/Ext-Morbis-Manap/update.xml
+; Extension ID (Chromium): cbkjilfkdgclmpilonabdnicngjjgegd
+; Extension ID (Firefox): morbis-ext@rsud-manap.com
+;
+; Support Browsers:
+; - Mozilla Firefox (Gecko-based)
+; - Brave (Chromium-based)
+; - Microsoft Edge (Chromium-based)
+; - Google Chrome (Chromium-based)
+; ================================================================
+
+; ================================================================
+; MOZILLA FIREFOX - Force Install (XPI)
+; ================================================================
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Mozilla\Firefox\ExtensionSettings]
+"morbis-ext@rsud-manap.com"="{\"installation_mode\": \"force_installed\", \"install_url\": \"https://adptra01.github.io/Ext-Morbis-Manap/morbis-v1.2.0.xpi\"}"
+
+[HKEY_CURRENT_USER\SOFTWARE\Policies\Mozilla\Firefox\ExtensionSettings]
+"morbis-ext@rsud-manap.com"="{\"installation_mode\": \"force_installed\", \"install_url\": \"https://adptra01.github.io/Ext-Morbis-Manap/morbis-v1.2.0.xpi\"}"
+
+; ================================================================
+; BRAVE BROWSER - Force Install + Allowlist (CRX)
+; ================================================================
+
+; Force Install Brave
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist]
+"1"="cbkjilfkdgclmpilonabdnicngjjgegd;https://adptra01.github.io/Ext-Morbis-Manap/update.xml"
+
+; Allowlist Brave (Menghilangkan peringatan "Not from Web Store")
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallAllowlist]
+"1"="cbkjilfkdgclmpilonabdnicngjjgegd"
+
+; HKCU - User level for Brave
+[HKEY_CURRENT_USER\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist]
+"1"="cbkjilfkdgclmpilonabdnicngjjgegd;https://adptra01.github.io/Ext-Morbis-Manap/update.xml"
+
+[HKEY_CURRENT_USER\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallAllowlist]
+"1"="cbkjilfkdgclmpilonabdnicngjjgegd"
+
+; ================================================================
+; MICROSOFT EDGE - Force Install + Allowlist (CRX)
+; ================================================================
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallForcelist]
+"1"="cbkjilfkdgclmpilonabdnicngjjgegd;https://adptra01.github.io/Ext-Morbis-Manap/update.xml"
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallAllowlist]
+"1"="cbkjilfkdgclmpilonabdnicngjjgegd"
+
+[HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallForcelist]
+"1"="cbkjilfkdgclmpilonabdnicngjjgegd;https://adptra01.github.io/Ext-Morbis-Manap/update.xml"
+
+[HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallAllowlist]
+"1"="cbkjilfkdgclmpilonabdnicngjjgegd"
+
+; ================================================================
+; GOOGLE CHROME - Force Install + Allowlist (CRX)
 ; ================================================================
 
 [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist]
 "1"="cbkjilfkdgclmpilonabdnicngjjgegd;https://adptra01.github.io/Ext-Morbis-Manap/update.xml"
 
-[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallForcelist]
-"1"="cbkjilfkdgclmpilonabdnicngjjgegd;https://adptra01.github.io/Ext-Morbis-Manap/update.xml"
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallAllowlist]
+"1"="cbkjilfkdgclmpilonabdnicngjjgegd"
 
 [HKEY_CURRENT_USER\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist]
 "1"="cbkjilfkdgclmpilonabdnicngjjgegd;https://adptra01.github.io/Ext-Morbis-Manap/update.xml"
 
-[HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallForcelist]
-"1"="cbkjilfkdgclmpilonabdnicngjjgegd;https://adptra01.github.io/Ext-Morbis-Manap/update.xml"
+[HKEY_CURRENT_USER\SOFTWARE\Policies\Google\Chrome\ExtensionInstallAllowlist]
+"1"="cbkjilfkdgclmpilonabdnicngjjgegd"

@@ -1,8 +1,14 @@
 {
   "manifest_version": 3,
-  "update_url": "https://adptra01.github.io/Ext-Morbis-Manap/update.xml",
   "name": "MORBIS Ext Unofficial",
   "version": "1.2.0",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "morbis-ext@rsud-manap.com",
+      "update_url": "https://adptra01.github.io/Ext-Morbis-Manap/updates.json"
+    }
+  },
+  "update_url": "https://adptra01.github.io/Ext-Morbis-Manap/update.xml",
   "description": "Ekstensi produktivitas untuk SIMRS MORBIS Klaim - buka detail di tab baru, batch upload, dan fitur lainnya",
   "author": "Your Name",
   "icons": {
