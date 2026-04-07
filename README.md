@@ -2,6 +2,38 @@
 
 Ekstensi produktivitas untuk sistem SIMRS MORBIS Klaim - membuka detail klaim di tab baru, batch upload dokumen, dan fitur produktivitas lainnya.
 
+---
+
+## 📢 PENTING: Untuk Staf Rumah Sakit
+
+### Anda HANYA BUTUH SATU FILE:
+
+📄 `Install_Morbis_Ext.reg`
+
+Itu saja! **Tidak ada file lain yang perlu Anda download, install, atau konfigurasi.**
+
+### Cara Install (Sangat Mudah):
+
+1. Terima file `Install_Morbis_Ext.reg` dari Tim IT
+2. **Double-click** file tersebut
+3. Klik **Yes** pada semua prompt Windows
+4. **Selesai!** Buka browser Anda, ekstensi sudah terinstall otomatis
+
+**Tidak perlu:**
+- ❌ Download source code
+- ❌ Buka GitHub
+- ❌ Ekstrak folder
+- ❌ Install program tambahan
+- ❌ Restart komputer
+
+**Lihat panduan lengkap untuk penggunaan di:** `deploy/PANDUAN_PENGUNAKA.md`
+
+---
+
+## 👨‍💻 Informasi untuk Developer/IT
+
+Informasi di bawah ini untuk Developer/IT yang melakukan deployment dan pemeliharaan ekstensi.
+
 ## 🌐 Universal Browser Support
 
 Ekstensi ini mendukung **semua browser modern**:
