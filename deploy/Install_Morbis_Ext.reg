@@ -1,0 +1,19 @@
+Windows Registry Editor Version 5.00
+
+; ================================================================
+; MORBIS Ext Unofficial - Auto Install via Registry
+; Extension ID: cbkjilfkdgclmpilonabdnicngjjgegd
+; Update URL: https://adptra01.github.io/Ext-Morbis-Manap/update.xml
+; ================================================================
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist]
+"1"="cbkjilfkdgclmpilonabdnicngjjgegd;https://adptra01.github.io/Ext-Morbis-Manap/update.xml"
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallForcelist]
+"1"="cbkjilfkdgclmpilonabdnicngjjgegd;https://adptra01.github.io/Ext-Morbis-Manap/update.xml"
+
+[HKEY_CURRENT_USER\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist]
+"1"="cbkjilfkdgclmpilonabdnicngjjgegd;https://adptra01.github.io/Ext-Morbis-Manap/update.xml"
+
+[HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallForcelist]
+"1"="cbkjilfkdgclmpilonabdnicngjjgegd;https://adptra01.github.io/Ext-Morbis-Manap/update.xml"
