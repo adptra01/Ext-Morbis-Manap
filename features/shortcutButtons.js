@@ -7,7 +7,8 @@ const SHORTCUT_CONFIG = {
   requiredParams: ['id_visit', 'tanggalAwal', 'tanggalAkhir'],
   shortcutUrls: {
     rajal: '/admisi/pelaksanaan_pelayanan/halaman-utama',
-    ranap: '/admisi/detail-rawat-inap/input-tindakan'
+    ranap: '/admisi/detail-rawat-inap/input-tindakan',
+    dokumenPasien: '/v2/dokumen-pasien/detail'
   },
   detailUrlPattern: '/v2/m-klaim/detail-v2-refaktor',
   buttonStyles: {
@@ -20,6 +21,11 @@ const SHORTCUT_CONFIG = {
       text: 'Pelayanan Rawat Inap',
       bgColor: '#10b981',
       hoverColor: '#059669'
+    },
+    dokumenPasien: {
+      text: 'Dokumen Pasien',
+      bgColor: '#8b5cf6',
+      hoverColor: '#7c3aed'
     },
     backMklaim: {
       text: 'Kembali ke M-KLAIM',
@@ -117,16 +123,36 @@ function extractIdVisit() {
   return urlParams.get('id_visit');
 }
 
+function extractNoRm() {
+  // Coba dari URL params (norm atau no_rm)
+  const urlParams = new URLSearchParams(window.location.search);
+  const noRmFromUrl = urlParams.get('norm') || urlParams.get('no_rm') || urlParams.get('noRm');
+  if (noRmFromUrl) return noRmFromUrl;
+
+  // Coba dari elemen di halaman
+  const noRmInput = document.querySelector('input[name="norm"], input[name="no_rm"], input[name="noRm"]');
+  if (noRmInput) return noRmInput.value;
+
+  return null;
+}
+
 function generatePelaksanaanUrl(type) {
   const baseUrl = window.location.origin;
   const idVisit = extractIdVisit();
-  
+
   if (type === 'rajal') {
     return `${baseUrl}${SHORTCUT_CONFIG.shortcutUrls.rajal}?id_visit=${idVisit}&page=101&status_periksa=belum`;
   } else if (type === 'ranap') {
     return `${baseUrl}${SHORTCUT_CONFIG.shortcutUrls.ranap}?idVisit=${idVisit}`;
   }
   return null;
+}
+
+function generateDokumenPasienUrl() {
+  const baseUrl = window.location.origin;
+  const noRm = extractNoRm();
+  if (!noRm) return null;
+  return `${baseUrl}${SHORTCUT_CONFIG.shortcutUrls.dokumenPasien}?id=${noRm}`;
 }
 
 function shortcutButtonsExist() {
@@ -227,6 +253,12 @@ function renderShortcutButtons() {
   // Jadi, TOMBOL KEMBALI SELALU DITAMPILKAN ketika extension enabled
   if (extensionEnabled) {
     container.appendChild(createButton(SHORTCUT_CONFIG.buttonStyles.backMklaim.url, SHORTCUT_CONFIG.buttonStyles.backMklaim, true));
+  }
+
+  // Tombol Dokumen Pasien (selalu tampilkan jika ada no_rm)
+  const dokumenPasienUrl = generateDokumenPasienUrl();
+  if (dokumenPasienUrl) {
+    container.appendChild(createButton(dokumenPasienUrl, SHORTCUT_CONFIG.buttonStyles.dokumenPasien));
   }
 
   if ((isRajal || isRanap) && rajalUrl) {
