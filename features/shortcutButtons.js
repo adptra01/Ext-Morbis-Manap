@@ -8,7 +8,7 @@ const SHORTCUT_CONFIG = {
   shortcutUrls: {
     rajal: '/admisi/pelaksanaan_pelayanan/halaman-utama',
     ranap: '/admisi/detail-rawat-inap/input-tindakan',
-    dokumenPasien: '/v2/dokumen-pasien/detail'
+    dokumenPasien: '/admisi/pelaksanaan_pelayanan/dokumen-pasien'
   },
   detailUrlPattern: '/v2/m-klaim/detail-v2-refaktor',
   buttonStyles: {
@@ -150,9 +150,9 @@ function generatePelaksanaanUrl(type) {
 
 function generateDokumenPasienUrl() {
   const baseUrl = window.location.origin;
-  const noRm = extractNoRm();
-  if (!noRm) return null;
-  return `${baseUrl}${SHORTCUT_CONFIG.shortcutUrls.dokumenPasien}?id=${noRm}`;
+  const idVisit = extractIdVisit();
+  if (!idVisit) return null;
+  return `${baseUrl}${SHORTCUT_CONFIG.shortcutUrls.dokumenPasien}?id_visit=${idVisit}&page=85&id_kunjungan=`;
 }
 
 function shortcutButtonsExist() {
