@@ -65,15 +65,13 @@ let isProcessing = false;
 function extractUrls(inputText) {
   if (!inputText || typeof inputText !== 'string') return [];
 
-  const urlPattern = /(https?:\/\/[^\s]+)/g;
-  const matches = inputText.match(urlPattern) || [];
+  const lines = inputText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 
-  return matches.filter(url => {
+  return lines.map(url => url.replace(/ /g, '%20')).filter(url => {
     try {
       new URL(url);
-      return BATCH_UPLOAD_URL_CONFIG.supportedExtensions.some(ext =>
-        url.toLowerCase().endsWith(ext)
-      );
+      const pathname = url.split(/[?#]/)[0].toLowerCase();
+      return BATCH_UPLOAD_URL_CONFIG.supportedExtensions.some(ext => pathname.endsWith(ext));
     } catch {
       return false;
     }
@@ -94,36 +92,26 @@ function parseMetadataFromUrl(url) {
     let norm = '';
     let tanggal = getTanggalMasukFromPage(); // baca dari DOM input #tgl (dd/mm/yyyy → yyyy-mm-dd)
 
-    // Cari NORM: 6-9 digit (bukan 10 digit timestamp)
-    const normIndex = parts.findIndex(p => /^\d{6,9}$/.test(p));
+    // Cari NORM: 3-12 digit (bukan 10 digit timestamp)
+    const normIndex = parts.findIndex(p => /^\d{3,12}$/.test(p) && !/^\d{10}$/.test(p));
     if (normIndex !== -1) {
       norm = parts[normIndex];
       parts.splice(normIndex, 1);
     }
 
-    // Cari Unix timestamp (10 digit) → konversi ke yyyy-mm-dd
-    const tsIndex = parts.findIndex(p => /^\d{10}$/.test(p));
-    if (tsIndex !== -1) {
-      const date = new Date(parseInt(parts[tsIndex]) * 1000);
-      tanggal = formatDateYMD(date);
-    }
+    // Tanggal konsisten diset menggunakan getTanggalMasukFromPage() di awal
+    // agar selalu memakai tanggal visit dari DOM, sesuai kebutuhan pengguna (tidak dioverride oleh filename).
 
-    // Cari tanggal dalam format DD-MM-YYYY atau DD/MM/YYYY
-    for (const part of parts) {
-      const ddmmyyyyMatch = part.match(/^(\d{2})[-/](\d{2})[-/](\d{4})$/);
-      if (ddmmyyyyMatch) {
-        const [, dd, mm, yyyy] = ddmmyyyyMatch;
-        tanggal = `${yyyy}-${mm}-${dd}`;
-        break;
-      }
-    }
+    // Ekstrak keterangan dengan membuang timestamp unix 10 digit (dan sisa text digabung)
+    const keteranganParts = parts.filter(p => !/^\d{10}$/.test(p));
+    const keterangan = keteranganParts.join(' ').trim() || nameWithoutExt.replace(/[-_]+/g, ' ');
 
     return {
       filename,
       norm,
       tanggal,       // format: yyyy-mm-dd
       jenis_dokumen: 'Lain-lain',
-      keterangan: '',
+      keterangan: keterangan,
       url,
       status: 'pending'
     };
@@ -148,7 +136,7 @@ function renderBatchUploadButton() {
   const btn = document.createElement('button');
   btn.id = 'ext-batch-url-btn';
   btn.type = 'button';
-  btn.textContent = '🚀 Auto Upload via URL';
+  btn.textContent = 'Auto Upload via URL';
   btn.style.cssText = `
     margin: 8px 0 4px 10px;
     padding: 8px 16px;
@@ -192,12 +180,13 @@ function renderBatchUploadButton() {
       .ext-modal-content {
         background: white;
         border-radius: 8px;
-        padding: 20px;
-        max-width: 600px;
-        width: 90%;
-        max-height: 80vh;
+        padding: 24px;
+        max-width: 850px;
+        width: 95%;
+        max-height: 85vh;
         overflow-y: auto;
         box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        margin: auto;
       }
 
       .ext-modal-header {
@@ -242,7 +231,7 @@ function renderBatchUploadButton() {
 
       #${BATCH_UPLOAD_URL_CONFIG.previewId} {
         margin-top: 15px;
-        max-height: 200px;
+        max-height: 400px;
         overflow-y: auto;
         border: 1px solid #e5e7eb;
         border-radius: 4px;
@@ -340,23 +329,34 @@ function showBatchUploadModal() {
     modal.innerHTML = `
       <div class="ext-modal-content">
         <div class="ext-modal-header">
-          <h3 style="margin: 0; font-size: 18px;">Batch Upload via URL</h3>
-          <button class="ext-modal-close" id="ext-modal-close-btn">&times;</button>
+          <h3 style="margin: 0; font-size: 18px;">Batch Upload Dokumen</h3>
+          <button class="ext-modal-close" id="ext-modal-close-btn">❌</button>
         </div>
 
-        <div>
+        <div style="margin-bottom: 15px; display: flex; gap: 15px; font-size: 14px; align-items: center;">
+          <label style="cursor: pointer;"><input type="radio" name="ext-upload-mode" value="manual" checked> Mode Manual (Paste URL)</label>
+          <label style="cursor: pointer;"><input type="radio" name="ext-upload-mode" value="auto"> Auto-Crawl Rekam Medis</label>
+        </div>
+
+        <div id="ext-manual-section">
           <label style="display: block; margin-bottom: 5px; font-weight: 500;">
             Paste URL Dokumen (satu per baris):
           </label>
           <textarea id="${BATCH_UPLOAD_URL_CONFIG.textareaId}" placeholder="https://example.com/dokumen1.pdf&#10;https://example.com/dokumen2.jpg&#10;..."></textarea>
+          <div style="margin-top: 10px;">
+            <button class="ext-btn ext-btn-secondary" id="ext-analyze-btn">Analisis URL</button>
+          </div>
         </div>
 
-        <div style="margin-top: 10px;">
-          <button class="ext-btn ext-btn-secondary" id="ext-analyze-btn">Analisis URL</button>
+        <div id="ext-auto-section" style="display: none;">
+          <p style="font-size: 13px; color: #4b5563; margin-bottom: 10px;">Mendeteksi dokumen otomatis dari halaman Rekam Medis (Pelaksanaan Pelayanan) pasien ini.</p>
+          <div style="margin-top: 10px;">
+             <button class="ext-btn ext-btn-primary" id="ext-crawl-btn" style="background: #8b5cf6;">Cari Dokumen Pasien Otomatis</button>
+          </div>
         </div>
 
         <div id="${BATCH_UPLOAD_URL_CONFIG.previewId}" style="display: none;">
-          <strong>Preview URL yang akan diproses:</strong>
+          <strong>Preview Dokumen:</strong>
         </div>
 
         <div id="${BATCH_UPLOAD_URL_CONFIG.progressId}">
@@ -391,6 +391,26 @@ function showBatchUploadModal() {
 
       // Start upload button
       document.getElementById('ext-start-upload-btn').addEventListener('click', startBatchUpload);
+      
+      // Radio mode toggle
+      document.querySelectorAll('input[name="ext-upload-mode"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+           if (e.target.value === 'manual') {
+              document.getElementById('ext-manual-section').style.display = 'block';
+              document.getElementById('ext-auto-section').style.display = 'none';
+           } else {
+              document.getElementById('ext-manual-section').style.display = 'none';
+              document.getElementById('ext-auto-section').style.display = 'block';
+           }
+           // reset preview on switch
+           batchQueue = [];
+           updatePreview([]);
+           updateStatus('');
+        });
+      });
+
+      // Crawl button
+      document.getElementById('ext-crawl-btn').addEventListener('click', crawlDokumenPasien);
     }, 0);
 
     document.body.appendChild(modal);
@@ -443,20 +463,86 @@ function updatePreview(items) {
   }
 
   previewEl.style.display = 'block';
-  previewEl.innerHTML = `<strong>Preview (${items.length} URL):</strong>`;
+  
+  const headerDiv = document.createElement('div');
+  headerDiv.style.marginBottom = '10px';
+  headerDiv.innerHTML = `<strong class="preview-header-text">Preview (${items.filter(i=>i.selected !== false).length} Dokumen Dipilih):</strong>`;
+  previewEl.innerHTML = '';
+  previewEl.appendChild(headerDiv);
 
   items.forEach((item, index) => {
+    let modeText = '';
+    if (item.tglFileTabel) {
+        modeText = `
+          <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 4px;">
+            <span style="font-weight: bold;"><strong style="color:#059669;">Dibuat:</strong> ${item.tglFileTabel}</span>
+            <span style="font-weight: bold;"><strong style="color:#059669;">Diunggah:</strong> ${item.tglUploadTabel}</span>
+            <span style="font-weight: bold;"><strong style="color:#059669;">Keterangan:</strong> ${item.keterangan || '-'}</span>
+          </div>
+        `;
+    } else {
+        modeText = `
+          <div style="display: flex; gap: 15px; margin-top: 4px;">
+            <span style="font-weight: bold;"><strong style="color:#059669;">NORM:</strong> ${item.norm || '-'}</span>
+            <span style="font-weight: bold;"><strong style="color:#059669;">Tanggal Klaim:</strong> ${item.tanggal}</span>
+          </div>
+        `;
+    }
+
     const itemEl = document.createElement('div');
     itemEl.className = `ext-preview-item ${item.status}`;
-    itemEl.textContent = `${index + 1}. ${item.filename} - NORM: ${item.norm || 'N/A'} - Tgl: ${item.tanggal} - Jenis: ${item.jenis_dokumen} - ${item.status}`;
-    if (item.error) {
-      itemEl.textContent += ` (${item.error})`;
+    itemEl.style.display = 'flex';
+    itemEl.style.alignItems = 'flex-start';
+    itemEl.style.gap = '12px';
+    itemEl.style.padding = '12px 8px';
+    itemEl.style.borderBottom = '1px solid #e5e7eb';
+    
+    if (item.selected === false) {
+      itemEl.style.opacity = '0.5';
+      itemEl.style.background = '#f9fafb';
     }
+
+    itemEl.innerHTML = `
+      <input type="checkbox" class="ext-doc-checkbox" data-index="${index}" style="margin-top: 4px; transform: scale(1.1);" ${item.selected !== false ? 'checked' : ''} ${isProcessing ? 'disabled' : ''}>
+      <div style="flex: 1; display: flex; flex-direction: column;">
+         <div style="display: flex; justify-content: space-between; align-items: center;">
+           <strong style="font-size:13px; color: #111827; word-break: break-all;">${index + 1}. ${item.filename}</strong>
+           <span style="font-weight: 600; font-size: 10px; padding: 2px 8px; border-radius: 12px; background: #f3f4f6; text-transform: uppercase;">${item.status}</span>
+         </div>
+         <div style="font-size: 11px; color: #4b5563;">
+           ${modeText}
+         </div>
+         ${item.error ? `<span style="font-size: 11px; color: #dc2626; margin-top: 4px;"><strong>Kesalahan:</strong> ${item.error}</span>` : ''}
+      </div>
+      <button class="ext-modal-close" style="width:24px; height:24px; font-size:18px; color:#ef4444; border-radius: 4px;" title="Buang Dokumen ini">❌</button>
+    `;
+
+    const checkbox = itemEl.querySelector('.ext-doc-checkbox');
+    const buangBtn = itemEl.querySelector('button');
+
+    const updateSelection = (isSelected) => {
+      if(isProcessing) return;
+      item.selected = isSelected;
+      checkbox.checked = isSelected;
+      itemEl.style.opacity = isSelected ? '1' : '0.5';
+      itemEl.style.background = isSelected ? 'transparent' : '#f9fafb';
+      
+      const currentSelected = items.filter(i=>i.selected !== false).length;
+      headerDiv.innerHTML = `<strong class="preview-header-text">Preview (${currentSelected} Dokumen Dipilih):</strong>`;
+      if(startBtn) startBtn.disabled = currentSelected === 0;
+    };
+
+    checkbox.addEventListener('change', (e) => updateSelection(e.target.checked));
+    buangBtn.addEventListener('click', () => updateSelection(false));
+
     previewEl.appendChild(itemEl);
   });
 
-  if (startBtn) startBtn.disabled = false;
+  if (startBtn) {
+     startBtn.disabled = items.filter(i=>i.selected !== false).length === 0;
+  }
 }
+
 
 /**
  * UI: Update progress bar
@@ -492,8 +578,13 @@ function toggleUIProcessingState(isUploading) {
     'ext-test-single-btn',
     'ext-start-upload-btn',
     'ext-modal-close-btn',
+    'ext-crawl-btn',
     BATCH_UPLOAD_URL_CONFIG.textareaId
   ];
+
+  document.querySelectorAll('input[name="ext-upload-mode"]').forEach(radio => {
+    radio.disabled = isUploading;
+  });
 
   elementsToToggle.forEach(id => {
     const el = document.getElementById(id);
@@ -535,6 +626,79 @@ function analyzeUrls() {
   batchQueue = urls.map(url => parseMetadataFromUrl(url));
   updatePreview(batchQueue);
   updateStatus(`${urls.length} URL siap diproses`);
+}
+
+/**
+ * Auto-Crawl: Ambil dokumen otomatis dari halaman rekam medis
+ */
+async function crawlDokumenPasien() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const idVisit = urlParams.get('id_visit');
+  if(!idVisit) { alert('Parameter id_visit tidak ditemukan di URL saat ini.'); return; }
+
+  updateStatus('Sedang mencari dokumen di rekam medis...');
+  const crawlBtn = document.getElementById('ext-crawl-btn');
+  if(crawlBtn) { crawlBtn.disabled = true; crawlBtn.textContent = 'Mencari...'; }
+
+  try {
+    const targetUrl = `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${idVisit}&page=85&id_kunjungan=`;
+    const response = await fetch(targetUrl);
+    
+    if(!response.ok) throw new Error('Gagal memuat halaman dokumen pasien');
+    const html = await response.text();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    
+    const rows = doc.querySelectorAll('table.data-list.tabel tr');
+    let urls = [];
+    
+    for(let i=1; i<rows.length; i++) {
+        const tr = rows[i];
+        const linkEl = tr.querySelector('td:nth-child(2) a');
+        if(!linkEl) continue;
+        
+        const urlPath = linkEl.getAttribute('href'); 
+        if(!urlPath.includes('/assets/dokumen-pasien/')) continue;
+        
+        const fullUrl = urlPath.startsWith('http') ? urlPath : `${window.location.origin}${urlPath}`;
+        
+        const filenameTabel = tr.cells[1]?.textContent.trim();
+        const keteranganTd = tr.cells[2]?.textContent.trim();
+        const tglFile = tr.cells[3]?.textContent.trim();
+        const tglUpload = tr.cells[4]?.textContent.trim();
+        
+        urls.push({
+            url: fullUrl,
+            filenameTabel,
+            tglFile,
+            tglUpload,
+            keteranganTabel: keteranganTd
+        });
+    }
+    
+    if(urls.length === 0) {
+       updateStatus('Tidak ada dokumen ditemukan di rekam medis.');
+       if(crawlBtn) { crawlBtn.disabled = false; crawlBtn.textContent = 'Cari Dokumen Pasien Otomatis'; }
+       return;
+    }
+    
+    batchQueue = urls.map(item => {
+        let metadata = parseMetadataFromUrl(item.url);
+        metadata.tglFileTabel = item.tglFile;
+        metadata.tglUploadTabel = item.tglUpload;
+        metadata.filename = item.filenameTabel || metadata.filename;
+        metadata.keterangan = item.keteranganTabel || metadata.filename || "-";
+        metadata.selected = true; 
+        return metadata;
+    });
+    
+    updatePreview(batchQueue);
+    updateStatus(`${batchQueue.length} dokumen berhasil ditemukan!`);
+
+  } catch (err) {
+    updateStatus('Error: ' + err.message);
+  } finally {
+    if(crawlBtn) { crawlBtn.disabled = false; crawlBtn.textContent = 'Cari Dokumen Pasien Otomatis'; }
+  }
 }
 
 /**
@@ -662,10 +826,20 @@ async function runBatchQueue() {
 
   let successCount = 0;
   let errorCount = 0;
-  const total = batchQueue.length;
+  const itemsToUpload = batchQueue.filter(item => item.selected !== false);
+  const total = itemsToUpload.length;
+
+  if (total === 0) {
+    alert("Tidak ada dokumen yang dipilih untuk diupload.");
+    toggleUIProcessingState(false);
+    isProcessing = false;
+    updateStatus('');
+    if(startBtn) startBtn.textContent = 'Mulai Upload';
+    return;
+  }
 
   for (let i = 0; i < total; i++) {
-    const metadata = batchQueue[i];
+    const metadata = itemsToUpload[i];
 
     try {
       const result = await processAndUploadSingleUrl(metadata, idVisitStr);
@@ -703,7 +877,7 @@ async function runBatchQueue() {
   const buttonsContainer = document.querySelector('.ext-modal-buttons');
   if (buttonsContainer) {
     buttonsContainer.innerHTML = `
-      <button class="ext-btn ext-btn-primary" id="ext-reload-btn">🔄 Reload Halaman</button>
+      <button class="ext-btn ext-btn-primary" id="ext-reload-btn">Reload Halaman</button>
     `;
     document.getElementById('ext-reload-btn').addEventListener('click', () => {
       window.location.reload();
