@@ -53,6 +53,11 @@ const DEFAULT_CONFIG = {
       enabled: false,
       name: 'Batch Upload Dokumen',
       description: 'Upload batch dokumen via paste URL dengan metadata extraction otomatis'
+    },
+    deleteDokumenKlaim: {
+      enabled: true,
+      name: 'Hapus Dokumen M-Klaim',
+      description: 'Menambahkan tombol hapus file langsung di tabel dokumen.'
     }
   }
 };
