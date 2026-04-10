@@ -1,115 +1,295 @@
-# Open Detail in New Tab - Chrome Extension
+# MORBIS Ext Unofficial
 
-Chrome Extension sederhana untuk mengubah perilaku tombol "Detail" agar membuka halaman detail di tab baru.
+Ekstensi produktivitas untuk sistem SIMRS MORBIS Klaim - membuka detail klaim di tab baru, batch upload dokumen, dan fitur produktivitas lainnya.
 
-## Fitur
+---
 
-- ✅ Otomatis mendeteksi tombol dengan `onclick="detail(id)"`
-- ✅ Membuka detail di tab baru (`_blank`)
-- ✅ Support konten dinamis (DataTables, AJAX, dll)
-- ✅ Konfigurasi URL pattern yang fleksibel
-- ✅ Mudah dikustomisasi
-- ✅ Tidak tergantung pada framework tertentu
+## 📢 PENTING: Untuk Staf Rumah Sakit
 
-## Instalasi
+### Anda HANYA BUTUH SATU FILE:
 
-1. Clone atau download extension ini
-2. Buka Chrome, masuk ke `chrome://extensions/`
-3. Aktifkan "Developer mode" (tombol di pojok kanan atas)
-4. Klik "Load unpacked"
-5. Pilih folder `open-detail-new-tab`
-6. Extension siap digunakan!
+📄 `Install_Morbis_Ext.reg`
 
-## Konfigurasi
+Itu saja! **Tidak ada file lain yang perlu Anda download, install, atau konfigurasi.**
 
-Buka `content.js` dan ubah bagian `CONFIG`:
+### Cara Install (Sangat Mudah):
 
-```javascript
-const CONFIG = {
-  // URL Pattern untuk detail
-  urlPatterns: [
-    // Pattern saat ini untuk aplikasi klaim
-    'http://103.147.236.140/v2/m-klaim/detail-v2-refaktor?id_visit={id}&tanggalAwal={tanggalAwal}&tanggalAkhir={tanggalAkhir}&norm=&nama=&reg=&billing=all&status=all&id_poli_cari=&poli_cari=',
-  ],
+1. Terima file `Install_Morbis_Ext.reg` dari Tim IT
+2. **Double-click** file tersebut
+3. Klik **Yes** pada semua prompt Windows
+4. **Selesai!** Buka browser Anda, ekstensi sudah terinstall otomatis
 
-  // Otomatis isi tanggal hari ini untuk {tanggalAwal} dan {tanggalAkhir}
-  autoDate: true,
+**Tidak perlu:**
+- ❌ Download source code
+- ❌ Buka GitHub
+- ❌ Ekstrak folder
+- ❌ Install program tambahan
+- ❌ Restart komputer
 
-  // Mode: 'new-tab' atau 'same-tab'
-  openMode: 'new-tab',
+**Lihat panduan lengkap untuk penggunaan di:** `deploy/PANDUAN_PENGUNAKA.md`
 
-  // Debug mode
-  debug: false
-};
+---
+
+## 👨‍💻 Informasi untuk Developer/IT
+
+Informasi di bawah ini untuk Developer/IT yang melakukan deployment dan pemeliharaan ekstensi.
+
+## 🌐 Universal Browser Support
+
+Ekstensi ini mendukung **semua browser modern**:
+
+| Browser | Format | Update System | Status |
+|---------|---------|---------------|---------|
+| **Mozilla Firefox** | `.xpi` | `updates.json` | ✅ |
+| **Google Chrome** | `.crx` | `update.xml` | ✅ |
+| **Microsoft Edge** | `.crx` | `update.xml` | ✅ |
+| **Brave** | `.crx` | `update.xml` | ✅ |
+
+---
+
+## ✨ Fitur Utama
+
+### 📌 Buka Detail di Tab Baru
+- Tombol detail sekarang terbuka di tab baru
+- Hindari kehilangan data saat navigasi
+- Tetap fokus pada halaman utama
+
+### 📑 Batch Upload Dokumen via URL
+- Upload banyak dokumen sekaligus menggunakan URL
+- Ekstraksi metadata otomatis dari URL dokumen
+- Progress tracking real-time untuk setiap dokumen
+
+### 🔘 Tombol Pintasan
+- Akses cepat ke fitur yang sering digunakan
+- Navigasi lebih efisien
+
+### 🔍 Persistensi Filter
+- Filter yang dipilih tetap tersimpan
+- Tidak perlu mengatur ulang setelah refresh
+
+### 💳 Simplifikasi Billing
+- Tampilan billing yang lebih bersih
+- Fokus pada informasi penting
+
+### ⬆️ Tombol Scroll
+- Navigasi cepat ke atas/bawah halaman
+- Hemat waktu pada halaman panjang
+
+### 🖨️ Optimasi Cetak
+- Tampilan cetak yang lebih rapi
+- Menghapus elemen yang tidak perlu
+
+---
+
+## 📥 Instalasi
+
+### Opsi 1: Load Unpacked (Development)
+
+1. Clone atau download ekstensi ini
+2. Buka browser, masuk ke halaman extensions:
+   - Chrome/Edge: `chrome://extensions/` atau `edge://extensions/`
+   - Firefox: `about:addons` → "Gear icon" → "Debug Add-ons"
+   - Brave: `brave://extensions/`
+3. Aktifkan **Developer mode** (Chrome/Edge/Brave)
+4. Klik **Load unpacked** atau **Temporary Add-on**
+5. Pilih folder `MORBIS_EXT`
+6. Ekstensi siap digunakan!
+
+### Opsi 2: Force Install via Registry (Enterprise)
+
+Gunakan file `Install_Morbis_Ext.reg` untuk instalasi otomatis di banyak komputer:
+
+```cmd
+# Double-click file .reg atau jalankan via command line
+regedit /s "Install_Morbis_Ext.reg"
 ```
 
-### Placeholder yang Tersedia
+**Supported Browsers:**
+- Mozilla Firefox (via `.xpi`)
+- Google Chrome (via `.crx`)
+- Microsoft Edge (via `.crx`)
+- Brave Browser (via `.crx`)
 
-| Placeholder | Deskripsi | Contoh Output |
-|-------------|-----------|---------------|
-| `{id}` | ID dari tombol detail | `162984` |
-| `{tanggalAwal}` | Tanggal awal (format ID) | `04-04-2026` |
-| `{tanggalAkhir}` | Tanggal akhir (format ID) | `04-04-2026` |
+---
 
-## Cara Cek URL Asli
+## 🚀 Deployment & Auto-Update
 
-1. Buka DevTools → Console
-2. Ketik `detail(162301)`
-3. Lihat network tab atau console output
-
-## Penggunaan Manual (via Console)
-
-Setelah extension terinstall, Anda bisa menggunakan API dari console:
-
-```javascript
-// Refresh semua tombol
-OpenDetailExtension.refresh();
-
-// Override tombol spesifik
-const btn = document.querySelector('button');
-OpenDetailExtension.override(btn);
-
-// Ubah konfigurasi runtime
-OpenDetailExtension.setConfig('openMode', 'same-tab');
-OpenDetailExtension.setConfig('debug', true);
-
-// Lihat konfigurasi saat ini
-OpenDetailExtension.getConfig();
-```
-
-## Selector yang Didukung
-
-Default mendeteksi:
-- `button[onclick^="detail("]`
-- `a[onclick^="detail("]`
-- `[data-action="detail"]`
-- Tombol dengan text "Detail"
-
-## Struktur File
+### Struktur GitHub Pages
 
 ```
-open-detail-new-tab/
-├── manifest.json       # Konfigurasi extension
-├── content.js         # Script utama (berisi semua logika)
-├── icons/             # Icon extension (opsional)
-└── README.md          # Dokumentasi
+https://adptra01.github.io/Ext-Morbis-Manap/
+├── update.xml              # Chromium (Chrome, Edge, Brave)
+├── updates.json            # Firefox
+├── morbis-v1.2.0.crx      # File untuk browser Chromium
+├── morbis-v1.2.0.xpi      # File untuk Firefox
+└── manifest.json            # (opsional, untuk referensi)
 ```
 
-## Troubleshooting
+### Update untuk Versi Baru
 
-### Tombol tidak teroverride
-1. Aktifkan debug mode: set `debug: true` di CONFIG
-2. Buka Console, lihat log extension
-3. Pastikan onclick format sesuai: `detail(123)` atau `detail('123')`
+#### Chromium Browsers (Chrome, Edge, Brave)
 
-### URL tidak sesuai
-1. Cek endpoint asli dengan DevTools Network
-2. Sesuaikan `urlPatterns` di CONFIG
+1. Update `manifest.json`: `"version": "1.3.0"`
+2. Pack CRX baru dengan file `.pem` yang sama
+3. Update `update.xml`:
+   ```xml
+   <updatecheck codebase='https://adptra01.github.io/Ext-Morbis-Manap/morbis-v1.3.0.crx' version='1.3.0' />
+   ```
+4. Push ke GitHub
+5. Browser akan auto-update (24-48 jam)
 
-### Konten dinamis tidak terdeteksi
-1. Extension sudah menggunakan MutationObserver
-2. Untuk update manual, jalankan `OpenDetailExtension.refresh()` di console
+#### Firefox
 
-## License
+1. Update `manifest.json`: `"version": "1.3.0"`
+2. Pack XPI baru (ZIP → rename ke `.xpi`)
+3. Update `updates.json`:
+   ```json
+   {
+     "addons": {
+       "morbis-ext@rsud-manap.com": {
+         "updates": [{
+           "version": "1.3.0",
+           "update_link": "https://adptra01.github.io/Ext-Morbis-Manap/morbis-v1.3.0.xpi"
+         }]
+       }
+     }
+   }
+   ```
+4. Push ke GitHub
+5. Firefox akan auto-update
+
+---
+
+## ⚙️ Konfigurasi
+
+### URL Pattern yang Didukung
+
+Ekstensi aktif pada:
+- `http://192.168.8.4/v2/m-klaim/*`
+- `http://103.147.236.140/v2/m-klaim/*`
+
+### Permissions yang Diperlukan
+
+| Permission | Kegunaan |
+|-----------|-----------|
+| `activeTab` | Interaksi dengan tab aktif |
+| `storage` | Menyimpan preferensi dan filter |
+| `scripting` | Menyuntikkan skrip ke halaman |
+| `host_permissions` | Mengakses SIMRS (192.168.8.4 dan 103.147.236.140) |
+
+---
+
+## 🔐 Keamanan
+
+| Aspek | Status |
+|--------|--------|
+| Data | Semua data tersimpan lokal di browser |
+| Server eksternal | Tidak ada data yang dikirim |
+| Kredensial | Tidak mengumpulkan informasi pribadi |
+| Domain | Hanya bekerja pada domain SIMRS yang ditentukan |
+
+---
+
+## 🛠️ Troubleshooting
+
+### Browser Chromium (Chrome, Edge, Brave)
+
+| Masalah | Solusi |
+|---------|--------|
+| Ekstensi tidak terinstall | Cek ID di registry vs manifest ID |
+| Peringatan "Not from Web Store" | Cek `ExtensionInstallAllowlist` di registry |
+| Update tidak berjalan | Cek URL update.xml di manifest.json |
+| Error CRX invalid | Pack ulang dengan file .pem yang sama |
+
+### Browser Firefox
+
+| Masalah | Solusi |
+|---------|--------|
+| Ekstensi tidak terinstall | Cek `ExtensionSettings` di registry |
+| Update tidak berjalan | Cek URL updates.json |
+| Error XPI invalid | Pack ulang ZIP → XPI |
+| Signature warning | Signing diperlukan untuk distribusi publik |
+
+### Verifikasi Registry
+
+```cmd
+rem Firefox
+reg query "HKLM\SOFTWARE\Policies\Mozilla\Firefox\ExtensionSettings"
+
+rem Chrome
+reg query "HKLM\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist"
+reg query "HKLM\SOFTWARE\Policies\Google\Chrome\ExtensionInstallAllowlist"
+
+rem Edge
+reg query "HKLM\SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallForcelist"
+reg query "HKLM\SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallAllowlist"
+
+rem Brave
+reg query "HKLM\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist"
+reg query "HKLM\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallAllowlist"
+```
+
+---
+
+## 📂 Struktur Proyek
+
+```
+MORBIS_EXT/
+├── manifest.json           # Konfigurasi ekstensi (Manifest V3)
+├── background.js          # Background service worker
+├── content.js            # Content script
+├── core.js               # Core functionality
+├── init.js              # Initialization
+├── popup.html            # Popup UI
+├── popup.js             # Popup logic
+├── features/             # Feature modules
+│   ├── batchUploadUrl.js
+│   ├── filterPersistence.js
+│   ├── openDetail.js
+│   ├── printOptimization.js
+│   ├── scrollButtons.js
+│   ├── shortcutButtons.js
+│   └── simplifyBilling.js
+├── icons/               # Extension icons
+│   ├── bluemorbis16.png
+│   ├── bluemorbis48.png
+│   ├── bluemorbis128.png
+│   └── ...
+├── deploy/              # Deployment files
+│   ├── update.xml        # Chromium update feed
+│   ├── updates.json      # Firefox update feed
+│   ├── Install_Morbis_Ext.reg  # Registry installer
+│   └── PANDUAN_DEPLOYMENT.md
+└── store-assets/        # Store submission assets
+    ├── logo-300x300.png
+    ├── promo-small-440x280.png
+    └── promo-large-1400x560.png
+```
+
+---
+
+## 📞 Informasi
+
+| Item | Value |
+|------|-------|
+| **Nama** | MORBIS Ext Unofficial |
+| **Versi** | 1.2.0 |
+| **Extension ID (Chromium)** | `cbkjilfkdgclmpilonabdnicngjjgegd` |
+| **Extension ID (Firefox)** | `morbis-ext@rsud-manap.com` |
+| **Manifest Version** | 3 |
+| **Update URL (Chromium)** | `https://adptra01.github.io/Ext-Morbis-Manap/update.xml` |
+| **Update URL (Firefox)** | `https://adptra01.github.io/Ext-Morbis-Manap/updates.json` |
+| **GitHub Pages** | `https://adptra01.github.io/Ext-Morbis-Manap/` |
+
+---
+
+## 📄 License
 
 MIT
+
+---
+
+## 🔗 Links
+
+- **Panduan Deployment Lengkap**: Lihat `deploy/PANDUAN_DEPLOYMENT.md`
+- **Instruksi Brave**: Lihat `deploy/update-brave-instructions.txt`

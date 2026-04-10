@@ -1,8 +1,15 @@
 {
   "manifest_version": 3,
-  "name": "Open Detail in New Tab",
+  "name": "MORBIS Ext Unofficial",
   "version": "1.2.0",
-  "description": "Override tombol detail agar buka tab baru untuk SIMRS Klaim",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "morbis-ext@rsud-manap.com",
+      "update_url": "https://adptra01.github.io/Ext-Morbis-Manap/updates.json"
+    }
+  },
+  "update_url": "https://adptra01.github.io/Ext-Morbis-Manap/update.xml",
+  "description": "Ekstensi produktivitas untuk SIMRS MORBIS Klaim - buka detail di tab baru, batch upload, dan fitur lainnya",
   "author": "Your Name",
   "icons": {
     "16": "icons/bluemorbis16.png",
@@ -11,7 +18,7 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Open Detail in New Tab"
+    "default_title": "MORBIS Ext Unofficial"
   },
   "content_scripts": [
     {
