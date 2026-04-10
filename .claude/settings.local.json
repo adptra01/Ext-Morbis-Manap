@@ -22,7 +22,8 @@
       "Bash(powershell -Command \"Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::OpenRead\\('OpenDetailInNewTab-v1.2.0-store.zip'\\).Entries.FullName | Sort-Object\")",
       "Bash(powershell -Command \"Remove-Item 'OpenDetailInNewTab-v1.2.0-store.zip' -ErrorAction SilentlyContinue; Write-Host 'Old zip removed'\")",
       "Bash(powershell -Command \"Compress-Archive -Path 'manifest.json', 'background.js', 'content.js', 'core.js', 'init.js', 'popup.html', 'popup.js', 'features', 'icons' -DestinationPath 'MORBIS-Ext-Unofficial-v1.2.0-store.zip' -Force\")",
-      "Bash(powershell -Command \"Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::OpenRead\\('MORBIS-Ext-Unofficial-v1.2.0-store.zip'\\).Entries.FullName | Sort-Object\")"
+      "Bash(powershell -Command \"Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::OpenRead\\('MORBIS-Ext-Unofficial-v1.2.0-store.zip'\\).Entries.FullName | Sort-Object\")",
+      "mcp__chrome-devtools__list_pages"
     ]
   }
 }

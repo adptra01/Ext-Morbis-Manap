@@ -35,6 +35,7 @@
         "features/scrollButtons.js",
         "features/printOptimization.js",
         "features/batchUploadUrl.js",
+        "features/deleteDokumenKlaim.js",
         "init.js"
       ],
       "run_at": "document_end",

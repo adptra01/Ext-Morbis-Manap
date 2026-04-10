@@ -35,15 +35,62 @@ function getTodayFormatted() {
 }
 
 /**
+ * Helper: Baca tanggal masuk dan keluar dari DOM
+ * Mencoba berbagai kemungkinan selector/label pada MORBIS
+ */
+function getPatientVisitDates() {
+  const dates = { masuk: '', keluar: '' };
+  
+  // 1. Coba dari input ID tgl (biasanya tgl masuk/visit)
+  const tglInput = document.getElementById('tgl');
+  if (tglInput && tglInput.value) {
+    dates.masuk = tglInput.value;
+  }
+
+  // 2. Coba cari di seluruh halaman berdasarkan teks label
+  // Karena struktur DOM MORBIS bervariasi, kita cari elemen yang mengandung teks "Masuk" atau "Keluar"
+  try {
+    const allLabels = Array.from(document.querySelectorAll('td, th, label, b, span'));
+    
+    // Cari Tgl Masuk jika belum ada
+    if (!dates.masuk) {
+      const masukLabel = allLabels.find(el => {
+        const txt = el.textContent.trim();
+        return txt === 'Tgl. Masuk' || txt === 'Tanggal Masuk' || txt === 'Tgl Masuk';
+      });
+      if (masukLabel) {
+        const val = masukLabel.nextElementSibling?.textContent.trim() || 
+                    masukLabel.parentElement?.querySelector('td:last-child')?.textContent.trim();
+        if (val && /\d{2}\/\d{2}\/\d{4}/.test(val)) dates.masuk = val;
+      }
+    }
+
+    // Cari Tgl Keluar
+    const keluarLabel = allLabels.find(el => {
+      const txt = el.textContent.trim();
+      return txt === 'Tgl. Keluar' || txt === 'Tanggal Keluar' || txt === 'Tgl Keluar';
+    });
+    if (keluarLabel) {
+      const val = keluarLabel.nextElementSibling?.textContent.trim() || 
+                  keluarLabel.parentElement?.querySelector('td:last-child')?.textContent.trim();
+      if (val && /\d{2}\/\d{2}\/\d{4}/.test(val)) dates.keluar = val;
+    }
+  } catch (e) {
+    console.warn('[Batch Upload] Gagal scraping tanggal tambahan:', e);
+  }
+
+  return dates;
+}
+
+/**
  * Helper: Baca tanggal masuk dari DOM input #tgl
  * Format input: dd/mm/yyyy (contoh: 17/03/2026)
  * Output: yyyy-mm-dd (contoh: 2026-03-17)
  */
 function getTanggalMasukFromPage() {
-  const tglInput = document.getElementById('tgl');
-
-  if (tglInput && tglInput.value) {
-    const parts = tglInput.value.split('/');
+  const dates = getPatientVisitDates();
+  if (dates.masuk) {
+    const parts = dates.masuk.split('/');
     if (parts.length === 3) {
       const [dd, mm, yyyy] = parts;
       return `${yyyy}-${mm}-${dd}`;
@@ -106,10 +153,14 @@ function parseMetadataFromUrl(url) {
     const keteranganParts = parts.filter(p => !/^\d{10}$/.test(p));
     const keterangan = keteranganParts.join(' ').trim() || nameWithoutExt.replace(/[-_]+/g, ' ');
 
+    const visitDates = getPatientVisitDates();
+
     return {
       filename,
       norm,
-      tanggal,       // format: yyyy-mm-dd
+      tanggal,       // format: yyyy-mm-dd (untuk upload)
+      tgl_masuk: visitDates.masuk,   // format: dd/mm/yyyy (untuk display)
+      tgl_keluar: visitDates.keluar, // format: dd/mm/yyyy (untuk display)
       jenis_dokumen: 'Lain-lain',
       keterangan: keterangan,
       url,
@@ -477,6 +528,8 @@ function updatePreview(items) {
           <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 4px;">
             <span style="font-weight: bold;"><strong style="color:#059669;">Dibuat:</strong> ${item.tglFileTabel}</span>
             <span style="font-weight: bold;"><strong style="color:#059669;">Diunggah:</strong> ${item.tglUploadTabel}</span>
+            ${item.tgl_masuk ? `<span style="font-weight: bold;"><strong style="color:#3b82f6;">Masuk:</strong> ${item.tgl_masuk}</span>` : ''}
+            ${item.tgl_keluar ? `<span style="font-weight: bold;"><strong style="color:#ef4444;">Keluar:</strong> ${item.tgl_keluar}</span>` : ''}
             <span style="font-weight: bold;"><strong style="color:#059669;">Keterangan:</strong> ${item.keterangan || '-'}</span>
           </div>
         `;
@@ -484,7 +537,9 @@ function updatePreview(items) {
         modeText = `
           <div style="display: flex; gap: 15px; margin-top: 4px;">
             <span style="font-weight: bold;"><strong style="color:#059669;">NORM:</strong> ${item.norm || '-'}</span>
-            <span style="font-weight: bold;"><strong style="color:#059669;">Tanggal Klaim:</strong> ${item.tanggal}</span>
+            <span style="font-weight: bold;"><strong style="color:#059669;">Tgl Klaim:</strong> ${item.tanggal}</span>
+            ${item.tgl_masuk ? `<span style="font-weight: bold;"><strong style="color:#3b82f6;">Masuk:</strong> ${item.tgl_masuk}</span>` : ''}
+            ${item.tgl_keluar ? `<span style="font-weight: bold;"><strong style="color:#ef4444;">Keluar:</strong> ${item.tgl_keluar}</span>` : ''}
           </div>
         `;
     }
