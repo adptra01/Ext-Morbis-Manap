@@ -409,7 +409,7 @@ function applyRingkasMode(tbodies) {
     const txt = r.textContent.trim();
     const tds = r.querySelectorAll('td');
     const firstTd = tds[0];
-    
+
     // Jika txt termasuk Total Resep
     if (txt.includes('Total Resep')) {
       // Cek jika baris dengan td pertama kosong (menandakan ini baris utama/tengah)
@@ -421,7 +421,7 @@ function applyRingkasMode(tbodies) {
         r.classList.add('ext-billing-hidden');
       }
     }
-    
+
     // Jasa Pelayanan tetap left
     if (txt.includes('Jasa Pelayanan')) {
       r.classList.add('ext-footer-left');
@@ -481,7 +481,7 @@ function renderToggleButton(section) {
 }
 
 function runSimplifyBillingFeature() {
-  if (!currentConfig?.features?.simplifyBilling?.enabled) return;
+  if (!currentConfig?.features?.simplifyBilling?.enabled || !ExtensionCore.isFeatureAllowed('simplifyBilling')) return;
   if (!isMklaimDetailPage()) return;
 
   const saved = sessionStorage.getItem(SIMPLIFY_BILLING_CONFIG.storageKey);

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -211,10 +212,16 @@
       margin-bottom: 8px;
     }
 
-    .feature-disabled {
+    .feature-disabled,
+    .role-restricted {
       opacity: 0.5;
       pointer-events: none;
       filter: grayscale(100%);
+    }
+
+    .role-restricted .subtitle {
+      color: #ef4444 !important;
+      font-weight: 500;
     }
 
     .toggle-label {
@@ -293,6 +300,27 @@
       color: #991b1b;
     }
 
+    .role-select {
+      padding: 8px 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      font-size: 13px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .role-select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    }
+
+    #roleBanner a {
+      color: #3b82f6;
+      text-decoration: underline;
+      font-size: 11px;
+    }
+
     .status-dot {
       width: 6px;
       height: 6px;
@@ -360,6 +388,7 @@
     }
   </style>
 </head>
+
 <body>
   <div id="loading" class="loading">Memuat...</div>
 
@@ -367,6 +396,22 @@
     <div class="header">
       <h1>Open Detail Extension</h1>
       <p>Buka tombol detail di tab baru untuk SIMRS</p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Pilih Role Pengguna</div>
+      <div class="toggle-container">
+        <div class="toggle-label">
+          <span class="title">Role Saat Ini</span>
+          <span class="subtitle" id="roleBanner">Anda saat ini menggunakan profil Casemix. <a href="#"
+              id="changeRoleLink">[Ubah Role]</a></span>
+        </div>
+        <select id="roleSelect" class="role-select">
+          <option value="casemix">Casemix</option>
+          <option value="kasir">Kasir</option>
+          <option value="dokter">Dokter</option>
+        </select>
+      </div>
     </div>
 
     <div class="section">
@@ -388,14 +433,14 @@
       </div>
     </div>
 
-     <div class="section">
+    <div class="section">
       <div class="section-title">Domain Settings</div>
-      
+
       <div class="url-input-container">
         <input type="text" id="urlInput" class="url-input" placeholder="http://example.com">
         <button id="addUrlBtn" class="btn-add">Tambah</button>
       </div>
-      
+
       <div id="urlsList"></div>
     </div>
 
@@ -407,7 +452,7 @@
       <div id="featuresList"></div>
     </div>
 
-     <div class="footer">
+    <div class="footer">
       <button id="reloadBtn" class="btn-reload">Reload Halaman</button>
       <button id="resetBtn" class="btn-reset">Reset Default</button>
     </div>
@@ -417,4 +462,5 @@
 
   <script src="popup.js"></script>
 </body>
+
 </html>

@@ -86,7 +86,7 @@ function generateUrl(id) {
     // Try to get dates from current page first
     const tanggalAwal = document.getElementById('tanggalAwal')?.value;
     const tanggalAkhir = document.getElementById('tanggalAkhir')?.value;
-    
+
     if (tanggalAwal && tanggalAkhir) {
       url = url.replace('{tanggalAwal}', encodeURIComponent(tanggalAwal)).replace('{tanggalAkhir}', encodeURIComponent(tanggalAkhir));
     } else {
@@ -177,7 +177,7 @@ function overrideDetailButton(btn) {
 }
 
 function overrideDetailButtons() {
-  if (!currentConfig?.features?.openDetailInNewTab?.enabled) return;
+  if (!currentConfig?.features?.openDetailInNewTab?.enabled || !ExtensionCore.isFeatureAllowed('openDetailInNewTab')) return;
 
   for (const selector of OPEN_DETAIL_CONFIG.buttonSelectors) {
     try {

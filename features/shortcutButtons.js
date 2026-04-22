@@ -90,10 +90,10 @@ function injectPrintStyles() {
 function getJenisKunjungan() {
   const jenisInput = document.querySelector('input[name="jenis"]');
   if (jenisInput) return jenisInput.value.trim().toUpperCase();
-  
+
   const jenisSelect = document.querySelector('select[name="jenis"]');
   if (jenisSelect) return jenisSelect.value.trim().toUpperCase();
-  
+
   return null;
 }
 
@@ -166,7 +166,7 @@ function shortcutButtonsExist() {
 }
 
 function renderShortcutButtons() {
-  const featureEnabled = currentConfig?.features?.shortcutButtons?.enabled ?? true;
+  const featureEnabled = currentConfig?.features?.shortcutButtons?.enabled && ExtensionCore.isFeatureAllowed('shortcutButtons');
   if (!featureEnabled) return;
   if (!isTargetPage() || shortcutButtonsExist()) return;
 
@@ -236,7 +236,7 @@ function renderShortcutButtons() {
       e.preventDefault();
       // Respect global open mode setting unless explicitly overridden
       const openMode = currentConfig?.features?.openDetailInNewTab?.mode || 'new-tab';
-      
+
       if (openInSameTab || openMode === 'same-tab') {
         window.location.href = url;
       } else {
@@ -277,14 +277,14 @@ function renderShortcutButtons() {
 
   const selectors = ['.form-horizontal', 'form', '.container-fluid', '.container', '.content', '.main-content', '#content', '.page-content'];
   let targetContainer = null;
-  
+
   for (const selector of selectors) {
     const found = document.querySelector(selector);
     if (found) { targetContainer = found; break; }
   }
-  
+
   if (!targetContainer) targetContainer = document.body;
-  
+
   if (targetContainer === document.body) {
     const header = document.querySelector('header, nav, .navbar, .header');
     if (header && header.nextSibling) {
@@ -350,7 +350,7 @@ function generateDetailUrlFromExecution(idVisit) {
   const tanggalAkhir = document.getElementById('tanggalAkhir')?.value;
   const startDate = tanggalAwal || formatDateDetail(new Date());
   const endDate = tanggalAkhir || formatDateDetail(new Date());
-  
+
   return `${baseUrl}/v2/m-klaim/detail-v2-refaktor?id_visit=${idVisit}&tanggalAwal=${encodeURIComponent(startDate)}&tanggalAkhir=${encodeURIComponent(endDate)}&norm=&nama=&reg=&billing=all&status=all&id_poli_cari=&poli_cari=`;
 }
 
@@ -360,7 +360,7 @@ function renderBackToDetailButton() {
 
   const idVisit = extractIdVisitFromExecution();
   if (!idVisit) return;
-  
+
   const detailUrl = generateDetailUrlFromExecution(idVisit);
 
   const container = document.createElement('div');

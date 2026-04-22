@@ -97,7 +97,7 @@ function isEffectivelyEmpty(section) {
 
   // Jika tidak ada data tabel, tidak ada visual, dan tidak ada teks konten substansial -> KOSONG
   if (actualContentText === "" && !hasVisuals && !hasSubstantialTable) {
-      return true;
+    return true;
   }
 
   return false;
@@ -178,7 +178,7 @@ function runPrintOptimization() {
   // Early return if config not available
   if (typeof currentConfig === 'undefined' || typeof featureModules === 'undefined') return;
 
-  const featureEnabled = window.currentConfig?.features?.printOptimization?.enabled ?? true;
+  const featureEnabled = currentConfig?.features?.printOptimization?.enabled && ExtensionCore.isFeatureAllowed('printOptimization');
   if (!featureEnabled) return;
 
   injectPrintOptimizationStyles();

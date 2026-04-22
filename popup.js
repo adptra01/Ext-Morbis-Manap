@@ -11,11 +11,19 @@ const DEFAULT_CUSTOM_URLS = [
   { id: 'default-2', url: 'http://103.147.236.140', enabled: true, isDefault: true }
 ];
 
+const ROLES = {
+  CASEMIX: 'casemix',
+  KASIR: 'kasir',
+  DOKTER: 'dokter'
+};
+
 const DEFAULT_CONFIG = {
   extensionEnabled: true,
+  currentRole: 'casemix',
   features: {
     openDetailInNewTab: {
       enabled: true,
+      allowedRoles: [ROLES.CASEMIX],
       name: 'Open Detail Mode',
       description: 'Pilih mode buka detail: tab baru / tab sama',
       mode: 'same-tab', // 'new-tab' or 'same-tab'
@@ -26,32 +34,38 @@ const DEFAULT_CONFIG = {
     },
     shortcutButtons: {
       enabled: true,
+      allowedRoles: [ROLES.CASEMIX],
       name: 'Shortcut Buttons',
       description: 'Tampilkan tombol shortcut ke pelaksanaan Rajal/Ranap'
     },
     filterPersistence: {
       enabled: true,
+      allowedRoles: [ROLES.CASEMIX],
       name: 'Filter Persistence State',
       description: 'Simpan otomatis kolom pencarian agar tidak perlu diketik ulang'
     },
     simplifyBilling: {
       enabled: true,
+      allowedRoles: [ROLES.CASEMIX],
       name: 'Ringkas Rincian Biaya',
       description: 'Ringkaskan tabel cetak rincian biaya menjadi tampilan rekap per unit'
     },
     scrollButtons: {
       enabled: true,
+      allowedRoles: [ROLES.CASEMIX],
       name: 'Scroll Buttons (Top/Bottom)',
       description: 'Tombol scroll otomatis ke atas dan bawah halaman detail'
     },
     printOptimization: {
       enabled: false,
+      allowedRoles: [ROLES.CASEMIX],
       name: 'Optimasi Cetak',
       description: 'Sembunyikan section kosong & Auto-Uncheck secara cerdas.',
       comingSoon: true
     },
     batchUpload: {
       enabled: false,
+      allowedRoles: [ROLES.CASEMIX],
       name: 'Batch Upload Dokumen',
       description: 'Upload batch dokumen via paste URL dengan metadata extraction otomatis'
     }
@@ -104,6 +118,13 @@ async function loadConfig() {
       }
 
       currentConfig.features = newFeatures;
+
+      // Silent auto-mapping untuk user lama
+      if (!currentConfig.currentRole) {
+        currentConfig.currentRole = ROLES.CASEMIX;
+        console.log('[Popup] Silent auto-mapping to casemix');
+        await saveConfig(currentConfig);
+      }
     }
 
     return currentConfig;
@@ -112,6 +133,20 @@ async function loadConfig() {
     currentConfig = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
     return currentConfig;
   }
+}
+
+function getCurrentRole() {
+  return currentConfig?.currentRole || ROLES.CASEMIX;
+}
+
+async function setCurrentRole(role) {
+  currentConfig.currentRole = role;
+  await saveConfig(currentConfig);
+  console.log(`[Popup] Role changed to: ${role}`);
+}
+
+function isFeatureAllowed(featureKey, role = getCurrentRole()) {
+  return currentConfig?.features?.[featureKey]?.allowedRoles?.includes(role) ?? false;
 }
 
 /**
@@ -131,14 +166,14 @@ async function saveConfig(config) {
 async function loadCustomUrls() {
   try {
     const result = await chrome.storage.sync.get(URLS_STORAGE_KEY);
-    
+
     if (!result[URLS_STORAGE_KEY]) {
       customUrls = JSON.parse(JSON.stringify(DEFAULT_CUSTOM_URLS));
       await saveCustomUrls(customUrls);
     } else {
       const savedUrls = result[URLS_STORAGE_KEY];
       const defaultUrls = JSON.parse(JSON.stringify(DEFAULT_CUSTOM_URLS));
-      
+
       // Gabungkan default URLs yang hilang
       customUrls = [...defaultUrls];
       savedUrls.forEach(savedUrl => {
@@ -146,7 +181,7 @@ async function loadCustomUrls() {
           customUrls.push(savedUrl);
         }
       });
-      
+
       // Update status enabled untuk default URLs
       customUrls.forEach(url => {
         const savedMatch = savedUrls.find(s => s.id === url.id);
@@ -155,7 +190,7 @@ async function loadCustomUrls() {
         }
       });
     }
-    
+
     return customUrls;
   } catch (error) {
     console.error('[Popup] Error loading custom URLs:', error);
@@ -201,7 +236,7 @@ function generateId() {
 function showToast(message, type = 'success') {
   toastEl.textContent = message;
   toastEl.className = `toast ${type} show`;
-  
+
   setTimeout(() => {
     toastEl.classList.remove('show');
   }, 2000);
@@ -212,29 +247,29 @@ function showToast(message, type = 'success') {
  */
 async function addNewUrl() {
   const urlValue = urlInput.value.trim();
-  
+
   if (!urlValue) {
     showToast('Masukkan URL terlebih dahulu', 'error');
     return;
   }
-  
+
   if (!isValidUrl(urlValue)) {
     showToast('Format URL tidak valid (gunakan http:// atau https://)', 'error');
     return;
   }
-  
+
   if (customUrls.find(u => u.url === urlValue)) {
     showToast('URL sudah ada di daftar', 'error');
     return;
   }
-  
+
   const newUrl = {
     id: generateId(),
     url: urlValue,
     enabled: true,
     isDefault: false
   };
-  
+
   customUrls.push(newUrl);
   await saveCustomUrls(customUrls);
   renderUrls();
@@ -253,7 +288,7 @@ async function toggleUrl(urlId, isEnabled) {
     }
     return url;
   });
-  
+
   await saveCustomUrls(customUrls);
   renderUrls();
   reloadPage();
@@ -268,7 +303,7 @@ async function deleteUrl(urlId) {
     showToast('URL default tidak dapat dihapus', 'error');
     return;
   }
-  
+
   customUrls = customUrls.filter(url => url.id !== urlId);
   await saveCustomUrls(customUrls);
   renderUrls();
@@ -281,13 +316,13 @@ async function deleteUrl(urlId) {
  */
 function renderUrls() {
   urlsList.innerHTML = '';
-  
+
   customUrls.forEach(url => {
     const urlItem = document.createElement('div');
     urlItem.className = `url-item ${url.isDefault ? 'default' : ''}`;
-    
+
     const badgeText = url.isDefault ? 'DEFAULT' : 'CUSTOM';
-    
+
     urlItem.innerHTML = `
       <div class="url-info">
         <div class="url-text">${url.url}</div>
@@ -298,7 +333,7 @@ function renderUrls() {
         <button class="btn-delete" data-url-id="${url.id}" ${url.isDefault ? 'disabled' : ''}>Hapus</button>
       </div>
     `;
-    
+
     urlsList.appendChild(urlItem);
   });
 }
@@ -309,12 +344,25 @@ function renderUrls() {
 function renderFeatures() {
   featuresList.innerHTML = '';
 
+  const role = getCurrentRole();
   const features = currentConfig?.features || {};
   const globalEnabled = currentConfig?.extensionEnabled ?? true;
   let enabled = 0;
   let total = 0;
 
   for (const [key, feature] of Object.entries(features)) {
+    if (!isFeatureAllowed(key, role)) {
+      const featureDiv = document.createElement('div');
+      featureDiv.className = 'toggle-container feature-disabled role-restricted';
+      featureDiv.innerHTML = `
+        <div class="toggle-label">
+          <span class="title">${feature.name || key}</span>
+          <span class="subtitle">Hanya untuk role: ${feature.allowedRoles?.join(', ') || 'tidak ada'}</span>
+        </div>
+      `;
+      featuresList.appendChild(featureDiv);
+      continue;
+    }
     // Jangan hitung fitur coming soon ke total aktif
     if (!feature.comingSoon) {
       total++;
@@ -326,13 +374,13 @@ function renderFeatures() {
     const isComingSoon = feature.comingSoon === true;
     const isDisabledClass = (!globalEnabled || isComingSoon) ? 'feature-disabled' : '';
     const isDisabledAttr = (!globalEnabled || isComingSoon) ? 'disabled' : '';
-    
+
     const titleText = isComingSoon ? `${feature.name || key} <span style="color: #ef4444; font-size: 9px; font-weight: bold;">(COMING SOON)</span>` : (feature.name || key);
 
     // Create feature toggle element
     const featureDiv = document.createElement('div');
     featureDiv.className = `toggle-container ${isDisabledClass}`;
-    
+
     // Only show checkbox if NOT coming soon
     let controlsHtml = '';
     if (!isComingSoon) {
@@ -343,14 +391,14 @@ function renderFeatures() {
         modeSelectorHtml = `
           <div style="margin-left: 12px; margin-right: 8px;">
             <select class="feature-mode-select" data-feature="${key}" style="padding: 4px 8px; border-radius: 4px; border: 1px solid #d1d5db; font-size: 11px;">
-              ${Object.entries(feature.modes).map(([mode, label]) => 
-                `<option value="${mode}" ${mode === currentMode ? 'selected' : ''}>${label}</option>`
-              ).join('')}
+              ${Object.entries(feature.modes).map(([mode, label]) =>
+          `<option value="${mode}" ${mode === currentMode ? 'selected' : ''}>${label}</option>`
+        ).join('')}
             </select>
           </div>
         `;
       }
-      
+
       controlsHtml = `
         ${modeSelectorHtml}
         <div class="checkbox-wrapper">
@@ -399,7 +447,7 @@ function updateUI() {
 
   // Render features list
   renderFeatures();
-  
+
   // Render URLs list
   renderUrls();
 }
@@ -511,12 +559,45 @@ async function init() {
       }
     });
 
-    // Event delegation untuk URL delete
+    // Event delegation untuk URL delete (robust)
     urlsList.addEventListener('click', (e) => {
-      if (e.target.classList.contains('btn-delete') && e.target.dataset.urlId) {
-        deleteUrl(e.target.dataset.urlId);
+      const btn = e.target.closest('.btn-delete');
+      if (btn && btn.dataset.urlId) {
+        deleteUrl(btn.dataset.urlId);
       }
     });
+
+    // Role change events
+    const roleSelect = document.getElementById('roleSelect');
+    const roleBanner = document.getElementById('roleBanner');
+    roleSelect.value = currentConfig.currentRole;
+
+    function updateRoleBanner() {
+      const role = getCurrentRole();
+      const roleName = role === 'casemix' ? 'Casemix' : role === 'kasir' ? 'Kasir' : 'Dokter';
+      roleBanner.innerHTML = `Anda saat ini: <strong>${roleName}</strong>. <a href="#" id="changeRoleLink">[Ubah]</a>`;
+    }
+
+    roleSelect.addEventListener('change', async (e) => {
+      await setCurrentRole(e.target.value);
+      updateRoleBanner();
+      renderFeatures();
+      showToast(`Role diubah ke ${roleSelect.options[roleSelect.selectedIndex].text}`);
+      reloadPage();
+    });
+
+    // Change role link
+    roleBanner.addEventListener('click', (e) => {
+      if (e.target.id === 'changeRoleLink') {
+        e.preventDefault();
+        roleSelect.focus();
+      }
+    });
+
+    updateRoleBanner();
+
+    // Update renderFeatures with role filter
+    window.renderFeatures = renderFeatures; // Re-export for role change
 
   } catch (error) {
     console.error('[Popup] Error initializing:', error);

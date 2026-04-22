@@ -391,21 +391,21 @@ function showBatchUploadModal() {
 
       // Start upload button
       document.getElementById('ext-start-upload-btn').addEventListener('click', startBatchUpload);
-      
+
       // Radio mode toggle
       document.querySelectorAll('input[name="ext-upload-mode"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
-           if (e.target.value === 'manual') {
-              document.getElementById('ext-manual-section').style.display = 'block';
-              document.getElementById('ext-auto-section').style.display = 'none';
-           } else {
-              document.getElementById('ext-manual-section').style.display = 'none';
-              document.getElementById('ext-auto-section').style.display = 'block';
-           }
-           // reset preview on switch
-           batchQueue = [];
-           updatePreview([]);
-           updateStatus('');
+          if (e.target.value === 'manual') {
+            document.getElementById('ext-manual-section').style.display = 'block';
+            document.getElementById('ext-auto-section').style.display = 'none';
+          } else {
+            document.getElementById('ext-manual-section').style.display = 'none';
+            document.getElementById('ext-auto-section').style.display = 'block';
+          }
+          // reset preview on switch
+          batchQueue = [];
+          updatePreview([]);
+          updateStatus('');
         });
       });
 
@@ -463,17 +463,17 @@ function updatePreview(items) {
   }
 
   previewEl.style.display = 'block';
-  
+
   const headerDiv = document.createElement('div');
   headerDiv.style.marginBottom = '10px';
-  headerDiv.innerHTML = `<strong class="preview-header-text">Preview (${items.filter(i=>i.selected !== false).length} Dokumen Dipilih):</strong>`;
+  headerDiv.innerHTML = `<strong class="preview-header-text">Preview (${items.filter(i => i.selected !== false).length} Dokumen Dipilih):</strong>`;
   previewEl.innerHTML = '';
   previewEl.appendChild(headerDiv);
 
   items.forEach((item, index) => {
     let modeText = '';
     if (item.tglFileTabel) {
-        modeText = `
+      modeText = `
           <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 4px;">
             <span style="font-weight: bold;"><strong style="color:#059669;">Dibuat:</strong> ${item.tglFileTabel}</span>
             <span style="font-weight: bold;"><strong style="color:#059669;">Diunggah:</strong> ${item.tglUploadTabel}</span>
@@ -481,7 +481,7 @@ function updatePreview(items) {
           </div>
         `;
     } else {
-        modeText = `
+      modeText = `
           <div style="display: flex; gap: 15px; margin-top: 4px;">
             <span style="font-weight: bold;"><strong style="color:#059669;">NORM:</strong> ${item.norm || '-'}</span>
             <span style="font-weight: bold;"><strong style="color:#059669;">Tanggal Klaim:</strong> ${item.tanggal}</span>
@@ -496,7 +496,7 @@ function updatePreview(items) {
     itemEl.style.gap = '12px';
     itemEl.style.padding = '12px 8px';
     itemEl.style.borderBottom = '1px solid #e5e7eb';
-    
+
     if (item.selected === false) {
       itemEl.style.opacity = '0.5';
       itemEl.style.background = '#f9fafb';
@@ -521,15 +521,15 @@ function updatePreview(items) {
     const buangBtn = itemEl.querySelector('button');
 
     const updateSelection = (isSelected) => {
-      if(isProcessing) return;
+      if (isProcessing) return;
       item.selected = isSelected;
       checkbox.checked = isSelected;
       itemEl.style.opacity = isSelected ? '1' : '0.5';
       itemEl.style.background = isSelected ? 'transparent' : '#f9fafb';
-      
-      const currentSelected = items.filter(i=>i.selected !== false).length;
+
+      const currentSelected = items.filter(i => i.selected !== false).length;
       headerDiv.innerHTML = `<strong class="preview-header-text">Preview (${currentSelected} Dokumen Dipilih):</strong>`;
-      if(startBtn) startBtn.disabled = currentSelected === 0;
+      if (startBtn) startBtn.disabled = currentSelected === 0;
     };
 
     checkbox.addEventListener('change', (e) => updateSelection(e.target.checked));
@@ -539,7 +539,7 @@ function updatePreview(items) {
   });
 
   if (startBtn) {
-     startBtn.disabled = items.filter(i=>i.selected !== false).length === 0;
+    startBtn.disabled = items.filter(i => i.selected !== false).length === 0;
   }
 }
 
@@ -634,70 +634,70 @@ function analyzeUrls() {
 async function crawlDokumenPasien() {
   const urlParams = new URLSearchParams(window.location.search);
   const idVisit = urlParams.get('id_visit');
-  if(!idVisit) { alert('Parameter id_visit tidak ditemukan di URL saat ini.'); return; }
+  if (!idVisit) { alert('Parameter id_visit tidak ditemukan di URL saat ini.'); return; }
 
   updateStatus('Sedang mencari dokumen di rekam medis...');
   const crawlBtn = document.getElementById('ext-crawl-btn');
-  if(crawlBtn) { crawlBtn.disabled = true; crawlBtn.textContent = 'Mencari...'; }
+  if (crawlBtn) { crawlBtn.disabled = true; crawlBtn.textContent = 'Mencari...'; }
 
   try {
     const targetUrl = `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${idVisit}&page=85&id_kunjungan=`;
     const response = await fetch(targetUrl);
-    
-    if(!response.ok) throw new Error('Gagal memuat halaman dokumen pasien');
+
+    if (!response.ok) throw new Error('Gagal memuat halaman dokumen pasien');
     const html = await response.text();
     const doc = new DOMParser().parseFromString(html, 'text/html');
-    
+
     const rows = doc.querySelectorAll('table.data-list.tabel tr');
     let urls = [];
-    
-    for(let i=1; i<rows.length; i++) {
-        const tr = rows[i];
-        const linkEl = tr.querySelector('td:nth-child(2) a');
-        if(!linkEl) continue;
-        
-        const urlPath = linkEl.getAttribute('href'); 
-        if(!urlPath.includes('/assets/dokumen-pasien/')) continue;
-        
-        const fullUrl = urlPath.startsWith('http') ? urlPath : `${window.location.origin}${urlPath}`;
-        
-        const filenameTabel = tr.cells[1]?.textContent.trim();
-        const keteranganTd = tr.cells[2]?.textContent.trim();
-        const tglFile = tr.cells[3]?.textContent.trim();
-        const tglUpload = tr.cells[4]?.textContent.trim();
-        
-        urls.push({
-            url: fullUrl,
-            filenameTabel,
-            tglFile,
-            tglUpload,
-            keteranganTabel: keteranganTd
-        });
+
+    for (let i = 1; i < rows.length; i++) {
+      const tr = rows[i];
+      const linkEl = tr.querySelector('td:nth-child(2) a');
+      if (!linkEl) continue;
+
+      const urlPath = linkEl.getAttribute('href');
+      if (!urlPath.includes('/assets/dokumen-pasien/')) continue;
+
+      const fullUrl = urlPath.startsWith('http') ? urlPath : `${window.location.origin}${urlPath}`;
+
+      const filenameTabel = tr.cells[1]?.textContent.trim();
+      const keteranganTd = tr.cells[2]?.textContent.trim();
+      const tglFile = tr.cells[3]?.textContent.trim();
+      const tglUpload = tr.cells[4]?.textContent.trim();
+
+      urls.push({
+        url: fullUrl,
+        filenameTabel,
+        tglFile,
+        tglUpload,
+        keteranganTabel: keteranganTd
+      });
     }
-    
-    if(urls.length === 0) {
-       updateStatus('Tidak ada dokumen ditemukan di rekam medis.');
-       if(crawlBtn) { crawlBtn.disabled = false; crawlBtn.textContent = 'Cari Dokumen Pasien Otomatis'; }
-       return;
+
+    if (urls.length === 0) {
+      updateStatus('Tidak ada dokumen ditemukan di rekam medis.');
+      if (crawlBtn) { crawlBtn.disabled = false; crawlBtn.textContent = 'Cari Dokumen Pasien Otomatis'; }
+      return;
     }
-    
+
     batchQueue = urls.map(item => {
-        let metadata = parseMetadataFromUrl(item.url);
-        metadata.tglFileTabel = item.tglFile;
-        metadata.tglUploadTabel = item.tglUpload;
-        metadata.filename = item.filenameTabel || metadata.filename;
-        metadata.keterangan = item.keteranganTabel || metadata.filename || "-";
-        metadata.selected = true; 
-        return metadata;
+      let metadata = parseMetadataFromUrl(item.url);
+      metadata.tglFileTabel = item.tglFile;
+      metadata.tglUploadTabel = item.tglUpload;
+      metadata.filename = item.filenameTabel || metadata.filename;
+      metadata.keterangan = item.keteranganTabel || metadata.filename || "-";
+      metadata.selected = true;
+      return metadata;
     });
-    
+
     updatePreview(batchQueue);
     updateStatus(`${batchQueue.length} dokumen berhasil ditemukan!`);
 
   } catch (err) {
     updateStatus('Error: ' + err.message);
   } finally {
-    if(crawlBtn) { crawlBtn.disabled = false; crawlBtn.textContent = 'Cari Dokumen Pasien Otomatis'; }
+    if (crawlBtn) { crawlBtn.disabled = false; crawlBtn.textContent = 'Cari Dokumen Pasien Otomatis'; }
   }
 }
 
@@ -834,7 +834,7 @@ async function runBatchQueue() {
     toggleUIProcessingState(false);
     isProcessing = false;
     updateStatus('');
-    if(startBtn) startBtn.textContent = 'Mulai Upload';
+    if (startBtn) startBtn.textContent = 'Mulai Upload';
     return;
   }
 
@@ -960,7 +960,7 @@ function isMklaimDetailPage() {
  * Initialize feature
  */
 function initBatchUploadUrlFeature() {
-  if (!currentConfig?.features?.batchUpload?.enabled) return;
+  if (!currentConfig?.features?.batchUpload?.enabled || !ExtensionCore.isFeatureAllowed('batchUpload')) return;
   if (!isMklaimDetailPage()) return;
 
   // Wait for page to load
