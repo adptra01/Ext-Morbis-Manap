@@ -489,6 +489,7 @@ function updatePreview(items) {
         `;
     }
 
+
     const itemEl = document.createElement('div');
     itemEl.className = `ext-preview-item ${item.status}`;
     itemEl.style.display = 'flex';
@@ -514,11 +515,16 @@ function updatePreview(items) {
          </div>
          ${item.error ? `<span style="font-size: 11px; color: #dc2626; margin-top: 4px;"><strong>Kesalahan:</strong> ${item.error}</span>` : ''}
       </div>
+      <button class="ext-preview-btn" data-index="${index}" style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer; min-width: 70px;" ${isProcessing ? 'disabled' : ''}>Preview</button>
       <button class="ext-modal-close" style="width:24px; height:24px; font-size:18px; color:#ef4444; border-radius: 4px;" title="Buang Dokumen ini">❌</button>
     `;
 
+
+
     const checkbox = itemEl.querySelector('.ext-doc-checkbox');
-    const buangBtn = itemEl.querySelector('button');
+    const previewBtn = itemEl.querySelector('.ext-preview-btn');
+    const buangBtn = itemEl.querySelector('.ext-modal-close');
+
 
     const updateSelection = (isSelected) => {
       if (isProcessing) return;
@@ -533,7 +539,15 @@ function updatePreview(items) {
     };
 
     checkbox.addEventListener('change', (e) => updateSelection(e.target.checked));
+
     buangBtn.addEventListener('click', () => updateSelection(false));
+
+    if (previewBtn) {
+      previewBtn.addEventListener('click', () => {
+        window.open(batchQueue[index].url, '_blank');
+      });
+    }
+
 
     previewEl.appendChild(itemEl);
   });
