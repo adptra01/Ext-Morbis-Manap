@@ -3,7 +3,7 @@
  */
 
 const SHORTCUT_CONFIG = {
-  targetUrlPattern: 'http://103.147.236.140/v2/m-klaim/detail-v2-refaktor',
+  targetUrlPattern: '/v2/m-klaim/detail-v2-refaktor',
   requiredParams: ['id_visit', 'tanggalAwal', 'tanggalAkhir'],
   shortcutUrls: {
     rajal: '/admisi/pelaksanaan_pelayanan/halaman-utama',
@@ -31,7 +31,7 @@ const SHORTCUT_CONFIG = {
       text: 'Kembali ke M-KLAIM',
       bgColor: '#ef4444',
       hoverColor: '#dc2626',
-      url: 'http://103.147.236.140/v2/m-klaim'
+      url: null // Akan di-generate secara dinamis
     }
   }
 };
@@ -155,6 +155,12 @@ function generateDokumenPasienUrl() {
   return `${baseUrl}${SHORTCUT_CONFIG.shortcutUrls.dokumenPasien}?id_visit=${idVisit}&page=85&id_kunjungan=`;
 }
 
+function generateMklaimBaseUrl() {
+  // Menggunakan URL saat ini sebagai basis, tetapi dengan path /v2/m-klaim
+  const baseUrl = window.location.origin;
+  return `${baseUrl}/v2/m-klaim`;
+}
+
 function shortcutButtonsExist() {
   return document.querySelector('[data-shortcut-buttons]') !== null;
 }
@@ -252,7 +258,8 @@ function renderShortcutButtons() {
   // Ketika fitur DISABLED: detail buka di tab baru → tombol Kembali berguna untuk kembali ke M-KLAIM
   // Jadi, TOMBOL KEMBALI SELALU DITAMPILKAN ketika extension enabled
   if (extensionEnabled) {
-    container.appendChild(createButton(SHORTCUT_CONFIG.buttonStyles.backMklaim.url, SHORTCUT_CONFIG.buttonStyles.backMklaim, true));
+    const mklaimUrl = generateMklaimBaseUrl();
+    container.appendChild(createButton(mklaimUrl, SHORTCUT_CONFIG.buttonStyles.backMklaim, true));
   }
 
   // Tombol Dokumen Pasien (selalu tampilkan jika ada no_rm)
