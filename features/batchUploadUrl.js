@@ -1,6 +1,6 @@
 /**
  * FEATURE: Batch Upload Dokumen via URL
- * Version: 1.0.0 - Initial Implementation
+ * Version: 1.1.0 - Added Inline Preview Modal
  * Deskripsi: Upload batch dokumen dengan mem-paste URL, ekstrak metadata, dan proses otomatis
  */
 
@@ -293,12 +293,136 @@ function renderBatchUploadButton() {
         display: none;
       }
 
-      #${BATCH_UPLOAD_URL_CONFIG.progressId} .progress-fill {
+        #${BATCH_UPLOAD_URL_CONFIG.progressId} .progress-fill {
         height: 100%;
         background: #10b981;
         border-radius: 4px;
         width: 0%;
         transition: width 0.3s ease;
+      }
+
+      /* Inline Preview Modal Styles */
+      #ext-inline-preview-modal {
+        position: fixed !important;
+        top: 0 !important; left: 0 !important;
+        width: 100vw !important; height: 100vh !important;
+        background: rgba(0,0,0,0.85) !important;
+        z-index: 10001 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-direction: column !important;
+        padding: 20px !important;
+        box-sizing: border-box !important;
+      }
+
+      .ext-inline-preview-header {
+        position: absolute !important;
+        top: 20px !important; right: 20px !important;
+        display: flex !important;
+        gap: 12px !important;
+        align-items: center !important;
+        background: rgba(0,0,0,0.7) !important;
+        padding: 10px 16px !important;
+        border-radius: 8px !important;
+        backdrop-filter: blur(10px) !important;
+      }
+
+      .ext-inline-preview-filename {
+        color: white !important;
+        font-size: 14px !important;
+        max-width: 400px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        font-weight: 500 !important;
+      }
+
+      .ext-inline-preview-btn {
+        padding: 6px 12px !important;
+        background: #3b82f6 !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 6px !important;
+        cursor: pointer !important;
+        font-size: 12px !important;
+        font-weight: 500 !important;
+        transition: background 0.2s ease !important;
+      }
+
+      .ext-inline-preview-btn:hover {
+        background: #2563eb !important;
+      }
+
+      .ext-inline-preview-close {
+        padding: 6px 14px !important;
+        background: #ef4444 !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 6px !important;
+        cursor: pointer !important;
+        font-size: 14px !important;
+        font-weight: bold !important;
+      }
+
+      .ext-inline-preview-content {
+        width: clamp(400px, 90vw, 1200px) !important;
+        height: clamp(300px, 90vh, 800px) !important;
+        background: white !important;
+        border-radius: 12px !important;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.5) !important;
+        overflow: hidden !important;
+        position: relative !important;
+      }
+
+      .ext-inline-preview-loading,
+      .ext-inline-preview-error {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: 100% !important;
+        font-size: 16px !important;
+        color: #6b7280 !important;
+        background: #f9fafb !important;
+        flex-direction: column !important;
+        gap: 16px !important;
+      }
+
+      .ext-inline-preview-spinner {
+        width: 40px !important;
+        height: 40px !important;
+        border: 4px solid #e5e7eb !important;
+        border-top: 4px solid #3b82f6 !important;
+        border-radius: 50% !important;
+        animation: spin 1s linear infinite !important;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      #ext-inline-preview-iframe,
+      #ext-inline-preview-img {
+        width: 100% !important;
+        height: 100% !important;
+        border: none !important;
+        display: block !important;
+        object-fit: contain !important;
+      }
+
+      @media (max-width: 768px) {
+        .ext-inline-preview-header {
+          top: 10px !important;
+          right: 10px !important;
+          flex-direction: column !important;
+          gap: 8px !important;
+          align-items: flex-start !important;
+        }
+        .ext-inline-preview-filename {
+          max-width: 280px !important;
+          font-size: 13px !important;
+        }
       }
     `;
     document.head.appendChild(style);
@@ -543,11 +667,17 @@ function updatePreview(items) {
     buangBtn.addEventListener('click', () => updateSelection(false));
 
     if (previewBtn) {
-      previewBtn.addEventListener('click', () => {
-        window.open(batchQueue[index].url, '_blank');
+      previewBtn.addEventListener('click', async () => {
+        try {
+          await showInlinePreviewSafe(batchQueue[index].url, batchQueue[index].filename);
+        } catch (error) {
+          console.error('[Preview] Error:', error);
+          window.open(batchQueue[index].url, '_blank'); // Fallback
+        }
       });
+      // Disable during processing
+      if (isProcessing) previewBtn.disabled = true;
     }
-
 
     previewEl.appendChild(itemEl);
   });
@@ -570,6 +700,135 @@ function updateProgress(percent) {
     fillEl.style.width = `${percent}%`;
   } else {
     progressEl.style.display = 'none';
+  }
+}
+
+/**
+ * Preview: Show inline preview with CORS-safe blob (replaces new tab)
+ * @param {string} url - Document URL
+ * @param {string} filename - Original filename for display/ext detection
+ */
+/**
+ * Safe inline preview with CORS handling via blob URL fallback
+ * @param {string} url - Document URL to preview
+ * @param {string} filename - Original filename for display and extension detection
+ * @returns {Promise<void>}
+ */
+async function showInlinePreviewSafe(url, filename) {
+  try {
+    const file = await fetchFileFromUrl(url, filename);
+    const blobUrl = URL.createObjectURL(file);
+
+    showInlinePreview(blobUrl, filename, () => URL.revokeObjectURL(blobUrl));
+  } catch (error) {
+    console.error('[Preview Safe] Fetch error:', error);
+    // Fallback to direct preview without blob
+    showInlinePreview(url, filename);
+  }
+}
+
+/**
+ * Preview: Render modal UI
+ * @param {string} previewUrl - URL or blob URL to preview
+ * @param {string} filename - Display name
+ * @param {function} onCleanup - Callback for blob revoke
+ */
+/**
+ * Render inline preview modal UI
+ * @param {string} previewUrl - URL or blob URL to display
+ * @param {string} filename - Display name and extension detection
+ * @param {function} onCleanup - Optional callback for blob URL cleanup (revokeObjectURL)
+ */
+function showInlinePreview(previewUrl, filename, onCleanup = null) {
+  // Remove existing
+  const existing = document.getElementById('ext-inline-preview-modal');
+  if (existing) existing.remove();
+
+  const ext = filename.toLowerCase().split('.').pop();
+  const isPdf = ext === 'pdf';
+  const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+
+  const modal = document.createElement('div');
+  modal.id = 'ext-inline-preview-modal';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-label', `Preview ${filename}`);
+  modal.tabIndex = -1; // Focusable for ESC
+
+  let contentHtml = `
+    <div class="ext-inline-preview-loading">
+      <div class="ext-inline-preview-spinner"></div>
+      <div>Memuat preview...</div>
+    </div>
+  `;
+
+  if (isPdf) {
+    contentHtml = `<iframe id="ext-inline-preview-iframe" src="${previewUrl}" aria-label="PDF Preview"></iframe>`;
+  } else if (isImage) {
+    contentHtml = `<img id="ext-inline-preview-img" src="${previewUrl}" alt="Image Preview" loading="lazy">`;
+  } else {
+    contentHtml = `
+      <div class="ext-inline-preview-error" role="alert">
+        <div style="font-size: 18px; color: #ef4444;">📄</div>
+        <div>Format tidak didukung untuk preview inline</div>
+        <div style="font-size: 14px;">(${ext.toUpperCase()})</div>
+      </div>
+    `;
+  }
+
+  modal.innerHTML = `
+    <div class="ext-inline-preview-header">
+      <span class="ext-inline-preview-filename" title="${filename.replace(/"/g, '"')}">${filename}</span>
+      <button class="ext-inline-preview-btn" id="ext-preview-newtab">Buka Tab Baru</button>
+      <button class="ext-inline-preview-close" id="ext-preview-close" aria-label="Tutup preview">✕</button>
+    </div>
+    <div class="ext-inline-preview-content">
+      ${contentHtml}
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+  modal.focus(); // Accessibility
+
+  // Event handlers
+  const closeBtn = document.getElementById('ext-preview-close');
+  const newtabBtn = document.getElementById('ext-preview-newtab');
+
+  const closeModal = () => {
+    if (onCleanup) onCleanup();
+    modal.remove();
+  };
+
+  closeBtn.addEventListener('click', closeModal);
+  newtabBtn.addEventListener('click', () => {
+    window.open(url || previewUrl, '_blank');
+    closeModal();
+  });
+
+  // Backdrop click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  // ESC key
+  const escHandler = (e) => {
+    if (e.key === 'Escape') {
+      closeModal();
+      document.removeEventListener('keydown', escHandler);
+    }
+  };
+  document.addEventListener('keydown', escHandler);
+
+  // Loading complete handler
+  if (isPdf || isImage) {
+    const loadCheck = setInterval(() => {
+      const iframe = document.getElementById('ext-inline-preview-iframe');
+      const img = document.getElementById('ext-inline-preview-img');
+      if ((isPdf && iframe?.contentDocument) || img?.complete) {
+        const container = modal.querySelector('.ext-inline-preview-loading');
+        if (container) container.remove();
+        clearInterval(loadCheck);
+      }
+    }, 500);
   }
 }
 
