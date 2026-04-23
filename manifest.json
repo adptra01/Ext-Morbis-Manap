@@ -35,13 +35,18 @@
         "features/scrollButtons.js",
         "features/printOptimization.js",
         "features/batchUploadUrl.js",
+        "features/batchDeleteFiles.js",
         "init.js"
       ],
       "run_at": "document_end",
       "all_frames": false
     }
   ],
-  "permissions": ["activeTab", "storage", "scripting"],
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
   "host_permissions": [
     "http://192.168.8.4/*",
     "http://103.147.236.140/*"

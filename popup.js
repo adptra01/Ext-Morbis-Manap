@@ -68,6 +68,12 @@ const DEFAULT_CONFIG = {
       allowedRoles: [ROLES.CASEMIX],
       name: 'Batch Upload Dokumen',
       description: 'Upload batch dokumen via paste URL dengan metadata extraction otomatis'
+    },
+    batchDelete: {
+      enabled: false,
+      allowedRoles: [ROLES.CASEMIX],
+      name: 'Batch Delete Dokumen',
+      description: 'Hapus batch dokumen yang sudah diupload (safety measures)'
     }
   }
 };
