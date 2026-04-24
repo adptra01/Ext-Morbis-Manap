@@ -199,23 +199,24 @@ function renderBatchUploadButton() {
       }
 
       .ext-modal-close {
-        background: none;
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+        color: #dc2626;
+        border-radius: 6px;
+        background: #fee2e2;
         border: none;
-        font-size: 24px;
         cursor: pointer;
-        color: #666;
-        padding: 0;
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
+        font-weight: 600;
+        transition: all 0.2s ease;
       }
 
       .ext-modal-close:hover {
-        background: #f3f4f6;
-        color: #333;
+       background: #fecaca;
+        transform: scale(1.1);
       }
 
       #${BATCH_UPLOAD_URL_CONFIG.textareaId} {
@@ -640,7 +641,7 @@ function updatePreview(items) {
          ${item.error ? `<span style="font-size: 11px; color: #dc2626; margin-top: 4px;"><strong>Kesalahan:</strong> ${item.error}</span>` : ''}
       </div>
       <button class="ext-preview-btn" data-index="${index}" style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer; min-width: 70px;" ${isProcessing ? 'disabled' : ''}>Preview</button>
-      <button class="ext-modal-close" style="width:24px; height:24px; font-size:18px; color:#ef4444; border-radius: 4px;" title="Buang Dokumen ini">❌</button>
+      <button class="ext-modal-close" title="Buang Dokumen ini">❌</button>
     `;
 
 
