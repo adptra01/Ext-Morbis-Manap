@@ -40,6 +40,36 @@
       ],
       "run_at": "document_end",
       "all_frames": false
+    },
+    {
+      "matches": [
+        "http://192.168.8.4/billing/pembayaran-new/billing-verifikasi*",
+        "http://103.147.236.140/billing/pembayaran-new/billing-verifikasi*"
+      ],
+      "js": [
+        "core.js",
+        "features/billingFilterPersistence.js",
+        "init.js"
+      ],
+      "run_at": "document_end",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "http://192.168.8.4/admisi/pelaksanaan-operasi*",
+        "http://103.147.236.140/admisi/pelaksanaan-operasi*",
+        "http://192.168.8.4/admisi/pelaksanaan_pelayanan*",
+        "http://103.147.236.140/admisi/pelaksanaan_pelayanan*",
+        "http://192.168.8.4/admisi/detail-rawat-inap*",
+        "http://103.147.236.140/admisi/detail-rawat-inap*"
+      ],
+      "js": [
+        "core.js",
+        "features/doctorFilterPersistence.js",
+        "init.js"
+      ],
+      "run_at": "document_end",
+      "all_frames": false
     }
   ],
   "permissions": [

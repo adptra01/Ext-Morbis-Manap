@@ -4,3 +4,4 @@ dist/
 .DS_Store
 example_code/
 test-results/
+code_views/
