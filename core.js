@@ -68,6 +68,24 @@ const DEFAULT_CONFIG = {
       allowedRoles: ['casemix'],
       name: 'Upload Dokumen Ulang',
       description: 'Upload batch dokumen via paste URL dengan metadata extraction otomatis'
+    },
+    batchDelete: {
+      enabled: false,
+      allowedRoles: ['casemix'],
+      name: 'Batch Delete Dokumen',
+      description: 'Hapus dokumen yang sudah diupload (safety measures)'
+    },
+    billingFilterPersistence: {
+      enabled: true,
+      allowedRoles: ['kasir', 'casemix'],
+      name: 'Billing Filter Persistence',
+      description: 'Simpan otomatis filter verifikasi billing agar tidak perlu diketik ulang'
+    },
+    doctorFilterPersistence: {
+      enabled: true,
+      allowedRoles: ['dokter'],
+      name: 'Doctor Filter Persistence',
+      description: 'Simpan otomatis filter pelaksanaan dokter agar tidak perlu diketik ulang'
     }
   }
 };
