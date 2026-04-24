@@ -29,76 +29,27 @@ function injectBatchDeleteCSS() {
     const style = document.createElement('style');
     style.id = 'ext-batch-delete-style';
     style.textContent = `
-      #${BATCH_DELETE_CONFIG.modalId} {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.5);
-        display: none;
-        z-index: 10000;
-        align-items: center;
-        justify-content: center;
-      }
+    .ext-batch-delete-modal{
+     position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  z-index: 10000;
+  align-items: center;
+  justify-content: center;
+    }
 
-      #${BATCH_DELETE_CONFIG.modalId}.show {
-        display: flex;
-      }
-
-      .ext-modal-content {
-       font-weight: 600;
-        background: white;
-        border-radius: 12px;
-        padding: 24px;
-        max-width: 850px;
-        width: 95%;
-        max-height: 85vh;
-        overflow-y: auto;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-        margin: auto;
-      }
-
-      .ext-modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        border-bottom: 2px solid #fee2e2;
-        padding-bottom: 15px;
-      }
-
-      .ext-modal-close {
-        background: #f3f4f6;
-        border: none;
-        font-size: 18px;
-        cursor: pointer;
-        color: #6b7280;
-        padding: 0;
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 500;
-        transition: all 0.2s ease;
-      }
-
-      .ext-modal-close:hover {
-        background: #e5e7eb;
-        color: #111827;
-      }
-
-      .ext-warning-box {
-        background: linear-gradient(to right, #fef2f2, #fee2e2);
-        border-left: 4px solid #dc2626;
-        color: #991b1b;
-        padding: 16px;
-        border-radius: 6px;
-        margin-bottom: 20px;
-      }
-
+    .ext-modal-content {
+  background: white;
+  border-radius: 8px;
+  width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
       .ext-delete-preview-item {
         padding: 16px;
         border-bottom: 1px solid #e5e7eb;
@@ -108,101 +59,17 @@ function injectBatchDeleteCSS() {
         align-items: flex-start;
         transition: background-color 0.2s ease;
       }
-
       .ext-delete-preview-item.selected {
         background: linear-gradient(to right, #fef2f2, #fff1f2);
       }
-
-      .ext-modal-buttons {
-        margin-top: 20px;
-        display: flex;
-        gap: 12px;
-        justify-content: flex-end;
-        padding-top: 20px;
-        border-top: 1px solid #e5e7eb;
-      }
-
-      .ext-btn {
-        padding: 10px 20px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: 600;
-        transition: all 0.2s ease;
-      }
-
-      .ext-btn-primary {
-        background: #3b82f6;
-        color: white;
-      }
-
-      .ext-btn-primary:hover { background: #2563eb; }
-
-      .ext-btn-danger {
-        background: #ef4444;
-        color: white;
-      }
-
-      .ext-btn-danger:hover { background: #dc2626; }
-
-      .ext-btn-secondary {
+      .ext-status-badge {
+        font-size: 11px;
+        padding: 4px 10px;
         background: #f3f4f6;
-        color: #374151;
+        border-radius: 12px;
+        color: #6b7280;
+        font-weight: 500;
       }
-
-      .ext-btn-secondary:hover { background: #e5e7eb; }
-
-      .ext-btn-purple {
-        background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-        color: white;
-        box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
-      }
-
-      .ext-btn-purple:hover {
-        background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%);
-        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
-        transform: translateY(-1px);
-      }
-
-      .ext-btn:disabled,
-      .ext-btn.disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      #${BATCH_DELETE_CONFIG.progressId} {
-        width: 100%;
-        height: 12px;
-        background: #e5e7eb;
-        border-radius: 999px;
-        overflow: hidden;
-        margin: 10px 0;
-        display: none;
-      }
-
-      #${BATCH_DELETE_CONFIG.progressId} .progress-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
-        width: 0%;
-        transition: width 0.3s ease;
-      }
-
-      #${BATCH_DELETE_CONFIG.previewId} {
-        margin-top: 15px;
-        max-height: 400px;
-        overflow-y: auto;
-        border: 1px solid #e5e7eb;
-        border-radius: 4px;
-        padding: 10px;
-      }
-
-      .ext-delete-checkbox {
-        margin-top: 4px;
-        transform: scale(1.2);
-        cursor: pointer;
-      }
-
       .ext-delete-preview-btn {
         padding: 8px 14px;
         background: #3b82f6;
@@ -215,12 +82,10 @@ function injectBatchDeleteCSS() {
         transition: all 0.2s ease;
         box-shadow: 0 1px 3px rgba(59, 130, 246, 0.2);
       }
-
       .ext-delete-preview-btn:hover {
         background: #2563eb;
         box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
       }
-
       .ext-delete-single-btn {
         width: 32px;
         height: 32px;
@@ -236,22 +101,47 @@ function injectBatchDeleteCSS() {
         font-weight: 600;
         transition: all 0.2s ease;
       }
-
       .ext-delete-single-btn:hover {
         background: #fecaca;
         transform: scale(1.1);
       }
-
-      .ext-status-badge {
-        font-size: 11px;
-        padding: 4px 10px;
-        background: #f3f4f6;
-        border-radius: 12px;
-        color: #6b7280;
-        font-weight: 500;
+      .ext-delete-checkbox {
+        margin-top: 4px;
+        transform: scale(1.2);
+        cursor: pointer;
       }
+      #ext-batch-delete-btn {
+        margin: 8px 0 4px 10px;
+        padding: 10px 18px;
+        background: #ef4444;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        display: block;
+        box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
+        transition: all 0.2s ease;
+      }
+      #ext-batch-delete-btn:hover {
+        background: #dc2626;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        transform: translateY(-1px);
+      }
+        .ext-batch-delete-modal {
+  display: none;
+}
+
+.ext-batch-delete-modal.show {
+  display: flex;
+}
     `;
     document.head.appendChild(style);
+    
+    if (typeof window.SharedBatchUtils !== 'undefined') {
+        window.SharedBatchUtils.injectSharedCSS();
+    }
 }
 
 /**
@@ -366,8 +256,10 @@ async function deleteDokumen(dokumenId) {
 function renderBatchDeleteButton() {
     if (document.getElementById('ext-batch-delete-btn')) return;
 
-    // Inject CSS first
-    injectBatchDeleteCSS();
+// Inject shared CSS
+    if (typeof window.SharedBatchUtils !== 'undefined') {
+        window.SharedBatchUtils.injectSharedCSS();
+    }
 
     const btn = document.createElement('button');
     btn.id = 'ext-batch-delete-btn';
@@ -426,6 +318,7 @@ function showBatchDeleteModal() {
     if (!modal) {
         modal = document.createElement('div');
         modal.id = BATCH_DELETE_CONFIG.modalId;
+        modal.className = 'ext-batch-delete-modal';
 
         modal.innerHTML = `
       <div class="ext-modal-content">
@@ -798,6 +691,7 @@ async function startBatchDelete() {
 function initBatchDeleteFeature() {
     try {
         console.log('[BatchDelete] Init starting...');
+        injectBatchDeleteCSS();
         renderBatchDeleteButton();
         console.log('[BatchDelete] Init complete, button should be rendered');
     } catch (err) {
