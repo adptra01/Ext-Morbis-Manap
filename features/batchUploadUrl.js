@@ -1,7 +1,7 @@
 /**
- * FEATURE: Batch Upload Dokumen via URL
+ * FEATURE: Upload Dokumen Ulang via URL
  * Version: 1.1.0 - Added Inline Preview Modal
- * Deskripsi: Upload batch dokumen dengan mem-paste URL, ekstrak metadata, dan proses otomatis
+ * Deskripsi: Upload Dokumen Ulang dengan mem-paste URL, ekstrak metadata, dan proses otomatis
  */
 
 const BATCH_UPLOAD_URL_CONFIG = {
@@ -136,10 +136,10 @@ function renderBatchUploadButton() {
   const btn = document.createElement('button');
   btn.id = 'ext-batch-url-btn';
   btn.type = 'button';
-  btn.textContent = 'Auto Upload via URL';
+  btn.textContent = 'Upload Dokumen Ulang';
   btn.style.cssText = `
     margin: 8px 0 4px 10px;
-    padding: 8px 16px;
+    padding: 10px 18px;
     background: #10b981;
     color: white;
     border: none;
@@ -454,7 +454,7 @@ function showBatchUploadModal() {
     modal.innerHTML = `
       <div class="ext-modal-content">
         <div class="ext-modal-header">
-          <h3 style="margin: 0; font-size: 18px;">Batch Upload Dokumen</h3>
+          <h3 style="margin: 0; font-size: 18px;">Upload Dokumen Ulang</h3>
           <button class="ext-modal-close" id="ext-modal-close-btn">❌</button>
         </div>
 
@@ -1248,8 +1248,8 @@ function initBatchUploadUrlFeature() {
 // Register module
 if (typeof featureModules !== 'undefined') {
   featureModules.batchUpload = {
-    name: 'Batch Upload Dokumen',
-    description: 'Upload batch dokumen via paste URL dengan metadata extraction otomatis',
+    name: 'Upload Dokumen Ulang',
+    description: 'Upload Dokumen Ulang via paste URL dengan metadata extraction otomatis',
     run: initBatchUploadUrlFeature
   };
 } else {

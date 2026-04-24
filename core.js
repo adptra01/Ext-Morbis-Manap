@@ -66,7 +66,7 @@ const DEFAULT_CONFIG = {
     batchUpload: {
       enabled: false,
       allowedRoles: ['casemix'],
-      name: 'Batch Upload Dokumen',
+      name: 'Upload Dokumen Ulang',
       description: 'Upload batch dokumen via paste URL dengan metadata extraction otomatis'
     }
   }

@@ -47,6 +47,7 @@ function injectBatchDeleteCSS() {
       }
 
       .ext-modal-content {
+       font-weight: 600;
         background: white;
         border-radius: 12px;
         padding: 24px;
@@ -372,7 +373,7 @@ function renderBatchDeleteButton() {
     btn.id = 'ext-batch-delete-btn';
     btn.type = 'button';
     btn.className = 'ext-btn ext-btn-danger';
-    btn.textContent = 'Hapus Batch Dokumen';
+    btn.textContent = 'Hapus Dokumen';
     btn.style.cssText = `
     margin: 8px 0 4px 10px;
     padding: 10px 18px;
@@ -429,7 +430,7 @@ function showBatchDeleteModal() {
         modal.innerHTML = `
       <div class="ext-modal-content">
         <div class="ext-modal-header">
-          <h3 style="margin: 0; font-size: 20px; color: #991b1b; font-weight: 700; letter-spacing: -0.3px;">Hapus Batch Dokumen</h3>
+          <h3 style="margin: 0; font-size: 20px; color: #991b1b; font-weight: 700; letter-spacing: -0.3px;">Hapus Dokumen</h3>
           <button class="ext-modal-close" id="ext-delete-close-btn">❌</button>
         </div>
         <div class="ext-warning-box">

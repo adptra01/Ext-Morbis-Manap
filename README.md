@@ -1,6 +1,6 @@
 # MORBIS Ext Unofficial
 
-Ekstensi produktivitas untuk sistem SIMRS MORBIS Klaim - membuka detail klaim di tab baru, batch upload dokumen, dan fitur produktivitas lainnya.
+Ekstensi produktivitas untuk sistem SIMRS MORBIS Klaim - membuka detail klaim di tab baru, Upload Dokumen Ulang, dan fitur produktivitas lainnya.
 
 ---
 
@@ -20,6 +20,7 @@ Itu saja! **Tidak ada file lain yang perlu Anda download, install, atau konfigur
 4. **Selesai!** Buka browser Anda, ekstensi sudah terinstall otomatis
 
 **Tidak perlu:**
+
 - ❌ Download source code
 - ❌ Buka GitHub
 - ❌ Ekstrak folder
@@ -38,44 +39,51 @@ Informasi di bawah ini untuk Developer/IT yang melakukan deployment dan pemeliha
 
 Ekstensi ini mendukung **semua browser modern**:
 
-| Browser | Format | Update System | Status |
-|---------|---------|---------------|---------|
-| **Mozilla Firefox** | `.xpi` | `updates.json` | ✅ |
-| **Google Chrome** | `.crx` | `update.xml` | ✅ |
-| **Microsoft Edge** | `.crx` | `update.xml` | ✅ |
-| **Brave** | `.crx` | `update.xml` | ✅ |
+| Browser             | Format | Update System  | Status |
+| ------------------- | ------ | -------------- | ------ |
+| **Mozilla Firefox** | `.xpi` | `updates.json` | ✅     |
+| **Google Chrome**   | `.crx` | `update.xml`   | ✅     |
+| **Microsoft Edge**  | `.crx` | `update.xml`   | ✅     |
+| **Brave**           | `.crx` | `update.xml`   | ✅     |
 
 ---
 
 ## ✨ Fitur Utama
 
 ### 📌 Buka Detail di Tab Baru
+
 - Tombol detail sekarang terbuka di tab baru
 - Hindari kehilangan data saat navigasi
 - Tetap fokus pada halaman utama
 
-### 📑 Batch Upload Dokumen via URL
+### 📑 Upload Dokumen Ulang via URL
+
 - Upload banyak dokumen sekaligus menggunakan URL
 - Ekstraksi metadata otomatis dari URL dokumen
 - Progress tracking real-time untuk setiap dokumen
 
 ### 🔘 Tombol Pintasan
+
 - Akses cepat ke fitur yang sering digunakan
 - Navigasi lebih efisien
 
 ### 🔍 Persistensi Filter
+
 - Filter yang dipilih tetap tersimpan
 - Tidak perlu mengatur ulang setelah refresh
 
 ### 💳 Simplifikasi Billing
+
 - Tampilan billing yang lebih bersih
 - Fokus pada informasi penting
 
 ### ⬆️ Tombol Scroll
+
 - Navigasi cepat ke atas/bawah halaman
 - Hemat waktu pada halaman panjang
 
 ### 🖨️ Optimasi Cetak
+
 - Tampilan cetak yang lebih rapi
 - Menghapus elemen yang tidak perlu
 
@@ -105,6 +113,7 @@ regedit /s "Install_Morbis_Ext.reg"
 ```
 
 **Supported Browsers:**
+
 - Mozilla Firefox (via `.xpi`)
 - Google Chrome (via `.crx`)
 - Microsoft Edge (via `.crx`)
@@ -147,10 +156,12 @@ https://adptra01.github.io/Ext-Morbis-Manap/
    {
      "addons": {
        "morbis-ext@rsud-manap.com": {
-         "updates": [{
-           "version": "1.3.0",
-           "update_link": "https://adptra01.github.io/Ext-Morbis-Manap/morbis-v1.3.0.xpi"
-         }]
+         "updates": [
+           {
+             "version": "1.3.0",
+             "update_link": "https://adptra01.github.io/Ext-Morbis-Manap/morbis-v1.3.0.xpi"
+           }
+         ]
        }
      }
    }
@@ -165,28 +176,29 @@ https://adptra01.github.io/Ext-Morbis-Manap/
 ### URL Pattern yang Didukung
 
 Ekstensi aktif pada:
+
 - `http://192.168.8.4/v2/m-klaim/*`
 - `http://103.147.236.140/v2/m-klaim/*`
 
 ### Permissions yang Diperlukan
 
-| Permission | Kegunaan |
-|-----------|-----------|
-| `activeTab` | Interaksi dengan tab aktif |
-| `storage` | Menyimpan preferensi dan filter |
-| `scripting` | Menyuntikkan skrip ke halaman |
+| Permission         | Kegunaan                                          |
+| ------------------ | ------------------------------------------------- |
+| `activeTab`        | Interaksi dengan tab aktif                        |
+| `storage`          | Menyimpan preferensi dan filter                   |
+| `scripting`        | Menyuntikkan skrip ke halaman                     |
 | `host_permissions` | Mengakses SIMRS (192.168.8.4 dan 103.147.236.140) |
 
 ---
 
 ## 🔐 Keamanan
 
-| Aspek | Status |
-|--------|--------|
-| Data | Semua data tersimpan lokal di browser |
-| Server eksternal | Tidak ada data yang dikirim |
-| Kredensial | Tidak mengumpulkan informasi pribadi |
-| Domain | Hanya bekerja pada domain SIMRS yang ditentukan |
+| Aspek            | Status                                          |
+| ---------------- | ----------------------------------------------- |
+| Data             | Semua data tersimpan lokal di browser           |
+| Server eksternal | Tidak ada data yang dikirim                     |
+| Kredensial       | Tidak mengumpulkan informasi pribadi            |
+| Domain           | Hanya bekerja pada domain SIMRS yang ditentukan |
 
 ---
 
@@ -194,21 +206,21 @@ Ekstensi aktif pada:
 
 ### Browser Chromium (Chrome, Edge, Brave)
 
-| Masalah | Solusi |
-|---------|--------|
-| Ekstensi tidak terinstall | Cek ID di registry vs manifest ID |
+| Masalah                         | Solusi                                      |
+| ------------------------------- | ------------------------------------------- |
+| Ekstensi tidak terinstall       | Cek ID di registry vs manifest ID           |
 | Peringatan "Not from Web Store" | Cek `ExtensionInstallAllowlist` di registry |
-| Update tidak berjalan | Cek URL update.xml di manifest.json |
-| Error CRX invalid | Pack ulang dengan file .pem yang sama |
+| Update tidak berjalan           | Cek URL update.xml di manifest.json         |
+| Error CRX invalid               | Pack ulang dengan file .pem yang sama       |
 
 ### Browser Firefox
 
-| Masalah | Solusi |
-|---------|--------|
-| Ekstensi tidak terinstall | Cek `ExtensionSettings` di registry |
-| Update tidak berjalan | Cek URL updates.json |
-| Error XPI invalid | Pack ulang ZIP → XPI |
-| Signature warning | Signing diperlukan untuk distribusi publik |
+| Masalah                   | Solusi                                     |
+| ------------------------- | ------------------------------------------ |
+| Ekstensi tidak terinstall | Cek `ExtensionSettings` di registry        |
+| Update tidak berjalan     | Cek URL updates.json                       |
+| Error XPI invalid         | Pack ulang ZIP → XPI                       |
+| Signature warning         | Signing diperlukan untuk distribusi publik |
 
 ### Verifikasi Registry
 
@@ -270,16 +282,16 @@ MORBIS_EXT/
 
 ## 📞 Informasi
 
-| Item | Value |
-|------|-------|
-| **Nama** | MORBIS Ext Unofficial |
-| **Versi** | 1.2.0 |
-| **Extension ID (Chromium)** | `cbkjilfkdgclmpilonabdnicngjjgegd` |
-| **Extension ID (Firefox)** | `morbis-ext@rsud-manap.com` |
-| **Manifest Version** | 3 |
-| **Update URL (Chromium)** | `https://adptra01.github.io/Ext-Morbis-Manap/update.xml` |
-| **Update URL (Firefox)** | `https://adptra01.github.io/Ext-Morbis-Manap/updates.json` |
-| **GitHub Pages** | `https://adptra01.github.io/Ext-Morbis-Manap/` |
+| Item                        | Value                                                      |
+| --------------------------- | ---------------------------------------------------------- |
+| **Nama**                    | MORBIS Ext Unofficial                                      |
+| **Versi**                   | 1.2.0                                                      |
+| **Extension ID (Chromium)** | `cbkjilfkdgclmpilonabdnicngjjgegd`                         |
+| **Extension ID (Firefox)**  | `morbis-ext@rsud-manap.com`                                |
+| **Manifest Version**        | 3                                                          |
+| **Update URL (Chromium)**   | `https://adptra01.github.io/Ext-Morbis-Manap/update.xml`   |
+| **Update URL (Firefox)**    | `https://adptra01.github.io/Ext-Morbis-Manap/updates.json` |
+| **GitHub Pages**            | `https://adptra01.github.io/Ext-Morbis-Manap/`             |
 
 ---
 
