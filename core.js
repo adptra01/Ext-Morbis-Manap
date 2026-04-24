@@ -69,6 +69,12 @@ const DEFAULT_CONFIG = {
       name: 'Upload Dokumen Ulang',
       description: 'Upload batch dokumen via paste URL dengan metadata extraction otomatis'
     },
+    batchDelete: {
+      enabled: false,
+      allowedRoles: ['casemix'],
+      name: 'Batch Delete Dokumen',
+      description: 'Hapus dokumen yang sudah diupload (safety measures)'
+    },
     billingFilterPersistence: {
       enabled: true,
       allowedRoles: ['kasir', 'casemix'],

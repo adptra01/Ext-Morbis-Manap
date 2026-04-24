@@ -367,20 +367,23 @@ function renderFeatures() {
   const globalEnabled = currentConfig?.extensionEnabled ?? true;
   let enabled = 0;
   let total = 0;
+  let hasFeaturesForRole = false;
+
+  // Update section title to show current role
+  const sectionTitle = document.querySelector('.section:nth-child(5) .section-title');
+  if (sectionTitle) {
+    const roleName = role === 'casemix' ? 'Casemix' : role === 'kasir' ? 'Kasir' : 'Dokter';
+    sectionTitle.textContent = `Fitur Tersedia (${roleName})`;
+  }
 
   for (const [key, feature] of Object.entries(features)) {
+    // Skip features not allowed for current role (hide completely)
     if (!isFeatureAllowed(key, role)) {
-      const featureDiv = document.createElement('div');
-      featureDiv.className = 'toggle-container feature-disabled role-restricted';
-      featureDiv.innerHTML = `
-        <div class="toggle-label">
-          <span class="title">${feature.name || key}</span>
-          <span class="subtitle">Hanya untuk role: ${feature.allowedRoles?.join(', ') || 'tidak ada'}</span>
-        </div>
-      `;
-      featuresList.appendChild(featureDiv);
       continue;
     }
+
+    hasFeaturesForRole = true;
+
     // Jangan hitung fitur coming soon ke total aktif
     if (!feature.comingSoon) {
       total++;
@@ -434,6 +437,22 @@ function renderFeatures() {
     `;
 
     featuresList.appendChild(featureDiv);
+  }
+
+  // Show message when no features are available for selected role
+  if (!hasFeaturesForRole) {
+    const noFeaturesDiv = document.createElement('div');
+    noFeaturesDiv.className = 'toggle-container';
+    noFeaturesDiv.style.textAlign = 'center';
+    noFeaturesDiv.style.color = '#6b7280';
+    noFeaturesDiv.style.padding = '20px 10px';
+    noFeaturesDiv.innerHTML = `
+      <div style="font-size: 13px;">Tidak ada fitur untuk role: <strong>${role}</strong></div>
+      <div style="font-size: 11px; margin-top: 4px;">Silakan pilih role lain untuk melihat fitur yang tersedia</div>
+    `;
+    featuresList.appendChild(noFeaturesDiv);
+    enabled = 0;
+    total = 0;
   }
 
   enabledCount.textContent = enabled;
