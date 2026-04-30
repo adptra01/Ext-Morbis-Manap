@@ -9,6 +9,7 @@ const PERSISTENCE_MAP = {
     pattern: '/v2/m-klaim',
     excludePattern: 'detail',
     storageKey: 'mklaim_filter',
+    scopeField: 'tanggalAwal',
     fields: [
       'tanggalAwal', 'tanggalAkhir', 'norm', 'nama', 'reg',
       'poli_cari', 'id_poli_cari', 'id_poli', 'billing', 'status'
@@ -26,6 +27,7 @@ const PERSISTENCE_MAP = {
   billingFilterPersistence: {
     pattern: '/billing/pembayaran-new/billing-verifikasi',
     storageKey: 'billing_filter',
+    scopeField: 'awal',
     fields: [
       'awal', 'akhir', 'noreg', 'no_Rm', 'pasien', 'sep',
       'status', 'statuspasien', 'jenisPasien', 'statusPeriksa',
@@ -130,13 +132,25 @@ function clearFilter() {
   log('Filter cleared:', ctx.storageKey);
 }
 
+function getFilterScope(ctx) {
+  if (!ctx.scopeField) return document;
+
+  const anchor = document.getElementById(ctx.scopeField);
+  if (!anchor) return document;
+
+  var scope = anchor.closest('form') || anchor.closest('table') || anchor.parentElement;
+  return scope || document;
+}
+
 function attachFilterListeners() {
   const ctx = getContext();
   if (!ctx) return;
 
+  const scope = getFilterScope(ctx);
+
   // Pasang listener pada tombol Cari
   for (const selector of ctx.cariButtonSelectors) {
-    const btns = document.querySelectorAll(selector);
+    const btns = scope.querySelectorAll(selector);
     for (const btn of btns) {
       const targetBtn = btn.tagName === 'I' ? btn.closest('button') : btn;
       if (targetBtn && !targetBtn.dataset.filterBound) {
@@ -148,7 +162,7 @@ function attachFilterListeners() {
 
   // Pasang listener pada tombol Batal/Cancel
   for (const selector of ctx.batalButtonSelectors) {
-    const btns = document.querySelectorAll(selector);
+    const btns = scope.querySelectorAll(selector);
     for (const btn of btns) {
       const targetBtn = btn.tagName === 'I' ? btn.closest('button') : btn;
       if (targetBtn && !targetBtn.dataset.filterBound) {
