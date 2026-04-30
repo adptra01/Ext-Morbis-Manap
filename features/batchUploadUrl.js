@@ -5,7 +5,7 @@
  */
 
 const BATCH_UPLOAD_URL_CONFIG = {
-  targetUrl: '/v2/m-klaim/detail-v2-refaktor',
+  targetUrl: '/v2/m-klaim/detail-v2-refaktor', // kept for documentation; URL matching uses regex
   uploadEndpoint: '/v2/m-klaim/uploda-dokumen/control?sub=simpan',
   maxConcurrent: 3,
   maxBatchSize: 50,
@@ -720,11 +720,11 @@ async function showInlinePreviewSafe(url, filename) {
     const file = await fetchFileFromUrl(url, filename);
     const blobUrl = URL.createObjectURL(file);
 
-    showInlinePreview(blobUrl, filename, () => URL.revokeObjectURL(blobUrl));
+    showInlinePreview(blobUrl, filename, url, () => URL.revokeObjectURL(blobUrl));
   } catch (error) {
     console.error('[Preview Safe] Fetch error:', error);
     // Fallback to direct preview without blob
-    showInlinePreview(url, filename);
+    showInlinePreview(url, filename, url);
   }
 }
 
@@ -740,7 +740,7 @@ async function showInlinePreviewSafe(url, filename) {
  * @param {string} filename - Display name and extension detection
  * @param {function} onCleanup - Optional callback for blob URL cleanup (revokeObjectURL)
  */
-function showInlinePreview(previewUrl, filename, onCleanup = null) {
+function showInlinePreview(previewUrl, filename, originalUrl, onCleanup = null) {
   // Remove existing
   const existing = document.getElementById('ext-inline-preview-modal');
   if (existing) existing.remove();
@@ -801,7 +801,7 @@ function showInlinePreview(previewUrl, filename, onCleanup = null) {
 
   closeBtn.addEventListener('click', closeModal);
   newtabBtn.addEventListener('click', () => {
-    window.open(url || previewUrl, '_blank');
+    window.open(originalUrl || previewUrl, '_blank');
     closeModal();
   });
 
@@ -961,7 +961,7 @@ async function crawlDokumenPasien() {
       metadata.tglUploadTabel = item.tglUpload;
       metadata.filename = item.filenameTabel || metadata.filename;
       metadata.keterangan = item.keteranganTabel || metadata.filename || "-";
-      metadata.selected = true;
+      metadata.selected = false;
       return metadata;
     });
 
@@ -1227,7 +1227,8 @@ function startBatchUpload() {
  * Check if current page is detail page
  */
 function isMklaimDetailPage() {
-  return window.location.pathname.includes(BATCH_UPLOAD_URL_CONFIG.targetUrl);
+  if (!/^\/v2\/m-klaim\/detail-v2-refaktor\/?$/.test(window.location.pathname)) return false;
+  return !!new URLSearchParams(window.location.search).get('id_visit');
 }
 
 /**

@@ -793,30 +793,35 @@ async function startBatchDelete() {
 
 
 /**
- * Initialize
+ * URL scope check — exact match on detail page path with id_visit
+ */
+function isBatchDeleteTargetPage() {
+    const path = window.location.pathname;
+    const match = /^\/v2\/m-klaim\/detail-v2-refaktor\/?$/.test(path);
+    const hasIdVisit = !!new URLSearchParams(window.location.search).get('id_visit');
+
+    console.log('[BatchDelete] URL check:', { path, pathMatch: match, hasIdVisit });
+    return match && hasIdVisit;
+}
+
+/**
+ * Initialize — called by init.js; defensive role/config check included
  */
 function initBatchDeleteFeature() {
+    if (!isBatchDeleteTargetPage()) return;
+    if (!currentConfig?.features?.batchDelete?.enabled) return;
+    if (!ExtensionCore.isFeatureAllowed('batchDelete')) return;
+
     try {
         console.log('[BatchDelete] Init starting...');
-        renderBatchDeleteButton();
+        setTimeout(renderBatchDeleteButton, 500);
         console.log('[BatchDelete] Init complete, button should be rendered');
     } catch (err) {
         console.error('[BatchDelete] Init error:', err);
     }
 }
 
-// AUTO INIT (fallback for immediate execution)
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log('[BatchDelete] DOM ready, initializing...');
-        initBatchDeleteFeature();
-    });
-} else {
-    console.log('[BatchDelete] DOM already ready, initializing...');
-    initBatchDeleteFeature();
-}
-
-// Export (optional integration with existing module system)
+// Register with centralized feature system — init.js handles role+config gating
 if (typeof featureModules !== 'undefined') {
     featureModules.batchDelete = {
         name: 'Batch Delete Dokumen',
