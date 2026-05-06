@@ -1,189 +1,98 @@
-# Optimisasi Cetak
+# Optimasi Cetak (Print Optimization)
 
 ## Gambaran Fitur dan Tujuan
 
-Fitur Optimisasi Cetak secara otomatis menyembunyikan bagian penagihan kosong dan mengelola checkbox cetak secara cerdas saat menghasilkan dokumen penagihan pasien, memastikan output cetak yang bersih dan efisien.
+Fitur Optimasi Cetak secara otomatis menyembunyikan section kosong dan mengoptimalkan layout cetak
+dokumen penagihan pasien di SIMRS, memastikan output cetak bersih, hemat kertas, dan mengalir
+sambung-menyambung tanpa page break paksa antar modul.
 
-## Masalah yang Diselesaikan untuk Pengguna
+## Masalah yang Diselesaikan
 
-Dokumen penagihan M-KLAIM sering berisi bagian kosong yang membuang kertas dan membingungkan pembaca. Pengelolaan manual checkbox cetak memakan waktu dan rentan kesalahan. Fitur ini menyelesaikan masalah dengan:
-
-- Secara otomatis menyembunyikan bagian penagihan kosong saat mencetak
-- Secara cerdas mencentang/menghilangkan centang opsi cetak berdasarkan ketersediaan konten
-- Mengurangi pemborosan kertas dan panjang dokumen
-- Merampingkan alur kerja cetak untuk staf medis
+- Setiap modul `.isidalam` memiliki inline `style="page-break-after: always;"` yang memaksa ganti halaman baru
+- Padding 75px pada `.isidalam` membuang ruang vertikal
+- Parent container (`.main`, `.panel-body`) menambah margin/padding yang mempersempit area cetak
+- Elemen dekoratif (`.watermark`, `.ribbon`, `.navbar`) muncul di hasil cetak
+- URL panjang internal tercetak setelah link via `a[href]::after`
+- Section kosong (surat-kontrol-view, nota-inacbgs-view, spri-view, pengkajian-hd) merender halaman kosong
+- `overflow: auto` pada `.main` memotong konten saat cetak
 
 ## Detail Implementasi Teknis
 
-Fitur ini menganalisis bagian penagihan untuk konten aktual, secara otomatis menyinkronkan state checkbox dengan ketersediaan konten, dan menerapkan CSS spesifik cetak untuk menyembunyikan bagian kosong. Fitur ini menggunakan MutationObserver untuk menangani konten yang dimuat secara dinamis.
+Fitur ini menyuntikkan CSS `@media print` komprehensif dan menggunakan listener
+`beforeprint`/`afterprint` untuk menyaring section secara cerdas.
 
 **Teknologi Utama:**
-- Analisis konten dan heuristik untuk deteksi bagian kosong
-- Sinkronisasi state checkbox dengan DOM konten
-- Listener event cetak (`beforeprint`, `afterprint`)
-- Query media CSS untuk styling spesifik cetak
-- Pemantauan konten AJAX yang didebounced
+- Injeksi CSS `@media print` komprehensif (reset container, override inline styles)
+- Listener event cetak (`beforeprint`, `afterprint`) untuk filter section
+- Deteksi konten berbasis checkbox + emptiness heuristic
+- Guard anti-double-registration untuk mencegah listener ganda
 
-## Panduan Penggunaan Langkah demi Langkah
+## Panduan Penggunaan
 
-1. **Buka Penagihan Pasien**: Navigasi ke halaman detail penagihan pasien
-2. **Optimisasi Otomatis**: Bagian kosong secara otomatis terdeteksi dan disembunyikan
-3. **Pengelolaan Checkbox**: Checkbox cetak secara otomatis dicentang/dihilangkan centang berdasarkan konten
-4. **Inisiasi Cetak**: Gunakan fungsi cetak browser (Ctrl+P) atau dialog cetak sistem
-5. **Output Bersih**: Dokumen tercetak menampilkan hanya bagian dengan data penagihan aktual
-6. **Pemulihan Post-Cetak**: Halaman kembali ke tampilan normal setelah cetak selesai
+1. **Buka Penagihan Pasien** - Navigasi ke halaman billing pasien
+2. **Atur Checkbox** - Centang modul yang ingin dicetak, hilangkan centang yang tidak diperlukan
+3. **Inisiasi Cetak** - Ctrl+P atau dialog cetak sistem
+4. **Output Bersih** - Section kosong otomatis disembunyikan, konten mengalir sambung-menyambung
+5. **Pemulihan** - Setelah dialog cetak ditutup, semua section kembali normal
 
-## Analisis Kode
+## Logika Filter Section
 
-### Fungsi Utama
+Saat `beforeprint`, setiap child div dari `#section-to-print` disembunyikan jika:
 
-**`isEffectivelyEmpty(section)`**
-- Melakukan analisis konten komprehensif
-- Memeriksa konten teks aktual setelah penghapusan elemen UI
-- Mendeteksi elemen visual (gambar, canvas, svg, iframe)
-- Menganggap tabel ukuran minimum (3+ baris) sebagai valid
-- Mengembalikan boolean yang menunjukkan apakah bagian harus disembunyikan
+1. **Checkbox tidak dicentang** - Checkbox `<input type="checkbox">` di dalam section dalam keadaan unchecked
+2. **Section kosong** - Tidak memiliki teks bermakna DAN tidak memiliki elemen `table`, `img`, `canvas`, `svg`, atau `iframe`
 
-**`syncCheckboxesWithContent()`**
-- Memindai checkbox kontrol cetak menggunakan pola pencocokan onclick
-- Mengekstrak ID elemen target dari atribut onclick
-- Memeriksa ketersediaan konten untuk setiap target bagian
-- Secara otomatis mencentang/menghilangkan centang berdasarkan keberadaan konten
-- Menerapkan kelas CSS untuk penyembunyian cetak
+## CSS @media print yang Diinjeksi
 
-**`menyembunyikanSectionKosong()` / `kembalikanSectionKosong()`**
-- Fungsi sembunyi: Menambahkan kelas `hilang-saat-print` dan `no-print`
-- Fungsi pulihkan: Menghapus kelas setelah mencetak
-- Mempertahankan preferensi checkbox pengguna saat konten ada
-- Menangani state checkbox otomatis dan manual
+```css
+@media print {
+  body, .main, .panel-body, #section-to-print {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
 
-**`injectPrintOptimizationStyles()`**
-- Menginjeksi CSS komprehensif untuk media cetak
-- Menyembunyikan elemen dengan kelas dan atribut spesifik
-- Menerapkan pengaturan break halaman dan margin yang tepat
-- Memastikan layout dokumen bersih untuk pencetakan rumah sakit
+  .isidalam {
+    page-break-after: auto !important;
+    break-after: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+  }
 
-### Metode Deteksi
+  #section-to-print > div {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    margin-bottom: 20px !important;
+  }
 
-1. **Deteksi Checkbox**:
-    - Pola: `input[type="checkbox"][onclick*="checkedPrint"]`
-    - Parsing onclick: `checkedPrint\([^,]+,\s*\['"]([^'"]+)['"]`
-    - Mengekstrak ID elemen target untuk pemeriksaan konten
+  .panel-heading, .no-print, .navbar, .ribbon, .watermark, .hilang-saat-print {
+    display: none !important;
+  }
 
-2. **Analisis Konten**:
-    - Konten teks setelah penghapusan elemen UI
-    - Keberadaan elemen visual (img, canvas, svg, iframe)
-    - Hitungan baris tabel threshold (3+ baris dianggap substansial)
-    - Analisis struktur DOM (kosong vs terisi)
+  a[href]::after { content: none !important; }
 
-3. **Identifikasi Bagian**:
-    - Selector kontainer: `.isidalam`, `#pembayaran-gabung`, `#section-to-print > div`
-    - Pemfilteran berbasis konten untuk relevansi penagihan
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
 
-### Teknik Modifikasi
-
-- **Manajemen Kelas CSS**: Penambahan/penghapusan dinamis kelas terkait cetak
-- **Kontrol State Checkbox**: Manipulasi properti checked secara langsung
-- **Analisis DOM**: Kloning dan manipulasi untuk penilaian konten
-- **Manajemen Event Listener**: Penanganan event cetak dengan pembersihan
-- **MutationObserver**: Pemantauan konten AJAX dengan debouncing
+  @page { margin: 0.75cm; }
+}
+```
 
 ## Opsi Konfigurasi
 
 ```javascript
 const PRINT_OPT_CONFIG = {
-  selectors: '.isidalam, #pembayaran-gabung, #section-to-print > div',
-  emptyTableThreshold: 3,
-  autoSyncDelay: 2000,
-  syncDebounce: 500
+  selectors: '#section-to-print > div'
 };
 ```
 
-- **selectors**: Selector CSS untuk kontainer bagian penagihan
-- **emptyTableThreshold**: Jumlah baris minimum yang diperlukan agar tabel tidak dianggap kosong
-- **autoSyncDelay**: Penundaan awal sebelum sinkronisasi checkbox pertama
-- **syncDebounce**: Penundaan debounce untuk sinkronisasi yang dipicu AJAX
+## Edge Cases
 
-## Edge Cases dan Keterbatasan
-
-### Edge Cases yang Ditangani
-- **Konten Dinamis**: MutationObserver menangani data penagihan yang dimuat AJAX
-- **Jenis Konten Campuran**: Menangani teks, tabel, dan elemen visual secara tepat
-- **Preferensi Pengguna**: Mempertahankan state checkbox manual saat konten ada
-- **Manajemen Dialog Cetak**: Siklus sembunyi/pulihkan yang tepat selama proses cetak
-
-### Keterbatasan
-- **Heuristik Deteksi Konten**: Mungkin tidak mengidentifikasi semua jenis konten secara sempurna
-- **Asumsi Pola Checkbox**: Bergantung pada pola atribut onclick spesifik
-- **Event Cetak Browser**: Mungkin tidak bekerja di semua implementasi cetak browser
-- **Dampak Performa**: Analisis konten pada halaman kompleks dapat intensif sumber daya
-
-## Contoh Perubahan DOM
-
-### Bagian Penagihan Asli (dengan konten)
-```html
-<div id="billing-section-1" class="isidalam">
-  <table>
-    <tbody>
-      <tr><td>Detail prosedur...</td></tr>
-      <tr><td>Data penagihan lainnya...</td></tr>
-      <tr><td>Baris tambahan...</td></tr>
-    </tbody>
-  </table>
-</div>
-<input type="checkbox" onclick="checkedPrint(['billing-section-1'])" checked>
-```
-
-### Bagian Penagihan Kosong (auto-disembunyikan)
-```html
-<div id="billing-section-2" class="isidalam hilang-saat-print no-print">
-  <!-- Konten kosong atau minimal -->
-</div>
-<input type="checkbox" onclick="checkedPrint(['billing-section-2'])" unchecked>
-```
-
-### Injeksi CSS Spesifik Cetak
-```css
-@media print {
-  .hilang-saat-print,
-  .no-print {
-    display: none !important;
-    height: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  #section-to-print > div:not(.hilang-saat-print):not(.no-print) {
-    page-break-before: always !important;
-    margin: 10mm auto !important;
-    padding: 15mm !important;
-  }
-}
-```
-
-### Logika Sinkronisasi Checkbox
-```javascript
-// Saat konten terdeteksi
-if (isEffectivelyEmpty(targetEl)) {
-  cb.checked = false;  // Hilangkan centang untuk bagian kosong
-  targetEl.classList.add('hilang-saat-print', 'no-print');
-} else {
-  cb.checked = true;   // Centang untuk bagian dengan konten
-  targetEl.classList.remove('hilang-saat-print', 'no-print');
-}
-```
-
-### MutationObserver untuk Konten Dinamis
-```javascript
-const observer = new MutationObserver(() => {
-  clearTimeout(window._extPrintSyncTimer);
-  window._extPrintSyncTimer = setTimeout(syncCheckboxesWithContent, PRINT_OPT_CONFIG.syncDebounce);
-});
-observer.observe(observerTarget, { childList: true, subtree: true, characterData: true });
-```
-
-### Penanganan Event Cetak
-```javascript
-window.addEventListener('beforeprint', menyembunyikanSectionKosong);
-window.addEventListener('afterprint', kembalikanSectionKosong);
-```
+- **Konten iframe/SVG** - Terdeteksi sebagai konten visual, tidak akan di-hidden
+- **Whitespace saja** - `innerText.trim().length === 0` memastikan whitespace tidak dianggap konten
+- **Double init** - Guard `printListenersRegistered` mencegah listener ganda jika modul di-refresh
+- **Layout asli** - `removeProperty('display')` mengembalikan ke CSS asli, tidak memaksa `display: block`

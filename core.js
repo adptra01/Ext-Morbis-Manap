@@ -58,12 +58,11 @@ const DEFAULT_CONFIG = {
       description: 'Tombol scroll otomatis ke atas dan bawah halaman detail'
     },
     printOptimization: {
-      enabled: false,
-      allowedRoles: ['casemix'],
-      name: 'Optimasi Cetak',
-      description: 'Sembunyikan section kosong & Auto-Uncheck secara cerdas.',
-      comingSoon: true
-    },
+	      enabled: true,
+	      allowedRoles: ['casemix'],
+	      name: 'Optimasi Cetak',
+	      description: 'Sembunyikan section kosong & optimasi layout cetak.'
+	    },
     batchUpload: {
       enabled: false,
       allowedRoles: ['casemix'],
@@ -161,6 +160,13 @@ async function loadConfig() {
       }
 
       currentConfig.features = newFeatures;
+	      // Upgrade: hapus comingSoon flag dari printOptimization jika masih ada (v1 -> v2)
+	      if (currentConfig.features.printOptimization?.comingSoon !== undefined) {
+	        delete currentConfig.features.printOptimization.comingSoon;
+	        currentConfig.features.printOptimization.enabled = true;
+	        saveConfig(currentConfig);
+	      }
+
 
       // Silent auto-mapping
       if (!currentConfig.currentRole) {
@@ -269,10 +275,19 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 
     var extChanged = newConfig?.extensionEnabled !== oldConfig.extensionEnabled;
     var roleChanged = newConfig?.currentRole !== oldConfig.currentRole;
-    var fixJasaChanged = newConfig?.features?.fixJasaPelayanan?.enabled !== oldConfig?.features?.fixJasaPelayanan?.enabled;
 
-    if (extChanged || roleChanged || fixJasaChanged) {
-      log('Config/role/fixJasa change detected, reloading...');
+    var featureChanged = false;
+    var oldFeatures = oldConfig?.features || {};
+    var newFeatures = newConfig?.features || {};
+    for (var key of Object.keys(newFeatures)) {
+      if (newFeatures[key]?.enabled !== oldFeatures[key]?.enabled) {
+        featureChanged = true;
+        break;
+      }
+    }
+
+    if (extChanged || roleChanged || featureChanged) {
+      log('Config change detected, reloading...');
       window.location.reload();
     }
   }

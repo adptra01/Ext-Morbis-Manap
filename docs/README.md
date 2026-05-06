@@ -256,8 +256,8 @@ open-detail-new-tab/
     - Posisi tetap
 
 6. **Optimisasi Cetak**
-    - Diaktifkan/Dinonaktifkan (ditandai sebagai coming soon)
-    - Perilaku sync otomatis
+    - Diaktifkan/Dinonaktifkan via toggle popup
+    - Sembunyikan section kosong & optimasi layout cetak sambung-menyambung
 
 ## Panduan Penggunaan
 

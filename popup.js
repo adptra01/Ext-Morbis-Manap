@@ -58,12 +58,11 @@ const DEFAULT_CONFIG = {
       description: 'Tombol scroll otomatis ke atas dan bawah halaman detail'
     },
     printOptimization: {
-      enabled: false,
-      allowedRoles: [ROLES.CASEMIX],
-      name: 'Optimasi Cetak',
-      description: 'Sembunyikan section kosong & Auto-Uncheck secara cerdas.',
-      comingSoon: true
-    },
+	      enabled: true,
+	      allowedRoles: [ROLES.CASEMIX],
+	      name: 'Optimasi Cetak',
+	      description: 'Sembunyikan section kosong & optimasi layout cetak.'
+	    },
     batchUpload: {
       enabled: false,
       allowedRoles: [ROLES.CASEMIX],
@@ -149,6 +148,13 @@ async function loadConfig() {
       }
 
       currentConfig.features = newFeatures;
+	      // Upgrade: hapus comingSoon flag dari printOptimization jika masih ada (v1 -> v2)
+	      if (currentConfig.features.printOptimization?.comingSoon !== undefined) {
+	        delete currentConfig.features.printOptimization.comingSoon;
+	        currentConfig.features.printOptimization.enabled = true;
+	        await saveConfig(currentConfig);
+	      }
+
 
       // Silent auto-mapping untuk user lama
       if (!currentConfig.currentRole) {
