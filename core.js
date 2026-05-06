@@ -126,6 +126,27 @@ async function loadConfig() {
         }
       }
 
+      // Repair only structurally invalid allowedRoles (missing, non-array, or unknown roles)
+      const ALL_KNOWN_ROLES = Object.values(ROLES);
+      for (const key of validFeatures) {
+        const defaultRoles = DEFAULT_CONFIG.features[key].allowedRoles;
+        const currentRoles = newFeatures[key].allowedRoles;
+
+        if (!Array.isArray(currentRoles)) {
+          console.warn(`[MORBIS Ext] Repairing allowedRoles for ${key}: not an array →`, defaultRoles);
+          newFeatures[key].allowedRoles = [...defaultRoles];
+        } else if (currentRoles.length === 0) {
+          console.warn(`[MORBIS Ext] Repairing allowedRoles for ${key}: empty array →`, defaultRoles);
+          newFeatures[key].allowedRoles = [...defaultRoles];
+        } else {
+          const unknown = currentRoles.filter(r => !ALL_KNOWN_ROLES.includes(r));
+          if (unknown.length > 0) {
+            console.warn(`[MORBIS Ext] Removing unknown roles from ${key}:`, unknown);
+            newFeatures[key].allowedRoles = currentRoles.filter(r => ALL_KNOWN_ROLES.includes(r));
+          }
+        }
+      }
+
       currentConfig.features = newFeatures;
 
       // Silent auto-mapping

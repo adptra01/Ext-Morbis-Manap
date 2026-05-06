@@ -1,165 +1,221 @@
 /**
- * FEATURE: Filter Persistence State
- * Menyimpan data input filter ke localStorage agar tidak perlu diketik ulang 
- * saat kembali dari halaman detail.
+ * FEATURE: Filter Persistence State (Universal)
+ * Menyimpan data input filter ke localStorage berdasarkan konteks halaman.
+ * Mendukung: M-Klaim (casemix), Billing Verifikasi (kasir), Dokter.
  */
 
-const FILTER_PERSISTENCE_CONFIG = {
-  targetUrlPattern: 'http://103.147.236.140/v2/m-klaim',
-  storageKey: 'mklaim_filter',
-  fields: [
-    'tanggalAwal', 'tanggalAkhir', 'norm', 'nama', 'reg',
-    'poli_cari', 'id_poli_cari', 'id_poli', 'billing', 'status'
-  ],
-  cariButtonSelectors: [
-    'button[onclick*="cari()"]',
-    '.btn-primary i.fa-search' // Fallback
-  ],
-  batalButtonSelectors: [
-    'button[onclick*="batal()"]',
-    'button[onclick*="reset"]',
-    '.btn-default i.fa-refresh' // Fallback
-  ]
+const PERSISTENCE_MAP = {
+  filterPersistence: {
+    pattern: '/v2/m-klaim',
+    excludePattern: 'detail',
+    storageKey: 'mklaim_filter',
+    scopeField: 'tanggalAwal',
+    fields: [
+      'tanggalAwal', 'tanggalAkhir', 'norm', 'nama', 'reg',
+      'poli_cari', 'id_poli_cari', 'id_poli', 'billing', 'status'
+    ],
+    cariButtonSelectors: [
+      'button[onclick*="cari()"]',
+      '.btn-primary i.fa-search'
+    ],
+    batalButtonSelectors: [
+      'button[onclick*="batal()"]',
+      'button[onclick*="reset"]',
+      '.btn-default i.fa-refresh'
+    ]
+  },
+  billingFilterPersistence: {
+    pattern: '/billing/pembayaran-new/billing-verifikasi',
+    storageKey: 'billing_filter',
+    scopeField: 'awal',
+    fields: [
+      'awal', 'akhir', 'noreg', 'no_Rm', 'pasien', 'sep',
+      'status', 'statuspasien', 'jenisPasien', 'statusPeriksa',
+      'dokter', 'idDokter', 'unit', 'idUnit', 'kategori'
+    ],
+    cariButtonSelectors: [
+      'input[id="cari"]',
+      'input.tombol[value="Cari"]'
+    ],
+    batalButtonSelectors: [
+      'input.tombol[value="Cancel"]'
+    ]
+  },
+  doctorFilterPersistence: {
+    pattern: '__PLACEHOLDER__',
+    storageKey: 'doctor_filter',
+    fields: [],
+    cariButtonSelectors: [],
+    batalButtonSelectors: []
+  }
 };
 
-function isMklaimSearchPage() {
-  const url = window.location.href;
-  // Memastikan kita berada di antarmuka m-klaim utama, bukan di halaman /detail
-  return url.includes('/v2/m-klaim') && !url.includes('detail');
+function getContext() {
+  const path = window.location.pathname;
+  for (const key of Object.keys(PERSISTENCE_MAP)) {
+    const ctx = PERSISTENCE_MAP[key];
+    if (!path.includes(ctx.pattern)) continue;
+    if (ctx.excludePattern && path.includes(ctx.excludePattern)) continue;
+
+    // Verify feature is enabled and allowed for current role
+    if (!currentConfig?.features?.[key]?.enabled) return null;
+    if (!ExtensionCore.isFeatureAllowed(key)) return null;
+
+    return ctx;
+  }
+  return null;
 }
 
 function saveFilter() {
-  const filterState = {};
+  const ctx = getContext();
+  if (!ctx) return;
 
-  FILTER_PERSISTENCE_CONFIG.fields.forEach(function (fieldId) {
+  const filterState = {};
+  ctx.fields.forEach(function (fieldId) {
     const el = document.getElementById(fieldId);
     if (el) {
       filterState[fieldId] = el.value;
     }
   });
 
-  localStorage.setItem(FILTER_PERSISTENCE_CONFIG.storageKey, JSON.stringify(filterState));
-  log('Filter state saved:', filterState);
+  localStorage.setItem(ctx.storageKey, JSON.stringify(filterState));
+  log('Filter saved:', ctx.storageKey, filterState);
 }
 
 function restoreFilter() {
-  const savedData = localStorage.getItem(FILTER_PERSISTENCE_CONFIG.storageKey);
+  const ctx = getContext();
+  if (!ctx) return;
 
-  if (savedData) {
-    try {
-      const filterState = JSON.parse(savedData);
+  const savedData = localStorage.getItem(ctx.storageKey);
+  if (!savedData) return;
 
-      FILTER_PERSISTENCE_CONFIG.fields.forEach(function (fieldId) {
-        const el = document.getElementById(fieldId);
-        if (el && filterState[fieldId] !== undefined) {
-          el.value = filterState[fieldId];
+  try {
+    const filterState = JSON.parse(savedData);
 
-          // Trigger native events agar dicatch oleh jQuery plugins
-          el.dispatchEvent(new Event('input', { bubbles: true }));
-          el.dispatchEvent(new Event('change', { bubbles: true }));
-          el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
+    ctx.fields.forEach(function (fieldId) {
+      const el = document.getElementById(fieldId);
+      if (el && filterState[fieldId] !== undefined) {
+        el.value = filterState[fieldId];
 
-          // Trik UI: focus dan blur seringkali memaksa re-kalkulasi kalender datepicker
-          setTimeout(() => {
-            if (fieldId === 'tanggalAwal' || fieldId === 'tanggalAkhir') {
-              el.dispatchEvent(new Event('blur', { bubbles: true }));
-            }
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+        el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
+
+        if (fieldId === 'awal' || fieldId === 'akhir' ||
+            fieldId === 'tanggalAwal' || fieldId === 'tanggalAkhir') {
+          setTimeout(function () {
+            el.dispatchEvent(new Event('blur', { bubbles: true }));
           }, 50);
         }
-      });
+      }
+    });
 
-      log('Filter state restored:', filterState);
-    } catch (err) {
-      console.error('[OpenDetail] Failed to restore filter state:', err);
-    }
+    log('Filter restored:', ctx.storageKey, filterState);
+  } catch (err) {
+    console.error('[FilterPersistence] Failed to restore:', err);
   }
 }
 
 function clearFilter() {
-  localStorage.removeItem(FILTER_PERSISTENCE_CONFIG.storageKey);
+  const ctx = getContext();
+  if (!ctx) return;
 
-  FILTER_PERSISTENCE_CONFIG.fields.forEach(function (fieldId) {
+  localStorage.removeItem(ctx.storageKey);
+
+  ctx.fields.forEach(function (fieldId) {
     const el = document.getElementById(fieldId);
     if (el) {
       el.value = '';
     }
   });
 
-  log('Filter state cleared.');
+  log('Filter cleared:', ctx.storageKey);
+}
+
+function getFilterScope(ctx) {
+  if (!ctx.scopeField) return document;
+
+  const anchor = document.getElementById(ctx.scopeField);
+  if (!anchor) return document;
+
+  var scope = anchor.closest('form') || anchor.closest('table') || anchor.parentElement;
+  return scope || document;
 }
 
 function attachFilterListeners() {
+  const ctx = getContext();
+  if (!ctx) return;
+
+  const scope = getFilterScope(ctx);
+
   // Pasang listener pada tombol Cari
-  for (const selector of FILTER_PERSISTENCE_CONFIG.cariButtonSelectors) {
-    const btns = document.querySelectorAll(selector);
+  for (const selector of ctx.cariButtonSelectors) {
+    const btns = scope.querySelectorAll(selector);
     for (const btn of btns) {
-      // Tombol i.fa-search biasanya dibungkus <button>, cari parent buttonnya
       const targetBtn = btn.tagName === 'I' ? btn.closest('button') : btn;
       if (targetBtn && !targetBtn.dataset.filterBound) {
         targetBtn.dataset.filterBound = 'true';
         targetBtn.addEventListener('click', saveFilter);
-        log('Attached save listener to Cari button');
       }
     }
   }
 
-  // Pasang listener pada tombol Batal
-  for (const selector of FILTER_PERSISTENCE_CONFIG.batalButtonSelectors) {
-    const btns = document.querySelectorAll(selector);
+  // Pasang listener pada tombol Batal/Cancel
+  for (const selector of ctx.batalButtonSelectors) {
+    const btns = scope.querySelectorAll(selector);
     for (const btn of btns) {
       const targetBtn = btn.tagName === 'I' ? btn.closest('button') : btn;
       if (targetBtn && !targetBtn.dataset.filterBound) {
         targetBtn.dataset.filterBound = 'true';
         targetBtn.addEventListener('click', clearFilter);
-        log('Attached clear listener to Batal button');
       }
     }
   }
 }
 
 function runFilterPersistenceFeature() {
-  if (!currentConfig?.features?.filterPersistence?.enabled || !ExtensionCore.isFeatureAllowed('filterPersistence')) {
-    return;
-  }
+  const ctx = getContext();
+  if (!ctx) return;
 
-  // Hanya jalankan jika di halaman utama M-klaim pencarian
-  if (!isMklaimSearchPage()) {
-    return;
-  }
+  log('Running Filter Persistence:', ctx.storageKey);
 
-  log('Running Filter Persistence State feature');
-
-  // Restore secara otomatis saat pertama kali fitur di-load
   restoreFilter();
-
-  // Pasangkan pendengar klik pada tombol yang ada
   attachFilterListeners();
 
-  // Kadang kala, UI / tombol dirender / update menggunakan AJAX.
-  // Gunakan Mutation Observer untuk mengikat ulang apabila tombol muncul belakangan.
-  const observer = new MutationObserver((mutations) => {
-    let shouldUpdate = false;
-    for (const mutation of mutations) {
-      if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-        shouldUpdate = true;
-        break;
-      }
-    }
-    if (shouldUpdate) {
-      attachFilterListeners();
-    }
+  const observer = new MutationObserver(function () {
+    attachFilterListeners();
   });
 
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
-// Register Module - Safe with defensive checks
+// Register modules - guard against multiple registration
 if (typeof featureModules !== 'undefined') {
-  featureModules.filterPersistence = {
-    name: 'Filter Persistence State',
-    description: 'Simpan otomatis kolom pencarian agar tidak perlu diketik ulang',
-    run: runFilterPersistenceFeature
+  const featureMeta = {
+    filterPersistence: {
+      name: 'Filter Persistence State',
+      description: 'Simpan otomatis kolom pencarian M-Klaim agar tidak perlu diketik ulang'
+    },
+    billingFilterPersistence: {
+      name: 'Billing Filter Persistence',
+      description: 'Simpan otomatis filter verifikasi billing agar tidak perlu diketik ulang'
+    },
+    doctorFilterPersistence: {
+      name: 'Doctor Filter Persistence',
+      description: 'Simpan otomatis filter pelaksanaan dokter agar tidak perlu diketik ulang'
+    }
   };
+
+  Object.keys(PERSISTENCE_MAP).forEach(function (key) {
+    // Skip modules that were already registered by a previous version
+    if (featureModules[key]) return;
+
+    featureModules[key] = {
+      name: featureMeta[key]?.name || key,
+      description: featureMeta[key]?.description || '',
+      run: runFilterPersistenceFeature
+    };
+  });
 } else {
-  console.warn('[Filter Persistence] featureModules not defined, module registration skipped');
+  console.warn('[FilterPersistence] featureModules not defined, module registration skipped');
 }

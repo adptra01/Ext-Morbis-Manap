@@ -24,7 +24,8 @@
     {
       "matches": [
         "http://192.168.8.4/v2/m-klaim/*",
-        "http://103.147.236.140/v2/m-klaim/*"
+        "http://103.147.236.140/v2/m-klaim/*",
+        "http://103.147.236.140/billing/pembayaran-new/billing-verifikasi*"
       ],
       "js": [
         "core.js",
