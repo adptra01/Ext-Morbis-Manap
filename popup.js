@@ -14,7 +14,8 @@ const DEFAULT_CUSTOM_URLS = [
 const ROLES = {
   CASEMIX: 'casemix',
   KASIR: 'kasir',
-  DOKTER: 'dokter'
+  DOKTER: 'dokter',
+  APOTEK: 'apotek'
 };
 
 const DEFAULT_CONFIG = {
@@ -86,6 +87,12 @@ const DEFAULT_CONFIG = {
       allowedRoles: [ROLES.DOKTER],
       name: 'Doctor Filter Persistence',
       description: 'Simpan otomatis filter pelaksanaan dokter agar tidak perlu diketik ulang'
+    },
+    resepTools: {
+      enabled: true,
+      allowedRoles: [ROLES.APOTEK],
+      name: 'Resep Tools',
+      description: 'Validasi aturan pakai, UI dosis kondisional, print safety lock'
     }
   }
 };
@@ -372,7 +379,7 @@ function renderFeatures() {
   // Update section title to show current role
   const sectionTitle = document.querySelector('.section:nth-child(5) .section-title');
   if (sectionTitle) {
-    const roleName = role === 'casemix' ? 'Casemix' : role === 'kasir' ? 'Kasir' : 'Dokter';
+    const roleName = role === 'casemix' ? 'Casemix' : role === 'kasir' ? 'Kasir' : role === 'dokter' ? 'Dokter' : 'Apotek';
     sectionTitle.textContent = `Fitur Tersedia (${roleName})`;
   }
 
@@ -611,7 +618,7 @@ async function init() {
 
     function updateRoleBanner() {
       const role = getCurrentRole();
-      const roleName = role === 'casemix' ? 'Casemix' : role === 'kasir' ? 'Kasir' : 'Dokter';
+      const roleName = role === 'casemix' ? 'Casemix' : role === 'kasir' ? 'Kasir' : role === 'dokter' ? 'Dokter' : 'Apotek';
       roleBanner.innerHTML = `Anda saat ini: <strong>${roleName}</strong>. <a href="#" id="changeRoleLink">[Ubah]</a>`;
     }
 

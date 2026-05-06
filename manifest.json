@@ -25,7 +25,9 @@
       "matches": [
         "http://192.168.8.4/v2/m-klaim/*",
         "http://103.147.236.140/v2/m-klaim/*",
-        "http://103.147.236.140/billing/pembayaran-new/billing-verifikasi*"
+        "http://103.147.236.140/billing/pembayaran-new/billing-verifikasi*",
+        "http://192.168.8.4/inventory/penjualan-bebas*",
+        "http://103.147.236.140/inventory/penjualan-bebas*"
       ],
       "js": [
         "core.js",
@@ -40,6 +42,31 @@
         "init.js"
       ],
       "run_at": "document_end",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "http://192.168.8.4/inventory/penjualan-resep-edit/*",
+        "http://103.147.236.140/inventory/penjualan-resep-edit/*"
+      ],
+      "js": [
+        "core.js",
+        "features/penerimaan_resep/main.js",
+        "init.js"
+      ],
+      "run_at": "document_end",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "http://192.168.8.4/inventory/penjualan-bebas*",
+        "http://103.147.236.140/inventory/penjualan-bebas*"
+      ],
+      "js": [
+        "features/fixJasaPelayanan.js"
+      ],
+      "run_at": "document_idle",
+      "world": "MAIN",
       "all_frames": false
     }
   ],
