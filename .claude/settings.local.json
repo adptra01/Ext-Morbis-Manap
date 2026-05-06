@@ -25,7 +25,10 @@
       "Bash(powershell -Command \"Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::OpenRead\\('MORBIS-Ext-Unofficial-v1.2.0-store.zip'\\).Entries.FullName | Sort-Object\")",
       "Bash(claude plugin *)",
       "Bash(python3 \"C:/Users/adptra01/.claude/skills/ui-ux-pro-max/scripts/search.py\" \"healthcare professional admin dashboard\" --design-system -p \"MORBIS Extension\" --stack html-tailwind -f markdown)",
-      "Bash(python \"C:/Users/adptra01/.claude/skills/ui-ux-pro-max/scripts/search.py\" \"healthcare professional admin dashboard\" --design-system -p \"MORBIS Extension\" --stack html-tailwind -f markdown)"
+      "Bash(python \"C:/Users/adptra01/.claude/skills/ui-ux-pro-max/scripts/search.py\" \"healthcare professional admin dashboard\" --design-system -p \"MORBIS Extension\" --stack html-tailwind -f markdown)",
+      "Bash(Get-ChildItem *)",
+      "Bash(Select-Object Name, FullName, Mode)",
+      "Bash(Remove-Item *)"
     ]
   }
 }
