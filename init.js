@@ -24,6 +24,14 @@ async function initExtension() {
     return;
   }
 
+  // Signal fixJasaPelayanan feature state to MAIN world script via DOM attribute
+  var fixJasaCfg = currentConfig?.features?.fixJasaPelayanan;
+  if (fixJasaCfg?.enabled && ExtensionCore.isFeatureAllowed('fixJasaPelayanan')) {
+    document.documentElement.setAttribute('data-ext-fix-jasa', '1');
+  } else {
+    document.documentElement.removeAttribute('data-ext-fix-jasa');
+  }
+
   for (const [key, module] of Object.entries(featureModules)) {
     const featureConfig = currentConfig?.features?.[key];
 

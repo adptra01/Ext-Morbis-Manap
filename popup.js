@@ -93,6 +93,12 @@ const DEFAULT_CONFIG = {
       allowedRoles: [ROLES.APOTEK],
       name: 'Resep Tools',
       description: 'Validasi aturan pakai, UI dosis kondisional, print safety lock'
+    },
+    fixJasaPelayanan: {
+      enabled: true,
+      allowedRoles: [ROLES.APOTEK],
+      name: 'Fix Jasa Pelayanan Reset',
+      description: 'Cegah reset otomatis kolom Jasa Pelayanan ke 0 pada penjualan bebas'
     }
   }
 };
