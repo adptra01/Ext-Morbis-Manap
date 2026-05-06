@@ -9,7 +9,8 @@ const URLS_STORAGE_KEY = 'extensionCustomUrls';
 const ROLES = {
   CASEMIX: 'casemix',
   KASIR: 'kasir',
-  DOKTER: 'dokter'
+  DOKTER: 'dokter',
+  APOTEK: 'apotek'
 };
 
 const DEFAULT_CUSTOM_URLS = [
@@ -86,6 +87,12 @@ const DEFAULT_CONFIG = {
       allowedRoles: ['dokter'],
       name: 'Doctor Filter Persistence',
       description: 'Simpan otomatis filter pelaksanaan dokter agar tidak perlu diketik ulang'
+    },
+    resepTools: {
+      enabled: true,
+      allowedRoles: ['apotek'],
+      name: 'Resep Tools',
+      description: 'Validasi aturan pakai, UI dosis kondisional, print safety lock'
     }
   }
 };
