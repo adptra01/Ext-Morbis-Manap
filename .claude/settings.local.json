@@ -28,7 +28,15 @@
       "Bash(python \"C:/Users/adptra01/.claude/skills/ui-ux-pro-max/scripts/search.py\" \"healthcare professional admin dashboard\" --design-system -p \"MORBIS Extension\" --stack html-tailwind -f markdown)",
       "Bash(Get-ChildItem *)",
       "Bash(Select-Object Name, FullName, Mode)",
-      "Bash(Remove-Item *)"
+      "Bash(Remove-Item *)",
+      "Bash(npx chrome-devtools-mcp@latest --help)",
+      "Bash(Select-Object -First 10)",
+      "PowerShell(npm view *)",
+      "PowerShell(npx chrome-devtools-mcp@latest --help 2>&1)",
+      "PowerShell(Get-Item *)",
+      "PowerShell(Get-Process *)",
+      "PowerShell(New-Item *)",
+      "mcp__chrome-devtools__list_pages"
     ]
   }
 }
