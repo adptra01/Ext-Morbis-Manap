@@ -267,8 +267,12 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     const newConfig = changes[STORAGE_KEY].newValue;
     const oldConfig = changes[STORAGE_KEY].oldValue || {};
 
-    if (newConfig?.extensionEnabled !== oldConfig.extensionEnabled || newConfig?.currentRole !== oldConfig.currentRole) {
-      log('Config/role change detected, reloading...');
+    var extChanged = newConfig?.extensionEnabled !== oldConfig.extensionEnabled;
+    var roleChanged = newConfig?.currentRole !== oldConfig.currentRole;
+    var fixJasaChanged = newConfig?.features?.fixJasaPelayanan?.enabled !== oldConfig?.features?.fixJasaPelayanan?.enabled;
+
+    if (extChanged || roleChanged || fixJasaChanged) {
+      log('Config/role/fixJasa change detected, reloading...');
       window.location.reload();
     }
   }
