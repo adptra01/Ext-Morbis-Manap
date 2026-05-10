@@ -1,0 +1,12 @@
+{
+  "addons": {
+    "morbis-ext@rsud-manap.com": {
+      "updates": [
+        {
+          "version": "1.2.0",
+          "update_link": "https://adptra01.github.io/Ext-Morbis-Manap/morbis-v1.2.0.xpi"
+        }
+      ]
+    }
+  }
+}
