@@ -5,3 +5,4 @@ dist/
 example_code/
 test-results/
 code_views/
+*.pem
