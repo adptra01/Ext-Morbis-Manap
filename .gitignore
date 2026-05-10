@@ -4,3 +4,4 @@ dist/
 .DS_Store
 code_views/
 test-results/
+*.pem
