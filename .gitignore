@@ -6,3 +6,5 @@ example_code/
 test-results/
 code_views/
 *.pem
+__pycache__/
+*.pyc

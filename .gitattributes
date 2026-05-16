@@ -5,6 +5,7 @@
 *.html diff=html
 *.md diff=markdown
 *.php diff=php
+*.json diff=json
 
 CHANGELOG.md export-ignore
 README.md export-ignore
@@ -25,3 +26,11 @@ README.md export-ignore
 *.jpeg binary
 *.gif binary
 *.ico binary
+*.crx binary
+*.pyc binary
+
+# Text-based vector/image formats
+*.svg text eol=lf
+
+# Windows registry export files
+*.reg text eol=lf
