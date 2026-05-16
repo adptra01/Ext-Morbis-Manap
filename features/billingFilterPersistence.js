@@ -1,7 +1,10 @@
 /**
  * FEATURE: Billing Filter Persistence State
- * Menyimpan data input filter halaman verifikasi billing ke localStorage
- * agar tidak perlu diketik ulang saat kembali dari halaman detail.
+ * Menyimpan data input filter halaman verifikasi billing ke cookies
+ * (via CookieFilterStorage) agar tidak perlu diketik ulang saat
+ * kembali dari halaman detail. Cookie otomatis expired tengah malam.
+ *
+ * Dependencies: CookieFilterStorage (features/shared/cookieFilterStorage.js)
  */
 
 const BILLING_FILTER_CONFIG = {
@@ -47,17 +50,15 @@ function saveFilter() {
     }
   });
 
-  localStorage.setItem(BILLING_FILTER_CONFIG.storageKey, JSON.stringify(filterState));
+  CookieFilterStorage.set(BILLING_FILTER_CONFIG.storageKey, filterState);
   log('Billing filter state saved:', filterState);
 }
 
 function restoreFilter() {
-  const savedData = localStorage.getItem(BILLING_FILTER_CONFIG.storageKey);
+  const filterState = CookieFilterStorage.get(BILLING_FILTER_CONFIG.storageKey);
 
-  if (savedData) {
+  if (filterState) {
     try {
-      const filterState = JSON.parse(savedData);
-
       BILLING_FILTER_CONFIG.fields.forEach(function (fieldId) {
         const el = document.getElementById(fieldId);
         if (el && filterState[fieldId] !== undefined) {
@@ -93,7 +94,7 @@ function restoreFilter() {
 }
 
 function clearFilter() {
-  localStorage.removeItem(BILLING_FILTER_CONFIG.storageKey);
+  CookieFilterStorage.remove(BILLING_FILTER_CONFIG.storageKey);
 
   BILLING_FILTER_CONFIG.fields.forEach(function (fieldId) {
     const el = document.getElementById(fieldId);
@@ -146,6 +147,12 @@ function runBillingFilterPersistence() {
   }
 
   log('Running Billing Filter Persistence State feature');
+
+  // Migrasi data dari localStorage legacy (jalan sekali)
+  CookieFilterStorage.migrateFromLocalStorage(BILLING_FILTER_CONFIG.storageKey, BILLING_FILTER_CONFIG.storageKey);
+
+  setupFilterLogoutWatcher();
+  initClearAllFilterButton();
 
   restoreFilter();
   attachFilterListeners();

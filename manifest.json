@@ -31,6 +31,7 @@
       ],
       "js": [
         "core.js",
+        "features/shared/cookieFilterStorage.js",
         "features/openDetail.js",
         "features/shortcutButtons.js",
         "features/filterPersistence.js",
@@ -51,6 +52,7 @@
       ],
       "js": [
         "core.js",
+        "features/shared/cookieFilterStorage.js",
         "features/billingFilterPersistence.js",
         "init.js"
       ],
@@ -81,6 +83,7 @@
       ],
       "js": [
         "core.js",
+        "features/shared/cookieFilterStorage.js",
         "features/doctorFilterPersistence.js",
         "init.js"
       ],

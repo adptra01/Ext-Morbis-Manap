@@ -1,7 +1,10 @@
 /**
  * FEATURE: Doctor Filter Persistence State
- * Menyimpan data input filter halaman pelaksanaan dokter ke localStorage
- * agar tidak perlu diketik ulang saat kembali dari halaman detail.
+ * Menyimpan data input filter halaman pelaksanaan dokter ke cookies
+ * (via CookieFilterStorage) agar tidak perlu diketik ulang saat
+ * kembali dari halaman detail. Cookie otomatis expired tengah malam.
+ *
+ * Dependencies: CookieFilterStorage (features/shared/cookieFilterStorage.js)
  */
 
 const DOCTOR_FILTER_CONFIGS = {
@@ -74,7 +77,7 @@ function saveFilter() {
     }
   });
 
-  localStorage.setItem(config.storageKey, JSON.stringify(filterState));
+  CookieFilterStorage.set(config.storageKey, filterState);
   log('Doctor filter state saved (' + config.urlPattern + '):', filterState);
 }
 
@@ -82,12 +85,10 @@ function restoreFilter() {
   const config = getCurrentPageConfig();
   if (!config) return;
 
-  const savedData = localStorage.getItem(config.storageKey);
+  const filterState = CookieFilterStorage.get(config.storageKey);
 
-  if (savedData) {
+  if (filterState) {
     try {
-      const filterState = JSON.parse(savedData);
-
       config.fields.forEach(function (fieldId) {
         const el = document.getElementById(fieldId);
         if (el && filterState[fieldId] !== undefined) {
@@ -116,7 +117,7 @@ function clearFilter() {
   const config = getCurrentPageConfig();
   if (!config) return;
 
-  localStorage.removeItem(config.storageKey);
+  CookieFilterStorage.remove(config.storageKey);
 
   config.fields.forEach(function (fieldId) {
     const el = document.getElementById(fieldId);
@@ -165,6 +166,15 @@ function runDoctorFilterPersistence() {
   }
 
   log('Running Doctor Filter Persistence State feature');
+
+  // Migrasi data dari localStorage legacy (jalan sekali per config)
+  var configs = DOCTOR_FILTER_CONFIGS;
+  for (var cfgKey in configs) {
+    CookieFilterStorage.migrateFromLocalStorage(configs[cfgKey].storageKey, configs[cfgKey].storageKey);
+  }
+
+  setupFilterLogoutWatcher();
+  initClearAllFilterButton();
 
   restoreFilter();
   attachFilterListeners();

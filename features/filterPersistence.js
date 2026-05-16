@@ -1,7 +1,10 @@
 /**
  * FEATURE: Filter Persistence State (Universal)
- * Menyimpan data input filter ke localStorage berdasarkan konteks halaman.
+ * Menyimpan data input filter ke cookies (via CookieFilterStorage)
+ * berdasarkan konteks halaman. Cookie otomatis expired setiap tengah malam.
  * Mendukung: M-Klaim (casemix), Billing Verifikasi (kasir), Dokter.
+ *
+ * Dependencies: CookieFilterStorage (features/shared/cookieFilterStorage.js)
  */
 
 const PERSISTENCE_MAP = {
@@ -78,7 +81,7 @@ function saveFilter() {
     }
   });
 
-  localStorage.setItem(ctx.storageKey, JSON.stringify(filterState));
+  CookieFilterStorage.set(ctx.storageKey, filterState);
   log('Filter saved:', ctx.storageKey, filterState);
 }
 
@@ -86,41 +89,35 @@ function restoreFilter() {
   const ctx = getContext();
   if (!ctx) return;
 
-  const savedData = localStorage.getItem(ctx.storageKey);
-  if (!savedData) return;
+  const filterState = CookieFilterStorage.get(ctx.storageKey);
+  if (!filterState) return;
 
-  try {
-    const filterState = JSON.parse(savedData);
+  ctx.fields.forEach(function (fieldId) {
+    const el = document.getElementById(fieldId);
+    if (el && filterState[fieldId] !== undefined) {
+      el.value = filterState[fieldId];
 
-    ctx.fields.forEach(function (fieldId) {
-      const el = document.getElementById(fieldId);
-      if (el && filterState[fieldId] !== undefined) {
-        el.value = filterState[fieldId];
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
 
-        el.dispatchEvent(new Event('input', { bubbles: true }));
-        el.dispatchEvent(new Event('change', { bubbles: true }));
-        el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
-
-        if (fieldId === 'awal' || fieldId === 'akhir' ||
-            fieldId === 'tanggalAwal' || fieldId === 'tanggalAkhir') {
-          setTimeout(function () {
-            el.dispatchEvent(new Event('blur', { bubbles: true }));
-          }, 50);
-        }
+      if (fieldId === 'awal' || fieldId === 'akhir' ||
+          fieldId === 'tanggalAwal' || fieldId === 'tanggalAkhir') {
+        setTimeout(function () {
+          el.dispatchEvent(new Event('blur', { bubbles: true }));
+        }, 50);
       }
-    });
+    }
+  });
 
-    log('Filter restored:', ctx.storageKey, filterState);
-  } catch (err) {
-    console.error('[FilterPersistence] Failed to restore:', err);
-  }
+  log('Filter restored:', ctx.storageKey, filterState);
 }
 
 function clearFilter() {
   const ctx = getContext();
   if (!ctx) return;
 
-  localStorage.removeItem(ctx.storageKey);
+  CookieFilterStorage.remove(ctx.storageKey);
 
   ctx.fields.forEach(function (fieldId) {
     const el = document.getElementById(fieldId);
@@ -173,11 +170,38 @@ function attachFilterListeners() {
   }
 }
 
+/**
+ * Legacy storage key mapping for migration from localStorage to cookies.
+ * Key = PERSISTENCE_MAP key, Value = old localStorage key name.
+ */
+const LEGACY_STORAGE_KEYS = {
+  filterPersistence: 'mklaim_filter',
+  billingFilterPersistence: 'billing_filter',
+  doctorFilterPersistence: 'doctor_filter'
+};
+
 function runFilterPersistenceFeature() {
   const ctx = getContext();
   if (!ctx) return;
 
+  // Cari key legacy yang cocok dengan context saat ini
+  var legacyKey = null;
+  for (var mapKey in PERSISTENCE_MAP) {
+    if (PERSISTENCE_MAP[mapKey] === ctx && LEGACY_STORAGE_KEYS[mapKey]) {
+      legacyKey = LEGACY_STORAGE_KEYS[mapKey];
+      break;
+    }
+  }
+
+  // Migrasi data dari localStorage legacy (jalan sekali)
+  if (legacyKey) {
+    CookieFilterStorage.migrateFromLocalStorage(legacyKey, ctx.storageKey);
+  }
+
   log('Running Filter Persistence:', ctx.storageKey);
+
+  setupFilterLogoutWatcher();
+  initClearAllFilterButton();
 
   restoreFilter();
   attachFilterListeners();
