@@ -1,0 +1,27 @@
+* text=auto eol=lf
+
+*.blade.php diff=html
+*.css diff=css
+*.html diff=html
+*.md diff=markdown
+*.php diff=php
+
+CHANGELOG.md export-ignore
+README.md export-ignore
+.github/workflows/browser-tests.yml export-ignore
+
+*.php text eol=lf
+*.js text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.blade.php text eol=lf
+*.sh text eol=lf
+
+*.bat text eol=crlf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
