@@ -8,6 +8,42 @@ Website tool untuk membantu menyesuaikan fitur extension dengan sistem M-KLAIM t
 Generate URL yang benar untuk navigasi antara halaman M-KLAIM dengan filter yang terjaga.
 
 **Fitur:**
+
+---
+
+### 5. Morbis Scraper (CLI)
+
+Scrape data dari sistem Morbis HIS secara otomatis menggunakan Scrapling.
+
+**Setup:**
+```bash
+source /tmp/scrapling-venv/bin/activate
+```
+
+**Login:**
+```bash
+python morbis_scraper.py login USERNAME PASSWORD
+```
+
+**Scrape surat pengantar rawat inap:**
+```bash
+python morbis_scraper.py surat-pengantar 169420 --page 1 --status belum
+```
+
+**Scrape halaman custom:**
+```bash
+python morbis_scraper.py scrape "http://103.147.236.140/admisi/..." \
+  --selector "table" --output data.json
+```
+
+**Fitur:**
+- ✅ Session management (login sekali, scrape berkali-kali)
+- ✅ Auto-save/load cookies
+- ✅ CSS selector extraction
+- ✅ JSON output untuk data tabel
+- ✅ Support pagination
+
+---
 - Input semua parameter filter (tanggal, norm, nama, reg, unit, billing, status)
 - Generate URL untuk halaman List dan Detail
 - Copy URL ke clipboard dengan 1 klik

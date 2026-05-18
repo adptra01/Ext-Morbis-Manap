@@ -34,3 +34,5 @@ README.md export-ignore
 
 # Windows registry export files
 *.reg text eol=lf
+
+./claude/*
