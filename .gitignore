@@ -8,3 +8,6 @@ code_views/
 *.pem
 __pycache__/
 *.pyc
+
+.claude/
+opencode.json
