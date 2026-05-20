@@ -41,7 +41,7 @@ const DEFAULT_CONFIG = {
     },
     filterPersistence: {
       enabled: true,
-      allowedRoles: ['casemix'],
+      allowedRoles: ['casemix', 'kasir', 'dokter', 'apotek'],
       name: 'Filter Persistence State',
       description: 'Simpan otomatis kolom pencarian agar tidak perlu diketik ulang'
     },
@@ -83,7 +83,7 @@ const DEFAULT_CONFIG = {
     },
     doctorFilterPersistence: {
       enabled: true,
-      allowedRoles: ['dokter'],
+      allowedRoles: ['casemix', 'kasir', 'dokter', 'apotek'],
       name: 'Doctor Filter Persistence',
       description: 'Simpan otomatis filter pelaksanaan dokter agar tidak perlu diketik ulang'
     },
@@ -162,6 +162,14 @@ async function loadConfig() {
             console.warn(`[MORBIS Ext] Removing unknown roles from ${key}:`, unknown);
             newFeatures[key].allowedRoles = currentRoles.filter(r => ALL_KNOWN_ROLES.includes(r));
           }
+        }
+      }
+
+      // Upgrade: expand filterPersistence and doctorFilterPersistence to all roles
+      const ALL_ROLES_LIST = Object.values(ROLES);
+      for (const key of ['filterPersistence', 'doctorFilterPersistence']) {
+        if (newFeatures[key]) {
+          newFeatures[key].allowedRoles = [...ALL_ROLES_LIST];
         }
       }
 

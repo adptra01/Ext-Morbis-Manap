@@ -41,7 +41,7 @@ const DEFAULT_CONFIG = {
     },
     filterPersistence: {
       enabled: true,
-      allowedRoles: [ROLES.CASEMIX],
+      allowedRoles: [ROLES.CASEMIX, ROLES.KASIR, ROLES.DOKTER, ROLES.APOTEK],
       name: 'Filter Persistence State',
       description: 'Simpan otomatis kolom pencarian agar tidak perlu diketik ulang'
     },
@@ -83,7 +83,7 @@ const DEFAULT_CONFIG = {
     },
     doctorFilterPersistence: {
       enabled: true,
-      allowedRoles: [ROLES.DOKTER],
+      allowedRoles: [ROLES.CASEMIX, ROLES.KASIR, ROLES.DOKTER, ROLES.APOTEK],
       name: 'Doctor Filter Persistence',
       description: 'Simpan otomatis filter pelaksanaan dokter agar tidak perlu diketik ulang'
     },
