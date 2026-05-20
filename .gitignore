@@ -11,3 +11,6 @@ __pycache__/
 
 .claude/
 opencode.json
+tool/
+screenshots/
+# .playwright-mcp/

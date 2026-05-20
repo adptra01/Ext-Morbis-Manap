@@ -32,6 +32,14 @@ async function initExtension() {
     document.documentElement.removeAttribute('data-ext-fix-jasa');
   }
 
+  // Signal consultationEnhancer feature state to MAIN world script via DOM attribute
+  var consulCfg = currentConfig?.features?.consultationEnhancer;
+  if (consulCfg?.enabled && ExtensionCore.isFeatureAllowed('consultationEnhancer')) {
+    document.documentElement.setAttribute('data-ext-consul-enhancer', '1');
+  } else {
+    document.documentElement.removeAttribute('data-ext-consul-enhancer');
+  }
+
   for (const [key, module] of Object.entries(featureModules)) {
     const featureConfig = currentConfig?.features?.[key];
 

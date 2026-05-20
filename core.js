@@ -98,6 +98,12 @@ const DEFAULT_CONFIG = {
       allowedRoles: ['apotek'],
       name: 'Fix Jasa Pelayanan Reset',
       description: 'Cegah reset otomatis kolom Jasa Pelayanan ke 0 pada penjualan bebas'
+    },
+    consultationEnhancer: {
+      enabled: true,
+      allowedRoles: ['casemix'],
+      name: 'Konsultasi Enhancer',
+      description: 'Tampilkan tabel konsultasi dengan DataTables, modal detail, dan info pasien'
     }
   }
 };

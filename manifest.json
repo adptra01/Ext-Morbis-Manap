@@ -101,6 +101,30 @@
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
+    },
+    {
+      "matches": [
+        "http://103.147.236.140/admisi/pengajuan_konsultasi/konsultasi*",
+        "http://192.168.8.4/admisi/pengajuan_konsultasi/konsultasi*"
+      ],
+      "js": [
+        "core.js",
+        "init.js"
+      ],
+      "run_at": "document_end",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "http://103.147.236.140/admisi/pengajuan_konsultasi/konsultasi*",
+        "http://192.168.8.4/admisi/pengajuan_konsultasi/konsultasi*"
+      ],
+      "js": [
+        "features/consultationEnhancer.js"
+      ],
+      "run_at": "document_end",
+      "world": "MAIN",
+      "all_frames": false
     }
   ],
   "permissions": [
