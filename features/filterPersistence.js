@@ -14,17 +14,19 @@ const PERSISTENCE_MAP = {
     storageKey: 'mklaim_filter',
     scopeField: 'tanggalAwal',
     fields: [
-      'tanggalAwal', 'tanggalAkhir', 'norm', 'nama', 'reg',
-      'poli_cari', 'id_poli_cari', 'id_poli', 'billing', 'status'
+      'filter_tanggal', 'tanggalAwal', 'tanggalAkhir', 'norm', 'nama', 'reg',
+      'id_poli_cari', 'billing', 'status', 'jenis_pasien'
     ],
     cariButtonSelectors: [
       'button[onclick*="cari()"]',
-      '.btn-primary i.fa-search'
+      '.btn-primary i.fa-search',
+      '.btn-info[onclick*="cari"]'
     ],
     batalButtonSelectors: [
       'button[onclick*="batal()"]',
       'button[onclick*="reset"]',
-      '.btn-default i.fa-refresh'
+      '.btn-default i.fa-refresh',
+      'button.btn-warning'
     ]
   },
   billingFilterPersistence: {
