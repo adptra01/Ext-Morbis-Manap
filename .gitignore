@@ -13,4 +13,4 @@ __pycache__/
 opencode.json
 tool/
 screenshots/
-# .playwright-mcp/
+.playwright-mcp/
