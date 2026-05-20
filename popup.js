@@ -1,524 +1,329 @@
-/**
- * Popup Script - Open Detail in New Tab Extension
- * Menangani UI toggle aktif/tidak aktif ekstensi
- */
-
-const STORAGE_KEY = 'extensionConfig';
-const URLS_STORAGE_KEY = 'extensionCustomUrls';
-
-const DEFAULT_CUSTOM_URLS = [
-  { id: 'default-1', url: 'http://192.168.8.4', enabled: true, isDefault: true },
-  { id: 'default-2', url: 'http://103.147.236.140', enabled: true, isDefault: true }
-];
-
-const ROLES = {
-  CASEMIX: 'casemix',
-  KASIR: 'kasir',
-  DOKTER: 'dokter',
-  APOTEK: 'apotek'
+const DOM = {
+  loading: document.getElementById('loading'),
+  mainContent: document.getElementById('mainContent'),
+  toggleExtension: document.getElementById('toggleExtension'),
+  statusBadge: document.getElementById('statusBadge'),
+  statusText: document.getElementById('statusText'),
+  featuresList: document.getElementById('featuresList'),
+  enabledCount: document.getElementById('enabledCount'),
+  totalCount: document.getElementById('totalCount'),
+  reloadBtn: document.getElementById('reloadBtn'),
+  resetBtn: document.getElementById('resetBtn'),
+  urlInput: document.getElementById('urlInput'),
+  addUrlBtn: document.getElementById('addUrlBtn'),
+  urlsList: document.getElementById('urlsList'),
+  toastEl: document.getElementById('toast'),
+  roleSelect: document.getElementById('roleSelect'),
+  roleBanner: document.getElementById('roleBanner')
 };
-
-const DEFAULT_CONFIG = {
-  extensionEnabled: true,
-  currentRole: 'casemix',
-  features: {
-    openDetailInNewTab: {
-      enabled: true,
-      allowedRoles: [ROLES.CASEMIX],
-      name: 'Open Detail Mode',
-      description: 'Pilih mode buka detail: tab baru / tab sama',
-      mode: 'same-tab', // 'new-tab' or 'same-tab'
-      modes: {
-        'same-tab': 'Buka di Tab Sama (Default)',
-        'new-tab': 'Buka di Tab Baru'
-      }
-    },
-    shortcutButtons: {
-      enabled: true,
-      allowedRoles: [ROLES.CASEMIX],
-      name: 'Shortcut Buttons',
-      description: 'Tampilkan tombol shortcut ke pelaksanaan Rajal/Ranap'
-    },
-    filterPersistence: {
-      enabled: true,
-      allowedRoles: [ROLES.CASEMIX, ROLES.KASIR, ROLES.DOKTER, ROLES.APOTEK],
-      name: 'Filter Persistence State',
-      description: 'Simpan otomatis kolom pencarian agar tidak perlu diketik ulang'
-    },
-    simplifyBilling: {
-      enabled: true,
-      allowedRoles: [ROLES.CASEMIX],
-      name: 'Ringkas Rincian Biaya',
-      description: 'Ringkaskan tabel cetak rincian biaya menjadi tampilan rekap per unit'
-    },
-    scrollButtons: {
-      enabled: true,
-      allowedRoles: [ROLES.CASEMIX],
-      name: 'Scroll Buttons (Top/Bottom)',
-      description: 'Tombol scroll otomatis ke atas dan bawah halaman detail'
-    },
-    printOptimization: {
-	      enabled: true,
-	      allowedRoles: [ROLES.CASEMIX],
-	      name: 'Optimasi Cetak',
-	      description: 'Sembunyikan section kosong & optimasi layout cetak.'
-	    },
-    batchUpload: {
-      enabled: false,
-      allowedRoles: [ROLES.CASEMIX],
-      name: 'Upload Dokumen Ulang',
-      description: 'Upload batch dokumen via paste URL dengan metadata extraction otomatis'
-    },
-    batchDelete: {
-      enabled: false,
-      allowedRoles: [ROLES.CASEMIX],
-      name: 'Batch Delete Dokumen',
-      description: 'Hapus dokumen yang sudah diupload (safety measures)'
-    },
-    billingFilterPersistence: {
-      enabled: true,
-      allowedRoles: [ROLES.KASIR, ROLES.CASEMIX],
-      name: 'Billing Filter Persistence',
-      description: 'Simpan otomatis filter verifikasi billing agar tidak perlu diketik ulang'
-    },
-    doctorFilterPersistence: {
-      enabled: true,
-      allowedRoles: [ROLES.CASEMIX, ROLES.KASIR, ROLES.DOKTER, ROLES.APOTEK],
-      name: 'Doctor Filter Persistence',
-      description: 'Simpan otomatis filter pelaksanaan dokter agar tidak perlu diketik ulang'
-    },
-    resepTools: {
-      enabled: true,
-      allowedRoles: [ROLES.APOTEK],
-      name: 'Resep Tools',
-      description: 'Validasi aturan pakai, UI dosis kondisional, print safety lock'
-    },
-    fixJasaPelayanan: {
-      enabled: true,
-      allowedRoles: [ROLES.APOTEK],
-      name: 'Fix Jasa Pelayanan Reset',
-      description: 'Cegah reset otomatis kolom Jasa Pelayanan ke 0 pada penjualan bebas'
-    },
-    consultationEnhancer: {
-      enabled: true,
-      allowedRoles: [ROLES.CASEMIX],
-      name: 'Konsultasi Enhancer',
-      description: 'Tampilkan tabel konsultasi dengan DataTables, modal detail, dan info pasien'
-    }
-  }
-};
-
-// DOM Elements
-const loadingEl = document.getElementById('loading');
-const mainContentEl = document.getElementById('mainContent');
-const toggleExtension = document.getElementById('toggleExtension');
-const statusBadge = document.getElementById('statusBadge');
-const statusText = document.getElementById('statusText');
-const featuresList = document.getElementById('featuresList');
-const enabledCount = document.getElementById('enabledCount');
-const totalCount = document.getElementById('totalCount');
-const reloadBtn = document.getElementById('reloadBtn');
-const resetBtn = document.getElementById('resetBtn');
-const urlInput = document.getElementById('urlInput');
-const addUrlBtn = document.getElementById('addUrlBtn');
-const urlsList = document.getElementById('urlsList');
-const toastEl = document.getElementById('toast');
 
 let currentConfig = null;
 let customUrls = [];
+let defaultConfig = null;
 
-/**
- * Load konfigurasi dari storage
- */
-async function loadConfig() {
+async function bgMessage(msg) {
   try {
-    const result = await chrome.storage.sync.get(STORAGE_KEY);
+    return await chrome.runtime.sendMessage(msg);
+  } catch (e) {
+    return null;
+  }
+}
 
-    // Jika belum ada config, gunakan default
-    if (!result[STORAGE_KEY]) {
-      currentConfig = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
-      await saveConfig(currentConfig);
-    } else {
-      currentConfig = result[STORAGE_KEY];
+async function bgWrite(msg) {
+  var ok = await bgMessage(msg);
+  if (ok) return ok;
+  var c = currentConfig || {};
+  switch (msg.type) {
+    case 'TOGGLE_EXTENSION':
+      c.extensionEnabled = msg.enabled;
+      await chrome.storage.sync.set({ extensionConfig: c });
+      break;
+    case 'TOGGLE_FEATURE':
+      if (c.features?.[msg.key]) c.features[msg.key].enabled = msg.enabled;
+      await chrome.storage.sync.set({ extensionConfig: c });
+      break;
+    case 'SET_ROLE':
+      c.currentRole = msg.role;
+      await chrome.storage.sync.set({ extensionConfig: c });
+      break;
+    case 'CHANGE_FEATURE_MODE':
+      if (c.features?.[msg.key]) c.features[msg.key].mode = msg.mode;
+      await chrome.storage.sync.set({ extensionConfig: c });
+      break;
+    case 'RESET_CONFIG':
+      await chrome.storage.sync.remove(['extensionConfig', 'extensionCustomUrls']);
+      break;
+    case 'ADD_URL':
+      var u = await chrome.storage.sync.get('extensionCustomUrls');
+      var urls = u.extensionCustomUrls || [];
+      urls.push({ id: 'url-' + Date.now(), url: msg.url, enabled: true, isDefault: false });
+      await chrome.storage.sync.set({ extensionCustomUrls: urls });
+      break;
+    case 'DELETE_URL':
+      var d = await chrome.storage.sync.get('extensionCustomUrls');
+      var durls = (d.extensionCustomUrls || []).filter(function (x) { return x.id !== msg.id || x.isDefault; });
+      await chrome.storage.sync.set({ extensionCustomUrls: durls });
+      break;
+    case 'TOGGLE_URL':
+      var t = await chrome.storage.sync.get('extensionCustomUrls');
+      var turls = t.extensionCustomUrls || [];
+      turls.forEach(function (x) { if (x.id === msg.id) x.enabled = msg.enabled; });
+      await chrome.storage.sync.set({ extensionCustomUrls: turls });
+      break;
+  }
+  return { success: true };
+}
 
-      // Bersihkan features yang tidak ada di DEFAULT_CONFIG (migrasi)
-      const validFeatures = Object.keys(DEFAULT_CONFIG.features);
-      const newFeatures = {};
+async function loadAll() {
+  const result = await bgMessage({ type: 'GET_ALL' });
+  if (result) {
+    currentConfig = result.config;
+    customUrls = result.urls;
+    defaultConfig = result.defaultConfig;
+  } else {
+    const c = await chrome.storage.sync.get(['extensionConfig', 'extensionCustomUrls']);
+    currentConfig = c.extensionConfig || { extensionEnabled: true, currentRole: 'casemix', features: {} };
+    customUrls = c.extensionCustomUrls || [];
+    defaultConfig = currentConfig;
+  }
+}
 
-      for (const key of validFeatures) {
-        if (currentConfig.features[key]) {
-          newFeatures[key] = currentConfig.features[key];
-        } else {
-          newFeatures[key] = JSON.parse(JSON.stringify(DEFAULT_CONFIG.features[key]));
+async function init() {
+  try {
+    await loadAll();
+
+    DOM.loading.classList.add('hidden');
+    DOM.mainContent.classList.remove('hidden');
+
+    updateUI();
+
+    DOM.toggleExtension.addEventListener('change', (e) => {
+      bgWrite({ type: 'TOGGLE_EXTENSION', enabled: e.target.checked });
+      DOM.toggleExtension.checked = e.target.checked;
+      updateUI();
+      reloadPage();
+    });
+
+    DOM.reloadBtn.addEventListener('click', reloadPage);
+
+    DOM.resetBtn.addEventListener('click', async () => {
+      if (confirm('Apakah Anda yakin ingin mereset ke pengaturan default?')) {
+        await bgWrite({ type: 'RESET_CONFIG' });
+        await loadAll();
+        updateUI();
+        reloadPage();
+      }
+    });
+
+    DOM.addUrlBtn.addEventListener('click', addNewUrl);
+    DOM.urlInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') addNewUrl();
+    });
+
+    DOM.featuresList.addEventListener('change', (e) => {
+      if (e.target.classList.contains('feature-toggle')) {
+        const key = e.target.dataset.feature;
+        bgWrite({ type: 'TOGGLE_FEATURE', key, enabled: e.target.checked });
+        DOM.featuresList.querySelectorAll(`.feature-toggle[data-feature="${key}"]`).forEach(el => el.checked = e.target.checked);
+        updateCounts();
+        reloadPage();
+      } else if (e.target.classList.contains('feature-mode-select')) {
+        const key = e.target.dataset.feature;
+        bgWrite({ type: 'CHANGE_FEATURE_MODE', key, mode: e.target.value });
+        showToast('Mode berhasil diubah');
+      }
+    });
+
+    DOM.urlsList.addEventListener('change', (e) => {
+      if (e.target.classList.contains('toggle-checkbox') && e.target.dataset.urlId) {
+        const id = e.target.dataset.urlId;
+        bgWrite({ type: 'TOGGLE_URL', id, enabled: e.target.checked });
+        customUrls = customUrls.map(u => u.id === id ? { ...u, enabled: e.target.checked } : u);
+        reloadPage();
+      }
+    });
+
+    DOM.urlsList.addEventListener('click', (e) => {
+      const btn = e.target.closest('.btn-delete');
+      if (btn && btn.dataset.urlId) {
+        const id = btn.dataset.urlId;
+        const url = customUrls.find(u => u.id === id);
+        if (url?.isDefault) {
+          showToast('URL default tidak dapat dihapus', 'error');
+          return;
         }
+        bgWrite({ type: 'DELETE_URL', id });
+        customUrls = customUrls.filter(u => u.id !== id);
+        renderUrls();
+        showToast('URL berhasil dihapus');
+        reloadPage();
       }
+    });
 
-      currentConfig.features = newFeatures;
-	      // Upgrade: hapus comingSoon flag dari printOptimization jika masih ada (v1 -> v2)
-	      if (currentConfig.features.printOptimization?.comingSoon !== undefined) {
-	        delete currentConfig.features.printOptimization.comingSoon;
-	        currentConfig.features.printOptimization.enabled = true;
-	        await saveConfig(currentConfig);
-	      }
+    DOM.roleSelect.value = currentConfig.currentRole;
+    DOM.roleSelect.addEventListener('change', async (e) => {
+      await bgWrite({ type: 'SET_ROLE', role: e.target.value });
+      currentConfig.currentRole = e.target.value;
+      updateRoleBanner();
+      renderFeatures();
+      showToast('Role berhasil diubah');
+      reloadPage();
+    });
 
-
-      // Silent auto-mapping untuk user lama
-      if (!currentConfig.currentRole) {
-        currentConfig.currentRole = ROLES.CASEMIX;
-        console.log('[Popup] Silent auto-mapping to casemix');
-        await saveConfig(currentConfig);
+    DOM.roleBanner.addEventListener('click', (e) => {
+      if (e.target.id === 'changeRoleLink') {
+        e.preventDefault();
+        DOM.roleSelect.focus();
       }
+    });
+
+    updateRoleBanner();
+  } catch (error) {
+    console.error('[Popup] Error initializing:', error);
+    DOM.loading.textContent = 'Terjadi kesalahan saat memuat.';
+  }
+}
+
+function updateUI() {
+  const enabled = currentConfig?.extensionEnabled ?? true;
+  DOM.toggleExtension.checked = enabled;
+
+  DOM.statusBadge.className = 'status-badge ' + (enabled ? 'active' : 'inactive');
+  DOM.statusText.textContent = enabled ? 'Extension Aktif' : 'Extension Non-Aktif';
+
+  renderFeatures();
+  renderUrls();
+}
+
+function renderFeatures() {
+  DOM.featuresList.innerHTML = '';
+
+  const role = currentConfig?.currentRole || 'casemix';
+  const features = currentConfig?.features || {};
+  const globalEnabled = currentConfig?.extensionEnabled ?? true;
+  let enabled = 0;
+  let total = 0;
+  let hasFeatures = false;
+
+  const sectionTitle = document.querySelector('.section:nth-child(5) .section-title');
+  if (sectionTitle) {
+    const roleName = role.charAt(0).toUpperCase() + role.slice(1);
+    sectionTitle.textContent = 'Fitur Tersedia (' + roleName + ')';
+  }
+
+  for (const [key, feature] of Object.entries(features)) {
+    if (!feature.allowedRoles?.includes(role)) continue;
+    hasFeatures = true;
+
+    if (!feature.comingSoon) {
+      total++;
+      if (feature.enabled) enabled++;
     }
 
-    return currentConfig;
-  } catch (error) {
-    console.error('[Popup] Error loading config:', error);
-    currentConfig = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
-    return currentConfig;
-  }
-}
+    const isComingSoon = feature.comingSoon === true;
+    const disabled = !globalEnabled || isComingSoon;
 
-function getCurrentRole() {
-  return currentConfig?.currentRole || ROLES.CASEMIX;
-}
+    let controlsHtml = '';
+    if (!isComingSoon) {
+      let modeHtml = '';
+      if (key === 'openDetailInNewTab' && feature.modes && feature.enabled) {
+        const currentMode = feature.mode || 'new-tab';
+        modeHtml = '<div style="margin-left:12px;margin-right:8px;">' +
+          '<select class="feature-mode-select" data-feature="' + key + '" style="padding:4px 8px;border-radius:4px;border:1px solid #d1d5db;font-size:11px;">' +
+          Object.entries(feature.modes).map(function (m) {
+            return '<option value="' + m[0] + '"' + (m[0] === currentMode ? ' selected' : '') + '>' + m[1] + '</option>';
+          }).join('') +
+          '</select></div>';
+      }
 
-async function setCurrentRole(role) {
-  currentConfig.currentRole = role;
-  await saveConfig(currentConfig);
-  console.log(`[Popup] Role changed to: ${role}`);
-}
-
-function isFeatureAllowed(featureKey, role = getCurrentRole()) {
-  return currentConfig?.features?.[featureKey]?.allowedRoles?.includes(role) ?? false;
-}
-
-/**
- * Simpan konfigurasi ke storage
- */
-async function saveConfig(config) {
-  try {
-    await chrome.storage.sync.set({ [STORAGE_KEY]: config });
-  } catch (error) {
-    console.error('[Popup] Error saving config:', error);
-  }
-}
-
-/**
- * Load custom URLs dari storage
- */
-async function loadCustomUrls() {
-  try {
-    const result = await chrome.storage.sync.get(URLS_STORAGE_KEY);
-
-    if (!result[URLS_STORAGE_KEY]) {
-      customUrls = JSON.parse(JSON.stringify(DEFAULT_CUSTOM_URLS));
-      await saveCustomUrls(customUrls);
-    } else {
-      const savedUrls = result[URLS_STORAGE_KEY];
-      const defaultUrls = JSON.parse(JSON.stringify(DEFAULT_CUSTOM_URLS));
-
-      // Gabungkan default URLs yang hilang
-      customUrls = [...defaultUrls];
-      savedUrls.forEach(savedUrl => {
-        if (!savedUrl.isDefault) {
-          customUrls.push(savedUrl);
-        }
-      });
-
-      // Update status enabled untuk default URLs
-      customUrls.forEach(url => {
-        const savedMatch = savedUrls.find(s => s.id === url.id);
-        if (savedMatch && url.isDefault) {
-          url.enabled = savedMatch.enabled;
-        }
-      });
+      controlsHtml = modeHtml +
+        '<div class="checkbox-wrapper">' +
+        '<input type="checkbox" class="toggle-checkbox feature-toggle" data-feature="' + key + '"' +
+        (feature.enabled ? ' checked' : '') + (disabled ? ' disabled' : '') + '>' +
+        '</div>';
     }
 
-    return customUrls;
-  } catch (error) {
-    console.error('[Popup] Error loading custom URLs:', error);
-    customUrls = JSON.parse(JSON.stringify(DEFAULT_CUSTOM_URLS));
-    return customUrls;
+    const div = document.createElement('div');
+    div.className = 'toggle-container' + (disabled ? ' feature-disabled' : '');
+    div.innerHTML = '<div class="toggle-label">' +
+      '<span class="title">' + (feature.name || key) + (isComingSoon ? ' <span style="color:#ef4444;font-size:9px;font-weight:bold;">(COMING SOON)</span>' : '') + '</span>' +
+      '<span class="subtitle">' + (feature.description || '') + '</span>' +
+      '</div>' + controlsHtml;
+    DOM.featuresList.appendChild(div);
   }
+
+  if (!hasFeatures) {
+    const div = document.createElement('div');
+    div.className = 'toggle-container';
+    div.style.cssText = 'text-align:center;color:#6b7280;padding:20px 10px';
+    div.innerHTML = '<div style="font-size:13px;">Tidak ada fitur untuk role: <strong>' + role + '</strong></div>' +
+      '<div style="font-size:11px;margin-top:4px;">Silakan pilih role lain untuk melihat fitur yang tersedia</div>';
+    DOM.featuresList.appendChild(div);
+    enabled = 0;
+    total = 0;
+  }
+
+  DOM.enabledCount.textContent = enabled;
+  DOM.totalCount.textContent = total;
 }
 
-/**
- * Simpan custom URLs ke storage
- */
-async function saveCustomUrls(urls) {
-  try {
-    customUrls = urls;
-    await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
-  } catch (error) {
-    console.error('[Popup] Error saving custom URLs:', error);
+function updateCounts() {
+  const role = currentConfig?.currentRole || 'casemix';
+  const features = currentConfig?.features || {};
+  let enabled = 0;
+  let total = 0;
+  for (const [key, f] of Object.entries(features)) {
+    if (!f.allowedRoles?.includes(role) || f.comingSoon) continue;
+    total++;
+    if (f.enabled) enabled++;
   }
+  DOM.enabledCount.textContent = enabled;
+  DOM.totalCount.textContent = total;
 }
 
-/**
- * Validate URL format
- */
+function renderUrls() {
+  DOM.urlsList.innerHTML = '';
+  customUrls.forEach(function (url) {
+    const item = document.createElement('div');
+    item.className = 'url-item' + (url.isDefault ? ' default' : '');
+    item.innerHTML =
+      '<div class="url-info">' +
+      '<div class="url-text">' + url.url + '</div>' +
+      '<span class="url-badge">' + (url.isDefault ? 'DEFAULT' : 'CUSTOM') + '</span>' +
+      '</div>' +
+      '<div class="url-actions">' +
+      '<input type="checkbox" class="toggle-checkbox"' + (url.enabled ? ' checked' : '') + ' data-url-id="' + url.id + '">' +
+      '<button class="btn-delete" data-url-id="' + url.id + '"' + (url.isDefault ? ' disabled' : '') + '>Hapus</button>' +
+      '</div>';
+    DOM.urlsList.appendChild(item);
+  });
+}
+
 function isValidUrl(url) {
   try {
-    const parsed = new URL(url);
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    const p = new URL(url);
+    return p.protocol === 'http:' || p.protocol === 'https:';
   } catch (e) {
     return false;
   }
 }
 
-/**
- * Generate unique ID
- */
-function generateId() {
-  return 'url-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-}
-
-/**
- * Show toast notification
- */
-function showToast(message, type = 'success') {
-  toastEl.textContent = message;
-  toastEl.className = `toast ${type} show`;
-
-  setTimeout(() => {
-    toastEl.classList.remove('show');
-  }, 2000);
-}
-
-/**
- * Add new URL
- */
 async function addNewUrl() {
-  const urlValue = urlInput.value.trim();
+  const val = DOM.urlInput.value.trim();
+  if (!val) { showToast('Masukkan URL terlebih dahulu', 'error'); return; }
+  if (!isValidUrl(val)) { showToast('Format URL tidak valid (gunakan http:// atau https://)', 'error'); return; }
+  if (customUrls.find(u => u.url === val)) { showToast('URL sudah ada di daftar', 'error'); return; }
 
-  if (!urlValue) {
-    showToast('Masukkan URL terlebih dahulu', 'error');
-    return;
-  }
-
-  if (!isValidUrl(urlValue)) {
-    showToast('Format URL tidak valid (gunakan http:// atau https://)', 'error');
-    return;
-  }
-
-  if (customUrls.find(u => u.url === urlValue)) {
-    showToast('URL sudah ada di daftar', 'error');
-    return;
-  }
-
-  const newUrl = {
-    id: generateId(),
-    url: urlValue,
-    enabled: true,
-    isDefault: false
-  };
-
-  customUrls.push(newUrl);
-  await saveCustomUrls(customUrls);
+  await bgWrite({ type: 'ADD_URL', url: val });
+  customUrls.push({ id: 'url-' + Date.now(), url: val, enabled: true, isDefault: false });
   renderUrls();
-  urlInput.value = '';
+  DOM.urlInput.value = '';
   showToast('URL berhasil ditambahkan');
   reloadPage();
 }
 
-/**
- * Toggle URL enabled status
- */
-async function toggleUrl(urlId, isEnabled) {
-  customUrls = customUrls.map(url => {
-    if (url.id === urlId) {
-      return { ...url, enabled: isEnabled };
-    }
-    return url;
-  });
-
-  await saveCustomUrls(customUrls);
-  renderUrls();
-  reloadPage();
-}
-
-/**
- * Delete URL
- */
-async function deleteUrl(urlId) {
-  const urlToDelete = customUrls.find(u => u.id === urlId);
-  if (urlToDelete?.isDefault) {
-    showToast('URL default tidak dapat dihapus', 'error');
-    return;
-  }
-
-  customUrls = customUrls.filter(url => url.id !== urlId);
-  await saveCustomUrls(customUrls);
-  renderUrls();
-  showToast('URL berhasil dihapus');
-  reloadPage();
-}
-
-/**
- * Render URL list
- */
-function renderUrls() {
-  urlsList.innerHTML = '';
-
-  customUrls.forEach(url => {
-    const urlItem = document.createElement('div');
-    urlItem.className = `url-item ${url.isDefault ? 'default' : ''}`;
-
-    const badgeText = url.isDefault ? 'DEFAULT' : 'CUSTOM';
-
-    urlItem.innerHTML = `
-      <div class="url-info">
-        <div class="url-text">${url.url}</div>
-        <span class="url-badge">${badgeText}</span>
-      </div>
-      <div class="url-actions">
-        <input type="checkbox" class="toggle-checkbox" ${url.enabled ? 'checked' : ''} data-url-id="${url.id}">
-        <button class="btn-delete" data-url-id="${url.id}" ${url.isDefault ? 'disabled' : ''}>Hapus</button>
-      </div>
-    `;
-
-    urlsList.appendChild(urlItem);
-  });
-}
-
-/**
- * Render list fitur
- */
-function renderFeatures() {
-  featuresList.innerHTML = '';
-
-  const role = getCurrentRole();
-  const features = currentConfig?.features || {};
-  const globalEnabled = currentConfig?.extensionEnabled ?? true;
-  let enabled = 0;
-  let total = 0;
-  let hasFeaturesForRole = false;
-
-  // Update section title to show current role
-  const sectionTitle = document.querySelector('.section:nth-child(5) .section-title');
-  if (sectionTitle) {
-    const roleName = role === 'casemix' ? 'Casemix' : role === 'kasir' ? 'Kasir' : role === 'dokter' ? 'Dokter' : 'Apotek';
-    sectionTitle.textContent = `Fitur Tersedia (${roleName})`;
-  }
-
-  for (const [key, feature] of Object.entries(features)) {
-    // Skip features not allowed for current role (hide completely)
-    if (!isFeatureAllowed(key, role)) {
-      continue;
-    }
-
-    hasFeaturesForRole = true;
-
-    // Jangan hitung fitur coming soon ke total aktif
-    if (!feature.comingSoon) {
-      total++;
-      if (feature.enabled) {
-        enabled++;
-      }
-    }
-
-    const isComingSoon = feature.comingSoon === true;
-    const isDisabledClass = (!globalEnabled || isComingSoon) ? 'feature-disabled' : '';
-    const isDisabledAttr = (!globalEnabled || isComingSoon) ? 'disabled' : '';
-
-    const titleText = isComingSoon ? `${feature.name || key} <span style="color: #ef4444; font-size: 9px; font-weight: bold;">(COMING SOON)</span>` : (feature.name || key);
-
-    // Create feature toggle element
-    const featureDiv = document.createElement('div');
-    featureDiv.className = `toggle-container ${isDisabledClass}`;
-
-    // Only show checkbox if NOT coming soon
-    let controlsHtml = '';
-    if (!isComingSoon) {
-      // Check if this feature has mode options
-      let modeSelectorHtml = '';
-      if (key === 'openDetailInNewTab' && feature.modes && feature.enabled) {
-        const currentMode = feature.mode || 'new-tab';
-        modeSelectorHtml = `
-          <div style="margin-left: 12px; margin-right: 8px;">
-            <select class="feature-mode-select" data-feature="${key}" style="padding: 4px 8px; border-radius: 4px; border: 1px solid #d1d5db; font-size: 11px;">
-              ${Object.entries(feature.modes).map(([mode, label]) =>
-          `<option value="${mode}" ${mode === currentMode ? 'selected' : ''}>${label}</option>`
-        ).join('')}
-            </select>
-          </div>
-        `;
-      }
-
-      controlsHtml = `
-        ${modeSelectorHtml}
-        <div class="checkbox-wrapper">
-          <input type="checkbox" class="toggle-checkbox feature-toggle" data-feature="${key}" ${feature.enabled ? 'checked' : ''} ${isDisabledAttr}>
-        </div>
-      `;
-    }
-
-    featureDiv.innerHTML = `
-      <div class="toggle-label">
-        <span class="title">${titleText}</span>
-        <span class="subtitle">${feature.description || ''}</span>
-      </div>
-      ${controlsHtml}
-    `;
-
-    featuresList.appendChild(featureDiv);
-  }
-
-  // Show message when no features are available for selected role
-  if (!hasFeaturesForRole) {
-    const noFeaturesDiv = document.createElement('div');
-    noFeaturesDiv.className = 'toggle-container';
-    noFeaturesDiv.style.textAlign = 'center';
-    noFeaturesDiv.style.color = '#6b7280';
-    noFeaturesDiv.style.padding = '20px 10px';
-    noFeaturesDiv.innerHTML = `
-      <div style="font-size: 13px;">Tidak ada fitur untuk role: <strong>${role}</strong></div>
-      <div style="font-size: 11px; margin-top: 4px;">Silakan pilih role lain untuk melihat fitur yang tersedia</div>
-    `;
-    featuresList.appendChild(noFeaturesDiv);
-    enabled = 0;
-    total = 0;
-  }
-
-  enabledCount.textContent = enabled;
-  totalCount.textContent = total;
-}
-
-/**
- * Update tampilan status badge
- */
-function updateStatusBadge(isEnabled) {
-  if (isEnabled) {
-    statusBadge.className = 'status-badge active';
-    statusText.textContent = 'Extension Aktif';
-  } else {
-    statusBadge.className = 'status-badge inactive';
-    statusText.textContent = 'Extension Non-Aktif';
-  }
-}
-
-/**
- * Update semua elemen UI sesuai config
- */
-function updateUI() {
-  // Update global extension toggle
-  toggleExtension.checked = currentConfig?.extensionEnabled ?? true;
-
-  // Update status badge
-  updateStatusBadge(currentConfig?.extensionEnabled ?? true);
-
-  // Render features list
-  renderFeatures();
-
-  // Render URLs list
-  renderUrls();
-}
-
-/**
- * Reload halaman aktif
- */
 function reloadPage() {
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     if (tabs[0]) {
       chrome.tabs.reload(tabs[0].id);
       window.close();
@@ -526,146 +331,17 @@ function reloadPage() {
   });
 }
 
-/**
- * Reset ke config default
- */
-async function resetToDefault() {
-  if (confirm('Apakah Anda yakin ingin mereset ke pengaturan default?')) {
-    currentConfig = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
-    await saveConfig(currentConfig);
-    updateUI();
-    reloadPage();
-  }
+function showToast(message, type) {
+  type = type || 'success';
+  DOM.toastEl.textContent = message;
+  DOM.toastEl.className = 'toast ' + type + ' show';
+  setTimeout(function () { DOM.toastEl.classList.remove('show'); }, 2000);
 }
 
-/**
- * Toggle extension global
- */
-async function toggleExtensionGlobal(isEnabled) {
-  currentConfig.extensionEnabled = isEnabled;
-  await saveConfig(currentConfig);
-  updateUI();
-  reloadPage();
+function updateRoleBanner() {
+  const role = currentConfig?.currentRole || 'casemix';
+  const name = role.charAt(0).toUpperCase() + role.slice(1);
+  DOM.roleBanner.innerHTML = 'Anda saat ini: <strong>' + name + '</strong>. <a href="#" id="changeRoleLink">[Ubah]</a>';
 }
 
-/**
- * Toggle fitur spesifik
- */
-async function toggleFeature(featureKey, isEnabled) {
-  if (!currentConfig.features[featureKey]) {
-    return;
-  }
-
-  currentConfig.features[featureKey].enabled = isEnabled;
-  await saveConfig(currentConfig);
-  renderFeatures();
-  reloadPage();
-}
-
-/**
- * Ubah mode fitur spesifik
- */
-async function changeFeatureMode(featureKey, mode) {
-  if (!currentConfig.features[featureKey]) {
-    return;
-  }
-
-  currentConfig.features[featureKey].mode = mode;
-  await saveConfig(currentConfig);
-  showToast('Mode berhasil diubah');
-}
-
-/**
- * Initialize popup
- */
-async function init() {
-  try {
-    // Load config
-    await loadConfig();
-    await loadCustomUrls();
-
-    // Hide loading, show content
-    loadingEl.classList.add('hidden');
-    mainContentEl.classList.remove('hidden');
-
-    // Update UI
-    updateUI();
-
-    // Setup event listeners
-    toggleExtension.addEventListener('change', (e) => {
-      toggleExtensionGlobal(e.target.checked);
-    });
-
-    reloadBtn.addEventListener('click', reloadPage);
-    resetBtn.addEventListener('click', resetToDefault);
-    addUrlBtn.addEventListener('click', addNewUrl);
-    urlInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') addNewUrl();
-    });
-
-    // Event delegation untuk feature toggles
-    featuresList.addEventListener('change', (e) => {
-      if (e.target.classList.contains('feature-toggle')) {
-        const featureKey = e.target.dataset.feature;
-        toggleFeature(featureKey, e.target.checked);
-      } else if (e.target.classList.contains('feature-mode-select')) {
-        const featureKey = e.target.dataset.feature;
-        changeFeatureMode(featureKey, e.target.value);
-      }
-    });
-
-    // Event delegation untuk URL toggles
-    urlsList.addEventListener('change', (e) => {
-      if (e.target.classList.contains('toggle-checkbox') && e.target.dataset.urlId) {
-        toggleUrl(e.target.dataset.urlId, e.target.checked);
-      }
-    });
-
-    // Event delegation untuk URL delete (robust)
-    urlsList.addEventListener('click', (e) => {
-      const btn = e.target.closest('.btn-delete');
-      if (btn && btn.dataset.urlId) {
-        deleteUrl(btn.dataset.urlId);
-      }
-    });
-
-    // Role change events
-    const roleSelect = document.getElementById('roleSelect');
-    const roleBanner = document.getElementById('roleBanner');
-    roleSelect.value = currentConfig.currentRole;
-
-    function updateRoleBanner() {
-      const role = getCurrentRole();
-      const roleName = role === 'casemix' ? 'Casemix' : role === 'kasir' ? 'Kasir' : role === 'dokter' ? 'Dokter' : 'Apotek';
-      roleBanner.innerHTML = `Anda saat ini: <strong>${roleName}</strong>. <a href="#" id="changeRoleLink">[Ubah]</a>`;
-    }
-
-    roleSelect.addEventListener('change', async (e) => {
-      await setCurrentRole(e.target.value);
-      updateRoleBanner();
-      renderFeatures();
-      showToast(`Role diubah ke ${roleSelect.options[roleSelect.selectedIndex].text}`);
-      reloadPage();
-    });
-
-    // Change role link
-    roleBanner.addEventListener('click', (e) => {
-      if (e.target.id === 'changeRoleLink') {
-        e.preventDefault();
-        roleSelect.focus();
-      }
-    });
-
-    updateRoleBanner();
-
-    // Update renderFeatures with role filter
-    window.renderFeatures = renderFeatures; // Re-export for role change
-
-  } catch (error) {
-    console.error('[Popup] Error initializing:', error);
-    loadingEl.textContent = 'Terjadi kesalahan saat memuat.';
-  }
-}
-
-// Jalankan saat popup dibuka
 init();

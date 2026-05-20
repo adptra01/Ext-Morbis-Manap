@@ -1,0 +1,260 @@
+/**
+ * FEATURE: Filter Persistence State (Universal)
+ * Menyimpan data input filter ke cookies (via CookieFilterStorage)
+ * berdasarkan konteks halaman. Cookie otomatis expired setiap tengah malam.
+ * Mendukung: M-Klaim (casemix), Billing Verifikasi (kasir), Dokter.
+ *
+ * Dependencies: CookieFilterStorage (features/shared/cookieFilterStorage.js)
+ */
+
+import { getMorbisGlobals } from './shared/types.js';
+
+const g = getMorbisGlobals();
+
+interface PersistenceContext {
+  pattern: string;
+  excludePattern?: string;
+  storageKey: string;
+  scopeField?: string;
+  fields: string[];
+  cariButtonSelectors: string[];
+  batalButtonSelectors: string[];
+}
+
+const PERSISTENCE_MAP: Record<string, PersistenceContext> = {
+  filterPersistence: {
+    pattern: '/v2/m-klaim',
+    excludePattern: 'detail',
+    storageKey: 'mklaim_filter',
+    scopeField: '',
+    fields: [
+      'filter_tanggal',
+      'tanggalAwal',
+      'tanggalAkhir',
+      'norm',
+      'nama',
+      'reg',
+      'id_poli_cari',
+      'billing',
+      'status',
+      'jenis_pasien',
+    ],
+    cariButtonSelectors: ['button.btn-info[onclick*="cari"]', 'button[onclick*="cari()"]'],
+    batalButtonSelectors: ['button.btn-warning:not([onclick])', 'button.btn-warning'],
+  },
+  billingFilterPersistence: {
+    pattern: '/billing/pembayaran-new/billing-verifikasi',
+    storageKey: 'billing_filter',
+    scopeField: 'awal',
+    fields: [
+      'awal',
+      'akhir',
+      'noreg',
+      'no_Rm',
+      'pasien',
+      'sep',
+      'status',
+      'statuspasien',
+      'jenisPasien',
+      'statusPeriksa',
+      'dokter',
+      'idDokter',
+      'unit',
+      'idUnit',
+      'kategori',
+    ],
+    cariButtonSelectors: ['input[id="cari"]', 'input.tombol[value="Cari"]'],
+    batalButtonSelectors: ['input.tombol[value="Cancel"]'],
+  },
+  doctorFilterPersistence: {
+    pattern: '__PLACEHOLDER__',
+    storageKey: 'doctor_filter',
+    fields: [],
+    cariButtonSelectors: [],
+    batalButtonSelectors: [],
+  },
+};
+
+const LEGACY_STORAGE_KEYS: Record<string, string> = {
+  filterPersistence: 'mklaim_filter',
+  billingFilterPersistence: 'billing_filter',
+  doctorFilterPersistence: 'doctor_filter',
+};
+
+function getContext(): PersistenceContext | null {
+  const path = window.location.pathname;
+  for (const key of Object.keys(PERSISTENCE_MAP)) {
+    const ctx = PERSISTENCE_MAP[key];
+    if (!path.includes(ctx.pattern)) continue;
+    if (ctx.excludePattern && path.includes(ctx.excludePattern)) continue;
+
+    if (!g.currentConfig?.features?.[key]?.enabled) return null;
+    if (!g.ExtensionCore.isFeatureAllowed(key)) return null;
+
+    return ctx;
+  }
+  return null;
+}
+
+function saveFilter(): void {
+  const ctx = getContext();
+  if (!ctx) return;
+
+  const filterState: Record<string, string> = {};
+  ctx.fields.forEach(function (fieldId) {
+    const el = document.getElementById(fieldId);
+    if (el) {
+      filterState[fieldId] = (el as HTMLInputElement).value;
+    }
+  });
+
+  g.CookieFilterStorage.set(ctx.storageKey, filterState);
+  console.log('Filter saved:', ctx.storageKey, filterState);
+}
+
+function restoreFilter(): void {
+  const ctx = getContext();
+  if (!ctx) return;
+
+  const filterState = g.CookieFilterStorage.get(ctx.storageKey) as Record<string, string> | null;
+  if (!filterState) return;
+
+  ctx.fields.forEach(function (fieldId) {
+    const el = document.getElementById(fieldId);
+    if (el && filterState[fieldId] !== undefined) {
+      (el as HTMLInputElement).value = filterState[fieldId];
+
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      el.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }));
+
+      if (
+        fieldId === 'awal' ||
+        fieldId === 'akhir' ||
+        fieldId === 'tanggalAwal' ||
+        fieldId === 'tanggalAkhir'
+      ) {
+        setTimeout(function () {
+          el.dispatchEvent(new Event('blur', { bubbles: true }));
+        }, 50);
+      }
+    }
+  });
+
+  console.log('Filter restored:', ctx.storageKey, filterState);
+}
+
+function clearFilter(): void {
+  const ctx = getContext();
+  if (!ctx) return;
+
+  g.CookieFilterStorage.remove(ctx.storageKey);
+
+  ctx.fields.forEach(function (fieldId) {
+    const el = document.getElementById(fieldId);
+    if (el) {
+      (el as HTMLInputElement).value = '';
+    }
+  });
+
+  console.log('Filter cleared:', ctx.storageKey);
+}
+
+function getFilterScope(ctx: PersistenceContext): Element | Document {
+  if (!ctx.scopeField) return document;
+
+  const anchor = document.getElementById(ctx.scopeField);
+  if (!anchor) return document;
+
+  const scope = anchor.closest('form') || anchor.closest('table') || anchor.parentElement;
+  return scope || document;
+}
+
+function attachFilterListeners(): void {
+  const ctx = getContext();
+  if (!ctx) return;
+
+  const scope = getFilterScope(ctx);
+
+  for (const selector of ctx.cariButtonSelectors) {
+    const btns = scope.querySelectorAll(selector);
+    for (const btn of Array.from(btns)) {
+      const targetBtn = (btn.tagName === 'I' ? btn.closest('button') : btn) as HTMLElement | null;
+      if (targetBtn && !targetBtn.dataset.filterBound) {
+        targetBtn.dataset.filterBound = 'true';
+        targetBtn.addEventListener('click', saveFilter);
+      }
+    }
+  }
+
+  for (const selector of ctx.batalButtonSelectors) {
+    const btns = scope.querySelectorAll(selector);
+    for (const btn of Array.from(btns)) {
+      const targetBtn = (btn.tagName === 'I' ? btn.closest('button') : btn) as HTMLElement | null;
+      if (targetBtn && !targetBtn.dataset.filterBound) {
+        targetBtn.dataset.filterBound = 'true';
+        targetBtn.addEventListener('click', clearFilter);
+      }
+    }
+  }
+}
+
+function runFilterPersistenceFeature(): void {
+  const ctx = getContext();
+  if (!ctx) return;
+
+  let legacyKey: string | null = null;
+  for (const mapKey in PERSISTENCE_MAP) {
+    if (PERSISTENCE_MAP[mapKey] === ctx && LEGACY_STORAGE_KEYS[mapKey]) {
+      legacyKey = LEGACY_STORAGE_KEYS[mapKey];
+      break;
+    }
+  }
+
+  if (legacyKey) {
+    g.CookieFilterStorage.migrateFromLocalStorage(legacyKey, ctx.storageKey);
+  }
+
+  console.log('Running Filter Persistence:', ctx.storageKey);
+
+  g.setupFilterLogoutWatcher();
+  g.initClearAllFilterButton();
+
+  restoreFilter();
+  attachFilterListeners();
+
+  const observer = new MutationObserver(function () {
+    attachFilterListeners();
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
+const featureMeta: Record<string, { name: string; description: string }> = {
+  filterPersistence: {
+    name: 'Filter Persistence State',
+    description: 'Simpan otomatis kolom pencarian M-Klaim agar tidak perlu diketik ulang',
+  },
+  billingFilterPersistence: {
+    name: 'Billing Filter Persistence',
+    description: 'Simpan otomatis filter verifikasi billing agar tidak perlu diketik ulang',
+  },
+  doctorFilterPersistence: {
+    name: 'Doctor Filter Persistence',
+    description: 'Simpan otomatis filter pelaksanaan dokter agar tidak perlu diketik ulang',
+  },
+};
+
+if (typeof g.featureModules !== 'undefined') {
+  Object.keys(PERSISTENCE_MAP).forEach(function (key) {
+    if (g.featureModules[key]) return;
+
+    g.featureModules[key] = {
+      name: featureMeta[key]?.name || key,
+      description: featureMeta[key]?.description || '',
+      run: runFilterPersistenceFeature,
+    };
+  });
+} else {
+  console.warn('[FilterPersistence] featureModules not defined, module registration skipped');
+}

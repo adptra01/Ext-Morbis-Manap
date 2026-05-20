@@ -1,11 +1,3 @@
-/**
- * Open Detail in New Tab - Chrome Extension
- * Core File - Penanganan Konfigurasi dan State Management
- */
-
-const STORAGE_KEY = 'extensionConfig';
-const URLS_STORAGE_KEY = 'extensionCustomUrls';
-
 const ROLES = {
   CASEMIX: 'casemix',
   KASIR: 'kasir',
@@ -13,266 +5,84 @@ const ROLES = {
   APOTEK: 'apotek'
 };
 
-const DEFAULT_CUSTOM_URLS = [
-  { id: 'default-1', url: 'http://192.168.8.4', enabled: true, isDefault: true },
-  { id: 'default-2', url: 'http://103.147.236.140', enabled: true, isDefault: true }
-];
-
-const DEFAULT_CONFIG = {
-  extensionEnabled: true,
-  currentRole: 'casemix',
-  features: {
-    openDetailInNewTab: {
-      enabled: true,
-      name: 'Open Detail Mode',
-      description: 'Pilih mode buka detail: tab baru / tab sama',
-      allowedRoles: ['casemix'],
-      mode: 'same-tab',
-      modes: {
-        'same-tab': 'Buka di Tab Sama (Default)',
-        'new-tab': 'Buka di Tab Baru'
-      }
-    },
-    shortcutButtons: {
-      enabled: true,
-      allowedRoles: ['casemix'],
-      name: 'Shortcut Buttons',
-      description: 'Tampilkan tombol shortcut ke pelaksanaan Rajal/Ranap'
-    },
-    filterPersistence: {
-      enabled: true,
-      allowedRoles: ['casemix', 'kasir', 'dokter', 'apotek'],
-      name: 'Filter Persistence State',
-      description: 'Simpan otomatis kolom pencarian agar tidak perlu diketik ulang'
-    },
-    simplifyBilling: {
-      enabled: true,
-      allowedRoles: ['casemix'],
-      name: 'Ringkas Rincian Biaya',
-      description: 'Ringkaskan tabel cetak rincian biaya menjadi tampilan rekap per unit'
-    },
-    scrollButtons: {
-      enabled: true,
-      allowedRoles: ['casemix'],
-      name: 'Scroll Buttons (Top/Bottom)',
-      description: 'Tombol scroll otomatis ke atas dan bawah halaman detail'
-    },
-    printOptimization: {
-	      enabled: true,
-	      allowedRoles: ['casemix'],
-	      name: 'Optimasi Cetak',
-	      description: 'Sembunyikan section kosong & optimasi layout cetak.'
-	    },
-    batchUpload: {
-      enabled: false,
-      allowedRoles: ['casemix'],
-      name: 'Upload Dokumen Ulang',
-      description: 'Upload batch dokumen via paste URL dengan metadata extraction otomatis'
-    },
-    batchDelete: {
-      enabled: false,
-      allowedRoles: ['casemix'],
-      name: 'Batch Delete Dokumen',
-      description: 'Hapus dokumen yang sudah diupload (safety measures)'
-    },
-    billingFilterPersistence: {
-      enabled: true,
-      allowedRoles: ['kasir', 'casemix'],
-      name: 'Billing Filter Persistence',
-      description: 'Simpan otomatis filter verifikasi billing agar tidak perlu diketik ulang'
-    },
-    doctorFilterPersistence: {
-      enabled: true,
-      allowedRoles: ['casemix', 'kasir', 'dokter', 'apotek'],
-      name: 'Doctor Filter Persistence',
-      description: 'Simpan otomatis filter pelaksanaan dokter agar tidak perlu diketik ulang'
-    },
-    resepTools: {
-      enabled: true,
-      allowedRoles: ['apotek'],
-      name: 'Resep Tools',
-      description: 'Validasi aturan pakai, UI dosis kondisional, print safety lock'
-    },
-    fixJasaPelayanan: {
-      enabled: true,
-      allowedRoles: ['apotek'],
-      name: 'Fix Jasa Pelayanan Reset',
-      description: 'Cegah reset otomatis kolom Jasa Pelayanan ke 0 pada penjualan bebas'
-    },
-    consultationEnhancer: {
-      enabled: true,
-      allowedRoles: ['casemix'],
-      name: 'Konsultasi Enhancer',
-      description: 'Tampilkan tabel konsultasi dengan DataTables, modal detail, dan info pasien'
-    }
-  }
-};
-
-// State global
 var currentConfig = null;
 var isExtensionEnabled = true;
 var featureModules = {};
 
-/**
- * Log debug
- */
 function log(...args) {
   console.log('[MORBIS Ext]', ...args);
 }
 
-/**
- * Load konfigurasi dari storage
- */
 async function loadConfig() {
   try {
-    const result = await chrome.storage.sync.get(STORAGE_KEY);
-
-    if (!result[STORAGE_KEY]) {
-      currentConfig = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
-    } else {
-      currentConfig = result[STORAGE_KEY];
-
-      // Migrasi features
-      const validFeatures = Object.keys(DEFAULT_CONFIG.features);
-      const newFeatures = {};
-
-      for (const key of validFeatures) {
-        if (currentConfig.features[key]) {
-          newFeatures[key] = currentConfig.features[key];
-        } else {
-          newFeatures[key] = JSON.parse(JSON.stringify(DEFAULT_CONFIG.features[key]));
-        }
-      }
-
-      // Repair only structurally invalid allowedRoles (missing, non-array, or unknown roles)
-      const ALL_KNOWN_ROLES = Object.values(ROLES);
-      for (const key of validFeatures) {
-        const defaultRoles = DEFAULT_CONFIG.features[key].allowedRoles;
-        const currentRoles = newFeatures[key].allowedRoles;
-
-        if (!Array.isArray(currentRoles)) {
-          console.warn(`[MORBIS Ext] Repairing allowedRoles for ${key}: not an array →`, defaultRoles);
-          newFeatures[key].allowedRoles = [...defaultRoles];
-        } else if (currentRoles.length === 0) {
-          console.warn(`[MORBIS Ext] Repairing allowedRoles for ${key}: empty array →`, defaultRoles);
-          newFeatures[key].allowedRoles = [...defaultRoles];
-        } else {
-          const unknown = currentRoles.filter(r => !ALL_KNOWN_ROLES.includes(r));
-          if (unknown.length > 0) {
-            console.warn(`[MORBIS Ext] Removing unknown roles from ${key}:`, unknown);
-            newFeatures[key].allowedRoles = currentRoles.filter(r => ALL_KNOWN_ROLES.includes(r));
-          }
-        }
-      }
-
-      // Upgrade: expand filterPersistence and doctorFilterPersistence to all roles
-      const ALL_ROLES_LIST = Object.values(ROLES);
-      for (const key of ['filterPersistence', 'doctorFilterPersistence']) {
-        if (newFeatures[key]) {
-          newFeatures[key].allowedRoles = [...ALL_ROLES_LIST];
-        }
-      }
-
-      currentConfig.features = newFeatures;
-	      // Upgrade: hapus comingSoon flag dari printOptimization jika masih ada (v1 -> v2)
-	      if (currentConfig.features.printOptimization?.comingSoon !== undefined) {
-	        delete currentConfig.features.printOptimization.comingSoon;
-	        currentConfig.features.printOptimization.enabled = true;
-	        saveConfig(currentConfig);
-	      }
-
-
-      // Silent auto-mapping
-      if (!currentConfig.currentRole) {
-        currentConfig.currentRole = 'casemix';
-        log('Silent auto-mapping to casemix');
-        saveConfig(currentConfig);
-      }
+    const result = await chrome.storage.sync.get('extensionConfig');
+    currentConfig = result.extensionConfig;
+    if (!currentConfig) {
+      currentConfig = { extensionEnabled: true, currentRole: 'casemix', features: {} };
     }
-
     isExtensionEnabled = currentConfig.extensionEnabled;
     log('Config loaded, role:', currentConfig.currentRole);
     return currentConfig;
   } catch (error) {
     console.error('[MORBIS Ext] Error loading config:', error);
-    currentConfig = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+    currentConfig = { extensionEnabled: true, currentRole: 'casemix', features: {} };
     isExtensionEnabled = true;
     return currentConfig;
   }
 }
 
-/**
- * Load custom URLs
- */
 async function loadCustomUrls() {
   try {
-    const result = await chrome.storage.sync.get(URLS_STORAGE_KEY);
-
-    if (!result[URLS_STORAGE_KEY]) {
-      return JSON.parse(JSON.stringify(DEFAULT_CUSTOM_URLS));
-    }
-
-    const savedUrls = result[URLS_STORAGE_KEY];
-    const defaultUrls = JSON.parse(JSON.stringify(DEFAULT_CUSTOM_URLS));
-
-    const mergedUrls = [...defaultUrls];
-    savedUrls.forEach(savedUrl => {
-      if (!savedUrl.isDefault) mergedUrls.push(savedUrl);
+    const result = await chrome.storage.sync.get('extensionCustomUrls');
+    const saved = result.extensionCustomUrls;
+    if (!saved) return [];
+    const defaults = [
+      { id: 'default-1', url: 'http://192.168.8.4', enabled: true, isDefault: true },
+      { id: 'default-2', url: 'http://103.147.236.140', enabled: true, isDefault: true }
+    ];
+    const merged = JSON.parse(JSON.stringify(defaults));
+    saved.forEach(function (u) { if (!u.isDefault) merged.push(u); });
+    merged.forEach(function (u) {
+      var m = saved.find(function (s) { return s.id === u.id; });
+      if (m && u.isDefault) u.enabled = m.enabled;
     });
-
-    mergedUrls.forEach(url => {
-      const savedMatch = savedUrls.find(s => s.id === url.id);
-      if (savedMatch && url.isDefault) url.enabled = savedMatch.enabled;
-    });
-
-    return mergedUrls;
+    return merged;
   } catch (error) {
     console.error('[MORBIS Ext] Error loading URLs:', error);
-    return JSON.parse(JSON.stringify(DEFAULT_CUSTOM_URLS));
+    return [];
   }
 }
 
 async function saveCustomUrls(urls) {
-  try {
-    await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
-    log('Custom URLs saved');
-  } catch (error) {
-    console.error('[MORBIS Ext] Error saving URLs:', error);
-  }
+  log('Custom URLs saved via background');
 }
 
 async function saveConfig(config) {
-  try {
-    currentConfig = config;
-    await chrome.storage.sync.set({ [STORAGE_KEY]: config });
-    log('Config saved');
-  } catch (error) {
-    console.error('[MORBIS Ext] Error saving config:', error);
-  }
+  currentConfig = config;
+  log('Config saved via background');
 }
 
-function getActiveUrlPatterns() {
-  return loadCustomUrls().then(urls => urls.filter(u => u.enabled).map(u => `${u.url}/*`));
-}
-
-// Role helpers
 function getCurrentRole() {
   return currentConfig?.currentRole || 'casemix';
 }
 
 async function setCurrentRole(role) {
   if (!currentConfig) await loadConfig();
+  try {
+    await chrome.runtime.sendMessage({ type: 'SET_ROLE', role: role });
+  } catch (e) {
+    await chrome.storage.sync.set({ extensionConfig: { ...currentConfig, currentRole: role } });
+  }
   currentConfig.currentRole = role;
-  await saveConfig(currentConfig);
-  log(`Role changed to: ${role}`);
+  log('Role changed to:', role);
   return role;
 }
 
-function isFeatureAllowed(featureKey, role = getCurrentRole()) {
+function isFeatureAllowed(featureKey, role) {
+  if (!role) role = getCurrentRole();
   return currentConfig?.features?.[featureKey]?.allowedRoles?.includes(role) ?? false;
 }
 
-// Export API
 window.ExtensionCore = {
   ROLES,
   getCurrentRole,
@@ -281,28 +91,9 @@ window.ExtensionCore = {
   getConfig: () => currentConfig
 };
 
-// Storage change listener
-chrome.storage.onChanged.addListener((changes, namespace) => {
-  if (namespace === 'sync' && changes[STORAGE_KEY]) {
-    const newConfig = changes[STORAGE_KEY].newValue;
-    const oldConfig = changes[STORAGE_KEY].oldValue || {};
-
-    var extChanged = newConfig?.extensionEnabled !== oldConfig.extensionEnabled;
-    var roleChanged = newConfig?.currentRole !== oldConfig.currentRole;
-
-    var featureChanged = false;
-    var oldFeatures = oldConfig?.features || {};
-    var newFeatures = newConfig?.features || {};
-    for (var key of Object.keys(newFeatures)) {
-      if (newFeatures[key]?.enabled !== oldFeatures[key]?.enabled) {
-        featureChanged = true;
-        break;
-      }
-    }
-
-    if (extChanged || roleChanged || featureChanged) {
-      log('Config change detected, reloading...');
-      window.location.reload();
-    }
+chrome.runtime.onMessage.addListener(function (message) {
+  if (message.type === 'CONFIG_CHANGED') {
+    log('Config changed by background, reloading...');
+    window.location.reload();
   }
 });

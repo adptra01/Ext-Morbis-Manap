@@ -1,0 +1,34 @@
+{
+  "name": "morbis-ext-unofficial",
+  "version": "1.2.0",
+  "description": "Ekstensi produktivitas untuk SIMRS MORBIS Klaim",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:prod": "node scripts/build.mjs --production",
+    "watch": "node scripts/build.mjs --watch",
+    "lint": "eslint \"src/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" --fix",
+    "format": "prettier --write \"src/**/*.{ts,js,json,html,css}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,js,json,html,css}\"",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist",
+    "pack": "npm run build && node scripts/pack.mjs",
+    "deploy": "npm run pack && node scripts/deploy.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@types/chrome": "^0.0.270",
+    "esbuild": "^0.24.0",
+    "eslint": "^9.15.0",
+    "globals": "^17.6.0",
+    "prettier": "^3.4.0",
+    "rimraf": "^6.0.0",
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.59.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -14,3 +14,8 @@ opencode.json
 tool/
 screenshots/
 .playwright-mcp/
+
+# Build artifacts
+*.crx
+*.xpi
+*.pem
