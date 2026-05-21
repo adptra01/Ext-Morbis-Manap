@@ -2,10 +2,7 @@
 Morbis DevTools MCP Server
 
 MCP server untuk development dan debugging Morbis Ext Unofficial.
-Menyediakan tools untuk:
-- Scrape halaman Morbis dengan session management
-- Diff DOM structure sebelum/sesudah extension injection
-- Analyze existing feature code dan suggest patterns
+Update: mendukung TypeScript source di src/features/, MCP config, dan tools baru.
 """
 
 import os
@@ -26,9 +23,14 @@ BASE_URL = os.getenv("MORBIS_BASE_URL", "http://103.147.236.140")
 MORBIS_USERNAME = os.getenv("MORBIS_USERNAME", "")
 MORBIS_PASSWORD = os.getenv("MORBIS_PASSWORD", "")
 
-# Cookie cache directory
 CACHE_DIR = Path(__file__).parent / ".cache"
 CACHE_DIR.mkdir(exist_ok=True)
+
+# Project root: mcp-servers/morbis-devtools/server.py -> ../../ (project root)
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+SRC_FEATURES = PROJECT_ROOT / "src" / "features"
+BUILD_SCRIPT = PROJECT_ROOT / "scripts" / "build.mjs"
+MANIFEST = PROJECT_ROOT / "manifest.json"
 
 mcp = FastMCP("Morbis DevTools")
 
@@ -40,7 +42,7 @@ class MorbisSession:
         self._client: Optional[httpx.Client] = None
         self._logged_in = False
         self._last_activity = 0
-        self._session_timeout = 1800  # 30 minutes
+        self._session_timeout = 1800
 
     def _get_client(self) -> httpx.Client:
         if self._client is None:
@@ -62,10 +64,8 @@ class MorbisSession:
         return True
 
     def login(self) -> bool:
-        """Login to Morbis HIS and store session cookie."""
         if not MORBIS_USERNAME or not MORBIS_PASSWORD:
             return False
-
         try:
             client = self._get_client()
             response = client.post(
@@ -73,55 +73,41 @@ class MorbisSession:
                 data={"username": MORBIS_USERNAME, "password": MORBIS_PASSWORD},
                 follow_redirects=False,
             )
-
-            # Check if login succeeded (redirect away from /login)
             if response.status_code in (301, 302, 303):
                 location = response.headers.get("location", "")
                 if "login" not in location.lower():
                     self._logged_in = True
                     self._last_activity = time.time()
                     return True
-
-            # Check if we're already on a non-login page
             if "login" not in response.url.path.lower():
                 self._logged_in = True
                 self._last_activity = time.time()
                 return True
-
             return False
         except Exception:
             return False
 
     def ensure_session(self) -> bool:
-        """Ensure valid session, relogin if needed."""
         if self._is_session_valid():
             self._last_activity = time.time()
             return True
-
         return self.login()
 
     def get(self, url: str, params: Optional[dict] = None) -> httpx.Response:
-        """Make GET request with session management."""
         if not self.ensure_session():
             raise Exception("Failed to establish Morbis session")
-
         client = self._get_client()
         full_url = url if url.startswith("http") else BASE_URL + url
         response = client.get(full_url, params=params)
-
-        # Check if session expired (redirected to login)
         if response.status_code in (301, 302, 303):
             location = response.headers.get("location", "")
             if "login" in location.lower():
-                # Session expired, relogin and retry
                 if self.login():
                     response = client.get(full_url, params=params)
-
         self._last_activity = time.time()
         return response
 
     def close(self):
-        """Close the HTTP client."""
         if self._client:
             self._client.close()
             self._client = None
@@ -139,30 +125,19 @@ def scrape_morbis_page(
     """Scrape halaman Morbis HIS dengan session management otomatis.
 
     Args:
-        url: URL halaman yang akan di-scrape (bisa relative atau absolute)
+        url: URL halaman (relative atau absolute)
         css_selector: CSS selector untuk ekstrak elemen spesifik (opsional)
-        extract_tables: Jika True, ekstrak semua tabel di halaman
+        extract_tables: Jika True, ekstrak semua tabel
 
     Returns:
         Dict dengan keys: success, html, text, tables, selected_html, error
     """
     try:
         response = _session.get(url)
-
         if response.status_code != 200:
-            return {
-                "success": False,
-                "error": f"HTTP {response.status_code}",
-                "html": "",
-                "text": "",
-                "tables": [],
-                "selected_html": "",
-            }
+            return {"success": False, "error": f"HTTP {response.status_code}"}
 
         html = response.text
-
-        # Extract text content
-        import re
         text = re.sub(r"<[^>]+>", " ", html)
         text = re.sub(r"\s+", " ", text).strip()
 
@@ -176,44 +151,143 @@ def scrape_morbis_page(
             "selected_html": "",
         }
 
-        # Extract tables if requested
         if extract_tables:
-            table_pattern = r"<table[^>]*>(.*?)</table>"
-            tables = re.findall(table_pattern, html, re.DOTALL | re.IGNORECASE)
-            result["tables"] = [
-                {"index": i, "html_preview": t[:200]} for i, t in enumerate(tables)
-            ]
+            tables = re.findall(r"<table[^>]*>(.*?)</table>", html, re.DOTALL | re.IGNORECASE)
+            result["tables"] = [{"index": i, "html_preview": t[:200]} for i, t in enumerate(tables)]
             result["table_count"] = len(tables)
 
-        # Extract specific selector if provided
         if css_selector:
-            # Simple CSS selector support (limited to basic selectors)
             if css_selector.startswith("#"):
-                # ID selector
                 id_name = css_selector[1:]
-                id_pattern = rf'<[^>]*id=["\']{id_name}["\'][^>]*>(.*?)</[^>]*>'
-                match = re.search(id_pattern, html, re.DOTALL | re.IGNORECASE)
+                match = re.search(rf'<[^>]*id=["\']{id_name}["\'][^>]*>(.*?)</[^>]*>', html, re.DOTALL | re.IGNORECASE)
                 if match:
                     result["selected_html"] = match.group(0)[:1000]
             elif css_selector.startswith("."):
-                # Class selector
                 class_name = css_selector[1:]
-                class_pattern = rf'<[^>]*class=["\'][^"\']*{class_name}[^"\']*["\'][^>]*>(.*?)</[^>]*>'
-                match = re.search(class_pattern, html, re.DOTALL | re.IGNORECASE)
+                match = re.search(rf'<[^>]*class=["\'][^"\']*{class_name}[^"\']*["\'][^>]*>(.*?)</[^>]*>', html, re.DOTALL | re.IGNORECASE)
                 if match:
                     result["selected_html"] = match.group(0)[:1000]
 
         return result
-
     except Exception as e:
-        return {
-            "success": False,
-            "error": str(e),
-            "html": "",
-            "text": "",
-            "tables": [],
-            "selected_html": "",
+        return {"success": False, "error": str(e)}
+
+
+@mcp.tool()
+def read_config() -> dict:
+    """Read the current extension configuration and feature list.
+
+    Returns:
+        Dict dengan keys: manifest, build_config, features, types
+    """
+    features = []
+    if SRC_FEATURES.exists():
+        for ts_file in sorted(SRC_FEATURES.rglob("*.ts")):
+            rel = ts_file.relative_to(PROJECT_ROOT)
+            content = ts_file.read_text()
+            features.append({
+                "path": str(rel),
+                "size": len(content),
+                "imports": re.findall(r"import .+ from ['\"](.+)['\"]", content),
+                "uses_mutation_observer": "MutationObserver" in content,
+                "uses_chrome_storage": "chrome.storage" in content,
+                "registers_module": "featureModules" in content,
+            })
+
+    manifest_data = {}
+    if MANIFEST.exists():
+        manifest_data = json.loads(MANIFEST.read_text())
+
+    build_config = {}
+    if BUILD_SCRIPT.exists():
+        content = BUILD_SCRIPT.read_text()
+        whitelist = re.findall(r"'([^']+\.ts)'", content)
+        build_config = {
+            "ready_ts_files": whitelist,
+            "uses_production_flag": "--production" in content,
         }
+
+    return {
+        "manifest": {
+            "name": manifest_data.get("name"),
+            "version": manifest_data.get("version"),
+            "content_script_count": len(manifest_data.get("content_scripts", [])),
+        },
+        "features": {
+            "total": len(features),
+            "list": features,
+        },
+        "build": build_config,
+    }
+
+
+@mcp.tool()
+def get_feature_source(feature_path: str) -> dict:
+    """Read source code of a specific feature file.
+
+    Args:
+        feature_path: Path relative to project root (e.g. 'src/features/openDetail.ts')
+
+    Returns:
+        Dict dengan keys: path, content, size, exports
+    """
+    full_path = PROJECT_ROOT / feature_path
+    if not full_path.exists():
+        return {"error": f"File not found: {feature_path}"}
+    if not feature_path.endswith(".ts"):
+        return {"error": "Only .ts files are supported"}
+
+    content = full_path.read_text()
+    lines = content.split("\n")
+    exports = re.findall(r"export (?:default |)(?:function|const|class|interface|type) (\w+)", content)
+
+    return {
+        "path": feature_path,
+        "size": len(content),
+        "lines": len(lines),
+        "exports": exports,
+        "content": content,
+        "preview": "\n".join(lines[:50]),
+    }
+
+
+@mcp.tool()
+def validate_build() -> dict:
+    """Validate that all TypeScript features compile and pass checks.
+
+    Returns:
+        Dict dengan keys: build_ok, lint_ok, typecheck_ok, format_ok, errors
+    """
+    import subprocess
+    import sys
+
+    results = {}
+    errors = []
+
+    checks = {
+        "build": ["node", "scripts/build.mjs", "--production"],
+        "lint": [sys.executable, "-m", "eslint"] if sys.platform != "win32" else ["npx", "eslint", "src/**/*.ts"],
+        "typecheck": ["npx", "tsc", "--noEmit"],
+    }
+
+    for name, cmd in checks.items():
+        try:
+            r = subprocess.run(cmd, capture_output=True, text=True, cwd=PROJECT_ROOT, timeout=60)
+            results[name] = r.returncode == 0
+            if r.returncode != 0:
+                errors.append(f"{name}: {r.stderr[:500]}")
+        except subprocess.TimeoutExpired:
+            results[name] = False
+            errors.append(f"{name}: timed out")
+        except Exception as e:
+            results[name] = False
+            errors.append(f"{name}: {str(e)[:200]}")
+
+    return {
+        "all_ok": all(results.values()),
+        "results": results,
+        "errors": errors,
+    }
 
 
 @mcp.tool()
@@ -223,31 +297,22 @@ def diff_dom(baseline_html: str, current_html: str, scope: Optional[str] = None)
     Args:
         baseline_html: HTML baseline (sebelum perubahan)
         current_html: HTML saat ini (setelah perubahan)
-        scope: CSS selector untuk scope diff (opsional, default: full HTML)
+        scope: CSS selector untuk scope diff (opsional)
 
     Returns:
         Dict dengan keys: identical, added_count, removed_count, modified_count, changes
     """
     try:
-        import re
-
-        # Extract elements for comparison
         def extract_elements(html):
             elements = {}
-            # Extract elements with id
-            id_pattern = r'<(\w+)[^>]*id=["\']([^"\']+)["\'][^>]*>'
-            for match in re.finditer(id_pattern, html):
+            for match in re.finditer(r'<(\w+)[^>]*id=["\']([^"\']+)["\'][^>]*>', html):
                 tag, id_val = match.group(1), match.group(2)
                 elements[f"{tag}#{id_val}"] = match.group(0)[:100]
-
-            # Extract elements with class
-            class_pattern = r'<(\w+)[^>]*class=["\']([^"\']+)["\'][^>]*>'
-            for match in re.finditer(class_pattern, html):
+            for match in re.finditer(r'<(\w+)[^>]*class=["\']([^"\']+)["\'][^>]*>', html):
                 tag, class_val = match.group(1), match.group(2)
                 key = f"{tag}.{class_val.split()[0]}"
                 if key not in elements:
                     elements[key] = match.group(0)[:100]
-
             return elements
 
         baseline_elements = extract_elements(baseline_html)
@@ -260,11 +325,7 @@ def diff_dom(baseline_html: str, current_html: str, scope: Optional[str] = None)
         removed = baseline_keys - current_keys
         common = baseline_keys & current_keys
 
-        # Check for modifications in common elements
-        modified = set()
-        for key in common:
-            if baseline_elements[key] != current_elements[key]:
-                modified.add(key)
+        modified = {key for key in common if baseline_elements[key] != current_elements[key]}
 
         changes = []
         for key in sorted(added):
@@ -285,15 +346,10 @@ def diff_dom(baseline_html: str, current_html: str, scope: Optional[str] = None)
             "modified_count": len(modified),
             "total_elements_baseline": len(baseline_elements),
             "total_elements_current": len(current_elements),
-            "changes": changes[:50],  # Limit to 50 changes
+            "changes": changes[:50],
         }
-
     except Exception as e:
-        return {
-            "identical": False,
-            "error": str(e),
-            "changes": [],
-        }
+        return {"identical": False, "error": str(e), "changes": []}
 
 
 @mcp.tool()
@@ -310,29 +366,19 @@ def analyze_feature(
     Returns:
         Dict dengan keys: matched_patterns, suggested_approach, risks, existing_features
     """
-    # Scan existing features for patterns
-    features_dir = Path(__file__).parent.parent.parent / "features"
     existing_features = []
-
-    if features_dir.exists():
-        for js_file in features_dir.glob("*.js"):
-            content = js_file.read_text()
-            # Extract feature name and description from comments
-            name_match = re.search(r"FEATURE:\s*(.+?)(?:\n|$)", content)
-            desc_match = re.search(r"Deskripsi:\s*(.+?)(?:\n|$)", content)
-
+    if SRC_FEATURES.exists():
+        for ts_file in sorted(SRC_FEATURES.rglob("*.ts")):
+            content = ts_file.read_text()
+            rel = ts_file.relative_to(PROJECT_ROOT)
             existing_features.append({
-                "file": js_file.name,
-                "name": name_match.group(1).strip() if name_match else js_file.stem,
-                "description": desc_match.group(1).strip() if desc_match else "",
+                "file": str(rel),
                 "size": len(content),
                 "uses_mutation_observer": "MutationObserver" in content,
-                "uses_css_injection": "createElement('style')" in content or "createElement(\"style\")" in content,
-                "uses_cookie_storage": "CookieFilterStorage" in content,
+                "uses_css_injection": "createElement('style')" in content or 'createElement("style")' in content,
                 "uses_chrome_storage": "chrome.storage" in content,
             })
 
-    # Match patterns based on description keywords
     desc_lower = feature_description.lower()
     matched_patterns = []
 
@@ -348,44 +394,26 @@ def analyze_feature(
 
     for pattern, keywords in pattern_keywords.items():
         if any(kw in desc_lower for kw in keywords):
-            # Find existing features that use this pattern
-            for feature in existing_features:
-                if pattern in feature["name"].lower() or pattern in feature["description"].lower():
-                    matched_patterns.append({
-                        "pattern": pattern,
-                        "feature": feature["name"],
-                        "file": feature["file"],
-                        "techniques": [
-                            "MutationObserver" if feature["uses_mutation_observer"] else None,
-                            "CSS Injection" if feature["uses_css_injection"] else None,
-                            "Cookie Storage" if feature["uses_cookie_storage"] else None,
-                        ],
-                    })
+            matched_patterns.append({
+                "pattern": pattern,
+                "matching_features": [f["file"] for f in existing_features if pattern in f["file"].lower()],
+                "common_techniques": ["MutationObserver", "CSS Injection", "Chrome Storage"],
+            })
 
-    # Remove None values from techniques
-    for p in matched_patterns:
-        p["techniques"] = [t for t in p["techniques"] if t]
-
-    # Suggest approach
     suggested_approach = "Berdasarkan pattern yang ditemukan:\n"
-    if matched_patterns:
-        for mp in matched_patterns[:3]:
-            suggested_approach += f"- Gunakan pattern dari {mp['feature']} ({mp['file']})\n"
-            suggested_approach += f"  Teknik: {', '.join(mp['techniques'])}\n"
-    else:
-        suggested_approach += "- Tidak ada pattern yang cocok. Implementasi dari awal diperlukan.\n"
-        suggested_approach += "- Gunakan MutationObserver untuk handle dynamic content\n"
-        suggested_approach += "- Inject CSS untuk styling\n"
-        suggested_approach += "- Register module ke window.featureModules\n"
+    for mp in matched_patterns[:3]:
+        suggested_approach += f"- Pattern '{mp['pattern']}': lihat {', '.join(mp['matching_features'][:3])}\n"
+    suggested_approach += "\nBest practices:\n"
+    suggested_approach += "- Import getMorbisGlobals() dari shared/types.ts\n"
+    suggested_approach += "- Gunakan getMorbisGlobals().currentConfig?.features?.{nama}?.\n"
+    suggested_approach += "- Register module ke window.featureModules\n"
+    suggested_approach += "- Gunakan strict TypeScript (noUnusedLocals, noUnusedParameters)\n"
 
-    # Identify risks
     risks = []
     if "main world" in desc_lower or "global function" in desc_lower:
         risks.append("Memerlukan execution di MAIN world (world: 'MAIN' di manifest)")
     if "mutation" in desc_lower:
         risks.append("MutationObserver bisa menyebabkan performance issue jika tidak di-debounce")
-    if "storage" in desc_lower:
-        risks.append("Pastikan handle case ketika storage tidak tersedia")
 
     return {
         "matched_patterns": matched_patterns,

@@ -1,24 +1,37 @@
 * text=auto eol=lf
 
+# TypeScript / JavaScript
+*.ts text eol=lf
+*.mjs text eol=lf
+*.js text eol=lf
+
+# Web
+*.html text eol=lf
+*.css text eol=lf
+*.json text eol=lf
+*.svg text eol=lf
+
+# Config
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Shell/scripts
+*.sh text eol=lf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Diffs
 *.blade.php diff=html
-*.css diff=css
-*.html diff=html
 *.md diff=markdown
-*.php diff=php
 *.json diff=json
 
+# Export-ignore (not included in release archives)
 CHANGELOG.md export-ignore
 README.md export-ignore
-.github/workflows/browser-tests.yml export-ignore
-
-*.php text eol=lf
-*.js text eol=lf
-*.css text eol=lf
-*.html text eol=lf
-*.blade.php text eol=lf
-*.sh text eol=lf
-
-*.bat text eol=crlf
+.github/ export-ignore
+tests/ export-ignore
+scripts/ export-ignore
+mcp-servers/ export-ignore
 
 # Binary files
 *.png binary
@@ -27,10 +40,6 @@ README.md export-ignore
 *.gif binary
 *.ico binary
 *.crx binary
+*.xpi binary
+*.pem binary
 *.pyc binary
-
-# Text-based vector/image formats
-*.svg text eol=lf
-
-# Windows registry export files
-*.reg text eol=lf

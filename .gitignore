@@ -1,21 +1,38 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
-*.log
-.DS_Store
-example_code/
-test-results/
-code_views/
-*.pem
-__pycache__/
-*.pyc
-
-.claude/
-opencode.json
-tool/
-screenshots/
-.playwright-mcp/
-
-# Build artifacts
 *.crx
 *.xpi
 *.pem
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor / config
+.claude/
+.opencode/
+opencode.json
+
+# Test artifacts
+test-results/
+coverage/
+debug-*.png
+*.screenshot.png
+
+# Project-specific
+example_code/
+code_views/
+screenshots/
+.playwright-mcp/
+tool/
+
+# Environment files
+.env
+.env.local
+.env.*.local

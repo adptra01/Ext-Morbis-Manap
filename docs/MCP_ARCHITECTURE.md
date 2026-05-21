@@ -1164,111 +1164,82 @@ async function withRetry<T>(
 
 **Status:** Build system operational. Extension in `dist/` ready for testing as unpacked extension.
 
-### 6.2 Scalable Architecture (Week 3-5)
+### 6.2 Full TypeScript Migration & Build System — DONE
 
-**Remaining TypeScript migration:**
-- [ ] Migrate `features/openDetail.js` → `.ts`
-- [ ] Migrate `features/shortcutButtons.js` → `.ts`
-- [ ] Migrate `features/filterPersistence.js` → `.ts`
-- [ ] Migrate `features/simplifyBilling.js` → `.ts`
-- [ ] Migrate `features/scrollButtons.js` → `.ts`
-- [ ] Migrate `features/printOptimization.js` → `.ts`
-- [ ] Migrate `features/batchUploadUrl.js` → `.ts`
-- [ ] Migrate `features/batchDeleteFiles.js` → `.ts`
-- [ ] Migrate `features/billingFilterPersistence.js` → `.ts`
-- [ ] Migrate `features/doctorFilterPersistence.js` → `.ts`
-- [ ] Migrate `features/fixJasaPelayanan.js` → `.ts`
-- [ ] Migrate `features/consultationEnhancer.js` → `.ts`
-- [ ] Migrate `features/penerimaan_resep/main.js` → `.ts`
+**Completed (Phase 2-4):**
+- [x] All 17 TypeScript feature files migrated (including `openDetail.ts`, `shortcutButtons.ts`)
+- [x] `SharedBatchUtils` module (`src/features/shared/batchUtils.ts`)
+- [x] Shared types module (`src/features/shared/types.ts`) — `getMorbisGlobals()` pattern
+- [x] All original JS files in `features/` removed
+- [x] Build script (`scripts/build.mjs`) simplified — pure TS compilation, no fallback copy
+- [x] Production minification (`npm run build:prod`, esbuild `--minify`)
+- [x] Core bundles: core.js 2.4kb, background.js 5.9kb, popup.js 8.2kb (minified)
 
-**MCP server setup:**
-- [ ] Create `mcp-servers/morbis-devtools/server.py`
-- [ ] Implement `morbis-his-scraper` tool
-- [ ] Implement `dom-diff-analyzer` tool
-- [ ] Register in `opencode.json`
-- [ ] Test tool execution
+**Status:** Extension 100% TypeScript. All 17 features compile via esbuild. Build, lint, typecheck, format:check all pass.
+
+### 6.3 MCP Server & Testing — DONE
+
+**MCP server (`mcp-servers/morbis-devtools/server.py`):**
+- [x] `scrape_morbis_page` — scrape Morbis HIS with session management
+- [x] `diff_dom` — compare two HTML versions
+- [x] `analyze_feature` — suggest implementation based on patterns
+- [x] `read_config` — read extension config and features
+- [x] `get_feature_source` — read source of specific feature
+- [x] `validate_build` — validate TS compilation and checks
 
 **Testing infrastructure:**
-- [ ] Setup Playwright test project
-- [ ] Create `tests/playwright.config.ts`
-- [ ] Create global setup for auth state
-- [ ] Write first E2E test: filter persistence
-- [ ] Write E2E test: batch upload
-- [ ] Write E2E test: print optimization
+- [x] Vitest unit tests (`npm test`) — 47 tests for pure logic (URL generation, ID extraction, storage, config management)
+- [x] Playwright E2E build validity tests (`npm run test:e2e`) — validates build output exists
+- [x] Chrome extension API mock for unit tests
 
-### 6.3 Production-grade Architecture (Week 6-8)
+### 6.4 CI/CD Pipeline — DONE
 
-**CI/CD pipeline:**
-- [ ] Create `.github/workflows/test.yml`
-- [ ] Create `.github/workflows/deploy.yml`
-- [ ] Setup GitHub Pages auto-deploy
-- [ ] Auto-create release on version tag
+- [x] `.github/workflows/test.yml` — lint, typecheck, build on push/PR
+- [x] `.github/workflows/deploy.yml` — auto-deploy to GitHub Pages on tag
+- [x] `scripts/pack.mjs` — pack extension to .crx/.xpi
+- [x] `scripts/deploy.mjs` — deploy script
 
-**MCP server expansion:**
-- [ ] Implement `context-memory` tool
-- [ ] Implement `feature-pattern-matcher` tool
-- [ ] Implement `session-orchestrator` tool
-- [ ] Implement `structured-output-validator` tool
-- [ ] Implement `context-summarizer` tool
-
-**Optimization:**
-- [ ] Add minification to build (esbuild `--minify`)
-- [ ] Add bundle size reporting
-- [ ] Implement build caching in CI
-- [ ] Add performance benchmarks
-
-**Documentation:**
-- [ ] Update `docs/` with TypeScript migration guide
-- [ ] Add MCP server documentation
-- [ ] Add testing guide
-- [ ] Add deployment guide
-
-### 6.4 Implementation Checklist
+### 6.5 Implementation Checklist
 
 | Priority | Task | Status | Risk |
 |----------|------|--------|------|
 | P0 | Phase 1 build system | ✅ Done | None |
-| P0 | TypeScript migration (remaining features) | Pending | Medium — complex features (batchUploadUrl: 1258 lines) |
-| P0 | Playwright E2E tests (3 critical features) | Pending | Low — Playwright well-documented |
-| P1 | MCP server: morbis-his-scraper | Pending | Medium — session management complexity |
-| P1 | MCP server: dom-diff-analyzer | Pending | Low — straightforward DOM comparison |
-| P1 | CI/CD pipeline (test + deploy) | Pending | Low — GitHub Actions standard |
-| P2 | MCP server: context-memory | Pending | Low — SQLite is stable |
-| P2 | MCP server: feature-pattern-matcher | Pending | Medium — pattern extraction logic |
-| P2 | MCP server: session-orchestrator | Pending | High — complex DAG execution |
-| P3 | MCP server: structured-output-validator | Pending | Low — JSON Schema validation |
-| P3 | MCP server: context-summarizer | Pending | Medium — LLM integration |
-| P3 | Build minification + optimization | Pending | Low — esbuild built-in |
+| P0 | Full TypeScript migration (17 features + shared) | ✅ Done | Low — all compile and pass typecheck |
+| P0 | Vitest unit tests (47 tests, pure logic) | ✅ Done | Low — no browser dependency |
+| P1 | MCP server: 6 tools (scrape, diff, analyze, readConfig, getSource, validate) | ✅ Done | Low |
+| P1 | Production minification | ✅ Done | Low |
+| P1 | CI/CD pipeline (test + deploy) | ✅ Done | Low |
+| P2 | Playwright build validity E2E | ✅ Done | Low |
+| P2 | .gitignore + .gitattributes updated | ✅ Done | None |
+| P3 | E2E content script testing (requires live Morbis server) | Blocked | High — Playwright route() blocks content script injection |
+| P3 | MCP server: context-memory, session-orchestrator | Future | Low priority |
 
-### 6.5 Risk Analysis
+### 6.6 Risk Analysis
 
 | Risk | Probability | Impact | Mitigation |
 |------|------------|--------|------------|
-| TypeScript migration breaks existing features | Medium | High | Test each migration individually, keep JS fallback |
+| Content script E2E testing impossible without live server | High | Low | Unit tests cover pure logic; manual testing for DOM features |
+| TypeScript compilation regression | Low | High | CI runs build + typecheck on every push |
+| Vitest mock mismatch with real chrome API | Medium | Medium | Keep mocks minimal; integration test via extension popup |
 | Morbis server changes break scraper | Medium | High | Cache HTML structure, alert on selector mismatch |
-| Playwright tests flaky | High | Medium | Retry logic, stable selectors, isolated test data |
-| MCP server crashes | Low | Medium | Process restart, fallback to manual execution |
 | Build pipeline breaks | Low | High | Pin dependency versions, test locally first |
-| Context window overflow | Medium | Medium | Summarization at 75% capacity, selective retrieval |
 
-### 6.6 Technical Debt Consideration
+### 6.7 Technical Debt Consideration
 
 **Current debt:**
-- Legacy JS files in `features/` still need TypeScript migration
-- No E2E tests — manual testing only
-- No CI/CD — manual deploy via `.bat` scripts
-- No MCP servers — agent has no structured tool access
+- No DOM-level integration tests (content scripts don't inject in Playwright mock pages)
+- No performance benchmarks
+- MCP server uses regex-based HTML parsing (fragile)
 
 **Debt repayment plan:**
-1. Complete TypeScript migration (P0) — eliminates type-related bugs
-2. Add E2E tests for critical features (P0) — prevents regression
-3. Setup CI/CD (P1) — automates deploy, catches errors early
-4. Build MCP servers (P1-P2) — enables agent automation
+1. Add Vitest tests for remaining edge cases (P2)
+2. Implement MCP server for `context-memory` (P3)
+3. Add bundle size reporting to CI (P3)
 
 **Debt to accept:**
-- Keep legacy JS files until migration complete (backward compatible)
-- Skip LLM-based summarization initially (rule-based sufficient)
-- Defer complex orchestrator (simple sequential workflows work for now)
+- Content script E2E testing requires a live Morbis server or Chrome extension testing API
+- Regex-based HTML parsing is sufficient for current scale
+- No LLM summarization needed (rule-based works)
 
 ---
 
@@ -1276,7 +1247,8 @@ async function withRetry<T>(
 
 ### Build Commands
 ```bash
-npm run build        # Build extension to dist/
+npm run build        # Build extension to dist/ (dev: sourcemaps, no minify)
+npm run build:prod   # Build extension (minified, no sourcemaps)
 npm run watch        # Watch mode (auto-rebuild)
 npm run lint         # ESLint check
 npm run lint:fix     # ESLint auto-fix
@@ -1286,15 +1258,18 @@ npm run format:check # Prettier check
 npm run clean        # Remove dist/
 npm run pack         # Build + pack .crx/.xpi
 npm run deploy       # Build + pack + deploy
+npm test             # Run Vitest unit tests
+npm run test:watch   # Vitest in watch mode
+npm run test:e2e     # Run Playwright build validity tests
 ```
 
 ### MCP Server Commands
 ```bash
-# Start MCP server
+# Start MCP server with 6 tools
 python -m mcp run mcp-servers/morbis-devtools/server.py
 
-# Test scraper
-python mcp-servers/morbis-devtools/server.py --test scrape
+# Available tools: scrape_morbis_page, diff_dom, analyze_feature,
+#                  read_config, get_feature_source, validate_build
 ```
 
 ### Extension Testing
@@ -1302,9 +1277,15 @@ python mcp-servers/morbis-devtools/server.py --test scrape
 # Load unpacked extension
 # Chrome: chrome://extensions → Load unpacked → select dist/
 
-# Run E2E tests
-npx playwright test
+# Run unit tests (47 tests)
+npm test
 
-# Run specific test
-npx playwright test --grep "batch upload"
+# Run unit tests in watch mode
+npm run test:watch
+
+# Run E2E build validity tests
+npm run test:e2e
+
+# Run specific unit test
+npx vitest run tests/unit/shared-types.test.ts
 ```

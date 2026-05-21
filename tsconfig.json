@@ -36,5 +36,5 @@
     "src/features/doctorFilterPersistence.ts",
     "src/features/scrollButtons.ts"
   ],
-  "exclude": ["node_modules", "dist", "case", "docs", "deploy", "tool", "test-results"]
+  "exclude": ["node_modules", "dist", "case", "docs", "deploy", "tool", "test-results", "tests"]
 }
