@@ -201,7 +201,11 @@ export function initClearAllFilterButton(): void {
 declare global {
   interface Window {
     CookieFilterStorage: CookieFilterStorageAPI;
+    setupFilterLogoutWatcher: () => void;
+    initClearAllFilterButton: () => void;
   }
 }
 
 window.CookieFilterStorage = CookieFilterStorage;
+window.setupFilterLogoutWatcher = setupFilterLogoutWatcher;
+window.initClearAllFilterButton = initClearAllFilterButton;

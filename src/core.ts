@@ -117,6 +117,30 @@ chrome.runtime.onMessage.addListener(function (message: MessagePayload) {
   }
 });
 
+// Expose shared globals on window for feature modules & init (esbuild wraps in IIFE)
+const _window = window as unknown as Record<string, unknown>;
+_window.ExtensionCore = ExtensionCore;
+_window.featureModules = {};
+
+// Use getters so window values reflect live changes (not snapshots)
+Object.defineProperty(_window, 'currentConfig', {
+  get: () => currentConfig,
+  configurable: true,
+  enumerable: true,
+});
+Object.defineProperty(_window, 'isExtensionEnabled', {
+  get: () => isExtensionEnabled,
+  configurable: true,
+  enumerable: true,
+});
+
+_window.loadConfig = loadConfig;
+_window.loadCustomUrls = loadCustomUrls;
+_window.saveConfig = saveConfig;
+_window.saveCustomUrls = saveCustomUrls;
+_window.log = log;
+_window.ROLES = ROLES;
+
 export {
   currentConfig,
   isExtensionEnabled,
