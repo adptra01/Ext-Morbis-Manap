@@ -54,8 +54,13 @@ async function initExtension(): Promise<void> {
   const consulCfg = cfg?.features?.consultationEnhancer;
   if (consulCfg?.enabled && window.ExtensionCore.isFeatureAllowed('consultationEnhancer')) {
     document.documentElement.setAttribute('data-ext-consul-enhancer', '1');
+    document.documentElement.setAttribute(
+      'data-ext-base-url',
+      chrome.runtime.getURL('/'),
+    );
   } else {
     document.documentElement.removeAttribute('data-ext-consul-enhancer');
+    document.documentElement.removeAttribute('data-ext-base-url');
   }
 
   for (const [key, module] of Object.entries(window.featureModules)) {

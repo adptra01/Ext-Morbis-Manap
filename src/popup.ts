@@ -153,7 +153,8 @@ function updateCounts(): void {
   let enabled = 0;
   let total = 0;
   for (const [, f] of Object.entries(features)) {
-    if (!f.allowedRoles?.includes(role) || f.comingSoon) continue;
+    if (role !== 'admin' && !f.allowedRoles?.includes(role)) continue;
+    if (f.comingSoon) continue;
     total++;
     if (f.enabled) enabled++;
   }
@@ -178,7 +179,7 @@ function renderFeatures(): void {
   }
 
   for (const [key, feature] of Object.entries(features)) {
-    if (!feature.allowedRoles?.includes(role)) continue;
+    if (role !== 'admin' && !feature.allowedRoles?.includes(role)) continue;
     hasFeatures = true;
 
     if (!feature.comingSoon) {

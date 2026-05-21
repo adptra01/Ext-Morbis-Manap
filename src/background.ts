@@ -8,6 +8,7 @@ const ROLES = {
   KASIR: 'kasir',
   DOKTER: 'dokter',
   APOTEK: 'apotek',
+  ADMIN: 'admin',
 } as const;
 
 const DEFAULT_CUSTOM_URLS: CustomUrl[] = [

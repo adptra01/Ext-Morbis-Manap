@@ -43,10 +43,10 @@ const BILLING_FILTER_CONFIG: BillingFilterConfig = {
   cariButtonSelectors: [
     '#cari',
     'input[value="Cari"]',
-    'button:contains("Cari")',
-    '.tombol:contains("Cari")',
+    'button.btn-info[onclick*="cari"]',
+    'input.tombol[value="Cari"]',
   ],
-  batalButtonSelectors: ['input[value="Cancel"]', '.tombol:contains("Cancel")'],
+  batalButtonSelectors: ['input[value="Cancel"]', 'input.tombol[value="Cancel"]'],
 };
 
 function isBillingVerifikasiPage(): boolean {

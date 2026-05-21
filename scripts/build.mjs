@@ -24,6 +24,7 @@ async function copyStaticFiles() {
     { src: 'icons/bluemorbis16.png', dest: 'icons/bluemorbis16.png' },
     { src: 'icons/bluemorbis48.png', dest: 'icons/bluemorbis48.png' },
     { src: 'icons/bluemorbis128.png', dest: 'icons/bluemorbis128.png' },
+
   ];
 
   for (const file of filesToCopy) {

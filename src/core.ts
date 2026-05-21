@@ -5,6 +5,7 @@ export const ROLES: Record<string, Role> = {
   KASIR: 'kasir',
   DOKTER: 'dokter',
   APOTEK: 'apotek',
+  ADMIN: 'admin',
 };
 
 declare global {
@@ -99,6 +100,7 @@ async function setCurrentRole(role: Role): Promise<Role> {
 
 function isFeatureAllowed(featureKey: string, role?: Role): boolean {
   if (!role) role = getCurrentRole();
+  if (role === 'admin') return true;
   return currentConfig?.features?.[featureKey]?.allowedRoles?.includes(role) ?? false;
 }
 
