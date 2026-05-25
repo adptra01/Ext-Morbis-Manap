@@ -35,18 +35,89 @@ function injectBatchDeleteCSS(): void {
   const style = document.createElement('style');
   style.id = 'ext-batch-delete-style';
   style.textContent = `
-    .ext-batch-delete-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 10000; align-items: center; justify-content: center; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+    .ext-batch-delete-modal {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.4); display: none; z-index: 10000;
+      align-items: center; justify-content: center;
+    }
     .ext-batch-delete-modal.show { display: flex; }
-    .ext-delete-preview-item { padding: 16px; border-bottom: 1px solid #e5e7eb; font-size: 12px; display: flex; gap: 12px; align-items: flex-start; transition: background-color 0.2s ease; }
-    .ext-delete-preview-item.selected { background: linear-gradient(to right, #fef2f2, #fff1f2); }
-    .ext-status-badge { font-size: 11px; padding: 4px 10px; background: #f3f4f6; border-radius: 12px; color: #6b7280; font-weight: 500; }
-    .ext-delete-preview-btn { padding: 8px 14px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(59, 130, 246, 0.2); }
-    .ext-delete-preview-btn:hover { background: #2563eb; box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3); }
-    .ext-delete-single-btn { width: 32px; height: 32px; font-size: 14px; color: #dc2626; border-radius: 6px; background: #fee2e2; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 600; transition: all 0.2s ease; }
-    .ext-delete-single-btn:hover { background: #fecaca; transform: scale(1.1); }
-    .ext-delete-checkbox { margin-top: 4px; transform: scale(1.2); cursor: pointer; }
-    #ext-batch-delete-btn { background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s ease; }
-    #ext-batch-delete-btn:hover { background: #dc2626; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); transform: translateY(-1px); }
+
+    .ext-delete-preview-item {
+      padding: 12px 16px; border-bottom: 1px solid #e5e7eb; font-size: 12px;
+      display: flex; gap: 12px; align-items: flex-start;
+      font-family: 'Inter', sans-serif; transition: background-color 0.15s ease;
+      background: #fff;
+    }
+    .ext-delete-preview-item:first-child { border-top-left-radius: 6px; border-top-right-radius: 6px; }
+    .ext-delete-preview-item:last-child { border-bottom: none; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px; }
+    .ext-delete-preview-item:hover { background: #f9fafb; }
+    .ext-delete-preview-item.selected {
+      background: #fef2f2;
+      border-left: 3px solid #ef4444;
+    }
+
+    .ext-status-badge {
+      font-size: 10px; padding: 2px 10px; background: #f3f4f6;
+      border-radius: 10px; color: #374151; font-weight: 600;
+      white-space: nowrap; border: 1px solid #e5e7eb;
+    }
+    .ext-status-badge[data-status="success"] { background: #d1fae5; color: #065f46; border-color: #a7f3d0; }
+    .ext-status-badge[data-status="error"] { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+    .ext-status-badge[data-status="deleting"] { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+
+    .ext-delete-search-input {
+      width: 100%; padding: 8px 12px; font-size: 13px; font-family: 'Inter', sans-serif;
+      border: 1px solid #d1d5db; border-radius: 6px; outline: none; color: #111827;
+      background: #fff; box-sizing: border-box; transition: border-color 0.12s ease;
+    }
+    .ext-delete-search-input:focus { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
+    .ext-delete-search-input::placeholder { color: #9ca3af; }
+
+    .ext-delete-preview-btn {
+      padding: 6px 14px; background: #f0f9ff; color: #2563eb;
+      border: 1px solid #93c5fd; border-radius: 6px; font-size: 11px;
+      font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif;
+      transition: all 0.12s ease;
+    }
+    .ext-delete-preview-btn:hover { background: #2563eb; color: white; border-color: #2563eb; }
+    .ext-delete-preview-btn:active { background: #1d4ed8; transform: translateY(1px); }
+
+    .ext-delete-single-btn {
+      width: 32px; height: 32px; font-size: 14px; color: #dc2626;
+      border-radius: 6px; background: #fff1f2; border: 1px solid #fecaca;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-weight: 700; transition: all 0.12s ease; line-height: 1;
+    }
+    .ext-delete-single-btn:hover {
+      background: #dc2626; color: white; border-color: #dc2626;
+    }
+    .ext-delete-single-btn:active { transform: translateY(1px); }
+
+    .ext-delete-checkbox {
+      margin-top: 4px; cursor: pointer; accent-color: #ef4444;
+      width: 16px; height: 16px; flex-shrink: 0;
+    }
+
+    #ext-batch-delete-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer;
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700;
+      padding: 10px 20px; transition: all 0.12s ease;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      box-shadow: 0 1px 3px rgba(220,38,38,0.3);
+    }
+    #ext-batch-delete-btn::before {
+      content: ""; display: inline-flex;
+    }
+    #ext-batch-delete-btn:hover {
+      background: #dc2626; box-shadow: 0 2px 8px rgba(220,38,38,0.4);
+      transform: translateY(-1px);
+    }
+    #ext-batch-delete-btn:active {
+      transform: translateY(0); box-shadow: 0 1px 2px rgba(220,38,38,0.3);
+    }
   `;
   document.head.appendChild(style);
 
@@ -116,7 +187,7 @@ function replaceButtonsWithReload(): void {
   const buttonsContainer = document.querySelector('.ext-modal-buttons');
   if (buttonsContainer) {
     buttonsContainer.innerHTML =
-      '<button class="ext-btn ext-btn-purple" id="ext-reload-btn">Reload Halaman</button>';
+      '<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:6px;">&#x21BB; Reload Halaman</span></button>';
     document.getElementById('ext-reload-btn')?.addEventListener('click', () => {
       window.location.reload();
     });
@@ -186,22 +257,29 @@ function showBatchDeleteModal(): void {
     modal.innerHTML = `
       <div class="ext-modal-content">
         <div class="ext-modal-header">
-          <h3 style="margin: 0; font-size: 20px; color: #991b1b; font-weight: 700; letter-spacing: -0.3px;">Hapus Dokumen</h3>
-          <button class="ext-modal-close" id="ext-delete-close-btn">❌</button>
+          <h3 style="margin: 0; font-size: 18px; color: #000000; font-weight: 800; letter-spacing: -0.3px; text-transform: uppercase;">Hapus Dokumen</h3>
+          <button class="ext-modal-close" id="ext-delete-close-btn">&#x2715;</button>
         </div>
         <div class="ext-warning-box">
-          <strong style="display: block; margin-bottom: 4px; font-size: 14px;">PERHATIAN!</strong>
-          <span style="font-size: 13px; opacity: 0.9;">File yang dihapus tidak dapat dikembalikan. Tindakan ini bersifat permanen.</span>
+          <strong style="display: block; margin-bottom: 6px; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">&#x26A0; PERHATIAN!</strong>
+          <span style="font-size: 12px; opacity: 0.85; line-height: 1.5;">File yang dihapus <strong style="color: #000000;">tidak dapat dikembalikan</strong>. Tindakan ini bersifat permanen.</span>
         </div>
-        <div style="margin-bottom: 20px;">
-          <button id="ext-fetch-files-btn" class="ext-btn ext-btn-purple">Cari Dokumen Pasien</button>
+        <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+          <button id="ext-fetch-files-btn" class="ext-btn ext-btn-purple">
+            <span style="display: inline-flex; align-items: center; gap: 6px;">&#x1F50D; Cari Dokumen Pasien</span>
+          </button>
         </div>
-        <div id="${BATCH_DELETE_CONFIG.previewId}" style="display: none;"></div>
-        <div id="${BATCH_DELETE_CONFIG.progressId}"></div>
-        <div id="${BATCH_DELETE_CONFIG.statusId}" style="margin: 10px 0;"></div>
+        <div id="ext-delete-search-wrap" style="display: none; margin-bottom: 10px;">
+          <input type="text" id="ext-delete-search-input" class="ext-delete-search-input" placeholder="Cari dokumen...">
+        </div>
+        <div id="${BATCH_DELETE_CONFIG.previewId}" style="display: none; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden;"></div>
+        <div id="${BATCH_DELETE_CONFIG.progressId}" style="display: none; height: 4px; background: #374151; margin: 12px 0; border-radius: 2px; overflow: hidden;">
+          <div class="progress-fill"></div>
+        </div>
+        <div id="${BATCH_DELETE_CONFIG.statusId}" style="margin: 8px 0; font-size: 11px; color: #9ca3af; font-weight: 500; letter-spacing: 0.3px;"></div>
         <div class="ext-modal-buttons">
           <button id="ext-delete-cancel-btn" class="ext-btn ext-btn-secondary">Batal</button>
-          <button id="ext-start-delete-btn" class="ext-btn ext-btn-danger disabled">Hapus Terpilih</button>
+          <button id="ext-start-delete-btn" class="ext-btn ext-btn-danger disabled">&#x2716; Hapus Terpilih</button>
         </div>
       </div>
     `;
@@ -219,14 +297,8 @@ function showBatchDeleteModal(): void {
         .getElementById('ext-fetch-files-btn')
         ?.addEventListener('click', crawlDokumenPasienDelete);
       document.getElementById('ext-start-delete-btn')?.addEventListener('click', startBatchDelete);
+      document.getElementById('ext-delete-search-input')?.addEventListener('input', updateDeletePreview);
     }, 50);
-  }
-
-  const progressEl = document.getElementById(BATCH_DELETE_CONFIG.progressId) as HTMLElement | null;
-  if (progressEl && !progressEl.dataset.ready) {
-    progressEl.style.display = 'none';
-    progressEl.innerHTML = '<div class="progress-fill"></div>';
-    progressEl.dataset.ready = '1';
   }
 
   modal.classList.add('show');
@@ -388,24 +460,43 @@ function updateDeletePreview(): void {
   const previewEl = document.getElementById(BATCH_DELETE_CONFIG.previewId) as HTMLElement | null;
   const startBtn = document.getElementById('ext-start-delete-btn') as HTMLButtonElement | null;
   const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
+  const searchWrap = document.getElementById('ext-delete-search-wrap');
+  const searchInput = document.getElementById('ext-delete-search-input') as HTMLInputElement | null;
+  const query = (searchInput?.value || '').toLowerCase();
 
   if (!deleteQueue || deleteQueue.length === 0) {
-    if (previewEl) {
-      previewEl.style.display = 'none';
-      previewEl.innerHTML = '';
-    }
+    if (previewEl) { previewEl.style.display = 'none'; previewEl.innerHTML = ''; }
+    if (searchWrap) searchWrap.style.display = 'none';
+    if (searchInput) searchInput.value = '';
     if (startBtn) startBtn.disabled = true;
-    if (statusEl) statusEl.textContent = '';
+    if (statusEl) { statusEl.textContent = ''; statusEl.style.color = '#4b5563'; }
     return;
   }
 
-  if (previewEl) previewEl.style.display = 'block';
-  previewEl!.innerHTML =
-    '<strong>Preview Dokumen (' +
-    deleteQueue.filter((i) => i.selected).length +
-    ' dipilih):</strong>';
+  if (searchWrap) searchWrap.style.display = 'block';
+  const filtered = deleteQueue
+    .map((item, idx) => ({ item, idx }))
+    .filter(({ item }) => !query || item.filename.toLowerCase().includes(query));
 
-  deleteQueue.forEach((item, index) => {
+  if (previewEl) {
+    previewEl.style.display = 'block';
+    previewEl.style.borderRadius = '6px';
+  }
+  previewEl!.innerHTML =
+    '<div style="padding:10px 16px;background:#f3f4f6;border-bottom:1px solid #e5e7eb;font-size:11px;font-weight:700;color:#111827;text-transform:uppercase;letter-spacing:0.5px;font-family:Inter,sans-serif;">Dokumen Pasien <span style="color:#6b7280;font-weight:400;">(' +
+    deleteQueue.length +
+    ' dokumen, <span style="color:#dc2626;">' +
+    deleteQueue.filter((i) => i.selected).length +
+    '</span> dipilih)</span></div>';
+
+  if (filtered.length === 0) {
+    const empty = document.createElement('div');
+    empty.style.cssText = 'padding:24px;text-align:center;font-size:13px;color:#9ca3af;font-family:Inter,sans-serif;';
+    empty.textContent = 'Tidak ada dokumen yang cocok dengan pencarian.';
+    previewEl?.appendChild(empty);
+  }
+
+  filtered.forEach(({ item, idx }) => {
     const itemEl = document.createElement('div');
     itemEl.className = 'ext-delete-preview-item';
     if (item.selected) itemEl.classList.add('selected');
@@ -413,25 +504,29 @@ function updateDeletePreview(): void {
     const isDisabled = isDeletingProcess;
 
     itemEl.innerHTML = `
-      <input type="checkbox" data-index="${index}" class="ext-delete-checkbox" ${item.selected ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>
-      <div style="flex: 1;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-          <strong style="font-size: 14px; color: #111827; margin-bottom: 4px;">${index + 1}. ${item.filename}</strong>
-          <span class="ext-status-badge">${item.status}</span>
+      <input type="checkbox" data-index="${idx}" class="ext-delete-checkbox" ${item.selected ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>
+      <div style="flex: 1; min-width: 0;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+          <strong style="font-size: 13px; color: #000000; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${idx + 1}. ${item.filename}</strong>
+          ${item.status !== 'pending' ? `<span class="ext-status-badge" data-status="${item.status}">${item.status === 'success' ? 'Selesai' : item.status === 'error' ? 'Gagal' : item.status === 'deleting' ? '...' : item.status}</span>` : ''}
         </div>
-        <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">
-          ID: <strong>${item.id_dokumen}</strong> | ${item.tglFile} | ${item.tglUpload}
+        <div style="font-size: 11px; color: #4b5563; margin-top: 6px; display: flex; gap: 8px; flex-wrap: wrap;">
+          <span>ID: <strong style="color: #111827;">${item.id_dokumen}</strong></span>
+          <span style="color: #d1d5db;">|</span>
+          <span>${item.tglFile}</span>
+          <span style="color: #d1d5db;">|</span>
+          <span>${item.tglUpload}</span>
         </div>
-        <div style="font-size: 12px; color: #4b5563; margin-top: 2px;">${item.keterangan}</div>
+        <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">${item.keterangan}</div>
       </div>
-      <button data-index="${index}" class="ext-delete-preview-btn" ${isDisabled ? 'disabled' : ''}>Preview</button>
-      <button data-index="${index}" class="ext-delete-single-btn" title="Hapus Dokumen Ini" ${isDisabled ? 'disabled' : ''}>❌</button>
+      <button data-index="${idx}" class="ext-delete-preview-btn" ${isDisabled ? 'disabled' : ''}>&#x25B6; Preview</button>
+      <button data-index="${idx}" class="ext-delete-single-btn" title="Hapus Dokumen Ini" ${isDisabled ? 'disabled' : ''}>&#x2716;</button>
     `;
 
     const checkbox = itemEl.querySelector('input[type="checkbox"]') as HTMLInputElement | null;
     if (!isDeletingProcess && checkbox) {
       checkbox.addEventListener('change', (e) => {
-        deleteQueue[index].selected = (e.target as HTMLInputElement).checked;
+        deleteQueue[idx].selected = (e.target as HTMLInputElement).checked;
         updateDeletePreview();
       });
     }
@@ -442,11 +537,11 @@ function updateDeletePreview(): void {
 
     if (!isDeletingProcess) {
       previewBtn.addEventListener('click', () => {
-        showInlinePreviewSafe(deleteQueue[index].url, deleteQueue[index].filename);
+        showInlinePreviewSafe(deleteQueue[idx].url, deleteQueue[idx].filename);
       });
 
       deleteBtn.addEventListener('click', () => {
-        deleteSingleFromQueue(index);
+        deleteSingleFromQueue(idx);
       });
     }
 
@@ -479,14 +574,14 @@ async function startBatchDelete(): Promise<void> {
   isDeletingProcess = true;
   toggleDeleteUIProcessingState(true);
 
-  let success = 0,
-    fail = 0;
+  let success = 0, fail = 0;
   const progressEl = document.getElementById(BATCH_DELETE_CONFIG.progressId) as HTMLElement | null;
   const progressFill = progressEl?.querySelector('.progress-fill') as HTMLElement | null;
   const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
 
   if (progressEl) progressEl.style.display = 'block';
   if (progressFill) progressFill.style.width = '0%';
+  if (statusEl) statusEl.style.color = '#fcd34d';
 
   for (let i = 0; i < selected.length; i++) {
     const item = selected[i];
@@ -511,7 +606,10 @@ async function startBatchDelete(): Promise<void> {
   }
 
   const finalStatus = `Selesai! Sukses: ${success}, Gagal: ${fail}`;
-  if (statusEl) statusEl.textContent = finalStatus;
+  if (statusEl) {
+    statusEl.textContent = finalStatus;
+    statusEl.style.color = fail > 0 ? '#000000' : '#6ee7b7';
+  }
 
   if (fail > 0) {
     console.log(

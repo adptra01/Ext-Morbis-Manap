@@ -9,12 +9,19 @@ const SHORTCUT_CONFIG = {
     rajal: '/admisi/pelaksanaan_pelayanan/halaman-utama',
     ranap: '/admisi/detail-rawat-inap/input-tindakan',
     dokumenPasien: '/admisi/pelaksanaan_pelayanan/dokumen-pasien',
+    editResumeRajal: '/rekam-medik/rm-rawat-jalan-new',
+    editResumeRanap: '/rekam-medik/resume-rawat-inap',
   },
   detailUrlPattern: '/v2/m-klaim/detail-v2-refaktor',
   buttonStyles: {
     rajal: { text: 'Pelayanan Rawat Jalan', bgColor: '#3b82f6', hoverColor: '#2563eb' },
     ranap: { text: 'Pelayanan Rawat Inap', bgColor: '#10b981', hoverColor: '#059669' },
     dokumenPasien: { text: 'Dokumen Pasien', bgColor: '#8b5cf6', hoverColor: '#7c3aed' },
+    editResume: {
+      text: 'Edit Resume',
+      bgColor: '#f59e0b',
+      hoverColor: '#d97706',
+    },
     backMklaim: {
       text: 'Kembali ke M-KLAIM',
       bgColor: '#ef4444',
@@ -111,6 +118,20 @@ function generateDokumenPasienUrl(): string | null {
   return `${baseUrl}${SHORTCUT_CONFIG.shortcutUrls.dokumenPasien}?id_visit=${idVisit}&page=85&id_kunjungan=`;
 }
 
+function generateEditResumeUrl(): string | null {
+  const baseUrl = window.location.origin;
+  const idVisit = extractIdVisit();
+  if (!idVisit) return null;
+
+  if (isRawatJalan()) {
+    return `${baseUrl}${SHORTCUT_CONFIG.shortcutUrls.editResumeRajal}?id_visit=${idVisit}`;
+  }
+  if (isRawatInap()) {
+    return `${baseUrl}${SHORTCUT_CONFIG.shortcutUrls.editResumeRanap}?id_visit=${idVisit}`;
+  }
+  return null;
+}
+
 function generateMklaimBaseUrl(): string {
   return `${window.location.origin}/v2/m-klaim`;
 }
@@ -184,6 +205,13 @@ function renderShortcutButtons(): void {
   if (extensionEnabled) {
     const mklaimUrl = generateMklaimBaseUrl();
     container.appendChild(createButton(mklaimUrl, SHORTCUT_CONFIG.buttonStyles.backMklaim, true));
+  }
+
+  const editResumeUrl = generateEditResumeUrl();
+  if (editResumeUrl) {
+    container.appendChild(
+      createButton(editResumeUrl, SHORTCUT_CONFIG.buttonStyles.editResume),
+    );
   }
 
   const dokumenPasienUrl = generateDokumenPasienUrl();

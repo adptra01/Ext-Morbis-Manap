@@ -6,50 +6,56 @@ export function injectSharedCSS(): void {
   style.id = BATCH_UTILS_STYLE_ID;
   style.textContent = `
     .ext-modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 10px;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px; padding-bottom: 12px;
+      border-bottom: 1px solid #e5e7eb;
     }
     .ext-modal-close {
-      width: 32px; height: 32px; font-size: 14px; color: #dc2626;
-      border-radius: 6px; background: #fee2e2; border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; font-weight: 600;
-      transition: all 0.2s ease;
+      width: 32px; height: 32px; font-size: 15px; color: #9ca3af;
+      border-radius: 6px; background: #f3f4f6; border: 1px solid #e5e7eb;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-weight: 600; transition: all 0.12s ease;
+      font-family: 'Inter', sans-serif;
     }
-    .ext-modal-close:hover { background: #fecaca; transform: scale(1.1); }
+    .ext-modal-close:hover { background: #fee2e2; color: #dc2626; border-color: #fecaca; }
     .ext-modal-buttons {
-      margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;
+      margin-top: 16px; display: flex; gap: 10px; justify-content: flex-end;
     }
     .ext-btn {
-      padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;
-      font-size: 13px; font-weight: 500; transition: all 0.2s ease;
+      padding: 9px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;
+      font-weight: 700; transition: all 0.12s ease; text-transform: uppercase;
+      letter-spacing: 0.5px; font-family: 'Inter', sans-serif;
     }
     .ext-btn-primary { background: #3b82f6; color: white; }
     .ext-btn-primary:hover { background: #2563eb; }
-    .ext-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-    .ext-btn-secondary { background: #f3f4f6; color: #374151; }
-    .ext-btn-secondary:hover { background: #e5e7eb; }
-    .ext-btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .ext-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+    .ext-btn-secondary {
+      background: #ffffff; color: #374151; border: 1px solid #d1d5db;
+    }
+    .ext-btn-secondary:hover { background: #f3f4f6; border-color: #9ca3af; }
+    .ext-btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
     .ext-btn-danger { background: #ef4444; color: white; }
-    .ext-btn-danger:hover { background: #dc2626; }
-    .ext-btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
-    .ext-btn-danger.disabled { opacity: 0.5; cursor: not-allowed; }
-    .ext-btn-purple { background: #8b5cf6; color: white; }
-    .ext-btn-purple:hover { background: #7c3aed; }
+    .ext-btn-danger:hover { background: #dc2626; box-shadow: 0 2px 8px rgba(220,38,38,0.3); }
+    .ext-btn-danger:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+    .ext-btn-danger.disabled { opacity: 0.4; cursor: not-allowed; }
+    .ext-btn-purple {
+      background: #f5f3ff; color: #7c3aed; border: 1px solid #c4b5fd;
+    }
+    .ext-btn-purple:hover { background: #7c3aed; color: white; border-color: #7c3aed; }
     .ext-warning-box {
       background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px;
-      padding: 16px; margin-bottom: 20px; color: #991b1b;
+      padding: 14px 16px; margin-bottom: 20px; color: #991b1b;
+      font-family: 'Inter', sans-serif; font-size: 13px;
     }
     .ext-modal-content {
-      background: white; border-radius: 8px; padding: 24px;
+      background: #ffffff; border-radius: 8px; padding: 24px;
       max-width: 850px; width: 95%; max-height: 85vh; overflow-y: auto;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3); margin: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.05);
+      margin: auto; font-family: 'Inter', sans-serif;
     }
+    .ext-modal-content * { font-family: 'Inter', sans-serif; }
     .progress-fill {
-      height: 100%; background: #10b981; border-radius: 4px; width: 0%;
+      height: 100%; background: #10b981; width: 0%;
       transition: width 0.3s ease;
     }
   `;

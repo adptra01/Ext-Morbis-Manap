@@ -31,6 +31,8 @@ code_views/
 screenshots/
 .playwright-mcp/
 tool/
+tests/
+pages/
 
 # Environment files
 .env
