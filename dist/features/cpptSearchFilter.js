@@ -222,7 +222,7 @@ var __morbis_feature = (() => {
     <input type="text" id="${searchId}" class="ext-cppt-search-input"
       placeholder="Cari..." value="${htmlEncode(state.search)}">
 
-    <span class="ext-cppt-label">Dokter:</span>
+    <span class="ext-cppt-label">Penginput:</span>
     <select id="${dokterSelId}" class="ext-cppt-dokter-select">
       <option value="">Semua Dokter</option>
     </select>
