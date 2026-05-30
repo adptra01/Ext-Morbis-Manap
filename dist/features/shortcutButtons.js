@@ -15,7 +15,8 @@ var __morbis_feature = (() => {
       ranap: "/admisi/detail-rawat-inap/input-tindakan",
       dokumenPasien: "/admisi/pelaksanaan_pelayanan/dokumen-pasien",
       editResumeRajal: "/rekam-medik/rm-rawat-jalan-new",
-      editResumeRanap: "/rekam-medik/resume-rawat-inap"
+      editResumeRanap: "/rekam-medik/resume-rawat-inap",
+      editBilling: "/billing/billing-edit"
     },
     detailUrlPattern: "/v2/m-klaim/detail-v2-refaktor",
     buttonStyles: {
@@ -26,6 +27,11 @@ var __morbis_feature = (() => {
         text: "Edit Resume",
         bgColor: "#f59e0b",
         hoverColor: "#d97706"
+      },
+      editBilling: {
+        text: "Edit Billing",
+        bgColor: "#06b6d4",
+        hoverColor: "#0891b2"
       },
       backMklaim: {
         text: "Kembali ke M-KLAIM",
@@ -124,6 +130,36 @@ var __morbis_feature = (() => {
   function generateMklaimBaseUrl() {
     return `${window.location.origin}/v2/m-klaim`;
   }
+  function extractIdBilling() {
+    var el = document.querySelector("[data-id_billing], [data-id-billing]");
+    if (el) return el.getAttribute("data-id_billing") || el.getAttribute("data-id-billing");
+    var btn = document.querySelector(
+      'a[href*="id_billing"], button[onclick*="id_billing"], a[href*="billing-edit"]'
+    );
+    if (btn) {
+      var m = btn.getAttribute("href") || btn.getAttribute("onclick") || "";
+      var idm = m.match(/id_billing=(\d+)/);
+      if (idm) return idm[1];
+    }
+    var allEls = document.querySelectorAll('a[href*="billing-edit"], button[onclick*="billing-edit"]');
+    for (var i = 0; i < allEls.length; i++) {
+      var href = allEls[i].getAttribute("href") || allEls[i].getAttribute("onclick") || "";
+      var match = href.match(/id_billing=(\d+)/);
+      if (match) return match[1];
+    }
+    return null;
+  }
+  function generateEditBillingUrl() {
+    var idVisit = extractIdVisit();
+    var idBilling = extractIdBilling();
+    var urlParams = new URLSearchParams(window.location.search);
+    var idPasien = urlParams.get("norm");
+    var pasien = urlParams.get("nama");
+    if (!idVisit || !idBilling) return null;
+    var baseUrl = window.location.origin;
+    var url = baseUrl + SHORTCUT_CONFIG.shortcutUrls.editBilling + "?id_billing=" + idBilling + "&id_pasien=" + (idPasien || "") + "&id_visit=" + idVisit + "&pasien=" + encodeURIComponent(pasien || "");
+    return url;
+  }
   function shortcutButtonsExist() {
     return document.querySelector("[data-shortcut-buttons]") !== null;
   }
@@ -184,6 +220,12 @@ var __morbis_feature = (() => {
     if (dokumenPasienUrl) {
       container.appendChild(
         createButton(dokumenPasienUrl, SHORTCUT_CONFIG.buttonStyles.dokumenPasien)
+      );
+    }
+    const editBillingUrl = generateEditBillingUrl();
+    if (editBillingUrl) {
+      container.appendChild(
+        createButton(editBillingUrl, SHORTCUT_CONFIG.buttonStyles.editBilling)
       );
     }
     if ((isRawatJalan() || isRawatInap()) && rajalUrl) {
