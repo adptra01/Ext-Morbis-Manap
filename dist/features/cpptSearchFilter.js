@@ -17,19 +17,29 @@ var __morbis_feature = (() => {
     return null;
   }
   function findCpptTable() {
-    const tables = document.querySelectorAll("table");
-    for (const t of tables) {
-      const headers = t.querySelectorAll("thead th, thead td");
-      if (headers.length === 0) continue;
-      const headerText = Array.from(headers).map((h) => h.textContent?.trim().toLowerCase() || "");
-      if (headerText.some((h) => h.includes("cppt"))) return t;
+    const byId = document.getElementById("history_cppt");
+    if (byId) return byId;
+    for (const t of document.querySelectorAll("table")) {
+      const firstRow = t.querySelector("tr");
+      if (!firstRow) continue;
+      const texts = Array.from(firstRow.querySelectorAll("th, td")).map(
+        (c) => c.textContent?.trim().toLowerCase() || ""
+      );
+      const keywords = ["waktu", "penginput", "subyektif", "obyektif", "assessment", "instruksi"];
+      const matchCount = keywords.filter((k) => texts.some((t2) => t2.includes(k))).length;
+      if (matchCount >= 2) return t;
     }
-    for (const t of tables) {
-      const body = t.querySelector("tbody");
-      if (!body || body.rows.length === 0) continue;
+    for (const t of document.querySelectorAll("table")) {
       if (t.textContent?.toLowerCase().includes("cppt")) return t;
     }
     return null;
+  }
+  function getHeaderTexts(table) {
+    const headerRow = table.querySelector("thead tr") || table.querySelector("tr");
+    if (!headerRow) return [];
+    return Array.from(headerRow.querySelectorAll("th, td")).map(
+      (h) => h.textContent?.trim() || ""
+    ).filter((t) => t.length > 0);
   }
   function getColumnIndex(headers, ...keywords) {
     for (const kw of keywords) {
@@ -93,22 +103,31 @@ var __morbis_feature = (() => {
   `;
     document.head.appendChild(s);
   }
-  function getHeaderTexts(table) {
-    const headerRow = table.querySelector("thead tr");
-    if (!headerRow) return [];
-    return Array.from(headerRow.querySelectorAll("th, td")).map(
-      (h) => h.textContent?.trim() || ""
-    ).filter((t) => t.length > 0);
+  function getDataRows(table) {
+    const rows = table.querySelectorAll("tbody tr, tr");
+    return Array.from(rows).filter((r) => r.querySelector("td"));
   }
-  function getUniqueDokters(table, dokterColIdx) {
+  function getUniqueDokters(rows, dokterColIdx) {
     const set = /* @__PURE__ */ new Set();
-    const rows = table.querySelectorAll("tbody tr");
     for (const row of rows) {
       const cells = row.querySelectorAll("td");
       const val = cells[dokterColIdx]?.textContent?.trim();
       if (val && val.length > 0) set.add(val);
     }
     return Array.from(set).sort();
+  }
+  function normalizeDateForCompare(s) {
+    const m = s.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+    if (m) return m[3] + "-" + m[2] + "-" + m[1];
+    return s;
+  }
+  function getStoredFilters() {
+    try {
+      const raw = sessionStorage.getItem("ext_cppt_filter");
+      if (raw) return JSON.parse(raw);
+    } catch {
+    }
+    return { search: "", dokter: "", tanggalAwal: "", tanggalAkhir: "" };
   }
   function storeFilters(state) {
     try {
@@ -141,8 +160,7 @@ var __morbis_feature = (() => {
       window.history.replaceState(null, "", newUrl);
     }
   }
-  function applyFilters(state, table, tanggalIdx, dokterIdx, noResultsEl) {
-    const rows = table.querySelectorAll("tbody tr");
+  function applyFilters(state, rows, tanggalIdx, dokterIdx, noResultsEl) {
     let visibleCount = 0;
     for (const row of rows) {
       const cells = row.querySelectorAll("td");
@@ -151,7 +169,8 @@ var __morbis_feature = (() => {
         continue;
       }
       let show = true;
-      const tanggalText = cells[tanggalIdx]?.textContent?.trim().toLowerCase() || "";
+      const rawTanggal = cells[tanggalIdx]?.textContent?.trim() || "";
+      const tanggalText = normalizeDateForCompare(rawTanggal.toLowerCase());
       const dokterText = cells[dokterIdx]?.textContent?.trim().toLowerCase() || "";
       const fullText = Array.from(cells).map((c) => c.textContent?.trim().toLowerCase() || "").join(" ");
       if (state.search) {
@@ -162,10 +181,10 @@ var __morbis_feature = (() => {
         if (dokterText !== state.dokter.toLowerCase()) show = false;
       }
       if (show && state.tanggalAwal) {
-        if (tanggalText < state.tanggalAwal.toLowerCase()) show = false;
+        if (tanggalText < state.tanggalAwal) show = false;
       }
       if (show && state.tanggalAkhir) {
-        if (tanggalText > state.tanggalAkhir.toLowerCase()) show = false;
+        if (tanggalText > state.tanggalAkhir) show = false;
       }
       row.classList.toggle("ext-cppt-filtered-row", !show);
       if (show) visibleCount++;
@@ -177,8 +196,8 @@ var __morbis_feature = (() => {
   function injectFilterUI(table) {
     if (document.getElementById(CPPT_CONTAINER_ID)) return;
     const headers = getHeaderTexts(table);
-    const tanggalIdx = getColumnIndex(headers, "tanggal");
-    const dokterIdx = getColumnIndex(headers, "dokter", "pembuat");
+    const tanggalIdx = getColumnIndex(headers, "waktu", "masuk", "tanggal");
+    const dokterIdx = getColumnIndex(headers, "penginput", "dokter", "pembuat");
     if (dokterIdx === -1 && tanggalIdx === -1) return;
     const container = document.createElement("div");
     container.id = CPPT_CONTAINER_ID;
@@ -219,8 +238,9 @@ var __morbis_feature = (() => {
       table.parentNode.insertBefore(noResults, table);
     }
     const dokterSelect = document.getElementById(dokterId);
+    const rows = getDataRows(table);
     if (dokterIdx !== -1 && dokterSelect) {
-      const dokters = getUniqueDokters(table, dokterIdx);
+      const dokters = getUniqueDokters(rows, dokterIdx);
       for (const d of dokters) {
         const opt = document.createElement("option");
         opt.value = d;
@@ -245,7 +265,7 @@ var __morbis_feature = (() => {
         };
         storeFilters(s);
         syncUrlParams(s);
-        applyFilters(s, table, tanggalIdx, dokterIdx, noResults);
+        applyFilters(s, getDataRows(table), tanggalIdx, dokterIdx, noResults);
       }, 250);
     }
     searchInput?.addEventListener("input", readAndApply);
@@ -260,9 +280,9 @@ var __morbis_feature = (() => {
       const cleared = { search: "", dokter: "", tanggalAwal: "", tanggalAkhir: "" };
       storeFilters(cleared);
       syncUrlParams(cleared);
-      applyFilters(cleared, table, tanggalIdx, dokterIdx, noResults);
+      applyFilters(cleared, getDataRows(table), tanggalIdx, dokterIdx, noResults);
     });
-    applyFilters(state, table, tanggalIdx, dokterIdx, noResults);
+    applyFilters(state, rows, tanggalIdx, dokterIdx, noResults);
   }
   function htmlEncode(s) {
     return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -277,18 +297,29 @@ var __morbis_feature = (() => {
     } else {
       setTimeout(tryInject, 500);
     }
-    const observer = new MutationObserver(() => {
+    const bodyObserver = new MutationObserver(() => {
       if (!document.getElementById(CPPT_CONTAINER_ID)) {
         tryInject();
       }
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    bodyObserver.observe(document.body, { childList: true, subtree: true });
     function tryInject() {
       if (document.getElementById(CPPT_CONTAINER_ID)) return;
       const table = findCpptTable();
       if (!table) return;
       injectStyles();
       injectFilterUI(table);
+      const tableObserver = new MutationObserver(() => {
+        const state = getStoredFilters();
+        const hasActiveFilter = state.search || state.dokter || state.tanggalAwal || state.tanggalAkhir;
+        if (hasActiveFilter) {
+          const h = getHeaderTexts(table);
+          const tglIdx = getColumnIndex(h, "waktu", "masuk", "tanggal");
+          const dokIdx = getColumnIndex(h, "penginput", "dokter", "pembuat");
+          applyFilters(state, getDataRows(table), tglIdx, dokIdx, document.getElementById(CPPT_NO_RESULTS_ID));
+        }
+      });
+      tableObserver.observe(table, { childList: true, subtree: true });
     }
   }
   if (typeof g.featureModules !== "undefined") {
