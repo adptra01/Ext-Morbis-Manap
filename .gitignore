@@ -38,3 +38,4 @@ pages/
 .env
 .env.local
 .env.*.local
+.env
