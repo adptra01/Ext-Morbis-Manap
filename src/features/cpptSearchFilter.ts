@@ -110,7 +110,15 @@ function injectStyles(): void {
       border-radius: 8px; margin: 10px 0;
     }
     .ext-cppt-table-wrapper {
-      display: block; width: 100%;
+      display: block !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      clear: both !important;
+      float: none !important;
+      flex: 0 0 100% !important;
+      box-sizing: border-box !important;
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
     }
     .ext-cppt-filtered-row {
       display: none !important;
@@ -278,9 +286,14 @@ function injectFilterForTable(table: HTMLTableElement, tableIdx: number): void {
     <button class="ext-cppt-btn ext-cppt-btn-clear" id="${clearId}">Reset</button>
   `;
 
+  const parentEl = table.parentNode as HTMLElement | null;
+  const parentDisplay = parentEl ? getComputedStyle(parentEl).display : 'unknown';
+  console.log('[CPPT Filter] Table #' + tableIdx + ' parent display:', parentDisplay);
+
   const wrapper = document.createElement('div');
   wrapper.className = 'ext-cppt-table-wrapper';
-  table.parentNode?.insertBefore(wrapper, table);
+  wrapper.style.cssText = 'display:block !important;width:100% !important;clear:both;flex:0 0 100%;box-sizing:border-box';
+  parentEl?.insertBefore(wrapper, table);
   wrapper.appendChild(container);
   wrapper.appendChild(table);
 
