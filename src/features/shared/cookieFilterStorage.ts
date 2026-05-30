@@ -174,7 +174,7 @@ export function initClearAllFilterButton(): void {
   btn.id = 'ext-clear-all-filters';
   btn.textContent = 'Hapus Data Filter';
   btn.style.cssText =
-    'position:fixed;bottom:20px;left:20px;z-index:99999;' +
+    'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99999;' +
     'background:#dc3545;color:#fff;padding:10px 16px;' +
     'border-radius:6px;cursor:pointer;font-size:13px;' +
     'font-weight:500;font-family:Segoe UI,Arial,sans-serif;' +

@@ -170,7 +170,7 @@ var __morbis_feature = (() => {
     const btn = document.createElement("div");
     btn.id = "ext-clear-all-filters";
     btn.textContent = "Hapus Data Filter";
-    btn.style.cssText = "position:fixed;bottom:20px;left:20px;z-index:99999;background:#dc3545;color:#fff;padding:10px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;font-family:Segoe UI,Arial,sans-serif;box-shadow:0 2px 8px rgba(220,53,69,0.3);user-select:none;";
+    btn.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99999;background:#dc3545;color:#fff;padding:10px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;font-family:Segoe UI,Arial,sans-serif;box-shadow:0 2px 8px rgba(220,53,69,0.3);user-select:none;";
     btn.addEventListener("click", function() {
       if (confirm("Hapus semua data filter yang tersimpan?")) {
         CookieFilterStorage.clearAll();
