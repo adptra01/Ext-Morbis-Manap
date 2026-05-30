@@ -63,6 +63,7 @@ async function compileFeatureFiles() {
     'batchUploadUrl.ts',
     'openDetail.ts',
     'shortcutButtons.ts',
+    'cpptSearchFilter.ts',
   ];
 
   for (const relativePath of tsFiles) {

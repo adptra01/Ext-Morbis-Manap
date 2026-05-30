@@ -7,26 +7,38 @@
     {
       id: 'resep',
       label: 'History Resep',
-      url: (id: string, visit: string) =>
-        `${window.location.origin}/admisi/detail-rawat-inap/resep?id_visit=${visit}`,
+      ajax: {
+        url: '/admisi/pengajuan_konsultasi/tabel-resep',
+        method: 'POST',
+        data: (visit: string, noRm: string) => ({ id_visit: visit, id_pasien: noRm, page: 1 }),
+      },
     },
     {
       id: 'dokumen',
       label: 'Dokumen Pasien',
-      url: (id: string, visit: string) =>
-        `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${visit}&page=85&id_kunjungan=`,
+      ajax: {
+        url: '/admisi/pengajuan_konsultasi/tabel-dok',
+        method: 'POST',
+        data: (visit: string, noRm: string) => ({ id_visit: visit, id_pasien: noRm, page: 1 }),
+      },
     },
     {
       id: 'cppt',
       label: 'CPPT',
-      url: (id: string, visit: string) =>
-        `${window.location.origin}/admisi/detail-rawat-inap/cppt?id_visit=${visit}`,
+      ajax: {
+        url: '/admisi/pengajuan_konsultasi/tabel-cppt',
+        method: 'POST',
+        data: (visit: string, noRm: string) => ({ id_visit: visit, id_pasien: noRm, page: 1 }),
+      },
     },
     {
       id: 'penunjang',
       label: 'Penunjang Medis',
-      url: (id: string, visit: string) =>
-        `${window.location.origin}/admisi/detail-rawat-inap/penunjang?id_visit=${visit}`,
+      ajax: {
+        url: '/admisi/modal/modal-history-penunjang-v2',
+        method: 'GET',
+        data: (visit: string, noRm: string, _konsulId: string) => ({ norm: noRm, id_visit: visit }),
+      },
     },
   ];
 
@@ -44,16 +56,57 @@
     }
   }, 50);
 
+  let enhanceTimer: number | null = null;
+  const observers: MutationObserver[] = [];
+
+  function disposeObservers(): void {
+    observers.forEach(function (o) { o.disconnect(); });
+    observers.length = 0;
+  }
+
+  function allTablesEnhanced(): boolean {
+    var all = document.querySelectorAll('table.tabel.full');
+    if (all.length === 0) return false;
+    var enhanced = document.querySelectorAll('table.tabel.full[data-morbis-enhanced]');
+    return enhanced.length >= all.length;
+  }
+
   function init(): void {
+    console.log('[Cons Enhancer] init() called');
     injectStyle();
+    injectPageScripts();
 
     enhanceTables();
+    setTimeout(function () { reinitDataTable(); }, 200);
 
-    const target = document.getElementById('tabellist') || document.body;
-    const obs = new MutationObserver(function () {
-      enhanceTables();
+    var targets = [document.getElementById('tabellist'), document.getElementById('tabeldone'), document.body];
+    console.log('[Cons Enhancer] MutationObserver targets:', targets.length);
+    var fireCount = 0;
+    var MAX_FIRES = 15;
+    targets.forEach(function (target) {
+      if (!target) return;
+      var obs = new MutationObserver(function () {
+        if (allTablesEnhanced()) {
+          console.log('[Cons Enhancer] All tables enhanced, disconnecting observers');
+          disposeObservers();
+          return;
+        }
+        fireCount++;
+        if (fireCount > MAX_FIRES) {
+          console.log('[Cons Enhancer] Max observer fires reached, disconnecting');
+          disposeObservers();
+          return;
+        }
+        if (enhanceTimer) clearTimeout(enhanceTimer);
+        enhanceTimer = window.setTimeout(function () {
+          console.log('[Cons Enhancer] MutationObserver fired');
+          enhanceTables();
+          setTimeout(function () { reinitDataTable(); }, 200);
+        }, 400);
+      });
+      obs.observe(target, { childList: true, subtree: true });
+      observers.push(obs);
     });
-    obs.observe(target, { childList: true, subtree: true });
   }
 
   function injectStyle(): void {
@@ -67,8 +120,8 @@
       '.morbis-cons-detail:hover { background:#1a7ab0; }',
       '.morbis-cons-info { background:#10b981; }',
       '.morbis-cons-info:hover { background:#059669; }',
-      '.morbis-cons-overlay { display:block; position:fixed; z-index:99999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); overflow:auto; }',
-      '.morbis-cons-content { background:#fff; margin:50px auto; padding:0; width:80%; max-width:900px; border-radius:8px; box-shadow:0 10px 40px rgba(0,0,0,0.2); max-height:80vh; display:flex; flex-direction:column; }',
+      '.morbis-cons-overlay { display:flex; align-items:center; justify-content:center; position:fixed; z-index:99999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); }',
+      '.morbis-cons-content { background:#fff; margin:0; padding:0; width:80%; max-width:900px; border-radius:8px; box-shadow:0 10px 40px rgba(0,0,0,0.2); max-height:85vh; display:flex; flex-direction:column; }',
       '.morbis-cons-header { background:#2193CF; color:#fff; padding:15px 20px; border-radius:8px 8px 0 0; display:flex; justify-content:space-between; align-items:center; }',
       '.morbis-cons-header h2 { margin:0; font-size:18px; font-weight:600; color:#fff; }',
       '.morbis-cons-close { color:#fff; font-size:28px; font-weight:bold; cursor:pointer; background:none; border:none; padding:0; line-height:1; }',
@@ -83,68 +136,147 @@
       '.morbis-tab-btn.morbis-tab-active { color:#2193CF; background:#fff; border-bottom-color:#2193CF; }',
       '.morbis-tab-panel { display:none; }',
       '.morbis-tab-panel.morbis-tab-active { display:block; }',
-      'table.tabel.full th:nth-child(n+9), table.tabel.full td:nth-child(n+9) { display:none !important; }',
     ].join('\n');
     document.head.appendChild(s);
   }
 
+  function reinitDataTable(): void {
+    const $ = (window as unknown as Record<string, unknown>).jQuery as JQueryStatic | undefined;
+    if (!$ || !$.fn.dataTable) {
+      console.log('[Cons Enhancer] DataTable not available');
+      return;
+    }
+
+    const tables = document.querySelectorAll<HTMLTableElement>('table.tabel.full');
+    console.log('[Cons Enhancer] reinitDataTable found tables:', tables.length);
+    tables.forEach(function (tbl) {
+      if (tbl.hasAttribute('data-morbis-dt')) {
+        console.log('[Cons Enhancer] Table already has data-morbis-dt, skip reinit');
+        return;
+      }
+      if (!$.fn.dataTable.isDataTable(tbl)) {
+        try {
+          console.log('[Cons Enhancer] Initializing DataTable');
+          $(tbl).DataTable({
+            pageLength: 25,
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'Semua']],
+            columnDefs: [{ targets: 'no-sort', orderable: false }],
+            destroy: true,
+            drawCallback: function () {
+              console.log('[Cons Enhancer] DataTable draw callback');
+              enhanceTables();
+            },
+          });
+        } catch (_e) {
+          console.log('[Cons Enhancer] DataTable init failed:', _e);
+        }
+      }
+      tbl.setAttribute('data-morbis-dt', '1');
+    });
+  }
+
   function enhanceTables(): void {
     const tables = document.querySelectorAll('table.tabel.full');
+    console.log('[Cons Enhancer] enhanceTables found:', tables.length);
     tables.forEach(function (tbl) {
-      if (tbl.hasAttribute('data-morbis-enhanced')) return;
+      if (tbl.hasAttribute('data-morbis-enhanced')) {
+        console.log('[Cons Enhancer] Table already enhanced, skip');
+        return;
+      }
+      console.log('[Cons Enhancer] Processing new table');
       tbl.setAttribute('data-morbis-enhanced', '1');
 
-      const headerRow = tbl.querySelector('thead tr');
-      if (!headerRow) return;
+      var headerRow = tbl.querySelector('thead tr') || tbl.querySelector('tbody tr') || tbl.querySelector('tr');
+      if (!headerRow) {
+        console.log('[Cons Enhancer] No header row found');
+        return;
+      }
+      var headerFromTbody = !tbl.querySelector('thead tr') && !!tbl.querySelector('tbody tr');
+      console.log('[Cons Enhancer] headerFromTbody:', headerFromTbody);
       const cells = headerRow.querySelectorAll('th, td');
       const headerTexts: string[] = [];
       cells.forEach(function (c) {
         headerTexts.push((c.textContent || '').trim());
       });
+      console.log('[Cons Enhancer] Headers:', headerTexts);
 
       const totalCols = headerTexts.length;
+      const hasAksiCol = headerTexts.some(function (t) { return /aksi/i.test(t); });
+      console.log('[Cons Enhancer] totalCols:', totalCols, 'hasAksiCol:', hasAksiCol);
 
-      let permintaanIdx = -1;
-      let kesanIdx = -1;
-      let anjuranIdx = -1;
-      headerTexts.forEach(function (t, i) {
-        if (/permintaan/i.test(t)) permintaanIdx = i;
-        if (/kesan/i.test(t)) kesanIdx = i;
-        if (/anjuran/i.test(t)) anjuranIdx = i;
-      });
+      if (!hasAksiCol) {
+        console.log('[Cons Enhancer] Adding Aksi header column');
+        var actionTh = document.createElement('th');
+        actionTh.textContent = 'Aksi';
+        actionTh.style.cssText = 'width:120px;text-align:center;';
+        headerRow.appendChild(actionTh);
+      }
 
-      const actionCol = totalCols - 1;
+      const permintaanIdx = headerTexts.findIndex(function (t) { return /permintaan/i.test(t); });
+      const kesanIdx = headerTexts.findIndex(function (t) { return /kesan/i.test(t); });
+      const anjuranIdx = headerTexts.findIndex(function (t) { return /anjuran/i.test(t); });
+
+      var actionCol = hasAksiCol ? headerTexts.findIndex(function (t) { return /aksi/i.test(t); }) : totalCols;
+      console.log('[Cons Enhancer] actionCol index:', actionCol);
 
       const rows = tbl.querySelectorAll('tbody tr');
-      rows.forEach(function (row) {
-        const rds = row.querySelectorAll('td');
-        if (rds.length < totalCols) return;
+      console.log('[Cons Enhancer] Rows to process:', rows.length);
+      rows.forEach(function (row, ri) {
+        if (headerFromTbody && ri === 0) {
+          console.log('[Cons Enhancer] Row', ri, 'skip - header row in tbody');
+          return;
+        }
+        var rds = row.querySelectorAll('td');
 
-        const onclickAttr = row.querySelector('button[onclick*="direction_konsul"], button[onclick*="edit"]');
-        if (onclickAttr) {
-          row.setAttribute('data-onclick', onclickAttr.getAttribute('onclick') || '');
+        if (!hasAksiCol && rds.length <= totalCols) {
+          console.log('[Cons Enhancer] Row', ri, 'adding td cell (no Aksi col)');
+          var td = document.createElement('td');
+          td.style.cssText = 'text-align:center;white-space:nowrap;';
+          row.appendChild(td);
         }
 
-        const actionCell = rds[actionCol];
-        if (!actionCell || actionCell.querySelector('.morbis-cons-btn')) return;
+        var allCells = row.querySelectorAll('td');
+        console.log('[Cons Enhancer] Row', ri, 'cells:', allCells.length, 'actionCol:', actionCol);
+        if (allCells.length <= actionCol) {
+          console.log('[Cons Enhancer] Row', ri, 'SKIP - not enough cells');
+          return;
+        }
 
-        const rd: string[] = [];
-        rds.forEach(function (td) {
-          rd.push((td.textContent || '').trim());
+        var actionCell = allCells[actionCol];
+        if (actionCell.querySelector('.morbis-cons-btn')) {
+          console.log('[Cons Enhancer] Row', ri, 'already has our buttons');
+          return;
+        }
+
+        var rd: string[] = [];
+        allCells.forEach(function (td) { rd.push((td.textContent || '').trim()); });
+
+        var id_konsul = row.id || '';
+        var visitId = '';
+        row.querySelectorAll('a[href*="id_visit"], a[href*="form-input-konsultasi"], button[onclick*="id_visit"], button[onclick*="form-input-konsultasi"], button[onclick*="direction_konsul"]').forEach(function (el) {
+          var href = el.getAttribute('href') || el.getAttribute('onclick') || '';
+          var m = href.match(/id_visit=(\d+)/) || href.match(/direction_konsul\('[^']+',\s*'(\d+)'/);
+          if (m) visitId = m[1];
+          if (!id_konsul) {
+            var km = href.match(/direction_konsul\('(\d+)'/);
+            if (km) id_konsul = km[1];
+          }
         });
+        console.log('[Cons Enhancer] Row', ri, 'id_konsul:', id_konsul, 'visitId:', visitId);
 
-        const detailBtn = document.createElement('button');
+        console.log('[Cons Enhancer] Row', ri, 'Adding buttons');
+        var detailBtn = document.createElement('button');
         detailBtn.className = 'morbis-cons-btn morbis-cons-detail';
         detailBtn.textContent = 'Detail';
         actionCell.appendChild(detailBtn);
 
-        const infoBtn = document.createElement('button');
+        var infoBtn = document.createElement('button');
         infoBtn.className = 'morbis-cons-btn morbis-cons-info';
         infoBtn.textContent = 'Info Pasien';
         actionCell.appendChild(infoBtn);
 
         detailBtn.onclick = function () {
-          const p: Record<string, string> = {};
+          var p: Record<string, string> = {};
           if (rd.length > 1) p.noRm = rd[1];
           if (rd.length > 2) p.nama = rd[2];
           if (rd.length > 3) p.unitAsal = rd[3];
@@ -152,24 +284,17 @@
           if (rd.length > 5) p.dokterMengajukan = rd[5];
           if (rd.length > 6) p.dokterKonsultasi = rd[6];
           if (rd.length > 7) p.tanggal = rd[7];
-          if (permintaanIdx >= 0 && rd.length > permintaanIdx)
-            p.permintaan = rd[permintaanIdx];
-          if (kesanIdx >= 0 && rd.length > kesanIdx)
-            p.kesan = rd[kesanIdx] || '-';
-          if (anjuranIdx >= 0 && rd.length > anjuranIdx)
-            p.anjuran = rd[anjuranIdx] || '-';
+          if (permintaanIdx >= 0 && rd.length > permintaanIdx) p.permintaan = rd[permintaanIdx];
+          if (kesanIdx >= 0 && rd.length > kesanIdx) p.kesan = rd[kesanIdx] || '-';
+          if (anjuranIdx >= 0 && rd.length > anjuranIdx) p.anjuran = rd[anjuranIdx] || '-';
           openDetail(p);
         };
 
         infoBtn.onclick = function () {
-          const oc = row.getAttribute('data-onclick') || '';
-          const m = oc.match(/'(.*?)'/g);
-          if (!m || m.length < 2) return;
-          const id = m[0].replace(/'/g, '');
-          const visit = m[1].replace(/'/g, '');
+          if (!id_konsul) return;
           openTabs({
-            id: id,
-            visit: visit,
+            id: id_konsul,
+            visit: visitId,
             nama: rd[2] || '',
             noRm: rd[1] || '',
           });
@@ -242,11 +367,10 @@
     const existing = document.getElementById('morbis-cons-tabs');
     if (existing) existing.remove();
 
-    let tabsHtml = '';
-    let panelsHtml = '';
+    var tabsHtml = '';
+    var panelsHtml = '';
     PATIENT_INFO_TABS.forEach(function (tab, i) {
-      const url = tab.url(data.id, data.visit);
-      const active = i === 0;
+      var active = i === 0;
       tabsHtml +=
         '<button class="morbis-tab-btn' +
         (active ? ' morbis-tab-active' : '') +
@@ -260,12 +384,10 @@
         (active ? ' morbis-tab-active' : '') +
         '" data-panel="' +
         tab.id +
-        '"><iframe src="' +
-        url +
-        '" style="width:100%;min-height:600px;border:none;"></iframe></div>';
+        '"><div class="morbis-tab-body" style="padding:20px;min-height:400px;"><div style="text-align:center;padding:40px;color:#999;">Memuat...</div></div></div>';
     });
 
-    const ov = document.createElement('div');
+    var ov = document.createElement('div');
     ov.className = 'morbis-cons-overlay';
     ov.id = 'morbis-cons-tabs';
     ov.innerHTML =
@@ -284,7 +406,9 @@
 
     document.body.appendChild(ov);
 
-    const closeBtn = ov.querySelector('.morbis-cons-close') as HTMLElement | null;
+    injectPageScripts();
+
+    var closeBtn = ov.querySelector('.morbis-cons-close') as HTMLElement | null;
     if (closeBtn)
       closeBtn.onclick = function () {
         ov.remove();
@@ -292,6 +416,8 @@
     ov.onclick = function (e) {
       if (e.target === ov) ov.remove();
     };
+
+    var loadedTabs: Record<string, boolean> = {};
 
     ov.querySelectorAll('.morbis-tab-btn').forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -302,11 +428,100 @@
           p.classList.remove('morbis-tab-active');
         });
         btn.classList.add('morbis-tab-active');
-        const tabId = btn.getAttribute('data-tab');
-        const panel = ov.querySelector('.morbis-tab-panel[data-panel="' + tabId + '"]');
+        var tabId = btn.getAttribute('data-tab');
+        var panel = ov.querySelector('.morbis-tab-panel[data-panel="' + tabId + '"]');
         if (panel) panel.classList.add('morbis-tab-active');
+        if (tabId && !loadedTabs[tabId]) {
+          loadTabContent(tabId, panel as HTMLElement, data);
+          loadedTabs[tabId] = true;
+        }
       });
     });
+
+    var firstTab = ov.querySelector('.morbis-tab-btn.morbis-tab-active');
+    if (firstTab) {
+      var firstId = firstTab.getAttribute('data-tab');
+      var firstPanel = ov.querySelector('.morbis-tab-panel[data-panel="' + firstId + '"]') as HTMLElement;
+      if (firstId && firstPanel) {
+        loadTabContent(firstId, firstPanel, data);
+        loadedTabs[firstId] = true;
+      }
+    }
+  }
+
+  function injectPageScripts(): void {
+    if (document.getElementById('morbis-cons-page-scripts')) return;
+    var s = document.createElement('script');
+    s.id = 'morbis-cons-page-scripts';
+    s.textContent = [
+      'window.openTab=function(e,t){',
+      'var c=e.closest(".tab")&&e.closest(".tab").parentElement||document.body;',
+      'c.querySelectorAll(".tabcontent").forEach(function(el){el.style.display="none"});',
+      'c.querySelectorAll(".tablinks").forEach(function(el){el.classList.remove("active")});',
+      'e.classList.add("active");',
+      'var sel=document.getElementById(t);',
+      'if(sel)sel.style.display="block";',
+      'var cc=c.querySelector("#contents, .tab-content");',
+      'if(cc)cc.style.display="block";',
+      '};',
+      'if(!window.cetak)window.cetak=function(){};',
+      'if(!window.openDirection)window.openDirection=function(){};',
+    ].join('\n');
+    (document.head || document.documentElement).appendChild(s);
+  }
+
+  function loadTabContent(tabId: string, panel: HTMLElement, data: Record<string, string>): void {
+    var tab = PATIENT_INFO_TABS.find(function (t) { return t.id === tabId; });
+    if (!tab) return;
+    var target = panel.querySelector('.morbis-tab-body') || panel;
+    var $ = (window as unknown as Record<string, unknown>).jQuery as JQueryStatic | undefined;
+    if (!$ || !$.ajax) {
+      target.innerHTML = '<div style="text-align:center;padding:40px;color:red;">jQuery tidak tersedia</div>';
+      return;
+    }
+    target.innerHTML = '<div style="text-align:center;padding:40px;color:#999;">Memuat...</div>';
+    var konsulId = data.id || '';
+    var ajaxData = tab.ajax.data(data.visit, data.noRm || '', konsulId);
+    var ajaxSettings: Record<string, unknown> = {
+      url: tab.ajax.url,
+      type: tab.ajax.method,
+      dataType: 'html',
+      data: ajaxData,
+      success: function (response: string) {
+        target.innerHTML = response;
+        if (tabId === 'penunjang') {
+          injectPenunjangFix(data.visit, data.noRm || '');
+        }
+      },
+      error: function (_xhr: unknown, _status: string, error: string) {
+        target.innerHTML = '<div style="text-align:center;padding:40px;color:red;">Gagal memuat: ' + error + '</div>';
+      },
+    };
+    $.ajax(ajaxSettings);
+  }
+
+  function injectPenunjangFix(visit: string, noRm: string): void {
+    if (document.getElementById('morbis-penunjang-fix')) return;
+    var s = document.createElement('script');
+    s.id = 'morbis-penunjang-fix';
+    s.textContent = [
+      'window.openTab=function(elem,tipe){',
+      'document.querySelectorAll(".tabcontent").forEach(function(e){e.style.display="none"});',
+      'document.querySelectorAll(".tablinks").forEach(function(e){e.classList.remove("active")});',
+      'elem.classList.add("active");',
+      'var t=document.getElementById(tipe);',
+      'if(t)t.style.display="block";',
+      'var c=document.getElementById("contents");',
+      'if(c)c.style.display="block";',
+      '};',
+      'window.searchTable=function(n,v,t){',
+      'var tb=document.querySelector("#tab-"+t);',
+      'if(tb)window.openTab(tb,t);',
+      '};',
+      'var hb=document.getElementById("tab-hasil");',
+      'if(hb)hb.click();',
+    ].join('\n');
+    (document.head || document.documentElement).appendChild(s);
   }
 
   function esc(t: string | undefined | null): string {

@@ -257,7 +257,7 @@ function showBatchDeleteModal(): void {
     modal.innerHTML = `
       <div class="ext-modal-content">
         <div class="ext-modal-header">
-          <h3 style="margin: 0; font-size: 18px; color: #000000; font-weight: 800; letter-spacing: -0.3px; text-transform: uppercase;">Hapus Dokumen</h3>
+          <h3 style="margin: 0; font-size: 18px; color: #000000; font-weight: 800; letter-spacing: -0.3px; text-transform: none;">Hapus Dokumen</h3>
           <button class="ext-modal-close" id="ext-delete-close-btn">&#x2715;</button>
         </div>
         <div class="ext-warning-box">

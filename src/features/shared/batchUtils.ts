@@ -23,7 +23,7 @@ export function injectSharedCSS(): void {
     }
     .ext-btn {
       padding: 9px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;
-      font-weight: 700; transition: all 0.12s ease; text-transform: uppercase;
+      font-weight: 700; transition: all 0.12s ease; text-transform: none;
       letter-spacing: 0.5px; font-family: 'Inter', sans-serif;
     }
     .ext-btn-primary { background: #3b82f6; color: white; }
