@@ -88,6 +88,7 @@
         "core.js",
         "features/shared/cookieFilterStorage.js",
         "features/doctorFilterPersistence.js",
+        "features/cpptSearchFilter.js",
         "init.js"
       ],
       "run_at": "document_end",
