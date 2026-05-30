@@ -16,7 +16,8 @@ var __morbis_feature = (() => {
       dokumenPasien: "/admisi/pelaksanaan_pelayanan/dokumen-pasien",
       editResumeRajal: "/rekam-medik/rm-rawat-jalan-new",
       editResumeRanap: "/rekam-medik/resume-rawat-inap",
-      editBilling: "/billing/billing-edit"
+      editBilling: "/billing/billing-edit",
+      triageIgd: "/admisi/pelaksanaan_pelayanan/triage_terintegrasi"
     },
     detailUrlPattern: "/v2/m-klaim/detail-v2-refaktor",
     buttonStyles: {
@@ -32,6 +33,11 @@ var __morbis_feature = (() => {
         text: "Edit Billing",
         bgColor: "#06b6d4",
         hoverColor: "#0891b2"
+      },
+      triageIgd: {
+        text: "Triage IGD",
+        bgColor: "#ec4899",
+        hoverColor: "#db2777"
       },
       backMklaim: {
         text: "Kembali ke M-KLAIM",
@@ -160,6 +166,12 @@ var __morbis_feature = (() => {
     var url = baseUrl + SHORTCUT_CONFIG.shortcutUrls.editBilling + "?id_billing=" + idBilling + "&id_pasien=" + (idPasien || "") + "&id_visit=" + idVisit + "&pasien=" + encodeURIComponent(pasien || "");
     return url;
   }
+  function generateTriageIgdUrl() {
+    if (!isRawatInap()) return null;
+    var idVisit = extractIdVisit();
+    if (!idVisit) return null;
+    return window.location.origin + SHORTCUT_CONFIG.shortcutUrls.triageIgd + "?id_visit=" + idVisit + "&status_periksa=belum&page=51";
+  }
   function shortcutButtonsExist() {
     return document.querySelector("[data-shortcut-buttons]") !== null;
   }
@@ -233,6 +245,12 @@ var __morbis_feature = (() => {
     }
     if (isRawatInap() && ranapUrl) {
       container.appendChild(createButton(ranapUrl, SHORTCUT_CONFIG.buttonStyles.ranap));
+    }
+    var triageIgdUrl = generateTriageIgdUrl();
+    if (triageIgdUrl) {
+      container.appendChild(
+        createButton(triageIgdUrl, SHORTCUT_CONFIG.buttonStyles.triageIgd)
+      );
     }
     const selectors = [
       ".form-horizontal",
