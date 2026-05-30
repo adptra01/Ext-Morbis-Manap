@@ -30,7 +30,7 @@ var __morbis_feature = (() => {
     }
     .ext-btn {
       padding: 9px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;
-      font-weight: 700; transition: all 0.12s ease; text-transform: uppercase;
+      font-weight: 700; transition: all 0.12s ease; text-transform: none;
       letter-spacing: 0.5px; font-family: 'Inter', sans-serif;
     }
     .ext-btn-primary { background: #3b82f6; color: white; }
@@ -346,7 +346,7 @@ var __morbis_feature = (() => {
       modal.innerHTML = `
       <div class="ext-modal-content">
         <div class="ext-modal-header">
-          <h3 style="margin: 0; font-size: 18px; color: #000000; font-weight: 800; letter-spacing: -0.3px; text-transform: uppercase;">Hapus Dokumen</h3>
+          <h3 style="margin: 0; font-size: 18px; color: #000000; font-weight: 800; letter-spacing: -0.3px; text-transform: none;">Hapus Dokumen</h3>
           <button class="ext-modal-close" id="ext-delete-close-btn">&#x2715;</button>
         </div>
         <div class="ext-warning-box">
