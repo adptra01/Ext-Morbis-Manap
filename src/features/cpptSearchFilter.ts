@@ -109,6 +109,9 @@ function injectStyles(): void {
       background: #fafafa; border: 1px dashed #d1d5db;
       border-radius: 8px; margin: 10px 0;
     }
+    .ext-cppt-table-wrapper {
+      display: block; width: 100%;
+    }
     .ext-cppt-filtered-row {
       display: none !important;
     }
@@ -275,14 +278,18 @@ function injectFilterForTable(table: HTMLTableElement, tableIdx: number): void {
     <button class="ext-cppt-btn ext-cppt-btn-clear" id="${clearId}">Reset</button>
   `;
 
-  table.insertAdjacentElement('beforebegin', container);
+  const wrapper = document.createElement('div');
+  wrapper.className = 'ext-cppt-table-wrapper';
+  table.parentNode?.insertBefore(wrapper, table);
+  wrapper.appendChild(container);
+  wrapper.appendChild(table);
 
   const noResults = document.createElement('div');
   noResults.id = noResultsId;
   noResults.className = CPPT_NO_RESULTS_CLASS;
   noResults.textContent = 'Tidak ada data yang sesuai dengan filter.';
   noResults.style.display = 'none';
-  table.insertAdjacentElement('beforebegin', noResults);
+  wrapper.appendChild(noResults);
 
   console.log('[CPPT Filter] Injected filter #' + tableIdx + ' before table:', table.id || '(no id)');
 
