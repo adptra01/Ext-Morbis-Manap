@@ -237,17 +237,14 @@ var __morbis_feature = (() => {
 
     <button class="ext-cppt-btn ext-cppt-btn-clear" id="${clearId}">Reset</button>
   `;
-    if (table.parentNode) {
-      table.parentNode.insertBefore(container, table);
-    }
+    table.insertAdjacentElement("beforebegin", container);
     const noResults = document.createElement("div");
     noResults.id = noResultsId;
     noResults.className = CPPT_NO_RESULTS_CLASS;
     noResults.textContent = "Tidak ada data yang sesuai dengan filter.";
     noResults.style.display = "none";
-    if (table.parentNode) {
-      table.parentNode.insertBefore(noResults, table);
-    }
+    table.insertAdjacentElement("beforebegin", noResults);
+    console.log("[CPPT Filter] Injected filter #" + tableIdx + " before table:", table.id || "(no id)");
     const dokterSelect = document.getElementById(dokterSelId);
     const rows = getDataRows(table);
     if (dokterIdx !== -1 && dokterSelect) {
@@ -322,7 +319,9 @@ var __morbis_feature = (() => {
       const tables = findCpptTables();
       if (tables.length === 0) return;
       injectStyles();
+      console.log("[CPPT Filter] Found " + tables.length + " CPPT table(s)");
       for (let i = 0; i < tables.length; i++) {
+        console.log("[CPPT Filter] Table #" + i + ": id=" + (tables[i].id || "(none)") + " parent=" + (tables[i].parentNode?.className || "(none)") + " rows=" + tables[i].querySelectorAll("tr").length);
         injectFilterForTable(tables[i], i);
       }
       for (let i = 0; i < tables.length; i++) {
