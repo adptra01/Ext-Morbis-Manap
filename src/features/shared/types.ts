@@ -35,6 +35,7 @@ export interface MorbisGlobals {
   };
   setupFilterLogoutWatcher: () => void;
   initClearAllFilterButton: () => void;
+  removeClearAllFilterButton: () => void;
   OpenDetailExtension: {
     getConfig: () => MorbisConfig | null;
     getFeatures: () => Record<string, { name: string; description?: string; run: () => void }>;

@@ -23,11 +23,12 @@ var __morbis_feature = (() => {
   __export(cookieFilterStorage_exports, {
     CookieFilterStorage: () => CookieFilterStorage,
     initClearAllFilterButton: () => initClearAllFilterButton,
+    removeClearAllFilterButton: () => removeClearAllFilterButton,
     setupFilterLogoutWatcher: () => setupFilterLogoutWatcher
   });
   var COOKIE_PREFIX = "_morbis_filter_";
   var __cf_logoutWatcherInit = false;
-  var __cf_clearBtnInit = false;
+  var __cf_clearBtn = null;
   function _cf_midnightDate() {
     const d = /* @__PURE__ */ new Date();
     d.setDate(d.getDate() + 1);
@@ -148,6 +149,11 @@ var __morbis_feature = (() => {
           CookieFilterStorage.clearAll();
           console.log("[CookieFilterStorage] Logout detected. Filter cookies cleared.");
         }
+        if (_isFilterPageUrl()) {
+          initClearAllFilterButton();
+        } else {
+          removeClearAllFilterButton();
+        }
       }
     });
     const target = document.body || document.documentElement;
@@ -155,9 +161,17 @@ var __morbis_feature = (() => {
       observer.observe(target, { childList: true, subtree: true });
     }
   }
+  function _isFilterPageUrl() {
+    const path = window.location.pathname;
+    if (path.includes("/v2/m-klaim") && !path.includes("detail")) return true;
+    if (path.includes("/billing/pembayaran-new/billing-verifikasi")) return true;
+    if (path.includes("/admisi/pelaksanaan-")) return true;
+    return false;
+  }
   function initClearAllFilterButton() {
-    if (__cf_clearBtnInit) return;
-    __cf_clearBtnInit = true;
+    removeClearAllFilterButton();
+    if (sessionStorage.getItem("ext-hide-clear-filter")) return;
+    if (!_isFilterPageUrl()) return;
     const cookies = document.cookie.split("; ");
     let hasAny = false;
     for (let i = 0; i < cookies.length; i++) {
@@ -169,8 +183,25 @@ var __morbis_feature = (() => {
     if (!hasAny) return;
     const btn = document.createElement("div");
     btn.id = "ext-clear-all-filters";
-    btn.textContent = "Hapus Data Filter";
-    btn.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99999;background:#dc3545;color:#fff;padding:10px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;font-family:Segoe UI,Arial,sans-serif;box-shadow:0 2px 8px rgba(220,53,69,0.3);user-select:none;";
+    btn.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99999;background:#dc3545;color:#fff;padding:10px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;font-family:Segoe UI,Arial,sans-serif;box-shadow:0 2px 8px rgba(220,53,69,0.3);user-select:none;display:flex;align-items:center;gap:12px;";
+    const label = document.createElement("span");
+    label.textContent = "Hapus Data Filter";
+    btn.appendChild(label);
+    const closeX = document.createElement("span");
+    closeX.textContent = "\xD7";
+    closeX.style.cssText = "cursor:pointer;font-weight:bold;font-size:20px;line-height:1;opacity:0.8;transition:opacity 0.15s;";
+    closeX.addEventListener("mouseenter", function() {
+      closeX.style.opacity = "1";
+    });
+    closeX.addEventListener("mouseleave", function() {
+      closeX.style.opacity = "0.8";
+    });
+    closeX.addEventListener("click", function(e) {
+      e.stopPropagation();
+      btn.style.display = "none";
+      sessionStorage.setItem("ext-hide-clear-filter", "true");
+    });
+    btn.appendChild(closeX);
     btn.addEventListener("click", function() {
       if (confirm("Hapus semua data filter yang tersimpan?")) {
         CookieFilterStorage.clearAll();
@@ -184,10 +215,20 @@ var __morbis_feature = (() => {
       btn.style.background = "#dc3545";
     });
     document.body.appendChild(btn);
+    __cf_clearBtn = btn;
+  }
+  function removeClearAllFilterButton() {
+    if (__cf_clearBtn) {
+      __cf_clearBtn.remove();
+      __cf_clearBtn = null;
+    }
+    const orphaned = document.getElementById("ext-clear-all-filters");
+    if (orphaned) orphaned.remove();
   }
   window.CookieFilterStorage = CookieFilterStorage;
   window.setupFilterLogoutWatcher = setupFilterLogoutWatcher;
   window.initClearAllFilterButton = initClearAllFilterButton;
+  window.removeClearAllFilterButton = removeClearAllFilterButton;
   return __toCommonJS(cookieFilterStorage_exports);
 })();
 //# sourceMappingURL=cookieFilterStorage.js.map

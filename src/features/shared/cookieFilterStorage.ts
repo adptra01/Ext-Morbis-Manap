@@ -1,6 +1,6 @@
 const COOKIE_PREFIX = '_morbis_filter_';
 let __cf_logoutWatcherInit = false;
-let __cf_clearBtnInit = false;
+let __cf_clearBtn: HTMLElement | null = null;
 
 function _cf_midnightDate(): Date {
   const d = new Date();
@@ -147,6 +147,11 @@ export function setupFilterLogoutWatcher(): void {
         CookieFilterStorage.clearAll();
         console.log('[CookieFilterStorage] Logout detected. Filter cookies cleared.');
       }
+      if (_isFilterPageUrl()) {
+        initClearAllFilterButton();
+      } else {
+        removeClearAllFilterButton();
+      }
     }
   });
 
@@ -156,9 +161,20 @@ export function setupFilterLogoutWatcher(): void {
   }
 }
 
+function _isFilterPageUrl(): boolean {
+  const path = window.location.pathname;
+  if (path.includes('/v2/m-klaim') && !path.includes('detail')) return true;
+  if (path.includes('/billing/pembayaran-new/billing-verifikasi')) return true;
+  if (path.includes('/admisi/pelaksanaan-')) return true;
+  return false;
+}
+
 export function initClearAllFilterButton(): void {
-  if (__cf_clearBtnInit) return;
-  __cf_clearBtnInit = true;
+  removeClearAllFilterButton();
+
+  if (sessionStorage.getItem('ext-hide-clear-filter')) return;
+
+  if (!_isFilterPageUrl()) return;
 
   const cookies = document.cookie.split('; ');
   let hasAny = false;
@@ -172,14 +188,31 @@ export function initClearAllFilterButton(): void {
 
   const btn = document.createElement('div');
   btn.id = 'ext-clear-all-filters';
-  btn.textContent = 'Hapus Data Filter';
   btn.style.cssText =
     'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99999;' +
     'background:#dc3545;color:#fff;padding:10px 16px;' +
     'border-radius:6px;cursor:pointer;font-size:13px;' +
     'font-weight:500;font-family:Segoe UI,Arial,sans-serif;' +
     'box-shadow:0 2px 8px rgba(220,53,69,0.3);' +
-    'user-select:none;';
+    'user-select:none;display:flex;align-items:center;gap:12px;';
+
+  const label = document.createElement('span');
+  label.textContent = 'Hapus Data Filter';
+  btn.appendChild(label);
+
+  const closeX = document.createElement('span');
+  closeX.textContent = '\u00D7';
+  closeX.style.cssText =
+    'cursor:pointer;font-weight:bold;font-size:20px;line-height:1;' +
+    'opacity:0.8;transition:opacity 0.15s;';
+  closeX.addEventListener('mouseenter', function () { closeX.style.opacity = '1'; });
+  closeX.addEventListener('mouseleave', function () { closeX.style.opacity = '0.8'; });
+  closeX.addEventListener('click', function (e) {
+    e.stopPropagation();
+    btn.style.display = 'none';
+    sessionStorage.setItem('ext-hide-clear-filter', 'true');
+  });
+  btn.appendChild(closeX);
 
   btn.addEventListener('click', function () {
     if (confirm('Hapus semua data filter yang tersimpan?')) {
@@ -196,6 +229,16 @@ export function initClearAllFilterButton(): void {
   });
 
   document.body.appendChild(btn);
+  __cf_clearBtn = btn;
+}
+
+export function removeClearAllFilterButton(): void {
+  if (__cf_clearBtn) {
+    __cf_clearBtn.remove();
+    __cf_clearBtn = null;
+  }
+  const orphaned = document.getElementById('ext-clear-all-filters');
+  if (orphaned) orphaned.remove();
 }
 
 declare global {
@@ -203,9 +246,11 @@ declare global {
     CookieFilterStorage: CookieFilterStorageAPI;
     setupFilterLogoutWatcher: () => void;
     initClearAllFilterButton: () => void;
+    removeClearAllFilterButton: () => void;
   }
 }
 
 window.CookieFilterStorage = CookieFilterStorage;
 window.setupFilterLogoutWatcher = setupFilterLogoutWatcher;
 window.initClearAllFilterButton = initClearAllFilterButton;
+window.removeClearAllFilterButton = removeClearAllFilterButton;
