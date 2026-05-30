@@ -212,7 +212,14 @@ var __morbis_feature = (() => {
   }
   function injectFilterForTable(table, tableIdx) {
     const containerId = "ext-cppt-filter-" + tableIdx;
-    if (document.getElementById(containerId)) return;
+    if (table.parentElement?.classList.contains("ext-cppt-table-wrapper")) return;
+    const orphaned = document.getElementById(containerId);
+    if (orphaned) {
+      const orphanedWrapper = orphaned.closest(".ext-cppt-table-wrapper");
+      if (orphanedWrapper) orphanedWrapper.remove();
+    }
+    const orphanedNoRes = document.getElementById("ext-cppt-nores-" + tableIdx);
+    if (orphanedNoRes) orphanedNoRes.remove();
     const headers = getHeaderTexts(table);
     const tanggalIdx = getColumnIndex(headers, "waktu", "masuk", "tanggal");
     const dokterIdx = getColumnIndex(headers, "penginput", "dokter", "pembuat");
@@ -327,9 +334,14 @@ var __morbis_feature = (() => {
     const bodyObserver = new MutationObserver(() => {
       const tables = findCpptTables();
       for (let i = 0; i < tables.length; i++) {
-        const id = "ext-cppt-filter-" + i;
-        if (!document.getElementById(id)) {
-          injectFilterForTable(tables[i], i);
+        const table = tables[i];
+        if (!table.parentElement?.classList.contains("ext-cppt-table-wrapper")) {
+          const orphaned = document.getElementById("ext-cppt-filter-" + i);
+          if (orphaned) {
+            const wrapper = orphaned.closest(".ext-cppt-table-wrapper");
+            if (wrapper) wrapper.remove();
+          }
+          injectFilterForTable(table, i);
         }
       }
     });
