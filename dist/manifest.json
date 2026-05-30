@@ -1,0 +1,142 @@
+{
+  "manifest_version": 3,
+  "name": "MORBIS Ext Unofficial",
+  "version": "1.2.0",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "morbis-ext@rsud-manap.com",
+      "update_url": "https://adptra01.github.io/Ext-Morbis-Manap/updates.json"
+    }
+  },
+  "update_url": "https://adptra01.github.io/Ext-Morbis-Manap/update.xml",
+  "description": "Ekstensi produktivitas untuk SIMRS MORBIS Klaim - buka detail di tab baru, batch upload, dan fitur lainnya",
+  "author": "Your Name",
+  "icons": {
+    "16": "icons/bluemorbis16.png",
+    "48": "icons/bluemorbis48.png",
+    "128": "icons/bluemorbis128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "MORBIS Ext Unofficial"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://192.168.8.4/v2/m-klaim*",
+        "http://103.147.236.140/v2/m-klaim*",
+        "http://103.147.236.140/billing/pembayaran-new/billing-verifikasi*",
+        "http://192.168.8.4/inventory/penjualan-bebas*",
+        "http://103.147.236.140/inventory/penjualan-bebas*"
+      ],
+      "js": [
+        "core.js",
+        "features/shared/cookieFilterStorage.js",
+        "features/openDetail.js",
+        "features/shortcutButtons.js",
+        "features/filterPersistence.js",
+        "features/simplifyBilling.js",
+        "features/scrollButtons.js",
+        "features/printOptimization.js",
+        "features/batchUploadUrl.js",
+        "features/batchDeleteFiles.js",
+        "init.js"
+      ],
+      "run_at": "document_end",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "http://192.168.8.4/billing/pembayaran-new/billing-verifikasi*",
+        "http://103.147.236.140/billing/pembayaran-new/billing-verifikasi*"
+      ],
+      "js": [
+        "core.js",
+        "features/shared/cookieFilterStorage.js",
+        "features/billingFilterPersistence.js",
+        "init.js"
+      ],
+      "run_at": "document_end",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "http://192.168.8.4/inventory/penjualan-resep-edit/*",
+        "http://103.147.236.140/inventory/penjualan-resep-edit/*"
+      ],
+      "js": [
+        "core.js",
+        "features/penerimaan_resep/main.js",
+        "init.js"
+      ],
+      "run_at": "document_end",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "http://192.168.8.4/admisi/pelaksanaan-operasi*",
+        "http://103.147.236.140/admisi/pelaksanaan-operasi*",
+        "http://192.168.8.4/admisi/pelaksanaan_pelayanan*",
+        "http://103.147.236.140/admisi/pelaksanaan_pelayanan*",
+        "http://192.168.8.4/admisi/detail-rawat-inap*",
+        "http://103.147.236.140/admisi/detail-rawat-inap*"
+      ],
+      "js": [
+        "core.js",
+        "features/shared/cookieFilterStorage.js",
+        "features/doctorFilterPersistence.js",
+        "init.js"
+      ],
+      "run_at": "document_end",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "http://192.168.8.4/inventory/penjualan-bebas*",
+        "http://103.147.236.140/inventory/penjualan-bebas*"
+      ],
+      "js": [
+        "features/fixJasaPelayanan.js"
+      ],
+      "run_at": "document_idle",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "http://103.147.236.140/admisi/pengajuan_konsultasi/konsultasi*",
+        "http://192.168.8.4/admisi/pengajuan_konsultasi/konsultasi*"
+      ],
+      "js": [
+        "core.js",
+        "init.js"
+      ],
+      "run_at": "document_end",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "http://103.147.236.140/admisi/pengajuan_konsultasi/konsultasi*",
+        "http://192.168.8.4/admisi/pengajuan_konsultasi/konsultasi*"
+      ],
+      "js": [
+        "features/consultationEnhancer.js"
+      ],
+      "run_at": "document_end",
+      "world": "MAIN",
+      "all_frames": false
+    }
+  ],
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://192.168.8.4/*",
+    "http://103.147.236.140/*"
+  ]
+}

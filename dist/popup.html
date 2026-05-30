@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open Detail in New Tab</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 340px;
+      max-height: 600px;
+      overflow-y: auto;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      font-size: 13px;
+      background: #ffffff;
+    }
+
+    /* Scrollbar styling */
+    body::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    body::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    body::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 3px;
+    }
+
+    .header {
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .header h1 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #111827;
+      margin-bottom: 4px;
+    }
+
+    .header p {
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    .section {
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .url-input-container {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .url-input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: inherit;
+    }
+
+    .url-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    }
+
+    .btn-add {
+      padding: 8px 16px;
+      background: #10b981;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-add:hover {
+      background: #059669;
+    }
+
+    .url-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: #f9fafb;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+      margin-bottom: 6px;
+    }
+
+    .url-item.default {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+    }
+
+    .url-info {
+      flex: 1;
+      margin-right: 12px;
+      overflow: hidden;
+    }
+
+    .url-text {
+      font-size: 12px;
+      color: #374151;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .url-badge {
+      font-size: 9px;
+      color: #6b7280;
+      background: #e5e7eb;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-top: 2px;
+      display: inline-block;
+    }
+
+    .url-item.default .url-badge {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .url-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-delete {
+      padding: 4px 8px;
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 10px;
+      cursor: pointer;
+    }
+
+    .btn-delete:hover {
+      background: #dc2626;
+    }
+
+    .btn-delete:disabled {
+      background: #d1d5db;
+      cursor: not-allowed;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+
+    .toast.success {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .toast.error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .toggle-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: #f9fafb;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      margin-bottom: 8px;
+    }
+
+    .feature-disabled,
+    .role-restricted {
+      opacity: 0.5;
+      pointer-events: none;
+      filter: grayscale(100%);
+    }
+
+    .role-restricted .subtitle {
+      color: #ef4444 !important;
+      font-weight: 500;
+    }
+
+    .toggle-label {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .toggle-label .title {
+      font-weight: 500;
+      color: #374151;
+      font-size: 13px;
+    }
+
+    .toggle-label .subtitle {
+      font-size: 10px;
+      color: #6b7280;
+    }
+
+    .checkbox-wrapper {
+      display: flex;
+      align-items: center;
+    }
+
+    .toggle-checkbox {
+      width: 40px;
+      height: 20px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: #d1d5db;
+      border-radius: 10px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle-checkbox::before {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: white;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .toggle-checkbox:checked {
+      background: #10b981;
+    }
+
+    .toggle-checkbox:checked::before {
+      transform: translateX(20px);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+
+    .status-badge.active {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .status-badge.inactive {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .role-select {
+      padding: 8px 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      font-size: 13px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .role-select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    }
+
+    #roleBanner a {
+      color: #3b82f6;
+      text-decoration: underline;
+      font-size: 11px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .status-badge.active .status-dot {
+      background: #10b981;
+    }
+
+    .status-badge.inactive .status-dot {
+      background: #ef4444;
+    }
+
+    .footer {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      gap: 8px;
+    }
+
+    .footer button {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+      border: none;
+    }
+
+    .btn-reload {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .btn-reload:hover {
+      background: #2563eb;
+    }
+
+    .btn-reset {
+      background: #6b7280;
+      color: white;
+    }
+
+    .btn-reset:hover {
+      background: #4b5563;
+    }
+
+    .feature-count {
+      font-size: 10px;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #6b7280;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="loading" class="loading">Memuat...</div>
+
+  <div id="mainContent" class="hidden">
+    <div class="header">
+      <h1>Open Detail Extension</h1>
+      <p>Buka tombol detail di tab baru untuk SIMRS</p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Pilih Role Pengguna</div>
+      <div class="toggle-container">
+        <div class="toggle-label">
+          <span class="title">Role Saat Ini</span>
+          <span class="subtitle" id="roleBanner">Anda saat ini menggunakan profil Casemix. <a href="#"
+              id="changeRoleLink">[Ubah Role]</a></span>
+        </div>
+        <select id="roleSelect" class="role-select">
+          <option value="casemix">Casemix</option>
+          <option value="kasir">Kasir</option>
+          <option value="dokter">Dokter</option>
+          <option value="apotek">Apotek</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Status Extension</div>
+
+      <div class="toggle-container">
+        <div class="toggle-label">
+          <span class="title">Aktifkan Extension</span>
+          <span class="subtitle">Enable/disable semua fitur</span>
+        </div>
+        <div class="checkbox-wrapper">
+          <input type="checkbox" id="toggleExtension" class="toggle-checkbox">
+        </div>
+      </div>
+
+      <div id="statusBadge" class="status-badge">
+        <span class="status-dot"></span>
+        <span id="statusText">Memuat...</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Domain Settings</div>
+
+      <div class="url-input-container">
+        <input type="text" id="urlInput" class="url-input" placeholder="http://example.com">
+        <button id="addUrlBtn" class="btn-add">Tambah</button>
+      </div>
+
+      <div id="urlsList"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Fitur Tersedia</div>
+      <div class="feature-count">
+        <span id="enabledCount">0</span> dari <span id="totalCount">0</span> fitur aktif
+      </div>
+      <div id="featuresList"></div>
+    </div>
+
+    <div class="footer">
+      <button id="reloadBtn" class="btn-reload">Reload Halaman</button>
+      <button id="resetBtn" class="btn-reset">Reset Default</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="popup.js"></script>
+</body>
+
+</html>
