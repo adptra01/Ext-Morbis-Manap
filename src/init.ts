@@ -70,6 +70,13 @@ async function initExtension(): Promise<void> {
     document.documentElement.removeAttribute('data-ext-auto-verif-billing');
   }
 
+  const rvCfg = cfg?.features?.resumeValidator;
+  if (rvCfg?.enabled && window.ExtensionCore.isFeatureAllowed('resumeValidator')) {
+    document.documentElement.setAttribute('data-ext-resume-validator', '1');
+  } else {
+    document.documentElement.removeAttribute('data-ext-resume-validator');
+  }
+
   for (const [key, module] of Object.entries(window.featureModules)) {
     const featureConfig = cfg?.features?.[key];
 

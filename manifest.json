@@ -141,6 +141,18 @@
       "run_at": "document_end",
       "world": "MAIN",
       "all_frames": false
+    },
+    {
+      "matches": [
+        "http://192.168.8.4/admisi/detail-rawat-inap/tambah-resume-ri*",
+        "http://103.147.236.140/admisi/detail-rawat-inap/tambah-resume-ri*"
+      ],
+      "js": [
+        "features/resumeValidator.js"
+      ],
+      "run_at": "document_idle",
+      "world": "MAIN",
+      "all_frames": false
     }
   ],
   "permissions": [

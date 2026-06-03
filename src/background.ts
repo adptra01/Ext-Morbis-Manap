@@ -115,6 +115,12 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       name: 'Auto Verif Billing',
       description: 'Verifikasi billing satu klik: isi otomatis klaim BPJS & bypass konfirmasi',
     },
+    resumeValidator: {
+      enabled: true,
+      allowedRoles: ['casemix', 'dokter'],
+      name: 'Resume Validator',
+      description: 'Validasi ketat form resume rawat inap agar tidak gagal simpan tanpa error',
+    },
   },
 };
 
