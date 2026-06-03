@@ -129,6 +129,18 @@
       "run_at": "document_end",
       "world": "MAIN",
       "all_frames": false
+    },
+    {
+      "matches": [
+        "http://192.168.8.4/billing/pembayaran-new/billing-verifikasi*",
+        "http://103.147.236.140/billing/pembayaran-new/billing-verifikasi*"
+      ],
+      "js": [
+        "features/autoVerifBilling.js"
+      ],
+      "run_at": "document_end",
+      "world": "MAIN",
+      "all_frames": false
     }
   ],
   "permissions": [

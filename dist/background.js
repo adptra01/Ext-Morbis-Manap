@@ -107,6 +107,12 @@ var __morbis_bg = (() => {
         allowedRoles: ["casemix"],
         name: "CPPT Search & Filter",
         description: "Cari dan filter data CPPT berdasarkan dokter & tanggal (RAJAL/RANAP)"
+      },
+      autoVerifBilling: {
+        enabled: true,
+        allowedRoles: ["kasir", "casemix"],
+        name: "Auto Verif Billing",
+        description: "Verifikasi billing satu klik: isi otomatis klaim BPJS & bypass konfirmasi"
       }
     }
   };

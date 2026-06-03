@@ -34,6 +34,12 @@ var __morbis_init = (() => {
       document.documentElement.removeAttribute("data-ext-consul-enhancer");
       document.documentElement.removeAttribute("data-ext-base-url");
     }
+    const avbCfg = cfg?.features?.autoVerifBilling;
+    if (avbCfg?.enabled && window.ExtensionCore.isFeatureAllowed("autoVerifBilling")) {
+      document.documentElement.setAttribute("data-ext-auto-verif-billing", "1");
+    } else {
+      document.documentElement.removeAttribute("data-ext-auto-verif-billing");
+    }
     for (const [key, module] of Object.entries(window.featureModules)) {
       const featureConfig = cfg?.features?.[key];
       if (featureConfig === void 0 || !featureConfig.enabled || !window.ExtensionCore.isFeatureAllowed(key)) {

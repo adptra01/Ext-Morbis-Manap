@@ -63,6 +63,13 @@ async function initExtension(): Promise<void> {
     document.documentElement.removeAttribute('data-ext-base-url');
   }
 
+  const avbCfg = cfg?.features?.autoVerifBilling;
+  if (avbCfg?.enabled && window.ExtensionCore.isFeatureAllowed('autoVerifBilling')) {
+    document.documentElement.setAttribute('data-ext-auto-verif-billing', '1');
+  } else {
+    document.documentElement.removeAttribute('data-ext-auto-verif-billing');
+  }
+
   for (const [key, module] of Object.entries(window.featureModules)) {
     const featureConfig = cfg?.features?.[key];
 

@@ -11,8 +11,8 @@ var __morbis_feature = (() => {
   var CPPT_NO_RESULTS_CLASS = "ext-cppt-no-results";
   function getCpptPageType() {
     const path = window.location.pathname;
-    if (path.includes("/admisi/pelaksanaan_pelayanan/cppt")) return "rajal";
-    if (path.includes("/admisi/detail-rawat-inap/cppt")) return "ranap";
+    if (/\/admisi\/pelaksanaan_pelayanan\/cppt\/?$/.test(path)) return "rajal";
+    if (/\/admisi\/detail-rawat-inap\/cppt\/?$/.test(path)) return "ranap";
     return null;
   }
   function isCpptTable(table) {

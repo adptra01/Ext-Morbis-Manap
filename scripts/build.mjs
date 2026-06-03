@@ -64,6 +64,7 @@ async function compileFeatureFiles() {
     'openDetail.ts',
     'shortcutButtons.ts',
     'cpptSearchFilter.ts',
+    'autoVerifBilling.ts',
   ];
 
   for (const relativePath of tsFiles) {

@@ -16,8 +16,8 @@ type CpptPageType = 'rajal' | 'ranap' | null;
 
 function getCpptPageType(): CpptPageType {
   const path = window.location.pathname;
-  if (path.includes('/admisi/pelaksanaan_pelayanan/cppt')) return 'rajal';
-  if (path.includes('/admisi/detail-rawat-inap/cppt')) return 'ranap';
+  if (/\/admisi\/pelaksanaan_pelayanan\/cppt\/?$/.test(path)) return 'rajal';
+  if (/\/admisi\/detail-rawat-inap\/cppt\/?$/.test(path)) return 'ranap';
   return null;
 }
 
