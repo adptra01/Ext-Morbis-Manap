@@ -1,5 +1,5 @@
 import { getMorbisGlobals } from './shared/types.js';
-import { injectSharedCSS, showInlinePreviewSafe } from './shared/batchUtils.js';
+import { injectSharedCSS, showInlinePreviewSafe, Icons, iconWrap } from './shared/batchUtils.js';
 
 const g = getMorbisGlobals();
 
@@ -127,38 +127,63 @@ function renderBatchUploadButton(): void {
   btn.type = 'button';
   btn.textContent = 'Upload Dokumen Ulang';
   btn.style.cssText =
-    'margin: 8px 0 4px 10px; padding: 10px 18px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; display: block; transition: all 0.2s ease;';
+    'margin: 8px 0 4px 10px; padding: 10px 22px; background: #2563eb; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; display: block; transition: all 0.15s ease; letter-spacing: -0.1px; box-shadow: 0 2px 8px rgba(37,99,235,0.2);';
 
   btn.addEventListener('click', showBatchUploadModal);
-  btn.addEventListener('mouseenter', () => (btn.style.background = '#059669'));
-  btn.addEventListener('mouseleave', () => (btn.style.background = '#10b981'));
+  btn.addEventListener('mouseenter', () => (btn.style.background = '#1d4ed8'));
+  btn.addEventListener('mouseleave', () => (btn.style.background = '#2563eb'));
 
   if (!document.getElementById('ext-batch-url-style')) {
     const style = document.createElement('style');
     style.id = 'ext-batch-url-style';
     style.textContent = `
-      #${BATCH_UPLOAD_URL_CONFIG.modalId} { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 10000; align-items: center; justify-content: center; }
-      #${BATCH_UPLOAD_URL_CONFIG.modalId}.show { display: flex; }
-      #${BATCH_UPLOAD_URL_CONFIG.textareaId} { width: 100%; height: 150px; padding: 10px; border: 1px solid #d1d5db; border-radius: 4px; font-family: monospace; font-size: 12px; resize: vertical; }
-      #${BATCH_UPLOAD_URL_CONFIG.previewId} { margin-top: 15px; max-height: 400px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 4px; padding: 10px; }
-      .ext-preview-item { padding: 5px 0; border-bottom: 1px solid #f3f4f6; font-size: 12px; }
-      .ext-preview-item.success { color: #059669; }
-      .ext-preview-item.error { color: #dc2626; }
-      .ext-preview-item.pending { color: #6b7280; }
-      #${BATCH_UPLOAD_URL_CONFIG.progressId} { width: 100%; height: 8px; background: #e5e7eb; border-radius: 4px; margin: 10px 0; display: none; }
-      #${BATCH_UPLOAD_URL_CONFIG.progressId} .progress-fill { height: 100%; background: #10b981; border-radius: 4px; width: 0%; transition: width 0.3s ease; }
-      .ext-upload-search-wrap { margin-bottom: 10px; display: none; }
-      .ext-upload-search-input { width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid #d1d5db; border-radius: 6px; outline: none; color: #111827; background: #fff; box-sizing: border-box; }
-      .ext-upload-search-input:focus { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
-      .ext-upload-search-input::placeholder { color: #9ca3af; }
-      #ext-inline-preview-modal { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(0,0,0,0.85) !important; z-index: 10001 !important; display: flex !important; align-items: center !important; justify-content: center !important; flex-direction: column !important; padding: 20px !important; box-sizing: border-box !important; }
-      .ext-inline-preview-header { position: absolute !important; top: 20px !important; right: 20px !important; display: flex !important; gap: 12px !important; align-items: center !important; background: rgba(0,0,0,0.7) !important; padding: 10px 16px !important; border-radius: 8px !important; backdrop-filter: blur(10px) !important; }
-      .ext-inline-preview-filename { color: white !important; font-size: 14px !important; max-width: 400px !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; font-weight: 500 !important; }
-      .ext-inline-preview-btn { padding: 6px 12px !important; background: #3b82f6 !important; color: white !important; border: none !important; border-radius: 6px !important; cursor: pointer !important; font-size: 12px !important; font-weight: 500 !important; }
-      .ext-inline-preview-close { padding: 6px 14px !important; background: #ef4444 !important; color: white !important; border: none !important; border-radius: 6px !important; cursor: pointer !important; font-size: 14px !important; font-weight: bold !important; }
-      .ext-inline-preview-content { width: clamp(400px, 90vw, 1200px) !important; height: clamp(300px, 90vh, 800px) !important; background: white !important; border-radius: 12px !important; box-shadow: 0 25px 50px rgba(0,0,0,0.5) !important; overflow: hidden !important; position: relative !important; }
-      .ext-inline-preview-spinner { width: 40px !important; height: 40px !important; border: 4px solid #e5e7eb !important; border-top: 4px solid #3b82f6 !important; border-radius: 50% !important; animation: spin2 1s linear infinite !important; }
-      @keyframes spin2 { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      #${BATCH_UPLOAD_URL_CONFIG.textareaId} {
+        width: 100%; height: 150px; padding: 12px; border: 1px solid #e2e8f0;
+        border-radius: 10px; font-size: 12px; resize: vertical;
+        background: #f8fafc; color: #1e293b;
+        transition: border-color 0.15s ease; box-sizing: border-box;
+      }
+      #${BATCH_UPLOAD_URL_CONFIG.textareaId}:focus {
+        border-color: #94a3b8; box-shadow: 0 0 0 3px rgba(148,163,184,0.1);
+        background: #fff; outline: none;
+      }
+      #${BATCH_UPLOAD_URL_CONFIG.previewId} {
+        margin-top: 15px; max-height: 400px; overflow-y: auto;
+        border: 1px solid #f1f5f9; border-radius: 10px; padding: 12px;
+      }
+      #${BATCH_UPLOAD_URL_CONFIG.progressId} {
+        width: 100%; height: 6px; background: #f1f5f9;
+        border-radius: 3px; margin: 12px 0; display: none; overflow: hidden;
+      }
+      #${BATCH_UPLOAD_URL_CONFIG.progressId} .progress-fill {
+        height: 100%; background: #2563eb; border-radius: 3px;
+        width: 0%; transition: width 0.3s cubic-bezier(0.16,1,0.3,1);
+      }
+      .ext-input-label {
+        display: block; margin-bottom: 6px; font-weight: 600;
+        font-size: 13px; color: #334155;
+      }
+      .ext-mode-radio {
+        display: flex; gap: 20px; align-items: center; margin-bottom: 16px;
+        font-size: 13px; color: #475569;
+      }
+      .ext-mode-radio label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
+      .ext-mode-radio input[type="radio"] { accent-color: #2563eb; }
+      .ext-upload-search-wrap { display: none; margin-bottom: 10px; }
+      .ext-keterangan-input {
+        width: 100%; padding: 6px 10px; font-size: 11px;
+        border: 1px solid #e2e8f0; border-radius: 6px; outline: none;
+        color: #475569; background: #f8fafc; box-sizing: border-box;
+        margin-top: 5px; transition: border-color 0.15s ease;
+      }
+      .ext-keterangan-input:focus { border-color: #94a3b8; background: #fff; }
+      .ext-keterangan-input::placeholder { color: #94a3b8; }
+      .ext-inline-preview-spinner {
+        width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.15);
+        border-top: 4px solid #fff; border-radius: 50%;
+        animation: ext-spin 0.8s linear infinite;
+      }
+      @keyframes ext-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     `;
     document.head.appendChild(style);
   }
@@ -181,44 +206,43 @@ function showBatchUploadModal(): void {
   if (!modal) {
     modal = document.createElement('div');
     modal.id = BATCH_UPLOAD_URL_CONFIG.modalId;
+    modal.className = 'ext-batch-delete-modal';
 
     modal.innerHTML = `
       <div class="ext-modal-content">
         <div class="ext-modal-header">
-          <h3 style="margin: 0; font-size: 18px;">Upload Dokumen Ulang</h3>
-          <button class="ext-modal-close" id="ext-modal-close-btn">❌</button>
+          <h3 style="margin: 0; font-size: 18px; color: #0f172a; font-weight: 700; letter-spacing: -0.3px;">Upload Dokumen Ulang</h3>
+          <button class="ext-modal-close" id="ext-modal-close-btn">${Icons.xClose}</button>
         </div>
-        <div style="margin-bottom: 15px; display: flex; gap: 15px; font-size: 14px; align-items: center;">
-          <label style="cursor: pointer;"><input type="radio" name="ext-upload-mode" value="manual" checked> Mode Manual (Paste URL)</label>
-          <label style="cursor: pointer;"><input type="radio" name="ext-upload-mode" value="auto"> Auto-Crawl Rekam Medis</label>
+        <div class="ext-mode-radio">
+          <label><input type="radio" name="ext-upload-mode" value="manual" checked> Mode Manual (Paste URL)</label>
+          <label><input type="radio" name="ext-upload-mode" value="auto"> Auto-Crawl Rekam Medis</label>
         </div>
         <div id="ext-manual-section">
-          <label style="display: block; margin-bottom: 5px; font-weight: 500;">Paste URL Dokumen (satu per baris):</label>
-          <textarea id="${BATCH_UPLOAD_URL_CONFIG.textareaId}" placeholder="https://example.com/dokumen1.pdf\nhttps://example.com/dokumen2.jpg\n..."></textarea>
-          <div style="margin-top: 10px;">
-            <button class="ext-btn ext-btn-secondary" id="ext-analyze-btn">Analisis URL</button>
+          <label class="ext-input-label">Paste URL Dokumen (satu per baris):</label>
+          <textarea id="${BATCH_UPLOAD_URL_CONFIG.textareaId}" placeholder="https://example.com/dokumen1.pdf&#10;https://example.com/dokumen2.jpg&#10;..."></textarea>
+          <div style="margin-top: 12px; display: flex; gap: 10px;">
+            <button class="ext-btn ext-btn-purple" id="ext-analyze-btn">${Icons.search} Analisis URL</button>
           </div>
         </div>
         <div id="ext-auto-section" style="display: none;">
-          <p style="font-size: 13px; color: #4b5563; margin-bottom: 10px;">Mendeteksi dokumen otomatis dari halaman Rekam Medis (Pelaksanaan Pelayanan) pasien ini.</p>
-          <div style="margin-top: 10px;">
-            <button class="ext-btn ext-btn-primary" id="ext-crawl-btn" style="background: #8b5cf6;">Cari Dokumen Pasien Otomatis</button>
+          <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">Mendeteksi dokumen otomatis dari halaman Rekam Medis pasien ini.</p>
+          <div style="margin-bottom: 12px; display: flex; gap: 10px;">
+            <button class="ext-btn ext-btn-purple" id="ext-crawl-btn">${Icons.search} Cari Dokumen Pasien Otomatis</button>
+          </div>
+          <div id="ext-upload-search-wrap" class="ext-upload-search-wrap" style="display: none;">
+            <input type="text" id="ext-upload-search-input" class="ext-search-input" placeholder="Cari dokumen...">
           </div>
         </div>
-        <div id="ext-upload-search-wrap" class="ext-upload-search-wrap">
-          <input type="text" id="ext-upload-search-input" class="ext-upload-search-input" placeholder="Cari dokumen...">
-        </div>
-        <div id="${BATCH_UPLOAD_URL_CONFIG.previewId}" style="display: none;">
-          <strong>Preview Dokumen:</strong>
-        </div>
-        <div id="${BATCH_UPLOAD_URL_CONFIG.progressId}">
+        <div id="${BATCH_UPLOAD_URL_CONFIG.previewId}" style="display: none; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden;"></div>
+        <div id="${BATCH_UPLOAD_URL_CONFIG.progressId}" style="display: none; height: 4px; background: #374151; margin: 12px 0; border-radius: 2px; overflow: hidden;">
           <div class="progress-fill"></div>
         </div>
-        <div id="${BATCH_UPLOAD_URL_CONFIG.statusId}" style="margin: 10px 0; font-size: 12px; color: #6b7280;"></div>
+        <div id="${BATCH_UPLOAD_URL_CONFIG.statusId}" style="margin: 8px 0; font-size: 11px; color: #9ca3af; font-weight: 500; letter-spacing: 0.3px;"></div>
         <div class="ext-modal-buttons">
           <button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Batal</button>
-          <button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #f59e0b; color: white;">Test 1 URL</button>
-          <button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>Mulai Upload</button>
+          <button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 URL</button>
+          <button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>${Icons.upload} Mulai Upload</button>
         </div>
       </div>
     `;
@@ -252,6 +276,10 @@ function showBatchUploadModal(): void {
 
       document.getElementById('ext-crawl-btn')?.addEventListener('click', crawlDokumenPasien);
       document.getElementById('ext-upload-search-input')?.addEventListener('input', () => updatePreview(batchQueue));
+
+      modal?.addEventListener('click', function (e: Event) {
+        if (e.target === modal) closeBatchModal();
+      });
     }, 0);
 
     document.body.appendChild(modal);
@@ -280,7 +308,7 @@ function closeBatchModal(): void {
     const buttonsContainer = document.querySelector('.ext-modal-buttons');
     if (buttonsContainer) {
       buttonsContainer.innerHTML =
-        '<button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Batal</button><button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #f59e0b; color: white;">Test 1 URL</button><button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>Mulai Upload</button>';
+        '<button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Batal</button><button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 URL</button><button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>' + Icons.upload + ' Mulai Upload</button>';
       document.getElementById('ext-cancel-btn')?.addEventListener('click', closeBatchModal);
       document.getElementById('ext-test-single-btn')?.addEventListener('click', testSingleUpload);
       document.getElementById('ext-start-upload-btn')?.addEventListener('click', startBatchUpload);
@@ -295,6 +323,7 @@ function updatePreview(items: BatchItem[]): void {
   const startBtn = document.getElementById('ext-start-upload-btn') as HTMLButtonElement | null;
   const searchWrap = document.getElementById('ext-upload-search-wrap');
   const searchInput = document.getElementById('ext-upload-search-input') as HTMLInputElement | null;
+  const isAutoMode = (document.getElementById('ext-auto-section') as HTMLElement)?.style.display !== 'none';
   const query = (searchInput?.value || '').toLowerCase();
 
   if (!items || items.length === 0) {
@@ -305,10 +334,10 @@ function updatePreview(items: BatchItem[]): void {
     return;
   }
 
-  if (searchWrap) searchWrap.style.display = 'block';
+  if (searchWrap && isAutoMode) searchWrap.style.display = 'block';
 
   const filtered = items
-    .map((item, idx) => ({ item, idx }))
+    .map((item, i) => ({ item, i }))
     .filter(({ item }) =>
       !query || item.filename.toLowerCase().includes(query) ||
       item.keterangan.toLowerCase().includes(query) ||
@@ -332,58 +361,56 @@ function updatePreview(items: BatchItem[]): void {
     previewEl?.appendChild(empty);
   }
 
-  filtered.forEach(({ item, index }) => {
+  filtered.forEach(({ item, i }) => {
     let modeText = '';
     if (item.tglFileTabel) {
-      modeText = `<div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 4px;">
-        <span style="font-weight: bold;"><strong style="color:#059669;">Dibuat:</strong> ${item.tglFileTabel}</span>
-        <span style="font-weight: bold;"><strong style="color:#059669;">Diunggah:</strong> ${item.tglUploadTabel}</span>
-        <span style="font-weight: bold;"><strong style="color:#059669;">Keterangan:</strong> ${item.keterangan || '-'}</span>
+      modeText = `<div style="font-size:11px;color:#4b5563;margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
+        <span>Dibuat: <strong style="color:#111827;">${item.tglFileTabel}</strong></span>
+        <span style="color:#d1d5db;">|</span>
+        <span>Diunggah: <strong style="color:#111827;">${item.tglUploadTabel}</strong></span>
       </div>`;
     } else {
-      modeText = `<div style="display: flex; gap: 15px; margin-top: 4px;">
-        <span style="font-weight: bold;"><strong style="color:#059669;">NORM:</strong> ${item.norm || '-'}</span>
-        <span style="font-weight: bold;"><strong style="color:#059669;">Tanggal Klaim:</strong> ${item.tanggal}</span>
+      modeText = `<div style="font-size:11px;color:#4b5563;margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
+        <span>NORM: <strong style="color:#111827;">${item.norm || '-'}</strong></span>
+        <span style="color:#d1d5db;">|</span>
+        <span>Tgl Klaim: <strong style="color:#111827;">${item.tanggal}</strong></span>
       </div>`;
     }
 
     const itemEl = document.createElement('div');
-    itemEl.className = `ext-preview-item ${item.status}`;
-    itemEl.style.display = 'flex';
-    itemEl.style.alignItems = 'flex-start';
-    itemEl.style.gap = '12px';
-    itemEl.style.padding = '12px 8px';
-    itemEl.style.borderBottom = '1px solid #e5e7eb';
-
-    if (item.selected === false) {
-      itemEl.style.opacity = '0.5';
-      itemEl.style.background = '#f9fafb';
-    }
+    itemEl.className = 'ext-delete-preview-item';
+    if (item.selected) itemEl.classList.add('selected');
 
     itemEl.innerHTML = `
-      <input type="checkbox" class="ext-doc-checkbox" data-index="${index}" style="margin-top: 4px; transform: scale(1.1);" ${item.selected !== false ? 'checked' : ''} ${isProcessing ? 'disabled' : ''}>
-      <div style="flex: 1; display: flex; flex-direction: column;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <strong style="font-size:13px; color: #111827; word-break: break-all;">${index + 1}. ${item.filename}</strong>
-          <span style="font-weight: 600; font-size: 10px; padding: 2px 8px; border-radius: 12px; background: #f3f4f6; text-transform: uppercase;">${item.status}</span>
+      <label class="ext-checkbox-label" style="flex:1;min-width:0;">
+        <input type="checkbox" class="ext-checkbox" data-index="${i}" ${item.selected !== false ? 'checked' : ''} ${isProcessing ? 'disabled' : ''}>
+        <div style="flex: 1; min-width: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+            <strong style="font-size: 13px; color: #000000; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${i + 1}. ${item.filename}</strong>
+            ${item.status !== 'pending' ? `<span class="ext-status-badge" data-status="${item.status}">${item.status === 'success' ? 'Sukses' : item.status === 'error' ? 'Gagal' : item.status}</span>` : ''}
+          </div>
+          ${modeText}
+          <input type="text" class="ext-keterangan-input" data-index="${i}" value="${item.keterangan || ''}" placeholder="Keterangan dokumen..." ${isProcessing ? 'disabled' : ''}>
+          ${item.error ? `<div style="font-size: 11px; color: #dc2626; margin-top: 4px;"><strong>Error:</strong> ${item.error}</div>` : ''}
         </div>
-        <div style="font-size: 11px; color: #4b5563;">${modeText}</div>
-        ${item.error ? `<span style="font-size: 11px; color: #dc2626; margin-top: 4px;"><strong>Kesalahan:</strong> ${item.error}</span>` : ''}
-      </div>
-      <button class="ext-preview-btn" data-index="${index}" style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer; min-width: 70px;" ${isProcessing ? 'disabled' : ''}>Preview</button>
-      <button class="ext-modal-close" title="Buang Dokumen ini">❌</button>
+      </label>
+      <button data-index="${i}" class="ext-delete-preview-btn" ${isProcessing ? 'disabled' : ''}>${Icons.eye} Preview</button>
+      <button data-index="${i}" class="ext-delete-single-btn" title="Buang dari Antrian" ${isProcessing ? 'disabled' : ''}>${Icons.xClose}</button>
     `;
 
-    const checkbox = itemEl.querySelector('.ext-doc-checkbox') as HTMLInputElement | null;
-    const previewBtn = itemEl.querySelector('.ext-preview-btn') as HTMLButtonElement | null;
-    const buangBtn = itemEl.querySelector('.ext-modal-close') as HTMLButtonElement | null;
+    const checkbox = itemEl.querySelector('.ext-checkbox') as HTMLInputElement | null;
+    const previewBtn = itemEl.querySelector('.ext-delete-preview-btn') as HTMLButtonElement | null;
+    const buangBtn = itemEl.querySelector('.ext-delete-single-btn') as HTMLButtonElement | null;
 
     const updateSelection = (isSelected: boolean) => {
       if (isProcessing) return;
       item.selected = isSelected;
       if (checkbox) checkbox.checked = isSelected;
-      itemEl.style.opacity = isSelected ? '1' : '0.5';
-      itemEl.style.background = isSelected ? 'transparent' : '#f9fafb';
+      if (isSelected) {
+        itemEl.classList.add('selected');
+      } else {
+        itemEl.classList.remove('selected');
+      }
 
       const currentSelected = items.filter((i) => i.selected !== false).length;
       headerDiv.innerHTML = `<strong class="preview-header-text">Preview (${currentSelected} Dokumen Dipilih):</strong>`;
@@ -395,12 +422,17 @@ function updatePreview(items: BatchItem[]): void {
     );
     buangBtn?.addEventListener('click', () => updateSelection(false));
 
+    const ketInput = itemEl.querySelector('.ext-keterangan-input') as HTMLInputElement | null;
+    ketInput?.addEventListener('input', function () {
+      batchQueue[i].keterangan = ketInput.value;
+    });
+
     if (previewBtn) {
       previewBtn.addEventListener('click', async () => {
         try {
-          await showInlinePreviewSafe(batchQueue[index].url, batchQueue[index].filename);
+          await showInlinePreviewSafe(batchQueue[i].url, batchQueue[i].filename);
         } catch {
-          window.open(batchQueue[index].url, '_blank');
+          window.open(batchQueue[i].url, '_blank');
         }
       });
       if (isProcessing) previewBtn.disabled = true;
@@ -641,6 +673,9 @@ async function runBatchQueue(): Promise<void> {
 
   if (!idVisitStr) {
     alert('ID Visit tidak ditemukan di URL');
+    toggleUIProcessingState(false);
+    isProcessing = false;
+    if (startBtn) startBtn.textContent = 'Mulai Upload';
     return;
   }
 
@@ -695,7 +730,7 @@ async function runBatchQueue(): Promise<void> {
   const buttonsContainer = document.querySelector('.ext-modal-buttons');
   if (buttonsContainer) {
     buttonsContainer.innerHTML =
-      '<button class="ext-btn ext-btn-primary" id="ext-reload-btn">Reload Halaman</button>';
+      '<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">' + Icons.refresh + ' Reload Halaman</span></button>';
     document
       .getElementById('ext-reload-btn')
       ?.addEventListener('click', () => window.location.reload());
@@ -723,16 +758,16 @@ async function testSingleUpload(): Promise<void> {
     const result = await processAndUploadSingleUrl(firstItem, idVisitStr);
     if (result.success) {
       firstItem.status = 'success';
-      updateStatus('✅ Test sukses! Cek console untuk detail.');
+      updateStatus('Test sukses! Detail di console.');
     } else {
       firstItem.status = 'error';
       firstItem.error = result.error;
-      updateStatus('❌ Test gagal! Cek console untuk detail.');
+      updateStatus('Test gagal! Detail di console.');
     }
   } catch (error) {
     firstItem.status = 'error';
     firstItem.error = (error as Error).message;
-    updateStatus('❌ Test error! Cek console untuk detail.');
+    updateStatus('Test error! Detail di console.');
   }
 
   updatePreview(batchQueue);

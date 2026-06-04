@@ -12,62 +12,163 @@ var __morbis_feature = (() => {
     const style = document.createElement("style");
     style.id = BATCH_UTILS_STYLE_ID;
     style.textContent = `
+    .ext-modal-content {
+      background: #ffffff; border-radius: 16px; padding: 28px 32px;
+      max-width: 860px; width: 95%; max-height: 85vh; overflow-y: auto;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04), 0 20px 40px -15px rgba(0,0,0,0.08);
+      margin: auto; font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    .ext-modal-content * { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+
     .ext-modal-header {
       display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 16px; padding-bottom: 12px;
-      border-bottom: 1px solid #e5e7eb;
+      margin-bottom: 20px; padding-bottom: 14px;
+      border-bottom: 1px solid #f1f5f9;
     }
+    .ext-modal-header h3 {
+      margin: 0; font-size: 18px; color: #0f172a; font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
     .ext-modal-close {
-      width: 32px; height: 32px; font-size: 15px; color: #9ca3af;
-      border-radius: 6px; background: #f3f4f6; border: 1px solid #e5e7eb;
+      width: 36px; height: 36px; font-size: 18px; color: #94a3b8;
+      border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
-      font-weight: 600; transition: all 0.12s ease;
-      font-family: 'Inter', sans-serif;
+      font-weight: 500; transition: all 0.15s ease;
     }
-    .ext-modal-close:hover { background: #fee2e2; color: #dc2626; border-color: #fecaca; }
+    .ext-modal-close:hover { background: #fef2f2; color: #dc2626; border-color: #fecaca; transform: scale(1.05); }
+    .ext-modal-close:active { transform: scale(0.95); }
+
     .ext-modal-buttons {
-      margin-top: 16px; display: flex; gap: 10px; justify-content: flex-end;
+      margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;
     }
+
     .ext-btn {
-      padding: 9px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;
-      font-weight: 700; transition: all 0.12s ease; text-transform: none;
-      letter-spacing: 0.5px; font-family: 'Inter', sans-serif;
+      padding: 10px 22px; border: none; border-radius: 10px; cursor: pointer;
+      font-size: 13px; font-weight: 600; transition: all 0.15s ease;
+      letter-spacing: -0.1px; display: inline-flex; align-items: center; gap: 7px;
     }
-    .ext-btn-primary { background: #3b82f6; color: white; }
-    .ext-btn-primary:hover { background: #2563eb; }
-    .ext-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-    .ext-btn-secondary {
-      background: #ffffff; color: #374151; border: 1px solid #d1d5db;
-    }
-    .ext-btn-secondary:hover { background: #f3f4f6; border-color: #9ca3af; }
-    .ext-btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+    .ext-btn:active { transform: scale(0.97); }
+
+    .ext-btn-primary { background: #2563eb; color: white; }
+    .ext-btn-primary:hover { background: #1d4ed8; box-shadow: 0 4px 12px rgba(37,99,235,0.2); }
+    .ext-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; transform: none; }
+
+    .ext-btn-secondary { background: #ffffff; color: #334155; border: 1px solid #e2e8f0; }
+    .ext-btn-secondary:hover { background: #f8fafc; border-color: #cbd5e1; }
+    .ext-btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
     .ext-btn-danger { background: #ef4444; color: white; }
-    .ext-btn-danger:hover { background: #dc2626; box-shadow: 0 2px 8px rgba(220,38,38,0.3); }
-    .ext-btn-danger:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
-    .ext-btn-danger.disabled { opacity: 0.4; cursor: not-allowed; }
+    .ext-btn-danger:hover { background: #dc2626; box-shadow: 0 4px 12px rgba(239,68,68,0.2); }
+    .ext-btn-danger:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; transform: none; }
+    .ext-btn-danger.disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
     .ext-btn-purple {
-      background: #f5f3ff; color: #7c3aed; border: 1px solid #c4b5fd;
+      background: #f5f3ff; color: #7c3aed; border: 1px solid #ddd6fe;
     }
-    .ext-btn-purple:hover { background: #7c3aed; color: white; border-color: #7c3aed; }
+    .ext-btn-purple:hover { background: #7c3aed; color: white; border-color: #7c3aed; box-shadow: 0 4px 12px rgba(124,58,237,0.2); }
+    .ext-btn-purple:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; transform: none; }
+
     .ext-warning-box {
-      background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px;
-      padding: 14px 16px; margin-bottom: 20px; color: #991b1b;
-      font-family: 'Inter', sans-serif; font-size: 13px;
+      background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px;
+      padding: 16px 18px; margin-bottom: 20px; color: #9a3412;
+      font-size: 13px; line-height: 1.6;
     }
-    .ext-modal-content {
-      background: #ffffff; border-radius: 8px; padding: 24px;
-      max-width: 850px; width: 95%; max-height: 85vh; overflow-y: auto;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.05);
-      margin: auto; font-family: 'Inter', sans-serif;
+    .ext-warning-box strong { color: #7c2d12; }
+
+    .ext-search-input {
+      width: 100%; padding: 10px 14px; font-size: 13px;
+      border: 1px solid #e2e8f0; border-radius: 10px; outline: none;
+      color: #1e293b; background: #f8fafc; box-sizing: border-box;
+      pointer-events: auto;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
-    .ext-modal-content * { font-family: 'Inter', sans-serif; }
+    .ext-search-input:focus { border-color: #94a3b8; box-shadow: 0 0 0 3px rgba(148,163,184,0.1); background: #fff; }
+    .ext-search-input::placeholder { color: #94a3b8; }
+
+    .ext-status-badge {
+      font-size: 10px; padding: 3px 10px; background: #f1f5f9;
+      border-radius: 20px; color: #475569; font-weight: 600;
+      white-space: nowrap; border: 1px solid #e2e8f0;
+      letter-spacing: 0.2px;
+    }
+    .ext-status-badge[data-status="success"] { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
+    .ext-status-badge[data-status="error"] { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+    .ext-status-badge[data-status="deleting"] { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+
+    .ext-modal-content input,
+    .ext-modal-content textarea,
+    .ext-modal-content select,
+    .ext-modal-content button {
+      pointer-events: auto !important;
+    }
+
+    .ext-checkbox {
+      margin-top: 4px; cursor: pointer; accent-color: #2563eb;
+      width: 20px; height: 20px; flex-shrink: 0; border-radius: 4px;
+    }
+
+    .ext-checkbox-label {
+      display: flex; gap: 12px; align-items: flex-start;
+      cursor: pointer; flex: 1; min-width: 0;
+    }
+
+    .ext-delete-preview-item {
+      padding: 12px 16px; border-bottom: 1px solid #f1f5f9; font-size: 12px;
+      display: flex; gap: 12px; align-items: flex-start;
+      background: #fff; transition: background-color 0.15s ease;
+    }
+    .ext-delete-preview-item:hover { background: #f8fafc; }
+    .ext-delete-preview-item.selected {
+      background: #fef2f2; border-left: 3px solid #ef4444;
+    }
+
+    .ext-delete-preview-btn {
+      padding: 7px 14px; background: #f8fafc; color: #475569;
+      border: 1px solid #e2e8f0; border-radius: 8px; font-size: 11px;
+      font-weight: 600; cursor: pointer; white-space: nowrap;
+      display: inline-flex; align-items: center; gap: 5px;
+      transition: all 0.15s ease;
+    }
+    .ext-delete-preview-btn:hover { background: #475569; color: white; border-color: #475569; }
+    .ext-delete-preview-btn:active { transform: scale(0.97); }
+    .ext-delete-preview-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .ext-delete-single-btn {
+      width: 32px; height: 32px; color: #dc2626; border-radius: 8px;
+      background: #fef2f2; border: 1px solid #fecaca;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s ease; flex-shrink: 0;
+    }
+    .ext-delete-single-btn:hover { background: #dc2626; color: white; border-color: #dc2626; }
+    .ext-delete-single-btn:active { transform: scale(0.93); }
+
     .progress-fill {
-      height: 100%; background: #10b981; width: 0%;
-      transition: width 0.3s ease;
+      height: 100%; background: #2563eb; width: 0%;
+      border-radius: 2px; transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
+
+    .ext-preview-item {
+      padding: 5px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px;
+    }
+    .ext-preview-item.success { color: #059669; }
+    .ext-preview-item.error { color: #dc2626; }
+    .ext-preview-item.pending { color: #64748b; }
   `;
     document.head.appendChild(style);
   }
+  var Icons = {
+    search: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>`,
+    trash: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`,
+    xClose: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`,
+    warning: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 00-3.48 0l-8 14A2 2 0 004 21h16a2 2 0 001.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+    eye: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+    refresh: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>`,
+    upload: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`,
+    file: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
+    check: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+    arrowRight: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`
+  };
   async function showInlinePreviewSafe(url, filename) {
     try {
       const response = await fetch(url, { method: "GET", mode: "cors", credentials: "omit" });
@@ -87,21 +188,22 @@ var __morbis_feature = (() => {
     const isImage = ["jpg", "jpeg", "png", "gif", "webp"].includes(ext);
     const modal = document.createElement("div");
     modal.id = "ext-inline-preview-modal";
-    modal.style.cssText = "position:fixed !important;top:0 !important;left:0 !important;width:100vw !important;height:100vh !important;background:rgba(0,0,0,0.85) !important;z-index:10001 !important;display:flex !important;align-items:center !important;justify-content:center !important;flex-direction:column !important;padding:20px !important;box-sizing:border-box !important;";
-    let contentHtml = '<div class="ext-inline-preview-loading"><div class="ext-inline-preview-spinner"></div><div>Memuat preview...</div></div>';
+    modal.style.cssText = "position:fixed !important;top:0 !important;left:0 !important;width:100vw !important;height:100vh !important;background:rgba(15,23,42,0.88) !important;z-index:10001 !important;display:flex !important;align-items:center !important;justify-content:center !important;flex-direction:column !important;padding:20px !important;box-sizing:border-box !important;backdrop-filter:blur(8px) !important;-webkit-backdrop-filter:blur(8px) !important;";
+    let contentHtml = '<div class="ext-inline-preview-loading" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:#fff;"><div class="ext-inline-preview-spinner"></div><div style="font-size:14px;">Loading preview...</div></div>';
     if (isPdf)
-      contentHtml = `<iframe id="ext-inline-preview-iframe" src="${previewUrl}" style="width:100%;height:100%;border:none;display:block;"></iframe>`;
+      contentHtml = `<iframe id="ext-inline-preview-iframe" src="${previewUrl}" style="width:100%;height:100%;border:none;display:block;border-radius:12px;"></iframe>`;
     else if (isImage)
-      contentHtml = `<img id="ext-inline-preview-img" src="${previewUrl}" alt="Image Preview" style="width:100%;height:100%;border:none;display:block;object-fit:contain;">`;
+      contentHtml = `<img id="ext-inline-preview-img" src="${previewUrl}" alt="Image Preview" style="width:100%;height:100%;border:none;display:block;object-fit:contain;border-radius:12px;">`;
     else
-      contentHtml = '<div class="ext-inline-preview-error" style="display:flex;align-items:center;justify-content:center;height:100%;font-size:16px;color:#6b7280;background:#f9fafb;flex-direction:column;gap:16px;"><div style="font-size:18px;color:#ef4444;">\u{1F4C4}</div><div>Format tidak didukung untuk preview inline</div></div>';
+      contentHtml = `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:15px;color:#64748b;background:#f8fafc;flex-direction:column;gap:16px;border-radius:12px;">${Icons.file}<div>Preview not available for this format</div></div>`;
+    const safeFilename = filename.replace(/"/g, "&quot;").replace(/</g, "&lt;");
     modal.innerHTML = `
-    <div style="position:absolute;top:20px;right:20px;display:flex;gap:12px;align-items:center;background:rgba(0,0,0,0.7);padding:10px 16px;border-radius:8px;backdrop-filter:blur(10px);z-index:10002;">
-      <span style="color:white;font-size:14px;max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">${filename.replace(/"/g, "&quot;")}</span>
-      <button id="ext-preview-newtab" style="padding:6px 12px;background:#3b82f6;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;">Buka Tab Baru</button>
-      <button id="ext-preview-close" style="padding:6px 14px;background:#ef4444;color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:bold;">\u2715</button>
+    <div style="position:absolute;top:20px;right:20px;display:flex;gap:10px;align-items:center;background:rgba(15,23,42,0.8);padding:10px 16px;border-radius:12px;backdrop-filter:blur(12px);z-index:10002;border:1px solid rgba(255,255,255,0.1);">
+      <span style="color:#e2e8f0;font-size:13px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">${safeFilename}</span>
+      <button id="ext-preview-newtab" style="padding:7px 14px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:background 0.15s ease;display:inline-flex;align-items:center;gap:6px;">${Icons.arrowRight} Open Tab</button>
+      <button id="ext-preview-close" style="padding:7px 12px;background:rgba(255,255,255,0.1);color:#e2e8f0;border:1px solid rgba(255,255,255,0.15);border-radius:8px;cursor:pointer;font-size:16px;font-weight:500;transition:all 0.15s ease;line-height:1;">${Icons.xClose}</button>
     </div>
-    <div style="width:clamp(400px,90vw,1200px);height:clamp(300px,90vh,800px);background:white;border-radius:12px;box-shadow:0 25px 50px rgba(0,0,0,0.5);overflow:hidden;position:relative;">${contentHtml}</div>
+    <div style="width:clamp(400px,90vw,1200px);height:clamp(300px,90vh,800px);background:white;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,0.4);overflow:hidden;position:relative;">${contentHtml}</div>
   `;
     document.body.appendChild(modal);
     document.getElementById("ext-preview-close")?.addEventListener("click", () => {
@@ -230,36 +332,61 @@ var __morbis_feature = (() => {
     btn.id = "ext-batch-url-btn";
     btn.type = "button";
     btn.textContent = "Upload Dokumen Ulang";
-    btn.style.cssText = "margin: 8px 0 4px 10px; padding: 10px 18px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; display: block; transition: all 0.2s ease;";
+    btn.style.cssText = "margin: 8px 0 4px 10px; padding: 10px 22px; background: #2563eb; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; display: block; transition: all 0.15s ease; letter-spacing: -0.1px; box-shadow: 0 2px 8px rgba(37,99,235,0.2);";
     btn.addEventListener("click", showBatchUploadModal);
-    btn.addEventListener("mouseenter", () => btn.style.background = "#059669");
-    btn.addEventListener("mouseleave", () => btn.style.background = "#10b981");
+    btn.addEventListener("mouseenter", () => btn.style.background = "#1d4ed8");
+    btn.addEventListener("mouseleave", () => btn.style.background = "#2563eb");
     if (!document.getElementById("ext-batch-url-style")) {
       const style = document.createElement("style");
       style.id = "ext-batch-url-style";
       style.textContent = `
-      #${BATCH_UPLOAD_URL_CONFIG.modalId} { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 10000; align-items: center; justify-content: center; }
-      #${BATCH_UPLOAD_URL_CONFIG.modalId}.show { display: flex; }
-      #${BATCH_UPLOAD_URL_CONFIG.textareaId} { width: 100%; height: 150px; padding: 10px; border: 1px solid #d1d5db; border-radius: 4px; font-family: monospace; font-size: 12px; resize: vertical; }
-      #${BATCH_UPLOAD_URL_CONFIG.previewId} { margin-top: 15px; max-height: 400px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 4px; padding: 10px; }
-      .ext-preview-item { padding: 5px 0; border-bottom: 1px solid #f3f4f6; font-size: 12px; }
-      .ext-preview-item.success { color: #059669; }
-      .ext-preview-item.error { color: #dc2626; }
-      .ext-preview-item.pending { color: #6b7280; }
-      #${BATCH_UPLOAD_URL_CONFIG.progressId} { width: 100%; height: 8px; background: #e5e7eb; border-radius: 4px; margin: 10px 0; display: none; }
-      #${BATCH_UPLOAD_URL_CONFIG.progressId} .progress-fill { height: 100%; background: #10b981; border-radius: 4px; width: 0%; transition: width 0.3s ease; }
-      .ext-upload-search-wrap { margin-bottom: 10px; display: none; }
-      .ext-upload-search-input { width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid #d1d5db; border-radius: 6px; outline: none; color: #111827; background: #fff; box-sizing: border-box; }
-      .ext-upload-search-input:focus { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
-      .ext-upload-search-input::placeholder { color: #9ca3af; }
-      #ext-inline-preview-modal { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(0,0,0,0.85) !important; z-index: 10001 !important; display: flex !important; align-items: center !important; justify-content: center !important; flex-direction: column !important; padding: 20px !important; box-sizing: border-box !important; }
-      .ext-inline-preview-header { position: absolute !important; top: 20px !important; right: 20px !important; display: flex !important; gap: 12px !important; align-items: center !important; background: rgba(0,0,0,0.7) !important; padding: 10px 16px !important; border-radius: 8px !important; backdrop-filter: blur(10px) !important; }
-      .ext-inline-preview-filename { color: white !important; font-size: 14px !important; max-width: 400px !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; font-weight: 500 !important; }
-      .ext-inline-preview-btn { padding: 6px 12px !important; background: #3b82f6 !important; color: white !important; border: none !important; border-radius: 6px !important; cursor: pointer !important; font-size: 12px !important; font-weight: 500 !important; }
-      .ext-inline-preview-close { padding: 6px 14px !important; background: #ef4444 !important; color: white !important; border: none !important; border-radius: 6px !important; cursor: pointer !important; font-size: 14px !important; font-weight: bold !important; }
-      .ext-inline-preview-content { width: clamp(400px, 90vw, 1200px) !important; height: clamp(300px, 90vh, 800px) !important; background: white !important; border-radius: 12px !important; box-shadow: 0 25px 50px rgba(0,0,0,0.5) !important; overflow: hidden !important; position: relative !important; }
-      .ext-inline-preview-spinner { width: 40px !important; height: 40px !important; border: 4px solid #e5e7eb !important; border-top: 4px solid #3b82f6 !important; border-radius: 50% !important; animation: spin2 1s linear infinite !important; }
-      @keyframes spin2 { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      #${BATCH_UPLOAD_URL_CONFIG.textareaId} {
+        width: 100%; height: 150px; padding: 12px; border: 1px solid #e2e8f0;
+        border-radius: 10px; font-size: 12px; resize: vertical;
+        background: #f8fafc; color: #1e293b;
+        transition: border-color 0.15s ease; box-sizing: border-box;
+      }
+      #${BATCH_UPLOAD_URL_CONFIG.textareaId}:focus {
+        border-color: #94a3b8; box-shadow: 0 0 0 3px rgba(148,163,184,0.1);
+        background: #fff; outline: none;
+      }
+      #${BATCH_UPLOAD_URL_CONFIG.previewId} {
+        margin-top: 15px; max-height: 400px; overflow-y: auto;
+        border: 1px solid #f1f5f9; border-radius: 10px; padding: 12px;
+      }
+      #${BATCH_UPLOAD_URL_CONFIG.progressId} {
+        width: 100%; height: 6px; background: #f1f5f9;
+        border-radius: 3px; margin: 12px 0; display: none; overflow: hidden;
+      }
+      #${BATCH_UPLOAD_URL_CONFIG.progressId} .progress-fill {
+        height: 100%; background: #2563eb; border-radius: 3px;
+        width: 0%; transition: width 0.3s cubic-bezier(0.16,1,0.3,1);
+      }
+      .ext-input-label {
+        display: block; margin-bottom: 6px; font-weight: 600;
+        font-size: 13px; color: #334155;
+      }
+      .ext-mode-radio {
+        display: flex; gap: 20px; align-items: center; margin-bottom: 16px;
+        font-size: 13px; color: #475569;
+      }
+      .ext-mode-radio label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
+      .ext-mode-radio input[type="radio"] { accent-color: #2563eb; }
+      .ext-upload-search-wrap { display: none; margin-bottom: 10px; }
+      .ext-keterangan-input {
+        width: 100%; padding: 6px 10px; font-size: 11px;
+        border: 1px solid #e2e8f0; border-radius: 6px; outline: none;
+        color: #475569; background: #f8fafc; box-sizing: border-box;
+        margin-top: 5px; transition: border-color 0.15s ease;
+      }
+      .ext-keterangan-input:focus { border-color: #94a3b8; background: #fff; }
+      .ext-keterangan-input::placeholder { color: #94a3b8; }
+      .ext-inline-preview-spinner {
+        width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.15);
+        border-top: 4px solid #fff; border-radius: 50%;
+        animation: ext-spin 0.8s linear infinite;
+      }
+      @keyframes ext-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     `;
       document.head.appendChild(style);
     }
@@ -279,45 +406,42 @@ var __morbis_feature = (() => {
     if (!modal) {
       modal = document.createElement("div");
       modal.id = BATCH_UPLOAD_URL_CONFIG.modalId;
+      modal.className = "ext-batch-delete-modal";
       modal.innerHTML = `
       <div class="ext-modal-content">
         <div class="ext-modal-header">
-          <h3 style="margin: 0; font-size: 18px;">Upload Dokumen Ulang</h3>
-          <button class="ext-modal-close" id="ext-modal-close-btn">\u274C</button>
+          <h3 style="margin: 0; font-size: 18px; color: #0f172a; font-weight: 700; letter-spacing: -0.3px;">Upload Dokumen Ulang</h3>
+          <button class="ext-modal-close" id="ext-modal-close-btn">${Icons.xClose}</button>
         </div>
-        <div style="margin-bottom: 15px; display: flex; gap: 15px; font-size: 14px; align-items: center;">
-          <label style="cursor: pointer;"><input type="radio" name="ext-upload-mode" value="manual" checked> Mode Manual (Paste URL)</label>
-          <label style="cursor: pointer;"><input type="radio" name="ext-upload-mode" value="auto"> Auto-Crawl Rekam Medis</label>
+        <div class="ext-mode-radio">
+          <label><input type="radio" name="ext-upload-mode" value="manual" checked> Mode Manual (Paste URL)</label>
+          <label><input type="radio" name="ext-upload-mode" value="auto"> Auto-Crawl Rekam Medis</label>
         </div>
         <div id="ext-manual-section">
-          <label style="display: block; margin-bottom: 5px; font-weight: 500;">Paste URL Dokumen (satu per baris):</label>
-          <textarea id="${BATCH_UPLOAD_URL_CONFIG.textareaId}" placeholder="https://example.com/dokumen1.pdf
-https://example.com/dokumen2.jpg
-..."></textarea>
-          <div style="margin-top: 10px;">
-            <button class="ext-btn ext-btn-secondary" id="ext-analyze-btn">Analisis URL</button>
+          <label class="ext-input-label">Paste URL Dokumen (satu per baris):</label>
+          <textarea id="${BATCH_UPLOAD_URL_CONFIG.textareaId}" placeholder="https://example.com/dokumen1.pdf&#10;https://example.com/dokumen2.jpg&#10;..."></textarea>
+          <div style="margin-top: 12px; display: flex; gap: 10px;">
+            <button class="ext-btn ext-btn-purple" id="ext-analyze-btn">${Icons.search} Analisis URL</button>
           </div>
         </div>
         <div id="ext-auto-section" style="display: none;">
-          <p style="font-size: 13px; color: #4b5563; margin-bottom: 10px;">Mendeteksi dokumen otomatis dari halaman Rekam Medis (Pelaksanaan Pelayanan) pasien ini.</p>
-          <div style="margin-top: 10px;">
-            <button class="ext-btn ext-btn-primary" id="ext-crawl-btn" style="background: #8b5cf6;">Cari Dokumen Pasien Otomatis</button>
+          <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">Mendeteksi dokumen otomatis dari halaman Rekam Medis pasien ini.</p>
+          <div style="margin-bottom: 12px; display: flex; gap: 10px;">
+            <button class="ext-btn ext-btn-purple" id="ext-crawl-btn">${Icons.search} Cari Dokumen Pasien Otomatis</button>
+          </div>
+          <div id="ext-upload-search-wrap" class="ext-upload-search-wrap" style="display: none;">
+            <input type="text" id="ext-upload-search-input" class="ext-search-input" placeholder="Cari dokumen...">
           </div>
         </div>
-        <div id="ext-upload-search-wrap" class="ext-upload-search-wrap">
-          <input type="text" id="ext-upload-search-input" class="ext-upload-search-input" placeholder="Cari dokumen...">
-        </div>
-        <div id="${BATCH_UPLOAD_URL_CONFIG.previewId}" style="display: none;">
-          <strong>Preview Dokumen:</strong>
-        </div>
-        <div id="${BATCH_UPLOAD_URL_CONFIG.progressId}">
+        <div id="${BATCH_UPLOAD_URL_CONFIG.previewId}" style="display: none; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden;"></div>
+        <div id="${BATCH_UPLOAD_URL_CONFIG.progressId}" style="display: none; height: 4px; background: #374151; margin: 12px 0; border-radius: 2px; overflow: hidden;">
           <div class="progress-fill"></div>
         </div>
-        <div id="${BATCH_UPLOAD_URL_CONFIG.statusId}" style="margin: 10px 0; font-size: 12px; color: #6b7280;"></div>
+        <div id="${BATCH_UPLOAD_URL_CONFIG.statusId}" style="margin: 8px 0; font-size: 11px; color: #9ca3af; font-weight: 500; letter-spacing: 0.3px;"></div>
         <div class="ext-modal-buttons">
           <button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Batal</button>
-          <button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #f59e0b; color: white;">Test 1 URL</button>
-          <button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>Mulai Upload</button>
+          <button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 URL</button>
+          <button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>${Icons.upload} Mulai Upload</button>
         </div>
       </div>
     `;
@@ -346,6 +470,9 @@ https://example.com/dokumen2.jpg
         });
         document.getElementById("ext-crawl-btn")?.addEventListener("click", crawlDokumenPasien);
         document.getElementById("ext-upload-search-input")?.addEventListener("input", () => updatePreview(batchQueue));
+        modal?.addEventListener("click", function(e) {
+          if (e.target === modal) closeBatchModal();
+        });
       }, 0);
       document.body.appendChild(modal);
     }
@@ -370,7 +497,7 @@ https://example.com/dokumen2.jpg
       if (searchWrap) searchWrap.style.display = "none";
       const buttonsContainer = document.querySelector(".ext-modal-buttons");
       if (buttonsContainer) {
-        buttonsContainer.innerHTML = '<button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Batal</button><button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #f59e0b; color: white;">Test 1 URL</button><button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>Mulai Upload</button>';
+        buttonsContainer.innerHTML = '<button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Batal</button><button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 URL</button><button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>' + Icons.upload + " Mulai Upload</button>";
         document.getElementById("ext-cancel-btn")?.addEventListener("click", closeBatchModal);
         document.getElementById("ext-test-single-btn")?.addEventListener("click", testSingleUpload);
         document.getElementById("ext-start-upload-btn")?.addEventListener("click", startBatchUpload);
@@ -384,6 +511,7 @@ https://example.com/dokumen2.jpg
     const startBtn = document.getElementById("ext-start-upload-btn");
     const searchWrap = document.getElementById("ext-upload-search-wrap");
     const searchInput = document.getElementById("ext-upload-search-input");
+    const isAutoMode = document.getElementById("ext-auto-section")?.style.display !== "none";
     const query = (searchInput?.value || "").toLowerCase();
     if (!items || items.length === 0) {
       if (previewEl) previewEl.style.display = "none";
@@ -392,8 +520,8 @@ https://example.com/dokumen2.jpg
       if (searchInput) searchInput.value = "";
       return;
     }
-    if (searchWrap) searchWrap.style.display = "block";
-    const filtered = items.map((item, idx) => ({ item, idx })).filter(
+    if (searchWrap && isAutoMode) searchWrap.style.display = "block";
+    const filtered = items.map((item, i) => ({ item, i })).filter(
       ({ item }) => !query || item.filename.toLowerCase().includes(query) || item.keterangan.toLowerCase().includes(query) || item.norm.toLowerCase().includes(query)
     );
     if (previewEl) previewEl.style.display = "block";
@@ -410,54 +538,53 @@ https://example.com/dokumen2.jpg
       empty.textContent = "Tidak ada dokumen yang cocok dengan pencarian.";
       previewEl?.appendChild(empty);
     }
-    filtered.forEach(({ item, index }) => {
+    filtered.forEach(({ item, i }) => {
       let modeText = "";
       if (item.tglFileTabel) {
-        modeText = `<div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 4px;">
-        <span style="font-weight: bold;"><strong style="color:#059669;">Dibuat:</strong> ${item.tglFileTabel}</span>
-        <span style="font-weight: bold;"><strong style="color:#059669;">Diunggah:</strong> ${item.tglUploadTabel}</span>
-        <span style="font-weight: bold;"><strong style="color:#059669;">Keterangan:</strong> ${item.keterangan || "-"}</span>
+        modeText = `<div style="font-size:11px;color:#4b5563;margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
+        <span>Dibuat: <strong style="color:#111827;">${item.tglFileTabel}</strong></span>
+        <span style="color:#d1d5db;">|</span>
+        <span>Diunggah: <strong style="color:#111827;">${item.tglUploadTabel}</strong></span>
       </div>`;
       } else {
-        modeText = `<div style="display: flex; gap: 15px; margin-top: 4px;">
-        <span style="font-weight: bold;"><strong style="color:#059669;">NORM:</strong> ${item.norm || "-"}</span>
-        <span style="font-weight: bold;"><strong style="color:#059669;">Tanggal Klaim:</strong> ${item.tanggal}</span>
+        modeText = `<div style="font-size:11px;color:#4b5563;margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
+        <span>NORM: <strong style="color:#111827;">${item.norm || "-"}</strong></span>
+        <span style="color:#d1d5db;">|</span>
+        <span>Tgl Klaim: <strong style="color:#111827;">${item.tanggal}</strong></span>
       </div>`;
       }
       const itemEl = document.createElement("div");
-      itemEl.className = `ext-preview-item ${item.status}`;
-      itemEl.style.display = "flex";
-      itemEl.style.alignItems = "flex-start";
-      itemEl.style.gap = "12px";
-      itemEl.style.padding = "12px 8px";
-      itemEl.style.borderBottom = "1px solid #e5e7eb";
-      if (item.selected === false) {
-        itemEl.style.opacity = "0.5";
-        itemEl.style.background = "#f9fafb";
-      }
+      itemEl.className = "ext-delete-preview-item";
+      if (item.selected) itemEl.classList.add("selected");
       itemEl.innerHTML = `
-      <input type="checkbox" class="ext-doc-checkbox" data-index="${index}" style="margin-top: 4px; transform: scale(1.1);" ${item.selected !== false ? "checked" : ""} ${isProcessing ? "disabled" : ""}>
-      <div style="flex: 1; display: flex; flex-direction: column;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <strong style="font-size:13px; color: #111827; word-break: break-all;">${index + 1}. ${item.filename}</strong>
-          <span style="font-weight: 600; font-size: 10px; padding: 2px 8px; border-radius: 12px; background: #f3f4f6; text-transform: uppercase;">${item.status}</span>
+      <label class="ext-checkbox-label" style="flex:1;min-width:0;">
+        <input type="checkbox" class="ext-checkbox" data-index="${i}" ${item.selected !== false ? "checked" : ""} ${isProcessing ? "disabled" : ""}>
+        <div style="flex: 1; min-width: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+            <strong style="font-size: 13px; color: #000000; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${i + 1}. ${item.filename}</strong>
+            ${item.status !== "pending" ? `<span class="ext-status-badge" data-status="${item.status}">${item.status === "success" ? "Sukses" : item.status === "error" ? "Gagal" : item.status}</span>` : ""}
+          </div>
+          ${modeText}
+          <input type="text" class="ext-keterangan-input" data-index="${i}" value="${item.keterangan || ""}" placeholder="Keterangan dokumen..." ${isProcessing ? "disabled" : ""}>
+          ${item.error ? `<div style="font-size: 11px; color: #dc2626; margin-top: 4px;"><strong>Error:</strong> ${item.error}</div>` : ""}
         </div>
-        <div style="font-size: 11px; color: #4b5563;">${modeText}</div>
-        ${item.error ? `<span style="font-size: 11px; color: #dc2626; margin-top: 4px;"><strong>Kesalahan:</strong> ${item.error}</span>` : ""}
-      </div>
-      <button class="ext-preview-btn" data-index="${index}" style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer; min-width: 70px;" ${isProcessing ? "disabled" : ""}>Preview</button>
-      <button class="ext-modal-close" title="Buang Dokumen ini">\u274C</button>
+      </label>
+      <button data-index="${i}" class="ext-delete-preview-btn" ${isProcessing ? "disabled" : ""}>${Icons.eye} Preview</button>
+      <button data-index="${i}" class="ext-delete-single-btn" title="Buang dari Antrian" ${isProcessing ? "disabled" : ""}>${Icons.xClose}</button>
     `;
-      const checkbox = itemEl.querySelector(".ext-doc-checkbox");
-      const previewBtn = itemEl.querySelector(".ext-preview-btn");
-      const buangBtn = itemEl.querySelector(".ext-modal-close");
+      const checkbox = itemEl.querySelector(".ext-checkbox");
+      const previewBtn = itemEl.querySelector(".ext-delete-preview-btn");
+      const buangBtn = itemEl.querySelector(".ext-delete-single-btn");
       const updateSelection = (isSelected) => {
         if (isProcessing) return;
         item.selected = isSelected;
         if (checkbox) checkbox.checked = isSelected;
-        itemEl.style.opacity = isSelected ? "1" : "0.5";
-        itemEl.style.background = isSelected ? "transparent" : "#f9fafb";
-        const currentSelected = items.filter((i) => i.selected !== false).length;
+        if (isSelected) {
+          itemEl.classList.add("selected");
+        } else {
+          itemEl.classList.remove("selected");
+        }
+        const currentSelected = items.filter((i2) => i2.selected !== false).length;
         headerDiv.innerHTML = `<strong class="preview-header-text">Preview (${currentSelected} Dokumen Dipilih):</strong>`;
         if (startBtn) startBtn.disabled = currentSelected === 0;
       };
@@ -466,12 +593,16 @@ https://example.com/dokumen2.jpg
         (e) => updateSelection(e.target.checked)
       );
       buangBtn?.addEventListener("click", () => updateSelection(false));
+      const ketInput = itemEl.querySelector(".ext-keterangan-input");
+      ketInput?.addEventListener("input", function() {
+        batchQueue[i].keterangan = ketInput.value;
+      });
       if (previewBtn) {
         previewBtn.addEventListener("click", async () => {
           try {
-            await showInlinePreviewSafe(batchQueue[index].url, batchQueue[index].filename);
+            await showInlinePreviewSafe(batchQueue[i].url, batchQueue[i].filename);
           } catch {
-            window.open(batchQueue[index].url, "_blank");
+            window.open(batchQueue[i].url, "_blank");
           }
         });
         if (isProcessing) previewBtn.disabled = true;
@@ -659,6 +790,9 @@ https://example.com/dokumen2.jpg
     const idVisitStr = urlParams.get("id_visit") || "";
     if (!idVisitStr) {
       alert("ID Visit tidak ditemukan di URL");
+      toggleUIProcessingState(false);
+      isProcessing = false;
+      if (startBtn) startBtn.textContent = "Mulai Upload";
       return;
     }
     let successCount = 0;
@@ -704,7 +838,7 @@ https://example.com/dokumen2.jpg
     }
     const buttonsContainer = document.querySelector(".ext-modal-buttons");
     if (buttonsContainer) {
-      buttonsContainer.innerHTML = '<button class="ext-btn ext-btn-primary" id="ext-reload-btn">Reload Halaman</button>';
+      buttonsContainer.innerHTML = '<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">' + Icons.refresh + " Reload Halaman</span></button>";
       document.getElementById("ext-reload-btn")?.addEventListener("click", () => window.location.reload());
     }
     isProcessing = false;
@@ -725,16 +859,16 @@ https://example.com/dokumen2.jpg
       const result = await processAndUploadSingleUrl(firstItem, idVisitStr);
       if (result.success) {
         firstItem.status = "success";
-        updateStatus("\u2705 Test sukses! Cek console untuk detail.");
+        updateStatus("Test sukses! Detail di console.");
       } else {
         firstItem.status = "error";
         firstItem.error = result.error;
-        updateStatus("\u274C Test gagal! Cek console untuk detail.");
+        updateStatus("Test gagal! Detail di console.");
       }
     } catch (error) {
       firstItem.status = "error";
       firstItem.error = error.message;
-      updateStatus("\u274C Test error! Cek console untuk detail.");
+      updateStatus("Test error! Detail di console.");
     }
     updatePreview(batchQueue);
     toggleUIProcessingState(false);
