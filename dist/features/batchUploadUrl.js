@@ -248,6 +248,10 @@ var __morbis_feature = (() => {
       .ext-preview-item.pending { color: #6b7280; }
       #${BATCH_UPLOAD_URL_CONFIG.progressId} { width: 100%; height: 8px; background: #e5e7eb; border-radius: 4px; margin: 10px 0; display: none; }
       #${BATCH_UPLOAD_URL_CONFIG.progressId} .progress-fill { height: 100%; background: #10b981; border-radius: 4px; width: 0%; transition: width 0.3s ease; }
+      .ext-upload-search-wrap { margin-bottom: 10px; display: none; }
+      .ext-upload-search-input { width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid #d1d5db; border-radius: 6px; outline: none; color: #111827; background: #fff; box-sizing: border-box; }
+      .ext-upload-search-input:focus { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
+      .ext-upload-search-input::placeholder { color: #9ca3af; }
       #ext-inline-preview-modal { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(0,0,0,0.85) !important; z-index: 10001 !important; display: flex !important; align-items: center !important; justify-content: center !important; flex-direction: column !important; padding: 20px !important; box-sizing: border-box !important; }
       .ext-inline-preview-header { position: absolute !important; top: 20px !important; right: 20px !important; display: flex !important; gap: 12px !important; align-items: center !important; background: rgba(0,0,0,0.7) !important; padding: 10px 16px !important; border-radius: 8px !important; backdrop-filter: blur(10px) !important; }
       .ext-inline-preview-filename { color: white !important; font-size: 14px !important; max-width: 400px !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; font-weight: 500 !important; }
@@ -300,6 +304,9 @@ https://example.com/dokumen2.jpg
             <button class="ext-btn ext-btn-primary" id="ext-crawl-btn" style="background: #8b5cf6;">Cari Dokumen Pasien Otomatis</button>
           </div>
         </div>
+        <div id="ext-upload-search-wrap" class="ext-upload-search-wrap">
+          <input type="text" id="ext-upload-search-input" class="ext-upload-search-input" placeholder="Cari dokumen...">
+        </div>
         <div id="${BATCH_UPLOAD_URL_CONFIG.previewId}" style="display: none;">
           <strong>Preview Dokumen:</strong>
         </div>
@@ -338,6 +345,7 @@ https://example.com/dokumen2.jpg
           });
         });
         document.getElementById("ext-crawl-btn")?.addEventListener("click", crawlDokumenPasien);
+        document.getElementById("ext-upload-search-input")?.addEventListener("input", () => updatePreview(batchQueue));
       }, 0);
       document.body.appendChild(modal);
     }
@@ -356,6 +364,10 @@ https://example.com/dokumen2.jpg
       updatePreview([]);
       updateProgress(0);
       updateStatus("");
+      const searchInput = document.getElementById("ext-upload-search-input");
+      if (searchInput) searchInput.value = "";
+      const searchWrap = document.getElementById("ext-upload-search-wrap");
+      if (searchWrap) searchWrap.style.display = "none";
       const buttonsContainer = document.querySelector(".ext-modal-buttons");
       if (buttonsContainer) {
         buttonsContainer.innerHTML = '<button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Batal</button><button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #f59e0b; color: white;">Test 1 URL</button><button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>Mulai Upload</button>';
@@ -370,20 +382,35 @@ https://example.com/dokumen2.jpg
       BATCH_UPLOAD_URL_CONFIG.previewId
     );
     const startBtn = document.getElementById("ext-start-upload-btn");
+    const searchWrap = document.getElementById("ext-upload-search-wrap");
+    const searchInput = document.getElementById("ext-upload-search-input");
+    const query = (searchInput?.value || "").toLowerCase();
     if (!items || items.length === 0) {
       if (previewEl) previewEl.style.display = "none";
       if (startBtn) startBtn.disabled = true;
+      if (searchWrap) searchWrap.style.display = "none";
+      if (searchInput) searchInput.value = "";
       return;
     }
+    if (searchWrap) searchWrap.style.display = "block";
+    const filtered = items.map((item, idx) => ({ item, idx })).filter(
+      ({ item }) => !query || item.filename.toLowerCase().includes(query) || item.keterangan.toLowerCase().includes(query) || item.norm.toLowerCase().includes(query)
+    );
     if (previewEl) previewEl.style.display = "block";
     const headerDiv = document.createElement("div");
     headerDiv.style.marginBottom = "10px";
-    headerDiv.innerHTML = `<strong class="preview-header-text">Preview (${items.filter((i) => i.selected !== false).length} Dokumen Dipilih):</strong>`;
+    headerDiv.innerHTML = `<strong class="preview-header-text">Preview (${filtered.length} dari ${items.length} dokumen, ${items.filter((i) => i.selected !== false).length} dipilih):</strong>`;
     if (previewEl) {
       previewEl.innerHTML = "";
       previewEl.appendChild(headerDiv);
     }
-    items.forEach((item, index) => {
+    if (filtered.length === 0) {
+      const empty = document.createElement("div");
+      empty.style.cssText = "padding:24px;text-align:center;font-size:13px;color:#9ca3af;";
+      empty.textContent = "Tidak ada dokumen yang cocok dengan pencarian.";
+      previewEl?.appendChild(empty);
+    }
+    filtered.forEach(({ item, index }) => {
       let modeText = "";
       if (item.tglFileTabel) {
         modeText = `<div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 4px;">

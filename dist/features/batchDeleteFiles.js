@@ -532,7 +532,9 @@ Tindakan ini tidak bisa di-undo.`
       return;
     }
     if (searchWrap) searchWrap.style.display = "block";
-    const filtered = deleteQueue.map((item, idx) => ({ item, idx })).filter(({ item }) => !query || item.filename.toLowerCase().includes(query));
+    const filtered = deleteQueue.map((item, idx) => ({ item, idx })).filter(
+      ({ item }) => !query || item.filename.toLowerCase().includes(query) || item.keterangan.toLowerCase().includes(query) || item.id_dokumen.toLowerCase().includes(query)
+    );
     if (previewEl) {
       previewEl.style.display = "block";
       previewEl.style.borderRadius = "6px";
