@@ -121,6 +121,12 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       name: 'Resume Validator',
       description: 'Validasi ketat form resume rawat inap agar tidak gagal simpan tanpa error',
     },
+    antrianTools: {
+      enabled: true,
+      allowedRoles: ['casemix', 'admin'],
+      name: 'Antrian Tools',
+      description: 'Sederhanakan antrian jadi 1 jalur & perbaiki tombol reset antrian',
+    },
   },
 };
 

@@ -46,6 +46,12 @@ var __morbis_init = (() => {
     } else {
       document.documentElement.removeAttribute("data-ext-resume-validator");
     }
+    const atCfg = cfg?.features?.antrianTools;
+    if (atCfg?.enabled && window.ExtensionCore.isFeatureAllowed("antrianTools")) {
+      document.documentElement.setAttribute("data-ext-antrian-tools", "1");
+    } else {
+      document.documentElement.removeAttribute("data-ext-antrian-tools");
+    }
     for (const [key, module] of Object.entries(window.featureModules)) {
       const featureConfig = cfg?.features?.[key];
       if (featureConfig === void 0 || !featureConfig.enabled || !window.ExtensionCore.isFeatureAllowed(key)) {

@@ -153,6 +153,38 @@
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
+    },
+    {
+      "matches": [
+        "http://192.168.8.4/public/mesin-antrian*",
+        "http://103.147.236.140/public/mesin-antrian*",
+        "http://192.168.8.4/public/counter-antrian/view-antrian*",
+        "http://103.147.236.140/public/counter-antrian/view-antrian*",
+        "http://192.168.8.4/counter-antrian/counter*",
+        "http://103.147.236.140/counter-antrian/counter*"
+      ],
+      "js": [
+        "core.js",
+        "init.js"
+      ],
+      "run_at": "document_end",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "http://192.168.8.4/public/mesin-antrian*",
+        "http://103.147.236.140/public/mesin-antrian*",
+        "http://192.168.8.4/public/counter-antrian/view-antrian*",
+        "http://103.147.236.140/public/counter-antrian/view-antrian*",
+        "http://192.168.8.4/counter-antrian/counter*",
+        "http://103.147.236.140/counter-antrian/counter*"
+      ],
+      "js": [
+        "features/antrianTools.js"
+      ],
+      "run_at": "document_idle",
+      "world": "MAIN",
+      "all_frames": false
     }
   ],
   "permissions": [

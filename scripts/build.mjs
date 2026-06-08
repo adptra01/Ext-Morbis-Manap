@@ -66,6 +66,7 @@ async function compileFeatureFiles() {
     'cpptSearchFilter.ts',
     'autoVerifBilling.ts',
     'resumeValidator.ts',
+    'antrianTools.ts',
   ];
 
   for (const relativePath of tsFiles) {
