@@ -34,6 +34,7 @@ var __morbis_feature = (() => {
     },
     pelaksanaanRawatInap: {
       urlPattern: "admisi/detail-rawat-inap",
+      excludePattern: "tambah-resume-ri",
       storageKey: "doctor_rawat_inap_filter",
       fields: ["tgl1", "tgl2", "noRm", "pasien", "noReg", "dokter_rs", "id_unit", "status_kunjungan"],
       saveButtonSelectors: ["#search", 'input[value="Cari"]', '.tombol[value="Cari"]'],
@@ -47,9 +48,9 @@ var __morbis_feature = (() => {
   function getCurrentPageConfig() {
     const url = window.location.href;
     for (const [, config] of Object.entries(DOCTOR_FILTER_CONFIGS)) {
-      if (url.includes(config.urlPattern)) {
-        return config;
-      }
+      if (!url.includes(config.urlPattern)) continue;
+      if (config.excludePattern && url.includes(config.excludePattern)) continue;
+      return config;
     }
     return null;
   }

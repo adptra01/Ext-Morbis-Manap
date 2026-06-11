@@ -156,6 +156,18 @@
     },
     {
       "matches": [
+        "http://192.168.8.4/admisi/detail-rawat-inap/surat-pengantar-ri*",
+        "http://103.147.236.140/admisi/detail-rawat-inap/surat-pengantar-ri*"
+      ],
+      "js": [
+        "features/ttvEditor.js"
+      ],
+      "run_at": "document_idle",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
+      "matches": [
         "http://192.168.8.4/public/mesin-antrian*",
         "http://103.147.236.140/public/mesin-antrian*",
         "http://192.168.8.4/public/counter-antrian/view-antrian*",

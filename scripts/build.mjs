@@ -67,6 +67,7 @@ async function compileFeatureFiles() {
     'autoVerifBilling.ts',
     'resumeValidator.ts',
     'antrianTools.ts',
+    'ttvEditor.ts',
   ];
 
   for (const relativePath of tsFiles) {

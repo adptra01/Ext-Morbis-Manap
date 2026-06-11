@@ -84,6 +84,13 @@ async function initExtension(): Promise<void> {
     document.documentElement.removeAttribute('data-ext-antrian-tools');
   }
 
+  const ttvCfg = cfg?.features?.ttvEditor;
+  if (ttvCfg?.enabled && window.ExtensionCore.isFeatureAllowed('ttvEditor')) {
+    document.documentElement.setAttribute('data-ext-ttv-editor', '1');
+  } else {
+    document.documentElement.removeAttribute('data-ext-ttv-editor');
+  }
+
   for (const [key, module] of Object.entries(window.featureModules)) {
     const featureConfig = cfg?.features?.[key];
 

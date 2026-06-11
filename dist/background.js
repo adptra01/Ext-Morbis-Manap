@@ -125,6 +125,12 @@ var __morbis_bg = (() => {
         allowedRoles: ["casemix", "admin"],
         name: "Antrian Tools",
         description: "Sederhanakan antrian jadi 1 jalur & perbaiki tombol reset antrian"
+      },
+      ttvEditor: {
+        enabled: true,
+        allowedRoles: ["casemix", "dokter"],
+        name: "TTV Editor (Surat Pengantar)",
+        description: "Buka field TTV read-only jadi editable di Surat Transfer Pasien Internal"
       }
     }
   };

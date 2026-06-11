@@ -13,6 +13,7 @@ const g = getMorbisGlobals();
 
 interface DoctorFilterConfig {
   urlPattern: string;
+  excludePattern?: string;
   storageKey: string;
   fields: string[];
   saveButtonSelectors: string[];
@@ -50,6 +51,7 @@ const DOCTOR_FILTER_CONFIGS: DoctorFilterConfigs = {
   },
   pelaksanaanRawatInap: {
     urlPattern: 'admisi/detail-rawat-inap',
+    excludePattern: 'tambah-resume-ri',
     storageKey: 'doctor_rawat_inap_filter',
     fields: ['tgl1', 'tgl2', 'noRm', 'pasien', 'noReg', 'dokter_rs', 'id_unit', 'status_kunjungan'],
     saveButtonSelectors: ['#search', 'input[value="Cari"]', '.tombol[value="Cari"]'],
@@ -65,9 +67,9 @@ function getCurrentPageConfig(): DoctorFilterConfig | null {
   const url = window.location.href;
 
   for (const [, config] of Object.entries(DOCTOR_FILTER_CONFIGS)) {
-    if (url.includes(config.urlPattern)) {
-      return config;
-    }
+    if (!url.includes(config.urlPattern)) continue;
+    if (config.excludePattern && url.includes(config.excludePattern)) continue;
+    return config;
   }
   return null;
 }
