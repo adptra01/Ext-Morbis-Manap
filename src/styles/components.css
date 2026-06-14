@@ -1,0 +1,301 @@
+/* MORBIS Ext Shared Components */
+:host, .morbis-root {
+  all: initial;
+  display: block;
+  font-family: var(--morbis-font);
+  font-size: var(--morbis-font-size-base);
+  color: var(--morbis-text-primary);
+  line-height: 1.5;
+}
+
+/* Floating Button */
+.morbis-float-btn {
+  position: fixed;
+  right: var(--morbis-spacing-lg);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: var(--morbis-z-max);
+  width: 48px;
+  height: 48px;
+  border-radius: var(--morbis-radius-full);
+  background: linear-gradient(135deg, var(--morbis-primary), var(--morbis-primary-hover));
+  color: var(--morbis-text-inverse);
+  border: none;
+  font-size: var(--morbis-font-size-lg);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.4);
+  transition: transform var(--morbis-transition-spring), box-shadow var(--morbis-transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.morbis-float-btn:hover {
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 6px 24px rgba(14, 165, 233, 0.5);
+}
+.morbis-float-btn svg {
+  width: 24px;
+  height: 24px;
+  transition: transform var(--morbis-transition-spring);
+}
+.morbis-float-btn.active svg {
+  transform: rotate(180deg);
+}
+
+/* Overlay */
+.morbis-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: var(--morbis-z-overlay);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.morbis-overlay.open { display: flex; }
+.morbis-backdrop {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.4);
+  animation: morbis-fade-in 0.2s var(--morbis-transition);
+}
+
+/* Panel */
+.morbis-panel {
+  position: relative;
+  width: 800px;
+  max-width: 94vw;
+  max-height: 90vh;
+  background: var(--morbis-bg);
+  border-radius: var(--morbis-radius-lg);
+  box-shadow: var(--morbis-shadow-xl);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: morbis-zoom-in 0.2s var(--morbis-transition-spring);
+}
+.morbis-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--morbis-spacing-md) var(--morbis-spacing-xl);
+  background: var(--morbis-bg-muted);
+  border-bottom: 1px solid var(--morbis-border);
+}
+.morbis-panel-title {
+  font-size: var(--morbis-font-size-lg);
+  font-weight: 700;
+  color: var(--morbis-primary-hover);
+}
+.morbis-panel-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--morbis-text-muted);
+  cursor: pointer;
+  padding: 0 var(--morbis-spacing-xs);
+  line-height: 1;
+  border-radius: var(--morbis-radius-sm);
+  transition: color var(--morbis-transition), background var(--morbis-transition);
+}
+.morbis-panel-close:hover {
+  color: var(--morbis-text-primary);
+  background: var(--morbis-bg-hover);
+}
+.morbis-panel-body {
+  padding: var(--morbis-spacing-xl);
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Loading */
+.morbis-loading {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--morbis-text-secondary);
+}
+.morbis-spinner {
+  display: inline-block;
+  width: 36px; height: 36px;
+  border: 3px solid var(--morbis-bg-muted);
+  border-top-color: var(--morbis-primary);
+  border-radius: 50%;
+  animation: morbis-spin 0.8s linear infinite;
+}
+
+/* Info Box */
+.morbis-info-box {
+  display: flex;
+  gap: var(--morbis-spacing-lg);
+  flex-wrap: wrap;
+  margin-bottom: var(--morbis-spacing-xl);
+  padding: var(--morbis-spacing-md) var(--morbis-spacing-lg);
+  background: var(--morbis-primary-light);
+  border-radius: var(--morbis-radius-md);
+  border-left: 4px solid var(--morbis-primary);
+}
+.morbis-info-item { flex: 1; min-width: 140px; }
+.morbis-info-item-wide { flex: 2; min-width: 200px; }
+.morbis-info-item label {
+  font-weight: 600;
+  color: var(--morbis-primary-hover);
+  font-size: var(--morbis-font-size-xs);
+  display: block;
+  margin-bottom: var(--morbis-spacing-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.morbis-info-value {
+  padding: 6px 10px;
+  background: var(--morbis-bg);
+  border-radius: var(--morbis-radius-sm);
+  font-size: var(--morbis-font-size-base);
+  border: 1px solid var(--morbis-primary-border);
+}
+
+/* Section */
+.morbis-section { margin-bottom: 18px; }
+.morbis-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.morbis-section-title {
+  color: var(--morbis-primary);
+  font-size: var(--morbis-font-size-md);
+  font-weight: 700;
+  margin: 0;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #e0f2fe;
+}
+
+/* Clinical Grid */
+.morbis-clinical-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.morbis-field { grid-column: span 1; }
+.morbis-field label {
+  font-weight: 600;
+  color: var(--morbis-text-primary);
+  font-size: var(--morbis-font-size-xs);
+  display: block;
+  margin-bottom: 3px;
+}
+.morbis-field textarea {
+  width: 100%;
+  min-height: 64px;
+  padding: 7px 9px;
+  border: 1px solid var(--morbis-border-hover);
+  border-radius: var(--morbis-radius-sm);
+  font-size: var(--morbis-font-size-base);
+  resize: vertical;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: border-color var(--morbis-transition), box-shadow var(--morbis-transition);
+}
+.morbis-field textarea:focus {
+  outline: none;
+  border-color: var(--morbis-border-focus);
+  box-shadow: 0 0 0 3px rgba(14,165,233,0.15);
+}
+
+/* Table */
+.morbis-table { width: 100%; border-collapse: collapse; font-size: var(--morbis-font-size-base); }
+.morbis-table th {
+  padding: 7px 8px;
+  text-align: left;
+  border: 1px solid var(--morbis-border);
+  background: var(--morbis-primary-light);
+  font-weight: 600;
+  color: var(--morbis-primary-hover);
+  font-size: var(--morbis-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.morbis-table td { padding: 5px 6px; border: 1px solid var(--morbis-border); }
+.morbis-table input, .morbis-table select {
+  width: 100%;
+  padding: 4px 7px;
+  border: 1px solid var(--morbis-border-hover);
+  border-radius: var(--morbis-radius-sm);
+  font-size: var(--morbis-font-size-base);
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: border-color var(--morbis-transition), box-shadow var(--morbis-transition);
+}
+.morbis-table input:focus, .morbis-table select:focus {
+  outline: none;
+  border-color: var(--morbis-border-focus);
+  box-shadow: 0 0 0 3px rgba(14,165,233,0.15);
+}
+
+/* Buttons */
+.morbis-btn {
+  padding: 9px 24px;
+  border: none;
+  border-radius: var(--morbis-radius-md);
+  font-size: var(--morbis-font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity var(--morbis-transition), background var(--morbis-transition);
+}
+.morbis-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.morbis-btn-primary { background: var(--morbis-primary); color: var(--morbis-text-inverse); }
+.morbis-btn-primary:hover:not(:disabled) { background: var(--morbis-primary-hover); }
+.morbis-btn-success { background: var(--morbis-success); color: var(--morbis-text-inverse); }
+.morbis-btn-success:hover:not(:disabled) { background: var(--morbis-success-hover); }
+.morbis-btn-danger { background: var(--morbis-danger); color: var(--morbis-text-inverse); }
+.morbis-btn-danger:hover:not(:disabled) { background: var(--morbis-danger-hover); }
+.morbis-btn-secondary { background: var(--morbis-secondary); color: var(--morbis-text-inverse); }
+.morbis-btn-secondary:hover:not(:disabled) { background: var(--morbis-secondary-hover); }
+.morbis-btn-sm { padding: 5px 12px; font-size: var(--morbis-font-size-sm); }
+
+/* Status */
+.morbis-status {
+  display: none;
+  padding: 6px 12px;
+  border-radius: var(--morbis-radius-sm);
+  font-size: var(--morbis-font-size-sm);
+  font-weight: 600;
+}
+
+/* Autocomplete */
+.morbis-ac-menu {
+  position: fixed;
+  z-index: var(--morbis-z-max);
+  display: none;
+  background: var(--morbis-bg);
+  border: 1px solid var(--morbis-border-hover);
+  border-radius: var(--morbis-radius-md);
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: var(--morbis-shadow-md);
+  min-width: 200px;
+}
+.morbis-ac-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--morbis-bg-muted);
+  transition: background 0.15s;
+}
+.morbis-ac-item:hover { background: var(--morbis-primary-light); }
+.morbis-ac-kode { color: var(--morbis-text-muted); }
+
+/* Animations */
+@keyframes morbis-spin { to { transform: rotate(360deg); } }
+@keyframes morbis-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes morbis-zoom-in {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Print */
+@media print {
+  .morbis-float-btn, .morbis-overlay, .morbis-ac-menu { display: none !important; }
+}

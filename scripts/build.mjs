@@ -21,10 +21,12 @@ async function ensureDir(dir) {
 async function copyStaticFiles() {
   const filesToCopy = [
     { src: 'popup.html', dest: 'popup.html' },
+    { src: 'sidepanel.html', dest: 'sidepanel.html' },
     { src: 'icons/bluemorbis16.png', dest: 'icons/bluemorbis16.png' },
+    { src: 'icons/bluemorbis32.png', dest: 'icons/bluemorbis32.png' },
     { src: 'icons/bluemorbis48.png', dest: 'icons/bluemorbis48.png' },
     { src: 'icons/bluemorbis128.png', dest: 'icons/bluemorbis128.png' },
-
+    { src: 'rules/rules.json', dest: 'rules/rules.json' },
   ];
 
   for (const file of filesToCopy) {
@@ -68,6 +70,7 @@ async function compileFeatureFiles() {
     'resumeValidator.ts',
     'antrianTools.ts',
     'ttvEditor.ts',
+    'resumeTab.ts',
   ];
 
   for (const relativePath of tsFiles) {
@@ -182,6 +185,17 @@ async function build() {
     globalName: '__morbis_init',
     banner: {
       js: '// MORBIS Ext Unofficial - init.js (Built with esbuild)',
+    },
+  });
+
+  // Build sidepanel.ts as standalone IIFE
+  await esbuild.build({
+    ...commonOptions,
+    entryPoints: [join(srcDir, 'sidepanel.ts')],
+    outfile: join(distDir, 'sidepanel.js'),
+    globalName: '__morbis_sidepanel',
+    banner: {
+      js: '// MORBIS Ext Unofficial - sidepanel.js (Built with esbuild)',
     },
   });
 

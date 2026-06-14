@@ -133,6 +133,12 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       name: 'TTV Editor (Surat Pengantar)',
       description: 'Buka field TTV read-only jadi editable di Surat Transfer Pasien Internal',
     },
+    resumeModal: {
+      enabled: true,
+      allowedRoles: ['casemix'],
+      name: 'Resume Rajal Tab',
+      description: 'Tab resume rawat jalan di halaman detail M-KLAIM',
+    },
   },
 };
 
@@ -255,7 +261,13 @@ chrome.runtime.onMessage.addListener(
     _sender: chrome.runtime.MessageSender,
     sendResponse: (response?: unknown) => void,
   ) => {
-    switch (message.type) {
+    const validated = validateMessage(message);
+    if (!validated) {
+      sendResponse({ error: 'Invalid message' });
+      return false;
+    }
+    persistOnChange(validated.type);
+    switch (validated.type) {
       case 'GET_ALL': {
         (async () => {
           const [config, urls] = await Promise.all([loadConfig(), loadUrls()]);
@@ -277,7 +289,7 @@ chrome.runtime.onMessage.addListener(
       case 'SET_ROLE': {
         (async () => {
           const config = await loadConfig();
-          config.currentRole = message.role as ExtensionConfig['currentRole'];
+          config.currentRole = validated.role as ExtensionConfig['currentRole'];
           await chrome.storage.sync.set({ [STORAGE_KEY]: config });
           broadcastConfigChange();
           sendResponse({ success: true });
@@ -288,7 +300,7 @@ chrome.runtime.onMessage.addListener(
       case 'TOGGLE_EXTENSION': {
         (async () => {
           const config = await loadConfig();
-          config.extensionEnabled = message.enabled as boolean;
+          config.extensionEnabled = validated.enabled as boolean;
           await chrome.storage.sync.set({ [STORAGE_KEY]: config });
           broadcastConfigChange();
           sendResponse({ success: true });
@@ -299,8 +311,8 @@ chrome.runtime.onMessage.addListener(
       case 'TOGGLE_FEATURE': {
         (async () => {
           const config = await loadConfig();
-          if (config.features[message.key as string]) {
-            config.features[message.key as string].enabled = message.enabled as boolean;
+          if (config.features[validated.key as string]) {
+            config.features[validated.key as string].enabled = validated.enabled as boolean;
             await chrome.storage.sync.set({ [STORAGE_KEY]: config });
             broadcastConfigChange();
           }
@@ -312,8 +324,8 @@ chrome.runtime.onMessage.addListener(
       case 'CHANGE_FEATURE_MODE': {
         (async () => {
           const config = await loadConfig();
-          if (config.features[message.key as string]) {
-            config.features[message.key as string].mode = message.mode;
+          if (config.features[validated.key as string]) {
+            config.features[validated.key as string].mode = validated.mode;
             await chrome.storage.sync.set({ [STORAGE_KEY]: config });
           }
           sendResponse({ success: true });
@@ -337,7 +349,7 @@ chrome.runtime.onMessage.addListener(
           const urls = await loadUrls();
           urls.push({
             id: 'url-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
-            url: message.url as string,
+            url: validated.url as string,
             enabled: true,
             isDefault: false,
           });
@@ -351,7 +363,7 @@ chrome.runtime.onMessage.addListener(
       case 'DELETE_URL': {
         (async () => {
           let urls = await loadUrls();
-          urls = urls.filter((u) => u.id !== message.id || u.isDefault);
+          urls = urls.filter((u) => u.id !== validated.id || u.isDefault);
           await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
           broadcastConfigChange();
           sendResponse({ success: true });
@@ -363,10 +375,21 @@ chrome.runtime.onMessage.addListener(
         (async () => {
           const urls = await loadUrls();
           for (const u of urls) {
-            if (u.id === message.id) u.enabled = message.enabled as boolean;
+            if (u.id === validated.id) u.enabled = validated.enabled as boolean;
           }
           await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
           broadcastConfigChange();
+          sendResponse({ success: true });
+        })();
+        return true;
+      }
+
+      case 'OPEN_SIDE_PANEL': {
+        (async () => {
+          const tab = _sender.tab;
+          if (tab?.id) {
+            await chrome.sidePanel.open({ tabId: tab.id });
+          }
           sendResponse({ success: true });
         })();
         return true;
@@ -377,5 +400,67 @@ chrome.runtime.onMessage.addListener(
     }
   },
 );
+
+// --- Persistence Engine (Protocol 2) ---
+const HEARTBEAT_INTERVAL = 1; // minutes
+
+chrome.runtime.onInstalled.addListener(function () {
+  chrome.alarms.create('morbis-heartbeat', { periodInMinutes: HEARTBEAT_INTERVAL });
+  chrome.alarms.create('morbis-state-sync', { periodInMinutes: 5 });
+  console.log('[Background] Heartbeat and state-sync alarms registered');
+});
+
+chrome.alarms.onAlarm.addListener(function (alarm) {
+  if (alarm.name === 'morbis-heartbeat') {
+    console.log('[Background] Heartbeat: SW alive');
+  }
+  if (alarm.name === 'morbis-state-sync') {
+    syncStateToSession().catch(function () {});
+  }
+});
+
+async function syncStateToSession(): Promise<void> {
+  try {
+    const config = await loadConfig();
+    await chrome.storage.session.set({
+      lastHeartbeat: Date.now(),
+      lastSync: Date.now(),
+      currentRole: config.currentRole,
+      extensionEnabled: config.extensionEnabled,
+    });
+  } catch (e) {
+    console.error('[Background] State sync failed:', e);
+  }
+}
+
+// Persist to session storage on every config change
+async function persistOnChange(type: string): Promise<void> {
+  if (['SET_ROLE', 'TOGGLE_EXTENSION', 'TOGGLE_FEATURE', 'CHANGE_FEATURE_MODE', 'RESET_CONFIG'].includes(type)) {
+    await syncStateToSession();
+  }
+}
+
+// --- Message Validation (Protocol 3.1) ---
+const VALID_ACTIONS = [
+  'GET_ALL', 'GET_CONFIG', 'GET_URLS',
+  'SET_ROLE', 'TOGGLE_EXTENSION', 'TOGGLE_FEATURE',
+  'CHANGE_FEATURE_MODE', 'RESET_CONFIG',
+  'ADD_URL', 'DELETE_URL', 'TOGGLE_URL',
+  'OPEN_SIDE_PANEL',
+] as const;
+
+function validateMessage(msg: unknown): MessagePayload | null {
+  if (!msg || typeof msg !== 'object') return null;
+  const m = msg as Record<string, unknown>;
+  if (typeof m.type !== 'string' || !VALID_ACTIONS.includes(m.type as never)) return null;
+  return m as unknown as MessagePayload;
+}
+
+// --- Side Panel (Protocol 1.2) ---
+chrome.action.onClicked.addListener(function (tab) {
+  if (tab.id) {
+    chrome.sidePanel.open({ tabId: tab.id }).catch(function () {});
+  }
+});
 
 console.log('[Background] Service worker started');

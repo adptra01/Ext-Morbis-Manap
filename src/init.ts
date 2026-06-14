@@ -91,6 +91,13 @@ async function initExtension(): Promise<void> {
     document.documentElement.removeAttribute('data-ext-ttv-editor');
   }
 
+  const rmCfg = cfg?.features?.resumeModal;
+  if (rmCfg?.enabled && window.ExtensionCore.isFeatureAllowed('resumeModal')) {
+    document.documentElement.setAttribute('data-ext-resume-modal', '1');
+  } else {
+    document.documentElement.removeAttribute('data-ext-resume-modal');
+  }
+
   for (const [key, module] of Object.entries(window.featureModules)) {
     const featureConfig = cfg?.features?.[key];
 

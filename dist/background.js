@@ -131,6 +131,12 @@ var __morbis_bg = (() => {
         allowedRoles: ["casemix", "dokter"],
         name: "TTV Editor (Surat Pengantar)",
         description: "Buka field TTV read-only jadi editable di Surat Transfer Pasien Internal"
+      },
+      resumeModal: {
+        enabled: true,
+        allowedRoles: ["casemix"],
+        name: "Resume Rajal Tab",
+        description: "Tab resume rawat jalan di halaman detail M-KLAIM"
       }
     }
   };
@@ -228,7 +234,13 @@ var __morbis_bg = (() => {
   }
   chrome.runtime.onMessage.addListener(
     (message, _sender, sendResponse) => {
-      switch (message.type) {
+      const validated = validateMessage(message);
+      if (!validated) {
+        sendResponse({ error: "Invalid message" });
+        return false;
+      }
+      persistOnChange(validated.type);
+      switch (validated.type) {
         case "GET_ALL": {
           (async () => {
             const [config, urls] = await Promise.all([loadConfig(), loadUrls()]);
@@ -247,7 +259,7 @@ var __morbis_bg = (() => {
         case "SET_ROLE": {
           (async () => {
             const config = await loadConfig();
-            config.currentRole = message.role;
+            config.currentRole = validated.role;
             await chrome.storage.sync.set({ [STORAGE_KEY]: config });
             broadcastConfigChange();
             sendResponse({ success: true });
@@ -257,7 +269,7 @@ var __morbis_bg = (() => {
         case "TOGGLE_EXTENSION": {
           (async () => {
             const config = await loadConfig();
-            config.extensionEnabled = message.enabled;
+            config.extensionEnabled = validated.enabled;
             await chrome.storage.sync.set({ [STORAGE_KEY]: config });
             broadcastConfigChange();
             sendResponse({ success: true });
@@ -267,8 +279,8 @@ var __morbis_bg = (() => {
         case "TOGGLE_FEATURE": {
           (async () => {
             const config = await loadConfig();
-            if (config.features[message.key]) {
-              config.features[message.key].enabled = message.enabled;
+            if (config.features[validated.key]) {
+              config.features[validated.key].enabled = validated.enabled;
               await chrome.storage.sync.set({ [STORAGE_KEY]: config });
               broadcastConfigChange();
             }
@@ -279,8 +291,8 @@ var __morbis_bg = (() => {
         case "CHANGE_FEATURE_MODE": {
           (async () => {
             const config = await loadConfig();
-            if (config.features[message.key]) {
-              config.features[message.key].mode = message.mode;
+            if (config.features[validated.key]) {
+              config.features[validated.key].mode = validated.mode;
               await chrome.storage.sync.set({ [STORAGE_KEY]: config });
             }
             sendResponse({ success: true });
@@ -302,7 +314,7 @@ var __morbis_bg = (() => {
             const urls = await loadUrls();
             urls.push({
               id: "url-" + Date.now() + "-" + Math.random().toString(36).substr(2, 9),
-              url: message.url,
+              url: validated.url,
               enabled: true,
               isDefault: false
             });
@@ -315,7 +327,7 @@ var __morbis_bg = (() => {
         case "DELETE_URL": {
           (async () => {
             let urls = await loadUrls();
-            urls = urls.filter((u) => u.id !== message.id || u.isDefault);
+            urls = urls.filter((u) => u.id !== validated.id || u.isDefault);
             await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
             broadcastConfigChange();
             sendResponse({ success: true });
@@ -326,10 +338,20 @@ var __morbis_bg = (() => {
           (async () => {
             const urls = await loadUrls();
             for (const u of urls) {
-              if (u.id === message.id) u.enabled = message.enabled;
+              if (u.id === validated.id) u.enabled = validated.enabled;
             }
             await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
             broadcastConfigChange();
+            sendResponse({ success: true });
+          })();
+          return true;
+        }
+        case "OPEN_SIDE_PANEL": {
+          (async () => {
+            const tab = _sender.tab;
+            if (tab?.id) {
+              await chrome.sidePanel.open({ tabId: tab.id });
+            }
             sendResponse({ success: true });
           })();
           return true;
@@ -339,6 +361,65 @@ var __morbis_bg = (() => {
       }
     }
   );
+  var HEARTBEAT_INTERVAL = 1;
+  chrome.runtime.onInstalled.addListener(function() {
+    chrome.alarms.create("morbis-heartbeat", { periodInMinutes: HEARTBEAT_INTERVAL });
+    chrome.alarms.create("morbis-state-sync", { periodInMinutes: 5 });
+    console.log("[Background] Heartbeat and state-sync alarms registered");
+  });
+  chrome.alarms.onAlarm.addListener(function(alarm) {
+    if (alarm.name === "morbis-heartbeat") {
+      console.log("[Background] Heartbeat: SW alive");
+    }
+    if (alarm.name === "morbis-state-sync") {
+      syncStateToSession().catch(function() {
+      });
+    }
+  });
+  async function syncStateToSession() {
+    try {
+      const config = await loadConfig();
+      await chrome.storage.session.set({
+        lastHeartbeat: Date.now(),
+        lastSync: Date.now(),
+        currentRole: config.currentRole,
+        extensionEnabled: config.extensionEnabled
+      });
+    } catch (e) {
+      console.error("[Background] State sync failed:", e);
+    }
+  }
+  async function persistOnChange(type) {
+    if (["SET_ROLE", "TOGGLE_EXTENSION", "TOGGLE_FEATURE", "CHANGE_FEATURE_MODE", "RESET_CONFIG"].includes(type)) {
+      await syncStateToSession();
+    }
+  }
+  var VALID_ACTIONS = [
+    "GET_ALL",
+    "GET_CONFIG",
+    "GET_URLS",
+    "SET_ROLE",
+    "TOGGLE_EXTENSION",
+    "TOGGLE_FEATURE",
+    "CHANGE_FEATURE_MODE",
+    "RESET_CONFIG",
+    "ADD_URL",
+    "DELETE_URL",
+    "TOGGLE_URL",
+    "OPEN_SIDE_PANEL"
+  ];
+  function validateMessage(msg) {
+    if (!msg || typeof msg !== "object") return null;
+    const m = msg;
+    if (typeof m.type !== "string" || !VALID_ACTIONS.includes(m.type)) return null;
+    return m;
+  }
+  chrome.action.onClicked.addListener(function(tab) {
+    if (tab.id) {
+      chrome.sidePanel.open({ tabId: tab.id }).catch(function() {
+      });
+    }
+  });
   console.log("[Background] Service worker started");
 })();
 //# sourceMappingURL=background.js.map

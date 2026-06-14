@@ -13,6 +13,7 @@
   "author": "Your Name",
   "icons": {
     "16": "icons/bluemorbis16.png",
+    "32": "icons/bluemorbis32.png",
     "48": "icons/bluemorbis48.png",
     "128": "icons/bluemorbis128.png"
   },
@@ -22,6 +23,12 @@
   "action": {
     "default_popup": "popup.html",
     "default_title": "MORBIS Ext Unofficial"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
   },
   "content_scripts": [
     {
@@ -168,6 +175,18 @@
     },
     {
       "matches": [
+        "http://192.168.8.4/v2/m-klaim/detail-v2-refaktor*",
+        "http://103.147.236.140/v2/m-klaim/detail-v2-refaktor*"
+      ],
+      "js": [
+        "features/resumeTab.js"
+      ],
+      "run_at": "document_idle",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
+      "matches": [
         "http://192.168.8.4/public/mesin-antrian*",
         "http://103.147.236.140/public/mesin-antrian*",
         "http://192.168.8.4/public/counter-antrian/view-antrian*",
@@ -201,11 +220,18 @@
   ],
   "permissions": [
     "activeTab",
-    "storage",
-    "scripting"
+    "alarms",
+    "offscreen",
+    "scripting",
+    "sidePanel",
+    "storage"
   ],
   "host_permissions": [
     "http://192.168.8.4/*",
     "http://103.147.236.140/*"
+  ],
+  "optional_host_permissions": [
+    "http://*/*",
+    "https://*/*"
   ]
 }
