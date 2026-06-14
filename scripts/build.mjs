@@ -1,4 +1,7 @@
 import * as esbuild from 'esbuild';
+import postcss from 'postcss';
+import tailwindcss from 'tailwindcss';
+import autoprefixer from 'autoprefixer';
 import { copyFileSync, mkdirSync, existsSync, readFileSync, writeFileSync, readdirSync } from 'fs';
 import { dirname, join, resolve, extname } from 'path';
 import { fileURLToPath } from 'url';
@@ -39,9 +42,6 @@ async function copyStaticFiles() {
   }
 }
 
-/**
- * Compile TypeScript feature files from src/features/ to dist/features/
- */
 async function compileFeatureFiles() {
   await ensureDir(featuresDestDir);
 
@@ -70,14 +70,16 @@ async function compileFeatureFiles() {
     'resumeValidator.ts',
     'antrianTools.ts',
     'ttvEditor.ts',
-    'resumeTab.ts',
+    'resumeTab/mount.tsx',
   ];
 
   for (const relativePath of tsFiles) {
     const tsFile = join(tsFeaturesDir, relativePath);
     if (!existsSync(tsFile)) continue;
 
-    const jsOutputPath = join(featuresDestDir, relativePath.replace('.ts', '.js'));
+    // Map subdirectory entries to flat output names
+    const outputName = relativePath.replace('/mount.tsx', '.ts').replace('.tsx', '.ts');
+    const jsOutputPath = join(featuresDestDir, outputName.replace('.ts', '.js'));
     await ensureDir(dirname(jsOutputPath));
 
     try {
@@ -92,6 +94,7 @@ async function compileFeatureFiles() {
         platform: 'browser',
         globalName: '__morbis_feature',
         logLevel: 'silent',
+        loader: { '.tsx': 'tsx', '.ts': 'ts', '.js': 'js' },
       });
       console.log(`[build] Compiled ${relativePath}`);
     } catch (e) {
@@ -128,6 +131,32 @@ function generateManifest() {
   );
 }
 
+async function buildTailwindCSS() {
+  const uiDest = join(distDir, 'ui');
+  await ensureDir(uiDest);
+
+  const cssPath = join(srcDir, 'ui', 'globals.css');
+  if (!existsSync(cssPath)) {
+    console.log('[build] No globals.css found, skipping Tailwind build');
+    return;
+  }
+
+  try {
+    const cssContent = readFileSync(cssPath, 'utf-8');
+    const result = await postcss([
+      tailwindcss({ config: join(rootDir, 'tailwind.config.js') }),
+      autoprefixer,
+    ]).process(cssContent, {
+      from: cssPath,
+      to: join(uiDest, 'shadow.css'),
+    });
+    writeFileSync(join(uiDest, 'shadow.css'), result.css);
+    console.log(`[build] Compiled ui/shadow.css (${result.css.length}b)`);
+  } catch (e) {
+    console.warn('[build] Tailwind CSS build failed:', e.message);
+  }
+}
+
 const commonOptions = {
   bundle: true,
   minify: isProduction,
@@ -138,14 +167,27 @@ const commonOptions = {
   logLevel: 'info',
 };
 
+async function buildWithReact(options) {
+  return esbuild.build({
+    ...options,
+    loader: {
+      '.tsx': 'tsx',
+      '.ts': 'ts',
+      '.js': 'js',
+    },
+  });
+}
+
 async function build() {
   console.log('[build] Building Morbis Ext Unofficial...');
   await ensureDir(distDir);
   await ensureDir(join(distDir, 'icons'));
   await ensureDir(join(distDir, 'features', 'shared'));
+  await ensureDir(join(distDir, 'ui'));
 
-  // Build core.ts as standalone IIFE → sets window.ExtensionCore
-  await esbuild.build({
+  await buildTailwindCSS();
+
+  await buildWithReact({
     ...commonOptions,
     entryPoints: [join(srcDir, 'core.ts')],
     outfile: join(distDir, 'core.js'),
@@ -155,8 +197,7 @@ async function build() {
     },
   });
 
-  // Build background.ts as standalone IIFE
-  await esbuild.build({
+  await buildWithReact({
     ...commonOptions,
     entryPoints: [join(srcDir, 'background.ts')],
     outfile: join(distDir, 'background.js'),
@@ -166,8 +207,7 @@ async function build() {
     },
   });
 
-  // Build popup.ts as standalone IIFE
-  await esbuild.build({
+  await buildWithReact({
     ...commonOptions,
     entryPoints: [join(srcDir, 'popup.ts')],
     outfile: join(distDir, 'popup.js'),
@@ -177,8 +217,7 @@ async function build() {
     },
   });
 
-  // Build init.ts as standalone IIFE (uses window.ExtensionCore from core.js)
-  await esbuild.build({
+  await buildWithReact({
     ...commonOptions,
     entryPoints: [join(srcDir, 'init.ts')],
     outfile: join(distDir, 'init.js'),
@@ -188,10 +227,9 @@ async function build() {
     },
   });
 
-  // Build sidepanel.ts as standalone IIFE
-  await esbuild.build({
+  await buildWithReact({
     ...commonOptions,
-    entryPoints: [join(srcDir, 'sidepanel.ts')],
+    entryPoints: [join(srcDir, 'sidepanel.tsx')],
     outfile: join(distDir, 'sidepanel.js'),
     globalName: '__morbis_sidepanel',
     banner: {
@@ -217,11 +255,13 @@ if (isWatch) {
     ],
     outdir: distDir,
     globalName: '__morbis_ext',
+    loader: { '.tsx': 'tsx', '.ts': 'ts', '.js': 'js' },
     banner: {
       js: '// MORBIS Ext Unofficial - Built with esbuild',
     },
   });
   await ctx.watch();
+  await buildTailwindCSS();
   await copyStaticFiles();
   await copyFeatureFiles();
   generateManifest();

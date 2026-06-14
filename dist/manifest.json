@@ -230,6 +230,17 @@
     "http://192.168.8.4/*",
     "http://103.147.236.140/*"
   ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "ui/shadow.css"
+      ],
+      "matches": [
+        "http://192.168.8.4/*",
+        "http://103.147.236.140/*"
+      ]
+    }
+  ],
   "optional_host_permissions": [
     "http://*/*",
     "https://*/*"
