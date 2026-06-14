@@ -1,4 +1,654 @@
-"use strict";var __morbis_feature=(()=>{(function(){let _=0,h=setInterval(function(){_++;let e=document.documentElement.getAttribute("data-ext-resume-validator");if(e!==null){if(clearInterval(h),e!=="1")return;B()}else _>=100&&clearInterval(h)},50);function B(){if(!window.location.pathname.includes("/tambah-resume-ri"))return;let e=setInterval(function(){let n=document.getElementById("save"),t=document.querySelector('form[action*="rawat-inap-resume"]');n&&t&&(clearInterval(e),O(t,n))},200)}function O(e,n){K(),N(e),oe(),P(),q(e),J(),W(),X(),Q(),Z(),Y(),ee(),G(e),U(e,n),$(n,e)}function K(){if(document.getElementById("ext-rv-css"))return;let e=document.createElement("style");e.id="ext-rv-css",e.textContent=[".ext-rv-error { border: 2px solid #dc2626 !important; background: #fef2f2 !important; transition: all 0.2s; }",".ext-rv-toast { position: fixed; top: 20px; right: 20px; z-index: 99999; padding: 16px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,0.15); max-width: 420px; line-height: 1.5; }",".ext-rv-toast-error { background: #fef2f2; color: #991b1b; border-left: 5px solid #dc2626; }",".ext-rv-toast-success { background: #f0fdf4; color: #065f46; border-left: 5px solid #16a34a; }",".ext-rv-locked { background: #f0f0f0 !important; cursor: not-allowed; opacity: 0.8; }",".ext-rv-save-disabled { opacity: 0.5; pointer-events: none; }",".ext-rv-icd-valid { border: 2px solid #4caf50 !important; background: #e8f5e9 !important; }",".ext-rv-icd-invalid { border: 2px solid #f44336 !important; background: #ffebee !important; }"].join(`
-`),document.head.appendChild(e)}function N(e){let n=window;n.cekForm=function(){return m()},e.onsubmit!==null&&(e.onsubmit=function(i){let o=m();return!o&&i&&i.preventDefault(),o});let t=n.jQuery;t&&t(e).on("submit",function(i){return m()?!0:(i.preventDefault(),!1)});var a=e.submit.bind(e);e.submit=function(){if(m()){c=!1;try{localStorage.removeItem(p())}catch{}a()}}}let R="ext_draft_resume_";function p(){let e=r("id_visit");return R+(e||"unknown")}var g=null,E=2e3;function b(e,n){return function(){g&&clearTimeout(g),g=setTimeout(e,n)}}function q(e){if(!v()){var n=function(){V(e)},t=e.querySelectorAll("input, textarea, select");t.forEach(function(a){a.addEventListener("change",b(n,E)),a.addEventListener("input",b(n,E))}),setInterval(n,3e4)}}function V(e){let n=p(),t=new FormData(e),a={};t.forEach(function(i,o){a[o]=i.toString()}),a._saved_at=Date.now().toString();try{localStorage.setItem(n,JSON.stringify(a))}catch{}}function P(){if(v())return;let e=p(),n=null;try{n=localStorage.getItem(e)}catch{return}if(!n)return;let t;try{t=JSON.parse(n)}catch{return}let a=window,i=typeof a.swal=="function"?a.swal:null,o=function(){for(let u in t){if(u==="_saved_at")continue;let s=document.querySelector('[name="'+u+'"]');s&&!s.value&&(s.value=t[u])}try{localStorage.removeItem(e)}catch{}};i?i({title:"Draft Ditemukan",text:"Data draft sebelumnya ditemukan. Pulihkan?",icon:"info",buttons:["Hapus","Pulihkan"],closeOnClickOutside:!1}).then(function(u){if(u)o();else try{localStorage.removeItem(e)}catch{}}):o()}function v(){let e=document.getElementById("id_resume_inap");return!!e&&!!e.value}function U(e,n){if(!v())return;let t=e.querySelectorAll("input, textarea, select");t.forEach(function(i){i.id==="save"||i.type==="button"||i.type==="submit"||(i.tagName==="SELECT"?i.disabled=!0:i.readOnly=!0,i.classList.add("ext-rv-locked"))}),n.textContent="Data Terkunci (Sudah Tersimpan)",n.value="Data Terkunci (Sudah Tersimpan)";let a=function(){t.forEach(function(i){i.id==="save"||i.type==="button"||i.type==="submit"||(i.disabled=!1,i.readOnly=!1,i.classList.remove("ext-rv-locked"))}),n.textContent="Simpan Perubahan",n.value="Simpan Perubahan",y(n,e)};n.onclick=function(i){i.preventDefault();let o=window,u=typeof o.swal=="function"?o.swal:null;(function(){u?u({title:"Buka Kunci?",text:"Data sudah tersimpan. Buka kunci untuk mengedit?",icon:"warning",buttons:["Batal","Ya, Buka"],closeOnClickOutside:!1}).then(function(l){l&&(a(),u({title:"Siap Edit",text:"Field sudah bisa diedit. Klik Simpan Perubahan jika selesai.",icon:"success",timer:2e3}))}):confirm("Data sudah tersimpan. Buka kunci untuk mengedit?")&&a()})()}}function $(e,n){v()||y(e,n)}function y(e,n){e.onclick=function(t){if(!m())return t.preventDefault(),!1;e.classList.add("ext-rv-save-disabled"),e.textContent="Mengecek Koneksi...",e.value="Mengecek Koneksi...",z().then(function(a){if(!a){e.classList.remove("ext-rv-save-disabled"),e.textContent="Simpan (Login Ulang Dulu)",e.value="Simpan (Login Ulang Dulu)";let i=window;typeof i.swal=="function"?i.swal({title:"Sesi Habis",text:"Jangan tutup halaman ini! Buka tab baru, login kembali, lalu klik Simpan lagi.",icon:"error",buttons:{confirm:{text:"OK, Saya Login Dulu",className:"btn btn-danger"}},closeOnClickOutside:!1}):alert("Sesi habis! Buka tab baru, login kembali, lalu klik Simpan lagi.");return}try{localStorage.removeItem(p())}catch{}e.textContent="Menyimpan...",e.value="Menyimpan...",n.submit()}),t.preventDefault()}}async function z(){try{let e=await fetch("/admisi/search?opsi=norm_rekam_medik&q=1",{method:"HEAD",cache:"no-store"});return!(e.redirected||e.status===401||e.status===403)}catch{return!1}}let c=!1;function G(e){var n=e.querySelectorAll("input, textarea, select");n.forEach(function(t){t.addEventListener("change",function(){c=!0}),t.addEventListener("input",function(){c=!0})}),e.addEventListener("submit",function(){c=!1}),window.addEventListener("beforeunload",function(t){if(c)return t.preventDefault(),t.returnValue="Data yang belum disimpan akan hilang.",t.returnValue})}function J(){[{id:"suhu_pulang",min:30,max:45,step:.1},{id:"suhu",min:30,max:45,step:.1},{id:"nadi_pulang",min:20,max:250,step:1},{id:"nadi",min:20,max:250,step:1},{id:"rr_pulang",min:4,max:80,step:1},{id:"nafas",min:4,max:80,step:1},{id:"spo2_pulang",min:50,max:100,step:1},{id:"spo2",min:50,max:100,step:1},{id:"gcs_e",min:1,max:4,step:1},{id:"gcs_m",min:1,max:6,step:1},{id:"gcs_v",min:1,max:5,step:1},{id:"berat",min:1,max:500,step:.1}].forEach(function(n){var t=document.getElementById(n.id);t&&(t.type="number",t.min=String(n.min),t.max=String(n.max),t.step=String(n.step),t.placeholder||(t.placeholder=n.min+"-"+n.max))})}function W(){var e=["td_pulang","td","tensi","tensi_pulang"];e.forEach(function(n){var t=document.getElementById(n);t&&(t.placeholder="120/80",t.pattern="[0-9]{2,3}/[0-9]{2,3}",t.title="Format: angka/angka (Contoh: 120/80)")})}function X(){var e=["alasan_rawat","anamnesa","diagnosa_primary","kode_diagnosa_utama","jenis_kasus","keadaan_keluar","cara_keluar","tgl_keluar2"];e.forEach(function(n){var t=document.getElementById(n);t&&(t.required=!0)})}function Q(){document.querySelectorAll('input:not([type="submit"]):not([type="button"])').forEach(function(e){e.addEventListener("keydown",function(n){n.key==="Enter"&&n.preventDefault()})})}function Z(){document.querySelectorAll("textarea").forEach(function(e){e.style.overflow="hidden",e.style.resize="vertical",e.addEventListener("input",function(){e.style.height="auto",e.style.height=e.scrollHeight+"px"})})}function Y(){var e=L(),n=T();e.forEach(function(t){var a=document.getElementById(t);a&&a.addEventListener("input",function(){var i=a.value.trim();a.classList.remove("ext-rv-icd-valid","ext-rv-icd-invalid"),i!==""&&(/^[A-Z][0-9][0-9](\.[0-9]{1,2})?$/i.test(i)?a.classList.add("ext-rv-icd-valid"):a.classList.add("ext-rv-icd-invalid"))})}),n.forEach(function(t){var a=document.getElementById(t);a&&a.addEventListener("input",function(){var i=a.value.trim();a.classList.remove("ext-rv-icd-valid","ext-rv-icd-invalid"),i!==""&&(/^[0-9]{2}(\.[0-9]{1,2})?$/.test(i)?a.classList.add("ext-rv-icd-valid"):a.classList.add("ext-rv-icd-invalid"))})})}function ee(){var e=L();e.forEach(function(t){var a=document.getElementById(t);a&&a.addEventListener("blur",function(){var i=a.value.trim().toUpperCase();i&&(i=i.replace(".",""),i.length>3&&(i=i.substring(0,3)+"."+i.substring(3)),a.value=i,a.dispatchEvent(new Event("input")))})});var n=T();n.forEach(function(t){var a=document.getElementById(t);a&&a.addEventListener("blur",function(){var i=a.value.trim();i&&(i=i.replace(".",""),i.length>2&&(i=i.substring(0,2)+"."+i.substring(2)),a.value=i,a.dispatchEvent(new Event("input")))})})}function m(){ne();var e=[];function n(pe,ve,ge){pe||e.push({msg:ve,id:ge})}n(!!r("norm"),"No. RM harus diisi","norm"),n(!!r("pasien"),"Nama pasien harus diisi","pasien"),n(!!r("id_visit"),"Data kunjungan tidak valid","pasien"),n(!!r("alasan_rawat"),"Alasan rawat harus diisi","alasan_rawat"),n(!!r("anamnesa"),"Anamnesa harus diisi","anamnesa"),n(!!r("diagnosa_primary"),"Diagnosa primary harus diisi","diagnosa_primary"),n(!!r("terapi_pengobatan"),"Terapi/pengobatan harus diisi","terapi_pengobatan"),n(!!r("kode_diagnosa_utama"),"Kode ICD-10 Diagnosa Utama harus diisi","kode_diagnosa_utama"),r("kode_diagnosa_utama")&&n(x(r("kode_diagnosa_utama")),"Format kode ICD-10 Diagnosa Utama tidak valid (contoh: A00, B20.9)","kode_diagnosa_utama"),r("diagnosa_utama")&&n(!!r("id_diagnosa_utama"),"Diagnosa Utama harus dipilih dari hasil pencarian (autocomplete)","diagnosa_utama");for(var t=1;t<=10;t++){var a=r("kode_diagnosa_sekunder"+t),i=r("diagnosa_sekunder"+t),o=r("id_diagnosa_sekunder"+t);a&&n(x(a),"Format kode ICD-10 Diagnosa Sekunder "+t+" tidak valid","kode_diagnosa_sekunder"+t),i&&n(!!o,"Diagnosa Sekunder "+t+" harus dipilih dari hasil pencarian","diagnosa_sekunder"+t)}for(var u=1;u<=10;u++){var s=r("kode_tindakan"+u),l=r("tindakan"+u),se=r("id_tindakan"+u);s&&n(re(s),"Format kode ICD-9 Tindakan "+u+" tidak valid (contoh: 45.16)","kode_tindakan"+u),l&&n(!!se,"Tindakan "+u+" harus dipilih dari hasil pencarian (autocomplete)","tindakan"+u)}var w=r("td_pulang")||r("tensi");w&&n(ie(w),"Tekanan darah pulang tidak valid (contoh: 120/80)",r("td_pulang")?"td_pulang":"tensi");var I=r("nadi_pulang");I&&n(d(I,20,250),"Nadi pulang harus 20-250","nadi_pulang");var M=r("suhu_pulang");M&&n(d(M,30,45),"Suhu pulang harus 30-45\xB0C","suhu_pulang");var S=r("rr_pulang");S&&n(d(S,4,80),"RR pulang harus 4-80","rr_pulang");var H=r("spo2_pulang");H&&n(d(H,50,100),"SpO2 pulang harus 50-100%","spo2_pulang"),n(!!r("jenis_kasus"),"Jenis kasus harus dipilih","jenis_kasus"),n(!!r("keadaan_keluar"),"Keadaan keluar harus dipilih","keadaan_keluar"),n(!!r("cara_keluar"),"Cara keluar harus dipilih","cara_keluar"),n(!!r("tgl_keluar2"),"Tanggal keluar harus diisi","tgl_keluar2");var D=r("gcs_e");D&&n(d(D,1,4),"GCS Eye harus 1-4","gcs_e");var C=r("gcs_m");C&&n(d(C,1,6),"GCS Motor harus 1-6","gcs_m");var A=r("gcs_v");A&&n(d(A,1,5),"GCS Verbal harus 1-5","gcs_v");var le=f("pasien_rujuk_masuk_opsi").toLowerCase();le==="ya"&&n(k("pasien_rujuk_masuk"),"Alasan Datang poin A: pilih asal rujukan masuk","pasien_rujuk_masuk_opsi-ya");var de=f("pasien_rujuk_dikembalikan_opsi").toLowerCase();de==="ya"&&n(k("pasien_rujuk_dikembalikan"),"Alasan Datang poin B: pilih asal rujukan dikembalikan","pasien_rujuk_dikembalikan_opsi-ya");var ce=f("pasien_dirujuk_keluar_opsi").toLowerCase();ce==="ya"&&n(k("pasien_rujuk_keluar"),"Alasan Datang poin C: pilih rujukan keluar","pasien_dirujuk_keluar_opsi-ya");var me=f("menggunakan_kb_opsi").toLowerCase();me==="ya"&&(n(!!r("jenis_kb"),"Pelayanan KB: jenis KB harus dipilih","jenis_kb"),n(!!r("waktu_kb"),"Pelayanan KB: waktu KB harus dipilih","waktu_kb"),n(ue(".monitoring_kb"),"Pelayanan KB: pilih minimal satu monitoring KB","monitoring_kb-komplikasi_kb"));var fe=f("cek_status_covid").toLowerCase();fe==="1"&&n(!!r("status_covid"),"Status COVID: pilih jenis COVID","status_covid");var F=r("tgl_masuk")||r("tgl_masuk2"),j=r("tgl_keluar2");return F&&j&&n(new Date(j)>=new Date(F),"Tanggal keluar tidak boleh sebelum tanggal masuk","tgl_keluar2"),e.length>0?(te(e),!1):!0}function ne(){document.querySelectorAll(".ext-rv-error").forEach(function(e){e.classList.remove("ext-rv-error")})}function te(e){var n=e[0],t=document.getElementById(n.id);t&&(t.focus(),t.classList.add("ext-rv-error"),setTimeout(function(){t.classList.remove("ext-rv-error")},3e3));for(var a=1;a<e.length;a++){var i=document.getElementById(e[a].id);i&&(i.classList.add("ext-rv-error"),function(l){setTimeout(function(){l.classList.remove("ext-rv-error")},3e3)}(i))}for(var o=[],a=0;a<e.length;a++)o.push("\u2022 "+e[a].msg);var u=o.join(`
-`),s=window;typeof s.swal=="function"?s.swal({title:"Validasi Gagal ("+e.length+" masalah)",text:u,icon:"warning",buttons:{confirm:{text:"OK",className:"btn btn-primary"}},closeOnClickOutside:!1}):alert("Validasi Gagal ("+e.length+` masalah):
-`+u)}function ae(e){return document.getElementById(e)}function r(e){return ae(e)?.value?.trim()||""}function ie(e){let n=e.split("/");if(n.length!==2)return!1;let t=parseInt(n[0]),a=parseInt(n[1]);return isNaN(t)||isNaN(a)?!1:t>=50&&t<=250&&a>=20&&a<=160}function d(e,n,t){let a=parseFloat(e.replace(/,/g,"."));return!isNaN(a)&&a>=n&&a<=t}function x(e){return/^[A-Z][0-9][0-9](\.[0-9]{1,2})?$/.test(e.toUpperCase())}function re(e){return/^[0-9]{2}(\.[0-9]{1,2})?$/.test(e)}function f(e){return document.querySelector('input[name="'+e+'"]:checked')?.value||""}function k(e){return document.querySelector('input[name="'+e+'"]:checked')!==null}function ue(e){return document.querySelector(e+":checked")!==null}function oe(){function e(o,u){var s=document.getElementById(o);s&&s.addEventListener("input",function(){var l=document.getElementById(u);l&&(l.value="")})}e("kode_diagnosa_utama","id_diagnosa_utama"),e("diagnosa_utama","id_diagnosa_utama");for(var n=1;n<=10;n++){var t="id_diagnosa_sekunder"+n;e("kode_diagnosa_sekunder"+n,t),e("diagnosa_sekunder"+n,t)}for(var a=1;a<=10;a++){var i="id_tindakan"+a;e("kode_tindakan"+a,i),e("tindakan"+a,i)}}function L(){for(var e=["kode_diagnosa_utama"],n=1;n<=10;n++)e.push("kode_diagnosa_sekunder"+n);return e}function T(){for(var e=[],n=1;n<=10;n++)e.push("kode_tindakan"+n);return e}})();})();
+"use strict";
+var __morbis_feature = (() => {
+  // src/features/resumeValidator.ts
+  (function() {
+    const MAX_WAIT = 100;
+    let waited = 0;
+    const check = setInterval(function() {
+      waited++;
+      const enabled = document.documentElement.getAttribute("data-ext-resume-validator");
+      if (enabled !== null) {
+        clearInterval(check);
+        if (enabled !== "1") return;
+        waitForForm();
+      } else if (waited >= MAX_WAIT) {
+        clearInterval(check);
+      }
+    }, 50);
+    function waitForForm() {
+      if (!window.location.pathname.includes("/tambah-resume-ri")) return;
+      const poll = setInterval(function() {
+        const saveBtn = document.getElementById("save");
+        const form = document.querySelector('form[action*="rawat-inap-resume"]');
+        if (saveBtn && form) {
+          clearInterval(poll);
+          init(form, saveBtn);
+        }
+      }, 200);
+    }
+    function init(form, saveBtn) {
+      injectStyle();
+      setupCekForm(form);
+      setupAutoClearHandlers();
+      restoreDraft();
+      setupAutosave(form);
+      optimizeVitalInputs();
+      optimizeBloodPressure();
+      addRequiredAttributes();
+      preventEnterSubmit();
+      autoExpandTextareas();
+      setupColorIndicators();
+      setupAutoFormatICD();
+      setupUnsavedWarning(form);
+      checkAndLockForm(form, saveBtn);
+      setupUnifiedSaveHandler(saveBtn, form);
+    }
+    function injectStyle() {
+      if (document.getElementById("ext-rv-css")) return;
+      const s = document.createElement("style");
+      s.id = "ext-rv-css";
+      s.textContent = [
+        ".ext-rv-error { border: 2px solid #dc2626 !important; background: #fef2f2 !important; transition: all 0.2s; }",
+        ".ext-rv-toast { position: fixed; top: 20px; right: 20px; z-index: 99999; padding: 16px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,0.15); max-width: 420px; line-height: 1.5; }",
+        ".ext-rv-toast-error { background: #fef2f2; color: #991b1b; border-left: 5px solid #dc2626; }",
+        ".ext-rv-toast-success { background: #f0fdf4; color: #065f46; border-left: 5px solid #16a34a; }",
+        ".ext-rv-locked { background: #f0f0f0 !important; cursor: not-allowed; opacity: 0.8; }",
+        ".ext-rv-save-disabled { opacity: 0.5; pointer-events: none; }",
+        ".ext-rv-icd-valid { border: 2px solid #4caf50 !important; background: #e8f5e9 !important; }",
+        ".ext-rv-icd-invalid { border: 2px solid #f44336 !important; background: #ffebee !important; }"
+      ].join("\n");
+      document.head.appendChild(s);
+    }
+    function setupCekForm(form) {
+      const w = window;
+      w.cekForm = function() {
+        return runValidation();
+      };
+      if (form.onsubmit !== null) {
+        form.onsubmit = function(e) {
+          const result = runValidation();
+          if (!result && e) {
+            e.preventDefault();
+          }
+          return result;
+        };
+      }
+      const $2 = w.jQuery;
+      if ($2) {
+        $2(form).on("submit", function(e) {
+          if (!runValidation()) {
+            e.preventDefault();
+            return false;
+          }
+          return true;
+        });
+      }
+      var origSubmit = form.submit.bind(form);
+      form.submit = function() {
+        if (!runValidation()) return;
+        _dirty = false;
+        try {
+          localStorage.removeItem(getDraftKey());
+        } catch (_e) {
+        }
+        origSubmit();
+      };
+    }
+    const DRAFT_PREFIX = "ext_draft_resume_";
+    function getDraftKey() {
+      const visitId = val("id_visit");
+      return DRAFT_PREFIX + (visitId || "unknown");
+    }
+    var _debounceTimer = null;
+    var DEBOUNCE_MS = 2e3;
+    function debounce(fn, delay) {
+      return function() {
+        if (_debounceTimer) clearTimeout(_debounceTimer);
+        _debounceTimer = setTimeout(fn, delay);
+      };
+    }
+    function setupAutosave(form) {
+      if (hasIdResume()) return;
+      var doSave = function() {
+        saveDraft(form);
+      };
+      var inputs = form.querySelectorAll(
+        "input, textarea, select"
+      );
+      inputs.forEach(function(el) {
+        el.addEventListener("change", debounce(doSave, DEBOUNCE_MS));
+        el.addEventListener("input", debounce(doSave, DEBOUNCE_MS));
+      });
+      setInterval(doSave, 3e4);
+    }
+    function saveDraft(form) {
+      const key = getDraftKey();
+      const data = new FormData(form);
+      const obj = {};
+      data.forEach(function(value, name) {
+        obj[name] = value.toString();
+      });
+      obj._saved_at = Date.now().toString();
+      try {
+        localStorage.setItem(key, JSON.stringify(obj));
+      } catch (_e) {
+      }
+    }
+    function restoreDraft() {
+      if (hasIdResume()) return;
+      const key = getDraftKey();
+      let raw = null;
+      try {
+        raw = localStorage.getItem(key);
+      } catch (_e) {
+        return;
+      }
+      if (!raw) return;
+      let draft;
+      try {
+        draft = JSON.parse(raw);
+      } catch (_e) {
+        return;
+      }
+      const w = window;
+      const swal = typeof w.swal === "function" ? w.swal : null;
+      const ok = function() {
+        for (const name in draft) {
+          if (name === "_saved_at") continue;
+          const el = document.querySelector(
+            '[name="' + name + '"]'
+          );
+          if (el && !el.value) {
+            el.value = draft[name];
+          }
+        }
+        try {
+          localStorage.removeItem(key);
+        } catch (_e) {
+        }
+      };
+      if (swal) {
+        swal({
+          title: "Draft Ditemukan",
+          text: "Data draft sebelumnya ditemukan. Pulihkan?",
+          icon: "info",
+          buttons: ["Hapus", "Pulihkan"],
+          closeOnClickOutside: false
+        }).then(function(restore) {
+          if (restore) ok();
+          else {
+            try {
+              localStorage.removeItem(key);
+            } catch (_e) {
+            }
+          }
+        });
+      } else {
+        ok();
+      }
+    }
+    function hasIdResume() {
+      const el = document.getElementById("id_resume_inap");
+      return !!el && !!el.value;
+    }
+    function checkAndLockForm(form, saveBtn) {
+      if (!hasIdResume()) return;
+      const fields = form.querySelectorAll(
+        "input, textarea, select"
+      );
+      fields.forEach(function(el) {
+        if (el.id === "save" || el.type === "button" || el.type === "submit") return;
+        if (el.tagName === "SELECT") {
+          el.disabled = true;
+        } else {
+          el.readOnly = true;
+        }
+        el.classList.add("ext-rv-locked");
+      });
+      saveBtn.textContent = "Data Terkunci (Sudah Tersimpan)";
+      saveBtn.value = "Data Terkunci (Sudah Tersimpan)";
+      const unlock = function() {
+        fields.forEach(function(el) {
+          if (el.id === "save" || el.type === "button" || el.type === "submit") return;
+          el.disabled = false;
+          el.readOnly = false;
+          el.classList.remove("ext-rv-locked");
+        });
+        saveBtn.textContent = "Simpan Perubahan";
+        saveBtn.value = "Simpan Perubahan";
+        attachSaveHandler(saveBtn, form);
+      };
+      saveBtn.onclick = function(e) {
+        e.preventDefault();
+        const w = window;
+        const swal = typeof w.swal === "function" ? w.swal : null;
+        const ask = function() {
+          if (swal) {
+            swal({
+              title: "Buka Kunci?",
+              text: "Data sudah tersimpan. Buka kunci untuk mengedit?",
+              icon: "warning",
+              buttons: ["Batal", "Ya, Buka"],
+              closeOnClickOutside: false
+            }).then(function(yes) {
+              if (yes) {
+                unlock();
+                swal({ title: "Siap Edit", text: "Field sudah bisa diedit. Klik Simpan Perubahan jika selesai.", icon: "success", timer: 2e3 });
+              }
+            });
+          } else {
+            if (confirm("Data sudah tersimpan. Buka kunci untuk mengedit?")) {
+              unlock();
+            }
+          }
+        };
+        ask();
+      };
+    }
+    function setupUnifiedSaveHandler(saveBtn, form) {
+      if (hasIdResume()) return;
+      attachSaveHandler(saveBtn, form);
+    }
+    function attachSaveHandler(saveBtn, form) {
+      saveBtn.onclick = function(e) {
+        if (!runValidation()) {
+          e.preventDefault();
+          return false;
+        }
+        saveBtn.classList.add("ext-rv-save-disabled");
+        saveBtn.textContent = "Mengecek Koneksi...";
+        saveBtn.value = "Mengecek Koneksi...";
+        checkSession().then(function(active) {
+          if (!active) {
+            saveBtn.classList.remove("ext-rv-save-disabled");
+            saveBtn.textContent = "Simpan (Login Ulang Dulu)";
+            saveBtn.value = "Simpan (Login Ulang Dulu)";
+            const w = window;
+            if (typeof w.swal === "function") {
+              w.swal({
+                title: "Sesi Habis",
+                text: "Jangan tutup halaman ini! Buka tab baru, login kembali, lalu klik Simpan lagi.",
+                icon: "error",
+                buttons: { confirm: { text: "OK, Saya Login Dulu", className: "btn btn-danger" } },
+                closeOnClickOutside: false
+              });
+            } else {
+              alert("Sesi habis! Buka tab baru, login kembali, lalu klik Simpan lagi.");
+            }
+            return;
+          }
+          try {
+            localStorage.removeItem(getDraftKey());
+          } catch (_e) {
+          }
+          saveBtn.textContent = "Menyimpan...";
+          saveBtn.value = "Menyimpan...";
+          form.submit();
+        });
+        e.preventDefault();
+      };
+    }
+    async function checkSession() {
+      try {
+        const resp = await fetch("/admisi/search?opsi=norm_rekam_medik&q=1", {
+          method: "HEAD",
+          cache: "no-store"
+        });
+        if (resp.redirected || resp.status === 401 || resp.status === 403) return false;
+        return true;
+      } catch (_e) {
+        return false;
+      }
+    }
+    let _dirty = false;
+    function setupUnsavedWarning(form) {
+      var inputs = form.querySelectorAll(
+        "input, textarea, select"
+      );
+      inputs.forEach(function(el) {
+        el.addEventListener("change", function() {
+          _dirty = true;
+        });
+        el.addEventListener("input", function() {
+          _dirty = true;
+        });
+      });
+      form.addEventListener("submit", function() {
+        _dirty = false;
+      });
+      window.addEventListener("beforeunload", function(e) {
+        if (!_dirty) return;
+        e.preventDefault();
+        e.returnValue = "Data yang belum disimpan akan hilang.";
+        return e.returnValue;
+      });
+    }
+    function optimizeVitalInputs() {
+      const fields = [
+        { id: "suhu_pulang", min: 30, max: 45, step: 0.1 },
+        { id: "suhu", min: 30, max: 45, step: 0.1 },
+        { id: "nadi_pulang", min: 20, max: 250, step: 1 },
+        { id: "nadi", min: 20, max: 250, step: 1 },
+        { id: "rr_pulang", min: 4, max: 80, step: 1 },
+        { id: "nafas", min: 4, max: 80, step: 1 },
+        { id: "spo2_pulang", min: 50, max: 100, step: 1 },
+        { id: "spo2", min: 50, max: 100, step: 1 },
+        { id: "gcs_e", min: 1, max: 4, step: 1 },
+        { id: "gcs_m", min: 1, max: 6, step: 1 },
+        { id: "gcs_v", min: 1, max: 5, step: 1 },
+        { id: "berat", min: 1, max: 500, step: 0.1 }
+      ];
+      fields.forEach(function(f) {
+        var el = document.getElementById(f.id);
+        if (!el) return;
+        el.type = "number";
+        el.min = String(f.min);
+        el.max = String(f.max);
+        el.step = String(f.step);
+        if (!el.placeholder) {
+          el.placeholder = f.min + "-" + f.max;
+        }
+      });
+    }
+    function optimizeBloodPressure() {
+      var ids = ["td_pulang", "td", "tensi", "tensi_pulang"];
+      ids.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.placeholder = "120/80";
+        el.pattern = "[0-9]{2,3}/[0-9]{2,3}";
+        el.title = "Format: angka/angka (Contoh: 120/80)";
+      });
+    }
+    function addRequiredAttributes() {
+      var ids = [
+        "alasan_rawat",
+        "anamnesa",
+        "diagnosa_primary",
+        "kode_diagnosa_utama",
+        "jenis_kasus",
+        "keadaan_keluar",
+        "cara_keluar",
+        "tgl_keluar2"
+      ];
+      ids.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.required = true;
+      });
+    }
+    function preventEnterSubmit() {
+      document.querySelectorAll('input:not([type="submit"]):not([type="button"])').forEach(function(el) {
+        el.addEventListener("keydown", function(e) {
+          if (e.key === "Enter") {
+            e.preventDefault();
+          }
+        });
+      });
+    }
+    function autoExpandTextareas() {
+      document.querySelectorAll("textarea").forEach(function(el) {
+        el.style.overflow = "hidden";
+        el.style.resize = "vertical";
+        el.addEventListener("input", function() {
+          el.style.height = "auto";
+          el.style.height = el.scrollHeight + "px";
+        });
+      });
+    }
+    function setupColorIndicators() {
+      var icd10Fields = buildICD10Fields();
+      var icd9Fields = buildICD9Fields();
+      icd10Fields.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener("input", function() {
+          var v = el.value.trim();
+          el.classList.remove("ext-rv-icd-valid", "ext-rv-icd-invalid");
+          if (v === "") return;
+          if (/^[A-Z][0-9][0-9](\.[0-9]{1,2})?$/i.test(v)) {
+            el.classList.add("ext-rv-icd-valid");
+          } else {
+            el.classList.add("ext-rv-icd-invalid");
+          }
+        });
+      });
+      icd9Fields.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener("input", function() {
+          var v = el.value.trim();
+          el.classList.remove("ext-rv-icd-valid", "ext-rv-icd-invalid");
+          if (v === "") return;
+          if (/^[0-9]{2}(\.[0-9]{1,2})?$/.test(v)) {
+            el.classList.add("ext-rv-icd-valid");
+          } else {
+            el.classList.add("ext-rv-icd-invalid");
+          }
+        });
+      });
+    }
+    function setupAutoFormatICD() {
+      var icd10Fields = buildICD10Fields();
+      icd10Fields.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener("blur", function() {
+          var v = el.value.trim().toUpperCase();
+          if (!v) return;
+          v = v.replace(".", "");
+          if (v.length > 3) {
+            v = v.substring(0, 3) + "." + v.substring(3);
+          }
+          el.value = v;
+          el.dispatchEvent(new Event("input"));
+        });
+      });
+      var icd9Fields = buildICD9Fields();
+      icd9Fields.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener("blur", function() {
+          var v = el.value.trim();
+          if (!v) return;
+          v = v.replace(".", "");
+          if (v.length > 2) {
+            v = v.substring(0, 2) + "." + v.substring(2);
+          }
+          el.value = v;
+          el.dispatchEvent(new Event("input"));
+        });
+      });
+    }
+    function runValidation() {
+      clearErrors();
+      var errs = [];
+      function fail(ok, msg, id) {
+        if (!ok) errs.push({ msg, id });
+      }
+      fail(!!val("norm"), "No. RM harus diisi", "norm");
+      fail(!!val("pasien"), "Nama pasien harus diisi", "pasien");
+      fail(!!val("id_visit"), "Data kunjungan tidak valid", "pasien");
+      fail(!!val("alasan_rawat"), "Alasan rawat harus diisi", "alasan_rawat");
+      fail(!!val("anamnesa"), "Anamnesa harus diisi", "anamnesa");
+      fail(!!val("diagnosa_primary"), "Diagnosa primary harus diisi", "diagnosa_primary");
+      fail(!!val("terapi_pengobatan"), "Terapi/pengobatan harus diisi", "terapi_pengobatan");
+      fail(!!val("kode_diagnosa_utama"), "Kode ICD-10 Diagnosa Utama harus diisi", "kode_diagnosa_utama");
+      if (val("kode_diagnosa_utama")) fail(isICD10(val("kode_diagnosa_utama")), "Format kode ICD-10 Diagnosa Utama tidak valid (contoh: A00, B20.9)", "kode_diagnosa_utama");
+      if (val("diagnosa_utama")) fail(!!val("id_diagnosa_utama"), "Diagnosa Utama harus dipilih dari hasil pencarian (autocomplete)", "diagnosa_utama");
+      for (var si = 1; si <= 10; si++) {
+        var kDS = val("kode_diagnosa_sekunder" + si);
+        var nDS = val("diagnosa_sekunder" + si);
+        var iDS = val("id_diagnosa_sekunder" + si);
+        if (kDS) fail(isICD10(kDS), "Format kode ICD-10 Diagnosa Sekunder " + si + " tidak valid", "kode_diagnosa_sekunder" + si);
+        if (nDS) fail(!!iDS, "Diagnosa Sekunder " + si + " harus dipilih dari hasil pencarian", "diagnosa_sekunder" + si);
+      }
+      for (var ti = 1; ti <= 10; ti++) {
+        var kTK = val("kode_tindakan" + ti);
+        var nTK = val("tindakan" + ti);
+        var iTK = val("id_tindakan" + ti);
+        if (kTK) fail(isICD9(kTK), "Format kode ICD-9 Tindakan " + ti + " tidak valid (contoh: 45.16)", "kode_tindakan" + ti);
+        if (nTK) fail(!!iTK, "Tindakan " + ti + " harus dipilih dari hasil pencarian (autocomplete)", "tindakan" + ti);
+      }
+      var td = val("td_pulang") || val("tensi");
+      if (td) fail(isNormalBP(td), "Tekanan darah pulang tidak valid (contoh: 120/80)", val("td_pulang") ? "td_pulang" : "tensi");
+      var nadi = val("nadi_pulang");
+      if (nadi) fail(isValidVital(nadi, 20, 250), "Nadi pulang harus 20-250", "nadi_pulang");
+      var suhu = val("suhu_pulang");
+      if (suhu) fail(isValidVital(suhu, 30, 45), "Suhu pulang harus 30-45\xB0C", "suhu_pulang");
+      var rr = val("rr_pulang");
+      if (rr) fail(isValidVital(rr, 4, 80), "RR pulang harus 4-80", "rr_pulang");
+      var spo2 = val("spo2_pulang");
+      if (spo2) fail(isValidVital(spo2, 50, 100), "SpO2 pulang harus 50-100%", "spo2_pulang");
+      fail(!!val("jenis_kasus"), "Jenis kasus harus dipilih", "jenis_kasus");
+      fail(!!val("keadaan_keluar"), "Keadaan keluar harus dipilih", "keadaan_keluar");
+      fail(!!val("cara_keluar"), "Cara keluar harus dipilih", "cara_keluar");
+      fail(!!val("tgl_keluar2"), "Tanggal keluar harus diisi", "tgl_keluar2");
+      var gcsE = val("gcs_e");
+      if (gcsE) fail(isValidVital(gcsE, 1, 4), "GCS Eye harus 1-4", "gcs_e");
+      var gcsM = val("gcs_m");
+      if (gcsM) fail(isValidVital(gcsM, 1, 6), "GCS Motor harus 1-6", "gcs_m");
+      var gcsV = val("gcs_v");
+      if (gcsV) fail(isValidVital(gcsV, 1, 5), "GCS Verbal harus 1-5", "gcs_v");
+      var opsiA = radioVal("pasien_rujuk_masuk_opsi").toLowerCase();
+      if (opsiA === "ya") fail(hasRadio("pasien_rujuk_masuk"), "Alasan Datang poin A: pilih asal rujukan masuk", "pasien_rujuk_masuk_opsi-ya");
+      var opsiB = radioVal("pasien_rujuk_dikembalikan_opsi").toLowerCase();
+      if (opsiB === "ya") fail(hasRadio("pasien_rujuk_dikembalikan"), "Alasan Datang poin B: pilih asal rujukan dikembalikan", "pasien_rujuk_dikembalikan_opsi-ya");
+      var opsiC = radioVal("pasien_dirujuk_keluar_opsi").toLowerCase();
+      if (opsiC === "ya") fail(hasRadio("pasien_rujuk_keluar"), "Alasan Datang poin C: pilih rujukan keluar", "pasien_dirujuk_keluar_opsi-ya");
+      var kb = radioVal("menggunakan_kb_opsi").toLowerCase();
+      if (kb === "ya") {
+        fail(!!val("jenis_kb"), "Pelayanan KB: jenis KB harus dipilih", "jenis_kb");
+        fail(!!val("waktu_kb"), "Pelayanan KB: waktu KB harus dipilih", "waktu_kb");
+        fail(hasChecked(".monitoring_kb"), "Pelayanan KB: pilih minimal satu monitoring KB", "monitoring_kb-komplikasi_kb");
+      }
+      var covid = radioVal("cek_status_covid").toLowerCase();
+      if (covid === "1") fail(!!val("status_covid"), "Status COVID: pilih jenis COVID", "status_covid");
+      var tglMasuk = val("tgl_masuk") || val("tgl_masuk2");
+      var tglKeluar = val("tgl_keluar2");
+      if (tglMasuk && tglKeluar) {
+        fail(new Date(tglKeluar) >= new Date(tglMasuk), "Tanggal keluar tidak boleh sebelum tanggal masuk", "tgl_keluar2");
+      }
+      if (errs.length > 0) {
+        warnAll(errs);
+        return false;
+      }
+      return true;
+    }
+    function clearErrors() {
+      document.querySelectorAll(".ext-rv-error").forEach(function(el) {
+        el.classList.remove("ext-rv-error");
+      });
+    }
+    function warnAll(errs) {
+      var first = errs[0];
+      var firstEl = document.getElementById(first.id);
+      if (firstEl) {
+        firstEl.focus();
+        firstEl.classList.add("ext-rv-error");
+        setTimeout(function() {
+          firstEl.classList.remove("ext-rv-error");
+        }, 3e3);
+      }
+      for (var i = 1; i < errs.length; i++) {
+        var f = document.getElementById(errs[i].id);
+        if (f) {
+          f.classList.add("ext-rv-error");
+          (function(el) {
+            setTimeout(function() {
+              el.classList.remove("ext-rv-error");
+            }, 3e3);
+          })(f);
+        }
+      }
+      var lines = [];
+      for (var i = 0; i < errs.length; i++) {
+        lines.push("\u2022 " + errs[i].msg);
+      }
+      var bulletList = lines.join("\n");
+      var w = window;
+      if (typeof w.swal === "function") {
+        w.swal({
+          title: "Validasi Gagal (" + errs.length + " masalah)",
+          text: bulletList,
+          icon: "warning",
+          buttons: { confirm: { text: "OK", className: "btn btn-primary" } },
+          closeOnClickOutside: false
+        });
+      } else {
+        alert("Validasi Gagal (" + errs.length + " masalah):\n" + bulletList);
+      }
+    }
+    function $(id) {
+      return document.getElementById(id);
+    }
+    function val(id) {
+      const el = $(id);
+      return el?.value?.trim() || "";
+    }
+    function isNormalBP(v) {
+      const parts = v.split("/");
+      if (parts.length !== 2) return false;
+      const sys = parseInt(parts[0]);
+      const dia = parseInt(parts[1]);
+      if (isNaN(sys) || isNaN(dia)) return false;
+      return sys >= 50 && sys <= 250 && dia >= 20 && dia <= 160;
+    }
+    function isValidVital(v, min, max) {
+      const n = parseFloat(v.replace(/,/g, "."));
+      return !isNaN(n) && n >= min && n <= max;
+    }
+    function isICD10(v) {
+      return /^[A-Z][0-9][0-9](\.[0-9]{1,2})?$/.test(v.toUpperCase());
+    }
+    function isICD9(v) {
+      return /^[0-9]{2}(\.[0-9]{1,2})?$/.test(v);
+    }
+    function radioVal(name) {
+      const el = document.querySelector('input[name="' + name + '"]:checked');
+      return el?.value || "";
+    }
+    function hasRadio(name) {
+      return document.querySelector('input[name="' + name + '"]:checked') !== null;
+    }
+    function hasChecked(sel) {
+      return document.querySelector(sel + ":checked") !== null;
+    }
+    function setupAutoClearHandlers() {
+      function attachClear(fieldId, targetId) {
+        var el = document.getElementById(fieldId);
+        if (!el) return;
+        el.addEventListener("input", function() {
+          var idEl = document.getElementById(targetId);
+          if (idEl) idEl.value = "";
+        });
+      }
+      attachClear("kode_diagnosa_utama", "id_diagnosa_utama");
+      attachClear("diagnosa_utama", "id_diagnosa_utama");
+      for (var i = 1; i <= 10; i++) {
+        var tgtS = "id_diagnosa_sekunder" + i;
+        attachClear("kode_diagnosa_sekunder" + i, tgtS);
+        attachClear("diagnosa_sekunder" + i, tgtS);
+      }
+      for (var j = 1; j <= 10; j++) {
+        var tgtT = "id_tindakan" + j;
+        attachClear("kode_tindakan" + j, tgtT);
+        attachClear("tindakan" + j, tgtT);
+      }
+    }
+    function buildICD10Fields() {
+      var result = ["kode_diagnosa_utama"];
+      for (var i = 1; i <= 10; i++) {
+        result.push("kode_diagnosa_sekunder" + i);
+      }
+      return result;
+    }
+    function buildICD9Fields() {
+      var result = [];
+      for (var i = 1; i <= 10; i++) {
+        result.push("kode_tindakan" + i);
+      }
+      return result;
+    }
+  })();
+})();
+//# sourceMappingURL=resumeValidator.js.map

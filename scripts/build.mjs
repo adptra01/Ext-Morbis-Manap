@@ -83,6 +83,15 @@ async function compileFeatureFiles() {
     await ensureDir(dirname(jsOutputPath));
 
     try {
+      const extraOptions = {};
+      // Inject compiled CSS into resumeTab bundle (runs in world:MAIN, no chrome.runtime access)
+      if (relativePath.includes('resumeTab/')) {
+        const cssPath = join(distDir, 'ui', 'shadow.css');
+        if (existsSync(cssPath)) {
+          const cssContent = readFileSync(cssPath, 'utf-8');
+          extraOptions.define = { SHADOW_CSS: JSON.stringify(cssContent) };
+        }
+      }
       await esbuild.build({
         entryPoints: [tsFile],
         outfile: jsOutputPath,
@@ -95,6 +104,7 @@ async function compileFeatureFiles() {
         globalName: '__morbis_feature',
         logLevel: 'silent',
         loader: { '.tsx': 'tsx', '.ts': 'ts', '.js': 'js' },
+        ...extraOptions,
       });
       console.log(`[build] Compiled ${relativePath}`);
     } catch (e) {

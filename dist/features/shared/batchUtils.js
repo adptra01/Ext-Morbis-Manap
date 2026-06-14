@@ -1,4 +1,41 @@
-"use strict";var __morbis_feature=(()=>{var p=Object.defineProperty;var j=Object.getOwnPropertyDescriptor;var z=Object.getOwnPropertyNames;var E=Object.prototype.hasOwnProperty;var B=(e,t)=>{for(var o in t)p(e,o,{get:t[o],enumerable:!0})},I=(e,t,o,r)=>{if(t&&typeof t=="object"||typeof t=="function")for(let i of z(t))!E.call(e,i)&&i!==o&&p(e,i,{get:()=>t[i],enumerable:!(r=j(t,i))||r.enumerable});return e};var L=e=>I(p({},"__esModule",{value:!0}),e);var M={};B(M,{Icons:()=>c,iconWrap:()=>T,injectSharedCSS:()=>u,registerGlobalBatchUtils:()=>C,safeFetch:()=>m,showErrorToast:()=>v,showInlinePreviewSafe:()=>k,toggleProcessingState:()=>w});var g="ext-batch-shared-style";function u(){if(document.getElementById(g))return;let e=document.createElement("style");e.id=g,e.textContent=`
+"use strict";
+var __morbis_feature = (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+  // src/features/shared/batchUtils.ts
+  var batchUtils_exports = {};
+  __export(batchUtils_exports, {
+    Icons: () => Icons,
+    iconWrap: () => iconWrap,
+    injectSharedCSS: () => injectSharedCSS,
+    registerGlobalBatchUtils: () => registerGlobalBatchUtils,
+    safeFetch: () => safeFetch,
+    showErrorToast: () => showErrorToast,
+    showInlinePreviewSafe: () => showInlinePreviewSafe,
+    toggleProcessingState: () => toggleProcessingState
+  });
+  var BATCH_UTILS_STYLE_ID = "ext-batch-shared-style";
+  function injectSharedCSS() {
+    if (document.getElementById(BATCH_UTILS_STYLE_ID)) return;
+    const style = document.createElement("style");
+    style.id = BATCH_UTILS_STYLE_ID;
+    style.textContent = `
     .ext-modal-content {
       background: #ffffff; border-radius: 16px; padding: 28px 32px;
       max-width: 860px; width: 95%; max-height: 85vh; overflow-y: auto;
@@ -141,11 +178,140 @@
     .ext-preview-item.success { color: #059669; }
     .ext-preview-item.error { color: #dc2626; }
     .ext-preview-item.pending { color: #64748b; }
-  `,document.head.appendChild(e)}var c={search:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',trash:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>',xClose:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',warning:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 00-3.48 0l-8 14A2 2 0 004 21h16a2 2 0 001.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',eye:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',refresh:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>',upload:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',file:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',check:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',arrowRight:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>'};function T(e,t){let o=t||18;return`<span style="display:inline-flex;align-items:center;justify-content:center;width:${o}px;height:${o}px;flex-shrink:0;">${e}</span>`}function m(e,t,o=2){let r=i=>fetch(e,t).catch(s=>{if(i<=0)throw s;return new Promise(a=>setTimeout(a,1e3*(3-i))).then(()=>r(i-1))});return r(o)}function w(e,t){e.forEach(o=>{let r=document.getElementById(o);r&&(r.disabled=t,r.style.opacity=t?"0.5":"1",r.style.cursor=t?"not-allowed":"pointer")})}function v(e){let t=document.querySelector(".ext-toast-error");t&&t.remove();let o=document.createElement("div");o.className="ext-toast-error",o.style.cssText="position:fixed;top:20px;right:20px;background:#fef2f2;border-left:4px solid #ef4444;color:#991b1b;padding:14px 18px;border-radius:12px;font-size:13px;font-weight:500;z-index:100001;box-shadow:0 20px 40px -15px rgba(0,0,0,0.1);max-width:420px;animation:ext-toast-in 0.25s cubic-bezier(0.16,1,0.3,1);",o.textContent=e,document.body.appendChild(o),setTimeout(()=>{o.style.opacity="0",o.style.transition="opacity 0.2s ease",setTimeout(()=>o.remove(),200)},4500)}async function k(e,t){try{let o=await fetch(e,{method:"GET",mode:"cors",credentials:"omit"});if(!o.ok)throw new Error(`HTTP ${o.status}`);let r=await o.blob(),i=URL.createObjectURL(r);h(i,t,e,()=>URL.revokeObjectURL(i))}catch{h(e,t,e)}}function h(e,t,o,r){let i=document.getElementById("ext-inline-preview-modal");i&&i.remove();let s=t.toLowerCase().split(".").pop()||"",a=s==="pdf",x=["jpg","jpeg","png","gif","webp"].includes(s),n=document.createElement("div");n.id="ext-inline-preview-modal",n.style.cssText="position:fixed !important;top:0 !important;left:0 !important;width:100vw !important;height:100vh !important;background:rgba(15,23,42,0.88) !important;z-index:10001 !important;display:flex !important;align-items:center !important;justify-content:center !important;flex-direction:column !important;padding:20px !important;box-sizing:border-box !important;backdrop-filter:blur(8px) !important;-webkit-backdrop-filter:blur(8px) !important;";let l='<div class="ext-inline-preview-loading" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:#fff;"><div class="ext-inline-preview-spinner"></div><div style="font-size:14px;">Loading preview...</div></div>';a?l=`<iframe id="ext-inline-preview-iframe" src="${e}" style="width:100%;height:100%;border:none;display:block;border-radius:12px;"></iframe>`:x?l=`<img id="ext-inline-preview-img" src="${e}" alt="Image Preview" style="width:100%;height:100%;border:none;display:block;object-fit:contain;border-radius:12px;">`:l=`<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:15px;color:#64748b;background:#f8fafc;flex-direction:column;gap:16px;border-radius:12px;">${c.file}<div>Preview not available for this format</div></div>`;let y=t.replace(/"/g,"&quot;").replace(/</g,"&lt;");if(n.innerHTML=`
+  `;
+    document.head.appendChild(style);
+  }
+  var Icons = {
+    search: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>`,
+    trash: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`,
+    xClose: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`,
+    warning: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 00-3.48 0l-8 14A2 2 0 004 21h16a2 2 0 001.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+    eye: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+    refresh: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>`,
+    upload: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`,
+    file: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
+    check: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+    arrowRight: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`
+  };
+  function iconWrap(iconSvg, size) {
+    const s = size || 18;
+    return `<span style="display:inline-flex;align-items:center;justify-content:center;width:${s}px;height:${s}px;flex-shrink:0;">${iconSvg}</span>`;
+  }
+  function safeFetch(url, options, retries = 2) {
+    const attempt = (n) => {
+      return fetch(url, options).catch((err) => {
+        if (n <= 0) throw err;
+        return new Promise((resolve) => setTimeout(resolve, 1e3 * (3 - n))).then(
+          () => attempt(n - 1)
+        );
+      });
+    };
+    return attempt(retries);
+  }
+  function toggleProcessingState(elementIds, isProcessing) {
+    elementIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.disabled = isProcessing;
+        el.style.opacity = isProcessing ? "0.5" : "1";
+        el.style.cursor = isProcessing ? "not-allowed" : "pointer";
+      }
+    });
+  }
+  function showErrorToast(message) {
+    const existing = document.querySelector(".ext-toast-error");
+    if (existing) existing.remove();
+    const toast = document.createElement("div");
+    toast.className = "ext-toast-error";
+    toast.style.cssText = "position:fixed;top:20px;right:20px;background:#fef2f2;border-left:4px solid #ef4444;color:#991b1b;padding:14px 18px;border-radius:12px;font-size:13px;font-weight:500;z-index:100001;box-shadow:0 20px 40px -15px rgba(0,0,0,0.1);max-width:420px;animation:ext-toast-in 0.25s cubic-bezier(0.16,1,0.3,1);";
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      toast.style.transition = "opacity 0.2s ease";
+      setTimeout(() => toast.remove(), 200);
+    }, 4500);
+  }
+  async function showInlinePreviewSafe(url, filename) {
+    try {
+      const response = await fetch(url, { method: "GET", mode: "cors", credentials: "omit" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      showInlinePreview(blobUrl, filename, url, () => URL.revokeObjectURL(blobUrl));
+    } catch {
+      showInlinePreview(url, filename, url);
+    }
+  }
+  function showInlinePreview(previewUrl, filename, originalUrl, onCleanup) {
+    const existing = document.getElementById("ext-inline-preview-modal");
+    if (existing) existing.remove();
+    const ext = filename.toLowerCase().split(".").pop() || "";
+    const isPdf = ext === "pdf";
+    const isImage = ["jpg", "jpeg", "png", "gif", "webp"].includes(ext);
+    const modal = document.createElement("div");
+    modal.id = "ext-inline-preview-modal";
+    modal.style.cssText = "position:fixed !important;top:0 !important;left:0 !important;width:100vw !important;height:100vh !important;background:rgba(15,23,42,0.88) !important;z-index:10001 !important;display:flex !important;align-items:center !important;justify-content:center !important;flex-direction:column !important;padding:20px !important;box-sizing:border-box !important;backdrop-filter:blur(8px) !important;-webkit-backdrop-filter:blur(8px) !important;";
+    let contentHtml = '<div class="ext-inline-preview-loading" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:#fff;"><div class="ext-inline-preview-spinner"></div><div style="font-size:14px;">Loading preview...</div></div>';
+    if (isPdf)
+      contentHtml = `<iframe id="ext-inline-preview-iframe" src="${previewUrl}" style="width:100%;height:100%;border:none;display:block;border-radius:12px;"></iframe>`;
+    else if (isImage)
+      contentHtml = `<img id="ext-inline-preview-img" src="${previewUrl}" alt="Image Preview" style="width:100%;height:100%;border:none;display:block;object-fit:contain;border-radius:12px;">`;
+    else
+      contentHtml = `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:15px;color:#64748b;background:#f8fafc;flex-direction:column;gap:16px;border-radius:12px;">${Icons.file}<div>Preview not available for this format</div></div>`;
+    const safeFilename = filename.replace(/"/g, "&quot;").replace(/</g, "&lt;");
+    modal.innerHTML = `
     <div style="position:absolute;top:20px;right:20px;display:flex;gap:10px;align-items:center;background:rgba(15,23,42,0.8);padding:10px 16px;border-radius:12px;backdrop-filter:blur(12px);z-index:10002;border:1px solid rgba(255,255,255,0.1);">
-      <span style="color:#e2e8f0;font-size:13px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">${y}</span>
-      <button id="ext-preview-newtab" style="padding:7px 14px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:background 0.15s ease;display:inline-flex;align-items:center;gap:6px;">${c.arrowRight} Open Tab</button>
-      <button id="ext-preview-close" style="padding:7px 12px;background:rgba(255,255,255,0.1);color:#e2e8f0;border:1px solid rgba(255,255,255,0.15);border-radius:8px;cursor:pointer;font-size:16px;font-weight:500;transition:all 0.15s ease;line-height:1;">${c.xClose}</button>
+      <span style="color:#e2e8f0;font-size:13px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">${safeFilename}</span>
+      <button id="ext-preview-newtab" style="padding:7px 14px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:background 0.15s ease;display:inline-flex;align-items:center;gap:6px;">${Icons.arrowRight} Open Tab</button>
+      <button id="ext-preview-close" style="padding:7px 12px;background:rgba(255,255,255,0.1);color:#e2e8f0;border:1px solid rgba(255,255,255,0.15);border-radius:8px;cursor:pointer;font-size:16px;font-weight:500;transition:all 0.15s ease;line-height:1;">${Icons.xClose}</button>
     </div>
-    <div style="width:clamp(400px,90vw,1200px);height:clamp(300px,90vh,800px);background:white;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,0.4);overflow:hidden;position:relative;">${l}</div>
-  `,document.body.appendChild(n),document.getElementById("ext-preview-close")?.addEventListener("click",()=>{r&&r(),n.remove()}),document.getElementById("ext-preview-newtab")?.addEventListener("click",()=>{window.open(o||e,"_blank"),r&&r(),n.remove()}),n.addEventListener("click",d=>{d.target===n&&(r&&r(),n.remove())}),document.addEventListener("keydown",function d(f){f.key==="Escape"&&(r&&r(),n.remove(),document.removeEventListener("keydown",d))}),a||x){let d=setInterval(()=>{if(a?document.getElementById("ext-inline-preview-iframe")?.getAttribute("src"):document.getElementById("ext-inline-preview-img")?.complete){let b=n.querySelector(".ext-inline-preview-loading");b&&b.remove(),clearInterval(d)}},500)}}function C(){let e=window;e.SharedBatchUtils={injectSharedCSS:u,safeFetch:m,showInlinePreviewSafe:k,toggleProcessingState:w,showErrorToast:v}}return L(M);})();
+    <div style="width:clamp(400px,90vw,1200px);height:clamp(300px,90vh,800px);background:white;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,0.4);overflow:hidden;position:relative;">${contentHtml}</div>
+  `;
+    document.body.appendChild(modal);
+    document.getElementById("ext-preview-close")?.addEventListener("click", () => {
+      if (onCleanup) onCleanup();
+      modal.remove();
+    });
+    document.getElementById("ext-preview-newtab")?.addEventListener("click", () => {
+      window.open(originalUrl || previewUrl, "_blank");
+      if (onCleanup) onCleanup();
+      modal.remove();
+    });
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        if (onCleanup) onCleanup();
+        modal.remove();
+      }
+    });
+    document.addEventListener("keydown", function handler(ev) {
+      if (ev.key === "Escape") {
+        if (onCleanup) onCleanup();
+        modal.remove();
+        document.removeEventListener("keydown", handler);
+      }
+    });
+    if (isPdf || isImage) {
+      const loadCheck = setInterval(() => {
+        const loaded = isPdf ? document.getElementById("ext-inline-preview-iframe")?.getAttribute("src") : document.getElementById("ext-inline-preview-img")?.complete;
+        if (loaded) {
+          const container = modal.querySelector(".ext-inline-preview-loading");
+          if (container) container.remove();
+          clearInterval(loadCheck);
+        }
+      }, 500);
+    }
+  }
+  function registerGlobalBatchUtils() {
+    const g = window;
+    g.SharedBatchUtils = {
+      injectSharedCSS,
+      safeFetch,
+      showInlinePreviewSafe,
+      toggleProcessingState,
+      showErrorToast
+    };
+  }
+  return __toCommonJS(batchUtils_exports);
+})();
+//# sourceMappingURL=batchUtils.js.map

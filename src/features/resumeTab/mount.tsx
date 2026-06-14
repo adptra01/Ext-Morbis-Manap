@@ -1,5 +1,3 @@
-/// <reference types="chrome"/>
-
 import { createRoot, type Root } from 'react-dom/client'
 import { App } from './App'
 import type { ResumeData, DiagnosaRow, TindakanRow } from './types'
@@ -151,12 +149,11 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
   const shadow = container.attachShadow({ mode: 'open' })
 
   const wrapper = document.createElement('div')
-  wrapper.style.cssText = 'all: initial; display: block; width: 100%; height: 100%;'
+  wrapper.style.cssText = 'all: initial; display: block; width: 100%; height: 100%; pointer-events: auto;'
 
-  const link = document.createElement('link')
-  link.rel = 'stylesheet'
-  link.href = chrome.runtime.getURL('ui/shadow.css')
-  shadow.appendChild(link)
+  const style = document.createElement('style')
+  style.textContent = (typeof SHADOW_CSS !== 'undefined' ? SHADOW_CSS : '')
+  shadow.appendChild(style)
 
   shadow.appendChild(wrapper)
 
@@ -199,7 +196,8 @@ function setupFloatingButton() {
 
   const container = document.createElement('div')
   container.id = 'ext-resume-container'
-  container.style.cssText = 'position: fixed; inset: 0; z-index: 2147483646; display: none;'
+  // Container only passes clicks through; interactive content lives in shadow DOM
+  container.style.cssText = 'position: fixed; inset: 0; z-index: 2147483646; display: none; pointer-events: none;'
   document.body.appendChild(container)
 
   const btn = document.createElement('button')

@@ -1,4 +1,17 @@
-"use strict";var __morbis_feature=(()=>{function C(){return window}var T="ext-batch-shared-style";function I(){if(document.getElementById(T))return;let e=document.createElement("style");e.id=T,e.textContent=`
+"use strict";
+var __morbis_feature = (() => {
+  // src/features/shared/types.ts
+  function getMorbisGlobals() {
+    return window;
+  }
+
+  // src/features/shared/batchUtils.ts
+  var BATCH_UTILS_STYLE_ID = "ext-batch-shared-style";
+  function injectSharedCSS() {
+    if (document.getElementById(BATCH_UTILS_STYLE_ID)) return;
+    const style = document.createElement("style");
+    style.id = BATCH_UTILS_STYLE_ID;
+    style.textContent = `
     .ext-modal-content {
       background: #ffffff; border-radius: 16px; padding: 28px 32px;
       max-width: 860px; width: 95%; max-height: 85vh; overflow-y: auto;
@@ -141,14 +154,116 @@
     .ext-preview-item.success { color: #059669; }
     .ext-preview-item.error { color: #dc2626; }
     .ext-preview-item.pending { color: #64748b; }
-  `,document.head.appendChild(e)}var x={search:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',trash:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>',xClose:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',warning:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 00-3.48 0l-8 14A2 2 0 004 21h16a2 2 0 001.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',eye:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',refresh:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>',upload:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',file:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',check:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',arrowRight:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>'};function S(e,t){let i=t||18;return`<span style="display:inline-flex;align-items:center;justify-content:center;width:${i}px;height:${i}px;flex-shrink:0;">${e}</span>`}async function $(e,t){try{let i=await fetch(e,{method:"GET",mode:"cors",credentials:"omit"});if(!i.ok)throw new Error(`HTTP ${i.status}`);let n=await i.blob(),r=URL.createObjectURL(n);M(r,t,e,()=>URL.revokeObjectURL(r))}catch{M(e,t,e)}}function M(e,t,i,n){let r=document.getElementById("ext-inline-preview-modal");r&&r.remove();let p=t.toLowerCase().split(".").pop()||"",f=p==="pdf",l=["jpg","jpeg","png","gif","webp"].includes(p),o=document.createElement("div");o.id="ext-inline-preview-modal",o.style.cssText="position:fixed !important;top:0 !important;left:0 !important;width:100vw !important;height:100vh !important;background:rgba(15,23,42,0.88) !important;z-index:10001 !important;display:flex !important;align-items:center !important;justify-content:center !important;flex-direction:column !important;padding:20px !important;box-sizing:border-box !important;backdrop-filter:blur(8px) !important;-webkit-backdrop-filter:blur(8px) !important;";let s='<div class="ext-inline-preview-loading" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:#fff;"><div class="ext-inline-preview-spinner"></div><div style="font-size:14px;">Loading preview...</div></div>';f?s=`<iframe id="ext-inline-preview-iframe" src="${e}" style="width:100%;height:100%;border:none;display:block;border-radius:12px;"></iframe>`:l?s=`<img id="ext-inline-preview-img" src="${e}" alt="Image Preview" style="width:100%;height:100%;border:none;display:block;object-fit:contain;border-radius:12px;">`:s=`<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:15px;color:#64748b;background:#f8fafc;flex-direction:column;gap:16px;border-radius:12px;">${x.file}<div>Preview not available for this format</div></div>`;let d=t.replace(/"/g,"&quot;").replace(/</g,"&lt;");if(o.innerHTML=`
+  `;
+    document.head.appendChild(style);
+  }
+  var Icons = {
+    search: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>`,
+    trash: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`,
+    xClose: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`,
+    warning: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 00-3.48 0l-8 14A2 2 0 004 21h16a2 2 0 001.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+    eye: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+    refresh: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>`,
+    upload: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`,
+    file: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
+    check: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+    arrowRight: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`
+  };
+  function iconWrap(iconSvg, size) {
+    const s = size || 18;
+    return `<span style="display:inline-flex;align-items:center;justify-content:center;width:${s}px;height:${s}px;flex-shrink:0;">${iconSvg}</span>`;
+  }
+  async function showInlinePreviewSafe(url, filename) {
+    try {
+      const response = await fetch(url, { method: "GET", mode: "cors", credentials: "omit" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      showInlinePreview(blobUrl, filename, url, () => URL.revokeObjectURL(blobUrl));
+    } catch {
+      showInlinePreview(url, filename, url);
+    }
+  }
+  function showInlinePreview(previewUrl, filename, originalUrl, onCleanup) {
+    const existing = document.getElementById("ext-inline-preview-modal");
+    if (existing) existing.remove();
+    const ext = filename.toLowerCase().split(".").pop() || "";
+    const isPdf = ext === "pdf";
+    const isImage = ["jpg", "jpeg", "png", "gif", "webp"].includes(ext);
+    const modal = document.createElement("div");
+    modal.id = "ext-inline-preview-modal";
+    modal.style.cssText = "position:fixed !important;top:0 !important;left:0 !important;width:100vw !important;height:100vh !important;background:rgba(15,23,42,0.88) !important;z-index:10001 !important;display:flex !important;align-items:center !important;justify-content:center !important;flex-direction:column !important;padding:20px !important;box-sizing:border-box !important;backdrop-filter:blur(8px) !important;-webkit-backdrop-filter:blur(8px) !important;";
+    let contentHtml = '<div class="ext-inline-preview-loading" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:#fff;"><div class="ext-inline-preview-spinner"></div><div style="font-size:14px;">Loading preview...</div></div>';
+    if (isPdf)
+      contentHtml = `<iframe id="ext-inline-preview-iframe" src="${previewUrl}" style="width:100%;height:100%;border:none;display:block;border-radius:12px;"></iframe>`;
+    else if (isImage)
+      contentHtml = `<img id="ext-inline-preview-img" src="${previewUrl}" alt="Image Preview" style="width:100%;height:100%;border:none;display:block;object-fit:contain;border-radius:12px;">`;
+    else
+      contentHtml = `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:15px;color:#64748b;background:#f8fafc;flex-direction:column;gap:16px;border-radius:12px;">${Icons.file}<div>Preview not available for this format</div></div>`;
+    const safeFilename = filename.replace(/"/g, "&quot;").replace(/</g, "&lt;");
+    modal.innerHTML = `
     <div style="position:absolute;top:20px;right:20px;display:flex;gap:10px;align-items:center;background:rgba(15,23,42,0.8);padding:10px 16px;border-radius:12px;backdrop-filter:blur(12px);z-index:10002;border:1px solid rgba(255,255,255,0.1);">
-      <span style="color:#e2e8f0;font-size:13px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">${d}</span>
-      <button id="ext-preview-newtab" style="padding:7px 14px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:background 0.15s ease;display:inline-flex;align-items:center;gap:6px;">${x.arrowRight} Open Tab</button>
-      <button id="ext-preview-close" style="padding:7px 12px;background:rgba(255,255,255,0.1);color:#e2e8f0;border:1px solid rgba(255,255,255,0.15);border-radius:8px;cursor:pointer;font-size:16px;font-weight:500;transition:all 0.15s ease;line-height:1;">${x.xClose}</button>
+      <span style="color:#e2e8f0;font-size:13px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">${safeFilename}</span>
+      <button id="ext-preview-newtab" style="padding:7px 14px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:background 0.15s ease;display:inline-flex;align-items:center;gap:6px;">${Icons.arrowRight} Open Tab</button>
+      <button id="ext-preview-close" style="padding:7px 12px;background:rgba(255,255,255,0.1);color:#e2e8f0;border:1px solid rgba(255,255,255,0.15);border-radius:8px;cursor:pointer;font-size:16px;font-weight:500;transition:all 0.15s ease;line-height:1;">${Icons.xClose}</button>
     </div>
-    <div style="width:clamp(400px,90vw,1200px);height:clamp(300px,90vh,800px);background:white;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,0.4);overflow:hidden;position:relative;">${s}</div>
-  `,document.body.appendChild(o),document.getElementById("ext-preview-close")?.addEventListener("click",()=>{n&&n(),o.remove()}),document.getElementById("ext-preview-newtab")?.addEventListener("click",()=>{window.open(i||e,"_blank"),n&&n(),o.remove()}),o.addEventListener("click",u=>{u.target===o&&(n&&n(),o.remove())}),document.addEventListener("keydown",function u(m){m.key==="Escape"&&(n&&n(),o.remove(),document.removeEventListener("keydown",u))}),f||l){let u=setInterval(()=>{if(f?document.getElementById("ext-inline-preview-iframe")?.getAttribute("src"):document.getElementById("ext-inline-preview-img")?.complete){let b=o.querySelector(".ext-inline-preview-loading");b&&b.remove(),clearInterval(u)}},500)}}var w=C(),a={deleteEndpoint:"/admisi/pelaksanaan_pelayanan/dokumen-pasien/control?sub=hapus",fetchListUrl:"/admisi/pelaksanaan_pelayanan/dokumen-pasien",maxConcurrent:1,maxBatchSize:10,delayBetweenDelete:500,modalId:"ext-batch-delete-modal",previewId:"ext-delete-preview-list",progressId:"ext-delete-progress-bar",statusId:"ext-delete-status-text"},c=[],g=!1;function j(){if(document.getElementById("ext-batch-delete-style"))return;let e=document.createElement("style");e.id="ext-batch-delete-style",e.textContent=`
+    <div style="width:clamp(400px,90vw,1200px);height:clamp(300px,90vh,800px);background:white;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,0.4);overflow:hidden;position:relative;">${contentHtml}</div>
+  `;
+    document.body.appendChild(modal);
+    document.getElementById("ext-preview-close")?.addEventListener("click", () => {
+      if (onCleanup) onCleanup();
+      modal.remove();
+    });
+    document.getElementById("ext-preview-newtab")?.addEventListener("click", () => {
+      window.open(originalUrl || previewUrl, "_blank");
+      if (onCleanup) onCleanup();
+      modal.remove();
+    });
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        if (onCleanup) onCleanup();
+        modal.remove();
+      }
+    });
+    document.addEventListener("keydown", function handler(ev) {
+      if (ev.key === "Escape") {
+        if (onCleanup) onCleanup();
+        modal.remove();
+        document.removeEventListener("keydown", handler);
+      }
+    });
+    if (isPdf || isImage) {
+      const loadCheck = setInterval(() => {
+        const loaded = isPdf ? document.getElementById("ext-inline-preview-iframe")?.getAttribute("src") : document.getElementById("ext-inline-preview-img")?.complete;
+        if (loaded) {
+          const container = modal.querySelector(".ext-inline-preview-loading");
+          if (container) container.remove();
+          clearInterval(loadCheck);
+        }
+      }, 500);
+    }
+  }
+
+  // src/features/batchDeleteFiles.ts
+  var g = getMorbisGlobals();
+  var BATCH_DELETE_CONFIG = {
+    deleteEndpoint: "/admisi/pelaksanaan_pelayanan/dokumen-pasien/control?sub=hapus",
+    fetchListUrl: "/admisi/pelaksanaan_pelayanan/dokumen-pasien",
+    maxConcurrent: 1,
+    maxBatchSize: 10,
+    delayBetweenDelete: 500,
+    modalId: "ext-batch-delete-modal",
+    previewId: "ext-delete-preview-list",
+    progressId: "ext-delete-progress-bar",
+    statusId: "ext-delete-status-text"
+  };
+  var deleteQueue = [];
+  var isDeletingProcess = false;
+  function injectBatchDeleteCSS() {
+    if (document.getElementById("ext-batch-delete-style")) return;
+    const style = document.createElement("style");
+    style.id = "ext-batch-delete-style";
+    style.textContent = `
     .ext-batch-delete-modal {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(15,23,42,0.45); display: none; z-index: 10000;
@@ -169,59 +284,448 @@
       transform: translateY(-1px);
     }
     #ext-batch-delete-btn:active { transform: translateY(0); }
-  `,document.head.appendChild(e),I()}function _(e){document.querySelectorAll("button:not(#ext-batch-delete-btn):not([disabled])").forEach(n=>{e?(n.disabled=!0,n.dataset.extWasEnabled="true"):n.dataset.extWasEnabled==="true"&&(n.disabled=!1,delete n.dataset.extWasEnabled)}),document.querySelectorAll("form input, form button, form a").forEach(n=>{e?(n.disabled=!0,n.dataset.extWasEnabled="true"):n.dataset.extWasEnabled==="true"&&(n.disabled=!1,delete n.dataset.extWasEnabled)})}function D(e){["ext-delete-close-btn","ext-delete-cancel-btn","ext-fetch-files-btn","ext-start-delete-btn"].forEach(i=>{let n=document.getElementById(i);n&&(n.disabled=e,n.style.opacity=e?"0.5":"1",n.style.cursor=e?"not-allowed":"pointer")}),document.querySelectorAll("#"+a.previewId+" input, #"+a.previewId+" button").forEach(i=>i.disabled=e),_(e)}function F(){let e=document.querySelector(".ext-modal-buttons");e&&(e.innerHTML='<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">'+x.refresh+" Reload Halaman</span></button>",document.getElementById("ext-reload-btn")?.addEventListener("click",()=>{window.location.reload()}))}async function H(e){try{let t=new FormData;return t.append("id",e),(await fetch(a.deleteEndpoint,{method:"POST",body:t,credentials:"same-origin"})).ok}catch(t){return console.error("[Delete Dokumen] Error:",t),!1}}function q(){if(document.getElementById("ext-batch-delete-btn"))return;I();let e=document.createElement("button");e.id="ext-batch-delete-btn",e.type="button",e.textContent="Hapus Dokumen",e.addEventListener("click",A);let t=null,i=document.getElementById("ext-batch-url-btn");i&&i.parentNode?(t=i.parentNode,t.insertBefore(e,i.nextSibling)):(t=document.querySelector(".panel-heading")||document.querySelector('[id*="upload"]')||document.querySelector(".panel")||document.querySelector("main")||document.body,t?t.appendChild(e):console.error("[BatchDelete] No suitable container found!"))}function A(){let e=document.getElementById(a.modalId);e||(e=document.createElement("div"),e.id=a.modalId,e.className="ext-batch-delete-modal",e.innerHTML=`
+  `;
+    document.head.appendChild(style);
+    injectSharedCSS();
+  }
+  function togglePageButtonState(isDisabled) {
+    const allButtons = document.querySelectorAll(
+      "button:not(#ext-batch-delete-btn):not([disabled])"
+    );
+    allButtons.forEach((btn) => {
+      if (isDisabled) {
+        btn.disabled = true;
+        btn.dataset.extWasEnabled = "true";
+      } else {
+        if (btn.dataset.extWasEnabled === "true") {
+          btn.disabled = false;
+          delete btn.dataset.extWasEnabled;
+        }
+      }
+    });
+    const formElements = document.querySelectorAll("form input, form button, form a");
+    formElements.forEach((el) => {
+      if (isDisabled) {
+        el.disabled = true;
+        el.dataset.extWasEnabled = "true";
+      } else {
+        if (el.dataset.extWasEnabled === "true") {
+          el.disabled = false;
+          delete el.dataset.extWasEnabled;
+        }
+      }
+    });
+  }
+  function toggleDeleteUIProcessingState(isDeleting) {
+    const elementsToToggle = [
+      "ext-delete-close-btn",
+      "ext-delete-cancel-btn",
+      "ext-fetch-files-btn",
+      "ext-start-delete-btn"
+    ];
+    elementsToToggle.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.disabled = isDeleting;
+        el.style.opacity = isDeleting ? "0.5" : "1";
+        el.style.cursor = isDeleting ? "not-allowed" : "pointer";
+      }
+    });
+    document.querySelectorAll("#" + BATCH_DELETE_CONFIG.previewId + " input, #" + BATCH_DELETE_CONFIG.previewId + " button").forEach((el) => el.disabled = isDeleting);
+    togglePageButtonState(isDeleting);
+  }
+  function replaceButtonsWithReload() {
+    const buttonsContainer = document.querySelector(".ext-modal-buttons");
+    if (buttonsContainer) {
+      buttonsContainer.innerHTML = '<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">' + Icons.refresh + " Reload Halaman</span></button>";
+      document.getElementById("ext-reload-btn")?.addEventListener("click", () => {
+        window.location.reload();
+      });
+    }
+  }
+  async function deleteDokumen(dokumenId) {
+    try {
+      const formData = new FormData();
+      formData.append("id", dokumenId);
+      const res = await fetch(BATCH_DELETE_CONFIG.deleteEndpoint, {
+        method: "POST",
+        body: formData,
+        credentials: "same-origin"
+      });
+      return res.ok;
+    } catch (err) {
+      console.error("[Delete Dokumen] Error:", err);
+      return false;
+    }
+  }
+  function renderBatchDeleteButton() {
+    if (document.getElementById("ext-batch-delete-btn")) return;
+    injectSharedCSS();
+    const btn = document.createElement("button");
+    btn.id = "ext-batch-delete-btn";
+    btn.type = "button";
+    btn.textContent = "Hapus Dokumen";
+    btn.addEventListener("click", showBatchDeleteModal);
+    let container = null;
+    const uploadBtn = document.getElementById("ext-batch-url-btn");
+    if (uploadBtn && uploadBtn.parentNode) {
+      container = uploadBtn.parentNode;
+      container.insertBefore(btn, uploadBtn.nextSibling);
+    } else {
+      container = document.querySelector(".panel-heading") || document.querySelector('[id*="upload"]') || document.querySelector(".panel") || document.querySelector("main") || document.body;
+      if (container) {
+        container.appendChild(btn);
+      } else {
+        console.error("[BatchDelete] No suitable container found!");
+      }
+    }
+  }
+  function showBatchDeleteModal() {
+    let modal = document.getElementById(BATCH_DELETE_CONFIG.modalId);
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = BATCH_DELETE_CONFIG.modalId;
+      modal.className = "ext-batch-delete-modal";
+      modal.innerHTML = `
       <div class="ext-modal-content">
         <div class="ext-modal-header">
           <h3 style="margin: 0; font-size: 18px; color: #0f172a; font-weight: 700; letter-spacing: -0.3px;">Hapus Dokumen</h3>
-          <button class="ext-modal-close" id="ext-delete-close-btn">${x.xClose}</button>
+          <button class="ext-modal-close" id="ext-delete-close-btn">${Icons.xClose}</button>
         </div>
         <div class="ext-warning-box">
-          <strong style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase;">${S(x.warning,18)} PERHATIAN!</strong>
+          <strong style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase;">${iconWrap(Icons.warning, 18)} PERHATIAN!</strong>
           <span style="font-size: 12px; opacity: 0.85; line-height: 1.5;">File yang dihapus <strong style="color: #7c2d12;">tidak dapat dikembalikan</strong>. Tindakan ini bersifat permanen.</span>
         </div>
         <div style="margin-bottom: 20px; display: flex; gap: 10px;">
           <button id="ext-fetch-files-btn" class="ext-btn ext-btn-purple">
-            <span style="display: inline-flex; align-items: center; gap: 7px;">${x.search} Cari Dokumen Pasien</span>
+            <span style="display: inline-flex; align-items: center; gap: 7px;">${Icons.search} Cari Dokumen Pasien</span>
           </button>
         </div>
         <div id="ext-delete-search-wrap" style="display: none; margin-bottom: 12px;">
           <input type="text" id="ext-delete-search-input" class="ext-search-input" placeholder="Cari dokumen...">
         </div>
-        <div id="${a.previewId}" style="display: none; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden;"></div>
-        <div id="${a.progressId}" style="display: none; height: 4px; background: #374151; margin: 12px 0; border-radius: 2px; overflow: hidden;">
+        <div id="${BATCH_DELETE_CONFIG.previewId}" style="display: none; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden;"></div>
+        <div id="${BATCH_DELETE_CONFIG.progressId}" style="display: none; height: 4px; background: #374151; margin: 12px 0; border-radius: 2px; overflow: hidden;">
           <div class="progress-fill"></div>
         </div>
-        <div id="${a.statusId}" style="margin: 8px 0; font-size: 11px; color: #9ca3af; font-weight: 500; letter-spacing: 0.3px;"></div>
+        <div id="${BATCH_DELETE_CONFIG.statusId}" style="margin: 8px 0; font-size: 11px; color: #9ca3af; font-weight: 500; letter-spacing: 0.3px;"></div>
         <div class="ext-modal-buttons">
           <button id="ext-delete-cancel-btn" class="ext-btn ext-btn-secondary">Batal</button>
-          <button id="ext-start-delete-btn" class="ext-btn ext-btn-danger disabled"><span style="display:inline-flex;align-items:center;gap:6px;">${x.trash}</span> Hapus Terpilih</button>
+          <button id="ext-start-delete-btn" class="ext-btn ext-btn-danger disabled"><span style="display:inline-flex;align-items:center;gap:6px;">${Icons.trash}</span> Hapus Terpilih</button>
         </div>
       </div>
-    `,document.body.appendChild(e),setTimeout(()=>{document.getElementById("ext-delete-close-btn")?.addEventListener("click",y),document.getElementById("ext-delete-cancel-btn")?.addEventListener("click",y),document.getElementById("ext-fetch-files-btn")?.addEventListener("click",U),document.getElementById("ext-start-delete-btn")?.addEventListener("click",P),document.getElementById("ext-delete-search-input")?.addEventListener("input",h),e?.addEventListener("click",function(t){t.target===e&&y()})},50)),e.classList.add("show")}function y(){let e=document.getElementById(a.modalId);e&&e.classList.remove("show"),c=[],g=!1;let t=document.getElementById(a.previewId),i=document.getElementById(a.progressId),n=document.getElementById(a.statusId);t&&(t.style.display="none",t.innerHTML=""),i&&(i.style.display="none"),n&&(n.textContent="");let r=document.querySelector(".ext-modal-buttons");r&&(r.innerHTML='<button id="ext-delete-cancel-btn" class="ext-btn ext-btn-secondary">Batal</button><button id="ext-start-delete-btn" class="ext-btn ext-btn-danger disabled"><span style="display:inline-flex;align-items:center;gap:6px;">'+x.trash+"</span> Hapus Terpilih</button>",document.getElementById("ext-delete-cancel-btn")?.addEventListener("click",y),document.getElementById("ext-start-delete-btn")?.addEventListener("click",P)),D(!1)}async function U(){let t=new URLSearchParams(window.location.search).get("id_visit");if(console.log("[BatchDelete] Current URL:",window.location.href),console.log("[BatchDelete] id_visit found:",t),!t){console.error("[BatchDelete] id_visit not found in URL!"),alert(`Parameter id_visit tidak ditemukan di URL saat ini.
+    `;
+      document.body.appendChild(modal);
+      setTimeout(() => {
+        document.getElementById("ext-delete-close-btn")?.addEventListener("click", closeBatchDeleteModal);
+        document.getElementById("ext-delete-cancel-btn")?.addEventListener("click", closeBatchDeleteModal);
+        document.getElementById("ext-fetch-files-btn")?.addEventListener("click", crawlDokumenPasienDelete);
+        document.getElementById("ext-start-delete-btn")?.addEventListener("click", startBatchDelete);
+        document.getElementById("ext-delete-search-input")?.addEventListener("input", updateDeletePreview);
+        modal?.addEventListener("click", function(e) {
+          if (e.target === modal) closeBatchDeleteModal();
+        });
+      }, 50);
+    }
+    modal.classList.add("show");
+  }
+  function closeBatchDeleteModal() {
+    const modal = document.getElementById(BATCH_DELETE_CONFIG.modalId);
+    if (modal) modal.classList.remove("show");
+    deleteQueue = [];
+    isDeletingProcess = false;
+    const previewEl = document.getElementById(BATCH_DELETE_CONFIG.previewId);
+    const progressEl = document.getElementById(BATCH_DELETE_CONFIG.progressId);
+    const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
+    if (previewEl) {
+      previewEl.style.display = "none";
+      previewEl.innerHTML = "";
+    }
+    if (progressEl) progressEl.style.display = "none";
+    if (statusEl) statusEl.textContent = "";
+    const buttonsContainer = document.querySelector(".ext-modal-buttons");
+    if (buttonsContainer) {
+      buttonsContainer.innerHTML = '<button id="ext-delete-cancel-btn" class="ext-btn ext-btn-secondary">Batal</button><button id="ext-start-delete-btn" class="ext-btn ext-btn-danger disabled"><span style="display:inline-flex;align-items:center;gap:6px;">' + Icons.trash + "</span> Hapus Terpilih</button>";
+      document.getElementById("ext-delete-cancel-btn")?.addEventListener("click", closeBatchDeleteModal);
+      document.getElementById("ext-start-delete-btn")?.addEventListener("click", startBatchDelete);
+    }
+    toggleDeleteUIProcessingState(false);
+  }
+  async function crawlDokumenPasienDelete() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const idVisit = urlParams.get("id_visit");
+    console.log("[BatchDelete] Current URL:", window.location.href);
+    console.log("[BatchDelete] id_visit found:", idVisit);
+    if (!idVisit) {
+      console.error("[BatchDelete] id_visit not found in URL!");
+      alert(
+        "Parameter id_visit tidak ditemukan di URL saat ini.\n\nPastikan buka dari halaman detail pasien."
+      );
+      return;
+    }
+    const fetchBtn = document.getElementById("ext-fetch-files-btn");
+    if (fetchBtn) {
+      fetchBtn.disabled = true;
+      fetchBtn.textContent = "Mencari...";
+    }
+    try {
+      const targetUrl = `${window.location.origin}${BATCH_DELETE_CONFIG.fetchListUrl}?id_visit=${idVisit}&page=85&id_kunjungan=`;
+      const response = await fetch(targetUrl);
+      if (!response.ok) throw new Error("Gagal memuat halaman dokumen pasien");
+      const html = await response.text();
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const rows = doc.querySelectorAll("table.data-list.tabel tr");
+      console.log("[BatchDelete] Total rows found:", rows.length);
+      deleteQueue = [];
+      for (let i = 1; i < rows.length; i++) {
+        const tr = rows[i];
+        const deleteBtn = tr.querySelector('button[onclick*="hapus"]');
+        let id_dokumen = null;
+        console.log(`[BatchDelete] Row ${i}: deleteBtn found:`, !!deleteBtn);
+        if (deleteBtn) {
+          const onclickStr = deleteBtn.getAttribute("onclick");
+          const match = onclickStr?.match(/hapus\(([^)]+)\)/);
+          if (match) {
+            id_dokumen = match[1].replace(/['"]/g, "").trim();
+          }
+        }
+        if (!id_dokumen) continue;
+        const linkEl = tr.querySelector("td:nth-child(2) a");
+        const filename = tr.cells[1]?.textContent?.trim() || "unknown";
+        const keterangan = tr.cells[2]?.textContent?.trim() || "-";
+        const tglFile = tr.cells[3]?.textContent?.trim() || "-";
+        const tglUpload = tr.cells[4]?.textContent?.trim() || "-";
+        const href = linkEl?.getAttribute("href") || "";
+        const url = href.startsWith("http") ? href : `${window.location.origin}${href}`;
+        deleteQueue.push({
+          id_dokumen,
+          filename,
+          keterangan,
+          tglFile,
+          tglUpload,
+          url,
+          selected: false,
+          status: "pending"
+        });
+      }
+      if (deleteQueue.length === 0) {
+        console.error("[BatchDelete] No documents found in queue!");
+        const statusEl2 = document.getElementById(BATCH_DELETE_CONFIG.statusId);
+        if (statusEl2) statusEl2.textContent = "Tidak ada dokumen ditemukan.";
+        return;
+      }
+      console.log("[BatchDelete] Queue populated with", deleteQueue.length, "documents");
+      updateDeletePreview();
+      const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
+      if (statusEl) statusEl.textContent = `${deleteQueue.length} dokumen siap dihapus!`;
+    } catch (err) {
+      console.error("[Batch Delete] Crawl error:", err);
+      const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
+      if (statusEl) statusEl.textContent = "Error: " + err.message;
+    } finally {
+      if (fetchBtn) {
+        fetchBtn.disabled = false;
+        fetchBtn.textContent = "Cari Dokumen Pasien";
+      }
+    }
+  }
+  async function deleteSingleFromQueue(index) {
+    if (isDeletingProcess) return;
+    const item = deleteQueue[index];
+    if (!item) return;
+    const yes = confirm(
+      `Hapus dokumen ini?
 
-Pastikan buka dari halaman detail pasien.`);return}let i=document.getElementById("ext-fetch-files-btn");i&&(i.disabled=!0,i.textContent="Mencari...");try{let n=`${window.location.origin}${a.fetchListUrl}?id_visit=${t}&page=85&id_kunjungan=`,r=await fetch(n);if(!r.ok)throw new Error("Gagal memuat halaman dokumen pasien");let p=await r.text(),l=new DOMParser().parseFromString(p,"text/html").querySelectorAll("table.data-list.tabel tr");console.log("[BatchDelete] Total rows found:",l.length),c=[];for(let s=1;s<l.length;s++){let d=l[s],u=d.querySelector('button[onclick*="hapus"]'),m=null;if(console.log(`[BatchDelete] Row ${s}: deleteBtn found:`,!!u),u){let L=u.getAttribute("onclick")?.match(/hapus\(([^)]+)\)/);L&&(m=L[1].replace(/['"]/g,"").trim())}if(!m)continue;let b=d.querySelector("td:nth-child(2) a"),v=d.cells[1]?.textContent?.trim()||"unknown",k=d.cells[2]?.textContent?.trim()||"-",E=d.cells[3]?.textContent?.trim()||"-",z=d.cells[4]?.textContent?.trim()||"-",B=b?.getAttribute("href")||"",R=B.startsWith("http")?B:`${window.location.origin}${B}`;c.push({id_dokumen:m,filename:v,keterangan:k,tglFile:E,tglUpload:z,url:R,selected:!1,status:"pending"})}if(c.length===0){console.error("[BatchDelete] No documents found in queue!");let s=document.getElementById(a.statusId);s&&(s.textContent="Tidak ada dokumen ditemukan.");return}console.log("[BatchDelete] Queue populated with",c.length,"documents"),h();let o=document.getElementById(a.statusId);o&&(o.textContent=`${c.length} dokumen siap dihapus!`)}catch(n){console.error("[Batch Delete] Crawl error:",n);let r=document.getElementById(a.statusId);r&&(r.textContent="Error: "+n.message)}finally{i&&(i.disabled=!1,i.textContent="Cari Dokumen Pasien")}}async function G(e){if(g)return;let t=c[e];if(!t||!confirm(`Hapus dokumen ini?
+${item.filename}
+ID: ${item.id_dokumen}
 
-${t.filename}
-ID: ${t.id_dokumen}
-
-Tindakan ini tidak bisa di-undo.`))return;let n=document.getElementById(a.statusId);t.status="deleting",h(),n&&(n.textContent=`Menghapus 1 dokumen: ${t.filename}...`),await H(t.id_dokumen)?(c.splice(e,1),n&&(n.textContent=`Sukses menghapus: ${t.filename}`)):(t.status="error",n&&(n.textContent=`Gagal menghapus: ${t.filename}`)),h()}function h(){let e=document.getElementById(a.previewId),t=document.getElementById("ext-start-delete-btn"),i=document.getElementById(a.statusId),n=document.getElementById("ext-delete-search-wrap"),r=document.getElementById("ext-delete-search-input"),p=(r?.value||"").toLowerCase();if(!c||c.length===0){e&&(e.style.display="none",e.innerHTML=""),n&&(n.style.display="none"),r&&(r.value=""),t&&(t.disabled=!0),i&&(i.textContent="",i.style.color="#4b5563");return}n&&(n.style.display="block");let f=c.map((o,s)=>({item:o,idx:s})).filter(({item:o})=>!p||o.filename.toLowerCase().includes(p)||o.keterangan.toLowerCase().includes(p)||o.id_dokumen.toLowerCase().includes(p));if(e&&(e.style.display="block",e.style.borderRadius="6px"),e.innerHTML='<div style="padding:10px 16px;background:#f8fafc;border-bottom:1px solid #f1f5f9;font-size:11px;font-weight:700;color:#1e293b;text-transform:uppercase;letter-spacing:0.5px;">Dokumen Pasien <span style="color:#64748b;font-weight:400;">('+c.length+' dokumen, <span style="color:#dc2626;">'+c.filter(o=>o.selected).length+"</span> dipilih)</span></div>",f.length===0){let o=document.createElement("div");o.style.cssText="padding:32px;text-align:center;font-size:13px;color:#94a3b8;",o.textContent="Tidak ada dokumen yang cocok dengan pencarian.",e?.appendChild(o)}f.forEach(({item:o,idx:s})=>{let d=document.createElement("div");d.className="ext-delete-preview-item",o.selected&&d.classList.add("selected");let u=g;d.innerHTML=`
+Tindakan ini tidak bisa di-undo.`
+    );
+    if (!yes) return;
+    const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
+    item.status = "deleting";
+    updateDeletePreview();
+    if (statusEl) statusEl.textContent = `Menghapus 1 dokumen: ${item.filename}...`;
+    const ok = await deleteDokumen(item.id_dokumen);
+    if (ok) {
+      deleteQueue.splice(index, 1);
+      if (statusEl) statusEl.textContent = `Sukses menghapus: ${item.filename}`;
+    } else {
+      item.status = "error";
+      if (statusEl) statusEl.textContent = `Gagal menghapus: ${item.filename}`;
+    }
+    updateDeletePreview();
+  }
+  function updateDeletePreview() {
+    const previewEl = document.getElementById(BATCH_DELETE_CONFIG.previewId);
+    const startBtn = document.getElementById("ext-start-delete-btn");
+    const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
+    const searchWrap = document.getElementById("ext-delete-search-wrap");
+    const searchInput = document.getElementById("ext-delete-search-input");
+    const query = (searchInput?.value || "").toLowerCase();
+    if (!deleteQueue || deleteQueue.length === 0) {
+      if (previewEl) {
+        previewEl.style.display = "none";
+        previewEl.innerHTML = "";
+      }
+      if (searchWrap) searchWrap.style.display = "none";
+      if (searchInput) searchInput.value = "";
+      if (startBtn) startBtn.disabled = true;
+      if (statusEl) {
+        statusEl.textContent = "";
+        statusEl.style.color = "#4b5563";
+      }
+      return;
+    }
+    if (searchWrap) searchWrap.style.display = "block";
+    const filtered = deleteQueue.map((item, idx) => ({ item, idx })).filter(
+      ({ item }) => !query || item.filename.toLowerCase().includes(query) || item.keterangan.toLowerCase().includes(query) || item.id_dokumen.toLowerCase().includes(query)
+    );
+    if (previewEl) {
+      previewEl.style.display = "block";
+      previewEl.style.borderRadius = "6px";
+    }
+    previewEl.innerHTML = '<div style="padding:10px 16px;background:#f8fafc;border-bottom:1px solid #f1f5f9;font-size:11px;font-weight:700;color:#1e293b;text-transform:uppercase;letter-spacing:0.5px;">Dokumen Pasien <span style="color:#64748b;font-weight:400;">(' + deleteQueue.length + ' dokumen, <span style="color:#dc2626;">' + deleteQueue.filter((i) => i.selected).length + "</span> dipilih)</span></div>";
+    if (filtered.length === 0) {
+      const empty = document.createElement("div");
+      empty.style.cssText = "padding:32px;text-align:center;font-size:13px;color:#94a3b8;";
+      empty.textContent = "Tidak ada dokumen yang cocok dengan pencarian.";
+      previewEl?.appendChild(empty);
+    }
+    filtered.forEach(({ item, idx }) => {
+      const itemEl = document.createElement("div");
+      itemEl.className = "ext-delete-preview-item";
+      if (item.selected) itemEl.classList.add("selected");
+      const isDisabled = isDeletingProcess;
+      itemEl.innerHTML = `
       <label class="ext-checkbox-label" style="flex:1;min-width:0;">
-        <input type="checkbox" data-index="${s}" class="ext-checkbox" ${o.selected?"checked":""} ${u?"disabled":""}>
+        <input type="checkbox" data-index="${idx}" class="ext-checkbox" ${item.selected ? "checked" : ""} ${isDisabled ? "disabled" : ""}>
         <div style="flex: 1; min-width: 0;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-            <strong style="font-size: 13px; color: #000000; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${s+1}. ${o.filename}</strong>
-            ${o.status!=="pending"?`<span class="ext-status-badge" data-status="${o.status}">${o.status==="success"?"Selesai":o.status==="error"?"Gagal":o.status==="deleting"?"...":o.status}</span>`:""}
+            <strong style="font-size: 13px; color: #000000; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${idx + 1}. ${item.filename}</strong>
+            ${item.status !== "pending" ? `<span class="ext-status-badge" data-status="${item.status}">${item.status === "success" ? "Selesai" : item.status === "error" ? "Gagal" : item.status === "deleting" ? "..." : item.status}</span>` : ""}
           </div>
           <div style="font-size: 11px; color: #4b5563; margin-top: 6px; display: flex; gap: 8px; flex-wrap: wrap;">
-            <span>ID: <strong style="color: #111827;">${o.id_dokumen}</strong></span>
+            <span>ID: <strong style="color: #111827;">${item.id_dokumen}</strong></span>
             <span style="color: #d1d5db;">|</span>
-            <span>${o.tglFile}</span>
+            <span>${item.tglFile}</span>
             <span style="color: #d1d5db;">|</span>
-            <span>${o.tglUpload}</span>
+            <span>${item.tglUpload}</span>
           </div>
-          <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">${o.keterangan}</div>
+          <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">${item.keterangan}</div>
         </div>
       </label>
-      <button data-index="${s}" class="ext-delete-preview-btn" ${u?"disabled":""}>${x.eye} Preview</button>
-      <button data-index="${s}" class="ext-delete-single-btn" title="Hapus Dokumen Ini" ${u?"disabled":""}>${x.trash}</button>
-    `;let m=d.querySelector('input[type="checkbox"]');!g&&m&&m.addEventListener("change",E=>{c[s].selected=E.target.checked,h()});let b=d.querySelectorAll("button"),v=b[0],k=b[1];g||(v.addEventListener("click",()=>{$(c[s].url,c[s].filename)}),k.addEventListener("click",()=>{G(s)})),e?.appendChild(d)});let l=c.filter(o=>o.selected).length;t&&(t.disabled=l===0||g,t.textContent=`Hapus ${l} Dokumen`,l>0&&!g?t.classList.remove("disabled"):t.classList.add("disabled"))}async function P(){if(g)return;let e=c.filter(l=>l.selected);if(e.length===0){alert("Pilih dokumen untuk dihapus");return}if(!confirm(`Hapus ${e.length} dokumen? TIDAK BISA DIUNDO!`))return;g=!0,D(!0);let t=0,i=0,n=document.getElementById(a.progressId),r=n?.querySelector(".progress-fill"),p=document.getElementById(a.statusId);n&&(n.style.display="block"),r&&(r.style.width="0%"),p&&(p.style.color="#fcd34d");for(let l=0;l<e.length;l++){let o=e[l];if(o.status="deleting",await H(o.id_dokumen)?(o.status="success",t++):(o.status="error",i++),h(),r&&p){let d=(l+1)/e.length*100;r.style.width=d+"%",p.textContent=`Diproses ${l+1}/${e.length} - Sukses: ${t}, Gagal: ${i}`}await new Promise(d=>setTimeout(d,a.delayBetweenDelete))}let f=`Selesai! Sukses: ${t}, Gagal: ${i}`;p&&(p.textContent=f,p.style.color=i>0?"#000000":"#6ee7b7"),i>0&&console.log("Failed deletes:",c.filter(l=>l.status==="error")),alert(f),F(),g=!1}function W(){let e=window.location.pathname,t=/^\/v2\/m-klaim\/detail-v2-refaktor\/?$/.test(e),i=!!new URLSearchParams(window.location.search).get("id_visit");return console.log("[BatchDelete] URL check:",{path:e,pathMatch:t,hasIdVisit:i}),t&&i}function N(){if(W()&&w.currentConfig?.features?.batchDelete?.enabled&&w.ExtensionCore.isFeatureAllowed("batchDelete"))try{console.log("[BatchDelete] Init starting..."),j(),setTimeout(q,500),console.log("[BatchDelete] Init complete, button should be rendered")}catch(e){console.error("[BatchDelete] Init error:",e)}}typeof w.featureModules<"u"&&(w.featureModules.batchDelete={name:"Batch Delete Dokumen",description:"Hapus multiple dokumen sekaligus",run:N});})();
+      <button data-index="${idx}" class="ext-delete-preview-btn" ${isDisabled ? "disabled" : ""}>${Icons.eye} Preview</button>
+      <button data-index="${idx}" class="ext-delete-single-btn" title="Hapus Dokumen Ini" ${isDisabled ? "disabled" : ""}>${Icons.trash}</button>
+    `;
+      const checkbox = itemEl.querySelector('input[type="checkbox"]');
+      if (!isDeletingProcess && checkbox) {
+        checkbox.addEventListener("change", (e) => {
+          deleteQueue[idx].selected = e.target.checked;
+          updateDeletePreview();
+        });
+      }
+      const actionButtons = itemEl.querySelectorAll("button");
+      const previewBtn = actionButtons[0];
+      const deleteBtn = actionButtons[1];
+      if (!isDeletingProcess) {
+        previewBtn.addEventListener("click", () => {
+          showInlinePreviewSafe(deleteQueue[idx].url, deleteQueue[idx].filename);
+        });
+        deleteBtn.addEventListener("click", () => {
+          deleteSingleFromQueue(idx);
+        });
+      }
+      previewEl?.appendChild(itemEl);
+    });
+    const selectedCount = deleteQueue.filter((i) => i.selected).length;
+    if (startBtn) {
+      startBtn.disabled = selectedCount === 0 || isDeletingProcess;
+      startBtn.textContent = `Hapus ${selectedCount} Dokumen`;
+      if (selectedCount > 0 && !isDeletingProcess) {
+        startBtn.classList.remove("disabled");
+      } else {
+        startBtn.classList.add("disabled");
+      }
+    }
+  }
+  async function startBatchDelete() {
+    if (isDeletingProcess) return;
+    const selected = deleteQueue.filter((i) => i.selected);
+    if (selected.length === 0) {
+      alert("Pilih dokumen untuk dihapus");
+      return;
+    }
+    if (!confirm(`Hapus ${selected.length} dokumen? TIDAK BISA DIUNDO!`)) return;
+    isDeletingProcess = true;
+    toggleDeleteUIProcessingState(true);
+    let success = 0, fail = 0;
+    const progressEl = document.getElementById(BATCH_DELETE_CONFIG.progressId);
+    const progressFill = progressEl?.querySelector(".progress-fill");
+    const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
+    if (progressEl) progressEl.style.display = "block";
+    if (progressFill) progressFill.style.width = "0%";
+    if (statusEl) statusEl.style.color = "#fcd34d";
+    for (let i = 0; i < selected.length; i++) {
+      const item = selected[i];
+      item.status = "deleting";
+      const ok = await deleteDokumen(item.id_dokumen);
+      if (ok) {
+        item.status = "success";
+        success++;
+      } else {
+        item.status = "error";
+        fail++;
+      }
+      updateDeletePreview();
+      if (progressFill && statusEl) {
+        const pct = (i + 1) / selected.length * 100;
+        progressFill.style.width = pct + "%";
+        statusEl.textContent = `Diproses ${i + 1}/${selected.length} - Sukses: ${success}, Gagal: ${fail}`;
+      }
+      await new Promise((r) => setTimeout(r, BATCH_DELETE_CONFIG.delayBetweenDelete));
+    }
+    const finalStatus = `Selesai! Sukses: ${success}, Gagal: ${fail}`;
+    if (statusEl) {
+      statusEl.textContent = finalStatus;
+      statusEl.style.color = fail > 0 ? "#000000" : "#6ee7b7";
+    }
+    if (fail > 0) {
+      console.log(
+        "Failed deletes:",
+        deleteQueue.filter((item) => item.status === "error")
+      );
+    }
+    alert(finalStatus);
+    replaceButtonsWithReload();
+    isDeletingProcess = false;
+  }
+  function isBatchDeleteTargetPage() {
+    const path = window.location.pathname;
+    const match = /^\/v2\/m-klaim\/detail-v2-refaktor\/?$/.test(path);
+    const hasIdVisit = !!new URLSearchParams(window.location.search).get("id_visit");
+    console.log("[BatchDelete] URL check:", { path, pathMatch: match, hasIdVisit });
+    return match && hasIdVisit;
+  }
+  function initBatchDeleteFeature() {
+    if (!isBatchDeleteTargetPage()) return;
+    if (!g.currentConfig?.features?.batchDelete?.enabled) return;
+    if (!g.ExtensionCore.isFeatureAllowed("batchDelete")) return;
+    try {
+      console.log("[BatchDelete] Init starting...");
+      injectBatchDeleteCSS();
+      setTimeout(renderBatchDeleteButton, 500);
+      console.log("[BatchDelete] Init complete, button should be rendered");
+    } catch (err) {
+      console.error("[BatchDelete] Init error:", err);
+    }
+  }
+  if (typeof g.featureModules !== "undefined") {
+    g.featureModules.batchDelete = {
+      name: "Batch Delete Dokumen",
+      description: "Hapus multiple dokumen sekaligus",
+      run: initBatchDeleteFeature
+    };
+  }
+})();
+//# sourceMappingURL=batchDeleteFiles.js.map

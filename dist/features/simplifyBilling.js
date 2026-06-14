@@ -1,4 +1,44 @@
-"use strict";var __morbis_feature=(()=>{function E(){return window}var S=E(),x={detailUrlPattern:"/v2/m-klaim/detail-v2-refaktor",targetSectionId:"pembayaran-gabung",toggleButtonId:"ext-billing-toggle-btn",storageKey:"billing_simplify_mode"},f="ringkas",k=["Jasa Pelayanan","Total Transaksi","Biaya Materai","Biaya Administrasi","Total Biaya","Pengurangan","Diskon","Retur Obat","Pembayaran","Uang Muka","Billing Parsial","Saldo Pembayaran","Pembulatan","Terbilang","Yang Menyerahkan","Yang Menerima","Dicetak Oleh","Total Resep","Total Jasa"];if(!document.getElementById("ext-billing-style")){let t=document.createElement("style");t.id="ext-billing-style",t.textContent=`
+"use strict";
+var __morbis_feature = (() => {
+  // src/features/shared/types.ts
+  function getMorbisGlobals() {
+    return window;
+  }
+
+  // src/features/simplifyBilling.ts
+  var g = getMorbisGlobals();
+  var SIMPLIFY_BILLING_CONFIG = {
+    detailUrlPattern: "/v2/m-klaim/detail-v2-refaktor",
+    targetSectionId: "pembayaran-gabung",
+    toggleButtonId: "ext-billing-toggle-btn",
+    storageKey: "billing_simplify_mode"
+  };
+  var billingViewMode = "ringkas";
+  var footerKeywords = [
+    "Jasa Pelayanan",
+    "Total Transaksi",
+    "Biaya Materai",
+    "Biaya Administrasi",
+    "Total Biaya",
+    "Pengurangan",
+    "Diskon",
+    "Retur Obat",
+    "Pembayaran",
+    "Uang Muka",
+    "Billing Parsial",
+    "Saldo Pembayaran",
+    "Pembulatan",
+    "Terbilang",
+    "Yang Menyerahkan",
+    "Yang Menerima",
+    "Dicetak Oleh",
+    "Total Resep",
+    "Total Jasa"
+  ];
+  if (!document.getElementById("ext-billing-style")) {
+    const style = document.createElement("style");
+    style.id = "ext-billing-style";
+    style.textContent = `
     .ext-billing-hidden { display: none !important; }
     tr[data-ext-summary="true"] > td > b { font-size: 13px; color: #000; }
     tr[data-ext-summary="true"] td { padding: 4px 0; vertical-align: middle; }
@@ -13,23 +53,345 @@
     .tabel-judul-top-only { width: 100% !important; }
     table tr td:first-child { width: revert-layer !important; }
     .ext-footer-left td { text-align: right !important; text-align-last: right; }
-  `,document.head.appendChild(t)}function B(){return window.location.pathname.includes(x.detailUrlPattern)}function A(){return document.getElementById("rincian-biaya-view")||document.getElementById("pembayaran-gabung")}function v(){let t=A();if(!t)return null;let e=Array.from(t.querySelectorAll("table")),n=e.find(r=>r.textContent?.includes("RINCIAN BIAYA")),i=e.find(r=>r.textContent?.includes("Nama Obat"));return{tindakan:n?n.querySelector("tbody"):null,obat:i?i.querySelector("tbody"):null}}function g(t){return t.toLocaleString("id-ID").replace(/,/g,".")}function h(t){if(!t)return 0;let e=t.replace(/[^\d]/g,"");return parseInt(e)||0}function q(t){let e=[],n=null,i=Array.from(t.querySelectorAll("tr"));for(let r of i){let a=r.querySelectorAll("td");if(!a.length)continue;let d=r.querySelector('td[colspan="7"], td[colspan="8"]');if(d){let o=d.textContent?.trim()||"";if(o&&!o.match(/^\d/)&&o.length>0&&!o.toLowerCase().includes("cetak oleh")){n={name:o,subtotal:null},e.push(n);continue}}if(r.querySelector('td[colspan="5"]')&&n){let o=Array.from(a);if(o.length>=3){let c=o.slice(-3).map(m=>m.textContent?.trim()||"");n.subtotal={tarif:h(c[0]),tunai:h(c[1]),jaminan:h(c[2])},n=null}}}return e}function P(t){let e=[],n=null,i=Array.from(t.querySelectorAll("tr"));for(let r of i){let a=r.querySelectorAll("td");if(!a.length)continue;let d=r.querySelector('td[colspan="6"]');if(d){let o=d.querySelector("b");if(o&&/\d{2}-\d{2}-\d{4}/.test(o.textContent||"")){let m=(o.textContent?.trim().replace(/\s+/g," ")||"").match(/^(\d{2}-\d{2}-\d{4})\s+(.+?)\s+(\d+)$/);if(m){n={label:`Resep ${m[1]} (No. ${m[3]})`,subtotal:null},e.push(n);continue}}}let l=r.querySelector('td[colspan="4"]');if(l&&/sub\s*total/i.test(l.textContent||"")&&n){let c=Array.from(a).slice(-3).map(m=>m.textContent?.trim()||"");n.subtotal={tarif:h(c[0]),tunai:h(c[1]),jaminan:h(c[2])},n=null}}return e}function L(t,e,n,i=!1){let r=document.createElement("tr");return r.dataset.extSummary="true",i?r.innerHTML=`
-      <td align="center" width="5%">${t}.</td>
-      <td align="left" colspan="2"><b style="font-size: 13px">${e}</b></td>
+  `;
+    document.head.appendChild(style);
+  }
+  function isMklaimDetailPage() {
+    return window.location.pathname.includes(SIMPLIFY_BILLING_CONFIG.detailUrlPattern);
+  }
+  function getTargetSection() {
+    return document.getElementById("rincian-biaya-view") || document.getElementById("pembayaran-gabung");
+  }
+  function getAllBillingTbodies() {
+    const section = getTargetSection();
+    if (!section) return null;
+    const tables = Array.from(section.querySelectorAll("table"));
+    const tTindakan = tables.find((t) => t.textContent?.includes("RINCIAN BIAYA"));
+    const tObat = tables.find((t) => t.textContent?.includes("Nama Obat"));
+    return {
+      tindakan: tTindakan ? tTindakan.querySelector("tbody") : null,
+      obat: tObat ? tObat.querySelector("tbody") : null
+    };
+  }
+  function formatNumber(num) {
+    return num.toLocaleString("id-ID").replace(/,/g, ".");
+  }
+  function parseCurrency(str) {
+    if (!str) return 0;
+    const cleaned = str.replace(/[^\d]/g, "");
+    return parseInt(cleaned) || 0;
+  }
+  function parseTindakanSections(tbody) {
+    const sections = [];
+    let currentSection = null;
+    const rows = Array.from(tbody.querySelectorAll("tr"));
+    for (const row of rows) {
+      const cells = row.querySelectorAll("td");
+      if (!cells.length) continue;
+      const bigColCell = row.querySelector('td[colspan="7"], td[colspan="8"]');
+      if (bigColCell) {
+        const unitName = bigColCell.textContent?.trim() || "";
+        if (unitName && !unitName.match(/^\d/) && unitName.length > 0 && !unitName.toLowerCase().includes("cetak oleh")) {
+          currentSection = { name: unitName, subtotal: null };
+          sections.push(currentSection);
+          continue;
+        }
+      }
+      const subtotalCell = row.querySelector('td[colspan="5"]');
+      if (subtotalCell && currentSection) {
+        const tds = Array.from(cells);
+        if (tds.length >= 3) {
+          const vals = tds.slice(-3).map((td) => td.textContent?.trim() || "");
+          currentSection.subtotal = {
+            tarif: parseCurrency(vals[0]),
+            tunai: parseCurrency(vals[1]),
+            jaminan: parseCurrency(vals[2])
+          };
+          currentSection = null;
+        }
+      }
+    }
+    return sections;
+  }
+  function parseResepSections(tbody) {
+    const sections = [];
+    let currentResep = null;
+    const rows = Array.from(tbody.querySelectorAll("tr"));
+    for (const row of rows) {
+      const cells = row.querySelectorAll("td");
+      if (!cells.length) continue;
+      const secondTd = row.querySelector('td[colspan="6"]');
+      if (secondTd) {
+        const bold = secondTd.querySelector("b");
+        if (bold && /\d{2}-\d{2}-\d{4}/.test(bold.textContent || "")) {
+          const headerText = bold.textContent?.trim().replace(/\s+/g, " ") || "";
+          const match = headerText.match(/^(\d{2}-\d{2}-\d{4})\s+(.+?)\s+(\d+)$/);
+          if (match) {
+            currentResep = {
+              label: `Resep ${match[1]} (No. ${match[3]})`,
+              subtotal: null
+            };
+            sections.push(currentResep);
+            continue;
+          }
+        }
+      }
+      const subTotalCell = row.querySelector('td[colspan="4"]');
+      if (subTotalCell && /sub\s*total/i.test(subTotalCell.textContent || "") && currentResep) {
+        const tds = Array.from(cells);
+        const vals = tds.slice(-3).map((td) => td.textContent?.trim() || "");
+        currentResep.subtotal = {
+          tarif: parseCurrency(vals[0]),
+          tunai: parseCurrency(vals[1]),
+          jaminan: parseCurrency(vals[2])
+        };
+        currentResep = null;
+      }
+    }
+    return sections;
+  }
+  function createSummaryRow(no, label, subtotal, isObat = false) {
+    const tr = document.createElement("tr");
+    tr.dataset.extSummary = "true";
+    if (isObat) {
+      tr.innerHTML = `
+      <td align="center" width="5%">${no}.</td>
+      <td align="left" colspan="2"><b style="font-size: 13px">${label}</b></td>
       <td align="center"></td>
-      <td align="right">${g(n.tarif)}</td>
-      <td align="right">${g(n.tunai)}</td>
-      <td align="right">${g(n.jaminan)}</td>
-    `:r.innerHTML=`
-      <td align="center" width="5%">${t}.</td>
-      <td align="left" colspan="3"><b style="font-size: 13px">${e}</b></td>
+      <td align="right">${formatNumber(subtotal.tarif)}</td>
+      <td align="right">${formatNumber(subtotal.tunai)}</td>
+      <td align="right">${formatNumber(subtotal.jaminan)}</td>
+    `;
+    } else {
+      tr.innerHTML = `
+      <td align="center" width="5%">${no}.</td>
+      <td align="left" colspan="3"><b style="font-size: 13px">${label}</b></td>
       <td align="center"></td>
-      <td align="right">${g(n.tarif)}</td>
-      <td align="right">${g(n.tunai)}</td>
-      <td align="right">${g(n.jaminan)}</td>
-    `,r}function M(t,e,n=!1){let i=document.createElement("tr");i.dataset.extSummary="true",i.className="ext-summary-total";let r=n?4:5;return i.innerHTML=`
-    <td colspan="${r}" align="right"><b style="font-size: 13px">${t}</b></td>
-    <td align="right"><b style="font-size: 13px">${g(e.tarif)}</b></td>
-    <td align="right"><b style="font-size: 13px">${g(e.tunai)}</b></td>
-    <td align="right"><b style="font-size: 13px">${g(e.jaminan)}</b></td>
-  `,i}function R(t){if(Array.from(document.querySelectorAll("[data-ext-summary]")).forEach(a=>a.remove()),Array.from(document.querySelectorAll(".ext-header-hidden")).forEach(a=>a.classList.remove("ext-header-hidden")),!t)return;let e=A();if(!e)return;Array.from(e.querySelectorAll("tr.ext-billing-hidden")).forEach(a=>{a.classList.remove("ext-billing-hidden")});let n=e.querySelector("u");n&&!n.textContent?.includes("(REKAPITULASI)")&&(n.innerHTML+=" (REKAPITULASI)"),Array.from(t.tindakan?.querySelectorAll("tr.tabel-label")||[]).forEach(a=>{let d=a.querySelector('td[align="center"][width="5%"]');d&&d.textContent?.trim()==="frek"&&d.classList.add("ext-header-hidden")});let r=0;if(t.tindakan){let a=q(t.tindakan),d=Array.from(t.tindakan.querySelectorAll("tr"));d.forEach(u=>{let s=u.textContent?.trim()||"",b=u.classList.contains("tabel-label")||u.dataset.extSummary||s.includes("BIAYA")&&s.includes("RINCIAN"),C=k.some(T=>s.includes(T));!b&&!C&&u.classList.add("ext-billing-hidden")});let l=document.createDocumentFragment(),o=document.createElement("tr");o.dataset.extSummary="true",o.innerHTML='<td colspan="8"><br><b style="font-size: 13px">A. TOTAL TINDAKAN PER UNIT</b></td>',l.appendChild(o);let c={tarif:0,tunai:0,jaminan:0};a.forEach((u,s)=>{u.subtotal&&(l.appendChild(L(s+1,`Sub Total Tindakan ${u.name}`,u.subtotal)),c.tarif+=u.subtotal.tarif,c.tunai+=u.subtotal.tunai,c.jaminan+=u.subtotal.jaminan,r++)});let m=document.createElement("tr");m.dataset.extSummary="true",m.innerHTML='<td colspan="8" height="10"></td>',l.appendChild(m),l.appendChild(M("Total Jasa Tindakan Rp.",c));let p=document.createElement("tr");p.dataset.extSummary="true",p.innerHTML='<td colspan="8" height="20"></td>',l.appendChild(p);let y=d.find(u=>(u.textContent?.includes("Total Jasa")||u.textContent?.includes("Jasa Pelayanan"))&&!u.dataset.extSummary);y?t.tindakan.insertBefore(l,y):t.tindakan.appendChild(l)}if(t.obat){let a=P(t.obat),d=Array.from(t.obat.querySelectorAll("tr"));d.forEach(s=>{let b=s.textContent?.trim()||"",C=s.classList.contains("tabel-label")||!!s.dataset.extSummary,T=k.some(I=>b.includes(I));!C&&!T&&s.classList.add("ext-billing-hidden")});let l=document.createDocumentFragment(),o=document.createElement("tr");o.dataset.extSummary="true",o.innerHTML='<td colspan="7"><b style="font-size: 13px">B. TOTAL PEMAKAIAN OBAT & ALKES PER RESEP</b></td>',l.appendChild(o);let c={tarif:0,tunai:0,jaminan:0},m=r+1;a.forEach((s,b)=>{s.subtotal&&(l.appendChild(L(m+b,s.label,s.subtotal,!0)),c.tarif+=s.subtotal.tarif,c.tunai+=s.subtotal.tunai,c.jaminan+=s.subtotal.jaminan)});let p=document.createElement("tr");p.dataset.extSummary="true",p.innerHTML='<td colspan="7" height="10"></td>',l.appendChild(p),l.appendChild(M("Total Resep Obat & Alkes Rp.",c,!0));let y=document.createElement("tr");y.dataset.extSummary="true",y.innerHTML='<td colspan="7" height="20"></td>',l.appendChild(y);let u=d.find(s=>k.some(b=>(s.textContent||"").includes(b))&&!s.dataset.extSummary);u?t.obat.insertBefore(l,u):t.obat.appendChild(l)}Array.from(e.querySelectorAll("tr")).forEach(a=>{let d=a.textContent?.trim()||"",o=a.querySelectorAll("td")[0];d.includes("Total Resep")&&(o&&o.textContent?.trim()===""?a.classList.add("ext-footer-left","ext-summary-total"):a.classList.add("ext-billing-hidden")),d.includes("Jasa Pelayanan")&&a.classList.add("ext-footer-left")})}function w(){Array.from(document.querySelectorAll("[data-ext-summary]")).forEach(e=>e.remove()),Array.from(document.querySelectorAll(".ext-header-hidden")).forEach(e=>e.classList.remove("ext-header-hidden")),Array.from(document.querySelectorAll("tr.ext-billing-hidden")).forEach(e=>e.classList.remove("ext-billing-hidden"));let t=A();if(t){let e=t.querySelector("u");e&&(e.innerHTML=(e.innerHTML||"").replace(" (REKAPITULASI)","")),Array.from(t.querySelectorAll("tr.ext-billing-hidden")).forEach(n=>{n.classList.remove("ext-billing-hidden")})}}function H(t){if(document.getElementById(x.toggleButtonId))return;let e=document.createElement("button");e.type="button",e.id=x.toggleButtonId,e.style.cssText="margin: 8px 0 4px 10px; padding: 5px 14px; background: #6366f1; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: 600; display: block;";let n=()=>{e.textContent=f==="ringkas"?"\u{1F4C4} Tampilkan Rincian Penuh":"\u{1F4CB} Ringkaskan Rincian Biaya",e.style.background=f==="ringkas"?"#6366f1":"#ef4444"};e.addEventListener("click",r=>{r.preventDefault(),r.stopPropagation();let a=v();f=f==="ringkas"?"penuh":"ringkas",f==="ringkas"?R(a):w(),n(),sessionStorage.setItem(x.storageKey,f)}),n();let i=t.querySelector(".panel-heading");i?(i.style.display="flex",i.style.alignItems="center",i.appendChild(e)):t.insertBefore(e,t.firstChild)}function $(){if(!S.currentConfig?.features?.simplifyBilling?.enabled||!S.ExtensionCore.isFeatureAllowed("simplifyBilling")||!B())return;let t=sessionStorage.getItem(x.storageKey);t&&(f=t);function e(){let n=A();if(!n)return!1;let i=v();return!i||!i.tindakan&&!i.obat?!1:(H(n),f==="ringkas"?R(i):w(),!0)}if(!e()){let n=new MutationObserver(()=>{e()&&n.disconnect()});n.observe(document.body,{childList:!0,subtree:!0})}}typeof S.featureModules<"u"?S.featureModules.simplifyBilling={name:"Ringkas Rincian Biaya",description:"Ringkaskan tabel rincian biaya menjadi tampilan rekapituluasi yang rapi.",run:$}:console.warn("[Simplify Billing] featureModules not defined, module registration skipped");})();
+      <td align="right">${formatNumber(subtotal.tarif)}</td>
+      <td align="right">${formatNumber(subtotal.tunai)}</td>
+      <td align="right">${formatNumber(subtotal.jaminan)}</td>
+    `;
+    }
+    return tr;
+  }
+  function createTotalRow(label, totalObj, isObat = false) {
+    const tr = document.createElement("tr");
+    tr.dataset.extSummary = "true";
+    tr.className = "ext-summary-total";
+    const colSpanLabel = isObat ? 4 : 5;
+    tr.innerHTML = `
+    <td colspan="${colSpanLabel}" align="right"><b style="font-size: 13px">${label}</b></td>
+    <td align="right"><b style="font-size: 13px">${formatNumber(totalObj.tarif)}</b></td>
+    <td align="right"><b style="font-size: 13px">${formatNumber(totalObj.tunai)}</b></td>
+    <td align="right"><b style="font-size: 13px">${formatNumber(totalObj.jaminan)}</b></td>
+  `;
+    return tr;
+  }
+  function applyRingkasMode(tbodies) {
+    Array.from(document.querySelectorAll("[data-ext-summary]")).forEach((el) => el.remove());
+    Array.from(document.querySelectorAll(".ext-header-hidden")).forEach(
+      (el) => el.classList.remove("ext-header-hidden")
+    );
+    if (!tbodies) return;
+    const section = getTargetSection();
+    if (!section) return;
+    Array.from(section.querySelectorAll("tr.ext-billing-hidden")).forEach((r) => {
+      r.classList.remove("ext-billing-hidden");
+    });
+    const titleEl = section.querySelector("u");
+    if (titleEl && !titleEl.textContent?.includes("(REKAPITULASI)")) {
+      titleEl.innerHTML += " (REKAPITULASI)";
+    }
+    const tindakanHeader = Array.from(tbodies.tindakan?.querySelectorAll("tr.tabel-label") || []);
+    tindakanHeader.forEach((tr) => {
+      const frekCell = tr.querySelector('td[align="center"][width="5%"]');
+      if (frekCell && frekCell.textContent?.trim() === "frek") {
+        frekCell.classList.add("ext-header-hidden");
+      }
+    });
+    let tindakanSectionCount = 0;
+    if (tbodies.tindakan) {
+      const sections = parseTindakanSections(tbodies.tindakan);
+      const rows = Array.from(tbodies.tindakan.querySelectorAll("tr"));
+      rows.forEach((r) => {
+        const txt = r.textContent?.trim() || "";
+        const isHeader = r.classList.contains("tabel-label") || r.dataset.extSummary || txt.includes("BIAYA") && txt.includes("RINCIAN");
+        const isFooter = footerKeywords.some((keyword) => txt.includes(keyword));
+        if (!isHeader && !isFooter) {
+          r.classList.add("ext-billing-hidden");
+        }
+      });
+      const frag = document.createDocumentFragment();
+      const head = document.createElement("tr");
+      head.dataset.extSummary = "true";
+      head.innerHTML = `<td colspan="8"><br><b style="font-size: 13px">A. TOTAL TINDAKAN PER UNIT</b></td>`;
+      frag.appendChild(head);
+      const totalA = { tarif: 0, tunai: 0, jaminan: 0 };
+      sections.forEach((s, i) => {
+        if (s.subtotal) {
+          frag.appendChild(createSummaryRow(i + 1, `Sub Total Tindakan ${s.name}`, s.subtotal));
+          totalA.tarif += s.subtotal.tarif;
+          totalA.tunai += s.subtotal.tunai;
+          totalA.jaminan += s.subtotal.jaminan;
+          tindakanSectionCount++;
+        }
+      });
+      const spacerBefore = document.createElement("tr");
+      spacerBefore.dataset.extSummary = "true";
+      spacerBefore.innerHTML = '<td colspan="8" height="10"></td>';
+      frag.appendChild(spacerBefore);
+      frag.appendChild(createTotalRow("Total Jasa Tindakan Rp.", totalA));
+      const spacerAfter = document.createElement("tr");
+      spacerAfter.dataset.extSummary = "true";
+      spacerAfter.innerHTML = '<td colspan="8" height="20"></td>';
+      frag.appendChild(spacerAfter);
+      const anchor = rows.find(
+        (r) => (r.textContent?.includes("Total Jasa") || r.textContent?.includes("Jasa Pelayanan")) && !r.dataset.extSummary
+      );
+      if (anchor) {
+        tbodies.tindakan.insertBefore(frag, anchor);
+      } else {
+        tbodies.tindakan.appendChild(frag);
+      }
+    }
+    if (tbodies.obat) {
+      const sections = parseResepSections(tbodies.obat);
+      const rows = Array.from(tbodies.obat.querySelectorAll("tr"));
+      rows.forEach((r) => {
+        const txt = r.textContent?.trim() || "";
+        const isHeader = r.classList.contains("tabel-label") || !!r.dataset.extSummary;
+        const isFooter = footerKeywords.some((keyword) => txt.includes(keyword));
+        if (!isHeader && !isFooter) {
+          r.classList.add("ext-billing-hidden");
+        }
+      });
+      const frag = document.createDocumentFragment();
+      const head = document.createElement("tr");
+      head.dataset.extSummary = "true";
+      head.innerHTML = `<td colspan="7"><b style="font-size: 13px">B. TOTAL PEMAKAIAN OBAT & ALKES PER RESEP</b></td>`;
+      frag.appendChild(head);
+      const totalB = { tarif: 0, tunai: 0, jaminan: 0 };
+      const startNoB = tindakanSectionCount + 1;
+      sections.forEach((s, i) => {
+        if (s.subtotal) {
+          frag.appendChild(createSummaryRow(startNoB + i, s.label, s.subtotal, true));
+          totalB.tarif += s.subtotal.tarif;
+          totalB.tunai += s.subtotal.tunai;
+          totalB.jaminan += s.subtotal.jaminan;
+        }
+      });
+      const spacerBefore = document.createElement("tr");
+      spacerBefore.dataset.extSummary = "true";
+      spacerBefore.innerHTML = '<td colspan="7" height="10"></td>';
+      frag.appendChild(spacerBefore);
+      frag.appendChild(createTotalRow("Total Resep Obat & Alkes Rp.", totalB, true));
+      const spacerAfter = document.createElement("tr");
+      spacerAfter.dataset.extSummary = "true";
+      spacerAfter.innerHTML = '<td colspan="7" height="20"></td>';
+      frag.appendChild(spacerAfter);
+      const anchor = rows.find(
+        (r) => footerKeywords.some((keyword) => (r.textContent || "").includes(keyword)) && !r.dataset.extSummary
+      );
+      if (anchor) {
+        tbodies.obat.insertBefore(frag, anchor);
+      } else {
+        tbodies.obat.appendChild(frag);
+      }
+    }
+    Array.from(section.querySelectorAll("tr")).forEach((r) => {
+      const txt = r.textContent?.trim() || "";
+      const tds = r.querySelectorAll("td");
+      const firstTd = tds[0];
+      if (txt.includes("Total Resep")) {
+        if (firstTd && firstTd.textContent?.trim() === "") {
+          r.classList.add("ext-footer-left", "ext-summary-total");
+        } else {
+          r.classList.add("ext-billing-hidden");
+        }
+      }
+      if (txt.includes("Jasa Pelayanan")) {
+        r.classList.add("ext-footer-left");
+      }
+    });
+  }
+  function applyPenuhMode() {
+    Array.from(document.querySelectorAll("[data-ext-summary]")).forEach((el) => el.remove());
+    Array.from(document.querySelectorAll(".ext-header-hidden")).forEach(
+      (el) => el.classList.remove("ext-header-hidden")
+    );
+    Array.from(document.querySelectorAll("tr.ext-billing-hidden")).forEach(
+      (el) => el.classList.remove("ext-billing-hidden")
+    );
+    const section = getTargetSection();
+    if (section) {
+      const titleEl = section.querySelector("u");
+      if (titleEl) titleEl.innerHTML = (titleEl.innerHTML || "").replace(" (REKAPITULASI)", "");
+      Array.from(section.querySelectorAll("tr.ext-billing-hidden")).forEach((r) => {
+        r.classList.remove("ext-billing-hidden");
+      });
+    }
+  }
+  function renderToggleButton(section) {
+    if (document.getElementById(SIMPLIFY_BILLING_CONFIG.toggleButtonId)) return;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.id = SIMPLIFY_BILLING_CONFIG.toggleButtonId;
+    btn.style.cssText = "margin: 8px 0 4px 10px; padding: 5px 14px; background: #6366f1; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: 600; display: block;";
+    const updateLabel = () => {
+      btn.textContent = billingViewMode === "ringkas" ? "\u{1F4C4} Tampilkan Rincian Penuh" : "\u{1F4CB} Ringkaskan Rincian Biaya";
+      btn.style.background = billingViewMode === "ringkas" ? "#6366f1" : "#ef4444";
+    };
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const tbodies = getAllBillingTbodies();
+      billingViewMode = billingViewMode === "ringkas" ? "penuh" : "ringkas";
+      if (billingViewMode === "ringkas") applyRingkasMode(tbodies);
+      else applyPenuhMode();
+      updateLabel();
+      sessionStorage.setItem(SIMPLIFY_BILLING_CONFIG.storageKey, billingViewMode);
+    });
+    updateLabel();
+    const heading = section.querySelector(".panel-heading");
+    if (heading) {
+      heading.style.display = "flex";
+      heading.style.alignItems = "center";
+      heading.appendChild(btn);
+    } else {
+      section.insertBefore(btn, section.firstChild);
+    }
+  }
+  function runSimplifyBillingFeature() {
+    if (!g.currentConfig?.features?.simplifyBilling?.enabled || !g.ExtensionCore.isFeatureAllowed("simplifyBilling"))
+      return;
+    if (!isMklaimDetailPage()) return;
+    const saved = sessionStorage.getItem(SIMPLIFY_BILLING_CONFIG.storageKey);
+    if (saved) billingViewMode = saved;
+    function tryApply() {
+      const section = getTargetSection();
+      if (!section) return false;
+      const tbodies = getAllBillingTbodies();
+      if (!tbodies || !tbodies.tindakan && !tbodies.obat) return false;
+      renderToggleButton(section);
+      if (billingViewMode === "ringkas") applyRingkasMode(tbodies);
+      else applyPenuhMode();
+      return true;
+    }
+    if (!tryApply()) {
+      const obs = new MutationObserver(() => {
+        if (tryApply()) obs.disconnect();
+      });
+      obs.observe(document.body, { childList: true, subtree: true });
+    }
+  }
+  if (typeof g.featureModules !== "undefined") {
+    g.featureModules.simplifyBilling = {
+      name: "Ringkas Rincian Biaya",
+      description: "Ringkaskan tabel rincian biaya menjadi tampilan rekapituluasi yang rapi.",
+      run: runSimplifyBillingFeature
+    };
+  } else {
+    console.warn("[Simplify Billing] featureModules not defined, module registration skipped");
+  }
+})();
+//# sourceMappingURL=simplifyBilling.js.map
