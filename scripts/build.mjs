@@ -22,8 +22,8 @@ async function ensureDir(dir) {
 }
 
 async function copyStaticFiles() {
+  // sidepanel.html handled by Vite
   const filesToCopy = [
-    { src: 'sidepanel.html', dest: 'sidepanel.html' },
     { src: 'icons/bluemorbis16.png', dest: 'icons/bluemorbis16.png' },
     { src: 'icons/bluemorbis32.png', dest: 'icons/bluemorbis32.png' },
     { src: 'icons/bluemorbis48.png', dest: 'icons/bluemorbis48.png' },
@@ -229,15 +229,8 @@ async function build() {
     },
   });
 
-  await buildWithReact({
-    ...commonOptions,
-    entryPoints: [join(srcDir, 'sidepanel.tsx')],
-    outfile: join(distDir, 'sidepanel.js'),
-    globalName: '__morbis_sidepanel',
-    banner: {
-      js: '// MORBIS Ext Unofficial - sidepanel.js (Built with esbuild)',
-    },
-  });
+  // Sidepanel migrated to React + Vite (sidepanel.html + sidepanel.js)
+  // Build handled by vite.config.ts
 
   await copyStaticFiles();
   await copyFeatureFiles();
