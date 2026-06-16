@@ -1,143 +1,181 @@
-import { useState, useEffect, useCallback } from 'react'
-import { sendMessage, MessageTypes } from '../shared/messaging'
-import type { Role, ExtensionConfig, CustomUrl } from './types'
-import { StatusCard } from './StatusCard'
-import { FeaturesPanel } from './FeaturesPanel'
-import { DomainPanel } from './DomainPanel'
-import { Footer } from './Footer'
+import { useState, useEffect, useCallback } from 'react';
+import { sendMessage, MessageTypes } from '../shared/messaging';
+import type { Role, ExtensionConfig, CustomUrl } from './types';
+import { StatusCard } from './StatusCard';
+import { FeaturesPanel } from './FeaturesPanel';
+import { DomainPanel } from './DomainPanel';
+import { Footer } from './Footer';
 
 async function loadAll(): Promise<{ config: ExtensionConfig | null; urls: CustomUrl[] }> {
   try {
-    const result = await sendMessage<'GET_ALL'>({ type: MessageTypes.GET_ALL })
+    const result = await sendMessage<'GET_ALL'>({ type: MessageTypes.GET_ALL });
     if (result?.config) {
-      return { config: result.config, urls: result.urls ?? [] }
+      return { config: result.config, urls: result.urls ?? [] };
     }
   } catch {}
   const c = (await chrome.storage.sync.get(['extensionConfig', 'extensionCustomUrls'])) as {
-    extensionConfig?: ExtensionConfig
-    extensionCustomUrls?: CustomUrl[]
-  }
+    extensionConfig?: ExtensionConfig;
+    extensionCustomUrls?: CustomUrl[];
+  };
   return {
     config: c.extensionConfig ?? { extensionEnabled: true, currentRole: 'casemix', features: {} },
     urls: c.extensionCustomUrls ?? [],
-  }
+  };
 }
 
 function reloadActiveTab(): void {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (tabs[0]?.id) {
-      chrome.tabs.reload(tabs[0].id)
-      window.close()
+      chrome.tabs.reload(tabs[0].id);
+      window.close();
     }
-  })
+  });
 }
 
 export function App() {
-  const [loading, setLoading] = useState(true)
-  const [config, setConfig] = useState<ExtensionConfig | null>(null)
-  const [urls, setUrls] = useState<CustomUrl[]>([])
-  const [toast, setToast] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true);
+  const [config, setConfig] = useState<ExtensionConfig | null>(null);
+  const [urls, setUrls] = useState<CustomUrl[]>([]);
+  const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     loadAll().then((result) => {
-      setConfig(result.config)
-      setUrls(result.urls)
-      setLoading(false)
-    })
-  }, [])
+      setConfig(result.config);
+      setUrls(result.urls);
+      setLoading(false);
+    });
+  }, []);
 
   const showToast = useCallback((msg: string) => {
-    setToast(msg)
-    setTimeout(() => setToast(null), 2000)
-  }, [])
+    setToast(msg);
+    setTimeout(() => setToast(null), 2000);
+  }, []);
 
   const handleToggleExtension = useCallback(() => {
-    if (!config) return
-    const next = !config.extensionEnabled
-    setConfig({ ...config, extensionEnabled: next })
-    sendMessage<'TOGGLE_EXTENSION'>({ type: MessageTypes.TOGGLE_EXTENSION, enabled: next })
-    showToast(next ? 'Extension diaktifkan' : 'Extension dinonaktifkan')
-    reloadActiveTab()
-  }, [config, showToast])
+    if (!config) return;
+    const next = !config.extensionEnabled;
+    setConfig({ ...config, extensionEnabled: next });
+    sendMessage<'TOGGLE_EXTENSION'>({ type: MessageTypes.TOGGLE_EXTENSION, enabled: next }).catch(
+      () => showToast('Gagal mengubah status extension'),
+    );
+    showToast(next ? 'Extension diaktifkan' : 'Extension dinonaktifkan');
+    reloadActiveTab();
+  }, [config, showToast]);
 
-  const handleRoleChange = useCallback((role: Role) => {
-    if (!config) return
-    setConfig({ ...config, currentRole: role })
-    sendMessage<'SET_ROLE'>({ type: MessageTypes.SET_ROLE, role })
-    showToast('Role berhasil diubah')
-    reloadActiveTab()
-  }, [config, showToast])
+  const handleRoleChange = useCallback(
+    (role: Role) => {
+      if (!config) return;
+      setConfig({ ...config, currentRole: role });
+      sendMessage<'SET_ROLE'>({ type: MessageTypes.SET_ROLE, role }).catch(() =>
+        showToast('Gagal mengubah role'),
+      );
+      showToast('Role berhasil diubah');
+      reloadActiveTab();
+    },
+    [config, showToast],
+  );
 
-  const handleFeatureToggle = useCallback((key: string, value: boolean) => {
-    if (!config?.features[key]) return
-    setConfig({
-      ...config,
-      features: {
-        ...config.features,
-        [key]: { ...config.features[key], enabled: value },
-      },
-    })
-    sendMessage<'TOGGLE_FEATURE'>({ type: MessageTypes.TOGGLE_FEATURE, key, enabled: value })
-    reloadActiveTab()
-  }, [config])
+  const handleFeatureToggle = useCallback(
+    (key: string, value: boolean) => {
+      if (!config?.features[key]) return;
+      setConfig({
+        ...config,
+        features: {
+          ...config.features,
+          [key]: { ...config.features[key], enabled: value },
+        },
+      });
+      sendMessage<'TOGGLE_FEATURE'>({
+        type: MessageTypes.TOGGLE_FEATURE,
+        key,
+        enabled: value,
+      }).catch(() => showToast('Gagal mengubah fitur'));
+      reloadActiveTab();
+    },
+    [config, showToast],
+  );
 
-  const handleModeChange = useCallback((key: string, mode: string) => {
-    if (!config?.features[key]) return
-    setConfig({
-      ...config,
-      features: {
-        ...config.features,
-        [key]: { ...config.features[key], mode },
-      },
-    })
-    sendMessage<'CHANGE_FEATURE_MODE'>({ type: MessageTypes.CHANGE_FEATURE_MODE, key, mode })
-    showToast('Mode berhasil diubah')
-  }, [config, showToast])
+  const handleModeChange = useCallback(
+    (key: string, mode: string) => {
+      if (!config?.features[key]) return;
+      setConfig({
+        ...config,
+        features: {
+          ...config.features,
+          [key]: { ...config.features[key], mode },
+        },
+      });
+      sendMessage<'CHANGE_FEATURE_MODE'>({
+        type: MessageTypes.CHANGE_FEATURE_MODE,
+        key,
+        mode,
+      }).catch(() => showToast('Gagal mengubah mode'));
+      showToast('Mode berhasil diubah');
+    },
+    [config, showToast],
+  );
 
-  const handleAddUrl = useCallback((url: string) => {
-    const newUrl: CustomUrl = {
-      id: 'url-' + Date.now(),
-      url,
-      enabled: true,
-      isDefault: false,
-    }
-    setUrls((prev) => [...prev, newUrl])
-    sendMessage<'ADD_URL'>({ type: MessageTypes.ADD_URL, url })
-    showToast('URL berhasil ditambahkan')
-    reloadActiveTab()
-  }, [showToast])
+  const handleAddUrl = useCallback(
+    (url: string) => {
+      const newUrl: CustomUrl = {
+        id: 'url-' + Date.now(),
+        url,
+        enabled: true,
+        isDefault: false,
+      };
+      setUrls((prev) => [...prev, newUrl]);
+      sendMessage<'ADD_URL'>({ type: MessageTypes.ADD_URL, url }).catch(() =>
+        showToast('Gagal menambah URL'),
+      );
+      showToast('URL berhasil ditambahkan');
+      reloadActiveTab();
+    },
+    [showToast],
+  );
 
-  const handleRemoveUrl = useCallback((id: string) => {
-    setUrls((prev) => prev.filter((u) => u.id !== id))
-    sendMessage<'DELETE_URL'>({ type: MessageTypes.DELETE_URL, id })
-    reloadActiveTab()
-  }, [])
+  const handleRemoveUrl = useCallback(
+    (id: string) => {
+      setUrls((prev) => prev.filter((u) => u.id !== id));
+      sendMessage<'DELETE_URL'>({ type: MessageTypes.DELETE_URL, id }).catch(() =>
+        showToast('Gagal menghapus URL'),
+      );
+      reloadActiveTab();
+    },
+    [showToast],
+  );
 
-  const handleToggleUrl = useCallback((id: string, value: boolean) => {
-    setUrls((prev) => prev.map((u) => (u.id === id ? { ...u, enabled: value } : u)))
-    sendMessage<'TOGGLE_URL'>({ type: MessageTypes.TOGGLE_URL, id, enabled: value })
-    reloadActiveTab()
-  }, [])
+  const handleToggleUrl = useCallback(
+    (id: string, value: boolean) => {
+      setUrls((prev) => prev.map((u) => (u.id === id ? { ...u, enabled: value } : u)));
+      sendMessage<'TOGGLE_URL'>({ type: MessageTypes.TOGGLE_URL, id, enabled: value }).catch(() =>
+        showToast('Gagal mengubah URL'),
+      );
+      reloadActiveTab();
+    },
+    [showToast],
+  );
 
   const handleReset = useCallback(() => {
-    if (!confirm('Apakah Anda yakin ingin mereset ke pengaturan default?')) return
-    sendMessage<'RESET_CONFIG'>({ type: MessageTypes.RESET_CONFIG })
-    setToast('Reset ke default')
+    if (!confirm('Apakah Anda yakin ingin mereset ke pengaturan default?')) return;
+    sendMessage<'RESET_CONFIG'>({ type: MessageTypes.RESET_CONFIG }).catch(() =>
+      showToast('Gagal mereset konfigurasi'),
+    );
+    setToast('Reset ke default');
     setTimeout(() => {
       loadAll().then((result) => {
-        setConfig(result.config)
-        setUrls(result.urls)
-        reloadActiveTab()
-      })
-    }, 500)
-  }, [])
+        setConfig(result.config);
+        setUrls(result.urls);
+        reloadActiveTab();
+      });
+    }, 500);
+  }, [showToast]);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[300px]">
         <p className="text-md-sm text-[var(--md-gray-400)]">Memuat...</p>
       </div>
-    )
+    );
   }
 
   if (!config) {
@@ -145,7 +183,7 @@ export function App() {
       <div className="flex items-center justify-center h-[300px]">
         <p className="text-md-sm text-[var(--md-red-500)]">Gagal memuat konfigurasi</p>
       </div>
-    )
+    );
   }
 
   return (
@@ -215,5 +253,5 @@ export function App() {
         </div>
       )}
     </div>
-  )
+  );
 }
