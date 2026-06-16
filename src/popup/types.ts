@@ -1,4 +1,5 @@
-import type { Role, ExtensionConfig, CustomUrl, MessagePayload } from '../types'
+import type { Role, ExtensionConfig, CustomUrl } from '../shared/types'
+import type { MessagePayload } from '../types'
 
 export interface PopupState {
   enabled: boolean

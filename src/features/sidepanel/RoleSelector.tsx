@@ -1,23 +1,24 @@
 import { cn } from '../../ui/lib/utils'
+import type { Role } from './types'
 
-const roleOptions: { value: string; label: string }[] = [
-  { value: 'Casemix', label: 'Casemix' },
-  { value: 'Kasir', label: 'Kasir' },
-  { value: 'Dokter', label: 'Dokter' },
-  { value: 'Apotek', label: 'Apotek' },
-  { value: 'Admin', label: 'Admin' },
+const roleOptions: { value: Role; label: string }[] = [
+  { value: 'casemix', label: 'Casemix' },
+  { value: 'kasir', label: 'Kasir' },
+  { value: 'dokter', label: 'Dokter' },
+  { value: 'apotek', label: 'Apotek' },
+  { value: 'admin', label: 'Admin' },
 ]
 
 interface RoleSelectorProps {
-  value: string
-  onChange: (role: string) => void
+  value: Role
+  onChange: (role: Role) => void
 }
 
 export function RoleSelector({ value, onChange }: RoleSelectorProps) {
   return (
     <select
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) => onChange(e.target.value as Role)}
       className={cn(
         'h-8 rounded-md border border-[var(--md-gray-200)] bg-white px-2.5 text-md-sm text-[var(--md-gray-800)]',
         'focus:outline-none focus:ring-2 focus:ring-[#2469f0] focus:ring-offset-1',

@@ -1,24 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
+import { sendMessage, MessageTypes } from '../shared/messaging'
 import type { Role, ExtensionConfig, CustomUrl } from './types'
 import { StatusCard } from './StatusCard'
 import { FeaturesPanel } from './FeaturesPanel'
 import { DomainPanel } from './DomainPanel'
 import { Footer } from './Footer'
 
-function bgMessage(msg: Record<string, unknown>): Promise<unknown> {
-  try {
-    return chrome.runtime.sendMessage(msg)
-  } catch {
-    return Promise.resolve(null)
-  }
-}
-
 async function loadAll(): Promise<{ config: ExtensionConfig | null; urls: CustomUrl[] }> {
   try {
-    const result = (await bgMessage({ type: 'GET_ALL' })) as {
-      config?: ExtensionConfig
-      urls?: CustomUrl[]
-    } | null
+    const result = await sendMessage<'GET_ALL'>({ type: MessageTypes.GET_ALL })
     if (result?.config) {
       return { config: result.config, urls: result.urls ?? [] }
     }
@@ -65,7 +55,7 @@ export function App() {
     if (!config) return
     const next = !config.extensionEnabled
     setConfig({ ...config, extensionEnabled: next })
-    bgMessage({ type: 'TOGGLE_EXTENSION', enabled: next })
+    sendMessage<'TOGGLE_EXTENSION'>({ type: MessageTypes.TOGGLE_EXTENSION, enabled: next })
     showToast(next ? 'Extension diaktifkan' : 'Extension dinonaktifkan')
     reloadActiveTab()
   }, [config, showToast])
@@ -73,7 +63,7 @@ export function App() {
   const handleRoleChange = useCallback((role: Role) => {
     if (!config) return
     setConfig({ ...config, currentRole: role })
-    bgMessage({ type: 'SET_ROLE', role })
+    sendMessage<'SET_ROLE'>({ type: MessageTypes.SET_ROLE, role })
     showToast('Role berhasil diubah')
     reloadActiveTab()
   }, [config, showToast])
@@ -87,7 +77,7 @@ export function App() {
         [key]: { ...config.features[key], enabled: value },
       },
     })
-    bgMessage({ type: 'TOGGLE_FEATURE', key, enabled: value })
+    sendMessage<'TOGGLE_FEATURE'>({ type: MessageTypes.TOGGLE_FEATURE, key, enabled: value })
     reloadActiveTab()
   }, [config])
 
@@ -100,7 +90,7 @@ export function App() {
         [key]: { ...config.features[key], mode },
       },
     })
-    bgMessage({ type: 'CHANGE_FEATURE_MODE', key, mode })
+    sendMessage<'CHANGE_FEATURE_MODE'>({ type: MessageTypes.CHANGE_FEATURE_MODE, key, mode })
     showToast('Mode berhasil diubah')
   }, [config, showToast])
 
@@ -112,26 +102,26 @@ export function App() {
       isDefault: false,
     }
     setUrls((prev) => [...prev, newUrl])
-    bgMessage({ type: 'ADD_URL', url })
+    sendMessage<'ADD_URL'>({ type: MessageTypes.ADD_URL, url })
     showToast('URL berhasil ditambahkan')
     reloadActiveTab()
   }, [showToast])
 
   const handleRemoveUrl = useCallback((id: string) => {
     setUrls((prev) => prev.filter((u) => u.id !== id))
-    bgMessage({ type: 'DELETE_URL', id })
+    sendMessage<'DELETE_URL'>({ type: MessageTypes.DELETE_URL, id })
     reloadActiveTab()
   }, [])
 
   const handleToggleUrl = useCallback((id: string, value: boolean) => {
     setUrls((prev) => prev.map((u) => (u.id === id ? { ...u, enabled: value } : u)))
-    bgMessage({ type: 'TOGGLE_URL', id, enabled: value })
+    sendMessage<'TOGGLE_URL'>({ type: MessageTypes.TOGGLE_URL, id, enabled: value })
     reloadActiveTab()
   }, [])
 
   const handleReset = useCallback(() => {
     if (!confirm('Apakah Anda yakin ingin mereset ke pengaturan default?')) return
-    bgMessage({ type: 'RESET_CONFIG' })
+    sendMessage<'RESET_CONFIG'>({ type: MessageTypes.RESET_CONFIG })
     setToast('Reset ke default')
     setTimeout(() => {
       loadAll().then((result) => {

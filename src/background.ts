@@ -1,4 +1,9 @@
-import type { ExtensionConfig, CustomUrl, MessagePayload } from './types.js';
+import { MessageTypes } from './shared/messaging';
+import type { ExtensionConfig, CustomUrl } from './shared/types';
+import type { MessagePayload } from './types.js';
+import { createLogger } from './shared/logger';
+
+const log = createLogger('Background');
 
 const STORAGE_KEY = 'extensionConfig';
 const URLS_STORAGE_KEY = 'extensionCustomUrls';
@@ -210,7 +215,7 @@ async function loadConfig(): Promise<ExtensionConfig> {
     await chrome.storage.sync.set({ [STORAGE_KEY]: config });
     return config;
   } catch (e) {
-    console.error('[Background] Error loading config:', e);
+    log.error('Error loading config:', e);
     return JSON.parse(JSON.stringify(DEFAULT_CONFIG));
   }
 }
@@ -237,7 +242,7 @@ async function loadUrls(): Promise<CustomUrl[]> {
     });
     return merged;
   } catch (e) {
-    console.error('[Background] Error loading URLs:', e);
+    log.error('Error loading URLs:', e);
     return JSON.parse(JSON.stringify(DEFAULT_CUSTOM_URLS));
   }
 }
@@ -407,12 +412,12 @@ const HEARTBEAT_INTERVAL = 1; // minutes
 chrome.runtime.onInstalled.addListener(function () {
   chrome.alarms.create('morbis-heartbeat', { periodInMinutes: HEARTBEAT_INTERVAL });
   chrome.alarms.create('morbis-state-sync', { periodInMinutes: 5 });
-  console.log('[Background] Heartbeat and state-sync alarms registered');
+  log.log('Heartbeat and state-sync alarms registered');
 });
 
 chrome.alarms.onAlarm.addListener(function (alarm) {
   if (alarm.name === 'morbis-heartbeat') {
-    console.log('[Background] Heartbeat: SW alive');
+    log.log('Heartbeat: SW alive');
   }
   if (alarm.name === 'morbis-state-sync') {
     syncStateToSession().catch(function () {});
@@ -429,7 +434,7 @@ async function syncStateToSession(): Promise<void> {
       extensionEnabled: config.extensionEnabled,
     });
   } catch (e) {
-    console.error('[Background] State sync failed:', e);
+    log.error('State sync failed:', e);
   }
 }
 
@@ -440,14 +445,10 @@ async function persistOnChange(type: string): Promise<void> {
   }
 }
 
-// --- Message Validation (Protocol 3.1) ---
-const VALID_ACTIONS = [
-  'GET_ALL', 'GET_CONFIG', 'GET_URLS',
-  'SET_ROLE', 'TOGGLE_EXTENSION', 'TOGGLE_FEATURE',
-  'CHANGE_FEATURE_MODE', 'RESET_CONFIG',
-  'ADD_URL', 'DELETE_URL', 'TOGGLE_URL',
-  'OPEN_SIDE_PANEL',
-] as const;
+// --- Message Validation ---
+const VALID_ACTIONS = Object.values(MessageTypes).filter(
+  (t) => t !== 'CONFIG_CHANGED',
+);
 
 function validateMessage(msg: unknown): MessagePayload | null {
   if (!msg || typeof msg !== 'object') return null;
@@ -463,4 +464,4 @@ chrome.action.onClicked.addListener(function (tab) {
   }
 });
 
-console.log('[Background] Service worker started');
+log.log('Service worker started');

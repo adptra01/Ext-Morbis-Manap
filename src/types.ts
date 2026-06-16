@@ -1,27 +1,15 @@
-export interface FeatureConfig {
-  enabled: boolean;
-  name?: string;
-  description?: string;
-  allowedRoles: Role[];
-  mode?: string;
-  modes?: Record<string, string>;
-  comingSoon?: boolean;
-}
+import type { Role } from './shared/types';
 
-export type Role = 'casemix' | 'kasir' | 'dokter' | 'apotek' | 'admin';
+export type {
+  FeatureConfig,
+  Role,
+  ExtensionConfig,
+  CustomUrl,
+  FeatureModule,
+} from './shared/types';
 
-export interface ExtensionConfig {
-  extensionEnabled: boolean;
-  currentRole: Role;
-  features: Record<string, FeatureConfig>;
-}
-
-export interface CustomUrl {
-  id: string;
-  url: string;
-  enabled: boolean;
-  isDefault: boolean;
-}
+export { MessageTypes } from './shared/messaging';
+export type { MessageType } from './shared/messaging';
 
 export interface MessagePayload {
   type: string;
@@ -31,11 +19,6 @@ export interface MessagePayload {
   mode?: string;
   url?: string;
   id?: string;
-}
-
-export interface FeatureModule {
-  name: string;
-  run: () => void;
 }
 
 export interface PopupDOM {
