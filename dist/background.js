@@ -1,144 +1,172 @@
 // MORBIS Ext Unofficial - background.js (Built with esbuild)
-"use strict";
+'use strict';
 var __morbis_bg = (() => {
+  // src/shared/messaging.ts
+  var MessageTypes = {
+    GET_ALL: 'GET_ALL',
+    GET_CONFIG: 'GET_CONFIG',
+    GET_URLS: 'GET_URLS',
+    SET_ROLE: 'SET_ROLE',
+    TOGGLE_EXTENSION: 'TOGGLE_EXTENSION',
+    TOGGLE_FEATURE: 'TOGGLE_FEATURE',
+    CHANGE_FEATURE_MODE: 'CHANGE_FEATURE_MODE',
+    RESET_CONFIG: 'RESET_CONFIG',
+    ADD_URL: 'ADD_URL',
+    DELETE_URL: 'DELETE_URL',
+    TOGGLE_URL: 'TOGGLE_URL',
+    OPEN_SIDE_PANEL: 'OPEN_SIDE_PANEL',
+    CONFIG_CHANGED: 'CONFIG_CHANGED',
+  };
+
+  // src/shared/logger.ts
+  function createLogger(name) {
+    const prefix = `[MORBIS Ext] [${name}]`;
+    return {
+      log: (...args) => console.log(prefix, ...args),
+      warn: (...args) => console.warn(prefix, ...args),
+      error: (...args) => console.error(prefix, ...args),
+    };
+  }
+
   // src/background.ts
-  var STORAGE_KEY = "extensionConfig";
-  var URLS_STORAGE_KEY = "extensionCustomUrls";
+  var log = createLogger('Background');
+  var STORAGE_KEY = 'extensionConfig';
+  var URLS_STORAGE_KEY = 'extensionCustomUrls';
   var ROLES = {
-    CASEMIX: "casemix",
-    KASIR: "kasir",
-    DOKTER: "dokter",
-    APOTEK: "apotek",
-    ADMIN: "admin"
+    CASEMIX: 'casemix',
+    KASIR: 'kasir',
+    DOKTER: 'dokter',
+    APOTEK: 'apotek',
+    ADMIN: 'admin',
   };
   var DEFAULT_CUSTOM_URLS = [
-    { id: "default-1", url: "http://192.168.8.4", enabled: true, isDefault: true },
-    { id: "default-2", url: "http://103.147.236.140", enabled: true, isDefault: true }
+    { id: 'default-1', url: 'http://192.168.8.4', enabled: true, isDefault: true },
+    { id: 'default-2', url: 'http://103.147.236.140', enabled: true, isDefault: true },
   ];
   var DEFAULT_CONFIG = {
     extensionEnabled: true,
-    currentRole: "casemix",
+    currentRole: 'casemix',
     features: {
       openDetailInNewTab: {
         enabled: true,
-        name: "Open Detail Mode",
-        description: "Pilih mode buka detail: tab baru / tab sama",
-        allowedRoles: ["casemix"],
-        mode: "same-tab",
+        name: 'Open Detail Mode',
+        description: 'Pilih mode buka detail: tab baru / tab sama',
+        allowedRoles: ['casemix'],
+        mode: 'same-tab',
         modes: {
-          "same-tab": "Buka di Tab Sama (Default)",
-          "new-tab": "Buka di Tab Baru"
-        }
+          'same-tab': 'Buka di Tab Sama (Default)',
+          'new-tab': 'Buka di Tab Baru',
+        },
       },
       shortcutButtons: {
         enabled: true,
-        allowedRoles: ["casemix"],
-        name: "Shortcut Buttons",
-        description: "Tampilkan tombol shortcut ke pelaksanaan Rajal/Ranap"
+        allowedRoles: ['casemix'],
+        name: 'Shortcut Buttons',
+        description: 'Tampilkan tombol shortcut ke pelaksanaan Rajal/Ranap',
       },
       filterPersistence: {
         enabled: true,
-        allowedRoles: ["casemix", "kasir", "dokter", "apotek"],
-        name: "Filter Persistence State",
-        description: "Simpan otomatis kolom pencarian agar tidak perlu diketik ulang"
+        allowedRoles: ['casemix', 'kasir', 'dokter', 'apotek'],
+        name: 'Filter Persistence State',
+        description: 'Simpan otomatis kolom pencarian agar tidak perlu diketik ulang',
       },
       simplifyBilling: {
         enabled: true,
-        allowedRoles: ["casemix"],
-        name: "Ringkas Rincian Biaya",
-        description: "Ringkaskan tabel cetak rincian biaya menjadi tampilan rekap per unit"
+        allowedRoles: ['casemix'],
+        name: 'Ringkas Rincian Biaya',
+        description: 'Ringkaskan tabel cetak rincian biaya menjadi tampilan rekap per unit',
       },
       scrollButtons: {
         enabled: true,
-        allowedRoles: ["casemix"],
-        name: "Scroll Buttons (Top/Bottom)",
-        description: "Tombol scroll otomatis ke atas dan bawah halaman detail"
+        allowedRoles: ['casemix'],
+        name: 'Scroll Buttons (Top/Bottom)',
+        description: 'Tombol scroll otomatis ke atas dan bawah halaman detail',
       },
       printOptimization: {
         enabled: true,
-        allowedRoles: ["casemix"],
-        name: "Optimasi Cetak",
-        description: "Sembunyikan section kosong & optimasi layout cetak."
+        allowedRoles: ['casemix'],
+        name: 'Optimasi Cetak',
+        description: 'Sembunyikan section kosong & optimasi layout cetak.',
       },
       batchUpload: {
         enabled: false,
-        allowedRoles: ["casemix"],
-        name: "Upload Dokumen Ulang",
-        description: "Upload batch dokumen via paste URL dengan metadata extraction otomatis"
+        allowedRoles: ['casemix'],
+        name: 'Upload Dokumen Ulang',
+        description: 'Upload batch dokumen via paste URL dengan metadata extraction otomatis',
       },
       batchDelete: {
         enabled: false,
-        allowedRoles: ["casemix"],
-        name: "Batch Delete Dokumen",
-        description: "Hapus dokumen yang sudah diupload (safety measures)"
+        allowedRoles: ['casemix'],
+        name: 'Batch Delete Dokumen',
+        description: 'Hapus dokumen yang sudah diupload (safety measures)',
       },
       billingFilterPersistence: {
         enabled: true,
-        allowedRoles: ["kasir", "casemix"],
-        name: "Billing Filter Persistence",
-        description: "Simpan otomatis filter verifikasi billing agar tidak perlu diketik ulang"
+        allowedRoles: ['kasir', 'casemix'],
+        name: 'Billing Filter Persistence',
+        description: 'Simpan otomatis filter verifikasi billing agar tidak perlu diketik ulang',
       },
       doctorFilterPersistence: {
         enabled: true,
-        allowedRoles: ["casemix", "kasir", "dokter", "apotek"],
-        name: "Doctor Filter Persistence",
-        description: "Simpan otomatis filter pelaksanaan dokter agar tidak perlu diketik ulang"
+        allowedRoles: ['casemix', 'kasir', 'dokter', 'apotek'],
+        name: 'Doctor Filter Persistence',
+        description: 'Simpan otomatis filter pelaksanaan dokter agar tidak perlu diketik ulang',
       },
       resepTools: {
         enabled: true,
-        allowedRoles: ["apotek"],
-        name: "Resep Tools",
-        description: "Validasi aturan pakai, UI dosis kondisional, print safety lock"
+        allowedRoles: ['apotek'],
+        name: 'Resep Tools',
+        description: 'Validasi aturan pakai, UI dosis kondisional, print safety lock',
       },
       fixJasaPelayanan: {
         enabled: true,
-        allowedRoles: ["apotek"],
-        name: "Fix Jasa Pelayanan Reset",
-        description: "Cegah reset otomatis kolom Jasa Pelayanan ke 0 pada penjualan bebas"
+        allowedRoles: ['apotek'],
+        name: 'Fix Jasa Pelayanan Reset',
+        description: 'Cegah reset otomatis kolom Jasa Pelayanan ke 0 pada penjualan bebas',
       },
       consultationEnhancer: {
         enabled: true,
-        allowedRoles: ["casemix"],
-        name: "Konsultasi Enhancer",
-        description: "Tampilkan tabel konsultasi dengan DataTables, modal detail, dan info pasien"
+        allowedRoles: ['casemix'],
+        name: 'Konsultasi Enhancer',
+        description: 'Tampilkan tabel konsultasi dengan DataTables, modal detail, dan info pasien',
       },
       cpptSearchFilter: {
         enabled: true,
-        allowedRoles: ["casemix"],
-        name: "CPPT Search & Filter",
-        description: "Cari dan filter data CPPT berdasarkan dokter & tanggal (RAJAL/RANAP)"
+        allowedRoles: ['casemix'],
+        name: 'CPPT Search & Filter',
+        description: 'Cari dan filter data CPPT berdasarkan dokter & tanggal (RAJAL/RANAP)',
       },
       autoVerifBilling: {
         enabled: true,
-        allowedRoles: ["kasir", "casemix"],
-        name: "Auto Verif Billing",
-        description: "Verifikasi billing satu klik: isi otomatis klaim BPJS & bypass konfirmasi"
+        allowedRoles: ['kasir', 'casemix'],
+        name: 'Auto Verif Billing',
+        description: 'Verifikasi billing satu klik: isi otomatis klaim BPJS & bypass konfirmasi',
       },
       resumeValidator: {
         enabled: true,
-        allowedRoles: ["casemix", "dokter"],
-        name: "Resume Validator",
-        description: "Validasi ketat form resume rawat inap agar tidak gagal simpan tanpa error"
+        allowedRoles: ['casemix', 'dokter'],
+        name: 'Resume Validator',
+        description: 'Validasi ketat form resume rawat inap agar tidak gagal simpan tanpa error',
       },
       antrianTools: {
         enabled: true,
-        allowedRoles: ["casemix", "admin"],
-        name: "Antrian Tools",
-        description: "Sederhanakan antrian jadi 1 jalur & perbaiki tombol reset antrian"
+        allowedRoles: ['casemix', 'admin'],
+        name: 'Antrian Tools',
+        description: 'Sederhanakan antrian jadi 1 jalur & perbaiki tombol reset antrian',
       },
       ttvEditor: {
         enabled: true,
-        allowedRoles: ["casemix", "dokter"],
-        name: "TTV Editor (Surat Pengantar)",
-        description: "Buka field TTV read-only jadi editable di Surat Transfer Pasien Internal"
+        allowedRoles: ['casemix', 'dokter'],
+        name: 'TTV Editor (Surat Pengantar)',
+        description: 'Buka field TTV read-only jadi editable di Surat Transfer Pasien Internal',
       },
       resumeModal: {
         enabled: true,
-        allowedRoles: ["casemix"],
-        name: "Resume Rajal Tab",
-        description: "Tab resume rawat jalan di halaman detail M-KLAIM"
-      }
-    }
+        allowedRoles: ['casemix'],
+        name: 'Resume Rajal Tab',
+        description: 'Tab resume rawat jalan di halaman detail M-KLAIM',
+      },
+    },
   };
   function migrateConfig(config) {
     if (!config || !config.features) return JSON.parse(JSON.stringify(DEFAULT_CONFIG));
@@ -158,17 +186,13 @@ var __morbis_bg = (() => {
       if (!Array.isArray(currentRoles) || currentRoles.length === 0) {
         newFeatures[key].allowedRoles = [...defaultRoles];
       } else {
-        const unknown = currentRoles.filter(
-          (r) => !ALL_KNOWN_ROLES.includes(r)
-        );
+        const unknown = currentRoles.filter((r) => !ALL_KNOWN_ROLES.includes(r));
         if (unknown.length > 0) {
-          newFeatures[key].allowedRoles = currentRoles.filter(
-            (r) => ALL_KNOWN_ROLES.includes(r)
-          );
+          newFeatures[key].allowedRoles = currentRoles.filter((r) => ALL_KNOWN_ROLES.includes(r));
         }
       }
     }
-    for (const key of ["filterPersistence", "doctorFilterPersistence"]) {
+    for (const key of ['filterPersistence', 'doctorFilterPersistence']) {
       if (newFeatures[key]) {
         newFeatures[key].allowedRoles = [...Object.values(ROLES)];
       }
@@ -179,7 +203,7 @@ var __morbis_bg = (() => {
       printOpt.enabled = true;
     }
     if (!config.currentRole) {
-      config.currentRole = "casemix";
+      config.currentRole = 'casemix';
     }
     config.features = newFeatures;
     return config;
@@ -196,7 +220,7 @@ var __morbis_bg = (() => {
       await chrome.storage.sync.set({ [STORAGE_KEY]: config });
       return config;
     } catch (e) {
-      console.error("[Background] Error loading config:", e);
+      log.error('Error loading config:', e);
       return JSON.parse(JSON.stringify(DEFAULT_CONFIG));
     }
   }
@@ -219,161 +243,161 @@ var __morbis_bg = (() => {
       });
       return merged;
     } catch (e) {
-      console.error("[Background] Error loading URLs:", e);
+      log.error('Error loading URLs:', e);
       return JSON.parse(JSON.stringify(DEFAULT_CUSTOM_URLS));
     }
   }
   async function broadcastConfigChange() {
     const tabs = await chrome.tabs.query({});
     for (const tab of tabs) {
-      if (tab.id && tab.url && (tab.url.includes("192.168.8.4") || tab.url.includes("103.147.236.140"))) {
-        chrome.tabs.sendMessage(tab.id, { type: "CONFIG_CHANGED" }).catch(() => {
-        });
+      if (
+        tab.id &&
+        tab.url &&
+        (tab.url.includes('192.168.8.4') || tab.url.includes('103.147.236.140'))
+      ) {
+        chrome.tabs.sendMessage(tab.id, { type: 'CONFIG_CHANGED' }).catch(() => {});
       }
     }
   }
-  chrome.runtime.onMessage.addListener(
-    (message, _sender, sendResponse) => {
-      const validated = validateMessage(message);
-      if (!validated) {
-        sendResponse({ error: "Invalid message" });
+  chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+    const validated = validateMessage(message);
+    if (!validated) {
+      sendResponse({ error: 'Invalid message' });
+      return false;
+    }
+    persistOnChange(validated.type);
+    switch (validated.type) {
+      case 'GET_ALL': {
+        (async () => {
+          const [config, urls] = await Promise.all([loadConfig(), loadUrls()]);
+          sendResponse({ config, urls, defaultConfig: DEFAULT_CONFIG });
+        })();
+        return true;
+      }
+      case 'GET_CONFIG': {
+        loadConfig().then((c) => sendResponse({ config: c }));
+        return true;
+      }
+      case 'GET_URLS': {
+        loadUrls().then((u) => sendResponse({ urls: u }));
+        return true;
+      }
+      case 'SET_ROLE': {
+        (async () => {
+          const config = await loadConfig();
+          config.currentRole = validated.role;
+          await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+          broadcastConfigChange();
+          sendResponse({ success: true });
+        })();
+        return true;
+      }
+      case 'TOGGLE_EXTENSION': {
+        (async () => {
+          const config = await loadConfig();
+          config.extensionEnabled = validated.enabled;
+          await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+          broadcastConfigChange();
+          sendResponse({ success: true });
+        })();
+        return true;
+      }
+      case 'TOGGLE_FEATURE': {
+        (async () => {
+          const config = await loadConfig();
+          if (config.features[validated.key]) {
+            config.features[validated.key].enabled = validated.enabled;
+            await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+            broadcastConfigChange();
+          }
+          sendResponse({ success: true });
+        })();
+        return true;
+      }
+      case 'CHANGE_FEATURE_MODE': {
+        (async () => {
+          const config = await loadConfig();
+          if (config.features[validated.key]) {
+            config.features[validated.key].mode = validated.mode;
+            await chrome.storage.sync.set({ [STORAGE_KEY]: config });
+          }
+          sendResponse({ success: true });
+        })();
+        return true;
+      }
+      case 'RESET_CONFIG': {
+        (async () => {
+          await chrome.storage.sync.set({
+            [STORAGE_KEY]: JSON.parse(JSON.stringify(DEFAULT_CONFIG)),
+          });
+          broadcastConfigChange();
+          sendResponse({ success: true });
+        })();
+        return true;
+      }
+      case 'ADD_URL': {
+        (async () => {
+          const urls = await loadUrls();
+          urls.push({
+            id: 'url-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+            url: validated.url,
+            enabled: true,
+            isDefault: false,
+          });
+          await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
+          broadcastConfigChange();
+          sendResponse({ success: true });
+        })();
+        return true;
+      }
+      case 'DELETE_URL': {
+        (async () => {
+          let urls = await loadUrls();
+          urls = urls.filter((u) => u.id !== validated.id || u.isDefault);
+          await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
+          broadcastConfigChange();
+          sendResponse({ success: true });
+        })();
+        return true;
+      }
+      case 'TOGGLE_URL': {
+        (async () => {
+          const urls = await loadUrls();
+          for (const u of urls) {
+            if (u.id === validated.id) u.enabled = validated.enabled;
+          }
+          await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
+          broadcastConfigChange();
+          sendResponse({ success: true });
+        })();
+        return true;
+      }
+      case 'OPEN_SIDE_PANEL': {
+        (async () => {
+          const tab = _sender.tab;
+          if (tab?.id) {
+            await chrome.sidePanel.open({ tabId: tab.id });
+          }
+          sendResponse({ success: true });
+        })();
+        return true;
+      }
+      default:
         return false;
-      }
-      persistOnChange(validated.type);
-      switch (validated.type) {
-        case "GET_ALL": {
-          (async () => {
-            const [config, urls] = await Promise.all([loadConfig(), loadUrls()]);
-            sendResponse({ config, urls, defaultConfig: DEFAULT_CONFIG });
-          })();
-          return true;
-        }
-        case "GET_CONFIG": {
-          loadConfig().then((c) => sendResponse({ config: c }));
-          return true;
-        }
-        case "GET_URLS": {
-          loadUrls().then((u) => sendResponse({ urls: u }));
-          return true;
-        }
-        case "SET_ROLE": {
-          (async () => {
-            const config = await loadConfig();
-            config.currentRole = validated.role;
-            await chrome.storage.sync.set({ [STORAGE_KEY]: config });
-            broadcastConfigChange();
-            sendResponse({ success: true });
-          })();
-          return true;
-        }
-        case "TOGGLE_EXTENSION": {
-          (async () => {
-            const config = await loadConfig();
-            config.extensionEnabled = validated.enabled;
-            await chrome.storage.sync.set({ [STORAGE_KEY]: config });
-            broadcastConfigChange();
-            sendResponse({ success: true });
-          })();
-          return true;
-        }
-        case "TOGGLE_FEATURE": {
-          (async () => {
-            const config = await loadConfig();
-            if (config.features[validated.key]) {
-              config.features[validated.key].enabled = validated.enabled;
-              await chrome.storage.sync.set({ [STORAGE_KEY]: config });
-              broadcastConfigChange();
-            }
-            sendResponse({ success: true });
-          })();
-          return true;
-        }
-        case "CHANGE_FEATURE_MODE": {
-          (async () => {
-            const config = await loadConfig();
-            if (config.features[validated.key]) {
-              config.features[validated.key].mode = validated.mode;
-              await chrome.storage.sync.set({ [STORAGE_KEY]: config });
-            }
-            sendResponse({ success: true });
-          })();
-          return true;
-        }
-        case "RESET_CONFIG": {
-          (async () => {
-            await chrome.storage.sync.set({
-              [STORAGE_KEY]: JSON.parse(JSON.stringify(DEFAULT_CONFIG))
-            });
-            broadcastConfigChange();
-            sendResponse({ success: true });
-          })();
-          return true;
-        }
-        case "ADD_URL": {
-          (async () => {
-            const urls = await loadUrls();
-            urls.push({
-              id: "url-" + Date.now() + "-" + Math.random().toString(36).substr(2, 9),
-              url: validated.url,
-              enabled: true,
-              isDefault: false
-            });
-            await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
-            broadcastConfigChange();
-            sendResponse({ success: true });
-          })();
-          return true;
-        }
-        case "DELETE_URL": {
-          (async () => {
-            let urls = await loadUrls();
-            urls = urls.filter((u) => u.id !== validated.id || u.isDefault);
-            await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
-            broadcastConfigChange();
-            sendResponse({ success: true });
-          })();
-          return true;
-        }
-        case "TOGGLE_URL": {
-          (async () => {
-            const urls = await loadUrls();
-            for (const u of urls) {
-              if (u.id === validated.id) u.enabled = validated.enabled;
-            }
-            await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
-            broadcastConfigChange();
-            sendResponse({ success: true });
-          })();
-          return true;
-        }
-        case "OPEN_SIDE_PANEL": {
-          (async () => {
-            const tab = _sender.tab;
-            if (tab?.id) {
-              await chrome.sidePanel.open({ tabId: tab.id });
-            }
-            sendResponse({ success: true });
-          })();
-          return true;
-        }
-        default:
-          return false;
-      }
     }
-  );
-  var HEARTBEAT_INTERVAL = 1;
-  chrome.runtime.onInstalled.addListener(function() {
-    chrome.alarms.create("morbis-heartbeat", { periodInMinutes: HEARTBEAT_INTERVAL });
-    chrome.alarms.create("morbis-state-sync", { periodInMinutes: 5 });
-    console.log("[Background] Heartbeat and state-sync alarms registered");
   });
-  chrome.alarms.onAlarm.addListener(function(alarm) {
-    if (alarm.name === "morbis-heartbeat") {
-      console.log("[Background] Heartbeat: SW alive");
+  var HEARTBEAT_INTERVAL = 1;
+  chrome.runtime.onInstalled.addListener(function () {
+    chrome.alarms.create('morbis-heartbeat', { periodInMinutes: HEARTBEAT_INTERVAL });
+    chrome.alarms.create('morbis-state-sync', { periodInMinutes: 5 });
+    log.log('Heartbeat and state-sync alarms registered');
+  });
+  chrome.alarms.onAlarm.addListener(function (alarm) {
+    if (alarm.name === 'morbis-heartbeat') {
+      log.log('Heartbeat: SW alive');
     }
-    if (alarm.name === "morbis-state-sync") {
-      syncStateToSession().catch(function() {
-      });
+    if (alarm.name === 'morbis-state-sync') {
+      syncStateToSession().catch(function () {});
     }
   });
   async function syncStateToSession() {
@@ -383,43 +407,37 @@ var __morbis_bg = (() => {
         lastHeartbeat: Date.now(),
         lastSync: Date.now(),
         currentRole: config.currentRole,
-        extensionEnabled: config.extensionEnabled
+        extensionEnabled: config.extensionEnabled,
       });
     } catch (e) {
-      console.error("[Background] State sync failed:", e);
+      log.error('State sync failed:', e);
     }
   }
   async function persistOnChange(type) {
-    if (["SET_ROLE", "TOGGLE_EXTENSION", "TOGGLE_FEATURE", "CHANGE_FEATURE_MODE", "RESET_CONFIG"].includes(type)) {
+    if (
+      [
+        'SET_ROLE',
+        'TOGGLE_EXTENSION',
+        'TOGGLE_FEATURE',
+        'CHANGE_FEATURE_MODE',
+        'RESET_CONFIG',
+      ].includes(type)
+    ) {
       await syncStateToSession();
     }
   }
-  var VALID_ACTIONS = [
-    "GET_ALL",
-    "GET_CONFIG",
-    "GET_URLS",
-    "SET_ROLE",
-    "TOGGLE_EXTENSION",
-    "TOGGLE_FEATURE",
-    "CHANGE_FEATURE_MODE",
-    "RESET_CONFIG",
-    "ADD_URL",
-    "DELETE_URL",
-    "TOGGLE_URL",
-    "OPEN_SIDE_PANEL"
-  ];
+  var VALID_ACTIONS = Object.values(MessageTypes).filter((t) => t !== 'CONFIG_CHANGED');
   function validateMessage(msg) {
-    if (!msg || typeof msg !== "object") return null;
+    if (!msg || typeof msg !== 'object') return null;
     const m = msg;
-    if (typeof m.type !== "string" || !VALID_ACTIONS.includes(m.type)) return null;
+    if (typeof m.type !== 'string' || !VALID_ACTIONS.includes(m.type)) return null;
     return m;
   }
-  chrome.action.onClicked.addListener(function(tab) {
+  chrome.action.onClicked.addListener(function (tab) {
     if (tab.id) {
-      chrome.sidePanel.open({ tabId: tab.id }).catch(function() {
-      });
+      chrome.sidePanel.open({ tabId: tab.id }).catch(function () {});
     }
   });
-  console.log("[Background] Service worker started");
+  log.log('Service worker started');
 })();
 //# sourceMappingURL=background.js.map

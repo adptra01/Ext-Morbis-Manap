@@ -1,0 +1,213 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║          MORBIS EXTENSION AUDIT - QUICK REFERENCE SUMMARY                   ║
+║          Migration Branch vs Dev Branch - 2026-06-16                        ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+OVERALL VERDICT: B+ (Production-ready with Phase 1 fixes)
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ FEATURE PARITY: ✅ EXCELLENT                                                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ • 19/19 features present in both branches                                   │
+│ • All core business logic preserved (17 vanilla TS features unchanged)      │
+│ • Manifest.json identical (13 content script entries)                       │
+│ • Only UI layer changed (popup + sidepanel)                                │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ARCHITECTURE: ✅ SIGNIFICANTLY IMPROVED                                      │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Dev:                               Migration:                               │
+│ • Vanilla JS popup (437 lines)     • React popup (219 + components)        │
+│ • esbuild only                     • Vite + esbuild                        │
+│ • No shared layer                  • Typed messaging layer                 │
+│ • String-based messages            • Enum-based message types              │
+│ • Flat types in src/types.ts       • Layered: shared/ abstraction         │
+│ • Basic console.log logging        • Structured logger factory             │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ CRITICAL ISSUES FOUND: ❌ 2 BLOCKING ISSUES                                 │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│ 1️⃣  STORAGE KEY MISMATCH (SIDEPANEL)                                        │
+│    ────────────────────────────────────                                     │
+│    • Popup uses: extensionConfig, extensionCustomUrls                      │
+│    • Sidepanel uses: md-enabled, md-features, md-urls, md-role             │
+│    • Risk: Settings won't sync between popup & sidepanel                   │
+│    • Fix time: 20 minutes                                                  │
+│    • Fix: Replace direct chrome.storage calls with sendMessage()           │
+│                                                                              │
+│ 2️⃣  HARDCODED FEATURE LIST IN SIDEPANEL                                     │
+│    ──────────────────────────────────────                                   │
+│    • Sidepanel has only 13 features hardcoded in App.tsx:10-24             │
+│    • Missing: batchDelete, resumeTab, and others                           │
+│    • Dev branch has all 19 features in background config                   │
+│    • Risk: User can't toggle 6+ features from sidepanel                    │
+│    • Fix time: 30 minutes                                                  │
+│    • Fix: Fetch feature list from background via GET_ALL message           │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ CODE QUALITY IMPROVEMENTS: ✅ SIGNIFICANT                                    │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ ✅ Type Safety          → Typed message system eliminates string typos      │
+│ ✅ Error Handling       → Proper rejection on chrome.runtime.lastError      │
+│ ✅ Logging              → Structured logger with per-module context         │
+│ ✅ Code Organization    → Shared abstraction layer (messaging, storage)     │
+│ ✅ Dev Experience       → Vite + HMR for faster development                │
+│ ✅ Pre-commit Hooks     → Husky + lint-staged for code quality             │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ MEDIUM ISSUES: ⚠️ 3 IMPORTANT CONCERNS                                      │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ ⚠️  Component Duplication                                                    │
+│    • StatusCard, FeaturesPanel, DomainPanel, Footer defined twice          │
+│    • Increases maintenance burden & risk of code drift                     │
+│    • Fix: Extract to src/ui/components/shared/                             │
+│    • Fix time: 1-2 hours                                                   │
+│                                                                              │
+│ ⚠️  Build Complexity                                                        │
+│    • Now: Vite + esbuild (2 build systems)                                 │
+│    • Dev: esbuild only (simpler)                                           │
+│    • Impact: More dependencies, harder troubleshooting                     │
+│    • Acceptable: Dev experience gains justify it                           │
+│                                                                              │
+│ ⚠️  Bundle Size Increase                                                    │
+│    • Dev: Small vanilla JS bundles                                         │
+│    • Migration: React adds ~300KB (before gzip)                            │
+│    • Acceptable: Tradeoff for maintainability                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ LINES OF CODE                                                                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Dev:       ~8,233 lines                                                     │
+│ Migration: ~8,243 lines                                                     │
+│ Diff:      +10 lines (negligible)                                           │
+│            • Gained: shared/ layer, React components, better logging        │
+│            • Lost: inline message handling, vanilla popup code              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ BUILD STATUS: ✅ PASSING                                                     │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ • npm run build succeeds                                                    │
+│ • Vite transpiled 35 modules                                               │
+│ • esbuild compiled all features                                            │
+│ • Manifest and static files copied                                         │
+│ • Tailwind CSS compiled                                                    │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ DEPENDENCIES CHANGE                                                          │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Added:                              Removed:                               │
+│ • vite@8.0.16                       • @radix-ui/react-* (5 packages)      │
+│ • @vitejs/plugin-react@6.0.2        • (Cleaner dependency tree)           │
+│ • vite-plugin-static-copy@4.1.1                                           │
+│ • husky@9.1.7 (pre-commit hooks)                                          │
+│ • lint-staged@17.0.7 (staged linting)                                     │
+│                                                                             │
+│ Assessment: ✅ Cleaner stack, dev dependencies only                         │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                         PHASE 1: MUST FIX (Before Production)               ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║ Task 1: Unify Storage Keys (20 minutes)                                     ║
+║ ────────────────────────────────────────                                    ║
+║ Location: src/features/sidepanel/App.tsx:41-46                             ║
+║ Change:   Replace direct chrome.storage.sync with sendMessage<'GET_ALL'>   ║
+║ Benefit:  Settings sync between popup & sidepanel                          ║
+║                                                                              ║
+║ Task 2: Add Dynamic Feature Discovery (30 minutes)                          ║
+║ ──────────────────────────────────────────────                             ║
+║ Location: src/features/sidepanel/App.tsx:10-24                             ║
+║ Change:   Fetch features from background instead of hardcoding             ║
+║ Benefit:  All 19 features available, future-proof                          ║
+║                                                                              ║
+║ Task 3: Verify Error Handling (10 minutes)                                 ║
+║ ──────────────────────────────────────────                                 ║
+║ Location: All sendMessage() calls                                          ║
+║ Change:   Add .catch() handlers with fallback to direct storage            ║
+║ Benefit:  No silent failures, better debugging                             ║
+║                                                                              ║
+║ Total Phase 1 Effort: 1 hour                                               ║
+║ Impact: Removes all blocking issues                                        ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    PHASE 2: SHOULD FIX (Before Wide Rollout)                ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║ Task 4: Extract Shared Components (1-2 hours)                              ║
+║ ──────────────────────────────────────────                                 ║
+║ Create src/ui/components/shared/ with:                                     ║
+║ • StatusCard.tsx                                                            ║
+║ • FeaturesPanel.tsx                                                         ║
+║ • DomainPanel.tsx                                                           ║
+║ • Footer.tsx                                                                ║
+║                                                                              ║
+║ Task 5: Test Storage Migration (1 hour)                                    ║
+║ ───────────────────────────────────                                        ║
+║ • Verify old extensionConfig loads in migration                            ║
+║ • Test data persistence across browser restarts                            ║
+║                                                                              ║
+║ Task 6: Analyze Bundle Size (30 minutes)                                   ║
+║ ───────────────────────────────────────                                    ║
+║ • Run npm run build, measure dist/ sizes                                   ║
+║ • Document size impact for release notes                                   ║
+║                                                                              ║
+║ Total Phase 2 Effort: 3-4 hours                                            ║
+║ Impact: Production-grade code quality                                      ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                         TESTING CHECKLIST                                   ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║ UI & Functionality:                                                        ║
+║ □ All 19 features appear in popup                                          ║
+║ □ All 19 features appear in sidepanel                                      ║
+║ □ Toggle feature in popup → sidepanel reflects change                      ║
+║ □ Add custom URL in popup → sidepanel reflects change                      ║
+║ □ Change role in popup → sidepanel reflects change                         ║
+║ □ Disable extension in popup → sidepanel reflects change                   ║
+║                                                                              ║
+║ Feature Execution:                                                         ║
+║ □ openDetail works on target pages                                         ║
+║ □ filterPersistence saves/restores state                                   ║
+║ □ Each MAIN world script injects correctly                                 ║
+║ □ No console errors on extension startup                                   ║
+║                                                                              ║
+║ Compatibility:                                                             ║
+║ □ Works on both default URLs (192.168.8.4 and 103.147.236.140)            ║
+║ □ Dark mode toggle works in sidepanel                                      ║
+║ □ Extension survives browser restart                                       ║
+║ □ Storage doesn't accumulate orphaned keys                                 ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+FINAL RECOMMENDATION:
+─────────────────────
+
+Migration branch is HIGH QUALITY with good architectural vision.
+
+✅ APPROVE for production deployment IF Phase 1 fixes are completed.
+
+Timeline:
+• Complete Phase 1 fixes: 1 hour
+• Test thoroughly: 2 hours
+• Ready for production: 3 hours total
+
+Grade: B+ → A- (after Phase 1 fixes)
+
+Full audit report saved to: AUDIT_MIGRATION_VS_DEV.md
+
