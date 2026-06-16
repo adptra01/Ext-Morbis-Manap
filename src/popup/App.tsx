@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { sendMessage, MessageTypes } from '../shared/messaging';
 import type { Role, ExtensionConfig, CustomUrl } from './types';
+import { ErrorBoundary } from '../ui/components/ErrorBoundary';
 import { StatusCard } from './StatusCard';
 import { FeaturesPanel } from './FeaturesPanel';
 import { DomainPanel } from './DomainPanel';
@@ -187,71 +188,76 @@ export function App() {
   }
 
   return (
-    <div className="w-[340px] min-h-[200px] max-h-[600px] overflow-y-auto">
-      {/* Header */}
-      <div className="px-4 pt-3 pb-2 border-b border-[var(--md-gray-200)]">
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded bg-[#2469f0] flex items-center justify-center">
-            <span className="text-white text-[10px] font-bold">M</span>
-          </div>
-          <div>
-            <h1 className="text-md-sm font-semibold text-[var(--md-gray-800)]">MORBIS Ext</h1>
-            <p className="text-[10px] text-[var(--md-gray-500)]">Produktivitas SIMRS</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Status & Role */}
-      <div className="px-4 py-2.5">
-        <StatusCard
-          enabled={config.extensionEnabled}
-          role={config.currentRole}
-          onToggle={handleToggleExtension}
-          onRoleChange={handleRoleChange}
-        />
-      </div>
-
-      {/* Features Section */}
-      <div className="px-4 pb-2">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] font-semibold text-[var(--md-gray-500)] uppercase tracking-wider">
-            Fitur
-          </span>
-        </div>
-        <FeaturesPanel
-          features={config.features}
-          role={config.currentRole}
-          onToggle={handleFeatureToggle}
-          onModeChange={handleModeChange}
-        />
-      </div>
-
-      {/* Domain Section */}
-      <div className="px-4 pb-2">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] font-semibold text-[var(--md-gray-500)] uppercase tracking-wider">
-            Domain
-          </span>
-        </div>
-        <DomainPanel
-          urls={urls}
-          onAdd={handleAddUrl}
-          onRemove={handleRemoveUrl}
-          onToggle={handleToggleUrl}
-        />
-      </div>
-
-      {/* Footer */}
-      <Footer onReload={reloadActiveTab} onReset={handleReset} />
-
-      {/* Toast */}
-      {toast && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 animate-slide-up">
-          <div className="px-4 py-2 bg-[var(--md-gray-800)] text-white text-md-xs rounded-lg shadow-lg">
-            {toast}
+    <ErrorBoundary>
+      <div className="w-[340px] min-h-[200px] max-h-[600px] overflow-y-auto">
+        {/* Header */}
+        <div className="px-4 pt-3 pb-2 border-b border-[var(--md-gray-200)]">
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 rounded bg-[#2469f0] flex items-center justify-center">
+              <span className="text-white text-[10px] font-bold">M</span>
+            </div>
+            <div>
+              <h1 className="text-md-sm font-semibold text-[var(--md-gray-800)]">MORBIS Ext</h1>
+              <p className="text-[10px] text-[var(--md-gray-500)]">Produktivitas SIMRS</p>
+            </div>
           </div>
         </div>
-      )}
-    </div>
+
+        {/* Status & Role */}
+        <div className="px-4 py-2.5">
+          <StatusCard
+            enabled={config.extensionEnabled}
+            role={config.currentRole}
+            onToggle={handleToggleExtension}
+            onRoleChange={handleRoleChange}
+          />
+        </div>
+
+        {/* Features Section */}
+        <div className="px-4 pb-2">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] font-semibold text-[var(--md-gray-500)] uppercase tracking-wider">
+              Fitur
+            </span>
+          </div>
+          <FeaturesPanel
+            features={config.features}
+            role={config.currentRole}
+            onToggle={handleFeatureToggle}
+            onModeChange={handleModeChange}
+          />
+        </div>
+
+        {/* Domain Section */}
+        <div className="px-4 pb-2">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] font-semibold text-[var(--md-gray-500)] uppercase tracking-wider">
+              Domain
+            </span>
+          </div>
+          <DomainPanel
+            urls={urls}
+            onAdd={handleAddUrl}
+            onRemove={handleRemoveUrl}
+            onToggle={handleToggleUrl}
+          />
+        </div>
+
+        {/* Footer */}
+        <Footer onReload={reloadActiveTab} onReset={handleReset} />
+
+        {/* Toast */}
+        {toast && (
+          <div
+            className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 animate-slide-up"
+            role="alert"
+          >
+            <div className="px-4 py-2 bg-[var(--md-gray-800)] text-white text-md-xs rounded-lg shadow-lg">
+              {toast}
+            </div>
+          </div>
+        )}
+      </div>
+    </ErrorBoundary>
   );
 }

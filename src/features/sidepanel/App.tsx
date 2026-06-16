@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useDarkMode } from '../../ui/hooks/useDarkMode';
 import { sendMessage, MessageTypes } from '../../shared/messaging';
+import { ErrorBoundary } from '../../ui/components/ErrorBoundary';
 import { StatusCard } from './StatusCard';
 import { FeaturesPanel } from './FeaturesPanel';
 import { DomainPanel } from './DomainPanel';
@@ -277,115 +278,120 @@ export function App() {
   }, [handleReload, showToast]);
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-[var(--md-gray-900)]">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--md-gray-200)]">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md bg-[#2469f0] flex items-center justify-center">
-            <span className="text-white text-md-xs font-bold">M</span>
+    <ErrorBoundary>
+      <div className="flex flex-col h-full bg-white dark:bg-[var(--md-gray-900)]">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--md-gray-200)]">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-md bg-[#2469f0] flex items-center justify-center">
+              <span className="text-white text-md-xs font-bold">M</span>
+            </div>
+            <span className="text-md-sm font-semibold text-[var(--md-gray-800)]">MORBIS Ext</span>
+            <span className="md-badge md-badge--primary">v1.2</span>
           </div>
-          <span className="text-md-sm font-semibold text-[var(--md-gray-800)]">MORBIS Ext</span>
-          <span className="md-badge md-badge--primary">v1.2</span>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="p-1.5 rounded-md text-[var(--md-gray-400)] hover:text-[var(--md-gray-600)] hover:bg-[var(--md-gray-100)] transition-colors"
+              title="Toggle dark mode"
+            >
+              {resolved ? (
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <circle cx="12" cy="12" r="5" />
+                  <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+                </svg>
+              ) : (
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-1">
+
+        {/* Status Card */}
+        <div className="px-4 py-3">
+          <StatusCard
+            enabled={enabled}
+            role={role}
+            onToggle={handleToggleExtension}
+            onRoleChange={handleRoleChange}
+          />
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-0 px-4 border-b border-[var(--md-gray-200)]">
           <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="p-1.5 rounded-md text-[var(--md-gray-400)] hover:text-[var(--md-gray-600)] hover:bg-[var(--md-gray-100)] transition-colors"
-            title="Toggle dark mode"
+            onClick={() => setActiveTab('features')}
+            className={`px-4 py-2 text-md-sm font-medium border-b-2 transition-colors -mb-[1px] ${
+              activeTab === 'features'
+                ? 'text-[#2469f0] border-[#2469f0]'
+                : 'text-[var(--md-gray-500)] border-transparent hover:text-[var(--md-gray-700)]'
+            }`}
           >
-            {resolved ? (
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <circle cx="12" cy="12" r="5" />
-                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-              </svg>
-            ) : (
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
-              </svg>
-            )}
+            Fitur
+          </button>
+          <button
+            onClick={() => setActiveTab('domain')}
+            className={`px-4 py-2 text-md-sm font-medium border-b-2 transition-colors -mb-[1px] ${
+              activeTab === 'domain'
+                ? 'text-[#2469f0] border-[#2469f0]'
+                : 'text-[var(--md-gray-500)] border-transparent hover:text-[var(--md-gray-700)]'
+            }`}
+          >
+            Domain
           </button>
         </div>
-      </div>
 
-      {/* Status Card */}
-      <div className="px-4 py-3">
-        <StatusCard
-          enabled={enabled}
-          role={role}
-          onToggle={handleToggleExtension}
-          onRoleChange={handleRoleChange}
-        />
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-0 px-4 border-b border-[var(--md-gray-200)]">
-        <button
-          onClick={() => setActiveTab('features')}
-          className={`px-4 py-2 text-md-sm font-medium border-b-2 transition-colors -mb-[1px] ${
-            activeTab === 'features'
-              ? 'text-[#2469f0] border-[#2469f0]'
-              : 'text-[var(--md-gray-500)] border-transparent hover:text-[var(--md-gray-700)]'
-          }`}
-        >
-          Fitur
-        </button>
-        <button
-          onClick={() => setActiveTab('domain')}
-          className={`px-4 py-2 text-md-sm font-medium border-b-2 transition-colors -mb-[1px] ${
-            activeTab === 'domain'
-              ? 'text-[#2469f0] border-[#2469f0]'
-              : 'text-[var(--md-gray-500)] border-transparent hover:text-[var(--md-gray-700)]'
-          }`}
-        >
-          Domain
-        </button>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4 py-3">
-        {activeTab === 'features' && (
-          <FeaturesPanel
-            features={featuresList}
-            enabledFeatures={features}
-            role={role}
-            onToggle={handleFeatureToggle}
-          />
-        )}
-        {activeTab === 'domain' && (
-          <DomainPanel
-            urls={urls}
-            onAdd={handleAddUrl}
-            onRemove={handleRemoveUrl}
-            onToggle={handleToggleUrl}
-          />
-        )}
-      </div>
-
-      {/* Footer */}
-      <Footer onReload={handleReload} onReset={handleReset} />
-
-      {/* Toast */}
-      {toast && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 animate-slide-up">
-          <div className="px-4 py-2 bg-[var(--md-gray-800)] text-white text-md-sm rounded-lg shadow-lg">
-            {toast}
-          </div>
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto px-4 py-3">
+          {activeTab === 'features' && (
+            <FeaturesPanel
+              features={featuresList}
+              enabledFeatures={features}
+              role={role}
+              onToggle={handleFeatureToggle}
+            />
+          )}
+          {activeTab === 'domain' && (
+            <DomainPanel
+              urls={urls}
+              onAdd={handleAddUrl}
+              onRemove={handleRemoveUrl}
+              onToggle={handleToggleUrl}
+            />
+          )}
         </div>
-      )}
-    </div>
+
+        {/* Footer */}
+        <Footer onReload={handleReload} onReset={handleReset} />
+
+        {/* Toast */}
+        {toast && (
+          <div
+            className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 animate-slide-up"
+            role="alert"
+          >
+            <div className="px-4 py-2 bg-[var(--md-gray-800)] text-white text-md-sm rounded-lg shadow-lg">
+              {toast}
+            </div>
+          </div>
+        )}
+      </div>
+    </ErrorBoundary>
   );
 }
