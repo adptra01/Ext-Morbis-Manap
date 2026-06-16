@@ -34,7 +34,7 @@ function validate(data: ResumeData): ValidationError[] {
   data.tindakan.forEach((t, i) => {
     if (!t.kode9) return
     if (!t.namaTindakan) errors.push({ section: `Tindakan #${i + 1}`, message: 'Nama tindakan kosong' })
-    if (!t.kategoriProsedur) errors.push({ section: `Tindakan #${i + 1}`, message: 'Kategori prosedur belum dipilih' })
+
   })
 
   return errors
