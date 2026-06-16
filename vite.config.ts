@@ -19,7 +19,6 @@ export default defineConfig({
       input: {
         popup: resolve(__dirname, 'popup/index.html'),
         sidepanel: resolve(__dirname, 'sidepanel.html'),
-        background: resolve(__dirname, 'src/background.ts'),
       },
       output: {
         entryFileNames: '[name].js',

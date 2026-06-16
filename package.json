@@ -5,8 +5,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node scripts/build.mjs",
-    "build:prod": "node scripts/build.mjs --production",
+    "build": "vite build && node scripts/build.mjs",
+    "build:prod": "vite build && node scripts/build.mjs --production",
     "watch": "node scripts/build.mjs --watch",
     "dev": "vite build --watch",
     "lint": "eslint \"src/**/*.ts\"",

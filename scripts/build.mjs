@@ -23,7 +23,6 @@ async function ensureDir(dir) {
 
 async function copyStaticFiles() {
   const filesToCopy = [
-    { src: 'popup.html', dest: 'popup.html' },
     { src: 'sidepanel.html', dest: 'sidepanel.html' },
     { src: 'icons/bluemorbis16.png', dest: 'icons/bluemorbis16.png' },
     { src: 'icons/bluemorbis32.png', dest: 'icons/bluemorbis32.png' },
@@ -217,15 +216,8 @@ async function build() {
     },
   });
 
-  await buildWithReact({
-    ...commonOptions,
-    entryPoints: [join(srcDir, 'popup.ts')],
-    outfile: join(distDir, 'popup.js'),
-    globalName: '__morbis_popup',
-    banner: {
-      js: '// MORBIS Ext Unofficial - popup.js (Built with esbuild)',
-    },
-  });
+  // Popup migrated to React + Vite (popup/index.html + popup.js)
+  // Build handled by vite.config.ts
 
   await buildWithReact({
     ...commonOptions,
@@ -260,7 +252,6 @@ if (isWatch) {
     entryPoints: [
       join(srcDir, 'core.ts'),
       join(srcDir, 'background.ts'),
-      join(srcDir, 'popup.ts'),
       join(srcDir, 'init.ts'),
     ],
     outdir: distDir,

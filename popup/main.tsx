@@ -1,8 +1,5 @@
 import { createRoot } from 'react-dom/client'
-
-function App() {
-  return <div>MORBIS Ext Popup</div>
-}
+import { App } from '../src/popup/App'
 
 const root = document.getElementById('root')
 if (root) {

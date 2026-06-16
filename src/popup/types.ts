@@ -1,0 +1,11 @@
+import type { Role, ExtensionConfig, CustomUrl, MessagePayload } from '../types'
+
+export interface PopupState {
+  enabled: boolean
+  role: Role
+  config: ExtensionConfig | null
+  urls: CustomUrl[]
+  loading: boolean
+}
+
+export type { Role, ExtensionConfig, CustomUrl, MessagePayload }
