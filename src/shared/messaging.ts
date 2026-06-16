@@ -53,7 +53,15 @@ type ResponseMap = {
 export function sendMessage<T extends MessageType>(
   message: RequestMap[T],
 ): Promise<ResponseMap[T]> {
-  return chrome.runtime.sendMessage(message);
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage(message, (response) => {
+      if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError);
+      } else {
+        resolve(response as ResponseMap[T]);
+      }
+    });
+  });
 }
 
 export type MessageHandler = (
