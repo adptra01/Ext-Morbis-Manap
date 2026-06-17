@@ -112,13 +112,13 @@ var __morbis_feature = (() => {
           }
         }
         function push(heap, node) {
-          var index = heap.length;
+          var index2 = heap.length;
           heap.push(node);
-          a: for (; 0 < index; ) {
-            var parentIndex = (index - 1) >>> 1,
+          a: for (; 0 < index2; ) {
+            var parentIndex = (index2 - 1) >>> 1,
               parent = heap[parentIndex];
             if (0 < compare(parent, node))
-              ((heap[parentIndex] = node), (heap[index] = parent), (index = parentIndex));
+              ((heap[parentIndex] = node), (heap[index2] = parent), (index2 = parentIndex));
             else break a;
           }
         }
@@ -132,19 +132,19 @@ var __morbis_feature = (() => {
           if (last !== first) {
             heap[0] = last;
             a: for (
-              var index = 0, length = heap.length, halfLength = length >>> 1;
-              index < halfLength;
+              var index2 = 0, length = heap.length, halfLength = length >>> 1;
+              index2 < halfLength;
             ) {
-              var leftIndex = 2 * (index + 1) - 1,
+              var leftIndex = 2 * (index2 + 1) - 1,
                 left = heap[leftIndex],
                 rightIndex = leftIndex + 1,
                 right = heap[rightIndex];
               if (0 > compare(left, last))
                 rightIndex < length && 0 > compare(right, left)
-                  ? ((heap[index] = right), (heap[rightIndex] = last), (index = rightIndex))
-                  : ((heap[index] = left), (heap[leftIndex] = last), (index = leftIndex));
+                  ? ((heap[index2] = right), (heap[rightIndex] = last), (index2 = rightIndex))
+                  : ((heap[index2] = left), (heap[leftIndex] = last), (index2 = leftIndex));
               else if (rightIndex < length && 0 > compare(right, last))
-                ((heap[index] = right), (heap[rightIndex] = last), (index = rightIndex));
+                ((heap[index2] = right), (heap[rightIndex] = last), (index2 = rightIndex));
               else break a;
             }
           }
@@ -295,13 +295,15 @@ var __morbis_feature = (() => {
             currentPriorityLevel = previousPriorityLevel;
           }
         };
-        exports.unstable_scheduleCallback = function (priorityLevel, callback, options) {
+        exports.unstable_scheduleCallback = function (priorityLevel, callback, options2) {
           var currentTime = exports.unstable_now();
-          'object' === typeof options && null !== options
-            ? ((options = options.delay),
-              (options =
-                'number' === typeof options && 0 < options ? currentTime + options : currentTime))
-            : (options = currentTime);
+          'object' === typeof options2 && null !== options2
+            ? ((options2 = options2.delay),
+              (options2 =
+                'number' === typeof options2 && 0 < options2
+                  ? currentTime + options2
+                  : currentTime))
+            : (options2 = currentTime);
           switch (priorityLevel) {
             case 1:
               var timeout = -1;
@@ -318,24 +320,24 @@ var __morbis_feature = (() => {
             default:
               timeout = 5e3;
           }
-          timeout = options + timeout;
+          timeout = options2 + timeout;
           priorityLevel = {
             id: taskIdCounter++,
             callback,
             priorityLevel,
-            startTime: options,
+            startTime: options2,
             expirationTime: timeout,
             sortIndex: -1,
           };
-          options > currentTime
-            ? ((priorityLevel.sortIndex = options),
+          options2 > currentTime
+            ? ((priorityLevel.sortIndex = options2),
               push(timerQueue, priorityLevel),
               null === peek(taskQueue) &&
                 priorityLevel === peek(timerQueue) &&
                 (isHostTimeoutScheduled
                   ? (localClearTimeout(taskTimeoutID), (taskTimeoutID = -1))
                   : (isHostTimeoutScheduled = true),
-                requestHostTimeout(handleTimeout, options - currentTime)))
+                requestHostTimeout(handleTimeout, options2 - currentTime)))
             : ((priorityLevel.sortIndex = timeout),
               push(taskQueue, priorityLevel),
               isHostCallbackScheduled ||
@@ -427,7 +429,7 @@ var __morbis_feature = (() => {
           this.refs = emptyObject;
           this.updater = updater || ReactNoopUpdateQueue;
         }
-        function noop() {}
+        function noop3() {}
         function testStringCoercion(value) {
           return '' + value;
         }
@@ -500,7 +502,7 @@ var __morbis_feature = (() => {
                   (innerType = type.displayName || null),
                   null !== innerType ? innerType : getComponentNameFromType(type.type) || 'Memo'
                 );
-              case REACT_LAZY_TYPE:
+              case REACT_LAZY_TYPE2:
                 innerType = type._payload;
                 type = type._init;
                 try {
@@ -511,7 +513,7 @@ var __morbis_feature = (() => {
         }
         function getTaskName(type) {
           if (type === REACT_FRAGMENT_TYPE) return '<>';
-          if ('object' === typeof type && null !== type && type.$$typeof === REACT_LAZY_TYPE)
+          if ('object' === typeof type && null !== type && type.$$typeof === REACT_LAZY_TYPE2)
             return '<...>';
           try {
             var name = getComponentNameFromType(type);
@@ -615,18 +617,18 @@ var __morbis_feature = (() => {
           return newKey;
         }
         function validateChildKeys(node) {
-          isValidElement(node)
+          isValidElement2(node)
             ? node._store && (node._store.validated = 1)
             : 'object' === typeof node &&
               null !== node &&
-              node.$$typeof === REACT_LAZY_TYPE &&
+              node.$$typeof === REACT_LAZY_TYPE2 &&
               ('fulfilled' === node._payload.status
-                ? isValidElement(node._payload.value) &&
+                ? isValidElement2(node._payload.value) &&
                   node._payload.value._store &&
                   (node._payload.value._store.validated = 1)
                 : node._store && (node._store.validated = 1));
         }
-        function isValidElement(object) {
+        function isValidElement2(object) {
           return (
             'object' === typeof object && null !== object && object.$$typeof === REACT_ELEMENT_TYPE
           );
@@ -640,10 +642,10 @@ var __morbis_feature = (() => {
             })
           );
         }
-        function getElementKey(element, index) {
+        function getElementKey(element, index2) {
           return 'object' === typeof element && null !== element && null != element.key
             ? (checkKeyStringCoercion(element.key), escape('' + element.key))
-            : index.toString(36);
+            : index2.toString(36);
         }
         function resolveThenable(thenable) {
           switch (thenable.status) {
@@ -654,7 +656,7 @@ var __morbis_feature = (() => {
             default:
               switch (
                 ('string' === typeof thenable.status
-                  ? thenable.then(noop, noop)
+                  ? thenable.then(noop3, noop3)
                   : ((thenable.status = 'pending'),
                     thenable.then(
                       function (fulfilledValue) {
@@ -694,7 +696,7 @@ var __morbis_feature = (() => {
                   case REACT_PORTAL_TYPE:
                     invokeCallback = true;
                     break;
-                  case REACT_LAZY_TYPE:
+                  case REACT_LAZY_TYPE2:
                     return (
                       (invokeCallback = children._init),
                       mapIntoArray(
@@ -719,7 +721,7 @@ var __morbis_feature = (() => {
                   return c;
                 }))
               : null != callback &&
-                (isValidElement(callback) &&
+                (isValidElement2(callback) &&
                   (null != callback.key &&
                     ((invokeCallback && invokeCallback.key === callback.key) ||
                       checkKeyStringCoercion(callback.key)),
@@ -734,7 +736,7 @@ var __morbis_feature = (() => {
                   )),
                   '' !== nameSoFar &&
                     null != invokeCallback &&
-                    isValidElement(invokeCallback) &&
+                    isValidElement2(invokeCallback) &&
                     null == invokeCallback.key &&
                     invokeCallback._store &&
                     !invokeCallback._store.validated &&
@@ -788,9 +790,9 @@ var __morbis_feature = (() => {
         function mapChildren(children, func, context) {
           if (null == children) return children;
           var result = [],
-            count = 0;
+            count3 = 0;
           mapIntoArray(children, result, '', '', function (child) {
-            return func.call(context, child, count++);
+            return func.call(context, child, count3++);
           });
           return result;
         }
@@ -955,7 +957,7 @@ var __morbis_feature = (() => {
           REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for('react.suspense'),
           REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for('react.suspense_list'),
           REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for('react.memo'),
-          REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for('react.lazy'),
+          REACT_LAZY_TYPE2 = /* @__PURE__ */ Symbol.for('react.lazy'),
           REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for('react.activity'),
           MAYBE_ITERATOR_SYMBOL = Symbol.iterator,
           didWarnStateUpdateForUnmountedComponent = {},
@@ -1083,8 +1085,8 @@ var __morbis_feature = (() => {
               : enqueueTask;
         deprecatedAPIs = Object.freeze({
           __proto__: null,
-          c: function (size) {
-            return resolveDispatcher().useMemoCache(size);
+          c: function (size4) {
+            return resolveDispatcher().useMemoCache(size4);
           },
         });
         var fnName = {
@@ -1113,7 +1115,7 @@ var __morbis_feature = (() => {
             );
           },
           only: function (children) {
-            if (!isValidElement(children))
+            if (!isValidElement2(children))
               throw Error('React.Children.only expected to receive a single React element child.');
             return children;
           },
@@ -1391,11 +1393,11 @@ var __morbis_feature = (() => {
           });
           return elementType;
         };
-        exports.isValidElement = isValidElement;
+        exports.isValidElement = isValidElement2;
         exports.lazy = function (ctor) {
           ctor = { _status: -1, _result: ctor };
           var lazyType = {
-              $$typeof: REACT_LAZY_TYPE,
+              $$typeof: REACT_LAZY_TYPE2,
               _payload: ctor,
               _init: lazyInitializer,
             },
@@ -1454,7 +1456,7 @@ var __morbis_feature = (() => {
               'function' === typeof returnValue.then &&
               (ReactSharedInternals.asyncTransitions++,
               returnValue.then(releaseAsyncTransition, releaseAsyncTransition),
-              returnValue.then(noop, reportGlobalError));
+              returnValue.then(noop3, reportGlobalError));
           } catch (error) {
             reportGlobalError(error);
           } finally {
@@ -1583,7 +1585,7 @@ var __morbis_feature = (() => {
     'node_modules/react-dom/cjs/react-dom.development.js'(exports) {
       'use strict';
       (function () {
-        function noop() {}
+        function noop3() {}
         function testStringCoercion(value) {
           return '' + value;
         }
@@ -1648,29 +1650,29 @@ var __morbis_feature = (() => {
         'undefined' !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ &&
           'function' === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart &&
           __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
-        var React = require_react(),
+        var React34 = require_react(),
           Internals = {
             d: {
-              f: noop,
+              f: noop3,
               r: function () {
                 throw Error(
                   'Invalid form element. requestFormReset must be passed a form that was rendered by React.',
                 );
               },
-              D: noop,
-              C: noop,
-              L: noop,
-              m: noop,
-              X: noop,
-              S: noop,
-              M: noop,
+              D: noop3,
+              C: noop3,
+              L: noop3,
+              m: noop3,
+              X: noop3,
+              S: noop3,
+              M: noop3,
             },
             p: 0,
             findDOMNode: null,
           },
           REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for('react.portal'),
           ReactSharedInternals =
-            React.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
+            React34.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
         ('function' === typeof Map &&
           null != Map.prototype &&
           'function' === typeof Map.prototype.forEach &&
@@ -1705,34 +1707,34 @@ var __morbis_feature = (() => {
                 ));
           }
         };
-        exports.preconnect = function (href, options) {
+        exports.preconnect = function (href, options2) {
           'string' === typeof href && href
-            ? null != options && 'object' !== typeof options
+            ? null != options2 && 'object' !== typeof options2
               ? console.error(
                   'ReactDOM.preconnect(): Expected the `options` argument (second) to be an object but encountered %s instead. The only supported option at this time is `crossOrigin` which accepts a string.',
-                  getValueDescriptorExpectingEnumForWarning(options),
+                  getValueDescriptorExpectingEnumForWarning(options2),
                 )
-              : null != options &&
-                'string' !== typeof options.crossOrigin &&
+              : null != options2 &&
+                'string' !== typeof options2.crossOrigin &&
                 console.error(
                   'ReactDOM.preconnect(): Expected the `crossOrigin` option (second argument) to be a string but encountered %s instead. Try removing this option or passing a string value instead.',
-                  getValueDescriptorExpectingObjectForWarning(options.crossOrigin),
+                  getValueDescriptorExpectingObjectForWarning(options2.crossOrigin),
                 )
             : console.error(
                 'ReactDOM.preconnect(): Expected the `href` argument (first) to be a non-empty string but encountered %s instead.',
                 getValueDescriptorExpectingObjectForWarning(href),
               );
           'string' === typeof href &&
-            (options
-              ? ((options = options.crossOrigin),
-                (options =
-                  'string' === typeof options
-                    ? 'use-credentials' === options
-                      ? options
+            (options2
+              ? ((options2 = options2.crossOrigin),
+                (options2 =
+                  'string' === typeof options2
+                    ? 'use-credentials' === options2
+                      ? options2
                       : ''
                     : void 0))
-              : (options = null),
-            Internals.d.C(href, options));
+              : (options2 = null),
+            Internals.d.C(href, options2));
         };
         exports.prefetchDNS = function (href) {
           if ('string' !== typeof href || !href)
@@ -1741,46 +1743,46 @@ var __morbis_feature = (() => {
               getValueDescriptorExpectingObjectForWarning(href),
             );
           else if (1 < arguments.length) {
-            var options = arguments[1];
-            'object' === typeof options && options.hasOwnProperty('crossOrigin')
+            var options2 = arguments[1];
+            'object' === typeof options2 && options2.hasOwnProperty('crossOrigin')
               ? console.error(
                   'ReactDOM.prefetchDNS(): Expected only one argument, `href`, but encountered %s as a second argument instead. This argument is reserved for future options and is currently disallowed. It looks like the you are attempting to set a crossOrigin property for this DNS lookup hint. Browsers do not perform DNS queries using CORS and setting this attribute on the resource hint has no effect. Try calling ReactDOM.prefetchDNS() with just a single string argument, `href`.',
-                  getValueDescriptorExpectingEnumForWarning(options),
+                  getValueDescriptorExpectingEnumForWarning(options2),
                 )
               : console.error(
                   'ReactDOM.prefetchDNS(): Expected only one argument, `href`, but encountered %s as a second argument instead. This argument is reserved for future options and is currently disallowed. Try calling ReactDOM.prefetchDNS() with just a single string argument, `href`.',
-                  getValueDescriptorExpectingEnumForWarning(options),
+                  getValueDescriptorExpectingEnumForWarning(options2),
                 );
           }
           'string' === typeof href && Internals.d.D(href);
         };
-        exports.preinit = function (href, options) {
+        exports.preinit = function (href, options2) {
           'string' === typeof href && href
-            ? null == options || 'object' !== typeof options
+            ? null == options2 || 'object' !== typeof options2
               ? console.error(
                   'ReactDOM.preinit(): Expected the `options` argument (second) to be an object with an `as` property describing the type of resource to be preinitialized but encountered %s instead.',
-                  getValueDescriptorExpectingEnumForWarning(options),
+                  getValueDescriptorExpectingEnumForWarning(options2),
                 )
-              : 'style' !== options.as &&
-                'script' !== options.as &&
+              : 'style' !== options2.as &&
+                'script' !== options2.as &&
                 console.error(
                   'ReactDOM.preinit(): Expected the `as` property in the `options` argument (second) to contain a valid value describing the type of resource to be preinitialized but encountered %s instead. Valid values for `as` are "style" and "script".',
-                  getValueDescriptorExpectingEnumForWarning(options.as),
+                  getValueDescriptorExpectingEnumForWarning(options2.as),
                 )
             : console.error(
                 'ReactDOM.preinit(): Expected the `href` argument (first) to be a non-empty string but encountered %s instead.',
                 getValueDescriptorExpectingObjectForWarning(href),
               );
-          if ('string' === typeof href && options && 'string' === typeof options.as) {
-            var as = options.as,
-              crossOrigin = getCrossOriginStringAs(as, options.crossOrigin),
-              integrity = 'string' === typeof options.integrity ? options.integrity : void 0,
+          if ('string' === typeof href && options2 && 'string' === typeof options2.as) {
+            var as = options2.as,
+              crossOrigin = getCrossOriginStringAs(as, options2.crossOrigin),
+              integrity = 'string' === typeof options2.integrity ? options2.integrity : void 0,
               fetchPriority =
-                'string' === typeof options.fetchPriority ? options.fetchPriority : void 0;
+                'string' === typeof options2.fetchPriority ? options2.fetchPriority : void 0;
             'style' === as
               ? Internals.d.S(
                   href,
-                  'string' === typeof options.precedence ? options.precedence : void 0,
+                  'string' === typeof options2.precedence ? options2.precedence : void 0,
                   {
                     crossOrigin,
                     integrity,
@@ -1792,28 +1794,28 @@ var __morbis_feature = (() => {
                   crossOrigin,
                   integrity,
                   fetchPriority,
-                  nonce: 'string' === typeof options.nonce ? options.nonce : void 0,
+                  nonce: 'string' === typeof options2.nonce ? options2.nonce : void 0,
                 });
           }
         };
-        exports.preinitModule = function (href, options) {
+        exports.preinitModule = function (href, options2) {
           var encountered = '';
           ('string' === typeof href && href) ||
             (encountered +=
               ' The `href` argument encountered was ' +
               getValueDescriptorExpectingObjectForWarning(href) +
               '.');
-          void 0 !== options && 'object' !== typeof options
+          void 0 !== options2 && 'object' !== typeof options2
             ? (encountered +=
                 ' The `options` argument encountered was ' +
-                getValueDescriptorExpectingObjectForWarning(options) +
+                getValueDescriptorExpectingObjectForWarning(options2) +
                 '.')
-            : options &&
-              'as' in options &&
-              'script' !== options.as &&
+            : options2 &&
+              'as' in options2 &&
+              'script' !== options2.as &&
               (encountered +=
                 ' The `as` option encountered was ' +
-                getValueDescriptorExpectingEnumForWarning(options.as) +
+                getValueDescriptorExpectingEnumForWarning(options2.as) +
                 '.');
           if (encountered)
             console.error(
@@ -1822,7 +1824,7 @@ var __morbis_feature = (() => {
             );
           else
             switch (
-              ((encountered = options && 'string' === typeof options.as ? options.as : 'script'),
+              ((encountered = options2 && 'string' === typeof options2.as ? options2.as : 'script'),
               encountered)
             ) {
               case 'script':
@@ -1836,32 +1838,32 @@ var __morbis_feature = (() => {
                   ));
             }
           if ('string' === typeof href)
-            if ('object' === typeof options && null !== options) {
-              if (null == options.as || 'script' === options.as)
-                ((encountered = getCrossOriginStringAs(options.as, options.crossOrigin)),
+            if ('object' === typeof options2 && null !== options2) {
+              if (null == options2.as || 'script' === options2.as)
+                ((encountered = getCrossOriginStringAs(options2.as, options2.crossOrigin)),
                   Internals.d.M(href, {
                     crossOrigin: encountered,
-                    integrity: 'string' === typeof options.integrity ? options.integrity : void 0,
-                    nonce: 'string' === typeof options.nonce ? options.nonce : void 0,
+                    integrity: 'string' === typeof options2.integrity ? options2.integrity : void 0,
+                    nonce: 'string' === typeof options2.nonce ? options2.nonce : void 0,
                   }));
-            } else null == options && Internals.d.M(href);
+            } else null == options2 && Internals.d.M(href);
         };
-        exports.preload = function (href, options) {
+        exports.preload = function (href, options2) {
           var encountered = '';
           ('string' === typeof href && href) ||
             (encountered +=
               ' The `href` argument encountered was ' +
               getValueDescriptorExpectingObjectForWarning(href) +
               '.');
-          null == options || 'object' !== typeof options
+          null == options2 || 'object' !== typeof options2
             ? (encountered +=
                 ' The `options` argument encountered was ' +
-                getValueDescriptorExpectingObjectForWarning(options) +
+                getValueDescriptorExpectingObjectForWarning(options2) +
                 '.')
-            : ('string' === typeof options.as && options.as) ||
+            : ('string' === typeof options2.as && options2.as) ||
               (encountered +=
                 ' The `as` option encountered was ' +
-                getValueDescriptorExpectingObjectForWarning(options.as) +
+                getValueDescriptorExpectingObjectForWarning(options2.as) +
                 '.');
           encountered &&
             console.error(
@@ -1870,45 +1872,45 @@ var __morbis_feature = (() => {
             );
           if (
             'string' === typeof href &&
-            'object' === typeof options &&
-            null !== options &&
-            'string' === typeof options.as
+            'object' === typeof options2 &&
+            null !== options2 &&
+            'string' === typeof options2.as
           ) {
-            encountered = options.as;
-            var crossOrigin = getCrossOriginStringAs(encountered, options.crossOrigin);
+            encountered = options2.as;
+            var crossOrigin = getCrossOriginStringAs(encountered, options2.crossOrigin);
             Internals.d.L(href, encountered, {
               crossOrigin,
-              integrity: 'string' === typeof options.integrity ? options.integrity : void 0,
-              nonce: 'string' === typeof options.nonce ? options.nonce : void 0,
-              type: 'string' === typeof options.type ? options.type : void 0,
+              integrity: 'string' === typeof options2.integrity ? options2.integrity : void 0,
+              nonce: 'string' === typeof options2.nonce ? options2.nonce : void 0,
+              type: 'string' === typeof options2.type ? options2.type : void 0,
               fetchPriority:
-                'string' === typeof options.fetchPriority ? options.fetchPriority : void 0,
+                'string' === typeof options2.fetchPriority ? options2.fetchPriority : void 0,
               referrerPolicy:
-                'string' === typeof options.referrerPolicy ? options.referrerPolicy : void 0,
-              imageSrcSet: 'string' === typeof options.imageSrcSet ? options.imageSrcSet : void 0,
-              imageSizes: 'string' === typeof options.imageSizes ? options.imageSizes : void 0,
-              media: 'string' === typeof options.media ? options.media : void 0,
+                'string' === typeof options2.referrerPolicy ? options2.referrerPolicy : void 0,
+              imageSrcSet: 'string' === typeof options2.imageSrcSet ? options2.imageSrcSet : void 0,
+              imageSizes: 'string' === typeof options2.imageSizes ? options2.imageSizes : void 0,
+              media: 'string' === typeof options2.media ? options2.media : void 0,
             });
           }
         };
-        exports.preloadModule = function (href, options) {
+        exports.preloadModule = function (href, options2) {
           var encountered = '';
           ('string' === typeof href && href) ||
             (encountered +=
               ' The `href` argument encountered was ' +
               getValueDescriptorExpectingObjectForWarning(href) +
               '.');
-          void 0 !== options && 'object' !== typeof options
+          void 0 !== options2 && 'object' !== typeof options2
             ? (encountered +=
                 ' The `options` argument encountered was ' +
-                getValueDescriptorExpectingObjectForWarning(options) +
+                getValueDescriptorExpectingObjectForWarning(options2) +
                 '.')
-            : options &&
-              'as' in options &&
-              'string' !== typeof options.as &&
+            : options2 &&
+              'as' in options2 &&
+              'string' !== typeof options2.as &&
               (encountered +=
                 ' The `as` option encountered was ' +
-                getValueDescriptorExpectingObjectForWarning(options.as) +
+                getValueDescriptorExpectingObjectForWarning(options2.as) +
                 '.');
           encountered &&
             console.error(
@@ -1916,13 +1918,15 @@ var __morbis_feature = (() => {
               encountered,
             );
           'string' === typeof href &&
-            (options
-              ? ((encountered = getCrossOriginStringAs(options.as, options.crossOrigin)),
+            (options2
+              ? ((encountered = getCrossOriginStringAs(options2.as, options2.crossOrigin)),
                 Internals.d.m(href, {
                   as:
-                    'string' === typeof options.as && 'script' !== options.as ? options.as : void 0,
+                    'string' === typeof options2.as && 'script' !== options2.as
+                      ? options2.as
+                      : void 0,
                   crossOrigin: encountered,
-                  integrity: 'string' === typeof options.integrity ? options.integrity : void 0,
+                  integrity: 'string' === typeof options2.integrity ? options2.integrity : void 0,
                 }))
               : Internals.d.m(href));
         };
@@ -1969,11 +1973,11 @@ var __morbis_feature = (() => {
             ((fiber = fiber.next), id--);
           return fiber;
         }
-        function copyWithSetImpl(obj, path, index, value) {
-          if (index >= path.length) return value;
-          var key = path[index],
+        function copyWithSetImpl(obj, path, index2, value) {
+          if (index2 >= path.length) return value;
+          var key = path[index2],
             updated = isArrayImpl(obj) ? obj.slice() : assign({}, obj);
-          updated[key] = copyWithSetImpl(obj[key], path, index + 1, value);
+          updated[key] = copyWithSetImpl(obj[key], path, index2 + 1, value);
           return updated;
         }
         function copyWithRename(obj, oldPath, newPath) {
@@ -1990,21 +1994,21 @@ var __morbis_feature = (() => {
             return copyWithRenameImpl(obj, oldPath, newPath, 0);
           }
         }
-        function copyWithRenameImpl(obj, oldPath, newPath, index) {
-          var oldKey = oldPath[index],
+        function copyWithRenameImpl(obj, oldPath, newPath, index2) {
+          var oldKey = oldPath[index2],
             updated = isArrayImpl(obj) ? obj.slice() : assign({}, obj);
-          index + 1 === oldPath.length
-            ? ((updated[newPath[index]] = updated[oldKey]),
+          index2 + 1 === oldPath.length
+            ? ((updated[newPath[index2]] = updated[oldKey]),
               isArrayImpl(updated) ? updated.splice(oldKey, 1) : delete updated[oldKey])
-            : (updated[oldKey] = copyWithRenameImpl(obj[oldKey], oldPath, newPath, index + 1));
+            : (updated[oldKey] = copyWithRenameImpl(obj[oldKey], oldPath, newPath, index2 + 1));
           return updated;
         }
-        function copyWithDeleteImpl(obj, path, index) {
-          var key = path[index],
+        function copyWithDeleteImpl(obj, path, index2) {
+          var key = path[index2],
             updated = isArrayImpl(obj) ? obj.slice() : assign({}, obj);
-          if (index + 1 === path.length)
+          if (index2 + 1 === path.length)
             return (isArrayImpl(updated) ? updated.splice(key, 1) : delete updated[key], updated);
-          updated[key] = copyWithDeleteImpl(obj[key], path, index + 1);
+          updated[key] = copyWithDeleteImpl(obj[key], path, index2 + 1);
           return updated;
         }
         function shouldSuspendImpl() {
@@ -2023,7 +2027,7 @@ var __morbis_feature = (() => {
             'Context can only be read while React is rendering. In classes, you can read it in the render method or getDerivedStateFromProps. In function components, you can read it directly in the function body, but not inside Hooks like useReducer() or useMemo().',
           );
         }
-        function noop() {}
+        function noop3() {}
         function warnForMissingKey() {}
         function setToSortedString(set) {
           var array = [];
@@ -2228,7 +2232,7 @@ var __morbis_feature = (() => {
                   (innerType = type.displayName || null),
                   null !== innerType ? innerType : getComponentNameFromType(type.type) || 'Memo'
                 );
-              case REACT_LAZY_TYPE:
+              case REACT_LAZY_TYPE2:
                 innerType = type._payload;
                 type = type._init;
                 try {
@@ -3031,18 +3035,18 @@ var __morbis_feature = (() => {
             expirationTimes = root2.expirationTimes,
             hiddenUpdates = root2.hiddenUpdates;
           for (remainingLanes = previouslyPendingLanes & ~remainingLanes; 0 < remainingLanes; ) {
-            var index = 31 - clz32(remainingLanes),
-              lane = 1 << index;
-            entanglements[index] = 0;
-            expirationTimes[index] = -1;
-            var hiddenUpdatesForLane = hiddenUpdates[index];
+            var index2 = 31 - clz32(remainingLanes),
+              lane = 1 << index2;
+            entanglements[index2] = 0;
+            expirationTimes[index2] = -1;
+            var hiddenUpdatesForLane = hiddenUpdates[index2];
             if (null !== hiddenUpdatesForLane)
               for (
-                hiddenUpdates[index] = null, index = 0;
-                index < hiddenUpdatesForLane.length;
-                index++
+                hiddenUpdates[index2] = null, index2 = 0;
+                index2 < hiddenUpdatesForLane.length;
+                index2++
               ) {
-                var update = hiddenUpdatesForLane[index];
+                var update = hiddenUpdatesForLane[index2];
                 null !== update && (update.lane &= -536870913);
               }
             remainingLanes &= ~lane;
@@ -3065,10 +3069,10 @@ var __morbis_feature = (() => {
         function markRootEntangled(root2, entangledLanes) {
           var rootEntangledLanes = (root2.entangledLanes |= entangledLanes);
           for (root2 = root2.entanglements; rootEntangledLanes; ) {
-            var index = 31 - clz32(rootEntangledLanes),
-              lane = 1 << index;
-            (lane & entangledLanes) | (root2[index] & entangledLanes) &&
-              (root2[index] |= entangledLanes);
+            var index2 = 31 - clz32(rootEntangledLanes),
+              lane = 1 << index2;
+            (lane & entangledLanes) | (root2[index2] & entangledLanes) &&
+              (root2[index2] |= entangledLanes);
             rootEntangledLanes &= ~lane;
           }
         }
@@ -3119,9 +3123,9 @@ var __morbis_feature = (() => {
         function addFiberToLanesMap(root2, fiber, lanes) {
           if (isDevToolsPresent)
             for (root2 = root2.pendingUpdatersLaneMap; 0 < lanes; ) {
-              var index = 31 - clz32(lanes),
-                lane = 1 << index;
-              root2[index].add(fiber);
+              var index2 = 31 - clz32(lanes),
+                lane = 1 << index2;
+              root2[index2].add(fiber);
               lanes &= ~lane;
             }
         }
@@ -3132,16 +3136,16 @@ var __morbis_feature = (() => {
                 memoizedUpdaters = root2.memoizedUpdaters;
               0 < lanes;
             ) {
-              var index = 31 - clz32(lanes);
-              root2 = 1 << index;
-              index = pendingUpdatersLaneMap[index];
-              0 < index.size &&
-                (index.forEach(function (fiber) {
+              var index2 = 31 - clz32(lanes);
+              root2 = 1 << index2;
+              index2 = pendingUpdatersLaneMap[index2];
+              0 < index2.size &&
+                (index2.forEach(function (fiber) {
                   var alternate = fiber.alternate;
                   (null !== alternate && memoizedUpdaters.has(alternate)) ||
                     memoizedUpdaters.add(fiber);
                 }),
-                index.clear());
+                index2.clear());
               lanes &= ~root2;
             }
         }
@@ -3552,7 +3556,7 @@ var __morbis_feature = (() => {
         function validateOptionProps(element, props) {
           null == props.value &&
             ('object' === typeof props.children && null !== props.children
-              ? React.Children.forEach(props.children, function (child) {
+              ? React34.Children.forEach(props.children, function (child) {
                   null == child ||
                     'string' === typeof child ||
                     'number' === typeof child ||
@@ -5142,7 +5146,7 @@ var __morbis_feature = (() => {
               : false;
         }
         function isEventSupported(eventNameSuffix) {
-          if (!canUseDOM) return false;
+          if (!canUseDOM2) return false;
           eventNameSuffix = 'on' + eventNameSuffix;
           var isSupported = eventNameSuffix in document;
           isSupported ||
@@ -5241,13 +5245,13 @@ var __morbis_feature = (() => {
           for (; node && node.firstChild; ) node = node.firstChild;
           return node;
         }
-        function getNodeForCharacterOffset(root2, offset) {
+        function getNodeForCharacterOffset(root2, offset4) {
           var node = getLeafNode(root2);
           root2 = 0;
           for (var nodeEnd; node; ) {
             if (3 === node.nodeType) {
               nodeEnd = root2 + node.textContent.length;
-              if (root2 <= offset && nodeEnd >= offset) return { node, offset: offset - root2 };
+              if (root2 <= offset4 && nodeEnd >= offset4) return { node, offset: offset4 - root2 };
               root2 = nodeEnd;
             }
             a: {
@@ -6075,7 +6079,7 @@ var __morbis_feature = (() => {
           sourceFiber.lanes |= lane;
           var alternate = sourceFiber.alternate;
           null !== alternate && (alternate.lanes |= lane);
-          for (var isHidden = false, parent = sourceFiber.return; null !== parent; )
+          for (var isHidden2 = false, parent = sourceFiber.return; null !== parent; )
             ((parent.childLanes |= lane),
               (alternate = parent.alternate),
               null !== alternate && (alternate.childLanes |= lane),
@@ -6083,17 +6087,17 @@ var __morbis_feature = (() => {
                 ((sourceFiber = parent.stateNode),
                 null === sourceFiber ||
                   sourceFiber._visibility & OffscreenVisible ||
-                  (isHidden = true)),
+                  (isHidden2 = true)),
               (sourceFiber = parent),
               (parent = parent.return));
           return 3 === sourceFiber.tag
             ? ((parent = sourceFiber.stateNode),
-              isHidden &&
+              isHidden2 &&
                 null !== update &&
-                ((isHidden = 31 - clz32(lane)),
+                ((isHidden2 = 31 - clz32(lane)),
                 (sourceFiber = parent.hiddenUpdates),
-                (alternate = sourceFiber[isHidden]),
-                null === alternate ? (sourceFiber[isHidden] = [update]) : alternate.push(update),
+                (alternate = sourceFiber[isHidden2]),
+                null === alternate ? (sourceFiber[isHidden2] = [update]) : alternate.push(update),
                 (update.lane = lane | 536870912)),
               parent)
             : null;
@@ -6157,18 +6161,18 @@ var __morbis_feature = (() => {
             case 0:
               'function' === typeof element
                 ? (needsCompareFamilies = true)
-                : $$typeofNextType === REACT_LAZY_TYPE && (needsCompareFamilies = true);
+                : $$typeofNextType === REACT_LAZY_TYPE2 && (needsCompareFamilies = true);
               break;
             case 11:
               $$typeofNextType === REACT_FORWARD_REF_TYPE
                 ? (needsCompareFamilies = true)
-                : $$typeofNextType === REACT_LAZY_TYPE && (needsCompareFamilies = true);
+                : $$typeofNextType === REACT_LAZY_TYPE2 && (needsCompareFamilies = true);
               break;
             case 14:
             case 15:
               $$typeofNextType === REACT_MEMO_TYPE
                 ? (needsCompareFamilies = true)
-                : $$typeofNextType === REACT_LAZY_TYPE && (needsCompareFamilies = true);
+                : $$typeofNextType === REACT_LAZY_TYPE2 && (needsCompareFamilies = true);
               break;
             default:
               return false;
@@ -6435,7 +6439,7 @@ var __morbis_feature = (() => {
                     case REACT_MEMO_TYPE:
                       fiberTag = 14;
                       break a;
-                    case REACT_LAZY_TYPE:
+                    case REACT_LAZY_TYPE2:
                       fiberTag = 16;
                       resolvedType = null;
                       break a;
@@ -6537,7 +6541,7 @@ var __morbis_feature = (() => {
           treeForkProvider = workInProgress2;
           treeForkCount = totalChildren;
         }
-        function pushTreeId(workInProgress2, totalChildren, index) {
+        function pushTreeId(workInProgress2, totalChildren, index2) {
           warnIfNotHydrating();
           idStack[idStackIndex++] = treeContextId;
           idStack[idStackIndex++] = treeContextOverflow;
@@ -6547,7 +6551,7 @@ var __morbis_feature = (() => {
           workInProgress2 = treeContextOverflow;
           var baseLength = 32 - clz32(baseIdWithLeadingBit) - 1;
           baseIdWithLeadingBit &= ~(1 << baseLength);
-          index += 1;
+          index2 += 1;
           var length = 32 - clz32(totalChildren) + baseLength;
           if (30 < length) {
             var numberOfOverflowBits = baseLength - (baseLength % 5);
@@ -6556,11 +6560,11 @@ var __morbis_feature = (() => {
             baseLength -= numberOfOverflowBits;
             treeContextId =
               (1 << (32 - clz32(totalChildren) + baseLength)) |
-              (index << baseLength) |
+              (index2 << baseLength) |
               baseIdWithLeadingBit;
             treeContextOverflow = length + workInProgress2;
           } else
-            ((treeContextId = (1 << length) | (index << baseLength) | baseIdWithLeadingBit),
+            ((treeContextId = (1 << length) | (index2 << baseLength) | baseIdWithLeadingBit),
               (treeContextOverflow = workInProgress2));
         }
         function pushMaterializedTreeId(workInProgress2) {
@@ -7300,20 +7304,20 @@ var __morbis_feature = (() => {
           thenable = thenable.status;
           return 'fulfilled' === thenable || 'rejected' === thenable;
         }
-        function trackUsedThenable(thenableState2, thenable, index) {
+        function trackUsedThenable(thenableState2, thenable, index2) {
           null !== ReactSharedInternals.actQueue && (ReactSharedInternals.didUsePromise = true);
           var trackedThenables = thenableState2.thenables;
-          index = trackedThenables[index];
-          void 0 === index
+          index2 = trackedThenables[index2];
+          void 0 === index2
             ? trackedThenables.push(thenable)
-            : index !== thenable &&
+            : index2 !== thenable &&
               (thenableState2.didWarnAboutUncachedPromise ||
                 ((thenableState2.didWarnAboutUncachedPromise = true),
                 console.error(
                   'A component was suspended by an uncached promise. Creating promises inside a Client Component or hook is not yet supported, except via a Suspense-compatible library or framework.',
                 )),
               thenable.then(noop$1, noop$1),
-              (thenable = index));
+              (thenable = index2));
           if (void 0 === thenable._debugInfo) {
             thenableState2 = performance.now();
             trackedThenables = thenable.displayName;
@@ -7452,10 +7456,10 @@ var __morbis_feature = (() => {
           }
         }
         function unwrapThenable(thenable) {
-          var index = thenableIndexCounter$1;
+          var index2 = thenableIndexCounter$1;
           thenableIndexCounter$1 += 1;
           null === thenableState$1 && (thenableState$1 = createThenableState());
-          return trackUsedThenable(thenableState$1, thenable, index);
+          return trackUsedThenable(thenableState$1, thenable, index2);
         }
         function coerceRef(workInProgress2, element) {
           element = element.props.ref;
@@ -7614,7 +7618,7 @@ var __morbis_feature = (() => {
                 isCompatibleFamilyForHotReloading(current2, element) ||
                 ('object' === typeof elementType &&
                   null !== elementType &&
-                  elementType.$$typeof === REACT_LAZY_TYPE &&
+                  elementType.$$typeof === REACT_LAZY_TYPE2 &&
                   resolveLazy(elementType) === current2.type))
             )
               return (
@@ -7697,7 +7701,7 @@ var __morbis_feature = (() => {
                     (newChild._debugInfo = currentDebugInfo),
                     newChild
                   );
-                case REACT_LAZY_TYPE:
+                case REACT_LAZY_TYPE2:
                   var _prevDebugInfo = pushDebugInfo(newChild._debugInfo);
                   newChild = resolveLazy(newChild);
                   returnFiber = createChild(returnFiber, newChild, lanes);
@@ -7757,7 +7761,7 @@ var __morbis_feature = (() => {
                   return newChild.key === key
                     ? updatePortal(returnFiber, oldFiber, newChild, lanes)
                     : null;
-                case REACT_LAZY_TYPE:
+                case REACT_LAZY_TYPE2:
                   return (
                     (key = pushDebugInfo(newChild._debugInfo)),
                     (newChild = resolveLazy(newChild)),
@@ -7825,7 +7829,7 @@ var __morbis_feature = (() => {
                       existingChildren.get(null === newChild.key ? newIdx : newChild.key) || null),
                     updatePortal(returnFiber, existingChildren, newChild, lanes)
                   );
-                case REACT_LAZY_TYPE:
+                case REACT_LAZY_TYPE2:
                   var _prevDebugInfo7 = pushDebugInfo(newChild._debugInfo);
                   newChild = resolveLazy(newChild);
                   returnFiber = updateFromMap(
@@ -7897,7 +7901,7 @@ var __morbis_feature = (() => {
                   );
                 });
                 break;
-              case REACT_LAZY_TYPE:
+              case REACT_LAZY_TYPE2:
                 ((child = resolveLazy(child)),
                   warnOnInvalidKey(returnFiber, workInProgress2, child, knownKeys));
             }
@@ -8094,7 +8098,7 @@ var __morbis_feature = (() => {
                           isCompatibleFamilyForHotReloading(currentFirstChild, newChild) ||
                           ('object' === typeof key &&
                             null !== key &&
-                            key.$$typeof === REACT_LAZY_TYPE &&
+                            key.$$typeof === REACT_LAZY_TYPE2 &&
                             resolveLazy(key) === currentFirstChild.type)
                         ) {
                           deleteRemainingChildren(returnFiber, currentFirstChild.sibling);
@@ -8162,7 +8166,7 @@ var __morbis_feature = (() => {
                     returnFiber = lanes;
                   }
                   return placeSingleChild(returnFiber);
-                case REACT_LAZY_TYPE:
+                case REACT_LAZY_TYPE2:
                   return (
                     (prevDebugInfo = pushDebugInfo(newChild._debugInfo)),
                     (newChild = resolveLazy(newChild)),
@@ -8305,7 +8309,7 @@ var __morbis_feature = (() => {
             }
           };
         }
-        function validateSuspenseListNestedChild(childSlot, index) {
+        function validateSuspenseListNestedChild(childSlot, index2) {
           var isAnArray = isArrayImpl(childSlot);
           childSlot = !isAnArray && 'function' === typeof getIteratorFn(childSlot);
           return isAnArray || childSlot
@@ -8313,7 +8317,7 @@ var __morbis_feature = (() => {
               console.error(
                 'A nested %s was passed to row #%s in <SuspenseList />. Wrap it in an additional SuspenseList to configure its revealOrder: <SuspenseList revealOrder=...> ... <SuspenseList revealOrder=...>{%s}</SuspenseList> ... </SuspenseList>',
                 isAnArray,
-                index,
+                index2,
                 isAnArray,
               ),
               false)
@@ -8975,27 +8979,27 @@ var __morbis_feature = (() => {
           return { lastEffect: null, events: null, stores: null, memoCache: null };
         }
         function useThenable(thenable) {
-          var index = thenableIndexCounter;
+          var index2 = thenableIndexCounter;
           thenableIndexCounter += 1;
           null === thenableState && (thenableState = createThenableState());
-          thenable = trackUsedThenable(thenableState, thenable, index);
-          index = currentlyRenderingFiber;
-          null === (null === workInProgressHook ? index.memoizedState : workInProgressHook.next) &&
-            ((index = index.alternate),
+          thenable = trackUsedThenable(thenableState, thenable, index2);
+          index2 = currentlyRenderingFiber;
+          null === (null === workInProgressHook ? index2.memoizedState : workInProgressHook.next) &&
+            ((index2 = index2.alternate),
             (ReactSharedInternals.H =
-              null !== index && null !== index.memoizedState
+              null !== index2 && null !== index2.memoizedState
                 ? HooksDispatcherOnUpdateInDEV
                 : HooksDispatcherOnMountInDEV));
           return thenable;
         }
-        function use(usable) {
+        function use2(usable) {
           if (null !== usable && 'object' === typeof usable) {
             if ('function' === typeof usable.then) return useThenable(usable);
             if (usable.$$typeof === REACT_CONTEXT_TYPE) return readContext(usable);
           }
           throw Error('An unsupported type was passed to use(): ' + String(usable));
         }
-        function useMemoCache(size) {
+        function useMemoCache(size4) {
           var memoCache = null,
             updateQueue = currentlyRenderingFiber.updateQueue;
           null !== updateQueue && (memoCache = updateQueue.memoCache);
@@ -9021,17 +9025,17 @@ var __morbis_feature = (() => {
           updateQueue = memoCache.data[memoCache.index];
           if (void 0 === updateQueue || ignorePreviousDependencies)
             for (
-              updateQueue = memoCache.data[memoCache.index] = Array(size), current2 = 0;
-              current2 < size;
+              updateQueue = memoCache.data[memoCache.index] = Array(size4), current2 = 0;
+              current2 < size4;
               current2++
             )
               updateQueue[current2] = REACT_MEMO_CACHE_SENTINEL;
           else
-            updateQueue.length !== size &&
+            updateQueue.length !== size4 &&
               console.error(
                 'Expected a constant size argument for each invocation of useMemoCache. The previous cache was allocated with size %s but size %s was requested.',
                 updateQueue.length,
-                size,
+                size4,
               );
           memoCache.index++;
           return updateQueue;
@@ -9949,7 +9953,7 @@ var __morbis_feature = (() => {
             pendingState,
             NotPendingTransition,
             null === action
-              ? noop
+              ? noop3
               : function () {
                   requestFormReset$1(formFiber);
                   return action(formData);
@@ -12383,7 +12387,7 @@ var __morbis_feature = (() => {
                 workInProgress2 = '';
                 null !== current2 &&
                   'object' === typeof current2 &&
-                  current2.$$typeof === REACT_LAZY_TYPE &&
+                  current2.$$typeof === REACT_LAZY_TYPE2 &&
                   (workInProgress2 = ' Did you wrap a component in React.lazy() more than once?');
                 renderLanes2 = getComponentNameFromType(current2) || current2;
                 throw Error(
@@ -16946,9 +16950,9 @@ var __morbis_feature = (() => {
           didAttemptEntireTree && (root2.warmLanes |= suspendedLanes);
           didAttemptEntireTree = root2.expirationTimes;
           for (var lanes = suspendedLanes; 0 < lanes; ) {
-            var index = 31 - clz32(lanes),
-              lane = 1 << index;
-            didAttemptEntireTree[index] = -1;
+            var index2 = 31 - clz32(lanes),
+              lane = 1 << index2;
+            didAttemptEntireTree[index2] = -1;
             lanes &= ~lane;
           }
           0 !== spawnedLane && markSpawnedDeferredLane(root2, spawnedLane, suspendedLanes);
@@ -18738,12 +18742,12 @@ var __morbis_feature = (() => {
               lanes = root2.pendingLanes & -62914561;
             0 < lanes;
           ) {
-            var index = 31 - clz32(lanes),
-              lane = 1 << index,
-              expirationTime = expirationTimes[index];
+            var index2 = 31 - clz32(lanes),
+              lane = 1 << index2,
+              expirationTime = expirationTimes[index2];
             if (-1 === expirationTime) {
               if (0 === (lane & suspendedLanes) || 0 !== (lane & pingedLanes))
-                expirationTimes[index] = computeExpirationTime(lane, currentTime);
+                expirationTimes[index2] = computeExpirationTime(lane, currentTime);
             } else expirationTime <= currentTime && (root2.expiredLanes |= lane);
             lanes &= ~lane;
           }
@@ -21488,7 +21492,7 @@ var __morbis_feature = (() => {
         function estimateBandwidth() {
           if ('function' === typeof performance.getEntriesByType) {
             for (
-              var count = 0,
+              var count3 = 0,
                 bits = 0,
                 resourceEntries = performance.getEntriesByType('resource'),
                 i = 0;
@@ -21519,15 +21523,15 @@ var __morbis_feature = (() => {
                 }
                 --i;
                 bits += (8 * (transferSize + initiatorType)) / (entry.duration / 1e3);
-                count++;
-                if (10 < count) break;
+                count3++;
+                if (10 < count3) break;
               }
             }
-            if (0 < count) return bits / count / 1e6;
+            if (0 < count3) return bits / count3 / 1e6;
           }
           return navigator.connection &&
-            ((count = navigator.connection.downlink), 'number' === typeof count)
-            ? count
+            ((count3 = navigator.connection.downlink), 'number' === typeof count3)
+            ? count3
             : 5;
         }
         function getOwnerDocumentFromRootContainer(rootContainerElement) {
@@ -21702,18 +21706,18 @@ var __morbis_feature = (() => {
           } while (node);
           retryIfBlockedOn(hydrationInstance);
         }
-        function hideOrUnhideDehydratedBoundary(suspenseInstance, isHidden) {
+        function hideOrUnhideDehydratedBoundary(suspenseInstance, isHidden2) {
           var node = suspenseInstance;
           suspenseInstance = 0;
           do {
             var nextNode = node.nextSibling;
             1 === node.nodeType
-              ? isHidden
+              ? isHidden2
                 ? ((node._stashedDisplay = node.style.display), (node.style.display = 'none'))
                 : ((node.style.display = node._stashedDisplay || ''),
                   '' === node.getAttribute('style') && node.removeAttribute('style'))
               : 3 === node.nodeType &&
-                (isHidden
+                (isHidden2
                   ? ((node._stashedText = node.nodeValue), (node.nodeValue = ''))
                   : (node.nodeValue = node._stashedText || ''));
             if (nextNode && 8 === nextNode.nodeType)
@@ -23467,8 +23471,8 @@ var __morbis_feature = (() => {
           'function' === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart &&
           __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
         var Scheduler = require_scheduler(),
-          React = require_react(),
-          ReactDOM = require_react_dom(),
+          React34 = require_react(),
+          ReactDOM5 = require_react_dom(),
           assign = Object.assign,
           REACT_LEGACY_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for('react.element'),
           REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for('react.transitional.element'),
@@ -23482,7 +23486,7 @@ var __morbis_feature = (() => {
           REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for('react.suspense'),
           REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for('react.suspense_list'),
           REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for('react.memo'),
-          REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for('react.lazy');
+          REACT_LAZY_TYPE2 = /* @__PURE__ */ Symbol.for('react.lazy');
         /* @__PURE__ */ Symbol.for('react.scope');
         var REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for('react.activity');
         /* @__PURE__ */ Symbol.for('react.legacy_hidden');
@@ -23493,9 +23497,9 @@ var __morbis_feature = (() => {
           REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for('react.client.reference'),
           isArrayImpl = Array.isArray,
           ReactSharedInternals =
-            React.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
+            React34.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
           ReactDOMSharedInternals =
-            ReactDOM.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
+            ReactDOM5.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
           NotPending = Object.freeze({
             pending: false,
             data: null,
@@ -24390,13 +24394,13 @@ var __morbis_feature = (() => {
           restoreTarget = null,
           restoreQueue = null,
           isInsideEventHandler = false,
-          canUseDOM = !(
+          canUseDOM2 = !(
             'undefined' === typeof window ||
             'undefined' === typeof window.document ||
             'undefined' === typeof window.document.createElement
           ),
           passiveBrowserEventsSupported = false;
-        if (canUseDOM)
+        if (canUseDOM2)
           try {
             var options$jscomp$0 = {};
             Object.defineProperty(options$jscomp$0, 'passive', {
@@ -24636,12 +24640,12 @@ var __morbis_feature = (() => {
           SyntheticToggleEvent = createSyntheticEvent(ToggleEventInterface),
           END_KEYCODES = [9, 13, 27, 32],
           START_KEYCODE = 229,
-          canUseCompositionEvent = canUseDOM && 'CompositionEvent' in window,
+          canUseCompositionEvent = canUseDOM2 && 'CompositionEvent' in window,
           documentMode = null;
-        canUseDOM && 'documentMode' in document && (documentMode = document.documentMode);
-        var canUseTextInputEvent = canUseDOM && 'TextEvent' in window && !documentMode,
+        canUseDOM2 && 'documentMode' in document && (documentMode = document.documentMode);
+        var canUseTextInputEvent = canUseDOM2 && 'TextEvent' in window && !documentMode,
           useFallbackCompositionData =
-            canUseDOM &&
+            canUseDOM2 &&
             (!canUseCompositionEvent || (documentMode && 8 < documentMode && 11 >= documentMode)),
           SPACEBAR_CODE = 32,
           SPACEBAR_CHAR = String.fromCharCode(SPACEBAR_CODE),
@@ -24667,12 +24671,12 @@ var __morbis_feature = (() => {
           activeElement$1 = null,
           activeElementInst$1 = null,
           isInputEventSupported = false;
-        canUseDOM &&
+        canUseDOM2 &&
           (isInputEventSupported =
             isEventSupported('input') && (!document.documentMode || 9 < document.documentMode));
         var objectIs = 'function' === typeof Object.is ? Object.is : is,
           skipSelectionChangeEvent =
-            canUseDOM && 'documentMode' in document && 11 >= document.documentMode,
+            canUseDOM2 && 'documentMode' in document && 11 >= document.documentMode,
           activeElement = null,
           activeElementInst = null,
           lastSelection = null,
@@ -24688,7 +24692,7 @@ var __morbis_feature = (() => {
           },
           prefixedEventNames = {},
           style = {};
-        canUseDOM &&
+        canUseDOM2 &&
           ((style = document.createElement('div').style),
           'AnimationEvent' in window ||
             (delete vendorPrefixes.animationend.animation,
@@ -25320,7 +25324,7 @@ var __morbis_feature = (() => {
           ignorePreviousDependencies = false,
           ContextOnlyDispatcher = {
             readContext,
-            use,
+            use: use2,
             useCallback: throwInvalidHookError,
             useContext: throwInvalidHookError,
             useEffect: throwInvalidHookError,
@@ -25355,7 +25359,7 @@ var __morbis_feature = (() => {
           readContext: function (context) {
             return readContext(context);
           },
-          use,
+          use: use2,
           useCallback: function (callback, deps) {
             currentHookNameInDev = 'useCallback';
             mountHookTypesDev();
@@ -25487,7 +25491,7 @@ var __morbis_feature = (() => {
           readContext: function (context) {
             return readContext(context);
           },
-          use,
+          use: use2,
           useCallback: function (callback, deps) {
             currentHookNameInDev = 'useCallback';
             updateHookTypesDev();
@@ -25613,7 +25617,7 @@ var __morbis_feature = (() => {
           readContext: function (context) {
             return readContext(context);
           },
-          use,
+          use: use2,
           useCallback: function (callback, deps) {
             currentHookNameInDev = 'useCallback';
             updateHookTypesDev();
@@ -25739,7 +25743,7 @@ var __morbis_feature = (() => {
           readContext: function (context) {
             return readContext(context);
           },
-          use,
+          use: use2,
           useCallback: function (callback, deps) {
             currentHookNameInDev = 'useCallback';
             updateHookTypesDev();
@@ -25868,7 +25872,7 @@ var __morbis_feature = (() => {
           },
           use: function (usable) {
             warnInvalidHookAccess();
-            return use(usable);
+            return use2(usable);
           },
           useCallback: function (callback, deps) {
             currentHookNameInDev = 'useCallback';
@@ -25995,9 +25999,9 @@ var __morbis_feature = (() => {
             mountHookTypesDev();
             return mountOptimistic(passthrough);
           },
-          useMemoCache: function (size) {
+          useMemoCache: function (size4) {
             warnInvalidHookAccess();
-            return useMemoCache(size);
+            return useMemoCache(size4);
           },
           useHostTransitionStatus,
           useCacheRefresh: function () {
@@ -26019,7 +26023,7 @@ var __morbis_feature = (() => {
           },
           use: function (usable) {
             warnInvalidHookAccess();
-            return use(usable);
+            return use2(usable);
           },
           useCallback: function (callback, deps) {
             currentHookNameInDev = 'useCallback';
@@ -26146,9 +26150,9 @@ var __morbis_feature = (() => {
             updateHookTypesDev();
             return updateOptimistic(passthrough, reducer);
           },
-          useMemoCache: function (size) {
+          useMemoCache: function (size4) {
             warnInvalidHookAccess();
-            return useMemoCache(size);
+            return useMemoCache(size4);
           },
           useHostTransitionStatus,
           useCacheRefresh: function () {
@@ -26170,7 +26174,7 @@ var __morbis_feature = (() => {
           },
           use: function (usable) {
             warnInvalidHookAccess();
-            return use(usable);
+            return use2(usable);
           },
           useCallback: function (callback, deps) {
             currentHookNameInDev = 'useCallback';
@@ -26297,9 +26301,9 @@ var __morbis_feature = (() => {
             updateHookTypesDev();
             return rerenderOptimistic(passthrough, reducer);
           },
-          useMemoCache: function (size) {
+          useMemoCache: function (size4) {
             warnInvalidHookAccess();
-            return useMemoCache(size);
+            return useMemoCache(size4);
           },
           useHostTransitionStatus,
           useCacheRefresh: function () {
@@ -26657,8 +26661,8 @@ var __morbis_feature = (() => {
             previousDispatcher.C(href, crossOrigin);
             preconnectAs('preconnect', href, crossOrigin);
           },
-          L: function (href, as, options) {
-            previousDispatcher.L(href, as, options);
+          L: function (href, as, options2) {
+            previousDispatcher.L(href, as, options2);
             var ownerDocument = globalDocument;
             if (ownerDocument && href && as) {
               var preloadSelector =
@@ -26666,15 +26670,15 @@ var __morbis_feature = (() => {
                 escapeSelectorAttributeValueInsideDoubleQuotes(as) +
                 '"]';
               'image' === as
-                ? options && options.imageSrcSet
+                ? options2 && options2.imageSrcSet
                   ? ((preloadSelector +=
                       '[imagesrcset="' +
-                      escapeSelectorAttributeValueInsideDoubleQuotes(options.imageSrcSet) +
+                      escapeSelectorAttributeValueInsideDoubleQuotes(options2.imageSrcSet) +
                       '"]'),
-                    'string' === typeof options.imageSizes &&
+                    'string' === typeof options2.imageSizes &&
                       (preloadSelector +=
                         '[imagesizes="' +
-                        escapeSelectorAttributeValueInsideDoubleQuotes(options.imageSizes) +
+                        escapeSelectorAttributeValueInsideDoubleQuotes(options2.imageSizes) +
                         '"]'))
                   : (preloadSelector +=
                       '[href="' + escapeSelectorAttributeValueInsideDoubleQuotes(href) + '"]')
@@ -26692,10 +26696,10 @@ var __morbis_feature = (() => {
                 ((href = assign(
                   {
                     rel: 'preload',
-                    href: 'image' === as && options && options.imageSrcSet ? void 0 : href,
+                    href: 'image' === as && options2 && options2.imageSrcSet ? void 0 : href,
                     as,
                   },
-                  options,
+                  options2,
                 )),
                 preloadPropsMap.set(key, href),
                 null !== ownerDocument.querySelector(preloadSelector) ||
@@ -26708,11 +26712,11 @@ var __morbis_feature = (() => {
                   ownerDocument.head.appendChild(as)));
             }
           },
-          m: function (href, options) {
-            previousDispatcher.m(href, options);
+          m: function (href, options2) {
+            previousDispatcher.m(href, options2);
             var ownerDocument = globalDocument;
             if (ownerDocument && href) {
-              var as = options && 'string' === typeof options.as ? options.as : 'script',
+              var as = options2 && 'string' === typeof options2.as ? options2.as : 'script',
                 preloadSelector =
                   'link[rel="modulepreload"][as="' +
                   escapeSelectorAttributeValueInsideDoubleQuotes(as) +
@@ -26731,7 +26735,7 @@ var __morbis_feature = (() => {
               }
               if (
                 !preloadPropsMap.has(key) &&
-                ((href = assign({ rel: 'modulepreload', href }, options)),
+                ((href = assign({ rel: 'modulepreload', href }, options2)),
                 preloadPropsMap.set(key, href),
                 null === ownerDocument.querySelector(preloadSelector))
               ) {
@@ -26751,8 +26755,8 @@ var __morbis_feature = (() => {
               }
             }
           },
-          X: function (src, options) {
-            previousDispatcher.X(src, options);
+          X: function (src, options2) {
+            previousDispatcher.X(src, options2);
             var ownerDocument = globalDocument;
             if (ownerDocument && src) {
               var scripts = getResourcesFromRoot(ownerDocument).hoistableScripts,
@@ -26761,8 +26765,9 @@ var __morbis_feature = (() => {
               resource ||
                 ((resource = ownerDocument.querySelector(getScriptSelectorFromKey(key))),
                 resource ||
-                  ((src = assign({ src, async: true }, options)),
-                  (options = preloadPropsMap.get(key)) && adoptPreloadPropsForScript(src, options),
+                  ((src = assign({ src, async: true }, options2)),
+                  (options2 = preloadPropsMap.get(key)) &&
+                    adoptPreloadPropsForScript(src, options2),
                   (resource = ownerDocument.createElement('script')),
                   markNodeAsHoistable(resource),
                   setInitialProperties(resource, 'link', src),
@@ -26776,8 +26781,8 @@ var __morbis_feature = (() => {
                 scripts.set(key, resource));
             }
           },
-          S: function (href, precedence, options) {
-            previousDispatcher.S(href, precedence, options);
+          S: function (href, precedence, options2) {
+            previousDispatcher.S(href, precedence, options2);
             var ownerDocument = globalDocument;
             if (ownerDocument && href) {
               var styles = getResourcesFromRoot(ownerDocument).hoistableStyles,
@@ -26795,10 +26800,10 @@ var __morbis_feature = (() => {
                       href,
                       'data-precedence': precedence,
                     },
-                    options,
+                    options2,
                   );
-                  (options = preloadPropsMap.get(key)) &&
-                    adoptPreloadPropsForStylesheet(href, options);
+                  (options2 = preloadPropsMap.get(key)) &&
+                    adoptPreloadPropsForStylesheet(href, options2);
                   var link = (resource = ownerDocument.createElement('link'));
                   markNodeAsHoistable(link);
                   setInitialProperties(link, 'link', href);
@@ -26825,8 +26830,8 @@ var __morbis_feature = (() => {
               }
             }
           },
-          M: function (src, options) {
-            previousDispatcher.M(src, options);
+          M: function (src, options2) {
+            previousDispatcher.M(src, options2);
             var ownerDocument = globalDocument;
             if (ownerDocument && src) {
               var scripts = getResourcesFromRoot(ownerDocument).hoistableScripts,
@@ -26835,8 +26840,9 @@ var __morbis_feature = (() => {
               resource ||
                 ((resource = ownerDocument.querySelector(getScriptSelectorFromKey(key))),
                 resource ||
-                  ((src = assign({ src, async: true, type: 'module' }, options)),
-                  (options = preloadPropsMap.get(key)) && adoptPreloadPropsForScript(src, options),
+                  ((src = assign({ src, async: true, type: 'module' }, options2)),
+                  (options2 = preloadPropsMap.get(key)) &&
+                    adoptPreloadPropsForScript(src, options2),
                   (resource = ownerDocument.createElement('script')),
                   markNodeAsHoistable(resource),
                   setInitialProperties(resource, 'link', src),
@@ -27020,7 +27026,7 @@ var __morbis_feature = (() => {
           }
         };
         (function () {
-          var isomorphicReactPackageVersion = React.version;
+          var isomorphicReactPackageVersion = React34.version;
           if ('19.2.7' !== isomorphicReactPackageVersion)
             throw Error(
               'Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ' +
@@ -27077,7 +27083,7 @@ var __morbis_feature = (() => {
             internals.getCurrentFiber = getCurrentFiberForDevTools;
             return injectInternals(internals);
           })() &&
-          canUseDOM &&
+          canUseDOM2 &&
           window.top === window.self &&
           ((-1 < navigator.userAgent.indexOf('Chrome') &&
             -1 === navigator.userAgent.indexOf('Edge')) ||
@@ -27093,7 +27099,7 @@ var __morbis_feature = (() => {
               'font-weight:bold',
             );
         }
-        exports.createRoot = function (container, options) {
+        exports.createRoot = function (container, options2) {
           if (!isValidContainer(container)) throw Error('Target container is not a DOM element.');
           warnIfReactDOMContainerInDEV(container);
           var isStrictMode = false,
@@ -27101,25 +27107,25 @@ var __morbis_feature = (() => {
             onUncaughtError = defaultOnUncaughtError,
             onCaughtError = defaultOnCaughtError,
             onRecoverableError = defaultOnRecoverableError;
-          null !== options &&
-            void 0 !== options &&
-            (options.hydrate
+          null !== options2 &&
+            void 0 !== options2 &&
+            (options2.hydrate
               ? console.warn(
                   'hydrate through createRoot is deprecated. Use ReactDOMClient.hydrateRoot(container, <App />) instead.',
                 )
-              : 'object' === typeof options &&
-                null !== options &&
-                options.$$typeof === REACT_ELEMENT_TYPE &&
+              : 'object' === typeof options2 &&
+                null !== options2 &&
+                options2.$$typeof === REACT_ELEMENT_TYPE &&
                 console.error(
                   'You passed a JSX element to createRoot. You probably meant to call root.render instead. Example usage:\n\n  let root = createRoot(domContainer);\n  root.render(<App />);',
                 ),
-            true === options.unstable_strictMode && (isStrictMode = true),
-            void 0 !== options.identifierPrefix && (identifierPrefix = options.identifierPrefix),
-            void 0 !== options.onUncaughtError && (onUncaughtError = options.onUncaughtError),
-            void 0 !== options.onCaughtError && (onCaughtError = options.onCaughtError),
-            void 0 !== options.onRecoverableError &&
-              (onRecoverableError = options.onRecoverableError));
-          options = createFiberRoot(
+            true === options2.unstable_strictMode && (isStrictMode = true),
+            void 0 !== options2.identifierPrefix && (identifierPrefix = options2.identifierPrefix),
+            void 0 !== options2.onUncaughtError && (onUncaughtError = options2.onUncaughtError),
+            void 0 !== options2.onCaughtError && (onCaughtError = options2.onCaughtError),
+            void 0 !== options2.onRecoverableError &&
+              (onRecoverableError = options2.onRecoverableError));
+          options2 = createFiberRoot(
             container,
             1,
             false,
@@ -27133,11 +27139,11 @@ var __morbis_feature = (() => {
             onRecoverableError,
             defaultOnDefaultTransitionIndicator,
           );
-          container[internalContainerInstanceKey] = options.current;
+          container[internalContainerInstanceKey] = options2.current;
           listenToAllSupportedEvents(container);
-          return new ReactDOMRoot(options);
+          return new ReactDOMRoot(options2);
         };
-        exports.hydrateRoot = function (container, initialChildren, options) {
+        exports.hydrateRoot = function (container, initialChildren, options2) {
           if (!isValidContainer(container)) throw Error('Target container is not a DOM element.');
           warnIfReactDOMContainerInDEV(container);
           void 0 === initialChildren &&
@@ -27150,21 +27156,21 @@ var __morbis_feature = (() => {
             onCaughtError = defaultOnCaughtError,
             onRecoverableError = defaultOnRecoverableError,
             formState = null;
-          null !== options &&
-            void 0 !== options &&
-            (true === options.unstable_strictMode && (isStrictMode = true),
-            void 0 !== options.identifierPrefix && (identifierPrefix = options.identifierPrefix),
-            void 0 !== options.onUncaughtError && (onUncaughtError = options.onUncaughtError),
-            void 0 !== options.onCaughtError && (onCaughtError = options.onCaughtError),
-            void 0 !== options.onRecoverableError &&
-              (onRecoverableError = options.onRecoverableError),
-            void 0 !== options.formState && (formState = options.formState));
+          null !== options2 &&
+            void 0 !== options2 &&
+            (true === options2.unstable_strictMode && (isStrictMode = true),
+            void 0 !== options2.identifierPrefix && (identifierPrefix = options2.identifierPrefix),
+            void 0 !== options2.onUncaughtError && (onUncaughtError = options2.onUncaughtError),
+            void 0 !== options2.onCaughtError && (onCaughtError = options2.onCaughtError),
+            void 0 !== options2.onRecoverableError &&
+              (onRecoverableError = options2.onRecoverableError),
+            void 0 !== options2.formState && (formState = options2.formState));
           initialChildren = createFiberRoot(
             container,
             1,
             true,
             initialChildren,
-            null != options ? options : null,
+            null != options2 ? options2 : null,
             isStrictMode,
             identifierPrefix,
             formState,
@@ -27174,16 +27180,16 @@ var __morbis_feature = (() => {
             defaultOnDefaultTransitionIndicator,
           );
           initialChildren.context = getContextForSubtree(null);
-          options = initialChildren.current;
-          isStrictMode = requestUpdateLane(options);
+          options2 = initialChildren.current;
+          isStrictMode = requestUpdateLane(options2);
           isStrictMode = getBumpedLaneForHydrationByLane(isStrictMode);
           identifierPrefix = createUpdate(isStrictMode);
           identifierPrefix.callback = null;
-          enqueueUpdate(options, identifierPrefix, isStrictMode);
+          enqueueUpdate(options2, identifierPrefix, isStrictMode);
           startUpdateTimerByLane(isStrictMode, 'hydrateRoot()', null);
-          options = isStrictMode;
-          initialChildren.current.lanes = options;
-          markRootUpdated$1(initialChildren, options);
+          options2 = isStrictMode;
+          initialChildren.current.lanes = options2;
+          markRootUpdated$1(initialChildren, options2);
           ensureRootIsScheduled(initialChildren);
           container[internalContainerInstanceKey] = initialChildren.current;
           listenToAllSupportedEvents(container);
@@ -27262,7 +27268,7 @@ var __morbis_feature = (() => {
                   (innerType = type.displayName || null),
                   null !== innerType ? innerType : getComponentNameFromType(type.type) || 'Memo'
                 );
-              case REACT_LAZY_TYPE:
+              case REACT_LAZY_TYPE2:
                 innerType = type._payload;
                 type = type._init;
                 try {
@@ -27298,7 +27304,7 @@ var __morbis_feature = (() => {
         }
         function getTaskName(type) {
           if (type === REACT_FRAGMENT_TYPE) return '<>';
-          if ('object' === typeof type && null !== type && type.$$typeof === REACT_LAZY_TYPE)
+          if ('object' === typeof type && null !== type && type.$$typeof === REACT_LAZY_TYPE2)
             return '<...>';
           try {
             var name = getComponentNameFromType(type);
@@ -27438,23 +27444,23 @@ var __morbis_feature = (() => {
           return ReactElement(type, children, maybeKey, getOwner(), debugStack, debugTask);
         }
         function validateChildKeys(node) {
-          isValidElement(node)
+          isValidElement2(node)
             ? node._store && (node._store.validated = 1)
             : 'object' === typeof node &&
               null !== node &&
-              node.$$typeof === REACT_LAZY_TYPE &&
+              node.$$typeof === REACT_LAZY_TYPE2 &&
               ('fulfilled' === node._payload.status
-                ? isValidElement(node._payload.value) &&
+                ? isValidElement2(node._payload.value) &&
                   node._payload.value._store &&
                   (node._payload.value._store.validated = 1)
                 : node._store && (node._store.validated = 1));
         }
-        function isValidElement(object) {
+        function isValidElement2(object) {
           return (
             'object' === typeof object && null !== object && object.$$typeof === REACT_ELEMENT_TYPE
           );
         }
-        var React = require_react(),
+        var React34 = require_react(),
           REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for('react.transitional.element'),
           REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for('react.portal'),
           REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for('react.fragment'),
@@ -27466,11 +27472,11 @@ var __morbis_feature = (() => {
           REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for('react.suspense'),
           REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for('react.suspense_list'),
           REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for('react.memo'),
-          REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for('react.lazy'),
+          REACT_LAZY_TYPE2 = /* @__PURE__ */ Symbol.for('react.lazy'),
           REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for('react.activity'),
           REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for('react.client.reference'),
           ReactSharedInternals =
-            React.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
+            React34.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
           hasOwnProperty = Object.prototype.hasOwnProperty,
           isArrayImpl = Array.isArray,
           createTask = console.createTask
@@ -27478,14 +27484,14 @@ var __morbis_feature = (() => {
             : function () {
                 return null;
               };
-        React = {
+        React34 = {
           react_stack_bottom_frame: function (callStackForError) {
             return callStackForError();
           },
         };
         var specialPropKeyWarningShown;
         var didWarnAboutElementRef = {};
-        var unknownOwnerDebugStack = React.react_stack_bottom_frame.bind(React, UnknownOwner)();
+        var unknownOwnerDebugStack = React34.react_stack_bottom_frame.bind(React34, UnknownOwner)();
         var unknownOwnerDebugTask = createTask(getTaskName(UnknownOwner));
         var didWarnAboutKeySpread = {};
         exports.Fragment = REACT_FRAGMENT_TYPE;
@@ -27532,79 +27538,4735 @@ var __morbis_feature = (() => {
   var import_client = __toESM(require_client(), 1);
 
   // src/features/resumeTab/App.tsx
+  var import_react9 = __toESM(require_react(), 1);
+
+  // node_modules/lucide-react/dist/esm/createLucideIcon.mjs
+  var import_react3 = __toESM(require_react(), 1);
+
+  // node_modules/lucide-react/dist/esm/shared/src/utils/mergeClasses.mjs
+  var mergeClasses = (...classes) =>
+    classes
+      .filter((className, index2, array) => {
+        return Boolean(className) && className.trim() !== '' && array.indexOf(className) === index2;
+      })
+      .join(' ')
+      .trim();
+
+  // node_modules/lucide-react/dist/esm/shared/src/utils/toKebabCase.mjs
+  var toKebabCase = (string) => string.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+
+  // node_modules/lucide-react/dist/esm/shared/src/utils/toCamelCase.mjs
+  var toCamelCase = (string) =>
+    string.replace(/^([A-Z])|[\s-_]+(\w)/g, (match, p1, p2) =>
+      p2 ? p2.toUpperCase() : p1.toLowerCase(),
+    );
+
+  // node_modules/lucide-react/dist/esm/shared/src/utils/toPascalCase.mjs
+  var toPascalCase = (string) => {
+    const camelCase = toCamelCase(string);
+    return camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
+  };
+
+  // node_modules/lucide-react/dist/esm/Icon.mjs
+  var import_react2 = __toESM(require_react(), 1);
+
+  // node_modules/lucide-react/dist/esm/defaultAttributes.mjs
+  var defaultAttributes = {
+    xmlns: 'http://www.w3.org/2000/svg',
+    width: 24,
+    height: 24,
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 2,
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+  };
+
+  // node_modules/lucide-react/dist/esm/shared/src/utils/hasA11yProp.mjs
+  var hasA11yProp = (props) => {
+    for (const prop in props) {
+      if (prop.startsWith('aria-') || prop === 'role' || prop === 'title') {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  // node_modules/lucide-react/dist/esm/context.mjs
   var import_react = __toESM(require_react(), 1);
+  var LucideContext = (0, import_react.createContext)({});
+  var useLucideContext = () => (0, import_react.useContext)(LucideContext);
+
+  // node_modules/lucide-react/dist/esm/Icon.mjs
+  var Icon = (0, import_react2.forwardRef)(
+    (
+      {
+        color,
+        size: size4,
+        strokeWidth,
+        absoluteStrokeWidth,
+        className = '',
+        children,
+        iconNode,
+        ...rest
+      },
+      ref,
+    ) => {
+      const {
+        size: contextSize = 24,
+        strokeWidth: contextStrokeWidth = 2,
+        absoluteStrokeWidth: contextAbsoluteStrokeWidth = false,
+        color: contextColor = 'currentColor',
+        className: contextClass = '',
+      } = useLucideContext() ?? {};
+      const calculatedStrokeWidth =
+        (absoluteStrokeWidth ?? contextAbsoluteStrokeWidth)
+          ? (Number(strokeWidth ?? contextStrokeWidth) * 24) / Number(size4 ?? contextSize)
+          : (strokeWidth ?? contextStrokeWidth);
+      return (0, import_react2.createElement)(
+        'svg',
+        {
+          ref,
+          ...defaultAttributes,
+          width: size4 ?? contextSize ?? defaultAttributes.width,
+          height: size4 ?? contextSize ?? defaultAttributes.height,
+          stroke: color ?? contextColor,
+          strokeWidth: calculatedStrokeWidth,
+          className: mergeClasses('lucide', contextClass, className),
+          ...(!children && !hasA11yProp(rest) && { 'aria-hidden': 'true' }),
+          ...rest,
+        },
+        [
+          ...iconNode.map(([tag, attrs]) => (0, import_react2.createElement)(tag, attrs)),
+          ...(Array.isArray(children) ? children : [children]),
+        ],
+      );
+    },
+  );
+
+  // node_modules/lucide-react/dist/esm/createLucideIcon.mjs
+  var createLucideIcon = (iconName, iconNode) => {
+    const Component = (0, import_react3.forwardRef)(({ className, ...props }, ref) =>
+      (0, import_react3.createElement)(Icon, {
+        ref,
+        iconNode,
+        className: mergeClasses(
+          `lucide-${toKebabCase(toPascalCase(iconName))}`,
+          `lucide-${iconName}`,
+          className,
+        ),
+        ...props,
+      }),
+    );
+    Component.displayName = toPascalCase(iconName);
+    return Component;
+  };
+
+  // node_modules/lucide-react/dist/esm/icons/chevron-down.mjs
+  var __iconNode = [['path', { d: 'm6 9 6 6 6-6', key: 'qrunsl' }]];
+  var ChevronDown = createLucideIcon('chevron-down', __iconNode);
+
+  // node_modules/lucide-react/dist/esm/icons/plus.mjs
+  var __iconNode2 = [
+    ['path', { d: 'M5 12h14', key: '1ays0h' }],
+    ['path', { d: 'M12 5v14', key: 's699le' }],
+  ];
+  var Plus = createLucideIcon('plus', __iconNode2);
+
+  // node_modules/lucide-react/dist/esm/icons/trash-2.mjs
+  var __iconNode3 = [
+    ['path', { d: 'M10 11v6', key: 'nco0om' }],
+    ['path', { d: 'M14 11v6', key: 'outv1u' }],
+    ['path', { d: 'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6', key: 'miytrc' }],
+    ['path', { d: 'M3 6h18', key: 'd0wm0j' }],
+    ['path', { d: 'M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2', key: 'e791ji' }],
+  ];
+  var Trash2 = createLucideIcon('trash-2', __iconNode3);
+
+  // node_modules/lucide-react/dist/esm/icons/triangle-alert.mjs
+  var __iconNode4 = [
+    [
+      'path',
+      {
+        d: 'm21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3',
+        key: 'wmoenq',
+      },
+    ],
+    ['path', { d: 'M12 9v4', key: 'juzpu7' }],
+    ['path', { d: 'M12 17h.01', key: 'p32p05' }],
+  ];
+  var TriangleAlert = createLucideIcon('triangle-alert', __iconNode4);
+
+  // node_modules/lucide-react/dist/esm/icons/x.mjs
+  var __iconNode5 = [
+    ['path', { d: 'M18 6 6 18', key: '1bl5f8' }],
+    ['path', { d: 'm6 6 12 12', key: 'd8bk6v' }],
+  ];
+  var X = createLucideIcon('x', __iconNode5);
+
+  // src/ui/components/button.tsx
+  var import_react4 = __toESM(require_react(), 1);
+
+  // node_modules/clsx/dist/clsx.mjs
+  function r(e) {
+    var t,
+      f,
+      n = '';
+    if ('string' == typeof e || 'number' == typeof e) n += e;
+    else if ('object' == typeof e)
+      if (Array.isArray(e)) {
+        var o = e.length;
+        for (t = 0; t < o; t++) e[t] && (f = r(e[t])) && (n && (n += ' '), (n += f));
+      } else for (f in e) e[f] && (n && (n += ' '), (n += f));
+    return n;
+  }
+  function clsx() {
+    for (var e, t, f = 0, n = '', o = arguments.length; f < o; f++)
+      (e = arguments[f]) && (t = r(e)) && (n && (n += ' '), (n += t));
+    return n;
+  }
+
+  // node_modules/class-variance-authority/dist/index.mjs
+  var falsyToString = (value) =>
+    typeof value === 'boolean' ? `${value}` : value === 0 ? '0' : value;
+  var cx = clsx;
+  var cva = (base, config) => (props) => {
+    var _config_compoundVariants;
+    if ((config === null || config === void 0 ? void 0 : config.variants) == null)
+      return cx(
+        base,
+        props === null || props === void 0 ? void 0 : props.class,
+        props === null || props === void 0 ? void 0 : props.className,
+      );
+    const { variants, defaultVariants } = config;
+    const getVariantClassNames = Object.keys(variants).map((variant) => {
+      const variantProp = props === null || props === void 0 ? void 0 : props[variant];
+      const defaultVariantProp =
+        defaultVariants === null || defaultVariants === void 0 ? void 0 : defaultVariants[variant];
+      if (variantProp === null) return null;
+      const variantKey = falsyToString(variantProp) || falsyToString(defaultVariantProp);
+      return variants[variant][variantKey];
+    });
+    const propsWithoutUndefined =
+      props &&
+      Object.entries(props).reduce((acc, param) => {
+        let [key, value] = param;
+        if (value === void 0) {
+          return acc;
+        }
+        acc[key] = value;
+        return acc;
+      }, {});
+    const getCompoundVariantClassNames =
+      config === null || config === void 0
+        ? void 0
+        : (_config_compoundVariants = config.compoundVariants) === null ||
+            _config_compoundVariants === void 0
+          ? void 0
+          : _config_compoundVariants.reduce((acc, param) => {
+              let { class: cvClass, className: cvClassName, ...compoundVariantOptions } = param;
+              return Object.entries(compoundVariantOptions).every((param2) => {
+                let [key, value] = param2;
+                return Array.isArray(value)
+                  ? value.includes(
+                      {
+                        ...defaultVariants,
+                        ...propsWithoutUndefined,
+                      }[key],
+                    )
+                  : {
+                      ...defaultVariants,
+                      ...propsWithoutUndefined,
+                    }[key] === value;
+              })
+                ? [...acc, cvClass, cvClassName]
+                : acc;
+            }, []);
+    return cx(
+      base,
+      getVariantClassNames,
+      getCompoundVariantClassNames,
+      props === null || props === void 0 ? void 0 : props.class,
+      props === null || props === void 0 ? void 0 : props.className,
+    );
+  };
+
+  // node_modules/tailwind-merge/dist/bundle-mjs.mjs
+  var concatArrays = (array1, array2) => {
+    const combinedArray = new Array(array1.length + array2.length);
+    for (let i = 0; i < array1.length; i++) {
+      combinedArray[i] = array1[i];
+    }
+    for (let i = 0; i < array2.length; i++) {
+      combinedArray[array1.length + i] = array2[i];
+    }
+    return combinedArray;
+  };
+  var createClassValidatorObject = (classGroupId, validator) => ({
+    classGroupId,
+    validator,
+  });
+  var createClassPartObject = (
+    nextPart = /* @__PURE__ */ new Map(),
+    validators = null,
+    classGroupId,
+  ) => ({
+    nextPart,
+    validators,
+    classGroupId,
+  });
+  var CLASS_PART_SEPARATOR = '-';
+  var EMPTY_CONFLICTS = [];
+  var ARBITRARY_PROPERTY_PREFIX = 'arbitrary..';
+  var createClassGroupUtils = (config) => {
+    const classMap = createClassMap(config);
+    const { conflictingClassGroups, conflictingClassGroupModifiers } = config;
+    const getClassGroupId = (className) => {
+      if (className.startsWith('[') && className.endsWith(']')) {
+        return getGroupIdForArbitraryProperty(className);
+      }
+      const classParts = className.split(CLASS_PART_SEPARATOR);
+      const startIndex = classParts[0] === '' && classParts.length > 1 ? 1 : 0;
+      return getGroupRecursive(classParts, startIndex, classMap);
+    };
+    const getConflictingClassGroupIds = (classGroupId, hasPostfixModifier) => {
+      if (hasPostfixModifier) {
+        const modifierConflicts = conflictingClassGroupModifiers[classGroupId];
+        const baseConflicts = conflictingClassGroups[classGroupId];
+        if (modifierConflicts) {
+          if (baseConflicts) {
+            return concatArrays(baseConflicts, modifierConflicts);
+          }
+          return modifierConflicts;
+        }
+        return baseConflicts || EMPTY_CONFLICTS;
+      }
+      return conflictingClassGroups[classGroupId] || EMPTY_CONFLICTS;
+    };
+    return {
+      getClassGroupId,
+      getConflictingClassGroupIds,
+    };
+  };
+  var getGroupRecursive = (classParts, startIndex, classPartObject) => {
+    const classPathsLength = classParts.length - startIndex;
+    if (classPathsLength === 0) {
+      return classPartObject.classGroupId;
+    }
+    const currentClassPart = classParts[startIndex];
+    const nextClassPartObject = classPartObject.nextPart.get(currentClassPart);
+    if (nextClassPartObject) {
+      const result = getGroupRecursive(classParts, startIndex + 1, nextClassPartObject);
+      if (result) return result;
+    }
+    const validators = classPartObject.validators;
+    if (validators === null) {
+      return void 0;
+    }
+    const classRest =
+      startIndex === 0
+        ? classParts.join(CLASS_PART_SEPARATOR)
+        : classParts.slice(startIndex).join(CLASS_PART_SEPARATOR);
+    const validatorsLength = validators.length;
+    for (let i = 0; i < validatorsLength; i++) {
+      const validatorObj = validators[i];
+      if (validatorObj.validator(classRest)) {
+        return validatorObj.classGroupId;
+      }
+    }
+    return void 0;
+  };
+  var getGroupIdForArbitraryProperty = (className) =>
+    className.slice(1, -1).indexOf(':') === -1
+      ? void 0
+      : (() => {
+          const content = className.slice(1, -1);
+          const colonIndex = content.indexOf(':');
+          const property = content.slice(0, colonIndex);
+          return property ? ARBITRARY_PROPERTY_PREFIX + property : void 0;
+        })();
+  var createClassMap = (config) => {
+    const { theme, classGroups } = config;
+    return processClassGroups(classGroups, theme);
+  };
+  var processClassGroups = (classGroups, theme) => {
+    const classMap = createClassPartObject();
+    for (const classGroupId in classGroups) {
+      const group = classGroups[classGroupId];
+      processClassesRecursively(group, classMap, classGroupId, theme);
+    }
+    return classMap;
+  };
+  var processClassesRecursively = (classGroup, classPartObject, classGroupId, theme) => {
+    const len = classGroup.length;
+    for (let i = 0; i < len; i++) {
+      const classDefinition = classGroup[i];
+      processClassDefinition(classDefinition, classPartObject, classGroupId, theme);
+    }
+  };
+  var processClassDefinition = (classDefinition, classPartObject, classGroupId, theme) => {
+    if (typeof classDefinition === 'string') {
+      processStringDefinition(classDefinition, classPartObject, classGroupId);
+      return;
+    }
+    if (typeof classDefinition === 'function') {
+      processFunctionDefinition(classDefinition, classPartObject, classGroupId, theme);
+      return;
+    }
+    processObjectDefinition(classDefinition, classPartObject, classGroupId, theme);
+  };
+  var processStringDefinition = (classDefinition, classPartObject, classGroupId) => {
+    const classPartObjectToEdit =
+      classDefinition === '' ? classPartObject : getPart(classPartObject, classDefinition);
+    classPartObjectToEdit.classGroupId = classGroupId;
+  };
+  var processFunctionDefinition = (classDefinition, classPartObject, classGroupId, theme) => {
+    if (isThemeGetter(classDefinition)) {
+      processClassesRecursively(classDefinition(theme), classPartObject, classGroupId, theme);
+      return;
+    }
+    if (classPartObject.validators === null) {
+      classPartObject.validators = [];
+    }
+    classPartObject.validators.push(createClassValidatorObject(classGroupId, classDefinition));
+  };
+  var processObjectDefinition = (classDefinition, classPartObject, classGroupId, theme) => {
+    const entries = Object.entries(classDefinition);
+    const len = entries.length;
+    for (let i = 0; i < len; i++) {
+      const [key, value] = entries[i];
+      processClassesRecursively(value, getPart(classPartObject, key), classGroupId, theme);
+    }
+  };
+  var getPart = (classPartObject, path) => {
+    let current = classPartObject;
+    const parts = path.split(CLASS_PART_SEPARATOR);
+    const len = parts.length;
+    for (let i = 0; i < len; i++) {
+      const part = parts[i];
+      let next = current.nextPart.get(part);
+      if (!next) {
+        next = createClassPartObject();
+        current.nextPart.set(part, next);
+      }
+      current = next;
+    }
+    return current;
+  };
+  var isThemeGetter = (func) => 'isThemeGetter' in func && func.isThemeGetter === true;
+  var createLruCache = (maxCacheSize) => {
+    if (maxCacheSize < 1) {
+      return {
+        get: () => void 0,
+        set: () => {},
+      };
+    }
+    let cacheSize = 0;
+    let cache = /* @__PURE__ */ Object.create(null);
+    let previousCache = /* @__PURE__ */ Object.create(null);
+    const update = (key, value) => {
+      cache[key] = value;
+      cacheSize++;
+      if (cacheSize > maxCacheSize) {
+        cacheSize = 0;
+        previousCache = cache;
+        cache = /* @__PURE__ */ Object.create(null);
+      }
+    };
+    return {
+      get(key) {
+        let value = cache[key];
+        if (value !== void 0) {
+          return value;
+        }
+        if ((value = previousCache[key]) !== void 0) {
+          update(key, value);
+          return value;
+        }
+      },
+      set(key, value) {
+        if (key in cache) {
+          cache[key] = value;
+        } else {
+          update(key, value);
+        }
+      },
+    };
+  };
+  var IMPORTANT_MODIFIER = '!';
+  var MODIFIER_SEPARATOR = ':';
+  var EMPTY_MODIFIERS = [];
+  var createResultObject = (
+    modifiers,
+    hasImportantModifier,
+    baseClassName,
+    maybePostfixModifierPosition,
+    isExternal,
+  ) => ({
+    modifiers,
+    hasImportantModifier,
+    baseClassName,
+    maybePostfixModifierPosition,
+    isExternal,
+  });
+  var createParseClassName = (config) => {
+    const { prefix, experimentalParseClassName } = config;
+    let parseClassName = (className) => {
+      const modifiers = [];
+      let bracketDepth = 0;
+      let parenDepth = 0;
+      let modifierStart = 0;
+      let postfixModifierPosition;
+      const len = className.length;
+      for (let index2 = 0; index2 < len; index2++) {
+        const currentCharacter = className[index2];
+        if (bracketDepth === 0 && parenDepth === 0) {
+          if (currentCharacter === MODIFIER_SEPARATOR) {
+            modifiers.push(className.slice(modifierStart, index2));
+            modifierStart = index2 + 1;
+            continue;
+          }
+          if (currentCharacter === '/') {
+            postfixModifierPosition = index2;
+            continue;
+          }
+        }
+        if (currentCharacter === '[') bracketDepth++;
+        else if (currentCharacter === ']') bracketDepth--;
+        else if (currentCharacter === '(') parenDepth++;
+        else if (currentCharacter === ')') parenDepth--;
+      }
+      const baseClassNameWithImportantModifier =
+        modifiers.length === 0 ? className : className.slice(modifierStart);
+      let baseClassName = baseClassNameWithImportantModifier;
+      let hasImportantModifier = false;
+      if (baseClassNameWithImportantModifier.endsWith(IMPORTANT_MODIFIER)) {
+        baseClassName = baseClassNameWithImportantModifier.slice(0, -1);
+        hasImportantModifier = true;
+      } else if (
+        /**
+         * In Tailwind CSS v3 the important modifier was at the start of the base class name. This is still supported for legacy reasons.
+         * @see https://github.com/dcastil/tailwind-merge/issues/513#issuecomment-2614029864
+         */
+        baseClassNameWithImportantModifier.startsWith(IMPORTANT_MODIFIER)
+      ) {
+        baseClassName = baseClassNameWithImportantModifier.slice(1);
+        hasImportantModifier = true;
+      }
+      const maybePostfixModifierPosition =
+        postfixModifierPosition && postfixModifierPosition > modifierStart
+          ? postfixModifierPosition - modifierStart
+          : void 0;
+      return createResultObject(
+        modifiers,
+        hasImportantModifier,
+        baseClassName,
+        maybePostfixModifierPosition,
+      );
+    };
+    if (prefix) {
+      const fullPrefix = prefix + MODIFIER_SEPARATOR;
+      const parseClassNameOriginal = parseClassName;
+      parseClassName = (className) =>
+        className.startsWith(fullPrefix)
+          ? parseClassNameOriginal(className.slice(fullPrefix.length))
+          : createResultObject(EMPTY_MODIFIERS, false, className, void 0, true);
+    }
+    if (experimentalParseClassName) {
+      const parseClassNameOriginal = parseClassName;
+      parseClassName = (className) =>
+        experimentalParseClassName({
+          className,
+          parseClassName: parseClassNameOriginal,
+        });
+    }
+    return parseClassName;
+  };
+  var createSortModifiers = (config) => {
+    const modifierWeights = /* @__PURE__ */ new Map();
+    config.orderSensitiveModifiers.forEach((mod, index2) => {
+      modifierWeights.set(mod, 1e6 + index2);
+    });
+    return (modifiers) => {
+      const result = [];
+      let currentSegment = [];
+      for (let i = 0; i < modifiers.length; i++) {
+        const modifier = modifiers[i];
+        const isArbitrary = modifier[0] === '[';
+        const isOrderSensitive = modifierWeights.has(modifier);
+        if (isArbitrary || isOrderSensitive) {
+          if (currentSegment.length > 0) {
+            currentSegment.sort();
+            result.push(...currentSegment);
+            currentSegment = [];
+          }
+          result.push(modifier);
+        } else {
+          currentSegment.push(modifier);
+        }
+      }
+      if (currentSegment.length > 0) {
+        currentSegment.sort();
+        result.push(...currentSegment);
+      }
+      return result;
+    };
+  };
+  var createConfigUtils = (config) => ({
+    cache: createLruCache(config.cacheSize),
+    parseClassName: createParseClassName(config),
+    sortModifiers: createSortModifiers(config),
+    postfixLookupClassGroupIds: createPostfixLookupClassGroupIds(config),
+    ...createClassGroupUtils(config),
+  });
+  var createPostfixLookupClassGroupIds = (config) => {
+    const lookup = /* @__PURE__ */ Object.create(null);
+    const classGroupIds = config.postfixLookupClassGroups;
+    if (classGroupIds) {
+      for (let i = 0; i < classGroupIds.length; i++) {
+        lookup[classGroupIds[i]] = true;
+      }
+    }
+    return lookup;
+  };
+  var SPLIT_CLASSES_REGEX = /\s+/;
+  var mergeClassList = (classList, configUtils) => {
+    const {
+      parseClassName,
+      getClassGroupId,
+      getConflictingClassGroupIds,
+      sortModifiers,
+      postfixLookupClassGroupIds,
+    } = configUtils;
+    const classGroupsInConflict = [];
+    const classNames = classList.trim().split(SPLIT_CLASSES_REGEX);
+    let result = '';
+    for (let index2 = classNames.length - 1; index2 >= 0; index2 -= 1) {
+      const originalClassName = classNames[index2];
+      const {
+        isExternal,
+        modifiers,
+        hasImportantModifier,
+        baseClassName,
+        maybePostfixModifierPosition,
+      } = parseClassName(originalClassName);
+      if (isExternal) {
+        result = originalClassName + (result.length > 0 ? ' ' + result : result);
+        continue;
+      }
+      let hasPostfixModifier = !!maybePostfixModifierPosition;
+      let classGroupId;
+      if (hasPostfixModifier) {
+        const baseClassNameWithoutPostfix = baseClassName.substring(
+          0,
+          maybePostfixModifierPosition,
+        );
+        classGroupId = getClassGroupId(baseClassNameWithoutPostfix);
+        const classGroupIdWithPostfix =
+          classGroupId && postfixLookupClassGroupIds[classGroupId]
+            ? getClassGroupId(baseClassName)
+            : void 0;
+        if (classGroupIdWithPostfix && classGroupIdWithPostfix !== classGroupId) {
+          classGroupId = classGroupIdWithPostfix;
+          hasPostfixModifier = false;
+        }
+      } else {
+        classGroupId = getClassGroupId(baseClassName);
+      }
+      if (!classGroupId) {
+        if (!hasPostfixModifier) {
+          result = originalClassName + (result.length > 0 ? ' ' + result : result);
+          continue;
+        }
+        classGroupId = getClassGroupId(baseClassName);
+        if (!classGroupId) {
+          result = originalClassName + (result.length > 0 ? ' ' + result : result);
+          continue;
+        }
+        hasPostfixModifier = false;
+      }
+      const variantModifier =
+        modifiers.length === 0
+          ? ''
+          : modifiers.length === 1
+            ? modifiers[0]
+            : sortModifiers(modifiers).join(':');
+      const modifierId = hasImportantModifier
+        ? variantModifier + IMPORTANT_MODIFIER
+        : variantModifier;
+      const classId = modifierId + classGroupId;
+      if (classGroupsInConflict.indexOf(classId) > -1) {
+        continue;
+      }
+      classGroupsInConflict.push(classId);
+      const conflictGroups = getConflictingClassGroupIds(classGroupId, hasPostfixModifier);
+      for (let i = 0; i < conflictGroups.length; ++i) {
+        const group = conflictGroups[i];
+        classGroupsInConflict.push(modifierId + group);
+      }
+      result = originalClassName + (result.length > 0 ? ' ' + result : result);
+    }
+    return result;
+  };
+  var twJoin = (...classLists) => {
+    let index2 = 0;
+    let argument;
+    let resolvedValue;
+    let string = '';
+    while (index2 < classLists.length) {
+      if ((argument = classLists[index2++])) {
+        if ((resolvedValue = toValue(argument))) {
+          string && (string += ' ');
+          string += resolvedValue;
+        }
+      }
+    }
+    return string;
+  };
+  var toValue = (mix) => {
+    if (typeof mix === 'string') {
+      return mix;
+    }
+    let resolvedValue;
+    let string = '';
+    for (let k = 0; k < mix.length; k++) {
+      if (mix[k]) {
+        if ((resolvedValue = toValue(mix[k]))) {
+          string && (string += ' ');
+          string += resolvedValue;
+        }
+      }
+    }
+    return string;
+  };
+  var createTailwindMerge = (createConfigFirst, ...createConfigRest) => {
+    let configUtils;
+    let cacheGet;
+    let cacheSet;
+    let functionToCall;
+    const initTailwindMerge = (classList) => {
+      const config = createConfigRest.reduce(
+        (previousConfig, createConfigCurrent) => createConfigCurrent(previousConfig),
+        createConfigFirst(),
+      );
+      configUtils = createConfigUtils(config);
+      cacheGet = configUtils.cache.get;
+      cacheSet = configUtils.cache.set;
+      functionToCall = tailwindMerge;
+      return tailwindMerge(classList);
+    };
+    const tailwindMerge = (classList) => {
+      const cachedResult = cacheGet(classList);
+      if (cachedResult) {
+        return cachedResult;
+      }
+      const result = mergeClassList(classList, configUtils);
+      cacheSet(classList, result);
+      return result;
+    };
+    functionToCall = initTailwindMerge;
+    return (...args) => functionToCall(twJoin(...args));
+  };
+  var fallbackThemeArr = [];
+  var fromTheme = (key) => {
+    const themeGetter = (theme) => theme[key] || fallbackThemeArr;
+    themeGetter.isThemeGetter = true;
+    return themeGetter;
+  };
+  var arbitraryValueRegex = /^\[(?:(\w[\w-]*):)?(.+)\]$/i;
+  var arbitraryVariableRegex = /^\((?:(\w[\w-]*):)?(.+)\)$/i;
+  var fractionRegex = /^\d+(?:\.\d+)?\/\d+(?:\.\d+)?$/;
+  var tshirtUnitRegex = /^(\d+(\.\d+)?)?(xs|sm|md|lg|xl)$/;
+  var lengthUnitRegex =
+    /\d+(%|px|r?em|[sdl]?v([hwib]|min|max)|pt|pc|in|cm|mm|cap|ch|ex|r?lh|cq(w|h|i|b|min|max))|\b(calc|min|max|clamp)\(.+\)|^0$/;
+  var colorFunctionRegex = /^(rgba?|hsla?|hwb|(ok)?(lab|lch)|color-mix)\(.+\)$/;
+  var shadowRegex = /^(inset_)?-?((\d+)?\.?(\d+)[a-z]+|0)_-?((\d+)?\.?(\d+)[a-z]+|0)/;
+  var imageRegex =
+    /^(url|image|image-set|cross-fade|element|(repeating-)?(linear|radial|conic)-gradient)\(.+\)$/;
+  var isFraction = (value) => fractionRegex.test(value);
+  var isNumber = (value) => !!value && !Number.isNaN(Number(value));
+  var isInteger = (value) => !!value && Number.isInteger(Number(value));
+  var isPercent = (value) => value.endsWith('%') && isNumber(value.slice(0, -1));
+  var isTshirtSize = (value) => tshirtUnitRegex.test(value);
+  var isAny = () => true;
+  var isLengthOnly = (value) =>
+    // `colorFunctionRegex` check is necessary because color functions can have percentages in them which which would be incorrectly classified as lengths.
+    // For example, `hsl(0 0% 0%)` would be classified as a length without this check.
+    // I could also use lookbehind assertion in `lengthUnitRegex` but that isn't supported widely enough.
+    lengthUnitRegex.test(value) && !colorFunctionRegex.test(value);
+  var isNever = () => false;
+  var isShadow = (value) => shadowRegex.test(value);
+  var isImage = (value) => imageRegex.test(value);
+  var isAnyNonArbitrary = (value) => !isArbitraryValue(value) && !isArbitraryVariable(value);
+  var isNamedContainerQuery = (value) =>
+    value.startsWith('@container') &&
+    ((value[10] === '/' && value[11] !== void 0) ||
+      (value[11] === 's' && value[16] !== void 0 && value.startsWith('-size/', 10)) ||
+      (value[11] === 'n' && value[18] !== void 0 && value.startsWith('-normal/', 10)));
+  var isArbitrarySize = (value) => getIsArbitraryValue(value, isLabelSize, isNever);
+  var isArbitraryValue = (value) => arbitraryValueRegex.test(value);
+  var isArbitraryLength = (value) => getIsArbitraryValue(value, isLabelLength, isLengthOnly);
+  var isArbitraryNumber = (value) => getIsArbitraryValue(value, isLabelNumber, isNumber);
+  var isArbitraryWeight = (value) => getIsArbitraryValue(value, isLabelWeight, isAny);
+  var isArbitraryFamilyName = (value) => getIsArbitraryValue(value, isLabelFamilyName, isNever);
+  var isArbitraryPosition = (value) => getIsArbitraryValue(value, isLabelPosition, isNever);
+  var isArbitraryImage = (value) => getIsArbitraryValue(value, isLabelImage, isImage);
+  var isArbitraryShadow = (value) => getIsArbitraryValue(value, isLabelShadow, isShadow);
+  var isArbitraryVariable = (value) => arbitraryVariableRegex.test(value);
+  var isArbitraryVariableLength = (value) => getIsArbitraryVariable(value, isLabelLength);
+  var isArbitraryVariableFamilyName = (value) => getIsArbitraryVariable(value, isLabelFamilyName);
+  var isArbitraryVariablePosition = (value) => getIsArbitraryVariable(value, isLabelPosition);
+  var isArbitraryVariableSize = (value) => getIsArbitraryVariable(value, isLabelSize);
+  var isArbitraryVariableImage = (value) => getIsArbitraryVariable(value, isLabelImage);
+  var isArbitraryVariableShadow = (value) => getIsArbitraryVariable(value, isLabelShadow, true);
+  var isArbitraryVariableWeight = (value) => getIsArbitraryVariable(value, isLabelWeight, true);
+  var getIsArbitraryValue = (value, testLabel, testValue) => {
+    const result = arbitraryValueRegex.exec(value);
+    if (result) {
+      if (result[1]) {
+        return testLabel(result[1]);
+      }
+      return testValue(result[2]);
+    }
+    return false;
+  };
+  var getIsArbitraryVariable = (value, testLabel, shouldMatchNoLabel = false) => {
+    const result = arbitraryVariableRegex.exec(value);
+    if (result) {
+      if (result[1]) {
+        return testLabel(result[1]);
+      }
+      return shouldMatchNoLabel;
+    }
+    return false;
+  };
+  var isLabelPosition = (label) => label === 'position' || label === 'percentage';
+  var isLabelImage = (label) => label === 'image' || label === 'url';
+  var isLabelSize = (label) => label === 'length' || label === 'size' || label === 'bg-size';
+  var isLabelLength = (label) => label === 'length';
+  var isLabelNumber = (label) => label === 'number';
+  var isLabelFamilyName = (label) => label === 'family-name';
+  var isLabelWeight = (label) => label === 'number' || label === 'weight';
+  var isLabelShadow = (label) => label === 'shadow';
+  var getDefaultConfig = () => {
+    const themeColor = fromTheme('color');
+    const themeFont = fromTheme('font');
+    const themeText = fromTheme('text');
+    const themeFontWeight = fromTheme('font-weight');
+    const themeTracking = fromTheme('tracking');
+    const themeLeading = fromTheme('leading');
+    const themeBreakpoint = fromTheme('breakpoint');
+    const themeContainer = fromTheme('container');
+    const themeSpacing = fromTheme('spacing');
+    const themeRadius = fromTheme('radius');
+    const themeShadow = fromTheme('shadow');
+    const themeInsetShadow = fromTheme('inset-shadow');
+    const themeTextShadow = fromTheme('text-shadow');
+    const themeDropShadow = fromTheme('drop-shadow');
+    const themeBlur = fromTheme('blur');
+    const themePerspective = fromTheme('perspective');
+    const themeAspect = fromTheme('aspect');
+    const themeEase = fromTheme('ease');
+    const themeAnimate = fromTheme('animate');
+    const scaleBreak = () => [
+      'auto',
+      'avoid',
+      'all',
+      'avoid-page',
+      'page',
+      'left',
+      'right',
+      'column',
+    ];
+    const scalePosition = () => [
+      'center',
+      'top',
+      'bottom',
+      'left',
+      'right',
+      'top-left',
+      // Deprecated since Tailwind CSS v4.1.0, see https://github.com/tailwindlabs/tailwindcss/pull/17378
+      'left-top',
+      'top-right',
+      // Deprecated since Tailwind CSS v4.1.0, see https://github.com/tailwindlabs/tailwindcss/pull/17378
+      'right-top',
+      'bottom-right',
+      // Deprecated since Tailwind CSS v4.1.0, see https://github.com/tailwindlabs/tailwindcss/pull/17378
+      'right-bottom',
+      'bottom-left',
+      // Deprecated since Tailwind CSS v4.1.0, see https://github.com/tailwindlabs/tailwindcss/pull/17378
+      'left-bottom',
+    ];
+    const scalePositionWithArbitrary = () => [
+      ...scalePosition(),
+      isArbitraryVariable,
+      isArbitraryValue,
+    ];
+    const scaleOverflow = () => ['auto', 'hidden', 'clip', 'visible', 'scroll'];
+    const scaleOverscroll = () => ['auto', 'contain', 'none'];
+    const scaleUnambiguousSpacing = () => [isArbitraryVariable, isArbitraryValue, themeSpacing];
+    const scaleInset = () => [isFraction, 'full', 'auto', ...scaleUnambiguousSpacing()];
+    const scaleGridTemplateColsRows = () => [
+      isInteger,
+      'none',
+      'subgrid',
+      isArbitraryVariable,
+      isArbitraryValue,
+    ];
+    const scaleGridColRowStartAndEnd = () => [
+      'auto',
+      {
+        span: ['full', isInteger, isArbitraryVariable, isArbitraryValue],
+      },
+      isInteger,
+      isArbitraryVariable,
+      isArbitraryValue,
+    ];
+    const scaleGridColRowStartOrEnd = () => [
+      isInteger,
+      'auto',
+      isArbitraryVariable,
+      isArbitraryValue,
+    ];
+    const scaleGridAutoColsRows = () => [
+      'auto',
+      'min',
+      'max',
+      'fr',
+      isArbitraryVariable,
+      isArbitraryValue,
+    ];
+    const scaleAlignPrimaryAxis = () => [
+      'start',
+      'end',
+      'center',
+      'between',
+      'around',
+      'evenly',
+      'stretch',
+      'baseline',
+      'center-safe',
+      'end-safe',
+    ];
+    const scaleAlignSecondaryAxis = () => [
+      'start',
+      'end',
+      'center',
+      'stretch',
+      'center-safe',
+      'end-safe',
+    ];
+    const scaleMargin = () => ['auto', ...scaleUnambiguousSpacing()];
+    const scaleSizing = () => [
+      isFraction,
+      'auto',
+      'full',
+      'dvw',
+      'dvh',
+      'lvw',
+      'lvh',
+      'svw',
+      'svh',
+      'min',
+      'max',
+      'fit',
+      ...scaleUnambiguousSpacing(),
+    ];
+    const scaleSizingInline = () => [
+      isFraction,
+      'screen',
+      'full',
+      'dvw',
+      'lvw',
+      'svw',
+      'min',
+      'max',
+      'fit',
+      ...scaleUnambiguousSpacing(),
+    ];
+    const scaleSizingBlock = () => [
+      isFraction,
+      'screen',
+      'full',
+      'lh',
+      'dvh',
+      'lvh',
+      'svh',
+      'min',
+      'max',
+      'fit',
+      ...scaleUnambiguousSpacing(),
+    ];
+    const scaleColor = () => [themeColor, isArbitraryVariable, isArbitraryValue];
+    const scaleBgPosition = () => [
+      ...scalePosition(),
+      isArbitraryVariablePosition,
+      isArbitraryPosition,
+      {
+        position: [isArbitraryVariable, isArbitraryValue],
+      },
+    ];
+    const scaleBgRepeat = () => [
+      'no-repeat',
+      {
+        repeat: ['', 'x', 'y', 'space', 'round'],
+      },
+    ];
+    const scaleBgSize = () => [
+      'auto',
+      'cover',
+      'contain',
+      isArbitraryVariableSize,
+      isArbitrarySize,
+      {
+        size: [isArbitraryVariable, isArbitraryValue],
+      },
+    ];
+    const scaleGradientStopPosition = () => [
+      isPercent,
+      isArbitraryVariableLength,
+      isArbitraryLength,
+    ];
+    const scaleRadius = () => [
+      // Deprecated since Tailwind CSS v4.0.0
+      '',
+      'none',
+      'full',
+      themeRadius,
+      isArbitraryVariable,
+      isArbitraryValue,
+    ];
+    const scaleBorderWidth = () => ['', isNumber, isArbitraryVariableLength, isArbitraryLength];
+    const scaleLineStyle = () => ['solid', 'dashed', 'dotted', 'double'];
+    const scaleBlendMode = () => [
+      'normal',
+      'multiply',
+      'screen',
+      'overlay',
+      'darken',
+      'lighten',
+      'color-dodge',
+      'color-burn',
+      'hard-light',
+      'soft-light',
+      'difference',
+      'exclusion',
+      'hue',
+      'saturation',
+      'color',
+      'luminosity',
+    ];
+    const scaleMaskImagePosition = () => [
+      isNumber,
+      isPercent,
+      isArbitraryVariablePosition,
+      isArbitraryPosition,
+    ];
+    const scaleBlur = () => [
+      // Deprecated since Tailwind CSS v4.0.0
+      '',
+      'none',
+      themeBlur,
+      isArbitraryVariable,
+      isArbitraryValue,
+    ];
+    const scaleRotate = () => ['none', isNumber, isArbitraryVariable, isArbitraryValue];
+    const scaleScale = () => ['none', isNumber, isArbitraryVariable, isArbitraryValue];
+    const scaleSkew = () => [isNumber, isArbitraryVariable, isArbitraryValue];
+    const scaleTranslate = () => [isFraction, 'full', ...scaleUnambiguousSpacing()];
+    return {
+      cacheSize: 500,
+      theme: {
+        animate: ['spin', 'ping', 'pulse', 'bounce'],
+        aspect: ['video'],
+        blur: [isTshirtSize],
+        breakpoint: [isTshirtSize],
+        color: [isAny],
+        container: [isTshirtSize],
+        'drop-shadow': [isTshirtSize],
+        ease: ['in', 'out', 'in-out'],
+        font: [isAnyNonArbitrary],
+        'font-weight': [
+          'thin',
+          'extralight',
+          'light',
+          'normal',
+          'medium',
+          'semibold',
+          'bold',
+          'extrabold',
+          'black',
+        ],
+        'inset-shadow': [isTshirtSize],
+        leading: ['none', 'tight', 'snug', 'normal', 'relaxed', 'loose'],
+        perspective: ['dramatic', 'near', 'normal', 'midrange', 'distant', 'none'],
+        radius: [isTshirtSize],
+        shadow: [isTshirtSize],
+        spacing: ['px', isNumber],
+        text: [isTshirtSize],
+        'text-shadow': [isTshirtSize],
+        tracking: ['tighter', 'tight', 'normal', 'wide', 'wider', 'widest'],
+      },
+      classGroups: {
+        // --------------
+        // --- Layout ---
+        // --------------
+        /**
+         * Aspect Ratio
+         * @see https://tailwindcss.com/docs/aspect-ratio
+         */
+        aspect: [
+          {
+            aspect: [
+              'auto',
+              'square',
+              isFraction,
+              isArbitraryValue,
+              isArbitraryVariable,
+              themeAspect,
+            ],
+          },
+        ],
+        /**
+         * Container
+         * @see https://tailwindcss.com/docs/container
+         * @deprecated since Tailwind CSS v4.0.0
+         */
+        container: ['container'],
+        /**
+         * Container Type
+         * @see https://tailwindcss.com/docs/responsive-design#container-queries
+         */
+        'container-type': [
+          {
+            '@container': ['', 'normal', 'size', isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Container Name
+         * @see https://tailwindcss.com/docs/responsive-design#named-containers
+         */
+        'container-named': [isNamedContainerQuery],
+        /**
+         * Columns
+         * @see https://tailwindcss.com/docs/columns
+         */
+        columns: [
+          {
+            columns: [isNumber, isArbitraryValue, isArbitraryVariable, themeContainer],
+          },
+        ],
+        /**
+         * Break After
+         * @see https://tailwindcss.com/docs/break-after
+         */
+        'break-after': [
+          {
+            'break-after': scaleBreak(),
+          },
+        ],
+        /**
+         * Break Before
+         * @see https://tailwindcss.com/docs/break-before
+         */
+        'break-before': [
+          {
+            'break-before': scaleBreak(),
+          },
+        ],
+        /**
+         * Break Inside
+         * @see https://tailwindcss.com/docs/break-inside
+         */
+        'break-inside': [
+          {
+            'break-inside': ['auto', 'avoid', 'avoid-page', 'avoid-column'],
+          },
+        ],
+        /**
+         * Box Decoration Break
+         * @see https://tailwindcss.com/docs/box-decoration-break
+         */
+        'box-decoration': [
+          {
+            'box-decoration': ['slice', 'clone'],
+          },
+        ],
+        /**
+         * Box Sizing
+         * @see https://tailwindcss.com/docs/box-sizing
+         */
+        box: [
+          {
+            box: ['border', 'content'],
+          },
+        ],
+        /**
+         * Display
+         * @see https://tailwindcss.com/docs/display
+         */
+        display: [
+          'block',
+          'inline-block',
+          'inline',
+          'flex',
+          'inline-flex',
+          'table',
+          'inline-table',
+          'table-caption',
+          'table-cell',
+          'table-column',
+          'table-column-group',
+          'table-footer-group',
+          'table-header-group',
+          'table-row-group',
+          'table-row',
+          'flow-root',
+          'grid',
+          'inline-grid',
+          'contents',
+          'list-item',
+          'hidden',
+        ],
+        /**
+         * Screen Reader Only
+         * @see https://tailwindcss.com/docs/display#screen-reader-only
+         */
+        sr: ['sr-only', 'not-sr-only'],
+        /**
+         * Floats
+         * @see https://tailwindcss.com/docs/float
+         */
+        float: [
+          {
+            float: ['right', 'left', 'none', 'start', 'end'],
+          },
+        ],
+        /**
+         * Clear
+         * @see https://tailwindcss.com/docs/clear
+         */
+        clear: [
+          {
+            clear: ['left', 'right', 'both', 'none', 'start', 'end'],
+          },
+        ],
+        /**
+         * Isolation
+         * @see https://tailwindcss.com/docs/isolation
+         */
+        isolation: ['isolate', 'isolation-auto'],
+        /**
+         * Object Fit
+         * @see https://tailwindcss.com/docs/object-fit
+         */
+        'object-fit': [
+          {
+            object: ['contain', 'cover', 'fill', 'none', 'scale-down'],
+          },
+        ],
+        /**
+         * Object Position
+         * @see https://tailwindcss.com/docs/object-position
+         */
+        'object-position': [
+          {
+            object: scalePositionWithArbitrary(),
+          },
+        ],
+        /**
+         * Overflow
+         * @see https://tailwindcss.com/docs/overflow
+         */
+        overflow: [
+          {
+            overflow: scaleOverflow(),
+          },
+        ],
+        /**
+         * Overflow X
+         * @see https://tailwindcss.com/docs/overflow
+         */
+        'overflow-x': [
+          {
+            'overflow-x': scaleOverflow(),
+          },
+        ],
+        /**
+         * Overflow Y
+         * @see https://tailwindcss.com/docs/overflow
+         */
+        'overflow-y': [
+          {
+            'overflow-y': scaleOverflow(),
+          },
+        ],
+        /**
+         * Overscroll Behavior
+         * @see https://tailwindcss.com/docs/overscroll-behavior
+         */
+        overscroll: [
+          {
+            overscroll: scaleOverscroll(),
+          },
+        ],
+        /**
+         * Overscroll Behavior X
+         * @see https://tailwindcss.com/docs/overscroll-behavior
+         */
+        'overscroll-x': [
+          {
+            'overscroll-x': scaleOverscroll(),
+          },
+        ],
+        /**
+         * Overscroll Behavior Y
+         * @see https://tailwindcss.com/docs/overscroll-behavior
+         */
+        'overscroll-y': [
+          {
+            'overscroll-y': scaleOverscroll(),
+          },
+        ],
+        /**
+         * Position
+         * @see https://tailwindcss.com/docs/position
+         */
+        position: ['static', 'fixed', 'absolute', 'relative', 'sticky'],
+        /**
+         * Inset
+         * @see https://tailwindcss.com/docs/top-right-bottom-left
+         */
+        inset: [
+          {
+            inset: scaleInset(),
+          },
+        ],
+        /**
+         * Inset Inline
+         * @see https://tailwindcss.com/docs/top-right-bottom-left
+         */
+        'inset-x': [
+          {
+            'inset-x': scaleInset(),
+          },
+        ],
+        /**
+         * Inset Block
+         * @see https://tailwindcss.com/docs/top-right-bottom-left
+         */
+        'inset-y': [
+          {
+            'inset-y': scaleInset(),
+          },
+        ],
+        /**
+         * Inset Inline Start
+         * @see https://tailwindcss.com/docs/top-right-bottom-left
+         * @todo class group will be renamed to `inset-s` in next major release
+         */
+        start: [
+          {
+            'inset-s': scaleInset(),
+            /**
+             * @deprecated since Tailwind CSS v4.2.0 in favor of `inset-s-*` utilities.
+             * @see https://github.com/tailwindlabs/tailwindcss/pull/19613
+             */
+            start: scaleInset(),
+          },
+        ],
+        /**
+         * Inset Inline End
+         * @see https://tailwindcss.com/docs/top-right-bottom-left
+         * @todo class group will be renamed to `inset-e` in next major release
+         */
+        end: [
+          {
+            'inset-e': scaleInset(),
+            /**
+             * @deprecated since Tailwind CSS v4.2.0 in favor of `inset-e-*` utilities.
+             * @see https://github.com/tailwindlabs/tailwindcss/pull/19613
+             */
+            end: scaleInset(),
+          },
+        ],
+        /**
+         * Inset Block Start
+         * @see https://tailwindcss.com/docs/top-right-bottom-left
+         */
+        'inset-bs': [
+          {
+            'inset-bs': scaleInset(),
+          },
+        ],
+        /**
+         * Inset Block End
+         * @see https://tailwindcss.com/docs/top-right-bottom-left
+         */
+        'inset-be': [
+          {
+            'inset-be': scaleInset(),
+          },
+        ],
+        /**
+         * Top
+         * @see https://tailwindcss.com/docs/top-right-bottom-left
+         */
+        top: [
+          {
+            top: scaleInset(),
+          },
+        ],
+        /**
+         * Right
+         * @see https://tailwindcss.com/docs/top-right-bottom-left
+         */
+        right: [
+          {
+            right: scaleInset(),
+          },
+        ],
+        /**
+         * Bottom
+         * @see https://tailwindcss.com/docs/top-right-bottom-left
+         */
+        bottom: [
+          {
+            bottom: scaleInset(),
+          },
+        ],
+        /**
+         * Left
+         * @see https://tailwindcss.com/docs/top-right-bottom-left
+         */
+        left: [
+          {
+            left: scaleInset(),
+          },
+        ],
+        /**
+         * Visibility
+         * @see https://tailwindcss.com/docs/visibility
+         */
+        visibility: ['visible', 'invisible', 'collapse'],
+        /**
+         * Z-Index
+         * @see https://tailwindcss.com/docs/z-index
+         */
+        z: [
+          {
+            z: [isInteger, 'auto', isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        // ------------------------
+        // --- Flexbox and Grid ---
+        // ------------------------
+        /**
+         * Flex Basis
+         * @see https://tailwindcss.com/docs/flex-basis
+         */
+        basis: [
+          {
+            basis: [isFraction, 'full', 'auto', themeContainer, ...scaleUnambiguousSpacing()],
+          },
+        ],
+        /**
+         * Flex Direction
+         * @see https://tailwindcss.com/docs/flex-direction
+         */
+        'flex-direction': [
+          {
+            flex: ['row', 'row-reverse', 'col', 'col-reverse'],
+          },
+        ],
+        /**
+         * Flex Wrap
+         * @see https://tailwindcss.com/docs/flex-wrap
+         */
+        'flex-wrap': [
+          {
+            flex: ['nowrap', 'wrap', 'wrap-reverse'],
+          },
+        ],
+        /**
+         * Flex
+         * @see https://tailwindcss.com/docs/flex
+         */
+        flex: [
+          {
+            flex: [isNumber, isFraction, 'auto', 'initial', 'none', isArbitraryValue],
+          },
+        ],
+        /**
+         * Flex Grow
+         * @see https://tailwindcss.com/docs/flex-grow
+         */
+        grow: [
+          {
+            grow: ['', isNumber, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Flex Shrink
+         * @see https://tailwindcss.com/docs/flex-shrink
+         */
+        shrink: [
+          {
+            shrink: ['', isNumber, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Order
+         * @see https://tailwindcss.com/docs/order
+         */
+        order: [
+          {
+            order: [isInteger, 'first', 'last', 'none', isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Grid Template Columns
+         * @see https://tailwindcss.com/docs/grid-template-columns
+         */
+        'grid-cols': [
+          {
+            'grid-cols': scaleGridTemplateColsRows(),
+          },
+        ],
+        /**
+         * Grid Column Start / End
+         * @see https://tailwindcss.com/docs/grid-column
+         */
+        'col-start-end': [
+          {
+            col: scaleGridColRowStartAndEnd(),
+          },
+        ],
+        /**
+         * Grid Column Start
+         * @see https://tailwindcss.com/docs/grid-column
+         */
+        'col-start': [
+          {
+            'col-start': scaleGridColRowStartOrEnd(),
+          },
+        ],
+        /**
+         * Grid Column End
+         * @see https://tailwindcss.com/docs/grid-column
+         */
+        'col-end': [
+          {
+            'col-end': scaleGridColRowStartOrEnd(),
+          },
+        ],
+        /**
+         * Grid Template Rows
+         * @see https://tailwindcss.com/docs/grid-template-rows
+         */
+        'grid-rows': [
+          {
+            'grid-rows': scaleGridTemplateColsRows(),
+          },
+        ],
+        /**
+         * Grid Row Start / End
+         * @see https://tailwindcss.com/docs/grid-row
+         */
+        'row-start-end': [
+          {
+            row: scaleGridColRowStartAndEnd(),
+          },
+        ],
+        /**
+         * Grid Row Start
+         * @see https://tailwindcss.com/docs/grid-row
+         */
+        'row-start': [
+          {
+            'row-start': scaleGridColRowStartOrEnd(),
+          },
+        ],
+        /**
+         * Grid Row End
+         * @see https://tailwindcss.com/docs/grid-row
+         */
+        'row-end': [
+          {
+            'row-end': scaleGridColRowStartOrEnd(),
+          },
+        ],
+        /**
+         * Grid Auto Flow
+         * @see https://tailwindcss.com/docs/grid-auto-flow
+         */
+        'grid-flow': [
+          {
+            'grid-flow': ['row', 'col', 'dense', 'row-dense', 'col-dense'],
+          },
+        ],
+        /**
+         * Grid Auto Columns
+         * @see https://tailwindcss.com/docs/grid-auto-columns
+         */
+        'auto-cols': [
+          {
+            'auto-cols': scaleGridAutoColsRows(),
+          },
+        ],
+        /**
+         * Grid Auto Rows
+         * @see https://tailwindcss.com/docs/grid-auto-rows
+         */
+        'auto-rows': [
+          {
+            'auto-rows': scaleGridAutoColsRows(),
+          },
+        ],
+        /**
+         * Gap
+         * @see https://tailwindcss.com/docs/gap
+         */
+        gap: [
+          {
+            gap: scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Gap X
+         * @see https://tailwindcss.com/docs/gap
+         */
+        'gap-x': [
+          {
+            'gap-x': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Gap Y
+         * @see https://tailwindcss.com/docs/gap
+         */
+        'gap-y': [
+          {
+            'gap-y': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Justify Content
+         * @see https://tailwindcss.com/docs/justify-content
+         */
+        'justify-content': [
+          {
+            justify: [...scaleAlignPrimaryAxis(), 'normal'],
+          },
+        ],
+        /**
+         * Justify Items
+         * @see https://tailwindcss.com/docs/justify-items
+         */
+        'justify-items': [
+          {
+            'justify-items': [...scaleAlignSecondaryAxis(), 'normal'],
+          },
+        ],
+        /**
+         * Justify Self
+         * @see https://tailwindcss.com/docs/justify-self
+         */
+        'justify-self': [
+          {
+            'justify-self': ['auto', ...scaleAlignSecondaryAxis()],
+          },
+        ],
+        /**
+         * Align Content
+         * @see https://tailwindcss.com/docs/align-content
+         */
+        'align-content': [
+          {
+            content: ['normal', ...scaleAlignPrimaryAxis()],
+          },
+        ],
+        /**
+         * Align Items
+         * @see https://tailwindcss.com/docs/align-items
+         */
+        'align-items': [
+          {
+            items: [
+              ...scaleAlignSecondaryAxis(),
+              {
+                baseline: ['', 'last'],
+              },
+            ],
+          },
+        ],
+        /**
+         * Align Self
+         * @see https://tailwindcss.com/docs/align-self
+         */
+        'align-self': [
+          {
+            self: [
+              'auto',
+              ...scaleAlignSecondaryAxis(),
+              {
+                baseline: ['', 'last'],
+              },
+            ],
+          },
+        ],
+        /**
+         * Place Content
+         * @see https://tailwindcss.com/docs/place-content
+         */
+        'place-content': [
+          {
+            'place-content': scaleAlignPrimaryAxis(),
+          },
+        ],
+        /**
+         * Place Items
+         * @see https://tailwindcss.com/docs/place-items
+         */
+        'place-items': [
+          {
+            'place-items': [...scaleAlignSecondaryAxis(), 'baseline'],
+          },
+        ],
+        /**
+         * Place Self
+         * @see https://tailwindcss.com/docs/place-self
+         */
+        'place-self': [
+          {
+            'place-self': ['auto', ...scaleAlignSecondaryAxis()],
+          },
+        ],
+        // Spacing
+        /**
+         * Padding
+         * @see https://tailwindcss.com/docs/padding
+         */
+        p: [
+          {
+            p: scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Padding Inline
+         * @see https://tailwindcss.com/docs/padding
+         */
+        px: [
+          {
+            px: scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Padding Block
+         * @see https://tailwindcss.com/docs/padding
+         */
+        py: [
+          {
+            py: scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Padding Inline Start
+         * @see https://tailwindcss.com/docs/padding
+         */
+        ps: [
+          {
+            ps: scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Padding Inline End
+         * @see https://tailwindcss.com/docs/padding
+         */
+        pe: [
+          {
+            pe: scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Padding Block Start
+         * @see https://tailwindcss.com/docs/padding
+         */
+        pbs: [
+          {
+            pbs: scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Padding Block End
+         * @see https://tailwindcss.com/docs/padding
+         */
+        pbe: [
+          {
+            pbe: scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Padding Top
+         * @see https://tailwindcss.com/docs/padding
+         */
+        pt: [
+          {
+            pt: scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Padding Right
+         * @see https://tailwindcss.com/docs/padding
+         */
+        pr: [
+          {
+            pr: scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Padding Bottom
+         * @see https://tailwindcss.com/docs/padding
+         */
+        pb: [
+          {
+            pb: scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Padding Left
+         * @see https://tailwindcss.com/docs/padding
+         */
+        pl: [
+          {
+            pl: scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Margin
+         * @see https://tailwindcss.com/docs/margin
+         */
+        m: [
+          {
+            m: scaleMargin(),
+          },
+        ],
+        /**
+         * Margin Inline
+         * @see https://tailwindcss.com/docs/margin
+         */
+        mx: [
+          {
+            mx: scaleMargin(),
+          },
+        ],
+        /**
+         * Margin Block
+         * @see https://tailwindcss.com/docs/margin
+         */
+        my: [
+          {
+            my: scaleMargin(),
+          },
+        ],
+        /**
+         * Margin Inline Start
+         * @see https://tailwindcss.com/docs/margin
+         */
+        ms: [
+          {
+            ms: scaleMargin(),
+          },
+        ],
+        /**
+         * Margin Inline End
+         * @see https://tailwindcss.com/docs/margin
+         */
+        me: [
+          {
+            me: scaleMargin(),
+          },
+        ],
+        /**
+         * Margin Block Start
+         * @see https://tailwindcss.com/docs/margin
+         */
+        mbs: [
+          {
+            mbs: scaleMargin(),
+          },
+        ],
+        /**
+         * Margin Block End
+         * @see https://tailwindcss.com/docs/margin
+         */
+        mbe: [
+          {
+            mbe: scaleMargin(),
+          },
+        ],
+        /**
+         * Margin Top
+         * @see https://tailwindcss.com/docs/margin
+         */
+        mt: [
+          {
+            mt: scaleMargin(),
+          },
+        ],
+        /**
+         * Margin Right
+         * @see https://tailwindcss.com/docs/margin
+         */
+        mr: [
+          {
+            mr: scaleMargin(),
+          },
+        ],
+        /**
+         * Margin Bottom
+         * @see https://tailwindcss.com/docs/margin
+         */
+        mb: [
+          {
+            mb: scaleMargin(),
+          },
+        ],
+        /**
+         * Margin Left
+         * @see https://tailwindcss.com/docs/margin
+         */
+        ml: [
+          {
+            ml: scaleMargin(),
+          },
+        ],
+        /**
+         * Space Between X
+         * @see https://tailwindcss.com/docs/margin#adding-space-between-children
+         */
+        'space-x': [
+          {
+            'space-x': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Space Between X Reverse
+         * @see https://tailwindcss.com/docs/margin#adding-space-between-children
+         */
+        'space-x-reverse': ['space-x-reverse'],
+        /**
+         * Space Between Y
+         * @see https://tailwindcss.com/docs/margin#adding-space-between-children
+         */
+        'space-y': [
+          {
+            'space-y': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Space Between Y Reverse
+         * @see https://tailwindcss.com/docs/margin#adding-space-between-children
+         */
+        'space-y-reverse': ['space-y-reverse'],
+        // --------------
+        // --- Sizing ---
+        // --------------
+        /**
+         * Size
+         * @see https://tailwindcss.com/docs/width#setting-both-width-and-height
+         */
+        size: [
+          {
+            size: scaleSizing(),
+          },
+        ],
+        /**
+         * Inline Size
+         * @see https://tailwindcss.com/docs/width
+         */
+        'inline-size': [
+          {
+            inline: ['auto', ...scaleSizingInline()],
+          },
+        ],
+        /**
+         * Min-Inline Size
+         * @see https://tailwindcss.com/docs/min-width
+         */
+        'min-inline-size': [
+          {
+            'min-inline': ['auto', ...scaleSizingInline()],
+          },
+        ],
+        /**
+         * Max-Inline Size
+         * @see https://tailwindcss.com/docs/max-width
+         */
+        'max-inline-size': [
+          {
+            'max-inline': ['none', ...scaleSizingInline()],
+          },
+        ],
+        /**
+         * Block Size
+         * @see https://tailwindcss.com/docs/height
+         */
+        'block-size': [
+          {
+            block: ['auto', ...scaleSizingBlock()],
+          },
+        ],
+        /**
+         * Min-Block Size
+         * @see https://tailwindcss.com/docs/min-height
+         */
+        'min-block-size': [
+          {
+            'min-block': ['auto', ...scaleSizingBlock()],
+          },
+        ],
+        /**
+         * Max-Block Size
+         * @see https://tailwindcss.com/docs/max-height
+         */
+        'max-block-size': [
+          {
+            'max-block': ['none', ...scaleSizingBlock()],
+          },
+        ],
+        /**
+         * Width
+         * @see https://tailwindcss.com/docs/width
+         */
+        w: [
+          {
+            w: [themeContainer, 'screen', ...scaleSizing()],
+          },
+        ],
+        /**
+         * Min-Width
+         * @see https://tailwindcss.com/docs/min-width
+         */
+        'min-w': [
+          {
+            'min-w': [
+              themeContainer,
+              'screen',
+              /** Deprecated. @see https://github.com/tailwindlabs/tailwindcss.com/issues/2027#issuecomment-2620152757 */
+              'none',
+              ...scaleSizing(),
+            ],
+          },
+        ],
+        /**
+         * Max-Width
+         * @see https://tailwindcss.com/docs/max-width
+         */
+        'max-w': [
+          {
+            'max-w': [
+              themeContainer,
+              'screen',
+              'none',
+              /** Deprecated since Tailwind CSS v4.0.0. @see https://github.com/tailwindlabs/tailwindcss.com/issues/2027#issuecomment-2620152757 */
+              'prose',
+              /** Deprecated since Tailwind CSS v4.0.0. @see https://github.com/tailwindlabs/tailwindcss.com/issues/2027#issuecomment-2620152757 */
+              {
+                screen: [themeBreakpoint],
+              },
+              ...scaleSizing(),
+            ],
+          },
+        ],
+        /**
+         * Height
+         * @see https://tailwindcss.com/docs/height
+         */
+        h: [
+          {
+            h: ['screen', 'lh', ...scaleSizing()],
+          },
+        ],
+        /**
+         * Min-Height
+         * @see https://tailwindcss.com/docs/min-height
+         */
+        'min-h': [
+          {
+            'min-h': ['screen', 'lh', 'none', ...scaleSizing()],
+          },
+        ],
+        /**
+         * Max-Height
+         * @see https://tailwindcss.com/docs/max-height
+         */
+        'max-h': [
+          {
+            'max-h': ['screen', 'lh', ...scaleSizing()],
+          },
+        ],
+        // ------------------
+        // --- Typography ---
+        // ------------------
+        /**
+         * Font Size
+         * @see https://tailwindcss.com/docs/font-size
+         */
+        'font-size': [
+          {
+            text: ['base', themeText, isArbitraryVariableLength, isArbitraryLength],
+          },
+        ],
+        /**
+         * Font Smoothing
+         * @see https://tailwindcss.com/docs/font-smoothing
+         */
+        'font-smoothing': ['antialiased', 'subpixel-antialiased'],
+        /**
+         * Font Style
+         * @see https://tailwindcss.com/docs/font-style
+         */
+        'font-style': ['italic', 'not-italic'],
+        /**
+         * Font Weight
+         * @see https://tailwindcss.com/docs/font-weight
+         */
+        'font-weight': [
+          {
+            font: [themeFontWeight, isArbitraryVariableWeight, isArbitraryWeight],
+          },
+        ],
+        /**
+         * Font Stretch
+         * @see https://tailwindcss.com/docs/font-stretch
+         */
+        'font-stretch': [
+          {
+            'font-stretch': [
+              'ultra-condensed',
+              'extra-condensed',
+              'condensed',
+              'semi-condensed',
+              'normal',
+              'semi-expanded',
+              'expanded',
+              'extra-expanded',
+              'ultra-expanded',
+              isPercent,
+              isArbitraryValue,
+            ],
+          },
+        ],
+        /**
+         * Font Family
+         * @see https://tailwindcss.com/docs/font-family
+         */
+        'font-family': [
+          {
+            font: [isArbitraryVariableFamilyName, isArbitraryFamilyName, themeFont],
+          },
+        ],
+        /**
+         * Font Feature Settings
+         * @see https://tailwindcss.com/docs/font-feature-settings
+         */
+        'font-features': [
+          {
+            'font-features': [isArbitraryValue],
+          },
+        ],
+        /**
+         * Font Variant Numeric
+         * @see https://tailwindcss.com/docs/font-variant-numeric
+         */
+        'fvn-normal': ['normal-nums'],
+        /**
+         * Font Variant Numeric
+         * @see https://tailwindcss.com/docs/font-variant-numeric
+         */
+        'fvn-ordinal': ['ordinal'],
+        /**
+         * Font Variant Numeric
+         * @see https://tailwindcss.com/docs/font-variant-numeric
+         */
+        'fvn-slashed-zero': ['slashed-zero'],
+        /**
+         * Font Variant Numeric
+         * @see https://tailwindcss.com/docs/font-variant-numeric
+         */
+        'fvn-figure': ['lining-nums', 'oldstyle-nums'],
+        /**
+         * Font Variant Numeric
+         * @see https://tailwindcss.com/docs/font-variant-numeric
+         */
+        'fvn-spacing': ['proportional-nums', 'tabular-nums'],
+        /**
+         * Font Variant Numeric
+         * @see https://tailwindcss.com/docs/font-variant-numeric
+         */
+        'fvn-fraction': ['diagonal-fractions', 'stacked-fractions'],
+        /**
+         * Letter Spacing
+         * @see https://tailwindcss.com/docs/letter-spacing
+         */
+        tracking: [
+          {
+            tracking: [themeTracking, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Line Clamp
+         * @see https://tailwindcss.com/docs/line-clamp
+         */
+        'line-clamp': [
+          {
+            'line-clamp': [isNumber, 'none', isArbitraryVariable, isArbitraryNumber],
+          },
+        ],
+        /**
+         * Line Height
+         * @see https://tailwindcss.com/docs/line-height
+         */
+        leading: [
+          {
+            leading: [
+              /** Deprecated since Tailwind CSS v4.0.0. @see https://github.com/tailwindlabs/tailwindcss.com/issues/2027#issuecomment-2620152757 */
+              themeLeading,
+              ...scaleUnambiguousSpacing(),
+            ],
+          },
+        ],
+        /**
+         * List Style Image
+         * @see https://tailwindcss.com/docs/list-style-image
+         */
+        'list-image': [
+          {
+            'list-image': ['none', isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * List Style Position
+         * @see https://tailwindcss.com/docs/list-style-position
+         */
+        'list-style-position': [
+          {
+            list: ['inside', 'outside'],
+          },
+        ],
+        /**
+         * List Style Type
+         * @see https://tailwindcss.com/docs/list-style-type
+         */
+        'list-style-type': [
+          {
+            list: ['disc', 'decimal', 'none', isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Text Alignment
+         * @see https://tailwindcss.com/docs/text-align
+         */
+        'text-alignment': [
+          {
+            text: ['left', 'center', 'right', 'justify', 'start', 'end'],
+          },
+        ],
+        /**
+         * Placeholder Color
+         * @deprecated since Tailwind CSS v3.0.0
+         * @see https://v3.tailwindcss.com/docs/placeholder-color
+         */
+        'placeholder-color': [
+          {
+            placeholder: scaleColor(),
+          },
+        ],
+        /**
+         * Text Color
+         * @see https://tailwindcss.com/docs/text-color
+         */
+        'text-color': [
+          {
+            text: scaleColor(),
+          },
+        ],
+        /**
+         * Text Decoration
+         * @see https://tailwindcss.com/docs/text-decoration
+         */
+        'text-decoration': ['underline', 'overline', 'line-through', 'no-underline'],
+        /**
+         * Text Decoration Style
+         * @see https://tailwindcss.com/docs/text-decoration-style
+         */
+        'text-decoration-style': [
+          {
+            decoration: [...scaleLineStyle(), 'wavy'],
+          },
+        ],
+        /**
+         * Text Decoration Thickness
+         * @see https://tailwindcss.com/docs/text-decoration-thickness
+         */
+        'text-decoration-thickness': [
+          {
+            decoration: [isNumber, 'from-font', 'auto', isArbitraryVariable, isArbitraryLength],
+          },
+        ],
+        /**
+         * Text Decoration Color
+         * @see https://tailwindcss.com/docs/text-decoration-color
+         */
+        'text-decoration-color': [
+          {
+            decoration: scaleColor(),
+          },
+        ],
+        /**
+         * Text Underline Offset
+         * @see https://tailwindcss.com/docs/text-underline-offset
+         */
+        'underline-offset': [
+          {
+            'underline-offset': [isNumber, 'auto', isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Text Transform
+         * @see https://tailwindcss.com/docs/text-transform
+         */
+        'text-transform': ['uppercase', 'lowercase', 'capitalize', 'normal-case'],
+        /**
+         * Text Overflow
+         * @see https://tailwindcss.com/docs/text-overflow
+         */
+        'text-overflow': ['truncate', 'text-ellipsis', 'text-clip'],
+        /**
+         * Text Wrap
+         * @see https://tailwindcss.com/docs/text-wrap
+         */
+        'text-wrap': [
+          {
+            text: ['wrap', 'nowrap', 'balance', 'pretty'],
+          },
+        ],
+        /**
+         * Text Indent
+         * @see https://tailwindcss.com/docs/text-indent
+         */
+        indent: [
+          {
+            indent: scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Tab Size
+         * @see https://tailwindcss.com/docs/tab-size
+         */
+        'tab-size': [
+          {
+            tab: [isInteger, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Vertical Alignment
+         * @see https://tailwindcss.com/docs/vertical-align
+         */
+        'vertical-align': [
+          {
+            align: [
+              'baseline',
+              'top',
+              'middle',
+              'bottom',
+              'text-top',
+              'text-bottom',
+              'sub',
+              'super',
+              isArbitraryVariable,
+              isArbitraryValue,
+            ],
+          },
+        ],
+        /**
+         * Whitespace
+         * @see https://tailwindcss.com/docs/whitespace
+         */
+        whitespace: [
+          {
+            whitespace: ['normal', 'nowrap', 'pre', 'pre-line', 'pre-wrap', 'break-spaces'],
+          },
+        ],
+        /**
+         * Word Break
+         * @see https://tailwindcss.com/docs/word-break
+         */
+        break: [
+          {
+            break: ['normal', 'words', 'all', 'keep'],
+          },
+        ],
+        /**
+         * Overflow Wrap
+         * @see https://tailwindcss.com/docs/overflow-wrap
+         */
+        wrap: [
+          {
+            wrap: ['break-word', 'anywhere', 'normal'],
+          },
+        ],
+        /**
+         * Hyphens
+         * @see https://tailwindcss.com/docs/hyphens
+         */
+        hyphens: [
+          {
+            hyphens: ['none', 'manual', 'auto'],
+          },
+        ],
+        /**
+         * Content
+         * @see https://tailwindcss.com/docs/content
+         */
+        content: [
+          {
+            content: ['none', isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        // -------------------
+        // --- Backgrounds ---
+        // -------------------
+        /**
+         * Background Attachment
+         * @see https://tailwindcss.com/docs/background-attachment
+         */
+        'bg-attachment': [
+          {
+            bg: ['fixed', 'local', 'scroll'],
+          },
+        ],
+        /**
+         * Background Clip
+         * @see https://tailwindcss.com/docs/background-clip
+         */
+        'bg-clip': [
+          {
+            'bg-clip': ['border', 'padding', 'content', 'text'],
+          },
+        ],
+        /**
+         * Background Origin
+         * @see https://tailwindcss.com/docs/background-origin
+         */
+        'bg-origin': [
+          {
+            'bg-origin': ['border', 'padding', 'content'],
+          },
+        ],
+        /**
+         * Background Position
+         * @see https://tailwindcss.com/docs/background-position
+         */
+        'bg-position': [
+          {
+            bg: scaleBgPosition(),
+          },
+        ],
+        /**
+         * Background Repeat
+         * @see https://tailwindcss.com/docs/background-repeat
+         */
+        'bg-repeat': [
+          {
+            bg: scaleBgRepeat(),
+          },
+        ],
+        /**
+         * Background Size
+         * @see https://tailwindcss.com/docs/background-size
+         */
+        'bg-size': [
+          {
+            bg: scaleBgSize(),
+          },
+        ],
+        /**
+         * Background Image
+         * @see https://tailwindcss.com/docs/background-image
+         */
+        'bg-image': [
+          {
+            bg: [
+              'none',
+              {
+                linear: [
+                  {
+                    to: ['t', 'tr', 'r', 'br', 'b', 'bl', 'l', 'tl'],
+                  },
+                  isInteger,
+                  isArbitraryVariable,
+                  isArbitraryValue,
+                ],
+                radial: ['', isArbitraryVariable, isArbitraryValue],
+                conic: [isInteger, isArbitraryVariable, isArbitraryValue],
+              },
+              isArbitraryVariableImage,
+              isArbitraryImage,
+            ],
+          },
+        ],
+        /**
+         * Background Color
+         * @see https://tailwindcss.com/docs/background-color
+         */
+        'bg-color': [
+          {
+            bg: scaleColor(),
+          },
+        ],
+        /**
+         * Gradient Color Stops From Position
+         * @see https://tailwindcss.com/docs/gradient-color-stops
+         */
+        'gradient-from-pos': [
+          {
+            from: scaleGradientStopPosition(),
+          },
+        ],
+        /**
+         * Gradient Color Stops Via Position
+         * @see https://tailwindcss.com/docs/gradient-color-stops
+         */
+        'gradient-via-pos': [
+          {
+            via: scaleGradientStopPosition(),
+          },
+        ],
+        /**
+         * Gradient Color Stops To Position
+         * @see https://tailwindcss.com/docs/gradient-color-stops
+         */
+        'gradient-to-pos': [
+          {
+            to: scaleGradientStopPosition(),
+          },
+        ],
+        /**
+         * Gradient Color Stops From
+         * @see https://tailwindcss.com/docs/gradient-color-stops
+         */
+        'gradient-from': [
+          {
+            from: scaleColor(),
+          },
+        ],
+        /**
+         * Gradient Color Stops Via
+         * @see https://tailwindcss.com/docs/gradient-color-stops
+         */
+        'gradient-via': [
+          {
+            via: scaleColor(),
+          },
+        ],
+        /**
+         * Gradient Color Stops To
+         * @see https://tailwindcss.com/docs/gradient-color-stops
+         */
+        'gradient-to': [
+          {
+            to: scaleColor(),
+          },
+        ],
+        // ---------------
+        // --- Borders ---
+        // ---------------
+        /**
+         * Border Radius
+         * @see https://tailwindcss.com/docs/border-radius
+         */
+        rounded: [
+          {
+            rounded: scaleRadius(),
+          },
+        ],
+        /**
+         * Border Radius Start
+         * @see https://tailwindcss.com/docs/border-radius
+         */
+        'rounded-s': [
+          {
+            'rounded-s': scaleRadius(),
+          },
+        ],
+        /**
+         * Border Radius End
+         * @see https://tailwindcss.com/docs/border-radius
+         */
+        'rounded-e': [
+          {
+            'rounded-e': scaleRadius(),
+          },
+        ],
+        /**
+         * Border Radius Top
+         * @see https://tailwindcss.com/docs/border-radius
+         */
+        'rounded-t': [
+          {
+            'rounded-t': scaleRadius(),
+          },
+        ],
+        /**
+         * Border Radius Right
+         * @see https://tailwindcss.com/docs/border-radius
+         */
+        'rounded-r': [
+          {
+            'rounded-r': scaleRadius(),
+          },
+        ],
+        /**
+         * Border Radius Bottom
+         * @see https://tailwindcss.com/docs/border-radius
+         */
+        'rounded-b': [
+          {
+            'rounded-b': scaleRadius(),
+          },
+        ],
+        /**
+         * Border Radius Left
+         * @see https://tailwindcss.com/docs/border-radius
+         */
+        'rounded-l': [
+          {
+            'rounded-l': scaleRadius(),
+          },
+        ],
+        /**
+         * Border Radius Start Start
+         * @see https://tailwindcss.com/docs/border-radius
+         */
+        'rounded-ss': [
+          {
+            'rounded-ss': scaleRadius(),
+          },
+        ],
+        /**
+         * Border Radius Start End
+         * @see https://tailwindcss.com/docs/border-radius
+         */
+        'rounded-se': [
+          {
+            'rounded-se': scaleRadius(),
+          },
+        ],
+        /**
+         * Border Radius End End
+         * @see https://tailwindcss.com/docs/border-radius
+         */
+        'rounded-ee': [
+          {
+            'rounded-ee': scaleRadius(),
+          },
+        ],
+        /**
+         * Border Radius End Start
+         * @see https://tailwindcss.com/docs/border-radius
+         */
+        'rounded-es': [
+          {
+            'rounded-es': scaleRadius(),
+          },
+        ],
+        /**
+         * Border Radius Top Left
+         * @see https://tailwindcss.com/docs/border-radius
+         */
+        'rounded-tl': [
+          {
+            'rounded-tl': scaleRadius(),
+          },
+        ],
+        /**
+         * Border Radius Top Right
+         * @see https://tailwindcss.com/docs/border-radius
+         */
+        'rounded-tr': [
+          {
+            'rounded-tr': scaleRadius(),
+          },
+        ],
+        /**
+         * Border Radius Bottom Right
+         * @see https://tailwindcss.com/docs/border-radius
+         */
+        'rounded-br': [
+          {
+            'rounded-br': scaleRadius(),
+          },
+        ],
+        /**
+         * Border Radius Bottom Left
+         * @see https://tailwindcss.com/docs/border-radius
+         */
+        'rounded-bl': [
+          {
+            'rounded-bl': scaleRadius(),
+          },
+        ],
+        /**
+         * Border Width
+         * @see https://tailwindcss.com/docs/border-width
+         */
+        'border-w': [
+          {
+            border: scaleBorderWidth(),
+          },
+        ],
+        /**
+         * Border Width Inline
+         * @see https://tailwindcss.com/docs/border-width
+         */
+        'border-w-x': [
+          {
+            'border-x': scaleBorderWidth(),
+          },
+        ],
+        /**
+         * Border Width Block
+         * @see https://tailwindcss.com/docs/border-width
+         */
+        'border-w-y': [
+          {
+            'border-y': scaleBorderWidth(),
+          },
+        ],
+        /**
+         * Border Width Inline Start
+         * @see https://tailwindcss.com/docs/border-width
+         */
+        'border-w-s': [
+          {
+            'border-s': scaleBorderWidth(),
+          },
+        ],
+        /**
+         * Border Width Inline End
+         * @see https://tailwindcss.com/docs/border-width
+         */
+        'border-w-e': [
+          {
+            'border-e': scaleBorderWidth(),
+          },
+        ],
+        /**
+         * Border Width Block Start
+         * @see https://tailwindcss.com/docs/border-width
+         */
+        'border-w-bs': [
+          {
+            'border-bs': scaleBorderWidth(),
+          },
+        ],
+        /**
+         * Border Width Block End
+         * @see https://tailwindcss.com/docs/border-width
+         */
+        'border-w-be': [
+          {
+            'border-be': scaleBorderWidth(),
+          },
+        ],
+        /**
+         * Border Width Top
+         * @see https://tailwindcss.com/docs/border-width
+         */
+        'border-w-t': [
+          {
+            'border-t': scaleBorderWidth(),
+          },
+        ],
+        /**
+         * Border Width Right
+         * @see https://tailwindcss.com/docs/border-width
+         */
+        'border-w-r': [
+          {
+            'border-r': scaleBorderWidth(),
+          },
+        ],
+        /**
+         * Border Width Bottom
+         * @see https://tailwindcss.com/docs/border-width
+         */
+        'border-w-b': [
+          {
+            'border-b': scaleBorderWidth(),
+          },
+        ],
+        /**
+         * Border Width Left
+         * @see https://tailwindcss.com/docs/border-width
+         */
+        'border-w-l': [
+          {
+            'border-l': scaleBorderWidth(),
+          },
+        ],
+        /**
+         * Divide Width X
+         * @see https://tailwindcss.com/docs/border-width#between-children
+         */
+        'divide-x': [
+          {
+            'divide-x': scaleBorderWidth(),
+          },
+        ],
+        /**
+         * Divide Width X Reverse
+         * @see https://tailwindcss.com/docs/border-width#between-children
+         */
+        'divide-x-reverse': ['divide-x-reverse'],
+        /**
+         * Divide Width Y
+         * @see https://tailwindcss.com/docs/border-width#between-children
+         */
+        'divide-y': [
+          {
+            'divide-y': scaleBorderWidth(),
+          },
+        ],
+        /**
+         * Divide Width Y Reverse
+         * @see https://tailwindcss.com/docs/border-width#between-children
+         */
+        'divide-y-reverse': ['divide-y-reverse'],
+        /**
+         * Border Style
+         * @see https://tailwindcss.com/docs/border-style
+         */
+        'border-style': [
+          {
+            border: [...scaleLineStyle(), 'hidden', 'none'],
+          },
+        ],
+        /**
+         * Divide Style
+         * @see https://tailwindcss.com/docs/border-style#setting-the-divider-style
+         */
+        'divide-style': [
+          {
+            divide: [...scaleLineStyle(), 'hidden', 'none'],
+          },
+        ],
+        /**
+         * Border Color
+         * @see https://tailwindcss.com/docs/border-color
+         */
+        'border-color': [
+          {
+            border: scaleColor(),
+          },
+        ],
+        /**
+         * Border Color Inline
+         * @see https://tailwindcss.com/docs/border-color
+         */
+        'border-color-x': [
+          {
+            'border-x': scaleColor(),
+          },
+        ],
+        /**
+         * Border Color Block
+         * @see https://tailwindcss.com/docs/border-color
+         */
+        'border-color-y': [
+          {
+            'border-y': scaleColor(),
+          },
+        ],
+        /**
+         * Border Color Inline Start
+         * @see https://tailwindcss.com/docs/border-color
+         */
+        'border-color-s': [
+          {
+            'border-s': scaleColor(),
+          },
+        ],
+        /**
+         * Border Color Inline End
+         * @see https://tailwindcss.com/docs/border-color
+         */
+        'border-color-e': [
+          {
+            'border-e': scaleColor(),
+          },
+        ],
+        /**
+         * Border Color Block Start
+         * @see https://tailwindcss.com/docs/border-color
+         */
+        'border-color-bs': [
+          {
+            'border-bs': scaleColor(),
+          },
+        ],
+        /**
+         * Border Color Block End
+         * @see https://tailwindcss.com/docs/border-color
+         */
+        'border-color-be': [
+          {
+            'border-be': scaleColor(),
+          },
+        ],
+        /**
+         * Border Color Top
+         * @see https://tailwindcss.com/docs/border-color
+         */
+        'border-color-t': [
+          {
+            'border-t': scaleColor(),
+          },
+        ],
+        /**
+         * Border Color Right
+         * @see https://tailwindcss.com/docs/border-color
+         */
+        'border-color-r': [
+          {
+            'border-r': scaleColor(),
+          },
+        ],
+        /**
+         * Border Color Bottom
+         * @see https://tailwindcss.com/docs/border-color
+         */
+        'border-color-b': [
+          {
+            'border-b': scaleColor(),
+          },
+        ],
+        /**
+         * Border Color Left
+         * @see https://tailwindcss.com/docs/border-color
+         */
+        'border-color-l': [
+          {
+            'border-l': scaleColor(),
+          },
+        ],
+        /**
+         * Divide Color
+         * @see https://tailwindcss.com/docs/divide-color
+         */
+        'divide-color': [
+          {
+            divide: scaleColor(),
+          },
+        ],
+        /**
+         * Outline Style
+         * @see https://tailwindcss.com/docs/outline-style
+         */
+        'outline-style': [
+          {
+            outline: [...scaleLineStyle(), 'none', 'hidden'],
+          },
+        ],
+        /**
+         * Outline Offset
+         * @see https://tailwindcss.com/docs/outline-offset
+         */
+        'outline-offset': [
+          {
+            'outline-offset': [isNumber, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Outline Width
+         * @see https://tailwindcss.com/docs/outline-width
+         */
+        'outline-w': [
+          {
+            outline: ['', isNumber, isArbitraryVariableLength, isArbitraryLength],
+          },
+        ],
+        /**
+         * Outline Color
+         * @see https://tailwindcss.com/docs/outline-color
+         */
+        'outline-color': [
+          {
+            outline: scaleColor(),
+          },
+        ],
+        // ---------------
+        // --- Effects ---
+        // ---------------
+        /**
+         * Box Shadow
+         * @see https://tailwindcss.com/docs/box-shadow
+         */
+        shadow: [
+          {
+            shadow: [
+              // Deprecated since Tailwind CSS v4.0.0
+              '',
+              'none',
+              themeShadow,
+              isArbitraryVariableShadow,
+              isArbitraryShadow,
+            ],
+          },
+        ],
+        /**
+         * Box Shadow Color
+         * @see https://tailwindcss.com/docs/box-shadow#setting-the-shadow-color
+         */
+        'shadow-color': [
+          {
+            shadow: scaleColor(),
+          },
+        ],
+        /**
+         * Inset Box Shadow
+         * @see https://tailwindcss.com/docs/box-shadow#adding-an-inset-shadow
+         */
+        'inset-shadow': [
+          {
+            'inset-shadow': [
+              'none',
+              themeInsetShadow,
+              isArbitraryVariableShadow,
+              isArbitraryShadow,
+            ],
+          },
+        ],
+        /**
+         * Inset Box Shadow Color
+         * @see https://tailwindcss.com/docs/box-shadow#setting-the-inset-shadow-color
+         */
+        'inset-shadow-color': [
+          {
+            'inset-shadow': scaleColor(),
+          },
+        ],
+        /**
+         * Ring Width
+         * @see https://tailwindcss.com/docs/box-shadow#adding-a-ring
+         */
+        'ring-w': [
+          {
+            ring: scaleBorderWidth(),
+          },
+        ],
+        /**
+         * Ring Width Inset
+         * @see https://v3.tailwindcss.com/docs/ring-width#inset-rings
+         * @deprecated since Tailwind CSS v4.0.0
+         * @see https://github.com/tailwindlabs/tailwindcss/blob/v4.0.0/packages/tailwindcss/src/utilities.ts#L4158
+         */
+        'ring-w-inset': ['ring-inset'],
+        /**
+         * Ring Color
+         * @see https://tailwindcss.com/docs/box-shadow#setting-the-ring-color
+         */
+        'ring-color': [
+          {
+            ring: scaleColor(),
+          },
+        ],
+        /**
+         * Ring Offset Width
+         * @see https://v3.tailwindcss.com/docs/ring-offset-width
+         * @deprecated since Tailwind CSS v4.0.0
+         * @see https://github.com/tailwindlabs/tailwindcss/blob/v4.0.0/packages/tailwindcss/src/utilities.ts#L4158
+         */
+        'ring-offset-w': [
+          {
+            'ring-offset': [isNumber, isArbitraryLength],
+          },
+        ],
+        /**
+         * Ring Offset Color
+         * @see https://v3.tailwindcss.com/docs/ring-offset-color
+         * @deprecated since Tailwind CSS v4.0.0
+         * @see https://github.com/tailwindlabs/tailwindcss/blob/v4.0.0/packages/tailwindcss/src/utilities.ts#L4158
+         */
+        'ring-offset-color': [
+          {
+            'ring-offset': scaleColor(),
+          },
+        ],
+        /**
+         * Inset Ring Width
+         * @see https://tailwindcss.com/docs/box-shadow#adding-an-inset-ring
+         */
+        'inset-ring-w': [
+          {
+            'inset-ring': scaleBorderWidth(),
+          },
+        ],
+        /**
+         * Inset Ring Color
+         * @see https://tailwindcss.com/docs/box-shadow#setting-the-inset-ring-color
+         */
+        'inset-ring-color': [
+          {
+            'inset-ring': scaleColor(),
+          },
+        ],
+        /**
+         * Text Shadow
+         * @see https://tailwindcss.com/docs/text-shadow
+         */
+        'text-shadow': [
+          {
+            'text-shadow': ['none', themeTextShadow, isArbitraryVariableShadow, isArbitraryShadow],
+          },
+        ],
+        /**
+         * Text Shadow Color
+         * @see https://tailwindcss.com/docs/text-shadow#setting-the-shadow-color
+         */
+        'text-shadow-color': [
+          {
+            'text-shadow': scaleColor(),
+          },
+        ],
+        /**
+         * Opacity
+         * @see https://tailwindcss.com/docs/opacity
+         */
+        opacity: [
+          {
+            opacity: [isNumber, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Mix Blend Mode
+         * @see https://tailwindcss.com/docs/mix-blend-mode
+         */
+        'mix-blend': [
+          {
+            'mix-blend': [...scaleBlendMode(), 'plus-darker', 'plus-lighter'],
+          },
+        ],
+        /**
+         * Background Blend Mode
+         * @see https://tailwindcss.com/docs/background-blend-mode
+         */
+        'bg-blend': [
+          {
+            'bg-blend': scaleBlendMode(),
+          },
+        ],
+        /**
+         * Mask Clip
+         * @see https://tailwindcss.com/docs/mask-clip
+         */
+        'mask-clip': [
+          {
+            'mask-clip': ['border', 'padding', 'content', 'fill', 'stroke', 'view'],
+          },
+          'mask-no-clip',
+        ],
+        /**
+         * Mask Composite
+         * @see https://tailwindcss.com/docs/mask-composite
+         */
+        'mask-composite': [
+          {
+            mask: ['add', 'subtract', 'intersect', 'exclude'],
+          },
+        ],
+        /**
+         * Mask Image
+         * @see https://tailwindcss.com/docs/mask-image
+         */
+        'mask-image-linear-pos': [
+          {
+            'mask-linear': [isNumber],
+          },
+        ],
+        'mask-image-linear-from-pos': [
+          {
+            'mask-linear-from': scaleMaskImagePosition(),
+          },
+        ],
+        'mask-image-linear-to-pos': [
+          {
+            'mask-linear-to': scaleMaskImagePosition(),
+          },
+        ],
+        'mask-image-linear-from-color': [
+          {
+            'mask-linear-from': scaleColor(),
+          },
+        ],
+        'mask-image-linear-to-color': [
+          {
+            'mask-linear-to': scaleColor(),
+          },
+        ],
+        'mask-image-t-from-pos': [
+          {
+            'mask-t-from': scaleMaskImagePosition(),
+          },
+        ],
+        'mask-image-t-to-pos': [
+          {
+            'mask-t-to': scaleMaskImagePosition(),
+          },
+        ],
+        'mask-image-t-from-color': [
+          {
+            'mask-t-from': scaleColor(),
+          },
+        ],
+        'mask-image-t-to-color': [
+          {
+            'mask-t-to': scaleColor(),
+          },
+        ],
+        'mask-image-r-from-pos': [
+          {
+            'mask-r-from': scaleMaskImagePosition(),
+          },
+        ],
+        'mask-image-r-to-pos': [
+          {
+            'mask-r-to': scaleMaskImagePosition(),
+          },
+        ],
+        'mask-image-r-from-color': [
+          {
+            'mask-r-from': scaleColor(),
+          },
+        ],
+        'mask-image-r-to-color': [
+          {
+            'mask-r-to': scaleColor(),
+          },
+        ],
+        'mask-image-b-from-pos': [
+          {
+            'mask-b-from': scaleMaskImagePosition(),
+          },
+        ],
+        'mask-image-b-to-pos': [
+          {
+            'mask-b-to': scaleMaskImagePosition(),
+          },
+        ],
+        'mask-image-b-from-color': [
+          {
+            'mask-b-from': scaleColor(),
+          },
+        ],
+        'mask-image-b-to-color': [
+          {
+            'mask-b-to': scaleColor(),
+          },
+        ],
+        'mask-image-l-from-pos': [
+          {
+            'mask-l-from': scaleMaskImagePosition(),
+          },
+        ],
+        'mask-image-l-to-pos': [
+          {
+            'mask-l-to': scaleMaskImagePosition(),
+          },
+        ],
+        'mask-image-l-from-color': [
+          {
+            'mask-l-from': scaleColor(),
+          },
+        ],
+        'mask-image-l-to-color': [
+          {
+            'mask-l-to': scaleColor(),
+          },
+        ],
+        'mask-image-x-from-pos': [
+          {
+            'mask-x-from': scaleMaskImagePosition(),
+          },
+        ],
+        'mask-image-x-to-pos': [
+          {
+            'mask-x-to': scaleMaskImagePosition(),
+          },
+        ],
+        'mask-image-x-from-color': [
+          {
+            'mask-x-from': scaleColor(),
+          },
+        ],
+        'mask-image-x-to-color': [
+          {
+            'mask-x-to': scaleColor(),
+          },
+        ],
+        'mask-image-y-from-pos': [
+          {
+            'mask-y-from': scaleMaskImagePosition(),
+          },
+        ],
+        'mask-image-y-to-pos': [
+          {
+            'mask-y-to': scaleMaskImagePosition(),
+          },
+        ],
+        'mask-image-y-from-color': [
+          {
+            'mask-y-from': scaleColor(),
+          },
+        ],
+        'mask-image-y-to-color': [
+          {
+            'mask-y-to': scaleColor(),
+          },
+        ],
+        'mask-image-radial': [
+          {
+            'mask-radial': [isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        'mask-image-radial-from-pos': [
+          {
+            'mask-radial-from': scaleMaskImagePosition(),
+          },
+        ],
+        'mask-image-radial-to-pos': [
+          {
+            'mask-radial-to': scaleMaskImagePosition(),
+          },
+        ],
+        'mask-image-radial-from-color': [
+          {
+            'mask-radial-from': scaleColor(),
+          },
+        ],
+        'mask-image-radial-to-color': [
+          {
+            'mask-radial-to': scaleColor(),
+          },
+        ],
+        'mask-image-radial-shape': [
+          {
+            'mask-radial': ['circle', 'ellipse'],
+          },
+        ],
+        'mask-image-radial-size': [
+          {
+            'mask-radial': [
+              {
+                closest: ['side', 'corner'],
+                farthest: ['side', 'corner'],
+              },
+            ],
+          },
+        ],
+        'mask-image-radial-pos': [
+          {
+            'mask-radial-at': scalePosition(),
+          },
+        ],
+        'mask-image-conic-pos': [
+          {
+            'mask-conic': [isNumber],
+          },
+        ],
+        'mask-image-conic-from-pos': [
+          {
+            'mask-conic-from': scaleMaskImagePosition(),
+          },
+        ],
+        'mask-image-conic-to-pos': [
+          {
+            'mask-conic-to': scaleMaskImagePosition(),
+          },
+        ],
+        'mask-image-conic-from-color': [
+          {
+            'mask-conic-from': scaleColor(),
+          },
+        ],
+        'mask-image-conic-to-color': [
+          {
+            'mask-conic-to': scaleColor(),
+          },
+        ],
+        /**
+         * Mask Mode
+         * @see https://tailwindcss.com/docs/mask-mode
+         */
+        'mask-mode': [
+          {
+            mask: ['alpha', 'luminance', 'match'],
+          },
+        ],
+        /**
+         * Mask Origin
+         * @see https://tailwindcss.com/docs/mask-origin
+         */
+        'mask-origin': [
+          {
+            'mask-origin': ['border', 'padding', 'content', 'fill', 'stroke', 'view'],
+          },
+        ],
+        /**
+         * Mask Position
+         * @see https://tailwindcss.com/docs/mask-position
+         */
+        'mask-position': [
+          {
+            mask: scaleBgPosition(),
+          },
+        ],
+        /**
+         * Mask Repeat
+         * @see https://tailwindcss.com/docs/mask-repeat
+         */
+        'mask-repeat': [
+          {
+            mask: scaleBgRepeat(),
+          },
+        ],
+        /**
+         * Mask Size
+         * @see https://tailwindcss.com/docs/mask-size
+         */
+        'mask-size': [
+          {
+            mask: scaleBgSize(),
+          },
+        ],
+        /**
+         * Mask Type
+         * @see https://tailwindcss.com/docs/mask-type
+         */
+        'mask-type': [
+          {
+            'mask-type': ['alpha', 'luminance'],
+          },
+        ],
+        /**
+         * Mask Image
+         * @see https://tailwindcss.com/docs/mask-image
+         */
+        'mask-image': [
+          {
+            mask: ['none', isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        // ---------------
+        // --- Filters ---
+        // ---------------
+        /**
+         * Filter
+         * @see https://tailwindcss.com/docs/filter
+         */
+        filter: [
+          {
+            filter: [
+              // Deprecated since Tailwind CSS v3.0.0
+              '',
+              'none',
+              isArbitraryVariable,
+              isArbitraryValue,
+            ],
+          },
+        ],
+        /**
+         * Blur
+         * @see https://tailwindcss.com/docs/blur
+         */
+        blur: [
+          {
+            blur: scaleBlur(),
+          },
+        ],
+        /**
+         * Brightness
+         * @see https://tailwindcss.com/docs/brightness
+         */
+        brightness: [
+          {
+            brightness: [isNumber, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Contrast
+         * @see https://tailwindcss.com/docs/contrast
+         */
+        contrast: [
+          {
+            contrast: [isNumber, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Drop Shadow
+         * @see https://tailwindcss.com/docs/drop-shadow
+         */
+        'drop-shadow': [
+          {
+            'drop-shadow': [
+              // Deprecated since Tailwind CSS v4.0.0
+              '',
+              'none',
+              themeDropShadow,
+              isArbitraryVariableShadow,
+              isArbitraryShadow,
+            ],
+          },
+        ],
+        /**
+         * Drop Shadow Color
+         * @see https://tailwindcss.com/docs/filter-drop-shadow#setting-the-shadow-color
+         */
+        'drop-shadow-color': [
+          {
+            'drop-shadow': scaleColor(),
+          },
+        ],
+        /**
+         * Grayscale
+         * @see https://tailwindcss.com/docs/grayscale
+         */
+        grayscale: [
+          {
+            grayscale: ['', isNumber, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Hue Rotate
+         * @see https://tailwindcss.com/docs/hue-rotate
+         */
+        'hue-rotate': [
+          {
+            'hue-rotate': [isNumber, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Invert
+         * @see https://tailwindcss.com/docs/invert
+         */
+        invert: [
+          {
+            invert: ['', isNumber, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Saturate
+         * @see https://tailwindcss.com/docs/saturate
+         */
+        saturate: [
+          {
+            saturate: [isNumber, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Sepia
+         * @see https://tailwindcss.com/docs/sepia
+         */
+        sepia: [
+          {
+            sepia: ['', isNumber, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Backdrop Filter
+         * @see https://tailwindcss.com/docs/backdrop-filter
+         */
+        'backdrop-filter': [
+          {
+            'backdrop-filter': [
+              // Deprecated since Tailwind CSS v3.0.0
+              '',
+              'none',
+              isArbitraryVariable,
+              isArbitraryValue,
+            ],
+          },
+        ],
+        /**
+         * Backdrop Blur
+         * @see https://tailwindcss.com/docs/backdrop-blur
+         */
+        'backdrop-blur': [
+          {
+            'backdrop-blur': scaleBlur(),
+          },
+        ],
+        /**
+         * Backdrop Brightness
+         * @see https://tailwindcss.com/docs/backdrop-brightness
+         */
+        'backdrop-brightness': [
+          {
+            'backdrop-brightness': [isNumber, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Backdrop Contrast
+         * @see https://tailwindcss.com/docs/backdrop-contrast
+         */
+        'backdrop-contrast': [
+          {
+            'backdrop-contrast': [isNumber, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Backdrop Grayscale
+         * @see https://tailwindcss.com/docs/backdrop-grayscale
+         */
+        'backdrop-grayscale': [
+          {
+            'backdrop-grayscale': ['', isNumber, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Backdrop Hue Rotate
+         * @see https://tailwindcss.com/docs/backdrop-hue-rotate
+         */
+        'backdrop-hue-rotate': [
+          {
+            'backdrop-hue-rotate': [isNumber, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Backdrop Invert
+         * @see https://tailwindcss.com/docs/backdrop-invert
+         */
+        'backdrop-invert': [
+          {
+            'backdrop-invert': ['', isNumber, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Backdrop Opacity
+         * @see https://tailwindcss.com/docs/backdrop-opacity
+         */
+        'backdrop-opacity': [
+          {
+            'backdrop-opacity': [isNumber, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Backdrop Saturate
+         * @see https://tailwindcss.com/docs/backdrop-saturate
+         */
+        'backdrop-saturate': [
+          {
+            'backdrop-saturate': [isNumber, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Backdrop Sepia
+         * @see https://tailwindcss.com/docs/backdrop-sepia
+         */
+        'backdrop-sepia': [
+          {
+            'backdrop-sepia': ['', isNumber, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        // --------------
+        // --- Tables ---
+        // --------------
+        /**
+         * Border Collapse
+         * @see https://tailwindcss.com/docs/border-collapse
+         */
+        'border-collapse': [
+          {
+            border: ['collapse', 'separate'],
+          },
+        ],
+        /**
+         * Border Spacing
+         * @see https://tailwindcss.com/docs/border-spacing
+         */
+        'border-spacing': [
+          {
+            'border-spacing': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Border Spacing X
+         * @see https://tailwindcss.com/docs/border-spacing
+         */
+        'border-spacing-x': [
+          {
+            'border-spacing-x': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Border Spacing Y
+         * @see https://tailwindcss.com/docs/border-spacing
+         */
+        'border-spacing-y': [
+          {
+            'border-spacing-y': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Table Layout
+         * @see https://tailwindcss.com/docs/table-layout
+         */
+        'table-layout': [
+          {
+            table: ['auto', 'fixed'],
+          },
+        ],
+        /**
+         * Caption Side
+         * @see https://tailwindcss.com/docs/caption-side
+         */
+        caption: [
+          {
+            caption: ['top', 'bottom'],
+          },
+        ],
+        // ---------------------------------
+        // --- Transitions and Animation ---
+        // ---------------------------------
+        /**
+         * Transition Property
+         * @see https://tailwindcss.com/docs/transition-property
+         */
+        transition: [
+          {
+            transition: [
+              '',
+              'all',
+              'colors',
+              'opacity',
+              'shadow',
+              'transform',
+              'none',
+              isArbitraryVariable,
+              isArbitraryValue,
+            ],
+          },
+        ],
+        /**
+         * Transition Behavior
+         * @see https://tailwindcss.com/docs/transition-behavior
+         */
+        'transition-behavior': [
+          {
+            transition: ['normal', 'discrete'],
+          },
+        ],
+        /**
+         * Transition Duration
+         * @see https://tailwindcss.com/docs/transition-duration
+         */
+        duration: [
+          {
+            duration: [isNumber, 'initial', isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Transition Timing Function
+         * @see https://tailwindcss.com/docs/transition-timing-function
+         */
+        ease: [
+          {
+            ease: ['linear', 'initial', themeEase, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Transition Delay
+         * @see https://tailwindcss.com/docs/transition-delay
+         */
+        delay: [
+          {
+            delay: [isNumber, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Animation
+         * @see https://tailwindcss.com/docs/animation
+         */
+        animate: [
+          {
+            animate: ['none', themeAnimate, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        // ------------------
+        // --- Transforms ---
+        // ------------------
+        /**
+         * Backface Visibility
+         * @see https://tailwindcss.com/docs/backface-visibility
+         */
+        backface: [
+          {
+            backface: ['hidden', 'visible'],
+          },
+        ],
+        /**
+         * Perspective
+         * @see https://tailwindcss.com/docs/perspective
+         */
+        perspective: [
+          {
+            perspective: [themePerspective, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        /**
+         * Perspective Origin
+         * @see https://tailwindcss.com/docs/perspective-origin
+         */
+        'perspective-origin': [
+          {
+            'perspective-origin': scalePositionWithArbitrary(),
+          },
+        ],
+        /**
+         * Rotate
+         * @see https://tailwindcss.com/docs/rotate
+         */
+        rotate: [
+          {
+            rotate: scaleRotate(),
+          },
+        ],
+        /**
+         * Rotate X
+         * @see https://tailwindcss.com/docs/rotate
+         */
+        'rotate-x': [
+          {
+            'rotate-x': scaleRotate(),
+          },
+        ],
+        /**
+         * Rotate Y
+         * @see https://tailwindcss.com/docs/rotate
+         */
+        'rotate-y': [
+          {
+            'rotate-y': scaleRotate(),
+          },
+        ],
+        /**
+         * Rotate Z
+         * @see https://tailwindcss.com/docs/rotate
+         */
+        'rotate-z': [
+          {
+            'rotate-z': scaleRotate(),
+          },
+        ],
+        /**
+         * Scale
+         * @see https://tailwindcss.com/docs/scale
+         */
+        scale: [
+          {
+            scale: scaleScale(),
+          },
+        ],
+        /**
+         * Scale X
+         * @see https://tailwindcss.com/docs/scale
+         */
+        'scale-x': [
+          {
+            'scale-x': scaleScale(),
+          },
+        ],
+        /**
+         * Scale Y
+         * @see https://tailwindcss.com/docs/scale
+         */
+        'scale-y': [
+          {
+            'scale-y': scaleScale(),
+          },
+        ],
+        /**
+         * Scale Z
+         * @see https://tailwindcss.com/docs/scale
+         */
+        'scale-z': [
+          {
+            'scale-z': scaleScale(),
+          },
+        ],
+        /**
+         * Scale 3D
+         * @see https://tailwindcss.com/docs/scale
+         */
+        'scale-3d': ['scale-3d'],
+        /**
+         * Skew
+         * @see https://tailwindcss.com/docs/skew
+         */
+        skew: [
+          {
+            skew: scaleSkew(),
+          },
+        ],
+        /**
+         * Skew X
+         * @see https://tailwindcss.com/docs/skew
+         */
+        'skew-x': [
+          {
+            'skew-x': scaleSkew(),
+          },
+        ],
+        /**
+         * Skew Y
+         * @see https://tailwindcss.com/docs/skew
+         */
+        'skew-y': [
+          {
+            'skew-y': scaleSkew(),
+          },
+        ],
+        /**
+         * Transform
+         * @see https://tailwindcss.com/docs/transform
+         */
+        transform: [
+          {
+            transform: [isArbitraryVariable, isArbitraryValue, '', 'none', 'gpu', 'cpu'],
+          },
+        ],
+        /**
+         * Transform Origin
+         * @see https://tailwindcss.com/docs/transform-origin
+         */
+        'transform-origin': [
+          {
+            origin: scalePositionWithArbitrary(),
+          },
+        ],
+        /**
+         * Transform Style
+         * @see https://tailwindcss.com/docs/transform-style
+         */
+        'transform-style': [
+          {
+            transform: ['3d', 'flat'],
+          },
+        ],
+        /**
+         * Translate
+         * @see https://tailwindcss.com/docs/translate
+         */
+        translate: [
+          {
+            translate: scaleTranslate(),
+          },
+        ],
+        /**
+         * Translate X
+         * @see https://tailwindcss.com/docs/translate
+         */
+        'translate-x': [
+          {
+            'translate-x': scaleTranslate(),
+          },
+        ],
+        /**
+         * Translate Y
+         * @see https://tailwindcss.com/docs/translate
+         */
+        'translate-y': [
+          {
+            'translate-y': scaleTranslate(),
+          },
+        ],
+        /**
+         * Translate Z
+         * @see https://tailwindcss.com/docs/translate
+         */
+        'translate-z': [
+          {
+            'translate-z': scaleTranslate(),
+          },
+        ],
+        /**
+         * Translate None
+         * @see https://tailwindcss.com/docs/translate
+         */
+        'translate-none': ['translate-none'],
+        /**
+         * Zoom
+         * @see https://tailwindcss.com/docs/zoom
+         */
+        zoom: [
+          {
+            zoom: [isInteger, isArbitraryVariable, isArbitraryValue],
+          },
+        ],
+        // ---------------------
+        // --- Interactivity ---
+        // ---------------------
+        /**
+         * Accent Color
+         * @see https://tailwindcss.com/docs/accent-color
+         */
+        accent: [
+          {
+            accent: scaleColor(),
+          },
+        ],
+        /**
+         * Appearance
+         * @see https://tailwindcss.com/docs/appearance
+         */
+        appearance: [
+          {
+            appearance: ['none', 'auto'],
+          },
+        ],
+        /**
+         * Caret Color
+         * @see https://tailwindcss.com/docs/just-in-time-mode#caret-color-utilities
+         */
+        'caret-color': [
+          {
+            caret: scaleColor(),
+          },
+        ],
+        /**
+         * Color Scheme
+         * @see https://tailwindcss.com/docs/color-scheme
+         */
+        'color-scheme': [
+          {
+            scheme: ['normal', 'dark', 'light', 'light-dark', 'only-dark', 'only-light'],
+          },
+        ],
+        /**
+         * Cursor
+         * @see https://tailwindcss.com/docs/cursor
+         */
+        cursor: [
+          {
+            cursor: [
+              'auto',
+              'default',
+              'pointer',
+              'wait',
+              'text',
+              'move',
+              'help',
+              'not-allowed',
+              'none',
+              'context-menu',
+              'progress',
+              'cell',
+              'crosshair',
+              'vertical-text',
+              'alias',
+              'copy',
+              'no-drop',
+              'grab',
+              'grabbing',
+              'all-scroll',
+              'col-resize',
+              'row-resize',
+              'n-resize',
+              'e-resize',
+              's-resize',
+              'w-resize',
+              'ne-resize',
+              'nw-resize',
+              'se-resize',
+              'sw-resize',
+              'ew-resize',
+              'ns-resize',
+              'nesw-resize',
+              'nwse-resize',
+              'zoom-in',
+              'zoom-out',
+              isArbitraryVariable,
+              isArbitraryValue,
+            ],
+          },
+        ],
+        /**
+         * Field Sizing
+         * @see https://tailwindcss.com/docs/field-sizing
+         */
+        'field-sizing': [
+          {
+            'field-sizing': ['fixed', 'content'],
+          },
+        ],
+        /**
+         * Pointer Events
+         * @see https://tailwindcss.com/docs/pointer-events
+         */
+        'pointer-events': [
+          {
+            'pointer-events': ['auto', 'none'],
+          },
+        ],
+        /**
+         * Resize
+         * @see https://tailwindcss.com/docs/resize
+         */
+        resize: [
+          {
+            resize: ['none', '', 'y', 'x'],
+          },
+        ],
+        /**
+         * Scroll Behavior
+         * @see https://tailwindcss.com/docs/scroll-behavior
+         */
+        'scroll-behavior': [
+          {
+            scroll: ['auto', 'smooth'],
+          },
+        ],
+        /**
+         * Scrollbar Thumb Color
+         * @see https://tailwindcss.com/docs/scrollbar-color
+         */
+        'scrollbar-thumb-color': [
+          {
+            'scrollbar-thumb': scaleColor(),
+          },
+        ],
+        /**
+         * Scrollbar Track Color
+         * @see https://tailwindcss.com/docs/scrollbar-color
+         */
+        'scrollbar-track-color': [
+          {
+            'scrollbar-track': scaleColor(),
+          },
+        ],
+        /**
+         * Scrollbar Gutter
+         * @see https://tailwindcss.com/docs/scrollbar-gutter
+         */
+        'scrollbar-gutter': [
+          {
+            'scrollbar-gutter': ['auto', 'stable', 'both'],
+          },
+        ],
+        /**
+         * Scrollbar Width
+         * @see https://tailwindcss.com/docs/scrollbar-width
+         */
+        'scrollbar-w': [
+          {
+            scrollbar: ['auto', 'thin', 'none'],
+          },
+        ],
+        /**
+         * Scroll Margin
+         * @see https://tailwindcss.com/docs/scroll-margin
+         */
+        'scroll-m': [
+          {
+            'scroll-m': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Scroll Margin Inline
+         * @see https://tailwindcss.com/docs/scroll-margin
+         */
+        'scroll-mx': [
+          {
+            'scroll-mx': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Scroll Margin Block
+         * @see https://tailwindcss.com/docs/scroll-margin
+         */
+        'scroll-my': [
+          {
+            'scroll-my': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Scroll Margin Inline Start
+         * @see https://tailwindcss.com/docs/scroll-margin
+         */
+        'scroll-ms': [
+          {
+            'scroll-ms': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Scroll Margin Inline End
+         * @see https://tailwindcss.com/docs/scroll-margin
+         */
+        'scroll-me': [
+          {
+            'scroll-me': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Scroll Margin Block Start
+         * @see https://tailwindcss.com/docs/scroll-margin
+         */
+        'scroll-mbs': [
+          {
+            'scroll-mbs': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Scroll Margin Block End
+         * @see https://tailwindcss.com/docs/scroll-margin
+         */
+        'scroll-mbe': [
+          {
+            'scroll-mbe': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Scroll Margin Top
+         * @see https://tailwindcss.com/docs/scroll-margin
+         */
+        'scroll-mt': [
+          {
+            'scroll-mt': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Scroll Margin Right
+         * @see https://tailwindcss.com/docs/scroll-margin
+         */
+        'scroll-mr': [
+          {
+            'scroll-mr': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Scroll Margin Bottom
+         * @see https://tailwindcss.com/docs/scroll-margin
+         */
+        'scroll-mb': [
+          {
+            'scroll-mb': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Scroll Margin Left
+         * @see https://tailwindcss.com/docs/scroll-margin
+         */
+        'scroll-ml': [
+          {
+            'scroll-ml': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Scroll Padding
+         * @see https://tailwindcss.com/docs/scroll-padding
+         */
+        'scroll-p': [
+          {
+            'scroll-p': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Scroll Padding Inline
+         * @see https://tailwindcss.com/docs/scroll-padding
+         */
+        'scroll-px': [
+          {
+            'scroll-px': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Scroll Padding Block
+         * @see https://tailwindcss.com/docs/scroll-padding
+         */
+        'scroll-py': [
+          {
+            'scroll-py': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Scroll Padding Inline Start
+         * @see https://tailwindcss.com/docs/scroll-padding
+         */
+        'scroll-ps': [
+          {
+            'scroll-ps': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Scroll Padding Inline End
+         * @see https://tailwindcss.com/docs/scroll-padding
+         */
+        'scroll-pe': [
+          {
+            'scroll-pe': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Scroll Padding Block Start
+         * @see https://tailwindcss.com/docs/scroll-padding
+         */
+        'scroll-pbs': [
+          {
+            'scroll-pbs': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Scroll Padding Block End
+         * @see https://tailwindcss.com/docs/scroll-padding
+         */
+        'scroll-pbe': [
+          {
+            'scroll-pbe': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Scroll Padding Top
+         * @see https://tailwindcss.com/docs/scroll-padding
+         */
+        'scroll-pt': [
+          {
+            'scroll-pt': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Scroll Padding Right
+         * @see https://tailwindcss.com/docs/scroll-padding
+         */
+        'scroll-pr': [
+          {
+            'scroll-pr': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Scroll Padding Bottom
+         * @see https://tailwindcss.com/docs/scroll-padding
+         */
+        'scroll-pb': [
+          {
+            'scroll-pb': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Scroll Padding Left
+         * @see https://tailwindcss.com/docs/scroll-padding
+         */
+        'scroll-pl': [
+          {
+            'scroll-pl': scaleUnambiguousSpacing(),
+          },
+        ],
+        /**
+         * Scroll Snap Align
+         * @see https://tailwindcss.com/docs/scroll-snap-align
+         */
+        'snap-align': [
+          {
+            snap: ['start', 'end', 'center', 'align-none'],
+          },
+        ],
+        /**
+         * Scroll Snap Stop
+         * @see https://tailwindcss.com/docs/scroll-snap-stop
+         */
+        'snap-stop': [
+          {
+            snap: ['normal', 'always'],
+          },
+        ],
+        /**
+         * Scroll Snap Type
+         * @see https://tailwindcss.com/docs/scroll-snap-type
+         */
+        'snap-type': [
+          {
+            snap: ['none', 'x', 'y', 'both'],
+          },
+        ],
+        /**
+         * Scroll Snap Type Strictness
+         * @see https://tailwindcss.com/docs/scroll-snap-type
+         */
+        'snap-strictness': [
+          {
+            snap: ['mandatory', 'proximity'],
+          },
+        ],
+        /**
+         * Touch Action
+         * @see https://tailwindcss.com/docs/touch-action
+         */
+        touch: [
+          {
+            touch: ['auto', 'none', 'manipulation'],
+          },
+        ],
+        /**
+         * Touch Action X
+         * @see https://tailwindcss.com/docs/touch-action
+         */
+        'touch-x': [
+          {
+            'touch-pan': ['x', 'left', 'right'],
+          },
+        ],
+        /**
+         * Touch Action Y
+         * @see https://tailwindcss.com/docs/touch-action
+         */
+        'touch-y': [
+          {
+            'touch-pan': ['y', 'up', 'down'],
+          },
+        ],
+        /**
+         * Touch Action Pinch Zoom
+         * @see https://tailwindcss.com/docs/touch-action
+         */
+        'touch-pz': ['touch-pinch-zoom'],
+        /**
+         * User Select
+         * @see https://tailwindcss.com/docs/user-select
+         */
+        select: [
+          {
+            select: ['none', 'text', 'all', 'auto'],
+          },
+        ],
+        /**
+         * Will Change
+         * @see https://tailwindcss.com/docs/will-change
+         */
+        'will-change': [
+          {
+            'will-change': [
+              'auto',
+              'scroll',
+              'contents',
+              'transform',
+              isArbitraryVariable,
+              isArbitraryValue,
+            ],
+          },
+        ],
+        // -----------
+        // --- SVG ---
+        // -----------
+        /**
+         * Fill
+         * @see https://tailwindcss.com/docs/fill
+         */
+        fill: [
+          {
+            fill: ['none', ...scaleColor()],
+          },
+        ],
+        /**
+         * Stroke Width
+         * @see https://tailwindcss.com/docs/stroke-width
+         */
+        'stroke-w': [
+          {
+            stroke: [isNumber, isArbitraryVariableLength, isArbitraryLength, isArbitraryNumber],
+          },
+        ],
+        /**
+         * Stroke
+         * @see https://tailwindcss.com/docs/stroke
+         */
+        stroke: [
+          {
+            stroke: ['none', ...scaleColor()],
+          },
+        ],
+        // ---------------------
+        // --- Accessibility ---
+        // ---------------------
+        /**
+         * Forced Color Adjust
+         * @see https://tailwindcss.com/docs/forced-color-adjust
+         */
+        'forced-color-adjust': [
+          {
+            'forced-color-adjust': ['auto', 'none'],
+          },
+        ],
+      },
+      conflictingClassGroups: {
+        'container-named': ['container-type'],
+        overflow: ['overflow-x', 'overflow-y'],
+        overscroll: ['overscroll-x', 'overscroll-y'],
+        inset: [
+          'inset-x',
+          'inset-y',
+          'inset-bs',
+          'inset-be',
+          'start',
+          'end',
+          'top',
+          'right',
+          'bottom',
+          'left',
+        ],
+        'inset-x': ['right', 'left'],
+        'inset-y': ['top', 'bottom'],
+        flex: ['basis', 'grow', 'shrink'],
+        gap: ['gap-x', 'gap-y'],
+        p: ['px', 'py', 'ps', 'pe', 'pbs', 'pbe', 'pt', 'pr', 'pb', 'pl'],
+        px: ['pr', 'pl'],
+        py: ['pt', 'pb'],
+        m: ['mx', 'my', 'ms', 'me', 'mbs', 'mbe', 'mt', 'mr', 'mb', 'ml'],
+        mx: ['mr', 'ml'],
+        my: ['mt', 'mb'],
+        size: ['w', 'h'],
+        'font-size': ['leading'],
+        'fvn-normal': [
+          'fvn-ordinal',
+          'fvn-slashed-zero',
+          'fvn-figure',
+          'fvn-spacing',
+          'fvn-fraction',
+        ],
+        'fvn-ordinal': ['fvn-normal'],
+        'fvn-slashed-zero': ['fvn-normal'],
+        'fvn-figure': ['fvn-normal'],
+        'fvn-spacing': ['fvn-normal'],
+        'fvn-fraction': ['fvn-normal'],
+        'line-clamp': ['display', 'overflow'],
+        rounded: [
+          'rounded-s',
+          'rounded-e',
+          'rounded-t',
+          'rounded-r',
+          'rounded-b',
+          'rounded-l',
+          'rounded-ss',
+          'rounded-se',
+          'rounded-ee',
+          'rounded-es',
+          'rounded-tl',
+          'rounded-tr',
+          'rounded-br',
+          'rounded-bl',
+        ],
+        'rounded-s': ['rounded-ss', 'rounded-es'],
+        'rounded-e': ['rounded-se', 'rounded-ee'],
+        'rounded-t': ['rounded-tl', 'rounded-tr'],
+        'rounded-r': ['rounded-tr', 'rounded-br'],
+        'rounded-b': ['rounded-br', 'rounded-bl'],
+        'rounded-l': ['rounded-tl', 'rounded-bl'],
+        'border-spacing': ['border-spacing-x', 'border-spacing-y'],
+        'border-w': [
+          'border-w-x',
+          'border-w-y',
+          'border-w-s',
+          'border-w-e',
+          'border-w-bs',
+          'border-w-be',
+          'border-w-t',
+          'border-w-r',
+          'border-w-b',
+          'border-w-l',
+        ],
+        'border-w-x': ['border-w-r', 'border-w-l'],
+        'border-w-y': ['border-w-t', 'border-w-b'],
+        'border-color': [
+          'border-color-x',
+          'border-color-y',
+          'border-color-s',
+          'border-color-e',
+          'border-color-bs',
+          'border-color-be',
+          'border-color-t',
+          'border-color-r',
+          'border-color-b',
+          'border-color-l',
+        ],
+        'border-color-x': ['border-color-r', 'border-color-l'],
+        'border-color-y': ['border-color-t', 'border-color-b'],
+        translate: ['translate-x', 'translate-y', 'translate-none'],
+        'translate-none': ['translate', 'translate-x', 'translate-y', 'translate-z'],
+        'scroll-m': [
+          'scroll-mx',
+          'scroll-my',
+          'scroll-ms',
+          'scroll-me',
+          'scroll-mbs',
+          'scroll-mbe',
+          'scroll-mt',
+          'scroll-mr',
+          'scroll-mb',
+          'scroll-ml',
+        ],
+        'scroll-mx': ['scroll-mr', 'scroll-ml'],
+        'scroll-my': ['scroll-mt', 'scroll-mb'],
+        'scroll-p': [
+          'scroll-px',
+          'scroll-py',
+          'scroll-ps',
+          'scroll-pe',
+          'scroll-pbs',
+          'scroll-pbe',
+          'scroll-pt',
+          'scroll-pr',
+          'scroll-pb',
+          'scroll-pl',
+        ],
+        'scroll-px': ['scroll-pr', 'scroll-pl'],
+        'scroll-py': ['scroll-pt', 'scroll-pb'],
+        touch: ['touch-x', 'touch-y', 'touch-pz'],
+        'touch-x': ['touch'],
+        'touch-y': ['touch'],
+        'touch-pz': ['touch'],
+      },
+      conflictingClassGroupModifiers: {
+        'font-size': ['leading'],
+      },
+      postfixLookupClassGroups: ['container-type'],
+      orderSensitiveModifiers: [
+        '*',
+        '**',
+        'after',
+        'backdrop',
+        'before',
+        'details-content',
+        'file',
+        'first-letter',
+        'first-line',
+        'marker',
+        'placeholder',
+        'selection',
+      ],
+    };
+  };
+  var twMerge = /* @__PURE__ */ createTailwindMerge(getDefaultConfig);
+
+  // src/ui/lib/utils.ts
+  function cn(...inputs) {
+    return twMerge(clsx(inputs));
+  }
+
+  // src/ui/components/button.tsx
+  var import_jsx_runtime = __toESM(require_jsx_runtime(), 1);
+  var buttonVariants = cva(
+    'inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md text-md-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+    {
+      variants: {
+        variant: {
+          default: 'bg-primary text-primary-foreground shadow hover:bg-primary/90',
+          destructive:
+            'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
+          outline:
+            'border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground',
+          secondary: 'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80',
+          ghost: 'hover:bg-accent hover:text-accent-foreground',
+          link: 'text-primary underline-offset-4 hover:underline',
+        },
+        size: {
+          default: 'h-8 px-3.5',
+          sm: 'h-7 px-2.5',
+          lg: 'h-9 px-4',
+          icon: 'h-8 w-8',
+        },
+      },
+      defaultVariants: {
+        variant: 'default',
+        size: 'default',
+      },
+    },
+  );
+  var Button = (0, import_react4.forwardRef)(
+    ({ className, variant, size: size4, ...props }, ref) => {
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsx)('button', {
+        className: cn(buttonVariants({ variant, size: size4, className })),
+        ref,
+        ...props,
+      });
+    },
+  );
+  Button.displayName = 'Button';
 
   // src/features/resumeTab/Header.tsx
-  var import_jsx_runtime = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime2 = __toESM(require_jsx_runtime(), 1);
   function Header({ title, onClose }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
+    return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)('div', {
       className:
-        'flex items-center justify-between px-5 py-3 border-b border-[var(--md-gray-200)] shrink-0',
+        'flex items-center justify-between px-5 py-3 border-b border-border shrink-0 bg-background',
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)('h2', {
-          className: 'text-md-lg font-semibold text-[var(--md-gray-800)]',
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)('h2', {
+          className: 'text-md-lg font-semibold text-foreground',
           children: title,
         }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)('button', {
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Button, {
+          variant: 'ghost',
+          size: 'icon',
           onClick: onClose,
-          className:
-            'w-7 h-7 flex items-center justify-center rounded-md text-[var(--md-gray-400)] hover:text-[var(--md-gray-600)] hover:bg-[var(--md-gray-100)] transition-colors',
-          children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)('svg', {
-            width: '16',
-            height: '16',
-            viewBox: '0 0 24 24',
-            fill: 'none',
-            stroke: 'currentColor',
-            strokeWidth: '2',
-            children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)('path', {
-              d: 'M18 6L6 18M6 6l12 12',
-            }),
-          }),
+          className: 'h-8 w-8 text-muted-foreground hover:text-foreground',
+          children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(X, { className: 'h-4 w-4' }),
         }),
       ],
     });
   }
 
   // src/features/resumeTab/InfoBanner.tsx
-  var import_jsx_runtime2 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime3 = __toESM(require_jsx_runtime(), 1);
   function InfoBanner({ data }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)('div', {
-      className: 'md-card p-3 flex flex-wrap gap-x-6 gap-y-1',
+    return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)('div', {
+      className:
+        'flex flex-wrap items-center gap-x-6 gap-y-2 px-5 py-3 bg-muted/50 border-b border-border text-md-xs shrink-0',
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)('div', {
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)('div', {
+          className: 'flex flex-col',
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)('span', {
-              className: 'md-label',
+            /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('span', {
+              className: 'text-muted-foreground uppercase tracking-wider font-semibold text-[9px]',
               children: 'No. RM',
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)('span', {
-              className: 'text-md-sm font-mono font-medium text-[var(--md-gray-800)]',
+            /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('span', {
+              className: 'text-md-sm font-mono font-medium text-foreground',
               children: data.norm,
             }),
           ],
         }),
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)('div', {
-          className: 'min-w-[200px] flex-1',
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)('div', {
+          className: 'flex flex-col border-l border-border pl-6',
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)('span', {
-              className: 'md-label',
+            /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('span', {
+              className: 'text-muted-foreground uppercase tracking-wider font-semibold text-[9px]',
               children: 'Nama Pasien',
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)('span', {
-              className: 'text-md-sm font-medium text-[var(--md-gray-800)]',
+            /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('span', {
+              className: 'text-md-sm font-medium text-foreground',
               children: data.pasien,
             }),
           ],
         }),
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)('div', {
-          className: 'min-w-[200px] flex-1',
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)('div', {
+          className: 'flex flex-col border-l border-border pl-6',
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)('span', {
-              className: 'md-label',
-              children: 'Dokter DPJP',
+            /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('span', {
+              className: 'text-muted-foreground uppercase tracking-wider font-semibold text-[9px]',
+              children: 'Dokter',
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)('span', {
-              className: 'text-md-sm font-medium text-[var(--md-gray-800)]',
+            /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('span', {
+              className: 'text-md-sm font-medium text-foreground',
               children: data.nama_dokter,
             }),
           ],
@@ -27614,92 +32276,119 @@ var __morbis_feature = (() => {
   }
 
   // src/features/resumeTab/ClinicalNotesSection.tsx
-  var import_jsx_runtime3 = __toESM(require_jsx_runtime(), 1);
-  var fields = [
-    { key: 'anamnesa', label: 'Anamnesa', wide: false },
-    { key: 'pemeriksaan_fisik', label: 'Pemeriksaan Fisik', wide: false },
-    { key: 'catatan', label: 'Catatan', wide: false },
-    { key: 'tindakan', label: 'Tindakan', wide: false },
-    { key: 'terapi_pengobatan', label: 'Terapi Pengobatan', wide: true },
-  ];
-  function ClinicalNotesSection({ data, onChange }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)('div', {
+  var import_jsx_runtime4 = __toESM(require_jsx_runtime(), 1);
+  function ClinicalNotesSection({ anamnesa, pemeriksaan, onChange }) {
+    return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
+      className: 'px-5 py-4 border-b border-border bg-background',
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('h3', {
-          className: 'text-md-sm font-semibold text-[var(--md-gray-700)] mb-2',
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('h3', {
+          className: 'text-md-sm font-semibold text-foreground mb-3',
           children: 'Data Klinis',
         }),
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('div', {
-          className: 'grid grid-cols-2 gap-3',
-          children: fields.map((f) =>
-            /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)(
-              'div',
-              {
-                className: f.wide ? 'col-span-2' : '',
-                children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('label', {
-                    className: 'md-label',
-                    children: f.label,
-                  }),
-                  /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('textarea', {
-                    value: data[f.key],
-                    onChange: (e) => onChange({ ...data, [f.key]: e.target.value }),
-                    className: 'md-input min-h-[60px] resize-y',
-                    rows: 2,
-                  }),
-                ],
-              },
-              f.key,
-            ),
-          ),
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
+          className: 'grid grid-cols-2 gap-4',
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('label', {
+                  className:
+                    'block text-[10px] font-semibold text-muted-foreground uppercase mb-1.5 ml-1',
+                  children: 'Anamnesa',
+                }),
+                /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('textarea', {
+                  value: anamnesa,
+                  onChange: (e) => onChange('anamnesa', e.target.value),
+                  className:
+                    'w-full h-24 rounded-md border border-input bg-background px-3 py-2 text-md-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 resize-none',
+                  placeholder: 'Keluhan pasien...',
+                }),
+              ],
+            }),
+            /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('label', {
+                  className:
+                    'block text-[10px] font-semibold text-muted-foreground uppercase mb-1.5 ml-1',
+                  children: 'Pemeriksaan Fisik',
+                }),
+                /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('textarea', {
+                  value: pemeriksaan,
+                  onChange: (e) => onChange('pemeriksaan', e.target.value),
+                  className:
+                    'w-full h-24 rounded-md border border-input bg-background px-3 py-2 text-md-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 resize-none',
+                  placeholder: 'Hasil pemeriksaan...',
+                }),
+              ],
+            }),
+          ],
         }),
       ],
     });
   }
 
+  // src/ui/components/input.tsx
+  var import_react5 = __toESM(require_react(), 1);
+  var import_jsx_runtime5 = __toESM(require_jsx_runtime(), 1);
+  var Input = (0, import_react5.forwardRef)(({ className, type, ...props }, ref) => {
+    return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('input', {
+      type,
+      className: cn(
+        'flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-md-sm text-foreground',
+        'placeholder:text-muted-foreground',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+        'disabled:cursor-not-allowed disabled:opacity-50',
+        className,
+      ),
+      ref,
+      ...props,
+    });
+  });
+  Input.displayName = 'Input';
+
   // src/features/resumeTab/VitalSignsSection.tsx
-  var import_jsx_runtime4 = __toESM(require_jsx_runtime(), 1);
-  var fields2 = [
-    { key: 'tensi', label: 'Tensi', unit: 'mmHg' },
-    { key: 'nadi', label: 'Nadi', unit: '/menit' },
-    { key: 'suhu', label: 'Suhu', unit: '\xB0C' },
-    { key: 'nafas', label: 'Nafas', unit: '/menit' },
-    { key: 'tinggi', label: 'Tinggi', unit: 'cm' },
-    { key: 'berat', label: 'Berat', unit: 'kg' },
-  ];
-  function VitalSignsSection({ data, onChange }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
+  var import_jsx_runtime6 = __toESM(require_jsx_runtime(), 1);
+  function VitalSignsSection({ vitals, onChange }) {
+    const fields = [
+      { key: 'tensi', label: 'Tensi', unit: 'mmHg', placeholder: '120/80' },
+      { key: 'nadi', label: 'Nadi', unit: 'x/mnt', placeholder: '80' },
+      { key: 'suhu', label: 'Suhu', unit: '\xB0C', placeholder: '36.5' },
+      { key: 'nafas', label: 'Nafas', unit: 'x/mnt', placeholder: '20' },
+      { key: 'berat', label: 'Berat', unit: 'kg', placeholder: '60' },
+      { key: 'tinggi', label: 'Tinggi', unit: 'cm', placeholder: '165' },
+    ];
+    return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)('div', {
+      className: 'px-5 py-4 border-b border-border bg-background',
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('h3', {
-          className: 'text-md-sm font-semibold text-[var(--md-gray-700)] mb-2',
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('h3', {
+          className: 'text-md-sm font-semibold text-foreground mb-3',
           children: 'Tanda Vital',
         }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('div', {
-          className: 'grid grid-cols-6 gap-2',
-          children: fields2.map((f) =>
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('div', {
+          className: 'grid grid-cols-6 gap-3',
+          children: fields.map((f) =>
+            /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)(
               'div',
               {
+                className: 'space-y-1.5',
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('label', {
-                    className: 'md-label',
+                  /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('label', {
+                    className: 'text-[10px] font-semibold text-muted-foreground uppercase ml-1',
                     children: f.label,
                   }),
-                  /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
+                  /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)('div', {
                     className: 'relative',
                     children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('input', {
-                        type: 'text',
-                        value: data[f.key],
-                        onChange: (e) => onChange({ ...data, [f.key]: e.target.value }),
-                        className: 'md-input pr-6',
+                      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(Input, {
+                        value: vitals[f.key],
+                        onChange: (e) => onChange(f.key, e.target.value),
+                        placeholder: f.placeholder,
+                        className: 'pr-10 text-md-xs h-9',
                       }),
-                      f.unit &&
-                        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('span', {
-                          className:
-                            'absolute right-2 top-1/2 -translate-y-1/2 text-md-xs text-[var(--md-gray-400)] pointer-events-none',
-                          children: f.unit,
-                        }),
+                      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('span', {
+                        className:
+                          'absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] font-medium text-muted-foreground/60 pointer-events-none',
+                        children: f.unit,
+                      }),
                     ],
                   }),
                 ],
@@ -27712,190 +32401,6224 @@ var __morbis_feature = (() => {
     });
   }
 
+  // src/ui/components/select.tsx
+  var import_react8 = __toESM(require_react(), 1);
+
+  // node_modules/@radix-ui/react-select/dist/index.mjs
+  var React33 = __toESM(require_react(), 1);
+  var ReactDOM4 = __toESM(require_react_dom(), 1);
+
+  // node_modules/@radix-ui/number/dist/index.mjs
+  function clamp(value, [min2, max2]) {
+    return Math.min(max2, Math.max(min2, value));
+  }
+
+  // node_modules/@radix-ui/primitive/dist/index.mjs
+  var canUseDOM = !!(
+    typeof window !== 'undefined' &&
+    window.document &&
+    window.document.createElement
+  );
+  function composeEventHandlers(
+    originalEventHandler,
+    ourEventHandler,
+    { checkForDefaultPrevented = true } = {},
+  ) {
+    return function handleEvent(event) {
+      originalEventHandler?.(event);
+      if (checkForDefaultPrevented === false || !event.defaultPrevented) {
+        return ourEventHandler?.(event);
+      }
+    };
+  }
+
+  // node_modules/@radix-ui/react-collection/dist/index.mjs
+  var React4 = __toESM(require_react(), 1);
+
+  // node_modules/@radix-ui/react-context/dist/index.mjs
+  var React = __toESM(require_react(), 1);
+  var import_jsx_runtime7 = __toESM(require_jsx_runtime(), 1);
+  function createContextScope(scopeName, createContextScopeDeps = []) {
+    let defaultContexts = [];
+    function createContext32(rootComponentName, defaultContext) {
+      const BaseContext = React.createContext(defaultContext);
+      BaseContext.displayName = rootComponentName + 'Context';
+      const index2 = defaultContexts.length;
+      defaultContexts = [...defaultContexts, defaultContext];
+      const Provider = (props) => {
+        const { scope, children, ...context } = props;
+        const Context = scope?.[scopeName]?.[index2] || BaseContext;
+        const value = React.useMemo(() => context, Object.values(context));
+        return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Context.Provider, { value, children });
+      };
+      Provider.displayName = rootComponentName + 'Provider';
+      function useContext22(consumerName, scope) {
+        const Context = scope?.[scopeName]?.[index2] || BaseContext;
+        const context = React.useContext(Context);
+        if (context) return context;
+        if (defaultContext !== void 0) return defaultContext;
+        throw new Error(`\`${consumerName}\` must be used within \`${rootComponentName}\``);
+      }
+      return [Provider, useContext22];
+    }
+    const createScope = () => {
+      const scopeContexts = defaultContexts.map((defaultContext) => {
+        return React.createContext(defaultContext);
+      });
+      return function useScope(scope) {
+        const contexts = scope?.[scopeName] || scopeContexts;
+        return React.useMemo(
+          () => ({ [`__scope${scopeName}`]: { ...scope, [scopeName]: contexts } }),
+          [scope, contexts],
+        );
+      };
+    };
+    createScope.scopeName = scopeName;
+    return [createContext32, composeContextScopes(createScope, ...createContextScopeDeps)];
+  }
+  function composeContextScopes(...scopes) {
+    const baseScope = scopes[0];
+    if (scopes.length === 1) return baseScope;
+    const createScope = () => {
+      const scopeHooks = scopes.map((createScope2) => ({
+        useScope: createScope2(),
+        scopeName: createScope2.scopeName,
+      }));
+      return function useComposedScopes(overrideScopes) {
+        const nextScopes = scopeHooks.reduce((nextScopes2, { useScope, scopeName }) => {
+          const scopeProps = useScope(overrideScopes);
+          const currentScope = scopeProps[`__scope${scopeName}`];
+          return { ...nextScopes2, ...currentScope };
+        }, {});
+        return React.useMemo(
+          () => ({ [`__scope${baseScope.scopeName}`]: nextScopes }),
+          [nextScopes],
+        );
+      };
+    };
+    createScope.scopeName = baseScope.scopeName;
+    return createScope;
+  }
+
+  // node_modules/@radix-ui/react-compose-refs/dist/index.mjs
+  var React2 = __toESM(require_react(), 1);
+  function setRef(ref, value) {
+    if (typeof ref === 'function') {
+      return ref(value);
+    } else if (ref !== null && ref !== void 0) {
+      ref.current = value;
+    }
+  }
+  function composeRefs(...refs) {
+    return (node) => {
+      let hasCleanup = false;
+      const cleanups = refs.map((ref) => {
+        const cleanup = setRef(ref, node);
+        if (!hasCleanup && typeof cleanup == 'function') {
+          hasCleanup = true;
+        }
+        return cleanup;
+      });
+      if (hasCleanup) {
+        return () => {
+          for (let i = 0; i < cleanups.length; i++) {
+            const cleanup = cleanups[i];
+            if (typeof cleanup == 'function') {
+              cleanup();
+            } else {
+              setRef(refs[i], null);
+            }
+          }
+        };
+      }
+    };
+  }
+  function useComposedRefs(...refs) {
+    return React2.useCallback(composeRefs(...refs), refs);
+  }
+
+  // node_modules/@radix-ui/react-slot/dist/index.mjs
+  var React3 = __toESM(require_react(), 1);
+  // @__NO_SIDE_EFFECTS__
+  function createSlot(ownerName) {
+    const Slot2 = React3.forwardRef((props, forwardedRef) => {
+      let { children, ...slotProps } = props;
+      let slottableElement = null;
+      let hasSlottable = false;
+      const newChildren = [];
+      if (isLazyComponent(children) && typeof use === 'function') {
+        children = use(children._payload);
+      }
+      React3.Children.forEach(children, (maybeSlottable) => {
+        if (isSlottable(maybeSlottable)) {
+          hasSlottable = true;
+          const slottable = maybeSlottable;
+          let child = 'child' in slottable.props ? slottable.props.child : slottable.props.children;
+          if (isLazyComponent(child) && typeof use === 'function') {
+            child = use(child._payload);
+          }
+          slottableElement = getSlottableElementFromSlottable(slottable, child);
+          newChildren.push(slottableElement?.props?.children);
+        } else {
+          newChildren.push(maybeSlottable);
+        }
+      });
+      if (slottableElement) {
+        slottableElement = React3.cloneElement(slottableElement, void 0, newChildren);
+      } else if (
+        // A `Slottable` was found but it didn't resolve to a single element (e.g.
+        // it wrapped multiple elements, text, or a render-prop `child` that
+        // wasn't an element). Don't fall back to treating the `Slottable` wrapper
+        // itself as the slot target — throw a descriptive error below instead.
+        !hasSlottable &&
+        React3.Children.count(children) === 1 &&
+        React3.isValidElement(children)
+      ) {
+        slottableElement = children;
+      }
+      const slottableElementRef = slottableElement ? getElementRef(slottableElement) : void 0;
+      const composedRef = useComposedRefs(forwardedRef, slottableElementRef);
+      if (!slottableElement) {
+        if (children || children === 0) {
+          throw new Error(
+            hasSlottable ? createSlottableError(ownerName) : createSlotError(ownerName),
+          );
+        }
+        return children;
+      }
+      const mergedProps = mergeProps(slotProps, slottableElement.props ?? {});
+      if (slottableElement.type !== React3.Fragment) {
+        mergedProps.ref = forwardedRef ? composedRef : slottableElementRef;
+      }
+      return React3.cloneElement(slottableElement, mergedProps);
+    });
+    Slot2.displayName = `${ownerName}.Slot`;
+    return Slot2;
+  }
+  var SLOTTABLE_IDENTIFIER = /* @__PURE__ */ Symbol.for('radix.slottable');
+  var getSlottableElementFromSlottable = (slottable, child) => {
+    if ('child' in slottable.props) {
+      const child2 = slottable.props.child;
+      if (!React3.isValidElement(child2)) return null;
+      return React3.cloneElement(child2, void 0, slottable.props.children(child2.props.children));
+    }
+    return React3.isValidElement(child) ? child : null;
+  };
+  function mergeProps(slotProps, childProps) {
+    const overrideProps = { ...childProps };
+    for (const propName in childProps) {
+      const slotPropValue = slotProps[propName];
+      const childPropValue = childProps[propName];
+      const isHandler = /^on[A-Z]/.test(propName);
+      if (isHandler) {
+        if (slotPropValue && childPropValue) {
+          overrideProps[propName] = (...args) => {
+            const result = childPropValue(...args);
+            slotPropValue(...args);
+            return result;
+          };
+        } else if (slotPropValue) {
+          overrideProps[propName] = slotPropValue;
+        }
+      } else if (propName === 'style') {
+        overrideProps[propName] = { ...slotPropValue, ...childPropValue };
+      } else if (propName === 'className') {
+        overrideProps[propName] = [slotPropValue, childPropValue].filter(Boolean).join(' ');
+      }
+    }
+    return { ...slotProps, ...overrideProps };
+  }
+  function getElementRef(element) {
+    let getter = Object.getOwnPropertyDescriptor(element.props, 'ref')?.get;
+    let mayWarn = getter && 'isReactWarning' in getter && getter.isReactWarning;
+    if (mayWarn) {
+      return element.ref;
+    }
+    getter = Object.getOwnPropertyDescriptor(element, 'ref')?.get;
+    mayWarn = getter && 'isReactWarning' in getter && getter.isReactWarning;
+    if (mayWarn) {
+      return element.props.ref;
+    }
+    return element.props.ref || element.ref;
+  }
+  function isSlottable(child) {
+    return (
+      React3.isValidElement(child) &&
+      typeof child.type === 'function' &&
+      '__radixId' in child.type &&
+      child.type.__radixId === SLOTTABLE_IDENTIFIER
+    );
+  }
+  var REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for('react.lazy');
+  function isLazyComponent(element) {
+    return (
+      element != null &&
+      typeof element === 'object' &&
+      '$$typeof' in element &&
+      element.$$typeof === REACT_LAZY_TYPE &&
+      '_payload' in element &&
+      isPromiseLike(element._payload)
+    );
+  }
+  function isPromiseLike(value) {
+    return typeof value === 'object' && value !== null && 'then' in value;
+  }
+  var createSlotError = (ownerName) => {
+    return `${ownerName} failed to slot onto its children. Expected a single React element child or \`Slottable\`.`;
+  };
+  var createSlottableError = (ownerName) => {
+    return `${ownerName} failed to slot onto its \`Slottable\`. Expected \`Slottable\` to receive a single React element child.`;
+  };
+  var use = React3[' use '.trim().toString()];
+
+  // node_modules/@radix-ui/react-collection/dist/index.mjs
+  var import_jsx_runtime8 = __toESM(require_jsx_runtime(), 1);
+  var React22 = __toESM(require_react(), 1);
+  var import_jsx_runtime9 = __toESM(require_jsx_runtime(), 1);
+  function createCollection(name) {
+    const PROVIDER_NAME2 = name + 'CollectionProvider';
+    const [createCollectionContext, createCollectionScope2] = createContextScope(PROVIDER_NAME2);
+    const [CollectionProviderImpl, useCollectionContext] = createCollectionContext(PROVIDER_NAME2, {
+      collectionRef: { current: null },
+      itemMap: /* @__PURE__ */ new Map(),
+    });
+    const CollectionProvider = (props) => {
+      const { scope, children } = props;
+      const ref = React4.useRef(null);
+      const itemMap = React4.useRef(/* @__PURE__ */ new Map()).current;
+      return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(CollectionProviderImpl, {
+        scope,
+        itemMap,
+        collectionRef: ref,
+        children,
+      });
+    };
+    CollectionProvider.displayName = PROVIDER_NAME2;
+    const COLLECTION_SLOT_NAME = name + 'CollectionSlot';
+    const CollectionSlotImpl = createSlot(COLLECTION_SLOT_NAME);
+    const CollectionSlot = React4.forwardRef((props, forwardedRef) => {
+      const { scope, children } = props;
+      const context = useCollectionContext(COLLECTION_SLOT_NAME, scope);
+      const composedRefs = useComposedRefs(forwardedRef, context.collectionRef);
+      return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(CollectionSlotImpl, {
+        ref: composedRefs,
+        children,
+      });
+    });
+    CollectionSlot.displayName = COLLECTION_SLOT_NAME;
+    const ITEM_SLOT_NAME = name + 'CollectionItemSlot';
+    const ITEM_DATA_ATTR = 'data-radix-collection-item';
+    const CollectionItemSlotImpl = createSlot(ITEM_SLOT_NAME);
+    const CollectionItemSlot = React4.forwardRef((props, forwardedRef) => {
+      const { scope, children, ...itemData } = props;
+      const ref = React4.useRef(null);
+      const composedRefs = useComposedRefs(forwardedRef, ref);
+      const context = useCollectionContext(ITEM_SLOT_NAME, scope);
+      React4.useEffect(() => {
+        context.itemMap.set(ref, { ref, ...itemData });
+        return () => void context.itemMap.delete(ref);
+      });
+      return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(CollectionItemSlotImpl, {
+        ...{ [ITEM_DATA_ATTR]: '' },
+        ref: composedRefs,
+        children,
+      });
+    });
+    CollectionItemSlot.displayName = ITEM_SLOT_NAME;
+    function useCollection2(scope) {
+      const context = useCollectionContext(name + 'CollectionConsumer', scope);
+      const getItems = React4.useCallback(() => {
+        const collectionNode = context.collectionRef.current;
+        if (!collectionNode) return [];
+        const orderedNodes = Array.from(collectionNode.querySelectorAll(`[${ITEM_DATA_ATTR}]`));
+        const items = Array.from(context.itemMap.values());
+        const orderedItems = items.sort(
+          (a, b) => orderedNodes.indexOf(a.ref.current) - orderedNodes.indexOf(b.ref.current),
+        );
+        return orderedItems;
+      }, [context.collectionRef, context.itemMap]);
+      return getItems;
+    }
+    return [
+      { Provider: CollectionProvider, Slot: CollectionSlot, ItemSlot: CollectionItemSlot },
+      useCollection2,
+      createCollectionScope2,
+    ];
+  }
+
+  // node_modules/@radix-ui/react-direction/dist/index.mjs
+  var React5 = __toESM(require_react(), 1);
+  var import_jsx_runtime10 = __toESM(require_jsx_runtime(), 1);
+  var DirectionContext = React5.createContext(void 0);
+  function useDirection(localDir) {
+    const globalDir = React5.useContext(DirectionContext);
+    return localDir || globalDir || 'ltr';
+  }
+
+  // node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs
+  var React9 = __toESM(require_react(), 1);
+
+  // node_modules/@radix-ui/react-primitive/dist/index.mjs
+  var React6 = __toESM(require_react(), 1);
+  var ReactDOM = __toESM(require_react_dom(), 1);
+  var import_jsx_runtime11 = __toESM(require_jsx_runtime(), 1);
+  var NODES = [
+    'a',
+    'button',
+    'div',
+    'form',
+    'h2',
+    'h3',
+    'img',
+    'input',
+    'label',
+    'li',
+    'nav',
+    'ol',
+    'p',
+    'select',
+    'span',
+    'svg',
+    'ul',
+  ];
+  var Primitive = NODES.reduce((primitive, node) => {
+    const Slot2 = createSlot(`Primitive.${node}`);
+    const Node2 = React6.forwardRef((props, forwardedRef) => {
+      const { asChild, ...primitiveProps } = props;
+      const Comp = asChild ? Slot2 : node;
+      if (typeof window !== 'undefined') {
+        window[/* @__PURE__ */ Symbol.for('radix-ui')] = true;
+      }
+      return /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Comp, {
+        ...primitiveProps,
+        ref: forwardedRef,
+      });
+    });
+    Node2.displayName = `Primitive.${node}`;
+    return { ...primitive, [node]: Node2 };
+  }, {});
+  function dispatchDiscreteCustomEvent(target, event) {
+    if (target) ReactDOM.flushSync(() => target.dispatchEvent(event));
+  }
+
+  // node_modules/@radix-ui/react-use-callback-ref/dist/index.mjs
+  var React7 = __toESM(require_react(), 1);
+  function useCallbackRef(callback) {
+    const callbackRef = React7.useRef(callback);
+    React7.useEffect(() => {
+      callbackRef.current = callback;
+    });
+    return React7.useMemo(
+      () =>
+        (...args) =>
+          callbackRef.current?.(...args),
+      [],
+    );
+  }
+
+  // node_modules/@radix-ui/react-use-escape-keydown/dist/index.mjs
+  var React8 = __toESM(require_react(), 1);
+  function useEscapeKeydown(onEscapeKeyDownProp, ownerDocument = globalThis?.document) {
+    const onEscapeKeyDown = useCallbackRef(onEscapeKeyDownProp);
+    React8.useEffect(() => {
+      const handleKeyDown = (event) => {
+        if (event.key === 'Escape') {
+          onEscapeKeyDown(event);
+        }
+      };
+      ownerDocument.addEventListener('keydown', handleKeyDown, { capture: true });
+      return () => ownerDocument.removeEventListener('keydown', handleKeyDown, { capture: true });
+    }, [onEscapeKeyDown, ownerDocument]);
+  }
+
+  // node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs
+  var import_jsx_runtime12 = __toESM(require_jsx_runtime(), 1);
+  var DISMISSABLE_LAYER_NAME = 'DismissableLayer';
+  var CONTEXT_UPDATE = 'dismissableLayer.update';
+  var POINTER_DOWN_OUTSIDE = 'dismissableLayer.pointerDownOutside';
+  var FOCUS_OUTSIDE = 'dismissableLayer.focusOutside';
+  var originalBodyPointerEvents;
+  var DismissableLayerContext = React9.createContext({
+    layers: /* @__PURE__ */ new Set(),
+    layersWithOutsidePointerEventsDisabled: /* @__PURE__ */ new Set(),
+    branches: /* @__PURE__ */ new Set(),
+    // Outside elements that belong to a layer's own dismiss affordance (eg, a
+    // dialog overlay). Pressing them should dismiss the layer regardless of
+    // whether or not they stop propagation.
+    //
+    // See https://github.com/radix-ui/primitives/issues/3346
+    dismissableSurfaces: /* @__PURE__ */ new Set(),
+  });
+  var DismissableLayer = React9.forwardRef((props, forwardedRef) => {
+    const {
+      disableOutsidePointerEvents = false,
+      deferPointerDownOutside = false,
+      onEscapeKeyDown,
+      onPointerDownOutside,
+      onFocusOutside,
+      onInteractOutside,
+      onDismiss,
+      ...layerProps
+    } = props;
+    const context = React9.useContext(DismissableLayerContext);
+    const [node, setNode] = React9.useState(null);
+    const ownerDocument = node?.ownerDocument ?? globalThis?.document;
+    const [, force] = React9.useState({});
+    const composedRefs = useComposedRefs(forwardedRef, (node2) => setNode(node2));
+    const layers = Array.from(context.layers);
+    const [highestLayerWithOutsidePointerEventsDisabled] = [
+      ...context.layersWithOutsidePointerEventsDisabled,
+    ].slice(-1);
+    const highestLayerWithOutsidePointerEventsDisabledIndex = layers.indexOf(
+      highestLayerWithOutsidePointerEventsDisabled,
+    );
+    const index2 = node ? layers.indexOf(node) : -1;
+    const isBodyPointerEventsDisabled = context.layersWithOutsidePointerEventsDisabled.size > 0;
+    const isPointerEventsEnabled = index2 >= highestLayerWithOutsidePointerEventsDisabledIndex;
+    const isDeferredPointerDownOutsideRef = React9.useRef(false);
+    const pointerDownOutside = usePointerDownOutside(
+      (event) => {
+        const target = event.target;
+        if (!(target instanceof Node)) {
+          return;
+        }
+        const isPointerDownOnBranch = [...context.branches].some((branch) =>
+          branch.contains(target),
+        );
+        if (!isPointerEventsEnabled || isPointerDownOnBranch) return;
+        onPointerDownOutside?.(event);
+        onInteractOutside?.(event);
+        if (!event.defaultPrevented) onDismiss?.();
+      },
+      {
+        ownerDocument,
+        deferPointerDownOutside,
+        isDeferredPointerDownOutsideRef,
+        dismissableSurfaces: context.dismissableSurfaces,
+      },
+    );
+    const focusOutside = useFocusOutside((event) => {
+      if (deferPointerDownOutside && isDeferredPointerDownOutsideRef.current) {
+        return;
+      }
+      const target = event.target;
+      const isFocusInBranch = [...context.branches].some((branch) => branch.contains(target));
+      if (isFocusInBranch) return;
+      onFocusOutside?.(event);
+      onInteractOutside?.(event);
+      if (!event.defaultPrevented) onDismiss?.();
+    }, ownerDocument);
+    useEscapeKeydown((event) => {
+      const isHighestLayer = index2 === context.layers.size - 1;
+      if (!isHighestLayer) return;
+      onEscapeKeyDown?.(event);
+      if (!event.defaultPrevented && onDismiss) {
+        event.preventDefault();
+        onDismiss();
+      }
+    }, ownerDocument);
+    React9.useEffect(() => {
+      if (!node) return;
+      if (disableOutsidePointerEvents) {
+        if (context.layersWithOutsidePointerEventsDisabled.size === 0) {
+          originalBodyPointerEvents = ownerDocument.body.style.pointerEvents;
+          ownerDocument.body.style.pointerEvents = 'none';
+        }
+        context.layersWithOutsidePointerEventsDisabled.add(node);
+      }
+      context.layers.add(node);
+      dispatchUpdate();
+      return () => {
+        if (disableOutsidePointerEvents) {
+          context.layersWithOutsidePointerEventsDisabled.delete(node);
+          if (context.layersWithOutsidePointerEventsDisabled.size === 0) {
+            ownerDocument.body.style.pointerEvents = originalBodyPointerEvents;
+          }
+        }
+      };
+    }, [node, ownerDocument, disableOutsidePointerEvents, context]);
+    React9.useEffect(() => {
+      return () => {
+        if (!node) return;
+        context.layers.delete(node);
+        context.layersWithOutsidePointerEventsDisabled.delete(node);
+        dispatchUpdate();
+      };
+    }, [node, context]);
+    React9.useEffect(() => {
+      const handleUpdate = () => force({});
+      document.addEventListener(CONTEXT_UPDATE, handleUpdate);
+      return () => document.removeEventListener(CONTEXT_UPDATE, handleUpdate);
+    }, []);
+    return /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Primitive.div, {
+      ...layerProps,
+      ref: composedRefs,
+      style: {
+        pointerEvents: isBodyPointerEventsDisabled
+          ? isPointerEventsEnabled
+            ? 'auto'
+            : 'none'
+          : void 0,
+        ...props.style,
+      },
+      onFocusCapture: composeEventHandlers(props.onFocusCapture, focusOutside.onFocusCapture),
+      onBlurCapture: composeEventHandlers(props.onBlurCapture, focusOutside.onBlurCapture),
+      onPointerDownCapture: composeEventHandlers(
+        props.onPointerDownCapture,
+        pointerDownOutside.onPointerDownCapture,
+      ),
+    });
+  });
+  DismissableLayer.displayName = DISMISSABLE_LAYER_NAME;
+  var BRANCH_NAME = 'DismissableLayerBranch';
+  var DismissableLayerBranch = React9.forwardRef((props, forwardedRef) => {
+    const context = React9.useContext(DismissableLayerContext);
+    const ref = React9.useRef(null);
+    const composedRefs = useComposedRefs(forwardedRef, ref);
+    React9.useEffect(() => {
+      const node = ref.current;
+      if (node) {
+        context.branches.add(node);
+        return () => {
+          context.branches.delete(node);
+        };
+      }
+    }, [context.branches]);
+    return /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Primitive.div, {
+      ...props,
+      ref: composedRefs,
+    });
+  });
+  DismissableLayerBranch.displayName = BRANCH_NAME;
+  function usePointerDownOutside(onPointerDownOutside, args) {
+    const {
+      ownerDocument = globalThis?.document,
+      deferPointerDownOutside = false,
+      isDeferredPointerDownOutsideRef,
+      dismissableSurfaces,
+    } = args;
+    const handlePointerDownOutside = useCallbackRef(onPointerDownOutside);
+    const isPointerInsideReactTreeRef = React9.useRef(false);
+    const isPointerDownOutsideRef = React9.useRef(false);
+    const interceptedOutsideInteractionEventsRef = React9.useRef(/* @__PURE__ */ new Map());
+    const handleClickRef = React9.useRef(() => {});
+    React9.useEffect(() => {
+      function resetOutsideInteraction() {
+        isPointerDownOutsideRef.current = false;
+        isDeferredPointerDownOutsideRef.current = false;
+        interceptedOutsideInteractionEventsRef.current.clear();
+      }
+      function isOutsideInteractionIntercepted() {
+        return Array.from(interceptedOutsideInteractionEventsRef.current.values()).some(Boolean);
+      }
+      function handleInteractionCapture(event) {
+        if (!isPointerDownOutsideRef.current) {
+          return;
+        }
+        const target = event.target;
+        const isDismissableSurface =
+          target instanceof Node &&
+          [...dismissableSurfaces].some((surface) => surface.contains(target));
+        if (!isDismissableSurface) {
+          interceptedOutsideInteractionEventsRef.current.set(event.type, true);
+        }
+        if (event.type === 'click') {
+          window.setTimeout(() => {
+            if (isPointerDownOutsideRef.current) {
+              handleClickRef.current();
+            }
+          }, 0);
+        }
+      }
+      function handleInteractionBubble(event) {
+        if (isPointerDownOutsideRef.current) {
+          interceptedOutsideInteractionEventsRef.current.set(event.type, false);
+        }
+      }
+      const handlePointerDown = (event) => {
+        if (event.target && !isPointerInsideReactTreeRef.current) {
+          let handleAndDispatchPointerDownOutsideEvent2 = function () {
+            ownerDocument.removeEventListener('click', handleClickRef.current);
+            const wasOutsideInteractionIntercepted = isOutsideInteractionIntercepted();
+            resetOutsideInteraction();
+            if (!wasOutsideInteractionIntercepted) {
+              handleAndDispatchCustomEvent(
+                POINTER_DOWN_OUTSIDE,
+                handlePointerDownOutside,
+                eventDetail,
+                { discrete: true },
+              );
+            }
+          };
+          var handleAndDispatchPointerDownOutsideEvent = handleAndDispatchPointerDownOutsideEvent2;
+          const eventDetail = { originalEvent: event };
+          isPointerDownOutsideRef.current = true;
+          isDeferredPointerDownOutsideRef.current = deferPointerDownOutside && event.button === 0;
+          interceptedOutsideInteractionEventsRef.current.clear();
+          if (!deferPointerDownOutside || event.button !== 0) {
+            handleAndDispatchPointerDownOutsideEvent2();
+          } else {
+            ownerDocument.removeEventListener('click', handleClickRef.current);
+            handleClickRef.current = handleAndDispatchPointerDownOutsideEvent2;
+            ownerDocument.addEventListener('click', handleClickRef.current, { once: true });
+          }
+        } else {
+          ownerDocument.removeEventListener('click', handleClickRef.current);
+          resetOutsideInteraction();
+        }
+        isPointerInsideReactTreeRef.current = false;
+      };
+      const outsideInteractionEvents = [
+        'pointerup',
+        'mousedown',
+        'mouseup',
+        'touchstart',
+        'touchend',
+        'click',
+      ];
+      for (const eventName of outsideInteractionEvents) {
+        ownerDocument.addEventListener(eventName, handleInteractionCapture, true);
+        ownerDocument.addEventListener(eventName, handleInteractionBubble);
+      }
+      const timerId = window.setTimeout(() => {
+        ownerDocument.addEventListener('pointerdown', handlePointerDown);
+      }, 0);
+      return () => {
+        window.clearTimeout(timerId);
+        ownerDocument.removeEventListener('pointerdown', handlePointerDown);
+        ownerDocument.removeEventListener('click', handleClickRef.current);
+        for (const eventName of outsideInteractionEvents) {
+          ownerDocument.removeEventListener(eventName, handleInteractionCapture, true);
+          ownerDocument.removeEventListener(eventName, handleInteractionBubble);
+        }
+      };
+    }, [
+      ownerDocument,
+      handlePointerDownOutside,
+      deferPointerDownOutside,
+      isDeferredPointerDownOutsideRef,
+      dismissableSurfaces,
+    ]);
+    return {
+      // ensures we check React component tree (not just DOM tree)
+      onPointerDownCapture: () => (isPointerInsideReactTreeRef.current = true),
+    };
+  }
+  function useFocusOutside(onFocusOutside, ownerDocument = globalThis?.document) {
+    const handleFocusOutside = useCallbackRef(onFocusOutside);
+    const isFocusInsideReactTreeRef = React9.useRef(false);
+    React9.useEffect(() => {
+      const handleFocus = (event) => {
+        if (event.target && !isFocusInsideReactTreeRef.current) {
+          const eventDetail = { originalEvent: event };
+          handleAndDispatchCustomEvent(FOCUS_OUTSIDE, handleFocusOutside, eventDetail, {
+            discrete: false,
+          });
+        }
+      };
+      ownerDocument.addEventListener('focusin', handleFocus);
+      return () => ownerDocument.removeEventListener('focusin', handleFocus);
+    }, [ownerDocument, handleFocusOutside]);
+    return {
+      onFocusCapture: () => (isFocusInsideReactTreeRef.current = true),
+      onBlurCapture: () => (isFocusInsideReactTreeRef.current = false),
+    };
+  }
+  function dispatchUpdate() {
+    const event = new CustomEvent(CONTEXT_UPDATE);
+    document.dispatchEvent(event);
+  }
+  function handleAndDispatchCustomEvent(name, handler, detail, { discrete }) {
+    const target = detail.originalEvent.target;
+    const event = new CustomEvent(name, { bubbles: false, cancelable: true, detail });
+    if (handler) target.addEventListener(name, handler, { once: true });
+    if (discrete) {
+      dispatchDiscreteCustomEvent(target, event);
+    } else {
+      target.dispatchEvent(event);
+    }
+  }
+
+  // node_modules/@radix-ui/react-focus-guards/dist/index.mjs
+  var React10 = __toESM(require_react(), 1);
+  var count = 0;
+  var guards = null;
+  function useFocusGuards() {
+    React10.useEffect(() => {
+      if (!guards) {
+        guards = { start: createFocusGuard(), end: createFocusGuard() };
+      }
+      const { start, end } = guards;
+      if (document.body.firstElementChild !== start) {
+        document.body.insertAdjacentElement('afterbegin', start);
+      }
+      if (document.body.lastElementChild !== end) {
+        document.body.insertAdjacentElement('beforeend', end);
+      }
+      count++;
+      return () => {
+        if (count === 1) {
+          guards?.start.remove();
+          guards?.end.remove();
+          guards = null;
+        }
+        count = Math.max(0, count - 1);
+      };
+    }, []);
+  }
+  function createFocusGuard() {
+    const element = document.createElement('span');
+    element.setAttribute('data-radix-focus-guard', '');
+    element.tabIndex = 0;
+    element.style.outline = 'none';
+    element.style.opacity = '0';
+    element.style.position = 'fixed';
+    element.style.pointerEvents = 'none';
+    return element;
+  }
+
+  // node_modules/@radix-ui/react-focus-scope/dist/index.mjs
+  var React11 = __toESM(require_react(), 1);
+  var import_jsx_runtime13 = __toESM(require_jsx_runtime(), 1);
+  var AUTOFOCUS_ON_MOUNT = 'focusScope.autoFocusOnMount';
+  var AUTOFOCUS_ON_UNMOUNT = 'focusScope.autoFocusOnUnmount';
+  var EVENT_OPTIONS = { bubbles: false, cancelable: true };
+  var FOCUS_SCOPE_NAME = 'FocusScope';
+  var FocusScope = React11.forwardRef((props, forwardedRef) => {
+    const {
+      loop = false,
+      trapped = false,
+      onMountAutoFocus: onMountAutoFocusProp,
+      onUnmountAutoFocus: onUnmountAutoFocusProp,
+      ...scopeProps
+    } = props;
+    const [container, setContainer] = React11.useState(null);
+    const onMountAutoFocus = useCallbackRef(onMountAutoFocusProp);
+    const onUnmountAutoFocus = useCallbackRef(onUnmountAutoFocusProp);
+    const lastFocusedElementRef = React11.useRef(null);
+    const composedRefs = useComposedRefs(forwardedRef, (node) => setContainer(node));
+    const focusScope = React11.useRef({
+      paused: false,
+      pause() {
+        this.paused = true;
+      },
+      resume() {
+        this.paused = false;
+      },
+    }).current;
+    React11.useEffect(() => {
+      if (trapped) {
+        let handleFocusIn2 = function (event) {
+            if (focusScope.paused || !container) return;
+            const target = event.target;
+            if (container.contains(target)) {
+              lastFocusedElementRef.current = target;
+            } else {
+              focus(lastFocusedElementRef.current, { select: true });
+            }
+          },
+          handleFocusOut2 = function (event) {
+            if (focusScope.paused || !container) return;
+            const relatedTarget = event.relatedTarget;
+            if (relatedTarget === null) return;
+            if (!container.contains(relatedTarget)) {
+              focus(lastFocusedElementRef.current, { select: true });
+            }
+          },
+          handleMutations2 = function (mutations) {
+            const focusedElement = document.activeElement;
+            if (focusedElement !== document.body) return;
+            for (const mutation of mutations) {
+              if (mutation.removedNodes.length > 0) focus(container);
+            }
+          };
+        var handleFocusIn = handleFocusIn2,
+          handleFocusOut = handleFocusOut2,
+          handleMutations = handleMutations2;
+        document.addEventListener('focusin', handleFocusIn2);
+        document.addEventListener('focusout', handleFocusOut2);
+        const mutationObserver = new MutationObserver(handleMutations2);
+        if (container) mutationObserver.observe(container, { childList: true, subtree: true });
+        return () => {
+          document.removeEventListener('focusin', handleFocusIn2);
+          document.removeEventListener('focusout', handleFocusOut2);
+          mutationObserver.disconnect();
+        };
+      }
+    }, [trapped, container, focusScope.paused]);
+    React11.useEffect(() => {
+      if (container) {
+        focusScopesStack.add(focusScope);
+        const previouslyFocusedElement = document.activeElement;
+        const hasFocusedCandidate = container.contains(previouslyFocusedElement);
+        if (!hasFocusedCandidate) {
+          const mountEvent = new CustomEvent(AUTOFOCUS_ON_MOUNT, EVENT_OPTIONS);
+          container.addEventListener(AUTOFOCUS_ON_MOUNT, onMountAutoFocus);
+          container.dispatchEvent(mountEvent);
+          if (!mountEvent.defaultPrevented) {
+            focusFirst(removeLinks(getTabbableCandidates(container)), { select: true });
+            if (document.activeElement === previouslyFocusedElement) {
+              focus(container);
+            }
+          }
+        }
+        return () => {
+          container.removeEventListener(AUTOFOCUS_ON_MOUNT, onMountAutoFocus);
+          setTimeout(() => {
+            const unmountEvent = new CustomEvent(AUTOFOCUS_ON_UNMOUNT, EVENT_OPTIONS);
+            container.addEventListener(AUTOFOCUS_ON_UNMOUNT, onUnmountAutoFocus);
+            container.dispatchEvent(unmountEvent);
+            if (!unmountEvent.defaultPrevented) {
+              focus(previouslyFocusedElement ?? document.body, { select: true });
+            }
+            container.removeEventListener(AUTOFOCUS_ON_UNMOUNT, onUnmountAutoFocus);
+            focusScopesStack.remove(focusScope);
+          }, 0);
+        };
+      }
+    }, [container, onMountAutoFocus, onUnmountAutoFocus, focusScope]);
+    const handleKeyDown = React11.useCallback(
+      (event) => {
+        if (!loop && !trapped) return;
+        if (focusScope.paused) return;
+        const isTabKey = event.key === 'Tab' && !event.altKey && !event.ctrlKey && !event.metaKey;
+        const focusedElement = document.activeElement;
+        if (isTabKey && focusedElement) {
+          const container2 = event.currentTarget;
+          const [first, last] = getTabbableEdges(container2);
+          const hasTabbableElementsInside = first && last;
+          if (!hasTabbableElementsInside) {
+            if (focusedElement === container2) event.preventDefault();
+          } else {
+            if (!event.shiftKey && focusedElement === last) {
+              event.preventDefault();
+              if (loop) focus(first, { select: true });
+            } else if (event.shiftKey && focusedElement === first) {
+              event.preventDefault();
+              if (loop) focus(last, { select: true });
+            }
+          }
+        }
+      },
+      [loop, trapped, focusScope.paused],
+    );
+    return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Primitive.div, {
+      tabIndex: -1,
+      ...scopeProps,
+      ref: composedRefs,
+      onKeyDown: handleKeyDown,
+    });
+  });
+  FocusScope.displayName = FOCUS_SCOPE_NAME;
+  function focusFirst(candidates, { select = false } = {}) {
+    const previouslyFocusedElement = document.activeElement;
+    for (const candidate of candidates) {
+      focus(candidate, { select });
+      if (document.activeElement !== previouslyFocusedElement) return;
+    }
+  }
+  function getTabbableEdges(container) {
+    const candidates = getTabbableCandidates(container);
+    const first = findVisible(candidates, container);
+    const last = findVisible(candidates.reverse(), container);
+    return [first, last];
+  }
+  function getTabbableCandidates(container) {
+    const nodes = [];
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_ELEMENT, {
+      acceptNode: (node) => {
+        const isHiddenInput = node.tagName === 'INPUT' && node.type === 'hidden';
+        if (node.disabled || node.hidden || isHiddenInput) return NodeFilter.FILTER_SKIP;
+        return node.tabIndex >= 0 ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+      },
+    });
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    return nodes;
+  }
+  function findVisible(elements, container) {
+    for (const element of elements) {
+      if (!isHidden(element, { upTo: container })) return element;
+    }
+  }
+  function isHidden(node, { upTo }) {
+    if (getComputedStyle(node).visibility === 'hidden') return true;
+    while (node) {
+      if (upTo !== void 0 && node === upTo) return false;
+      if (getComputedStyle(node).display === 'none') return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+  function isSelectableInput(element) {
+    return element instanceof HTMLInputElement && 'select' in element;
+  }
+  function focus(element, { select = false } = {}) {
+    if (element && element.focus) {
+      const previouslyFocusedElement = document.activeElement;
+      element.focus({ preventScroll: true });
+      if (element !== previouslyFocusedElement && isSelectableInput(element) && select)
+        element.select();
+    }
+  }
+  var focusScopesStack = createFocusScopesStack();
+  function createFocusScopesStack() {
+    let stack = [];
+    return {
+      add(focusScope) {
+        const activeFocusScope = stack[0];
+        if (focusScope !== activeFocusScope) {
+          activeFocusScope?.pause();
+        }
+        stack = arrayRemove(stack, focusScope);
+        stack.unshift(focusScope);
+      },
+      remove(focusScope) {
+        stack = arrayRemove(stack, focusScope);
+        stack[0]?.resume();
+      },
+    };
+  }
+  function arrayRemove(array, item) {
+    const updatedArray = [...array];
+    const index2 = updatedArray.indexOf(item);
+    if (index2 !== -1) {
+      updatedArray.splice(index2, 1);
+    }
+    return updatedArray;
+  }
+  function removeLinks(items) {
+    return items.filter((item) => item.tagName !== 'A');
+  }
+
+  // node_modules/@radix-ui/react-id/dist/index.mjs
+  var React13 = __toESM(require_react(), 1);
+
+  // node_modules/@radix-ui/react-use-layout-effect/dist/index.mjs
+  var React12 = __toESM(require_react(), 1);
+  var useLayoutEffect2 = globalThis?.document ? React12.useLayoutEffect : () => {};
+
+  // node_modules/@radix-ui/react-id/dist/index.mjs
+  var useReactId = React13[' useId '.trim().toString()] || (() => void 0);
+  var count2 = 0;
+  function useId(deterministicId) {
+    const [id, setId] = React13.useState(useReactId());
+    useLayoutEffect2(() => {
+      if (!deterministicId) setId((reactId) => reactId ?? String(count2++));
+    }, [deterministicId]);
+    return deterministicId || (id ? `radix-${id}` : '');
+  }
+
+  // node_modules/@radix-ui/react-popper/dist/index.mjs
+  var React17 = __toESM(require_react(), 1);
+
+  // node_modules/@floating-ui/utils/dist/floating-ui.utils.mjs
+  var sides = ['top', 'right', 'bottom', 'left'];
+  var min = Math.min;
+  var max = Math.max;
+  var round = Math.round;
+  var floor = Math.floor;
+  var createCoords = (v) => ({
+    x: v,
+    y: v,
+  });
+  var oppositeSideMap = {
+    left: 'right',
+    right: 'left',
+    bottom: 'top',
+    top: 'bottom',
+  };
+  function clamp2(start, value, end) {
+    return max(start, min(value, end));
+  }
+  function evaluate(value, param) {
+    return typeof value === 'function' ? value(param) : value;
+  }
+  function getSide(placement) {
+    return placement.split('-')[0];
+  }
+  function getAlignment(placement) {
+    return placement.split('-')[1];
+  }
+  function getOppositeAxis(axis) {
+    return axis === 'x' ? 'y' : 'x';
+  }
+  function getAxisLength(axis) {
+    return axis === 'y' ? 'height' : 'width';
+  }
+  function getSideAxis(placement) {
+    const firstChar = placement[0];
+    return firstChar === 't' || firstChar === 'b' ? 'y' : 'x';
+  }
+  function getAlignmentAxis(placement) {
+    return getOppositeAxis(getSideAxis(placement));
+  }
+  function getAlignmentSides(placement, rects, rtl) {
+    if (rtl === void 0) {
+      rtl = false;
+    }
+    const alignment = getAlignment(placement);
+    const alignmentAxis = getAlignmentAxis(placement);
+    const length = getAxisLength(alignmentAxis);
+    let mainAlignmentSide =
+      alignmentAxis === 'x'
+        ? alignment === (rtl ? 'end' : 'start')
+          ? 'right'
+          : 'left'
+        : alignment === 'start'
+          ? 'bottom'
+          : 'top';
+    if (rects.reference[length] > rects.floating[length]) {
+      mainAlignmentSide = getOppositePlacement(mainAlignmentSide);
+    }
+    return [mainAlignmentSide, getOppositePlacement(mainAlignmentSide)];
+  }
+  function getExpandedPlacements(placement) {
+    const oppositePlacement = getOppositePlacement(placement);
+    return [
+      getOppositeAlignmentPlacement(placement),
+      oppositePlacement,
+      getOppositeAlignmentPlacement(oppositePlacement),
+    ];
+  }
+  function getOppositeAlignmentPlacement(placement) {
+    return placement.includes('start')
+      ? placement.replace('start', 'end')
+      : placement.replace('end', 'start');
+  }
+  var lrPlacement = ['left', 'right'];
+  var rlPlacement = ['right', 'left'];
+  var tbPlacement = ['top', 'bottom'];
+  var btPlacement = ['bottom', 'top'];
+  function getSideList(side, isStart, rtl) {
+    switch (side) {
+      case 'top':
+      case 'bottom':
+        if (rtl) return isStart ? rlPlacement : lrPlacement;
+        return isStart ? lrPlacement : rlPlacement;
+      case 'left':
+      case 'right':
+        return isStart ? tbPlacement : btPlacement;
+      default:
+        return [];
+    }
+  }
+  function getOppositeAxisPlacements(placement, flipAlignment, direction, rtl) {
+    const alignment = getAlignment(placement);
+    let list = getSideList(getSide(placement), direction === 'start', rtl);
+    if (alignment) {
+      list = list.map((side) => side + '-' + alignment);
+      if (flipAlignment) {
+        list = list.concat(list.map(getOppositeAlignmentPlacement));
+      }
+    }
+    return list;
+  }
+  function getOppositePlacement(placement) {
+    const side = getSide(placement);
+    return oppositeSideMap[side] + placement.slice(side.length);
+  }
+  function expandPaddingObject(padding) {
+    return {
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
+      ...padding,
+    };
+  }
+  function getPaddingObject(padding) {
+    return typeof padding !== 'number'
+      ? expandPaddingObject(padding)
+      : {
+          top: padding,
+          right: padding,
+          bottom: padding,
+          left: padding,
+        };
+  }
+  function rectToClientRect(rect) {
+    const { x, y, width, height } = rect;
+    return {
+      width,
+      height,
+      top: y,
+      left: x,
+      right: x + width,
+      bottom: y + height,
+      x,
+      y,
+    };
+  }
+
+  // node_modules/@floating-ui/core/dist/floating-ui.core.mjs
+  function computeCoordsFromPlacement(_ref, placement, rtl) {
+    let { reference, floating } = _ref;
+    const sideAxis = getSideAxis(placement);
+    const alignmentAxis = getAlignmentAxis(placement);
+    const alignLength = getAxisLength(alignmentAxis);
+    const side = getSide(placement);
+    const isVertical = sideAxis === 'y';
+    const commonX = reference.x + reference.width / 2 - floating.width / 2;
+    const commonY = reference.y + reference.height / 2 - floating.height / 2;
+    const commonAlign = reference[alignLength] / 2 - floating[alignLength] / 2;
+    let coords;
+    switch (side) {
+      case 'top':
+        coords = {
+          x: commonX,
+          y: reference.y - floating.height,
+        };
+        break;
+      case 'bottom':
+        coords = {
+          x: commonX,
+          y: reference.y + reference.height,
+        };
+        break;
+      case 'right':
+        coords = {
+          x: reference.x + reference.width,
+          y: commonY,
+        };
+        break;
+      case 'left':
+        coords = {
+          x: reference.x - floating.width,
+          y: commonY,
+        };
+        break;
+      default:
+        coords = {
+          x: reference.x,
+          y: reference.y,
+        };
+    }
+    switch (getAlignment(placement)) {
+      case 'start':
+        coords[alignmentAxis] -= commonAlign * (rtl && isVertical ? -1 : 1);
+        break;
+      case 'end':
+        coords[alignmentAxis] += commonAlign * (rtl && isVertical ? -1 : 1);
+        break;
+    }
+    return coords;
+  }
+  async function detectOverflow(state, options2) {
+    var _await$platform$isEle;
+    if (options2 === void 0) {
+      options2 = {};
+    }
+    const { x, y, platform: platform2, rects, elements, strategy } = state;
+    const {
+      boundary = 'clippingAncestors',
+      rootBoundary = 'viewport',
+      elementContext = 'floating',
+      altBoundary = false,
+      padding = 0,
+    } = evaluate(options2, state);
+    const paddingObject = getPaddingObject(padding);
+    const altContext = elementContext === 'floating' ? 'reference' : 'floating';
+    const element = elements[altBoundary ? altContext : elementContext];
+    const clippingClientRect = rectToClientRect(
+      await platform2.getClippingRect({
+        element: (
+          (_await$platform$isEle = await (platform2.isElement == null
+            ? void 0
+            : platform2.isElement(element))) != null
+            ? _await$platform$isEle
+            : true
+        )
+          ? element
+          : element.contextElement ||
+            (await (platform2.getDocumentElement == null
+              ? void 0
+              : platform2.getDocumentElement(elements.floating))),
+        boundary,
+        rootBoundary,
+        strategy,
+      }),
+    );
+    const rect =
+      elementContext === 'floating'
+        ? {
+            x,
+            y,
+            width: rects.floating.width,
+            height: rects.floating.height,
+          }
+        : rects.reference;
+    const offsetParent = await (platform2.getOffsetParent == null
+      ? void 0
+      : platform2.getOffsetParent(elements.floating));
+    const offsetScale = (await (platform2.isElement == null
+      ? void 0
+      : platform2.isElement(offsetParent)))
+      ? (await (platform2.getScale == null ? void 0 : platform2.getScale(offsetParent))) || {
+          x: 1,
+          y: 1,
+        }
+      : {
+          x: 1,
+          y: 1,
+        };
+    const elementClientRect = rectToClientRect(
+      platform2.convertOffsetParentRelativeRectToViewportRelativeRect
+        ? await platform2.convertOffsetParentRelativeRectToViewportRelativeRect({
+            elements,
+            rect,
+            offsetParent,
+            strategy,
+          })
+        : rect,
+    );
+    return {
+      top: (clippingClientRect.top - elementClientRect.top + paddingObject.top) / offsetScale.y,
+      bottom:
+        (elementClientRect.bottom - clippingClientRect.bottom + paddingObject.bottom) /
+        offsetScale.y,
+      left: (clippingClientRect.left - elementClientRect.left + paddingObject.left) / offsetScale.x,
+      right:
+        (elementClientRect.right - clippingClientRect.right + paddingObject.right) / offsetScale.x,
+    };
+  }
+  var MAX_RESET_COUNT = 50;
+  var computePosition = async (reference, floating, config) => {
+    const {
+      placement = 'bottom',
+      strategy = 'absolute',
+      middleware = [],
+      platform: platform2,
+    } = config;
+    const platformWithDetectOverflow = platform2.detectOverflow
+      ? platform2
+      : {
+          ...platform2,
+          detectOverflow,
+        };
+    const rtl = await (platform2.isRTL == null ? void 0 : platform2.isRTL(floating));
+    let rects = await platform2.getElementRects({
+      reference,
+      floating,
+      strategy,
+    });
+    let { x, y } = computeCoordsFromPlacement(rects, placement, rtl);
+    let statefulPlacement = placement;
+    let resetCount = 0;
+    const middlewareData = {};
+    for (let i = 0; i < middleware.length; i++) {
+      const currentMiddleware = middleware[i];
+      if (!currentMiddleware) {
+        continue;
+      }
+      const { name, fn } = currentMiddleware;
+      const {
+        x: nextX,
+        y: nextY,
+        data,
+        reset,
+      } = await fn({
+        x,
+        y,
+        initialPlacement: placement,
+        placement: statefulPlacement,
+        strategy,
+        middlewareData,
+        rects,
+        platform: platformWithDetectOverflow,
+        elements: {
+          reference,
+          floating,
+        },
+      });
+      x = nextX != null ? nextX : x;
+      y = nextY != null ? nextY : y;
+      middlewareData[name] = {
+        ...middlewareData[name],
+        ...data,
+      };
+      if (reset && resetCount < MAX_RESET_COUNT) {
+        resetCount++;
+        if (typeof reset === 'object') {
+          if (reset.placement) {
+            statefulPlacement = reset.placement;
+          }
+          if (reset.rects) {
+            rects =
+              reset.rects === true
+                ? await platform2.getElementRects({
+                    reference,
+                    floating,
+                    strategy,
+                  })
+                : reset.rects;
+          }
+          ({ x, y } = computeCoordsFromPlacement(rects, statefulPlacement, rtl));
+        }
+        i = -1;
+      }
+    }
+    return {
+      x,
+      y,
+      placement: statefulPlacement,
+      strategy,
+      middlewareData,
+    };
+  };
+  var arrow = (options2) => ({
+    name: 'arrow',
+    options: options2,
+    async fn(state) {
+      const { x, y, placement, rects, platform: platform2, elements, middlewareData } = state;
+      const { element, padding = 0 } = evaluate(options2, state) || {};
+      if (element == null) {
+        return {};
+      }
+      const paddingObject = getPaddingObject(padding);
+      const coords = {
+        x,
+        y,
+      };
+      const axis = getAlignmentAxis(placement);
+      const length = getAxisLength(axis);
+      const arrowDimensions = await platform2.getDimensions(element);
+      const isYAxis = axis === 'y';
+      const minProp = isYAxis ? 'top' : 'left';
+      const maxProp = isYAxis ? 'bottom' : 'right';
+      const clientProp = isYAxis ? 'clientHeight' : 'clientWidth';
+      const endDiff =
+        rects.reference[length] + rects.reference[axis] - coords[axis] - rects.floating[length];
+      const startDiff = coords[axis] - rects.reference[axis];
+      const arrowOffsetParent = await (platform2.getOffsetParent == null
+        ? void 0
+        : platform2.getOffsetParent(element));
+      let clientSize = arrowOffsetParent ? arrowOffsetParent[clientProp] : 0;
+      if (
+        !clientSize ||
+        !(await (platform2.isElement == null ? void 0 : platform2.isElement(arrowOffsetParent)))
+      ) {
+        clientSize = elements.floating[clientProp] || rects.floating[length];
+      }
+      const centerToReference = endDiff / 2 - startDiff / 2;
+      const largestPossiblePadding = clientSize / 2 - arrowDimensions[length] / 2 - 1;
+      const minPadding = min(paddingObject[minProp], largestPossiblePadding);
+      const maxPadding = min(paddingObject[maxProp], largestPossiblePadding);
+      const min$1 = minPadding;
+      const max2 = clientSize - arrowDimensions[length] - maxPadding;
+      const center = clientSize / 2 - arrowDimensions[length] / 2 + centerToReference;
+      const offset4 = clamp2(min$1, center, max2);
+      const shouldAddOffset =
+        !middlewareData.arrow &&
+        getAlignment(placement) != null &&
+        center !== offset4 &&
+        rects.reference[length] / 2 -
+          (center < min$1 ? minPadding : maxPadding) -
+          arrowDimensions[length] / 2 <
+          0;
+      const alignmentOffset = shouldAddOffset
+        ? center < min$1
+          ? center - min$1
+          : center - max2
+        : 0;
+      return {
+        [axis]: coords[axis] + alignmentOffset,
+        data: {
+          [axis]: offset4,
+          centerOffset: center - offset4 - alignmentOffset,
+          ...(shouldAddOffset && {
+            alignmentOffset,
+          }),
+        },
+        reset: shouldAddOffset,
+      };
+    },
+  });
+  var flip = function (options2) {
+    if (options2 === void 0) {
+      options2 = {};
+    }
+    return {
+      name: 'flip',
+      options: options2,
+      async fn(state) {
+        var _middlewareData$arrow, _middlewareData$flip;
+        const {
+          placement,
+          middlewareData,
+          rects,
+          initialPlacement,
+          platform: platform2,
+          elements,
+        } = state;
+        const {
+          mainAxis: checkMainAxis = true,
+          crossAxis: checkCrossAxis = true,
+          fallbackPlacements: specifiedFallbackPlacements,
+          fallbackStrategy = 'bestFit',
+          fallbackAxisSideDirection = 'none',
+          flipAlignment = true,
+          ...detectOverflowOptions
+        } = evaluate(options2, state);
+        if (
+          (_middlewareData$arrow = middlewareData.arrow) != null &&
+          _middlewareData$arrow.alignmentOffset
+        ) {
+          return {};
+        }
+        const side = getSide(placement);
+        const initialSideAxis = getSideAxis(initialPlacement);
+        const isBasePlacement = getSide(initialPlacement) === initialPlacement;
+        const rtl = await (platform2.isRTL == null ? void 0 : platform2.isRTL(elements.floating));
+        const fallbackPlacements =
+          specifiedFallbackPlacements ||
+          (isBasePlacement || !flipAlignment
+            ? [getOppositePlacement(initialPlacement)]
+            : getExpandedPlacements(initialPlacement));
+        const hasFallbackAxisSideDirection = fallbackAxisSideDirection !== 'none';
+        if (!specifiedFallbackPlacements && hasFallbackAxisSideDirection) {
+          fallbackPlacements.push(
+            ...getOppositeAxisPlacements(
+              initialPlacement,
+              flipAlignment,
+              fallbackAxisSideDirection,
+              rtl,
+            ),
+          );
+        }
+        const placements2 = [initialPlacement, ...fallbackPlacements];
+        const overflow = await platform2.detectOverflow(state, detectOverflowOptions);
+        const overflows = [];
+        let overflowsData =
+          ((_middlewareData$flip = middlewareData.flip) == null
+            ? void 0
+            : _middlewareData$flip.overflows) || [];
+        if (checkMainAxis) {
+          overflows.push(overflow[side]);
+        }
+        if (checkCrossAxis) {
+          const sides2 = getAlignmentSides(placement, rects, rtl);
+          overflows.push(overflow[sides2[0]], overflow[sides2[1]]);
+        }
+        overflowsData = [
+          ...overflowsData,
+          {
+            placement,
+            overflows,
+          },
+        ];
+        if (!overflows.every((side2) => side2 <= 0)) {
+          var _middlewareData$flip2, _overflowsData$filter;
+          const nextIndex =
+            (((_middlewareData$flip2 = middlewareData.flip) == null
+              ? void 0
+              : _middlewareData$flip2.index) || 0) + 1;
+          const nextPlacement = placements2[nextIndex];
+          if (nextPlacement) {
+            const ignoreCrossAxisOverflow =
+              checkCrossAxis === 'alignment'
+                ? initialSideAxis !== getSideAxis(nextPlacement)
+                : false;
+            if (
+              !ignoreCrossAxisOverflow || // We leave the current main axis only if every placement on that axis
+              // overflows the main axis.
+              overflowsData.every((d) =>
+                getSideAxis(d.placement) === initialSideAxis ? d.overflows[0] > 0 : true,
+              )
+            ) {
+              return {
+                data: {
+                  index: nextIndex,
+                  overflows: overflowsData,
+                },
+                reset: {
+                  placement: nextPlacement,
+                },
+              };
+            }
+          }
+          let resetPlacement =
+            (_overflowsData$filter = overflowsData
+              .filter((d) => d.overflows[0] <= 0)
+              .sort((a, b) => a.overflows[1] - b.overflows[1])[0]) == null
+              ? void 0
+              : _overflowsData$filter.placement;
+          if (!resetPlacement) {
+            switch (fallbackStrategy) {
+              case 'bestFit': {
+                var _overflowsData$filter2;
+                const placement2 =
+                  (_overflowsData$filter2 = overflowsData
+                    .filter((d) => {
+                      if (hasFallbackAxisSideDirection) {
+                        const currentSideAxis = getSideAxis(d.placement);
+                        return (
+                          currentSideAxis === initialSideAxis || // Create a bias to the `y` side axis due to horizontal
+                          // reading directions favoring greater width.
+                          currentSideAxis === 'y'
+                        );
+                      }
+                      return true;
+                    })
+                    .map((d) => [
+                      d.placement,
+                      d.overflows
+                        .filter((overflow2) => overflow2 > 0)
+                        .reduce((acc, overflow2) => acc + overflow2, 0),
+                    ])
+                    .sort((a, b) => a[1] - b[1])[0]) == null
+                    ? void 0
+                    : _overflowsData$filter2[0];
+                if (placement2) {
+                  resetPlacement = placement2;
+                }
+                break;
+              }
+              case 'initialPlacement':
+                resetPlacement = initialPlacement;
+                break;
+            }
+          }
+          if (placement !== resetPlacement) {
+            return {
+              reset: {
+                placement: resetPlacement,
+              },
+            };
+          }
+        }
+        return {};
+      },
+    };
+  };
+  function getSideOffsets(overflow, rect) {
+    return {
+      top: overflow.top - rect.height,
+      right: overflow.right - rect.width,
+      bottom: overflow.bottom - rect.height,
+      left: overflow.left - rect.width,
+    };
+  }
+  function isAnySideFullyClipped(overflow) {
+    return sides.some((side) => overflow[side] >= 0);
+  }
+  var hide = function (options2) {
+    if (options2 === void 0) {
+      options2 = {};
+    }
+    return {
+      name: 'hide',
+      options: options2,
+      async fn(state) {
+        const { rects, platform: platform2 } = state;
+        const { strategy = 'referenceHidden', ...detectOverflowOptions } = evaluate(
+          options2,
+          state,
+        );
+        switch (strategy) {
+          case 'referenceHidden': {
+            const overflow = await platform2.detectOverflow(state, {
+              ...detectOverflowOptions,
+              elementContext: 'reference',
+            });
+            const offsets = getSideOffsets(overflow, rects.reference);
+            return {
+              data: {
+                referenceHiddenOffsets: offsets,
+                referenceHidden: isAnySideFullyClipped(offsets),
+              },
+            };
+          }
+          case 'escaped': {
+            const overflow = await platform2.detectOverflow(state, {
+              ...detectOverflowOptions,
+              altBoundary: true,
+            });
+            const offsets = getSideOffsets(overflow, rects.floating);
+            return {
+              data: {
+                escapedOffsets: offsets,
+                escaped: isAnySideFullyClipped(offsets),
+              },
+            };
+          }
+          default: {
+            return {};
+          }
+        }
+      },
+    };
+  };
+  var originSides = /* @__PURE__ */ new Set(['left', 'top']);
+  async function convertValueToCoords(state, options2) {
+    const { placement, platform: platform2, elements } = state;
+    const rtl = await (platform2.isRTL == null ? void 0 : platform2.isRTL(elements.floating));
+    const side = getSide(placement);
+    const alignment = getAlignment(placement);
+    const isVertical = getSideAxis(placement) === 'y';
+    const mainAxisMulti = originSides.has(side) ? -1 : 1;
+    const crossAxisMulti = rtl && isVertical ? -1 : 1;
+    const rawValue = evaluate(options2, state);
+    let { mainAxis, crossAxis, alignmentAxis } =
+      typeof rawValue === 'number'
+        ? {
+            mainAxis: rawValue,
+            crossAxis: 0,
+            alignmentAxis: null,
+          }
+        : {
+            mainAxis: rawValue.mainAxis || 0,
+            crossAxis: rawValue.crossAxis || 0,
+            alignmentAxis: rawValue.alignmentAxis,
+          };
+    if (alignment && typeof alignmentAxis === 'number') {
+      crossAxis = alignment === 'end' ? alignmentAxis * -1 : alignmentAxis;
+    }
+    return isVertical
+      ? {
+          x: crossAxis * crossAxisMulti,
+          y: mainAxis * mainAxisMulti,
+        }
+      : {
+          x: mainAxis * mainAxisMulti,
+          y: crossAxis * crossAxisMulti,
+        };
+  }
+  var offset = function (options2) {
+    if (options2 === void 0) {
+      options2 = 0;
+    }
+    return {
+      name: 'offset',
+      options: options2,
+      async fn(state) {
+        var _middlewareData$offse, _middlewareData$arrow;
+        const { x, y, placement, middlewareData } = state;
+        const diffCoords = await convertValueToCoords(state, options2);
+        if (
+          placement ===
+            ((_middlewareData$offse = middlewareData.offset) == null
+              ? void 0
+              : _middlewareData$offse.placement) &&
+          (_middlewareData$arrow = middlewareData.arrow) != null &&
+          _middlewareData$arrow.alignmentOffset
+        ) {
+          return {};
+        }
+        return {
+          x: x + diffCoords.x,
+          y: y + diffCoords.y,
+          data: {
+            ...diffCoords,
+            placement,
+          },
+        };
+      },
+    };
+  };
+  var shift = function (options2) {
+    if (options2 === void 0) {
+      options2 = {};
+    }
+    return {
+      name: 'shift',
+      options: options2,
+      async fn(state) {
+        const { x, y, placement, platform: platform2 } = state;
+        const {
+          mainAxis: checkMainAxis = true,
+          crossAxis: checkCrossAxis = false,
+          limiter = {
+            fn: (_ref) => {
+              let { x: x2, y: y2 } = _ref;
+              return {
+                x: x2,
+                y: y2,
+              };
+            },
+          },
+          ...detectOverflowOptions
+        } = evaluate(options2, state);
+        const coords = {
+          x,
+          y,
+        };
+        const overflow = await platform2.detectOverflow(state, detectOverflowOptions);
+        const crossAxis = getSideAxis(getSide(placement));
+        const mainAxis = getOppositeAxis(crossAxis);
+        let mainAxisCoord = coords[mainAxis];
+        let crossAxisCoord = coords[crossAxis];
+        if (checkMainAxis) {
+          const minSide = mainAxis === 'y' ? 'top' : 'left';
+          const maxSide = mainAxis === 'y' ? 'bottom' : 'right';
+          const min2 = mainAxisCoord + overflow[minSide];
+          const max2 = mainAxisCoord - overflow[maxSide];
+          mainAxisCoord = clamp2(min2, mainAxisCoord, max2);
+        }
+        if (checkCrossAxis) {
+          const minSide = crossAxis === 'y' ? 'top' : 'left';
+          const maxSide = crossAxis === 'y' ? 'bottom' : 'right';
+          const min2 = crossAxisCoord + overflow[minSide];
+          const max2 = crossAxisCoord - overflow[maxSide];
+          crossAxisCoord = clamp2(min2, crossAxisCoord, max2);
+        }
+        const limitedCoords = limiter.fn({
+          ...state,
+          [mainAxis]: mainAxisCoord,
+          [crossAxis]: crossAxisCoord,
+        });
+        return {
+          ...limitedCoords,
+          data: {
+            x: limitedCoords.x - x,
+            y: limitedCoords.y - y,
+            enabled: {
+              [mainAxis]: checkMainAxis,
+              [crossAxis]: checkCrossAxis,
+            },
+          },
+        };
+      },
+    };
+  };
+  var limitShift = function (options2) {
+    if (options2 === void 0) {
+      options2 = {};
+    }
+    return {
+      options: options2,
+      fn(state) {
+        const { x, y, placement, rects, middlewareData } = state;
+        const {
+          offset: offset4 = 0,
+          mainAxis: checkMainAxis = true,
+          crossAxis: checkCrossAxis = true,
+        } = evaluate(options2, state);
+        const coords = {
+          x,
+          y,
+        };
+        const crossAxis = getSideAxis(placement);
+        const mainAxis = getOppositeAxis(crossAxis);
+        let mainAxisCoord = coords[mainAxis];
+        let crossAxisCoord = coords[crossAxis];
+        const rawOffset = evaluate(offset4, state);
+        const computedOffset =
+          typeof rawOffset === 'number'
+            ? {
+                mainAxis: rawOffset,
+                crossAxis: 0,
+              }
+            : {
+                mainAxis: 0,
+                crossAxis: 0,
+                ...rawOffset,
+              };
+        if (checkMainAxis) {
+          const len = mainAxis === 'y' ? 'height' : 'width';
+          const limitMin =
+            rects.reference[mainAxis] - rects.floating[len] + computedOffset.mainAxis;
+          const limitMax =
+            rects.reference[mainAxis] + rects.reference[len] - computedOffset.mainAxis;
+          if (mainAxisCoord < limitMin) {
+            mainAxisCoord = limitMin;
+          } else if (mainAxisCoord > limitMax) {
+            mainAxisCoord = limitMax;
+          }
+        }
+        if (checkCrossAxis) {
+          var _middlewareData$offse, _middlewareData$offse2;
+          const len = mainAxis === 'y' ? 'width' : 'height';
+          const isOriginSide = originSides.has(getSide(placement));
+          const limitMin =
+            rects.reference[crossAxis] -
+            rects.floating[len] +
+            (isOriginSide
+              ? ((_middlewareData$offse = middlewareData.offset) == null
+                  ? void 0
+                  : _middlewareData$offse[crossAxis]) || 0
+              : 0) +
+            (isOriginSide ? 0 : computedOffset.crossAxis);
+          const limitMax =
+            rects.reference[crossAxis] +
+            rects.reference[len] +
+            (isOriginSide
+              ? 0
+              : ((_middlewareData$offse2 = middlewareData.offset) == null
+                  ? void 0
+                  : _middlewareData$offse2[crossAxis]) || 0) -
+            (isOriginSide ? computedOffset.crossAxis : 0);
+          if (crossAxisCoord < limitMin) {
+            crossAxisCoord = limitMin;
+          } else if (crossAxisCoord > limitMax) {
+            crossAxisCoord = limitMax;
+          }
+        }
+        return {
+          [mainAxis]: mainAxisCoord,
+          [crossAxis]: crossAxisCoord,
+        };
+      },
+    };
+  };
+  var size = function (options2) {
+    if (options2 === void 0) {
+      options2 = {};
+    }
+    return {
+      name: 'size',
+      options: options2,
+      async fn(state) {
+        var _state$middlewareData, _state$middlewareData2;
+        const { placement, rects, platform: platform2, elements } = state;
+        const { apply = () => {}, ...detectOverflowOptions } = evaluate(options2, state);
+        const overflow = await platform2.detectOverflow(state, detectOverflowOptions);
+        const side = getSide(placement);
+        const alignment = getAlignment(placement);
+        const isYAxis = getSideAxis(placement) === 'y';
+        const { width, height } = rects.floating;
+        let heightSide;
+        let widthSide;
+        if (side === 'top' || side === 'bottom') {
+          heightSide = side;
+          widthSide =
+            alignment ===
+            ((await (platform2.isRTL == null ? void 0 : platform2.isRTL(elements.floating)))
+              ? 'start'
+              : 'end')
+              ? 'left'
+              : 'right';
+        } else {
+          widthSide = side;
+          heightSide = alignment === 'end' ? 'top' : 'bottom';
+        }
+        const maximumClippingHeight = height - overflow.top - overflow.bottom;
+        const maximumClippingWidth = width - overflow.left - overflow.right;
+        const overflowAvailableHeight = min(height - overflow[heightSide], maximumClippingHeight);
+        const overflowAvailableWidth = min(width - overflow[widthSide], maximumClippingWidth);
+        const noShift = !state.middlewareData.shift;
+        let availableHeight = overflowAvailableHeight;
+        let availableWidth = overflowAvailableWidth;
+        if (
+          (_state$middlewareData = state.middlewareData.shift) != null &&
+          _state$middlewareData.enabled.x
+        ) {
+          availableWidth = maximumClippingWidth;
+        }
+        if (
+          (_state$middlewareData2 = state.middlewareData.shift) != null &&
+          _state$middlewareData2.enabled.y
+        ) {
+          availableHeight = maximumClippingHeight;
+        }
+        if (noShift && !alignment) {
+          const xMin = max(overflow.left, 0);
+          const xMax = max(overflow.right, 0);
+          const yMin = max(overflow.top, 0);
+          const yMax = max(overflow.bottom, 0);
+          if (isYAxis) {
+            availableWidth =
+              width -
+              2 * (xMin !== 0 || xMax !== 0 ? xMin + xMax : max(overflow.left, overflow.right));
+          } else {
+            availableHeight =
+              height -
+              2 * (yMin !== 0 || yMax !== 0 ? yMin + yMax : max(overflow.top, overflow.bottom));
+          }
+        }
+        await apply({
+          ...state,
+          availableWidth,
+          availableHeight,
+        });
+        const nextDimensions = await platform2.getDimensions(elements.floating);
+        if (width !== nextDimensions.width || height !== nextDimensions.height) {
+          return {
+            reset: {
+              rects: true,
+            },
+          };
+        }
+        return {};
+      },
+    };
+  };
+
+  // node_modules/@floating-ui/utils/dist/floating-ui.utils.dom.mjs
+  function hasWindow() {
+    return typeof window !== 'undefined';
+  }
+  function getNodeName(node) {
+    if (isNode(node)) {
+      return (node.nodeName || '').toLowerCase();
+    }
+    return '#document';
+  }
+  function getWindow(node) {
+    var _node$ownerDocument;
+    return (
+      (node == null || (_node$ownerDocument = node.ownerDocument) == null
+        ? void 0
+        : _node$ownerDocument.defaultView) || window
+    );
+  }
+  function getDocumentElement(node) {
+    var _ref;
+    return (_ref = (isNode(node) ? node.ownerDocument : node.document) || window.document) == null
+      ? void 0
+      : _ref.documentElement;
+  }
+  function isNode(value) {
+    if (!hasWindow()) {
+      return false;
+    }
+    return value instanceof Node || value instanceof getWindow(value).Node;
+  }
+  function isElement(value) {
+    if (!hasWindow()) {
+      return false;
+    }
+    return value instanceof Element || value instanceof getWindow(value).Element;
+  }
+  function isHTMLElement(value) {
+    if (!hasWindow()) {
+      return false;
+    }
+    return value instanceof HTMLElement || value instanceof getWindow(value).HTMLElement;
+  }
+  function isShadowRoot(value) {
+    if (!hasWindow() || typeof ShadowRoot === 'undefined') {
+      return false;
+    }
+    return value instanceof ShadowRoot || value instanceof getWindow(value).ShadowRoot;
+  }
+  function isOverflowElement(element) {
+    const { overflow, overflowX, overflowY, display } = getComputedStyle2(element);
+    return (
+      /auto|scroll|overlay|hidden|clip/.test(overflow + overflowY + overflowX) &&
+      display !== 'inline' &&
+      display !== 'contents'
+    );
+  }
+  function isTableElement(element) {
+    return /^(table|td|th)$/.test(getNodeName(element));
+  }
+  function isTopLayer(element) {
+    try {
+      if (element.matches(':popover-open')) {
+        return true;
+      }
+    } catch (_e) {}
+    try {
+      return element.matches(':modal');
+    } catch (_e) {
+      return false;
+    }
+  }
+  var willChangeRe = /transform|translate|scale|rotate|perspective|filter/;
+  var containRe = /paint|layout|strict|content/;
+  var isNotNone = (value) => !!value && value !== 'none';
+  var isWebKitValue;
+  function isContainingBlock(elementOrCss) {
+    const css = isElement(elementOrCss) ? getComputedStyle2(elementOrCss) : elementOrCss;
+    return (
+      isNotNone(css.transform) ||
+      isNotNone(css.translate) ||
+      isNotNone(css.scale) ||
+      isNotNone(css.rotate) ||
+      isNotNone(css.perspective) ||
+      (!isWebKit() && (isNotNone(css.backdropFilter) || isNotNone(css.filter))) ||
+      willChangeRe.test(css.willChange || '') ||
+      containRe.test(css.contain || '')
+    );
+  }
+  function getContainingBlock(element) {
+    let currentNode = getParentNode(element);
+    while (isHTMLElement(currentNode) && !isLastTraversableNode(currentNode)) {
+      if (isContainingBlock(currentNode)) {
+        return currentNode;
+      } else if (isTopLayer(currentNode)) {
+        return null;
+      }
+      currentNode = getParentNode(currentNode);
+    }
+    return null;
+  }
+  function isWebKit() {
+    if (isWebKitValue == null) {
+      isWebKitValue =
+        typeof CSS !== 'undefined' &&
+        CSS.supports &&
+        CSS.supports('-webkit-backdrop-filter', 'none');
+    }
+    return isWebKitValue;
+  }
+  function isLastTraversableNode(node) {
+    return /^(html|body|#document)$/.test(getNodeName(node));
+  }
+  function getComputedStyle2(element) {
+    return getWindow(element).getComputedStyle(element);
+  }
+  function getNodeScroll(element) {
+    if (isElement(element)) {
+      return {
+        scrollLeft: element.scrollLeft,
+        scrollTop: element.scrollTop,
+      };
+    }
+    return {
+      scrollLeft: element.scrollX,
+      scrollTop: element.scrollY,
+    };
+  }
+  function getParentNode(node) {
+    if (getNodeName(node) === 'html') {
+      return node;
+    }
+    const result =
+      // Step into the shadow DOM of the parent of a slotted node.
+      node.assignedSlot || // DOM Element detected.
+      node.parentNode || // ShadowRoot detected.
+      (isShadowRoot(node) && node.host) || // Fallback.
+      getDocumentElement(node);
+    return isShadowRoot(result) ? result.host : result;
+  }
+  function getNearestOverflowAncestor(node) {
+    const parentNode = getParentNode(node);
+    if (isLastTraversableNode(parentNode)) {
+      return node.ownerDocument ? node.ownerDocument.body : node.body;
+    }
+    if (isHTMLElement(parentNode) && isOverflowElement(parentNode)) {
+      return parentNode;
+    }
+    return getNearestOverflowAncestor(parentNode);
+  }
+  function getOverflowAncestors(node, list, traverseIframes) {
+    var _node$ownerDocument2;
+    if (list === void 0) {
+      list = [];
+    }
+    if (traverseIframes === void 0) {
+      traverseIframes = true;
+    }
+    const scrollableAncestor = getNearestOverflowAncestor(node);
+    const isBody =
+      scrollableAncestor ===
+      ((_node$ownerDocument2 = node.ownerDocument) == null ? void 0 : _node$ownerDocument2.body);
+    const win = getWindow(scrollableAncestor);
+    if (isBody) {
+      const frameElement = getFrameElement(win);
+      return list.concat(
+        win,
+        win.visualViewport || [],
+        isOverflowElement(scrollableAncestor) ? scrollableAncestor : [],
+        frameElement && traverseIframes ? getOverflowAncestors(frameElement) : [],
+      );
+    } else {
+      return list.concat(
+        scrollableAncestor,
+        getOverflowAncestors(scrollableAncestor, [], traverseIframes),
+      );
+    }
+  }
+  function getFrameElement(win) {
+    return win.parent && Object.getPrototypeOf(win.parent) ? win.frameElement : null;
+  }
+
+  // node_modules/@floating-ui/dom/dist/floating-ui.dom.mjs
+  function getCssDimensions(element) {
+    const css = getComputedStyle2(element);
+    let width = parseFloat(css.width) || 0;
+    let height = parseFloat(css.height) || 0;
+    const hasOffset = isHTMLElement(element);
+    const offsetWidth = hasOffset ? element.offsetWidth : width;
+    const offsetHeight = hasOffset ? element.offsetHeight : height;
+    const shouldFallback = round(width) !== offsetWidth || round(height) !== offsetHeight;
+    if (shouldFallback) {
+      width = offsetWidth;
+      height = offsetHeight;
+    }
+    return {
+      width,
+      height,
+      $: shouldFallback,
+    };
+  }
+  function unwrapElement(element) {
+    return !isElement(element) ? element.contextElement : element;
+  }
+  function getScale(element) {
+    const domElement = unwrapElement(element);
+    if (!isHTMLElement(domElement)) {
+      return createCoords(1);
+    }
+    const rect = domElement.getBoundingClientRect();
+    const { width, height, $ } = getCssDimensions(domElement);
+    let x = ($ ? round(rect.width) : rect.width) / width;
+    let y = ($ ? round(rect.height) : rect.height) / height;
+    if (!x || !Number.isFinite(x)) {
+      x = 1;
+    }
+    if (!y || !Number.isFinite(y)) {
+      y = 1;
+    }
+    return {
+      x,
+      y,
+    };
+  }
+  var noOffsets = /* @__PURE__ */ createCoords(0);
+  function getVisualOffsets(element) {
+    const win = getWindow(element);
+    if (!isWebKit() || !win.visualViewport) {
+      return noOffsets;
+    }
+    return {
+      x: win.visualViewport.offsetLeft,
+      y: win.visualViewport.offsetTop,
+    };
+  }
+  function shouldAddVisualOffsets(element, isFixed, floatingOffsetParent) {
+    if (isFixed === void 0) {
+      isFixed = false;
+    }
+    if (!floatingOffsetParent || (isFixed && floatingOffsetParent !== getWindow(element))) {
+      return false;
+    }
+    return isFixed;
+  }
+  function getBoundingClientRect(element, includeScale, isFixedStrategy, offsetParent) {
+    if (includeScale === void 0) {
+      includeScale = false;
+    }
+    if (isFixedStrategy === void 0) {
+      isFixedStrategy = false;
+    }
+    const clientRect = element.getBoundingClientRect();
+    const domElement = unwrapElement(element);
+    let scale = createCoords(1);
+    if (includeScale) {
+      if (offsetParent) {
+        if (isElement(offsetParent)) {
+          scale = getScale(offsetParent);
+        }
+      } else {
+        scale = getScale(element);
+      }
+    }
+    const visualOffsets = shouldAddVisualOffsets(domElement, isFixedStrategy, offsetParent)
+      ? getVisualOffsets(domElement)
+      : createCoords(0);
+    let x = (clientRect.left + visualOffsets.x) / scale.x;
+    let y = (clientRect.top + visualOffsets.y) / scale.y;
+    let width = clientRect.width / scale.x;
+    let height = clientRect.height / scale.y;
+    if (domElement) {
+      const win = getWindow(domElement);
+      const offsetWin =
+        offsetParent && isElement(offsetParent) ? getWindow(offsetParent) : offsetParent;
+      let currentWin = win;
+      let currentIFrame = getFrameElement(currentWin);
+      while (currentIFrame && offsetParent && offsetWin !== currentWin) {
+        const iframeScale = getScale(currentIFrame);
+        const iframeRect = currentIFrame.getBoundingClientRect();
+        const css = getComputedStyle2(currentIFrame);
+        const left =
+          iframeRect.left +
+          (currentIFrame.clientLeft + parseFloat(css.paddingLeft)) * iframeScale.x;
+        const top =
+          iframeRect.top + (currentIFrame.clientTop + parseFloat(css.paddingTop)) * iframeScale.y;
+        x *= iframeScale.x;
+        y *= iframeScale.y;
+        width *= iframeScale.x;
+        height *= iframeScale.y;
+        x += left;
+        y += top;
+        currentWin = getWindow(currentIFrame);
+        currentIFrame = getFrameElement(currentWin);
+      }
+    }
+    return rectToClientRect({
+      width,
+      height,
+      x,
+      y,
+    });
+  }
+  function getWindowScrollBarX(element, rect) {
+    const leftScroll = getNodeScroll(element).scrollLeft;
+    if (!rect) {
+      return getBoundingClientRect(getDocumentElement(element)).left + leftScroll;
+    }
+    return rect.left + leftScroll;
+  }
+  function getHTMLOffset(documentElement, scroll) {
+    const htmlRect = documentElement.getBoundingClientRect();
+    const x = htmlRect.left + scroll.scrollLeft - getWindowScrollBarX(documentElement, htmlRect);
+    const y = htmlRect.top + scroll.scrollTop;
+    return {
+      x,
+      y,
+    };
+  }
+  function convertOffsetParentRelativeRectToViewportRelativeRect(_ref) {
+    let { elements, rect, offsetParent, strategy } = _ref;
+    const isFixed = strategy === 'fixed';
+    const documentElement = getDocumentElement(offsetParent);
+    const topLayer = elements ? isTopLayer(elements.floating) : false;
+    if (offsetParent === documentElement || (topLayer && isFixed)) {
+      return rect;
+    }
+    let scroll = {
+      scrollLeft: 0,
+      scrollTop: 0,
+    };
+    let scale = createCoords(1);
+    const offsets = createCoords(0);
+    const isOffsetParentAnElement = isHTMLElement(offsetParent);
+    if (isOffsetParentAnElement || (!isOffsetParentAnElement && !isFixed)) {
+      if (getNodeName(offsetParent) !== 'body' || isOverflowElement(documentElement)) {
+        scroll = getNodeScroll(offsetParent);
+      }
+      if (isOffsetParentAnElement) {
+        const offsetRect = getBoundingClientRect(offsetParent);
+        scale = getScale(offsetParent);
+        offsets.x = offsetRect.x + offsetParent.clientLeft;
+        offsets.y = offsetRect.y + offsetParent.clientTop;
+      }
+    }
+    const htmlOffset =
+      documentElement && !isOffsetParentAnElement && !isFixed
+        ? getHTMLOffset(documentElement, scroll)
+        : createCoords(0);
+    return {
+      width: rect.width * scale.x,
+      height: rect.height * scale.y,
+      x: rect.x * scale.x - scroll.scrollLeft * scale.x + offsets.x + htmlOffset.x,
+      y: rect.y * scale.y - scroll.scrollTop * scale.y + offsets.y + htmlOffset.y,
+    };
+  }
+  function getClientRects(element) {
+    return Array.from(element.getClientRects());
+  }
+  function getDocumentRect(element) {
+    const html = getDocumentElement(element);
+    const scroll = getNodeScroll(element);
+    const body = element.ownerDocument.body;
+    const width = max(html.scrollWidth, html.clientWidth, body.scrollWidth, body.clientWidth);
+    const height = max(html.scrollHeight, html.clientHeight, body.scrollHeight, body.clientHeight);
+    let x = -scroll.scrollLeft + getWindowScrollBarX(element);
+    const y = -scroll.scrollTop;
+    if (getComputedStyle2(body).direction === 'rtl') {
+      x += max(html.clientWidth, body.clientWidth) - width;
+    }
+    return {
+      width,
+      height,
+      x,
+      y,
+    };
+  }
+  var SCROLLBAR_MAX = 25;
+  function getViewportRect(element, strategy) {
+    const win = getWindow(element);
+    const html = getDocumentElement(element);
+    const visualViewport = win.visualViewport;
+    let width = html.clientWidth;
+    let height = html.clientHeight;
+    let x = 0;
+    let y = 0;
+    if (visualViewport) {
+      width = visualViewport.width;
+      height = visualViewport.height;
+      const visualViewportBased = isWebKit();
+      if (!visualViewportBased || (visualViewportBased && strategy === 'fixed')) {
+        x = visualViewport.offsetLeft;
+        y = visualViewport.offsetTop;
+      }
+    }
+    const windowScrollbarX = getWindowScrollBarX(html);
+    if (windowScrollbarX <= 0) {
+      const doc = html.ownerDocument;
+      const body = doc.body;
+      const bodyStyles = getComputedStyle(body);
+      const bodyMarginInline =
+        doc.compatMode === 'CSS1Compat'
+          ? parseFloat(bodyStyles.marginLeft) + parseFloat(bodyStyles.marginRight) || 0
+          : 0;
+      const clippingStableScrollbarWidth = Math.abs(
+        html.clientWidth - body.clientWidth - bodyMarginInline,
+      );
+      if (clippingStableScrollbarWidth <= SCROLLBAR_MAX) {
+        width -= clippingStableScrollbarWidth;
+      }
+    } else if (windowScrollbarX <= SCROLLBAR_MAX) {
+      width += windowScrollbarX;
+    }
+    return {
+      width,
+      height,
+      x,
+      y,
+    };
+  }
+  function getInnerBoundingClientRect(element, strategy) {
+    const clientRect = getBoundingClientRect(element, true, strategy === 'fixed');
+    const top = clientRect.top + element.clientTop;
+    const left = clientRect.left + element.clientLeft;
+    const scale = isHTMLElement(element) ? getScale(element) : createCoords(1);
+    const width = element.clientWidth * scale.x;
+    const height = element.clientHeight * scale.y;
+    const x = left * scale.x;
+    const y = top * scale.y;
+    return {
+      width,
+      height,
+      x,
+      y,
+    };
+  }
+  function getClientRectFromClippingAncestor(element, clippingAncestor, strategy) {
+    let rect;
+    if (clippingAncestor === 'viewport') {
+      rect = getViewportRect(element, strategy);
+    } else if (clippingAncestor === 'document') {
+      rect = getDocumentRect(getDocumentElement(element));
+    } else if (isElement(clippingAncestor)) {
+      rect = getInnerBoundingClientRect(clippingAncestor, strategy);
+    } else {
+      const visualOffsets = getVisualOffsets(element);
+      rect = {
+        x: clippingAncestor.x - visualOffsets.x,
+        y: clippingAncestor.y - visualOffsets.y,
+        width: clippingAncestor.width,
+        height: clippingAncestor.height,
+      };
+    }
+    return rectToClientRect(rect);
+  }
+  function hasFixedPositionAncestor(element, stopNode) {
+    const parentNode = getParentNode(element);
+    if (parentNode === stopNode || !isElement(parentNode) || isLastTraversableNode(parentNode)) {
+      return false;
+    }
+    return (
+      getComputedStyle2(parentNode).position === 'fixed' ||
+      hasFixedPositionAncestor(parentNode, stopNode)
+    );
+  }
+  function getClippingElementAncestors(element, cache) {
+    const cachedResult = cache.get(element);
+    if (cachedResult) {
+      return cachedResult;
+    }
+    let result = getOverflowAncestors(element, [], false).filter(
+      (el) => isElement(el) && getNodeName(el) !== 'body',
+    );
+    let currentContainingBlockComputedStyle = null;
+    const elementIsFixed = getComputedStyle2(element).position === 'fixed';
+    let currentNode = elementIsFixed ? getParentNode(element) : element;
+    while (isElement(currentNode) && !isLastTraversableNode(currentNode)) {
+      const computedStyle = getComputedStyle2(currentNode);
+      const currentNodeIsContaining = isContainingBlock(currentNode);
+      if (!currentNodeIsContaining && computedStyle.position === 'fixed') {
+        currentContainingBlockComputedStyle = null;
+      }
+      const shouldDropCurrentNode = elementIsFixed
+        ? !currentNodeIsContaining && !currentContainingBlockComputedStyle
+        : (!currentNodeIsContaining &&
+            computedStyle.position === 'static' &&
+            !!currentContainingBlockComputedStyle &&
+            (currentContainingBlockComputedStyle.position === 'absolute' ||
+              currentContainingBlockComputedStyle.position === 'fixed')) ||
+          (isOverflowElement(currentNode) &&
+            !currentNodeIsContaining &&
+            hasFixedPositionAncestor(element, currentNode));
+      if (shouldDropCurrentNode) {
+        result = result.filter((ancestor) => ancestor !== currentNode);
+      } else {
+        currentContainingBlockComputedStyle = computedStyle;
+      }
+      currentNode = getParentNode(currentNode);
+    }
+    cache.set(element, result);
+    return result;
+  }
+  function getClippingRect(_ref) {
+    let { element, boundary, rootBoundary, strategy } = _ref;
+    const elementClippingAncestors =
+      boundary === 'clippingAncestors'
+        ? isTopLayer(element)
+          ? []
+          : getClippingElementAncestors(element, this._c)
+        : [].concat(boundary);
+    const clippingAncestors = [...elementClippingAncestors, rootBoundary];
+    const firstRect = getClientRectFromClippingAncestor(element, clippingAncestors[0], strategy);
+    let top = firstRect.top;
+    let right = firstRect.right;
+    let bottom = firstRect.bottom;
+    let left = firstRect.left;
+    for (let i = 1; i < clippingAncestors.length; i++) {
+      const rect = getClientRectFromClippingAncestor(element, clippingAncestors[i], strategy);
+      top = max(rect.top, top);
+      right = min(rect.right, right);
+      bottom = min(rect.bottom, bottom);
+      left = max(rect.left, left);
+    }
+    return {
+      width: right - left,
+      height: bottom - top,
+      x: left,
+      y: top,
+    };
+  }
+  function getDimensions(element) {
+    const { width, height } = getCssDimensions(element);
+    return {
+      width,
+      height,
+    };
+  }
+  function getRectRelativeToOffsetParent(element, offsetParent, strategy) {
+    const isOffsetParentAnElement = isHTMLElement(offsetParent);
+    const documentElement = getDocumentElement(offsetParent);
+    const isFixed = strategy === 'fixed';
+    const rect = getBoundingClientRect(element, true, isFixed, offsetParent);
+    let scroll = {
+      scrollLeft: 0,
+      scrollTop: 0,
+    };
+    const offsets = createCoords(0);
+    function setLeftRTLScrollbarOffset() {
+      offsets.x = getWindowScrollBarX(documentElement);
+    }
+    if (isOffsetParentAnElement || (!isOffsetParentAnElement && !isFixed)) {
+      if (getNodeName(offsetParent) !== 'body' || isOverflowElement(documentElement)) {
+        scroll = getNodeScroll(offsetParent);
+      }
+      if (isOffsetParentAnElement) {
+        const offsetRect = getBoundingClientRect(offsetParent, true, isFixed, offsetParent);
+        offsets.x = offsetRect.x + offsetParent.clientLeft;
+        offsets.y = offsetRect.y + offsetParent.clientTop;
+      } else if (documentElement) {
+        setLeftRTLScrollbarOffset();
+      }
+    }
+    if (isFixed && !isOffsetParentAnElement && documentElement) {
+      setLeftRTLScrollbarOffset();
+    }
+    const htmlOffset =
+      documentElement && !isOffsetParentAnElement && !isFixed
+        ? getHTMLOffset(documentElement, scroll)
+        : createCoords(0);
+    const x = rect.left + scroll.scrollLeft - offsets.x - htmlOffset.x;
+    const y = rect.top + scroll.scrollTop - offsets.y - htmlOffset.y;
+    return {
+      x,
+      y,
+      width: rect.width,
+      height: rect.height,
+    };
+  }
+  function isStaticPositioned(element) {
+    return getComputedStyle2(element).position === 'static';
+  }
+  function getTrueOffsetParent(element, polyfill) {
+    if (!isHTMLElement(element) || getComputedStyle2(element).position === 'fixed') {
+      return null;
+    }
+    if (polyfill) {
+      return polyfill(element);
+    }
+    let rawOffsetParent = element.offsetParent;
+    if (getDocumentElement(element) === rawOffsetParent) {
+      rawOffsetParent = rawOffsetParent.ownerDocument.body;
+    }
+    return rawOffsetParent;
+  }
+  function getOffsetParent(element, polyfill) {
+    const win = getWindow(element);
+    if (isTopLayer(element)) {
+      return win;
+    }
+    if (!isHTMLElement(element)) {
+      let svgOffsetParent = getParentNode(element);
+      while (svgOffsetParent && !isLastTraversableNode(svgOffsetParent)) {
+        if (isElement(svgOffsetParent) && !isStaticPositioned(svgOffsetParent)) {
+          return svgOffsetParent;
+        }
+        svgOffsetParent = getParentNode(svgOffsetParent);
+      }
+      return win;
+    }
+    let offsetParent = getTrueOffsetParent(element, polyfill);
+    while (offsetParent && isTableElement(offsetParent) && isStaticPositioned(offsetParent)) {
+      offsetParent = getTrueOffsetParent(offsetParent, polyfill);
+    }
+    if (
+      offsetParent &&
+      isLastTraversableNode(offsetParent) &&
+      isStaticPositioned(offsetParent) &&
+      !isContainingBlock(offsetParent)
+    ) {
+      return win;
+    }
+    return offsetParent || getContainingBlock(element) || win;
+  }
+  var getElementRects = async function (data) {
+    const getOffsetParentFn = this.getOffsetParent || getOffsetParent;
+    const getDimensionsFn = this.getDimensions;
+    const floatingDimensions = await getDimensionsFn(data.floating);
+    return {
+      reference: getRectRelativeToOffsetParent(
+        data.reference,
+        await getOffsetParentFn(data.floating),
+        data.strategy,
+      ),
+      floating: {
+        x: 0,
+        y: 0,
+        width: floatingDimensions.width,
+        height: floatingDimensions.height,
+      },
+    };
+  };
+  function isRTL(element) {
+    return getComputedStyle2(element).direction === 'rtl';
+  }
+  var platform = {
+    convertOffsetParentRelativeRectToViewportRelativeRect,
+    getDocumentElement,
+    getClippingRect,
+    getOffsetParent,
+    getElementRects,
+    getClientRects,
+    getDimensions,
+    getScale,
+    isElement,
+    isRTL,
+  };
+  function rectsAreEqual(a, b) {
+    return a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height;
+  }
+  function observeMove(element, onMove) {
+    let io = null;
+    let timeoutId;
+    const root = getDocumentElement(element);
+    function cleanup() {
+      var _io;
+      clearTimeout(timeoutId);
+      (_io = io) == null || _io.disconnect();
+      io = null;
+    }
+    function refresh(skip, threshold) {
+      if (skip === void 0) {
+        skip = false;
+      }
+      if (threshold === void 0) {
+        threshold = 1;
+      }
+      cleanup();
+      const elementRectForRootMargin = element.getBoundingClientRect();
+      const { left, top, width, height } = elementRectForRootMargin;
+      if (!skip) {
+        onMove();
+      }
+      if (!width || !height) {
+        return;
+      }
+      const insetTop = floor(top);
+      const insetRight = floor(root.clientWidth - (left + width));
+      const insetBottom = floor(root.clientHeight - (top + height));
+      const insetLeft = floor(left);
+      const rootMargin =
+        -insetTop + 'px ' + -insetRight + 'px ' + -insetBottom + 'px ' + -insetLeft + 'px';
+      const options2 = {
+        rootMargin,
+        threshold: max(0, min(1, threshold)) || 1,
+      };
+      let isFirstUpdate = true;
+      function handleObserve(entries) {
+        const ratio = entries[0].intersectionRatio;
+        if (ratio !== threshold) {
+          if (!isFirstUpdate) {
+            return refresh();
+          }
+          if (!ratio) {
+            timeoutId = setTimeout(() => {
+              refresh(false, 1e-7);
+            }, 1e3);
+          } else {
+            refresh(false, ratio);
+          }
+        }
+        if (
+          ratio === 1 &&
+          !rectsAreEqual(elementRectForRootMargin, element.getBoundingClientRect())
+        ) {
+          refresh();
+        }
+        isFirstUpdate = false;
+      }
+      try {
+        io = new IntersectionObserver(handleObserve, {
+          ...options2,
+          // Handle <iframe>s
+          root: root.ownerDocument,
+        });
+      } catch (_e) {
+        io = new IntersectionObserver(handleObserve, options2);
+      }
+      io.observe(element);
+    }
+    refresh(true);
+    return cleanup;
+  }
+  function autoUpdate(reference, floating, update, options2) {
+    if (options2 === void 0) {
+      options2 = {};
+    }
+    const {
+      ancestorScroll = true,
+      ancestorResize = true,
+      elementResize = typeof ResizeObserver === 'function',
+      layoutShift = typeof IntersectionObserver === 'function',
+      animationFrame = false,
+    } = options2;
+    const referenceEl = unwrapElement(reference);
+    const ancestors =
+      ancestorScroll || ancestorResize
+        ? [
+            ...(referenceEl ? getOverflowAncestors(referenceEl) : []),
+            ...(floating ? getOverflowAncestors(floating) : []),
+          ]
+        : [];
+    ancestors.forEach((ancestor) => {
+      ancestorScroll &&
+        ancestor.addEventListener('scroll', update, {
+          passive: true,
+        });
+      ancestorResize && ancestor.addEventListener('resize', update);
+    });
+    const cleanupIo = referenceEl && layoutShift ? observeMove(referenceEl, update) : null;
+    let reobserveFrame = -1;
+    let resizeObserver = null;
+    if (elementResize) {
+      resizeObserver = new ResizeObserver((_ref) => {
+        let [firstEntry] = _ref;
+        if (firstEntry && firstEntry.target === referenceEl && resizeObserver && floating) {
+          resizeObserver.unobserve(floating);
+          cancelAnimationFrame(reobserveFrame);
+          reobserveFrame = requestAnimationFrame(() => {
+            var _resizeObserver;
+            (_resizeObserver = resizeObserver) == null || _resizeObserver.observe(floating);
+          });
+        }
+        update();
+      });
+      if (referenceEl && !animationFrame) {
+        resizeObserver.observe(referenceEl);
+      }
+      if (floating) {
+        resizeObserver.observe(floating);
+      }
+    }
+    let frameId;
+    let prevRefRect = animationFrame ? getBoundingClientRect(reference) : null;
+    if (animationFrame) {
+      frameLoop();
+    }
+    function frameLoop() {
+      const nextRefRect = getBoundingClientRect(reference);
+      if (prevRefRect && !rectsAreEqual(prevRefRect, nextRefRect)) {
+        update();
+      }
+      prevRefRect = nextRefRect;
+      frameId = requestAnimationFrame(frameLoop);
+    }
+    update();
+    return () => {
+      var _resizeObserver2;
+      ancestors.forEach((ancestor) => {
+        ancestorScroll && ancestor.removeEventListener('scroll', update);
+        ancestorResize && ancestor.removeEventListener('resize', update);
+      });
+      cleanupIo == null || cleanupIo();
+      (_resizeObserver2 = resizeObserver) == null || _resizeObserver2.disconnect();
+      resizeObserver = null;
+      if (animationFrame) {
+        cancelAnimationFrame(frameId);
+      }
+    };
+  }
+  var offset2 = offset;
+  var shift2 = shift;
+  var flip2 = flip;
+  var size2 = size;
+  var hide2 = hide;
+  var arrow2 = arrow;
+  var limitShift2 = limitShift;
+  var computePosition2 = (reference, floating, options2) => {
+    const cache = /* @__PURE__ */ new Map();
+    const mergedOptions = {
+      platform,
+      ...options2,
+    };
+    const platformWithCache = {
+      ...mergedOptions.platform,
+      _c: cache,
+    };
+    return computePosition(reference, floating, {
+      ...mergedOptions,
+      platform: platformWithCache,
+    });
+  };
+
+  // node_modules/@floating-ui/react-dom/dist/floating-ui.react-dom.mjs
+  var React14 = __toESM(require_react(), 1);
+  var import_react6 = __toESM(require_react(), 1);
+  var ReactDOM2 = __toESM(require_react_dom(), 1);
+  var isClient = typeof document !== 'undefined';
+  var noop = function noop2() {};
+  var index = isClient ? import_react6.useLayoutEffect : noop;
+  function deepEqual(a, b) {
+    if (a === b) {
+      return true;
+    }
+    if (typeof a !== typeof b) {
+      return false;
+    }
+    if (typeof a === 'function' && a.toString() === b.toString()) {
+      return true;
+    }
+    let length;
+    let i;
+    let keys;
+    if (a && b && typeof a === 'object') {
+      if (Array.isArray(a)) {
+        length = a.length;
+        if (length !== b.length) return false;
+        for (i = length; i-- !== 0; ) {
+          if (!deepEqual(a[i], b[i])) {
+            return false;
+          }
+        }
+        return true;
+      }
+      keys = Object.keys(a);
+      length = keys.length;
+      if (length !== Object.keys(b).length) {
+        return false;
+      }
+      for (i = length; i-- !== 0; ) {
+        if (!{}.hasOwnProperty.call(b, keys[i])) {
+          return false;
+        }
+      }
+      for (i = length; i-- !== 0; ) {
+        const key = keys[i];
+        if (key === '_owner' && a.$$typeof) {
+          continue;
+        }
+        if (!deepEqual(a[key], b[key])) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return a !== a && b !== b;
+  }
+  function getDPR(element) {
+    if (typeof window === 'undefined') {
+      return 1;
+    }
+    const win = element.ownerDocument.defaultView || window;
+    return win.devicePixelRatio || 1;
+  }
+  function roundByDPR(element, value) {
+    const dpr = getDPR(element);
+    return Math.round(value * dpr) / dpr;
+  }
+  function useLatestRef(value) {
+    const ref = React14.useRef(value);
+    index(() => {
+      ref.current = value;
+    });
+    return ref;
+  }
+  function useFloating(options2) {
+    if (options2 === void 0) {
+      options2 = {};
+    }
+    const {
+      placement = 'bottom',
+      strategy = 'absolute',
+      middleware = [],
+      platform: platform2,
+      elements: { reference: externalReference, floating: externalFloating } = {},
+      transform = true,
+      whileElementsMounted,
+      open,
+    } = options2;
+    const [data, setData] = React14.useState({
+      x: 0,
+      y: 0,
+      strategy,
+      placement,
+      middlewareData: {},
+      isPositioned: false,
+    });
+    const [latestMiddleware, setLatestMiddleware] = React14.useState(middleware);
+    if (!deepEqual(latestMiddleware, middleware)) {
+      setLatestMiddleware(middleware);
+    }
+    const [_reference, _setReference] = React14.useState(null);
+    const [_floating, _setFloating] = React14.useState(null);
+    const setReference = React14.useCallback((node) => {
+      if (node !== referenceRef.current) {
+        referenceRef.current = node;
+        _setReference(node);
+      }
+    }, []);
+    const setFloating = React14.useCallback((node) => {
+      if (node !== floatingRef.current) {
+        floatingRef.current = node;
+        _setFloating(node);
+      }
+    }, []);
+    const referenceEl = externalReference || _reference;
+    const floatingEl = externalFloating || _floating;
+    const referenceRef = React14.useRef(null);
+    const floatingRef = React14.useRef(null);
+    const dataRef = React14.useRef(data);
+    const hasWhileElementsMounted = whileElementsMounted != null;
+    const whileElementsMountedRef = useLatestRef(whileElementsMounted);
+    const platformRef = useLatestRef(platform2);
+    const openRef = useLatestRef(open);
+    const update = React14.useCallback(() => {
+      if (!referenceRef.current || !floatingRef.current) {
+        return;
+      }
+      const config = {
+        placement,
+        strategy,
+        middleware: latestMiddleware,
+      };
+      if (platformRef.current) {
+        config.platform = platformRef.current;
+      }
+      computePosition2(referenceRef.current, floatingRef.current, config).then((data2) => {
+        const fullData = {
+          ...data2,
+          // The floating element's position may be recomputed while it's closed
+          // but still mounted (such as when transitioning out). To ensure
+          // `isPositioned` will be `false` initially on the next open, avoid
+          // setting it to `true` when `open === false` (must be specified).
+          isPositioned: openRef.current !== false,
+        };
+        if (isMountedRef.current && !deepEqual(dataRef.current, fullData)) {
+          dataRef.current = fullData;
+          ReactDOM2.flushSync(() => {
+            setData(fullData);
+          });
+        }
+      });
+    }, [latestMiddleware, placement, strategy, platformRef, openRef]);
+    index(() => {
+      if (open === false && dataRef.current.isPositioned) {
+        dataRef.current.isPositioned = false;
+        setData((data2) => ({
+          ...data2,
+          isPositioned: false,
+        }));
+      }
+    }, [open]);
+    const isMountedRef = React14.useRef(false);
+    index(() => {
+      isMountedRef.current = true;
+      return () => {
+        isMountedRef.current = false;
+      };
+    }, []);
+    index(() => {
+      if (referenceEl) referenceRef.current = referenceEl;
+      if (floatingEl) floatingRef.current = floatingEl;
+      if (referenceEl && floatingEl) {
+        if (whileElementsMountedRef.current) {
+          return whileElementsMountedRef.current(referenceEl, floatingEl, update);
+        }
+        update();
+      }
+    }, [referenceEl, floatingEl, update, whileElementsMountedRef, hasWhileElementsMounted]);
+    const refs = React14.useMemo(
+      () => ({
+        reference: referenceRef,
+        floating: floatingRef,
+        setReference,
+        setFloating,
+      }),
+      [setReference, setFloating],
+    );
+    const elements = React14.useMemo(
+      () => ({
+        reference: referenceEl,
+        floating: floatingEl,
+      }),
+      [referenceEl, floatingEl],
+    );
+    const floatingStyles = React14.useMemo(() => {
+      const initialStyles = {
+        position: strategy,
+        left: 0,
+        top: 0,
+      };
+      if (!elements.floating) {
+        return initialStyles;
+      }
+      const x = roundByDPR(elements.floating, data.x);
+      const y = roundByDPR(elements.floating, data.y);
+      if (transform) {
+        return {
+          ...initialStyles,
+          transform: 'translate(' + x + 'px, ' + y + 'px)',
+          ...(getDPR(elements.floating) >= 1.5 && {
+            willChange: 'transform',
+          }),
+        };
+      }
+      return {
+        position: strategy,
+        left: x,
+        top: y,
+      };
+    }, [strategy, transform, elements.floating, data.x, data.y]);
+    return React14.useMemo(
+      () => ({
+        ...data,
+        update,
+        refs,
+        elements,
+        floatingStyles,
+      }),
+      [data, update, refs, elements, floatingStyles],
+    );
+  }
+  var arrow$1 = (options2) => {
+    function isRef(value) {
+      return {}.hasOwnProperty.call(value, 'current');
+    }
+    return {
+      name: 'arrow',
+      options: options2,
+      fn(state) {
+        const { element, padding } = typeof options2 === 'function' ? options2(state) : options2;
+        if (element && isRef(element)) {
+          if (element.current != null) {
+            return arrow2({
+              element: element.current,
+              padding,
+            }).fn(state);
+          }
+          return {};
+        }
+        if (element) {
+          return arrow2({
+            element,
+            padding,
+          }).fn(state);
+        }
+        return {};
+      },
+    };
+  };
+  var offset3 = (options2, deps) => {
+    const result = offset2(options2);
+    return {
+      name: result.name,
+      fn: result.fn,
+      options: [options2, deps],
+    };
+  };
+  var shift3 = (options2, deps) => {
+    const result = shift2(options2);
+    return {
+      name: result.name,
+      fn: result.fn,
+      options: [options2, deps],
+    };
+  };
+  var limitShift3 = (options2, deps) => {
+    const result = limitShift2(options2);
+    return {
+      fn: result.fn,
+      options: [options2, deps],
+    };
+  };
+  var flip3 = (options2, deps) => {
+    const result = flip2(options2);
+    return {
+      name: result.name,
+      fn: result.fn,
+      options: [options2, deps],
+    };
+  };
+  var size3 = (options2, deps) => {
+    const result = size2(options2);
+    return {
+      name: result.name,
+      fn: result.fn,
+      options: [options2, deps],
+    };
+  };
+  var hide3 = (options2, deps) => {
+    const result = hide2(options2);
+    return {
+      name: result.name,
+      fn: result.fn,
+      options: [options2, deps],
+    };
+  };
+  var arrow3 = (options2, deps) => {
+    const result = arrow$1(options2);
+    return {
+      name: result.name,
+      fn: result.fn,
+      options: [options2, deps],
+    };
+  };
+
+  // node_modules/@radix-ui/react-arrow/dist/index.mjs
+  var React15 = __toESM(require_react(), 1);
+  var import_jsx_runtime14 = __toESM(require_jsx_runtime(), 1);
+  var NAME = 'Arrow';
+  var Arrow = React15.forwardRef((props, forwardedRef) => {
+    const { children, width = 10, height = 5, ...arrowProps } = props;
+    return /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Primitive.svg, {
+      ...arrowProps,
+      ref: forwardedRef,
+      width,
+      height,
+      viewBox: '0 0 30 10',
+      preserveAspectRatio: 'none',
+      children: props.asChild
+        ? children
+        : /* @__PURE__ */ (0, import_jsx_runtime14.jsx)('polygon', { points: '0,0 30,0 15,10' }),
+    });
+  });
+  Arrow.displayName = NAME;
+  var Root = Arrow;
+
+  // node_modules/@radix-ui/react-use-size/dist/index.mjs
+  var React16 = __toESM(require_react(), 1);
+  function useSize(element) {
+    const [size4, setSize] = React16.useState(void 0);
+    useLayoutEffect2(() => {
+      if (element) {
+        setSize({ width: element.offsetWidth, height: element.offsetHeight });
+        const resizeObserver = new ResizeObserver((entries) => {
+          if (!Array.isArray(entries)) {
+            return;
+          }
+          if (!entries.length) {
+            return;
+          }
+          const entry = entries[0];
+          let width;
+          let height;
+          if ('borderBoxSize' in entry) {
+            const borderSizeEntry = entry['borderBoxSize'];
+            const borderSize = Array.isArray(borderSizeEntry)
+              ? borderSizeEntry[0]
+              : borderSizeEntry;
+            width = borderSize['inlineSize'];
+            height = borderSize['blockSize'];
+          } else {
+            width = element.offsetWidth;
+            height = element.offsetHeight;
+          }
+          setSize({ width, height });
+        });
+        resizeObserver.observe(element, { box: 'border-box' });
+        return () => resizeObserver.unobserve(element);
+      } else {
+        setSize(void 0);
+      }
+    }, [element]);
+    return size4;
+  }
+
+  // node_modules/@radix-ui/react-popper/dist/index.mjs
+  var import_jsx_runtime15 = __toESM(require_jsx_runtime(), 1);
+  var POPPER_NAME = 'Popper';
+  var [createPopperContext, createPopperScope] = createContextScope(POPPER_NAME);
+  var [PopperProvider, usePopperContext] = createPopperContext(POPPER_NAME);
+  var Popper = (props) => {
+    const { __scopePopper, children } = props;
+    const [anchor, setAnchor] = React17.useState(null);
+    const [placementState, setPlacementState] = React17.useState(void 0);
+    return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(PopperProvider, {
+      scope: __scopePopper,
+      anchor,
+      onAnchorChange: setAnchor,
+      placementState,
+      setPlacementState,
+      children,
+    });
+  };
+  Popper.displayName = POPPER_NAME;
+  var ANCHOR_NAME = 'PopperAnchor';
+  var PopperAnchor = React17.forwardRef((props, forwardedRef) => {
+    const { __scopePopper, virtualRef, ...anchorProps } = props;
+    const context = usePopperContext(ANCHOR_NAME, __scopePopper);
+    const ref = React17.useRef(null);
+    const onAnchorChange = context.onAnchorChange;
+    const callbackRef = React17.useCallback(
+      (node) => {
+        ref.current = node;
+        if (node) {
+          onAnchorChange(node);
+        }
+      },
+      [onAnchorChange],
+    );
+    const composedRefs = useComposedRefs(forwardedRef, callbackRef);
+    const anchorRef = React17.useRef(null);
+    React17.useEffect(() => {
+      if (!virtualRef) {
+        return;
+      }
+      const previousAnchor = anchorRef.current;
+      anchorRef.current = virtualRef.current;
+      if (previousAnchor !== anchorRef.current) {
+        onAnchorChange(anchorRef.current);
+      }
+    });
+    const sideAndAlign =
+      context.placementState && getSideAndAlignFromPlacement(context.placementState);
+    const placedSide = sideAndAlign?.[0];
+    const placedAlign = sideAndAlign?.[1];
+    return virtualRef
+      ? null
+      : /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Primitive.div, {
+          'data-radix-popper-side': placedSide,
+          'data-radix-popper-align': placedAlign,
+          ...anchorProps,
+          ref: composedRefs,
+        });
+  });
+  PopperAnchor.displayName = ANCHOR_NAME;
+  var CONTENT_NAME = 'PopperContent';
+  var [PopperContentProvider, useContentContext] = createPopperContext(CONTENT_NAME);
+  var PopperContent = React17.forwardRef((props, forwardedRef) => {
+    const {
+      __scopePopper,
+      side = 'bottom',
+      sideOffset = 0,
+      align = 'center',
+      alignOffset = 0,
+      arrowPadding = 0,
+      avoidCollisions = true,
+      collisionBoundary = [],
+      collisionPadding: collisionPaddingProp = 0,
+      sticky = 'partial',
+      hideWhenDetached = false,
+      updatePositionStrategy = 'optimized',
+      onPlaced,
+      ...contentProps
+    } = props;
+    const context = usePopperContext(CONTENT_NAME, __scopePopper);
+    const [content, setContent] = React17.useState(null);
+    const composedRefs = useComposedRefs(forwardedRef, (node) => setContent(node));
+    const [arrow4, setArrow] = React17.useState(null);
+    const arrowSize = useSize(arrow4);
+    const arrowWidth = arrowSize?.width ?? 0;
+    const arrowHeight = arrowSize?.height ?? 0;
+    const desiredPlacement = side + (align !== 'center' ? '-' + align : '');
+    const collisionPadding =
+      typeof collisionPaddingProp === 'number'
+        ? collisionPaddingProp
+        : { top: 0, right: 0, bottom: 0, left: 0, ...collisionPaddingProp };
+    const boundary = Array.isArray(collisionBoundary) ? collisionBoundary : [collisionBoundary];
+    const hasExplicitBoundaries = boundary.length > 0;
+    const detectOverflowOptions = {
+      padding: collisionPadding,
+      boundary: boundary.filter(isNotNull),
+      // with `strategy: 'fixed'`, this is the only way to get it to respect boundaries
+      altBoundary: hasExplicitBoundaries,
+    };
+    const { refs, floatingStyles, placement, isPositioned, middlewareData } = useFloating({
+      // default to `fixed` strategy so users don't have to pick and we also avoid focus scroll issues
+      strategy: 'fixed',
+      placement: desiredPlacement,
+      whileElementsMounted: (...args) => {
+        const cleanup = autoUpdate(...args, {
+          animationFrame: updatePositionStrategy === 'always',
+        });
+        return cleanup;
+      },
+      elements: {
+        reference: context.anchor,
+      },
+      middleware: [
+        offset3({ mainAxis: sideOffset + arrowHeight, alignmentAxis: alignOffset }),
+        avoidCollisions &&
+          shift3({
+            mainAxis: true,
+            crossAxis: false,
+            limiter: sticky === 'partial' ? limitShift3() : void 0,
+            ...detectOverflowOptions,
+          }),
+        avoidCollisions && flip3({ ...detectOverflowOptions }),
+        size3({
+          ...detectOverflowOptions,
+          apply: ({ elements, rects, availableWidth, availableHeight }) => {
+            const { width: anchorWidth, height: anchorHeight } = rects.reference;
+            const contentStyle = elements.floating.style;
+            contentStyle.setProperty('--radix-popper-available-width', `${availableWidth}px`);
+            contentStyle.setProperty('--radix-popper-available-height', `${availableHeight}px`);
+            contentStyle.setProperty('--radix-popper-anchor-width', `${anchorWidth}px`);
+            contentStyle.setProperty('--radix-popper-anchor-height', `${anchorHeight}px`);
+          },
+        }),
+        arrow4 && arrow3({ element: arrow4, padding: arrowPadding }),
+        transformOrigin({ arrowWidth, arrowHeight }),
+        hideWhenDetached &&
+          hide3({
+            strategy: 'referenceHidden',
+            ...detectOverflowOptions,
+            // `hide` detects whether the anchor (reference) is clipped, so when
+            // no explicit `collisionBoundary` is set we fall back to Floating
+            // UI's default clipping ancestors (e.g. a scrollable menu). This
+            // lets an occluded submenu hide once its anchor scrolls out of view
+            // (#3237). The collision/size middlewares deliberately keep the
+            // viewport-based default to avoid clamping content rendered inside
+            // transformed or overflow-clipping portal containers.
+            boundary: hasExplicitBoundaries ? detectOverflowOptions.boundary : void 0,
+          }),
+      ],
+    });
+    const setPlacementState = context.setPlacementState;
+    useLayoutEffect2(() => {
+      setPlacementState(placement);
+      return () => {
+        setPlacementState(void 0);
+      };
+    }, [placement, setPlacementState]);
+    const [placedSide, placedAlign] = getSideAndAlignFromPlacement(placement);
+    const handlePlaced = useCallbackRef(onPlaced);
+    useLayoutEffect2(() => {
+      if (isPositioned) {
+        handlePlaced?.();
+      }
+    }, [isPositioned, handlePlaced]);
+    const arrowX = middlewareData.arrow?.x;
+    const arrowY = middlewareData.arrow?.y;
+    const cannotCenterArrow = middlewareData.arrow?.centerOffset !== 0;
+    const [contentZIndex, setContentZIndex] = React17.useState();
+    useLayoutEffect2(() => {
+      if (content) setContentZIndex(window.getComputedStyle(content).zIndex);
+    }, [content]);
+    return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)('div', {
+      ref: refs.setFloating,
+      'data-radix-popper-content-wrapper': '',
+      style: {
+        ...floatingStyles,
+        transform: isPositioned ? floatingStyles.transform : 'translate(0, -200%)',
+        // keep off the page when measuring
+        minWidth: 'max-content',
+        zIndex: contentZIndex,
+        '--radix-popper-transform-origin': [
+          middlewareData.transformOrigin?.x,
+          middlewareData.transformOrigin?.y,
+        ].join(' '),
+        // hide the content if using the hide middleware and should be hidden
+        // set visibility to hidden and disable pointer events so the UI behaves
+        // as if the PopperContent isn't there at all
+        ...(middlewareData.hide?.referenceHidden && {
+          visibility: 'hidden',
+          pointerEvents: 'none',
+        }),
+      },
+      dir: props.dir,
+      children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(PopperContentProvider, {
+        scope: __scopePopper,
+        placedSide,
+        placedAlign,
+        onArrowChange: setArrow,
+        arrowX,
+        arrowY,
+        shouldHideArrow: cannotCenterArrow,
+        children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Primitive.div, {
+          'data-side': placedSide,
+          'data-align': placedAlign,
+          ...contentProps,
+          ref: composedRefs,
+          style: {
+            ...contentProps.style,
+            // if the PopperContent hasn't been placed yet (not all measurements done)
+            // we prevent animations so that users's animation don't kick in too early referring wrong sides
+            animation: !isPositioned ? 'none' : void 0,
+          },
+        }),
+      }),
+    });
+  });
+  PopperContent.displayName = CONTENT_NAME;
+  var ARROW_NAME = 'PopperArrow';
+  var OPPOSITE_SIDE = {
+    top: 'bottom',
+    right: 'left',
+    bottom: 'top',
+    left: 'right',
+  };
+  var PopperArrow = React17.forwardRef(function PopperArrow2(props, forwardedRef) {
+    const { __scopePopper, ...arrowProps } = props;
+    const contentContext = useContentContext(ARROW_NAME, __scopePopper);
+    const baseSide = OPPOSITE_SIDE[contentContext.placedSide];
+    return (
+      // we have to use an extra wrapper because `ResizeObserver` (used by `useSize`)
+      // doesn't report size as we'd expect on SVG elements.
+      // it reports their bounding box which is effectively the largest path inside the SVG.
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)('span', {
+        ref: contentContext.onArrowChange,
+        style: {
+          position: 'absolute',
+          left: contentContext.arrowX,
+          top: contentContext.arrowY,
+          [baseSide]: 0,
+          transformOrigin: {
+            top: '',
+            right: '0 0',
+            bottom: 'center 0',
+            left: '100% 0',
+          }[contentContext.placedSide],
+          transform: {
+            top: 'translateY(100%)',
+            right: 'translateY(50%) rotate(90deg) translateX(-50%)',
+            bottom: `rotate(180deg)`,
+            left: 'translateY(50%) rotate(-90deg) translateX(50%)',
+          }[contentContext.placedSide],
+          visibility: contentContext.shouldHideArrow ? 'hidden' : void 0,
+        },
+        children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Root, {
+          ...arrowProps,
+          ref: forwardedRef,
+          style: {
+            ...arrowProps.style,
+            // ensures the element can be measured correctly (mostly for if SVG)
+            display: 'block',
+          },
+        }),
+      })
+    );
+  });
+  PopperArrow.displayName = ARROW_NAME;
+  function isNotNull(value) {
+    return value !== null;
+  }
+  var transformOrigin = (options2) => ({
+    name: 'transformOrigin',
+    options: options2,
+    fn(data) {
+      const { placement, rects, middlewareData } = data;
+      const cannotCenterArrow = middlewareData.arrow?.centerOffset !== 0;
+      const isArrowHidden = cannotCenterArrow;
+      const arrowWidth = isArrowHidden ? 0 : options2.arrowWidth;
+      const arrowHeight = isArrowHidden ? 0 : options2.arrowHeight;
+      const [placedSide, placedAlign] = getSideAndAlignFromPlacement(placement);
+      const noArrowAlign = { start: '0%', center: '50%', end: '100%' }[placedAlign];
+      const arrowXCenter = (middlewareData.arrow?.x ?? 0) + arrowWidth / 2;
+      const arrowYCenter = (middlewareData.arrow?.y ?? 0) + arrowHeight / 2;
+      let x = '';
+      let y = '';
+      if (placedSide === 'bottom') {
+        x = isArrowHidden ? noArrowAlign : `${arrowXCenter}px`;
+        y = `${-arrowHeight}px`;
+      } else if (placedSide === 'top') {
+        x = isArrowHidden ? noArrowAlign : `${arrowXCenter}px`;
+        y = `${rects.floating.height + arrowHeight}px`;
+      } else if (placedSide === 'right') {
+        x = `${-arrowHeight}px`;
+        y = isArrowHidden ? noArrowAlign : `${arrowYCenter}px`;
+      } else if (placedSide === 'left') {
+        x = `${rects.floating.width + arrowHeight}px`;
+        y = isArrowHidden ? noArrowAlign : `${arrowYCenter}px`;
+      }
+      return { data: { x, y } };
+    },
+  });
+  function getSideAndAlignFromPlacement(placement) {
+    const [side, align = 'center'] = placement.split('-');
+    return [side, align];
+  }
+  var Root2 = Popper;
+  var Anchor = PopperAnchor;
+  var Content = PopperContent;
+  var Arrow2 = PopperArrow;
+
+  // node_modules/@radix-ui/react-portal/dist/index.mjs
+  var React18 = __toESM(require_react(), 1);
+  var ReactDOM3 = __toESM(require_react_dom(), 1);
+  var import_jsx_runtime16 = __toESM(require_jsx_runtime(), 1);
+  var PORTAL_NAME = 'Portal';
+  var Portal = React18.forwardRef((props, forwardedRef) => {
+    const { container: containerProp, ...portalProps } = props;
+    const [mounted, setMounted] = React18.useState(false);
+    useLayoutEffect2(() => setMounted(true), []);
+    const container = containerProp || (mounted && globalThis?.document?.body);
+    return container
+      ? ReactDOM3.createPortal(
+          /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Primitive.div, {
+            ...portalProps,
+            ref: forwardedRef,
+          }),
+          container,
+        )
+      : null;
+  });
+  Portal.displayName = PORTAL_NAME;
+
+  // node_modules/@radix-ui/react-presence/dist/index.mjs
+  var React23 = __toESM(require_react(), 1);
+  var React19 = __toESM(require_react(), 1);
+  function useStateMachine(initialState, machine) {
+    return React19.useReducer((state, event) => {
+      const nextState = machine[state][event];
+      return nextState ?? state;
+    }, initialState);
+  }
+  var Presence = (props) => {
+    const { present, children } = props;
+    const presence = usePresence(present);
+    const child =
+      typeof children === 'function'
+        ? children({ present: presence.isPresent })
+        : React23.Children.only(children);
+    const ref = useStableComposedRefs(presence.ref, getElementRef2(child));
+    const forceMount = typeof children === 'function';
+    return forceMount || presence.isPresent ? React23.cloneElement(child, { ref }) : null;
+  };
+  Presence.displayName = 'Presence';
+  function usePresence(present) {
+    const [node, setNode] = React23.useState();
+    const stylesRef = React23.useRef(null);
+    const prevPresentRef = React23.useRef(present);
+    const prevAnimationNameRef = React23.useRef('none');
+    const initialState = present ? 'mounted' : 'unmounted';
+    const [state, send] = useStateMachine(initialState, {
+      mounted: {
+        UNMOUNT: 'unmounted',
+        ANIMATION_OUT: 'unmountSuspended',
+      },
+      unmountSuspended: {
+        MOUNT: 'mounted',
+        ANIMATION_END: 'unmounted',
+      },
+      unmounted: {
+        MOUNT: 'mounted',
+      },
+    });
+    React23.useEffect(() => {
+      const currentAnimationName = getAnimationName(stylesRef.current);
+      prevAnimationNameRef.current = state === 'mounted' ? currentAnimationName : 'none';
+    }, [state]);
+    useLayoutEffect2(() => {
+      const styles = stylesRef.current;
+      const wasPresent = prevPresentRef.current;
+      const hasPresentChanged = wasPresent !== present;
+      if (hasPresentChanged) {
+        const prevAnimationName = prevAnimationNameRef.current;
+        const currentAnimationName = getAnimationName(styles);
+        if (present) {
+          send('MOUNT');
+        } else if (currentAnimationName === 'none' || styles?.display === 'none') {
+          send('UNMOUNT');
+        } else {
+          const isAnimating = prevAnimationName !== currentAnimationName;
+          if (wasPresent && isAnimating) {
+            send('ANIMATION_OUT');
+          } else {
+            send('UNMOUNT');
+          }
+        }
+        prevPresentRef.current = present;
+      }
+    }, [present, send]);
+    useLayoutEffect2(() => {
+      if (node) {
+        let timeoutId;
+        const ownerWindow = node.ownerDocument.defaultView ?? window;
+        const handleAnimationEnd = (event) => {
+          const currentAnimationName = getAnimationName(stylesRef.current);
+          const isCurrentAnimation = currentAnimationName.includes(CSS.escape(event.animationName));
+          if (event.target === node && isCurrentAnimation) {
+            send('ANIMATION_END');
+            if (!prevPresentRef.current) {
+              const currentFillMode = node.style.animationFillMode;
+              node.style.animationFillMode = 'forwards';
+              timeoutId = ownerWindow.setTimeout(() => {
+                if (node.style.animationFillMode === 'forwards') {
+                  node.style.animationFillMode = currentFillMode;
+                }
+              });
+            }
+          }
+        };
+        const handleAnimationStart = (event) => {
+          if (event.target === node) {
+            prevAnimationNameRef.current = getAnimationName(stylesRef.current);
+          }
+        };
+        node.addEventListener('animationstart', handleAnimationStart);
+        node.addEventListener('animationcancel', handleAnimationEnd);
+        node.addEventListener('animationend', handleAnimationEnd);
+        return () => {
+          ownerWindow.clearTimeout(timeoutId);
+          node.removeEventListener('animationstart', handleAnimationStart);
+          node.removeEventListener('animationcancel', handleAnimationEnd);
+          node.removeEventListener('animationend', handleAnimationEnd);
+        };
+      } else {
+        send('ANIMATION_END');
+      }
+    }, [node, send]);
+    return {
+      isPresent: ['mounted', 'unmountSuspended'].includes(state),
+      ref: React23.useCallback((node2) => {
+        stylesRef.current = node2 ? getComputedStyle(node2) : null;
+        setNode(node2);
+      }, []),
+    };
+  }
+  function setRef2(ref, value) {
+    if (typeof ref === 'function') {
+      return ref(value);
+    } else if (ref !== null && ref !== void 0) {
+      ref.current = value;
+    }
+  }
+  function useStableComposedRefs(...refs) {
+    const refsRef = React23.useRef(refs);
+    refsRef.current = refs;
+    return React23.useCallback((node) => {
+      const currentRefs = refsRef.current;
+      let hasCleanup = false;
+      const cleanups = currentRefs.map((ref) => {
+        const cleanup = setRef2(ref, node);
+        if (!hasCleanup && typeof cleanup === 'function') {
+          hasCleanup = true;
+        }
+        return cleanup;
+      });
+      if (hasCleanup) {
+        return () => {
+          for (let i = 0; i < cleanups.length; i++) {
+            const cleanup = cleanups[i];
+            if (typeof cleanup === 'function') {
+              cleanup();
+            } else {
+              setRef2(currentRefs[i], null);
+            }
+          }
+        };
+      }
+    }, []);
+  }
+  function getAnimationName(styles) {
+    return styles?.animationName || 'none';
+  }
+  function getElementRef2(element) {
+    let getter = Object.getOwnPropertyDescriptor(element.props, 'ref')?.get;
+    let mayWarn = getter && 'isReactWarning' in getter && getter.isReactWarning;
+    if (mayWarn) {
+      return element.ref;
+    }
+    getter = Object.getOwnPropertyDescriptor(element, 'ref')?.get;
+    mayWarn = getter && 'isReactWarning' in getter && getter.isReactWarning;
+    if (mayWarn) {
+      return element.props.ref;
+    }
+    return element.props.ref || element.ref;
+  }
+
+  // node_modules/@radix-ui/react-use-controllable-state/dist/index.mjs
+  var React20 = __toESM(require_react(), 1);
+  var React24 = __toESM(require_react(), 1);
+  var useInsertionEffect = React20[' useInsertionEffect '.trim().toString()] || useLayoutEffect2;
+  function useControllableState({ prop, defaultProp, onChange = () => {}, caller }) {
+    const [uncontrolledProp, setUncontrolledProp, onChangeRef] = useUncontrolledState({
+      defaultProp,
+      onChange,
+    });
+    const isControlled = prop !== void 0;
+    const value = isControlled ? prop : uncontrolledProp;
+    if (true) {
+      const isControlledRef = React20.useRef(prop !== void 0);
+      React20.useEffect(() => {
+        const wasControlled = isControlledRef.current;
+        if (wasControlled !== isControlled) {
+          const from = wasControlled ? 'controlled' : 'uncontrolled';
+          const to = isControlled ? 'controlled' : 'uncontrolled';
+          console.warn(
+            `${caller} is changing from ${from} to ${to}. Components should not switch from controlled to uncontrolled (or vice versa). Decide between using a controlled or uncontrolled value for the lifetime of the component.`,
+          );
+        }
+        isControlledRef.current = isControlled;
+      }, [isControlled, caller]);
+    }
+    const setValue = React20.useCallback(
+      (nextValue) => {
+        if (isControlled) {
+          const value2 = isFunction(nextValue) ? nextValue(prop) : nextValue;
+          if (value2 !== prop) {
+            onChangeRef.current?.(value2);
+          }
+        } else {
+          setUncontrolledProp(nextValue);
+        }
+      },
+      [isControlled, prop, setUncontrolledProp, onChangeRef],
+    );
+    return [value, setValue];
+  }
+  function useUncontrolledState({ defaultProp, onChange }) {
+    const [value, setValue] = React20.useState(defaultProp);
+    const prevValueRef = React20.useRef(value);
+    const onChangeRef = React20.useRef(onChange);
+    useInsertionEffect(() => {
+      onChangeRef.current = onChange;
+    }, [onChange]);
+    React20.useEffect(() => {
+      if (prevValueRef.current !== value) {
+        onChangeRef.current?.(value);
+        prevValueRef.current = value;
+      }
+    }, [value, prevValueRef]);
+    return [value, setValue, onChangeRef];
+  }
+  function isFunction(value) {
+    return typeof value === 'function';
+  }
+
+  // node_modules/@radix-ui/react-use-previous/dist/index.mjs
+  var React21 = __toESM(require_react(), 1);
+  function usePrevious(value) {
+    const ref = React21.useRef({ value, previous: value });
+    return React21.useMemo(() => {
+      if (ref.current.value !== value) {
+        ref.current.previous = ref.current.value;
+        ref.current.value = value;
+      }
+      return ref.current.previous;
+    }, [value]);
+  }
+
+  // node_modules/@radix-ui/react-visually-hidden/dist/index.mjs
+  var React25 = __toESM(require_react(), 1);
+  var import_jsx_runtime17 = __toESM(require_jsx_runtime(), 1);
+  var VISUALLY_HIDDEN_STYLES = Object.freeze({
+    // See: https://github.com/twbs/bootstrap/blob/main/scss/mixins/_visually-hidden.scss
+    position: 'absolute',
+    border: 0,
+    width: 1,
+    height: 1,
+    padding: 0,
+    margin: -1,
+    overflow: 'hidden',
+    clip: 'rect(0, 0, 0, 0)',
+    whiteSpace: 'nowrap',
+    wordWrap: 'normal',
+  });
+  var NAME2 = 'VisuallyHidden';
+  var VisuallyHidden = React25.forwardRef((props, forwardedRef) => {
+    return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Primitive.span, {
+      ...props,
+      ref: forwardedRef,
+      style: { ...VISUALLY_HIDDEN_STYLES, ...props.style },
+    });
+  });
+  VisuallyHidden.displayName = NAME2;
+
+  // node_modules/aria-hidden/dist/es2015/index.js
+  var getDefaultParent = function (originalTarget) {
+    if (typeof document === 'undefined') {
+      return null;
+    }
+    var sampleTarget = Array.isArray(originalTarget) ? originalTarget[0] : originalTarget;
+    return sampleTarget.ownerDocument.body;
+  };
+  var counterMap = /* @__PURE__ */ new WeakMap();
+  var uncontrolledNodes = /* @__PURE__ */ new WeakMap();
+  var markerMap = {};
+  var lockCount = 0;
+  var unwrapHost = function (node) {
+    return node && (node.host || unwrapHost(node.parentNode));
+  };
+  var correctTargets = function (parent, targets) {
+    return targets
+      .map(function (target) {
+        if (parent.contains(target)) {
+          return target;
+        }
+        var correctedTarget = unwrapHost(target);
+        if (correctedTarget && parent.contains(correctedTarget)) {
+          return correctedTarget;
+        }
+        console.error('aria-hidden', target, 'in not contained inside', parent, '. Doing nothing');
+        return null;
+      })
+      .filter(function (x) {
+        return Boolean(x);
+      });
+  };
+  var applyAttributeToOthers = function (originalTarget, parentNode, markerName, controlAttribute) {
+    var targets = correctTargets(
+      parentNode,
+      Array.isArray(originalTarget) ? originalTarget : [originalTarget],
+    );
+    if (!markerMap[markerName]) {
+      markerMap[markerName] = /* @__PURE__ */ new WeakMap();
+    }
+    var markerCounter = markerMap[markerName];
+    var hiddenNodes = [];
+    var elementsToKeep = /* @__PURE__ */ new Set();
+    var elementsToStop = new Set(targets);
+    var keep = function (el) {
+      if (!el || elementsToKeep.has(el)) {
+        return;
+      }
+      elementsToKeep.add(el);
+      keep(el.parentNode);
+    };
+    targets.forEach(keep);
+    var deep = function (parent) {
+      if (!parent || elementsToStop.has(parent)) {
+        return;
+      }
+      Array.prototype.forEach.call(parent.children, function (node) {
+        if (elementsToKeep.has(node)) {
+          deep(node);
+        } else {
+          try {
+            var attr = node.getAttribute(controlAttribute);
+            var alreadyHidden = attr !== null && attr !== 'false';
+            var counterValue = (counterMap.get(node) || 0) + 1;
+            var markerValue = (markerCounter.get(node) || 0) + 1;
+            counterMap.set(node, counterValue);
+            markerCounter.set(node, markerValue);
+            hiddenNodes.push(node);
+            if (counterValue === 1 && alreadyHidden) {
+              uncontrolledNodes.set(node, true);
+            }
+            if (markerValue === 1) {
+              node.setAttribute(markerName, 'true');
+            }
+            if (!alreadyHidden) {
+              node.setAttribute(controlAttribute, 'true');
+            }
+          } catch (e) {
+            console.error('aria-hidden: cannot operate on ', node, e);
+          }
+        }
+      });
+    };
+    deep(parentNode);
+    elementsToKeep.clear();
+    lockCount++;
+    return function () {
+      hiddenNodes.forEach(function (node) {
+        var counterValue = counterMap.get(node) - 1;
+        var markerValue = markerCounter.get(node) - 1;
+        counterMap.set(node, counterValue);
+        markerCounter.set(node, markerValue);
+        if (!counterValue) {
+          if (!uncontrolledNodes.has(node)) {
+            node.removeAttribute(controlAttribute);
+          }
+          uncontrolledNodes.delete(node);
+        }
+        if (!markerValue) {
+          node.removeAttribute(markerName);
+        }
+      });
+      lockCount--;
+      if (!lockCount) {
+        counterMap = /* @__PURE__ */ new WeakMap();
+        counterMap = /* @__PURE__ */ new WeakMap();
+        uncontrolledNodes = /* @__PURE__ */ new WeakMap();
+        markerMap = {};
+      }
+    };
+  };
+  var hideOthers = function (originalTarget, parentNode, markerName) {
+    if (markerName === void 0) {
+      markerName = 'data-aria-hidden';
+    }
+    var targets = Array.from(Array.isArray(originalTarget) ? originalTarget : [originalTarget]);
+    var activeParentNode = parentNode || getDefaultParent(originalTarget);
+    if (!activeParentNode) {
+      return function () {
+        return null;
+      };
+    }
+    targets.push.apply(
+      targets,
+      Array.from(activeParentNode.querySelectorAll('[aria-live], script')),
+    );
+    return applyAttributeToOthers(targets, activeParentNode, markerName, 'aria-hidden');
+  };
+
+  // node_modules/tslib/tslib.es6.mjs
+  var __assign = function () {
+    __assign =
+      Object.assign ||
+      function __assign2(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+          s = arguments[i];
+          for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+        }
+        return t;
+      };
+    return __assign.apply(this, arguments);
+  };
+  function __rest(s, e) {
+    var t = {};
+    for (var p in s)
+      if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0) t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === 'function')
+      for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+        if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+          t[p[i]] = s[p[i]];
+      }
+    return t;
+  }
+  function __spreadArray(to, from, pack) {
+    if (pack || arguments.length === 2)
+      for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+          if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+          ar[i] = from[i];
+        }
+      }
+    return to.concat(ar || Array.prototype.slice.call(from));
+  }
+
+  // node_modules/react-remove-scroll/dist/es2015/Combination.js
+  var React32 = __toESM(require_react());
+
+  // node_modules/react-remove-scroll/dist/es2015/UI.js
+  var React28 = __toESM(require_react());
+
+  // node_modules/react-remove-scroll-bar/dist/es2015/constants.js
+  var zeroRightClassName = 'right-scroll-bar-position';
+  var fullWidthClassName = 'width-before-scroll-bar';
+  var noScrollbarsClassName = 'with-scroll-bars-hidden';
+  var removedBarSizeVariable = '--removed-body-scroll-bar-size';
+
+  // node_modules/use-callback-ref/dist/es2015/assignRef.js
+  function assignRef(ref, value) {
+    if (typeof ref === 'function') {
+      ref(value);
+    } else if (ref) {
+      ref.current = value;
+    }
+    return ref;
+  }
+
+  // node_modules/use-callback-ref/dist/es2015/useRef.js
+  var import_react7 = __toESM(require_react());
+  function useCallbackRef2(initialValue, callback) {
+    var ref = (0, import_react7.useState)(function () {
+      return {
+        // value
+        value: initialValue,
+        // last callback
+        callback,
+        // "memoized" public interface
+        facade: {
+          get current() {
+            return ref.value;
+          },
+          set current(value) {
+            var last = ref.value;
+            if (last !== value) {
+              ref.value = value;
+              ref.callback(value, last);
+            }
+          },
+        },
+      };
+    })[0];
+    ref.callback = callback;
+    return ref.facade;
+  }
+
+  // node_modules/use-callback-ref/dist/es2015/useMergeRef.js
+  var React26 = __toESM(require_react());
+  var useIsomorphicLayoutEffect =
+    typeof window !== 'undefined' ? React26.useLayoutEffect : React26.useEffect;
+  var currentValues = /* @__PURE__ */ new WeakMap();
+  function useMergeRefs(refs, defaultValue) {
+    var callbackRef = useCallbackRef2(defaultValue || null, function (newValue) {
+      return refs.forEach(function (ref) {
+        return assignRef(ref, newValue);
+      });
+    });
+    useIsomorphicLayoutEffect(
+      function () {
+        var oldValue = currentValues.get(callbackRef);
+        if (oldValue) {
+          var prevRefs_1 = new Set(oldValue);
+          var nextRefs_1 = new Set(refs);
+          var current_1 = callbackRef.current;
+          prevRefs_1.forEach(function (ref) {
+            if (!nextRefs_1.has(ref)) {
+              assignRef(ref, null);
+            }
+          });
+          nextRefs_1.forEach(function (ref) {
+            if (!prevRefs_1.has(ref)) {
+              assignRef(ref, current_1);
+            }
+          });
+        }
+        currentValues.set(callbackRef, refs);
+      },
+      [refs],
+    );
+    return callbackRef;
+  }
+
+  // node_modules/use-sidecar/dist/es2015/medium.js
+  function ItoI(a) {
+    return a;
+  }
+  function innerCreateMedium(defaults, middleware) {
+    if (middleware === void 0) {
+      middleware = ItoI;
+    }
+    var buffer = [];
+    var assigned = false;
+    var medium = {
+      read: function () {
+        if (assigned) {
+          throw new Error(
+            'Sidecar: could not `read` from an `assigned` medium. `read` could be used only with `useMedium`.',
+          );
+        }
+        if (buffer.length) {
+          return buffer[buffer.length - 1];
+        }
+        return defaults;
+      },
+      useMedium: function (data) {
+        var item = middleware(data, assigned);
+        buffer.push(item);
+        return function () {
+          buffer = buffer.filter(function (x) {
+            return x !== item;
+          });
+        };
+      },
+      assignSyncMedium: function (cb) {
+        assigned = true;
+        while (buffer.length) {
+          var cbs = buffer;
+          buffer = [];
+          cbs.forEach(cb);
+        }
+        buffer = {
+          push: function (x) {
+            return cb(x);
+          },
+          filter: function () {
+            return buffer;
+          },
+        };
+      },
+      assignMedium: function (cb) {
+        assigned = true;
+        var pendingQueue = [];
+        if (buffer.length) {
+          var cbs = buffer;
+          buffer = [];
+          cbs.forEach(cb);
+          pendingQueue = buffer;
+        }
+        var executeQueue = function () {
+          var cbs2 = pendingQueue;
+          pendingQueue = [];
+          cbs2.forEach(cb);
+        };
+        var cycle = function () {
+          return Promise.resolve().then(executeQueue);
+        };
+        cycle();
+        buffer = {
+          push: function (x) {
+            pendingQueue.push(x);
+            cycle();
+          },
+          filter: function (filter) {
+            pendingQueue = pendingQueue.filter(filter);
+            return buffer;
+          },
+        };
+      },
+    };
+    return medium;
+  }
+  function createSidecarMedium(options2) {
+    if (options2 === void 0) {
+      options2 = {};
+    }
+    var medium = innerCreateMedium(null);
+    medium.options = __assign({ async: true, ssr: false }, options2);
+    return medium;
+  }
+
+  // node_modules/use-sidecar/dist/es2015/exports.js
+  var React27 = __toESM(require_react());
+  var SideCar = function (_a) {
+    var sideCar = _a.sideCar,
+      rest = __rest(_a, ['sideCar']);
+    if (!sideCar) {
+      throw new Error('Sidecar: please provide `sideCar` property to import the right car');
+    }
+    var Target = sideCar.read();
+    if (!Target) {
+      throw new Error('Sidecar medium not found');
+    }
+    return React27.createElement(Target, __assign({}, rest));
+  };
+  SideCar.isSideCarExport = true;
+  function exportSidecar(medium, exported) {
+    medium.useMedium(exported);
+    return SideCar;
+  }
+
+  // node_modules/react-remove-scroll/dist/es2015/medium.js
+  var effectCar = createSidecarMedium();
+
+  // node_modules/react-remove-scroll/dist/es2015/UI.js
+  var nothing = function () {
+    return;
+  };
+  var RemoveScroll = React28.forwardRef(function (props, parentRef) {
+    var ref = React28.useRef(null);
+    var _a = React28.useState({
+        onScrollCapture: nothing,
+        onWheelCapture: nothing,
+        onTouchMoveCapture: nothing,
+      }),
+      callbacks = _a[0],
+      setCallbacks = _a[1];
+    var forwardProps = props.forwardProps,
+      children = props.children,
+      className = props.className,
+      removeScrollBar = props.removeScrollBar,
+      enabled = props.enabled,
+      shards = props.shards,
+      sideCar = props.sideCar,
+      noRelative = props.noRelative,
+      noIsolation = props.noIsolation,
+      inert = props.inert,
+      allowPinchZoom = props.allowPinchZoom,
+      _b = props.as,
+      Container = _b === void 0 ? 'div' : _b,
+      gapMode = props.gapMode,
+      rest = __rest(props, [
+        'forwardProps',
+        'children',
+        'className',
+        'removeScrollBar',
+        'enabled',
+        'shards',
+        'sideCar',
+        'noRelative',
+        'noIsolation',
+        'inert',
+        'allowPinchZoom',
+        'as',
+        'gapMode',
+      ]);
+    var SideCar2 = sideCar;
+    var containerRef = useMergeRefs([ref, parentRef]);
+    var containerProps = __assign(__assign({}, rest), callbacks);
+    return React28.createElement(
+      React28.Fragment,
+      null,
+      enabled &&
+        React28.createElement(SideCar2, {
+          sideCar: effectCar,
+          removeScrollBar,
+          shards,
+          noRelative,
+          noIsolation,
+          inert,
+          setCallbacks,
+          allowPinchZoom: !!allowPinchZoom,
+          lockRef: ref,
+          gapMode,
+        }),
+      forwardProps
+        ? React28.cloneElement(
+            React28.Children.only(children),
+            __assign(__assign({}, containerProps), { ref: containerRef }),
+          )
+        : React28.createElement(
+            Container,
+            __assign({}, containerProps, { className, ref: containerRef }),
+            children,
+          ),
+    );
+  });
+  RemoveScroll.defaultProps = {
+    enabled: true,
+    removeScrollBar: true,
+    inert: false,
+  };
+  RemoveScroll.classNames = {
+    fullWidth: fullWidthClassName,
+    zeroRight: zeroRightClassName,
+  };
+
+  // node_modules/react-remove-scroll/dist/es2015/SideEffect.js
+  var React31 = __toESM(require_react());
+
+  // node_modules/react-remove-scroll-bar/dist/es2015/component.js
+  var React30 = __toESM(require_react());
+
+  // node_modules/react-style-singleton/dist/es2015/hook.js
+  var React29 = __toESM(require_react());
+
+  // node_modules/get-nonce/dist/es2015/index.js
+  var currentNonce;
+  var getNonce = function () {
+    if (currentNonce) {
+      return currentNonce;
+    }
+    if (typeof __webpack_nonce__ !== 'undefined') {
+      return __webpack_nonce__;
+    }
+    return void 0;
+  };
+
+  // node_modules/react-style-singleton/dist/es2015/singleton.js
+  function makeStyleTag() {
+    if (!document) return null;
+    var tag = document.createElement('style');
+    tag.type = 'text/css';
+    var nonce = getNonce();
+    if (nonce) {
+      tag.setAttribute('nonce', nonce);
+    }
+    return tag;
+  }
+  function injectStyles(tag, css) {
+    if (tag.styleSheet) {
+      tag.styleSheet.cssText = css;
+    } else {
+      tag.appendChild(document.createTextNode(css));
+    }
+  }
+  function insertStyleTag(tag) {
+    var head = document.head || document.getElementsByTagName('head')[0];
+    head.appendChild(tag);
+  }
+  var stylesheetSingleton = function () {
+    var counter = 0;
+    var stylesheet = null;
+    return {
+      add: function (style) {
+        if (counter == 0) {
+          if ((stylesheet = makeStyleTag())) {
+            injectStyles(stylesheet, style);
+            insertStyleTag(stylesheet);
+          }
+        }
+        counter++;
+      },
+      remove: function () {
+        counter--;
+        if (!counter && stylesheet) {
+          stylesheet.parentNode && stylesheet.parentNode.removeChild(stylesheet);
+          stylesheet = null;
+        }
+      },
+    };
+  };
+
+  // node_modules/react-style-singleton/dist/es2015/hook.js
+  var styleHookSingleton = function () {
+    var sheet = stylesheetSingleton();
+    return function (styles, isDynamic) {
+      React29.useEffect(
+        function () {
+          sheet.add(styles);
+          return function () {
+            sheet.remove();
+          };
+        },
+        [styles && isDynamic],
+      );
+    };
+  };
+
+  // node_modules/react-style-singleton/dist/es2015/component.js
+  var styleSingleton = function () {
+    var useStyle = styleHookSingleton();
+    var Sheet = function (_a) {
+      var styles = _a.styles,
+        dynamic = _a.dynamic;
+      useStyle(styles, dynamic);
+      return null;
+    };
+    return Sheet;
+  };
+
+  // node_modules/react-remove-scroll-bar/dist/es2015/utils.js
+  var zeroGap = {
+    left: 0,
+    top: 0,
+    right: 0,
+    gap: 0,
+  };
+  var parse = function (x) {
+    return parseInt(x || '', 10) || 0;
+  };
+  var getOffset = function (gapMode) {
+    var cs = window.getComputedStyle(document.body);
+    var left = cs[gapMode === 'padding' ? 'paddingLeft' : 'marginLeft'];
+    var top = cs[gapMode === 'padding' ? 'paddingTop' : 'marginTop'];
+    var right = cs[gapMode === 'padding' ? 'paddingRight' : 'marginRight'];
+    return [parse(left), parse(top), parse(right)];
+  };
+  var getGapWidth = function (gapMode) {
+    if (gapMode === void 0) {
+      gapMode = 'margin';
+    }
+    if (typeof window === 'undefined') {
+      return zeroGap;
+    }
+    var offsets = getOffset(gapMode);
+    var documentWidth = document.documentElement.clientWidth;
+    var windowWidth = window.innerWidth;
+    return {
+      left: offsets[0],
+      top: offsets[1],
+      right: offsets[2],
+      gap: Math.max(0, windowWidth - documentWidth + offsets[2] - offsets[0]),
+    };
+  };
+
+  // node_modules/react-remove-scroll-bar/dist/es2015/component.js
+  var Style = styleSingleton();
+  var lockAttribute = 'data-scroll-locked';
+  var getStyles = function (_a, allowRelative, gapMode, important) {
+    var left = _a.left,
+      top = _a.top,
+      right = _a.right,
+      gap = _a.gap;
+    if (gapMode === void 0) {
+      gapMode = 'margin';
+    }
+    return '\n  .'
+      .concat(noScrollbarsClassName, ' {\n   overflow: hidden ')
+      .concat(important, ';\n   padding-right: ')
+      .concat(gap, 'px ')
+      .concat(important, ';\n  }\n  body[')
+      .concat(lockAttribute, '] {\n    overflow: hidden ')
+      .concat(important, ';\n    overscroll-behavior: contain;\n    ')
+      .concat(
+        [
+          allowRelative && 'position: relative '.concat(important, ';'),
+          gapMode === 'margin' &&
+            '\n    padding-left: '
+              .concat(left, 'px;\n    padding-top: ')
+              .concat(top, 'px;\n    padding-right: ')
+              .concat(right, 'px;\n    margin-left:0;\n    margin-top:0;\n    margin-right: ')
+              .concat(gap, 'px ')
+              .concat(important, ';\n    '),
+          gapMode === 'padding' && 'padding-right: '.concat(gap, 'px ').concat(important, ';'),
+        ]
+          .filter(Boolean)
+          .join(''),
+        '\n  }\n  \n  .',
+      )
+      .concat(zeroRightClassName, ' {\n    right: ')
+      .concat(gap, 'px ')
+      .concat(important, ';\n  }\n  \n  .')
+      .concat(fullWidthClassName, ' {\n    margin-right: ')
+      .concat(gap, 'px ')
+      .concat(important, ';\n  }\n  \n  .')
+      .concat(zeroRightClassName, ' .')
+      .concat(zeroRightClassName, ' {\n    right: 0 ')
+      .concat(important, ';\n  }\n  \n  .')
+      .concat(fullWidthClassName, ' .')
+      .concat(fullWidthClassName, ' {\n    margin-right: 0 ')
+      .concat(important, ';\n  }\n  \n  body[')
+      .concat(lockAttribute, '] {\n    ')
+      .concat(removedBarSizeVariable, ': ')
+      .concat(gap, 'px;\n  }\n');
+  };
+  var getCurrentUseCounter = function () {
+    var counter = parseInt(document.body.getAttribute(lockAttribute) || '0', 10);
+    return isFinite(counter) ? counter : 0;
+  };
+  var useLockAttribute = function () {
+    React30.useEffect(function () {
+      document.body.setAttribute(lockAttribute, (getCurrentUseCounter() + 1).toString());
+      return function () {
+        var newCounter = getCurrentUseCounter() - 1;
+        if (newCounter <= 0) {
+          document.body.removeAttribute(lockAttribute);
+        } else {
+          document.body.setAttribute(lockAttribute, newCounter.toString());
+        }
+      };
+    }, []);
+  };
+  var RemoveScrollBar = function (_a) {
+    var noRelative = _a.noRelative,
+      noImportant = _a.noImportant,
+      _b = _a.gapMode,
+      gapMode = _b === void 0 ? 'margin' : _b;
+    useLockAttribute();
+    var gap = React30.useMemo(
+      function () {
+        return getGapWidth(gapMode);
+      },
+      [gapMode],
+    );
+    return React30.createElement(Style, {
+      styles: getStyles(gap, !noRelative, gapMode, !noImportant ? '!important' : ''),
+    });
+  };
+
+  // node_modules/react-remove-scroll/dist/es2015/aggresiveCapture.js
+  var passiveSupported = false;
+  if (typeof window !== 'undefined') {
+    try {
+      options = Object.defineProperty({}, 'passive', {
+        get: function () {
+          passiveSupported = true;
+          return true;
+        },
+      });
+      window.addEventListener('test', options, options);
+      window.removeEventListener('test', options, options);
+    } catch (err) {
+      passiveSupported = false;
+    }
+  }
+  var options;
+  var nonPassive = passiveSupported ? { passive: false } : false;
+
+  // node_modules/react-remove-scroll/dist/es2015/handleScroll.js
+  var alwaysContainsScroll = function (node) {
+    return node.tagName === 'TEXTAREA';
+  };
+  var elementCanBeScrolled = function (node, overflow) {
+    if (!(node instanceof Element)) {
+      return false;
+    }
+    var styles = window.getComputedStyle(node);
+    return (
+      // not-not-scrollable
+      styles[overflow] !== 'hidden' && // contains scroll inside self
+      !(
+        styles.overflowY === styles.overflowX &&
+        !alwaysContainsScroll(node) &&
+        styles[overflow] === 'visible'
+      )
+    );
+  };
+  var elementCouldBeVScrolled = function (node) {
+    return elementCanBeScrolled(node, 'overflowY');
+  };
+  var elementCouldBeHScrolled = function (node) {
+    return elementCanBeScrolled(node, 'overflowX');
+  };
+  var locationCouldBeScrolled = function (axis, node) {
+    var ownerDocument = node.ownerDocument;
+    var current = node;
+    do {
+      if (typeof ShadowRoot !== 'undefined' && current instanceof ShadowRoot) {
+        current = current.host;
+      }
+      var isScrollable = elementCouldBeScrolled(axis, current);
+      if (isScrollable) {
+        var _a = getScrollVariables(axis, current),
+          scrollHeight = _a[1],
+          clientHeight = _a[2];
+        if (scrollHeight > clientHeight) {
+          return true;
+        }
+      }
+      current = current.parentNode;
+    } while (current && current !== ownerDocument.body);
+    return false;
+  };
+  var getVScrollVariables = function (_a) {
+    var scrollTop = _a.scrollTop,
+      scrollHeight = _a.scrollHeight,
+      clientHeight = _a.clientHeight;
+    return [scrollTop, scrollHeight, clientHeight];
+  };
+  var getHScrollVariables = function (_a) {
+    var scrollLeft = _a.scrollLeft,
+      scrollWidth = _a.scrollWidth,
+      clientWidth = _a.clientWidth;
+    return [scrollLeft, scrollWidth, clientWidth];
+  };
+  var elementCouldBeScrolled = function (axis, node) {
+    return axis === 'v' ? elementCouldBeVScrolled(node) : elementCouldBeHScrolled(node);
+  };
+  var getScrollVariables = function (axis, node) {
+    return axis === 'v' ? getVScrollVariables(node) : getHScrollVariables(node);
+  };
+  var getDirectionFactor = function (axis, direction) {
+    return axis === 'h' && direction === 'rtl' ? -1 : 1;
+  };
+  var handleScroll = function (axis, endTarget, event, sourceDelta, noOverscroll) {
+    var directionFactor = getDirectionFactor(axis, window.getComputedStyle(endTarget).direction);
+    var delta = directionFactor * sourceDelta;
+    var target = event.target;
+    var targetInLock = endTarget.contains(target);
+    var shouldCancelScroll = false;
+    var isDeltaPositive = delta > 0;
+    var availableScroll = 0;
+    var availableScrollTop = 0;
+    do {
+      if (!target) {
+        break;
+      }
+      var _a = getScrollVariables(axis, target),
+        position = _a[0],
+        scroll_1 = _a[1],
+        capacity = _a[2];
+      var elementScroll = scroll_1 - capacity - directionFactor * position;
+      if (position || elementScroll) {
+        if (elementCouldBeScrolled(axis, target)) {
+          availableScroll += elementScroll;
+          availableScrollTop += position;
+        }
+      }
+      var parent_1 = target.parentNode;
+      target =
+        parent_1 && parent_1.nodeType === Node.DOCUMENT_FRAGMENT_NODE ? parent_1.host : parent_1;
+    } while (
+      // portaled content
+      (!targetInLock && target !== document.body) || // self content
+      (targetInLock && (endTarget.contains(target) || endTarget === target))
+    );
+    if (
+      isDeltaPositive &&
+      ((noOverscroll && Math.abs(availableScroll) < 1) ||
+        (!noOverscroll && delta > availableScroll))
+    ) {
+      shouldCancelScroll = true;
+    } else if (
+      !isDeltaPositive &&
+      ((noOverscroll && Math.abs(availableScrollTop) < 1) ||
+        (!noOverscroll && -delta > availableScrollTop))
+    ) {
+      shouldCancelScroll = true;
+    }
+    return shouldCancelScroll;
+  };
+
+  // node_modules/react-remove-scroll/dist/es2015/SideEffect.js
+  var getTouchXY = function (event) {
+    return 'changedTouches' in event
+      ? [event.changedTouches[0].clientX, event.changedTouches[0].clientY]
+      : [0, 0];
+  };
+  var getDeltaXY = function (event) {
+    return [event.deltaX, event.deltaY];
+  };
+  var extractRef = function (ref) {
+    return ref && 'current' in ref ? ref.current : ref;
+  };
+  var deltaCompare = function (x, y) {
+    return x[0] === y[0] && x[1] === y[1];
+  };
+  var generateStyle = function (id) {
+    return '\n  .block-interactivity-'
+      .concat(id, ' {pointer-events: none;}\n  .allow-interactivity-')
+      .concat(id, ' {pointer-events: all;}\n');
+  };
+  var idCounter = 0;
+  var lockStack = [];
+  function RemoveScrollSideCar(props) {
+    var shouldPreventQueue = React31.useRef([]);
+    var touchStartRef = React31.useRef([0, 0]);
+    var activeAxis = React31.useRef();
+    var id = React31.useState(idCounter++)[0];
+    var Style2 = React31.useState(styleSingleton)[0];
+    var lastProps = React31.useRef(props);
+    React31.useEffect(
+      function () {
+        lastProps.current = props;
+      },
+      [props],
+    );
+    React31.useEffect(
+      function () {
+        if (props.inert) {
+          document.body.classList.add('block-interactivity-'.concat(id));
+          var allow_1 = __spreadArray(
+            [props.lockRef.current],
+            (props.shards || []).map(extractRef),
+            true,
+          ).filter(Boolean);
+          allow_1.forEach(function (el) {
+            return el.classList.add('allow-interactivity-'.concat(id));
+          });
+          return function () {
+            document.body.classList.remove('block-interactivity-'.concat(id));
+            allow_1.forEach(function (el) {
+              return el.classList.remove('allow-interactivity-'.concat(id));
+            });
+          };
+        }
+        return;
+      },
+      [props.inert, props.lockRef.current, props.shards],
+    );
+    var shouldCancelEvent = React31.useCallback(function (event, parent) {
+      if (
+        ('touches' in event && event.touches.length === 2) ||
+        (event.type === 'wheel' && event.ctrlKey)
+      ) {
+        return !lastProps.current.allowPinchZoom;
+      }
+      var touch = getTouchXY(event);
+      var touchStart = touchStartRef.current;
+      var deltaX = 'deltaX' in event ? event.deltaX : touchStart[0] - touch[0];
+      var deltaY = 'deltaY' in event ? event.deltaY : touchStart[1] - touch[1];
+      var currentAxis;
+      var target = event.target;
+      var moveDirection = Math.abs(deltaX) > Math.abs(deltaY) ? 'h' : 'v';
+      if ('touches' in event && moveDirection === 'h' && target.type === 'range') {
+        return false;
+      }
+      var selection = window.getSelection();
+      var anchorNode = selection && selection.anchorNode;
+      var isTouchingSelection = anchorNode
+        ? anchorNode === target || anchorNode.contains(target)
+        : false;
+      if (isTouchingSelection) {
+        return false;
+      }
+      var canBeScrolledInMainDirection = locationCouldBeScrolled(moveDirection, target);
+      if (!canBeScrolledInMainDirection) {
+        return true;
+      }
+      if (canBeScrolledInMainDirection) {
+        currentAxis = moveDirection;
+      } else {
+        currentAxis = moveDirection === 'v' ? 'h' : 'v';
+        canBeScrolledInMainDirection = locationCouldBeScrolled(moveDirection, target);
+      }
+      if (!canBeScrolledInMainDirection) {
+        return false;
+      }
+      if (!activeAxis.current && 'changedTouches' in event && (deltaX || deltaY)) {
+        activeAxis.current = currentAxis;
+      }
+      if (!currentAxis) {
+        return true;
+      }
+      var cancelingAxis = activeAxis.current || currentAxis;
+      return handleScroll(
+        cancelingAxis,
+        parent,
+        event,
+        cancelingAxis === 'h' ? deltaX : deltaY,
+        true,
+      );
+    }, []);
+    var shouldPrevent = React31.useCallback(function (_event) {
+      var event = _event;
+      if (!lockStack.length || lockStack[lockStack.length - 1] !== Style2) {
+        return;
+      }
+      var delta = 'deltaY' in event ? getDeltaXY(event) : getTouchXY(event);
+      var sourceEvent = shouldPreventQueue.current.filter(function (e) {
+        return (
+          e.name === event.type &&
+          (e.target === event.target || event.target === e.shadowParent) &&
+          deltaCompare(e.delta, delta)
+        );
+      })[0];
+      if (sourceEvent && sourceEvent.should) {
+        if (event.cancelable) {
+          event.preventDefault();
+        }
+        return;
+      }
+      if (!sourceEvent) {
+        var shardNodes = (lastProps.current.shards || [])
+          .map(extractRef)
+          .filter(Boolean)
+          .filter(function (node) {
+            return node.contains(event.target);
+          });
+        var shouldStop =
+          shardNodes.length > 0
+            ? shouldCancelEvent(event, shardNodes[0])
+            : !lastProps.current.noIsolation;
+        if (shouldStop) {
+          if (event.cancelable) {
+            event.preventDefault();
+          }
+        }
+      }
+    }, []);
+    var shouldCancel = React31.useCallback(function (name, delta, target, should) {
+      var event = { name, delta, target, should, shadowParent: getOutermostShadowParent(target) };
+      shouldPreventQueue.current.push(event);
+      setTimeout(function () {
+        shouldPreventQueue.current = shouldPreventQueue.current.filter(function (e) {
+          return e !== event;
+        });
+      }, 1);
+    }, []);
+    var scrollTouchStart = React31.useCallback(function (event) {
+      touchStartRef.current = getTouchXY(event);
+      activeAxis.current = void 0;
+    }, []);
+    var scrollWheel = React31.useCallback(function (event) {
+      shouldCancel(
+        event.type,
+        getDeltaXY(event),
+        event.target,
+        shouldCancelEvent(event, props.lockRef.current),
+      );
+    }, []);
+    var scrollTouchMove = React31.useCallback(function (event) {
+      shouldCancel(
+        event.type,
+        getTouchXY(event),
+        event.target,
+        shouldCancelEvent(event, props.lockRef.current),
+      );
+    }, []);
+    React31.useEffect(function () {
+      lockStack.push(Style2);
+      props.setCallbacks({
+        onScrollCapture: scrollWheel,
+        onWheelCapture: scrollWheel,
+        onTouchMoveCapture: scrollTouchMove,
+      });
+      document.addEventListener('wheel', shouldPrevent, nonPassive);
+      document.addEventListener('touchmove', shouldPrevent, nonPassive);
+      document.addEventListener('touchstart', scrollTouchStart, nonPassive);
+      return function () {
+        lockStack = lockStack.filter(function (inst) {
+          return inst !== Style2;
+        });
+        document.removeEventListener('wheel', shouldPrevent, nonPassive);
+        document.removeEventListener('touchmove', shouldPrevent, nonPassive);
+        document.removeEventListener('touchstart', scrollTouchStart, nonPassive);
+      };
+    }, []);
+    var removeScrollBar = props.removeScrollBar,
+      inert = props.inert;
+    return React31.createElement(
+      React31.Fragment,
+      null,
+      inert ? React31.createElement(Style2, { styles: generateStyle(id) }) : null,
+      removeScrollBar
+        ? React31.createElement(RemoveScrollBar, {
+            noRelative: props.noRelative,
+            gapMode: props.gapMode,
+          })
+        : null,
+    );
+  }
+  function getOutermostShadowParent(node) {
+    var shadowParent = null;
+    while (node !== null) {
+      if (node instanceof ShadowRoot) {
+        shadowParent = node.host;
+        node = node.host;
+      }
+      node = node.parentNode;
+    }
+    return shadowParent;
+  }
+
+  // node_modules/react-remove-scroll/dist/es2015/sidecar.js
+  var sidecar_default = exportSidecar(effectCar, RemoveScrollSideCar);
+
+  // node_modules/react-remove-scroll/dist/es2015/Combination.js
+  var ReactRemoveScroll = React32.forwardRef(function (props, ref) {
+    return React32.createElement(
+      RemoveScroll,
+      __assign({}, props, { ref, sideCar: sidecar_default }),
+    );
+  });
+  ReactRemoveScroll.classNames = RemoveScroll.classNames;
+  var Combination_default = ReactRemoveScroll;
+
+  // node_modules/@radix-ui/react-select/dist/index.mjs
+  var import_jsx_runtime18 = __toESM(require_jsx_runtime(), 1);
+  var OPEN_KEYS = [' ', 'Enter', 'ArrowUp', 'ArrowDown'];
+  var SELECTION_KEYS = [' ', 'Enter'];
+  var SELECT_NAME = 'Select';
+  var [Collection, useCollection, createCollectionScope] = createCollection(SELECT_NAME);
+  var [createSelectContext, createSelectScope] = createContextScope(SELECT_NAME, [
+    createCollectionScope,
+    createPopperScope,
+  ]);
+  var usePopperScope = createPopperScope();
+  var [SelectProviderImpl, useSelectContext] = createSelectContext(SELECT_NAME);
+  var [SelectNativeOptionsProvider, useSelectNativeOptionsContext] =
+    createSelectContext(SELECT_NAME);
+  var PROVIDER_NAME = 'SelectProvider';
+  function SelectProvider(props) {
+    const {
+      __scopeSelect,
+      children,
+      open: openProp,
+      defaultOpen,
+      onOpenChange,
+      value: valueProp,
+      defaultValue,
+      onValueChange,
+      dir,
+      name,
+      autoComplete,
+      disabled,
+      required,
+      form,
+      // @ts-expect-error internal render prop used by `Select` to compose its default parts
+      internal_do_not_use_render,
+    } = props;
+    const popperScope = usePopperScope(__scopeSelect);
+    const [trigger, setTrigger] = React33.useState(null);
+    const [valueNode, setValueNode] = React33.useState(null);
+    const [valueNodeHasChildren, setValueNodeHasChildren] = React33.useState(false);
+    const direction = useDirection(dir);
+    const [open, setOpen] = useControllableState({
+      prop: openProp,
+      defaultProp: defaultOpen ?? false,
+      onChange: onOpenChange,
+      caller: SELECT_NAME,
+    });
+    const [value, setValue] = useControllableState({
+      prop: valueProp,
+      defaultProp: defaultValue,
+      onChange: onValueChange,
+      caller: SELECT_NAME,
+    });
+    const triggerPointerDownPosRef = React33.useRef(null);
+    const isFormControl = trigger ? !!form || !!trigger.closest('form') : true;
+    const [nativeOptionsSet, setNativeOptionsSet] = React33.useState(/* @__PURE__ */ new Set());
+    const contentId = useId();
+    const nativeSelectKey = Array.from(nativeOptionsSet)
+      .map((option) => option.props.value)
+      .join(';');
+    const handleNativeOptionAdd = React33.useCallback((option) => {
+      setNativeOptionsSet((prev) => new Set(prev).add(option));
+    }, []);
+    const handleNativeOptionRemove = React33.useCallback((option) => {
+      setNativeOptionsSet((prev) => {
+        const optionsSet = new Set(prev);
+        optionsSet.delete(option);
+        return optionsSet;
+      });
+    }, []);
+    const context = {
+      required,
+      trigger,
+      onTriggerChange: setTrigger,
+      valueNode,
+      onValueNodeChange: setValueNode,
+      valueNodeHasChildren,
+      onValueNodeHasChildrenChange: setValueNodeHasChildren,
+      contentId,
+      value,
+      onValueChange: setValue,
+      open,
+      onOpenChange: setOpen,
+      dir: direction,
+      triggerPointerDownPosRef,
+      disabled,
+      name,
+      autoComplete,
+      form,
+      nativeOptions: nativeOptionsSet,
+      nativeSelectKey,
+      isFormControl,
+    };
+    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Root2, {
+      ...popperScope,
+      children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectProviderImpl, {
+        scope: __scopeSelect,
+        ...context,
+        children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Collection.Provider, {
+          scope: __scopeSelect,
+          children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectNativeOptionsProvider, {
+            scope: __scopeSelect,
+            onNativeOptionAdd: handleNativeOptionAdd,
+            onNativeOptionRemove: handleNativeOptionRemove,
+            children: isFunction2(internal_do_not_use_render)
+              ? internal_do_not_use_render(context)
+              : children,
+          }),
+        }),
+      }),
+    });
+  }
+  SelectProvider.displayName = PROVIDER_NAME;
+  var Select = (props) => {
+    const { __scopeSelect, children, ...providerProps } = props;
+    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectProvider, {
+      __scopeSelect,
+      ...providerProps,
+      internal_do_not_use_render: ({ isFormControl }) =>
+        /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(import_jsx_runtime18.Fragment, {
+          children: [
+            children,
+            isFormControl
+              ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectBubbleInput, {
+                  __scopeSelect,
+                })
+              : null,
+          ],
+        }),
+    });
+  };
+  Select.displayName = SELECT_NAME;
+  var TRIGGER_NAME = 'SelectTrigger';
+  var SelectTrigger = React33.forwardRef((props, forwardedRef) => {
+    const { __scopeSelect, disabled = false, ...triggerProps } = props;
+    const popperScope = usePopperScope(__scopeSelect);
+    const context = useSelectContext(TRIGGER_NAME, __scopeSelect);
+    const isDisabled = context.disabled || disabled;
+    const composedRefs = useComposedRefs(forwardedRef, context.onTriggerChange);
+    const getItems = useCollection(__scopeSelect);
+    const pointerTypeRef = React33.useRef('touch');
+    const [searchRef, handleTypeaheadSearch, resetTypeahead] = useTypeaheadSearch((search) => {
+      const enabledItems = getItems().filter((item) => !item.disabled);
+      const currentItem = enabledItems.find((item) => item.value === context.value);
+      const nextItem = findNextItem(enabledItems, search, currentItem);
+      if (nextItem !== void 0) {
+        context.onValueChange(nextItem.value);
+      }
+    });
+    const handleOpen = (pointerEvent) => {
+      if (!isDisabled) {
+        context.onOpenChange(true);
+        resetTypeahead();
+      }
+      if (pointerEvent) {
+        context.triggerPointerDownPosRef.current = {
+          x: Math.round(pointerEvent.pageX),
+          y: Math.round(pointerEvent.pageY),
+        };
+      }
+    };
+    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Anchor, {
+      asChild: true,
+      ...popperScope,
+      children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.button, {
+        type: 'button',
+        role: 'combobox',
+        'aria-controls': context.open ? context.contentId : void 0,
+        'aria-expanded': context.open,
+        'aria-required': context.required,
+        'aria-autocomplete': 'none',
+        dir: context.dir,
+        'data-state': context.open ? 'open' : 'closed',
+        disabled: isDisabled,
+        'data-disabled': isDisabled ? '' : void 0,
+        'data-placeholder': shouldShowPlaceholder(context.value) ? '' : void 0,
+        ...triggerProps,
+        ref: composedRefs,
+        onClick: composeEventHandlers(triggerProps.onClick, (event) => {
+          event.currentTarget.focus();
+          if (pointerTypeRef.current !== 'mouse') {
+            handleOpen(event);
+          }
+        }),
+        onPointerDown: composeEventHandlers(triggerProps.onPointerDown, (event) => {
+          pointerTypeRef.current = event.pointerType;
+          const target = event.target;
+          if (target.hasPointerCapture(event.pointerId)) {
+            target.releasePointerCapture(event.pointerId);
+          }
+          if (event.button === 0 && event.ctrlKey === false && event.pointerType === 'mouse') {
+            handleOpen(event);
+            event.preventDefault();
+          }
+        }),
+        onKeyDown: composeEventHandlers(triggerProps.onKeyDown, (event) => {
+          const isTypingAhead = searchRef.current !== '';
+          const isModifierKey = event.ctrlKey || event.altKey || event.metaKey;
+          if (!isModifierKey && event.key.length === 1) handleTypeaheadSearch(event.key);
+          if (isTypingAhead && event.key === ' ') return;
+          if (OPEN_KEYS.includes(event.key)) {
+            handleOpen();
+            event.preventDefault();
+          }
+        }),
+      }),
+    });
+  });
+  SelectTrigger.displayName = TRIGGER_NAME;
+  var VALUE_NAME = 'SelectValue';
+  var SelectValue = React33.forwardRef((props, forwardedRef) => {
+    const { __scopeSelect, className, style, children, placeholder = '', ...valueProps } = props;
+    const context = useSelectContext(VALUE_NAME, __scopeSelect);
+    const { onValueNodeHasChildrenChange } = context;
+    const hasChildren = children !== void 0;
+    const composedRefs = useComposedRefs(forwardedRef, context.onValueNodeChange);
+    useLayoutEffect2(() => {
+      onValueNodeHasChildrenChange(hasChildren);
+    }, [onValueNodeHasChildrenChange, hasChildren]);
+    const showPlaceholder = shouldShowPlaceholder(context.value);
+    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.span, {
+      ...valueProps,
+      asChild: showPlaceholder ? false : valueProps.asChild,
+      ref: composedRefs,
+      style: { pointerEvents: 'none' },
+      children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+        React33.Fragment,
+        { children: showPlaceholder ? placeholder : children },
+        showPlaceholder ? 'placeholder' : 'value',
+      ),
+    });
+  });
+  SelectValue.displayName = VALUE_NAME;
+  var ICON_NAME = 'SelectIcon';
+  var SelectIcon = React33.forwardRef((props, forwardedRef) => {
+    const { __scopeSelect, children, ...iconProps } = props;
+    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.span, {
+      'aria-hidden': true,
+      ...iconProps,
+      ref: forwardedRef,
+      children: children || '\u25BC',
+    });
+  });
+  SelectIcon.displayName = ICON_NAME;
+  var PORTAL_NAME2 = 'SelectPortal';
+  var [PortalProvider, usePortalContext] = createSelectContext(PORTAL_NAME2, {
+    forceMount: void 0,
+  });
+  var SelectPortal = (props) => {
+    const { __scopeSelect, forceMount, ...portalProps } = props;
+    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(PortalProvider, {
+      scope: props.__scopeSelect,
+      forceMount,
+      children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Portal, {
+        asChild: true,
+        ...portalProps,
+      }),
+    });
+  };
+  SelectPortal.displayName = PORTAL_NAME2;
+  var CONTENT_NAME2 = 'SelectContent';
+  var SelectContent = React33.forwardRef((props, forwardedRef) => {
+    const portalContext = usePortalContext(CONTENT_NAME2, props.__scopeSelect);
+    const { forceMount = portalContext.forceMount, ...contentProps } = props;
+    const context = useSelectContext(CONTENT_NAME2, props.__scopeSelect);
+    const [fragment, setFragment] = React33.useState();
+    useLayoutEffect2(() => {
+      setFragment(new DocumentFragment());
+    }, []);
+    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Presence, {
+      present: forceMount || context.open,
+      children: ({ present }) =>
+        present
+          ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectContentImpl, {
+              ...contentProps,
+              ref: forwardedRef,
+            })
+          : /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectContentFragment, {
+              ...contentProps,
+              fragment,
+            }),
+    });
+  });
+  SelectContent.displayName = CONTENT_NAME2;
+  var SelectContentFragment = React33.forwardRef((props, forwardedRef) => {
+    const { __scopeSelect, children, fragment } = props;
+    if (!fragment) return null;
+    return ReactDOM4.createPortal(
+      /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectContentProvider, {
+        scope: __scopeSelect,
+        children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Collection.Slot, {
+          scope: __scopeSelect,
+          children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)('div', {
+            ref: forwardedRef,
+            children,
+          }),
+        }),
+      }),
+      fragment,
+    );
+  });
+  SelectContentFragment.displayName = 'SelectContentFragment';
+  var CONTENT_MARGIN = 10;
+  var [SelectContentProvider, useSelectContentContext] = createSelectContext(CONTENT_NAME2);
+  var CONTENT_IMPL_NAME = 'SelectContentImpl';
+  var Slot = createSlot('SelectContent.RemoveScroll');
+  var SelectContentImpl = React33.forwardRef((props, forwardedRef) => {
+    const { __scopeSelect } = props;
+    const {
+      position = 'item-aligned',
+      onCloseAutoFocus,
+      onEscapeKeyDown,
+      onPointerDownOutside,
+      //
+      // PopperContent props
+      side,
+      sideOffset,
+      align,
+      alignOffset,
+      arrowPadding,
+      collisionBoundary,
+      collisionPadding,
+      sticky,
+      hideWhenDetached,
+      avoidCollisions,
+      //
+      ...contentProps
+    } = props;
+    const context = useSelectContext(CONTENT_NAME2, __scopeSelect);
+    const [content, setContent] = React33.useState(null);
+    const [viewport, setViewport] = React33.useState(null);
+    const composedRefs = useComposedRefs(forwardedRef, (node) => setContent(node));
+    const [selectedItem, setSelectedItem] = React33.useState(null);
+    const [selectedItemText, setSelectedItemText] = React33.useState(null);
+    const getItems = useCollection(__scopeSelect);
+    const [isPositioned, setIsPositioned] = React33.useState(false);
+    const firstValidItemFoundRef = React33.useRef(false);
+    React33.useEffect(() => {
+      if (content) return hideOthers(content);
+    }, [content]);
+    useFocusGuards();
+    const focusFirst2 = React33.useCallback(
+      (candidates) => {
+        const [firstItem, ...restItems] = getItems().map((item) => item.ref.current);
+        const [lastItem] = restItems.slice(-1);
+        const PREVIOUSLY_FOCUSED_ELEMENT = document.activeElement;
+        for (const candidate of candidates) {
+          if (candidate === PREVIOUSLY_FOCUSED_ELEMENT) return;
+          candidate?.scrollIntoView({ block: 'nearest' });
+          if (candidate === firstItem && viewport) viewport.scrollTop = 0;
+          if (candidate === lastItem && viewport) viewport.scrollTop = viewport.scrollHeight;
+          candidate?.focus();
+          if (document.activeElement !== PREVIOUSLY_FOCUSED_ELEMENT) return;
+        }
+      },
+      [getItems, viewport],
+    );
+    const focusSelectedItem = React33.useCallback(
+      () => focusFirst2([selectedItem, content]),
+      [focusFirst2, selectedItem, content],
+    );
+    React33.useEffect(() => {
+      if (isPositioned) {
+        focusSelectedItem();
+      }
+    }, [isPositioned, focusSelectedItem]);
+    const { onOpenChange, triggerPointerDownPosRef } = context;
+    React33.useEffect(() => {
+      if (content) {
+        let pointerMoveDelta = { x: 0, y: 0 };
+        const handlePointerMove = (event) => {
+          pointerMoveDelta = {
+            x: Math.abs(Math.round(event.pageX) - (triggerPointerDownPosRef.current?.x ?? 0)),
+            y: Math.abs(Math.round(event.pageY) - (triggerPointerDownPosRef.current?.y ?? 0)),
+          };
+        };
+        const handlePointerUp = (event) => {
+          if (pointerMoveDelta.x <= 10 && pointerMoveDelta.y <= 10) {
+            event.preventDefault();
+          } else {
+            if (!event.composedPath().includes(content)) {
+              onOpenChange(false);
+            }
+          }
+          document.removeEventListener('pointermove', handlePointerMove);
+          triggerPointerDownPosRef.current = null;
+        };
+        if (triggerPointerDownPosRef.current !== null) {
+          document.addEventListener('pointermove', handlePointerMove);
+          document.addEventListener('pointerup', handlePointerUp, { capture: true, once: true });
+        }
+        return () => {
+          document.removeEventListener('pointermove', handlePointerMove);
+          document.removeEventListener('pointerup', handlePointerUp, { capture: true });
+        };
+      }
+    }, [content, onOpenChange, triggerPointerDownPosRef]);
+    React33.useEffect(() => {
+      const close = () => onOpenChange(false);
+      window.addEventListener('blur', close);
+      window.addEventListener('resize', close);
+      return () => {
+        window.removeEventListener('blur', close);
+        window.removeEventListener('resize', close);
+      };
+    }, [onOpenChange]);
+    const [searchRef, handleTypeaheadSearch] = useTypeaheadSearch((search) => {
+      const enabledItems = getItems().filter((item) => !item.disabled);
+      const currentItem = enabledItems.find((item) => item.ref.current === document.activeElement);
+      const nextItem = findNextItem(enabledItems, search, currentItem);
+      if (nextItem) {
+        setTimeout(() => nextItem.ref.current?.focus());
+      }
+    });
+    const itemRefCallback = React33.useCallback(
+      (node, value, disabled) => {
+        const isFirstValidItem = !firstValidItemFoundRef.current && !disabled;
+        const isSelectedItem = context.value !== void 0 && context.value === value;
+        if (isSelectedItem || isFirstValidItem) {
+          setSelectedItem(node);
+          if (isFirstValidItem) firstValidItemFoundRef.current = true;
+        }
+      },
+      [context.value],
+    );
+    const handleItemLeave = React33.useCallback(() => content?.focus(), [content]);
+    const itemTextRefCallback = React33.useCallback(
+      (node, value, disabled) => {
+        const isFirstValidItem = !firstValidItemFoundRef.current && !disabled;
+        const isSelectedItem = context.value !== void 0 && context.value === value;
+        if (isSelectedItem || isFirstValidItem) {
+          setSelectedItemText(node);
+        }
+      },
+      [context.value],
+    );
+    const SelectPosition = position === 'popper' ? SelectPopperPosition : SelectItemAlignedPosition;
+    const popperContentProps =
+      SelectPosition === SelectPopperPosition
+        ? {
+            side,
+            sideOffset,
+            align,
+            alignOffset,
+            arrowPadding,
+            collisionBoundary,
+            collisionPadding,
+            sticky,
+            hideWhenDetached,
+            avoidCollisions,
+          }
+        : {};
+    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectContentProvider, {
+      scope: __scopeSelect,
+      content,
+      viewport,
+      onViewportChange: setViewport,
+      itemRefCallback,
+      selectedItem,
+      onItemLeave: handleItemLeave,
+      itemTextRefCallback,
+      focusSelectedItem,
+      selectedItemText,
+      position,
+      isPositioned,
+      searchRef,
+      children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Combination_default, {
+        as: Slot,
+        allowPinchZoom: true,
+        children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(FocusScope, {
+          asChild: true,
+          trapped: context.open,
+          onMountAutoFocus: (event) => {
+            event.preventDefault();
+          },
+          onUnmountAutoFocus: composeEventHandlers(onCloseAutoFocus, (event) => {
+            context.trigger?.focus({ preventScroll: true });
+            event.preventDefault();
+          }),
+          children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(DismissableLayer, {
+            asChild: true,
+            disableOutsidePointerEvents: true,
+            onEscapeKeyDown,
+            onPointerDownOutside,
+            onFocusOutside: (event) => event.preventDefault(),
+            onDismiss: () => context.onOpenChange(false),
+            children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectPosition, {
+              role: 'listbox',
+              id: context.contentId,
+              'data-state': context.open ? 'open' : 'closed',
+              dir: context.dir,
+              onContextMenu: (event) => event.preventDefault(),
+              ...contentProps,
+              ...popperContentProps,
+              onPlaced: () => setIsPositioned(true),
+              ref: composedRefs,
+              style: {
+                // flex layout so we can place the scroll buttons properly
+                display: 'flex',
+                flexDirection: 'column',
+                // reset the outline by default as the content MAY get focused
+                outline: 'none',
+                ...contentProps.style,
+              },
+              onKeyDown: composeEventHandlers(contentProps.onKeyDown, (event) => {
+                const isModifierKey = event.ctrlKey || event.altKey || event.metaKey;
+                if (event.key === 'Tab') event.preventDefault();
+                if (!isModifierKey && event.key.length === 1) handleTypeaheadSearch(event.key);
+                if (['ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) {
+                  const items = getItems().filter((item) => !item.disabled);
+                  let candidateNodes = items.map((item) => item.ref.current);
+                  if (['ArrowUp', 'End'].includes(event.key)) {
+                    candidateNodes = candidateNodes.slice().reverse();
+                  }
+                  if (['ArrowUp', 'ArrowDown'].includes(event.key)) {
+                    const currentElement = event.target;
+                    const currentIndex = candidateNodes.indexOf(currentElement);
+                    candidateNodes = candidateNodes.slice(currentIndex + 1);
+                  }
+                  setTimeout(() => focusFirst2(candidateNodes));
+                  event.preventDefault();
+                }
+              }),
+            }),
+          }),
+        }),
+      }),
+    });
+  });
+  SelectContentImpl.displayName = CONTENT_IMPL_NAME;
+  var ITEM_ALIGNED_POSITION_NAME = 'SelectItemAlignedPosition';
+  var SelectItemAlignedPosition = React33.forwardRef((props, forwardedRef) => {
+    const { __scopeSelect, onPlaced, ...popperProps } = props;
+    const context = useSelectContext(CONTENT_NAME2, __scopeSelect);
+    const contentContext = useSelectContentContext(CONTENT_NAME2, __scopeSelect);
+    const [contentWrapper, setContentWrapper] = React33.useState(null);
+    const [content, setContent] = React33.useState(null);
+    const composedRefs = useComposedRefs(forwardedRef, (node) => setContent(node));
+    const getItems = useCollection(__scopeSelect);
+    const shouldExpandOnScrollRef = React33.useRef(false);
+    const shouldRepositionRef = React33.useRef(true);
+    const { viewport, selectedItem, selectedItemText, focusSelectedItem } = contentContext;
+    const position = React33.useCallback(() => {
+      if (
+        context.trigger &&
+        context.valueNode &&
+        contentWrapper &&
+        content &&
+        viewport &&
+        selectedItem &&
+        selectedItemText
+      ) {
+        const triggerRect = context.trigger.getBoundingClientRect();
+        const contentRect = content.getBoundingClientRect();
+        const valueNodeRect = context.valueNode.getBoundingClientRect();
+        const itemTextRect = selectedItemText.getBoundingClientRect();
+        if (context.dir !== 'rtl') {
+          const itemTextOffset = itemTextRect.left - contentRect.left;
+          const left = valueNodeRect.left - itemTextOffset;
+          const leftDelta = triggerRect.left - left;
+          const minContentWidth = triggerRect.width + leftDelta;
+          const contentWidth = Math.max(minContentWidth, contentRect.width);
+          const rightEdge = window.innerWidth - CONTENT_MARGIN;
+          const clampedLeft = clamp(left, [
+            CONTENT_MARGIN,
+            // Prevents the content from going off the starting edge of the
+            // viewport. It may still go off the ending edge, but this can be
+            // controlled by the user since they may want to manage overflow in a
+            // specific way.
+            // https://github.com/radix-ui/primitives/issues/2049
+            Math.max(CONTENT_MARGIN, rightEdge - contentWidth),
+          ]);
+          contentWrapper.style.minWidth = minContentWidth + 'px';
+          contentWrapper.style.left = clampedLeft + 'px';
+        } else {
+          const itemTextOffset = contentRect.right - itemTextRect.right;
+          const right = window.innerWidth - valueNodeRect.right - itemTextOffset;
+          const rightDelta = window.innerWidth - triggerRect.right - right;
+          const minContentWidth = triggerRect.width + rightDelta;
+          const contentWidth = Math.max(minContentWidth, contentRect.width);
+          const leftEdge = window.innerWidth - CONTENT_MARGIN;
+          const clampedRight = clamp(right, [
+            CONTENT_MARGIN,
+            Math.max(CONTENT_MARGIN, leftEdge - contentWidth),
+          ]);
+          contentWrapper.style.minWidth = minContentWidth + 'px';
+          contentWrapper.style.right = clampedRight + 'px';
+        }
+        const items = getItems();
+        const availableHeight = window.innerHeight - CONTENT_MARGIN * 2;
+        const itemsHeight = viewport.scrollHeight;
+        const contentStyles = window.getComputedStyle(content);
+        const contentBorderTopWidth = parseInt(contentStyles.borderTopWidth, 10);
+        const contentPaddingTop = parseInt(contentStyles.paddingTop, 10);
+        const contentBorderBottomWidth = parseInt(contentStyles.borderBottomWidth, 10);
+        const contentPaddingBottom = parseInt(contentStyles.paddingBottom, 10);
+        const fullContentHeight =
+          contentBorderTopWidth +
+          contentPaddingTop +
+          itemsHeight +
+          contentPaddingBottom +
+          contentBorderBottomWidth;
+        const minContentHeight = Math.min(selectedItem.offsetHeight * 5, fullContentHeight);
+        const viewportStyles = window.getComputedStyle(viewport);
+        const viewportPaddingTop = parseInt(viewportStyles.paddingTop, 10);
+        const viewportPaddingBottom = parseInt(viewportStyles.paddingBottom, 10);
+        const topEdgeToTriggerMiddle = triggerRect.top + triggerRect.height / 2 - CONTENT_MARGIN;
+        const triggerMiddleToBottomEdge = availableHeight - topEdgeToTriggerMiddle;
+        const selectedItemHalfHeight = selectedItem.offsetHeight / 2;
+        const itemOffsetMiddle = selectedItem.offsetTop + selectedItemHalfHeight;
+        const contentTopToItemMiddle = contentBorderTopWidth + contentPaddingTop + itemOffsetMiddle;
+        const itemMiddleToContentBottom = fullContentHeight - contentTopToItemMiddle;
+        const willAlignWithoutTopOverflow = contentTopToItemMiddle <= topEdgeToTriggerMiddle;
+        if (willAlignWithoutTopOverflow) {
+          const isLastItem =
+            items.length > 0 && selectedItem === items[items.length - 1].ref.current;
+          contentWrapper.style.bottom = '0px';
+          const viewportOffsetBottom =
+            content.clientHeight - viewport.offsetTop - viewport.offsetHeight;
+          const clampedTriggerMiddleToBottomEdge = Math.max(
+            triggerMiddleToBottomEdge,
+            selectedItemHalfHeight + // viewport might have padding bottom, include it to avoid a scrollable viewport
+              (isLastItem ? viewportPaddingBottom : 0) +
+              viewportOffsetBottom +
+              contentBorderBottomWidth,
+          );
+          const height = contentTopToItemMiddle + clampedTriggerMiddleToBottomEdge;
+          contentWrapper.style.height = height + 'px';
+        } else {
+          const isFirstItem = items.length > 0 && selectedItem === items[0].ref.current;
+          contentWrapper.style.top = '0px';
+          const clampedTopEdgeToTriggerMiddle = Math.max(
+            topEdgeToTriggerMiddle,
+            contentBorderTopWidth +
+              viewport.offsetTop + // viewport might have padding top, include it to avoid a scrollable viewport
+              (isFirstItem ? viewportPaddingTop : 0) +
+              selectedItemHalfHeight,
+          );
+          const height = clampedTopEdgeToTriggerMiddle + itemMiddleToContentBottom;
+          contentWrapper.style.height = height + 'px';
+          viewport.scrollTop = contentTopToItemMiddle - topEdgeToTriggerMiddle + viewport.offsetTop;
+        }
+        contentWrapper.style.margin = `${CONTENT_MARGIN}px 0`;
+        contentWrapper.style.minHeight = minContentHeight + 'px';
+        contentWrapper.style.maxHeight = availableHeight + 'px';
+        onPlaced?.();
+        requestAnimationFrame(() => (shouldExpandOnScrollRef.current = true));
+      }
+    }, [
+      getItems,
+      context.trigger,
+      context.valueNode,
+      contentWrapper,
+      content,
+      viewport,
+      selectedItem,
+      selectedItemText,
+      context.dir,
+      onPlaced,
+    ]);
+    useLayoutEffect2(() => position(), [position]);
+    const [contentZIndex, setContentZIndex] = React33.useState();
+    useLayoutEffect2(() => {
+      if (content) setContentZIndex(window.getComputedStyle(content).zIndex);
+    }, [content]);
+    const handleScrollButtonChange = React33.useCallback(
+      (node) => {
+        if (node && shouldRepositionRef.current === true) {
+          position();
+          focusSelectedItem?.();
+          shouldRepositionRef.current = false;
+        }
+      },
+      [position, focusSelectedItem],
+    );
+    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectViewportProvider, {
+      scope: __scopeSelect,
+      contentWrapper,
+      shouldExpandOnScrollRef,
+      onScrollButtonChange: handleScrollButtonChange,
+      children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)('div', {
+        ref: setContentWrapper,
+        style: {
+          display: 'flex',
+          flexDirection: 'column',
+          position: 'fixed',
+          zIndex: contentZIndex,
+        },
+        children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.div, {
+          ...popperProps,
+          ref: composedRefs,
+          style: {
+            // When we get the height of the content, it includes borders. If we were to set
+            // the height without having `boxSizing: 'border-box'` it would be too big.
+            boxSizing: 'border-box',
+            // We need to ensure the content doesn't get taller than the wrapper
+            maxHeight: '100%',
+            ...popperProps.style,
+          },
+        }),
+      }),
+    });
+  });
+  SelectItemAlignedPosition.displayName = ITEM_ALIGNED_POSITION_NAME;
+  var POPPER_POSITION_NAME = 'SelectPopperPosition';
+  var SelectPopperPosition = React33.forwardRef((props, forwardedRef) => {
+    const {
+      __scopeSelect,
+      align = 'start',
+      collisionPadding = CONTENT_MARGIN,
+      ...popperProps
+    } = props;
+    const popperScope = usePopperScope(__scopeSelect);
+    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Content, {
+      ...popperScope,
+      ...popperProps,
+      ref: forwardedRef,
+      align,
+      collisionPadding,
+      style: {
+        // Ensure border-box for floating-ui calculations
+        boxSizing: 'border-box',
+        ...popperProps.style,
+        // re-namespace exposed content custom properties
+        ...{
+          '--radix-select-content-transform-origin': 'var(--radix-popper-transform-origin)',
+          '--radix-select-content-available-width': 'var(--radix-popper-available-width)',
+          '--radix-select-content-available-height': 'var(--radix-popper-available-height)',
+          '--radix-select-trigger-width': 'var(--radix-popper-anchor-width)',
+          '--radix-select-trigger-height': 'var(--radix-popper-anchor-height)',
+        },
+      },
+    });
+  });
+  SelectPopperPosition.displayName = POPPER_POSITION_NAME;
+  var [SelectViewportProvider, useSelectViewportContext] = createSelectContext(CONTENT_NAME2, {});
+  var VIEWPORT_NAME = 'SelectViewport';
+  var SelectViewport = React33.forwardRef((props, forwardedRef) => {
+    const { __scopeSelect, nonce, ...viewportProps } = props;
+    const contentContext = useSelectContentContext(VIEWPORT_NAME, __scopeSelect);
+    const viewportContext = useSelectViewportContext(VIEWPORT_NAME, __scopeSelect);
+    const composedRefs = useComposedRefs(forwardedRef, contentContext.onViewportChange);
+    const prevScrollTopRef = React33.useRef(0);
+    return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(import_jsx_runtime18.Fragment, {
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)('style', {
+          dangerouslySetInnerHTML: {
+            __html: `[data-radix-select-viewport]{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;}[data-radix-select-viewport]::-webkit-scrollbar{display:none}`,
+          },
+          nonce,
+        }),
+        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Collection.Slot, {
+          scope: __scopeSelect,
+          children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.div, {
+            'data-radix-select-viewport': '',
+            role: 'presentation',
+            ...viewportProps,
+            ref: composedRefs,
+            style: {
+              // we use position: 'relative' here on the `viewport` so that when we call
+              // `selectedItem.offsetTop` in calculations, the offset is relative to the viewport
+              // (independent of the scrollUpButton).
+              position: 'relative',
+              flex: 1,
+              // Viewport should only be scrollable in the vertical direction.
+              // This won't work in vertical writing modes, so we'll need to
+              // revisit this if/when that is supported
+              // https://developer.chrome.com/blog/vertical-form-controls
+              overflow: 'hidden auto',
+              ...viewportProps.style,
+            },
+            onScroll: composeEventHandlers(viewportProps.onScroll, (event) => {
+              const viewport = event.currentTarget;
+              const { contentWrapper, shouldExpandOnScrollRef } = viewportContext;
+              if (shouldExpandOnScrollRef?.current && contentWrapper) {
+                const scrolledBy = Math.abs(prevScrollTopRef.current - viewport.scrollTop);
+                if (scrolledBy > 0) {
+                  const availableHeight = window.innerHeight - CONTENT_MARGIN * 2;
+                  const cssMinHeight = parseFloat(contentWrapper.style.minHeight);
+                  const cssHeight = parseFloat(contentWrapper.style.height);
+                  const prevHeight = Math.max(cssMinHeight, cssHeight);
+                  if (prevHeight < availableHeight) {
+                    const nextHeight = prevHeight + scrolledBy;
+                    const clampedNextHeight = Math.min(availableHeight, nextHeight);
+                    const heightDiff = nextHeight - clampedNextHeight;
+                    contentWrapper.style.height = clampedNextHeight + 'px';
+                    if (contentWrapper.style.bottom === '0px') {
+                      viewport.scrollTop = heightDiff > 0 ? heightDiff : 0;
+                      contentWrapper.style.justifyContent = 'flex-end';
+                    }
+                  }
+                }
+              }
+              prevScrollTopRef.current = viewport.scrollTop;
+            }),
+          }),
+        }),
+      ],
+    });
+  });
+  SelectViewport.displayName = VIEWPORT_NAME;
+  var GROUP_NAME = 'SelectGroup';
+  var [SelectGroupContextProvider, useSelectGroupContext] = createSelectContext(GROUP_NAME);
+  var SelectGroup = React33.forwardRef((props, forwardedRef) => {
+    const { __scopeSelect, ...groupProps } = props;
+    const groupId = useId();
+    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectGroupContextProvider, {
+      scope: __scopeSelect,
+      id: groupId,
+      children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.div, {
+        role: 'group',
+        'aria-labelledby': groupId,
+        ...groupProps,
+        ref: forwardedRef,
+      }),
+    });
+  });
+  SelectGroup.displayName = GROUP_NAME;
+  var LABEL_NAME = 'SelectLabel';
+  var SelectLabel = React33.forwardRef((props, forwardedRef) => {
+    const { __scopeSelect, ...labelProps } = props;
+    const groupContext = useSelectGroupContext(LABEL_NAME, __scopeSelect);
+    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.div, {
+      id: groupContext.id,
+      ...labelProps,
+      ref: forwardedRef,
+    });
+  });
+  SelectLabel.displayName = LABEL_NAME;
+  var ITEM_NAME = 'SelectItem';
+  var [SelectItemContextProvider, useSelectItemContext] = createSelectContext(ITEM_NAME);
+  var SelectItem = React33.forwardRef((props, forwardedRef) => {
+    const {
+      __scopeSelect,
+      value,
+      disabled = false,
+      textValue: textValueProp,
+      ...itemProps
+    } = props;
+    const context = useSelectContext(ITEM_NAME, __scopeSelect);
+    const contentContext = useSelectContentContext(ITEM_NAME, __scopeSelect);
+    const isSelected = context.value === value;
+    const [textValue, setTextValue] = React33.useState(textValueProp ?? '');
+    const [isFocused, setIsFocused] = React33.useState(false);
+    const composedRefs = useComposedRefs(forwardedRef, (node) =>
+      contentContext.itemRefCallback?.(node, value, disabled),
+    );
+    const textId = useId();
+    const pointerTypeRef = React33.useRef('touch');
+    const handleSelect = () => {
+      if (!disabled) {
+        context.onValueChange(value);
+        context.onOpenChange(false);
+      }
+    };
+    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectItemContextProvider, {
+      scope: __scopeSelect,
+      value,
+      disabled,
+      textId,
+      isSelected,
+      onItemTextChange: React33.useCallback((node) => {
+        setTextValue((prevTextValue) => prevTextValue || (node?.textContent ?? '').trim());
+      }, []),
+      children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Collection.ItemSlot, {
+        scope: __scopeSelect,
+        value,
+        disabled,
+        textValue,
+        children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.div, {
+          role: 'option',
+          'aria-labelledby': textId,
+          'data-highlighted': isFocused ? '' : void 0,
+          'aria-selected': isSelected && isFocused,
+          'data-state': isSelected ? 'checked' : 'unchecked',
+          'aria-disabled': disabled || void 0,
+          'data-disabled': disabled ? '' : void 0,
+          tabIndex: disabled ? void 0 : -1,
+          ...itemProps,
+          ref: composedRefs,
+          onFocus: composeEventHandlers(itemProps.onFocus, () => setIsFocused(true)),
+          onBlur: composeEventHandlers(itemProps.onBlur, () => setIsFocused(false)),
+          onClick: composeEventHandlers(itemProps.onClick, () => {
+            if (pointerTypeRef.current !== 'mouse') handleSelect();
+          }),
+          onPointerUp: composeEventHandlers(itemProps.onPointerUp, () => {
+            if (pointerTypeRef.current === 'mouse') handleSelect();
+          }),
+          onPointerDown: composeEventHandlers(itemProps.onPointerDown, (event) => {
+            pointerTypeRef.current = event.pointerType;
+          }),
+          onPointerMove: composeEventHandlers(itemProps.onPointerMove, (event) => {
+            pointerTypeRef.current = event.pointerType;
+            if (disabled) {
+              contentContext.onItemLeave?.();
+            } else if (pointerTypeRef.current === 'mouse') {
+              event.currentTarget.focus({ preventScroll: true });
+            }
+          }),
+          onPointerLeave: composeEventHandlers(itemProps.onPointerLeave, (event) => {
+            if (event.currentTarget === document.activeElement) {
+              contentContext.onItemLeave?.();
+            }
+          }),
+          onKeyDown: composeEventHandlers(itemProps.onKeyDown, (event) => {
+            const isTypingAhead = contentContext.searchRef?.current !== '';
+            if (isTypingAhead && event.key === ' ') return;
+            if (SELECTION_KEYS.includes(event.key)) handleSelect();
+            if (event.key === ' ') event.preventDefault();
+          }),
+        }),
+      }),
+    });
+  });
+  SelectItem.displayName = ITEM_NAME;
+  var ITEM_TEXT_NAME = 'SelectItemText';
+  var SelectItemText = React33.forwardRef((props, forwardedRef) => {
+    const { __scopeSelect, className, style, ...itemTextProps } = props;
+    const context = useSelectContext(ITEM_TEXT_NAME, __scopeSelect);
+    const contentContext = useSelectContentContext(ITEM_TEXT_NAME, __scopeSelect);
+    const itemContext = useSelectItemContext(ITEM_TEXT_NAME, __scopeSelect);
+    const nativeOptionsContext = useSelectNativeOptionsContext(ITEM_TEXT_NAME, __scopeSelect);
+    const [itemTextNode, setItemTextNode] = React33.useState(null);
+    const composedRefs = useComposedRefs(
+      forwardedRef,
+      (node) => setItemTextNode(node),
+      itemContext.onItemTextChange,
+      (node) => contentContext.itemTextRefCallback?.(node, itemContext.value, itemContext.disabled),
+    );
+    const textContent = itemTextNode?.textContent;
+    const nativeOption = React33.useMemo(
+      () =>
+        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+          'option',
+          { value: itemContext.value, disabled: itemContext.disabled, children: textContent },
+          itemContext.value,
+        ),
+      [itemContext.disabled, itemContext.value, textContent],
+    );
+    const { onNativeOptionAdd, onNativeOptionRemove } = nativeOptionsContext;
+    useLayoutEffect2(() => {
+      onNativeOptionAdd(nativeOption);
+      return () => onNativeOptionRemove(nativeOption);
+    }, [onNativeOptionAdd, onNativeOptionRemove, nativeOption]);
+    return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(import_jsx_runtime18.Fragment, {
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.span, {
+          id: itemContext.textId,
+          ...itemTextProps,
+          ref: composedRefs,
+        }),
+        itemContext.isSelected &&
+        context.valueNode &&
+        !context.valueNodeHasChildren &&
+        !shouldShowPlaceholder(context.value)
+          ? ReactDOM4.createPortal(itemTextProps.children, context.valueNode)
+          : null,
+      ],
+    });
+  });
+  SelectItemText.displayName = ITEM_TEXT_NAME;
+  var ITEM_INDICATOR_NAME = 'SelectItemIndicator';
+  var SelectItemIndicator = React33.forwardRef((props, forwardedRef) => {
+    const { __scopeSelect, ...itemIndicatorProps } = props;
+    const itemContext = useSelectItemContext(ITEM_INDICATOR_NAME, __scopeSelect);
+    return itemContext.isSelected
+      ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.span, {
+          'aria-hidden': true,
+          ...itemIndicatorProps,
+          ref: forwardedRef,
+        })
+      : null;
+  });
+  SelectItemIndicator.displayName = ITEM_INDICATOR_NAME;
+  var SCROLL_UP_BUTTON_NAME = 'SelectScrollUpButton';
+  var SelectScrollUpButton = React33.forwardRef((props, forwardedRef) => {
+    const contentContext = useSelectContentContext(SCROLL_UP_BUTTON_NAME, props.__scopeSelect);
+    const viewportContext = useSelectViewportContext(SCROLL_UP_BUTTON_NAME, props.__scopeSelect);
+    const [canScrollUp, setCanScrollUp] = React33.useState(false);
+    const composedRefs = useComposedRefs(forwardedRef, viewportContext.onScrollButtonChange);
+    useLayoutEffect2(() => {
+      if (contentContext.viewport && contentContext.isPositioned) {
+        let handleScroll22 = function () {
+          const canScrollUp2 = viewport.scrollTop > 0;
+          setCanScrollUp(canScrollUp2);
+        };
+        var handleScroll2 = handleScroll22;
+        const viewport = contentContext.viewport;
+        handleScroll22();
+        viewport.addEventListener('scroll', handleScroll22);
+        return () => viewport.removeEventListener('scroll', handleScroll22);
+      }
+    }, [contentContext.viewport, contentContext.isPositioned]);
+    return canScrollUp
+      ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectScrollButtonImpl, {
+          ...props,
+          ref: composedRefs,
+          onAutoScroll: () => {
+            const { viewport, selectedItem } = contentContext;
+            if (viewport && selectedItem) {
+              viewport.scrollTop = viewport.scrollTop - selectedItem.offsetHeight;
+            }
+          },
+        })
+      : null;
+  });
+  SelectScrollUpButton.displayName = SCROLL_UP_BUTTON_NAME;
+  var SCROLL_DOWN_BUTTON_NAME = 'SelectScrollDownButton';
+  var SelectScrollDownButton = React33.forwardRef((props, forwardedRef) => {
+    const contentContext = useSelectContentContext(SCROLL_DOWN_BUTTON_NAME, props.__scopeSelect);
+    const viewportContext = useSelectViewportContext(SCROLL_DOWN_BUTTON_NAME, props.__scopeSelect);
+    const [canScrollDown, setCanScrollDown] = React33.useState(false);
+    const composedRefs = useComposedRefs(forwardedRef, viewportContext.onScrollButtonChange);
+    useLayoutEffect2(() => {
+      if (contentContext.viewport && contentContext.isPositioned) {
+        let handleScroll22 = function () {
+          const maxScroll = viewport.scrollHeight - viewport.clientHeight;
+          const canScrollDown2 = Math.ceil(viewport.scrollTop) < maxScroll;
+          setCanScrollDown(canScrollDown2);
+        };
+        var handleScroll2 = handleScroll22;
+        const viewport = contentContext.viewport;
+        handleScroll22();
+        viewport.addEventListener('scroll', handleScroll22);
+        return () => viewport.removeEventListener('scroll', handleScroll22);
+      }
+    }, [contentContext.viewport, contentContext.isPositioned]);
+    return canScrollDown
+      ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectScrollButtonImpl, {
+          ...props,
+          ref: composedRefs,
+          onAutoScroll: () => {
+            const { viewport, selectedItem } = contentContext;
+            if (viewport && selectedItem) {
+              viewport.scrollTop = viewport.scrollTop + selectedItem.offsetHeight;
+            }
+          },
+        })
+      : null;
+  });
+  SelectScrollDownButton.displayName = SCROLL_DOWN_BUTTON_NAME;
+  var SelectScrollButtonImpl = React33.forwardRef((props, forwardedRef) => {
+    const { __scopeSelect, onAutoScroll, ...scrollIndicatorProps } = props;
+    const contentContext = useSelectContentContext('SelectScrollButton', __scopeSelect);
+    const autoScrollTimerRef = React33.useRef(null);
+    const getItems = useCollection(__scopeSelect);
+    const clearAutoScrollTimer = React33.useCallback(() => {
+      if (autoScrollTimerRef.current !== null) {
+        window.clearInterval(autoScrollTimerRef.current);
+        autoScrollTimerRef.current = null;
+      }
+    }, []);
+    React33.useEffect(() => {
+      return () => clearAutoScrollTimer();
+    }, [clearAutoScrollTimer]);
+    useLayoutEffect2(() => {
+      const activeItem = getItems().find((item) => item.ref.current === document.activeElement);
+      activeItem?.ref.current?.scrollIntoView({ block: 'nearest' });
+    }, [getItems]);
+    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.div, {
+      'aria-hidden': true,
+      ...scrollIndicatorProps,
+      ref: forwardedRef,
+      style: { flexShrink: 0, ...scrollIndicatorProps.style },
+      onPointerDown: composeEventHandlers(scrollIndicatorProps.onPointerDown, () => {
+        if (autoScrollTimerRef.current === null) {
+          autoScrollTimerRef.current = window.setInterval(onAutoScroll, 50);
+        }
+      }),
+      onPointerMove: composeEventHandlers(scrollIndicatorProps.onPointerMove, () => {
+        contentContext.onItemLeave?.();
+        if (autoScrollTimerRef.current === null) {
+          autoScrollTimerRef.current = window.setInterval(onAutoScroll, 50);
+        }
+      }),
+      onPointerLeave: composeEventHandlers(scrollIndicatorProps.onPointerLeave, () => {
+        clearAutoScrollTimer();
+      }),
+    });
+  });
+  var SEPARATOR_NAME = 'SelectSeparator';
+  var SelectSeparator = React33.forwardRef((props, forwardedRef) => {
+    const { __scopeSelect, ...separatorProps } = props;
+    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.div, {
+      'aria-hidden': true,
+      ...separatorProps,
+      ref: forwardedRef,
+    });
+  });
+  SelectSeparator.displayName = SEPARATOR_NAME;
+  var ARROW_NAME2 = 'SelectArrow';
+  var SelectArrow = React33.forwardRef((props, forwardedRef) => {
+    const { __scopeSelect, ...arrowProps } = props;
+    const popperScope = usePopperScope(__scopeSelect);
+    const contentContext = useSelectContentContext(ARROW_NAME2, __scopeSelect);
+    return contentContext.position === 'popper'
+      ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Arrow2, {
+          ...popperScope,
+          ...arrowProps,
+          ref: forwardedRef,
+        })
+      : null;
+  });
+  SelectArrow.displayName = ARROW_NAME2;
+  var BUBBLE_INPUT_NAME = 'SelectBubbleInput';
+  var SelectBubbleInput = React33.forwardRef(({ __scopeSelect, ...props }, forwardedRef) => {
+    const context = useSelectContext(BUBBLE_INPUT_NAME, __scopeSelect);
+    const { value, onValueChange, required, disabled, name, autoComplete, form } = context;
+    const { nativeOptions, nativeSelectKey } = context;
+    const ref = React33.useRef(null);
+    const composedRefs = useComposedRefs(forwardedRef, ref);
+    const selectValue = value ?? '';
+    const prevValue = usePrevious(selectValue);
+    const hasEmptyValueOption = Array.from(nativeOptions).some(
+      (option) => (option.props.value ?? '') === '',
+    );
+    React33.useEffect(() => {
+      const select = ref.current;
+      if (!select) return;
+      const selectProto = window.HTMLSelectElement.prototype;
+      const descriptor = Object.getOwnPropertyDescriptor(selectProto, 'value');
+      const setValue = descriptor.set;
+      if (prevValue !== selectValue && setValue) {
+        const event = new Event('change', { bubbles: true });
+        setValue.call(select, selectValue);
+        select.dispatchEvent(event);
+      }
+    }, [prevValue, selectValue]);
+    return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(
+      Primitive.select,
+      {
+        'aria-hidden': true,
+        required,
+        tabIndex: -1,
+        name,
+        autoComplete,
+        disabled,
+        form,
+        onChange: (event) => onValueChange(event.target.value),
+        ...props,
+        style: { ...VISUALLY_HIDDEN_STYLES, ...props.style },
+        ref: composedRefs,
+        defaultValue: selectValue,
+        children: [
+          shouldShowPlaceholder(value) && !hasEmptyValueOption
+            ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)('option', { value: '' })
+            : null,
+          Array.from(nativeOptions),
+        ],
+      },
+      nativeSelectKey,
+    );
+  });
+  SelectBubbleInput.displayName = BUBBLE_INPUT_NAME;
+  function isFunction2(value) {
+    return typeof value === 'function';
+  }
+  function shouldShowPlaceholder(value) {
+    return value === '' || value === void 0;
+  }
+  function useTypeaheadSearch(onSearchChange) {
+    const handleSearchChange = useCallbackRef(onSearchChange);
+    const searchRef = React33.useRef('');
+    const timerRef = React33.useRef(0);
+    const handleTypeaheadSearch = React33.useCallback(
+      (key) => {
+        const search = searchRef.current + key;
+        handleSearchChange(search);
+        (function updateSearch(value) {
+          searchRef.current = value;
+          window.clearTimeout(timerRef.current);
+          if (value !== '') timerRef.current = window.setTimeout(() => updateSearch(''), 1e3);
+        })(search);
+      },
+      [handleSearchChange],
+    );
+    const resetTypeahead = React33.useCallback(() => {
+      searchRef.current = '';
+      window.clearTimeout(timerRef.current);
+    }, []);
+    React33.useEffect(() => {
+      return () => window.clearTimeout(timerRef.current);
+    }, []);
+    return [searchRef, handleTypeaheadSearch, resetTypeahead];
+  }
+  function findNextItem(items, search, currentItem) {
+    const isRepeated = search.length > 1 && Array.from(search).every((char) => char === search[0]);
+    const normalizedSearch = isRepeated ? search[0] : search;
+    const currentItemIndex = currentItem ? items.indexOf(currentItem) : -1;
+    let wrappedItems = wrapArray(items, Math.max(currentItemIndex, 0));
+    const excludeCurrentItem = normalizedSearch.length === 1;
+    if (excludeCurrentItem) wrappedItems = wrappedItems.filter((v) => v !== currentItem);
+    const nextItem = wrappedItems.find((item) =>
+      item.textValue.toLowerCase().startsWith(normalizedSearch.toLowerCase()),
+    );
+    return nextItem !== currentItem ? nextItem : void 0;
+  }
+  function wrapArray(array, startIndex) {
+    return array.map((_, index2) => array[(startIndex + index2) % array.length]);
+  }
+
+  // src/ui/components/select.tsx
+  var import_jsx_runtime19 = __toESM(require_jsx_runtime(), 1);
+  var Select2 = Select;
+  var SelectValue2 = SelectValue;
+  var SelectTrigger2 = (0, import_react8.forwardRef)(({ className, children, ...props }, ref) =>
+    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(SelectTrigger, {
+      ref,
+      className: cn(
+        'flex h-8 w-full items-center justify-between gap-1 rounded-md border border-input bg-background px-2.5 py-1 text-md-sm text-foreground',
+        'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1',
+        'disabled:cursor-not-allowed disabled:opacity-50',
+        '[&>span]:line-clamp-1',
+        className,
+      ),
+      ...props,
+      children: [
+        children,
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectIcon, {
+          asChild: true,
+          children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(ChevronDown, {
+            className: 'h-4 w-4 opacity-50',
+          }),
+        }),
+      ],
+    }),
+  );
+  SelectTrigger2.displayName = SelectTrigger.displayName;
+  var SelectContent2 = (0, import_react8.forwardRef)(
+    ({ className, children, position = 'popper', ...props }, ref) =>
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectPortal, {
+        children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectContent, {
+          ref,
+          className: cn(
+            'relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md',
+            'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
+            'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
+            'data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2',
+            'data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
+            position === 'popper' &&
+              'data-[side=bottom]:translate-y-1 data-[side=top]:-translate-y-1',
+            className,
+          ),
+          position,
+          ...props,
+          children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectViewport, {
+            className: cn(
+              'p-1',
+              position === 'popper' &&
+                'h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]',
+            ),
+            children,
+          }),
+        }),
+      }),
+  );
+  SelectContent2.displayName = SelectContent.displayName;
+  var SelectItem2 = (0, import_react8.forwardRef)(({ className, children, ...props }, ref) =>
+    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectItem, {
+      ref,
+      className: cn(
+        'relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-md-sm outline-none',
+        'focus:bg-accent focus:text-accent-foreground',
+        'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+        className,
+      ),
+      ...props,
+      children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectItemText, { children }),
+    }),
+  );
+  SelectItem2.displayName = SelectItem.displayName;
+
   // src/features/resumeTab/DiagnosaSection.tsx
-  var import_jsx_runtime5 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime20 = __toESM(require_jsx_runtime(), 1);
   function DiagnosaSection({ rows, onChange }) {
     const updateRow = (i, partial) => {
-      const next = rows.map((r, idx) => (idx === i ? { ...r, ...partial } : r));
+      const next = rows.map((r2, idx) => (idx === i ? { ...r2, ...partial } : r2));
       onChange(next);
     };
     const removeRow = (i) => {
       onChange(rows.filter((_, idx) => idx !== i));
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)('div', {
+    return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('div', {
+      className: 'px-5 py-4 border-b border-border bg-background',
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)('div', {
-          className: 'flex items-center justify-between mb-2',
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('div', {
+          className: 'flex items-center justify-between mb-3',
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)('h3', {
-              className: 'text-md-sm font-semibold text-[var(--md-gray-700)]',
+            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('h3', {
+              className: 'text-md-sm font-semibold text-foreground',
               children: [
                 'Diagnosa (ICD-10) ',
-                /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('span', {
-                  className: 'text-[var(--md-gray-400)] font-normal',
-                  children: rows.length > 0 ? `(${rows.length})` : '',
-                }),
+                rows.length > 0 &&
+                  /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('span', {
+                    className: 'text-muted-foreground font-normal',
+                    children: ['(', rows.length, ')'],
+                  }),
               ],
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)('button', {
+            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(Button, {
+              variant: 'default',
+              size: 'sm',
               onClick: () =>
                 onChange([
                   ...rows,
                   { idicd: '', kode10: '', namaDiagnosa: '', kasus: '', komplikasi: '' },
                 ]),
-              className:
-                'inline-flex items-center gap-1 px-2.5 h-7 rounded-md text-md-xs font-medium\n            bg-[#2469f0] text-white hover:bg-[#1d58cc] transition-colors',
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('svg', {
-                  width: '12',
-                  height: '12',
-                  viewBox: '0 0 24 24',
-                  fill: 'none',
-                  stroke: 'currentColor',
-                  strokeWidth: '2.5',
-                  children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('path', {
-                    d: 'M12 5v14M5 12h14',
-                  }),
-                }),
+                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Plus, { className: 'size-3.5' }),
                 'Tambah Diagnosa',
               ],
             }),
           ],
         }),
         rows.length === 0
-          ? /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)('div', {
-              className:
-                'border border-dashed border-[var(--md-gray-200)] rounded-md py-6 text-center',
+          ? /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('div', {
+              className: 'border border-dashed border-border rounded-md py-6 text-center',
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('p', {
-                  className: 'text-md-sm text-[var(--md-gray-400)]',
+                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('p', {
+                  className: 'text-md-sm text-muted-foreground',
                   children: 'Belum ada diagnosa',
                 }),
-                /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('p', {
-                  className: 'text-md-xs text-[var(--md-gray-400)] mt-1',
+                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('p', {
+                  className: 'text-md-xs text-muted-foreground mt-1',
                   children: 'Klik "Tambah Diagnosa" untuk menambahkan',
                 }),
               ],
             })
-          : /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('div', {
-              className: 'border border-[var(--md-gray-200)] rounded-md overflow-hidden',
-              children: /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)('table', {
-                className: 'md-table',
+          : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('div', {
+              className: 'border border-border rounded-md overflow-hidden',
+              children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('table', {
+                className: 'w-full text-md-xs',
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('thead', {
-                    children: /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)('tr', {
+                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('thead', {
+                    children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('tr', {
+                      className: 'border-b border-border bg-muted/50',
                       children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('th', {
-                          className: 'pl-3',
+                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('th', {
+                          className: 'text-left font-semibold text-muted-foreground px-3 py-2',
                           style: { width: '35%' },
                           children: 'Nama Diagnosa',
                         }),
-                        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('th', {
+                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('th', {
+                          className: 'text-left font-semibold text-muted-foreground px-3 py-2',
                           style: { width: '14%' },
                           children: 'Kode ICD-10',
                         }),
-                        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('th', {
+                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('th', {
+                          className: 'text-left font-semibold text-muted-foreground px-3 py-2',
                           style: { width: '15%' },
                           children: 'Kasus',
                         }),
-                        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('th', {
+                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('th', {
+                          className: 'text-left font-semibold text-muted-foreground px-3 py-2',
                           style: { width: '15%' },
                           children: 'Komplikasi',
                         }),
-                        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('th', {
-                          className: 'pr-3',
+                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('th', {
+                          className: 'pr-3 py-2',
                           style: { width: '8%' },
                         }),
                       ],
                     }),
                   }),
-                  /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('tbody', {
+                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('tbody', {
                     children: rows.map((row, i) =>
-                      /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(
+                      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
                         'tr',
                         {
+                          className: 'border-b border-border last:border-0 hover:bg-accent/50',
                           children: [
-                            /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('td', {
-                              className: 'pl-3',
-                              children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('input', {
+                            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('td', {
+                              className: 'px-3 py-1.5',
+                              children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Input, {
                                 type: 'text',
                                 value: row.namaDiagnosa,
                                 onChange: (e) => updateRow(i, { namaDiagnosa: e.target.value }),
                                 placeholder: 'Cari diagnosa...',
                                 className:
-                                  'w-full border-0 bg-transparent text-md-sm text-[var(--md-gray-800)] outline-none',
+                                  'border-0 bg-transparent px-0 h-7 text-md-sm shadow-none focus-visible:ring-0',
                               }),
                             }),
-                            /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('td', {
-                              children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('input', {
+                            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('td', {
+                              className: 'px-3 py-1.5',
+                              children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Input, {
                                 type: 'text',
                                 value: row.kode10,
                                 onChange: (e) => updateRow(i, { kode10: e.target.value }),
                                 placeholder: 'Kode',
                                 className:
-                                  'w-full border-0 bg-transparent font-mono text-md-xs text-[var(--md-gray-700)] outline-none',
+                                  'border-0 bg-transparent px-0 h-7 text-md-xs font-mono shadow-none focus-visible:ring-0',
                               }),
                             }),
-                            /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('td', {
-                              children: /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)('select', {
+                            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('td', {
+                              className: 'px-3 py-1.5',
+                              children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(Select2, {
                                 value: row.kasus,
-                                onChange: (e) => updateRow(i, { kasus: e.target.value }),
-                                className:
-                                  'w-full h-7 rounded border border-[var(--md-gray-200)] bg-white px-2 text-md-xs text-[var(--md-gray-700)] outline-none focus:border-[#2469f0]',
+                                onValueChange: (v) => updateRow(i, { kasus: v }),
                                 children: [
-                                  /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('option', {
-                                    value: '',
-                                    children: 'Pilih Kasus',
+                                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectTrigger2, {
+                                    className: 'h-7 w-full border-border text-md-xs',
+                                    children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                                      SelectValue2,
+                                      { placeholder: 'Pilih Kasus' },
+                                    ),
                                   }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('option', {
-                                    value: 'BARU',
-                                    children: 'BARU',
-                                  }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('option', {
-                                    value: 'LAMA',
-                                    children: 'LAMA',
+                                  /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(SelectContent2, {
+                                    children: [
+                                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectItem2, {
+                                        value: 'BARU',
+                                        children: 'BARU',
+                                      }),
+                                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectItem2, {
+                                        value: 'LAMA',
+                                        children: 'LAMA',
+                                      }),
+                                    ],
                                   }),
                                 ],
                               }),
                             }),
-                            /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('td', {
-                              children: /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)('select', {
+                            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('td', {
+                              className: 'px-3 py-1.5',
+                              children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(Select2, {
                                 value: row.komplikasi,
-                                onChange: (e) => updateRow(i, { komplikasi: e.target.value }),
-                                className:
-                                  'w-full h-7 rounded border border-[var(--md-gray-200)] bg-white px-2 text-md-xs text-[var(--md-gray-700)] outline-none focus:border-[#2469f0]',
+                                onValueChange: (v) => updateRow(i, { komplikasi: v }),
                                 children: [
-                                  /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('option', {
-                                    value: '',
-                                    children: 'Pilih',
+                                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectTrigger2, {
+                                    className: 'h-7 w-full border-border text-md-xs',
+                                    children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                                      SelectValue2,
+                                      { placeholder: 'Pilih' },
+                                    ),
                                   }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('option', {
-                                    value: 'Ya',
-                                    children: 'Ya',
-                                  }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('option', {
-                                    value: 'Tidak',
-                                    children: 'Tidak',
+                                  /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(SelectContent2, {
+                                    children: [
+                                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectItem2, {
+                                        value: 'Ya',
+                                        children: 'Ya',
+                                      }),
+                                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectItem2, {
+                                        value: 'Tidak',
+                                        children: 'Tidak',
+                                      }),
+                                    ],
                                   }),
                                 ],
                               }),
                             }),
-                            /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('td', {
-                              className: 'pr-3',
-                              children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('button', {
+                            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('td', {
+                              className: 'pr-3 py-1.5',
+                              children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Button, {
+                                variant: 'ghost',
+                                size: 'icon',
                                 onClick: () => removeRow(i),
-                                className:
-                                  'w-6 h-6 flex items-center justify-center rounded text-[var(--md-gray-400)] hover:text-[#cc3340] hover:bg-[var(--md-red-50)] transition-colors',
-                                children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('svg', {
-                                  width: '14',
-                                  height: '14',
-                                  viewBox: '0 0 24 24',
-                                  fill: 'none',
-                                  stroke: 'currentColor',
-                                  strokeWidth: '2',
-                                  children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('path', {
-                                    d: 'M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2',
-                                  }),
+                                className: 'h-7 w-7 text-muted-foreground hover:text-destructive',
+                                children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Trash2, {
+                                  className: 'size-3.5',
                                 }),
                               }),
                             }),
@@ -27913,197 +38636,121 @@ var __morbis_feature = (() => {
   }
 
   // src/features/resumeTab/TindakanSection.tsx
-  var import_jsx_runtime6 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime21 = __toESM(require_jsx_runtime(), 1);
   function TindakanSection({ rows, onChange }) {
     const updateRow = (i, partial) => {
-      const next = rows.map((r, idx) => (idx === i ? { ...r, ...partial } : r));
+      const next = rows.map((r2, idx) => (idx === i ? { ...r2, ...partial } : r2));
       onChange(next);
     };
     const removeRow = (i) => {
       onChange(rows.filter((_, idx) => idx !== i));
     };
-    const komorbidOptions = ['Tidak', 'DM', 'HT', 'Jantung', 'Ginjal', 'Lainnya'];
-    return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)('div', {
+    return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
+      className: 'px-5 py-4 border-b border-border bg-background',
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)('div', {
-          className: 'flex items-center justify-between mb-2',
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
+          className: 'flex items-center justify-between mb-3',
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)('h3', {
-              className: 'text-md-sm font-semibold text-[var(--md-gray-700)]',
+            /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('h3', {
+              className: 'text-md-sm font-semibold text-foreground',
               children: [
                 'Tindakan (ICD-9) ',
-                /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('span', {
-                  className: 'text-[var(--md-gray-400)] font-normal',
-                  children: rows.length > 0 ? `(${rows.length})` : '',
-                }),
+                rows.length > 0 &&
+                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('span', {
+                    className: 'text-muted-foreground font-normal',
+                    children: ['(', rows.length, ')'],
+                  }),
               ],
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)('button', {
-              onClick: () =>
-                onChange([
-                  ...rows,
-                  {
-                    idicdTindakan: '',
-                    kode9: '',
-                    namaTindakan: '',
-                    komorbid: '',
-                    kategoriProsedur: '',
-                    snomedProsedur: '',
-                    codeProsedur: '',
-                  },
-                ]),
-              className:
-                'inline-flex items-center gap-1 px-2.5 h-7 rounded-md text-md-xs font-medium\n            bg-[#2469f0] text-white hover:bg-[#1d58cc] transition-colors',
+            /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(Button, {
+              variant: 'default',
+              size: 'sm',
+              onClick: () => onChange([...rows, { idicd: '', kode9: '', namaTindakan: '' }]),
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('svg', {
-                  width: '12',
-                  height: '12',
-                  viewBox: '0 0 24 24',
-                  fill: 'none',
-                  stroke: 'currentColor',
-                  strokeWidth: '2.5',
-                  children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('path', {
-                    d: 'M12 5v14M5 12h14',
-                  }),
-                }),
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Plus, { className: 'size-3.5' }),
                 'Tambah Tindakan',
               ],
             }),
           ],
         }),
         rows.length === 0
-          ? /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)('div', {
-              className:
-                'border border-dashed border-[var(--md-gray-200)] rounded-md py-6 text-center',
+          ? /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
+              className: 'border border-dashed border-border rounded-md py-6 text-center',
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('p', {
-                  className: 'text-md-sm text-[var(--md-gray-400)]',
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('p', {
+                  className: 'text-md-sm text-muted-foreground',
                   children: 'Belum ada tindakan',
                 }),
-                /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('p', {
-                  className: 'text-md-xs text-[var(--md-gray-400)] mt-1',
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('p', {
+                  className: 'text-md-xs text-muted-foreground mt-1',
                   children: 'Klik "Tambah Tindakan" untuk menambahkan',
                 }),
               ],
             })
-          : /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('div', {
-              className: 'border border-[var(--md-gray-200)] rounded-md overflow-hidden',
-              children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)('table', {
-                className: 'md-table',
+          : /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
+              className: 'border border-border rounded-md overflow-hidden',
+              children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('table', {
+                className: 'w-full text-md-xs',
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('thead', {
-                    children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)('tr', {
+                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('thead', {
+                    children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('tr', {
+                      className: 'border-b border-border bg-muted/50',
                       children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('th', {
-                          className: 'pl-3',
-                          style: { width: '30%' },
+                        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('th', {
+                          className: 'text-left font-semibold text-muted-foreground px-3 py-2',
+                          style: { width: '55%' },
                           children: 'Nama Tindakan',
                         }),
-                        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('th', {
-                          style: { width: '12%' },
+                        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('th', {
+                          className: 'text-left font-semibold text-muted-foreground px-3 py-2',
+                          style: { width: '20%' },
                           children: 'Kode ICD-9',
                         }),
-                        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('th', {
-                          style: { width: '12%' },
-                          children: 'Komorbid',
-                        }),
-                        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('th', {
-                          style: { width: '15%' },
-                          children: 'Kategori',
-                        }),
-                        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('th', {
-                          className: 'pr-3',
+                        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('th', {
+                          className: 'pr-3 py-2',
                           style: { width: '8%' },
                         }),
                       ],
                     }),
                   }),
-                  /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('tbody', {
+                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('tbody', {
                     children: rows.map((row, i) =>
-                      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)(
+                      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
                         'tr',
                         {
+                          className: 'border-b border-border last:border-0 hover:bg-accent/50',
                           children: [
-                            /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('td', {
-                              className: 'pl-3',
-                              children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('input', {
+                            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('td', {
+                              className: 'px-3 py-1.5',
+                              children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Input, {
                                 type: 'text',
                                 value: row.namaTindakan,
                                 onChange: (e) => updateRow(i, { namaTindakan: e.target.value }),
                                 placeholder: 'Cari tindakan...',
                                 className:
-                                  'w-full border-0 bg-transparent text-md-sm text-[var(--md-gray-800)] outline-none',
+                                  'border-0 bg-transparent px-0 h-7 text-md-sm shadow-none focus-visible:ring-0',
                               }),
                             }),
-                            /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('td', {
-                              children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('input', {
+                            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('td', {
+                              className: 'px-3 py-1.5',
+                              children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Input, {
                                 type: 'text',
                                 value: row.kode9,
                                 onChange: (e) => updateRow(i, { kode9: e.target.value }),
                                 placeholder: 'Kode',
                                 className:
-                                  'w-full border-0 bg-transparent font-mono text-md-xs text-[var(--md-gray-700)] outline-none',
+                                  'border-0 bg-transparent px-0 h-7 text-md-xs font-mono shadow-none focus-visible:ring-0',
                               }),
                             }),
-                            /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('td', {
-                              children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)('select', {
-                                value: row.komorbid,
-                                onChange: (e) => updateRow(i, { komorbid: e.target.value }),
-                                className:
-                                  'w-full h-7 rounded border border-[var(--md-gray-200)] bg-white px-2 text-md-xs text-[var(--md-gray-700)] outline-none focus:border-[#2469f0]',
-                                children: [
-                                  /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('option', {
-                                    value: '',
-                                    children: 'Pilih',
-                                  }),
-                                  komorbidOptions.map((o) =>
-                                    /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
-                                      'option',
-                                      { value: o, children: o },
-                                      o,
-                                    ),
-                                  ),
-                                ],
-                              }),
-                            }),
-                            /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('td', {
-                              children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)('select', {
-                                value: row.kategoriProsedur,
-                                onChange: (e) => updateRow(i, { kategoriProsedur: e.target.value }),
-                                className:
-                                  'w-full h-7 rounded border border-[var(--md-gray-200)] bg-white px-2 text-md-xs text-[var(--md-gray-700)] outline-none focus:border-[#2469f0]',
-                                children: [
-                                  /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('option', {
-                                    value: '',
-                                    children: 'Pilih',
-                                  }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('option', {
-                                    value: 'Utama',
-                                    children: 'Utama',
-                                  }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('option', {
-                                    value: 'Tambahan',
-                                    children: 'Tambahan',
-                                  }),
-                                ],
-                              }),
-                            }),
-                            /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('td', {
-                              className: 'pr-3',
-                              children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('button', {
+                            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('td', {
+                              className: 'pr-3 py-1.5',
+                              children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Button, {
+                                variant: 'ghost',
+                                size: 'icon',
                                 onClick: () => removeRow(i),
-                                className:
-                                  'w-6 h-6 flex items-center justify-center rounded text-[var(--md-gray-400)] hover:text-[#cc3340] hover:bg-[var(--md-red-50)] transition-colors',
-                                children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('svg', {
-                                  width: '14',
-                                  height: '14',
-                                  viewBox: '0 0 24 24',
-                                  fill: 'none',
-                                  stroke: 'currentColor',
-                                  strokeWidth: '2',
-                                  children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('path', {
-                                    d: 'M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2',
-                                  }),
+                                className: 'h-7 w-7 text-muted-foreground hover:text-destructive',
+                                children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Trash2, {
+                                  className: 'size-3.5',
                                 }),
                               }),
                             }),
@@ -28121,58 +38768,34 @@ var __morbis_feature = (() => {
   }
 
   // src/features/resumeTab/ValidationPanel.tsx
-  var import_jsx_runtime7 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime22 = __toESM(require_jsx_runtime(), 1);
   function ValidationPanel({ errors }) {
     if (errors.length === 0) return null;
-    return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)('div', {
-      className:
-        'px-5 py-3 bg-[var(--md-red-50)] border-t border-[var(--md-red-100)] animate-slide-up',
-      children: /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)('div', {
-        className: 'flex items-start gap-2.5',
+    return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('div', {
+      className: 'px-5 py-3 bg-destructive/10 border-t border-destructive/20',
+      role: 'alert',
+      children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
+        className: 'flex items-start gap-2',
         children: [
-          /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)('svg', {
-            className: 'w-4 h-4 text-[#cc3340] mt-0.5 shrink-0',
-            viewBox: '0 0 24 24',
-            fill: 'none',
-            stroke: 'currentColor',
-            strokeWidth: '2',
-            children: [
-              /* @__PURE__ */ (0, import_jsx_runtime7.jsx)('circle', {
-                cx: '12',
-                cy: '12',
-                r: '10',
-              }),
-              /* @__PURE__ */ (0, import_jsx_runtime7.jsx)('path', { d: 'M12 8v4M12 16h.01' }),
-            ],
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(TriangleAlert, {
+            className: 'size-4 text-destructive shrink-0 mt-0.5',
           }),
-          /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)('div', {
-            className: 'space-y-1',
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)('p', {
-                className: 'text-md-xs font-semibold text-[#cc3340]',
-                children: [
-                  errors.length,
-                  ' ',
-                  errors.length === 1 ? 'masalah' : 'masalah',
-                  ' perlu diperbaiki',
-                ],
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('p', {
+                className: 'text-md-xs font-semibold text-destructive mb-1',
+                children: ['Terdapat ', errors.length, ' kesalahan'],
               }),
-              errors.map((e, i) =>
-                /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(
-                  'p',
-                  {
-                    className: 'text-md-xs text-[#ad2b36]',
-                    children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)('strong', {
-                        children: [e.section, ':'],
-                      }),
-                      ' ',
-                      e.message,
-                    ],
-                  },
-                  i,
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('ul', {
+                className: 'space-y-0.5',
+                children: errors.map((err, i) =>
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
+                    'li',
+                    { className: 'text-md-xs text-destructive/80', children: err },
+                    i,
+                  ),
                 ),
-              ),
+              }),
             ],
           }),
         ],
@@ -28181,74 +38804,28 @@ var __morbis_feature = (() => {
   }
 
   // src/features/resumeTab/Footer.tsx
-  var import_jsx_runtime8 = __toESM(require_jsx_runtime(), 1);
-  function Footer({ saving, hasErrors, lastSaved, onSave, onCancel }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)('div', {
+  var import_jsx_runtime23 = __toESM(require_jsx_runtime(), 1);
+  function Footer({ onClose, onSave, saving }) {
+    return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('div', {
       className:
-        'flex items-center justify-between px-5 py-3 border-t border-[var(--md-gray-200)] shrink-0',
+        'flex items-center justify-between px-5 py-3 border-t border-border shrink-0 bg-background',
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)('div', {
-          className: 'flex items-center gap-2',
-          children:
-            lastSaved &&
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)('span', {
-              className: 'text-md-xs text-[var(--md-green-500)] flex items-center gap-1',
-              children: [
-                /* @__PURE__ */ (0, import_jsx_runtime8.jsx)('svg', {
-                  className: 'w-3.5 h-3.5',
-                  viewBox: '0 0 24 24',
-                  fill: 'none',
-                  stroke: 'currentColor',
-                  strokeWidth: '2.5',
-                  children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)('path', {
-                    d: 'M20 6L9 17l-5-5',
-                  }),
-                }),
-                lastSaved,
-              ],
-            }),
-        }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)('div', {
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('div', {}),
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('div', {
           className: 'flex items-center gap-2',
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)('button', {
-              onClick: onCancel,
-              className:
-                'inline-flex items-center justify-center h-8 px-4 rounded-md text-md-sm font-medium\n            border border-[var(--md-gray-200)] text-[var(--md-gray-600)]\n            hover:bg-[var(--md-gray-50)] active:bg-[var(--md-gray-100)] transition-colors',
-              children: 'Tutup',
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Button, {
+              variant: 'outline',
+              size: 'sm',
+              onClick: onClose,
+              children: 'Batal',
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)('button', {
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Button, {
+              variant: 'default',
+              size: 'sm',
               onClick: onSave,
               disabled: saving,
-              className:
-                'inline-flex items-center justify-center h-8 px-4 rounded-md text-md-sm font-semibold\n            bg-[#1b8a4b] text-white shadow-sm\n            hover:bg-[#16753f] active:bg-[#116033]\n            disabled:opacity-50 disabled:cursor-not-allowed transition-colors',
-              children: saving
-                ? /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, {
-                    children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)('svg', {
-                        className: 'animate-spin -ml-1 mr-1.5 h-3.5 w-3.5',
-                        viewBox: '0 0 24 24',
-                        fill: 'none',
-                        children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)('circle', {
-                            className: 'opacity-25',
-                            cx: '12',
-                            cy: '12',
-                            r: '10',
-                            stroke: 'currentColor',
-                            strokeWidth: '4',
-                          }),
-                          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)('path', {
-                            className: 'opacity-75',
-                            fill: 'currentColor',
-                            d: 'M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z',
-                          }),
-                        ],
-                      }),
-                      'Menyimpan...',
-                    ],
-                  })
-                : 'Simpan Resume',
+              children: saving ? 'Menyimpan...' : 'Simpan',
             }),
           ],
         }),
@@ -28257,7 +38834,7 @@ var __morbis_feature = (() => {
   }
 
   // src/features/resumeTab/App.tsx
-  var import_jsx_runtime9 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime24 = __toESM(require_jsx_runtime(), 1);
   function validate(data) {
     const errors = [];
     if (data.diagnosa.length === 0) {
@@ -28279,11 +38856,11 @@ var __morbis_feature = (() => {
     return errors;
   }
   function App({ data: initialData, onSave, onClose }) {
-    const [data, setData] = (0, import_react.useState)(initialData);
-    const [saving, setSaving] = (0, import_react.useState)(false);
-    const [lastSaved, setLastSaved] = (0, import_react.useState)(null);
+    const [data, setData] = (0, import_react9.useState)(initialData);
+    const [saving, setSaving] = (0, import_react9.useState)(false);
+    const [lastSaved, setLastSaved] = (0, import_react9.useState)(null);
     const errors = validate(data);
-    const handleSave = (0, import_react.useCallback)(async () => {
+    const handleSave = (0, import_react9.useCallback)(async () => {
       if (errors.length > 0) return;
       setSaving(true);
       try {
@@ -28293,38 +38870,38 @@ var __morbis_feature = (() => {
         setSaving(false);
       }
     }, [data, errors, onSave]);
-    return /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)('div', {
+    return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)('div', {
       className:
         'flex flex-col h-full bg-white rounded-md-lg shadow-md-panel overflow-hidden animate-zoom-in',
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Header, { title: 'Resume Rajal', onClose }),
-        /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)('div', {
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Header, { title: 'Resume Rajal', onClose }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)('div', {
           className: 'flex-1 overflow-y-auto px-5 py-4 space-y-5',
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(InfoBanner, { data: data.patientInfo }),
-            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(ClinicalNotesSection, {
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(InfoBanner, { data: data.patientInfo }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(ClinicalNotesSection, {
               data: data.clinicalNotes,
               onChange: (clinicalNotes) => setData({ ...data, clinicalNotes }),
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('div', { className: 'md-divider' }),
-            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(VitalSignsSection, {
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)('div', { className: 'md-divider' }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(VitalSignsSection, {
               data: data.vitalSigns,
               onChange: (vitalSigns) => setData({ ...data, vitalSigns }),
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('div', { className: 'md-divider' }),
-            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(DiagnosaSection, {
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)('div', { className: 'md-divider' }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(DiagnosaSection, {
               rows: data.diagnosa,
               onChange: (diagnosa) => setData({ ...data, diagnosa }),
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('div', { className: 'md-divider' }),
-            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(TindakanSection, {
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)('div', { className: 'md-divider' }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(TindakanSection, {
               rows: data.tindakan,
               onChange: (tindakan) => setData({ ...data, tindakan }),
             }),
           ],
         }),
-        /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(ValidationPanel, { errors }),
-        /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Footer, {
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(ValidationPanel, { errors }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Footer, {
           saving,
           hasErrors: errors.length > 0,
           lastSaved,
@@ -28336,7 +38913,7 @@ var __morbis_feature = (() => {
   }
 
   // src/features/resumeTab/mount.tsx
-  var import_jsx_runtime10 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime25 = __toESM(require_jsx_runtime(), 1);
   var ENDPOINT = '/v2/m-klaim/detail-v2-refaktor/simpan_resume';
   var reactRoot = null;
   function extractFormData() {
@@ -28476,7 +39053,7 @@ var __morbis_feature = (() => {
       'all: initial; display: block; width: 100%; height: 100%; pointer-events: auto;';
     const style = document.createElement('style');
     style.textContent = true
-      ? '@import url(\'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\');\n\n*, ::before, ::after{\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n\n::backdrop{\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n\n/*\n! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com\n*/\n\n/*\n1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)\n*/\n\n*,\n::before,\n::after {\n  box-sizing: border-box; /* 1 */\n  border-width: 0; /* 2 */\n  border-style: solid; /* 2 */\n  border-color: #e5e7eb; /* 2 */\n}\n\n::before,\n::after {\n  --tw-content: \'\';\n}\n\n/*\n1. Use a consistent sensible line-height in all browsers.\n2. Prevent adjustments of font size after orientation changes in iOS.\n3. Use a more readable tab size.\n4. Use the user\'s configured `sans` font-family by default.\n5. Use the user\'s configured `sans` font-feature-settings by default.\n6. Use the user\'s configured `sans` font-variation-settings by default.\n7. Disable tap highlights on iOS\n*/\n\nhtml,\n:host {\n  line-height: 1.5; /* 1 */\n  -webkit-text-size-adjust: 100%; /* 2 */\n  -moz-tab-size: 4; /* 3 */\n  -o-tab-size: 4;\n     tab-size: 4; /* 3 */\n  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; /* 4 */\n  font-feature-settings: normal; /* 5 */\n  font-variation-settings: normal; /* 6 */\n  -webkit-tap-highlight-color: transparent; /* 7 */\n}\n\n/*\n1. Remove the margin in all browsers.\n2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.\n*/\n\nbody {\n  margin: 0; /* 1 */\n  line-height: inherit; /* 2 */\n}\n\n/*\n1. Add the correct height in Firefox.\n2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n3. Ensure horizontal rules are visible by default.\n*/\n\nhr {\n  height: 0; /* 1 */\n  color: inherit; /* 2 */\n  border-top-width: 1px; /* 3 */\n}\n\n/*\nAdd the correct text decoration in Chrome, Edge, and Safari.\n*/\n\nabbr:where([title]) {\n  -webkit-text-decoration: underline dotted;\n          text-decoration: underline dotted;\n}\n\n/*\nRemove the default font size and weight for headings.\n*/\n\nh1,\nh2,\nh3,\nh4,\nh5,\nh6 {\n  font-size: inherit;\n  font-weight: inherit;\n}\n\n/*\nReset links to optimize for opt-in styling instead of opt-out.\n*/\n\na {\n  color: inherit;\n  text-decoration: inherit;\n}\n\n/*\nAdd the correct font weight in Edge and Safari.\n*/\n\nb,\nstrong {\n  font-weight: bolder;\n}\n\n/*\n1. Use the user\'s configured `mono` font-family by default.\n2. Use the user\'s configured `mono` font-feature-settings by default.\n3. Use the user\'s configured `mono` font-variation-settings by default.\n4. Correct the odd `em` font sizing in all browsers.\n*/\n\ncode,\nkbd,\nsamp,\npre {\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace; /* 1 */\n  font-feature-settings: normal; /* 2 */\n  font-variation-settings: normal; /* 3 */\n  font-size: 1em; /* 4 */\n}\n\n/*\nAdd the correct font size in all browsers.\n*/\n\nsmall {\n  font-size: 80%;\n}\n\n/*\nPrevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\nsub,\nsup {\n  font-size: 75%;\n  line-height: 0;\n  position: relative;\n  vertical-align: baseline;\n}\n\nsub {\n  bottom: -0.25em;\n}\n\nsup {\n  top: -0.5em;\n}\n\n/*\n1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n3. Remove gaps between table borders by default.\n*/\n\ntable {\n  text-indent: 0; /* 1 */\n  border-color: inherit; /* 2 */\n  border-collapse: collapse; /* 3 */\n}\n\n/*\n1. Change the font styles in all browsers.\n2. Remove the margin in Firefox and Safari.\n3. Remove default padding in all browsers.\n*/\n\nbutton,\ninput,\noptgroup,\nselect,\ntextarea {\n  font-family: inherit; /* 1 */\n  font-feature-settings: inherit; /* 1 */\n  font-variation-settings: inherit; /* 1 */\n  font-size: 100%; /* 1 */\n  font-weight: inherit; /* 1 */\n  line-height: inherit; /* 1 */\n  letter-spacing: inherit; /* 1 */\n  color: inherit; /* 1 */\n  margin: 0; /* 2 */\n  padding: 0; /* 3 */\n}\n\n/*\nRemove the inheritance of text transform in Edge and Firefox.\n*/\n\nbutton,\nselect {\n  text-transform: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Remove default button styles.\n*/\n\nbutton,\ninput:where([type=\'button\']),\ninput:where([type=\'reset\']),\ninput:where([type=\'submit\']) {\n  -webkit-appearance: button; /* 1 */\n  background-color: transparent; /* 2 */\n  background-image: none; /* 2 */\n}\n\n/*\nUse the modern Firefox focus style for all focusable elements.\n*/\n\n:-moz-focusring {\n  outline: auto;\n}\n\n/*\nRemove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n:-moz-ui-invalid {\n  box-shadow: none;\n}\n\n/*\nAdd the correct vertical alignment in Chrome and Firefox.\n*/\n\nprogress {\n  vertical-align: baseline;\n}\n\n/*\nCorrect the cursor style of increment and decrement buttons in Safari.\n*/\n\n::-webkit-inner-spin-button,\n::-webkit-outer-spin-button {\n  height: auto;\n}\n\n/*\n1. Correct the odd appearance in Chrome and Safari.\n2. Correct the outline style in Safari.\n*/\n\n[type=\'search\'] {\n  -webkit-appearance: textfield; /* 1 */\n  outline-offset: -2px; /* 2 */\n}\n\n/*\nRemove the inner padding in Chrome and Safari on macOS.\n*/\n\n::-webkit-search-decoration {\n  -webkit-appearance: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Change font properties to `inherit` in Safari.\n*/\n\n::-webkit-file-upload-button {\n  -webkit-appearance: button; /* 1 */\n  font: inherit; /* 2 */\n}\n\n/*\nAdd the correct display in Chrome and Safari.\n*/\n\nsummary {\n  display: list-item;\n}\n\n/*\nRemoves the default spacing and border for appropriate elements.\n*/\n\nblockquote,\ndl,\ndd,\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\nhr,\nfigure,\np,\npre {\n  margin: 0;\n}\n\nfieldset {\n  margin: 0;\n  padding: 0;\n}\n\nlegend {\n  padding: 0;\n}\n\nol,\nul,\nmenu {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n}\n\n/*\nReset default styling for dialogs.\n*/\n\ndialog {\n  padding: 0;\n}\n\n/*\nPrevent resizing textareas horizontally by default.\n*/\n\ntextarea {\n  resize: vertical;\n}\n\n/*\n1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n2. Set the default placeholder color to the user\'s configured gray 400 color.\n*/\n\ninput::-moz-placeholder, textarea::-moz-placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\ninput::placeholder,\ntextarea::placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\n/*\nSet the default cursor for buttons.\n*/\n\nbutton,\n[role="button"] {\n  cursor: pointer;\n}\n\n/*\nMake sure disabled buttons don\'t get the pointer cursor.\n*/\n\n:disabled {\n  cursor: default;\n}\n\n/*\n1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n   This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\nimg,\nsvg,\nvideo,\ncanvas,\naudio,\niframe,\nembed,\nobject {\n  display: block; /* 1 */\n  vertical-align: middle; /* 2 */\n}\n\n/*\nConstrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\nimg,\nvideo {\n  max-width: 100%;\n  height: auto;\n}\n\n/* Make elements with the HTML hidden attribute stay hidden by default */\n\n[hidden]:where(:not([hidden="until-found"])) {\n  display: none;\n}\n\n*,\n  *::before,\n  *::after {\n    box-sizing: border-box;\n  }\n\nhtml {\n    font-family:\n      \'Inter\',\n      -apple-system,\n      BlinkMacSystemFont,\n      \'Segoe UI\',\n      sans-serif;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale;\n  }\n\n:root {\n    --md-primary: #2469f0;\n    --md-primary-hover: #1d58cc;\n    --md-primary-active: #1647a8;\n\n    --md-gray-50: #f8f9fb;\n    --md-gray-100: #f1f2f5;\n    --md-gray-200: #e4e6eb;\n    --md-gray-300: #c9cdd4;\n    --md-gray-400: #a4a9b3;\n    --md-gray-500: #808690;\n    --md-gray-600: #636971;\n    --md-gray-700: #484d54;\n    --md-gray-800: #2e3238;\n    --md-gray-900: #1a1d21;\n\n    --md-radius: 6px;\n    --md-radius-lg: 8px;\n\n    --md-shadow-panel: 0 0 0 1px rgba(0, 0, 0, 0.04), 0 8px 32px rgba(0, 0, 0, 0.12);\n    --md-shadow-card: 0 0 0 1px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);\n    --md-shadow-dropdown: 0 4px 16px rgba(0, 0, 0, 0.14);\n\n    /* \u2500\u2500 shadcn/ui CSS variables \u2500\u2500 */\n    --background: 0 0% 100%;\n    --foreground: 222.2 84% 4.9%;\n    --card: 0 0% 100%;\n    --card-foreground: 222.2 84% 4.9%;\n    --popover: 0 0% 100%;\n    --popover-foreground: 222.2 84% 4.9%;\n    --primary: 221.2 83.2% 53.3%;\n    --primary-foreground: 210 40% 98%;\n    --secondary: 210 40% 96.1%;\n    --secondary-foreground: 222.2 47.4% 11.2%;\n    --muted: 210 40% 96.1%;\n    --muted-foreground: 215.4 16.3% 46.9%;\n    --accent: 210 40% 96.1%;\n    --accent-foreground: 222.2 47.4% 11.2%;\n    --destructive: 0 84.2% 60.2%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 214.3 31.8% 91.4%;\n    --input: 214.3 31.8% 91.4%;\n    --ring: 221.2 83.2% 53.3%;\n    --radius: 0.375rem;\n  }\n\n.dark {\n    --md-gray-50: #1a1d21;\n    --md-gray-100: #2e3238;\n    --md-gray-200: #484d54;\n    --md-gray-300: #636971;\n    --md-gray-400: #808690;\n    --md-gray-500: #a4a9b3;\n    --md-gray-600: #c9cdd4;\n    --md-gray-700: #e4e6eb;\n    --md-gray-800: #f1f2f5;\n    --md-gray-900: #f8f9fb;\n\n    /* \u2500\u2500 shadcn/ui dark variables \u2500\u2500 */\n    --background: 222.2 84% 4.9%;\n    --foreground: 210 40% 98%;\n    --card: 222.2 84% 4.9%;\n    --card-foreground: 210 40% 98%;\n    --popover: 222.2 84% 4.9%;\n    --popover-foreground: 210 40% 98%;\n    --primary: 217.2 91.2% 59.8%;\n    --primary-foreground: 222.2 47.4% 11.2%;\n    --secondary: 217.2 32.6% 17.5%;\n    --secondary-foreground: 210 40% 98%;\n    --muted: 217.2 32.6% 17.5%;\n    --muted-foreground: 215 20.2% 65.1%;\n    --accent: 217.2 32.6% 17.5%;\n    --accent-foreground: 210 40% 98%;\n    --destructive: 0 62.8% 30.6%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 217.2 32.6% 17.5%;\n    --input: 217.2 32.6% 17.5%;\n    --ring: 224.3 76.3% 48%;\n  }\n\n::-moz-selection {\n    background: #2469f0;\n    color: white;\n  }\n\n::selection {\n    background: #2469f0;\n    color: white;\n  }\n\n* {\n    scrollbar-width: thin;\n    scrollbar-color: var(--md-gray-300) transparent;\n  }\n\n*::-webkit-scrollbar {\n    width: 6px;\n    height: 6px;\n  }\n\n*::-webkit-scrollbar-track {\n    background: transparent;\n  }\n\n*::-webkit-scrollbar-thumb {\n    background: var(--md-gray-300);\n    border-radius: 3px;\n  }\n\n*::-webkit-scrollbar-thumb:hover {\n    background: var(--md-gray-400);\n  }\n.\\!container{\n  width: 100% !important;\n}\n.container{\n  width: 100%;\n}\n@media (min-width: 640px){\n\n  .\\!container{\n    max-width: 640px !important;\n  }\n\n  .container{\n    max-width: 640px;\n  }\n}\n@media (min-width: 768px){\n\n  .\\!container{\n    max-width: 768px !important;\n  }\n\n  .container{\n    max-width: 768px;\n  }\n}\n@media (min-width: 1024px){\n\n  .\\!container{\n    max-width: 1024px !important;\n  }\n\n  .container{\n    max-width: 1024px;\n  }\n}\n@media (min-width: 1280px){\n\n  .\\!container{\n    max-width: 1280px !important;\n  }\n\n  .container{\n    max-width: 1280px;\n  }\n}\n@media (min-width: 1536px){\n\n  .\\!container{\n    max-width: 1536px !important;\n  }\n\n  .container{\n    max-width: 1536px;\n  }\n}\n.md-card {\n    background: white;\n    border: 1px solid var(--md-gray-200);\n    border-radius: var(--md-radius-lg);\n  }\n.dark .md-card {\n    background: var(--md-gray-100);\n    border-color: var(--md-gray-200);\n  }\n.md-input {\n    width: 100%;\n    padding: 6px 10px;\n    font-size: 13px;\n    line-height: 20px;\n    color: var(--md-gray-900);\n    background: white;\n    border: 1px solid var(--md-gray-200);\n    border-radius: var(--md-radius);\n    outline: none;\n    transition:\n      border-color 0.15s ease,\n      box-shadow 0.15s ease;\n  }\n.md-input:focus {\n    border-color: #2469f0;\n    box-shadow: 0 0 0 2px rgba(36, 105, 240, 0.12);\n  }\n.md-input::-moz-placeholder {\n    color: var(--md-gray-400);\n  }\n.md-input::placeholder {\n    color: var(--md-gray-400);\n  }\n.dark .md-input {\n    background: var(--md-gray-100);\n    border-color: var(--md-gray-200);\n    color: var(--md-gray-900);\n  }\n.md-label {\n    display: block;\n    font-size: 11px;\n    font-weight: 600;\n    color: var(--md-gray-500);\n    text-transform: uppercase;\n    letter-spacing: 0.04em;\n    margin-bottom: 4px;\n  }\n.md-table {\n    width: 100%;\n    border-collapse: collapse;\n  }\n.md-table th {\n    padding: 6px 8px;\n    font-size: 11px;\n    font-weight: 600;\n    color: var(--md-gray-500);\n    text-transform: uppercase;\n    letter-spacing: 0.04em;\n    text-align: left;\n    border-bottom: 1px solid var(--md-gray-200);\n    white-space: nowrap;\n  }\n.md-table td {\n    padding: 6px 8px;\n    font-size: 13px;\n    line-height: 20px;\n    color: var(--md-gray-800);\n    border-bottom: 1px solid var(--md-gray-100);\n  }\n.md-table tr:last-child td {\n    border-bottom: none;\n  }\n.md-table tr:hover td {\n    background: var(--md-gray-50);\n  }\n.md-badge {\n    display: inline-flex;\n    align-items: center;\n    gap: 4px;\n    padding: 1px 8px;\n    font-size: 11px;\n    font-weight: 600;\n    border-radius: 9999px;\n    white-space: nowrap;\n  }\n.md-badge--primary {\n    color: #2469f0;\n    background: #eef3ff;\n  }\n.md-badge--green {\n    color: #1b8a4b;\n    background: #eaf6ef;\n  }\n.md-badge--amber {\n    color: #c47a1a;\n    background: #fef4e4;\n  }\n.md-badge--red {\n    color: #cc3340;\n    background: #fcecee;\n  }\n.dark .md-badge--primary {\n    background: rgba(36, 105, 240, 0.15);\n  }\n.dark .md-badge--green {\n    background: rgba(27, 138, 75, 0.15);\n  }\n.dark .md-badge--amber {\n    background: rgba(196, 122, 26, 0.15);\n  }\n.dark .md-badge--red {\n    background: rgba(204, 51, 64, 0.15);\n  }\n.md-divider {\n    height: 1px;\n    background: var(--md-gray-200);\n    margin: 12px 0;\n  }\n.pointer-events-none{\n  pointer-events: none;\n}\n.visible{\n  visibility: visible;\n}\n.collapse{\n  visibility: collapse;\n}\n.static{\n  position: static;\n}\n.fixed{\n  position: fixed;\n}\n.absolute{\n  position: absolute;\n}\n.relative{\n  position: relative;\n}\n.bottom-4{\n  bottom: 1rem;\n}\n.left-1\\/2{\n  left: 50%;\n}\n.right-2{\n  right: 0.5rem;\n}\n.top-1\\/2{\n  top: 50%;\n}\n.z-50{\n  z-index: 50;\n}\n.col-span-2{\n  grid-column: span 2 / span 2;\n}\n.-mb-\\[1px\\]{\n  margin-bottom: -1px;\n}\n.-ml-1{\n  margin-left: -0.25rem;\n}\n.mb-1{\n  margin-bottom: 0.25rem;\n}\n.mb-1\\.5{\n  margin-bottom: 0.375rem;\n}\n.mb-2{\n  margin-bottom: 0.5rem;\n}\n.mb-3{\n  margin-bottom: 0.75rem;\n}\n.mr-1\\.5{\n  margin-right: 0.375rem;\n}\n.mr-2{\n  margin-right: 0.5rem;\n}\n.mr-3{\n  margin-right: 0.75rem;\n}\n.mt-0\\.5{\n  margin-top: 0.125rem;\n}\n.mt-1{\n  margin-top: 0.25rem;\n}\n.block{\n  display: block;\n}\n.inline-block{\n  display: inline-block;\n}\n.flex{\n  display: flex;\n}\n.inline-flex{\n  display: inline-flex;\n}\n.\\!table{\n  display: table !important;\n}\n.table{\n  display: table;\n}\n.table-header-group{\n  display: table-header-group;\n}\n.grid{\n  display: grid;\n}\n.contents{\n  display: contents;\n}\n.hidden{\n  display: none;\n}\n.size-3{\n  width: 0.75rem;\n  height: 0.75rem;\n}\n.size-3\\.5{\n  width: 0.875rem;\n  height: 0.875rem;\n}\n.h-2{\n  height: 0.5rem;\n}\n.h-3\\.5{\n  height: 0.875rem;\n}\n.h-4{\n  height: 1rem;\n}\n.h-5{\n  height: 1.25rem;\n}\n.h-6{\n  height: 1.5rem;\n}\n.h-7{\n  height: 1.75rem;\n}\n.h-8{\n  height: 2rem;\n}\n.h-9{\n  height: 2.25rem;\n}\n.h-\\[300px\\]{\n  height: 300px;\n}\n.h-\\[var\\(--radix-select-trigger-height\\)\\]{\n  height: var(--radix-select-trigger-height);\n}\n.h-full{\n  height: 100%;\n}\n.max-h-96{\n  max-height: 24rem;\n}\n.max-h-\\[600px\\]{\n  max-height: 600px;\n}\n.min-h-\\[200px\\]{\n  min-height: 200px;\n}\n.min-h-\\[60px\\]{\n  min-height: 60px;\n}\n.w-2{\n  width: 0.5rem;\n}\n.w-3\\.5{\n  width: 0.875rem;\n}\n.w-4{\n  width: 1rem;\n}\n.w-5{\n  width: 1.25rem;\n}\n.w-6{\n  width: 1.5rem;\n}\n.w-7{\n  width: 1.75rem;\n}\n.w-8{\n  width: 2rem;\n}\n.w-9{\n  width: 2.25rem;\n}\n.w-\\[100px\\]{\n  width: 100px;\n}\n.w-\\[120px\\]{\n  width: 120px;\n}\n.w-\\[340px\\]{\n  width: 340px;\n}\n.w-\\[90px\\]{\n  width: 90px;\n}\n.w-full{\n  width: 100%;\n}\n.min-w-0{\n  min-width: 0px;\n}\n.min-w-\\[200px\\]{\n  min-width: 200px;\n}\n.min-w-\\[8rem\\]{\n  min-width: 8rem;\n}\n.min-w-\\[var\\(--radix-select-trigger-width\\)\\]{\n  min-width: var(--radix-select-trigger-width);\n}\n.flex-1{\n  flex: 1 1 0%;\n}\n.flex-shrink{\n  flex-shrink: 1;\n}\n.shrink-0{\n  flex-shrink: 0;\n}\n.border-collapse{\n  border-collapse: collapse;\n}\n.-translate-x-1\\/2{\n  --tw-translate-x: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.-translate-y-1\\/2{\n  --tw-translate-y: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.transform{\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n@keyframes slide-up{\n\n  0%{\n    opacity: 0;\n    transform: translateY(8px);\n  }\n\n  100%{\n    opacity: 1;\n    transform: translateY(0);\n  }\n}\n.animate-slide-up{\n  animation: slide-up 0.15s ease-out;\n}\n@keyframes spin{\n\n  to{\n    transform: rotate(360deg);\n  }\n}\n.animate-spin{\n  animation: spin 1s linear infinite;\n}\n@keyframes zoom-in{\n\n  0%{\n    opacity: 0;\n    transform: scale(0.95);\n  }\n\n  100%{\n    opacity: 1;\n    transform: scale(1);\n  }\n}\n.animate-zoom-in{\n  animation: zoom-in 0.15s ease-out;\n}\n.cursor-default{\n  cursor: default;\n}\n.cursor-not-allowed{\n  cursor: not-allowed;\n}\n.cursor-pointer{\n  cursor: pointer;\n}\n.select-none{\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.resize-y{\n  resize: vertical;\n}\n.resize{\n  resize: both;\n}\n.grid-cols-2{\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n}\n.grid-cols-6{\n  grid-template-columns: repeat(6, minmax(0, 1fr));\n}\n.flex-col{\n  flex-direction: column;\n}\n.flex-wrap{\n  flex-wrap: wrap;\n}\n.items-start{\n  align-items: flex-start;\n}\n.items-center{\n  align-items: center;\n}\n.justify-center{\n  justify-content: center;\n}\n.justify-between{\n  justify-content: space-between;\n}\n.gap-0{\n  gap: 0px;\n}\n.gap-1{\n  gap: 0.25rem;\n}\n.gap-1\\.5{\n  gap: 0.375rem;\n}\n.gap-2{\n  gap: 0.5rem;\n}\n.gap-2\\.5{\n  gap: 0.625rem;\n}\n.gap-3{\n  gap: 0.75rem;\n}\n.gap-x-6{\n  -moz-column-gap: 1.5rem;\n       column-gap: 1.5rem;\n}\n.gap-y-1{\n  row-gap: 0.25rem;\n}\n.space-y-0\\.5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.125rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.125rem * var(--tw-space-y-reverse));\n}\n.space-y-1 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));\n}\n.space-y-3 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));\n}\n.space-y-5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1.25rem * var(--tw-space-y-reverse));\n}\n.overflow-hidden{\n  overflow: hidden;\n}\n.overflow-y-auto{\n  overflow-y: auto;\n}\n.truncate{\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n.whitespace-nowrap{\n  white-space: nowrap;\n}\n.rounded{\n  border-radius: 0.25rem;\n}\n.rounded-full{\n  border-radius: 9999px;\n}\n.rounded-lg{\n  border-radius: 0.5rem;\n}\n.rounded-md{\n  border-radius: 6px;\n}\n.rounded-md-lg{\n  border-radius: 8px;\n}\n.rounded-sm{\n  border-radius: 0.125rem;\n}\n.border{\n  border-width: 1px;\n}\n.border-0{\n  border-width: 0px;\n}\n.border-2{\n  border-width: 2px;\n}\n.border-b{\n  border-bottom-width: 1px;\n}\n.border-b-2{\n  border-bottom-width: 2px;\n}\n.border-t{\n  border-top-width: 1px;\n}\n.border-dashed{\n  border-style: dashed;\n}\n.border-\\[\\#2469f0\\]{\n  --tw-border-opacity: 1;\n  border-color: rgb(36 105 240 / var(--tw-border-opacity, 1));\n}\n.border-\\[var\\(--md-gray-200\\)\\]{\n  border-color: var(--md-gray-200);\n}\n.border-\\[var\\(--md-red-100\\)\\]{\n  border-color: var(--md-red-100);\n}\n.border-border{\n  border-color: hsl(var(--border));\n}\n.border-input{\n  border-color: hsl(var(--input));\n}\n.border-transparent{\n  border-color: transparent;\n}\n.bg-\\[\\#1b8a4b\\]{\n  --tw-bg-opacity: 1;\n  background-color: rgb(27 138 75 / var(--tw-bg-opacity, 1));\n}\n.bg-\\[\\#2469f0\\]{\n  --tw-bg-opacity: 1;\n  background-color: rgb(36 105 240 / var(--tw-bg-opacity, 1));\n}\n.bg-\\[var\\(--md-red-50\\)\\]{\n  background-color: var(--md-red-50);\n}\n.bg-accent{\n  background-color: hsl(var(--accent));\n}\n.bg-amber-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(255 251 235 / var(--tw-bg-opacity, 1));\n}\n.bg-background{\n  background-color: hsl(var(--background));\n}\n.bg-blue-100{\n  --tw-bg-opacity: 1;\n  background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1));\n}\n.bg-blue-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(239 246 255 / var(--tw-bg-opacity, 1));\n}\n.bg-destructive{\n  background-color: hsl(var(--destructive));\n}\n.bg-foreground{\n  background-color: hsl(var(--foreground));\n}\n.bg-green-500{\n  --tw-bg-opacity: 1;\n  background-color: rgb(34 197 94 / var(--tw-bg-opacity, 1));\n}\n.bg-muted{\n  background-color: hsl(var(--muted));\n}\n.bg-muted-foreground{\n  background-color: hsl(var(--muted-foreground));\n}\n.bg-popover{\n  background-color: hsl(var(--popover));\n}\n.bg-primary{\n  background-color: hsl(var(--primary));\n}\n.bg-secondary{\n  background-color: hsl(var(--secondary));\n}\n.bg-transparent{\n  background-color: transparent;\n}\n.bg-white{\n  --tw-bg-opacity: 1;\n  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));\n}\n.p-0\\.5{\n  padding: 0.125rem;\n}\n.p-1{\n  padding: 0.25rem;\n}\n.p-1\\.5{\n  padding: 0.375rem;\n}\n.p-3{\n  padding: 0.75rem;\n}\n.p-8{\n  padding: 2rem;\n}\n.px-1{\n  padding-left: 0.25rem;\n  padding-right: 0.25rem;\n}\n.px-1\\.5{\n  padding-left: 0.375rem;\n  padding-right: 0.375rem;\n}\n.px-2{\n  padding-left: 0.5rem;\n  padding-right: 0.5rem;\n}\n.px-2\\.5{\n  padding-left: 0.625rem;\n  padding-right: 0.625rem;\n}\n.px-3{\n  padding-left: 0.75rem;\n  padding-right: 0.75rem;\n}\n.px-3\\.5{\n  padding-left: 0.875rem;\n  padding-right: 0.875rem;\n}\n.px-4{\n  padding-left: 1rem;\n  padding-right: 1rem;\n}\n.px-5{\n  padding-left: 1.25rem;\n  padding-right: 1.25rem;\n}\n.py-0\\.5{\n  padding-top: 0.125rem;\n  padding-bottom: 0.125rem;\n}\n.py-1{\n  padding-top: 0.25rem;\n  padding-bottom: 0.25rem;\n}\n.py-1\\.5{\n  padding-top: 0.375rem;\n  padding-bottom: 0.375rem;\n}\n.py-2{\n  padding-top: 0.5rem;\n  padding-bottom: 0.5rem;\n}\n.py-2\\.5{\n  padding-top: 0.625rem;\n  padding-bottom: 0.625rem;\n}\n.py-3{\n  padding-top: 0.75rem;\n  padding-bottom: 0.75rem;\n}\n.py-4{\n  padding-top: 1rem;\n  padding-bottom: 1rem;\n}\n.py-6{\n  padding-top: 1.5rem;\n  padding-bottom: 1.5rem;\n}\n.py-8{\n  padding-top: 2rem;\n  padding-bottom: 2rem;\n}\n.pb-2{\n  padding-bottom: 0.5rem;\n}\n.pl-2{\n  padding-left: 0.5rem;\n}\n.pl-3{\n  padding-left: 0.75rem;\n}\n.pr-3{\n  padding-right: 0.75rem;\n}\n.pr-6{\n  padding-right: 1.5rem;\n}\n.pr-8{\n  padding-right: 2rem;\n}\n.pt-3{\n  padding-top: 0.75rem;\n}\n.text-center{\n  text-align: center;\n}\n.font-mono{\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace;\n}\n.text-\\[10px\\]{\n  font-size: 10px;\n}\n.text-\\[8px\\]{\n  font-size: 8px;\n}\n.text-\\[9px\\]{\n  font-size: 9px;\n}\n.text-md-lg{\n  font-size: 15px;\n  line-height: 24px;\n}\n.text-md-sm{\n  font-size: 12px;\n  line-height: 18px;\n}\n.text-md-xs{\n  font-size: 11px;\n  line-height: 16px;\n}\n.font-bold{\n  font-weight: 700;\n}\n.font-medium{\n  font-weight: 500;\n}\n.font-normal{\n  font-weight: 400;\n}\n.font-semibold{\n  font-weight: 600;\n}\n.uppercase{\n  text-transform: uppercase;\n}\n.tracking-wider{\n  letter-spacing: 0.05em;\n}\n.text-\\[\\#2469f0\\]{\n  --tw-text-opacity: 1;\n  color: rgb(36 105 240 / var(--tw-text-opacity, 1));\n}\n.text-\\[\\#ad2b36\\]{\n  --tw-text-opacity: 1;\n  color: rgb(173 43 54 / var(--tw-text-opacity, 1));\n}\n.text-\\[\\#cc3340\\]{\n  --tw-text-opacity: 1;\n  color: rgb(204 51 64 / var(--tw-text-opacity, 1));\n}\n.text-\\[var\\(--md-gray-400\\)\\]{\n  color: var(--md-gray-400);\n}\n.text-\\[var\\(--md-gray-600\\)\\]{\n  color: var(--md-gray-600);\n}\n.text-\\[var\\(--md-gray-700\\)\\]{\n  color: var(--md-gray-700);\n}\n.text-\\[var\\(--md-gray-800\\)\\]{\n  color: var(--md-gray-800);\n}\n.text-\\[var\\(--md-green-500\\)\\]{\n  color: var(--md-green-500);\n}\n.text-amber-700{\n  --tw-text-opacity: 1;\n  color: rgb(180 83 9 / var(--tw-text-opacity, 1));\n}\n.text-background{\n  color: hsl(var(--background));\n}\n.text-blue-700{\n  --tw-text-opacity: 1;\n  color: rgb(29 78 216 / var(--tw-text-opacity, 1));\n}\n.text-destructive{\n  color: hsl(var(--destructive));\n}\n.text-destructive-foreground{\n  color: hsl(var(--destructive-foreground));\n}\n.text-foreground{\n  color: hsl(var(--foreground));\n}\n.text-muted-foreground{\n  color: hsl(var(--muted-foreground));\n}\n.text-popover-foreground{\n  color: hsl(var(--popover-foreground));\n}\n.text-primary{\n  color: hsl(var(--primary));\n}\n.text-primary-foreground{\n  color: hsl(var(--primary-foreground));\n}\n.text-secondary-foreground{\n  color: hsl(var(--secondary-foreground));\n}\n.text-white{\n  --tw-text-opacity: 1;\n  color: rgb(255 255 255 / var(--tw-text-opacity, 1));\n}\n.underline-offset-4{\n  text-underline-offset: 4px;\n}\n.antialiased{\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n}\n.opacity-0{\n  opacity: 0;\n}\n.opacity-25{\n  opacity: 0.25;\n}\n.opacity-30{\n  opacity: 0.3;\n}\n.opacity-50{\n  opacity: 0.5;\n}\n.opacity-60{\n  opacity: 0.6;\n}\n.opacity-75{\n  opacity: 0.75;\n}\n.shadow{\n  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-lg{\n  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-md{\n  --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-md-panel{\n  --tw-shadow: 0 0 0 1px rgba(0,0,0,.04), 0 8px 32px rgba(0,0,0,.12);\n  --tw-shadow-colored: 0 0 0 1px var(--tw-shadow-color), 0 8px 32px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-sm{\n  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);\n  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.outline-none{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.outline{\n  outline-style: solid;\n}\n.ring-0{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.blur{\n  --tw-blur: blur(8px);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.grayscale{\n  --tw-grayscale: grayscale(100%);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.filter{\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.backdrop-filter{\n  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);\n}\n.transition{\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-colors{\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-transform{\n  transition-property: transform;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.duration-150{\n  transition-duration: 150ms;\n}\n.duration-200{\n  transition-duration: 200ms;\n}\n.ease-in-out{\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n@keyframes enter{\n\n  from{\n    opacity: var(--tw-enter-opacity, 1);\n    transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0) scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1)) rotate(var(--tw-enter-rotate, 0));\n  }\n}\n@keyframes exit{\n\n  to{\n    opacity: var(--tw-exit-opacity, 1);\n    transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0) scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1)) rotate(var(--tw-exit-rotate, 0));\n  }\n}\n.duration-150{\n  animation-duration: 150ms;\n}\n.duration-200{\n  animation-duration: 200ms;\n}\n.ease-in-out{\n  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.running{\n  animation-play-state: running;\n}\n.placeholder\\:text-muted-foreground::-moz-placeholder{\n  color: hsl(var(--muted-foreground));\n}\n.placeholder\\:text-muted-foreground::placeholder{\n  color: hsl(var(--muted-foreground));\n}\n.hover\\:bg-\\[\\#16753f\\]:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(22 117 63 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-\\[\\#1d58cc\\]:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(29 88 204 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-\\[var\\(--md-gray-100\\)\\]:hover{\n  background-color: var(--md-gray-100);\n}\n.hover\\:bg-\\[var\\(--md-gray-50\\)\\]:hover{\n  background-color: var(--md-gray-50);\n}\n.hover\\:bg-\\[var\\(--md-red-50\\)\\]:hover{\n  background-color: var(--md-red-50);\n}\n.hover\\:bg-accent:hover{\n  background-color: hsl(var(--accent));\n}\n.hover\\:bg-destructive\\/90:hover{\n  background-color: hsl(var(--destructive) / 0.9);\n}\n.hover\\:bg-primary\\/90:hover{\n  background-color: hsl(var(--primary) / 0.9);\n}\n.hover\\:bg-secondary\\/80:hover{\n  background-color: hsl(var(--secondary) / 0.8);\n}\n.hover\\:text-\\[\\#cc3340\\]:hover{\n  --tw-text-opacity: 1;\n  color: rgb(204 51 64 / var(--tw-text-opacity, 1));\n}\n.hover\\:text-\\[var\\(--md-gray-600\\)\\]:hover{\n  color: var(--md-gray-600);\n}\n.hover\\:text-accent-foreground:hover{\n  color: hsl(var(--accent-foreground));\n}\n.hover\\:text-destructive:hover{\n  color: hsl(var(--destructive));\n}\n.hover\\:text-foreground:hover{\n  color: hsl(var(--foreground));\n}\n.hover\\:underline:hover{\n  text-decoration-line: underline;\n}\n.focus\\:border-\\[\\#2469f0\\]:focus{\n  --tw-border-opacity: 1;\n  border-color: rgb(36 105 240 / var(--tw-border-opacity, 1));\n}\n.focus\\:bg-accent:focus{\n  background-color: hsl(var(--accent));\n}\n.focus\\:text-accent-foreground:focus{\n  color: hsl(var(--accent-foreground));\n}\n.focus\\:outline-none:focus{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus\\:ring-2:focus{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-ring:focus{\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus\\:ring-offset-1:focus{\n  --tw-ring-offset-width: 1px;\n}\n.focus-visible\\:outline-none:focus-visible{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus-visible\\:ring-2:focus-visible{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus-visible\\:ring-ring:focus-visible{\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus-visible\\:ring-offset-1:focus-visible{\n  --tw-ring-offset-width: 1px;\n}\n.active\\:bg-\\[\\#116033\\]:active{\n  --tw-bg-opacity: 1;\n  background-color: rgb(17 96 51 / var(--tw-bg-opacity, 1));\n}\n.active\\:bg-\\[var\\(--md-gray-100\\)\\]:active{\n  background-color: var(--md-gray-100);\n}\n.disabled\\:pointer-events-none:disabled{\n  pointer-events: none;\n}\n.disabled\\:cursor-not-allowed:disabled{\n  cursor: not-allowed;\n}\n.disabled\\:opacity-50:disabled{\n  opacity: 0.5;\n}\n.group:hover .group-hover\\:opacity-100{\n  opacity: 1;\n}\n.data-\\[disabled\\]\\:pointer-events-none[data-disabled]{\n  pointer-events: none;\n}\n.data-\\[side\\=bottom\\]\\:translate-y-1[data-side="bottom"]{\n  --tw-translate-y: 0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[side\\=top\\]\\:-translate-y-1[data-side="top"]{\n  --tw-translate-y: -0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:translate-x-4[data-state="checked"]{\n  --tw-translate-x: 1rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=unchecked\\]\\:translate-x-0[data-state="unchecked"]{\n  --tw-translate-x: 0px;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:bg-primary[data-state="checked"]{\n  background-color: hsl(var(--primary));\n}\n.data-\\[state\\=unchecked\\]\\:bg-input[data-state="unchecked"]{\n  background-color: hsl(var(--input));\n}\n.data-\\[disabled\\]\\:opacity-50[data-disabled]{\n  opacity: 0.5;\n}\n.data-\\[state\\=open\\]\\:animate-in[data-state="open"]{\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:animate-out[data-state="closed"]{\n  animation-name: exit;\n  animation-duration: 150ms;\n  --tw-exit-opacity: initial;\n  --tw-exit-scale: initial;\n  --tw-exit-rotate: initial;\n  --tw-exit-translate-x: initial;\n  --tw-exit-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:fade-out-0[data-state="closed"]{\n  --tw-exit-opacity: 0;\n}\n.data-\\[state\\=open\\]\\:fade-in-0[data-state="open"]{\n  --tw-enter-opacity: 0;\n}\n.data-\\[state\\=closed\\]\\:zoom-out-95[data-state="closed"]{\n  --tw-exit-scale: .95;\n}\n.data-\\[state\\=open\\]\\:zoom-in-95[data-state="open"]{\n  --tw-enter-scale: .95;\n}\n.data-\\[side\\=bottom\\]\\:slide-in-from-top-2[data-side="bottom"]{\n  --tw-enter-translate-y: -0.5rem;\n}\n.data-\\[side\\=left\\]\\:slide-in-from-right-2[data-side="left"]{\n  --tw-enter-translate-x: 0.5rem;\n}\n.data-\\[side\\=right\\]\\:slide-in-from-left-2[data-side="right"]{\n  --tw-enter-translate-x: -0.5rem;\n}\n.data-\\[side\\=top\\]\\:slide-in-from-bottom-2[data-side="top"]{\n  --tw-enter-translate-y: 0.5rem;\n}\n.dark\\:bg-amber-900\\/30:is(.dark *){\n  background-color: rgb(120 53 15 / 0.3);\n}\n.dark\\:bg-blue-900\\/30:is(.dark *){\n  background-color: rgb(30 58 138 / 0.3);\n}\n.dark\\:bg-blue-950\\/20:is(.dark *){\n  background-color: rgb(23 37 84 / 0.2);\n}\n.dark\\:text-amber-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(252 211 77 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-blue-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(147 197 253 / var(--tw-text-opacity, 1));\n}\n.\\[\\&\\>span\\]\\:line-clamp-1>span{\n  overflow: hidden;\n  display: -webkit-box;\n  -webkit-box-orient: vertical;\n  -webkit-line-clamp: 1;\n}\n.\\[\\&\\>span\\]\\:h-3>span{\n  height: 0.75rem;\n}\n.\\[\\&\\>span\\]\\:w-3>span{\n  width: 0.75rem;\n}\n.data-\\[state\\=checked\\]\\:\\[\\&\\>span\\]\\:translate-x-3>span[data-state="checked"]{\n  --tw-translate-x: 0.75rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.\\[\\&_svg\\]\\:pointer-events-none svg{\n  pointer-events: none;\n}\n.\\[\\&_svg\\]\\:size-4 svg{\n  width: 1rem;\n  height: 1rem;\n}\n.\\[\\&_svg\\]\\:shrink-0 svg{\n  flex-shrink: 0;\n}\n'
+      ? '@import url(\'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\');\n\n*, ::before, ::after{\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n\n::backdrop{\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n\n/*\n! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com\n*/\n\n/*\n1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)\n*/\n\n*,\n::before,\n::after {\n  box-sizing: border-box; /* 1 */\n  border-width: 0; /* 2 */\n  border-style: solid; /* 2 */\n  border-color: #e5e7eb; /* 2 */\n}\n\n::before,\n::after {\n  --tw-content: \'\';\n}\n\n/*\n1. Use a consistent sensible line-height in all browsers.\n2. Prevent adjustments of font size after orientation changes in iOS.\n3. Use a more readable tab size.\n4. Use the user\'s configured `sans` font-family by default.\n5. Use the user\'s configured `sans` font-feature-settings by default.\n6. Use the user\'s configured `sans` font-variation-settings by default.\n7. Disable tap highlights on iOS\n*/\n\nhtml,\n:host {\n  line-height: 1.5; /* 1 */\n  -webkit-text-size-adjust: 100%; /* 2 */\n  -moz-tab-size: 4; /* 3 */\n  -o-tab-size: 4;\n     tab-size: 4; /* 3 */\n  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; /* 4 */\n  font-feature-settings: normal; /* 5 */\n  font-variation-settings: normal; /* 6 */\n  -webkit-tap-highlight-color: transparent; /* 7 */\n}\n\n/*\n1. Remove the margin in all browsers.\n2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.\n*/\n\nbody {\n  margin: 0; /* 1 */\n  line-height: inherit; /* 2 */\n}\n\n/*\n1. Add the correct height in Firefox.\n2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n3. Ensure horizontal rules are visible by default.\n*/\n\nhr {\n  height: 0; /* 1 */\n  color: inherit; /* 2 */\n  border-top-width: 1px; /* 3 */\n}\n\n/*\nAdd the correct text decoration in Chrome, Edge, and Safari.\n*/\n\nabbr:where([title]) {\n  -webkit-text-decoration: underline dotted;\n          text-decoration: underline dotted;\n}\n\n/*\nRemove the default font size and weight for headings.\n*/\n\nh1,\nh2,\nh3,\nh4,\nh5,\nh6 {\n  font-size: inherit;\n  font-weight: inherit;\n}\n\n/*\nReset links to optimize for opt-in styling instead of opt-out.\n*/\n\na {\n  color: inherit;\n  text-decoration: inherit;\n}\n\n/*\nAdd the correct font weight in Edge and Safari.\n*/\n\nb,\nstrong {\n  font-weight: bolder;\n}\n\n/*\n1. Use the user\'s configured `mono` font-family by default.\n2. Use the user\'s configured `mono` font-feature-settings by default.\n3. Use the user\'s configured `mono` font-variation-settings by default.\n4. Correct the odd `em` font sizing in all browsers.\n*/\n\ncode,\nkbd,\nsamp,\npre {\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace; /* 1 */\n  font-feature-settings: normal; /* 2 */\n  font-variation-settings: normal; /* 3 */\n  font-size: 1em; /* 4 */\n}\n\n/*\nAdd the correct font size in all browsers.\n*/\n\nsmall {\n  font-size: 80%;\n}\n\n/*\nPrevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\nsub,\nsup {\n  font-size: 75%;\n  line-height: 0;\n  position: relative;\n  vertical-align: baseline;\n}\n\nsub {\n  bottom: -0.25em;\n}\n\nsup {\n  top: -0.5em;\n}\n\n/*\n1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n3. Remove gaps between table borders by default.\n*/\n\ntable {\n  text-indent: 0; /* 1 */\n  border-color: inherit; /* 2 */\n  border-collapse: collapse; /* 3 */\n}\n\n/*\n1. Change the font styles in all browsers.\n2. Remove the margin in Firefox and Safari.\n3. Remove default padding in all browsers.\n*/\n\nbutton,\ninput,\noptgroup,\nselect,\ntextarea {\n  font-family: inherit; /* 1 */\n  font-feature-settings: inherit; /* 1 */\n  font-variation-settings: inherit; /* 1 */\n  font-size: 100%; /* 1 */\n  font-weight: inherit; /* 1 */\n  line-height: inherit; /* 1 */\n  letter-spacing: inherit; /* 1 */\n  color: inherit; /* 1 */\n  margin: 0; /* 2 */\n  padding: 0; /* 3 */\n}\n\n/*\nRemove the inheritance of text transform in Edge and Firefox.\n*/\n\nbutton,\nselect {\n  text-transform: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Remove default button styles.\n*/\n\nbutton,\ninput:where([type=\'button\']),\ninput:where([type=\'reset\']),\ninput:where([type=\'submit\']) {\n  -webkit-appearance: button; /* 1 */\n  background-color: transparent; /* 2 */\n  background-image: none; /* 2 */\n}\n\n/*\nUse the modern Firefox focus style for all focusable elements.\n*/\n\n:-moz-focusring {\n  outline: auto;\n}\n\n/*\nRemove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n:-moz-ui-invalid {\n  box-shadow: none;\n}\n\n/*\nAdd the correct vertical alignment in Chrome and Firefox.\n*/\n\nprogress {\n  vertical-align: baseline;\n}\n\n/*\nCorrect the cursor style of increment and decrement buttons in Safari.\n*/\n\n::-webkit-inner-spin-button,\n::-webkit-outer-spin-button {\n  height: auto;\n}\n\n/*\n1. Correct the odd appearance in Chrome and Safari.\n2. Correct the outline style in Safari.\n*/\n\n[type=\'search\'] {\n  -webkit-appearance: textfield; /* 1 */\n  outline-offset: -2px; /* 2 */\n}\n\n/*\nRemove the inner padding in Chrome and Safari on macOS.\n*/\n\n::-webkit-search-decoration {\n  -webkit-appearance: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Change font properties to `inherit` in Safari.\n*/\n\n::-webkit-file-upload-button {\n  -webkit-appearance: button; /* 1 */\n  font: inherit; /* 2 */\n}\n\n/*\nAdd the correct display in Chrome and Safari.\n*/\n\nsummary {\n  display: list-item;\n}\n\n/*\nRemoves the default spacing and border for appropriate elements.\n*/\n\nblockquote,\ndl,\ndd,\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\nhr,\nfigure,\np,\npre {\n  margin: 0;\n}\n\nfieldset {\n  margin: 0;\n  padding: 0;\n}\n\nlegend {\n  padding: 0;\n}\n\nol,\nul,\nmenu {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n}\n\n/*\nReset default styling for dialogs.\n*/\n\ndialog {\n  padding: 0;\n}\n\n/*\nPrevent resizing textareas horizontally by default.\n*/\n\ntextarea {\n  resize: vertical;\n}\n\n/*\n1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n2. Set the default placeholder color to the user\'s configured gray 400 color.\n*/\n\ninput::-moz-placeholder, textarea::-moz-placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\ninput::placeholder,\ntextarea::placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\n/*\nSet the default cursor for buttons.\n*/\n\nbutton,\n[role="button"] {\n  cursor: pointer;\n}\n\n/*\nMake sure disabled buttons don\'t get the pointer cursor.\n*/\n\n:disabled {\n  cursor: default;\n}\n\n/*\n1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n   This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\nimg,\nsvg,\nvideo,\ncanvas,\naudio,\niframe,\nembed,\nobject {\n  display: block; /* 1 */\n  vertical-align: middle; /* 2 */\n}\n\n/*\nConstrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\nimg,\nvideo {\n  max-width: 100%;\n  height: auto;\n}\n\n/* Make elements with the HTML hidden attribute stay hidden by default */\n\n[hidden]:where(:not([hidden="until-found"])) {\n  display: none;\n}\n\n*,\n  *::before,\n  *::after {\n    box-sizing: border-box;\n  }\n\nhtml {\n    font-family:\n      \'Inter\',\n      -apple-system,\n      BlinkMacSystemFont,\n      \'Segoe UI\',\n      sans-serif;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale;\n  }\n\n:root {\n    --md-primary: #2469f0;\n    --md-primary-hover: #1d58cc;\n    --md-primary-active: #1647a8;\n\n    --md-gray-50: #f8f9fb;\n    --md-gray-100: #f1f2f5;\n    --md-gray-200: #e4e6eb;\n    --md-gray-300: #c9cdd4;\n    --md-gray-400: #a4a9b3;\n    --md-gray-500: #808690;\n    --md-gray-600: #636971;\n    --md-gray-700: #484d54;\n    --md-gray-800: #2e3238;\n    --md-gray-900: #1a1d21;\n\n    --md-radius: 6px;\n    --md-radius-lg: 8px;\n\n    --md-shadow-panel: 0 0 0 1px rgba(0, 0, 0, 0.04), 0 8px 32px rgba(0, 0, 0, 0.12);\n    --md-shadow-card: 0 0 0 1px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);\n    --md-shadow-dropdown: 0 4px 16px rgba(0, 0, 0, 0.14);\n\n    /* \u2500\u2500 shadcn/ui CSS variables \u2500\u2500 */\n    --background: 0 0% 100%;\n    --foreground: 222.2 84% 4.9%;\n    --card: 0 0% 100%;\n    --card-foreground: 222.2 84% 4.9%;\n    --popover: 0 0% 100%;\n    --popover-foreground: 222.2 84% 4.9%;\n    --primary: 221.2 83.2% 53.3%;\n    --primary-foreground: 210 40% 98%;\n    --secondary: 210 40% 96.1%;\n    --secondary-foreground: 222.2 47.4% 11.2%;\n    --muted: 210 40% 96.1%;\n    --muted-foreground: 215.4 16.3% 46.9%;\n    --accent: 210 40% 96.1%;\n    --accent-foreground: 222.2 47.4% 11.2%;\n    --destructive: 0 84.2% 60.2%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 214.3 31.8% 91.4%;\n    --input: 214.3 31.8% 91.4%;\n    --ring: 221.2 83.2% 53.3%;\n    --radius: 0.375rem;\n  }\n\n.dark {\n    --md-gray-50: #1a1d21;\n    --md-gray-100: #2e3238;\n    --md-gray-200: #484d54;\n    --md-gray-300: #636971;\n    --md-gray-400: #808690;\n    --md-gray-500: #a4a9b3;\n    --md-gray-600: #c9cdd4;\n    --md-gray-700: #e4e6eb;\n    --md-gray-800: #f1f2f5;\n    --md-gray-900: #f8f9fb;\n\n    /* \u2500\u2500 shadcn/ui dark variables \u2500\u2500 */\n    --background: 222.2 84% 4.9%;\n    --foreground: 210 40% 98%;\n    --card: 222.2 84% 4.9%;\n    --card-foreground: 210 40% 98%;\n    --popover: 222.2 84% 4.9%;\n    --popover-foreground: 210 40% 98%;\n    --primary: 217.2 91.2% 59.8%;\n    --primary-foreground: 222.2 47.4% 11.2%;\n    --secondary: 217.2 32.6% 17.5%;\n    --secondary-foreground: 210 40% 98%;\n    --muted: 217.2 32.6% 17.5%;\n    --muted-foreground: 215 20.2% 65.1%;\n    --accent: 217.2 32.6% 17.5%;\n    --accent-foreground: 210 40% 98%;\n    --destructive: 0 62.8% 30.6%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 217.2 32.6% 17.5%;\n    --input: 217.2 32.6% 17.5%;\n    --ring: 224.3 76.3% 48%;\n  }\n\n::-moz-selection {\n    background: #2469f0;\n    color: white;\n  }\n\n::selection {\n    background: #2469f0;\n    color: white;\n  }\n\n* {\n    scrollbar-width: thin;\n    scrollbar-color: var(--md-gray-300) transparent;\n  }\n\n*::-webkit-scrollbar {\n    width: 6px;\n    height: 6px;\n  }\n\n*::-webkit-scrollbar-track {\n    background: transparent;\n  }\n\n*::-webkit-scrollbar-thumb {\n    background: var(--md-gray-300);\n    border-radius: 3px;\n  }\n\n*::-webkit-scrollbar-thumb:hover {\n    background: var(--md-gray-400);\n  }\n.\\!container{\n  width: 100% !important;\n}\n.container{\n  width: 100%;\n}\n@media (min-width: 640px){\n\n  .\\!container{\n    max-width: 640px !important;\n  }\n\n  .container{\n    max-width: 640px;\n  }\n}\n@media (min-width: 768px){\n\n  .\\!container{\n    max-width: 768px !important;\n  }\n\n  .container{\n    max-width: 768px;\n  }\n}\n@media (min-width: 1024px){\n\n  .\\!container{\n    max-width: 1024px !important;\n  }\n\n  .container{\n    max-width: 1024px;\n  }\n}\n@media (min-width: 1280px){\n\n  .\\!container{\n    max-width: 1280px !important;\n  }\n\n  .container{\n    max-width: 1280px;\n  }\n}\n@media (min-width: 1536px){\n\n  .\\!container{\n    max-width: 1536px !important;\n  }\n\n  .container{\n    max-width: 1536px;\n  }\n}\n.md-card {\n    background: white;\n    border: 1px solid var(--md-gray-200);\n    border-radius: var(--md-radius-lg);\n  }\n.dark .md-card {\n    background: var(--md-gray-100);\n    border-color: var(--md-gray-200);\n  }\n.dark .md-input {\n    background: var(--md-gray-100);\n    border-color: var(--md-gray-200);\n    color: var(--md-gray-900);\n  }\n.md-badge {\n    display: inline-flex;\n    align-items: center;\n    gap: 4px;\n    padding: 1px 8px;\n    font-size: 11px;\n    font-weight: 600;\n    border-radius: 9999px;\n    white-space: nowrap;\n  }\n.md-badge--primary {\n    color: #2469f0;\n    background: #eef3ff;\n  }\n.md-badge--green {\n    color: #1b8a4b;\n    background: #eaf6ef;\n  }\n.md-badge--amber {\n    color: #c47a1a;\n    background: #fef4e4;\n  }\n.md-badge--red {\n    color: #cc3340;\n    background: #fcecee;\n  }\n.dark .md-badge--primary {\n    background: rgba(36, 105, 240, 0.15);\n  }\n.dark .md-badge--green {\n    background: rgba(27, 138, 75, 0.15);\n  }\n.dark .md-badge--amber {\n    background: rgba(196, 122, 26, 0.15);\n  }\n.dark .md-badge--red {\n    background: rgba(204, 51, 64, 0.15);\n  }\n.md-divider {\n    height: 1px;\n    background: var(--md-gray-200);\n    margin: 12px 0;\n  }\n.pointer-events-none{\n  pointer-events: none;\n}\n.visible{\n  visibility: visible;\n}\n.collapse{\n  visibility: collapse;\n}\n.static{\n  position: static;\n}\n.fixed{\n  position: fixed;\n}\n.absolute{\n  position: absolute;\n}\n.relative{\n  position: relative;\n}\n.bottom-4{\n  bottom: 1rem;\n}\n.left-1\\/2{\n  left: 50%;\n}\n.right-2\\.5{\n  right: 0.625rem;\n}\n.top-1\\/2{\n  top: 50%;\n}\n.z-50{\n  z-index: 50;\n}\n.-mb-\\[1px\\]{\n  margin-bottom: -1px;\n}\n.mb-1{\n  margin-bottom: 0.25rem;\n}\n.mb-1\\.5{\n  margin-bottom: 0.375rem;\n}\n.mb-3{\n  margin-bottom: 0.75rem;\n}\n.ml-1{\n  margin-left: 0.25rem;\n}\n.mr-2{\n  margin-right: 0.5rem;\n}\n.mr-3{\n  margin-right: 0.75rem;\n}\n.mt-0\\.5{\n  margin-top: 0.125rem;\n}\n.mt-1{\n  margin-top: 0.25rem;\n}\n.block{\n  display: block;\n}\n.inline-block{\n  display: inline-block;\n}\n.flex{\n  display: flex;\n}\n.inline-flex{\n  display: inline-flex;\n}\n.\\!table{\n  display: table !important;\n}\n.table{\n  display: table;\n}\n.table-header-group{\n  display: table-header-group;\n}\n.grid{\n  display: grid;\n}\n.contents{\n  display: contents;\n}\n.hidden{\n  display: none;\n}\n.size-3{\n  width: 0.75rem;\n  height: 0.75rem;\n}\n.size-3\\.5{\n  width: 0.875rem;\n  height: 0.875rem;\n}\n.size-4{\n  width: 1rem;\n  height: 1rem;\n}\n.h-2{\n  height: 0.5rem;\n}\n.h-24{\n  height: 6rem;\n}\n.h-4{\n  height: 1rem;\n}\n.h-5{\n  height: 1.25rem;\n}\n.h-6{\n  height: 1.5rem;\n}\n.h-7{\n  height: 1.75rem;\n}\n.h-8{\n  height: 2rem;\n}\n.h-9{\n  height: 2.25rem;\n}\n.h-\\[300px\\]{\n  height: 300px;\n}\n.h-\\[var\\(--radix-select-trigger-height\\)\\]{\n  height: var(--radix-select-trigger-height);\n}\n.h-full{\n  height: 100%;\n}\n.max-h-96{\n  max-height: 24rem;\n}\n.max-h-\\[600px\\]{\n  max-height: 600px;\n}\n.min-h-\\[200px\\]{\n  min-height: 200px;\n}\n.w-2{\n  width: 0.5rem;\n}\n.w-4{\n  width: 1rem;\n}\n.w-5{\n  width: 1.25rem;\n}\n.w-6{\n  width: 1.5rem;\n}\n.w-7{\n  width: 1.75rem;\n}\n.w-8{\n  width: 2rem;\n}\n.w-9{\n  width: 2.25rem;\n}\n.w-\\[100px\\]{\n  width: 100px;\n}\n.w-\\[120px\\]{\n  width: 120px;\n}\n.w-\\[340px\\]{\n  width: 340px;\n}\n.w-\\[90px\\]{\n  width: 90px;\n}\n.w-full{\n  width: 100%;\n}\n.min-w-0{\n  min-width: 0px;\n}\n.min-w-\\[8rem\\]{\n  min-width: 8rem;\n}\n.min-w-\\[var\\(--radix-select-trigger-width\\)\\]{\n  min-width: var(--radix-select-trigger-width);\n}\n.flex-1{\n  flex: 1 1 0%;\n}\n.flex-shrink{\n  flex-shrink: 1;\n}\n.shrink-0{\n  flex-shrink: 0;\n}\n.border-collapse{\n  border-collapse: collapse;\n}\n.-translate-x-1\\/2{\n  --tw-translate-x: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.-translate-y-1\\/2{\n  --tw-translate-y: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.transform{\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n@keyframes slide-up{\n\n  0%{\n    opacity: 0;\n    transform: translateY(8px);\n  }\n\n  100%{\n    opacity: 1;\n    transform: translateY(0);\n  }\n}\n.animate-slide-up{\n  animation: slide-up 0.15s ease-out;\n}\n@keyframes zoom-in{\n\n  0%{\n    opacity: 0;\n    transform: scale(0.95);\n  }\n\n  100%{\n    opacity: 1;\n    transform: scale(1);\n  }\n}\n.animate-zoom-in{\n  animation: zoom-in 0.15s ease-out;\n}\n.cursor-default{\n  cursor: default;\n}\n.cursor-not-allowed{\n  cursor: not-allowed;\n}\n.cursor-pointer{\n  cursor: pointer;\n}\n.select-none{\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.resize-none{\n  resize: none;\n}\n.resize{\n  resize: both;\n}\n.grid-cols-2{\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n}\n.grid-cols-6{\n  grid-template-columns: repeat(6, minmax(0, 1fr));\n}\n.flex-col{\n  flex-direction: column;\n}\n.flex-wrap{\n  flex-wrap: wrap;\n}\n.items-start{\n  align-items: flex-start;\n}\n.items-center{\n  align-items: center;\n}\n.justify-center{\n  justify-content: center;\n}\n.justify-between{\n  justify-content: space-between;\n}\n.gap-0{\n  gap: 0px;\n}\n.gap-1{\n  gap: 0.25rem;\n}\n.gap-1\\.5{\n  gap: 0.375rem;\n}\n.gap-2{\n  gap: 0.5rem;\n}\n.gap-2\\.5{\n  gap: 0.625rem;\n}\n.gap-3{\n  gap: 0.75rem;\n}\n.gap-4{\n  gap: 1rem;\n}\n.gap-x-6{\n  -moz-column-gap: 1.5rem;\n       column-gap: 1.5rem;\n}\n.gap-y-2{\n  row-gap: 0.5rem;\n}\n.space-y-0\\.5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.125rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.125rem * var(--tw-space-y-reverse));\n}\n.space-y-1 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));\n}\n.space-y-1\\.5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.375rem * var(--tw-space-y-reverse));\n}\n.space-y-3 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));\n}\n.space-y-5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1.25rem * var(--tw-space-y-reverse));\n}\n.overflow-hidden{\n  overflow: hidden;\n}\n.overflow-y-auto{\n  overflow-y: auto;\n}\n.truncate{\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n.whitespace-nowrap{\n  white-space: nowrap;\n}\n.rounded{\n  border-radius: 0.25rem;\n}\n.rounded-full{\n  border-radius: 9999px;\n}\n.rounded-lg{\n  border-radius: 0.5rem;\n}\n.rounded-md{\n  border-radius: 6px;\n}\n.rounded-md-lg{\n  border-radius: 8px;\n}\n.rounded-sm{\n  border-radius: 0.125rem;\n}\n.border{\n  border-width: 1px;\n}\n.border-0{\n  border-width: 0px;\n}\n.border-2{\n  border-width: 2px;\n}\n.border-b{\n  border-bottom-width: 1px;\n}\n.border-b-2{\n  border-bottom-width: 2px;\n}\n.border-l{\n  border-left-width: 1px;\n}\n.border-t{\n  border-top-width: 1px;\n}\n.border-dashed{\n  border-style: dashed;\n}\n.border-\\[\\#2469f0\\]{\n  --tw-border-opacity: 1;\n  border-color: rgb(36 105 240 / var(--tw-border-opacity, 1));\n}\n.border-border{\n  border-color: hsl(var(--border));\n}\n.border-destructive\\/20{\n  border-color: hsl(var(--destructive) / 0.2);\n}\n.border-input{\n  border-color: hsl(var(--input));\n}\n.border-transparent{\n  border-color: transparent;\n}\n.bg-\\[\\#2469f0\\]{\n  --tw-bg-opacity: 1;\n  background-color: rgb(36 105 240 / var(--tw-bg-opacity, 1));\n}\n.bg-accent{\n  background-color: hsl(var(--accent));\n}\n.bg-amber-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(255 251 235 / var(--tw-bg-opacity, 1));\n}\n.bg-background{\n  background-color: hsl(var(--background));\n}\n.bg-blue-100{\n  --tw-bg-opacity: 1;\n  background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1));\n}\n.bg-blue-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(239 246 255 / var(--tw-bg-opacity, 1));\n}\n.bg-destructive{\n  background-color: hsl(var(--destructive));\n}\n.bg-destructive\\/10{\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.bg-foreground{\n  background-color: hsl(var(--foreground));\n}\n.bg-green-500{\n  --tw-bg-opacity: 1;\n  background-color: rgb(34 197 94 / var(--tw-bg-opacity, 1));\n}\n.bg-muted{\n  background-color: hsl(var(--muted));\n}\n.bg-muted-foreground{\n  background-color: hsl(var(--muted-foreground));\n}\n.bg-muted\\/50{\n  background-color: hsl(var(--muted) / 0.5);\n}\n.bg-popover{\n  background-color: hsl(var(--popover));\n}\n.bg-primary{\n  background-color: hsl(var(--primary));\n}\n.bg-secondary{\n  background-color: hsl(var(--secondary));\n}\n.bg-transparent{\n  background-color: transparent;\n}\n.bg-white{\n  --tw-bg-opacity: 1;\n  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));\n}\n.p-0\\.5{\n  padding: 0.125rem;\n}\n.p-1{\n  padding: 0.25rem;\n}\n.p-1\\.5{\n  padding: 0.375rem;\n}\n.p-3{\n  padding: 0.75rem;\n}\n.p-8{\n  padding: 2rem;\n}\n.px-0{\n  padding-left: 0px;\n  padding-right: 0px;\n}\n.px-1{\n  padding-left: 0.25rem;\n  padding-right: 0.25rem;\n}\n.px-1\\.5{\n  padding-left: 0.375rem;\n  padding-right: 0.375rem;\n}\n.px-2{\n  padding-left: 0.5rem;\n  padding-right: 0.5rem;\n}\n.px-2\\.5{\n  padding-left: 0.625rem;\n  padding-right: 0.625rem;\n}\n.px-3{\n  padding-left: 0.75rem;\n  padding-right: 0.75rem;\n}\n.px-3\\.5{\n  padding-left: 0.875rem;\n  padding-right: 0.875rem;\n}\n.px-4{\n  padding-left: 1rem;\n  padding-right: 1rem;\n}\n.px-5{\n  padding-left: 1.25rem;\n  padding-right: 1.25rem;\n}\n.py-0\\.5{\n  padding-top: 0.125rem;\n  padding-bottom: 0.125rem;\n}\n.py-1{\n  padding-top: 0.25rem;\n  padding-bottom: 0.25rem;\n}\n.py-1\\.5{\n  padding-top: 0.375rem;\n  padding-bottom: 0.375rem;\n}\n.py-2{\n  padding-top: 0.5rem;\n  padding-bottom: 0.5rem;\n}\n.py-2\\.5{\n  padding-top: 0.625rem;\n  padding-bottom: 0.625rem;\n}\n.py-3{\n  padding-top: 0.75rem;\n  padding-bottom: 0.75rem;\n}\n.py-4{\n  padding-top: 1rem;\n  padding-bottom: 1rem;\n}\n.py-6{\n  padding-top: 1.5rem;\n  padding-bottom: 1.5rem;\n}\n.py-8{\n  padding-top: 2rem;\n  padding-bottom: 2rem;\n}\n.pb-2{\n  padding-bottom: 0.5rem;\n}\n.pl-2{\n  padding-left: 0.5rem;\n}\n.pl-6{\n  padding-left: 1.5rem;\n}\n.pr-10{\n  padding-right: 2.5rem;\n}\n.pr-3{\n  padding-right: 0.75rem;\n}\n.pr-8{\n  padding-right: 2rem;\n}\n.pt-3{\n  padding-top: 0.75rem;\n}\n.text-left{\n  text-align: left;\n}\n.text-center{\n  text-align: center;\n}\n.font-mono{\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace;\n}\n.text-\\[10px\\]{\n  font-size: 10px;\n}\n.text-\\[8px\\]{\n  font-size: 8px;\n}\n.text-\\[9px\\]{\n  font-size: 9px;\n}\n.text-md-lg{\n  font-size: 15px;\n  line-height: 24px;\n}\n.text-md-sm{\n  font-size: 12px;\n  line-height: 18px;\n}\n.text-md-xs{\n  font-size: 11px;\n  line-height: 16px;\n}\n.font-bold{\n  font-weight: 700;\n}\n.font-medium{\n  font-weight: 500;\n}\n.font-normal{\n  font-weight: 400;\n}\n.font-semibold{\n  font-weight: 600;\n}\n.uppercase{\n  text-transform: uppercase;\n}\n.tracking-wider{\n  letter-spacing: 0.05em;\n}\n.text-\\[\\#2469f0\\]{\n  --tw-text-opacity: 1;\n  color: rgb(36 105 240 / var(--tw-text-opacity, 1));\n}\n.text-amber-700{\n  --tw-text-opacity: 1;\n  color: rgb(180 83 9 / var(--tw-text-opacity, 1));\n}\n.text-background{\n  color: hsl(var(--background));\n}\n.text-blue-700{\n  --tw-text-opacity: 1;\n  color: rgb(29 78 216 / var(--tw-text-opacity, 1));\n}\n.text-destructive{\n  color: hsl(var(--destructive));\n}\n.text-destructive-foreground{\n  color: hsl(var(--destructive-foreground));\n}\n.text-destructive\\/80{\n  color: hsl(var(--destructive) / 0.8);\n}\n.text-foreground{\n  color: hsl(var(--foreground));\n}\n.text-muted-foreground{\n  color: hsl(var(--muted-foreground));\n}\n.text-muted-foreground\\/60{\n  color: hsl(var(--muted-foreground) / 0.6);\n}\n.text-popover-foreground{\n  color: hsl(var(--popover-foreground));\n}\n.text-primary{\n  color: hsl(var(--primary));\n}\n.text-primary-foreground{\n  color: hsl(var(--primary-foreground));\n}\n.text-secondary-foreground{\n  color: hsl(var(--secondary-foreground));\n}\n.text-white{\n  --tw-text-opacity: 1;\n  color: rgb(255 255 255 / var(--tw-text-opacity, 1));\n}\n.underline-offset-4{\n  text-underline-offset: 4px;\n}\n.antialiased{\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n}\n.opacity-0{\n  opacity: 0;\n}\n.opacity-30{\n  opacity: 0.3;\n}\n.opacity-50{\n  opacity: 0.5;\n}\n.opacity-60{\n  opacity: 0.6;\n}\n.shadow{\n  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-lg{\n  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-md{\n  --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-md-panel{\n  --tw-shadow: 0 0 0 1px rgba(0,0,0,.04), 0 8px 32px rgba(0,0,0,.12);\n  --tw-shadow-colored: 0 0 0 1px var(--tw-shadow-color), 0 8px 32px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-none{\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-sm{\n  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);\n  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.outline-none{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.outline{\n  outline-style: solid;\n}\n.ring-0{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.ring-offset-background{\n  --tw-ring-offset-color: hsl(var(--background));\n}\n.blur{\n  --tw-blur: blur(8px);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.grayscale{\n  --tw-grayscale: grayscale(100%);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.filter{\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.backdrop-filter{\n  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);\n}\n.transition{\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-colors{\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-transform{\n  transition-property: transform;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.duration-150{\n  transition-duration: 150ms;\n}\n.duration-200{\n  transition-duration: 200ms;\n}\n.ease-in-out{\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n@keyframes enter{\n\n  from{\n    opacity: var(--tw-enter-opacity, 1);\n    transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0) scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1)) rotate(var(--tw-enter-rotate, 0));\n  }\n}\n@keyframes exit{\n\n  to{\n    opacity: var(--tw-exit-opacity, 1);\n    transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0) scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1)) rotate(var(--tw-exit-rotate, 0));\n  }\n}\n.duration-150{\n  animation-duration: 150ms;\n}\n.duration-200{\n  animation-duration: 200ms;\n}\n.ease-in-out{\n  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.running{\n  animation-play-state: running;\n}\n.placeholder\\:text-muted-foreground::-moz-placeholder{\n  color: hsl(var(--muted-foreground));\n}\n.placeholder\\:text-muted-foreground::placeholder{\n  color: hsl(var(--muted-foreground));\n}\n.last\\:border-0:last-child{\n  border-width: 0px;\n}\n.hover\\:bg-accent:hover{\n  background-color: hsl(var(--accent));\n}\n.hover\\:bg-accent\\/50:hover{\n  background-color: hsl(var(--accent) / 0.5);\n}\n.hover\\:bg-destructive\\/90:hover{\n  background-color: hsl(var(--destructive) / 0.9);\n}\n.hover\\:bg-primary\\/90:hover{\n  background-color: hsl(var(--primary) / 0.9);\n}\n.hover\\:bg-secondary\\/80:hover{\n  background-color: hsl(var(--secondary) / 0.8);\n}\n.hover\\:text-accent-foreground:hover{\n  color: hsl(var(--accent-foreground));\n}\n.hover\\:text-destructive:hover{\n  color: hsl(var(--destructive));\n}\n.hover\\:text-foreground:hover{\n  color: hsl(var(--foreground));\n}\n.hover\\:underline:hover{\n  text-decoration-line: underline;\n}\n.focus\\:bg-accent:focus{\n  background-color: hsl(var(--accent));\n}\n.focus\\:text-accent-foreground:focus{\n  color: hsl(var(--accent-foreground));\n}\n.focus\\:outline-none:focus{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus\\:ring-2:focus{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-ring:focus{\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus\\:ring-offset-1:focus{\n  --tw-ring-offset-width: 1px;\n}\n.focus-visible\\:outline-none:focus-visible{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus-visible\\:ring-0:focus-visible{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus-visible\\:ring-2:focus-visible{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus-visible\\:ring-ring:focus-visible{\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus-visible\\:ring-offset-1:focus-visible{\n  --tw-ring-offset-width: 1px;\n}\n.disabled\\:pointer-events-none:disabled{\n  pointer-events: none;\n}\n.disabled\\:cursor-not-allowed:disabled{\n  cursor: not-allowed;\n}\n.disabled\\:opacity-50:disabled{\n  opacity: 0.5;\n}\n.group:hover .group-hover\\:opacity-100{\n  opacity: 1;\n}\n.data-\\[disabled\\]\\:pointer-events-none[data-disabled]{\n  pointer-events: none;\n}\n.data-\\[side\\=bottom\\]\\:translate-y-1[data-side="bottom"]{\n  --tw-translate-y: 0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[side\\=top\\]\\:-translate-y-1[data-side="top"]{\n  --tw-translate-y: -0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:translate-x-4[data-state="checked"]{\n  --tw-translate-x: 1rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=unchecked\\]\\:translate-x-0[data-state="unchecked"]{\n  --tw-translate-x: 0px;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:bg-primary[data-state="checked"]{\n  background-color: hsl(var(--primary));\n}\n.data-\\[state\\=unchecked\\]\\:bg-input[data-state="unchecked"]{\n  background-color: hsl(var(--input));\n}\n.data-\\[disabled\\]\\:opacity-50[data-disabled]{\n  opacity: 0.5;\n}\n.data-\\[state\\=open\\]\\:animate-in[data-state="open"]{\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:animate-out[data-state="closed"]{\n  animation-name: exit;\n  animation-duration: 150ms;\n  --tw-exit-opacity: initial;\n  --tw-exit-scale: initial;\n  --tw-exit-rotate: initial;\n  --tw-exit-translate-x: initial;\n  --tw-exit-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:fade-out-0[data-state="closed"]{\n  --tw-exit-opacity: 0;\n}\n.data-\\[state\\=open\\]\\:fade-in-0[data-state="open"]{\n  --tw-enter-opacity: 0;\n}\n.data-\\[state\\=closed\\]\\:zoom-out-95[data-state="closed"]{\n  --tw-exit-scale: .95;\n}\n.data-\\[state\\=open\\]\\:zoom-in-95[data-state="open"]{\n  --tw-enter-scale: .95;\n}\n.data-\\[side\\=bottom\\]\\:slide-in-from-top-2[data-side="bottom"]{\n  --tw-enter-translate-y: -0.5rem;\n}\n.data-\\[side\\=left\\]\\:slide-in-from-right-2[data-side="left"]{\n  --tw-enter-translate-x: 0.5rem;\n}\n.data-\\[side\\=right\\]\\:slide-in-from-left-2[data-side="right"]{\n  --tw-enter-translate-x: -0.5rem;\n}\n.data-\\[side\\=top\\]\\:slide-in-from-bottom-2[data-side="top"]{\n  --tw-enter-translate-y: 0.5rem;\n}\n.dark\\:bg-amber-900\\/30:is(.dark *){\n  background-color: rgb(120 53 15 / 0.3);\n}\n.dark\\:bg-blue-900\\/30:is(.dark *){\n  background-color: rgb(30 58 138 / 0.3);\n}\n.dark\\:bg-blue-950\\/20:is(.dark *){\n  background-color: rgb(23 37 84 / 0.2);\n}\n.dark\\:text-amber-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(252 211 77 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-blue-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(147 197 253 / var(--tw-text-opacity, 1));\n}\n.\\[\\&\\>span\\]\\:line-clamp-1>span{\n  overflow: hidden;\n  display: -webkit-box;\n  -webkit-box-orient: vertical;\n  -webkit-line-clamp: 1;\n}\n.\\[\\&\\>span\\]\\:h-3>span{\n  height: 0.75rem;\n}\n.\\[\\&\\>span\\]\\:w-3>span{\n  width: 0.75rem;\n}\n.data-\\[state\\=checked\\]\\:\\[\\&\\>span\\]\\:translate-x-3>span[data-state="checked"]{\n  --tw-translate-x: 0.75rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.\\[\\&_svg\\]\\:pointer-events-none svg{\n  pointer-events: none;\n}\n.\\[\\&_svg\\]\\:size-4 svg{\n  width: 1rem;\n  height: 1rem;\n}\n.\\[\\&_svg\\]\\:shrink-0 svg{\n  flex-shrink: 0;\n}\n'
       : '';
     shadow.appendChild(style);
     shadow.appendChild(wrapper);
@@ -28493,7 +39070,7 @@ var __morbis_feature = (() => {
       return;
     };
     reactRoot.render(
-      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(App, {
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(App, {
         data,
         onSave: handleSave,
         onClose: () => {
@@ -28611,6 +39188,28 @@ react/cjs/react-jsx-runtime.development.js:
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/shared/src/utils/mergeClasses.mjs:
+lucide-react/dist/esm/shared/src/utils/toKebabCase.mjs:
+lucide-react/dist/esm/shared/src/utils/toCamelCase.mjs:
+lucide-react/dist/esm/shared/src/utils/toPascalCase.mjs:
+lucide-react/dist/esm/defaultAttributes.mjs:
+lucide-react/dist/esm/shared/src/utils/hasA11yProp.mjs:
+lucide-react/dist/esm/context.mjs:
+lucide-react/dist/esm/Icon.mjs:
+lucide-react/dist/esm/createLucideIcon.mjs:
+lucide-react/dist/esm/icons/chevron-down.mjs:
+lucide-react/dist/esm/icons/plus.mjs:
+lucide-react/dist/esm/icons/trash-2.mjs:
+lucide-react/dist/esm/icons/triangle-alert.mjs:
+lucide-react/dist/esm/icons/x.mjs:
+lucide-react/dist/esm/lucide-react.mjs:
+  (**
+   * @license lucide-react v1.18.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
    *)
 */
 //# sourceMappingURL=resumeTab.js.map

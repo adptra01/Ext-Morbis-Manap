@@ -1,43 +1,50 @@
-import type { VitalSigns } from './types'
+import { Input } from '../../ui/components/input';
 
 interface VitalSignsSectionProps {
-  data: VitalSigns
-  onChange: (data: VitalSigns) => void
+  vitals: {
+    tensi: string;
+    nadi: string;
+    suhu: string;
+    nafas: string;
+    berat: string;
+    tinggi: string;
+  };
+  onChange: (field: string, value: string) => void;
 }
 
-const fields: { key: keyof VitalSigns; label: string; unit?: string }[] = [
-  { key: 'tensi', label: 'Tensi', unit: 'mmHg' },
-  { key: 'nadi', label: 'Nadi', unit: '/menit' },
-  { key: 'suhu', label: 'Suhu', unit: '°C' },
-  { key: 'nafas', label: 'Nafas', unit: '/menit' },
-  { key: 'tinggi', label: 'Tinggi', unit: 'cm' },
-  { key: 'berat', label: 'Berat', unit: 'kg' },
-]
+export function VitalSignsSection({ vitals, onChange }: VitalSignsSectionProps) {
+  const fields = [
+    { key: 'tensi', label: 'Tensi', unit: 'mmHg', placeholder: '120/80' },
+    { key: 'nadi', label: 'Nadi', unit: 'x/mnt', placeholder: '80' },
+    { key: 'suhu', label: 'Suhu', unit: '°C', placeholder: '36.5' },
+    { key: 'nafas', label: 'Nafas', unit: 'x/mnt', placeholder: '20' },
+    { key: 'berat', label: 'Berat', unit: 'kg', placeholder: '60' },
+    { key: 'tinggi', label: 'Tinggi', unit: 'cm', placeholder: '165' },
+  ];
 
-export function VitalSignsSection({ data, onChange }: VitalSignsSectionProps) {
   return (
-    <div>
-      <h3 className="text-md-sm font-semibold text-[var(--md-gray-700)] mb-2">Tanda Vital</h3>
-      <div className="grid grid-cols-6 gap-2">
+    <div className="px-5 py-4 border-b border-border bg-background">
+      <h3 className="text-md-sm font-semibold text-foreground mb-3">Tanda Vital</h3>
+      <div className="grid grid-cols-6 gap-3">
         {fields.map((f) => (
-          <div key={f.key}>
-            <label className="md-label">{f.label}</label>
+          <div key={f.key} className="space-y-1.5">
+            <label className="text-[10px] font-semibold text-muted-foreground uppercase ml-1">
+              {f.label}
+            </label>
             <div className="relative">
-              <input
-                type="text"
-                value={data[f.key]}
-                onChange={(e) => onChange({ ...data, [f.key]: e.target.value })}
-                className="md-input pr-6"
+              <Input
+                value={vitals[f.key as keyof typeof vitals]}
+                onChange={(e) => onChange(f.key, e.target.value)}
+                placeholder={f.placeholder}
+                className="pr-10 text-md-xs h-9"
               />
-              {f.unit && (
-                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-md-xs text-[var(--md-gray-400)] pointer-events-none">
-                  {f.unit}
-                </span>
-              )}
+              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] font-medium text-muted-foreground/60 pointer-events-none">
+                {f.unit}
+              </span>
             </div>
           </div>
         ))}
       </div>
     </div>
-  )
+  );
 }

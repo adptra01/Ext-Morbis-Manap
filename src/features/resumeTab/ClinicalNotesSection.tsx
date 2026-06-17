@@ -1,35 +1,41 @@
-import type { ClinicalNotes } from './types'
-
 interface ClinicalNotesSectionProps {
-  data: ClinicalNotes
-  onChange: (data: ClinicalNotes) => void
+  anamnesa: string;
+  pemeriksaan: string;
+  onChange: (field: 'anamnesa' | 'pemeriksaan', value: string) => void;
 }
 
-const fields: { key: keyof ClinicalNotes; label: string; wide: boolean }[] = [
-  { key: 'anamnesa', label: 'Anamnesa', wide: false },
-  { key: 'pemeriksaan_fisik', label: 'Pemeriksaan Fisik', wide: false },
-  { key: 'catatan', label: 'Catatan', wide: false },
-  { key: 'tindakan', label: 'Tindakan', wide: false },
-  { key: 'terapi_pengobatan', label: 'Terapi Pengobatan', wide: true },
-]
-
-export function ClinicalNotesSection({ data, onChange }: ClinicalNotesSectionProps) {
+export function ClinicalNotesSection({
+  anamnesa,
+  pemeriksaan,
+  onChange,
+}: ClinicalNotesSectionProps) {
   return (
-    <div>
-      <h3 className="text-md-sm font-semibold text-[var(--md-gray-700)] mb-2">Data Klinis</h3>
-      <div className="grid grid-cols-2 gap-3">
-        {fields.map((f) => (
-          <div key={f.key} className={f.wide ? 'col-span-2' : ''}>
-            <label className="md-label">{f.label}</label>
-            <textarea
-              value={data[f.key]}
-              onChange={(e) => onChange({ ...data, [f.key]: e.target.value })}
-              className="md-input min-h-[60px] resize-y"
-              rows={2}
-            />
-          </div>
-        ))}
+    <div className="px-5 py-4 border-b border-border bg-background">
+      <h3 className="text-md-sm font-semibold text-foreground mb-3">Data Klinis</h3>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-[10px] font-semibold text-muted-foreground uppercase mb-1.5 ml-1">
+            Anamnesa
+          </label>
+          <textarea
+            value={anamnesa}
+            onChange={(e) => onChange('anamnesa', e.target.value)}
+            className="w-full h-24 rounded-md border border-input bg-background px-3 py-2 text-md-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+            placeholder="Keluhan pasien..."
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] font-semibold text-muted-foreground uppercase mb-1.5 ml-1">
+            Pemeriksaan Fisik
+          </label>
+          <textarea
+            value={pemeriksaan}
+            onChange={(e) => onChange('pemeriksaan', e.target.value)}
+            className="w-full h-24 rounded-md border border-input bg-background px-3 py-2 text-md-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+            placeholder="Hasil pemeriksaan..."
+          />
+        </div>
       </div>
     </div>
-  )
+  );
 }
