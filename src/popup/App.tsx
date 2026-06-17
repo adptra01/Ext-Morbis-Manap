@@ -174,7 +174,7 @@ export function App() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[300px]">
-        <p className="text-md-sm text-[var(--md-gray-400)]">Memuat...</p>
+        <p className="text-md-sm text-muted-foreground">Memuat...</p>
       </div>
     );
   }
@@ -182,7 +182,7 @@ export function App() {
   if (!config) {
     return (
       <div className="flex items-center justify-center h-[300px]">
-        <p className="text-md-sm text-[var(--md-red-500)]">Gagal memuat konfigurasi</p>
+        <p className="text-md-sm text-destructive">Gagal memuat konfigurasi</p>
       </div>
     );
   }
@@ -191,14 +191,14 @@ export function App() {
     <ErrorBoundary>
       <div className="w-[340px] min-h-[200px] max-h-[600px] overflow-y-auto">
         {/* Header */}
-        <div className="px-4 pt-3 pb-2 border-b border-[var(--md-gray-200)]">
+        <div className="px-4 pt-3 pb-2 border-b border-border">
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded bg-[#2469f0] flex items-center justify-center">
               <span className="text-white text-[10px] font-bold">M</span>
             </div>
             <div>
-              <h1 className="text-md-sm font-semibold text-[var(--md-gray-800)]">MORBIS Ext</h1>
-              <p className="text-[10px] text-[var(--md-gray-500)]">Produktivitas SIMRS</p>
+              <h1 className="text-md-sm font-semibold text-foreground">MORBIS Ext</h1>
+              <p className="text-[10px] text-muted-foreground">Produktivitas SIMRS</p>
             </div>
           </div>
         </div>
@@ -216,13 +216,14 @@ export function App() {
         {/* Features Section */}
         <div className="px-4 pb-2">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-semibold text-[var(--md-gray-500)] uppercase tracking-wider">
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
               Fitur
             </span>
           </div>
           <FeaturesPanel
             features={config.features}
             role={config.currentRole}
+            disabled={!config.extensionEnabled}
             onToggle={handleFeatureToggle}
             onModeChange={handleModeChange}
           />
@@ -231,7 +232,7 @@ export function App() {
         {/* Domain Section */}
         <div className="px-4 pb-2">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-semibold text-[var(--md-gray-500)] uppercase tracking-wider">
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
               Domain
             </span>
           </div>
@@ -252,7 +253,7 @@ export function App() {
             className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 animate-slide-up"
             role="alert"
           >
-            <div className="px-4 py-2 bg-[var(--md-gray-800)] text-white text-md-xs rounded-lg shadow-lg">
+            <div className="px-4 py-2 bg-foreground text-background text-md-xs rounded-lg shadow-lg">
               {toast}
             </div>
           </div>

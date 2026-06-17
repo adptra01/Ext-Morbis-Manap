@@ -6,6 +6,7 @@ import { StatusCard } from './StatusCard';
 import { FeaturesPanel } from './FeaturesPanel';
 import { DomainPanel } from './DomainPanel';
 import { Footer } from './Footer';
+import { configToFeatureList, configToToggles } from './utils';
 import type { FeatureConfig, Role, CustomUrl } from './types';
 
 // Fallback feature list (for offline or when background unavailable)
@@ -127,23 +128,9 @@ export function App() {
         if (result?.config) {
           setEnabled(result.config.extensionEnabled);
           setRole(result.config.currentRole);
-          // Convert extensionConfig features format to boolean Record
-          const featureToggles: Record<string, boolean> = {};
-          for (const [key, featureObj] of Object.entries(result.config.features || {})) {
-            featureToggles[key] = featureObj.enabled ?? false;
-          }
-          setFeatures(featureToggles);
-          // Extract feature list from config and convert to sidepanel format
+          setFeatures(configToToggles(result.config.features || {}));
           if (result.config.features) {
-            const features: FeatureConfig[] = Object.entries(result.config.features).map(
-              ([key, featureObj]) => ({
-                key,
-                name: featureObj.name || key,
-                desc: featureObj.description || '',
-                roles: (featureObj.allowedRoles || []) as Role[],
-              }),
-            );
-            setFeaturesList(features);
+            setFeaturesList(configToFeatureList(result.config.features));
           }
         }
         if (result?.urls) {
@@ -156,24 +143,9 @@ export function App() {
           if (fallback.extensionConfig) {
             setEnabled(fallback.extensionConfig.extensionEnabled);
             setRole(fallback.extensionConfig.currentRole);
-            const featureToggles: Record<string, boolean> = {};
-            for (const [key, featureObj] of Object.entries(
-              fallback.extensionConfig.features || {},
-            )) {
-              featureToggles[key] = featureObj.enabled ?? false;
-            }
-            setFeatures(featureToggles);
-            // Extract feature list from fallback config and convert to sidepanel format
+            setFeatures(configToToggles(fallback.extensionConfig.features || {}));
             if (fallback.extensionConfig.features) {
-              const features: FeatureConfig[] = Object.entries(
-                fallback.extensionConfig.features,
-              ).map(([key, featureObj]) => ({
-                key,
-                name: featureObj.name || key,
-                desc: featureObj.description || '',
-                roles: (featureObj.allowedRoles || []) as Role[],
-              }));
-              setFeaturesList(features);
+              setFeaturesList(configToFeatureList(fallback.extensionConfig.features));
             }
           }
           if (fallback.extensionCustomUrls) {
@@ -255,6 +227,18 @@ export function App() {
     [urls, showToast],
   );
 
+  const handleModeChange = useCallback(
+    (key: string, mode: string) => {
+      sendMessage<'CHANGE_FEATURE_MODE'>({
+        type: MessageTypes.CHANGE_FEATURE_MODE,
+        key,
+        mode,
+      }).catch(() => showToast('Gagal mengubah mode'));
+      showToast('Mode berhasil diubah');
+    },
+    [showToast],
+  );
+
   const handleReload = useCallback(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]?.id) chrome.tabs.reload(tabs[0].id);
@@ -279,20 +263,22 @@ export function App() {
 
   return (
     <ErrorBoundary>
-      <div className="flex flex-col h-full bg-white dark:bg-[var(--md-gray-900)]">
+      <div className="flex flex-col h-full bg-background">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--md-gray-200)]">
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-border">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-md bg-[#2469f0] flex items-center justify-center">
               <span className="text-white text-md-xs font-bold">M</span>
             </div>
-            <span className="text-md-sm font-semibold text-[var(--md-gray-800)]">MORBIS Ext</span>
-            <span className="md-badge md-badge--primary">v1.2</span>
+            <span className="text-md-sm font-semibold text-foreground">MORBIS Ext</span>
+            <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-300 px-1.5 py-0.5 rounded-full">
+              v1.2
+            </span>
           </div>
           <div className="flex items-center gap-1">
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="p-1.5 rounded-md text-[var(--md-gray-400)] hover:text-[var(--md-gray-600)] hover:bg-[var(--md-gray-100)] transition-colors"
+              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
               title="Toggle dark mode"
             >
               {resolved ? (
@@ -334,13 +320,13 @@ export function App() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-0 px-4 border-b border-[var(--md-gray-200)]">
+        <div className="flex gap-0 px-4 border-b border-border">
           <button
             onClick={() => setActiveTab('features')}
             className={`px-4 py-2 text-md-sm font-medium border-b-2 transition-colors -mb-[1px] ${
               activeTab === 'features'
                 ? 'text-[#2469f0] border-[#2469f0]'
-                : 'text-[var(--md-gray-500)] border-transparent hover:text-[var(--md-gray-700)]'
+                : 'text-muted-foreground border-transparent hover:text-foreground'
             }`}
           >
             Fitur
@@ -350,7 +336,7 @@ export function App() {
             className={`px-4 py-2 text-md-sm font-medium border-b-2 transition-colors -mb-[1px] ${
               activeTab === 'domain'
                 ? 'text-[#2469f0] border-[#2469f0]'
-                : 'text-[var(--md-gray-500)] border-transparent hover:text-[var(--md-gray-700)]'
+                : 'text-muted-foreground border-transparent hover:text-foreground'
             }`}
           >
             Domain
@@ -364,7 +350,9 @@ export function App() {
               features={featuresList}
               enabledFeatures={features}
               role={role}
+              disabled={!enabled}
               onToggle={handleFeatureToggle}
+              onModeChange={handleModeChange}
             />
           )}
           {activeTab === 'domain' && (
@@ -386,7 +374,7 @@ export function App() {
             className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 animate-slide-up"
             role="alert"
           >
-            <div className="px-4 py-2 bg-[var(--md-gray-800)] text-white text-md-sm rounded-lg shadow-lg">
+            <div className="px-4 py-2 bg-foreground text-background text-md-sm rounded-lg shadow-lg">
               {toast}
             </div>
           </div>

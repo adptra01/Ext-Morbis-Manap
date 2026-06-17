@@ -1,11 +1,13 @@
-import type { Role, CustomUrl } from '../../shared/types'
+import type { Role, CustomUrl } from '../../shared/types';
 
 export interface FeatureConfig {
-  key: string
-  name: string
-  desc: string
-  roles: Role[]
-  comingSoon?: boolean
+  key: string;
+  name: string;
+  desc: string;
+  roles: Role[];
+  mode?: string;
+  modes?: Record<string, string>;
+  comingSoon?: boolean;
 }
 
-export type { Role, CustomUrl }
+export type { Role, CustomUrl };

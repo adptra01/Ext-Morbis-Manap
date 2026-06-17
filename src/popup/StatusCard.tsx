@@ -23,6 +23,14 @@ const ROLES: { value: Role; label: string }[] = [
   { value: 'admin', label: 'Admin' },
 ];
 
+const ROLE_LABELS: Record<Role, string> = {
+  casemix: 'Casemix',
+  kasir: 'Kasir',
+  dokter: 'Dokter',
+  apotek: 'Apotek',
+  admin: 'Admin',
+};
+
 export function StatusCard({ enabled, role, onToggle, onRoleChange }: StatusCardProps) {
   return (
     <div className="flex items-center justify-between">
@@ -37,6 +45,9 @@ export function StatusCard({ enabled, role, onToggle, onRoleChange }: StatusCard
               {enabled ? 'Aktif' : 'Non-Aktif'}
             </span>
           </div>
+          <p className="text-[10px] text-muted-foreground mt-0.5">
+            Role: {ROLE_LABELS[role] || role}
+          </p>
         </div>
       </div>
       <Select value={role} onValueChange={(v) => onRoleChange(v as Role)}>

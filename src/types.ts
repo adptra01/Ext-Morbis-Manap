@@ -20,22 +20,3 @@ export interface MessagePayload {
   url?: string;
   id?: string;
 }
-
-export interface PopupDOM {
-  loading: HTMLElement;
-  mainContent: HTMLElement;
-  toggleExtension: HTMLInputElement;
-  statusBadge: HTMLElement;
-  statusText: HTMLElement;
-  featuresList: HTMLElement;
-  enabledCount: HTMLElement;
-  totalCount: HTMLElement;
-  reloadBtn: HTMLElement;
-  resetBtn: HTMLElement;
-  urlInput: HTMLInputElement;
-  addUrlBtn: HTMLElement;
-  urlsList: HTMLElement;
-  toastEl: HTMLElement;
-  roleSelect: HTMLSelectElement;
-  roleBanner: HTMLElement;
-}

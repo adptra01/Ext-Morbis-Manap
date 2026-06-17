@@ -18,7 +18,7 @@ import {
   u as g,
   v as _,
   y as v,
-} from './chunks/button-oeVl7aqx.js';
+} from './chunks/button-Lo_Q_Ev9.js';
 var y = n(v(), 1),
   b = _(),
   x = s(),
@@ -28,8 +28,9 @@ var y = n(v(), 1),
     { value: `dokter`, label: `Dokter` },
     { value: `apotek`, label: `Apotek` },
     { value: `admin`, label: `Admin` },
-  ];
-function C({ enabled: e, role: n, onToggle: r, onRoleChange: i }) {
+  ],
+  C = { casemix: `Casemix`, kasir: `Kasir`, dokter: `Dokter`, apotek: `Apotek`, admin: `Admin` };
+function w({ enabled: e, role: n, onToggle: r, onRoleChange: i }) {
   return (0, x.jsxs)(`div`, {
     className: `flex items-center justify-between`,
     children: [
@@ -37,19 +38,25 @@ function C({ enabled: e, role: n, onToggle: r, onRoleChange: i }) {
         className: `flex items-center gap-2.5`,
         children: [
           (0, x.jsx)(a, { checked: e, onCheckedChange: r }),
-          (0, x.jsx)(`div`, {
-            children: (0, x.jsxs)(`div`, {
-              className: `flex items-center gap-1.5`,
-              children: [
-                (0, x.jsx)(`span`, {
-                  className: `inline-block w-2 h-2 rounded-full ${e ? `bg-green-500` : `bg-muted-foreground`}`,
-                }),
-                (0, x.jsx)(`span`, {
-                  className: `text-md-xs font-medium text-foreground`,
-                  children: e ? `Aktif` : `Non-Aktif`,
-                }),
-              ],
-            }),
+          (0, x.jsxs)(`div`, {
+            children: [
+              (0, x.jsxs)(`div`, {
+                className: `flex items-center gap-1.5`,
+                children: [
+                  (0, x.jsx)(`span`, {
+                    className: `inline-block w-2 h-2 rounded-full ${e ? `bg-green-500` : `bg-muted-foreground`}`,
+                  }),
+                  (0, x.jsx)(`span`, {
+                    className: `text-md-xs font-medium text-foreground`,
+                    children: e ? `Aktif` : `Non-Aktif`,
+                  }),
+                ],
+              }),
+              (0, x.jsxs)(`p`, {
+                className: `text-[10px] text-muted-foreground mt-0.5`,
+                children: [`Role: `, C[n] || n],
+              }),
+            ],
           }),
         ],
       }),
@@ -66,98 +73,101 @@ function C({ enabled: e, role: n, onToggle: r, onRoleChange: i }) {
     ],
   });
 }
-function w({ features: e, role: t, onToggle: n, onModeChange: r }) {
-  let i = Object.entries(e).filter(([, e]) => t === `admin` || e.allowedRoles?.includes(t)),
-    a = i.filter(([, e]) => e.enabled && !e.comingSoon).length;
-  return i.length === 0
+function T({ features: e, role: n, disabled: r, onToggle: i, onModeChange: o }) {
+  let s = Object.entries(e).filter(([, e]) => n === `admin` || e.allowedRoles?.includes(n)),
+    l = s.filter(([, e]) => e.enabled && !e.comingSoon).length;
+  return s.length === 0
     ? (0, x.jsx)(`div`, {
         className: `text-center py-4`,
         children: (0, x.jsx)(`p`, {
-          className: `text-md-xs text-[var(--md-gray-400)]`,
+          className: `text-md-xs text-muted-foreground`,
           children: `Tidak ada fitur untuk role ini`,
         }),
       })
     : (0, x.jsxs)(`div`, {
+        className: r ? `opacity-50 pointer-events-none` : ``,
         children: [
           (0, x.jsxs)(`p`, {
-            className: `text-[10px] text-[var(--md-gray-500)] mb-1.5`,
-            children: [a, ` dari `, i.filter(([, e]) => !e.comingSoon).length, ` fitur aktif`],
+            className: `text-[10px] text-muted-foreground mb-1.5`,
+            children: [l, ` dari `, s.filter(([, e]) => !e.comingSoon).length, ` fitur aktif`],
           }),
           (0, x.jsx)(`div`, {
             className: `space-y-0.5`,
-            children: i.map(([e, t]) => {
-              let i = t.comingSoon === !0,
-                a = t.enabled && !i;
-              return (
-                t.enabled,
-                (0, x.jsxs)(
-                  `div`,
-                  {
-                    className: `flex items-center justify-between px-2.5 py-2 rounded ${a ? `bg-[var(--md-gray-50)]` : ``} ${i ? `opacity-60` : ``}`,
-                    children: [
-                      (0, x.jsxs)(`div`, {
-                        className: `flex-1 min-w-0 mr-2`,
-                        children: [
-                          (0, x.jsxs)(`div`, {
-                            className: `flex items-center gap-1.5`,
-                            children: [
+            children: s.map(([e, n]) => {
+              let s = n.comingSoon === !0;
+              return (0, x.jsxs)(
+                `div`,
+                {
+                  className: `flex items-center justify-between px-2.5 py-2 rounded ${n.enabled && !s ? `bg-accent` : ``} ${s ? `opacity-60` : ``}`,
+                  children: [
+                    (0, x.jsxs)(`div`, {
+                      className: `flex-1 min-w-0 mr-2`,
+                      children: [
+                        (0, x.jsxs)(`div`, {
+                          className: `flex items-center gap-1.5`,
+                          children: [
+                            (0, x.jsx)(`span`, {
+                              className: `text-md-xs font-medium text-foreground`,
+                              children: n.name || e,
+                            }),
+                            s &&
                               (0, x.jsx)(`span`, {
-                                className: `text-md-xs font-medium text-[var(--md-gray-800)]`,
-                                children: t.name || e,
+                                className: `text-[9px] font-semibold text-amber-700 bg-amber-50 dark:bg-amber-900/30 dark:text-amber-300 px-1.5 py-0.5 rounded-full`,
+                                children: `CS`,
                               }),
-                              i &&
-                                (0, x.jsx)(`span`, {
-                                  className: `text-[9px] font-semibold text-[#c47a1a] bg-[#fef4e4] px-1.5 py-0.5 rounded-full`,
-                                  children: `CS`,
-                                }),
+                          ],
+                        }),
+                        n.description &&
+                          (0, x.jsx)(`p`, {
+                            className: `text-[10px] text-muted-foreground truncate mt-0.5`,
+                            children: n.description,
+                          }),
+                      ],
+                    }),
+                    (0, x.jsxs)(`div`, {
+                      className: `flex items-center gap-1.5 shrink-0`,
+                      children: [
+                        e === `openDetailInNewTab` &&
+                          n.modes &&
+                          n.enabled &&
+                          (0, x.jsxs)(p, {
+                            value: n.mode || `same-tab`,
+                            onValueChange: (t) => o(e, t),
+                            children: [
+                              (0, x.jsx)(f, {
+                                className: `h-6 text-[10px] w-[90px]`,
+                                onClick: (e) => e.stopPropagation(),
+                                children: (0, x.jsx)(m, {}),
+                              }),
+                              (0, x.jsx)(c, {
+                                children: Object.entries(n.modes).map(([e, n]) =>
+                                  (0, x.jsx)(
+                                    t,
+                                    { value: e, className: `text-[10px]`, children: n },
+                                    e,
+                                  ),
+                                ),
+                              }),
                             ],
                           }),
-                          t.description &&
-                            (0, x.jsx)(`p`, {
-                              className: `text-[10px] text-[var(--md-gray-500)] truncate mt-0.5`,
-                              children: t.description,
-                            }),
-                        ],
-                      }),
-                      (0, x.jsxs)(`div`, {
-                        className: `flex items-center gap-1.5 shrink-0`,
-                        children: [
-                          e === `openDetailInNewTab` &&
-                            t.modes &&
-                            t.enabled &&
-                            (0, x.jsx)(`select`, {
-                              value: t.mode || `same-tab`,
-                              onChange: (t) => r(e, t.target.value),
-                              onClick: (e) => e.stopPropagation(),
-                              className: `text-[10px] px-1.5 py-1 rounded border border-[var(--md-gray-200)] bg-white text-[var(--md-gray-700)] cursor-pointer focus:outline-none`,
-                              children: Object.entries(t.modes).map(([e, t]) =>
-                                (0, x.jsx)(`option`, { value: e, children: t }, e),
-                              ),
-                            }),
-                          !i &&
-                            (0, x.jsx)(`button`, {
-                              type: `button`,
-                              role: `switch`,
-                              'aria-checked': t.enabled,
-                              onClick: () => n(e, !t.enabled),
-                              className: `relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ${t.enabled ? `bg-[#2469f0]` : `bg-[var(--md-gray-200)]`}`,
-                              children: (0, x.jsx)(`span`, {
-                                className: `pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ${t.enabled ? `translate-x-3` : `translate-x-0`}`,
-                              }),
-                            }),
-                        ],
-                      }),
-                    ],
-                  },
-                  e,
-                )
+                        !s &&
+                          (0, x.jsx)(a, {
+                            checked: n.enabled,
+                            onCheckedChange: (t) => i(e, t),
+                            disabled: r,
+                          }),
+                      ],
+                    }),
+                  ],
+                },
+                e,
               );
             }),
           }),
         ],
       });
 }
-function T({ urls: e, onAdd: t, onRemove: n, onToggle: o }) {
+function E({ urls: e, onAdd: t, onRemove: n, onToggle: o }) {
   let [s, c] = (0, y.useState)(``),
     [l, u] = (0, y.useState)(null),
     f = (e) => {
@@ -258,7 +268,7 @@ function T({ urls: e, onAdd: t, onRemove: n, onToggle: o }) {
     ],
   });
 }
-function E({ onReload: e, onReset: t }) {
+function D({ onReload: e, onReset: t }) {
   return (0, x.jsxs)(`div`, {
     className: `flex items-center gap-2 px-4 py-2.5 border-t border-border`,
     children: [
@@ -279,7 +289,7 @@ function E({ onReload: e, onReset: t }) {
     ],
   });
 }
-async function D() {
+async function O() {
   try {
     let t = await e({ type: o.GET_ALL });
     if (t?.config) return { config: t.config, urls: t.urls ?? [] };
@@ -290,18 +300,18 @@ async function D() {
     urls: t.extensionCustomUrls ?? [],
   };
 }
-function O() {
+function k() {
   chrome.tabs.query({ active: !0, currentWindow: !0 }, (e) => {
     e[0]?.id && (chrome.tabs.reload(e[0].id), window.close());
   });
 }
-function k() {
+function A() {
   let [t, n] = (0, y.useState)(!0),
     [r, i] = (0, y.useState)(null),
     [a, s] = (0, y.useState)([]),
     [c, l] = (0, y.useState)(null);
   (0, y.useEffect)(() => {
-    D().then((e) => {
+    O().then((e) => {
       (i(e.config), s(e.urls), n(!1));
     });
   }, []);
@@ -316,7 +326,7 @@ function k() {
           d(`Gagal mengubah status extension`),
         ),
         d(t ? `Extension diaktifkan` : `Extension dinonaktifkan`),
-        O());
+        k());
     }, [r, d]),
     p = (0, y.useCallback)(
       (t) => {
@@ -324,7 +334,7 @@ function k() {
           (i({ ...r, currentRole: t }),
           e({ type: o.SET_ROLE, role: t }).catch(() => d(`Gagal mengubah role`)),
           d(`Role berhasil diubah`),
-          O());
+          k());
       },
       [r, d],
     ),
@@ -333,7 +343,7 @@ function k() {
         r?.features[t] &&
           (i({ ...r, features: { ...r.features, [t]: { ...r.features[t], enabled: n } } }),
           e({ type: o.TOGGLE_FEATURE, key: t, enabled: n }).catch(() => d(`Gagal mengubah fitur`)),
-          O());
+          k());
       },
       [r, d],
     ),
@@ -352,7 +362,7 @@ function k() {
         (s((e) => [...e, n]),
           e({ type: o.ADD_URL, url: t }).catch(() => d(`Gagal menambah URL`)),
           d(`URL berhasil ditambahkan`),
-          O());
+          k());
       },
       [d],
     ),
@@ -360,7 +370,7 @@ function k() {
       (t) => {
         (s((e) => e.filter((e) => e.id !== t)),
           e({ type: o.DELETE_URL, id: t }).catch(() => d(`Gagal menghapus URL`)),
-          O());
+          k());
       },
       [d],
     ),
@@ -368,7 +378,7 @@ function k() {
       (t, n) => {
         (s((e) => e.map((e) => (e.id === t ? { ...e, enabled: n } : e))),
           e({ type: o.TOGGLE_URL, id: t, enabled: n }).catch(() => d(`Gagal mengubah URL`)),
-          O());
+          k());
       },
       [d],
     ),
@@ -377,8 +387,8 @@ function k() {
         (e({ type: o.RESET_CONFIG }).catch(() => d(`Gagal mereset konfigurasi`)),
         l(`Reset ke default`),
         setTimeout(() => {
-          D().then((e) => {
-            (i(e.config), s(e.urls), O());
+          O().then((e) => {
+            (i(e.config), s(e.urls), k());
           });
         }, 500));
     }, [d]);
@@ -386,7 +396,7 @@ function k() {
     ? (0, x.jsx)(`div`, {
         className: `flex items-center justify-center h-[300px]`,
         children: (0, x.jsx)(`p`, {
-          className: `text-md-sm text-[var(--md-gray-400)]`,
+          className: `text-md-sm text-muted-foreground`,
           children: `Memuat...`,
         }),
       })
@@ -396,7 +406,7 @@ function k() {
             className: `w-[340px] min-h-[200px] max-h-[600px] overflow-y-auto`,
             children: [
               (0, x.jsx)(`div`, {
-                className: `px-4 pt-3 pb-2 border-b border-[var(--md-gray-200)]`,
+                className: `px-4 pt-3 pb-2 border-b border-border`,
                 children: (0, x.jsxs)(`div`, {
                   className: `flex items-center gap-2`,
                   children: [
@@ -410,11 +420,11 @@ function k() {
                     (0, x.jsxs)(`div`, {
                       children: [
                         (0, x.jsx)(`h1`, {
-                          className: `text-md-sm font-semibold text-[var(--md-gray-800)]`,
+                          className: `text-md-sm font-semibold text-foreground`,
                           children: `MORBIS Ext`,
                         }),
                         (0, x.jsx)(`p`, {
-                          className: `text-[10px] text-[var(--md-gray-500)]`,
+                          className: `text-[10px] text-muted-foreground`,
                           children: `Produktivitas SIMRS`,
                         }),
                       ],
@@ -424,7 +434,7 @@ function k() {
               }),
               (0, x.jsx)(`div`, {
                 className: `px-4 py-2.5`,
-                children: (0, x.jsx)(C, {
+                children: (0, x.jsx)(w, {
                   enabled: r.extensionEnabled,
                   role: r.currentRole,
                   onToggle: f,
@@ -437,13 +447,14 @@ function k() {
                   (0, x.jsx)(`div`, {
                     className: `flex items-center justify-between mb-1`,
                     children: (0, x.jsx)(`span`, {
-                      className: `text-[10px] font-semibold text-[var(--md-gray-500)] uppercase tracking-wider`,
+                      className: `text-[10px] font-semibold text-muted-foreground uppercase tracking-wider`,
                       children: `Fitur`,
                     }),
                   }),
-                  (0, x.jsx)(w, {
+                  (0, x.jsx)(T, {
                     features: r.features,
                     role: r.currentRole,
+                    disabled: !r.extensionEnabled,
                     onToggle: m,
                     onModeChange: h,
                   }),
@@ -455,20 +466,20 @@ function k() {
                   (0, x.jsx)(`div`, {
                     className: `flex items-center justify-between mb-1`,
                     children: (0, x.jsx)(`span`, {
-                      className: `text-[10px] font-semibold text-[var(--md-gray-500)] uppercase tracking-wider`,
+                      className: `text-[10px] font-semibold text-muted-foreground uppercase tracking-wider`,
                       children: `Domain`,
                     }),
                   }),
-                  (0, x.jsx)(T, { urls: a, onAdd: g, onRemove: _, onToggle: v }),
+                  (0, x.jsx)(E, { urls: a, onAdd: g, onRemove: _, onToggle: v }),
                 ],
               }),
-              (0, x.jsx)(E, { onReload: O, onReset: b }),
+              (0, x.jsx)(D, { onReload: k, onReset: b }),
               c &&
                 (0, x.jsx)(`div`, {
                   className: `fixed bottom-4 left-1/2 -translate-x-1/2 z-50 animate-slide-up`,
                   role: `alert`,
                   children: (0, x.jsx)(`div`, {
-                    className: `px-4 py-2 bg-[var(--md-gray-800)] text-white text-md-xs rounded-lg shadow-lg`,
+                    className: `px-4 py-2 bg-foreground text-background text-md-xs rounded-lg shadow-lg`,
                     children: c,
                   }),
                 }),
@@ -478,10 +489,10 @@ function k() {
       : (0, x.jsx)(`div`, {
           className: `flex items-center justify-center h-[300px]`,
           children: (0, x.jsx)(`p`, {
-            className: `text-md-sm text-[var(--md-red-500)]`,
+            className: `text-md-sm text-destructive`,
             children: `Gagal memuat konfigurasi`,
           }),
         });
 }
-var A = document.getElementById(`root`);
-A && (0, b.createRoot)(A).render((0, x.jsx)(k, {}));
+var j = document.getElementById(`root`);
+j && (0, b.createRoot)(j).render((0, x.jsx)(A, {}));
