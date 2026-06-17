@@ -1,319 +1,346 @@
-"use strict";
+'use strict';
 var __morbis_feature = (() => {
   // src/features/shared/types.ts
   function getMorbisGlobals() {
     return window;
   }
 
+  // src/shared/ui/colors.ts
+  var colors = {
+    background: '#ffffff',
+    foreground: '#0a0a0e',
+    card: '#ffffff',
+    cardForeground: '#0a0a0e',
+    primary: '#2469f0',
+    primaryForeground: '#f8fafc',
+    primaryHover: '#1d58cc',
+    secondary: '#f1f5f9',
+    secondaryForeground: '#1e293b',
+    muted: '#f1f5f9',
+    mutedForeground: '#64748b',
+    accent: '#f1f5f9',
+    accentForeground: '#1e293b',
+    destructive: '#ef4444',
+    destructiveForeground: '#f8fafc',
+    border: '#e2e8f0',
+    input: '#e2e8f0',
+    ring: '#2469f0',
+    /* semantic shortcuts */
+    success: '#1b8a4b',
+    successBg: '#eaf6ef',
+    warning: '#c47a1a',
+    warningBg: '#fef4e4',
+    error: '#ef4444',
+    errorBg: '#fef2f2',
+    info: '#2469f0',
+    infoBg: '#eef3ff',
+  };
+
+  // src/shared/ui/index.ts
+  var injectedSheets = /* @__PURE__ */ new Set();
+  function injectCSS(id, css) {
+    if (injectedSheets.has(id)) {
+      const existing = document.getElementById(id);
+      if (existing) return existing;
+    }
+    const style = document.createElement('style');
+    style.id = id;
+    style.textContent = css;
+    document.head.appendChild(style);
+    injectedSheets.add(id);
+    return style;
+  }
+  injectCSS(
+    'ext-shared-animations',
+    `
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+`,
+  );
+
   // src/features/shortcutButtons.ts
   var g = getMorbisGlobals();
-  var SHORTCUT_CONFIG = {
-    targetUrlPattern: "/v2/m-klaim/detail-v2-refaktor",
-    requiredParams: ["id_visit", "tanggalAwal", "tanggalAkhir"],
-    shortcutUrls: {
-      rajal: "/admisi/pelaksanaan_pelayanan/halaman-utama",
-      ranap: "/admisi/detail-rawat-inap/input-tindakan",
-      dokumenPasien: "/admisi/pelaksanaan_pelayanan/dokumen-pasien",
-      editResumeRajal: "/rekam-medik/rm-rawat-jalan-new",
-      editResumeRanap: "/rekam-medik/resume-rawat-inap",
-      triageIgd: "/admisi/pelaksanaan_pelayanan/triage_terintegrasi"
-    },
-    detailUrlPattern: "/v2/m-klaim/detail-v2-refaktor",
-    buttonStyles: {
-      rajal: { text: "Pelayanan Rawat Jalan", bgColor: "#3b82f6", hoverColor: "#2563eb" },
-      ranap: { text: "Pelayanan Rawat Inap", bgColor: "#10b981", hoverColor: "#059669" },
-      dokumenPasien: { text: "Dokumen Pasien", bgColor: "#8b5cf6", hoverColor: "#7c3aed" },
-      editResume: {
-        text: "Edit Resume",
-        bgColor: "#f59e0b",
-        hoverColor: "#d97706"
-      },
-      triageIgd: {
-        text: "Triage IGD",
-        bgColor: "#ec4899",
-        hoverColor: "#db2777"
-      },
-      backMklaim: {
-        text: "Kembali ke M-KLAIM",
-        bgColor: "#ef4444",
-        hoverColor: "#dc2626",
-        url: null
-      }
+  injectCSS(
+    'ext-shortcut-styles',
+    `
+  @media print {
+    [data-shortcut-buttons], [data-back-to-detail-klaim], .no-print, .hilang-saat-print {
+      display: none !important; height: 0 !important; width: 0 !important;
+      margin: 0 !important; padding: 0 !important; overflow: hidden !important;
+      visibility: hidden !important; position: absolute !important;
+      top: -9999px !important; left: -9999px !important; opacity: 0 !important;
     }
-  };
-  var BACK_TO_DETAIL_CONFIG = {
-    executionUrlPatterns: {
-      rajal: "/admisi/pelaksanaan_pelayanan/",
-      ranap: "/admisi/detail-rawat-inap/"
-    },
-    buttonStyle: {
-      text: "Kembali ke Detail Klaim",
-      bgColor: "#6366f1",
-      hoverColor: "#4f46e5"
-    }
-  };
-  function injectPrintStyles() {
-    const styleId = "shortcut-buttons-print-styles";
-    if (document.getElementById(styleId)) return;
-    const style = document.createElement("style");
-    style.id = styleId;
-    style.textContent = `
-    @media print {
-      [data-shortcut-buttons], [data-back-to-detail-klaim], .no-print, .hilang-saat-print {
-        display: none !important; height: 0 !important; width: 0 !important;
-        margin: 0 !important; padding: 0 !important; overflow: hidden !important;
-        visibility: hidden !important; position: absolute !important;
-        top: -9999px !important; left: -9999px !important; opacity: 0 !important;
-      }
-      [data-shortcut-buttons] a, [data-shortcut-buttons] button,
-      [data-back-to-detail-klaim] a, [data-back-to-detail-klaim] button { display: none !important; }
-    }
-  `;
-    document.head.appendChild(style);
+    [data-shortcut-buttons] a, [data-shortcut-buttons] button,
+    [data-back-to-detail-klaim] a, [data-back-to-detail-klaim] button { display: none !important; }
   }
+`,
+  );
+  var SHORTCUT_URLS = {
+    rajal: '/admisi/pelaksanaan_pelayanan/halaman-utama',
+    ranap: '/admisi/detail-rawat-inap/input-tindakan',
+    dokumenPasien: '/admisi/pelaksanaan_pelayanan/dokumen-pasien',
+    editResumeRajal: '/rekam-medik/rm-rawat-jalan-new',
+    editResumeRanap: '/rekam-medik/resume-rawat-inap',
+    triageIgd: '/admisi/pelaksanaan_pelayanan/triage_terintegrasi',
+  };
+  var BTN_STYLES = {
+    rajal: { text: 'Pelayanan Rawat Jalan', bg: colors.primary, hover: colors.primaryHover },
+    ranap: { text: 'Pelayanan Rawat Inap', bg: colors.success, hover: '#16a34a' },
+    dokumenPasien: { text: 'Dokumen Pasien', bg: '#8b5cf6', hover: '#7c3aed' },
+    editResume: { text: 'Edit Resume', bg: colors.warning, hover: '#d97706' },
+    triageIgd: { text: 'Triage IGD', bg: '#ec4899', hover: '#db2777' },
+    backMklaim: { text: 'Kembali ke M-KLAIM', bg: colors.error, hover: '#dc2626' },
+  };
+  var BACK_DETAIL_BTN = { text: 'Kembali ke Detail Klaim', bg: '#6366f1', hover: '#4f46e5' };
   function getJenisKunjungan() {
-    const jenisInput = document.querySelector('input[name="jenis"]');
-    if (jenisInput) return jenisInput.value.trim().toUpperCase();
-    const jenisSelect = document.querySelector('select[name="jenis"]');
-    if (jenisSelect) return jenisSelect.value.trim().toUpperCase();
+    const input = document.querySelector('input[name="jenis"]');
+    if (input) return input.value.trim().toUpperCase();
+    const sel = document.querySelector('select[name="jenis"]');
+    if (sel) return sel.value.trim().toUpperCase();
     return null;
   }
   function isRawatJalan() {
-    const jenis = getJenisKunjungan();
-    return !!jenis && (jenis.includes("JALAN") || jenis === "RAWAT JALAN");
+    const j = getJenisKunjungan();
+    return !!j && (j.includes('JALAN') || j === 'RAWAT JALAN');
   }
   function isRawatInap() {
-    const jenis = getJenisKunjungan();
-    return !!jenis && (jenis.includes("INAP") || jenis === "RAWAT INAP");
+    const j = getJenisKunjungan();
+    return !!j && (j.includes('INAP') || j === 'RAWAT INAP');
+  }
+  function extractParam(name) {
+    return new URLSearchParams(window.location.search).get(name);
+  }
+  function extractIdVisit() {
+    return extractParam('id_visit');
+  }
+  function createShortcutLink(url, def, sameTab = false) {
+    const a = document.createElement('a');
+    a.href = url;
+    a.textContent = def.text;
+    Object.assign(a.style, {
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '10px 20px',
+      background: def.bg,
+      color: '#fff',
+      border: 'none',
+      borderRadius: '6px',
+      textDecoration: 'none',
+      fontSize: '14px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+    });
+    a.addEventListener('mouseenter', () => {
+      a.style.background = def.hover;
+      a.style.transform = 'translateY(-2px)';
+      a.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+    });
+    a.addEventListener('mouseleave', () => {
+      a.style.background = def.bg;
+      a.style.transform = 'translateY(0)';
+      a.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+    });
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const mode = g.currentConfig?.features?.openDetailInNewTab?.mode || 'new-tab';
+      if (sameTab || mode === 'same-tab') {
+        window.location.href = url;
+      } else {
+        window.open(url, '_blank');
+      }
+    });
+    return a;
+  }
+  function buildUrl(path, qs) {
+    return `${window.location.origin}${path}?${qs}`;
+  }
+  function rajalUrl() {
+    const id = extractIdVisit();
+    return id
+      ? buildUrl(SHORTCUT_URLS.rajal, `id_visit=${id}&page=101&status_periksa=belum`)
+      : null;
+  }
+  function ranapUrl() {
+    const id = extractIdVisit();
+    return id ? buildUrl(SHORTCUT_URLS.ranap, `idVisit=${id}`) : null;
+  }
+  function dokumenPasienUrl() {
+    const id = extractIdVisit();
+    return id
+      ? buildUrl(SHORTCUT_URLS.dokumenPasien, `id_visit=${id}&page=85&id_kunjungan=`)
+      : null;
+  }
+  function editResumeUrl() {
+    const id = extractIdVisit();
+    if (!id) return null;
+    if (isRawatJalan()) return buildUrl(SHORTCUT_URLS.editResumeRajal, `id_visit=${id}`);
+    if (isRawatInap()) return buildUrl(SHORTCUT_URLS.editResumeRanap, `id_visit=${id}`);
+    return null;
+  }
+  function triageIgdUrl() {
+    if (!isRawatInap()) return null;
+    const id = extractIdVisit();
+    return id
+      ? buildUrl(SHORTCUT_URLS.triageIgd, `id_visit=${id}&status_periksa=belum&page=51`)
+      : null;
+  }
+  function mklaimBaseUrl() {
+    return `${window.location.origin}/v2/m-klaim`;
   }
   function isTargetPage() {
     const url = window.location.href;
-    if (!url.includes(SHORTCUT_CONFIG.targetUrlPattern)) return false;
-    const urlParams = new URLSearchParams(window.location.search);
-    for (const param of SHORTCUT_CONFIG.requiredParams) {
-      if (!urlParams.has(param)) return false;
+    if (!url.includes('/v2/m-klaim/detail-v2-refaktor')) return false;
+    for (const p of ['id_visit', 'tanggalAwal', 'tanggalAkhir']) {
+      if (!extractParam(p)) return false;
     }
     return true;
   }
-  function extractIdVisit() {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get("id_visit");
-  }
-  function generatePelaksanaanUrl(type) {
-    const baseUrl = window.location.origin;
-    const idVisit = extractIdVisit();
-    if (type === "rajal") {
-      return `${baseUrl}${SHORTCUT_CONFIG.shortcutUrls.rajal}?id_visit=${idVisit}&page=101&status_periksa=belum`;
-    } else if (type === "ranap") {
-      return `${baseUrl}${SHORTCUT_CONFIG.shortcutUrls.ranap}?idVisit=${idVisit}`;
+  function renderShortcutButtons() {
+    if (
+      !(
+        g.currentConfig?.features?.shortcutButtons?.enabled &&
+        g.ExtensionCore.isFeatureAllowed('shortcutButtons')
+      )
+    )
+      return;
+    if (!isTargetPage() || document.querySelector('[data-shortcut-buttons]')) return;
+    if (!extractIdVisit()) return;
+    const bar = document.createElement('div');
+    bar.dataset.shortcutButtons = 'true';
+    Object.assign(bar.style, {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      flexWrap: 'wrap',
+      padding: '12px 16px',
+      margin: '12px 0',
+      background: colors.secondary,
+      borderRadius: '8px',
+      border: `1px solid ${colors.border}`,
+    });
+    const label = document.createElement('span');
+    label.textContent = 'Shortcut:';
+    Object.assign(label.style, {
+      color: colors.mutedForeground,
+      fontWeight: '600',
+      fontSize: '13px',
+    });
+    bar.appendChild(label);
+    if (g.currentConfig?.extensionEnabled) {
+      bar.appendChild(createShortcutLink(mklaimBaseUrl(), BTN_STYLES.backMklaim, true));
     }
-    return null;
-  }
-  function generateDokumenPasienUrl() {
-    const baseUrl = window.location.origin;
-    const idVisit = extractIdVisit();
-    if (!idVisit) return null;
-    return `${baseUrl}${SHORTCUT_CONFIG.shortcutUrls.dokumenPasien}?id_visit=${idVisit}&page=85&id_kunjungan=`;
-  }
-  function generateEditResumeUrl() {
-    const baseUrl = window.location.origin;
-    const idVisit = extractIdVisit();
-    if (!idVisit) return null;
-    if (isRawatJalan()) {
-      return `${baseUrl}${SHORTCUT_CONFIG.shortcutUrls.editResumeRajal}?id_visit=${idVisit}`;
+    const eResume = editResumeUrl();
+    if (eResume) bar.appendChild(createShortcutLink(eResume, BTN_STYLES.editResume));
+    const dUrl = dokumenPasienUrl();
+    if (dUrl) bar.appendChild(createShortcutLink(dUrl, BTN_STYLES.dokumenPasien));
+    if (isRawatJalan() || isRawatInap()) {
+      const rj = rajalUrl();
+      if (rj) bar.appendChild(createShortcutLink(rj, BTN_STYLES.rajal));
     }
     if (isRawatInap()) {
-      return `${baseUrl}${SHORTCUT_CONFIG.shortcutUrls.editResumeRanap}?id_visit=${idVisit}`;
+      const ri = ranapUrl();
+      if (ri) bar.appendChild(createShortcutLink(ri, BTN_STYLES.ranap));
     }
-    return null;
-  }
-  function generateMklaimBaseUrl() {
-    return `${window.location.origin}/v2/m-klaim`;
-  }
-  function generateTriageIgdUrl() {
-    if (!isRawatInap()) return null;
-    var idVisit = extractIdVisit();
-    if (!idVisit) return null;
-    return window.location.origin + SHORTCUT_CONFIG.shortcutUrls.triageIgd + "?id_visit=" + idVisit + "&status_periksa=belum&page=51";
-  }
-  function shortcutButtonsExist() {
-    return document.querySelector("[data-shortcut-buttons]") !== null;
-  }
-  function renderShortcutButtons() {
-    const featureEnabled = g.currentConfig?.features?.shortcutButtons?.enabled && g.ExtensionCore.isFeatureAllowed("shortcutButtons");
-    if (!featureEnabled) return;
-    if (!isTargetPage() || shortcutButtonsExist()) return;
-    const idVisit = extractIdVisit();
-    if (!idVisit) return;
-    const container = document.createElement("div");
-    container.dataset.shortcutButtons = "true";
-    container.classList.add("no-print", "hilang-saat-print");
-    container.style.cssText = "display: flex; align-items: center; gap: 15px; padding: 15px; margin: 15px 0; background: #eee; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);";
-    const label = document.createElement("span");
-    label.textContent = "Shortcut:";
-    label.style.cssText = "color: #374151; font-weight: 600; font-size: 14px;";
-    container.appendChild(label);
-    const rajalUrl = generatePelaksanaanUrl("rajal");
-    const ranapUrl = generatePelaksanaanUrl("ranap");
-    const createButton = (url, style, openInSameTab = false) => {
-      const btn = document.createElement("a");
-      btn.href = url;
-      btn.textContent = style.text;
-      btn.style.cssText = `display: inline-flex; align-items: center; justify-content: center; padding: 10px 20px; background-color: ${style.bgColor}; color: white; border: none; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.2);`;
-      btn.addEventListener("mouseenter", () => {
-        btn.style.backgroundColor = style.hoverColor;
-        btn.style.transform = "translateY(-2px)";
-        btn.style.boxShadow = "0 4px 8px rgba(0,0,0,0.3)";
-      });
-      btn.addEventListener("mouseleave", () => {
-        btn.style.backgroundColor = style.bgColor;
-        btn.style.transform = "translateY(0)";
-        btn.style.boxShadow = "0 2px 4px rgba(0,0,0,0.2)";
-      });
-      btn.addEventListener("click", (e) => {
-        e.preventDefault();
-        const openMode = g.currentConfig?.features?.openDetailInNewTab?.mode || "new-tab";
-        if (openInSameTab || openMode === "same-tab") {
-          window.location.href = url;
-        } else {
-          window.open(url, "_blank");
-        }
-      });
-      return btn;
-    };
-    const extensionEnabled = g.currentConfig?.extensionEnabled ?? true;
-    if (extensionEnabled) {
-      const mklaimUrl = generateMklaimBaseUrl();
-      container.appendChild(createButton(mklaimUrl, SHORTCUT_CONFIG.buttonStyles.backMklaim, true));
-    }
-    const editResumeUrl = generateEditResumeUrl();
-    if (editResumeUrl) {
-      container.appendChild(
-        createButton(editResumeUrl, SHORTCUT_CONFIG.buttonStyles.editResume)
-      );
-    }
-    const dokumenPasienUrl = generateDokumenPasienUrl();
-    if (dokumenPasienUrl) {
-      container.appendChild(
-        createButton(dokumenPasienUrl, SHORTCUT_CONFIG.buttonStyles.dokumenPasien)
-      );
-    }
-    if ((isRawatJalan() || isRawatInap()) && rajalUrl) {
-      container.appendChild(createButton(rajalUrl, SHORTCUT_CONFIG.buttonStyles.rajal));
-    }
-    if (isRawatInap() && ranapUrl) {
-      container.appendChild(createButton(ranapUrl, SHORTCUT_CONFIG.buttonStyles.ranap));
-    }
-    var triageIgdUrl = generateTriageIgdUrl();
-    if (triageIgdUrl) {
-      container.appendChild(
-        createButton(triageIgdUrl, SHORTCUT_CONFIG.buttonStyles.triageIgd)
-      );
-    }
+    const tId = triageIgdUrl();
+    if (tId) bar.appendChild(createShortcutLink(tId, BTN_STYLES.triageIgd));
     const selectors = [
-      ".form-horizontal",
-      "form",
-      ".container-fluid",
-      ".container",
-      ".content",
-      ".main-content",
-      "#content",
-      ".page-content"
+      '.form-horizontal',
+      'form',
+      '.container-fluid',
+      '.container',
+      '.content',
+      '.main-content',
+      '#content',
+      '.page-content',
     ];
-    let targetContainer = null;
-    for (const selector of selectors) {
-      const found = document.querySelector(selector);
-      if (found) {
-        targetContainer = found;
-        break;
-      }
+    let target = null;
+    for (const sel of selectors) {
+      target = document.querySelector(sel);
+      if (target) break;
     }
-    if (!targetContainer) targetContainer = document.body;
-    if (targetContainer === document.body) {
-      const header = document.querySelector("header, nav, .navbar, .header");
-      if (header && header.nextSibling) {
-        targetContainer.insertBefore(container, header.nextSibling);
-      } else if (targetContainer.firstChild) {
-        targetContainer.insertBefore(container, targetContainer.firstChild);
-      } else {
-        targetContainer.appendChild(container);
-      }
+    if (!target) target = document.body;
+    if (target.firstChild) {
+      target.insertBefore(bar, target.firstChild);
     } else {
-      if (targetContainer.firstChild) {
-        targetContainer.insertBefore(container, targetContainer.firstChild);
-      } else {
-        targetContainer.appendChild(container);
-      }
+      target.appendChild(bar);
     }
-  }
-  function runShortcutButtonsFeature() {
-    const featureEnabled = g.currentConfig?.features?.shortcutButtons?.enabled ?? true;
-    if (!featureEnabled) return;
-    if (document.readyState === "complete") {
-      setTimeout(renderShortcutButtons, 500);
-    } else {
-      window.addEventListener("load", () => setTimeout(renderShortcutButtons, 500));
-    }
-    const observer = new MutationObserver(() => {
-      const stillEnabled = g.currentConfig?.features?.shortcutButtons?.enabled ?? true;
-      if (stillEnabled && !shortcutButtonsExist()) {
-        renderShortcutButtons();
-      }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
   }
   function isExecutionPage() {
-    const isRajal = window.location.pathname.includes(
-      BACK_TO_DETAIL_CONFIG.executionUrlPatterns.rajal
+    return (
+      window.location.pathname.includes('/admisi/pelaksanaan_pelayanan/') ||
+      window.location.pathname.includes('/admisi/detail-rawat-inap/')
     );
-    const isRanap = window.location.pathname.includes(
-      BACK_TO_DETAIL_CONFIG.executionUrlPatterns.ranap
-    );
-    return isRajal || isRanap;
   }
-  function extractIdVisitFromExecution() {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get("id_visit") || urlParams.get("idVisit") || null;
+  function formatDate(d) {
+    return [
+      String(d.getDate()).padStart(2, '0'),
+      String(d.getMonth() + 1).padStart(2, '0'),
+      d.getFullYear(),
+    ].join('-');
   }
-  function formatDateDetail(date) {
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
-  }
-  function generateDetailUrlFromExecution(idVisit) {
-    const baseUrl = window.location.origin;
-    const tanggalAwal = document.getElementById("tanggalAwal")?.value;
-    const tanggalAkhir = document.getElementById("tanggalAkhir")?.value;
-    const startDate = tanggalAwal || formatDateDetail(/* @__PURE__ */ new Date());
-    const endDate = tanggalAkhir || formatDateDetail(/* @__PURE__ */ new Date());
-    return `${baseUrl}/v2/m-klaim/detail-v2-refaktor?id_visit=${idVisit}&tanggalAwal=${encodeURIComponent(startDate)}&tanggalAkhir=${encodeURIComponent(endDate)}&norm=&nama=&reg=&billing=all&status=all&id_poli_cari=&poli_cari=`;
+  function generateDetailUrl(idVisit) {
+    const ta =
+      document.getElementById('tanggalAwal')?.value || formatDate(/* @__PURE__ */ new Date());
+    const tAkhir =
+      document.getElementById('tanggalAkhir')?.value || formatDate(/* @__PURE__ */ new Date());
+    return `${window.location.origin}/v2/m-klaim/detail-v2-refaktor?id_visit=${idVisit}&tanggalAwal=${encodeURIComponent(ta)}&tanggalAkhir=${encodeURIComponent(tAkhir)}&norm=&nama=&reg=&billing=all&status=all&id_poli_cari=&poli_cari=`;
   }
   function renderBackToDetailButton() {
     if (!g.currentConfig?.features?.shortcutButtons?.enabled) return;
-    if (!isExecutionPage() || document.querySelector("[data-back-to-detail-klaim]")) return;
-    const idVisit = extractIdVisitFromExecution();
+    if (!isExecutionPage() || document.querySelector('[data-back-to-detail-klaim]')) return;
+    const idVisit = extractParam('id_visit') || extractParam('idVisit');
     if (!idVisit) return;
-    const detailUrl = generateDetailUrlFromExecution(idVisit);
-    const container = document.createElement("div");
-    container.dataset.backToDetailKlaim = "true";
-    container.classList.add("no-print", "hilang-saat-print");
-    container.style.cssText = "display: inline-flex; align-items: center; gap: 10px; padding: 12px 16px; margin: 15px; background: #eee; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: fixed; top: 100px; right: 20px; z-index: 9999;";
-    const btn = document.createElement("a");
+    const detailUrl = generateDetailUrl(idVisit);
+    const container = document.createElement('div');
+    container.dataset.backToDetailKlaim = 'true';
+    Object.assign(container.style, {
+      display: 'inline-flex',
+      alignItems: 'center',
+      padding: '10px 14px',
+      margin: '12px',
+      background: colors.secondary,
+      border: `1px solid ${colors.border}`,
+      borderRadius: '8px',
+      position: 'fixed',
+      top: '100px',
+      right: '20px',
+      zIndex: '9999',
+    });
+    const btn = document.createElement('a');
     btn.href = detailUrl;
-    btn.textContent = "Kembali ke Detail Klaim";
-    btn.style.cssText = `display: inline-flex; align-items: center; justify-content: center; padding: 8px 16px; background-color: ${BACK_TO_DETAIL_CONFIG.buttonStyle.bgColor}; color: white; border: none; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.2);`;
-    btn.addEventListener("mouseenter", () => {
-      btn.style.backgroundColor = BACK_TO_DETAIL_CONFIG.buttonStyle.hoverColor;
-      btn.style.transform = "translateY(-2px)";
-      btn.style.boxShadow = "0 4px 8px rgba(0,0,0,0.3)";
+    btn.textContent = BACK_DETAIL_BTN.text;
+    Object.assign(btn.style, {
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '8px 16px',
+      background: BACK_DETAIL_BTN.bg,
+      color: '#fff',
+      border: 'none',
+      borderRadius: '6px',
+      textDecoration: 'none',
+      fontSize: '13px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
     });
-    btn.addEventListener("mouseleave", () => {
-      btn.style.backgroundColor = BACK_TO_DETAIL_CONFIG.buttonStyle.bgColor;
-      btn.style.transform = "translateY(0)";
-      btn.style.boxShadow = "0 2px 4px rgba(0,0,0,0.2)";
+    btn.addEventListener('mouseenter', () => {
+      btn.style.background = BACK_DETAIL_BTN.hover;
+      btn.style.transform = 'translateY(-2px)';
+      btn.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
     });
-    btn.addEventListener("click", (e) => {
+    btn.addEventListener('mouseleave', () => {
+      btn.style.background = BACK_DETAIL_BTN.bg;
+      btn.style.transform = 'translateY(0)';
+      btn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+    });
+    btn.addEventListener('click', (e) => {
       e.preventDefault();
       window.close();
       setTimeout(() => {
@@ -323,32 +350,36 @@ var __morbis_feature = (() => {
     container.appendChild(btn);
     document.body.appendChild(container);
   }
-  function runBackToDetailFromExecutionFeature() {
-    if (!g.currentConfig?.features?.shortcutButtons?.enabled) return;
-    if (document.readyState === "complete") {
-      setTimeout(renderBackToDetailButton, 500);
+  function runWithObserver(fn, checkExist) {
+    if (document.readyState === 'complete') {
+      setTimeout(fn, 500);
     } else {
-      window.addEventListener("load", () => setTimeout(renderBackToDetailButton, 500));
+      window.addEventListener('load', () => setTimeout(fn, 500));
     }
-    const observer = new MutationObserver(() => {
-      if (g.currentConfig?.features?.shortcutButtons?.enabled && !document.querySelector("[data-back-to-detail-klaim]")) {
-        renderBackToDetailButton();
+    const obs = new MutationObserver(() => {
+      if (g.currentConfig?.features?.shortcutButtons?.enabled !== false && !checkExist()) {
+        fn();
       }
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    obs.observe(document.body, { childList: true, subtree: true });
   }
-  if (typeof g.featureModules !== "undefined") {
+  if (typeof g.featureModules !== 'undefined') {
     g.featureModules.shortcutButtons = {
-      name: "Shortcut Buttons",
-      description: "Tampilkan shortcut buttons ke halaman pelaksanaan Rajal/Ranap",
+      name: 'Shortcut Buttons',
+      description: 'Tampilkan shortcut buttons ke halaman pelaksanaan Rajal/Ranap',
       run: () => {
-        injectPrintStyles();
-        runShortcutButtonsFeature();
-        runBackToDetailFromExecutionFeature();
-      }
+        runWithObserver(
+          renderShortcutButtons,
+          () => !!document.querySelector('[data-shortcut-buttons]'),
+        );
+        runWithObserver(
+          renderBackToDetailButton,
+          () => !!document.querySelector('[data-back-to-detail-klaim]'),
+        );
+      },
     };
   } else {
-    console.warn("[Shortcut Buttons] featureModules not defined, module registration skipped");
+    console.warn('[Shortcut Buttons] featureModules not defined, module registration skipped');
   }
 })();
 //# sourceMappingURL=shortcutButtons.js.map

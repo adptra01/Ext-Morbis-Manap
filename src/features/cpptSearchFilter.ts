@@ -1,4 +1,5 @@
 import { getMorbisGlobals } from './shared/types.js';
+import { colors, injectCSS } from '../shared/ui/index.js';
 
 const g = getMorbisGlobals();
 
@@ -27,11 +28,11 @@ function isCpptTable(table: HTMLTableElement): boolean {
 
   const firstRow = table.querySelector('tr');
   if (firstRow) {
-    const texts = Array.from(firstRow.querySelectorAll('th, td')).map(c =>
-      c.textContent?.trim().toLowerCase() || ''
+    const texts = Array.from(firstRow.querySelectorAll('th, td')).map(
+      (c) => c.textContent?.trim().toLowerCase() || '',
     );
     const keywords = ['waktu', 'penginput', 'subyektif', 'obyektif', 'assessment', 'instruksi'];
-    const matchCount = keywords.filter(k => texts.some(t => t.includes(k))).length;
+    const matchCount = keywords.filter((k) => texts.some((t) => t.includes(k))).length;
     if (matchCount >= 2) return true;
   }
 
@@ -47,88 +48,71 @@ function findCpptTables(): HTMLTableElement[] {
 function getHeaderTexts(table: HTMLTableElement): string[] {
   const headerRow = table.querySelector('thead tr') || table.querySelector('tr');
   if (!headerRow) return [];
-  return Array.from(headerRow.querySelectorAll('th, td')).map(h =>
-    h.textContent?.trim() || ''
-  ).filter(t => t.length > 0);
+  return Array.from(headerRow.querySelectorAll('th, td'))
+    .map((h) => h.textContent?.trim() || '')
+    .filter((t) => t.length > 0);
 }
 
 function getColumnIndex(headers: string[], ...keywords: string[]): number {
   for (const kw of keywords) {
-    const idx = headers.findIndex(h => h.toLowerCase().includes(kw));
+    const idx = headers.findIndex((h) => h.toLowerCase().includes(kw));
     if (idx !== -1) return idx;
   }
   return -1;
 }
 
 function injectStyles(): void {
-  if (document.getElementById(CPPT_STYLE_ID)) return;
-  const s = document.createElement('style');
-  s.id = CPPT_STYLE_ID;
-  s.textContent = `
+  injectCSS(
+    CPPT_STYLE_ID,
+    `
     .ext-cppt-filter-bar {
       display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
-      padding: 12px 16px; margin: 10px 0; background: #f0f4f8;
-      border: 1px solid #d1d9e6; border-radius: 8px;
-      font-family: 'Segoe UI', system-ui, sans-serif;
+      padding: 12px 16px; margin: 10px 0;
+      background: ${colors.muted};
+      border: 1px solid ${colors.border}; border-radius: 8px;
     }
     .ext-cppt-filter-bar .ext-cppt-label {
-      font-weight: 600; font-size: 13px; color: #374151; margin-right: 4px;
+      font-weight: 600; font-size: 13px; color: ${colors.foreground}; margin-right: 4px;
     }
     .ext-cppt-filter-bar input, .ext-cppt-filter-bar select {
-      padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 5px;
-      font-size: 13px; background: white; color: #1f2937;
+      padding: 6px 10px; border: 1px solid ${colors.input}; border-radius: 5px;
+      font-size: 13px; background: ${colors.background}; color: ${colors.foreground};
       outline: none; transition: border-color 0.15s;
       min-width: 0;
     }
     .ext-cppt-filter-bar input:focus, .ext-cppt-filter-bar select:focus {
-      border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+      border-color: ${colors.primary}; box-shadow: 0 0 0 2px ${colors.primary}26;
     }
-    .ext-cppt-filter-bar input.ext-cppt-search-input {
-      flex: 1 1 180px; min-width: 140px;
-    }
-    .ext-cppt-filter-bar select.ext-cppt-dokter-select {
-      flex: 0 1 160px;
-    }
-    .ext-cppt-filter-bar input.ext-cppt-date-input {
-      flex: 0 1 130px;
-    }
+    .ext-cppt-filter-bar input.ext-cppt-search-input { flex: 1 1 180px; min-width: 140px; }
+    .ext-cppt-filter-bar select.ext-cppt-dokter-select { flex: 0 1 160px; }
+    .ext-cppt-filter-bar input.ext-cppt-date-input { flex: 0 1 130px; }
     .ext-cppt-filter-bar .ext-cppt-btn {
       padding: 6px 14px; border: none; border-radius: 5px;
       cursor: pointer; font-size: 12px; font-weight: 600;
       transition: all 0.15s; white-space: nowrap;
     }
-    .ext-cppt-filter-bar .ext-cppt-btn-clear {
-      background: #ef4444; color: white;
-    }
-    .ext-cppt-filter-bar .ext-cppt-btn-clear:hover {
-      background: #dc2626;
-    }
+    .ext-cppt-filter-bar .ext-cppt-btn-clear { background: ${colors.error}; color: white; }
+    .ext-cppt-filter-bar .ext-cppt-btn-clear:hover { background: #dc2626; }
     .ext-cppt-no-results {
       padding: 30px 20px; text-align: center;
-      color: #6b7280; font-size: 14px; font-weight: 500;
-      background: #fafafa; border: 1px dashed #d1d5db;
+      color: ${colors.mutedForeground}; font-size: 14px; font-weight: 500;
+      background: #fafafa; border: 1px dashed ${colors.border};
       border-radius: 8px; margin: 10px 0;
     }
     .ext-cppt-table-wrapper {
-      display: block !important;
-      width: 100% !important;
-      max-width: 100% !important;
-      clear: both !important;
-      float: none !important;
-      flex: 0 0 100% !important;
-      box-sizing: border-box !important;
-      break-inside: avoid !important;
+      display: block !important; width: 100% !important;
+      max-width: 100% !important; clear: both !important;
+      float: none !important; flex: 0 0 100% !important;
+      box-sizing: border-box !important; break-inside: avoid !important;
       page-break-inside: avoid !important;
     }
-    .ext-cppt-filtered-row {
-      display: none !important;
-    }
-  `;
-  document.head.appendChild(s);
+    .ext-cppt-filtered-row { display: none !important; }
+  `,
+  );
 }
 
 function getDataRows(table: HTMLTableElement): HTMLTableRowElement[] {
-  return Array.from(table.querySelectorAll('tr')).filter(r => r.querySelector('td'));
+  return Array.from(table.querySelectorAll('tr')).filter((r) => r.querySelector('td'));
 }
 
 function getUniqueDokters(rows: HTMLTableRowElement[], dokterColIdx: number): string[] {
@@ -159,14 +143,18 @@ function getStoredFilters(tableIdx: number): CpptFilterState {
   try {
     const raw = sessionStorage.getItem(getStorageKey(tableIdx));
     if (raw) return JSON.parse(raw);
-  } catch {}
+  } catch {
+    /* ignore */
+  }
   return { search: '', dokter: '', tanggalAwal: '', tanggalAkhir: '' };
 }
 
 function storeFilters(state: CpptFilterState, tableIdx: number): void {
   try {
     sessionStorage.setItem(getStorageKey(tableIdx), JSON.stringify(state));
-  } catch {}
+  } catch {
+    /* ignore */
+  }
 }
 
 function restoreFiltersFromUrl(tableIdx: number): CpptFilterState {
@@ -209,14 +197,19 @@ function applyFilters(
 
   for (const row of rows) {
     const cells = row.querySelectorAll('td');
-    if (cells.length === 0) { visibleCount++; continue; }
+    if (cells.length === 0) {
+      visibleCount++;
+      continue;
+    }
 
     let show = true;
 
     const rawTanggal = cells[tanggalIdx]?.textContent?.trim() || '';
     const tanggalText = normalizeDateForCompare(rawTanggal.toLowerCase());
     const dokterText = cells[dokterIdx]?.textContent?.trim().toLowerCase() || '';
-    const fullText = Array.from(cells).map(c => c.textContent?.trim().toLowerCase() || '').join(' ');
+    const fullText = Array.from(cells)
+      .map((c) => c.textContent?.trim().toLowerCase() || '')
+      .join(' ');
 
     if (state.search) {
       const q = state.search.toLowerCase();
@@ -237,7 +230,7 @@ function applyFilters(
   }
 
   if (noResultsEl) {
-    noResultsEl.style.display = (visibleCount === 0 && rows.length > 0) ? 'block' : 'none';
+    noResultsEl.style.display = visibleCount === 0 && rows.length > 0 ? 'block' : 'none';
   }
 }
 
@@ -300,7 +293,8 @@ function injectFilterForTable(table: HTMLTableElement, tableIdx: number): void {
 
   const wrapper = document.createElement('div');
   wrapper.className = 'ext-cppt-table-wrapper';
-  wrapper.style.cssText = 'display:block !important;width:100% !important;clear:both;flex:0 0 100%;box-sizing:border-box';
+  wrapper.style.cssText =
+    'display:block !important;width:100% !important;clear:both;flex:0 0 100%;box-sizing:border-box';
   parentEl?.insertBefore(wrapper, table);
   wrapper.appendChild(container);
   wrapper.appendChild(table);
@@ -312,7 +306,10 @@ function injectFilterForTable(table: HTMLTableElement, tableIdx: number): void {
   noResults.style.display = 'none';
   wrapper.appendChild(noResults);
 
-  console.log('[CPPT Filter] Injected filter #' + tableIdx + ' before table:', table.id || '(no id)');
+  console.log(
+    '[CPPT Filter] Injected filter #' + tableIdx + ' before table:',
+    table.id || '(no id)',
+  );
 
   const dokterSelect = document.getElementById(dokterSelId) as HTMLSelectElement;
   const rows = getDataRows(table);
@@ -370,7 +367,11 @@ function injectFilterForTable(table: HTMLTableElement, tableIdx: number): void {
 }
 
 function htmlEncode(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 function initCpptSearchFilter(): void {
@@ -407,7 +408,16 @@ function initCpptSearchFilter(): void {
     injectStyles();
     console.log('[CPPT Filter] Found ' + tables.length + ' CPPT table(s)');
     for (let i = 0; i < tables.length; i++) {
-      console.log('[CPPT Filter] Table #' + i + ': id=' + (tables[i].id || '(none)') + ' parent=' + (tables[i].parentNode?.className || '(none)') + ' rows=' + tables[i].querySelectorAll('tr').length);
+      console.log(
+        '[CPPT Filter] Table #' +
+          i +
+          ': id=' +
+          (tables[i].id || '(none)') +
+          ' parent=' +
+          (tables[i].parentNode?.className || '(none)') +
+          ' rows=' +
+          tables[i].querySelectorAll('tr').length,
+      );
       injectFilterForTable(tables[i], i);
     }
 
@@ -415,7 +425,8 @@ function initCpptSearchFilter(): void {
       const table = tables[i];
       const tableObserver = new MutationObserver(() => {
         const state = getStoredFilters(i);
-        const hasActiveFilter = state.search || state.dokter || state.tanggalAwal || state.tanggalAkhir;
+        const hasActiveFilter =
+          state.search || state.dokter || state.tanggalAwal || state.tanggalAkhir;
         if (hasActiveFilter) {
           const h = getHeaderTexts(table);
           const tglIdx = getColumnIndex(h, 'waktu', 'masuk', 'tanggal');

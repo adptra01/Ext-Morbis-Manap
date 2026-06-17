@@ -1,3 +1,6 @@
+import { colors, injectCSS } from '../shared/ui/index.js';
+
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-unsafe-function-type, no-var */
 (function () {
   const MAX_WAIT = 100;
   let waited = 0;
@@ -47,21 +50,19 @@
   }
 
   function injectStyle(): void {
-    if (document.getElementById('ext-rv-css')) return;
-
-    const s = document.createElement('style');
-    s.id = 'ext-rv-css';
-    s.textContent = [
-      '.ext-rv-error { border: 2px solid #dc2626 !important; background: #fef2f2 !important; transition: all 0.2s; }',
-      '.ext-rv-toast { position: fixed; top: 20px; right: 20px; z-index: 99999; padding: 16px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,0.15); max-width: 420px; line-height: 1.5; }',
-      '.ext-rv-toast-error { background: #fef2f2; color: #991b1b; border-left: 5px solid #dc2626; }',
-      '.ext-rv-toast-success { background: #f0fdf4; color: #065f46; border-left: 5px solid #16a34a; }',
-      '.ext-rv-locked { background: #f0f0f0 !important; cursor: not-allowed; opacity: 0.8; }',
-      '.ext-rv-save-disabled { opacity: 0.5; pointer-events: none; }',
-      '.ext-rv-icd-valid { border: 2px solid #4caf50 !important; background: #e8f5e9 !important; }',
-      '.ext-rv-icd-invalid { border: 2px solid #f44336 !important; background: #ffebee !important; }',
-    ].join('\n');
-    document.head.appendChild(s);
+    injectCSS(
+      'ext-rv-css',
+      [
+        `.ext-rv-error { border: 2px solid ${colors.error} !important; background: ${colors.errorBg} !important; transition: all 0.2s; }`,
+        `.ext-rv-toast { position: fixed; top: 20px; right: 20px; z-index: 99999; padding: 16px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,0.15); max-width: 420px; line-height: 1.5; }`,
+        `.ext-rv-toast-error { background: ${colors.errorBg}; color: #991b1b; border-left: 5px solid ${colors.error}; }`,
+        `.ext-rv-toast-success { background: ${colors.successBg}; color: #065f46; border-left: 5px solid ${colors.success}; }`,
+        `.ext-rv-locked { background: ${colors.muted} !important; cursor: not-allowed; opacity: 0.8; }`,
+        '.ext-rv-save-disabled { opacity: 0.5; pointer-events: none; }',
+        `.ext-rv-icd-valid { border: 2px solid ${colors.success} !important; background: ${colors.successBg} !important; }`,
+        `.ext-rv-icd-invalid { border: 2px solid ${colors.error} !important; background: ${colors.errorBg} !important; }`,
+      ].join('\n'),
+    );
   }
 
   function setupCekForm(form: HTMLFormElement): void {
@@ -81,7 +82,7 @@
       };
     }
 
-    const $ = (w.jQuery as JQueryStatic | undefined);
+    const $ = w.jQuery as JQueryStatic | undefined;
     if ($) {
       $(form).on('submit', function (e: Event) {
         if (!runValidation()) {
@@ -96,7 +97,11 @@
     form.submit = function () {
       if (!runValidation()) return;
       _dirty = false;
-      try { localStorage.removeItem(getDraftKey()); } catch (_e) { /* ignore */ }
+      try {
+        localStorage.removeItem(getDraftKey());
+      } catch (_e) {
+        /* ignore */
+      }
       origSubmit();
     };
   }
@@ -123,7 +128,9 @@
   function setupAutosave(form: HTMLFormElement): void {
     if (hasIdResume()) return;
 
-    var doSave = function () { saveDraft(form); };
+    var doSave = function () {
+      saveDraft(form);
+    };
 
     var inputs = form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
       'input, textarea, select',
@@ -146,7 +153,9 @@
     obj._saved_at = Date.now().toString();
     try {
       localStorage.setItem(key, JSON.stringify(obj));
-    } catch (_e) { /* storage full */ }
+    } catch (_e) {
+      /* storage full */
+    }
   }
 
   function restoreDraft(): void {
@@ -156,27 +165,35 @@
     let raw: string | null = null;
     try {
       raw = localStorage.getItem(key);
-    } catch (_e) { return; }
+    } catch (_e) {
+      return;
+    }
     if (!raw) return;
 
     let draft: Record<string, string>;
     try {
       draft = JSON.parse(raw);
-    } catch (_e) { return; }
+    } catch (_e) {
+      return;
+    }
 
     const w = window as unknown as Record<string, unknown>;
     const swal = typeof w.swal === 'function' ? (w.swal as Function) : null;
     const ok = function () {
       for (const name in draft) {
         if (name === '_saved_at') continue;
-        const el = document.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
-          '[name="' + name + '"]',
-        );
+        const el = document.querySelector<
+          HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+        >('[name="' + name + '"]');
         if (el && !el.value) {
           el.value = draft[name];
         }
       }
-      try { localStorage.removeItem(key); } catch (_e) { /* ignore */ }
+      try {
+        localStorage.removeItem(key);
+      } catch (_e) {
+        /* ignore */
+      }
     };
 
     if (swal) {
@@ -189,7 +206,11 @@
       }).then(function (restore: boolean) {
         if (restore) ok();
         else {
-          try { localStorage.removeItem(key); } catch (_e) { /* ignore */ }
+          try {
+            localStorage.removeItem(key);
+          } catch (_e) {
+            /* ignore */
+          }
         }
       });
     } else {
@@ -207,9 +228,9 @@
   function checkAndLockForm(form: HTMLFormElement, saveBtn: HTMLElement): void {
     if (!hasIdResume()) return;
 
-    const fields = form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
-      'input, textarea, select',
-    );
+    const fields = form.querySelectorAll<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >('input, textarea, select');
     fields.forEach(function (el) {
       if (el.id === 'save' || el.type === 'button' || el.type === 'submit') return;
       if (el.tagName === 'SELECT') {
@@ -251,7 +272,12 @@
           }).then(function (yes: boolean) {
             if (yes) {
               unlock();
-              swal({ title: 'Siap Edit', text: 'Field sudah bisa diedit. Klik Simpan Perubahan jika selesai.', icon: 'success', timer: 2000 });
+              swal({
+                title: 'Siap Edit',
+                text: 'Field sudah bisa diedit. Klik Simpan Perubahan jika selesai.',
+                icon: 'success',
+                timer: 2000,
+              });
             }
           });
         } else {
@@ -303,7 +329,11 @@
           return;
         }
 
-        try { localStorage.removeItem(getDraftKey()); } catch (_e) { /* ignore */ }
+        try {
+          localStorage.removeItem(getDraftKey());
+        } catch (_e) {
+          /* ignore */
+        }
 
         saveBtn.textContent = 'Menyimpan...';
         (saveBtn as HTMLInputElement).value = 'Menyimpan...';
@@ -337,11 +367,17 @@
       'input, textarea, select',
     );
     inputs.forEach(function (el) {
-      el.addEventListener('change', function () { _dirty = true; });
-      el.addEventListener('input', function () { _dirty = true; });
+      el.addEventListener('change', function () {
+        _dirty = true;
+      });
+      el.addEventListener('input', function () {
+        _dirty = true;
+      });
     });
 
-    form.addEventListener('submit', function () { _dirty = false; });
+    form.addEventListener('submit', function () {
+      _dirty = false;
+    });
 
     window.addEventListener('beforeunload', function (e: BeforeUnloadEvent) {
       if (!_dirty) return;
@@ -394,22 +430,36 @@
   }
 
   function addRequiredAttributes(): void {
-    var ids = ['alasan_rawat', 'anamnesa', 'diagnosa_primary', 'kode_diagnosa_utama',
-               'jenis_kasus', 'keadaan_keluar', 'cara_keluar', 'tgl_keluar2'];
+    var ids = [
+      'alasan_rawat',
+      'anamnesa',
+      'diagnosa_primary',
+      'kode_diagnosa_utama',
+      'jenis_kasus',
+      'keadaan_keluar',
+      'cara_keluar',
+      'tgl_keluar2',
+    ];
     ids.forEach(function (id) {
-      var el = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null;
+      var el = document.getElementById(id) as
+        | HTMLInputElement
+        | HTMLTextAreaElement
+        | HTMLSelectElement
+        | null;
       if (el) el.required = true;
     });
   }
 
   function preventEnterSubmit(): void {
-    document.querySelectorAll<HTMLInputElement>('input:not([type="submit"]):not([type="button"])').forEach(function (el) {
-      el.addEventListener('keydown', function (e: KeyboardEvent) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-        }
+    document
+      .querySelectorAll<HTMLInputElement>('input:not([type="submit"]):not([type="button"])')
+      .forEach(function (el) {
+        el.addEventListener('keydown', function (e: KeyboardEvent) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+          }
+        });
       });
-    });
   }
 
   function autoExpandTextareas(): void {
@@ -515,28 +565,67 @@
     fail(!!val('diagnosa_primary'), 'Diagnosa primary harus diisi', 'diagnosa_primary');
     fail(!!val('terapi_pengobatan'), 'Terapi/pengobatan harus diisi', 'terapi_pengobatan');
 
-    fail(!!val('kode_diagnosa_utama'), 'Kode ICD-10 Diagnosa Utama harus diisi', 'kode_diagnosa_utama');
-    if (val('kode_diagnosa_utama')) fail(isICD10(val('kode_diagnosa_utama')), 'Format kode ICD-10 Diagnosa Utama tidak valid (contoh: A00, B20.9)', 'kode_diagnosa_utama');
-    if (val('diagnosa_utama')) fail(!!val('id_diagnosa_utama'), 'Diagnosa Utama harus dipilih dari hasil pencarian (autocomplete)', 'diagnosa_utama');
+    fail(
+      !!val('kode_diagnosa_utama'),
+      'Kode ICD-10 Diagnosa Utama harus diisi',
+      'kode_diagnosa_utama',
+    );
+    if (val('kode_diagnosa_utama'))
+      fail(
+        isICD10(val('kode_diagnosa_utama')),
+        'Format kode ICD-10 Diagnosa Utama tidak valid (contoh: A00, B20.9)',
+        'kode_diagnosa_utama',
+      );
+    if (val('diagnosa_utama'))
+      fail(
+        !!val('id_diagnosa_utama'),
+        'Diagnosa Utama harus dipilih dari hasil pencarian (autocomplete)',
+        'diagnosa_utama',
+      );
 
     for (var si = 1; si <= 10; si++) {
       var kDS = val('kode_diagnosa_sekunder' + si);
       var nDS = val('diagnosa_sekunder' + si);
       var iDS = val('id_diagnosa_sekunder' + si);
-      if (kDS) fail(isICD10(kDS), 'Format kode ICD-10 Diagnosa Sekunder ' + si + ' tidak valid', 'kode_diagnosa_sekunder' + si);
-      if (nDS) fail(!!iDS, 'Diagnosa Sekunder ' + si + ' harus dipilih dari hasil pencarian', 'diagnosa_sekunder' + si);
+      if (kDS)
+        fail(
+          isICD10(kDS),
+          'Format kode ICD-10 Diagnosa Sekunder ' + si + ' tidak valid',
+          'kode_diagnosa_sekunder' + si,
+        );
+      if (nDS)
+        fail(
+          !!iDS,
+          'Diagnosa Sekunder ' + si + ' harus dipilih dari hasil pencarian',
+          'diagnosa_sekunder' + si,
+        );
     }
 
     for (var ti = 1; ti <= 10; ti++) {
       var kTK = val('kode_tindakan' + ti);
       var nTK = val('tindakan' + ti);
       var iTK = val('id_tindakan' + ti);
-      if (kTK) fail(isICD9(kTK), 'Format kode ICD-9 Tindakan ' + ti + ' tidak valid (contoh: 45.16)', 'kode_tindakan' + ti);
-      if (nTK) fail(!!iTK, 'Tindakan ' + ti + ' harus dipilih dari hasil pencarian (autocomplete)', 'tindakan' + ti);
+      if (kTK)
+        fail(
+          isICD9(kTK),
+          'Format kode ICD-9 Tindakan ' + ti + ' tidak valid (contoh: 45.16)',
+          'kode_tindakan' + ti,
+        );
+      if (nTK)
+        fail(
+          !!iTK,
+          'Tindakan ' + ti + ' harus dipilih dari hasil pencarian (autocomplete)',
+          'tindakan' + ti,
+        );
     }
 
     var td = val('td_pulang') || val('tensi');
-    if (td) fail(isNormalBP(td), 'Tekanan darah pulang tidak valid (contoh: 120/80)', val('td_pulang') ? 'td_pulang' : 'tensi');
+    if (td)
+      fail(
+        isNormalBP(td),
+        'Tekanan darah pulang tidak valid (contoh: 120/80)',
+        val('td_pulang') ? 'td_pulang' : 'tensi',
+      );
 
     var nadi = val('nadi_pulang');
     if (nadi) fail(isValidVital(nadi, 20, 250), 'Nadi pulang harus 20-250', 'nadi_pulang');
@@ -563,28 +652,52 @@
     if (gcsV) fail(isValidVital(gcsV, 1, 5), 'GCS Verbal harus 1-5', 'gcs_v');
 
     var opsiA = radioVal('pasien_rujuk_masuk_opsi').toLowerCase();
-    if (opsiA === 'ya') fail(hasRadio('pasien_rujuk_masuk'), 'Alasan Datang poin A: pilih asal rujukan masuk', 'pasien_rujuk_masuk_opsi-ya');
+    if (opsiA === 'ya')
+      fail(
+        hasRadio('pasien_rujuk_masuk'),
+        'Alasan Datang poin A: pilih asal rujukan masuk',
+        'pasien_rujuk_masuk_opsi-ya',
+      );
 
     var opsiB = radioVal('pasien_rujuk_dikembalikan_opsi').toLowerCase();
-    if (opsiB === 'ya') fail(hasRadio('pasien_rujuk_dikembalikan'), 'Alasan Datang poin B: pilih asal rujukan dikembalikan', 'pasien_rujuk_dikembalikan_opsi-ya');
+    if (opsiB === 'ya')
+      fail(
+        hasRadio('pasien_rujuk_dikembalikan'),
+        'Alasan Datang poin B: pilih asal rujukan dikembalikan',
+        'pasien_rujuk_dikembalikan_opsi-ya',
+      );
 
     var opsiC = radioVal('pasien_dirujuk_keluar_opsi').toLowerCase();
-    if (opsiC === 'ya') fail(hasRadio('pasien_rujuk_keluar'), 'Alasan Datang poin C: pilih rujukan keluar', 'pasien_dirujuk_keluar_opsi-ya');
+    if (opsiC === 'ya')
+      fail(
+        hasRadio('pasien_rujuk_keluar'),
+        'Alasan Datang poin C: pilih rujukan keluar',
+        'pasien_dirujuk_keluar_opsi-ya',
+      );
 
     var kb = radioVal('menggunakan_kb_opsi').toLowerCase();
     if (kb === 'ya') {
       fail(!!val('jenis_kb'), 'Pelayanan KB: jenis KB harus dipilih', 'jenis_kb');
       fail(!!val('waktu_kb'), 'Pelayanan KB: waktu KB harus dipilih', 'waktu_kb');
-      fail(hasChecked('.monitoring_kb'), 'Pelayanan KB: pilih minimal satu monitoring KB', 'monitoring_kb-komplikasi_kb');
+      fail(
+        hasChecked('.monitoring_kb'),
+        'Pelayanan KB: pilih minimal satu monitoring KB',
+        'monitoring_kb-komplikasi_kb',
+      );
     }
 
     var covid = radioVal('cek_status_covid').toLowerCase();
-    if (covid === '1') fail(!!val('status_covid'), 'Status COVID: pilih jenis COVID', 'status_covid');
+    if (covid === '1')
+      fail(!!val('status_covid'), 'Status COVID: pilih jenis COVID', 'status_covid');
 
     var tglMasuk = val('tgl_masuk') || val('tgl_masuk2');
     var tglKeluar = val('tgl_keluar2');
     if (tglMasuk && tglKeluar) {
-      fail(new Date(tglKeluar) >= new Date(tglMasuk), 'Tanggal keluar tidak boleh sebelum tanggal masuk', 'tgl_keluar2');
+      fail(
+        new Date(tglKeluar) >= new Date(tglMasuk),
+        'Tanggal keluar tidak boleh sebelum tanggal masuk',
+        'tgl_keluar2',
+      );
     }
 
     if (errs.length > 0) {
@@ -606,7 +719,9 @@
     if (firstEl) {
       firstEl.focus();
       firstEl.classList.add('ext-rv-error');
-      setTimeout(function () { firstEl.classList.remove('ext-rv-error'); }, 3000);
+      setTimeout(function () {
+        firstEl.classList.remove('ext-rv-error');
+      }, 3000);
     }
 
     for (var i = 1; i < errs.length; i++) {
@@ -614,7 +729,9 @@
       if (f) {
         f.classList.add('ext-rv-error');
         (function (el) {
-          setTimeout(function () { el.classList.remove('ext-rv-error'); }, 3000);
+          setTimeout(function () {
+            el.classList.remove('ext-rv-error');
+          }, 3000);
         })(f);
       }
     }
