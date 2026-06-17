@@ -70,23 +70,11 @@ var __morbis_bg = (() => {
         name: 'Filter Persistence State',
         description: 'Simpan otomatis kolom pencarian agar tidak perlu diketik ulang',
       },
-      simplifyBilling: {
-        enabled: true,
-        allowedRoles: ['casemix'],
-        name: 'Ringkas Rincian Biaya',
-        description: 'Ringkaskan tabel cetak rincian biaya menjadi tampilan rekap per unit',
-      },
       scrollButtons: {
         enabled: true,
         allowedRoles: ['casemix'],
         name: 'Scroll Buttons (Top/Bottom)',
         description: 'Tombol scroll otomatis ke atas dan bawah halaman detail',
-      },
-      printOptimization: {
-        enabled: true,
-        allowedRoles: ['casemix'],
-        name: 'Optimasi Cetak',
-        description: 'Sembunyikan section kosong & optimasi layout cetak.',
       },
       batchUpload: {
         enabled: false,
@@ -135,12 +123,6 @@ var __morbis_bg = (() => {
         allowedRoles: ['casemix'],
         name: 'CPPT Search & Filter',
         description: 'Cari dan filter data CPPT berdasarkan dokter & tanggal (RAJAL/RANAP)',
-      },
-      autoVerifBilling: {
-        enabled: true,
-        allowedRoles: ['kasir', 'casemix'],
-        name: 'Auto Verif Billing',
-        description: 'Verifikasi billing satu klik: isi otomatis klaim BPJS & bypass konfirmasi',
       },
       resumeValidator: {
         enabled: true,
@@ -196,11 +178,6 @@ var __morbis_bg = (() => {
       if (newFeatures[key]) {
         newFeatures[key].allowedRoles = [...Object.values(ROLES)];
       }
-    }
-    const printOpt = newFeatures.printOptimization;
-    if (printOpt?.comingSoon !== void 0) {
-      delete printOpt.comingSoon;
-      printOpt.enabled = true;
     }
     if (!config.currentRole) {
       config.currentRole = 'casemix';

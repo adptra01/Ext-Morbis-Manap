@@ -54,20 +54,10 @@ async function initExtension(): Promise<void> {
   const consulCfg = cfg?.features?.consultationEnhancer;
   if (consulCfg?.enabled && window.ExtensionCore.isFeatureAllowed('consultationEnhancer')) {
     document.documentElement.setAttribute('data-ext-consul-enhancer', '1');
-    document.documentElement.setAttribute(
-      'data-ext-base-url',
-      chrome.runtime.getURL('/'),
-    );
+    document.documentElement.setAttribute('data-ext-base-url', chrome.runtime.getURL('/'));
   } else {
     document.documentElement.removeAttribute('data-ext-consul-enhancer');
     document.documentElement.removeAttribute('data-ext-base-url');
-  }
-
-  const avbCfg = cfg?.features?.autoVerifBilling;
-  if (avbCfg?.enabled && window.ExtensionCore.isFeatureAllowed('autoVerifBilling')) {
-    document.documentElement.setAttribute('data-ext-auto-verif-billing', '1');
-  } else {
-    document.documentElement.removeAttribute('data-ext-auto-verif-billing');
   }
 
   const rvCfg = cfg?.features?.resumeValidator;

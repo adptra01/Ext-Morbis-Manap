@@ -56,8 +56,6 @@ async function compileFeatureFiles() {
     'billingFilterPersistence.ts',
     'doctorFilterPersistence.ts',
     'scrollButtons.ts',
-    'simplifyBilling.ts',
-    'printOptimization.ts',
     'consultationEnhancer.ts',
     'penerimaan_resep/main.ts',
     'batchDeleteFiles.ts',
@@ -65,7 +63,6 @@ async function compileFeatureFiles() {
     'openDetail.ts',
     'shortcutButtons.ts',
     'cpptSearchFilter.ts',
-    'autoVerifBilling.ts',
     'resumeValidator.ts',
     'antrianTools.ts',
     'ttvEditor.ts',
@@ -134,10 +131,7 @@ function generateManifest() {
   const manifestPath = join(rootDir, 'manifest.json');
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
 
-  writeFileSync(
-    join(distDir, 'manifest.json'),
-    JSON.stringify(manifest, null, 2)
-  );
+  writeFileSync(join(distDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
 }
 
 async function buildTailwindCSS() {
@@ -242,11 +236,7 @@ if (isWatch) {
   console.log('[build] Watch mode enabled');
   const ctx = await esbuild.context({
     ...commonOptions,
-    entryPoints: [
-      join(srcDir, 'core.ts'),
-      join(srcDir, 'background.ts'),
-      join(srcDir, 'init.ts'),
-    ],
+    entryPoints: [join(srcDir, 'core.ts'), join(srcDir, 'background.ts'), join(srcDir, 'init.ts')],
     outdir: distDir,
     globalName: '__morbis_ext',
     loader: { '.tsx': 'tsx', '.ts': 'ts', '.js': 'js' },

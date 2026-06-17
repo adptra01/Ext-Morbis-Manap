@@ -1,4 +1,5 @@
 import { getMorbisGlobals } from '../shared/types.js';
+import { colors, injectCSS } from '../../shared/ui/index.js';
 
 const g = getMorbisGlobals();
 
@@ -6,9 +7,6 @@ const RESEP_CONFIG = {
   styleId: 'ext-resep-tools-style',
   aturanPakaiSelector: '.aturan_pakai_manual',
   validRegex: /^\d+\s*[xX]\s*\d+/,
-  warningClass: 'ext-aturan-warning',
-  validClass: 'ext-aturan-valid',
-  disabledClass: 'ext-dosis-disabled',
   massBasedTypes: ['mg', 'ml', 'gram', 'iu', 'persen'],
   dirtyCheckSelector: 'input, select, textarea',
   excludeSelector: '[type="hidden"], [name*="id_detail"]',
@@ -22,29 +20,22 @@ function log(...args: unknown[]): void {
   console.log('[MORBIS Ext]', ...args);
 }
 
-function injectResepStyles(): void {
-  if (document.getElementById(RESEP_CONFIG.styleId)) return;
-
-  const style = document.createElement('style');
-  style.id = RESEP_CONFIG.styleId;
-  style.textContent = `
-    .${RESEP_CONFIG.warningClass} { background-color: #fef2f2 !important; border: 2px solid #ef4444 !important; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important; }
-    .${RESEP_CONFIG.validClass} { background-color: #f0fdf4 !important; border: 2px solid #22c55e !important; }
-    .ext-aturan-tooltip { position: absolute; background: #991b1b; color: white; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; white-space: nowrap; z-index: 10001; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.2); margin-top: 4px; }
-    .ext-aturan-tooltip::before { content: ''; position: absolute; top: -6px; left: 12px; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 6px solid #991b1b; }
-    .${RESEP_CONFIG.disabledClass} { opacity: 0.35 !important; pointer-events: none !important; background-color: #f3f4f6 !important; }
-    .ext-print-safety-toast { position: fixed; top: 20px; right: 20px; background: #fef2f2; border-left: 4px solid #ef4444; color: #991b1b; padding: 16px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; z-index: 100001; box-shadow: 0 10px 25px rgba(0,0,0,0.15); max-width: 400px; animation: extSlideIn 0.3s ease; }
-    @keyframes extSlideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-    .ext-print-safety-toast button { margin-top: 8px; padding: 6px 14px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; }
-    .ext-print-safety-toast button:hover { background: #dc2626; }
-  `;
-  document.head.appendChild(style);
-}
+/* ── Inject styles with shadcn colors ── */
+injectCSS(
+  RESEP_CONFIG.styleId,
+  `
+  .ext-aturan-warning { background: ${colors.errorBg} !important; border: 2px solid ${colors.error} !important; box-shadow: 0 0 0 3px rgba(239,68,68,0.15) !important; }
+  .ext-aturan-valid { background: ${colors.successBg} !important; border: 2px solid ${colors.success} !important; }
+  .ext-aturan-tooltip { position: absolute; background: #991b1b; color: white; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; white-space: nowrap; z-index: 10001; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.2); margin-top: 4px; }
+  .ext-aturan-tooltip::before { content: ''; position: absolute; top: -6px; left: 12px; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 6px solid #991b1b; }
+  .ext-dosis-disabled { opacity: 0.35 !important; pointer-events: none !important; background: ${colors.muted} !important; }
+`,
+);
 
 function validateAturanPakai(input: HTMLInputElement): boolean {
   const val = input.value.trim();
   if (!val) {
-    input.classList.remove(RESEP_CONFIG.warningClass, RESEP_CONFIG.validClass);
+    input.classList.remove('ext-aturan-warning', 'ext-aturan-valid');
     return true;
   }
   return RESEP_CONFIG.validRegex.test(val);
@@ -66,15 +57,15 @@ function handleAturanInput(e: Event): void {
   const input = e.target as HTMLInputElement;
   const valid = validateAturanPakai(input);
 
-  input.classList.remove(RESEP_CONFIG.warningClass, RESEP_CONFIG.validClass);
+  input.classList.remove('ext-aturan-warning', 'ext-aturan-valid');
   document.querySelectorAll('.ext-aturan-tooltip').forEach((el) => el.remove());
 
   if (!input.value.trim()) return;
 
   if (valid) {
-    input.classList.add(RESEP_CONFIG.validClass);
+    input.classList.add('ext-aturan-valid');
   } else {
-    input.classList.add(RESEP_CONFIG.warningClass);
+    input.classList.add('ext-aturan-warning');
     showTooltip(input, 'Format tidak dikenal. Gunakan: 3x1, 2x1, 3 x 1');
   }
 }
@@ -109,7 +100,7 @@ function interceptSubmit(): void {
       if (hasInvalidInputs()) {
         e.preventDefault();
         e.stopImmediatePropagation();
-        const bad = document.querySelectorAll('.' + RESEP_CONFIG.warningClass);
+        const bad = document.querySelectorAll('.ext-aturan-warning');
         if (bad.length > 0) {
           (bad[0] as HTMLElement).focus();
           (bad[0] as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -140,13 +131,13 @@ function updateDosisFieldsForRow(idx: number): void {
   const dp = document.getElementById('dosis_p' + idx);
 
   if (mass) {
-    if (dg) dg.classList.remove(RESEP_CONFIG.disabledClass);
-    if (dm) dm.classList.add(RESEP_CONFIG.disabledClass);
-    if (dp) dp.classList.add(RESEP_CONFIG.disabledClass);
+    if (dg) dg.classList.remove('ext-dosis-disabled');
+    if (dm) dm.classList.add('ext-dosis-disabled');
+    if (dp) dp.classList.add('ext-dosis-disabled');
   } else {
-    if (dg) dg.classList.add(RESEP_CONFIG.disabledClass);
-    if (dm) dm.classList.remove(RESEP_CONFIG.disabledClass);
-    if (dp) dp.classList.remove(RESEP_CONFIG.disabledClass);
+    if (dg) dg.classList.add('ext-dosis-disabled');
+    if (dm) dm.classList.remove('ext-dosis-disabled');
+    if (dp) dp.classList.remove('ext-dosis-disabled');
   }
 }
 
@@ -180,17 +171,55 @@ function attachDosisListeners(): void {
   }
 }
 
+/* ── Shadcn-styled toast ── */
 function showPrintToast(message: string): void {
-  const ex = document.querySelector('.ext-print-safety-toast');
-  if (ex) ex.remove();
+  const existing = document.querySelector('.ext-print-safety-toast');
+  if (existing) existing.remove();
 
   const toast = document.createElement('div');
   toast.className = 'ext-print-safety-toast';
-  toast.innerHTML = message + '<br><button onclick="this.parentElement!.remove()">Tutup</button>';
+  Object.assign(toast.style, {
+    position: 'fixed',
+    top: '20px',
+    right: '20px',
+    zIndex: '100001',
+    background: colors.errorBg,
+    borderLeft: `4px solid ${colors.error}`,
+    color: '#991b1b',
+    padding: '14px 18px',
+    borderRadius: '8px',
+    fontSize: '13px',
+    fontWeight: '500',
+    maxWidth: '400px',
+    boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+    animation: 'extSlideIn 0.3s ease',
+  });
+  toast.innerHTML = message;
+
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = 'Tutup';
+  Object.assign(closeBtn.style, {
+    marginTop: '8px',
+    padding: '6px 14px',
+    background: colors.error,
+    color: '#fff',
+    border: 'none',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontWeight: '600',
+    fontSize: '12px',
+  });
+  closeBtn.onmouseenter = () => {
+    closeBtn.style.background = '#dc2626';
+  };
+  closeBtn.onmouseleave = () => {
+    closeBtn.style.background = colors.error;
+  };
+  closeBtn.onclick = () => toast.remove();
+  toast.appendChild(closeBtn);
+
   document.body.appendChild(toast);
-  setTimeout(function () {
-    toast.remove();
-  }, 6000);
+  setTimeout(() => toast.remove(), 6000);
 }
 
 function trackDirtyState(): void {
@@ -288,13 +317,10 @@ function runResepTools(): void {
   if (
     !g.currentConfig?.features?.resepTools?.enabled ||
     !g.ExtensionCore.isFeatureAllowed('resepTools')
-  ) {
+  )
     return;
-  }
 
   log('Resep Tools: starting all sub-features');
-
-  injectResepStyles();
 
   attachAturanValidators();
   interceptSubmit();

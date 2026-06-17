@@ -30,21 +30,9 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
     roles: ['casemix', 'kasir', 'apotek', 'dokter', 'admin'],
   },
   {
-    key: 'simplifyBilling',
-    name: 'Simplify Billing',
-    desc: 'Tampilan billing lebih bersih',
-    roles: ['kasir'],
-  },
-  {
     key: 'scrollButtons',
     name: 'Scroll Buttons',
     desc: 'Tombol scroll cepat',
-    roles: ['casemix', 'kasir', 'apotek', 'dokter', 'admin'],
-  },
-  {
-    key: 'printOptimization',
-    name: 'Print Optimization',
-    desc: 'Optimasi tampilan print',
     roles: ['casemix', 'kasir', 'apotek', 'dokter', 'admin'],
   },
   {
@@ -68,12 +56,6 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
   { key: 'ttvEditor', name: 'TTV Editor', desc: 'Edit tanda vital', roles: ['dokter', 'admin'] },
   { key: 'cpptSearchFilter', name: 'CPPT Search', desc: 'Cari & filter CPPT', roles: ['casemix'] },
   { key: 'antrianTools', name: 'Antrian Tools', desc: 'Tools halaman antrian', roles: ['admin'] },
-  {
-    key: 'autoVerifBilling',
-    name: 'Auto Verif Billing',
-    desc: 'Verifikasi billing otomatis',
-    roles: ['kasir', 'admin'],
-  },
   {
     key: 'consultationEnhancer',
     name: 'Konsultasi',

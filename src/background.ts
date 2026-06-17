@@ -48,23 +48,11 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       name: 'Filter Persistence State',
       description: 'Simpan otomatis kolom pencarian agar tidak perlu diketik ulang',
     },
-    simplifyBilling: {
-      enabled: true,
-      allowedRoles: ['casemix'],
-      name: 'Ringkas Rincian Biaya',
-      description: 'Ringkaskan tabel cetak rincian biaya menjadi tampilan rekap per unit',
-    },
     scrollButtons: {
       enabled: true,
       allowedRoles: ['casemix'],
       name: 'Scroll Buttons (Top/Bottom)',
       description: 'Tombol scroll otomatis ke atas dan bawah halaman detail',
-    },
-    printOptimization: {
-      enabled: true,
-      allowedRoles: ['casemix'],
-      name: 'Optimasi Cetak',
-      description: 'Sembunyikan section kosong & optimasi layout cetak.',
     },
     batchUpload: {
       enabled: false,
@@ -113,12 +101,6 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       allowedRoles: ['casemix'],
       name: 'CPPT Search & Filter',
       description: 'Cari dan filter data CPPT berdasarkan dokter & tanggal (RAJAL/RANAP)',
-    },
-    autoVerifBilling: {
-      enabled: true,
-      allowedRoles: ['kasir', 'casemix'],
-      name: 'Auto Verif Billing',
-      description: 'Verifikasi billing satu klik: isi otomatis klaim BPJS & bypass konfirmasi',
     },
     resumeValidator: {
       enabled: true,
@@ -182,14 +164,6 @@ function migrateConfig(config: ExtensionConfig | null): ExtensionConfig {
     if (newFeatures[key]) {
       (newFeatures[key] as { allowedRoles: string[] }).allowedRoles = [...Object.values(ROLES)];
     }
-  }
-
-  const printOpt = newFeatures.printOptimization as
-    | { comingSoon?: boolean; enabled?: boolean }
-    | undefined;
-  if (printOpt?.comingSoon !== undefined) {
-    delete printOpt.comingSoon;
-    printOpt.enabled = true;
   }
 
   if (!config.currentRole) {
@@ -440,15 +414,21 @@ async function syncStateToSession(): Promise<void> {
 
 // Persist to session storage on every config change
 async function persistOnChange(type: string): Promise<void> {
-  if (['SET_ROLE', 'TOGGLE_EXTENSION', 'TOGGLE_FEATURE', 'CHANGE_FEATURE_MODE', 'RESET_CONFIG'].includes(type)) {
+  if (
+    [
+      'SET_ROLE',
+      'TOGGLE_EXTENSION',
+      'TOGGLE_FEATURE',
+      'CHANGE_FEATURE_MODE',
+      'RESET_CONFIG',
+    ].includes(type)
+  ) {
     await syncStateToSession();
   }
 }
 
 // --- Message Validation ---
-const VALID_ACTIONS = Object.values(MessageTypes).filter(
-  (t) => t !== 'CONFIG_CHANGED',
-);
+const VALID_ACTIONS = Object.values(MessageTypes).filter((t) => t !== 'CONFIG_CHANGED');
 
 function validateMessage(msg: unknown): MessagePayload | null {
   if (!msg || typeof msg !== 'object') return null;

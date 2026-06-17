@@ -20,7 +20,7 @@ import {
   v,
   x as y,
   y as b,
-} from './chunks/button-B6a1xhqu.js';
+} from './chunks/button-1pt39gqw.js';
 var x = a(`check`, [[`path`, { d: `M20 6 9 17l-5-5`, key: `1gmf2c` }]]),
   S = a(`info`, [
     [`circle`, { cx: `12`, cy: `12`, r: `10`, key: `1mglay` }],
@@ -412,21 +412,9 @@ var V = [
       roles: [`casemix`, `kasir`, `apotek`, `dokter`, `admin`],
     },
     {
-      key: `simplifyBilling`,
-      name: `Simplify Billing`,
-      desc: `Tampilan billing lebih bersih`,
-      roles: [`kasir`],
-    },
-    {
       key: `scrollButtons`,
       name: `Scroll Buttons`,
       desc: `Tombol scroll cepat`,
-      roles: [`casemix`, `kasir`, `apotek`, `dokter`, `admin`],
-    },
-    {
-      key: `printOptimization`,
-      name: `Print Optimization`,
-      desc: `Optimasi tampilan print`,
       roles: [`casemix`, `kasir`, `apotek`, `dokter`, `admin`],
     },
     {
@@ -455,12 +443,6 @@ var V = [
       roles: [`casemix`],
     },
     { key: `antrianTools`, name: `Antrian Tools`, desc: `Tools halaman antrian`, roles: [`admin`] },
-    {
-      key: `autoVerifBilling`,
-      name: `Auto Verif Billing`,
-      desc: `Verifikasi billing otomatis`,
-      roles: [`kasir`, `admin`],
-    },
     {
       key: `consultationEnhancer`,
       name: `Konsultasi`,
