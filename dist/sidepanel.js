@@ -18,34 +18,53 @@ import {
   t as g,
   u as _,
   v,
-  y,
-} from './chunks/button-D3A0m3M1.js';
-var b = v(),
-  x = n(y(), 1);
-function S() {
-  let [e, t] = (0, x.useState)(() => (typeof chrome < `u` && chrome.storage?.sync, `system`)),
-    [n, r] = (0, x.useState)(!1);
-  (0, x.useEffect)(() => {
-    chrome.storage.sync.get(`md-theme`, (e) => {
-      let n = e[`md-theme`] || `system`;
+  x as y,
+  y as b,
+} from './chunks/button-B6a1xhqu.js';
+var x = a(`check`, [[`path`, { d: `M20 6 9 17l-5-5`, key: `1gmf2c` }]]),
+  S = a(`info`, [
+    [`circle`, { cx: `12`, cy: `12`, r: `10`, key: `1mglay` }],
+    [`path`, { d: `M12 16v-4`, key: `1dtifu` }],
+    [`path`, { d: `M12 8h.01`, key: `e9boi3` }],
+  ]),
+  C = a(`triangle-alert`, [
+    [
+      `path`,
+      {
+        d: `m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3`,
+        key: `wmoenq`,
+      },
+    ],
+    [`path`, { d: `M12 9v4`, key: `juzpu7` }],
+    [`path`, { d: `M12 17h.01`, key: `p32p05` }],
+  ]),
+  w = b(),
+  T = y(n(), 1),
+  E = `theme`;
+function D() {
+  let [e, t] = (0, T.useState)(() => (typeof chrome < `u` && chrome.storage?.sync, `system`)),
+    [n, r] = (0, T.useState)(!1);
+  (0, T.useEffect)(() => {
+    chrome.storage.sync.get(E, (e) => {
+      let n = e[E] || `system`;
       (t(n), i(n));
     });
   }, []);
-  let i = (0, x.useCallback)((e) => {
+  let i = (0, T.useCallback)((e) => {
       let t;
       ((t =
         e === `system` ? window.matchMedia(`(prefers-color-scheme: dark)`).matches : e === `dark`),
         document.documentElement.classList.toggle(`dark`, t),
         r(t));
     }, []),
-    a = (0, x.useCallback)(
+    a = (0, T.useCallback)(
       (e) => {
-        (t(e), i(e), chrome.storage.sync.set({ 'md-theme': e }));
+        (t(e), i(e), chrome.storage.sync.set({ [E]: e }));
       },
       [i],
     );
   return (
-    (0, x.useEffect)(() => {
+    (0, T.useEffect)(() => {
       let t = window.matchMedia(`(prefers-color-scheme: dark)`),
         n = () => {
           e === `system` && i(`system`);
@@ -55,56 +74,75 @@ function S() {
     { theme: e, resolved: n, setTheme: a }
   );
 }
-var C = s(),
-  w = {
-    default: `md-badge--primary`,
-    success: `md-badge--green`,
-    warning: `md-badge--amber`,
-    danger: `md-badge--red`,
-  };
-function T({ className: e, variant: t = `default`, children: n, ...r }) {
-  return (0, C.jsx)(`span`, { className: p(`md-badge`, w[t], e), ...r, children: n });
+var O = o(),
+  k = {
+    default: `bg-primary/10 text-primary border-primary/20`,
+    success: `bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800`,
+    warning: `bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800`,
+    danger: `bg-destructive/10 text-destructive border-destructive/20`,
+  },
+  A = { default: S, success: x, warning: C, danger: r };
+function j({ variant: e = `default`, icon: t, children: n, className: i, onDismiss: a }) {
+  let o = A[e];
+  return (0, O.jsxs)(`span`, {
+    className: u(
+      `inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold`,
+      k[e],
+      i,
+    ),
+    children: [
+      t && (0, O.jsx)(o, { className: `size-3` }),
+      n,
+      a &&
+        (0, O.jsx)(`button`, {
+          onClick: a,
+          className: `ml-0.5 hover:opacity-70`,
+          'aria-label': `Dismiss`,
+          children: (0, O.jsx)(r, { className: `size-2.5` }),
+        }),
+    ],
+  });
 }
-var E = [
+var M = [
   { value: `casemix`, label: `Casemix` },
   { value: `kasir`, label: `Kasir` },
   { value: `dokter`, label: `Dokter` },
   { value: `apotek`, label: `Apotek` },
   { value: `admin`, label: `Admin` },
 ];
-function D({ value: e, onChange: n }) {
-  return (0, C.jsxs)(m, {
+function N({ value: e, onChange: n }) {
+  return (0, O.jsxs)(m, {
     value: e,
     onValueChange: (e) => n(e),
     children: [
-      (0, C.jsx)(f, { className: `w-[120px]`, children: (0, C.jsx)(h, {}) }),
-      (0, C.jsx)(c, {
-        children: E.map((e) => (0, C.jsx)(t, { value: e.value, children: e.label }, e.value)),
+      (0, O.jsx)(f, { className: `w-[120px]`, children: (0, O.jsx)(h, {}) }),
+      (0, O.jsx)(c, {
+        children: M.map((e) => (0, O.jsx)(t, { value: e.value, children: e.label }, e.value)),
       }),
     ],
   });
 }
-function O({ enabled: e, role: t, onToggle: n, onRoleChange: r }) {
-  return (0, C.jsxs)(`div`, {
-    className: `md-card p-3 flex items-center justify-between`,
+function P({ enabled: e, role: t, onToggle: n, onRoleChange: r }) {
+  return (0, O.jsxs)(`div`, {
+    className: `rounded-lg border bg-card text-card-foreground shadow-sm p-3 flex items-center justify-between`,
     children: [
-      (0, C.jsxs)(`div`, {
+      (0, O.jsxs)(`div`, {
         className: `flex items-center gap-3`,
         children: [
-          (0, C.jsx)(a, { checked: e, onCheckedChange: n }),
-          (0, C.jsxs)(`div`, {
+          (0, O.jsx)(p, { checked: e, onCheckedChange: n }),
+          (0, O.jsxs)(`div`, {
             children: [
-              (0, C.jsxs)(`div`, {
+              (0, O.jsxs)(`div`, {
                 className: `flex items-center gap-2`,
                 children: [
-                  (0, C.jsx)(`span`, {
+                  (0, O.jsx)(`span`, {
                     className: `text-md-sm font-semibold text-foreground`,
                     children: `MORBIS Ext`,
                   }),
-                  e && (0, C.jsx)(T, { variant: `success`, children: `Aktif` }),
+                  e && (0, O.jsx)(j, { variant: `success`, children: `Aktif` }),
                 ],
               }),
-              (0, C.jsx)(`p`, {
+              (0, O.jsx)(`p`, {
                 className: `text-md-xs text-muted-foreground mt-0.5`,
                 children: e ? `Extension aktif di halaman ini` : `Extension tidak aktif`,
               }),
@@ -112,42 +150,42 @@ function O({ enabled: e, role: t, onToggle: n, onRoleChange: r }) {
           }),
         ],
       }),
-      (0, C.jsx)(D, { value: t, onChange: (e) => r(e) }),
+      (0, O.jsx)(N, { value: t, onChange: (e) => r(e) }),
     ],
   });
 }
-function k({
+function F({
   features: e,
   enabledFeatures: n,
   role: r,
   disabled: i,
-  onToggle: o,
-  onModeChange: s,
+  onToggle: a,
+  onModeChange: o,
 }) {
-  let l = e.filter((e) => e.roles.includes(r)),
-    u = l.filter((e) => n[e.key]).length;
-  return (0, C.jsxs)(`div`, {
+  let s = e.filter((e) => e.roles.includes(r)),
+    l = s.filter((e) => n[e.key]).length;
+  return (0, O.jsxs)(`div`, {
     children: [
-      (0, C.jsx)(`div`, {
+      (0, O.jsx)(`div`, {
         className: `flex items-center justify-between mb-3`,
-        children: (0, C.jsxs)(`p`, {
+        children: (0, O.jsxs)(`p`, {
           className: `text-md-xs text-muted-foreground font-medium`,
-          children: [u, ` dari `, l.length, ` aktif`],
+          children: [l, ` dari `, s.length, ` aktif`],
         }),
       }),
-      l.length === 0 &&
-        (0, C.jsx)(`div`, {
+      s.length === 0 &&
+        (0, O.jsx)(`div`, {
           className: `text-center py-8`,
-          children: (0, C.jsx)(`p`, {
+          children: (0, O.jsx)(`p`, {
             className: `text-md-sm text-muted-foreground`,
             children: `Tidak ada fitur untuk role ini`,
           }),
         }),
-      (0, C.jsx)(`div`, {
+      (0, O.jsx)(`div`, {
         className: `space-y-0.5`,
-        children: l.map((e) => {
+        children: s.map((e) => {
           let r = !!n[e.key];
-          return (0, C.jsxs)(
+          return (0, O.jsxs)(
             `div`,
             {
               className: `
@@ -156,58 +194,58 @@ function k({
                 ${e.comingSoon ? `opacity-60` : `cursor-pointer hover:bg-accent`}
               `,
               onClick: () => {
-                !e.comingSoon && !i && o(e.key, !r);
+                !e.comingSoon && !i && a(e.key, !r);
               },
               children: [
-                (0, C.jsxs)(`div`, {
+                (0, O.jsxs)(`div`, {
                   className: `flex-1 min-w-0 mr-3`,
                   children: [
-                    (0, C.jsxs)(`div`, {
+                    (0, O.jsxs)(`div`, {
                       className: `flex items-center gap-2`,
                       children: [
-                        (0, C.jsx)(`span`, {
+                        (0, O.jsx)(`span`, {
                           className: `text-md-sm font-medium text-foreground`,
                           children: e.name,
                         }),
                         e.comingSoon &&
-                          (0, C.jsx)(`span`, {
+                          (0, O.jsx)(`span`, {
                             className: `text-[10px] font-semibold text-amber-700 bg-amber-50 dark:bg-amber-900/30 dark:text-amber-300 px-1.5 py-0.5 rounded-full`,
                             children: `CS`,
                           }),
                       ],
                     }),
-                    (0, C.jsx)(`p`, {
+                    (0, O.jsx)(`p`, {
                       className: `text-md-xs text-muted-foreground mt-0.5 truncate`,
                       children: e.desc,
                     }),
                   ],
                 }),
-                (0, C.jsxs)(`div`, {
+                (0, O.jsxs)(`div`, {
                   className: `flex items-center gap-1.5 shrink-0`,
                   children: [
                     e.key === `openDetailInNewTab` &&
                       e.modes &&
                       n[e.key] &&
-                      (0, C.jsxs)(m, {
+                      (0, O.jsxs)(m, {
                         value: e.mode || `same-tab`,
-                        onValueChange: (t) => s(e.key, t),
+                        onValueChange: (t) => o(e.key, t),
                         children: [
-                          (0, C.jsx)(f, {
+                          (0, O.jsx)(f, {
                             className: `h-7 text-md-xs w-[100px]`,
                             onClick: (e) => e.stopPropagation(),
-                            children: (0, C.jsx)(h, {}),
+                            children: (0, O.jsx)(h, {}),
                           }),
-                          (0, C.jsx)(c, {
+                          (0, O.jsx)(c, {
                             children: Object.entries(e.modes).map(([e, n]) =>
-                              (0, C.jsx)(t, { value: e, className: `text-md-xs`, children: n }, e),
+                              (0, O.jsx)(t, { value: e, className: `text-md-xs`, children: n }, e),
                             ),
                           }),
                         ],
                       }),
-                    (0, C.jsx)(a, {
+                    (0, O.jsx)(p, {
                       checked: r,
                       onCheckedChange: (t) => {
-                        e.comingSoon || o(e.key, t);
+                        e.comingSoon || a(e.key, t);
                       },
                       disabled: i || e.comingSoon,
                     }),
@@ -222,7 +260,7 @@ function k({
     ],
   });
 }
-var A = (e) => {
+var I = (e) => {
   try {
     let t = new URL(e);
     return t.protocol === `http:` || t.protocol === `https:`;
@@ -230,85 +268,85 @@ var A = (e) => {
     return !1;
   }
 };
-function j({ urls: e, onAdd: t, onRemove: n, onToggle: o }) {
-  let [s, c] = (0, x.useState)(``),
-    [l, u] = (0, x.useState)(null),
-    f = () => {
-      let n = s.trim();
+function L({ urls: e, onAdd: t, onRemove: n, onToggle: a }) {
+  let [o, s] = (0, T.useState)(``),
+    [c, l] = (0, T.useState)(null),
+    u = () => {
+      let n = o.trim();
       if (!n) {
-        u(`Masukkan URL terlebih dahulu`);
+        l(`Masukkan URL terlebih dahulu`);
         return;
       }
-      if (!A(n)) {
-        u(`Format URL tidak valid`);
+      if (!I(n)) {
+        l(`Format URL tidak valid`);
         return;
       }
       if (e.find((e) => e.url === n)) {
-        u(`URL sudah ada`);
+        l(`URL sudah ada`);
         return;
       }
-      (u(null), t(n), c(``));
+      (l(null), t(n), s(``));
     };
-  return (0, C.jsxs)(`div`, {
+  return (0, O.jsxs)(`div`, {
     className: `space-y-3`,
     children: [
-      (0, C.jsxs)(`div`, {
+      (0, O.jsxs)(`div`, {
         className: `flex gap-2`,
         children: [
-          (0, C.jsx)(d, {
+          (0, O.jsx)(d, {
             type: `text`,
-            value: s,
+            value: o,
             onChange: (e) => {
-              (c(e.target.value), u(null));
+              (s(e.target.value), l(null));
             },
-            onKeyDown: (e) => e.key === `Enter` && f(),
+            onKeyDown: (e) => e.key === `Enter` && u(),
             placeholder: `http://192.168.1.100`,
             className: `flex-1`,
           }),
-          (0, C.jsxs)(g, {
+          (0, O.jsxs)(g, {
             variant: `default`,
             size: `sm`,
-            onClick: f,
-            children: [(0, C.jsx)(i, { className: `size-3.5` }), `Add`],
+            onClick: u,
+            children: [(0, O.jsx)(i, { className: `size-3.5` }), `Add`],
           }),
         ],
       }),
-      l &&
-        (0, C.jsx)(`p`, { className: `text-md-xs text-destructive`, role: `alert`, children: l }),
+      c &&
+        (0, O.jsx)(`p`, { className: `text-md-xs text-destructive`, role: `alert`, children: c }),
       e.length === 0 &&
-        !l &&
-        (0, C.jsx)(`div`, {
+        !c &&
+        (0, O.jsx)(`div`, {
           className: `text-center py-8`,
-          children: (0, C.jsx)(`p`, {
+          children: (0, O.jsx)(`p`, {
             className: `text-md-sm text-muted-foreground`,
             children: `Belum ada domain`,
           }),
         }),
-      (0, C.jsx)(`div`, {
+      (0, O.jsx)(`div`, {
         className: `space-y-1`,
         children: e.map((e) =>
-          (0, C.jsxs)(
+          (0, O.jsxs)(
             `div`,
             {
               className: `flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent group ${e.isDefault ? `bg-blue-50 dark:bg-blue-950/20` : ``}`,
               children: [
-                (0, C.jsx)(a, { checked: e.enabled, onCheckedChange: (t) => o(e.id, t) }),
-                (0, C.jsx)(`span`, {
+                (0, O.jsx)(p, { checked: e.enabled, onCheckedChange: (t) => a(e.id, t) }),
+                (0, O.jsx)(`span`, {
                   className: `flex-1 text-md-xs text-foreground truncate font-mono`,
                   children: e.url,
                 }),
                 e.isDefault &&
-                  (0, C.jsx)(`span`, {
+                  (0, O.jsx)(`span`, {
                     className: `text-[10px] font-semibold text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-900/30 px-1.5 py-0.5 rounded`,
                     children: `DEFAULT`,
                   }),
-                (0, C.jsx)(`button`, {
+                (0, O.jsx)(`button`, {
                   onClick: () => n(e.id),
                   disabled: e.isDefault,
                   'aria-label': `Hapus ${e.url}`,
                   className: `p-1 rounded transition-colors ${e.isDefault ? `opacity-30 cursor-not-allowed` : `opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive`}`,
                   title: e.isDefault ? `URL default tidak dapat dihapus` : `Hapus`,
-                  children: (0, C.jsx)(r, { className: `size-3.5` }),
+                  children: (0, O.jsx)(r, { className: `size-3.5` }),
                 }),
               ],
             },
@@ -319,26 +357,26 @@ function j({ urls: e, onAdd: t, onRemove: n, onToggle: o }) {
     ],
   });
 }
-function M({ onReload: e, onReset: t }) {
-  return (0, C.jsxs)(`div`, {
+function R({ onReload: e, onReset: t }) {
+  return (0, O.jsxs)(`div`, {
     className: `flex items-center justify-between px-4 py-3 border-t border-border`,
     children: [
-      (0, C.jsxs)(g, {
+      (0, O.jsxs)(g, {
         variant: `ghost`,
         size: `sm`,
         onClick: e,
-        children: [(0, C.jsx)(_, { className: `size-3.5` }), `Reload Halaman`],
+        children: [(0, O.jsx)(_, { className: `size-3.5` }), `Reload Halaman`],
       }),
-      (0, C.jsxs)(g, {
+      (0, O.jsxs)(g, {
         variant: `ghost`,
         size: `sm`,
         onClick: t,
-        children: [(0, C.jsx)(l, { className: `size-3.5` }), `Reset Default`],
+        children: [(0, O.jsx)(l, { className: `size-3.5` }), `Reset Default`],
       }),
     ],
   });
 }
-function N(e) {
+function z(e) {
   return Object.entries(e).map(([e, t]) => ({
     key: e,
     name: t.name || e,
@@ -349,12 +387,12 @@ function N(e) {
     comingSoon: t.comingSoon,
   }));
 }
-function P(e) {
+function B(e) {
   let t = {};
   for (let [n, r] of Object.entries(e || {})) t[n] = r.enabled ?? !1;
   return t;
 }
-var F = [
+var V = [
     {
       key: `openDetailInNewTab`,
       name: `Open Detail`,
@@ -455,146 +493,146 @@ var F = [
       roles: [`admin`],
     },
   ],
-  I = [
+  H = [
     { id: `default-1`, url: `http://103.147.236.140`, enabled: !0, isDefault: !0 },
     { id: `default-2`, url: `http://192.168.8.4`, enabled: !0, isDefault: !0 },
   ];
-function L() {
-  let [t, n] = (0, x.useState)(!0),
-    [r, i] = (0, x.useState)(`casemix`),
-    [a, s] = (0, x.useState)(`features`),
-    [c, l] = (0, x.useState)({}),
-    [d, f] = (0, x.useState)(F),
-    [p, m] = (0, x.useState)(I),
-    [h, g] = (0, x.useState)(null),
-    { theme: _, resolved: v, setTheme: y } = S();
-  (0, x.useEffect)(() => {
-    e({ type: o.GET_ALL })
+function U() {
+  let [t, n] = (0, T.useState)(!0),
+    [r, i] = (0, T.useState)(`casemix`),
+    [a, o] = (0, T.useState)(`features`),
+    [c, l] = (0, T.useState)({}),
+    [u, d] = (0, T.useState)(V),
+    [f, p] = (0, T.useState)(H),
+    [m, h] = (0, T.useState)(null),
+    { theme: g, resolved: _, setTheme: y } = D();
+  (0, T.useEffect)(() => {
+    v({ type: e.GET_ALL })
       .then((e) => {
         (e?.config &&
           (n(e.config.extensionEnabled),
           i(e.config.currentRole),
-          l(P(e.config.features || {})),
-          e.config.features && f(N(e.config.features))),
-          e?.urls && m(e.urls));
+          l(B(e.config.features || {})),
+          e.config.features && d(z(e.config.features))),
+          e?.urls && p(e.urls));
       })
       .catch(() => {
         chrome.storage.sync.get([`extensionConfig`, `extensionCustomUrls`], (e) => {
           (e.extensionConfig &&
             (n(e.extensionConfig.extensionEnabled),
             i(e.extensionConfig.currentRole),
-            l(P(e.extensionConfig.features || {})),
-            e.extensionConfig.features && f(N(e.extensionConfig.features))),
-            e.extensionCustomUrls && m(e.extensionCustomUrls));
+            l(B(e.extensionConfig.features || {})),
+            e.extensionConfig.features && d(z(e.extensionConfig.features))),
+            e.extensionCustomUrls && p(e.extensionCustomUrls));
         });
       });
   }, []);
-  let b = (0, x.useCallback)((e) => {
-      (g(e), setTimeout(() => g(null), 2500));
+  let b = (0, T.useCallback)((e) => {
+      (h(e), setTimeout(() => h(null), 2500));
     }, []),
-    w = (0, x.useCallback)(() => {
+    x = (0, T.useCallback)(() => {
       let r = !t;
       (n(r),
-        e({ type: o.TOGGLE_EXTENSION, enabled: r }).catch(() =>
+        v({ type: e.TOGGLE_EXTENSION, enabled: r }).catch(() =>
           b(`Gagal mengubah status extension`),
         ),
         b(r ? `Extension diaktifkan` : `Extension dinonaktifkan`));
     }, [t, b]),
-    T = (0, x.useCallback)(
+    S = (0, T.useCallback)(
       (t) => {
-        (i(t), e({ type: o.SET_ROLE, role: t }).catch(() => b(`Gagal mengubah role`)));
+        (i(t), v({ type: e.SET_ROLE, role: t }).catch(() => b(`Gagal mengubah role`)));
       },
       [b],
     ),
-    E = (0, x.useCallback)(
+    C = (0, T.useCallback)(
       (t, n) => {
         (l({ ...c, [t]: n }),
-          e({ type: o.TOGGLE_FEATURE, key: t, enabled: n }).catch(() => b(`Gagal mengubah fitur`)),
+          v({ type: e.TOGGLE_FEATURE, key: t, enabled: n }).catch(() => b(`Gagal mengubah fitur`)),
           b(n ? `${t} diaktifkan` : `${t} dinonaktifkan`));
       },
       [c, b],
     ),
-    D = (0, x.useCallback)(
+    w = (0, T.useCallback)(
       (t) => {
         let n = `url-` + Date.now();
-        (m([...p, { id: n, url: t, enabled: !0, isDefault: !1 }]),
-          e({ type: o.ADD_URL, url: t }).catch(() => b(`Gagal menambah domain`)),
+        (p([...f, { id: n, url: t, enabled: !0, isDefault: !1 }]),
+          v({ type: e.ADD_URL, url: t }).catch(() => b(`Gagal menambah domain`)),
           b(`Domain ditambahkan`));
       },
-      [p, b],
+      [f, b],
     ),
-    A = (0, x.useCallback)(
+    E = (0, T.useCallback)(
       (t) => {
-        (m(p.filter((e) => e.id !== t)),
-          e({ type: o.DELETE_URL, id: t }).catch(() => b(`Gagal menghapus domain`)),
+        (p(f.filter((e) => e.id !== t)),
+          v({ type: e.DELETE_URL, id: t }).catch(() => b(`Gagal menghapus domain`)),
           b(`Domain dihapus`));
       },
-      [p, b],
+      [f, b],
     ),
-    L = (0, x.useCallback)(
+    k = (0, T.useCallback)(
       (t, n) => {
-        (m(p.map((e) => (e.id === t ? { ...e, enabled: n } : e))),
-          e({ type: o.TOGGLE_URL, id: t, enabled: n }).catch(() => b(`Gagal mengubah domain`)));
+        (p(f.map((e) => (e.id === t ? { ...e, enabled: n } : e))),
+          v({ type: e.TOGGLE_URL, id: t, enabled: n }).catch(() => b(`Gagal mengubah domain`)));
       },
-      [p, b],
+      [f, b],
     ),
-    R = (0, x.useCallback)(
+    A = (0, T.useCallback)(
       (t, n) => {
-        (e({ type: o.CHANGE_FEATURE_MODE, key: t, mode: n }).catch(() => b(`Gagal mengubah mode`)),
+        (v({ type: e.CHANGE_FEATURE_MODE, key: t, mode: n }).catch(() => b(`Gagal mengubah mode`)),
           b(`Mode berhasil diubah`));
       },
       [b],
     ),
-    z = (0, x.useCallback)(() => {
+    j = (0, T.useCallback)(() => {
       chrome.tabs.query({ active: !0, currentWindow: !0 }, (e) => {
         e[0]?.id && chrome.tabs.reload(e[0].id);
       });
     }, []),
-    B = (0, x.useCallback)(() => {
+    M = (0, T.useCallback)(() => {
       confirm(`Apakah Anda yakin ingin mereset ke pengaturan default?`) &&
-        e({ type: o.RESET_CONFIG })
+        v({ type: e.RESET_CONFIG })
           .then(() => {
-            (l({}), m(I), i(`casemix`), n(!0), b(`Reset ke default`), z());
+            (l({}), p(H), i(`casemix`), n(!0), b(`Reset ke default`), j());
           })
           .catch(() => {
             b(`Gagal mereset konfigurasi`);
           });
-    }, [z, b]);
-  return (0, C.jsx)(u, {
-    children: (0, C.jsxs)(`div`, {
+    }, [j, b]);
+  return (0, O.jsx)(s, {
+    children: (0, O.jsxs)(`div`, {
       className: `flex flex-col h-full bg-background`,
       children: [
-        (0, C.jsxs)(`div`, {
+        (0, O.jsxs)(`div`, {
           className: `flex items-center justify-between px-4 py-2.5 border-b border-border`,
           children: [
-            (0, C.jsxs)(`div`, {
+            (0, O.jsxs)(`div`, {
               className: `flex items-center gap-2`,
               children: [
-                (0, C.jsx)(`div`, {
+                (0, O.jsx)(`div`, {
                   className: `w-6 h-6 rounded-md bg-[#2469f0] flex items-center justify-center`,
-                  children: (0, C.jsx)(`span`, {
+                  children: (0, O.jsx)(`span`, {
                     className: `text-white text-md-xs font-bold`,
                     children: `M`,
                   }),
                 }),
-                (0, C.jsx)(`span`, {
+                (0, O.jsx)(`span`, {
                   className: `text-md-sm font-semibold text-foreground`,
                   children: `MORBIS Ext`,
                 }),
-                (0, C.jsx)(`span`, {
+                (0, O.jsx)(`span`, {
                   className: `text-[10px] font-semibold text-blue-700 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-300 px-1.5 py-0.5 rounded-full`,
                   children: `v1.2`,
                 }),
               ],
             }),
-            (0, C.jsx)(`div`, {
+            (0, O.jsx)(`div`, {
               className: `flex items-center gap-1`,
-              children: (0, C.jsx)(`button`, {
-                onClick: () => y(_ === `dark` ? `light` : `dark`),
+              children: (0, O.jsx)(`button`, {
+                onClick: () => y(g === `dark` ? `light` : `dark`),
                 className: `p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors`,
                 title: `Toggle dark mode`,
-                children: v
-                  ? (0, C.jsxs)(`svg`, {
+                children: _
+                  ? (0, O.jsxs)(`svg`, {
                       width: `16`,
                       height: `16`,
                       viewBox: `0 0 24 24`,
@@ -602,20 +640,20 @@ function L() {
                       stroke: `currentColor`,
                       strokeWidth: `2`,
                       children: [
-                        (0, C.jsx)(`circle`, { cx: `12`, cy: `12`, r: `5` }),
-                        (0, C.jsx)(`path`, {
+                        (0, O.jsx)(`circle`, { cx: `12`, cy: `12`, r: `5` }),
+                        (0, O.jsx)(`path`, {
                           d: `M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42`,
                         }),
                       ],
                     })
-                  : (0, C.jsx)(`svg`, {
+                  : (0, O.jsx)(`svg`, {
                       width: `16`,
                       height: `16`,
                       viewBox: `0 0 24 24`,
                       fill: `none`,
                       stroke: `currentColor`,
                       strokeWidth: `2`,
-                      children: (0, C.jsx)(`path`, {
+                      children: (0, O.jsx)(`path`, {
                         d: `M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z`,
                       }),
                     }),
@@ -623,53 +661,53 @@ function L() {
             }),
           ],
         }),
-        (0, C.jsx)(`div`, {
+        (0, O.jsx)(`div`, {
           className: `px-4 py-3`,
-          children: (0, C.jsx)(O, { enabled: t, role: r, onToggle: w, onRoleChange: T }),
+          children: (0, O.jsx)(P, { enabled: t, role: r, onToggle: x, onRoleChange: S }),
         }),
-        (0, C.jsxs)(`div`, {
+        (0, O.jsxs)(`div`, {
           className: `flex gap-0 px-4 border-b border-border`,
           children: [
-            (0, C.jsx)(`button`, {
-              onClick: () => s(`features`),
+            (0, O.jsx)(`button`, {
+              onClick: () => o(`features`),
               className: `px-4 py-2 text-md-sm font-medium border-b-2 transition-colors -mb-[1px] ${a === `features` ? `text-[#2469f0] border-[#2469f0]` : `text-muted-foreground border-transparent hover:text-foreground`}`,
               children: `Fitur`,
             }),
-            (0, C.jsx)(`button`, {
-              onClick: () => s(`domain`),
+            (0, O.jsx)(`button`, {
+              onClick: () => o(`domain`),
               className: `px-4 py-2 text-md-sm font-medium border-b-2 transition-colors -mb-[1px] ${a === `domain` ? `text-[#2469f0] border-[#2469f0]` : `text-muted-foreground border-transparent hover:text-foreground`}`,
               children: `Domain`,
             }),
           ],
         }),
-        (0, C.jsxs)(`div`, {
+        (0, O.jsxs)(`div`, {
           className: `flex-1 overflow-y-auto px-4 py-3`,
           children: [
             a === `features` &&
-              (0, C.jsx)(k, {
-                features: d,
+              (0, O.jsx)(F, {
+                features: u,
                 enabledFeatures: c,
                 role: r,
                 disabled: !t,
-                onToggle: E,
-                onModeChange: R,
+                onToggle: C,
+                onModeChange: A,
               }),
-            a === `domain` && (0, C.jsx)(j, { urls: p, onAdd: D, onRemove: A, onToggle: L }),
+            a === `domain` && (0, O.jsx)(L, { urls: f, onAdd: w, onRemove: E, onToggle: k }),
           ],
         }),
-        (0, C.jsx)(M, { onReload: z, onReset: B }),
-        h &&
-          (0, C.jsx)(`div`, {
+        (0, O.jsx)(R, { onReload: j, onReset: M }),
+        m &&
+          (0, O.jsx)(`div`, {
             className: `fixed bottom-4 left-1/2 -translate-x-1/2 z-50 animate-slide-up`,
             role: `alert`,
-            children: (0, C.jsx)(`div`, {
+            children: (0, O.jsx)(`div`, {
               className: `px-4 py-2 bg-foreground text-background text-md-sm rounded-lg shadow-lg`,
-              children: h,
+              children: m,
             }),
           }),
       ],
     }),
   });
 }
-var R = document.getElementById(`app`);
-R && (0, b.createRoot)(R).render((0, C.jsx)(L, {}));
+var W = document.getElementById(`app`);
+W && (0, w.createRoot)(W).render((0, O.jsx)(U, {}));

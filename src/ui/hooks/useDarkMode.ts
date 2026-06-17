@@ -1,50 +1,55 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react';
 
-type Theme = 'light' | 'dark' | 'system'
+type Theme = 'light' | 'dark' | 'system';
+
+const STORAGE_KEY = 'theme';
 
 export function useDarkMode() {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof chrome !== 'undefined' && chrome.storage?.sync) {
-      return 'system'
+      return 'system';
     }
-    return 'system'
-  })
+    return 'system';
+  });
 
-  const [resolved, setResolved] = useState(false)
+  const [resolved, setResolved] = useState(false);
 
   useEffect(() => {
-    chrome.storage.sync.get('md-theme', (result) => {
-      const stored = (result['md-theme'] as Theme) || 'system'
-      setTheme(stored)
-      applyTheme(stored)
-    })
-  }, [])
+    chrome.storage.sync.get(STORAGE_KEY, (result) => {
+      const stored = (result[STORAGE_KEY] as Theme) || 'system';
+      setTheme(stored);
+      applyTheme(stored);
+    });
+  }, []);
 
   const applyTheme = useCallback((t: Theme) => {
-    let isDark: boolean
+    let isDark: boolean;
     if (t === 'system') {
-      isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     } else {
-      isDark = t === 'dark'
+      isDark = t === 'dark';
     }
-    document.documentElement.classList.toggle('dark', isDark)
-    setResolved(isDark)
-  }, [])
+    document.documentElement.classList.toggle('dark', isDark);
+    setResolved(isDark);
+  }, []);
 
-  const setAndStore = useCallback((t: Theme) => {
-    setTheme(t)
-    applyTheme(t)
-    chrome.storage.sync.set({ 'md-theme': t })
-  }, [applyTheme])
+  const setAndStore = useCallback(
+    (t: Theme) => {
+      setTheme(t);
+      applyTheme(t);
+      chrome.storage.sync.set({ [STORAGE_KEY]: t });
+    },
+    [applyTheme],
+  );
 
   useEffect(() => {
-    const mq = window.matchMedia('(prefers-color-scheme: dark)')
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
     const handler = () => {
-      if (theme === 'system') applyTheme('system')
-    }
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [theme, applyTheme])
+      if (theme === 'system') applyTheme('system');
+    };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, [theme, applyTheme]);
 
-  return { theme, resolved, setTheme: setAndStore }
+  return { theme, resolved, setTheme: setAndStore };
 }

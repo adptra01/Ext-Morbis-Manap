@@ -4,24 +4,24 @@ import {
   b as n,
   c as r,
   d as i,
-  f as a,
-  g as o,
-  h as s,
-  i as c,
-  l,
-  m as u,
-  n as d,
-  o as f,
-  r as p,
-  s as m,
-  t as h,
-  u as g,
-  v as _,
+  g as a,
+  h as o,
+  i as s,
+  l as c,
+  n as l,
+  o as u,
+  p as d,
+  r as f,
+  s as p,
+  t as m,
+  u as h,
+  v as g,
+  x as _,
   y as v,
-} from './chunks/button-D3A0m3M1.js';
-var y = n(v(), 1),
-  b = _(),
-  x = s(),
+} from './chunks/button-B6a1xhqu.js';
+var y = _(n(), 1),
+  b = v(),
+  x = a(),
   S = [
     { value: `casemix`, label: `Casemix` },
     { value: `kasir`, label: `Kasir` },
@@ -37,7 +37,7 @@ function w({ enabled: e, role: n, onToggle: r, onRoleChange: i }) {
       (0, x.jsxs)(`div`, {
         className: `flex items-center gap-2.5`,
         children: [
-          (0, x.jsx)(a, { checked: e, onCheckedChange: r }),
+          (0, x.jsx)(d, { checked: e, onCheckedChange: r }),
           (0, x.jsxs)(`div`, {
             children: [
               (0, x.jsxs)(`div`, {
@@ -60,12 +60,12 @@ function w({ enabled: e, role: n, onToggle: r, onRoleChange: i }) {
           }),
         ],
       }),
-      (0, x.jsxs)(p, {
+      (0, x.jsxs)(f, {
         value: n,
         onValueChange: (e) => i(e),
         children: [
-          (0, x.jsx)(f, { className: `w-[120px]`, children: (0, x.jsx)(m, {}) }),
-          (0, x.jsx)(c, {
+          (0, x.jsx)(u, { className: `w-[120px]`, children: (0, x.jsx)(p, {}) }),
+          (0, x.jsx)(s, {
             children: S.map((e) => (0, x.jsx)(t, { value: e.value, children: e.label }, e.value)),
           }),
         ],
@@ -73,10 +73,10 @@ function w({ enabled: e, role: n, onToggle: r, onRoleChange: i }) {
     ],
   });
 }
-function T({ features: e, role: n, disabled: r, onToggle: i, onModeChange: o }) {
-  let s = Object.entries(e).filter(([, e]) => n === `admin` || e.allowedRoles?.includes(n)),
-    l = s.filter(([, e]) => e.enabled && !e.comingSoon).length;
-  return s.length === 0
+function T({ features: e, role: n, disabled: r, onToggle: i, onModeChange: a }) {
+  let o = Object.entries(e).filter(([, e]) => n === `admin` || e.allowedRoles?.includes(n)),
+    c = o.filter(([, e]) => e.enabled && !e.comingSoon).length;
+  return o.length === 0
     ? (0, x.jsx)(`div`, {
         className: `text-center py-4`,
         children: (0, x.jsx)(`p`, {
@@ -89,16 +89,16 @@ function T({ features: e, role: n, disabled: r, onToggle: i, onModeChange: o }) 
         children: [
           (0, x.jsxs)(`p`, {
             className: `text-[10px] text-muted-foreground mb-1.5`,
-            children: [l, ` dari `, s.filter(([, e]) => !e.comingSoon).length, ` fitur aktif`],
+            children: [c, ` dari `, o.filter(([, e]) => !e.comingSoon).length, ` fitur aktif`],
           }),
           (0, x.jsx)(`div`, {
             className: `space-y-0.5`,
-            children: s.map(([e, n]) => {
-              let s = n.comingSoon === !0;
+            children: o.map(([e, n]) => {
+              let o = n.comingSoon === !0;
               return (0, x.jsxs)(
                 `div`,
                 {
-                  className: `flex items-center justify-between px-2.5 py-2 rounded ${n.enabled && !s ? `bg-accent` : ``} ${s ? `opacity-60` : ``}`,
+                  className: `flex items-center justify-between px-2.5 py-2 rounded ${n.enabled && !o ? `bg-accent` : ``} ${o ? `opacity-60` : ``}`,
                   children: [
                     (0, x.jsxs)(`div`, {
                       className: `flex-1 min-w-0 mr-2`,
@@ -110,7 +110,7 @@ function T({ features: e, role: n, disabled: r, onToggle: i, onModeChange: o }) 
                               className: `text-md-xs font-medium text-foreground`,
                               children: n.name || e,
                             }),
-                            s &&
+                            o &&
                               (0, x.jsx)(`span`, {
                                 className: `text-[9px] font-semibold text-amber-700 bg-amber-50 dark:bg-amber-900/30 dark:text-amber-300 px-1.5 py-0.5 rounded-full`,
                                 children: `CS`,
@@ -130,16 +130,16 @@ function T({ features: e, role: n, disabled: r, onToggle: i, onModeChange: o }) 
                         e === `openDetailInNewTab` &&
                           n.modes &&
                           n.enabled &&
-                          (0, x.jsxs)(p, {
+                          (0, x.jsxs)(f, {
                             value: n.mode || `same-tab`,
-                            onValueChange: (t) => o(e, t),
+                            onValueChange: (t) => a(e, t),
                             children: [
-                              (0, x.jsx)(f, {
+                              (0, x.jsx)(u, {
                                 className: `h-6 text-[10px] w-[90px]`,
                                 onClick: (e) => e.stopPropagation(),
-                                children: (0, x.jsx)(m, {}),
+                                children: (0, x.jsx)(p, {}),
                               }),
-                              (0, x.jsx)(c, {
+                              (0, x.jsx)(s, {
                                 children: Object.entries(n.modes).map(([e, n]) =>
                                   (0, x.jsx)(
                                     t,
@@ -150,8 +150,8 @@ function T({ features: e, role: n, disabled: r, onToggle: i, onModeChange: o }) 
                               }),
                             ],
                           }),
-                        !s &&
-                          (0, x.jsx)(a, {
+                        !o &&
+                          (0, x.jsx)(d, {
                             checked: n.enabled,
                             onCheckedChange: (t) => i(e, t),
                             disabled: r,
@@ -167,9 +167,9 @@ function T({ features: e, role: n, disabled: r, onToggle: i, onModeChange: o }) 
         ],
       });
 }
-function E({ urls: e, onAdd: t, onRemove: n, onToggle: o }) {
-  let [s, c] = (0, y.useState)(``),
-    [l, u] = (0, y.useState)(null),
+function E({ urls: e, onAdd: t, onRemove: n, onToggle: a }) {
+  let [o, s] = (0, y.useState)(``),
+    [c, u] = (0, y.useState)(null),
     f = (e) => {
       try {
         let t = new URL(e);
@@ -179,7 +179,7 @@ function E({ urls: e, onAdd: t, onRemove: n, onToggle: o }) {
       }
     },
     p = () => {
-      let n = s.trim();
+      let n = o.trim();
       if (!n) {
         u(`Masukkan URL terlebih dahulu`);
         return;
@@ -192,24 +192,24 @@ function E({ urls: e, onAdd: t, onRemove: n, onToggle: o }) {
         u(`URL sudah ada`);
         return;
       }
-      (u(null), t(n), c(``));
+      (u(null), t(n), s(``));
     };
   return (0, x.jsxs)(`div`, {
     children: [
       (0, x.jsxs)(`div`, {
         className: `flex gap-1.5 mb-1.5`,
         children: [
-          (0, x.jsx)(d, {
+          (0, x.jsx)(l, {
             type: `text`,
-            value: s,
+            value: o,
             onChange: (e) => {
-              (c(e.target.value), u(null));
+              (s(e.target.value), u(null));
             },
             onKeyDown: (e) => e.key === `Enter` && p(),
             placeholder: `http://example.com`,
             className: `flex-1`,
           }),
-          (0, x.jsxs)(h, {
+          (0, x.jsxs)(m, {
             variant: `default`,
             size: `sm`,
             onClick: p,
@@ -217,11 +217,11 @@ function E({ urls: e, onAdd: t, onRemove: n, onToggle: o }) {
           }),
         ],
       }),
-      l &&
+      c &&
         (0, x.jsx)(`p`, {
           className: `text-[10px] text-destructive mb-1`,
           role: `alert`,
-          children: l,
+          children: c,
         }),
       e.length === 0
         ? (0, x.jsx)(`p`, {
@@ -236,9 +236,9 @@ function E({ urls: e, onAdd: t, onRemove: n, onToggle: o }) {
                 {
                   className: `flex items-center gap-1.5 px-2 py-1.5 rounded hover:bg-accent group ${e.isDefault ? `bg-blue-50 dark:bg-blue-950/20` : ``}`,
                   children: [
-                    (0, x.jsx)(a, {
+                    (0, x.jsx)(d, {
                       checked: e.enabled,
-                      onCheckedChange: (t) => o(e.id, t),
+                      onCheckedChange: (t) => a(e.id, t),
                       className: `h-4 w-7 [&>span]:h-3 [&>span]:w-3 data-[state=checked]:[&>span]:translate-x-3`,
                     }),
                     (0, x.jsx)(`span`, {
@@ -272,26 +272,26 @@ function D({ onReload: e, onReset: t }) {
   return (0, x.jsxs)(`div`, {
     className: `flex items-center gap-2 px-4 py-2.5 border-t border-border`,
     children: [
-      (0, x.jsxs)(h, {
+      (0, x.jsxs)(m, {
         variant: `default`,
         size: `sm`,
         className: `flex-1`,
         onClick: e,
-        children: [(0, x.jsx)(g, { className: `size-3.5` }), `Reload Halaman`],
+        children: [(0, x.jsx)(h, { className: `size-3.5` }), `Reload Halaman`],
       }),
-      (0, x.jsxs)(h, {
+      (0, x.jsxs)(m, {
         variant: `secondary`,
         size: `sm`,
         className: `flex-1`,
         onClick: t,
-        children: [(0, x.jsx)(l, { className: `size-3.5` }), `Reset Default`],
+        children: [(0, x.jsx)(c, { className: `size-3.5` }), `Reset Default`],
       }),
     ],
   });
 }
 async function O() {
   try {
-    let t = await e({ type: o.GET_ALL });
+    let t = await g({ type: e.GET_ALL });
     if (t?.config) return { config: t.config, urls: t.urls ?? [] };
   } catch {}
   let t = await chrome.storage.sync.get([`extensionConfig`, `extensionCustomUrls`]);
@@ -315,83 +315,83 @@ function A() {
       (i(e.config), s(e.urls), n(!1));
     });
   }, []);
-  let d = (0, y.useCallback)((e) => {
+  let u = (0, y.useCallback)((e) => {
       (l(e), setTimeout(() => l(null), 2e3));
     }, []),
-    f = (0, y.useCallback)(() => {
+    d = (0, y.useCallback)(() => {
       if (!r) return;
       let t = !r.extensionEnabled;
       (i({ ...r, extensionEnabled: t }),
-        e({ type: o.TOGGLE_EXTENSION, enabled: t }).catch(() =>
-          d(`Gagal mengubah status extension`),
+        g({ type: e.TOGGLE_EXTENSION, enabled: t }).catch(() =>
+          u(`Gagal mengubah status extension`),
         ),
-        d(t ? `Extension diaktifkan` : `Extension dinonaktifkan`),
+        u(t ? `Extension diaktifkan` : `Extension dinonaktifkan`),
         k());
-    }, [r, d]),
-    p = (0, y.useCallback)(
+    }, [r, u]),
+    f = (0, y.useCallback)(
       (t) => {
         r &&
           (i({ ...r, currentRole: t }),
-          e({ type: o.SET_ROLE, role: t }).catch(() => d(`Gagal mengubah role`)),
-          d(`Role berhasil diubah`),
+          g({ type: e.SET_ROLE, role: t }).catch(() => u(`Gagal mengubah role`)),
+          u(`Role berhasil diubah`),
           k());
       },
-      [r, d],
+      [r, u],
+    ),
+    p = (0, y.useCallback)(
+      (t, n) => {
+        r?.features[t] &&
+          (i({ ...r, features: { ...r.features, [t]: { ...r.features[t], enabled: n } } }),
+          g({ type: e.TOGGLE_FEATURE, key: t, enabled: n }).catch(() => u(`Gagal mengubah fitur`)),
+          k());
+      },
+      [r, u],
     ),
     m = (0, y.useCallback)(
       (t, n) => {
         r?.features[t] &&
-          (i({ ...r, features: { ...r.features, [t]: { ...r.features[t], enabled: n } } }),
-          e({ type: o.TOGGLE_FEATURE, key: t, enabled: n }).catch(() => d(`Gagal mengubah fitur`)),
-          k());
+          (i({ ...r, features: { ...r.features, [t]: { ...r.features[t], mode: n } } }),
+          g({ type: e.CHANGE_FEATURE_MODE, key: t, mode: n }).catch(() => u(`Gagal mengubah mode`)),
+          u(`Mode berhasil diubah`));
       },
-      [r, d],
+      [r, u],
     ),
     h = (0, y.useCallback)(
-      (t, n) => {
-        r?.features[t] &&
-          (i({ ...r, features: { ...r.features, [t]: { ...r.features[t], mode: n } } }),
-          e({ type: o.CHANGE_FEATURE_MODE, key: t, mode: n }).catch(() => d(`Gagal mengubah mode`)),
-          d(`Mode berhasil diubah`));
-      },
-      [r, d],
-    ),
-    g = (0, y.useCallback)(
       (t) => {
         let n = { id: `url-` + Date.now(), url: t, enabled: !0, isDefault: !1 };
         (s((e) => [...e, n]),
-          e({ type: o.ADD_URL, url: t }).catch(() => d(`Gagal menambah URL`)),
-          d(`URL berhasil ditambahkan`),
+          g({ type: e.ADD_URL, url: t }).catch(() => u(`Gagal menambah URL`)),
+          u(`URL berhasil ditambahkan`),
           k());
       },
-      [d],
+      [u],
     ),
     _ = (0, y.useCallback)(
       (t) => {
         (s((e) => e.filter((e) => e.id !== t)),
-          e({ type: o.DELETE_URL, id: t }).catch(() => d(`Gagal menghapus URL`)),
+          g({ type: e.DELETE_URL, id: t }).catch(() => u(`Gagal menghapus URL`)),
           k());
       },
-      [d],
+      [u],
     ),
     v = (0, y.useCallback)(
       (t, n) => {
         (s((e) => e.map((e) => (e.id === t ? { ...e, enabled: n } : e))),
-          e({ type: o.TOGGLE_URL, id: t, enabled: n }).catch(() => d(`Gagal mengubah URL`)),
+          g({ type: e.TOGGLE_URL, id: t, enabled: n }).catch(() => u(`Gagal mengubah URL`)),
           k());
       },
-      [d],
+      [u],
     ),
     b = (0, y.useCallback)(() => {
       confirm(`Apakah Anda yakin ingin mereset ke pengaturan default?`) &&
-        (e({ type: o.RESET_CONFIG }).catch(() => d(`Gagal mereset konfigurasi`)),
+        (g({ type: e.RESET_CONFIG }).catch(() => u(`Gagal mereset konfigurasi`)),
         l(`Reset ke default`),
         setTimeout(() => {
           O().then((e) => {
             (i(e.config), s(e.urls), k());
           });
         }, 500));
-    }, [d]);
+    }, [u]);
   return t
     ? (0, x.jsx)(`div`, {
         className: `flex items-center justify-center h-[300px]`,
@@ -401,7 +401,7 @@ function A() {
         }),
       })
     : r
-      ? (0, x.jsx)(u, {
+      ? (0, x.jsx)(o, {
           children: (0, x.jsxs)(`div`, {
             className: `w-[340px] min-h-[200px] max-h-[600px] overflow-y-auto`,
             children: [
@@ -437,8 +437,8 @@ function A() {
                 children: (0, x.jsx)(w, {
                   enabled: r.extensionEnabled,
                   role: r.currentRole,
-                  onToggle: f,
-                  onRoleChange: p,
+                  onToggle: d,
+                  onRoleChange: f,
                 }),
               }),
               (0, x.jsxs)(`div`, {
@@ -455,8 +455,8 @@ function A() {
                     features: r.features,
                     role: r.currentRole,
                     disabled: !r.extensionEnabled,
-                    onToggle: m,
-                    onModeChange: h,
+                    onToggle: p,
+                    onModeChange: m,
                   }),
                 ],
               }),
@@ -470,7 +470,7 @@ function A() {
                       children: `Domain`,
                     }),
                   }),
-                  (0, x.jsx)(E, { urls: a, onAdd: g, onRemove: _, onToggle: v }),
+                  (0, x.jsx)(E, { urls: a, onAdd: h, onRemove: _, onToggle: v }),
                 ],
               }),
               (0, x.jsx)(D, { onReload: k, onReset: b }),

@@ -12,7 +12,7 @@ interface StatusCardProps {
 
 export function StatusCard({ enabled, role, onToggle, onRoleChange }: StatusCardProps) {
   return (
-    <div className="md-card p-3 flex items-center justify-between">
+    <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-3 flex items-center justify-between">
       <div className="flex items-center gap-3">
         <Switch checked={enabled} onCheckedChange={onToggle} />
         <div>
