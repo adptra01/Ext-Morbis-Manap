@@ -201,7 +201,11 @@ export function showErrorToast(message: string): void {
     'position:fixed;top:20px;right:20px;background:#fef2f2;border-left:4px solid #ef4444;color:#991b1b;padding:14px 18px;border-radius:12px;font-size:13px;font-weight:500;z-index:100001;box-shadow:0 20px 40px -15px rgba(0,0,0,0.1);max-width:420px;animation:ext-toast-in 0.25s cubic-bezier(0.16,1,0.3,1);';
   toast.textContent = message;
   document.body.appendChild(toast);
-  setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.2s ease'; setTimeout(() => toast.remove(), 200); }, 4500);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.2s ease';
+    setTimeout(() => toast.remove(), 200);
+  }, 4500);
 }
 
 export async function showInlinePreviewSafe(url: string, filename: string): Promise<void> {
@@ -241,8 +245,7 @@ function showInlinePreview(
   else if (isImage)
     contentHtml = `<img id="ext-inline-preview-img" src="${previewUrl}" alt="Image Preview" style="width:100%;height:100%;border:none;display:block;object-fit:contain;border-radius:12px;">`;
   else
-    contentHtml =
-      `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:15px;color:#64748b;background:#f8fafc;flex-direction:column;gap:16px;border-radius:12px;">${Icons.file}<div>Preview not available for this format</div></div>`;
+    contentHtml = `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:15px;color:#64748b;background:#f8fafc;flex-direction:column;gap:16px;border-radius:12px;">${Icons.file}<div>Preview not available for this format</div></div>`;
 
   const safeFilename = filename.replace(/"/g, '&quot;').replace(/</g, '&lt;');
 
@@ -284,7 +287,7 @@ function showInlinePreview(
     const loadCheck = setInterval(() => {
       const loaded = isPdf
         ? document.getElementById('ext-inline-preview-iframe')?.getAttribute('src')
-        : document.getElementById('ext-inline-preview-img')?.complete;
+        : (document.getElementById('ext-inline-preview-img') as HTMLImageElement | null)?.complete;
       if (loaded) {
         const container = modal.querySelector('.ext-inline-preview-loading');
         if (container) container.remove();
@@ -295,7 +298,7 @@ function showInlinePreview(
 }
 
 export function registerGlobalBatchUtils(): void {
-  const g = window as Record<string, unknown>;
+  const g = window as unknown as Record<string, unknown>;
   g.SharedBatchUtils = {
     injectSharedCSS,
     safeFetch,

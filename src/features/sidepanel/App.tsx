@@ -12,7 +12,7 @@ import type { FeatureConfig, Role, CustomUrl } from './types';
 // Fallback feature list (for offline or when background unavailable)
 const FALLBACK_FEATURES: FeatureConfig[] = [
   {
-    key: 'openDetail',
+    key: 'openDetailInNewTab',
     name: 'Open Detail',
     desc: 'Buka detail di tab baru',
     roles: ['casemix', 'kasir', 'dokter', 'admin'],
@@ -48,7 +48,7 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
     roles: ['casemix', 'kasir', 'apotek', 'dokter', 'admin'],
   },
   {
-    key: 'batchUploadUrl',
+    key: 'batchUpload',
     name: 'Batch Upload URL',
     desc: 'Upload URL berkas',
     roles: ['casemix', 'admin'],
@@ -60,12 +60,13 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
     roles: ['casemix', 'dokter'],
   },
   {
-    key: 'resumeTab',
+    key: 'resumeModal',
     name: 'Resume Rajal',
     desc: 'Edit resume rawat jalan',
     roles: ['casemix', 'dokter'],
   },
   { key: 'ttvEditor', name: 'TTV Editor', desc: 'Edit tanda vital', roles: ['dokter', 'admin'] },
+  { key: 'cpptSearchFilter', name: 'CPPT Search', desc: 'Cari & filter CPPT', roles: ['casemix'] },
   { key: 'antrianTools', name: 'Antrian Tools', desc: 'Tools halaman antrian', roles: ['admin'] },
   {
     key: 'autoVerifBilling',
@@ -79,7 +80,7 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
     desc: 'Enhancer halaman konsultasi',
     roles: ['dokter'],
   },
-  { key: 'batchDeleteFiles', name: 'Batch Delete', desc: 'Hapus file massal', roles: ['admin'] },
+  { key: 'batchDelete', name: 'Batch Delete', desc: 'Hapus file massal', roles: ['admin'] },
   {
     key: 'fixJasaPelayanan',
     name: 'Fix Jasa Pelayanan',
@@ -99,7 +100,7 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
     roles: ['kasir'],
   },
   {
-    key: 'penerimaanResep',
+    key: 'resepTools',
     name: 'Penerimaan Resep',
     desc: 'Tools penerimaan resep',
     roles: ['admin'],
