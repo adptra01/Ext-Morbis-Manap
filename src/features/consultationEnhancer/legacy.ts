@@ -49,37 +49,46 @@ export function injectPageScripts(): void {
   (document.head || document.documentElement).appendChild(s);
 }
 
-function truncateCell(td: HTMLTableCellElement): void {
-  if (td.hasAttribute('data-ext-trunc')) return;
-  const html = td.innerHTML;
-  const text = (td.textContent || '').trim();
-  if (text.length <= 100) return;
-  td.setAttribute('data-ext-trunc', '1');
-  td.setAttribute('data-full-html', html);
-  const truncText = text.slice(0, 100).replace(/\n/g, ' ');
-  const setTruncView = () => {
-    td.innerHTML = `<span class="ext-trunc-text">${truncText}...</span> <a href="javascript:void 0" class="ext-trunc-toggle" style="font-size:11px;color:#2563eb;text-decoration:none;white-space:nowrap;">more</a>`;
-    td.removeAttribute('data-ext-open');
-    td.querySelector('.ext-trunc-toggle')!.onclick = (e) => {
-      e.stopPropagation();
-      setFullView();
-    };
+function getDtVersion(): { major: number; ver: string } {
+  try {
+    const $ = (window as unknown as Record<string, unknown>).jQuery as any;
+    if (!$ || !$.fn.dataTable || !$.fn.dataTable.version) return { major: 1, ver: '2.5.0' };
+    const v = $.fn.dataTable.version;
+    const m = parseInt(v.charAt(0), 10);
+    return { major: m, ver: m >= 2 ? '3.0.8' : '2.5.0' };
+  } catch {
+    return { major: 1, ver: '2.5.0' };
+  }
+}
+
+export function injectResponsiveExtension(): void {
+  if (document.getElementById('morbis-resp-dt')) return;
+  const $ = (window as unknown as Record<string, unknown>).jQuery as any;
+  if (!$ || !$.fn.dataTable || $.fn.dataTable.Responsive) return;
+  const { ver } = getDtVersion();
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = `https://cdn.datatables.net/responsive/${ver}/css/responsive.dataTables.min.css`;
+  link.id = 'morbis-resp-dt-css';
+  document.head.appendChild(link);
+  const script = document.createElement('script');
+  script.src = `https://cdn.datatables.net/responsive/${ver}/js/dataTables.responsive.min.js`;
+  script.id = 'morbis-resp-dt';
+  script.onload = () => {
+    document.querySelectorAll('table.tabel.full[data-morbis-dt]').forEach((tbl) => {
+      if ($.fn.dataTable.isDataTable(tbl)) { $(tbl).DataTable().destroy(); }
+      tbl.removeAttribute('data-morbis-dt');
+    });
+    reinitDataTable();
   };
-  const setFullView = () => {
-    td.innerHTML = (td.getAttribute('data-full-html') || html) + ' <a href="javascript:void 0" class="ext-trunc-toggle" style="font-size:11px;color:#2563eb;text-decoration:none;white-space:nowrap;">less</a>';
-    td.setAttribute('data-ext-open', '1');
-    td.querySelector('.ext-trunc-toggle')!.onclick = (e) => {
-      e.stopPropagation();
-      setTruncView();
-    };
-  };
-  setTruncView();
+  document.head.appendChild(script);
 }
 
 export function enhanceTables(): void {
   const tables = document.querySelectorAll('table.tabel.full');
   tables.forEach((tbl) => {
     if (tbl.hasAttribute('data-morbis-enhanced')) return;
+    if (tbl.closest('.cons-overlay')) return; // skip modal tables
     tbl.setAttribute('data-morbis-enhanced', '1');
 
     const headerRow = tbl.querySelector('thead tr') || tbl.querySelector('tbody tr') || tbl.querySelector('tr');
@@ -118,11 +127,6 @@ export function enhanceTables(): void {
 
       const allCells = row.querySelectorAll('td');
       if (allCells.length <= actionCol) return;
-
-      // Truncate all data cells before action column
-      allCells.forEach((td, ci) => {
-        if (ci !== actionCol) truncateCell(td);
-      });
 
       const actionCell = allCells[actionCol];
       if (actionCell.querySelector('.morbis-cons-btn')) return;
@@ -187,13 +191,17 @@ export function reinitDataTable(): void {
     if (tbl.hasAttribute('data-morbis-dt')) return;
     if (!$.fn.dataTable.isDataTable(tbl)) {
       try {
-        $(tbl).DataTable({
+        const config: Record<string, unknown> = {
           pageLength: 25,
           lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'Semua']],
           columnDefs: [{ targets: 'no-sort', orderable: false }],
           destroy: true,
           drawCallback: () => { enhanceTables(); },
-        });
+        };
+        if ($.fn.dataTable.Responsive) {
+          config.responsive = true;
+        }
+        $(tbl).DataTable(config);
       } catch { /* silent */ }
     }
     tbl.setAttribute('data-morbis-dt', '1');
