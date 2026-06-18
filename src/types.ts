@@ -19,4 +19,11 @@ export interface MessagePayload {
   mode?: string;
   url?: string;
   id?: string;
+
+  // Batch / tab-action fields
+  feature?: string;
+  data?: Record<string, unknown>;
+  action?: string;
+  payload?: unknown;
+  tabId?: number;
 }

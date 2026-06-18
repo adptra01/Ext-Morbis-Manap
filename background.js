@@ -312,6 +312,44 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       })();
       return true;
     }
+
+    case 'PAGE_CONTEXT': {
+      // Forward to all side panels
+      chrome.runtime.sendMessage({ type: 'PAGE_CONTEXT', feature: message.feature, data: message.data });
+      sendResponse({ success: true });
+      return true;
+    }
+
+    case 'TAB_ACTION': {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]?.id) {
+          chrome.tabs.sendMessage(tabs[0].id, { type: 'TAB_ACTION', action: message.action, payload: message.payload }).catch(() => {});
+          sendResponse({ success: true });
+        } else {
+          sendResponse({ success: false });
+        }
+      });
+      return true;
+    }
+
+    case 'TAB_ACTION_RESULT': {
+      chrome.runtime.sendMessage({ type: 'TAB_ACTION_RESULT', action: message.action, data: message.data });
+      sendResponse({ success: true });
+      return true;
+    }
+
+    case 'BATCH_UPLOAD_ACTION':
+    case 'BATCH_DELETE_ACTION': {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]?.id) {
+          chrome.tabs.sendMessage(tabs[0].id, { type: message.type, payload: message.payload }).catch(() => {});
+          sendResponse({ success: true });
+        } else {
+          sendResponse({ success: false });
+        }
+      });
+      return true;
+    }
   }
 });
 

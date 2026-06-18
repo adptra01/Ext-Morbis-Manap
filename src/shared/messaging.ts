@@ -14,6 +14,15 @@ export const MessageTypes = {
   TOGGLE_URL: 'TOGGLE_URL',
   OPEN_SIDE_PANEL: 'OPEN_SIDE_PANEL',
   CONFIG_CHANGED: 'CONFIG_CHANGED',
+
+  // --- Batch feature actions (content script ↔ side panel via background proxy) ---
+  PAGE_CONTEXT: 'PAGE_CONTEXT',
+  GET_PAGE_CONTEXT: 'GET_PAGE_CONTEXT',
+  TAB_ACTION: 'TAB_ACTION',
+  TAB_ACTION_RESULT: 'TAB_ACTION_RESULT',
+  BATCH_UPLOAD_ACTION: 'BATCH_UPLOAD_ACTION',
+  BATCH_DELETE_ACTION: 'BATCH_DELETE_ACTION',
+  PROXY_FETCH: 'PROXY_FETCH',
 } as const;
 
 export type MessageType = (typeof MessageTypes)[keyof typeof MessageTypes];
@@ -32,6 +41,25 @@ type RequestMap = {
   TOGGLE_URL: { type: 'TOGGLE_URL'; id: string; enabled: boolean };
   OPEN_SIDE_PANEL: { type: 'OPEN_SIDE_PANEL' };
   CONFIG_CHANGED: { type: 'CONFIG_CHANGED' };
+
+  // Content script → Background: notify page state
+  PAGE_CONTEXT: { type: 'PAGE_CONTEXT'; feature: string; data: Record<string, unknown> };
+
+  // Side panel → Background: get current tab context
+  GET_PAGE_CONTEXT: { type: 'GET_PAGE_CONTEXT' };
+
+  // Side panel → Background → Content script: execute action
+  TAB_ACTION: { type: 'TAB_ACTION'; action: string; payload: unknown };
+
+  // Content script → Background → Side panel: action result
+  TAB_ACTION_RESULT: { type: 'TAB_ACTION_RESULT'; action: string; data: unknown };
+
+  // Proxy fetch (side panel → background: fetch HTML from hospital server)
+  PROXY_FETCH: { type: 'PROXY_FETCH'; url: string; method: string; data: Record<string, string> };
+
+  // Batch actions
+  BATCH_UPLOAD_ACTION: { type: 'BATCH_UPLOAD_ACTION'; payload: unknown };
+  BATCH_DELETE_ACTION: { type: 'BATCH_DELETE_ACTION'; payload: unknown };
 };
 
 type ResponseMap = {
@@ -48,6 +76,14 @@ type ResponseMap = {
   TOGGLE_URL: { success: true };
   OPEN_SIDE_PANEL: { success: true };
   CONFIG_CHANGED: { success: true };
+
+  PAGE_CONTEXT: { success: true };
+  GET_PAGE_CONTEXT: { context: { feature: string; data: Record<string, unknown> } | null };
+  TAB_ACTION: { success: true };
+  TAB_ACTION_RESULT: { success: true };
+  BATCH_UPLOAD_ACTION: { success: true };
+  BATCH_DELETE_ACTION: { success: true };
+  PROXY_FETCH: { success: boolean; html?: string; error?: string };
 };
 
 export function sendMessage<T extends MessageType>(

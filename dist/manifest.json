@@ -74,7 +74,11 @@
         "http://192.168.8.4/inventory/penjualan-resep-edit/*",
         "http://103.147.236.140/inventory/penjualan-resep-edit/*"
       ],
-      "js": ["core.js", "features/penerimaan_resep/main.js", "init.js"],
+      "js": [
+        "core.js",
+        "features/penerimaan_resep/main.js",
+        "init.js"
+      ],
       "run_at": "document_end",
       "all_frames": false
     },
@@ -102,7 +106,9 @@
         "http://192.168.8.4/inventory/penjualan-bebas*",
         "http://103.147.236.140/inventory/penjualan-bebas*"
       ],
-      "js": ["features/fixJasaPelayanan.js"],
+      "js": [
+        "features/fixJasaPelayanan.js"
+      ],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
@@ -112,7 +118,10 @@
         "http://103.147.236.140/admisi/pengajuan_konsultasi/konsultasi*",
         "http://192.168.8.4/admisi/pengajuan_konsultasi/konsultasi*"
       ],
-      "js": ["core.js", "init.js"],
+      "js": [
+        "core.js",
+        "init.js"
+      ],
       "run_at": "document_end",
       "all_frames": false
     },
@@ -121,7 +130,9 @@
         "http://103.147.236.140/admisi/pengajuan_konsultasi/konsultasi*",
         "http://192.168.8.4/admisi/pengajuan_konsultasi/konsultasi*"
       ],
-      "js": ["features/consultationEnhancer.js"],
+      "js": [
+        "features/consultationEnhancer.js"
+      ],
       "run_at": "document_end",
       "world": "MAIN",
       "all_frames": false
@@ -131,7 +142,9 @@
         "http://192.168.8.4/billing/pembayaran-new/billing-verifikasi*",
         "http://103.147.236.140/billing/pembayaran-new/billing-verifikasi*"
       ],
-      "js": ["features/autoVerifBilling.js"],
+      "js": [
+        "features/autoVerifBilling.js"
+      ],
       "run_at": "document_end",
       "world": "MAIN",
       "all_frames": false
@@ -141,7 +154,9 @@
         "http://192.168.8.4/admisi/detail-rawat-inap/tambah-resume-ri*",
         "http://103.147.236.140/admisi/detail-rawat-inap/tambah-resume-ri*"
       ],
-      "js": ["features/resumeValidator.js"],
+      "js": [
+        "features/resumeValidator.js"
+      ],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
@@ -151,7 +166,9 @@
         "http://192.168.8.4/admisi/detail-rawat-inap/surat-pengantar-ri*",
         "http://103.147.236.140/admisi/detail-rawat-inap/surat-pengantar-ri*"
       ],
-      "js": ["features/ttvEditor.js"],
+      "js": [
+        "features/ttvEditor.js"
+      ],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
@@ -161,7 +178,9 @@
         "http://192.168.8.4/v2/m-klaim/detail-v2-refaktor*",
         "http://103.147.236.140/v2/m-klaim/detail-v2-refaktor*"
       ],
-      "js": ["features/resumeTab.js"],
+      "js": [
+        "features/resumeTab.js"
+      ],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
@@ -175,7 +194,10 @@
         "http://192.168.8.4/counter-antrian/counter*",
         "http://103.147.236.140/counter-antrian/counter*"
       ],
-      "js": ["core.js", "init.js"],
+      "js": [
+        "core.js",
+        "init.js"
+      ],
       "run_at": "document_end",
       "all_frames": false
     },
@@ -188,19 +210,39 @@
         "http://192.168.8.4/counter-antrian/counter*",
         "http://103.147.236.140/counter-antrian/counter*"
       ],
-      "js": ["features/antrianTools.js"],
+      "js": [
+        "features/antrianTools.js"
+      ],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
     }
   ],
-  "permissions": ["activeTab", "alarms", "offscreen", "scripting", "sidePanel", "storage"],
-  "host_permissions": ["http://192.168.8.4/*", "http://103.147.236.140/*"],
+  "permissions": [
+    "activeTab",
+    "alarms",
+    "offscreen",
+    "scripting",
+    "sidePanel",
+    "storage"
+  ],
+  "host_permissions": [
+    "http://192.168.8.4/*",
+    "http://103.147.236.140/*"
+  ],
   "web_accessible_resources": [
     {
-      "resources": ["ui/shadow.css"],
-      "matches": ["http://192.168.8.4/*", "http://103.147.236.140/*"]
+      "resources": [
+        "ui/shadow.css"
+      ],
+      "matches": [
+        "http://192.168.8.4/*",
+        "http://103.147.236.140/*"
+      ]
     }
   ],
-  "optional_host_permissions": ["http://*/*", "https://*/*"]
+  "optional_host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ]
 }

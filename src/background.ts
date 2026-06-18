@@ -5,6 +5,9 @@ import { createLogger } from './shared/logger';
 
 const log = createLogger('Background');
 
+/** Tracks the most recent page context reported by content scripts, keyed by tabId */
+const tabContexts = new Map<number, { feature: string; data: Record<string, unknown> }>();
+
 const STORAGE_KEY = 'extensionConfig';
 const URLS_STORAGE_KEY = 'extensionCustomUrls';
 
@@ -371,6 +374,85 @@ chrome.runtime.onMessage.addListener(
           }
           sendResponse({ success: true });
         })();
+        return true;
+      }
+
+      // --- Batch feature actions: proxy between content script & side panel ---
+
+      case 'PAGE_CONTEXT': {
+        const tabId = _sender.tab?.id;
+        if (tabId && validated.feature) {
+          const v = validated as unknown as Record<string, unknown>;
+          tabContexts.set(tabId, {
+            feature: validated.feature,
+            data: v.data as Record<string, unknown>,
+          });
+          log.log('Page context stored for tab', tabId, ':', validated.feature);
+        }
+        sendResponse({ success: true });
+        return true;
+      }
+
+      case 'GET_PAGE_CONTEXT': {
+        (async () => {
+          const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+          const tabId = tabs[0]?.id;
+          if (tabId && tabContexts.has(tabId)) {
+            sendResponse({ context: tabContexts.get(tabId)! });
+          } else {
+            sendResponse({ context: null });
+          }
+        })();
+        return true;
+      }
+
+      case 'PROXY_FETCH': {
+        (async () => {
+          try {
+            const { url, method = 'GET', data } = validated as unknown as Record<string, unknown>;
+            let fetchUrl = url as string;
+            const opts: RequestInit = { method: method as string, credentials: 'include' as RequestCredentials };
+            if (data && typeof data === 'object') {
+              const params = new URLSearchParams(data as Record<string, string>);
+              if (method === 'POST') {
+                opts.body = params;
+                opts.headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+              } else {
+                fetchUrl += '?' + params.toString();
+              }
+            }
+            const res = await fetch(fetchUrl, opts);
+            const text = await res.text();
+            sendResponse({ success: true, html: text });
+          } catch (e) {
+            sendResponse({ success: false, error: String(e) });
+          }
+        })();
+        return true;
+      }
+
+      case 'TAB_ACTION': {
+        (async () => {
+          const targetTabId = (validated as unknown as Record<string, unknown>).tabId as number | undefined;
+          if (!targetTabId) {
+            sendResponse({ success: false });
+            return;
+          }
+          try {
+            await chrome.tabs.sendMessage(targetTabId, validated);
+            sendResponse({ success: true });
+          } catch (err) {
+            log.log('TAB_ACTION forward failed:', err);
+            sendResponse({ success: false });
+          }
+        })();
+        return true;
+      }
+
+      case 'TAB_ACTION_RESULT': {
+        // Forward result to all extension pages (side panel listens for this)
+        chrome.runtime.sendMessage(validated).catch(() => {});
+        sendResponse({ success: true });
         return true;
       }
 

@@ -5,6 +5,10 @@ import { ErrorBoundary } from '../../ui/components/ErrorBoundary';
 import { StatusCard } from './StatusCard';
 import { FeaturesPanel } from './FeaturesPanel';
 import { DomainPanel } from './DomainPanel';
+import { BatchUploadPanel } from './BatchUploadPanel';
+import { BatchDeletePanel } from './BatchDeletePanel';
+import { ConsultationDetailPanel } from './ConsultationDetailPanel';
+import { ConsultationInfoPanel } from './ConsultationInfoPanel';
 import { Footer } from './Footer';
 import { configToFeatureList, configToToggles } from './utils';
 import type { FeatureConfig, Role, CustomUrl } from './types';
@@ -97,12 +101,42 @@ const DEFAULT_URLS: CustomUrl[] = [
 export function App() {
   const [enabled, setEnabled] = useState(true);
   const [role, setRole] = useState<Role>('casemix');
-  const [activeTab, setActiveTab] = useState<'features' | 'domain'>('features');
+  const [activeTab, setActiveTab] = useState<'features' | 'domain' | 'tools'>('features');
+  const [toolsSubTab, setToolsSubTab] = useState<'upload' | 'delete'>('upload');
   const [features, setFeatures] = useState<Record<string, boolean>>({});
   const [featuresList, setFeaturesList] = useState<FeatureConfig[]>(FALLBACK_FEATURES);
   const [urls, setUrls] = useState<CustomUrl[]>(DEFAULT_URLS);
   const [toast, setToast] = useState<string | null>(null);
+  const [tabId, setTabId] = useState<number | null>(null);
+  const [pageContext, setPageContext] = useState<{ feature: string; data: Record<string, unknown> } | null>(null);
   const { theme, resolved, setTheme } = useDarkMode();
+
+  // Load active tab ID & context
+  useEffect(() => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const activeTabId = tabs[0]?.id;
+      if (activeTabId) {
+        setTabId(activeTabId);
+        sendMessage<'GET_PAGE_CONTEXT'>({ type: 'GET_PAGE_CONTEXT' as any })
+          .then((res: any) => {
+            if (res?.context) {
+              setPageContext(res.context);
+              setActiveTab('tools');
+            }
+          })
+          .catch(console.error);
+      }
+    });
+
+    const handleMessage = (message: any) => {
+      if (message.type === 'PAGE_CONTEXT') {
+        setPageContext({ feature: message.feature, data: message.data });
+        setActiveTab('tools');
+      }
+    };
+    chrome.runtime.onMessage.addListener(handleMessage);
+    return () => chrome.runtime.onMessage.removeListener(handleMessage);
+  }, []);
 
   useEffect(() => {
     // Load config from background (unified source of truth)
@@ -324,6 +358,19 @@ export function App() {
           >
             Domain
           </button>
+          <button
+            onClick={() => setActiveTab('tools')}
+            className={`px-4 py-2 text-md-sm font-medium border-b-2 transition-colors -mb-[1px] flex items-center gap-1.5 ${
+              activeTab === 'tools'
+                ? 'text-[#2469f0] border-[#2469f0]'
+                : 'text-muted-foreground border-transparent hover:text-foreground'
+            }`}
+          >
+            <span>Aksi Halaman</span>
+            {pageContext && (
+              <span className="size-1.5 bg-primary rounded-full inline-block animate-pulse shrink-0" />
+            )}
+          </button>
         </div>
 
         {/* Content */}
@@ -345,6 +392,66 @@ export function App() {
               onRemove={handleRemoveUrl}
               onToggle={handleToggleUrl}
             />
+          )}
+          {activeTab === 'tools' && (
+            <div className="space-y-4">
+              {pageContext?.feature === 'mKlaimDetail' && tabId && (
+                <div className="space-y-4">
+                  <div className="flex p-1 bg-muted rounded-lg">
+                    <button
+                      onClick={() => setToolsSubTab('upload')}
+                      className={`flex-1 py-1 text-[11px] font-semibold rounded-md transition-all ${
+                        toolsSubTab === 'upload'
+                          ? 'bg-background text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      Upload Dokumen
+                    </button>
+                    <button
+                      onClick={() => setToolsSubTab('delete')}
+                      className={`flex-1 py-1 text-[11px] font-semibold rounded-md transition-all ${
+                        toolsSubTab === 'delete'
+                          ? 'bg-background text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      Hapus Dokumen
+                    </button>
+                  </div>
+                  {toolsSubTab === 'upload' ? (
+                    <BatchUploadPanel tabId={tabId} />
+                  ) : (
+                    <BatchDeletePanel tabId={tabId} />
+                  )}
+                </div>
+              )}
+              {pageContext?.feature === 'batchUpload' && tabId && (
+                <BatchUploadPanel tabId={tabId} />
+              )}
+              {pageContext?.feature === 'batchDelete' && tabId && (
+                <BatchDeletePanel tabId={tabId} />
+              )}
+              {pageContext?.feature === 'consultationDetail' && pageContext?.data && (
+                <ConsultationDetailPanel data={pageContext.data as Record<string, string>} />
+              )}
+              {pageContext?.feature === 'consultationInfo' && pageContext?.data && (
+                <ConsultationInfoPanel data={pageContext.data as Record<string, string>} />
+              )}
+              {(!pageContext || !tabId) && (
+                <div className="text-center py-12 px-4 space-y-2.5">
+                  <div className="size-10 rounded-full bg-accent flex items-center justify-center mx-auto text-muted-foreground">
+                    <svg className="size-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-md-sm font-semibold text-foreground">Tidak Ada Aksi Halaman</h3>
+                  <p className="text-md-xs text-muted-foreground leading-relaxed">
+                    Buka halaman detail rekam medis pasien di SIMRS Morbis untuk mengaktifkan peralatan halaman (batch upload / batch delete).
+                  </p>
+                </div>
+              )}
+            </div>
           )}
         </div>
 

@@ -707,6 +707,116 @@ Tindakan ini tidak bisa di-undo.`
     console.log("[BatchDelete] URL check:", { path, pathMatch: match, hasIdVisit });
     return match && hasIdVisit;
   }
+  async function crawlDokumenPasienDeleteToSidepanel() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const idVisit = urlParams.get("id_visit");
+    if (!idVisit) {
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_DELETE_ERROR",
+        data: { error: "Parameter id_visit tidak ditemukan di URL." }
+      }).catch(console.error);
+      return;
+    }
+    try {
+      const targetUrl = `${window.location.origin}${BATCH_DELETE_CONFIG.fetchListUrl}?id_visit=${idVisit}&page=85&id_kunjungan=`;
+      const response = await fetch(targetUrl);
+      if (!response.ok) throw new Error("Gagal memuat halaman dokumen pasien");
+      const html = await response.text();
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const rows = doc.querySelectorAll("table.data-list.tabel tr");
+      deleteQueue = [];
+      for (let i = 1; i < rows.length; i++) {
+        const tr = rows[i];
+        const deleteBtn = tr.querySelector('button[onclick*="hapus"]');
+        let id_dokumen = null;
+        if (deleteBtn) {
+          const onclickStr = deleteBtn.getAttribute("onclick");
+          const match = onclickStr?.match(/hapus\(([^)]+)\)/);
+          if (match) {
+            id_dokumen = match[1].replace(/['"]/g, "").trim();
+          }
+        }
+        if (!id_dokumen) continue;
+        const linkEl = tr.querySelector("td:nth-child(2) a");
+        const filename = tr.cells[1]?.textContent?.trim() || "unknown";
+        const keterangan = tr.cells[2]?.textContent?.trim() || "-";
+        const tglFile = tr.cells[3]?.textContent?.trim() || "-";
+        const tglUpload = tr.cells[4]?.textContent?.trim() || "-";
+        const href = linkEl?.getAttribute("href") || "";
+        const url = href.startsWith("http") ? href : `${window.location.origin}${href}`;
+        deleteQueue.push({
+          id_dokumen,
+          filename,
+          keterangan,
+          tglFile,
+          tglUpload,
+          url,
+          selected: false,
+          status: "pending"
+        });
+      }
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_DELETE_CRAWL_RESULT",
+        data: { items: deleteQueue }
+      }).catch(console.error);
+    } catch (err) {
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_DELETE_ERROR",
+        data: { error: err.message }
+      }).catch(console.error);
+    }
+  }
+  async function deleteSingleFromQueueToSidepanel(index, id_dokumen) {
+    const item = deleteQueue[index];
+    if (!item) return;
+    const ok = await deleteDokumen(id_dokumen);
+    chrome.runtime.sendMessage({
+      type: "TAB_ACTION_RESULT",
+      action: "BATCH_DELETE_SINGLE_RESULT",
+      data: { index, success: ok, error: ok ? void 0 : "Gagal memproses penghapusan di server." }
+    }).catch(console.error);
+  }
+  async function startBatchDeleteToSidepanel() {
+    const selected = deleteQueue.filter((i) => i.selected);
+    if (selected.length === 0) return;
+    let success = 0, fail = 0;
+    for (let i = 0; i < selected.length; i++) {
+      const item = selected[i];
+      item.status = "deleting";
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_DELETE_PROGRESS",
+        data: {
+          percent: i / selected.length * 100,
+          status: `Menghapus: ${item.filename} (${i + 1}/${selected.length})...`,
+          items: deleteQueue,
+          finished: false
+        }
+      }).catch(console.error);
+      const ok = await deleteDokumen(item.id_dokumen);
+      if (ok) {
+        item.status = "success";
+        success++;
+      } else {
+        item.status = "error";
+        fail++;
+      }
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_DELETE_PROGRESS",
+        data: {
+          percent: (i + 1) / selected.length * 100,
+          status: `Diproses ${i + 1}/${selected.length} - Sukses: ${success}, Gagal: ${fail}`,
+          items: deleteQueue,
+          finished: i === selected.length - 1
+        }
+      }).catch(console.error);
+      await new Promise((r) => setTimeout(r, BATCH_DELETE_CONFIG.delayBetweenDelete));
+    }
+  }
   function initBatchDeleteFeature() {
     if (!isBatchDeleteTargetPage()) return;
     if (!g.currentConfig?.features?.batchDelete?.enabled) return;
@@ -714,6 +824,35 @@ Tindakan ini tidak bisa di-undo.`
     try {
       console.log("[BatchDelete] Init starting...");
       injectBatchDeleteCSS();
+      chrome.runtime.sendMessage({
+        type: "PAGE_CONTEXT",
+        feature: "mKlaimDetail",
+        data: {
+          idVisit: new URLSearchParams(window.location.search).get("id_visit")
+        }
+      }).catch(console.error);
+      chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+        if (message.type === "TAB_ACTION") {
+          const { action, payload } = message;
+          if (action === "BATCH_DELETE_CRAWL") {
+            crawlDokumenPasienDeleteToSidepanel();
+          } else if (action === "BATCH_DELETE_UPDATE_ITEMS") {
+            deleteQueue = payload.items;
+          } else if (action === "BATCH_DELETE_PREVIEW") {
+            showInlinePreviewSafe(payload.url, payload.filename).catch(() => {
+              window.open(payload.url, "_blank");
+            });
+          } else if (action === "BATCH_DELETE_SINGLE") {
+            deleteSingleFromQueueToSidepanel(payload.index, payload.id_dokumen);
+          } else if (action === "BATCH_DELETE_START") {
+            startBatchDeleteToSidepanel();
+          }
+          sendResponse({ success: true });
+        } else if (message.type === "BATCH_DELETE_ACTION") {
+          sendResponse({ success: true });
+        }
+        return true;
+      });
       setTimeout(renderBatchDeleteButton, 500);
       console.log("[BatchDelete] Init complete, button should be rendered");
     } catch (err) {

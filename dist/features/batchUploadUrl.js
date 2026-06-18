@@ -887,10 +887,212 @@ var __morbis_feature = (() => {
     if (!/^\/v2\/m-klaim\/detail-v2-refaktor\/?$/.test(window.location.pathname)) return false;
     return !!new URLSearchParams(window.location.search).get("id_visit");
   }
+  async function crawlDokumenPasienToSidepanel() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const idVisit = urlParams.get("id_visit");
+    if (!idVisit) {
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_UPLOAD_ERROR",
+        data: { error: "Parameter id_visit tidak ditemukan di URL." }
+      }).catch(console.error);
+      return;
+    }
+    try {
+      const targetUrl = `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${idVisit}&page=85&id_kunjungan=`;
+      const response = await fetch(targetUrl);
+      if (!response.ok) throw new Error("Gagal memuat halaman dokumen pasien");
+      const html = await response.text();
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const rows = doc.querySelectorAll("table.data-list.tabel tr");
+      const urls = [];
+      for (let i = 1; i < rows.length; i++) {
+        const tr = rows[i];
+        const linkEl = tr.querySelector("td:nth-child(2) a");
+        if (!linkEl) continue;
+        const urlPath = linkEl.getAttribute("href");
+        if (!urlPath?.includes("/assets/dokumen-pasien/")) continue;
+        const fullUrl = urlPath.startsWith("http") ? urlPath : `${window.location.origin}${urlPath}`;
+        const filenameTabel = tr.cells[1]?.textContent?.trim() || "";
+        const keteranganTd = tr.cells[2]?.textContent?.trim() || "";
+        const tglFile = tr.cells[3]?.textContent?.trim() || "";
+        const tglUpload = tr.cells[4]?.textContent?.trim() || "";
+        urls.push({ url: fullUrl, filenameTabel, tglFile, tglUpload, keteranganTabel: keteranganTd });
+      }
+      if (urls.length === 0) {
+        chrome.runtime.sendMessage({
+          type: "TAB_ACTION_RESULT",
+          action: "BATCH_UPLOAD_CRAWL_RESULT",
+          data: { items: [] }
+        }).catch(console.error);
+        return;
+      }
+      batchQueue = urls.map((item) => {
+        const metadata = parseMetadataFromUrl(item.url);
+        metadata.tglFileTabel = item.tglFile;
+        metadata.tglUploadTabel = item.tglUpload;
+        metadata.filename = item.filenameTabel || metadata.filename;
+        metadata.keterangan = item.keteranganTabel || metadata.filename || "-";
+        metadata.selected = false;
+        return metadata;
+      });
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_UPLOAD_CRAWL_RESULT",
+        data: { items: batchQueue }
+      }).catch(console.error);
+    } catch (err) {
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_UPLOAD_ERROR",
+        data: { error: err.message }
+      }).catch(console.error);
+    }
+  }
+  async function runBatchQueueToSidepanel() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const idVisitStr = urlParams.get("id_visit") || "";
+    if (!idVisitStr) {
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_UPLOAD_ERROR",
+        data: { error: "ID Visit tidak ditemukan di URL" }
+      }).catch(console.error);
+      return;
+    }
+    let successCount = 0;
+    let errorCount = 0;
+    const itemsToUpload = batchQueue.filter((item) => item.selected !== false);
+    const total = itemsToUpload.length;
+    if (total === 0) {
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_UPLOAD_ERROR",
+        data: { error: "Tidak ada dokumen yang dipilih." }
+      }).catch(console.error);
+      return;
+    }
+    for (let i = 0; i < total; i++) {
+      const metadata = itemsToUpload[i];
+      metadata.status = "uploading";
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_UPLOAD_PROGRESS",
+        data: {
+          percent: i / total * 100,
+          status: `Mengupload: ${metadata.filename} (${i + 1}/${total})...`,
+          items: batchQueue,
+          finished: false
+        }
+      }).catch(console.error);
+      try {
+        const result = await processAndUploadSingleUrl(metadata, idVisitStr);
+        if (result.success) {
+          metadata.status = "success";
+          successCount++;
+        } else {
+          metadata.status = "error";
+          metadata.error = result.error;
+          errorCount++;
+        }
+      } catch (error) {
+        metadata.status = "error";
+        metadata.error = error.message;
+        errorCount++;
+      }
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_UPLOAD_PROGRESS",
+        data: {
+          percent: (i + 1) / total * 100,
+          status: `Diproses: ${i + 1}/${total} - Sukses: ${successCount}, Gagal: ${errorCount}`,
+          items: batchQueue,
+          finished: i === total - 1
+        }
+      }).catch(console.error);
+    }
+  }
+  async function testSingleUploadToSidepanel() {
+    if (batchQueue.length === 0) return;
+    const firstItem = batchQueue[0];
+    const urlParams = new URLSearchParams(window.location.search);
+    const idVisitStr = urlParams.get("id_visit") || "";
+    firstItem.status = "uploading";
+    chrome.runtime.sendMessage({
+      type: "TAB_ACTION_RESULT",
+      action: "BATCH_UPLOAD_PROGRESS",
+      data: {
+        percent: 50,
+        status: `Testing single upload: ${firstItem.filename}...`,
+        items: batchQueue,
+        finished: false
+      }
+    }).catch(console.error);
+    try {
+      const result = await processAndUploadSingleUrl(firstItem, idVisitStr);
+      if (result.success) {
+        firstItem.status = "success";
+      } else {
+        firstItem.status = "error";
+        firstItem.error = result.error;
+      }
+    } catch (error) {
+      firstItem.status = "error";
+      firstItem.error = error.message;
+    }
+    chrome.runtime.sendMessage({
+      type: "TAB_ACTION_RESULT",
+      action: "BATCH_UPLOAD_PROGRESS",
+      data: {
+        percent: 100,
+        status: firstItem.status === "success" ? "Test upload sukses!" : "Test upload gagal!",
+        items: batchQueue,
+        finished: true
+      }
+    }).catch(console.error);
+  }
   function initBatchUploadUrlFeature() {
     if (!g.currentConfig?.features?.batchUpload?.enabled || !g.ExtensionCore.isFeatureAllowed("batchUpload"))
       return;
     if (!isMklaimDetailPage()) return;
+    chrome.runtime.sendMessage({
+      type: "PAGE_CONTEXT",
+      feature: "mKlaimDetail",
+      data: {
+        idVisit: new URLSearchParams(window.location.search).get("id_visit"),
+        tanggalMasuk: getTanggalMasukFromPage()
+      }
+    }).catch(console.error);
+    chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+      if (message.type === "TAB_ACTION") {
+        const { action, payload } = message;
+        if (action === "BATCH_UPLOAD_ANALYZE") {
+          const urls = extractUrls(payload.inputText);
+          batchQueue = urls.map((url) => parseMetadataFromUrl(url));
+          chrome.runtime.sendMessage({
+            type: "TAB_ACTION_RESULT",
+            action: "BATCH_UPLOAD_ANALYZE_RESULT",
+            data: { items: batchQueue }
+          }).catch(console.error);
+        } else if (action === "BATCH_UPLOAD_CRAWL") {
+          crawlDokumenPasienToSidepanel();
+        } else if (action === "BATCH_UPLOAD_UPDATE_ITEMS") {
+          batchQueue = payload.items;
+        } else if (action === "BATCH_UPLOAD_PREVIEW") {
+          showInlinePreviewSafe(payload.url, payload.filename).catch(() => {
+            window.open(payload.url, "_blank");
+          });
+        } else if (action === "BATCH_UPLOAD_START") {
+          runBatchQueueToSidepanel();
+        } else if (action === "BATCH_UPLOAD_TEST_SINGLE") {
+          testSingleUploadToSidepanel();
+        }
+        sendResponse({ success: true });
+      } else if (message.type === "BATCH_UPLOAD_ACTION") {
+        sendResponse({ success: true });
+      }
+      return true;
+    });
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", renderBatchUploadButton);
     } else {

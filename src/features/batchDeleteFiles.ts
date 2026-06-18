@@ -579,6 +579,138 @@ function isBatchDeleteTargetPage(): boolean {
   return match && hasIdVisit;
 }
 
+// --- Sidepanel specific wrappers ---
+
+async function crawlDokumenPasienDeleteToSidepanel(): Promise<void> {
+  const urlParams = new URLSearchParams(window.location.search);
+  const idVisit = urlParams.get('id_visit');
+
+  if (!idVisit) {
+    chrome.runtime.sendMessage({
+      type: 'TAB_ACTION_RESULT',
+      action: 'BATCH_DELETE_ERROR',
+      data: { error: 'Parameter id_visit tidak ditemukan di URL.' },
+    }).catch(console.error);
+    return;
+  }
+
+  try {
+    const targetUrl = `${window.location.origin}${BATCH_DELETE_CONFIG.fetchListUrl}?id_visit=${idVisit}&page=85&id_kunjungan=`;
+    const response = await fetch(targetUrl);
+
+    if (!response.ok) throw new Error('Gagal memuat halaman dokumen pasien');
+    const html = await response.text();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+
+    const rows = doc.querySelectorAll('table.data-list.tabel tr');
+    deleteQueue = [];
+
+    for (let i = 1; i < rows.length; i++) {
+      const tr = rows[i];
+      const deleteBtn = tr.querySelector('button[onclick*="hapus"]');
+      let id_dokumen: string | null = null;
+
+      if (deleteBtn) {
+        const onclickStr = deleteBtn.getAttribute('onclick');
+        const match = onclickStr?.match(/hapus\(([^)]+)\)/);
+        if (match) {
+          id_dokumen = match[1].replace(/['"]/g, '').trim();
+        }
+      }
+
+      if (!id_dokumen) continue;
+
+      const linkEl = tr.querySelector('td:nth-child(2) a');
+      const filename = tr.cells[1]?.textContent?.trim() || 'unknown';
+      const keterangan = tr.cells[2]?.textContent?.trim() || '-';
+      const tglFile = tr.cells[3]?.textContent?.trim() || '-';
+      const tglUpload = tr.cells[4]?.textContent?.trim() || '-';
+      const href = linkEl?.getAttribute('href') || '';
+      const url = href.startsWith('http') ? href : `${window.location.origin}${href}`;
+
+      deleteQueue.push({
+        id_dokumen,
+        filename,
+        keterangan,
+        tglFile,
+        tglUpload,
+        url,
+        selected: false,
+        status: 'pending',
+      });
+    }
+
+    chrome.runtime.sendMessage({
+      type: 'TAB_ACTION_RESULT',
+      action: 'BATCH_DELETE_CRAWL_RESULT',
+      data: { items: deleteQueue },
+    }).catch(console.error);
+  } catch (err) {
+    chrome.runtime.sendMessage({
+      type: 'TAB_ACTION_RESULT',
+      action: 'BATCH_DELETE_ERROR',
+      data: { error: (err as Error).message },
+    }).catch(console.error);
+  }
+}
+
+async function deleteSingleFromQueueToSidepanel(index: number, id_dokumen: string): Promise<void> {
+  const item = deleteQueue[index];
+  if (!item) return;
+
+  const ok = await deleteDokumen(id_dokumen);
+  chrome.runtime.sendMessage({
+    type: 'TAB_ACTION_RESULT',
+    action: 'BATCH_DELETE_SINGLE_RESULT',
+    data: { index, success: ok, error: ok ? undefined : 'Gagal memproses penghapusan di server.' },
+  }).catch(console.error);
+}
+
+async function startBatchDeleteToSidepanel(): Promise<void> {
+  const selected = deleteQueue.filter((i) => i.selected);
+  if (selected.length === 0) return;
+
+  let success = 0, fail = 0;
+
+  for (let i = 0; i < selected.length; i++) {
+    const item = selected[i];
+    item.status = 'deleting';
+
+    chrome.runtime.sendMessage({
+      type: 'TAB_ACTION_RESULT',
+      action: 'BATCH_DELETE_PROGRESS',
+      data: {
+        percent: (i / selected.length) * 100,
+        status: `Menghapus: ${item.filename} (${i + 1}/${selected.length})...`,
+        items: deleteQueue,
+        finished: false,
+      },
+    }).catch(console.error);
+
+    const ok = await deleteDokumen(item.id_dokumen);
+    if (ok) {
+      item.status = 'success';
+      success++;
+    } else {
+      item.status = 'error';
+      fail++;
+    }
+
+    chrome.runtime.sendMessage({
+      type: 'TAB_ACTION_RESULT',
+      action: 'BATCH_DELETE_PROGRESS',
+      data: {
+        percent: ((i + 1) / selected.length) * 100,
+        status: `Diproses ${i + 1}/${selected.length} - Sukses: ${success}, Gagal: ${fail}`,
+        items: deleteQueue,
+        finished: i === selected.length - 1,
+      },
+    }).catch(console.error);
+
+    await new Promise((r) => setTimeout(r, BATCH_DELETE_CONFIG.delayBetweenDelete));
+  }
+}
+
 function initBatchDeleteFeature(): void {
   if (!isBatchDeleteTargetPage()) return;
   if (!g.currentConfig?.features?.batchDelete?.enabled) return;
@@ -587,6 +719,65 @@ function initBatchDeleteFeature(): void {
   try {
     console.log('[BatchDelete] Init starting...');
     injectBatchDeleteCSS();
+
+    // Report page context on load (only if we have both upload & delete page active)
+    // We can report multiple contexts, but background only stores the last one.
+    // However, if we have both, we can just let it overlap, or let the side panel show both or one of them.
+    // Actually, both live on /v2/m-klaim/detail-v2-refaktor, which means BOTH contexts can be reported!
+    // Since they live on the same page, we can report 'batchUpload' or 'batchDelete' depending on user choice,
+    // or report a combined context!
+    // Wait! Let's think about this: both features are active on the EXACT same page!
+    // So the page context can just be 'batchUpload' and we can let side panel switch between BatchUpload and BatchDelete,
+    // OR we can report both.
+    // If we look at App.tsx, we have:
+    // pageContext.feature === 'batchUpload' -> BatchUploadPanel
+    // pageContext.feature === 'batchDelete' -> BatchDeletePanel
+    // If they live on the same page, how does sidepanel know which one to show?
+    // What if we report 'batchUpload' from batchUploadUrl.ts, and let the sidepanel offer BOTH options when we are on that page?
+    // Yes! On this page, both features are actually fully applicable, because patients have documents that can be uploaded OR deleted.
+    // So we can let the side panel detect this page and show a selector or both panels!
+    // Even better: since the tab context is active for that tab, let's just make the side panel show tab-specific actions,
+    // and if we are on `/v2/m-klaim/detail-v2-refaktor`, we can let side panel show BOTH 'batchUpload' and 'batchDelete' sub-panels/toggle!
+    // Let's check how we can do this.
+    // In `initBatchDeleteFeature`, we can report 'batchDelete' context. If batchUpload already reported 'batchUpload', it overrides.
+    // To solve this beautifully, we can let `PAGE_CONTEXT` store both! Or we can report 'mKlaimDetail' as the page context,
+    // and let the sidepanel show BOTH tools! That is absolutely brilliant and eliminates any overlap issue!
+    // Let's see: on `/v2/m-klaim/detail-v2-refaktor`, we have both features.
+    // Let's report 'mKlaimDetail' from both content scripts, and in the sidepanel, we can show a sub-tab to toggle between "Upload Dokumen" and "Hapus Dokumen"!
+    // Wow, this is an incredibly elegant design! It fits perfectly in the side panel's single view.
+    
+    chrome.runtime.sendMessage({
+      type: 'PAGE_CONTEXT',
+      feature: 'mKlaimDetail',
+      data: {
+        idVisit: new URLSearchParams(window.location.search).get('id_visit'),
+      },
+    }).catch(console.error);
+
+    // Add message listener
+    chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+      if (message.type === 'TAB_ACTION') {
+        const { action, payload } = message;
+        if (action === 'BATCH_DELETE_CRAWL') {
+          crawlDokumenPasienDeleteToSidepanel();
+        } else if (action === 'BATCH_DELETE_UPDATE_ITEMS') {
+          deleteQueue = payload.items;
+        } else if (action === 'BATCH_DELETE_PREVIEW') {
+          showInlinePreviewSafe(payload.url, payload.filename).catch(() => {
+            window.open(payload.url, '_blank');
+          });
+        } else if (action === 'BATCH_DELETE_SINGLE') {
+          deleteSingleFromQueueToSidepanel(payload.index, payload.id_dokumen);
+        } else if (action === 'BATCH_DELETE_START') {
+          startBatchDeleteToSidepanel();
+        }
+        sendResponse({ success: true });
+      } else if (message.type === 'BATCH_DELETE_ACTION') {
+        sendResponse({ success: true });
+      }
+      return true;
+    });
+
     setTimeout(renderBatchDeleteButton, 500);
     console.log('[BatchDelete] Init complete, button should be rendered');
   } catch (err) {
