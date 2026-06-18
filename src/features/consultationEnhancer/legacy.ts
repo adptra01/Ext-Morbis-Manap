@@ -1,8 +1,40 @@
 const PATIENT_INFO_TABS = [
-  { id: 'resep', label: 'History Resep', ajax: { url: '/admisi/pengajuan_konsultasi/tabel-resep', method: 'POST' as const, data: (visit: string, noRm: string) => ({ id_visit: visit, id_pasien: noRm, page: 1 }) } },
-  { id: 'dokumen', label: 'Dokumen Pasien', ajax: { url: '/admisi/pengajuan_konsultasi/tabel-dok', method: 'POST' as const, data: (visit: string, noRm: string) => ({ id_visit: visit, id_pasien: noRm, page: 1 }) } },
-  { id: 'cppt', label: 'CPPT', ajax: { url: '/admisi/pengajuan_konsultasi/tabel-cppt', method: 'POST' as const, data: (visit: string, noRm: string) => ({ id_visit: visit, id_pasien: noRm, page: 1 }) } },
-  { id: 'penunjang', label: 'Penunjang Medis', ajax: { url: '/admisi/modal/modal-history-penunjang-v2', method: 'GET' as const, data: (visit: string, noRm: string) => ({ norm: noRm, id_visit: visit }) } },
+  {
+    id: 'resep',
+    label: 'History Resep',
+    ajax: {
+      url: '/admisi/pengajuan_konsultasi/tabel-resep',
+      method: 'POST' as const,
+      data: (visit: string, noRm: string) => ({ id_visit: visit, id_pasien: noRm, page: 1 }),
+    },
+  },
+  {
+    id: 'dokumen',
+    label: 'Dokumen Pasien',
+    ajax: {
+      url: '/admisi/pengajuan_konsultasi/tabel-dok',
+      method: 'POST' as const,
+      data: (visit: string, noRm: string) => ({ id_visit: visit, id_pasien: noRm, page: 1 }),
+    },
+  },
+  {
+    id: 'cppt',
+    label: 'CPPT',
+    ajax: {
+      url: '/admisi/pengajuan_konsultasi/tabel-cppt',
+      method: 'POST' as const,
+      data: (visit: string, noRm: string) => ({ id_visit: visit, id_pasien: noRm, page: 1 }),
+    },
+  },
+  {
+    id: 'penunjang',
+    label: 'Penunjang Medis',
+    ajax: {
+      url: '/admisi/modal/modal-history-penunjang-v2',
+      method: 'GET' as const,
+      data: (visit: string, noRm: string) => ({ norm: noRm, id_visit: visit }),
+    },
+  },
 ];
 
 export function injectStyle(): void {
@@ -33,6 +65,11 @@ export function injectStyle(): void {
     '.morbis-tab-btn.morbis-tab-active { color:#111827; background:#fff; border-bottom-color:#111827; }',
     '.morbis-tab-panel { display:none; }',
     '.morbis-tab-panel.morbis-tab-active { display:block; }',
+    '.ext-resp-wrap{overflow-x:auto;width:100%;margin-bottom:8px;}',
+    '.ext-child-row{display:flex;padding:5px 0;border-bottom:1px solid #f3f4f6;}',
+    '.ext-child-row:last-child{border-bottom:none;}',
+    '.ext-child-label{font-weight:600;min-width:140px;font-size:12px;color:#6b7280;flex-shrink:0;}',
+    '.ext-child-value{flex:1;font-size:13px;color:#111827;white-space:pre-wrap;word-break:break-word;padding-left:8px;}',
   ].join('\n');
   document.head.appendChild(s);
 }
@@ -49,39 +86,155 @@ export function injectPageScripts(): void {
   (document.head || document.documentElement).appendChild(s);
 }
 
-function getDtVersion(): { major: number; ver: string } {
-  try {
-    const $ = (window as unknown as Record<string, unknown>).jQuery as any;
-    if (!$ || !$.fn.dataTable || !$.fn.dataTable.version) return { major: 1, ver: '2.5.0' };
-    const v = $.fn.dataTable.version;
-    const m = parseInt(v.charAt(0), 10);
-    return { major: m, ver: m >= 2 ? '3.0.8' : '2.5.0' };
-  } catch {
-    return { major: 1, ver: '2.5.0' };
+function getHeaders(tbl: HTMLTableElement): string[] {
+  const h: string[] = [];
+  const thead = tbl.querySelector('thead');
+  if (thead) {
+    thead.querySelectorAll('th, td').forEach((c) => h.push(c.textContent?.trim() || ''));
   }
+  const firstRow = tbl.querySelector('tbody tr') || tbl.querySelector('tr');
+  if (h.length === 0 && firstRow) {
+    firstRow.querySelectorAll('th').forEach((c) => h.push(c.textContent?.trim() || ''));
+  }
+  return h;
 }
 
-export function injectResponsiveExtension(): void {
-  if (document.getElementById('morbis-resp-dt')) return;
-  const $ = (window as unknown as Record<string, unknown>).jQuery as any;
-  if (!$ || !$.fn.dataTable || $.fn.dataTable.Responsive) return;
-  const { ver } = getDtVersion();
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = `https://cdn.datatables.net/responsive/${ver}/css/responsive.dataTables.min.css`;
-  link.id = 'morbis-resp-dt-css';
-  document.head.appendChild(link);
-  const script = document.createElement('script');
-  script.src = `https://cdn.datatables.net/responsive/${ver}/js/dataTables.responsive.min.js`;
-  script.id = 'morbis-resp-dt';
-  script.onload = () => {
-    document.querySelectorAll('table.tabel.full[data-morbis-dt]').forEach((tbl) => {
-      if ($.fn.dataTable.isDataTable(tbl)) { $(tbl).DataTable().destroy(); }
-      tbl.removeAttribute('data-morbis-dt');
+function getAksiIdx(headers: string[]): number {
+  const i = headers.findIndex((h) => /aksi/i.test(h));
+  return i >= 0 ? i : headers.length - 1;
+}
+
+function makeTableResponsive(tbl: HTMLTableElement): void {
+  if (tbl.hasAttribute('data-ext-resp')) return;
+  const rows = tbl.querySelectorAll('tbody tr');
+  if (rows.length === 0) return;
+  const colCount = rows[0].querySelectorAll('td, th').length;
+  if (colCount < 4) return; // nothing to collapse
+  tbl.setAttribute('data-ext-resp', '1');
+
+  const headers = getHeaders(tbl);
+  const aksiIdx = getAksiIdx(headers);
+
+  // wrap in scroll container
+  if (tbl.parentElement && !tbl.parentElement.classList.contains('ext-resp-wrap')) {
+    const w = document.createElement('div');
+    w.className = 'ext-resp-wrap';
+    w.style.cssText = 'overflow-x:auto;width:100%;margin-bottom:8px;';
+    tbl.parentElement.insertBefore(w, tbl);
+    w.appendChild(tbl);
+  }
+
+  // add control + set up collapse
+  rows.forEach((row) => {
+    const cells = row.querySelectorAll('td');
+    if (cells.length < 3) return;
+    if (cells[0].querySelector('.ext-ctrl')) return;
+
+    const ctrl = document.createElement('span');
+    ctrl.className = 'ext-ctrl';
+    ctrl.textContent = '▶';
+    ctrl.style.cssText =
+      'cursor:pointer;display:none;margin-right:6px;font-size:11px;color:#2563eb;width:16px;text-align:center;user-select:none;';
+    (cells[0] as HTMLElement).style.whiteSpace = 'nowrap';
+    cells[0].insertBefore(ctrl, cells[0].firstChild);
+
+    ctrl.onclick = (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      const open = row.classList.toggle('ext-open');
+      ctrl.textContent = open ? '▼' : '▶';
+      const child = row.nextElementSibling;
+      if (child && child.classList.contains('ext-child')) {
+        child.remove();
+        return;
+      }
+      if (!open) return;
+      const tr = document.createElement('tr');
+      tr.className = 'ext-child';
+      const td = document.createElement('td');
+      td.colSpan = colCount;
+      td.style.cssText = 'padding:10px 14px;background:#f9fafb;border-bottom:1px solid #e5e7eb;';
+      const html = Array.from(cells)
+        .map((c, ci) => {
+          if (ci === aksiIdx) return '';
+          const label = headers[ci] || `Kolom ${ci + 1}`;
+          return `<div class="ext-child-row" data-idx="${ci}"><span class="ext-child-label">${esc(label)}</span><span class="ext-child-value">${c.innerHTML}</span></div>`;
+        })
+        .filter(Boolean)
+        .join('');
+      td.innerHTML = html;
+      tr.appendChild(td);
+      row.parentNode?.insertBefore(tr, row.nextSibling);
+    };
+  });
+
+  const fit = () => {
+    const parentW = tbl.parentElement?.offsetWidth || tbl.offsetWidth;
+    let totalW = 0;
+    const colEls = tbl.querySelectorAll(
+      'thead tr th, thead tr td, tbody tr:first-child td, tbody tr:first-child th',
+    );
+    const widths: number[] = [];
+    colEls.forEach((el, i) => {
+      if (i >= colCount) return;
+      if (widths.length <= i) widths.push(0);
+      widths[i] = Math.max(widths[i], (el as HTMLElement).offsetWidth);
     });
-    reinitDataTable();
+    totalW = widths.reduce((a, b) => a + b, 0);
+
+    const hide: boolean[] = new Array(colCount).fill(false);
+    if (totalW > parentW) {
+      // hide columns from rightmost (except aksi) until fit
+      const order: number[] = [];
+      for (let i = colCount - 1; i >= 0; i--) if (i !== aksiIdx) order.push(i);
+      let surplus = totalW - parentW;
+      for (const ci of order) {
+        if (surplus <= 0) break;
+        hide[ci] = true;
+        surplus -= widths[ci] || 0;
+      }
+    }
+
+    // never hide Aksi
+    hide[aksiIdx] = false;
+
+    rows.forEach((row) => {
+      const cells = row.querySelectorAll('td');
+      const ctrl = cells[0]?.querySelector('.ext-ctrl') as HTMLElement | null;
+      if (!ctrl) return;
+      const hasHidden = hide.some((h) => h);
+      ctrl.style.display = hasHidden ? 'inline-block' : 'none';
+      cells.forEach((td, ci) => {
+        (td as HTMLElement).style.display = ci < hide.length && hide[ci] ? 'none' : '';
+      });
+    });
+
+    // also hide header cells
+    if (headerRow) {
+      (headerRow.querySelectorAll('th, td') as NodeListOf<HTMLElement>).forEach((th, ci) => {
+        th.style.display = ci < hide.length && hide[ci] ? 'none' : '';
+      });
+    }
   };
-  document.head.appendChild(script);
+
+  let headerRow = tbl.querySelector('thead tr') || tbl.querySelector('tbody tr:first-child');
+  // wrap th row in thead if missing
+  if (!tbl.querySelector('thead') && headerRow?.querySelector('th')) {
+    const thead = document.createElement('thead');
+    tbl.insertBefore(thead, tbl.firstChild);
+    thead.appendChild(headerRow);
+    headerRow = thead.querySelector('tr');
+  }
+
+  const ro = new ResizeObserver(() => fit());
+  ro.observe(tbl.parentElement || tbl);
+  setTimeout(fit, 50);
+}
+
+function esc(s: string): string {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
 }
 
 export function enhanceTables(): void {
@@ -91,7 +244,8 @@ export function enhanceTables(): void {
     if (tbl.closest('.cons-overlay')) return; // skip modal tables
     tbl.setAttribute('data-morbis-enhanced', '1');
 
-    const headerRow = tbl.querySelector('thead tr') || tbl.querySelector('tbody tr') || tbl.querySelector('tr');
+    const headerRow =
+      tbl.querySelector('thead tr') || tbl.querySelector('tbody tr') || tbl.querySelector('tr');
     if (!headerRow) return;
 
     const headerFromTbody = !tbl.querySelector('thead tr') && !!tbl.querySelector('tbody tr');
@@ -136,15 +290,20 @@ export function enhanceTables(): void {
 
       let id_konsul = row.id || '';
       let visitId = '';
-      row.querySelectorAll('a[href*="id_visit"], a[href*="form-input-konsultasi"], button[onclick*="id_visit"], button[onclick*="form-input-konsultasi"], button[onclick*="direction_konsul"]').forEach((el) => {
-        const href = el.getAttribute('href') || el.getAttribute('onclick') || '';
-        const m = href.match(/id_visit=(\d+)/) || href.match(/direction_konsul\('[^']+',\s*'(\d+)'/);
-        if (m) visitId = m[1];
-        if (!id_konsul) {
-          const km = href.match(/direction_konsul\('(\d+)'/);
-          if (km) id_konsul = km[1];
-        }
-      });
+      row
+        .querySelectorAll(
+          'a[href*="id_visit"], a[href*="form-input-konsultasi"], button[onclick*="id_visit"], button[onclick*="form-input-konsultasi"], button[onclick*="direction_konsul"]',
+        )
+        .forEach((el) => {
+          const href = el.getAttribute('href') || el.getAttribute('onclick') || '';
+          const m =
+            href.match(/id_visit=(\d+)/) || href.match(/direction_konsul\('[^']+',\s*'(\d+)'/);
+          if (m) visitId = m[1];
+          if (!id_konsul) {
+            const km = href.match(/direction_konsul\('(\d+)'/);
+            if (km) id_konsul = km[1];
+          }
+        });
 
       const detailBtn = document.createElement('button');
       detailBtn.className = 'morbis-cons-btn morbis-cons-detail';
@@ -174,47 +333,38 @@ export function enhanceTables(): void {
 
       infoBtn.onclick = () => {
         if (!id_konsul) return;
-        window.dispatchEvent(new CustomEvent('morbis-cons-info', {
-          detail: { id: id_konsul, visit: visitId, nama: rd[2] || '', noRm: rd[1] || '', baseUrl: window.location.origin },
-        }));
+        window.dispatchEvent(
+          new CustomEvent('morbis-cons-info', {
+            detail: {
+              id: id_konsul,
+              visit: visitId,
+              nama: rd[2] || '',
+              noRm: rd[1] || '',
+              baseUrl: window.location.origin,
+            },
+          }),
+        );
       };
     });
   });
 }
 
-export function reinitDataTable(): void {
-  const $ = (window as unknown as Record<string, unknown>).jQuery as any;
-  if (!$ || !$.fn.dataTable) return;
-
-  const tables = document.querySelectorAll<HTMLTableElement>('table.tabel.full');
-  tables.forEach((tbl) => {
-    if (tbl.hasAttribute('data-morbis-dt')) return;
-    if (!$.fn.dataTable.isDataTable(tbl)) {
-      try {
-        const config: Record<string, unknown> = {
-          pageLength: 25,
-          lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'Semua']],
-          columnDefs: [{ targets: 'no-sort', orderable: false }],
-          destroy: true,
-          drawCallback: () => { enhanceTables(); },
-        };
-        if ($.fn.dataTable.Responsive) {
-          config.responsive = true;
-        }
-        $(tbl).DataTable(config);
-      } catch { /* silent */ }
-    }
-    tbl.setAttribute('data-morbis-dt', '1');
-  });
+export function initResponsiveTables(): void {
+  document.querySelectorAll('table').forEach(makeTableResponsive);
 }
 
-export function loadTabContent(tabId: string, panel: HTMLElement, data: Record<string, string>): void {
+export function loadTabContent(
+  tabId: string,
+  panel: HTMLElement,
+  data: Record<string, string>,
+): void {
   const tab = PATIENT_INFO_TABS.find((t) => t.id === tabId);
   if (!tab) return;
   const target = panel.querySelector('.morbis-tab-body') || panel;
   const $ = (window as unknown as Record<string, unknown>).jQuery as any;
   if (!$ || !$.ajax) {
-    target.innerHTML = '<div style="text-align:center;padding:40px;color:red;">jQuery tidak tersedia</div>';
+    target.innerHTML =
+      '<div style="text-align:center;padding:40px;color:red;">jQuery tidak tersedia</div>';
     return;
   }
   target.innerHTML = '<div style="text-align:center;padding:40px;color:#999;">Memuat...</div>';
@@ -232,7 +382,8 @@ export function loadTabContent(tabId: string, panel: HTMLElement, data: Record<s
       }
     },
     error: (_xhr: unknown, _status: string, error: string) => {
-      target.innerHTML = '<div style="text-align:center;padding:40px;color:red;">Gagal memuat: ' + error + '</div>';
+      target.innerHTML =
+        '<div style="text-align:center;padding:40px;color:red;">Gagal memuat: ' + error + '</div>';
     },
   });
 }
@@ -240,18 +391,24 @@ export function loadTabContent(tabId: string, panel: HTMLElement, data: Record<s
 export function fetchTabContent(tabId: string, data: Record<string, string>): Promise<string> {
   return new Promise((resolve, reject) => {
     const tab = PATIENT_INFO_TABS.find((t) => t.id === tabId);
-    if (!tab) { resolve("Tab tidak ditemukan"); return; }
+    if (!tab) {
+      resolve('Tab tidak ditemukan');
+      return;
+    }
     const $ = (window as unknown as Record<string, unknown>).jQuery as any;
-    if (!$ || !$.ajax) { resolve("jQuery tidak tersedia"); return; }
-    const konsulId = data.id || "";
-    const ajaxData = tab.ajax.data(data.visit, data.noRm || "", konsulId);
+    if (!$ || !$.ajax) {
+      resolve('jQuery tidak tersedia');
+      return;
+    }
+    const konsulId = data.id || '';
+    const ajaxData = tab.ajax.data(data.visit, data.noRm || '', konsulId);
     $.ajax({
       url: tab.ajax.url,
       type: tab.ajax.method,
-      dataType: "html",
+      dataType: 'html',
       data: ajaxData,
       success: (response: string) => {
-        if (tabId === "penunjang") injectPenunjangFix(data.visit, data.noRm || "");
+        if (tabId === 'penunjang') injectPenunjangFix(data.visit, data.noRm || '');
         resolve(response);
       },
       error: (_xhr: unknown, _status: string, error: string) => {
