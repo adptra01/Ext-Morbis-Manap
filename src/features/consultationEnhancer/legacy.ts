@@ -49,6 +49,33 @@ export function injectPageScripts(): void {
   (document.head || document.documentElement).appendChild(s);
 }
 
+function truncateCell(td: HTMLTableCellElement): void {
+  if (td.hasAttribute('data-ext-trunc')) return;
+  const html = td.innerHTML;
+  const text = (td.textContent || '').trim();
+  if (text.length <= 100) return;
+  td.setAttribute('data-ext-trunc', '1');
+  td.setAttribute('data-full-html', html);
+  const truncText = text.slice(0, 100).replace(/\n/g, ' ');
+  const setTruncView = () => {
+    td.innerHTML = `<span class="ext-trunc-text">${truncText}...</span> <a href="javascript:void 0" class="ext-trunc-toggle" style="font-size:11px;color:#2563eb;text-decoration:none;white-space:nowrap;">more</a>`;
+    td.removeAttribute('data-ext-open');
+    td.querySelector('.ext-trunc-toggle')!.onclick = (e) => {
+      e.stopPropagation();
+      setFullView();
+    };
+  };
+  const setFullView = () => {
+    td.innerHTML = (td.getAttribute('data-full-html') || html) + ' <a href="javascript:void 0" class="ext-trunc-toggle" style="font-size:11px;color:#2563eb;text-decoration:none;white-space:nowrap;">less</a>';
+    td.setAttribute('data-ext-open', '1');
+    td.querySelector('.ext-trunc-toggle')!.onclick = (e) => {
+      e.stopPropagation();
+      setTruncView();
+    };
+  };
+  setTruncView();
+}
+
 export function enhanceTables(): void {
   const tables = document.querySelectorAll('table.tabel.full');
   tables.forEach((tbl) => {
@@ -91,6 +118,11 @@ export function enhanceTables(): void {
 
       const allCells = row.querySelectorAll('td');
       if (allCells.length <= actionCol) return;
+
+      // Truncate all data cells before action column
+      allCells.forEach((td, ci) => {
+        if (ci !== actionCol) truncateCell(td);
+      });
 
       const actionCell = allCells[actionCol];
       if (actionCell.querySelector('.morbis-cons-btn')) return;
