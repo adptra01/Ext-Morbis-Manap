@@ -6,7 +6,13 @@ interface Props {
 
 interface TableData {
   headers: string[];
-  rows: { html: string }[][];
+  rows: { html: string; text: string }[][];
+}
+
+function stripHtml(html: string): string {
+  const d = document.createElement("div");
+  d.innerHTML = html;
+  return d.textContent || d.innerText || "";
 }
 
 function extractTables(html: string): TableData[] {
@@ -40,9 +46,10 @@ function extractTables(html: string): TableData[] {
 
     bodyRows.forEach((row, ri) => {
       if (skipFirstRow && ri === 0) return;
-      const cells: { html: string }[] = [];
+      const cells: { html: string; text: string }[] = [];
       row.querySelectorAll("td").forEach((cell) => {
-        cells.push({ html: cell.innerHTML });
+        const h = cell.innerHTML;
+        cells.push({ html: h, text: stripHtml(h).trim() });
       });
       if (cells.length > 0) t.rows.push(cells);
     });
@@ -53,24 +60,19 @@ function extractTables(html: string): TableData[] {
   return tables;
 }
 
-function extractPagination(html: string): string | null {
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  const el = doc.querySelector(".pagination");
-  return el ? el.outerHTML : null;
-}
+const TRUNCATE_LEN = 100;
 
-function hasLongText(rows: { html: string }[][]): boolean {
-  return rows.some((row) =>
-    row.some((cell) => {
-      const txt = cell.html.replace(/<[^>]+>/g, "").trim();
-      return txt.length > 80 || (txt.match(/\n/g) || []).length > 2;
-    })
-  );
+function needsTruncate(text: string): boolean {
+  return text.length > TRUNCATE_LEN || (text.match(/\n/g) || []).length > 2;
 }
 
 export default function ServerTabRenderer({ html }: Props) {
   const tables = useMemo(() => extractTables(html), [html]);
-  const pagination = useMemo(() => extractPagination(html), [html]);
+  const pagination = useMemo(() => {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const el = doc.querySelector(".pagination");
+    return el ? el.outerHTML : null;
+  }, [html]);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   const toggle = (tidx: number, ridx: number) => {
@@ -90,7 +92,7 @@ export default function ServerTabRenderer({ html }: Props) {
   return (
     <div className="cons-renderer">
       {tables.map((t, ti) => {
-        const showDetail = hasLongText(t.rows);
+        const anyLong = t.rows.some((r) => r.some((c) => needsTruncate(c.text)));
         return (
           <div key={ti} className="cons-table-wrap">
             <table className="cons-custom-table">
@@ -99,7 +101,7 @@ export default function ServerTabRenderer({ html }: Props) {
                   {t.headers.map((h, ci) => (
                     <th key={ci}>{h || `Kolom ${ci + 1}`}</th>
                   ))}
-                  {showDetail && <th className="cons-th-aksi">Aksi</th>}
+                  {anyLong && <th className="cons-th-aksi">Aksi</th>}
                 </tr>
               </thead>
               <tbody>
@@ -110,14 +112,21 @@ export default function ServerTabRenderer({ html }: Props) {
                     <React.Fragment key={ri}>
                       <tr>
                         {row.map((cell, ci) => (
-                          <td key={ci}>
-                            <div
-                              className={showDetail && !open ? "cons-cell-trunc" : ""}
-                              dangerouslySetInnerHTML={{ __html: cell.html }}
-                            />
+                          <td
+                            key={ci}
+                            className={open ? "cons-td-open" : ""}
+                            title={!open && needsTruncate(cell.text) ? cell.text : undefined}
+                          >
+                            {!open && needsTruncate(cell.text) ? (
+                              <span className="cons-text-clip">
+                                {cell.text.slice(0, TRUNCATE_LEN).replace(/\n/g, " ")}...
+                              </span>
+                            ) : (
+                              <span style={{ whiteSpace: "pre-wrap" }}>{cell.text}</span>
+                            )}
                           </td>
                         ))}
-                        {showDetail && (
+                        {anyLong && (
                           <td className="cons-td-aksi">
                             <button className="cons-btn-detail" onClick={() => toggle(ti, ri)}>
                               {open ? "Tutup" : "Detail"}
@@ -127,7 +136,7 @@ export default function ServerTabRenderer({ html }: Props) {
                       </tr>
                       {open && (
                         <tr className="cons-expand-row">
-                          <td colSpan={(t.headers.length || row.length) + (showDetail ? 1 : 0)}>
+                          <td colSpan={(t.headers.length || row.length) + (anyLong ? 1 : 0)}>
                             <div className="cons-expand-body">
                               {row.map((cell, ci) => (
                                 <div key={ci} className="cons-expand-field">
