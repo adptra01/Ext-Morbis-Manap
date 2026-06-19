@@ -1,9 +1,4 @@
-import {
-  injectStyle,
-  injectPageScripts,
-  enhanceTables,
-  initResponsiveTables,
-} from './consultationEnhancer/legacy';
+import { injectStyle, injectPageScripts, enhanceTables } from './consultationEnhancer/legacy';
 import { mountConsultationEnhancer } from './consultationEnhancer/mount';
 
 function injectModalStyle() {
@@ -32,9 +27,9 @@ function injectModalStyle() {
     '.cons-error{padding:20px;color:#ef4444;text-align:center;}',
     '.cons-empty{padding:40px 20px;text-align:center;color:#9ca3af;font-size:13px;}',
     '.cons-raw-html{font-size:13px;color:#374151;}',
-    '.cons-raw-html table.tabel,.cons-raw-html table.table-input{width:100%;border-collapse:collapse;margin-bottom:12px;}',
-    '.cons-raw-html table.tabel th,.cons-raw-html table.tabel td,.cons-raw-html table.table-input td{border:1px solid #e5e7eb;padding:8px 10px;vertical-align:top;word-break:break-word;}',
-    '.cons-raw-html table.tabel thead th{background:#f9fafb;font-weight:600;color:#111827;white-space:nowrap;}',
+    '.cons-raw-html table,.cons-penunjang table,.cons-raw-html table.tabel,.cons-raw-html table.table-input{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:13px;}',
+    '.cons-raw-html td,.cons-raw-html th,.cons-penunjang td,.cons-penunjang th{border:1px solid #e5e7eb;padding:8px 10px;vertical-align:top;word-break:break-word;}',
+    '.cons-raw-html thead th,.cons-penunjang thead th{background:#f9fafb;font-weight:600;color:#111827;white-space:nowrap;}',
     '.cons-raw-html .pagination{margin-top:16px;text-align:center;}',
     '.cons-raw-html .pagination a{display:inline-block;padding:6px 12px;margin:0 2px;border:1px solid #d1d5db;border-radius:6px;text-decoration:none;color:#374151;font-size:13px;transition:all .15s;}',
     '.cons-raw-html .pagination a:hover{background:#f3f4f6;border-color:#9ca3af;}',
@@ -57,18 +52,27 @@ const check = setInterval(() => {
     injectPageScripts();
     enhanceTables();
     mountConsultationEnhancer();
-    setTimeout(() => initResponsiveTables(), 200);
 
     let timer: ReturnType<typeof setTimeout> | null = null;
     const observer = new MutationObserver(() => {
-      if (timer) clearTimeout(timer);
-      timer = setTimeout(() => {
-        enhanceTables();
-        initResponsiveTables();
-      }, 400);
+      if (document.querySelector('table.tabel.full:not([data-morbis-enhanced])')) {
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(() => {
+          enhanceTables();
+        }, 400);
+      }
     });
     observer.observe(document.body, { childList: true, subtree: true });
   } else if (waited >= MAX_WAIT) {
     clearInterval(check);
+    console.warn('[consultationEnhancer] config attr not found, skipping');
   }
 }, 50);
+
+const g = globalThis as unknown as Record<string, unknown>;
+if (typeof g.featureModules !== 'undefined') {
+  g.featureModules.consultationEnhancer = {
+    name: 'Consultation Enhancer',
+    run: () => {},
+  };
+}

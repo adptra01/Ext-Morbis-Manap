@@ -133,15 +133,15 @@ const DEFAULT_CONFIG: ExtensionConfig = {
 };
 
 function migrateConfig(config: ExtensionConfig | null): ExtensionConfig {
-  if (!config || !config.features) return JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+  if (!config || !config.features) return structuredClone(DEFAULT_CONFIG);
 
   const validFeatures = Object.keys(DEFAULT_CONFIG.features);
   const newFeatures: Record<string, unknown> = {};
   for (const key of validFeatures) {
     if (config.features[key]) {
-      newFeatures[key] = JSON.parse(JSON.stringify(config.features[key]));
+      newFeatures[key] = structuredClone(config.features[key]);
     } else {
-      newFeatures[key] = JSON.parse(JSON.stringify(DEFAULT_CONFIG.features[key]));
+      newFeatures[key] = structuredClone(DEFAULT_CONFIG.features[key]);
     }
   }
 
@@ -184,16 +184,16 @@ async function loadConfig(): Promise<ExtensionConfig> {
       ExtensionConfig | undefined
     >;
     if (!result[STORAGE_KEY]) {
-      const config = JSON.parse(JSON.stringify(DEFAULT_CONFIG)) as ExtensionConfig;
+      const config = structuredClone(DEFAULT_CONFIG) as ExtensionConfig;
       await chrome.storage.sync.set({ [STORAGE_KEY]: config });
       return config;
     }
-    const config = migrateConfig(JSON.parse(JSON.stringify(result[STORAGE_KEY])));
+    const config = migrateConfig(structuredClone(result[STORAGE_KEY]));
     await chrome.storage.sync.set({ [STORAGE_KEY]: config });
     return config;
   } catch (e) {
     log.error('Error loading config:', e);
-    return JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+    return structuredClone(DEFAULT_CONFIG);
   }
 }
 
@@ -204,12 +204,12 @@ async function loadUrls(): Promise<CustomUrl[]> {
       CustomUrl[] | undefined
     >;
     if (!result[URLS_STORAGE_KEY]) {
-      const urls = JSON.parse(JSON.stringify(DEFAULT_CUSTOM_URLS)) as CustomUrl[];
+      const urls = structuredClone(DEFAULT_CUSTOM_URLS) as CustomUrl[];
       await chrome.storage.sync.set({ [URLS_STORAGE_KEY]: urls });
       return urls;
     }
     const saved = result[URLS_STORAGE_KEY];
-    const merged = JSON.parse(JSON.stringify(DEFAULT_CUSTOM_URLS)) as CustomUrl[];
+    const merged = structuredClone(DEFAULT_CUSTOM_URLS) as CustomUrl[];
     saved.forEach((u) => {
       if (!u.isDefault) merged.push(u);
     });
@@ -220,7 +220,7 @@ async function loadUrls(): Promise<CustomUrl[]> {
     return merged;
   } catch (e) {
     log.error('Error loading URLs:', e);
-    return JSON.parse(JSON.stringify(DEFAULT_CUSTOM_URLS));
+    return structuredClone(DEFAULT_CUSTOM_URLS);
   }
 }
 
@@ -318,7 +318,7 @@ chrome.runtime.onMessage.addListener(
       case 'RESET_CONFIG': {
         (async () => {
           await chrome.storage.sync.set({
-            [STORAGE_KEY]: JSON.parse(JSON.stringify(DEFAULT_CONFIG)),
+            [STORAGE_KEY]: structuredClone(DEFAULT_CONFIG),
           });
           broadcastConfigChange();
           sendResponse({ success: true });
@@ -411,7 +411,10 @@ chrome.runtime.onMessage.addListener(
           try {
             const { url, method = 'GET', data } = validated as unknown as Record<string, unknown>;
             let fetchUrl = url as string;
-            const opts: RequestInit = { method: method as string, credentials: 'include' as RequestCredentials };
+            const opts: RequestInit = {
+              method: method as string,
+              credentials: 'include' as RequestCredentials,
+            };
             if (data && typeof data === 'object') {
               const params = new URLSearchParams(data as Record<string, string>);
               if (method === 'POST') {
@@ -433,7 +436,9 @@ chrome.runtime.onMessage.addListener(
 
       case 'TAB_ACTION': {
         (async () => {
-          const targetTabId = (validated as unknown as Record<string, unknown>).tabId as number | undefined;
+          const targetTabId = (validated as unknown as Record<string, unknown>).tabId as
+            | number
+            | undefined;
           if (!targetTabId) {
             sendResponse({ success: false });
             return;

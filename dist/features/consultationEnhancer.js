@@ -27571,7 +27571,7 @@ var __morbis_feature = (() => {
     s.id = 'morbis-cons-css';
     s.textContent = [
       '.morbis-cons-hide { display:none !important; }',
-      '.morbis-cons-btn { display:inline-block; padding:4px 10px; margin:2px; font-size:12px; font-weight:500; border:1px solid #d1d5db; border-radius:4px; cursor:pointer; transition:all 0.15s; background:#fff; color:#374151; }',
+      '.morbis-cons-btn { display:inline-block; padding:4px 8px; margin:2px; font-size:11px; font-weight:600; border:1px solid #d1d5db; border-radius:4px; cursor:pointer; background:#fff; color:#374151; }',
       '.morbis-cons-btn:hover { background:#f3f4f6; }',
       '.morbis-cons-detail { }',
       '.morbis-cons-detail:hover { }',
@@ -27588,16 +27588,33 @@ var __morbis_feature = (() => {
       '.morbis-cons-body label:first-child { margin-top:0; }',
       '.morbis-cons-fv { background:#f9fafb; padding:12px 15px; border-radius:6px; border-left:4px solid #9ca3af; font-size:14px; line-height:1.6; white-space:pre-wrap; word-wrap:break-word; max-height:300px; overflow-y:auto; }',
       '.morbis-cons-tab-bar { background:#f9fafb; padding:0 20px; display:flex; gap:2px; border-bottom:2px solid #e5e7eb; flex-shrink:0; }',
-      '.morbis-tab-btn { padding:10px 18px; font-size:13px; font-weight:500; border:none; background:transparent; color:#6b7280; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; transition:all 0.15s; }',
+      '.morbis-tab-btn { padding:10px 18px; font-size:13px; font-weight:500; border:none; background:transparent; color:#6b7280; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; transition:color 0.15s,background-color 0.15s; }',
       '.morbis-tab-btn:hover { color:#111827; background:#f3f4f6; }',
       '.morbis-tab-btn.morbis-tab-active { color:#111827; background:#fff; border-bottom-color:#111827; }',
       '.morbis-tab-panel { display:none; }',
       '.morbis-tab-panel.morbis-tab-active { display:block; }',
-      '.ext-resp-wrap{overflow-x:auto;width:100%;margin-bottom:8px;}',
-      '.ext-child-row{display:flex;padding:5px 0;border-bottom:1px solid #f3f4f6;}',
-      '.ext-child-row:last-child{border-bottom:none;}',
-      '.ext-child-label{font-weight:600;min-width:140px;font-size:12px;color:#6b7280;flex-shrink:0;}',
-      '.ext-child-value{flex:1;font-size:13px;color:#111827;white-space:pre-wrap;word-break:break-word;padding-left:8px;}',
+      'table.tabel.full.tabel-compact,table.table-input.tabel-compact{width:100%!important;border-collapse:collapse!important;font-size:14px!important;table-layout:auto!important;}',
+      'table.tabel.full.tabel-compact th{background:#374151!important;color:#fff!important;font-weight:600!important;padding:10px 12px!important;border:1px solid #4b5563!important;white-space:nowrap!important;}',
+      'table.tabel.full.tabel-compact td{padding:8px 12px!important;border:1px solid #e5e7eb!important;vertical-align:top!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;max-width:200px!important;}',
+      'table.tabel.full.tabel-compact td:nth-child(3){font-weight:600!important;color:#111827!important;min-width:130px!important;}',
+      'table.tabel.full.tabel-compact tr:nth-child(even){background:#f9fafb!important;}',
+      'table.tabel.full.tabel-compact tr:hover{background:#f3f4f6!important;}',
+      'table.tabel.full.tabel-compact,table.tabel.full.tabel-compact td,table.tabel.full.tabel-compact th{transition:none!important;}',
+      '.ext-resp-wrap{overflow-x:auto!important;width:100%!important;margin-bottom:12px!important;border:1px solid #e2e8f0!important;border-radius:8px!important;-webkit-overflow-scrolling:touch!important;}',
+      '.ext-resp-wrap table.tabel.full.tabel-compact{width:auto!important;min-width:100%!important;table-layout:auto!important;}',
+      '.patient-info{display:flex!important;flex-direction:column!important;gap:2px!important;}',
+      '.patient-name{font-weight:700!important;color:#0f172a!important;}',
+      '.patient-rm{font-size:11px!important;color:#64748b!important;}',
+      '.morbis-dd{position:relative;display:inline-block;vertical-align:middle;}',
+      '.morbis-dd-toggle{padding:4px 10px;font-size:16px;line-height:1;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;background:#fff;color:#374151;}',
+      '.morbis-dd-toggle:hover{background:#f3f4f6;}',
+      '.morbis-dd-menu{display:none;position:absolute;right:0;top:100%;z-index:50;background:#fff;border:1px solid #e5e7eb;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.15);padding:4px 0;min-width:140px;margin-top:2px;}',
+      '.morbis-dd-menu button{display:block;width:100%;padding:8px 16px;background:none!important;border:none!important;text-align:left;cursor:pointer;font-size:12px;color:#374151!important;border-radius:0!important;}',
+      '.morbis-dd-menu button:hover{background:#f3f4f6!important;}',
+      '.ext-search-wrap{display:flex;margin-bottom:8px;}',
+      '.ext-search-input{padding:6px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;width:220px;outline:none;color:#374151;background:#fff;}',
+      '.ext-search-input:focus{border-color:#6366f1;box-shadow:0 0 0 2px rgba(99,102,241,0.15);}',
+      '.ext-search-input::placeholder{color:#9ca3af;}',
     ].join('\n');
     document.head.appendChild(s);
   }
@@ -27612,141 +27629,58 @@ var __morbis_feature = (() => {
     ].join('\n');
     (document.head || document.documentElement).appendChild(s);
   }
-  function getHeaders(tbl) {
-    const h = [];
-    const thead = tbl.querySelector('thead');
-    if (thead) {
-      thead.querySelectorAll('th, td').forEach((c) => h.push(c.textContent?.trim() || ''));
-    }
-    const firstRow = tbl.querySelector('tbody tr') || tbl.querySelector('tr');
-    if (h.length === 0 && firstRow) {
-      firstRow.querySelectorAll('th').forEach((c) => h.push(c.textContent?.trim() || ''));
-    }
-    return h;
-  }
-  function getAksiIdx(headers) {
-    const i = headers.findIndex((h) => /aksi/i.test(h));
-    return i >= 0 ? i : headers.length - 1;
-  }
-  function makeTableResponsive(tbl) {
-    if (tbl.hasAttribute('data-ext-resp')) return;
-    const rows = tbl.querySelectorAll('tbody tr');
-    if (rows.length === 0) return;
-    const colCount = rows[0].querySelectorAll('td, th').length;
-    if (colCount < 4) return;
-    tbl.setAttribute('data-ext-resp', '1');
-    const headers = getHeaders(tbl);
-    const aksiIdx = getAksiIdx(headers);
-    if (tbl.parentElement && !tbl.parentElement.classList.contains('ext-resp-wrap')) {
-      const w = document.createElement('div');
-      w.className = 'ext-resp-wrap';
-      w.style.cssText = 'overflow-x:auto;width:100%;margin-bottom:8px;';
-      tbl.parentElement.insertBefore(w, tbl);
-      w.appendChild(tbl);
-    }
-    rows.forEach((row) => {
-      const cells = row.querySelectorAll('td');
-      if (cells.length < 3) return;
-      if (cells[0].querySelector('.ext-ctrl')) return;
-      const ctrl = document.createElement('span');
-      ctrl.className = 'ext-ctrl';
-      ctrl.textContent = '\u25B6';
-      ctrl.style.cssText =
-        'cursor:pointer;display:none;margin-right:6px;font-size:11px;color:#2563eb;width:16px;text-align:center;user-select:none;';
-      cells[0].style.whiteSpace = 'nowrap';
-      cells[0].insertBefore(ctrl, cells[0].firstChild);
-      ctrl.onclick = (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        const open = row.classList.toggle('ext-open');
-        ctrl.textContent = open ? '\u25BC' : '\u25B6';
-        const child = row.nextElementSibling;
-        if (child && child.classList.contains('ext-child')) {
-          child.remove();
-          return;
-        }
-        if (!open) return;
-        const tr = document.createElement('tr');
-        tr.className = 'ext-child';
-        const td = document.createElement('td');
-        td.colSpan = colCount;
-        td.style.cssText = 'padding:10px 14px;background:#f9fafb;border-bottom:1px solid #e5e7eb;';
-        const html = Array.from(cells)
-          .map((c, ci) => {
-            if (ci === aksiIdx) return '';
-            const label = headers[ci] || `Kolom ${ci + 1}`;
-            return `<div class="ext-child-row" data-idx="${ci}"><span class="ext-child-label">${esc(label)}</span><span class="ext-child-value">${c.innerHTML}</span></div>`;
-          })
-          .filter(Boolean)
-          .join('');
-        td.innerHTML = html;
-        tr.appendChild(td);
-        row.parentNode?.insertBefore(tr, row.nextSibling);
-      };
-    });
-    const fit = () => {
-      const parentW = tbl.parentElement?.offsetWidth || tbl.offsetWidth;
-      let totalW = 0;
-      const colEls = tbl.querySelectorAll(
-        'thead tr th, thead tr td, tbody tr:first-child td, tbody tr:first-child th',
-      );
-      const widths = [];
-      colEls.forEach((el, i) => {
-        if (i >= colCount) return;
-        if (widths.length <= i) widths.push(0);
-        widths[i] = Math.max(widths[i], el.offsetWidth);
-      });
-      totalW = widths.reduce((a, b) => a + b, 0);
-      const hide = new Array(colCount).fill(false);
-      if (totalW > parentW) {
-        const order = [];
-        for (let i = colCount - 1; i >= 0; i--) if (i !== aksiIdx) order.push(i);
-        let surplus = totalW - parentW;
-        for (const ci of order) {
-          if (surplus <= 0) break;
-          hide[ci] = true;
-          surplus -= widths[ci] || 0;
-        }
-      }
-      hide[aksiIdx] = false;
-      rows.forEach((row) => {
-        const cells = row.querySelectorAll('td');
-        const ctrl = cells[0]?.querySelector('.ext-ctrl');
-        if (!ctrl) return;
-        const hasHidden = hide.some((h) => h);
-        ctrl.style.display = hasHidden ? 'inline-block' : 'none';
-        cells.forEach((td, ci) => {
-          td.style.display = ci < hide.length && hide[ci] ? 'none' : '';
-        });
-      });
-      if (headerRow) {
-        headerRow.querySelectorAll('th, td').forEach((th, ci) => {
-          th.style.display = ci < hide.length && hide[ci] ? 'none' : '';
-        });
-      }
-    };
-    let headerRow = tbl.querySelector('thead tr') || tbl.querySelector('tbody tr:first-child');
-    if (!tbl.querySelector('thead') && headerRow?.querySelector('th')) {
-      const thead = document.createElement('thead');
-      tbl.insertBefore(thead, tbl.firstChild);
-      thead.appendChild(headerRow);
-      headerRow = thead.querySelector('tr');
-    }
-    const ro = new ResizeObserver(() => fit());
-    ro.observe(tbl.parentElement || tbl);
-    setTimeout(fit, 50);
+  function shortName(n) {
+    const ci = n.indexOf(',');
+    return ci >= 0 ? n.substring(0, ci).trim() : n;
   }
   function esc(s) {
     const d = document.createElement('div');
     d.textContent = s;
     return d.innerHTML;
   }
+  function addSearchFilter(tbl) {
+    if (tbl.querySelector('.ext-search-input')) return;
+    const input = document.createElement('input');
+    input.className = 'ext-search-input';
+    input.type = 'text';
+    input.placeholder = 'Cari di tabel ini...';
+    const wrap = tbl.parentElement || tbl;
+    wrap.insertBefore(input, tbl);
+    input.addEventListener('input', () => {
+      const q = input.value.toLowerCase().trim();
+      tbl.querySelectorAll('tbody tr').forEach((row) => {
+        if (row.classList.contains('ext-child')) return;
+        row.style.display =
+          q === '' || (row.textContent || '').toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
+  }
   function enhanceTables() {
+    if (!document.getElementById('morbis-dd-close')) {
+      document.addEventListener('click', (e) => {
+        document.querySelectorAll('.morbis-dd-menu').forEach((m) => {
+          const menu = m;
+          if (menu.style.display === 'none') return;
+          if (!menu.contains(e.target)) menu.style.display = 'none';
+        });
+      });
+      const fl = document.createElement('span');
+      fl.id = 'morbis-dd-close';
+      fl.style.display = 'none';
+      document.body.appendChild(fl);
+    }
     const tables = document.querySelectorAll('table.tabel.full');
     tables.forEach((tbl) => {
       if (tbl.hasAttribute('data-morbis-enhanced')) return;
       if (tbl.closest('.cons-overlay')) return;
       tbl.setAttribute('data-morbis-enhanced', '1');
+      tbl.classList.add('tabel-compact');
+      if (tbl.parentElement && !tbl.parentElement.classList.contains('ext-resp-wrap')) {
+        const w = document.createElement('div');
+        w.className = 'ext-resp-wrap';
+        tbl.parentElement.insertBefore(w, tbl);
+        w.appendChild(tbl);
+      }
       const headerRow =
         tbl.querySelector('thead tr') || tbl.querySelector('tbody tr') || tbl.querySelector('tr');
       if (!headerRow) return;
@@ -27766,6 +27700,34 @@ var __morbis_feature = (() => {
       const kesanIdx = headerTexts.findIndex((t) => /kesan/i.test(t));
       const anjuranIdx = headerTexts.findIndex((t) => /anjuran/i.test(t));
       const actionCol = hasAksiCol ? headerTexts.findIndex((t) => /aksi/i.test(t)) : totalCols;
+      const unitTujuanIdx = headerTexts.findIndex((t) => /unit tujuan/i.test(t));
+      const tanggalIdx = headerTexts.findIndex((t) => /tanggal pengajuan/i.test(t));
+      const months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'Mei',
+        'Jun',
+        'Jul',
+        'Agu',
+        'Sep',
+        'Okt',
+        'Nov',
+        'Des',
+      ];
+      if (unitTujuanIdx >= 0 && cells.length > unitTujuanIdx) {
+        cells[unitTujuanIdx].style.display = 'none';
+      }
+      const headCells = headerRow.querySelectorAll('th, td');
+      if (!headerRow.hasAttribute('data-ext-head-merge') && headCells.length > 2) {
+        headerRow.setAttribute('data-ext-head-merge', '1');
+        headCells[2].textContent = 'NAMA / RM';
+        if (headCells.length > 3) headCells[3].textContent = 'UNIT';
+        if (headCells.length > 5) headCells[5].textContent = 'DOKTER';
+        if (headCells.length > 1) headCells[1].style.display = 'none';
+        if (headCells.length > 6) headCells[6].style.display = 'none';
+      }
       const rows = tbl.querySelectorAll('tbody tr');
       rows.forEach((row, ri) => {
         if (headerFromTbody && ri === 0) return;
@@ -27777,10 +27739,40 @@ var __morbis_feature = (() => {
         }
         const allCells = row.querySelectorAll('td');
         if (allCells.length <= actionCol) return;
+        if (unitTujuanIdx >= 0 && allCells.length > unitTujuanIdx) {
+          allCells[unitTujuanIdx].style.display = 'none';
+        }
+        if (tanggalIdx >= 0 && allCells.length > tanggalIdx) {
+          const cell = allCells[tanggalIdx];
+          const txt = cell.textContent?.trim() || '';
+          const m = txt.match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})$/);
+          if (m) {
+            cell.textContent = `${parseInt(m[3])} ${months[parseInt(m[2]) - 1]} ${m[4]}:${m[5]}`;
+          }
+        }
         const actionCell = allCells[actionCol];
         if (actionCell.querySelector('.morbis-cons-btn')) return;
         const rd = [];
         allCells.forEach((td) => rd.push((td.textContent || '').trim()));
+        if (allCells.length > 2 && !allCells[2].querySelector('.patient-info')) {
+          const nama = (allCells[2].textContent || '').trim();
+          const rm = (allCells[1].textContent || '').trim();
+          allCells[2].innerHTML = `<div class="patient-info"><span class="patient-name">${esc(nama)}</span><span class="patient-rm">${esc(rm)}</span></div>`;
+          allCells[1].style.display = 'none';
+          if (allCells.length > 4) {
+            const asal = (allCells[3].textContent || '').trim();
+            const tujuan = (allCells[4].textContent || '').trim();
+            allCells[3].textContent = `${asal}  \u2192  ${tujuan}`;
+          }
+          if (allCells.length > 6) {
+            const pengaju = shortName((allCells[5].textContent || '').trim());
+            const kons = shortName((allCells[6].textContent || '').trim());
+            allCells[5].innerHTML = kons
+              ? `${esc(pengaju)}<br><span class="patient-rm">\u2192 ${esc(kons)}</span>`
+              : esc(pengaju);
+            allCells[6].style.display = 'none';
+          }
+        }
         let id_konsul = row.id || '';
         let visitId = '';
         row
@@ -27800,11 +27792,9 @@ var __morbis_feature = (() => {
         const detailBtn = document.createElement('button');
         detailBtn.className = 'morbis-cons-btn morbis-cons-detail';
         detailBtn.textContent = 'Detail';
-        actionCell.appendChild(detailBtn);
         const infoBtn = document.createElement('button');
         infoBtn.className = 'morbis-cons-btn morbis-cons-info';
         infoBtn.textContent = 'Info Pasien';
-        actionCell.appendChild(infoBtn);
         detailBtn.onclick = () => {
           const p = {};
           if (rd.length > 1) p.noRm = rd[1];
@@ -27834,11 +27824,47 @@ var __morbis_feature = (() => {
             }),
           );
         };
+        const dd = document.createElement('div');
+        dd.className = 'morbis-dd';
+        const toggle = document.createElement('button');
+        toggle.className = 'morbis-dd-toggle';
+        toggle.textContent = '\u2022\u2022\u2022';
+        dd.appendChild(toggle);
+        const menu = document.createElement('div');
+        menu.className = 'morbis-dd-menu';
+        dd.appendChild(menu);
+        Array.from(actionCell.querySelectorAll('button')).forEach((b) => menu.appendChild(b));
+        menu.appendChild(detailBtn);
+        menu.appendChild(infoBtn);
+        const hapusBtn = Array.from(menu.querySelectorAll('button')).find((b) =>
+          b.textContent?.includes('Hapus'),
+        );
+        if (hapusBtn) menu.appendChild(hapusBtn);
+        actionCell.innerHTML = '';
+        actionCell.appendChild(dd);
+        toggle.onclick = (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          const isOpen = menu.style.display !== 'none';
+          if (isOpen) {
+            menu.style.display = 'none';
+            dd.appendChild(menu);
+            menu.style.position = '';
+            menu.style.top = '';
+            menu.style.left = '';
+          } else {
+            document.body.appendChild(menu);
+            const r = toggle.getBoundingClientRect();
+            menu.style.position = 'fixed';
+            menu.style.top = r.bottom + 'px';
+            menu.style.left =
+              Math.max(4, Math.min(r.left + r.width - 160, window.innerWidth - 164)) + 'px';
+            menu.style.display = 'block';
+          }
+        };
       });
+      addSearchFilter(tbl);
     });
-  }
-  function initResponsiveTables() {
-    document.querySelectorAll('table').forEach(makeTableResponsive);
   }
   function fetchTabContent(tabId, data) {
     return new Promise((resolve, reject) => {
@@ -28203,9 +28229,9 @@ var __morbis_feature = (() => {
       '.cons-error{padding:20px;color:#ef4444;text-align:center;}',
       '.cons-empty{padding:40px 20px;text-align:center;color:#9ca3af;font-size:13px;}',
       '.cons-raw-html{font-size:13px;color:#374151;}',
-      '.cons-raw-html table.tabel,.cons-raw-html table.table-input{width:100%;border-collapse:collapse;margin-bottom:12px;}',
-      '.cons-raw-html table.tabel th,.cons-raw-html table.tabel td,.cons-raw-html table.table-input td{border:1px solid #e5e7eb;padding:8px 10px;vertical-align:top;word-break:break-word;}',
-      '.cons-raw-html table.tabel thead th{background:#f9fafb;font-weight:600;color:#111827;white-space:nowrap;}',
+      '.cons-raw-html table,.cons-penunjang table,.cons-raw-html table.tabel,.cons-raw-html table.table-input{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:13px;}',
+      '.cons-raw-html td,.cons-raw-html th,.cons-penunjang td,.cons-penunjang th{border:1px solid #e5e7eb;padding:8px 10px;vertical-align:top;word-break:break-word;}',
+      '.cons-raw-html thead th,.cons-penunjang thead th{background:#f9fafb;font-weight:600;color:#111827;white-space:nowrap;}',
       '.cons-raw-html .pagination{margin-top:16px;text-align:center;}',
       '.cons-raw-html .pagination a{display:inline-block;padding:6px 12px;margin:0 2px;border:1px solid #d1d5db;border-radius:6px;text-decoration:none;color:#374151;font-size:13px;transition:all .15s;}',
       '.cons-raw-html .pagination a:hover{background:#f3f4f6;border-color:#9ca3af;}',
@@ -28226,20 +28252,28 @@ var __morbis_feature = (() => {
       injectPageScripts();
       enhanceTables();
       mountConsultationEnhancer();
-      setTimeout(() => initResponsiveTables(), 200);
       let timer = null;
       const observer = new MutationObserver(() => {
-        if (timer) clearTimeout(timer);
-        timer = setTimeout(() => {
-          enhanceTables();
-          initResponsiveTables();
-        }, 400);
+        if (document.querySelector('table.tabel.full:not([data-morbis-enhanced])')) {
+          if (timer) clearTimeout(timer);
+          timer = setTimeout(() => {
+            enhanceTables();
+          }, 400);
+        }
       });
       observer.observe(document.body, { childList: true, subtree: true });
     } else if (waited >= MAX_WAIT) {
       clearInterval(check);
+      console.warn('[consultationEnhancer] config attr not found, skipping');
     }
   }, 50);
+  var g = globalThis;
+  if (typeof g.featureModules !== 'undefined') {
+    g.featureModules.consultationEnhancer = {
+      name: 'Consultation Enhancer',
+      run: () => {},
+    };
+  }
 })();
 /*! Bundled license information:
 
