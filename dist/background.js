@@ -399,7 +399,10 @@ var __morbis_bg = (() => {
           try {
             const { url, method = 'GET', data } = validated;
             let fetchUrl = url;
-            const opts = { method, credentials: 'include' };
+            const opts = {
+              method,
+              credentials: 'include',
+            };
             if (data && typeof data === 'object') {
               const params = new URLSearchParams(data);
               if (method === 'POST') {

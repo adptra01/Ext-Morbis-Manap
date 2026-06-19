@@ -27615,6 +27615,11 @@ var __morbis_feature = (() => {
       '.ext-search-input{padding:6px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;width:220px;outline:none;color:#374151;background:#fff;}',
       '.ext-search-input:focus{border-color:#6366f1;box-shadow:0 0 0 2px rgba(99,102,241,0.15);}',
       '.ext-search-input::placeholder{color:#9ca3af;}',
+      'table.tabel.full.tabel-compact td[data-full-text]{position:relative!important;cursor:help!important;}',
+      'table.tabel.full.tabel-compact td[data-full-text]::after{content:attr(data-full-text);position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;color:#1f2937;padding:20px 24px;border-radius:12px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);z-index:10000;max-width:80vw;width:420px;white-space:pre-wrap;line-height:1.6;border:1px solid #e5e7eb;font-size:14px;pointer-events:none;opacity:0;visibility:hidden;transition:opacity 0.15s,visibility 0.15s;transition-delay:0s;}',
+      'table.tabel.full.tabel-compact td[data-full-text]:hover::after{opacity:1;visibility:visible;transition-delay:0.3s;}',
+      'table.tabel.full.tabel-compact td[data-full-text]::before{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.15);z-index:9999;opacity:0;visibility:hidden;transition:opacity 0.15s,visibility 0.15s;transition-delay:0s;pointer-events:none;}',
+      'table.tabel.full.tabel-compact td[data-full-text]:hover::before{opacity:1;visibility:visible;transition-delay:0.3s;}',
     ].join('\n');
     document.head.appendChild(s);
   }
@@ -27750,6 +27755,12 @@ var __morbis_feature = (() => {
             cell.textContent = `${parseInt(m[3])} ${months[parseInt(m[2]) - 1]} ${m[4]}:${m[5]}`;
           }
         }
+        [permintaanIdx, kesanIdx, anjuranIdx].forEach((idx) => {
+          if (idx >= 0 && allCells.length > idx) {
+            const txt = (allCells[idx].textContent || '').trim();
+            if (txt.length > 20) allCells[idx].setAttribute('data-full-text', txt);
+          }
+        });
         const actionCell = allCells[actionCol];
         if (actionCell.querySelector('.morbis-cons-btn')) return;
         const rd = [];
