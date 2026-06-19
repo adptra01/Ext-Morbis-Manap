@@ -27593,15 +27593,15 @@ var __morbis_feature = (() => {
       '.morbis-tab-btn.morbis-tab-active { color:#111827; background:#fff; border-bottom-color:#111827; }',
       '.morbis-tab-panel { display:none; }',
       '.morbis-tab-panel.morbis-tab-active { display:block; }',
-      'table.tabel.full.tabel-compact,table.table-input.tabel-compact{width:100%!important;border-collapse:collapse!important;font-size:14px!important;table-layout:auto!important;}',
-      'table.tabel.full.tabel-compact th{background:#374151!important;color:#fff!important;font-weight:600!important;padding:10px 12px!important;border:1px solid #4b5563!important;white-space:nowrap!important;}',
-      'table.tabel.full.tabel-compact td{padding:8px 12px!important;border:1px solid #e5e7eb!important;vertical-align:top!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;max-width:200px!important;}',
-      'table.tabel.full.tabel-compact td:nth-child(3){font-weight:600!important;color:#111827!important;min-width:130px!important;}',
-      'table.tabel.full.tabel-compact tr:nth-child(even){background:#f9fafb!important;}',
-      'table.tabel.full.tabel-compact tr:hover{background:#f3f4f6!important;}',
-      'table.tabel.full.tabel-compact,table.tabel.full.tabel-compact td,table.tabel.full.tabel-compact th{transition:none!important;}',
+      'table.tabel.tabel-compact,table.table-input.tabel-compact{width:100%!important;border-collapse:collapse!important;font-size:14px!important;table-layout:auto!important;}',
+      'table.tabel.tabel-compact th,table.table-input.tabel-compact th{background:#374151!important;color:#fff!important;font-weight:600!important;padding:10px 12px!important;border:1px solid #4b5563!important;white-space:nowrap!important;}',
+      'table.tabel.tabel-compact td,table.table-input.tabel-compact td{padding:8px 12px!important;border:1px solid #e5e7eb!important;vertical-align:top!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;max-width:200px!important;}',
+      'table.tabel.tabel-compact td:nth-child(3),table.table-input.tabel-compact td:nth-child(3){font-weight:600!important;color:#111827!important;min-width:130px!important;}',
+      'table.tabel.tabel-compact tr:nth-child(even),table.table-input.tabel-compact tr:nth-child(even){background:#f9fafb!important;}',
+      'table.tabel.tabel-compact tr:hover,table.table-input.tabel-compact tr:hover{background:#f3f4f6!important;}',
+      'table.tabel.tabel-compact,table.tabel.tabel-compact td,table.tabel.tabel-compact th{transition:none!important;}',
       '.ext-resp-wrap{overflow-x:auto!important;width:100%!important;margin-bottom:12px!important;border:1px solid #e2e8f0!important;border-radius:8px!important;-webkit-overflow-scrolling:touch!important;}',
-      '.ext-resp-wrap table.tabel.full.tabel-compact{width:auto!important;min-width:100%!important;table-layout:auto!important;}',
+      '.ext-resp-wrap table.tabel.tabel-compact{width:auto!important;min-width:100%!important;table-layout:auto!important;}',
       '.patient-info{display:flex!important;flex-direction:column!important;gap:2px!important;}',
       '.patient-name{font-weight:700!important;color:#0f172a!important;}',
       '.patient-rm{font-size:11px!important;color:#64748b!important;}',
@@ -27615,11 +27615,26 @@ var __morbis_feature = (() => {
       '.ext-search-input{padding:6px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;width:220px;outline:none;color:#374151;background:#fff;}',
       '.ext-search-input:focus{border-color:#6366f1;box-shadow:0 0 0 2px rgba(99,102,241,0.15);}',
       '.ext-search-input::placeholder{color:#9ca3af;}',
-      'table.tabel.full.tabel-compact td[data-full-text]{position:relative!important;cursor:help!important;}',
-      'table.tabel.full.tabel-compact td[data-full-text]::after{content:attr(data-full-text);position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;color:#1f2937;padding:20px 24px;border-radius:12px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);z-index:10000;max-width:80vw;width:420px;white-space:pre-wrap;line-height:1.6;border:1px solid #e5e7eb;font-size:14px;pointer-events:none;opacity:0;visibility:hidden;transition:opacity 0.15s,visibility 0.15s;transition-delay:0s;}',
-      'table.tabel.full.tabel-compact td[data-full-text]:hover::after{opacity:1;visibility:visible;transition-delay:0.3s;}',
-      'table.tabel.full.tabel-compact td[data-full-text]::before{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.15);z-index:9999;opacity:0;visibility:hidden;transition:opacity 0.15s,visibility 0.15s;transition-delay:0s;pointer-events:none;}',
-      'table.tabel.full.tabel-compact td[data-full-text]:hover::before{opacity:1;visibility:visible;transition-delay:0.3s;}',
+      'table.tabel.tabel-compact td[data-full-text]{position:relative!important;cursor:help!important;}',
+      'table.tabel.tabel-compact td[data-full-text]::after{content:attr(data-full-text);position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;color:#1f2937;padding:20px 24px;border-radius:12px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);z-index:10000;max-width:80vw;width:420px;white-space:pre-wrap;line-height:1.6;border:1px solid #e5e7eb;font-size:14px;pointer-events:none;opacity:0;visibility:hidden;transition:opacity 0.15s,visibility 0.15s;transition-delay:0s;}',
+      'table.tabel.tabel-compact td[data-full-text]:hover::after{opacity:1;visibility:visible;transition-delay:0.3s;}',
+      'table.tabel.tabel-compact td[data-full-text]::before{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.15);z-index:9999;opacity:0;visibility:hidden;transition:opacity 0.15s,visibility 0.15s;transition-delay:0s;pointer-events:none;}',
+      'table.tabel.tabel-compact td[data-full-text]:hover::before{opacity:1;visibility:visible;transition-delay:0.3s;}',
+      '.cons-modal table.tabel{width:100%!important;border-collapse:collapse!important;border:1px solid #e5e7eb!important;margin-bottom:1rem!important;}',
+      '.cons-modal table.tabel th{background:#f3f4f6!important;color:#374151!important;font-weight:600!important;text-transform:none!important;padding:8px 12px!important;border:1px solid #e5e7eb!important;text-align:left!important;}',
+      '.cons-modal table.tabel td{background:#fff!important;color:#4b5563!important;padding:8px 12px!important;border:1px solid #e5e7eb!important;text-align:left!important;}',
+      '.cons-header{padding-top:10px!important;padding-bottom:10px!important;}',
+      '.cons-tab-content{padding-top:5px!important;padding-bottom:5px!important;}',
+      '.cons-modal .cons-header{padding:10px 24px!important;}',
+      '.cons-modal .cons-tab-content{padding:5px 24px!important;}',
+      '.cons-modal .cons-raw-html{margin:0!important;padding:0!important;}',
+      '.cons-modal .cons-raw-html > *{margin-top:0!important;margin-bottom:0!important;}',
+      '.cons-modal table{margin-top:0!important;margin-bottom:0!important;}',
+      '.cons-modal center{margin:0!important;padding:0!important;}',
+      '.cons-modal p{margin:0!important;}',
+      '.cons-modal br{line-height:0!important;}',
+      '.cons-modal table.tabel{margin-top:0!important;}',
+      '.cons-raw-html > *:first-child{margin-top:0!important;}',
     ].join('\n');
     document.head.appendChild(s);
   }
@@ -27674,12 +27689,12 @@ var __morbis_feature = (() => {
       fl.style.display = 'none';
       document.body.appendChild(fl);
     }
-    const tables = document.querySelectorAll('table.tabel.full');
+    const tables = document.querySelectorAll('table');
     tables.forEach((tbl) => {
       if (tbl.hasAttribute('data-morbis-enhanced')) return;
       if (tbl.closest('.cons-overlay')) return;
       tbl.setAttribute('data-morbis-enhanced', '1');
-      tbl.classList.add('tabel-compact');
+      tbl.classList.add('tabel', 'full', 'tabel-compact');
       if (tbl.parentElement && !tbl.parentElement.classList.contains('ext-resp-wrap')) {
         const w = document.createElement('div');
         w.className = 'ext-resp-wrap';
