@@ -67,11 +67,11 @@ var __morbis_core = (() => {
     try {
       const result = await chrome.storage.sync.get('extensionCustomUrls');
       const saved = result.extensionCustomUrls;
-      if (!saved) return [];
       const defaults = [
         { id: 'default-1', url: 'http://192.168.8.4', enabled: true, isDefault: true },
         { id: 'default-2', url: 'http://103.147.236.140', enabled: true, isDefault: true },
       ];
+      if (!saved) return defaults;
       const merged = structuredClone(defaults);
       saved.forEach(function (u) {
         if (!u.isDefault) merged.push(u);

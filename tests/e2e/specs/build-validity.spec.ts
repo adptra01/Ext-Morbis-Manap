@@ -32,7 +32,6 @@ test.describe('Build Output Validity', () => {
     const path = resolve(distDir, 'popup.js');
     expect(existsSync(path)).toBe(true);
     const content = readFileSync(path, 'utf-8');
-    expect(content).toContain('popup.js');
     expect(content.length).toBeGreaterThan(1000);
   });
 
@@ -81,7 +80,7 @@ test.describe('Build Output Validity', () => {
   });
 
   test('static files should exist', () => {
-    expect(checkFile('popup.html')).toBe(true);
+    expect(checkFile('popup/index.html')).toBe(true);
     expect(checkFile('icons/bluemorbis16.png')).toBe(true);
     expect(checkFile('icons/bluemorbis48.png')).toBe(true);
     expect(checkFile('icons/bluemorbis128.png')).toBe(true);

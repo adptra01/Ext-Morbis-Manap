@@ -1,4 +1,9 @@
-import { injectStyle, injectPageScripts, enhanceTables } from './consultationEnhancer/legacy';
+import {
+  injectStyle,
+  injectPageScripts,
+  enhanceTables,
+  buildCustomTables,
+} from './consultationEnhancer/legacy';
 import { mountConsultationEnhancer } from './consultationEnhancer/mount';
 
 function injectModalStyle() {
@@ -51,16 +56,16 @@ const check = setInterval(() => {
     injectStyle();
     injectPageScripts();
     enhanceTables();
+    buildCustomTables();
     mountConsultationEnhancer();
 
     let timer: ReturnType<typeof setTimeout> | null = null;
     const observer = new MutationObserver(() => {
-      if (document.querySelector('table.tabel.full:not([data-morbis-enhanced])')) {
-        if (timer) clearTimeout(timer);
-        timer = setTimeout(() => {
-          enhanceTables();
-        }, 400);
-      }
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        enhanceTables();
+        buildCustomTables();
+      }, 400);
     });
     observer.observe(document.body, { childList: true, subtree: true });
   } else if (waited >= MAX_WAIT) {
