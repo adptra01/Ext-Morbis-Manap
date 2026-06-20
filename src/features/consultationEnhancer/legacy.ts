@@ -26,15 +26,6 @@ const PATIENT_INFO_TABS = [
       data: (visit: string, noRm: string) => ({ id_visit: visit, id_pasien: noRm, page: 1 }),
     },
   },
-  {
-    id: 'penunjang',
-    label: 'Penunjang Medis',
-    ajax: {
-      url: '/admisi/modal/modal-history-penunjang-v2',
-      method: 'GET' as const,
-      data: (visit: string, noRm: string) => ({ norm: noRm, id_visit: visit }),
-    },
-  },
 ];
 
 export function injectStyle(): void {
@@ -183,6 +174,7 @@ export function injectStyle(): void {
     '.cons-cppt-row:last-child{border-bottom:none;}',
     '.cons-cppt-label{flex:0 0 140px;font-weight:600;color:#374151;font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding-top:2px;flex-shrink:0;}',
     '.cons-cppt-value{flex:1;font-size:13px;line-height:1.6;color:#1e293b;white-space:pre-wrap;word-break:break-word;}',
+    '#modals #isimaster table th:first-child,#modals #isimaster table td:first-child{width:30px!important;max-width:30px!important;text-align:center!important;white-space:nowrap!important;padding:8px 4px!important;}',
   ].join('\n');
   document.head.appendChild(s);
 }
@@ -279,6 +271,7 @@ export function injectPageScripts(): void {
     '    ds();',
     '  };',
     '})();',
+    "(function(){var _h=function(id){var v=document.getElementById('id_visit');var m=document.getElementById('modals');if(m)m.style.display='block';if(typeof jQuery!='undefined'){jQuery('#isimaster').html('');jQuery.ajax({url:'/admisi/pelaksanaan_pelayanan/history-penunjang/tabel',data:'noRm='+id+'&id_visit='+(v?v.value:'')+'&tipe=hasil',cache:false,success:function(r){jQuery('#isimaster').html(r)}})}};if(!window._ext_pnj_lock){window._ext_pnj_lock=true;window.modal_penunjang_history=_h;Object.defineProperty(window,'penunjang_modal',{configurable:false,get:function(){return _h},set:function(){}});}else{window.penunjang_modal=_h;}})();",
   ].join('\n');
   (document.head || document.documentElement).appendChild(s);
 }
@@ -569,7 +562,9 @@ export function enhanceTables(): void {
 }
 
 export function buildCustomTables(): void {
-  console.log('[EXT] buildCustomTables running!');
+  if (document.querySelector('[data-ext-bct-running]')) return;
+  document.documentElement.setAttribute('data-ext-bct-running', '1');
+  setTimeout(() => document.documentElement.removeAttribute('data-ext-bct-running'), 1000);
   if (!document.getElementById('morbis-dd-close')) {
     document.addEventListener('click', (e) => {
       document.querySelectorAll('.morbis-dd-menu').forEach((m) => {
@@ -874,9 +869,6 @@ export function loadTabContent(
       target.querySelectorAll('[style*="margin-top"]').forEach((el) => {
         el.style.marginTop = '0';
       });
-      if (tabId === 'penunjang') {
-        injectPenunjangFix(data.visit, data.noRm || '');
-      }
     },
     error: (_xhr: unknown, _status: string, error: string) => {
       target.innerHTML =
@@ -916,7 +908,6 @@ export function fetchTabContent(tabId: string, data: Record<string, string>): Pr
         else if (tabId === 'dokumen')
           response = filterTableCols(response, ['no', 'nama file', 'keterangan']);
         else if (tabId === 'cppt') response = toCpptCards(response);
-        if (tabId === 'penunjang') injectPenunjangFix(data.visit, data.noRm || '');
         resolve(response);
       },
       error: (_xhr: unknown, _status: string, error: string) => {
@@ -1006,16 +997,4 @@ function toCpptCards(html: string): string {
     );
   });
   return cards.join('');
-}
-
-function injectPenunjangFix(_visit: string, _noRm: string): void {
-  if (document.getElementById('morbis-penunjang-fix')) return;
-  const s = document.createElement('script');
-  s.id = 'morbis-penunjang-fix';
-  s.textContent = [
-    'window.openTab=function(elem,tipe){document.querySelectorAll(".tabcontent").forEach(function(e){e.style.display="none"});document.querySelectorAll(".tablinks").forEach(function(e){e.classList.remove("active")});elem.classList.add("active");var t=document.getElementById(tipe);if(t)t.style.display="block";var c=document.getElementById("contents");if(c)c.style.display="block";};',
-    'window.searchTable=function(n,v,t){var tb=document.querySelector("#tab-"+t);if(tb)window.openTab(tb,t);};',
-    'var hb=document.getElementById("tab-hasil");if(hb)hb.click();',
-  ].join('\n');
-  (document.head || document.documentElement).appendChild(s);
 }

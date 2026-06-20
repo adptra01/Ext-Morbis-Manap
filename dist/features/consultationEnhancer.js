@@ -1647,7 +1647,7 @@ var __morbis_feature = (() => {
         'undefined' !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ &&
           'function' === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart &&
           __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
-        var React5 = require_react(),
+        var React4 = require_react(),
           Internals = {
             d: {
               f: noop,
@@ -1669,7 +1669,7 @@ var __morbis_feature = (() => {
           },
           REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for('react.portal'),
           ReactSharedInternals =
-            React5.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
+            React4.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
         ('function' === typeof Map &&
           null != Map.prototype &&
           'function' === typeof Map.prototype.forEach &&
@@ -3551,7 +3551,7 @@ var __morbis_feature = (() => {
         function validateOptionProps(element, props) {
           null == props.value &&
             ('object' === typeof props.children && null !== props.children
-              ? React5.Children.forEach(props.children, function (child) {
+              ? React4.Children.forEach(props.children, function (child) {
                   null == child ||
                     'string' === typeof child ||
                     'number' === typeof child ||
@@ -23466,7 +23466,7 @@ var __morbis_feature = (() => {
           'function' === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart &&
           __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
         var Scheduler = require_scheduler(),
-          React5 = require_react(),
+          React4 = require_react(),
           ReactDOM = require_react_dom(),
           assign = Object.assign,
           REACT_LEGACY_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for('react.element'),
@@ -23492,7 +23492,7 @@ var __morbis_feature = (() => {
           REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for('react.client.reference'),
           isArrayImpl = Array.isArray,
           ReactSharedInternals =
-            React5.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
+            React4.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
           ReactDOMSharedInternals =
             ReactDOM.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
           NotPending = Object.freeze({
@@ -27019,7 +27019,7 @@ var __morbis_feature = (() => {
           }
         };
         (function () {
-          var isomorphicReactPackageVersion = React5.version;
+          var isomorphicReactPackageVersion = React4.version;
           if ('19.2.7' !== isomorphicReactPackageVersion)
             throw Error(
               'Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ' +
@@ -27453,7 +27453,7 @@ var __morbis_feature = (() => {
             'object' === typeof object && null !== object && object.$$typeof === REACT_ELEMENT_TYPE
           );
         }
-        var React5 = require_react(),
+        var React4 = require_react(),
           REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for('react.transitional.element'),
           REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for('react.portal'),
           REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for('react.fragment'),
@@ -27469,7 +27469,7 @@ var __morbis_feature = (() => {
           REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for('react.activity'),
           REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for('react.client.reference'),
           ReactSharedInternals =
-            React5.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
+            React4.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
           hasOwnProperty = Object.prototype.hasOwnProperty,
           isArrayImpl = Array.isArray,
           createTask = console.createTask
@@ -27477,14 +27477,14 @@ var __morbis_feature = (() => {
             : function () {
                 return null;
               };
-        React5 = {
+        React4 = {
           react_stack_bottom_frame: function (callStackForError) {
             return callStackForError();
           },
         };
         var specialPropKeyWarningShown;
         var didWarnAboutElementRef = {};
-        var unknownOwnerDebugStack = React5.react_stack_bottom_frame.bind(React5, UnknownOwner)();
+        var unknownOwnerDebugStack = React4.react_stack_bottom_frame.bind(React4, UnknownOwner)();
         var unknownOwnerDebugTask = createTask(getTaskName(UnknownOwner));
         var didWarnAboutKeySpread = {};
         exports.Fragment = REACT_FRAGMENT_TYPE;
@@ -27553,15 +27553,6 @@ var __morbis_feature = (() => {
         url: '/admisi/pengajuan_konsultasi/tabel-cppt',
         method: 'POST',
         data: (visit, noRm) => ({ id_visit: visit, id_pasien: noRm, page: 1 }),
-      },
-    },
-    {
-      id: 'penunjang',
-      label: 'Penunjang Medis',
-      ajax: {
-        url: '/admisi/modal/modal-history-penunjang-v2',
-        method: 'GET',
-        data: (visit, noRm) => ({ norm: noRm, id_visit: visit }),
       },
     },
   ];
@@ -27704,6 +27695,7 @@ var __morbis_feature = (() => {
       '.cons-cppt-row:last-child{border-bottom:none;}',
       '.cons-cppt-label{flex:0 0 140px;font-weight:600;color:#374151;font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding-top:2px;flex-shrink:0;}',
       '.cons-cppt-value{flex:1;font-size:13px;line-height:1.6;color:#1e293b;white-space:pre-wrap;word-break:break-word;}',
+      '#modals #isimaster table th:first-child,#modals #isimaster table td:first-child{width:30px!important;max-width:30px!important;text-align:center!important;white-space:nowrap!important;padding:8px 4px!important;}',
     ].join('\n');
     document.head.appendChild(s);
   }
@@ -27799,6 +27791,7 @@ var __morbis_feature = (() => {
       '    ds();',
       '  };',
       '})();',
+      "(function(){var _h=function(id){var v=document.getElementById('id_visit');var m=document.getElementById('modals');if(m)m.style.display='block';if(typeof jQuery!='undefined'){jQuery('#isimaster').html('');jQuery.ajax({url:'/admisi/pelaksanaan_pelayanan/history-penunjang/tabel',data:'noRm='+id+'&id_visit='+(v?v.value:'')+'&tipe=hasil',cache:false,success:function(r){jQuery('#isimaster').html(r)}})}};if(!window._ext_pnj_lock){window._ext_pnj_lock=true;window.modal_penunjang_history=_h;Object.defineProperty(window,'penunjang_modal',{configurable:false,get:function(){return _h},set:function(){}});}else{window.penunjang_modal=_h;}})();",
     ].join('\n');
     (document.head || document.documentElement).appendChild(s);
   }
@@ -28048,7 +28041,9 @@ var __morbis_feature = (() => {
     });
   }
   function buildCustomTables() {
-    console.log('[EXT] buildCustomTables running!');
+    if (document.querySelector('[data-ext-bct-running]')) return;
+    document.documentElement.setAttribute('data-ext-bct-running', '1');
+    setTimeout(() => document.documentElement.removeAttribute('data-ext-bct-running'), 1e3);
     if (!document.getElementById('morbis-dd-close')) {
       document.addEventListener('click', (e) => {
         document.querySelectorAll('.morbis-dd-menu').forEach((m) => {
@@ -28314,7 +28309,6 @@ var __morbis_feature = (() => {
           else if (tabId === 'dokumen')
             response = filterTableCols(response, ['no', 'nama file', 'keterangan']);
           else if (tabId === 'cppt') response = toCpptCards(response);
-          if (tabId === 'penunjang') injectPenunjangFix(data.visit, data.noRm || '');
           resolve(response);
         },
         error: (_xhr, _status, error) => {
@@ -28398,23 +28392,12 @@ var __morbis_feature = (() => {
     });
     return cards.join('');
   }
-  function injectPenunjangFix(_visit, _noRm) {
-    if (document.getElementById('morbis-penunjang-fix')) return;
-    const s = document.createElement('script');
-    s.id = 'morbis-penunjang-fix';
-    s.textContent = [
-      'window.openTab=function(elem,tipe){document.querySelectorAll(".tabcontent").forEach(function(e){e.style.display="none"});document.querySelectorAll(".tablinks").forEach(function(e){e.classList.remove("active")});elem.classList.add("active");var t=document.getElementById(tipe);if(t)t.style.display="block";var c=document.getElementById("contents");if(c)c.style.display="block";};',
-      'window.searchTable=function(n,v,t){var tb=document.querySelector("#tab-"+t);if(tb)window.openTab(tb,t);};',
-      'var hb=document.getElementById("tab-hasil");if(hb)hb.click();',
-    ].join('\n');
-    (document.head || document.documentElement).appendChild(s);
-  }
 
   // src/features/consultationEnhancer/mount.tsx
   var import_client = __toESM(require_client(), 1);
 
   // src/features/consultationEnhancer/ConsEnhancerApp.tsx
-  var import_react4 = __toESM(require_react(), 1);
+  var import_react3 = __toESM(require_react(), 1);
 
   // src/features/consultationEnhancer/ConsDetailModal.tsx
   var import_react_dom = __toESM(require_react_dom(), 1);
@@ -28488,7 +28471,7 @@ var __morbis_feature = (() => {
   }
 
   // src/features/consultationEnhancer/ConsInfoTabs.tsx
-  var import_react3 = __toESM(require_react(), 1);
+  var import_react2 = __toESM(require_react(), 1);
   var import_react_dom2 = __toESM(require_react_dom(), 1);
 
   // src/features/consultationEnhancer/ServerTabRenderer.tsx
@@ -28515,79 +28498,18 @@ var __morbis_feature = (() => {
     });
   }
 
-  // src/features/consultationEnhancer/PenunjangRenderer.tsx
-  var import_react2 = __toESM(require_react(), 1);
-  var import_jsx_runtime3 = __toESM(require_jsx_runtime(), 1);
-  function extractVisibleHtml(html) {
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    const preferred = doc.querySelector('.data-input-cus');
-    if (preferred) return preferred.outerHTML;
-    const main = doc.querySelector('.main');
-    if (main) return main.outerHTML;
-    const contents = doc.getElementById('contents');
-    if (contents) return contents.outerHTML;
-    return html;
-  }
-  function PenunjangRenderer({ html }) {
-    const [readyHtml, setReadyHtml] = (0, import_react2.useState)('');
-    const seed = (0, import_react2.useMemo)(() => html, [html]);
-    (0, import_react2.useEffect)(() => {
-      const t = window.setTimeout(() => setReadyHtml(extractVisibleHtml(seed)), 0);
-      if (typeof window !== 'undefined') {
-        window.penunjang_modal = (id_pasien) => {
-          const modal = window.open('', '_blank');
-          const url = `/admisi/modal/modal-history-penunjang-v2?norm=${id_pasien}&id_visit=${window.document?.querySelector?.('#id_visit')?.value || ''}`;
-          if (modal) {
-            modal.location.href = url;
-            modal.focus();
-          } else {
-            window.location.href = url;
-          }
-        };
-        window.master_lab = (id_visit) => {
-          const win = window.open(
-            `/admisi/modal/modal-laborat?id_visit=${id_visit}`,
-            'MyWindow',
-            'width=8000px,height=800px,scrollbars=1',
-          );
-          win?.focus();
-        };
-        window.master = (id_visit) => {
-          const win = window.open(
-            `/admisi/modal/modal-radiologi?id_visit=${id_visit}&jenis=Radiologi`,
-            'MyWindow',
-            'width=8000px,height=800px,scrollbars=1',
-          );
-          win?.focus();
-        };
-      }
-      return () => window.clearTimeout(t);
-    }, [seed]);
-    if (!readyHtml) {
-      return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('div', {
-        className: 'cons-loading',
-        children: 'Memuat...',
-      });
-    }
-    return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('div', {
-      className: 'cons-penunjang',
-      dangerouslySetInnerHTML: { __html: readyHtml },
-    });
-  }
-
   // src/features/consultationEnhancer/ConsInfoTabs.tsx
-  var import_jsx_runtime4 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime3 = __toESM(require_jsx_runtime(), 1);
   var TABS = [
     { id: 'resep', label: 'History Resep' },
     { id: 'dokumen', label: 'Dokumen Pasien' },
     { id: 'cppt', label: 'CPPT' },
-    { id: 'penunjang', label: 'Penunjang Medis' },
   ];
   function ConsInfoTabs({ data, onClose }) {
-    const [activeTab, setActiveTab] = (0, import_react3.useState)(TABS[0].id);
-    const [contents, setContents] = (0, import_react3.useState)({});
-    const [loading, setLoading] = (0, import_react3.useState)({});
-    const loaded = (0, import_react3.useRef)(/* @__PURE__ */ new Set());
+    const [activeTab, setActiveTab] = (0, import_react2.useState)(TABS[0].id);
+    const [contents, setContents] = (0, import_react2.useState)({});
+    const [loading, setLoading] = (0, import_react2.useState)({});
+    const loaded = (0, import_react2.useRef)(/* @__PURE__ */ new Set());
     const loadTab = async (tabId) => {
       if (loaded.current.has(tabId)) return;
       loaded.current.add(tabId);
@@ -28604,35 +28526,35 @@ var __morbis_feature = (() => {
         setLoading((prev) => ({ ...prev, [tabId]: false }));
       }
     };
-    (0, import_react3.useEffect)(() => {
+    (0, import_react2.useEffect)(() => {
       loadTab(TABS[0].id);
     }, []);
     return (0, import_react_dom2.createPortal)(
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('div', {
+      /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('div', {
         className: 'cons-overlay',
         onClick: (e) => {
           if (e.target === e.currentTarget) onClose();
         },
-        children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
+        children: /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)('div', {
           className: 'cons-modal cons-modal-wide',
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
+            /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)('div', {
               className: 'cons-header',
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('h2', {
+                /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)('h2', {
                   children: [data.nama ?? '', ' (', data.noRm ?? '', ')'],
                 }),
-                /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('button', {
+                /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('button', {
                   className: 'cons-close',
                   onClick: onClose,
                   children: '\xD7',
                 }),
               ],
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('div', {
+            /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('div', {
               className: 'cons-tabs',
               children: TABS.map((tab) =>
-                /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
                   'button',
                   {
                     className: `cons-tab-btn${activeTab === tab.id ? ' cons-tab-active' : ''}`,
@@ -28646,21 +28568,17 @@ var __morbis_feature = (() => {
                 ),
               ),
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('div', {
+            /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('div', {
               className: 'cons-tab-content',
               children: loading[activeTab]
-                ? /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('div', {
+                ? /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('div', {
                     className: 'cons-loading',
                     children: 'Memuat...',
                   })
                 : contents[activeTab]
-                  ? activeTab === 'penunjang'
-                    ? /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(PenunjangRenderer, {
-                        html: contents[activeTab],
-                      })
-                    : /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(ServerTabRenderer, {
-                        html: contents[activeTab],
-                      })
+                  ? /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(ServerTabRenderer, {
+                      html: contents[activeTab],
+                    })
                   : null,
             }),
           ],
@@ -28671,11 +28589,11 @@ var __morbis_feature = (() => {
   }
 
   // src/features/consultationEnhancer/ConsEnhancerApp.tsx
-  var import_jsx_runtime5 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime4 = __toESM(require_jsx_runtime(), 1);
   function ConsEnhancerApp() {
-    const [detailData, setDetailData] = import_react4.default.useState(null);
-    const [infoData, setInfoData] = import_react4.default.useState(null);
-    import_react4.default.useEffect(() => {
+    const [detailData, setDetailData] = import_react3.default.useState(null);
+    const [infoData, setInfoData] = import_react3.default.useState(null);
+    import_react3.default.useEffect(() => {
       const onDetail = (e) => setDetailData(e.detail);
       const onInfo = (e) => setInfoData(e.detail);
       window.addEventListener('morbis-cons-detail', onDetail);
@@ -28685,15 +28603,15 @@ var __morbis_feature = (() => {
         window.removeEventListener('morbis-cons-info', onInfo);
       };
     }, []);
-    return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(import_jsx_runtime5.Fragment, {
+    return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(import_jsx_runtime4.Fragment, {
       children: [
         detailData &&
-          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(ConsDetailModal, {
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(ConsDetailModal, {
             data: detailData,
             onClose: () => setDetailData(null),
           }),
         infoData &&
-          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(ConsInfoTabs, {
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(ConsInfoTabs, {
             data: infoData,
             onClose: () => setInfoData(null),
           }),
@@ -28702,7 +28620,7 @@ var __morbis_feature = (() => {
   }
 
   // src/features/consultationEnhancer/mount.tsx
-  var import_jsx_runtime6 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime5 = __toESM(require_jsx_runtime(), 1);
   function mountConsultationEnhancer() {
     const container = document.createElement('div');
     container.id = 'consRoot';
@@ -28710,8 +28628,8 @@ var __morbis_feature = (() => {
     document.body.appendChild(container);
     const root = (0, import_client.createRoot)(container);
     root.render(
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('div', {
-        children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(ConsEnhancerApp, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('div', {
+        children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(ConsEnhancerApp, {}),
       }),
     );
     return () => {
@@ -28749,11 +28667,11 @@ var __morbis_feature = (() => {
       '.cons-error{padding:20px;color:#ef4444;text-align:center;}',
       '.cons-empty{padding:40px 20px;text-align:center;color:#9ca3af;font-size:13px;}',
       '.cons-raw-html{font-size:13px;color:#374151;}',
-      '.cons-raw-html table,.cons-penunjang table,.cons-raw-html table.tabel,.cons-raw-html table.table-input{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:13px;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;}',
-      '.cons-raw-html td,.cons-raw-html th,.cons-penunjang td,.cons-penunjang th{border:1px solid #e5e7eb;padding:10px 12px;vertical-align:top;word-break:break-word;}',
-      '.cons-raw-html thead th,.cons-penunjang thead th{background:#f1f5f9;font-weight:600;color:#1e293b;white-space:nowrap;}',
-      '.cons-raw-html tbody tr:nth-child(even),.cons-penunjang tbody tr:nth-child(even){background:#f8fafc;}',
-      '.cons-raw-html tbody tr:hover,.cons-penunjang tbody tr:hover{background:#f1f5f9;}',
+      '.cons-raw-html table,.cons-raw-html table.tabel,.cons-raw-html table.table-input{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:13px;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;}',
+      '.cons-raw-html td,.cons-raw-html th{border:1px solid #e5e7eb;padding:10px 12px;vertical-align:top;word-break:break-word;}',
+      '.cons-raw-html thead th{background:#f1f5f9;font-weight:600;color:#1e293b;white-space:nowrap;}',
+      '.cons-raw-html tbody tr:nth-child(even){background:#f8fafc;}',
+      '.cons-raw-html tbody tr:hover{background:#f1f5f9;}',
       '.cons-raw-html .pagination{margin-top:16px;text-align:center;}',
       '.cons-raw-html .pagination a{display:inline-block;padding:6px 12px;margin:0 2px;border:1px solid #d1d5db;border-radius:6px;text-decoration:none;color:#16a34a;font-size:13px;transition:all .15s;}',
       '.cons-raw-html .pagination a:hover{background:#f0fdf4;border-color:#86efac;}',
@@ -28765,6 +28683,44 @@ var __morbis_feature = (() => {
     ].join('');
     document.head.appendChild(s);
   }
+  function interceptPnj() {
+    if (!window.location.pathname.includes('/admisi/pengajuan_konsultasi/konsultasi')) return;
+    document.querySelectorAll('button[onclick*="penunjang_modal"]').forEach((btn) => {
+      if (btn.hasAttribute('data-ext-pnj')) return;
+      btn.setAttribute('data-ext-pnj', '1');
+      const m = btn.getAttribute('onclick')?.match(/penunjang_modal\((\d+)\)/);
+      if (!m) return;
+      btn.removeAttribute('onclick');
+      btn.addEventListener('click', () => {
+        const v = document.getElementById('id_visit');
+        const mod = document.getElementById('modals');
+        if (mod) mod.style.display = 'block';
+        const $ = window.jQuery;
+        if (!$) return;
+        $('#isimaster').html('');
+        $.ajax({
+          url: '/admisi/pelaksanaan_pelayanan/history-penunjang/tabel',
+          data: 'noRm=' + m[1] + '&id_visit=' + (v ? v.value : '') + '&tipe=hasil',
+          cache: false,
+          success: (r) => {
+            $('#isimaster').html(r);
+            $('#isimaster table').css('table-layout', 'fixed');
+            const $first = $(
+              '#isimaster table tr th:first-child,#isimaster table tr td:first-child',
+            );
+            $first
+              .css('width', '30px')
+              .css('max-width', '30px')
+              .css('text-align', 'center')
+              .css('padding', '6px 4px');
+          },
+        });
+      });
+    });
+  }
+  interceptPnj();
+  var pnjObs = new MutationObserver(() => interceptPnj());
+  pnjObs.observe(document.body, { childList: true, subtree: true });
   var waited = 0;
   var MAX_WAIT = 100;
   var check = setInterval(() => {

@@ -34,11 +34,11 @@ function injectModalStyle() {
     '.cons-error{padding:20px;color:#ef4444;text-align:center;}',
     '.cons-empty{padding:40px 20px;text-align:center;color:#9ca3af;font-size:13px;}',
     '.cons-raw-html{font-size:13px;color:#374151;}',
-    '.cons-raw-html table,.cons-penunjang table,.cons-raw-html table.tabel,.cons-raw-html table.table-input{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:13px;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;}',
-    '.cons-raw-html td,.cons-raw-html th,.cons-penunjang td,.cons-penunjang th{border:1px solid #e5e7eb;padding:10px 12px;vertical-align:top;word-break:break-word;}',
-    '.cons-raw-html thead th,.cons-penunjang thead th{background:#f1f5f9;font-weight:600;color:#1e293b;white-space:nowrap;}',
-    '.cons-raw-html tbody tr:nth-child(even),.cons-penunjang tbody tr:nth-child(even){background:#f8fafc;}',
-    '.cons-raw-html tbody tr:hover,.cons-penunjang tbody tr:hover{background:#f1f5f9;}',
+    '.cons-raw-html table,.cons-raw-html table.tabel,.cons-raw-html table.table-input{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:13px;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;}',
+    '.cons-raw-html td,.cons-raw-html th{border:1px solid #e5e7eb;padding:10px 12px;vertical-align:top;word-break:break-word;}',
+    '.cons-raw-html thead th{background:#f1f5f9;font-weight:600;color:#1e293b;white-space:nowrap;}',
+    '.cons-raw-html tbody tr:nth-child(even){background:#f8fafc;}',
+    '.cons-raw-html tbody tr:hover{background:#f1f5f9;}',
     '.cons-raw-html .pagination{margin-top:16px;text-align:center;}',
     '.cons-raw-html .pagination a{display:inline-block;padding:6px 12px;margin:0 2px;border:1px solid #d1d5db;border-radius:6px;text-decoration:none;color:#16a34a;font-size:13px;transition:all .15s;}',
     '.cons-raw-html .pagination a:hover{background:#f0fdf4;border-color:#86efac;}',
@@ -50,6 +50,44 @@ function injectModalStyle() {
   ].join('');
   document.head.appendChild(s);
 }
+
+// intercept penunjang buttons — runs independent of config
+function interceptPnj() {
+  if (!window.location.pathname.includes('/admisi/pengajuan_konsultasi/konsultasi')) return;
+  document.querySelectorAll('button[onclick*="penunjang_modal"]').forEach((btn) => {
+    if (btn.hasAttribute('data-ext-pnj')) return;
+    btn.setAttribute('data-ext-pnj', '1');
+    const m = btn.getAttribute('onclick')?.match(/penunjang_modal\((\d+)\)/);
+    if (!m) return;
+    btn.removeAttribute('onclick');
+    btn.addEventListener('click', () => {
+      const v = document.getElementById('id_visit') as HTMLInputElement;
+      const mod = document.getElementById('modals');
+      if (mod) mod.style.display = 'block';
+      const $ = (window as unknown as Record<string, unknown>).jQuery as any;
+      if (!$) return;
+      $('#isimaster').html('');
+      $.ajax({
+        url: '/admisi/pelaksanaan_pelayanan/history-penunjang/tabel',
+        data: 'noRm=' + m[1] + '&id_visit=' + (v ? v.value : '') + '&tipe=hasil',
+        cache: false,
+        success: (r: string) => {
+          $('#isimaster').html(r);
+          $('#isimaster table').css('table-layout', 'fixed');
+          const $first = $('#isimaster table tr th:first-child,#isimaster table tr td:first-child');
+          $first
+            .css('width', '30px')
+            .css('max-width', '30px')
+            .css('text-align', 'center')
+            .css('padding', '6px 4px');
+        },
+      });
+    });
+  });
+}
+interceptPnj();
+const pnjObs = new MutationObserver(() => interceptPnj());
+pnjObs.observe(document.body, { childList: true, subtree: true });
 
 let waited = 0;
 const MAX_WAIT = 100;
