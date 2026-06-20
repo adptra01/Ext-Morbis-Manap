@@ -27558,6 +27558,14 @@ var __morbis_feature = (() => {
   ];
   function injectStyle() {
     if (document.getElementById('morbis-cons-css')) return;
+    if (!document.getElementById('morbis-font-inter')) {
+      const l = document.createElement('link');
+      l.id = 'morbis-font-inter';
+      l.rel = 'stylesheet';
+      l.href =
+        'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap';
+      document.head.appendChild(l);
+    }
     const s = document.createElement('style');
     s.id = 'morbis-cons-css';
     s.textContent = [
@@ -27621,12 +27629,12 @@ var __morbis_feature = (() => {
       '.morbis-patient-name{font-weight:700!important;color:#0f172a!important;}',
       '.morbis-patient-rm{font-size:11px!important;color:#64748b!important;}',
       'table.tabel.tabel-compact td[data-full-text]{position:relative!important;cursor:help!important;}',
-      'table.tabel.tabel-compact td[data-full-text]::after{content:attr(data-full-text);position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;color:#1f2937;padding:20px 24px;border-radius:12px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);z-index:10000;max-width:80vw;width:420px;white-space:pre-wrap;line-height:1.6;border:1px solid #e5e7eb;font-size:14px;pointer-events:none;opacity:0;visibility:hidden;transition:opacity 0.15s,visibility 0.15s;transition-delay:0s;}',
+      'table.tabel.tabel-compact td[data-full-text]::after{content:attr(data-full-text);position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;color:#1f2937;padding:28px 32px;border-radius:16px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);z-index:10000;max-width:92vw;width:800px;white-space:pre-wrap;line-height:1.8;border:1px solid #e5e7eb;font-size:16px;pointer-events:none;opacity:0;visibility:hidden;transition:opacity 0.15s,visibility 0.15s;transition-delay:0s;}',
       'table.tabel.tabel-compact td[data-full-text]:hover::after{opacity:1;visibility:visible;transition-delay:0.3s;}',
       'table.tabel.tabel-compact td[data-full-text]::before{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.15);z-index:9999;opacity:0;visibility:hidden;transition:opacity 0.15s,visibility 0.15s;transition-delay:0s;pointer-events:none;}',
       'table.tabel.tabel-compact td[data-full-text]:hover::before{opacity:1;visibility:visible;transition-delay:0.3s;}',
       '.morbis-data-table td[data-morbis-ft]{position:relative!important;cursor:help!important;}',
-      '.morbis-data-table td[data-morbis-ft]::after{content:attr(data-morbis-ft);position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;color:#1f2937;padding:20px 24px;border-radius:12px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);z-index:10000;max-width:80vw;width:420px;white-space:pre-wrap;line-height:1.6;border:1px solid #e5e7eb;font-size:14px;pointer-events:none;opacity:0;visibility:hidden;transition:opacity 0.15s,visibility 0.15s;transition-delay:0s;}',
+      '.morbis-data-table td[data-morbis-ft]::after{content:attr(data-morbis-ft);position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;color:#1f2937;padding:28px 32px;border-radius:16px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);z-index:10000;max-width:92vw;width:800px;white-space:pre-wrap;line-height:1.8;border:1px solid #e5e7eb;font-size:16px;pointer-events:none;opacity:0;visibility:hidden;transition:opacity 0.15s,visibility 0.15s;transition-delay:0s;}',
       '.morbis-data-table td[data-morbis-ft]:hover::after{opacity:1;visibility:visible;transition-delay:0.3s;}',
       '.morbis-data-table td[data-morbis-ft]::before{content:"";position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.15);z-index:9999;opacity:0;visibility:hidden;transition:opacity 0.15s,visibility 0.15s;transition-delay:0s;pointer-events:none;}',
       '.morbis-data-table td[data-morbis-ft]:hover::before{opacity:1;visibility:visible;transition-delay:0.3s;}',
@@ -27696,6 +27704,10 @@ var __morbis_feature = (() => {
       '.cons-cppt-label{flex:0 0 140px;font-weight:600;color:#374151;font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding-top:2px;flex-shrink:0;}',
       '.cons-cppt-value{flex:1;font-size:13px;line-height:1.6;color:#1e293b;white-space:pre-wrap;word-break:break-word;}',
       '#modals #isimaster table th:first-child,#modals #isimaster table td:first-child{width:30px!important;max-width:30px!important;text-align:center!important;white-space:nowrap!important;padding:8px 4px!important;}',
+      'html,body,body *,.main,.main *,table,table *,input,button,select,textarea,.cons-raw-html,.cons-raw-html *{font-family:"Inter",sans-serif!important;letter-spacing:-0.011em!important;}',
+      'body{font-weight:400!important;line-height:1.5;}',
+      'h1,h2,h3,h4,h5,h6,th,b,strong{font-weight:600!important;letter-spacing:-0.02em!important;}',
+      'table{font-variant-numeric:tabular-nums;}',
     ].join('\n');
     document.head.appendChild(s);
   }
@@ -27918,10 +27930,13 @@ var __morbis_feature = (() => {
             cell.textContent = `${parseInt(m[3])} ${months[parseInt(m[2]) - 1]} ${m[4]}:${m[5]}`;
           }
         }
+        const namaPx = allCells.length > 2 ? (allCells[2].textContent || '').trim() : '';
+        const rmPx = allCells.length > 1 ? (allCells[1].textContent || '').trim() : '';
+        const headerPx = namaPx + (rmPx ? ' (' + rmPx + ')\n\n' : '\n\n');
         [permintaanIdx, kesanIdx, anjuranIdx].forEach((idx) => {
           if (idx >= 0 && allCells.length > idx) {
             const txt = (allCells[idx].textContent || '').trim();
-            if (txt.length > 20) allCells[idx].setAttribute('data-full-text', txt);
+            if (txt.length > 20) allCells[idx].setAttribute('data-full-text', headerPx + txt);
           }
         });
         const actionCell = allCells[actionCol];
@@ -28150,10 +28165,13 @@ var __morbis_feature = (() => {
             cell.textContent = `${parseInt(m[3])} ${months[parseInt(m[2]) - 1]} ${m[4]}:${m[5]}`;
           }
         }
+        const namaPx = allCells.length > 2 ? (allCells[2].textContent || '').trim() : '';
+        const rmPx = allCells.length > 1 ? (allCells[1].textContent || '').trim() : '';
+        const headerPx = namaPx + (rmPx ? ' (' + rmPx + ')\n\n' : '\n\n');
         [permintaanIdx, kesanIdx, anjuranIdx].forEach((idx) => {
           if (idx >= 0 && allCells.length > idx) {
             const txt = (allCells[idx].textContent || '').trim();
-            if (txt.length > 20) allCells[idx].setAttribute('data-morbis-ft', txt);
+            if (txt.length > 20) allCells[idx].setAttribute('data-morbis-ft', headerPx + txt);
           }
         });
         const actionCell = allCells[actionCol];
