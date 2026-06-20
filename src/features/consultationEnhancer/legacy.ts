@@ -146,9 +146,16 @@ export function injectStyle(): void {
     '#filter-loading.active{display:inline-block;animation:morbis-spin .6s linear infinite;}',
     '@keyframes morbis-spin{to{transform:rotate(360deg);}}',
 
-    '.cons-modal table.tabel{width:100%!important;border-collapse:collapse!important;border:1px solid #e5e7eb!important;margin-bottom:1rem!important;}',
-    '.cons-modal table.tabel th{background:#f3f4f6!important;color:#374151!important;font-weight:600!important;text-transform:none!important;padding:8px 12px!important;border:1px solid #e5e7eb!important;text-align:left!important;}',
-    '.cons-modal table.tabel td{background:#fff!important;color:#4b5563!important;padding:8px 12px!important;border:1px solid #e5e7eb!important;text-align:left!important;}',
+    '.cons-modal table.tabel{width:100%!important;border-collapse:collapse!important;border:1px solid #e5e7eb!important;border-radius:8px;overflow:hidden;margin-bottom:1rem!important;table-layout:fixed;}',
+    '.cons-modal table.tabel th{background:#f1f5f9!important;color:#1e293b!important;font-weight:600!important;text-transform:none!important;padding:10px 12px!important;border:1px solid #e5e7eb!important;text-align:left!important;}',
+    '.cons-modal table.tabel td{background:#fff!important;color:#475569!important;padding:10px 12px!important;border:1px solid #e5e7eb!important;text-align:left!important;vertical-align:top;line-height:1.6;font-size:13px;}',
+    '.cons-modal table.tabel tr:nth-child(even) td{background:#f8fafc!important;}',
+    '.cons-modal table.tabel tbody tr:hover td{background:#f1f5f9!important;}',
+    '.cons-modal table.tabel td[style*="white-space:pre-line"]{white-space:pre-wrap!important;word-break:break-word;overflow:hidden;position:relative;max-height:6em;}',
+    '.cons-modal table.tabel td[style*="white-space:pre-line"]:hover{max-height:none;}',
+    '.cons-modal table.tabel td[style*="white-space:pre-line"]::after{content:"\\2935 \\a0 lanjutkan";position:absolute;bottom:0;right:0;background:linear-gradient(to right,transparent,#fff);color:#16a34a;font-size:11px;font-weight:600;padding:2px 8px 2px 40px;pointer-events:none;transition:opacity .2s;}',
+    '.cons-modal table.tabel td[style*="white-space:pre-line"]:hover::after{opacity:0;}',
+    '.cons-modal table.tabel td[style*="white-space:pre-line"]:not(:hover){max-height:6em;overflow:hidden;}',
 
     '.cons-header{padding-top:10px!important;padding-bottom:10px!important;}',
     '.cons-tab-content{padding-top:5px!important;padding-bottom:5px!important;}',
@@ -162,6 +169,20 @@ export function injectStyle(): void {
     '.cons-modal br{line-height:0!important;}',
     '.cons-modal table.tabel{margin-top:0!important;}',
     '.cons-raw-html > *:first-child{margin-top:0!important;}',
+
+    '.cons-cppt-card{border:1px solid #e5e7eb;border-radius:8px;margin-bottom:8px;overflow:hidden;}',
+    '.cons-cppt-head{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;user-select:none;transition:background .15s;background:#f8fafc;}',
+    '.cons-cppt-head:hover{background:#f1f5f9;}',
+    '.cons-cppt-arrow{font-size:10px;color:#94a3b8;transition:transform .2s;flex-shrink:0;display:inline-block;}',
+    '.cons-cppt-card.expanded .cons-cppt-arrow{transform:rotate(90deg);}',
+    '.cons-cppt-head-info{font-size:13px;font-weight:500;color:#1e293b;flex:1;}',
+    '.cons-cppt-head-sub{font-size:11px;color:#64748b;}',
+    '.cons-cppt-body{display:none;border-top:1px solid #e5e7eb;}',
+    '.cons-cppt-card.expanded .cons-cppt-body{display:block;}',
+    '.cons-cppt-row{display:flex;gap:8px;padding:8px 12px;border-bottom:1px solid #f1f5f9;align-items:flex-start;}',
+    '.cons-cppt-row:last-child{border-bottom:none;}',
+    '.cons-cppt-label{flex:0 0 140px;font-weight:600;color:#374151;font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding-top:2px;flex-shrink:0;}',
+    '.cons-cppt-value{flex:1;font-size:13px;line-height:1.6;color:#1e293b;white-space:pre-wrap;word-break:break-word;}',
   ].join('\n');
   document.head.appendChild(s);
 }
@@ -884,6 +905,17 @@ export function fetchTabContent(tabId: string, data: Record<string, string>): Pr
       dataType: 'html',
       data: ajaxData,
       success: (response: string) => {
+        if (tabId === 'resep')
+          response = filterTableCols(response, [
+            'no',
+            'waktu penjualan',
+            'dokter',
+            'unit asal',
+            'unit tujuan',
+          ]);
+        else if (tabId === 'dokumen')
+          response = filterTableCols(response, ['no', 'nama file', 'keterangan']);
+        else if (tabId === 'cppt') response = toCpptCards(response);
         if (tabId === 'penunjang') injectPenunjangFix(data.visit, data.noRm || '');
         resolve(response);
       },
@@ -892,6 +924,88 @@ export function fetchTabContent(tabId: string, data: Record<string, string>): Pr
       },
     });
   });
+}
+
+function filterTableCols(html: string, keepHeaders: string[]): string {
+  const d = document.createElement('div');
+  d.innerHTML = html;
+  const tbl = d.querySelector('table');
+  if (!tbl) return html;
+  const headRow = tbl.querySelector('thead tr') || tbl.querySelector('tr');
+  if (!headRow) return html;
+  const heads = headRow.querySelectorAll('th, td');
+  const hideIdx: number[] = [];
+  heads.forEach((h, i) => {
+    const txt = (h.textContent || '').trim().toLowerCase();
+    const keep = keepHeaders.some((k) => txt.includes(k));
+    if (!keep) hideIdx.push(i);
+  });
+  hideIdx.forEach((i) => {
+    if (heads[i]) (heads[i] as HTMLElement).style.display = 'none';
+  });
+  tbl.querySelectorAll('tr').forEach((row) => {
+    const cells = row.querySelectorAll('td');
+    hideIdx.forEach((i) => {
+      if (cells[i]) (cells[i] as HTMLElement).style.display = 'none';
+    });
+  });
+  return d.innerHTML;
+}
+
+const CPPT_WAKTU_KW = ['waktu', 'masuk', 'tanggal'];
+const CPPT_PEGAWAI_KW = ['pegawai', 'penginput', 'dokter'];
+
+function toCpptCards(html: string): string {
+  const d = document.createElement('div');
+  d.innerHTML = html;
+  const tbl = d.querySelector('table');
+  if (!tbl) return html;
+  const headRow = tbl.querySelector('thead tr') || tbl.querySelector('tr');
+  if (!headRow) return html;
+  const heads = headRow.querySelectorAll('th, td');
+  const labels: string[] = [];
+  heads.forEach((h) => labels.push((h.textContent || '').trim()));
+  const waktuIdx = labels.findIndex((l) => CPPT_WAKTU_KW.some((k) => l.toLowerCase().includes(k)));
+  const pegawaiIdx = labels.findIndex((l) =>
+    CPPT_PEGAWAI_KW.some((k) => l.toLowerCase().includes(k)),
+  );
+  const skipIdx = new Set([waktuIdx, pegawaiIdx].filter((i) => i >= 0 && i < labels.length));
+  const bodyRows = tbl.querySelectorAll('tbody tr, tr');
+  const cards: string[] = [];
+  bodyRows.forEach((row) => {
+    if (!row.querySelector('td')) return;
+    const cells = row.querySelectorAll('td');
+    if (cells.length === 0) return;
+    const waktuVal =
+      waktuIdx >= 0 && cells.length > waktuIdx ? (cells[waktuIdx].textContent || '').trim() : '';
+    const pegawaiVal =
+      pegawaiIdx >= 0 && cells.length > pegawaiIdx
+        ? (cells[pegawaiIdx].textContent || '').trim()
+        : '';
+    const headText = waktuVal + (waktuVal && pegawaiVal ? ' — ' : '') + pegawaiVal;
+    const fields: string[] = [];
+    labels.forEach((label, i) => {
+      if (i >= cells.length || skipIdx.has(i)) return;
+      const val = cells[i].innerHTML.trim();
+      fields.push(
+        `<div class="cons-cppt-row"><span class="cons-cppt-label">${esc(label)}</span><div class="cons-cppt-value">${val}</div></div>`,
+      );
+    });
+    cards.push(
+      '<div class="cons-cppt-card">' +
+        '<div class="cons-cppt-head" data-cppt-toggle role="button" tabindex="0">' +
+        '<span class="cons-cppt-arrow">▶</span>' +
+        '<span class="cons-cppt-head-info">' +
+        esc(headText || '(detail)') +
+        '</span>' +
+        '</div>' +
+        '<div class="cons-cppt-body">' +
+        fields.join('') +
+        '</div>' +
+        '</div>',
+    );
+  });
+  return cards.join('');
 }
 
 function injectPenunjangFix(_visit: string, _noRm: string): void {

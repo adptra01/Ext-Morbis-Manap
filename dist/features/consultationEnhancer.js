@@ -1647,7 +1647,7 @@ var __morbis_feature = (() => {
         'undefined' !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ &&
           'function' === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart &&
           __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
-        var React4 = require_react(),
+        var React5 = require_react(),
           Internals = {
             d: {
               f: noop,
@@ -1669,7 +1669,7 @@ var __morbis_feature = (() => {
           },
           REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for('react.portal'),
           ReactSharedInternals =
-            React4.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
+            React5.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
         ('function' === typeof Map &&
           null != Map.prototype &&
           'function' === typeof Map.prototype.forEach &&
@@ -3551,7 +3551,7 @@ var __morbis_feature = (() => {
         function validateOptionProps(element, props) {
           null == props.value &&
             ('object' === typeof props.children && null !== props.children
-              ? React4.Children.forEach(props.children, function (child) {
+              ? React5.Children.forEach(props.children, function (child) {
                   null == child ||
                     'string' === typeof child ||
                     'number' === typeof child ||
@@ -23466,7 +23466,7 @@ var __morbis_feature = (() => {
           'function' === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart &&
           __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
         var Scheduler = require_scheduler(),
-          React4 = require_react(),
+          React5 = require_react(),
           ReactDOM = require_react_dom(),
           assign = Object.assign,
           REACT_LEGACY_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for('react.element'),
@@ -23492,7 +23492,7 @@ var __morbis_feature = (() => {
           REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for('react.client.reference'),
           isArrayImpl = Array.isArray,
           ReactSharedInternals =
-            React4.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
+            React5.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
           ReactDOMSharedInternals =
             ReactDOM.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
           NotPending = Object.freeze({
@@ -27019,7 +27019,7 @@ var __morbis_feature = (() => {
           }
         };
         (function () {
-          var isomorphicReactPackageVersion = React4.version;
+          var isomorphicReactPackageVersion = React5.version;
           if ('19.2.7' !== isomorphicReactPackageVersion)
             throw Error(
               'Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ' +
@@ -27453,7 +27453,7 @@ var __morbis_feature = (() => {
             'object' === typeof object && null !== object && object.$$typeof === REACT_ELEMENT_TYPE
           );
         }
-        var React4 = require_react(),
+        var React5 = require_react(),
           REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for('react.transitional.element'),
           REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for('react.portal'),
           REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for('react.fragment'),
@@ -27469,7 +27469,7 @@ var __morbis_feature = (() => {
           REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for('react.activity'),
           REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for('react.client.reference'),
           ReactSharedInternals =
-            React4.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
+            React5.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
           hasOwnProperty = Object.prototype.hasOwnProperty,
           isArrayImpl = Array.isArray,
           createTask = console.createTask
@@ -27477,14 +27477,14 @@ var __morbis_feature = (() => {
             : function () {
                 return null;
               };
-        React4 = {
+        React5 = {
           react_stack_bottom_frame: function (callStackForError) {
             return callStackForError();
           },
         };
         var specialPropKeyWarningShown;
         var didWarnAboutElementRef = {};
-        var unknownOwnerDebugStack = React4.react_stack_bottom_frame.bind(React4, UnknownOwner)();
+        var unknownOwnerDebugStack = React5.react_stack_bottom_frame.bind(React5, UnknownOwner)();
         var unknownOwnerDebugTask = createTask(getTaskName(UnknownOwner));
         var didWarnAboutKeySpread = {};
         exports.Fragment = REACT_FRAGMENT_TYPE;
@@ -27669,9 +27669,16 @@ var __morbis_feature = (() => {
       '#filter-loading{width:18px;height:18px;border:2px solid #e2e8f0;border-top-color:#22c55e;border-radius:50%;display:none;}',
       '#filter-loading.active{display:inline-block;animation:morbis-spin .6s linear infinite;}',
       '@keyframes morbis-spin{to{transform:rotate(360deg);}}',
-      '.cons-modal table.tabel{width:100%!important;border-collapse:collapse!important;border:1px solid #e5e7eb!important;margin-bottom:1rem!important;}',
-      '.cons-modal table.tabel th{background:#f3f4f6!important;color:#374151!important;font-weight:600!important;text-transform:none!important;padding:8px 12px!important;border:1px solid #e5e7eb!important;text-align:left!important;}',
-      '.cons-modal table.tabel td{background:#fff!important;color:#4b5563!important;padding:8px 12px!important;border:1px solid #e5e7eb!important;text-align:left!important;}',
+      '.cons-modal table.tabel{width:100%!important;border-collapse:collapse!important;border:1px solid #e5e7eb!important;border-radius:8px;overflow:hidden;margin-bottom:1rem!important;table-layout:fixed;}',
+      '.cons-modal table.tabel th{background:#f1f5f9!important;color:#1e293b!important;font-weight:600!important;text-transform:none!important;padding:10px 12px!important;border:1px solid #e5e7eb!important;text-align:left!important;}',
+      '.cons-modal table.tabel td{background:#fff!important;color:#475569!important;padding:10px 12px!important;border:1px solid #e5e7eb!important;text-align:left!important;vertical-align:top;line-height:1.6;font-size:13px;}',
+      '.cons-modal table.tabel tr:nth-child(even) td{background:#f8fafc!important;}',
+      '.cons-modal table.tabel tbody tr:hover td{background:#f1f5f9!important;}',
+      '.cons-modal table.tabel td[style*="white-space:pre-line"]{white-space:pre-wrap!important;word-break:break-word;overflow:hidden;position:relative;max-height:6em;}',
+      '.cons-modal table.tabel td[style*="white-space:pre-line"]:hover{max-height:none;}',
+      '.cons-modal table.tabel td[style*="white-space:pre-line"]::after{content:"\\2935 \\a0 lanjutkan";position:absolute;bottom:0;right:0;background:linear-gradient(to right,transparent,#fff);color:#16a34a;font-size:11px;font-weight:600;padding:2px 8px 2px 40px;pointer-events:none;transition:opacity .2s;}',
+      '.cons-modal table.tabel td[style*="white-space:pre-line"]:hover::after{opacity:0;}',
+      '.cons-modal table.tabel td[style*="white-space:pre-line"]:not(:hover){max-height:6em;overflow:hidden;}',
       '.cons-header{padding-top:10px!important;padding-bottom:10px!important;}',
       '.cons-tab-content{padding-top:5px!important;padding-bottom:5px!important;}',
       '.cons-modal .cons-header{padding:10px 24px!important;}',
@@ -27684,6 +27691,19 @@ var __morbis_feature = (() => {
       '.cons-modal br{line-height:0!important;}',
       '.cons-modal table.tabel{margin-top:0!important;}',
       '.cons-raw-html > *:first-child{margin-top:0!important;}',
+      '.cons-cppt-card{border:1px solid #e5e7eb;border-radius:8px;margin-bottom:8px;overflow:hidden;}',
+      '.cons-cppt-head{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;user-select:none;transition:background .15s;background:#f8fafc;}',
+      '.cons-cppt-head:hover{background:#f1f5f9;}',
+      '.cons-cppt-arrow{font-size:10px;color:#94a3b8;transition:transform .2s;flex-shrink:0;display:inline-block;}',
+      '.cons-cppt-card.expanded .cons-cppt-arrow{transform:rotate(90deg);}',
+      '.cons-cppt-head-info{font-size:13px;font-weight:500;color:#1e293b;flex:1;}',
+      '.cons-cppt-head-sub{font-size:11px;color:#64748b;}',
+      '.cons-cppt-body{display:none;border-top:1px solid #e5e7eb;}',
+      '.cons-cppt-card.expanded .cons-cppt-body{display:block;}',
+      '.cons-cppt-row{display:flex;gap:8px;padding:8px 12px;border-bottom:1px solid #f1f5f9;align-items:flex-start;}',
+      '.cons-cppt-row:last-child{border-bottom:none;}',
+      '.cons-cppt-label{flex:0 0 140px;font-weight:600;color:#374151;font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding-top:2px;flex-shrink:0;}',
+      '.cons-cppt-value{flex:1;font-size:13px;line-height:1.6;color:#1e293b;white-space:pre-wrap;word-break:break-word;}',
     ].join('\n');
     document.head.appendChild(s);
   }
@@ -28283,6 +28303,17 @@ var __morbis_feature = (() => {
         dataType: 'html',
         data: ajaxData,
         success: (response) => {
+          if (tabId === 'resep')
+            response = filterTableCols(response, [
+              'no',
+              'waktu penjualan',
+              'dokter',
+              'unit asal',
+              'unit tujuan',
+            ]);
+          else if (tabId === 'dokumen')
+            response = filterTableCols(response, ['no', 'nama file', 'keterangan']);
+          else if (tabId === 'cppt') response = toCpptCards(response);
           if (tabId === 'penunjang') injectPenunjangFix(data.visit, data.noRm || '');
           resolve(response);
         },
@@ -28291,6 +28322,81 @@ var __morbis_feature = (() => {
         },
       });
     });
+  }
+  function filterTableCols(html, keepHeaders) {
+    const d = document.createElement('div');
+    d.innerHTML = html;
+    const tbl = d.querySelector('table');
+    if (!tbl) return html;
+    const headRow = tbl.querySelector('thead tr') || tbl.querySelector('tr');
+    if (!headRow) return html;
+    const heads = headRow.querySelectorAll('th, td');
+    const hideIdx = [];
+    heads.forEach((h, i) => {
+      const txt = (h.textContent || '').trim().toLowerCase();
+      const keep = keepHeaders.some((k) => txt.includes(k));
+      if (!keep) hideIdx.push(i);
+    });
+    hideIdx.forEach((i) => {
+      if (heads[i]) heads[i].style.display = 'none';
+    });
+    tbl.querySelectorAll('tr').forEach((row) => {
+      const cells = row.querySelectorAll('td');
+      hideIdx.forEach((i) => {
+        if (cells[i]) cells[i].style.display = 'none';
+      });
+    });
+    return d.innerHTML;
+  }
+  var CPPT_WAKTU_KW = ['waktu', 'masuk', 'tanggal'];
+  var CPPT_PEGAWAI_KW = ['pegawai', 'penginput', 'dokter'];
+  function toCpptCards(html) {
+    const d = document.createElement('div');
+    d.innerHTML = html;
+    const tbl = d.querySelector('table');
+    if (!tbl) return html;
+    const headRow = tbl.querySelector('thead tr') || tbl.querySelector('tr');
+    if (!headRow) return html;
+    const heads = headRow.querySelectorAll('th, td');
+    const labels = [];
+    heads.forEach((h) => labels.push((h.textContent || '').trim()));
+    const waktuIdx = labels.findIndex((l) =>
+      CPPT_WAKTU_KW.some((k) => l.toLowerCase().includes(k)),
+    );
+    const pegawaiIdx = labels.findIndex((l) =>
+      CPPT_PEGAWAI_KW.some((k) => l.toLowerCase().includes(k)),
+    );
+    const skipIdx = new Set([waktuIdx, pegawaiIdx].filter((i) => i >= 0 && i < labels.length));
+    const bodyRows = tbl.querySelectorAll('tbody tr, tr');
+    const cards = [];
+    bodyRows.forEach((row) => {
+      if (!row.querySelector('td')) return;
+      const cells = row.querySelectorAll('td');
+      if (cells.length === 0) return;
+      const waktuVal =
+        waktuIdx >= 0 && cells.length > waktuIdx ? (cells[waktuIdx].textContent || '').trim() : '';
+      const pegawaiVal =
+        pegawaiIdx >= 0 && cells.length > pegawaiIdx
+          ? (cells[pegawaiIdx].textContent || '').trim()
+          : '';
+      const headText = waktuVal + (waktuVal && pegawaiVal ? ' \u2014 ' : '') + pegawaiVal;
+      const fields = [];
+      labels.forEach((label, i) => {
+        if (i >= cells.length || skipIdx.has(i)) return;
+        const val = cells[i].innerHTML.trim();
+        fields.push(
+          `<div class="cons-cppt-row"><span class="cons-cppt-label">${esc(label)}</span><div class="cons-cppt-value">${val}</div></div>`,
+        );
+      });
+      cards.push(
+        '<div class="cons-cppt-card"><div class="cons-cppt-head" data-cppt-toggle role="button" tabindex="0"><span class="cons-cppt-arrow">\u25B6</span><span class="cons-cppt-head-info">' +
+          esc(headText || '(detail)') +
+          '</span></div><div class="cons-cppt-body">' +
+          fields.join('') +
+          '</div></div>',
+      );
+    });
+    return cards.join('');
   }
   function injectPenunjangFix(_visit, _noRm) {
     if (document.getElementById('morbis-penunjang-fix')) return;
@@ -28308,7 +28414,7 @@ var __morbis_feature = (() => {
   var import_client = __toESM(require_client(), 1);
 
   // src/features/consultationEnhancer/ConsEnhancerApp.tsx
-  var import_react3 = __toESM(require_react(), 1);
+  var import_react4 = __toESM(require_react(), 1);
 
   // src/features/consultationEnhancer/ConsDetailModal.tsx
   var import_react_dom = __toESM(require_react_dom(), 1);
@@ -28382,20 +28488,35 @@ var __morbis_feature = (() => {
   }
 
   // src/features/consultationEnhancer/ConsInfoTabs.tsx
-  var import_react2 = __toESM(require_react(), 1);
+  var import_react3 = __toESM(require_react(), 1);
   var import_react_dom2 = __toESM(require_react_dom(), 1);
 
   // src/features/consultationEnhancer/ServerTabRenderer.tsx
+  var import_react = __toESM(require_react(), 1);
   var import_jsx_runtime2 = __toESM(require_jsx_runtime(), 1);
   function ServerTabRenderer({ html }) {
+    const ref = (0, import_react.useRef)(null);
+    (0, import_react.useEffect)(() => {
+      const el = ref.current;
+      if (!el) return;
+      const handler = (e) => {
+        const head = e.target.closest('[data-cppt-toggle]');
+        if (!head) return;
+        const card = head.closest('.cons-cppt-card');
+        if (card) card.classList.toggle('expanded');
+      };
+      el.addEventListener('click', handler);
+      return () => el.removeEventListener('click', handler);
+    }, [html]);
     return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)('div', {
+      ref,
       className: 'cons-raw-html',
       dangerouslySetInnerHTML: { __html: html },
     });
   }
 
   // src/features/consultationEnhancer/PenunjangRenderer.tsx
-  var import_react = __toESM(require_react(), 1);
+  var import_react2 = __toESM(require_react(), 1);
   var import_jsx_runtime3 = __toESM(require_jsx_runtime(), 1);
   function extractVisibleHtml(html) {
     const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -28408,9 +28529,9 @@ var __morbis_feature = (() => {
     return html;
   }
   function PenunjangRenderer({ html }) {
-    const [readyHtml, setReadyHtml] = (0, import_react.useState)('');
-    const seed = (0, import_react.useMemo)(() => html, [html]);
-    (0, import_react.useEffect)(() => {
+    const [readyHtml, setReadyHtml] = (0, import_react2.useState)('');
+    const seed = (0, import_react2.useMemo)(() => html, [html]);
+    (0, import_react2.useEffect)(() => {
       const t = window.setTimeout(() => setReadyHtml(extractVisibleHtml(seed)), 0);
       if (typeof window !== 'undefined') {
         window.penunjang_modal = (id_pasien) => {
@@ -28463,10 +28584,10 @@ var __morbis_feature = (() => {
     { id: 'penunjang', label: 'Penunjang Medis' },
   ];
   function ConsInfoTabs({ data, onClose }) {
-    const [activeTab, setActiveTab] = (0, import_react2.useState)(TABS[0].id);
-    const [contents, setContents] = (0, import_react2.useState)({});
-    const [loading, setLoading] = (0, import_react2.useState)({});
-    const loaded = (0, import_react2.useRef)(/* @__PURE__ */ new Set());
+    const [activeTab, setActiveTab] = (0, import_react3.useState)(TABS[0].id);
+    const [contents, setContents] = (0, import_react3.useState)({});
+    const [loading, setLoading] = (0, import_react3.useState)({});
+    const loaded = (0, import_react3.useRef)(/* @__PURE__ */ new Set());
     const loadTab = async (tabId) => {
       if (loaded.current.has(tabId)) return;
       loaded.current.add(tabId);
@@ -28483,7 +28604,7 @@ var __morbis_feature = (() => {
         setLoading((prev) => ({ ...prev, [tabId]: false }));
       }
     };
-    (0, import_react2.useEffect)(() => {
+    (0, import_react3.useEffect)(() => {
       loadTab(TABS[0].id);
     }, []);
     return (0, import_react_dom2.createPortal)(
@@ -28552,9 +28673,9 @@ var __morbis_feature = (() => {
   // src/features/consultationEnhancer/ConsEnhancerApp.tsx
   var import_jsx_runtime5 = __toESM(require_jsx_runtime(), 1);
   function ConsEnhancerApp() {
-    const [detailData, setDetailData] = import_react3.default.useState(null);
-    const [infoData, setInfoData] = import_react3.default.useState(null);
-    import_react3.default.useEffect(() => {
+    const [detailData, setDetailData] = import_react4.default.useState(null);
+    const [infoData, setInfoData] = import_react4.default.useState(null);
+    import_react4.default.useEffect(() => {
       const onDetail = (e) => setDetailData(e.detail);
       const onInfo = (e) => setInfoData(e.detail);
       window.addEventListener('morbis-cons-detail', onDetail);
@@ -28605,34 +28726,42 @@ var __morbis_feature = (() => {
     const s = document.createElement('style');
     s.id = 'cons-modal-css';
     s.textContent = [
-      '.cons-overlay{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);}',
-      '.cons-modal{background:#fff;border-radius:12px;box-shadow:0 25px 60px rgba(0,0,0,.25);width:640px;max-width:90vw;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;}',
+      '.cons-overlay{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);animation:cons-fadein .2s ease;}',
+      '@keyframes cons-fadein{from{opacity:0}to{opacity:1}}',
+      '@keyframes cons-slideup{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}',
+      '.cons-modal{background:#fff;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,.25);width:640px;max-width:90vw;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;animation:cons-slideup .25s ease;}',
       '.cons-modal-wide{width:95vw;max-width:1200px;}',
-      '.cons-header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid #e5e7eb;}',
-      '.cons-header h2{margin:0;font-size:16px;font-weight:600;color:#111827;}',
-      '.cons-close{background:none;border:none;font-size:24px;color:#9ca3af;cursor:pointer;padding:0;line-height:1;}',
-      '.cons-close:hover{color:#374151;}',
+      '.cons-header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:linear-gradient(135deg,#16a34a,#15803d);}',
+      '.cons-header h2{margin:0;font-size:16px;font-weight:600;color:#fff;}',
+      '.cons-close{background:none;border:none;font-size:24px;color:rgba(255,255,255,.7);cursor:pointer;padding:0;line-height:1;transition:color .15s;}',
+      '.cons-close:hover{color:#fff;}',
       '.cons-body{padding:20px 24px;overflow-y:auto;flex:1;}',
       '.cons-field{display:flex;padding:10px 0;border-bottom:1px solid #f3f4f6;}',
       '.cons-field:last-child{border-bottom:none;}',
       '.cons-label{width:200px;flex-shrink:0;font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;padding-top:2px;}',
       '.cons-value{flex:1;font-size:14px;color:#111827;line-height:1.5;white-space:pre-wrap;word-break:break-word;}',
-      '.cons-tabs{display:flex;gap:0;padding:0 24px;border-bottom:1px solid #e5e7eb;flex-shrink:0;}',
-      '.cons-tab-btn{padding:10px 16px;font-size:13px;font-weight:500;border:none;background:transparent;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;}',
-      '.cons-tab-btn:hover{color:#111827;background:#f9fafb;}',
-      '.cons-tab-btn.cons-tab-active{color:#111827;border-bottom-color:#111827;}',
+      '.cons-tabs{display:flex;gap:0;padding:0 24px;background:#f8fafc;border-bottom:1px solid #e5e7eb;flex-shrink:0;}',
+      '.cons-tab-btn{padding:12px 20px;font-size:13px;font-weight:500;border:none;background:transparent;color:#64748b;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;position:relative;}',
+      '.cons-tab-btn:hover{color:#16a34a;background:#f1f5f9;}',
+      '.cons-tab-btn.cons-tab-active{color:#16a34a;border-bottom-color:#16a34a;font-weight:600;}',
       '.cons-tab-content{padding:20px 24px;overflow-y:auto;flex:1;min-height:300px;}',
       '.cons-loading{text-align:center;padding:40px;color:#9ca3af;font-size:14px;}',
       '.cons-error{padding:20px;color:#ef4444;text-align:center;}',
       '.cons-empty{padding:40px 20px;text-align:center;color:#9ca3af;font-size:13px;}',
       '.cons-raw-html{font-size:13px;color:#374151;}',
-      '.cons-raw-html table,.cons-penunjang table,.cons-raw-html table.tabel,.cons-raw-html table.table-input{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:13px;}',
-      '.cons-raw-html td,.cons-raw-html th,.cons-penunjang td,.cons-penunjang th{border:1px solid #e5e7eb;padding:8px 10px;vertical-align:top;word-break:break-word;}',
-      '.cons-raw-html thead th,.cons-penunjang thead th{background:#f9fafb;font-weight:600;color:#111827;white-space:nowrap;}',
+      '.cons-raw-html table,.cons-penunjang table,.cons-raw-html table.tabel,.cons-raw-html table.table-input{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:13px;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;}',
+      '.cons-raw-html td,.cons-raw-html th,.cons-penunjang td,.cons-penunjang th{border:1px solid #e5e7eb;padding:10px 12px;vertical-align:top;word-break:break-word;}',
+      '.cons-raw-html thead th,.cons-penunjang thead th{background:#f1f5f9;font-weight:600;color:#1e293b;white-space:nowrap;}',
+      '.cons-raw-html tbody tr:nth-child(even),.cons-penunjang tbody tr:nth-child(even){background:#f8fafc;}',
+      '.cons-raw-html tbody tr:hover,.cons-penunjang tbody tr:hover{background:#f1f5f9;}',
       '.cons-raw-html .pagination{margin-top:16px;text-align:center;}',
-      '.cons-raw-html .pagination a{display:inline-block;padding:6px 12px;margin:0 2px;border:1px solid #d1d5db;border-radius:6px;text-decoration:none;color:#374151;font-size:13px;transition:all .15s;}',
-      '.cons-raw-html .pagination a:hover{background:#f3f4f6;border-color:#9ca3af;}',
-      '.cons-raw-html .pagination a.active{background:#111827;color:#fff;border-color:#111827;}',
+      '.cons-raw-html .pagination a{display:inline-block;padding:6px 12px;margin:0 2px;border:1px solid #d1d5db;border-radius:6px;text-decoration:none;color:#16a34a;font-size:13px;transition:all .15s;}',
+      '.cons-raw-html .pagination a:hover{background:#f0fdf4;border-color:#86efac;}',
+      '.cons-raw-html .pagination a.active{background:#16a34a;color:#fff;border-color:#16a34a;}',
+      '.cons-tab-content::-webkit-scrollbar,.cons-body::-webkit-scrollbar{width:6px;}',
+      '.cons-tab-content::-webkit-scrollbar-track{background:transparent;}',
+      '.cons-tab-content::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px;}',
+      '.cons-tab-content::-webkit-scrollbar-thumb:hover{background:#94a3b8;}',
     ].join('');
     document.head.appendChild(s);
   }
