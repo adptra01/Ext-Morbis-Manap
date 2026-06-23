@@ -1,4 +1,17 @@
-"use strict";var __morbis_feature=(()=>{function P(){return window}var A="ext-batch-shared-style";function R(){if(document.getElementById(A))return;let e=document.createElement("style");e.id=A,e.textContent=`
+"use strict";
+var __morbis_feature = (() => {
+  // src/features/shared/types.ts
+  function getMorbisGlobals() {
+    return window;
+  }
+
+  // src/features/shared/batchUtils.ts
+  var BATCH_UTILS_STYLE_ID = "ext-batch-shared-style";
+  function injectSharedCSS() {
+    if (document.getElementById(BATCH_UTILS_STYLE_ID)) return;
+    const style = document.createElement("style");
+    style.id = BATCH_UTILS_STYLE_ID;
+    style.textContent = `
     .ext-modal-content {
       background: #ffffff; border-radius: 16px; padding: 28px 32px;
       max-width: 860px; width: 95%; max-height: 85vh; overflow-y: auto;
@@ -141,34 +154,211 @@
     .ext-preview-item.success { color: #059669; }
     .ext-preview-item.error { color: #dc2626; }
     .ext-preview-item.pending { color: #64748b; }
-  `,document.head.appendChild(e)}var b={search:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',trash:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>',xClose:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',warning:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 00-3.48 0l-8 14A2 2 0 004 21h16a2 2 0 001.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',eye:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',refresh:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>',upload:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',file:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',check:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',arrowRight:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>'};async function C(e,r){try{let t=await fetch(e,{method:"GET",mode:"cors",credentials:"omit"});if(!t.ok)throw new Error(`HTTP ${t.status}`);let n=await t.blob(),i=URL.createObjectURL(n);$(i,r,e,()=>URL.revokeObjectURL(i))}catch{$(e,r,e)}}function $(e,r,t,n){let i=document.getElementById("ext-inline-preview-modal");i&&i.remove();let c=r.toLowerCase().split(".").pop()||"",s=c==="pdf",p=["jpg","jpeg","png","gif","webp"].includes(c),a=document.createElement("div");a.id="ext-inline-preview-modal",a.style.cssText="position:fixed !important;top:0 !important;left:0 !important;width:100vw !important;height:100vh !important;background:rgba(15,23,42,0.88) !important;z-index:10001 !important;display:flex !important;align-items:center !important;justify-content:center !important;flex-direction:column !important;padding:20px !important;box-sizing:border-box !important;backdrop-filter:blur(8px) !important;-webkit-backdrop-filter:blur(8px) !important;";let o='<div class="ext-inline-preview-loading" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:#fff;"><div class="ext-inline-preview-spinner"></div><div style="font-size:14px;">Loading preview...</div></div>';s?o=`<iframe id="ext-inline-preview-iframe" src="${e}" style="width:100%;height:100%;border:none;display:block;border-radius:12px;"></iframe>`:p?o=`<img id="ext-inline-preview-img" src="${e}" alt="Image Preview" style="width:100%;height:100%;border:none;display:block;object-fit:contain;border-radius:12px;">`:o=`<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:15px;color:#64748b;background:#f8fafc;flex-direction:column;gap:16px;border-radius:12px;">${b.file}<div>Preview not available for this format</div></div>`;let l=r.replace(/"/g,"&quot;").replace(/</g,"&lt;");if(a.innerHTML=`
+  `;
+    document.head.appendChild(style);
+  }
+  var Icons = {
+    search: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>`,
+    trash: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`,
+    xClose: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`,
+    warning: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 00-3.48 0l-8 14A2 2 0 004 21h16a2 2 0 001.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+    eye: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+    refresh: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>`,
+    upload: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`,
+    file: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
+    check: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+    arrowRight: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`
+  };
+  async function showInlinePreviewSafe(url, filename) {
+    try {
+      const response = await fetch(url, { method: "GET", mode: "cors", credentials: "omit" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      showInlinePreview(blobUrl, filename, url, () => URL.revokeObjectURL(blobUrl));
+    } catch {
+      showInlinePreview(url, filename, url);
+    }
+  }
+  function showInlinePreview(previewUrl, filename, originalUrl, onCleanup) {
+    const existing = document.getElementById("ext-inline-preview-modal");
+    if (existing) existing.remove();
+    const ext = filename.toLowerCase().split(".").pop() || "";
+    const isPdf = ext === "pdf";
+    const isImage = ["jpg", "jpeg", "png", "gif", "webp"].includes(ext);
+    const modal = document.createElement("div");
+    modal.id = "ext-inline-preview-modal";
+    modal.style.cssText = "position:fixed !important;top:0 !important;left:0 !important;width:100vw !important;height:100vh !important;background:rgba(15,23,42,0.88) !important;z-index:10001 !important;display:flex !important;align-items:center !important;justify-content:center !important;flex-direction:column !important;padding:20px !important;box-sizing:border-box !important;backdrop-filter:blur(8px) !important;-webkit-backdrop-filter:blur(8px) !important;";
+    let contentHtml = '<div class="ext-inline-preview-loading" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:#fff;"><div class="ext-inline-preview-spinner"></div><div style="font-size:14px;">Loading preview...</div></div>';
+    if (isPdf)
+      contentHtml = `<iframe id="ext-inline-preview-iframe" src="${previewUrl}" style="width:100%;height:100%;border:none;display:block;border-radius:12px;"></iframe>`;
+    else if (isImage)
+      contentHtml = `<img id="ext-inline-preview-img" src="${previewUrl}" alt="Image Preview" style="width:100%;height:100%;border:none;display:block;object-fit:contain;border-radius:12px;">`;
+    else
+      contentHtml = `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:15px;color:#64748b;background:#f8fafc;flex-direction:column;gap:16px;border-radius:12px;">${Icons.file}<div>Preview not available for this format</div></div>`;
+    const safeFilename = filename.replace(/"/g, "&quot;").replace(/</g, "&lt;");
+    modal.innerHTML = `
     <div style="position:absolute;top:20px;right:20px;display:flex;gap:10px;align-items:center;background:rgba(15,23,42,0.8);padding:10px 16px;border-radius:12px;backdrop-filter:blur(12px);z-index:10002;border:1px solid rgba(255,255,255,0.1);">
-      <span style="color:#e2e8f0;font-size:13px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">${l}</span>
-      <button id="ext-preview-newtab" style="padding:7px 14px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:background 0.15s ease;display:inline-flex;align-items:center;gap:6px;">${b.arrowRight} Open Tab</button>
-      <button id="ext-preview-close" style="padding:7px 12px;background:rgba(255,255,255,0.1);color:#e2e8f0;border:1px solid rgba(255,255,255,0.15);border-radius:8px;cursor:pointer;font-size:16px;font-weight:500;transition:all 0.15s ease;line-height:1;">${b.xClose}</button>
+      <span style="color:#e2e8f0;font-size:13px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">${safeFilename}</span>
+      <button id="ext-preview-newtab" style="padding:7px 14px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:background 0.15s ease;display:inline-flex;align-items:center;gap:6px;">${Icons.arrowRight} Open Tab</button>
+      <button id="ext-preview-close" style="padding:7px 12px;background:rgba(255,255,255,0.1);color:#e2e8f0;border:1px solid rgba(255,255,255,0.15);border-radius:8px;cursor:pointer;font-size:16px;font-weight:500;transition:all 0.15s ease;line-height:1;">${Icons.xClose}</button>
     </div>
-    <div style="width:clamp(400px,90vw,1200px);height:clamp(300px,90vh,800px);background:white;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,0.4);overflow:hidden;position:relative;">${o}</div>
-  `,document.body.appendChild(a),document.getElementById("ext-preview-close")?.addEventListener("click",()=>{n&&n(),a.remove()}),document.getElementById("ext-preview-newtab")?.addEventListener("click",()=>{window.open(t||e,"_blank"),n&&n(),a.remove()}),a.addEventListener("click",u=>{u.target===a&&(n&&n(),a.remove())}),document.addEventListener("keydown",function u(m){m.key==="Escape"&&(n&&n(),a.remove(),document.removeEventListener("keydown",u))}),s||p){let u=setInterval(()=>{if(s?document.getElementById("ext-inline-preview-iframe")?.getAttribute("src"):document.getElementById("ext-inline-preview-img")?.complete){let h=a.querySelector(".ext-inline-preview-loading");h&&h.remove(),clearInterval(u)}},500)}}var I=P(),g={targetUrl:"/v2/m-klaim/detail-v2-refaktor",uploadEndpoint:"/v2/m-klaim/uploda-dokumen/control?sub=simpan",maxConcurrent:3,maxBatchSize:50,supportedExtensions:[".pdf",".jpg",".jpeg",".png"],modalId:"ext-batch-url-modal",textareaId:"ext-url-input",previewId:"ext-preview-list",progressId:"ext-progress-bar",statusId:"ext-status-text"};function N(e){let r=e.getFullYear(),t=String(e.getMonth()+1).padStart(2,"0"),n=String(e.getDate()).padStart(2,"0");return`${r}-${t}-${n}`}function q(){return N(new Date)}function S(){let e=document.getElementById("tgl");if(e&&e.value){let r=e.value.split("/");if(r.length===3){let[t,n,i]=r;return`${i}-${n}-${t}`}}return console.warn("[Batch Upload] Input #tgl tidak ditemukan, pakai tanggal hari ini"),q()}var d=[],f=!1;function D(e){return!e||typeof e!="string"?[]:e.split(`
-`).map(t=>t.trim()).filter(t=>t.length>0).map(t=>t.replace(/ /g,"%20")).filter(t=>{try{new URL(t);let n=t.split(/[?#]/)[0].toLowerCase();return g.supportedExtensions.some(i=>n.endsWith(i))}catch{return!1}})}function B(e){try{let r=new URL(e),n=decodeURIComponent(r.pathname).split("/").pop()||"unknown",i=n.replace(/\.[^/.]+$/,""),c=i.split(/[-_\s]+/),s="",p=S(),a=c.findIndex(u=>/^\d{3,12}$/.test(u)&&!/^\d{10}$/.test(u));a!==-1&&(s=c[a],c.splice(a,1));let l=c.filter(u=>!/^\d{10}$/.test(u)).join(" ").trim()||i.replace(/[-_]+/g," ");return{filename:n,norm:s,tanggal:p,jenis_dokumen:"Lain-lain",keterangan:l,url:e,status:"pending"}}catch{return{filename:"error",norm:"",tanggal:S(),url:e,status:"error",error:"Invalid URL format"}}}function H(){if(document.getElementById("ext-batch-url-btn"))return;let e=document.createElement("button");if(e.id="ext-batch-url-btn",e.type="button",e.textContent="Upload Dokumen Ulang",e.style.cssText="margin: 8px 0 4px 10px; padding: 10px 22px; background: #2563eb; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; display: block; transition: all 0.15s ease; letter-spacing: -0.1px; box-shadow: 0 2px 8px rgba(37,99,235,0.2);",e.addEventListener("click",G),e.addEventListener("mouseenter",()=>e.style.background="#1d4ed8"),e.addEventListener("mouseleave",()=>e.style.background="#2563eb"),!document.getElementById("ext-batch-url-style")){let t=document.createElement("style");t.id="ext-batch-url-style",t.textContent=`
-      #${g.textareaId} {
+    <div style="width:clamp(400px,90vw,1200px);height:clamp(300px,90vh,800px);background:white;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,0.4);overflow:hidden;position:relative;">${contentHtml}</div>
+  `;
+    document.body.appendChild(modal);
+    document.getElementById("ext-preview-close")?.addEventListener("click", () => {
+      if (onCleanup) onCleanup();
+      modal.remove();
+    });
+    document.getElementById("ext-preview-newtab")?.addEventListener("click", () => {
+      window.open(originalUrl || previewUrl, "_blank");
+      if (onCleanup) onCleanup();
+      modal.remove();
+    });
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        if (onCleanup) onCleanup();
+        modal.remove();
+      }
+    });
+    document.addEventListener("keydown", function handler(ev) {
+      if (ev.key === "Escape") {
+        if (onCleanup) onCleanup();
+        modal.remove();
+        document.removeEventListener("keydown", handler);
+      }
+    });
+    if (isPdf || isImage) {
+      const loadCheck = setInterval(() => {
+        const loaded = isPdf ? document.getElementById("ext-inline-preview-iframe")?.getAttribute("src") : document.getElementById("ext-inline-preview-img")?.complete;
+        if (loaded) {
+          const container = modal.querySelector(".ext-inline-preview-loading");
+          if (container) container.remove();
+          clearInterval(loadCheck);
+        }
+      }, 500);
+    }
+  }
+
+  // src/features/batchUploadUrl.ts
+  var g = getMorbisGlobals();
+  var BATCH_UPLOAD_URL_CONFIG = {
+    targetUrl: "/v2/m-klaim/detail-v2-refaktor",
+    uploadEndpoint: "/v2/m-klaim/uploda-dokumen/control?sub=simpan",
+    maxConcurrent: 3,
+    maxBatchSize: 50,
+    supportedExtensions: [".pdf", ".jpg", ".jpeg", ".png"],
+    modalId: "ext-batch-url-modal",
+    textareaId: "ext-url-input",
+    previewId: "ext-preview-list",
+    progressId: "ext-progress-bar",
+    statusId: "ext-status-text"
+  };
+  function formatDateYMD(date) {
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  function getTodayFormatted() {
+    return formatDateYMD(/* @__PURE__ */ new Date());
+  }
+  function getTanggalMasukFromPage() {
+    const tglInput = document.getElementById("tgl");
+    if (tglInput && tglInput.value) {
+      const parts = tglInput.value.split("/");
+      if (parts.length === 3) {
+        const [dd, mm, yyyy] = parts;
+        return `${yyyy}-${mm}-${dd}`;
+      }
+    }
+    console.warn("[Batch Upload] Input #tgl tidak ditemukan, pakai tanggal hari ini");
+    return getTodayFormatted();
+  }
+  var batchQueue = [];
+  var isProcessing = false;
+  function extractUrls(inputText) {
+    if (!inputText || typeof inputText !== "string") return [];
+    const lines = inputText.split("\n").map((l) => l.trim()).filter((l) => l.length > 0);
+    return lines.map((url) => url.replace(/ /g, "%20")).filter((url) => {
+      try {
+        new URL(url);
+        const pathname = url.split(/[?#]/)[0].toLowerCase();
+        return BATCH_UPLOAD_URL_CONFIG.supportedExtensions.some((ext) => pathname.endsWith(ext));
+      } catch {
+        return false;
+      }
+    });
+  }
+  function parseMetadataFromUrl(url) {
+    try {
+      const urlObj = new URL(url);
+      const pathname = decodeURIComponent(urlObj.pathname);
+      const filename = pathname.split("/").pop() || "unknown";
+      const nameWithoutExt = filename.replace(/\.[^/.]+$/, "");
+      const parts = nameWithoutExt.split(/[-_\s]+/);
+      let norm = "";
+      const tanggal = getTanggalMasukFromPage();
+      const normIndex = parts.findIndex((p) => /^\d{3,12}$/.test(p) && !/^\d{10}$/.test(p));
+      if (normIndex !== -1) {
+        norm = parts[normIndex];
+        parts.splice(normIndex, 1);
+      }
+      const keteranganParts = parts.filter((p) => !/^\d{10}$/.test(p));
+      const keterangan = keteranganParts.join(" ").trim() || nameWithoutExt.replace(/[-_]+/g, " ");
+      return {
+        filename,
+        norm,
+        tanggal,
+        jenis_dokumen: "Lain-lain",
+        keterangan,
+        url,
+        status: "pending"
+      };
+    } catch {
+      return {
+        filename: "error",
+        norm: "",
+        tanggal: getTanggalMasukFromPage(),
+        url,
+        status: "error",
+        error: "Invalid URL format"
+      };
+    }
+  }
+  function renderBatchUploadButton() {
+    if (document.getElementById("ext-batch-url-btn")) return;
+    const btn = document.createElement("button");
+    btn.id = "ext-batch-url-btn";
+    btn.type = "button";
+    btn.textContent = "Upload Dokumen Ulang";
+    btn.style.cssText = "margin: 8px 0 4px 10px; padding: 10px 22px; background: #2563eb; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; display: block; transition: all 0.15s ease; letter-spacing: -0.1px; box-shadow: 0 2px 8px rgba(37,99,235,0.2);";
+    btn.addEventListener("click", showBatchUploadModal);
+    btn.addEventListener("mouseenter", () => btn.style.background = "#1d4ed8");
+    btn.addEventListener("mouseleave", () => btn.style.background = "#2563eb");
+    if (!document.getElementById("ext-batch-url-style")) {
+      const style = document.createElement("style");
+      style.id = "ext-batch-url-style";
+      style.textContent = `
+      #${BATCH_UPLOAD_URL_CONFIG.textareaId} {
         width: 100%; height: 150px; padding: 12px; border: 1px solid #e2e8f0;
         border-radius: 10px; font-size: 12px; resize: vertical;
         background: #f8fafc; color: #1e293b;
         transition: border-color 0.15s ease; box-sizing: border-box;
       }
-      #${g.textareaId}:focus {
+      #${BATCH_UPLOAD_URL_CONFIG.textareaId}:focus {
         border-color: #94a3b8; box-shadow: 0 0 0 3px rgba(148,163,184,0.1);
         background: #fff; outline: none;
       }
-      #${g.previewId} {
+      #${BATCH_UPLOAD_URL_CONFIG.previewId} {
         margin-top: 15px; max-height: 400px; overflow-y: auto;
         border: 1px solid #f1f5f9; border-radius: 10px; padding: 12px;
       }
-      #${g.progressId} {
+      #${BATCH_UPLOAD_URL_CONFIG.progressId} {
         width: 100%; height: 6px; background: #f1f5f9;
         border-radius: 3px; margin: 12px 0; display: none; overflow: hidden;
       }
-      #${g.progressId} .progress-fill {
+      #${BATCH_UPLOAD_URL_CONFIG.progressId} .progress-fill {
         height: 100%; background: #2563eb; border-radius: 3px;
         width: 0%; transition: width 0.3s cubic-bezier(0.16,1,0.3,1);
       }
@@ -197,11 +387,31 @@
         animation: ext-spin 0.8s linear infinite;
       }
       @keyframes ext-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    `,document.head.appendChild(t)}R();let r=document.querySelector('.panel-heading, [id*="upload"], [class*="upload"]');if(r)r.appendChild(e);else{let t=document.querySelector('form[action*="uploda-dokumen"]');t&&t.parentNode?.insertBefore(e,t)}}function G(){let e=document.getElementById(g.modalId);e||(e=document.createElement("div"),e.id=g.modalId,e.className="ext-batch-delete-modal",e.innerHTML=`
+    `;
+      document.head.appendChild(style);
+    }
+    injectSharedCSS();
+    const uploadSection = document.querySelector('.panel-heading, [id*="upload"], [class*="upload"]');
+    if (uploadSection) {
+      uploadSection.appendChild(btn);
+    } else {
+      const form = document.querySelector('form[action*="uploda-dokumen"]');
+      if (form) {
+        form.parentNode?.insertBefore(btn, form);
+      }
+    }
+  }
+  function showBatchUploadModal() {
+    let modal = document.getElementById(BATCH_UPLOAD_URL_CONFIG.modalId);
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = BATCH_UPLOAD_URL_CONFIG.modalId;
+      modal.className = "ext-batch-delete-modal";
+      modal.innerHTML = `
       <div class="ext-modal-content">
         <div class="ext-modal-header">
           <h3 style="margin: 0; font-size: 18px; color: #0f172a; font-weight: 700; letter-spacing: -0.3px;">Upload Dokumen Ulang</h3>
-          <button class="ext-modal-close" id="ext-modal-close-btn">${b.xClose}</button>
+          <button class="ext-modal-close" id="ext-modal-close-btn">${Icons.xClose}</button>
         </div>
         <div class="ext-mode-radio">
           <label><input type="radio" name="ext-upload-mode" value="manual" checked> Mode Manual (Paste URL)</label>
@@ -209,52 +419,694 @@
         </div>
         <div id="ext-manual-section">
           <label class="ext-input-label">Paste URL Dokumen (satu per baris):</label>
-          <textarea id="${g.textareaId}" placeholder="https://example.com/dokumen1.pdf&#10;https://example.com/dokumen2.jpg&#10;..."></textarea>
+          <textarea id="${BATCH_UPLOAD_URL_CONFIG.textareaId}" placeholder="https://example.com/dokumen1.pdf&#10;https://example.com/dokumen2.jpg&#10;..."></textarea>
           <div style="margin-top: 12px; display: flex; gap: 10px;">
-            <button class="ext-btn ext-btn-purple" id="ext-analyze-btn">${b.search} Analisis URL</button>
+            <button class="ext-btn ext-btn-purple" id="ext-analyze-btn">${Icons.search} Analisis URL</button>
           </div>
         </div>
         <div id="ext-auto-section" style="display: none;">
           <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">Mendeteksi dokumen otomatis dari halaman Rekam Medis pasien ini.</p>
           <div style="margin-bottom: 12px; display: flex; gap: 10px;">
-            <button class="ext-btn ext-btn-purple" id="ext-crawl-btn">${b.search} Cari Dokumen Pasien Otomatis</button>
+            <button class="ext-btn ext-btn-purple" id="ext-crawl-btn">${Icons.search} Cari Dokumen Pasien Otomatis</button>
           </div>
           <div id="ext-upload-search-wrap" class="ext-upload-search-wrap" style="display: none;">
             <input type="text" id="ext-upload-search-input" class="ext-search-input" placeholder="Cari dokumen...">
           </div>
         </div>
-        <div id="${g.previewId}" style="display: none; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden;"></div>
-        <div id="${g.progressId}" style="display: none; height: 4px; background: #374151; margin: 12px 0; border-radius: 2px; overflow: hidden;">
+        <div id="${BATCH_UPLOAD_URL_CONFIG.previewId}" style="display: none; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden;"></div>
+        <div id="${BATCH_UPLOAD_URL_CONFIG.progressId}" style="display: none; height: 4px; background: #374151; margin: 12px 0; border-radius: 2px; overflow: hidden;">
           <div class="progress-fill"></div>
         </div>
-        <div id="${g.statusId}" style="margin: 8px 0; font-size: 11px; color: #9ca3af; font-weight: 500; letter-spacing: 0.3px;"></div>
+        <div id="${BATCH_UPLOAD_URL_CONFIG.statusId}" style="margin: 8px 0; font-size: 11px; color: #9ca3af; font-weight: 500; letter-spacing: 0.3px;"></div>
         <div class="ext-modal-buttons">
           <button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Batal</button>
           <button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 URL</button>
-          <button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>${b.upload} Mulai Upload</button>
+          <button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>${Icons.upload} Mulai Upload</button>
         </div>
       </div>
-    `,setTimeout(()=>{document.getElementById("ext-modal-close-btn")?.addEventListener("click",()=>e?.classList.remove("show")),document.getElementById("ext-analyze-btn")?.addEventListener("click",V),document.getElementById("ext-cancel-btn")?.addEventListener("click",M),document.getElementById("ext-test-single-btn")?.addEventListener("click",z),document.getElementById("ext-start-upload-btn")?.addEventListener("click",j),document.querySelectorAll('input[name="ext-upload-mode"]').forEach(t=>{t.addEventListener("change",n=>{let i=n.target,c=document.getElementById("ext-manual-section"),s=document.getElementById("ext-auto-section");i.value==="manual"?(c&&(c.style.display="block"),s&&(s.style.display="none")):(c&&(c.style.display="none"),s&&(s.style.display="block")),d=[],w([]),x("")})}),document.getElementById("ext-crawl-btn")?.addEventListener("click",W),document.getElementById("ext-upload-search-input")?.addEventListener("input",()=>w(d)),e?.addEventListener("click",function(t){t.target===e&&M()})},0),document.body.appendChild(e)),e.classList.add("show"),document.getElementById(g.textareaId)?.focus()}function M(){let e=document.getElementById(g.modalId);if(e){e.classList.remove("show"),d=[],f=!1,w([]),O(0),x("");let r=document.getElementById("ext-upload-search-input");r&&(r.value="");let t=document.getElementById("ext-upload-search-wrap");t&&(t.style.display="none");let n=document.querySelector(".ext-modal-buttons");n&&(n.innerHTML='<button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Batal</button><button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 URL</button><button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>'+b.upload+" Mulai Upload</button>",document.getElementById("ext-cancel-btn")?.addEventListener("click",M),document.getElementById("ext-test-single-btn")?.addEventListener("click",z),document.getElementById("ext-start-upload-btn")?.addEventListener("click",j))}}function w(e){let r=document.getElementById(g.previewId),t=document.getElementById("ext-start-upload-btn"),n=document.getElementById("ext-upload-search-wrap"),i=document.getElementById("ext-upload-search-input"),c=document.getElementById("ext-auto-section")?.style.display!=="none",s=(i?.value||"").toLowerCase();if(!e||e.length===0){r&&(r.style.display="none"),t&&(t.disabled=!0),n&&(n.style.display="none"),i&&(i.value="");return}n&&c&&(n.style.display="block");let p=e.map((o,l)=>({item:o,i:l})).filter(({item:o})=>!s||o.filename.toLowerCase().includes(s)||o.keterangan.toLowerCase().includes(s)||o.norm.toLowerCase().includes(s));r&&(r.style.display="block");let a=document.createElement("div");if(a.style.marginBottom="10px",a.innerHTML=`<strong class="preview-header-text">Preview (${p.length} dari ${e.length} dokumen, ${e.filter(o=>o.selected!==!1).length} dipilih):</strong>`,r&&(r.innerHTML="",r.appendChild(a)),p.length===0){let o=document.createElement("div");o.style.cssText="padding:24px;text-align:center;font-size:13px;color:#9ca3af;",o.textContent="Tidak ada dokumen yang cocok dengan pencarian.",r?.appendChild(o)}p.forEach(({item:o,i:l})=>{let u="";o.tglFileTabel?u=`<div style="font-size:11px;color:#4b5563;margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
-        <span>Dibuat: <strong style="color:#111827;">${o.tglFileTabel}</strong></span>
+    `;
+      setTimeout(() => {
+        document.getElementById("ext-modal-close-btn")?.addEventListener("click", () => modal?.classList.remove("show"));
+        document.getElementById("ext-analyze-btn")?.addEventListener("click", analyzeUrls);
+        document.getElementById("ext-cancel-btn")?.addEventListener("click", closeBatchModal);
+        document.getElementById("ext-test-single-btn")?.addEventListener("click", testSingleUpload);
+        document.getElementById("ext-start-upload-btn")?.addEventListener("click", startBatchUpload);
+        document.querySelectorAll('input[name="ext-upload-mode"]').forEach((radio) => {
+          radio.addEventListener("change", (e) => {
+            const target = e.target;
+            const manual = document.getElementById("ext-manual-section");
+            const auto = document.getElementById("ext-auto-section");
+            if (target.value === "manual") {
+              if (manual) manual.style.display = "block";
+              if (auto) auto.style.display = "none";
+            } else {
+              if (manual) manual.style.display = "none";
+              if (auto) auto.style.display = "block";
+            }
+            batchQueue = [];
+            updatePreview([]);
+            updateStatus("");
+          });
+        });
+        document.getElementById("ext-crawl-btn")?.addEventListener("click", crawlDokumenPasien);
+        document.getElementById("ext-upload-search-input")?.addEventListener("input", () => updatePreview(batchQueue));
+        modal?.addEventListener("click", function(e) {
+          if (e.target === modal) closeBatchModal();
+        });
+      }, 0);
+      document.body.appendChild(modal);
+    }
+    modal.classList.add("show");
+    const textarea = document.getElementById(
+      BATCH_UPLOAD_URL_CONFIG.textareaId
+    );
+    textarea?.focus();
+  }
+  function closeBatchModal() {
+    const modal = document.getElementById(BATCH_UPLOAD_URL_CONFIG.modalId);
+    if (modal) {
+      modal.classList.remove("show");
+      batchQueue = [];
+      isProcessing = false;
+      updatePreview([]);
+      updateProgress(0);
+      updateStatus("");
+      const searchInput = document.getElementById("ext-upload-search-input");
+      if (searchInput) searchInput.value = "";
+      const searchWrap = document.getElementById("ext-upload-search-wrap");
+      if (searchWrap) searchWrap.style.display = "none";
+      const buttonsContainer = document.querySelector(".ext-modal-buttons");
+      if (buttonsContainer) {
+        buttonsContainer.innerHTML = '<button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Batal</button><button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 URL</button><button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>' + Icons.upload + " Mulai Upload</button>";
+        document.getElementById("ext-cancel-btn")?.addEventListener("click", closeBatchModal);
+        document.getElementById("ext-test-single-btn")?.addEventListener("click", testSingleUpload);
+        document.getElementById("ext-start-upload-btn")?.addEventListener("click", startBatchUpload);
+      }
+    }
+  }
+  function updatePreview(items) {
+    const previewEl = document.getElementById(
+      BATCH_UPLOAD_URL_CONFIG.previewId
+    );
+    const startBtn = document.getElementById("ext-start-upload-btn");
+    const searchWrap = document.getElementById("ext-upload-search-wrap");
+    const searchInput = document.getElementById("ext-upload-search-input");
+    const isAutoMode = document.getElementById("ext-auto-section")?.style.display !== "none";
+    const query = (searchInput?.value || "").toLowerCase();
+    if (!items || items.length === 0) {
+      if (previewEl) previewEl.style.display = "none";
+      if (startBtn) startBtn.disabled = true;
+      if (searchWrap) searchWrap.style.display = "none";
+      if (searchInput) searchInput.value = "";
+      return;
+    }
+    if (searchWrap && isAutoMode) searchWrap.style.display = "block";
+    const filtered = items.map((item, i) => ({ item, i })).filter(
+      ({ item }) => !query || item.filename.toLowerCase().includes(query) || item.keterangan.toLowerCase().includes(query) || item.norm.toLowerCase().includes(query)
+    );
+    if (previewEl) previewEl.style.display = "block";
+    const headerDiv = document.createElement("div");
+    headerDiv.style.marginBottom = "10px";
+    headerDiv.innerHTML = `<strong class="preview-header-text">Preview (${filtered.length} dari ${items.length} dokumen, ${items.filter((i) => i.selected !== false).length} dipilih):</strong>`;
+    if (previewEl) {
+      previewEl.innerHTML = "";
+      previewEl.appendChild(headerDiv);
+    }
+    if (filtered.length === 0) {
+      const empty = document.createElement("div");
+      empty.style.cssText = "padding:24px;text-align:center;font-size:13px;color:#9ca3af;";
+      empty.textContent = "Tidak ada dokumen yang cocok dengan pencarian.";
+      previewEl?.appendChild(empty);
+    }
+    filtered.forEach(({ item, i }) => {
+      let modeText = "";
+      if (item.tglFileTabel) {
+        modeText = `<div style="font-size:11px;color:#4b5563;margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
+        <span>Dibuat: <strong style="color:#111827;">${item.tglFileTabel}</strong></span>
         <span style="color:#d1d5db;">|</span>
-        <span>Diunggah: <strong style="color:#111827;">${o.tglUploadTabel}</strong></span>
-      </div>`:u=`<div style="font-size:11px;color:#4b5563;margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
-        <span>NORM: <strong style="color:#111827;">${o.norm||"-"}</strong></span>
+        <span>Diunggah: <strong style="color:#111827;">${item.tglUploadTabel}</strong></span>
+      </div>`;
+      } else {
+        modeText = `<div style="font-size:11px;color:#4b5563;margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
+        <span>NORM: <strong style="color:#111827;">${item.norm || "-"}</strong></span>
         <span style="color:#d1d5db;">|</span>
-        <span>Tgl Klaim: <strong style="color:#111827;">${o.tanggal}</strong></span>
-      </div>`;let m=document.createElement("div");m.className="ext-delete-preview-item",o.selected&&m.classList.add("selected"),m.innerHTML=`
+        <span>Tgl Klaim: <strong style="color:#111827;">${item.tanggal}</strong></span>
+      </div>`;
+      }
+      const itemEl = document.createElement("div");
+      itemEl.className = "ext-delete-preview-item";
+      if (item.selected) itemEl.classList.add("selected");
+      itemEl.innerHTML = `
       <label class="ext-checkbox-label" style="flex:1;min-width:0;">
-        <input type="checkbox" class="ext-checkbox" data-index="${l}" ${o.selected!==!1?"checked":""} ${f?"disabled":""}>
+        <input type="checkbox" class="ext-checkbox" data-index="${i}" ${item.selected !== false ? "checked" : ""} ${isProcessing ? "disabled" : ""}>
         <div style="flex: 1; min-width: 0;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-            <strong style="font-size: 13px; color: #000000; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${l+1}. ${o.filename}</strong>
-            ${o.status!=="pending"?`<span class="ext-status-badge" data-status="${o.status}">${o.status==="success"?"Sukses":o.status==="error"?"Gagal":o.status}</span>`:""}
+            <strong style="font-size: 13px; color: #000000; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${i + 1}. ${item.filename}</strong>
+            ${item.status !== "pending" ? `<span class="ext-status-badge" data-status="${item.status}">${item.status === "success" ? "Sukses" : item.status === "error" ? "Gagal" : item.status}</span>` : ""}
           </div>
-          ${u}
-          <input type="text" class="ext-keterangan-input" data-index="${l}" value="${o.keterangan||""}" placeholder="Keterangan dokumen..." ${f?"disabled":""}>
-          ${o.error?`<div style="font-size: 11px; color: #dc2626; margin-top: 4px;"><strong>Error:</strong> ${o.error}</div>`:""}
+          ${modeText}
+          <input type="text" class="ext-keterangan-input" data-index="${i}" value="${item.keterangan || ""}" placeholder="Keterangan dokumen..." ${isProcessing ? "disabled" : ""}>
+          ${item.error ? `<div style="font-size: 11px; color: #dc2626; margin-top: 4px;"><strong>Error:</strong> ${item.error}</div>` : ""}
         </div>
       </label>
-      <button data-index="${l}" class="ext-delete-preview-btn" ${f?"disabled":""}>${b.eye} Preview</button>
-      <button data-index="${l}" class="ext-delete-single-btn" title="Buang dari Antrian" ${f?"disabled":""}>${b.xClose}</button>
-    `;let h=m.querySelector(".ext-checkbox"),y=m.querySelector(".ext-delete-preview-btn"),k=m.querySelector(".ext-delete-single-btn"),v=E=>{if(f)return;o.selected=E,h&&(h.checked=E),E?m.classList.add("selected"):m.classList.remove("selected");let _=e.filter(F=>F.selected!==!1).length;a.innerHTML=`<strong class="preview-header-text">Preview (${_} Dokumen Dipilih):</strong>`,t&&(t.disabled=_===0)};h?.addEventListener("change",E=>v(E.target.checked)),k?.addEventListener("click",()=>v(!1));let L=m.querySelector(".ext-keterangan-input");L?.addEventListener("input",function(){d[l].keterangan=L.value}),y&&(y.addEventListener("click",async()=>{try{await C(d[l].url,d[l].filename)}catch{window.open(d[l].url,"_blank")}}),f&&(y.disabled=!0)),r?.appendChild(m)}),t&&(t.disabled=e.filter(o=>o.selected!==!1).length===0)}function O(e){let r=document.getElementById(g.progressId);if(!r)return;let t=r.querySelector(".progress-fill");e>0?(r.style.display="block",t&&(t.style.width=`${e}%`)):r.style.display="none"}function x(e){let r=document.getElementById(g.statusId);r&&(r.textContent=e)}function T(e){let r=["ext-analyze-btn","ext-cancel-btn","ext-test-single-btn","ext-start-upload-btn","ext-modal-close-btn","ext-crawl-btn",g.textareaId];document.querySelectorAll('input[name="ext-upload-mode"]').forEach(t=>{t.disabled=e}),r.forEach(t=>{let n=document.getElementById(t);n&&(n.disabled=e,(t==="ext-modal-close-btn"||t===g.textareaId)&&(n.style.opacity=e?"0.5":"1",n.style.cursor=e?"not-allowed":t===g.textareaId?"text":"pointer"))})}function V(){let r=document.getElementById(g.textareaId)?.value.trim()||"";if(!r){alert("Silakan paste URL terlebih dahulu");return}let t=D(r);if(t.length===0){alert("Tidak ada URL valid yang ditemukan. Pastikan URL mengandung ekstensi file yang didukung.");return}if(t.length>g.maxBatchSize){alert(`Maksimal ${g.maxBatchSize} URL per batch`);return}d=t.map(n=>B(n)),w(d),x(`${t.length} URL siap diproses`)}async function W(){let r=new URLSearchParams(window.location.search).get("id_visit");if(!r){alert("Parameter id_visit tidak ditemukan di URL saat ini.");return}x("Sedang mencari dokumen di rekam medis...");let t=document.getElementById("ext-crawl-btn");t&&(t.disabled=!0,t.textContent="Mencari...");try{let n=`${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${r}&page=85&id_kunjungan=`,i=await fetch(n);if(!i.ok)throw new Error("Gagal memuat halaman dokumen pasien");let c=await i.text(),p=new DOMParser().parseFromString(c,"text/html").querySelectorAll("table.data-list.tabel tr"),a=[];for(let o=1;o<p.length;o++){let l=p[o],u=l.querySelector("td:nth-child(2) a");if(!u)continue;let m=u.getAttribute("href");if(!m?.includes("/assets/dokumen-pasien/"))continue;let h=m.startsWith("http")?m:`${window.location.origin}${m}`,y=l.cells[1]?.textContent?.trim()||"",k=l.cells[2]?.textContent?.trim()||"",v=l.cells[3]?.textContent?.trim()||"",L=l.cells[4]?.textContent?.trim()||"";a.push({url:h,filenameTabel:y,tglFile:v,tglUpload:L,keteranganTabel:k})}if(a.length===0){x("Tidak ada dokumen ditemukan di rekam medis."),t&&(t.disabled=!1,t.textContent="Cari Dokumen Pasien Otomatis");return}d=a.map(o=>{let l=B(o.url);return l.tglFileTabel=o.tglFile,l.tglUploadTabel=o.tglUpload,l.filename=o.filenameTabel||l.filename,l.keterangan=o.keteranganTabel||l.filename||"-",l.selected=!1,l}),w(d),x(`${d.length} dokumen berhasil ditemukan!`)}catch(n){x("Error: "+n.message)}finally{t&&(t.disabled=!1,t.textContent="Cari Dokumen Pasien Otomatis")}}async function K(e,r){x(`Mengunduh: ${r}...`),console.log("[Batch Upload] Fetching URL:",e);let t=await fetch(e,{method:"GET",mode:"cors",credentials:"omit"});if(!t.ok)throw new Error(`HTTP ${t.status}: ${t.statusText}`);let n=await t.blob();return new File([n],r,{type:n.type})}async function U(e,r){try{let t=await K(e.url,e.filename),n=new FormData;n.append("id_visit",r),n.append("norm",e.norm),n.append("tgl_file",e.tanggal),n.append("jenis_dokumen",e.jenis_dokumen||"Lain-lain"),n.append("dok",t),n.append("keterangan",e.keterangan||""),x(`Mengupload: ${e.filename}...`);let i=await fetch(g.uploadEndpoint,{method:"POST",body:n,credentials:"same-origin"});if(!i.ok){let s=await i.text();throw new Error(`Upload failed: ${i.status} - ${s}`)}return{success:!0,result:await i.text()}}catch(t){return{success:!1,error:t.message}}}async function Y(){if(f)return;f=!0,T(!0);let e=document.getElementById("ext-start-upload-btn");e&&(e.textContent="Memproses...");let t=new URLSearchParams(window.location.search).get("id_visit")||"";if(!t){alert("ID Visit tidak ditemukan di URL"),T(!1),f=!1,e&&(e.textContent="Mulai Upload");return}let n=0,i=0,c=d.filter(a=>a.selected!==!1),s=c.length;if(s===0){alert("Tidak ada dokumen yang dipilih untuk diupload."),T(!1),f=!1,x(""),e&&(e.textContent="Mulai Upload");return}for(let a=0;a<s;a++){let o=c[a];try{let u=await U(o,t);u.success?(o.status="success",n++):(o.status="error",o.error=u.error,i++)}catch(u){o.status="error",o.error=u.message,i++}let l=(a+1)/s*100;O(l),w(d),x(`Diproses: ${a+1}/${s} - Sukses: ${n}, Gagal: ${i}`)}x(`Selesai! Sukses: ${n}, Gagal: ${i}`),i>0&&console.log("Failed uploads:",d.filter(a=>a.status==="error"));let p=document.querySelector(".ext-modal-buttons");p&&(p.innerHTML='<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">'+b.refresh+" Reload Halaman</span></button>",document.getElementById("ext-reload-btn")?.addEventListener("click",()=>window.location.reload())),f=!1}async function z(){if(d.length===0){alert("Tidak ada URL untuk ditest");return}if(f)return;f=!0,T(!0);let e=d[0];x("Testing single upload...");let t=new URLSearchParams(window.location.search).get("id_visit")||"";try{let n=await U(e,t);n.success?(e.status="success",x("Test sukses! Detail di console.")):(e.status="error",e.error=n.error,x("Test gagal! Detail di console."))}catch(n){e.status="error",e.error=n.message,x("Test error! Detail di console.")}w(d),T(!1),f=!1}function j(){if(d.length===0){alert("Tidak ada URL untuk diproses");return}confirm(`Upload ${d.length} dokumen? Proses ini tidak dapat dibatalkan.`)&&Y()}function Q(){return/^\/v2\/m-klaim\/detail-v2-refaktor\/?$/.test(window.location.pathname)?!!new URLSearchParams(window.location.search).get("id_visit"):!1}async function Z(){let r=new URLSearchParams(window.location.search).get("id_visit");if(!r){chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_UPLOAD_ERROR",data:{error:"Parameter id_visit tidak ditemukan di URL."}}).catch(console.error);return}try{let t=`${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${r}&page=85&id_kunjungan=`,n=await fetch(t);if(!n.ok)throw new Error("Gagal memuat halaman dokumen pasien");let i=await n.text(),s=new DOMParser().parseFromString(i,"text/html").querySelectorAll("table.data-list.tabel tr"),p=[];for(let a=1;a<s.length;a++){let o=s[a],l=o.querySelector("td:nth-child(2) a");if(!l)continue;let u=l.getAttribute("href");if(!u?.includes("/assets/dokumen-pasien/"))continue;let m=u.startsWith("http")?u:`${window.location.origin}${u}`,h=o.cells[1]?.textContent?.trim()||"",y=o.cells[2]?.textContent?.trim()||"",k=o.cells[3]?.textContent?.trim()||"",v=o.cells[4]?.textContent?.trim()||"";p.push({url:m,filenameTabel:h,tglFile:k,tglUpload:v,keteranganTabel:y})}if(p.length===0){chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_UPLOAD_CRAWL_RESULT",data:{items:[]}}).catch(console.error);return}d=p.map(a=>{let o=B(a.url);return o.tglFileTabel=a.tglFile,o.tglUploadTabel=a.tglUpload,o.filename=a.filenameTabel||o.filename,o.keterangan=a.keteranganTabel||o.filename||"-",o.selected=!1,o}),chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_UPLOAD_CRAWL_RESULT",data:{items:d}}).catch(console.error)}catch(t){chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_UPLOAD_ERROR",data:{error:t.message}}).catch(console.error)}}async function X(){let r=new URLSearchParams(window.location.search).get("id_visit")||"";if(!r){chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_UPLOAD_ERROR",data:{error:"ID Visit tidak ditemukan di URL"}}).catch(console.error);return}let t=0,n=0,i=d.filter(s=>s.selected!==!1),c=i.length;if(c===0){chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_UPLOAD_ERROR",data:{error:"Tidak ada dokumen yang dipilih."}}).catch(console.error);return}for(let s=0;s<c;s++){let p=i[s];p.status="uploading",chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_UPLOAD_PROGRESS",data:{percent:s/c*100,status:`Mengupload: ${p.filename} (${s+1}/${c})...`,items:d,finished:!1}}).catch(console.error);try{let a=await U(p,r);a.success?(p.status="success",t++):(p.status="error",p.error=a.error,n++)}catch(a){p.status="error",p.error=a.message,n++}chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_UPLOAD_PROGRESS",data:{percent:(s+1)/c*100,status:`Diproses: ${s+1}/${c} - Sukses: ${t}, Gagal: ${n}`,items:d,finished:s===c-1}}).catch(console.error)}}async function J(){if(d.length===0)return;let e=d[0],t=new URLSearchParams(window.location.search).get("id_visit")||"";e.status="uploading",chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_UPLOAD_PROGRESS",data:{percent:50,status:`Testing single upload: ${e.filename}...`,items:d,finished:!1}}).catch(console.error);try{let n=await U(e,t);n.success?e.status="success":(e.status="error",e.error=n.error)}catch(n){e.status="error",e.error=n.message}chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_UPLOAD_PROGRESS",data:{percent:100,status:e.status==="success"?"Test upload sukses!":"Test upload gagal!",items:d,finished:!0}}).catch(console.error)}function ee(){!I.currentConfig?.features?.batchUpload?.enabled||!I.ExtensionCore.isFeatureAllowed("batchUpload")||Q()&&(chrome.runtime.sendMessage({type:"PAGE_CONTEXT",feature:"mKlaimDetail",data:{idVisit:new URLSearchParams(window.location.search).get("id_visit"),tanggalMasuk:S()}}).catch(console.error),chrome.runtime.onMessage.addListener((e,r,t)=>{if(e.type==="TAB_ACTION"){let{action:n,payload:i}=e;n==="BATCH_UPLOAD_ANALYZE"?(d=D(i.inputText).map(s=>B(s)),chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_UPLOAD_ANALYZE_RESULT",data:{items:d}}).catch(console.error)):n==="BATCH_UPLOAD_CRAWL"?Z():n==="BATCH_UPLOAD_UPDATE_ITEMS"?d=i.items:n==="BATCH_UPLOAD_PREVIEW"?C(i.url,i.filename).catch(()=>{window.open(i.url,"_blank")}):n==="BATCH_UPLOAD_START"?X():n==="BATCH_UPLOAD_TEST_SINGLE"&&J(),t({success:!0})}else e.type==="BATCH_UPLOAD_ACTION"&&t({success:!0});return!0}),document.readyState==="loading"?document.addEventListener("DOMContentLoaded",H):setTimeout(H,1e3))}typeof I.featureModules<"u"?I.featureModules.batchUpload={name:"Upload Dokumen Ulang",description:"Upload Dokumen Ulang via paste URL dengan metadata extraction otomatis",run:ee}:console.warn("[Batch Upload] featureModules not defined, module registration skipped");})();
+      <button data-index="${i}" class="ext-delete-preview-btn" ${isProcessing ? "disabled" : ""}>${Icons.eye} Preview</button>
+      <button data-index="${i}" class="ext-delete-single-btn" title="Buang dari Antrian" ${isProcessing ? "disabled" : ""}>${Icons.xClose}</button>
+    `;
+      const checkbox = itemEl.querySelector(".ext-checkbox");
+      const previewBtn = itemEl.querySelector(".ext-delete-preview-btn");
+      const buangBtn = itemEl.querySelector(".ext-delete-single-btn");
+      const updateSelection = (isSelected) => {
+        if (isProcessing) return;
+        item.selected = isSelected;
+        if (checkbox) checkbox.checked = isSelected;
+        if (isSelected) {
+          itemEl.classList.add("selected");
+        } else {
+          itemEl.classList.remove("selected");
+        }
+        const currentSelected = items.filter((i2) => i2.selected !== false).length;
+        headerDiv.innerHTML = `<strong class="preview-header-text">Preview (${currentSelected} Dokumen Dipilih):</strong>`;
+        if (startBtn) startBtn.disabled = currentSelected === 0;
+      };
+      checkbox?.addEventListener(
+        "change",
+        (e) => updateSelection(e.target.checked)
+      );
+      buangBtn?.addEventListener("click", () => updateSelection(false));
+      const ketInput = itemEl.querySelector(".ext-keterangan-input");
+      ketInput?.addEventListener("input", function() {
+        batchQueue[i].keterangan = ketInput.value;
+      });
+      if (previewBtn) {
+        previewBtn.addEventListener("click", async () => {
+          try {
+            await showInlinePreviewSafe(batchQueue[i].url, batchQueue[i].filename);
+          } catch {
+            window.open(batchQueue[i].url, "_blank");
+          }
+        });
+        if (isProcessing) previewBtn.disabled = true;
+      }
+      previewEl?.appendChild(itemEl);
+    });
+    if (startBtn) {
+      startBtn.disabled = items.filter((i) => i.selected !== false).length === 0;
+    }
+  }
+  function updateProgress(percent) {
+    const progressEl = document.getElementById(
+      BATCH_UPLOAD_URL_CONFIG.progressId
+    );
+    if (!progressEl) return;
+    const fillEl = progressEl.querySelector(".progress-fill");
+    if (percent > 0) {
+      progressEl.style.display = "block";
+      if (fillEl) fillEl.style.width = `${percent}%`;
+    } else {
+      progressEl.style.display = "none";
+    }
+  }
+  function updateStatus(text) {
+    const statusEl = document.getElementById(BATCH_UPLOAD_URL_CONFIG.statusId);
+    if (statusEl) statusEl.textContent = text;
+  }
+  function toggleUIProcessingState(isUploading) {
+    const elementsToToggle = [
+      "ext-analyze-btn",
+      "ext-cancel-btn",
+      "ext-test-single-btn",
+      "ext-start-upload-btn",
+      "ext-modal-close-btn",
+      "ext-crawl-btn",
+      BATCH_UPLOAD_URL_CONFIG.textareaId
+    ];
+    document.querySelectorAll('input[name="ext-upload-mode"]').forEach((radio) => {
+      radio.disabled = isUploading;
+    });
+    elementsToToggle.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.disabled = isUploading;
+        if (id === "ext-modal-close-btn" || id === BATCH_UPLOAD_URL_CONFIG.textareaId) {
+          el.style.opacity = isUploading ? "0.5" : "1";
+          el.style.cursor = isUploading ? "not-allowed" : id === BATCH_UPLOAD_URL_CONFIG.textareaId ? "text" : "pointer";
+        }
+      }
+    });
+  }
+  function analyzeUrls() {
+    const textarea = document.getElementById(
+      BATCH_UPLOAD_URL_CONFIG.textareaId
+    );
+    const inputText = textarea?.value.trim() || "";
+    if (!inputText) {
+      alert("Silakan paste URL terlebih dahulu");
+      return;
+    }
+    const urls = extractUrls(inputText);
+    if (urls.length === 0) {
+      alert(
+        "Tidak ada URL valid yang ditemukan. Pastikan URL mengandung ekstensi file yang didukung."
+      );
+      return;
+    }
+    if (urls.length > BATCH_UPLOAD_URL_CONFIG.maxBatchSize) {
+      alert(`Maksimal ${BATCH_UPLOAD_URL_CONFIG.maxBatchSize} URL per batch`);
+      return;
+    }
+    batchQueue = urls.map((url) => parseMetadataFromUrl(url));
+    updatePreview(batchQueue);
+    updateStatus(`${urls.length} URL siap diproses`);
+  }
+  async function crawlDokumenPasien() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const idVisit = urlParams.get("id_visit");
+    if (!idVisit) {
+      alert("Parameter id_visit tidak ditemukan di URL saat ini.");
+      return;
+    }
+    updateStatus("Sedang mencari dokumen di rekam medis...");
+    const crawlBtn = document.getElementById("ext-crawl-btn");
+    if (crawlBtn) {
+      crawlBtn.disabled = true;
+      crawlBtn.textContent = "Mencari...";
+    }
+    try {
+      const targetUrl = `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${idVisit}&page=85&id_kunjungan=`;
+      const response = await fetch(targetUrl);
+      if (!response.ok) throw new Error("Gagal memuat halaman dokumen pasien");
+      const html = await response.text();
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const rows = doc.querySelectorAll("table.data-list.tabel tr");
+      const urls = [];
+      for (let i = 1; i < rows.length; i++) {
+        const tr = rows[i];
+        const linkEl = tr.querySelector("td:nth-child(2) a");
+        if (!linkEl) continue;
+        const urlPath = linkEl.getAttribute("href");
+        if (!urlPath?.includes("/assets/dokumen-pasien/")) continue;
+        const fullUrl = urlPath.startsWith("http") ? urlPath : `${window.location.origin}${urlPath}`;
+        const filenameTabel = tr.cells[1]?.textContent?.trim() || "";
+        const keteranganTd = tr.cells[2]?.textContent?.trim() || "";
+        const tglFile = tr.cells[3]?.textContent?.trim() || "";
+        const tglUpload = tr.cells[4]?.textContent?.trim() || "";
+        urls.push({ url: fullUrl, filenameTabel, tglFile, tglUpload, keteranganTabel: keteranganTd });
+      }
+      if (urls.length === 0) {
+        updateStatus("Tidak ada dokumen ditemukan di rekam medis.");
+        if (crawlBtn) {
+          crawlBtn.disabled = false;
+          crawlBtn.textContent = "Cari Dokumen Pasien Otomatis";
+        }
+        return;
+      }
+      batchQueue = urls.map((item) => {
+        const metadata = parseMetadataFromUrl(item.url);
+        metadata.tglFileTabel = item.tglFile;
+        metadata.tglUploadTabel = item.tglUpload;
+        metadata.filename = item.filenameTabel || metadata.filename;
+        metadata.keterangan = item.keteranganTabel || metadata.filename || "-";
+        metadata.selected = false;
+        return metadata;
+      });
+      updatePreview(batchQueue);
+      updateStatus(`${batchQueue.length} dokumen berhasil ditemukan!`);
+    } catch (err) {
+      updateStatus("Error: " + err.message);
+    } finally {
+      if (crawlBtn) {
+        crawlBtn.disabled = false;
+        crawlBtn.textContent = "Cari Dokumen Pasien Otomatis";
+      }
+    }
+  }
+  async function fetchFileFromUrl(url, filename) {
+    updateStatus(`Mengunduh: ${filename}...`);
+    console.log("[Batch Upload] Fetching URL:", url);
+    const response = await fetch(url, {
+      method: "GET",
+      mode: "cors",
+      credentials: "omit"
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    const blob = await response.blob();
+    return new File([blob], filename, { type: blob.type });
+  }
+  async function processAndUploadSingleUrl(metadata, idVisitStr) {
+    try {
+      const file = await fetchFileFromUrl(metadata.url, metadata.filename);
+      const formData = new FormData();
+      formData.append("id_visit", idVisitStr);
+      formData.append("norm", metadata.norm);
+      formData.append("tgl_file", metadata.tanggal);
+      formData.append("jenis_dokumen", metadata.jenis_dokumen || "Lain-lain");
+      formData.append("dok", file);
+      formData.append("keterangan", metadata.keterangan || "");
+      updateStatus(`Mengupload: ${metadata.filename}...`);
+      const uploadResponse = await fetch(BATCH_UPLOAD_URL_CONFIG.uploadEndpoint, {
+        method: "POST",
+        body: formData,
+        credentials: "same-origin"
+      });
+      if (!uploadResponse.ok) {
+        const errorText = await uploadResponse.text();
+        throw new Error(`Upload failed: ${uploadResponse.status} - ${errorText}`);
+      }
+      const result = await uploadResponse.text();
+      return { success: true, result };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+  async function runBatchQueue() {
+    if (isProcessing) return;
+    isProcessing = true;
+    toggleUIProcessingState(true);
+    const startBtn = document.getElementById("ext-start-upload-btn");
+    if (startBtn) startBtn.textContent = "Memproses...";
+    const urlParams = new URLSearchParams(window.location.search);
+    const idVisitStr = urlParams.get("id_visit") || "";
+    if (!idVisitStr) {
+      alert("ID Visit tidak ditemukan di URL");
+      toggleUIProcessingState(false);
+      isProcessing = false;
+      if (startBtn) startBtn.textContent = "Mulai Upload";
+      return;
+    }
+    let successCount = 0;
+    let errorCount = 0;
+    const itemsToUpload = batchQueue.filter((item) => item.selected !== false);
+    const total = itemsToUpload.length;
+    if (total === 0) {
+      alert("Tidak ada dokumen yang dipilih untuk diupload.");
+      toggleUIProcessingState(false);
+      isProcessing = false;
+      updateStatus("");
+      if (startBtn) startBtn.textContent = "Mulai Upload";
+      return;
+    }
+    for (let i = 0; i < total; i++) {
+      const metadata = itemsToUpload[i];
+      try {
+        const result = await processAndUploadSingleUrl(metadata, idVisitStr);
+        if (result.success) {
+          metadata.status = "success";
+          successCount++;
+        } else {
+          metadata.status = "error";
+          metadata.error = result.error;
+          errorCount++;
+        }
+      } catch (error) {
+        metadata.status = "error";
+        metadata.error = error.message;
+        errorCount++;
+      }
+      const progress = (i + 1) / total * 100;
+      updateProgress(progress);
+      updatePreview(batchQueue);
+      updateStatus(`Diproses: ${i + 1}/${total} - Sukses: ${successCount}, Gagal: ${errorCount}`);
+    }
+    updateStatus(`Selesai! Sukses: ${successCount}, Gagal: ${errorCount}`);
+    if (errorCount > 0) {
+      console.log(
+        "Failed uploads:",
+        batchQueue.filter((item) => item.status === "error")
+      );
+    }
+    const buttonsContainer = document.querySelector(".ext-modal-buttons");
+    if (buttonsContainer) {
+      buttonsContainer.innerHTML = '<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">' + Icons.refresh + " Reload Halaman</span></button>";
+      document.getElementById("ext-reload-btn")?.addEventListener("click", () => window.location.reload());
+    }
+    isProcessing = false;
+  }
+  async function testSingleUpload() {
+    if (batchQueue.length === 0) {
+      alert("Tidak ada URL untuk ditest");
+      return;
+    }
+    if (isProcessing) return;
+    isProcessing = true;
+    toggleUIProcessingState(true);
+    const firstItem = batchQueue[0];
+    updateStatus("Testing single upload...");
+    const urlParams = new URLSearchParams(window.location.search);
+    const idVisitStr = urlParams.get("id_visit") || "";
+    try {
+      const result = await processAndUploadSingleUrl(firstItem, idVisitStr);
+      if (result.success) {
+        firstItem.status = "success";
+        updateStatus("Test sukses! Detail di console.");
+      } else {
+        firstItem.status = "error";
+        firstItem.error = result.error;
+        updateStatus("Test gagal! Detail di console.");
+      }
+    } catch (error) {
+      firstItem.status = "error";
+      firstItem.error = error.message;
+      updateStatus("Test error! Detail di console.");
+    }
+    updatePreview(batchQueue);
+    toggleUIProcessingState(false);
+    isProcessing = false;
+  }
+  function startBatchUpload() {
+    if (batchQueue.length === 0) {
+      alert("Tidak ada URL untuk diproses");
+      return;
+    }
+    if (confirm(`Upload ${batchQueue.length} dokumen? Proses ini tidak dapat dibatalkan.`)) {
+      runBatchQueue();
+    }
+  }
+  function isMklaimDetailPage() {
+    if (!/^\/v2\/m-klaim\/detail-v2-refaktor\/?$/.test(window.location.pathname)) return false;
+    return !!new URLSearchParams(window.location.search).get("id_visit");
+  }
+  async function crawlDokumenPasienToSidepanel() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const idVisit = urlParams.get("id_visit");
+    if (!idVisit) {
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_UPLOAD_ERROR",
+        data: { error: "Parameter id_visit tidak ditemukan di URL." }
+      }).catch(console.error);
+      return;
+    }
+    try {
+      const targetUrl = `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${idVisit}&page=85&id_kunjungan=`;
+      const response = await fetch(targetUrl);
+      if (!response.ok) throw new Error("Gagal memuat halaman dokumen pasien");
+      const html = await response.text();
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const rows = doc.querySelectorAll("table.data-list.tabel tr");
+      const urls = [];
+      for (let i = 1; i < rows.length; i++) {
+        const tr = rows[i];
+        const linkEl = tr.querySelector("td:nth-child(2) a");
+        if (!linkEl) continue;
+        const urlPath = linkEl.getAttribute("href");
+        if (!urlPath?.includes("/assets/dokumen-pasien/")) continue;
+        const fullUrl = urlPath.startsWith("http") ? urlPath : `${window.location.origin}${urlPath}`;
+        const filenameTabel = tr.cells[1]?.textContent?.trim() || "";
+        const keteranganTd = tr.cells[2]?.textContent?.trim() || "";
+        const tglFile = tr.cells[3]?.textContent?.trim() || "";
+        const tglUpload = tr.cells[4]?.textContent?.trim() || "";
+        urls.push({ url: fullUrl, filenameTabel, tglFile, tglUpload, keteranganTabel: keteranganTd });
+      }
+      if (urls.length === 0) {
+        chrome.runtime.sendMessage({
+          type: "TAB_ACTION_RESULT",
+          action: "BATCH_UPLOAD_CRAWL_RESULT",
+          data: { items: [] }
+        }).catch(console.error);
+        return;
+      }
+      batchQueue = urls.map((item) => {
+        const metadata = parseMetadataFromUrl(item.url);
+        metadata.tglFileTabel = item.tglFile;
+        metadata.tglUploadTabel = item.tglUpload;
+        metadata.filename = item.filenameTabel || metadata.filename;
+        metadata.keterangan = item.keteranganTabel || metadata.filename || "-";
+        metadata.selected = false;
+        return metadata;
+      });
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_UPLOAD_CRAWL_RESULT",
+        data: { items: batchQueue }
+      }).catch(console.error);
+    } catch (err) {
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_UPLOAD_ERROR",
+        data: { error: err.message }
+      }).catch(console.error);
+    }
+  }
+  async function runBatchQueueToSidepanel() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const idVisitStr = urlParams.get("id_visit") || "";
+    if (!idVisitStr) {
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_UPLOAD_ERROR",
+        data: { error: "ID Visit tidak ditemukan di URL" }
+      }).catch(console.error);
+      return;
+    }
+    let successCount = 0;
+    let errorCount = 0;
+    const itemsToUpload = batchQueue.filter((item) => item.selected !== false);
+    const total = itemsToUpload.length;
+    if (total === 0) {
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_UPLOAD_ERROR",
+        data: { error: "Tidak ada dokumen yang dipilih." }
+      }).catch(console.error);
+      return;
+    }
+    for (let i = 0; i < total; i++) {
+      const metadata = itemsToUpload[i];
+      metadata.status = "uploading";
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_UPLOAD_PROGRESS",
+        data: {
+          percent: i / total * 100,
+          status: `Mengupload: ${metadata.filename} (${i + 1}/${total})...`,
+          items: batchQueue,
+          finished: false
+        }
+      }).catch(console.error);
+      try {
+        const result = await processAndUploadSingleUrl(metadata, idVisitStr);
+        if (result.success) {
+          metadata.status = "success";
+          successCount++;
+        } else {
+          metadata.status = "error";
+          metadata.error = result.error;
+          errorCount++;
+        }
+      } catch (error) {
+        metadata.status = "error";
+        metadata.error = error.message;
+        errorCount++;
+      }
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_UPLOAD_PROGRESS",
+        data: {
+          percent: (i + 1) / total * 100,
+          status: `Diproses: ${i + 1}/${total} - Sukses: ${successCount}, Gagal: ${errorCount}`,
+          items: batchQueue,
+          finished: i === total - 1
+        }
+      }).catch(console.error);
+    }
+  }
+  async function testSingleUploadToSidepanel() {
+    if (batchQueue.length === 0) return;
+    const firstItem = batchQueue[0];
+    const urlParams = new URLSearchParams(window.location.search);
+    const idVisitStr = urlParams.get("id_visit") || "";
+    firstItem.status = "uploading";
+    chrome.runtime.sendMessage({
+      type: "TAB_ACTION_RESULT",
+      action: "BATCH_UPLOAD_PROGRESS",
+      data: {
+        percent: 50,
+        status: `Testing single upload: ${firstItem.filename}...`,
+        items: batchQueue,
+        finished: false
+      }
+    }).catch(console.error);
+    try {
+      const result = await processAndUploadSingleUrl(firstItem, idVisitStr);
+      if (result.success) {
+        firstItem.status = "success";
+      } else {
+        firstItem.status = "error";
+        firstItem.error = result.error;
+      }
+    } catch (error) {
+      firstItem.status = "error";
+      firstItem.error = error.message;
+    }
+    chrome.runtime.sendMessage({
+      type: "TAB_ACTION_RESULT",
+      action: "BATCH_UPLOAD_PROGRESS",
+      data: {
+        percent: 100,
+        status: firstItem.status === "success" ? "Test upload sukses!" : "Test upload gagal!",
+        items: batchQueue,
+        finished: true
+      }
+    }).catch(console.error);
+  }
+  function initBatchUploadUrlFeature() {
+    if (!g.currentConfig?.features?.batchUpload?.enabled || !g.ExtensionCore.isFeatureAllowed("batchUpload"))
+      return;
+    if (!isMklaimDetailPage()) return;
+    chrome.runtime.sendMessage({
+      type: "PAGE_CONTEXT",
+      feature: "mKlaimDetail",
+      data: {
+        idVisit: new URLSearchParams(window.location.search).get("id_visit"),
+        tanggalMasuk: getTanggalMasukFromPage()
+      }
+    }).catch(console.error);
+    chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+      if (message.type === "TAB_ACTION") {
+        const { action, payload } = message;
+        if (action === "BATCH_UPLOAD_ANALYZE") {
+          const urls = extractUrls(payload.inputText);
+          batchQueue = urls.map((url) => parseMetadataFromUrl(url));
+          chrome.runtime.sendMessage({
+            type: "TAB_ACTION_RESULT",
+            action: "BATCH_UPLOAD_ANALYZE_RESULT",
+            data: { items: batchQueue }
+          }).catch(console.error);
+        } else if (action === "BATCH_UPLOAD_CRAWL") {
+          crawlDokumenPasienToSidepanel();
+        } else if (action === "BATCH_UPLOAD_UPDATE_ITEMS") {
+          batchQueue = payload.items;
+        } else if (action === "BATCH_UPLOAD_PREVIEW") {
+          showInlinePreviewSafe(payload.url, payload.filename).catch(() => {
+            window.open(payload.url, "_blank");
+          });
+        } else if (action === "BATCH_UPLOAD_START") {
+          runBatchQueueToSidepanel();
+        } else if (action === "BATCH_UPLOAD_TEST_SINGLE") {
+          testSingleUploadToSidepanel();
+        }
+        sendResponse({ success: true });
+      } else if (message.type === "BATCH_UPLOAD_ACTION") {
+        sendResponse({ success: true });
+      }
+      return true;
+    });
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", renderBatchUploadButton);
+    } else {
+      setTimeout(renderBatchUploadButton, 1e3);
+    }
+  }
+  if (typeof g.featureModules !== "undefined") {
+    g.featureModules.batchUpload = {
+      name: "Upload Dokumen Ulang",
+      description: "Upload Dokumen Ulang via paste URL dengan metadata extraction otomatis",
+      run: initBatchUploadUrlFeature
+    };
+  } else {
+    console.warn("[Batch Upload] featureModules not defined, module registration skipped");
+  }
+})();
+//# sourceMappingURL=batchUploadUrl.js.map

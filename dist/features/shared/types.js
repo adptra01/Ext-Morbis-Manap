@@ -1,1 +1,31 @@
-"use strict";var __morbis_feature=(()=>{var i=Object.defineProperty;var s=Object.getOwnPropertyDescriptor;var l=Object.getOwnPropertyNames;var a=Object.prototype.hasOwnProperty;var g=(o,e)=>{for(var n in e)i(o,n,{get:e[n],enumerable:!0})},d=(o,e,n,t)=>{if(e&&typeof e=="object"||typeof e=="function")for(let r of l(e))!a.call(o,r)&&r!==n&&i(o,r,{get:()=>e[r],enumerable:!(t=s(e,r))||t.enumerable});return o};var u=o=>d(i({},"__esModule",{value:!0}),o);var b={};g(b,{getMorbisGlobals:()=>c});function c(){return window}return u(b);})();
+"use strict";
+var __morbis_feature = (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+  // src/features/shared/types.ts
+  var types_exports = {};
+  __export(types_exports, {
+    getMorbisGlobals: () => getMorbisGlobals
+  });
+  function getMorbisGlobals() {
+    return window;
+  }
+  return __toCommonJS(types_exports);
+})();
+//# sourceMappingURL=types.js.map
