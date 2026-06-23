@@ -806,6 +806,9 @@ html {
 .h-1\.5{
   height: 0.375rem;
 }
+.h-11{
+  height: 2.75rem;
+}
 .h-2{
   height: 0.5rem;
 }
@@ -1333,6 +1336,10 @@ html {
   padding-left: 1.25rem;
   padding-right: 1.25rem;
 }
+.px-6{
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
 .py-0{
   padding-top: 0px;
   padding-bottom: 0px;
@@ -1421,6 +1428,10 @@ html {
 }
 .text-\[9px\]{
   font-size: 9px;
+}
+.text-base{
+  font-size: 1rem;
+  line-height: 1.5rem;
 }
 .text-md-lg{
   font-size: 15px;

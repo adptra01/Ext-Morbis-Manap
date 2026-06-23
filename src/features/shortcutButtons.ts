@@ -24,7 +24,7 @@ const SHORTCUT_URLS = {
   rajal: '/admisi/pelaksanaan_pelayanan/halaman-utama',
   ranap: '/admisi/detail-rawat-inap/input-tindakan',
   dokumenPasien: '/admisi/pelaksanaan_pelayanan/dokumen-pasien',
-  editResumeRajal: '/rekam-medik/rm-rawat-jalan-new',
+  editResumeRajal: '/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new',
   editResumeRanap: '/rekam-medik/resume-rawat-inap',
   triageIgd: '/admisi/pelaksanaan_pelayanan/triage_terintegrasi',
 };
@@ -72,6 +72,10 @@ function extractParam(name: string): string | null {
 
 function extractIdVisit(): string | null {
   return extractParam('id_visit');
+}
+
+function extractIdRawatJalan(): string | null {
+  return (document.getElementById('id_rawat_jalan') as HTMLInputElement)?.value || null;
 }
 
 /* ── Button builder ── */
@@ -144,7 +148,11 @@ function dokumenPasienUrl(): string | null {
 function editResumeUrl(): string | null {
   const id = extractIdVisit();
   if (!id) return null;
-  if (isRawatJalan()) return buildUrl(SHORTCUT_URLS.editResumeRajal, `id_visit=${id}`);
+  if (isRawatJalan()) {
+    const idRj = extractIdRawatJalan();
+    const qs = idRj ? `id_visit=${id}&id=${idRj}&page=6` : `id_visit=${id}&page=6`;
+    return buildUrl(SHORTCUT_URLS.editResumeRajal, qs);
+  }
   if (isRawatInap()) return buildUrl(SHORTCUT_URLS.editResumeRanap, `id_visit=${id}`);
   return null;
 }
