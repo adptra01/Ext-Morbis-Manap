@@ -27,8 +27,8 @@ export function TindakanSection({ rows, onChange }: Props) {
         <h3 className="text-md-sm font-semibold text-foreground">
           Tindakan (ICD-9) {rows.length > 0 && <span className="text-muted-foreground font-normal">({rows.length})</span>}
         </h3>
-        <Button variant="default" size="sm" onClick={() => onChange([...rows, { idicd: '', kode9: '', namaTindakan: '' }])}>
-          <Plus className="size-3.5" /> Tambah Tindakan
+        <Button variant="default" size="lg" onClick={() => onChange([...rows, { idicd: '', kode9: '', namaTindakan: '' }])} className="px-5 py-2.5 text-sm font-semibold">
+          <Plus className="size-4" /> Tambah Tindakan
         </Button>
       </div>
       {rows.length === 0 ? (
@@ -54,13 +54,13 @@ export function TindakanSection({ rows, onChange }: Props) {
                   <td className="px-3 py-1.5">
                     <input type="text" id={`rj-tindakan${no}`} name="namaTindakan[]" defaultValue={row.namaTindakan}
                       placeholder="Cari tindakan..."
-                      className="flex w-full rounded-md border-input py-1 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 border-0 bg-transparent px-0 h-7 text-md-sm shadow-none focus-visible:ring-0" />
+                      className="flex w-full rounded-md border-input py-2 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 border-0 bg-transparent px-0 h-10 text-base shadow-none focus-visible:ring-0" />
                     <input type="hidden" id={`rj-idicdTindakan${no}`} name="idicdTindakan[]" defaultValue={row.idicd} />
                   </td>
                   <td className="px-3 py-1.5">
                     <input type="text" id={`rj-kode9${no}`} name="kode9[]" defaultValue={row.kode9}
                       placeholder="Kode"
-                      className="flex w-full rounded-md border-input py-1 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 border-0 bg-transparent px-0 h-7 text-md-xs font-mono shadow-none focus-visible:ring-0" />
+                      className="flex w-full rounded-md border-input py-2 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 border-0 bg-transparent px-0 h-10 text-sm font-mono shadow-none focus-visible:ring-0" />
                   </td>
                   <td className="pr-3 py-1.5">
                     <Button variant="ghost" size="icon" onClick={() => removeRow(i)}

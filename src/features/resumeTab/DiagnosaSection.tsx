@@ -67,8 +67,8 @@ export function DiagnosaSection({ rows, onChange }: Props) {
         <h3 className="text-md-sm font-semibold text-foreground">
           Diagnosa (ICD-10) {rows.length > 0 && <span className="text-muted-foreground font-normal">({rows.length})</span>}
         </h3>
-        <Button variant="default" size="sm" onClick={() => onChange([...rows, { idicd: '', kode10: '', namaDiagnosa: '', kasus: '', komplikasi: '' }])}>
-          <Plus className="size-3.5" /> Tambah Diagnosa
+        <Button variant="default" size="lg" onClick={() => onChange([...rows, { idicd: '', kode10: '', namaDiagnosa: '', kasus: '', komplikasi: '' }])} className="px-5 py-2.5 text-sm font-semibold">
+          <Plus className="size-4" /> Tambah Diagnosa
         </Button>
       </div>
       <div className="border border-border rounded-md overflow-hidden">
@@ -91,7 +91,7 @@ export function DiagnosaSection({ rows, onChange }: Props) {
                   <input type="text" id={`rj-nama${no}`} name="nama[]" defaultValue={row.namaDiagnosa}
                     placeholder="Cari diagnosa..."
                     autoComplete="off"
-                    className="flex w-full rounded-md border-input py-1 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-offset-1 border-0 bg-transparent px-0 h-7 text-md-sm shadow-none focus-visible:ring-0" />
+                    className="flex w-full rounded-md border-input py-2 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-offset-1 border-0 bg-transparent px-0 h-10 text-base shadow-none focus-visible:ring-0" />
                   <input type="hidden" id={`rj-idicd${no}`} name="idicd[]" defaultValue={row.idicd} />
                   {hits.length > 0 && hitRow === i && (
                     <div style={{ position: 'fixed', top: hitPos.top, left: hitPos.left, width: hitPos.width, zIndex: 2147483647, background: '#fff', border: '1px solid #d1d5db', borderRadius: '6px', boxShadow: '0 4px 12px rgba(0,0,0,.15)', maxHeight: '200px', overflowY: 'auto' }}>
@@ -109,11 +109,11 @@ export function DiagnosaSection({ rows, onChange }: Props) {
                 <td className="px-3 py-1.5">
                   <input type="text" id={`rj-kode${no}`} name="kode10[]" defaultValue={row.kode10}
                     placeholder="Kode"
-                    className="flex w-full rounded-md border-input py-1 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-offset-1 border-0 bg-transparent px-0 h-7 text-md-xs font-mono shadow-none focus-visible:ring-0" />
+                    className="flex w-full rounded-md border-input py-2 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-offset-1 border-0 bg-transparent px-0 h-10 text-sm font-mono shadow-none focus-visible:ring-0" />
                 </td>
                 <td className="px-3 py-1.5">
                   <Select value={row.kasus} onValueChange={v => updateRow(i, { kasus: v })}>
-                    <SelectTrigger className="h-7 w-full border-border text-md-xs">
+                    <SelectTrigger className="h-10 w-full border-border text-sm">
                       <SelectValue placeholder="Pilih Kasus" />
                     </SelectTrigger>
                     <SelectContent>
@@ -124,7 +124,7 @@ export function DiagnosaSection({ rows, onChange }: Props) {
                 </td>
                 <td className="px-3 py-1.5">
                   <Select value={row.komplikasi} onValueChange={v => updateRow(i, { komplikasi: v })}>
-                    <SelectTrigger className="h-7 w-full border-border text-md-xs">
+                    <SelectTrigger className="h-10 w-full border-border text-sm">
                       <SelectValue placeholder="Pilih" />
                     </SelectTrigger>
                     <SelectContent>
