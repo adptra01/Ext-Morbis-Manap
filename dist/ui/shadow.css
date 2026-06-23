@@ -1340,6 +1340,10 @@ html {
   padding-left: 1.5rem;
   padding-right: 1.5rem;
 }
+.px-8{
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
 .py-0{
   padding-top: 0px;
   padding-bottom: 0px;
@@ -1433,9 +1437,9 @@ html {
   font-size: 1rem;
   line-height: 1.5rem;
 }
-.text-md-lg{
-  font-size: 15px;
-  line-height: 24px;
+.text-lg{
+  font-size: 1.125rem;
+  line-height: 1.75rem;
 }
 .text-md-sm{
   font-size: 12px;
@@ -1462,6 +1466,9 @@ html {
 }
 .leading-relaxed{
   line-height: 1.625;
+}
+.tracking-tight{
+  letter-spacing: -0.025em;
 }
 .tracking-wide{
   letter-spacing: 0.025em;
@@ -1743,6 +1750,9 @@ html {
 }
 .hover\:bg-secondary\/80:hover{
   background-color: hsl(var(--secondary) / 0.8);
+}
+.hover\:bg-white\/50:hover{
+  background-color: rgb(255 255 255 / 0.5);
 }
 .hover\:text-accent-foreground:hover{
   color: hsl(var(--accent-foreground));

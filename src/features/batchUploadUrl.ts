@@ -148,7 +148,7 @@ function renderBatchUploadButton(): void {
         background: #fff; outline: none;
       }
       #${BATCH_UPLOAD_URL_CONFIG.previewId} {
-        margin-top: 15px; max-height: 400px; overflow-y: auto;
+        margin-top: 15px; max-height: none; overflow-y: visible;
         border: 1px solid #f1f5f9; border-radius: 10px; padding: 12px;
       }
       #${BATCH_UPLOAD_URL_CONFIG.progressId} {
