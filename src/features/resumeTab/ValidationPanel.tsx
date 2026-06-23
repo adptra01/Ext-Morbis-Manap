@@ -1,7 +1,12 @@
 import { AlertTriangle } from 'lucide-react';
 
+interface ValidationError {
+  section: string;
+  message: string;
+}
+
 interface ValidationPanelProps {
-  errors: string[];
+  errors: ValidationError[];
 }
 
 export function ValidationPanel({ errors }: ValidationPanelProps) {
@@ -18,7 +23,7 @@ export function ValidationPanel({ errors }: ValidationPanelProps) {
           <ul className="space-y-0.5">
             {errors.map((err, i) => (
               <li key={i} className="text-md-xs text-destructive/80">
-                {err}
+                {err.section}: {err.message}
               </li>
             ))}
           </ul>

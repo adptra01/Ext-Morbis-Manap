@@ -1,5 +1,6 @@
 import { createRoot, type Root } from 'react-dom/client'
 import { App } from './App'
+import { ErrorBoundary } from './ErrorBoundary'
 import type { ResumeData, DiagnosaRow, TindakanRow } from './types'
 
 const AUTOCOMPLETE_URLS = {
@@ -10,13 +11,18 @@ const AUTOCOMPLETE_URLS = {
 const ENDPOINT = '/v2/m-klaim/detail-v2-refaktor/simpan_resume'
 
 let reactRoot: Root | null = null
+let overlayBtn: HTMLButtonElement | null = null
 
 function extractFormData(): ResumeData {
   const doc = document
 
   const getVal = (id: string) => (doc.getElementById(id) as HTMLInputElement)?.value || ''
-  const getTextarea = (name: string) =>
-    (doc.querySelector(`textarea[name="${name}"]`) as HTMLTextAreaElement)?.value || ''
+
+  // ponytail: support both input and textarea for clinical fields
+  const getField = (name: string) => {
+    const el = doc.querySelector(`textarea[name="${name}"], input[name="${name}"], #${name}`) as HTMLInputElement | HTMLTextAreaElement | null
+    return el?.value || ''
+  }
 
   const patientInfo = {
     norm: getVal('norm') || getVal('no_rm'),
@@ -25,11 +31,11 @@ function extractFormData(): ResumeData {
   }
 
   const clinicalNotes = {
-    anamnesa: getTextarea('anamnesa'),
-    pemeriksaan_fisik: getTextarea('pemeriksaan_fisik'),
-    catatan: getTextarea('catatan'),
-    tindakan: getTextarea('tindakan'),
-    terapi_pengobatan: getTextarea('terapi_pengobatan'),
+    anamnesa: getField('anamnesa'),
+    pemeriksaan_fisik: getField('pemeriksaan_fisik'),
+    catatan: getField('catatan'),
+    tindakan: getField('tindakan'),
+    terapi_pengobatan: getField('terapi_pengobatan'),
   }
 
   const vitalSigns = {
@@ -42,19 +48,32 @@ function extractFormData(): ResumeData {
   }
 
   const diagnosa: DiagnosaRow[] = []
-  const kode10Inputs = doc.querySelectorAll<HTMLInputElement>('input[name="kode10[]"]')
-  kode10Inputs.forEach((inp) => {
-    const row = inp.closest('tr')
-    if (!row) return
-    const idicd = (row.querySelector<HTMLInputElement>('input[name="idicd[]"]')?.value) || ''
-    const kode10 = inp.value || ''
-    const nama = (row.querySelector<HTMLInputElement>('input[name="namaDiagnosa[]"]')?.value) || ''
-    const kasus = (row.querySelector<HTMLSelectElement>('select[name="kasus[]"]')?.value) || ''
-    const komplikasi = (row.querySelector<HTMLSelectElement>('select[name="komplikasi[]"]')?.value) || ''
-    if (kode10 || nama) {
-      diagnosa.push({ idicd, kode10, namaDiagnosa: nama, kasus, komplikasi })
+  // ponytail: try both name patterns (kode10[] for klaim, kode[] and numbered IDs for rm-rawat-jalan)
+  const kode10Inputs = doc.querySelectorAll<HTMLInputElement>('input[name="kode10[]"], input[name="kode[]"]')
+  if (kode10Inputs.length === 0) {
+    // fallback: numbered IDs like kode1, kode2, kode3
+    let i = 1
+    while (doc.getElementById(`kode${i}`) || doc.querySelector(`input[name="kode10[]"]:nth-child(${i})`)) {
+      const idicd = getVal(`idicd${i}`) || ''
+      const kode10 = getVal(`kode${i}`) || ''
+      const nama = getVal(`nama${i}`) || ''
+      if (kode10 || nama) diagnosa.push({ idicd, kode10, namaDiagnosa: nama, kasus: '', komplikasi: '' })
+      i++
     }
-  })
+  } else {
+    kode10Inputs.forEach((inp) => {
+      const row = inp.closest('tr')
+      if (!row) return
+      const idicd = (row.querySelector<HTMLInputElement>('input[name="idicd[]"], input[name="idicd"]')?.value) || ''
+      const kode10 = inp.value || ''
+      const nama = (row.querySelector<HTMLInputElement>('input[name="namaDiagnosa[]"], input[name="nama[]"]')?.value) || ''
+      const kasus = (row.querySelector<HTMLSelectElement>('select[name="kasus[]"]')?.value) || ''
+      const komplikasi = (row.querySelector<HTMLSelectElement>('select[name="komplikasi[]"]')?.value) || ''
+      if (kode10 || nama) {
+        diagnosa.push({ idicd, kode10, namaDiagnosa: nama, kasus, komplikasi })
+      }
+    })
+  }
 
   const tindakan: TindakanRow[] = []
   const kode9Inputs = doc.querySelectorAll<HTMLInputElement>('input[name="kode9[]"]')
@@ -140,24 +159,36 @@ function serializeFormData(data: ResumeData): string {
   return pairs.map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v)).join('&')
 }
 
+function closeOverlay(container: HTMLElement) {
+  if (reactRoot) {
+    reactRoot.unmount()
+    reactRoot = null
+  }
+  container.innerHTML = ''
+  container.style.display = 'none'
+  document.body.classList.remove('ext-resume-open')
+  if (overlayBtn) overlayBtn.disabled = false
+}
+
 function mountReactApp(container: HTMLElement, data: ResumeData) {
   if (reactRoot) {
     reactRoot.unmount()
     reactRoot = null
   }
+  container.innerHTML = ''
 
-  const shadow = container.attachShadow({ mode: 'open' })
+  // ponytail: inject Tailwind CSS once into head, not shadow DOM
+  if (!document.getElementById('morbis-resume-css')) {
+    const s = document.createElement('style')
+    s.id = 'morbis-resume-css'
+    s.textContent = (typeof SHADOW_CSS !== 'undefined' ? SHADOW_CSS : '') + `
+      .resume-modal{background:#fff;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,.25);width:90%;max-width:800px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;animation:resume-slideup .25s ease;}
+      @keyframes resume-slideup{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    `
+    document.head.appendChild(s)
+  }
 
-  const wrapper = document.createElement('div')
-  wrapper.style.cssText = 'all: initial; display: block; width: 100%; height: 100%; pointer-events: auto;'
-
-  const style = document.createElement('style')
-  style.textContent = (typeof SHADOW_CSS !== 'undefined' ? SHADOW_CSS : '')
-  shadow.appendChild(style)
-
-  shadow.appendChild(wrapper)
-
-  reactRoot = createRoot(wrapper)
+  reactRoot = createRoot(container)
 
   const handleSave = async (resumeData: ResumeData): Promise<void> => {
     const body = serializeFormData(resumeData)
@@ -168,39 +199,31 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
       credentials: 'same-origin',
     })
     if (!response.ok) throw new Error('HTTP ' + response.status)
-    return
   }
 
   reactRoot.render(
-    <App
-      data={data}
-      onSave={handleSave}
-      onClose={() => {
-        if (reactRoot) {
-          reactRoot.unmount()
-          reactRoot = null
-        }
-        container.innerHTML = ''
-        container.style.display = 'none'
-        document.body.classList.remove('ext-resume-open')
-      }}
-    />
+    <ErrorBoundary onError={() => setTimeout(() => closeOverlay(container), 0)}>
+      <App
+        data={data}
+        onSave={handleSave}
+        onClose={() => closeOverlay(container)}
+      />
+    </ErrorBoundary>
   )
 
   document.body.classList.add('ext-resume-open')
 }
 
 function setupFloatingButton() {
-  const existing = document.getElementById('ext-resume-float-btn')
-  if (existing) return
+  if (document.getElementById('ext-resume-float-btn')) return
 
   const container = document.createElement('div')
   container.id = 'ext-resume-container'
-  // Container only passes clicks through; interactive content lives in shadow DOM
-  container.style.cssText = 'position: fixed; inset: 0; z-index: 2147483646; display: none; pointer-events: none;'
+  container.style.cssText = 'position: fixed; inset: 0; z-index: 2147483646; display: none; background: rgba(0,0,0,.4); align-items: center; justify-content: center;'
   document.body.appendChild(container)
 
   const btn = document.createElement('button')
+  overlayBtn = btn
   btn.id = 'ext-resume-float-btn'
   btn.textContent = 'RJ'
   btn.title = 'Resume Rajal'
@@ -215,22 +238,23 @@ function setupFloatingButton() {
   btn.onmouseleave = () => { btn.style.transform = 'translateY(-50%)'; btn.style.boxShadow = '0 2px 8px rgba(0,0,0,.2)' }
 
   btn.addEventListener('click', () => {
-    const data = extractFormData()
-    container.style.display = 'block'
-    mountReactApp(container, data)
+    if (btn.disabled) return
+    btn.disabled = true
+    try {
+      const data = extractFormData()
+      container.style.display = 'block'
+      mountReactApp(container, data)
+    } catch {
+      container.style.display = 'none'
+      btn.disabled = false
+    }
   })
 
   document.body.appendChild(btn)
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && container.style.display === 'block') {
-      if (reactRoot) {
-        reactRoot.unmount()
-        reactRoot = null
-      }
-      container.innerHTML = ''
-      container.style.display = 'none'
-      document.body.classList.remove('ext-resume-open')
+      closeOverlay(container)
     }
   })
 }

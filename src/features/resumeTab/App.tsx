@@ -59,19 +59,20 @@ export function App({ data: initialData, onSave, onClose }: AppProps) {
   }, [data, errors, onSave]);
 
   return (
-    <div className="flex flex-col h-full bg-background text-foreground rounded-lg shadow-lg overflow-hidden animate-zoom-in">
+    <div className="resume-modal">
       <Header title="Resume Rajal" onClose={onClose} />
 
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
         <InfoBanner data={data.patientInfo} />
         <ClinicalNotesSection
-          data={data.clinicalNotes}
-          onChange={(clinicalNotes) => setData({ ...data, clinicalNotes })}
+          anamnesa={data.clinicalNotes.anamnesa}
+          pemeriksaan={data.clinicalNotes.pemeriksaan_fisik}
+          onChange={(field, value) => setData({ ...data, clinicalNotes: { ...data.clinicalNotes, [field]: value } })}
         />
         <div className="border-t border-border" />
         <VitalSignsSection
-          data={data.vitalSigns}
-          onChange={(vitalSigns) => setData({ ...data, vitalSigns })}
+          vitals={data.vitalSigns}
+          onChange={(key, value) => setData({ ...data, vitalSigns: { ...data.vitalSigns, [key]: value } })}
         />
         <div className="border-t border-border" />
         <DiagnosaSection

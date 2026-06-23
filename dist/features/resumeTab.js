@@ -308,7 +308,7 @@ var __morbis_feature = (() => {
       "use strict";
       (function() {
         function defineDeprecationWarning(methodName, info) {
-          Object.defineProperty(Component.prototype, methodName, {
+          Object.defineProperty(Component2.prototype, methodName, {
             get: function() {
               console.warn(
                 "%s(...) is deprecated in plain JavaScript React classes. %s",
@@ -333,7 +333,7 @@ var __morbis_feature = (() => {
             publicInstance
           ), didWarnStateUpdateForUnmountedComponent[warningKey] = true);
         }
-        function Component(props, context, updater) {
+        function Component2(props, context, updater) {
           this.props = props;
           this.context = context;
           this.refs = emptyObject;
@@ -786,15 +786,15 @@ var __morbis_feature = (() => {
           }
         }, assign = Object.assign, emptyObject = {};
         Object.freeze(emptyObject);
-        Component.prototype.isReactComponent = {};
-        Component.prototype.setState = function(partialState, callback) {
+        Component2.prototype.isReactComponent = {};
+        Component2.prototype.setState = function(partialState, callback) {
           if ("object" !== typeof partialState && "function" !== typeof partialState && null != partialState)
             throw Error(
               "takes an object of state variables to update or a function which returns an object of state variables."
             );
           this.updater.enqueueSetState(this, partialState, callback, "setState");
         };
-        Component.prototype.forceUpdate = function(callback) {
+        Component2.prototype.forceUpdate = function(callback) {
           this.updater.enqueueForceUpdate(this, callback, "forceUpdate");
         };
         var deprecatedAPIs = {
@@ -809,10 +809,10 @@ var __morbis_feature = (() => {
         };
         for (fnName in deprecatedAPIs)
           deprecatedAPIs.hasOwnProperty(fnName) && defineDeprecationWarning(fnName, deprecatedAPIs[fnName]);
-        ComponentDummy.prototype = Component.prototype;
+        ComponentDummy.prototype = Component2.prototype;
         deprecatedAPIs = PureComponent.prototype = new ComponentDummy();
         deprecatedAPIs.constructor = PureComponent;
-        assign(deprecatedAPIs, Component.prototype);
+        assign(deprecatedAPIs, Component2.prototype);
         deprecatedAPIs.isPureReactComponent = true;
         var isArrayImpl = Array.isArray, REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for("react.client.reference"), ReactSharedInternals = {
           H: null,
@@ -900,7 +900,7 @@ var __morbis_feature = (() => {
         };
         exports.Activity = REACT_ACTIVITY_TYPE;
         exports.Children = fnName;
-        exports.Component = Component;
+        exports.Component = Component2;
         exports.Fragment = REACT_FRAGMENT_TYPE;
         exports.Profiler = REACT_PROFILER_TYPE;
         exports.PureComponent = PureComponent;
@@ -4888,9 +4888,9 @@ var __morbis_feature = (() => {
           this._debugHookTypes = null;
           hasBadMapPolyfill || "function" !== typeof Object.preventExtensions || Object.preventExtensions(this);
         }
-        function shouldConstruct(Component) {
-          Component = Component.prototype;
-          return !(!Component || !Component.isReactComponent);
+        function shouldConstruct(Component2) {
+          Component2 = Component2.prototype;
+          return !(!Component2 || !Component2.isReactComponent);
         }
         function createWorkInProgress(current2, pendingProps) {
           var workInProgress2 = current2.alternate;
@@ -6899,13 +6899,13 @@ var __morbis_feature = (() => {
             if (!objectIs(nextDeps[i], prevDeps[i])) return false;
           return true;
         }
-        function renderWithHooks(current2, workInProgress2, Component, props, secondArg, nextRenderLanes) {
+        function renderWithHooks(current2, workInProgress2, Component2, props, secondArg, nextRenderLanes) {
           renderLanes = nextRenderLanes;
           currentlyRenderingFiber = workInProgress2;
           hookTypesDev = null !== current2 ? current2._debugHookTypes : null;
           hookTypesUpdateIndexDev = -1;
           ignorePreviousDependencies = null !== current2 && current2.type !== workInProgress2.type;
-          if ("[object AsyncFunction]" === Object.prototype.toString.call(Component) || "[object AsyncGeneratorFunction]" === Object.prototype.toString.call(Component))
+          if ("[object AsyncFunction]" === Object.prototype.toString.call(Component2) || "[object AsyncGeneratorFunction]" === Object.prototype.toString.call(Component2))
             nextRenderLanes = getComponentNameFromFiber(currentlyRenderingFiber), didWarnAboutAsyncClientComponent.has(nextRenderLanes) || (didWarnAboutAsyncClientComponent.add(nextRenderLanes), console.error(
               "%s is an async Client Component. Only Server Components can be async at the moment. This error is often caused by accidentally adding `'use client'` to a module that was originally written for the server.",
               null === nextRenderLanes ? "An unknown Component" : "<" + nextRenderLanes + ">"
@@ -6915,11 +6915,11 @@ var __morbis_feature = (() => {
           workInProgress2.lanes = 0;
           ReactSharedInternals.H = null !== current2 && null !== current2.memoizedState ? HooksDispatcherOnUpdateInDEV : null !== hookTypesDev ? HooksDispatcherOnMountWithHookTypesInDEV : HooksDispatcherOnMountInDEV;
           shouldDoubleInvokeUserFnsInHooksDEV = nextRenderLanes = (workInProgress2.mode & StrictLegacyMode) !== NoMode;
-          var children = callComponentInDEV(Component, props, secondArg);
+          var children = callComponentInDEV(Component2, props, secondArg);
           shouldDoubleInvokeUserFnsInHooksDEV = false;
           didScheduleRenderPhaseUpdateDuringThisPass && (children = renderWithHooksAgain(
             workInProgress2,
-            Component,
+            Component2,
             props,
             secondArg
           ));
@@ -6928,7 +6928,7 @@ var __morbis_feature = (() => {
             try {
               children = renderWithHooksAgain(
                 workInProgress2,
-                Component,
+                Component2,
                 props,
                 secondArg
               );
@@ -6967,7 +6967,7 @@ var __morbis_feature = (() => {
             "`use` was called from inside a try/catch block. This is not allowed and can lead to unexpected behavior. To handle errors triggered by `use`, wrap your component in a error boundary."
           )));
         }
-        function renderWithHooksAgain(workInProgress2, Component, props, secondArg) {
+        function renderWithHooksAgain(workInProgress2, Component2, props, secondArg) {
           currentlyRenderingFiber = workInProgress2;
           var numberOfReRenders = 0;
           do {
@@ -6990,7 +6990,7 @@ var __morbis_feature = (() => {
             }
             hookTypesUpdateIndexDev = -1;
             ReactSharedInternals.H = HooksDispatcherOnRerenderInDEV;
-            children = callComponentInDEV(Component, props, secondArg);
+            children = callComponentInDEV(Component2, props, secondArg);
           } while (didScheduleRenderPhaseUpdateDuringThisPass);
           return children;
         }
@@ -8211,17 +8211,17 @@ var __morbis_feature = (() => {
             null
           ));
         }
-        function resolveClassComponentProps(Component, baseProps) {
+        function resolveClassComponentProps(Component2, baseProps) {
           var newProps = baseProps;
           if ("ref" in baseProps) {
             newProps = {};
             for (var propName in baseProps)
               "ref" !== propName && (newProps[propName] = baseProps[propName]);
           }
-          if (Component = Component.defaultProps) {
+          if (Component2 = Component2.defaultProps) {
             newProps === baseProps && (newProps = assign({}, newProps));
-            for (var _propName in Component)
-              void 0 === newProps[_propName] && (newProps[_propName] = Component[_propName]);
+            for (var _propName in Component2)
+              void 0 === newProps[_propName] && (newProps[_propName] = Component2[_propName]);
           }
           return newProps;
         }
@@ -8450,8 +8450,8 @@ var __morbis_feature = (() => {
             renderLanes2
           );
         }
-        function updateForwardRef(current2, workInProgress2, Component, nextProps, renderLanes2) {
-          Component = Component.render;
+        function updateForwardRef(current2, workInProgress2, Component2, nextProps, renderLanes2) {
+          Component2 = Component2.render;
           var ref = workInProgress2.ref;
           if ("ref" in nextProps) {
             var propsWithoutRef = {};
@@ -8462,7 +8462,7 @@ var __morbis_feature = (() => {
           nextProps = renderWithHooks(
             current2,
             workInProgress2,
-            Component,
+            Component2,
             propsWithoutRef,
             ref,
             renderLanes2
@@ -8475,19 +8475,19 @@ var __morbis_feature = (() => {
           reconcileChildren(current2, workInProgress2, nextProps, renderLanes2);
           return workInProgress2.child;
         }
-        function updateMemoComponent(current2, workInProgress2, Component, nextProps, renderLanes2) {
+        function updateMemoComponent(current2, workInProgress2, Component2, nextProps, renderLanes2) {
           if (null === current2) {
-            var type = Component.type;
-            if ("function" === typeof type && !shouldConstruct(type) && void 0 === type.defaultProps && null === Component.compare)
-              return Component = resolveFunctionForHotReloading(type), workInProgress2.tag = 15, workInProgress2.type = Component, validateFunctionComponentInDev(workInProgress2, type), updateSimpleMemoComponent(
+            var type = Component2.type;
+            if ("function" === typeof type && !shouldConstruct(type) && void 0 === type.defaultProps && null === Component2.compare)
+              return Component2 = resolveFunctionForHotReloading(type), workInProgress2.tag = 15, workInProgress2.type = Component2, validateFunctionComponentInDev(workInProgress2, type), updateSimpleMemoComponent(
                 current2,
                 workInProgress2,
-                Component,
+                Component2,
                 nextProps,
                 renderLanes2
               );
             current2 = createFiberFromTypeAndProps(
-              Component.type,
+              Component2.type,
               null,
               nextProps,
               workInProgress2,
@@ -8501,9 +8501,9 @@ var __morbis_feature = (() => {
           type = current2.child;
           if (!checkScheduledUpdateOrContext(current2, renderLanes2)) {
             var prevProps = type.memoizedProps;
-            Component = Component.compare;
-            Component = null !== Component ? Component : shallowEqual;
-            if (Component(prevProps, nextProps) && current2.ref === workInProgress2.ref)
+            Component2 = Component2.compare;
+            Component2 = null !== Component2 ? Component2 : shallowEqual;
+            if (Component2(prevProps, nextProps) && current2.ref === workInProgress2.ref)
               return bailoutOnAlreadyFinishedWork(
                 current2,
                 workInProgress2,
@@ -8516,7 +8516,7 @@ var __morbis_feature = (() => {
           current2.return = workInProgress2;
           return workInProgress2.child = current2;
         }
-        function updateSimpleMemoComponent(current2, workInProgress2, Component, nextProps, renderLanes2) {
+        function updateSimpleMemoComponent(current2, workInProgress2, Component2, nextProps, renderLanes2) {
           if (null !== current2) {
             var prevProps = current2.memoizedProps;
             if (shallowEqual(prevProps, nextProps) && current2.ref === workInProgress2.ref && workInProgress2.type === current2.type)
@@ -8528,7 +8528,7 @@ var __morbis_feature = (() => {
           return updateFunctionComponent(
             current2,
             workInProgress2,
-            Component,
+            Component2,
             nextProps,
             renderLanes2
           );
@@ -8718,9 +8718,9 @@ var __morbis_feature = (() => {
               workInProgress2.flags |= 4194816;
           }
         }
-        function updateFunctionComponent(current2, workInProgress2, Component, nextProps, renderLanes2) {
-          if (Component.prototype && "function" === typeof Component.prototype.render) {
-            var componentName2 = getComponentNameFromType(Component) || "Unknown";
+        function updateFunctionComponent(current2, workInProgress2, Component2, nextProps, renderLanes2) {
+          if (Component2.prototype && "function" === typeof Component2.prototype.render) {
+            var componentName2 = getComponentNameFromType(Component2) || "Unknown";
             didWarnAboutBadClass[componentName2] || (console.error(
               "The <%s /> component appears to have a render method, but doesn't extend React.Component. This is likely to cause errors. Change %s to extend React.Component instead.",
               componentName2,
@@ -8731,15 +8731,15 @@ var __morbis_feature = (() => {
             workInProgress2,
             null
           );
-          null === current2 && (validateFunctionComponentInDev(workInProgress2, workInProgress2.type), Component.contextTypes && (componentName2 = getComponentNameFromType(Component) || "Unknown", didWarnAboutContextTypes[componentName2] || (didWarnAboutContextTypes[componentName2] = true, console.error(
+          null === current2 && (validateFunctionComponentInDev(workInProgress2, workInProgress2.type), Component2.contextTypes && (componentName2 = getComponentNameFromType(Component2) || "Unknown", didWarnAboutContextTypes[componentName2] || (didWarnAboutContextTypes[componentName2] = true, console.error(
             "%s uses the legacy contextTypes API which was removed in React 19. Use React.createContext() with React.useContext() instead. (https://react.dev/link/legacy-context)",
             componentName2
           ))));
           prepareToReadContext(workInProgress2);
-          Component = renderWithHooks(
+          Component2 = renderWithHooks(
             current2,
             workInProgress2,
-            Component,
+            Component2,
             nextProps,
             void 0,
             renderLanes2
@@ -8749,30 +8749,30 @@ var __morbis_feature = (() => {
             return bailoutHooks(current2, workInProgress2, renderLanes2), bailoutOnAlreadyFinishedWork(current2, workInProgress2, renderLanes2);
           isHydrating && nextProps && pushMaterializedTreeId(workInProgress2);
           workInProgress2.flags |= 1;
-          reconcileChildren(current2, workInProgress2, Component, renderLanes2);
+          reconcileChildren(current2, workInProgress2, Component2, renderLanes2);
           return workInProgress2.child;
         }
-        function replayFunctionComponent(current2, workInProgress2, nextProps, Component, secondArg, renderLanes2) {
+        function replayFunctionComponent(current2, workInProgress2, nextProps, Component2, secondArg, renderLanes2) {
           prepareToReadContext(workInProgress2);
           hookTypesUpdateIndexDev = -1;
           ignorePreviousDependencies = null !== current2 && current2.type !== workInProgress2.type;
           workInProgress2.updateQueue = null;
           nextProps = renderWithHooksAgain(
             workInProgress2,
-            Component,
+            Component2,
             nextProps,
             secondArg
           );
           finishRenderingHooks(current2, workInProgress2);
-          Component = checkDidRenderIdHook();
+          Component2 = checkDidRenderIdHook();
           if (null !== current2 && !didReceiveUpdate)
             return bailoutHooks(current2, workInProgress2, renderLanes2), bailoutOnAlreadyFinishedWork(current2, workInProgress2, renderLanes2);
-          isHydrating && Component && pushMaterializedTreeId(workInProgress2);
+          isHydrating && Component2 && pushMaterializedTreeId(workInProgress2);
           workInProgress2.flags |= 1;
           reconcileChildren(current2, workInProgress2, nextProps, renderLanes2);
           return workInProgress2.child;
         }
-        function updateClassComponent(current2, workInProgress2, Component, nextProps, renderLanes2) {
+        function updateClassComponent(current2, workInProgress2, Component2, nextProps, renderLanes2) {
           switch (shouldErrorImpl(workInProgress2)) {
             case false:
               var _instance = workInProgress2.stateNode, state = new workInProgress2.type(
@@ -8804,18 +8804,18 @@ var __morbis_feature = (() => {
           prepareToReadContext(workInProgress2);
           if (null === workInProgress2.stateNode) {
             state = emptyContextObject;
-            _instance = Component.contextType;
-            "contextType" in Component && null !== _instance && (void 0 === _instance || _instance.$$typeof !== REACT_CONTEXT_TYPE) && !didWarnAboutInvalidateContextType.has(Component) && (didWarnAboutInvalidateContextType.add(Component), lane = void 0 === _instance ? " However, it is set to undefined. This can be caused by a typo or by mixing up named and default imports. This can also happen due to a circular dependency, so try moving the createContext() call to a separate file." : "object" !== typeof _instance ? " However, it is set to a " + typeof _instance + "." : _instance.$$typeof === REACT_CONSUMER_TYPE ? " Did you accidentally pass the Context.Consumer instead?" : " However, it is set to an object with keys {" + Object.keys(_instance).join(", ") + "}.", console.error(
+            _instance = Component2.contextType;
+            "contextType" in Component2 && null !== _instance && (void 0 === _instance || _instance.$$typeof !== REACT_CONTEXT_TYPE) && !didWarnAboutInvalidateContextType.has(Component2) && (didWarnAboutInvalidateContextType.add(Component2), lane = void 0 === _instance ? " However, it is set to undefined. This can be caused by a typo or by mixing up named and default imports. This can also happen due to a circular dependency, so try moving the createContext() call to a separate file." : "object" !== typeof _instance ? " However, it is set to a " + typeof _instance + "." : _instance.$$typeof === REACT_CONSUMER_TYPE ? " Did you accidentally pass the Context.Consumer instead?" : " However, it is set to an object with keys {" + Object.keys(_instance).join(", ") + "}.", console.error(
               "%s defines an invalid contextType. contextType should point to the Context object returned by React.createContext().%s",
-              getComponentNameFromType(Component) || "Component",
+              getComponentNameFromType(Component2) || "Component",
               lane
             ));
             "object" === typeof _instance && null !== _instance && (state = readContext(_instance));
-            _instance = new Component(nextProps, state);
+            _instance = new Component2(nextProps, state);
             if (workInProgress2.mode & StrictLegacyMode) {
               setIsStrictModeForDevtools(true);
               try {
-                _instance = new Component(nextProps, state);
+                _instance = new Component2(nextProps, state);
               } finally {
                 setIsStrictModeForDevtools(false);
               }
@@ -8825,20 +8825,20 @@ var __morbis_feature = (() => {
             workInProgress2.stateNode = _instance;
             _instance._reactInternals = workInProgress2;
             _instance._reactInternalInstance = fakeInternalInstance;
-            "function" === typeof Component.getDerivedStateFromProps && null === state && (state = getComponentNameFromType(Component) || "Component", didWarnAboutUninitializedState.has(state) || (didWarnAboutUninitializedState.add(state), console.error(
+            "function" === typeof Component2.getDerivedStateFromProps && null === state && (state = getComponentNameFromType(Component2) || "Component", didWarnAboutUninitializedState.has(state) || (didWarnAboutUninitializedState.add(state), console.error(
               "`%s` uses `getDerivedStateFromProps` but its initial state is %s. This is not recommended. Instead, define the initial state by assigning an object to `this.state` in the constructor of `%s`. This ensures that `getDerivedStateFromProps` arguments have a consistent shape.",
               state,
               null === _instance.state ? "null" : "undefined",
               state
             )));
-            if ("function" === typeof Component.getDerivedStateFromProps || "function" === typeof _instance.getSnapshotBeforeUpdate) {
+            if ("function" === typeof Component2.getDerivedStateFromProps || "function" === typeof _instance.getSnapshotBeforeUpdate) {
               var foundWillUpdateName = lane = state = null;
               "function" === typeof _instance.componentWillMount && true !== _instance.componentWillMount.__suppressDeprecationWarning ? state = "componentWillMount" : "function" === typeof _instance.UNSAFE_componentWillMount && (state = "UNSAFE_componentWillMount");
               "function" === typeof _instance.componentWillReceiveProps && true !== _instance.componentWillReceiveProps.__suppressDeprecationWarning ? lane = "componentWillReceiveProps" : "function" === typeof _instance.UNSAFE_componentWillReceiveProps && (lane = "UNSAFE_componentWillReceiveProps");
               "function" === typeof _instance.componentWillUpdate && true !== _instance.componentWillUpdate.__suppressDeprecationWarning ? foundWillUpdateName = "componentWillUpdate" : "function" === typeof _instance.UNSAFE_componentWillUpdate && (foundWillUpdateName = "UNSAFE_componentWillUpdate");
               if (null !== state || null !== lane || null !== foundWillUpdateName) {
-                _instance = getComponentNameFromType(Component) || "Component";
-                var newApiName = "function" === typeof Component.getDerivedStateFromProps ? "getDerivedStateFromProps()" : "getSnapshotBeforeUpdate()";
+                _instance = getComponentNameFromType(Component2) || "Component";
+                var newApiName = "function" === typeof Component2.getDerivedStateFromProps ? "getDerivedStateFromProps()" : "getSnapshotBeforeUpdate()";
                 didWarnAboutLegacyLifecyclesAndDerivedState.has(_instance) || (didWarnAboutLegacyLifecyclesAndDerivedState.add(_instance), console.error(
                   "Unsafe legacy lifecycles will not be called for components using new component APIs.\n\n%s uses %s but also contains the following legacy lifecycles:%s%s%s\n\nThe above lifecycles should be removed. Learn more about this warning here:\nhttps://react.dev/link/unsafe-component-lifecycles",
                   _instance,
@@ -8850,8 +8850,8 @@ var __morbis_feature = (() => {
               }
             }
             _instance = workInProgress2.stateNode;
-            state = getComponentNameFromType(Component) || "Component";
-            _instance.render || (Component.prototype && "function" === typeof Component.prototype.render ? console.error(
+            state = getComponentNameFromType(Component2) || "Component";
+            _instance.render || (Component2.prototype && "function" === typeof Component2.prototype.render ? console.error(
               "No `render` method found on the %s instance: did you accidentally return an object from the constructor?",
               state
             ) : console.error(
@@ -8870,11 +8870,11 @@ var __morbis_feature = (() => {
               "contextType was defined as an instance property on %s. Use a static property to define contextType instead.",
               state
             );
-            Component.childContextTypes && !didWarnAboutChildContextTypes.has(Component) && (didWarnAboutChildContextTypes.add(Component), console.error(
+            Component2.childContextTypes && !didWarnAboutChildContextTypes.has(Component2) && (didWarnAboutChildContextTypes.add(Component2), console.error(
               "%s uses the legacy childContextTypes API which was removed in React 19. Use React.createContext() instead. (https://react.dev/link/legacy-context)",
               state
             ));
-            Component.contextTypes && !didWarnAboutContextTypes$1.has(Component) && (didWarnAboutContextTypes$1.add(Component), console.error(
+            Component2.contextTypes && !didWarnAboutContextTypes$1.has(Component2) && (didWarnAboutContextTypes$1.add(Component2), console.error(
               "%s uses the legacy contextTypes API which was removed in React 19. Use React.createContext() with static contextType instead. (https://react.dev/link/legacy-context)",
               state
             ));
@@ -8882,9 +8882,9 @@ var __morbis_feature = (() => {
               "%s has a method called componentShouldUpdate(). Did you mean shouldComponentUpdate()? The name is phrased as a question because the function is expected to return a value.",
               state
             );
-            Component.prototype && Component.prototype.isPureReactComponent && "undefined" !== typeof _instance.shouldComponentUpdate && console.error(
+            Component2.prototype && Component2.prototype.isPureReactComponent && "undefined" !== typeof _instance.shouldComponentUpdate && console.error(
               "%s has a method called shouldComponentUpdate(). shouldComponentUpdate should not be used when extending React.PureComponent. Please extend React.Component if shouldComponentUpdate is used.",
-              getComponentNameFromType(Component) || "A pure component"
+              getComponentNameFromType(Component2) || "A pure component"
             );
             "function" === typeof _instance.componentDidUnmount && console.error(
               "%s has a method called componentDidUnmount(). But there is no such lifecycle method. Did you mean componentWillUnmount()?",
@@ -8912,9 +8912,9 @@ var __morbis_feature = (() => {
               state,
               state
             );
-            "function" !== typeof _instance.getSnapshotBeforeUpdate || "function" === typeof _instance.componentDidUpdate || didWarnAboutGetSnapshotBeforeUpdateWithoutDidUpdate.has(Component) || (didWarnAboutGetSnapshotBeforeUpdateWithoutDidUpdate.add(Component), console.error(
+            "function" !== typeof _instance.getSnapshotBeforeUpdate || "function" === typeof _instance.componentDidUpdate || didWarnAboutGetSnapshotBeforeUpdateWithoutDidUpdate.has(Component2) || (didWarnAboutGetSnapshotBeforeUpdateWithoutDidUpdate.add(Component2), console.error(
               "%s: getSnapshotBeforeUpdate() should be used with componentDidUpdate(). This component defines getSnapshotBeforeUpdate() only.",
-              getComponentNameFromType(Component)
+              getComponentNameFromType(Component2)
             ));
             "function" === typeof _instance.getDerivedStateFromProps && console.error(
               "%s: getDerivedStateFromProps() is defined as an instance method and will be ignored. Instead, declare it as a static method.",
@@ -8924,12 +8924,12 @@ var __morbis_feature = (() => {
               "%s: getDerivedStateFromError() is defined as an instance method and will be ignored. Instead, declare it as a static method.",
               state
             );
-            "function" === typeof Component.getSnapshotBeforeUpdate && console.error(
+            "function" === typeof Component2.getSnapshotBeforeUpdate && console.error(
               "%s: getSnapshotBeforeUpdate() is defined as a static method and will be ignored. Instead, declare it as an instance method.",
               state
             );
             (lane = _instance.state) && ("object" !== typeof lane || isArrayImpl(lane)) && console.error("%s.state: must be set to an object or null", state);
-            "function" === typeof _instance.getChildContext && "object" !== typeof Component.childContextTypes && console.error(
+            "function" === typeof _instance.getChildContext && "object" !== typeof Component2.childContextTypes && console.error(
               "%s.getChildContext(): childContextTypes must be defined in order to use getChildContext().",
               state
             );
@@ -8938,9 +8938,9 @@ var __morbis_feature = (() => {
             _instance.state = workInProgress2.memoizedState;
             _instance.refs = {};
             initializeUpdateQueue(workInProgress2);
-            state = Component.contextType;
+            state = Component2.contextType;
             _instance.context = "object" === typeof state && null !== state ? readContext(state) : emptyContextObject;
-            _instance.state === nextProps && (state = getComponentNameFromType(Component) || "Component", didWarnAboutDirectlyAssigningPropsToState.has(state) || (didWarnAboutDirectlyAssigningPropsToState.add(state), console.error(
+            _instance.state === nextProps && (state = getComponentNameFromType(Component2) || "Component", didWarnAboutDirectlyAssigningPropsToState.has(state) || (didWarnAboutDirectlyAssigningPropsToState.add(state), console.error(
               "%s: It is not recommended to assign props directly to state because updates to props won't be reflected in state. In most cases, it is better to use props directly.",
               state
             )));
@@ -8953,14 +8953,14 @@ var __morbis_feature = (() => {
               _instance
             );
             _instance.state = workInProgress2.memoizedState;
-            state = Component.getDerivedStateFromProps;
+            state = Component2.getDerivedStateFromProps;
             "function" === typeof state && (applyDerivedStateFromProps(
               workInProgress2,
-              Component,
+              Component2,
               state,
               nextProps
             ), _instance.state = workInProgress2.memoizedState);
-            "function" === typeof Component.getDerivedStateFromProps || "function" === typeof _instance.getSnapshotBeforeUpdate || "function" !== typeof _instance.UNSAFE_componentWillMount && "function" !== typeof _instance.componentWillMount || (state = _instance.state, "function" === typeof _instance.componentWillMount && _instance.componentWillMount(), "function" === typeof _instance.UNSAFE_componentWillMount && _instance.UNSAFE_componentWillMount(), state !== _instance.state && (console.error(
+            "function" === typeof Component2.getDerivedStateFromProps || "function" === typeof _instance.getSnapshotBeforeUpdate || "function" !== typeof _instance.UNSAFE_componentWillMount && "function" !== typeof _instance.componentWillMount || (state = _instance.state, "function" === typeof _instance.componentWillMount && _instance.componentWillMount(), "function" === typeof _instance.UNSAFE_componentWillMount && _instance.UNSAFE_componentWillMount(), state !== _instance.state && (console.error(
               "%s.componentWillMount(): Assigning directly to this.state is deprecated (except inside a component's constructor). Use setState instead.",
               getComponentNameFromFiber(workInProgress2) || "Component"
             ), classComponentUpdater.enqueueReplaceState(
@@ -8974,13 +8974,13 @@ var __morbis_feature = (() => {
           } else if (null === current2) {
             _instance = workInProgress2.stateNode;
             var unresolvedOldProps = workInProgress2.memoizedProps;
-            lane = resolveClassComponentProps(Component, unresolvedOldProps);
+            lane = resolveClassComponentProps(Component2, unresolvedOldProps);
             _instance.props = lane;
             var oldContext = _instance.context;
-            foundWillUpdateName = Component.contextType;
+            foundWillUpdateName = Component2.contextType;
             state = emptyContextObject;
             "object" === typeof foundWillUpdateName && null !== foundWillUpdateName && (state = readContext(foundWillUpdateName));
-            newApiName = Component.getDerivedStateFromProps;
+            newApiName = Component2.getDerivedStateFromProps;
             foundWillUpdateName = "function" === typeof newApiName || "function" === typeof _instance.getSnapshotBeforeUpdate;
             unresolvedOldProps = workInProgress2.pendingProps !== unresolvedOldProps;
             foundWillUpdateName || "function" !== typeof _instance.UNSAFE_componentWillReceiveProps && "function" !== typeof _instance.componentWillReceiveProps || (unresolvedOldProps || oldContext !== state) && callComponentWillReceiveProps(
@@ -8997,12 +8997,12 @@ var __morbis_feature = (() => {
             oldContext = workInProgress2.memoizedState;
             unresolvedOldProps || oldState !== oldContext || hasForceUpdate ? ("function" === typeof newApiName && (applyDerivedStateFromProps(
               workInProgress2,
-              Component,
+              Component2,
               newApiName,
               nextProps
             ), oldContext = workInProgress2.memoizedState), (lane = hasForceUpdate || checkShouldComponentUpdate(
               workInProgress2,
-              Component,
+              Component2,
               lane,
               nextProps,
               oldState,
@@ -9013,14 +9013,14 @@ var __morbis_feature = (() => {
             _instance = workInProgress2.stateNode;
             cloneUpdateQueue(current2, workInProgress2);
             state = workInProgress2.memoizedProps;
-            foundWillUpdateName = resolveClassComponentProps(Component, state);
+            foundWillUpdateName = resolveClassComponentProps(Component2, state);
             _instance.props = foundWillUpdateName;
             newApiName = workInProgress2.pendingProps;
             oldState = _instance.context;
-            oldContext = Component.contextType;
+            oldContext = Component2.contextType;
             lane = emptyContextObject;
             "object" === typeof oldContext && null !== oldContext && (lane = readContext(oldContext));
-            unresolvedOldProps = Component.getDerivedStateFromProps;
+            unresolvedOldProps = Component2.getDerivedStateFromProps;
             (oldContext = "function" === typeof unresolvedOldProps || "function" === typeof _instance.getSnapshotBeforeUpdate) || "function" !== typeof _instance.UNSAFE_componentWillReceiveProps && "function" !== typeof _instance.componentWillReceiveProps || (state !== newApiName || oldState !== lane) && callComponentWillReceiveProps(
               workInProgress2,
               _instance,
@@ -9035,12 +9035,12 @@ var __morbis_feature = (() => {
             var newState = workInProgress2.memoizedState;
             state !== newApiName || oldState !== newState || hasForceUpdate || null !== current2 && null !== current2.dependencies && checkIfContextChanged(current2.dependencies) ? ("function" === typeof unresolvedOldProps && (applyDerivedStateFromProps(
               workInProgress2,
-              Component,
+              Component2,
               unresolvedOldProps,
               nextProps
             ), newState = workInProgress2.memoizedState), (foundWillUpdateName = hasForceUpdate || checkShouldComponentUpdate(
               workInProgress2,
-              Component,
+              Component2,
               foundWillUpdateName,
               nextProps,
               oldState,
@@ -9058,9 +9058,9 @@ var __morbis_feature = (() => {
           if (lane || state) {
             lane = workInProgress2.stateNode;
             setCurrentFiber(workInProgress2);
-            if (state && "function" !== typeof Component.getDerivedStateFromError)
-              Component = null, profilerStartTime = -1;
-            else if (Component = callRenderInDEV(lane), workInProgress2.mode & StrictLegacyMode) {
+            if (state && "function" !== typeof Component2.getDerivedStateFromError)
+              Component2 = null, profilerStartTime = -1;
+            else if (Component2 = callRenderInDEV(lane), workInProgress2.mode & StrictLegacyMode) {
               setIsStrictModeForDevtools(true);
               try {
                 callRenderInDEV(lane);
@@ -9077,9 +9077,9 @@ var __morbis_feature = (() => {
             ), workInProgress2.child = reconcileChildFibers(
               workInProgress2,
               null,
-              Component,
+              Component2,
               renderLanes2
-            )) : reconcileChildren(current2, workInProgress2, Component, renderLanes2);
+            )) : reconcileChildren(current2, workInProgress2, Component2, renderLanes2);
             workInProgress2.memoizedState = lane.state;
             current2 = workInProgress2.child;
           } else
@@ -9101,19 +9101,19 @@ var __morbis_feature = (() => {
           reconcileChildren(current2, workInProgress2, nextChildren, renderLanes2);
           return workInProgress2.child;
         }
-        function validateFunctionComponentInDev(workInProgress2, Component) {
-          Component && Component.childContextTypes && console.error(
+        function validateFunctionComponentInDev(workInProgress2, Component2) {
+          Component2 && Component2.childContextTypes && console.error(
             "childContextTypes cannot be defined on a function component.\n  %s.childContextTypes = ...",
-            Component.displayName || Component.name || "Component"
+            Component2.displayName || Component2.name || "Component"
           );
-          "function" === typeof Component.getDerivedStateFromProps && (workInProgress2 = getComponentNameFromType(Component) || "Unknown", didWarnAboutGetDerivedStateOnFunctionComponent[workInProgress2] || (console.error(
+          "function" === typeof Component2.getDerivedStateFromProps && (workInProgress2 = getComponentNameFromType(Component2) || "Unknown", didWarnAboutGetDerivedStateOnFunctionComponent[workInProgress2] || (console.error(
             "%s: Function components do not support getDerivedStateFromProps.",
             workInProgress2
           ), didWarnAboutGetDerivedStateOnFunctionComponent[workInProgress2] = true));
-          "object" === typeof Component.contextType && null !== Component.contextType && (Component = getComponentNameFromType(Component) || "Unknown", didWarnAboutContextTypeOnFunctionComponent[Component] || (console.error(
+          "object" === typeof Component2.contextType && null !== Component2.contextType && (Component2 = getComponentNameFromType(Component2) || "Unknown", didWarnAboutContextTypeOnFunctionComponent[Component2] || (console.error(
             "%s: Function components do not support contextType.",
-            Component
-          ), didWarnAboutContextTypeOnFunctionComponent[Component] = true));
+            Component2
+          ), didWarnAboutContextTypeOnFunctionComponent[Component2] = true));
         }
         function mountSuspenseOffscreenState(renderLanes2) {
           return { baseLanes: renderLanes2, cachePool: getSuspendedCache() };
@@ -19766,11 +19766,11 @@ var __morbis_feature = (() => {
           pendingLegacyContextWarning = /* @__PURE__ */ new Map();
         };
         var callComponent = {
-          react_stack_bottom_frame: function(Component, props, secondArg) {
+          react_stack_bottom_frame: function(Component2, props, secondArg) {
             var wasRendering = isRendering;
             isRendering = true;
             try {
-              return Component(props, secondArg);
+              return Component2(props, secondArg);
             } finally {
               isRendering = wasRendering;
             }
@@ -21819,7 +21819,7 @@ var __morbis_feature = (() => {
 
   // node_modules/lucide-react/dist/esm/createLucideIcon.mjs
   var createLucideIcon = (iconName, iconNode) => {
-    const Component = (0, import_react3.forwardRef)(
+    const Component2 = (0, import_react3.forwardRef)(
       ({ className, ...props }, ref) => (0, import_react3.createElement)(Icon, {
         ref,
         iconNode,
@@ -21831,8 +21831,8 @@ var __morbis_feature = (() => {
         ...props
       })
     );
-    Component.displayName = toPascalCase(iconName);
-    return Component;
+    Component2.displayName = toPascalCase(iconName);
+    return Component2;
   };
 
   // node_modules/lucide-react/dist/esm/icons/chevron-down.mjs
@@ -31212,7 +31212,11 @@ var __morbis_feature = (() => {
           errors.length,
           " kesalahan"
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("ul", { className: "space-y-0.5", children: errors.map((err, i) => /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("li", { className: "text-md-xs text-destructive/80", children: err }, i)) })
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("ul", { className: "space-y-0.5", children: errors.map((err, i) => /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("li", { className: "text-md-xs text-destructive/80", children: [
+          err.section,
+          ": ",
+          err.message
+        ] }, i)) })
       ] })
     ] }) });
   }
@@ -31275,23 +31279,24 @@ var __morbis_feature = (() => {
         setSaving(false);
       }
     }, [data, errors, onSave]);
-    return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex flex-col h-full bg-background text-foreground rounded-lg shadow-lg overflow-hidden animate-zoom-in", children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "resume-modal", children: [
       /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Header, { title: "Resume Rajal", onClose }),
       /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex-1 overflow-y-auto px-5 py-4 space-y-5", children: [
         /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(InfoBanner, { data: data.patientInfo }),
         /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           ClinicalNotesSection,
           {
-            data: data.clinicalNotes,
-            onChange: (clinicalNotes) => setData({ ...data, clinicalNotes })
+            anamnesa: data.clinicalNotes.anamnesa,
+            pemeriksaan: data.clinicalNotes.pemeriksaan_fisik,
+            onChange: (field, value) => setData({ ...data, clinicalNotes: { ...data.clinicalNotes, [field]: value } })
           }
         ),
         /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "border-t border-border" }),
         /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           VitalSignsSection,
           {
-            data: data.vitalSigns,
-            onChange: (vitalSigns) => setData({ ...data, vitalSigns })
+            vitals: data.vitalSigns,
+            onChange: (key, value) => setData({ ...data, vitalSigns: { ...data.vitalSigns, [key]: value } })
           }
         ),
         /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "border-t border-border" }),
@@ -31325,25 +31330,48 @@ var __morbis_feature = (() => {
     ] });
   }
 
+  // src/features/resumeTab/ErrorBoundary.tsx
+  var import_react10 = __toESM(require_react(), 1);
+  var ErrorBoundary = class extends import_react10.Component {
+    constructor() {
+      super(...arguments);
+      this.state = { hasError: false };
+    }
+    static getDerivedStateFromError() {
+      return { hasError: true };
+    }
+    componentDidCatch() {
+      this.props.onError();
+    }
+    render() {
+      if (this.state.hasError) return null;
+      return this.props.children;
+    }
+  };
+
   // src/features/resumeTab/mount.tsx
   var import_jsx_runtime25 = __toESM(require_jsx_runtime(), 1);
   var ENDPOINT = "/v2/m-klaim/detail-v2-refaktor/simpan_resume";
   var reactRoot = null;
+  var overlayBtn = null;
   function extractFormData() {
     const doc = document;
     const getVal = (id) => doc.getElementById(id)?.value || "";
-    const getTextarea = (name) => doc.querySelector(`textarea[name="${name}"]`)?.value || "";
+    const getField = (name) => {
+      const el = doc.querySelector(`textarea[name="${name}"], input[name="${name}"], #${name}`);
+      return el?.value || "";
+    };
     const patientInfo = {
       norm: getVal("norm") || getVal("no_rm"),
       pasien: getVal("pasien") || getVal("nama_pasien"),
       nama_dokter: getVal("nama_dokter") || getVal("dokter")
     };
     const clinicalNotes = {
-      anamnesa: getTextarea("anamnesa"),
-      pemeriksaan_fisik: getTextarea("pemeriksaan_fisik"),
-      catatan: getTextarea("catatan"),
-      tindakan: getTextarea("tindakan"),
-      terapi_pengobatan: getTextarea("terapi_pengobatan")
+      anamnesa: getField("anamnesa"),
+      pemeriksaan_fisik: getField("pemeriksaan_fisik"),
+      catatan: getField("catatan"),
+      tindakan: getField("tindakan"),
+      terapi_pengobatan: getField("terapi_pengobatan")
     };
     const vitalSigns = {
       tensi: getVal("tensi"),
@@ -31354,19 +31382,30 @@ var __morbis_feature = (() => {
       berat: getVal("berat")
     };
     const diagnosa = [];
-    const kode10Inputs = doc.querySelectorAll('input[name="kode10[]"]');
-    kode10Inputs.forEach((inp) => {
-      const row = inp.closest("tr");
-      if (!row) return;
-      const idicd = row.querySelector('input[name="idicd[]"]')?.value || "";
-      const kode10 = inp.value || "";
-      const nama = row.querySelector('input[name="namaDiagnosa[]"]')?.value || "";
-      const kasus = row.querySelector('select[name="kasus[]"]')?.value || "";
-      const komplikasi = row.querySelector('select[name="komplikasi[]"]')?.value || "";
-      if (kode10 || nama) {
-        diagnosa.push({ idicd, kode10, namaDiagnosa: nama, kasus, komplikasi });
+    const kode10Inputs = doc.querySelectorAll('input[name="kode10[]"], input[name="kode[]"]');
+    if (kode10Inputs.length === 0) {
+      let i = 1;
+      while (doc.getElementById(`kode${i}`) || doc.querySelector(`input[name="kode10[]"]:nth-child(${i})`)) {
+        const idicd = getVal(`idicd${i}`) || "";
+        const kode10 = getVal(`kode${i}`) || "";
+        const nama = getVal(`nama${i}`) || "";
+        if (kode10 || nama) diagnosa.push({ idicd, kode10, namaDiagnosa: nama, kasus: "", komplikasi: "" });
+        i++;
       }
-    });
+    } else {
+      kode10Inputs.forEach((inp) => {
+        const row = inp.closest("tr");
+        if (!row) return;
+        const idicd = row.querySelector('input[name="idicd[]"], input[name="idicd"]')?.value || "";
+        const kode10 = inp.value || "";
+        const nama = row.querySelector('input[name="namaDiagnosa[]"], input[name="nama[]"]')?.value || "";
+        const kasus = row.querySelector('select[name="kasus[]"]')?.value || "";
+        const komplikasi = row.querySelector('select[name="komplikasi[]"]')?.value || "";
+        if (kode10 || nama) {
+          diagnosa.push({ idicd, kode10, namaDiagnosa: nama, kasus, komplikasi });
+        }
+      });
+    }
     const tindakan = [];
     const kode9Inputs = doc.querySelectorAll('input[name="kode9[]"]');
     kode9Inputs.forEach((inp) => {
@@ -31439,19 +31478,32 @@ var __morbis_feature = (() => {
     add("save", "Simpan");
     return pairs.map(([k, v]) => encodeURIComponent(k) + "=" + encodeURIComponent(v)).join("&");
   }
+  function closeOverlay(container) {
+    if (reactRoot) {
+      reactRoot.unmount();
+      reactRoot = null;
+    }
+    container.innerHTML = "";
+    container.style.display = "none";
+    document.body.classList.remove("ext-resume-open");
+    if (overlayBtn) overlayBtn.disabled = false;
+  }
   function mountReactApp(container, data) {
     if (reactRoot) {
       reactRoot.unmount();
       reactRoot = null;
     }
-    const shadow = container.attachShadow({ mode: "open" });
-    const wrapper = document.createElement("div");
-    wrapper.style.cssText = "all: initial; display: block; width: 100%; height: 100%; pointer-events: auto;";
-    const style = document.createElement("style");
-    style.textContent = true ? '@import url(\'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\');\n\n*, ::before, ::after{\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n\n::backdrop{\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n\n/*\n! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com\n*/\n\n/*\n1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)\n*/\n\n*,\n::before,\n::after {\n  box-sizing: border-box; /* 1 */\n  border-width: 0; /* 2 */\n  border-style: solid; /* 2 */\n  border-color: #e5e7eb; /* 2 */\n}\n\n::before,\n::after {\n  --tw-content: \'\';\n}\n\n/*\n1. Use a consistent sensible line-height in all browsers.\n2. Prevent adjustments of font size after orientation changes in iOS.\n3. Use a more readable tab size.\n4. Use the user\'s configured `sans` font-family by default.\n5. Use the user\'s configured `sans` font-feature-settings by default.\n6. Use the user\'s configured `sans` font-variation-settings by default.\n7. Disable tap highlights on iOS\n*/\n\nhtml,\n:host {\n  line-height: 1.5; /* 1 */\n  -webkit-text-size-adjust: 100%; /* 2 */\n  -moz-tab-size: 4; /* 3 */\n  -o-tab-size: 4;\n     tab-size: 4; /* 3 */\n  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; /* 4 */\n  font-feature-settings: normal; /* 5 */\n  font-variation-settings: normal; /* 6 */\n  -webkit-tap-highlight-color: transparent; /* 7 */\n}\n\n/*\n1. Remove the margin in all browsers.\n2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.\n*/\n\nbody {\n  margin: 0; /* 1 */\n  line-height: inherit; /* 2 */\n}\n\n/*\n1. Add the correct height in Firefox.\n2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n3. Ensure horizontal rules are visible by default.\n*/\n\nhr {\n  height: 0; /* 1 */\n  color: inherit; /* 2 */\n  border-top-width: 1px; /* 3 */\n}\n\n/*\nAdd the correct text decoration in Chrome, Edge, and Safari.\n*/\n\nabbr:where([title]) {\n  -webkit-text-decoration: underline dotted;\n          text-decoration: underline dotted;\n}\n\n/*\nRemove the default font size and weight for headings.\n*/\n\nh1,\nh2,\nh3,\nh4,\nh5,\nh6 {\n  font-size: inherit;\n  font-weight: inherit;\n}\n\n/*\nReset links to optimize for opt-in styling instead of opt-out.\n*/\n\na {\n  color: inherit;\n  text-decoration: inherit;\n}\n\n/*\nAdd the correct font weight in Edge and Safari.\n*/\n\nb,\nstrong {\n  font-weight: bolder;\n}\n\n/*\n1. Use the user\'s configured `mono` font-family by default.\n2. Use the user\'s configured `mono` font-feature-settings by default.\n3. Use the user\'s configured `mono` font-variation-settings by default.\n4. Correct the odd `em` font sizing in all browsers.\n*/\n\ncode,\nkbd,\nsamp,\npre {\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace; /* 1 */\n  font-feature-settings: normal; /* 2 */\n  font-variation-settings: normal; /* 3 */\n  font-size: 1em; /* 4 */\n}\n\n/*\nAdd the correct font size in all browsers.\n*/\n\nsmall {\n  font-size: 80%;\n}\n\n/*\nPrevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\nsub,\nsup {\n  font-size: 75%;\n  line-height: 0;\n  position: relative;\n  vertical-align: baseline;\n}\n\nsub {\n  bottom: -0.25em;\n}\n\nsup {\n  top: -0.5em;\n}\n\n/*\n1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n3. Remove gaps between table borders by default.\n*/\n\ntable {\n  text-indent: 0; /* 1 */\n  border-color: inherit; /* 2 */\n  border-collapse: collapse; /* 3 */\n}\n\n/*\n1. Change the font styles in all browsers.\n2. Remove the margin in Firefox and Safari.\n3. Remove default padding in all browsers.\n*/\n\nbutton,\ninput,\noptgroup,\nselect,\ntextarea {\n  font-family: inherit; /* 1 */\n  font-feature-settings: inherit; /* 1 */\n  font-variation-settings: inherit; /* 1 */\n  font-size: 100%; /* 1 */\n  font-weight: inherit; /* 1 */\n  line-height: inherit; /* 1 */\n  letter-spacing: inherit; /* 1 */\n  color: inherit; /* 1 */\n  margin: 0; /* 2 */\n  padding: 0; /* 3 */\n}\n\n/*\nRemove the inheritance of text transform in Edge and Firefox.\n*/\n\nbutton,\nselect {\n  text-transform: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Remove default button styles.\n*/\n\nbutton,\ninput:where([type=\'button\']),\ninput:where([type=\'reset\']),\ninput:where([type=\'submit\']) {\n  -webkit-appearance: button; /* 1 */\n  background-color: transparent; /* 2 */\n  background-image: none; /* 2 */\n}\n\n/*\nUse the modern Firefox focus style for all focusable elements.\n*/\n\n:-moz-focusring {\n  outline: auto;\n}\n\n/*\nRemove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n:-moz-ui-invalid {\n  box-shadow: none;\n}\n\n/*\nAdd the correct vertical alignment in Chrome and Firefox.\n*/\n\nprogress {\n  vertical-align: baseline;\n}\n\n/*\nCorrect the cursor style of increment and decrement buttons in Safari.\n*/\n\n::-webkit-inner-spin-button,\n::-webkit-outer-spin-button {\n  height: auto;\n}\n\n/*\n1. Correct the odd appearance in Chrome and Safari.\n2. Correct the outline style in Safari.\n*/\n\n[type=\'search\'] {\n  -webkit-appearance: textfield; /* 1 */\n  outline-offset: -2px; /* 2 */\n}\n\n/*\nRemove the inner padding in Chrome and Safari on macOS.\n*/\n\n::-webkit-search-decoration {\n  -webkit-appearance: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Change font properties to `inherit` in Safari.\n*/\n\n::-webkit-file-upload-button {\n  -webkit-appearance: button; /* 1 */\n  font: inherit; /* 2 */\n}\n\n/*\nAdd the correct display in Chrome and Safari.\n*/\n\nsummary {\n  display: list-item;\n}\n\n/*\nRemoves the default spacing and border for appropriate elements.\n*/\n\nblockquote,\ndl,\ndd,\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\nhr,\nfigure,\np,\npre {\n  margin: 0;\n}\n\nfieldset {\n  margin: 0;\n  padding: 0;\n}\n\nlegend {\n  padding: 0;\n}\n\nol,\nul,\nmenu {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n}\n\n/*\nReset default styling for dialogs.\n*/\n\ndialog {\n  padding: 0;\n}\n\n/*\nPrevent resizing textareas horizontally by default.\n*/\n\ntextarea {\n  resize: vertical;\n}\n\n/*\n1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n2. Set the default placeholder color to the user\'s configured gray 400 color.\n*/\n\ninput::-moz-placeholder, textarea::-moz-placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\ninput::placeholder,\ntextarea::placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\n/*\nSet the default cursor for buttons.\n*/\n\nbutton,\n[role="button"] {\n  cursor: pointer;\n}\n\n/*\nMake sure disabled buttons don\'t get the pointer cursor.\n*/\n\n:disabled {\n  cursor: default;\n}\n\n/*\n1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n   This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\nimg,\nsvg,\nvideo,\ncanvas,\naudio,\niframe,\nembed,\nobject {\n  display: block; /* 1 */\n  vertical-align: middle; /* 2 */\n}\n\n/*\nConstrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\nimg,\nvideo {\n  max-width: 100%;\n  height: auto;\n}\n\n/* Make elements with the HTML hidden attribute stay hidden by default */\n\n[hidden]:where(:not([hidden="until-found"])) {\n  display: none;\n}\n\n*,\n  *::before,\n  *::after {\n    box-sizing: border-box;\n  }\n\nhtml {\n    font-family:\n      \'Inter\',\n      -apple-system,\n      BlinkMacSystemFont,\n      \'Segoe UI\',\n      sans-serif;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale;\n  }\n\n:root {\n    --background: 0 0% 100%;\n    --foreground: 222.2 84% 4.9%;\n    --card: 0 0% 100%;\n    --card-foreground: 222.2 84% 4.9%;\n    --popover: 0 0% 100%;\n    --popover-foreground: 222.2 84% 4.9%;\n    --primary: 221.2 83.2% 53.3%;\n    --primary-foreground: 210 40% 98%;\n    --secondary: 210 40% 96.1%;\n    --secondary-foreground: 222.2 47.4% 11.2%;\n    --muted: 210 40% 96.1%;\n    --muted-foreground: 215.4 16.3% 46.9%;\n    --accent: 210 40% 96.1%;\n    --accent-foreground: 222.2 47.4% 11.2%;\n    --destructive: 0 84.2% 60.2%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 214.3 31.8% 91.4%;\n    --input: 214.3 31.8% 91.4%;\n    --ring: 221.2 83.2% 53.3%;\n    --radius: 0.375rem;\n  }\n\n.dark {\n    --background: 222.2 84% 4.9%;\n    --foreground: 210 40% 98%;\n    --card: 222.2 84% 4.9%;\n    --card-foreground: 210 40% 98%;\n    --popover: 222.2 84% 4.9%;\n    --popover-foreground: 210 40% 98%;\n    --primary: 217.2 91.2% 59.8%;\n    --primary-foreground: 222.2 47.4% 11.2%;\n    --secondary: 217.2 32.6% 17.5%;\n    --secondary-foreground: 210 40% 98%;\n    --muted: 217.2 32.6% 17.5%;\n    --muted-foreground: 215 20.2% 65.1%;\n    --accent: 217.2 32.6% 17.5%;\n    --accent-foreground: 210 40% 98%;\n    --destructive: 0 62.8% 30.6%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 217.2 32.6% 17.5%;\n    --input: 217.2 32.6% 17.5%;\n    --ring: 224.3 76.3% 48%;\n    --md-scrollbar: #484d54;\n  }\n\n::-moz-selection {\n    background: #2469f0;\n    color: white;\n  }\n\n::selection {\n    background: #2469f0;\n    color: white;\n  }\n\n* {\n    scrollbar-width: thin;\n    scrollbar-color: #c9cdd4 transparent;\n  }\n\n.dark * {\n    scrollbar-color: var(--md-scrollbar) transparent;\n  }\n\n*::-webkit-scrollbar {\n    width: 6px;\n    height: 6px;\n  }\n\n*::-webkit-scrollbar-track {\n    background: transparent;\n  }\n\n*::-webkit-scrollbar-thumb {\n    background: #c9cdd4;\n    border-radius: 3px;\n  }\n\n.dark *::-webkit-scrollbar-thumb {\n    background: var(--md-scrollbar);\n  }\n\n*::-webkit-scrollbar-thumb:hover {\n    background: #a4a9b3;\n  }\n\n.dark *::-webkit-scrollbar-thumb:hover {\n    background: #636971;\n  }\n.\\!container{\n  width: 100% !important;\n}\n.container{\n  width: 100%;\n}\n@media (min-width: 640px){\n\n  .\\!container{\n    max-width: 640px !important;\n  }\n\n  .container{\n    max-width: 640px;\n  }\n}\n@media (min-width: 768px){\n\n  .\\!container{\n    max-width: 768px !important;\n  }\n\n  .container{\n    max-width: 768px;\n  }\n}\n@media (min-width: 1024px){\n\n  .\\!container{\n    max-width: 1024px !important;\n  }\n\n  .container{\n    max-width: 1024px;\n  }\n}\n@media (min-width: 1280px){\n\n  .\\!container{\n    max-width: 1280px !important;\n  }\n\n  .container{\n    max-width: 1280px;\n  }\n}\n@media (min-width: 1536px){\n\n  .\\!container{\n    max-width: 1536px !important;\n  }\n\n  .container{\n    max-width: 1536px;\n  }\n}\n.pointer-events-none{\n  pointer-events: none;\n}\n.visible{\n  visibility: visible;\n}\n.static{\n  position: static;\n}\n.fixed{\n  position: fixed;\n}\n.absolute{\n  position: absolute;\n}\n.relative{\n  position: relative;\n}\n.bottom-4{\n  bottom: 1rem;\n}\n.left-1\\/2{\n  left: 50%;\n}\n.right-2\\.5{\n  right: 0.625rem;\n}\n.top-1\\/2{\n  top: 50%;\n}\n.z-50{\n  z-index: 50;\n}\n.mx-auto{\n  margin-left: auto;\n  margin-right: auto;\n}\n.-mb-\\[1px\\]{\n  margin-bottom: -1px;\n}\n.mb-1{\n  margin-bottom: 0.25rem;\n}\n.mb-1\\.5{\n  margin-bottom: 0.375rem;\n}\n.mb-3{\n  margin-bottom: 0.75rem;\n}\n.ml-0\\.5{\n  margin-left: 0.125rem;\n}\n.ml-1{\n  margin-left: 0.25rem;\n}\n.mr-1{\n  margin-right: 0.25rem;\n}\n.mr-2{\n  margin-right: 0.5rem;\n}\n.mr-3{\n  margin-right: 0.75rem;\n}\n.mt-0\\.5{\n  margin-top: 0.125rem;\n}\n.mt-1{\n  margin-top: 0.25rem;\n}\n.block{\n  display: block;\n}\n.inline-block{\n  display: inline-block;\n}\n.flex{\n  display: flex;\n}\n.inline-flex{\n  display: inline-flex;\n}\n.\\!table{\n  display: table !important;\n}\n.table{\n  display: table;\n}\n.grid{\n  display: grid;\n}\n.\\!contents{\n  display: contents !important;\n}\n.contents{\n  display: contents;\n}\n.hidden{\n  display: none;\n}\n.size-1\\.5{\n  width: 0.375rem;\n  height: 0.375rem;\n}\n.size-10{\n  width: 2.5rem;\n  height: 2.5rem;\n}\n.size-2\\.5{\n  width: 0.625rem;\n  height: 0.625rem;\n}\n.size-3{\n  width: 0.75rem;\n  height: 0.75rem;\n}\n.size-3\\.5{\n  width: 0.875rem;\n  height: 0.875rem;\n}\n.size-4{\n  width: 1rem;\n  height: 1rem;\n}\n.size-5{\n  width: 1.25rem;\n  height: 1.25rem;\n}\n.h-1{\n  height: 0.25rem;\n}\n.h-1\\.5{\n  height: 0.375rem;\n}\n.h-2{\n  height: 0.5rem;\n}\n.h-24{\n  height: 6rem;\n}\n.h-4{\n  height: 1rem;\n}\n.h-5{\n  height: 1.25rem;\n}\n.h-6{\n  height: 1.5rem;\n}\n.h-7{\n  height: 1.75rem;\n}\n.h-8{\n  height: 2rem;\n}\n.h-9{\n  height: 2.25rem;\n}\n.h-\\[300px\\]{\n  height: 300px;\n}\n.h-\\[var\\(--radix-select-trigger-height\\)\\]{\n  height: var(--radix-select-trigger-height);\n}\n.h-full{\n  height: 100%;\n}\n.max-h-60{\n  max-height: 15rem;\n}\n.max-h-96{\n  max-height: 24rem;\n}\n.max-h-\\[600px\\]{\n  max-height: 600px;\n}\n.min-h-\\[200px\\]{\n  min-height: 200px;\n}\n.w-1\\.5{\n  width: 0.375rem;\n}\n.w-2{\n  width: 0.5rem;\n}\n.w-4{\n  width: 1rem;\n}\n.w-5{\n  width: 1.25rem;\n}\n.w-6{\n  width: 1.5rem;\n}\n.w-7{\n  width: 1.75rem;\n}\n.w-8{\n  width: 2rem;\n}\n.w-9{\n  width: 2.25rem;\n}\n.w-\\[100px\\]{\n  width: 100px;\n}\n.w-\\[120px\\]{\n  width: 120px;\n}\n.w-\\[340px\\]{\n  width: 340px;\n}\n.w-\\[90px\\]{\n  width: 90px;\n}\n.w-full{\n  width: 100%;\n}\n.min-w-0{\n  min-width: 0px;\n}\n.min-w-\\[8rem\\]{\n  min-width: 8rem;\n}\n.min-w-\\[var\\(--radix-select-trigger-width\\)\\]{\n  min-width: var(--radix-select-trigger-width);\n}\n.max-w-\\[120px\\]{\n  max-width: 120px;\n}\n.max-w-\\[200px\\]{\n  max-width: 200px;\n}\n.flex-1{\n  flex: 1 1 0%;\n}\n.flex-shrink{\n  flex-shrink: 1;\n}\n.shrink-0{\n  flex-shrink: 0;\n}\n.-translate-x-1\\/2{\n  --tw-translate-x: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.-translate-y-1\\/2{\n  --tw-translate-y: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.scale-90{\n  --tw-scale-x: .9;\n  --tw-scale-y: .9;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.transform{\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n@keyframes pulse{\n\n  50%{\n    opacity: .5;\n  }\n}\n.animate-pulse{\n  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;\n}\n@keyframes slide-up{\n\n  0%{\n    opacity: 0;\n    transform: translateY(8px);\n  }\n\n  100%{\n    opacity: 1;\n    transform: translateY(0);\n  }\n}\n.animate-slide-up{\n  animation: slide-up 0.15s ease-out;\n}\n@keyframes zoom-in{\n\n  0%{\n    opacity: 0;\n    transform: scale(0.95);\n  }\n\n  100%{\n    opacity: 1;\n    transform: scale(1);\n  }\n}\n.animate-zoom-in{\n  animation: zoom-in 0.15s ease-out;\n}\n.cursor-default{\n  cursor: default;\n}\n.cursor-not-allowed{\n  cursor: not-allowed;\n}\n.cursor-pointer{\n  cursor: pointer;\n}\n.select-none{\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.resize-none{\n  resize: none;\n}\n.resize{\n  resize: both;\n}\n.grid-cols-2{\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n}\n.grid-cols-6{\n  grid-template-columns: repeat(6, minmax(0, 1fr));\n}\n.flex-col{\n  flex-direction: column;\n}\n.flex-wrap{\n  flex-wrap: wrap;\n}\n.items-start{\n  align-items: flex-start;\n}\n.items-center{\n  align-items: center;\n}\n.justify-center{\n  justify-content: center;\n}\n.justify-between{\n  justify-content: space-between;\n}\n.gap-0{\n  gap: 0px;\n}\n.gap-1{\n  gap: 0.25rem;\n}\n.gap-1\\.5{\n  gap: 0.375rem;\n}\n.gap-2{\n  gap: 0.5rem;\n}\n.gap-2\\.5{\n  gap: 0.625rem;\n}\n.gap-3{\n  gap: 0.75rem;\n}\n.gap-4{\n  gap: 1rem;\n}\n.gap-x-6{\n  -moz-column-gap: 1.5rem;\n       column-gap: 1.5rem;\n}\n.gap-y-2{\n  row-gap: 0.5rem;\n}\n.space-y-0\\.5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.125rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.125rem * var(--tw-space-y-reverse));\n}\n.space-y-1 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));\n}\n.space-y-1\\.5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.375rem * var(--tw-space-y-reverse));\n}\n.space-y-2 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));\n}\n.space-y-2\\.5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.625rem * var(--tw-space-y-reverse));\n}\n.space-y-3 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));\n}\n.space-y-4 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1rem * var(--tw-space-y-reverse));\n}\n.space-y-5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1.25rem * var(--tw-space-y-reverse));\n}\n.divide-y > :not([hidden]) ~ :not([hidden]){\n  --tw-divide-y-reverse: 0;\n  border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));\n  border-bottom-width: calc(1px * var(--tw-divide-y-reverse));\n}\n.divide-border > :not([hidden]) ~ :not([hidden]){\n  border-color: hsl(var(--border));\n}\n.overflow-hidden{\n  overflow: hidden;\n}\n.overflow-y-auto{\n  overflow-y: auto;\n}\n.truncate{\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n.whitespace-nowrap{\n  white-space: nowrap;\n}\n.whitespace-pre-wrap{\n  white-space: pre-wrap;\n}\n.break-words{\n  overflow-wrap: break-word;\n}\n.rounded{\n  border-radius: 0.25rem;\n}\n.rounded-full{\n  border-radius: 9999px;\n}\n.rounded-lg{\n  border-radius: 0.5rem;\n}\n.rounded-md{\n  border-radius: 6px;\n}\n.rounded-sm{\n  border-radius: 0.125rem;\n}\n.border{\n  border-width: 1px;\n}\n.border-0{\n  border-width: 0px;\n}\n.border-2{\n  border-width: 2px;\n}\n.border-b{\n  border-bottom-width: 1px;\n}\n.border-b-2{\n  border-bottom-width: 2px;\n}\n.border-l{\n  border-left-width: 1px;\n}\n.border-l-2{\n  border-left-width: 2px;\n}\n.border-t{\n  border-top-width: 1px;\n}\n.border-dashed{\n  border-style: dashed;\n}\n.border-\\[\\#2469f0\\]{\n  --tw-border-opacity: 1;\n  border-color: rgb(36 105 240 / var(--tw-border-opacity, 1));\n}\n.border-amber-200{\n  --tw-border-opacity: 1;\n  border-color: rgb(253 230 138 / var(--tw-border-opacity, 1));\n}\n.border-border{\n  border-color: hsl(var(--border));\n}\n.border-destructive\\/20{\n  border-color: hsl(var(--destructive) / 0.2);\n}\n.border-foreground{\n  border-color: hsl(var(--foreground));\n}\n.border-green-200{\n  --tw-border-opacity: 1;\n  border-color: rgb(187 247 208 / var(--tw-border-opacity, 1));\n}\n.border-input{\n  border-color: hsl(var(--input));\n}\n.border-primary{\n  border-color: hsl(var(--primary));\n}\n.border-primary\\/20{\n  border-color: hsl(var(--primary) / 0.2);\n}\n.border-red-200{\n  --tw-border-opacity: 1;\n  border-color: rgb(254 202 202 / var(--tw-border-opacity, 1));\n}\n.border-red-500{\n  --tw-border-opacity: 1;\n  border-color: rgb(239 68 68 / var(--tw-border-opacity, 1));\n}\n.border-transparent{\n  border-color: transparent;\n}\n.bg-\\[\\#2469f0\\]{\n  --tw-bg-opacity: 1;\n  background-color: rgb(36 105 240 / var(--tw-bg-opacity, 1));\n}\n.bg-accent{\n  background-color: hsl(var(--accent));\n}\n.bg-accent\\/20{\n  background-color: hsl(var(--accent) / 0.2);\n}\n.bg-accent\\/40{\n  background-color: hsl(var(--accent) / 0.4);\n}\n.bg-accent\\/50{\n  background-color: hsl(var(--accent) / 0.5);\n}\n.bg-amber-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(255 251 235 / var(--tw-bg-opacity, 1));\n}\n.bg-amber-50\\/50{\n  background-color: rgb(255 251 235 / 0.5);\n}\n.bg-background{\n  background-color: hsl(var(--background));\n}\n.bg-blue-100{\n  --tw-bg-opacity: 1;\n  background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1));\n}\n.bg-blue-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(239 246 255 / var(--tw-bg-opacity, 1));\n}\n.bg-card{\n  background-color: hsl(var(--card));\n}\n.bg-destructive{\n  background-color: hsl(var(--destructive));\n}\n.bg-destructive\\/10{\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.bg-foreground{\n  background-color: hsl(var(--foreground));\n}\n.bg-green-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(240 253 244 / var(--tw-bg-opacity, 1));\n}\n.bg-green-500{\n  --tw-bg-opacity: 1;\n  background-color: rgb(34 197 94 / var(--tw-bg-opacity, 1));\n}\n.bg-green-600{\n  --tw-bg-opacity: 1;\n  background-color: rgb(22 163 74 / var(--tw-bg-opacity, 1));\n}\n.bg-muted{\n  background-color: hsl(var(--muted));\n}\n.bg-muted-foreground{\n  background-color: hsl(var(--muted-foreground));\n}\n.bg-muted\\/50{\n  background-color: hsl(var(--muted) / 0.5);\n}\n.bg-popover{\n  background-color: hsl(var(--popover));\n}\n.bg-primary{\n  background-color: hsl(var(--primary));\n}\n.bg-primary\\/10{\n  background-color: hsl(var(--primary) / 0.1);\n}\n.bg-red-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 242 242 / var(--tw-bg-opacity, 1));\n}\n.bg-red-500\\/5{\n  background-color: rgb(239 68 68 / 0.05);\n}\n.bg-red-600{\n  --tw-bg-opacity: 1;\n  background-color: rgb(220 38 38 / var(--tw-bg-opacity, 1));\n}\n.bg-secondary{\n  background-color: hsl(var(--secondary));\n}\n.bg-transparent{\n  background-color: transparent;\n}\n.p-0\\.5{\n  padding: 0.125rem;\n}\n.p-1{\n  padding: 0.25rem;\n}\n.p-1\\.5{\n  padding: 0.375rem;\n}\n.p-2{\n  padding: 0.5rem;\n}\n.p-2\\.5{\n  padding: 0.625rem;\n}\n.p-3{\n  padding: 0.75rem;\n}\n.p-4{\n  padding: 1rem;\n}\n.p-8{\n  padding: 2rem;\n}\n.px-0{\n  padding-left: 0px;\n  padding-right: 0px;\n}\n.px-1{\n  padding-left: 0.25rem;\n  padding-right: 0.25rem;\n}\n.px-1\\.5{\n  padding-left: 0.375rem;\n  padding-right: 0.375rem;\n}\n.px-2{\n  padding-left: 0.5rem;\n  padding-right: 0.5rem;\n}\n.px-2\\.5{\n  padding-left: 0.625rem;\n  padding-right: 0.625rem;\n}\n.px-3{\n  padding-left: 0.75rem;\n  padding-right: 0.75rem;\n}\n.px-3\\.5{\n  padding-left: 0.875rem;\n  padding-right: 0.875rem;\n}\n.px-4{\n  padding-left: 1rem;\n  padding-right: 1rem;\n}\n.px-5{\n  padding-left: 1.25rem;\n  padding-right: 1.25rem;\n}\n.py-0{\n  padding-top: 0px;\n  padding-bottom: 0px;\n}\n.py-0\\.5{\n  padding-top: 0.125rem;\n  padding-bottom: 0.125rem;\n}\n.py-1{\n  padding-top: 0.25rem;\n  padding-bottom: 0.25rem;\n}\n.py-1\\.5{\n  padding-top: 0.375rem;\n  padding-bottom: 0.375rem;\n}\n.py-12{\n  padding-top: 3rem;\n  padding-bottom: 3rem;\n}\n.py-2{\n  padding-top: 0.5rem;\n  padding-bottom: 0.5rem;\n}\n.py-2\\.5{\n  padding-top: 0.625rem;\n  padding-bottom: 0.625rem;\n}\n.py-3{\n  padding-top: 0.75rem;\n  padding-bottom: 0.75rem;\n}\n.py-4{\n  padding-top: 1rem;\n  padding-bottom: 1rem;\n}\n.py-6{\n  padding-top: 1.5rem;\n  padding-bottom: 1.5rem;\n}\n.py-8{\n  padding-top: 2rem;\n  padding-bottom: 2rem;\n}\n.pb-1\\.5{\n  padding-bottom: 0.375rem;\n}\n.pb-2{\n  padding-bottom: 0.5rem;\n}\n.pl-2{\n  padding-left: 0.5rem;\n}\n.pl-6{\n  padding-left: 1.5rem;\n}\n.pr-10{\n  padding-right: 2.5rem;\n}\n.pr-3{\n  padding-right: 0.75rem;\n}\n.pr-8{\n  padding-right: 2rem;\n}\n.pt-3{\n  padding-top: 0.75rem;\n}\n.text-left{\n  text-align: left;\n}\n.text-center{\n  text-align: center;\n}\n.font-mono{\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace;\n}\n.text-\\[10px\\]{\n  font-size: 10px;\n}\n.text-\\[11px\\]{\n  font-size: 11px;\n}\n.text-\\[8px\\]{\n  font-size: 8px;\n}\n.text-\\[9px\\]{\n  font-size: 9px;\n}\n.text-md-lg{\n  font-size: 15px;\n  line-height: 24px;\n}\n.text-md-sm{\n  font-size: 12px;\n  line-height: 18px;\n}\n.text-md-xs{\n  font-size: 11px;\n  line-height: 16px;\n}\n.font-bold{\n  font-weight: 700;\n}\n.font-medium{\n  font-weight: 500;\n}\n.font-normal{\n  font-weight: 400;\n}\n.font-semibold{\n  font-weight: 600;\n}\n.uppercase{\n  text-transform: uppercase;\n}\n.leading-relaxed{\n  line-height: 1.625;\n}\n.tracking-wide{\n  letter-spacing: 0.025em;\n}\n.tracking-wider{\n  letter-spacing: 0.05em;\n}\n.text-\\[\\#2469f0\\]{\n  --tw-text-opacity: 1;\n  color: rgb(36 105 240 / var(--tw-text-opacity, 1));\n}\n.text-amber-700{\n  --tw-text-opacity: 1;\n  color: rgb(180 83 9 / var(--tw-text-opacity, 1));\n}\n.text-background{\n  color: hsl(var(--background));\n}\n.text-blue-700{\n  --tw-text-opacity: 1;\n  color: rgb(29 78 216 / var(--tw-text-opacity, 1));\n}\n.text-card-foreground{\n  color: hsl(var(--card-foreground));\n}\n.text-destructive{\n  color: hsl(var(--destructive));\n}\n.text-destructive-foreground{\n  color: hsl(var(--destructive-foreground));\n}\n.text-destructive\\/80{\n  color: hsl(var(--destructive) / 0.8);\n}\n.text-foreground{\n  color: hsl(var(--foreground));\n}\n.text-green-700{\n  --tw-text-opacity: 1;\n  color: rgb(21 128 61 / var(--tw-text-opacity, 1));\n}\n.text-muted-foreground{\n  color: hsl(var(--muted-foreground));\n}\n.text-muted-foreground\\/60{\n  color: hsl(var(--muted-foreground) / 0.6);\n}\n.text-popover-foreground{\n  color: hsl(var(--popover-foreground));\n}\n.text-primary{\n  color: hsl(var(--primary));\n}\n.text-primary-foreground{\n  color: hsl(var(--primary-foreground));\n}\n.text-red-600{\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.text-red-800{\n  --tw-text-opacity: 1;\n  color: rgb(153 27 27 / var(--tw-text-opacity, 1));\n}\n.text-red-900{\n  --tw-text-opacity: 1;\n  color: rgb(127 29 29 / var(--tw-text-opacity, 1));\n}\n.text-secondary-foreground{\n  color: hsl(var(--secondary-foreground));\n}\n.text-white{\n  --tw-text-opacity: 1;\n  color: rgb(255 255 255 / var(--tw-text-opacity, 1));\n}\n.underline-offset-4{\n  text-underline-offset: 4px;\n}\n.antialiased{\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n}\n.opacity-0{\n  opacity: 0;\n}\n.opacity-30{\n  opacity: 0.3;\n}\n.opacity-50{\n  opacity: 0.5;\n}\n.opacity-60{\n  opacity: 0.6;\n}\n.opacity-85{\n  opacity: 0.85;\n}\n.opacity-90{\n  opacity: 0.9;\n}\n.shadow{\n  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-lg{\n  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-md{\n  --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-none{\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-sm{\n  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);\n  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.outline-none{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.outline{\n  outline-style: solid;\n}\n.ring{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.ring-0{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.ring-offset-background{\n  --tw-ring-offset-color: hsl(var(--background));\n}\n.blur{\n  --tw-blur: blur(8px);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.grayscale{\n  --tw-grayscale: grayscale(100%);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.filter{\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.backdrop-filter{\n  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);\n}\n.transition{\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-all{\n  transition-property: all;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-colors{\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-transform{\n  transition-property: transform;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.duration-150{\n  transition-duration: 150ms;\n}\n.duration-200{\n  transition-duration: 200ms;\n}\n.duration-300{\n  transition-duration: 300ms;\n}\n.ease-in-out{\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.ease-out{\n  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);\n}\n@keyframes enter{\n\n  from{\n    opacity: var(--tw-enter-opacity, 1);\n    transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0) scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1)) rotate(var(--tw-enter-rotate, 0));\n  }\n}\n@keyframes exit{\n\n  to{\n    opacity: var(--tw-exit-opacity, 1);\n    transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0) scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1)) rotate(var(--tw-exit-rotate, 0));\n  }\n}\n.animate-in{\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.fade-in{\n  --tw-enter-opacity: 0;\n}\n.duration-150{\n  animation-duration: 150ms;\n}\n.duration-200{\n  animation-duration: 200ms;\n}\n.duration-300{\n  animation-duration: 300ms;\n}\n.ease-in-out{\n  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.ease-out{\n  animation-timing-function: cubic-bezier(0, 0, 0.2, 1);\n}\n.running{\n  animation-play-state: running;\n}\n.placeholder\\:text-muted-foreground::-moz-placeholder{\n  color: hsl(var(--muted-foreground));\n}\n.placeholder\\:text-muted-foreground::placeholder{\n  color: hsl(var(--muted-foreground));\n}\n.last\\:border-0:last-child{\n  border-width: 0px;\n}\n.hover\\:bg-accent:hover{\n  background-color: hsl(var(--accent));\n}\n.hover\\:bg-accent\\/50:hover{\n  background-color: hsl(var(--accent) / 0.5);\n}\n.hover\\:bg-amber-100\\/50:hover{\n  background-color: rgb(254 243 199 / 0.5);\n}\n.hover\\:bg-destructive\\/10:hover{\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.hover\\:bg-destructive\\/90:hover{\n  background-color: hsl(var(--destructive) / 0.9);\n}\n.hover\\:bg-green-700:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(21 128 61 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-primary\\/5:hover{\n  background-color: hsl(var(--primary) / 0.05);\n}\n.hover\\:bg-primary\\/90:hover{\n  background-color: hsl(var(--primary) / 0.9);\n}\n.hover\\:bg-red-500\\/10:hover{\n  background-color: rgb(239 68 68 / 0.1);\n}\n.hover\\:bg-red-700:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(185 28 28 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-secondary\\/80:hover{\n  background-color: hsl(var(--secondary) / 0.8);\n}\n.hover\\:text-accent-foreground:hover{\n  color: hsl(var(--accent-foreground));\n}\n.hover\\:text-destructive:hover{\n  color: hsl(var(--destructive));\n}\n.hover\\:text-foreground:hover{\n  color: hsl(var(--foreground));\n}\n.hover\\:text-red-600:hover{\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.hover\\:underline:hover{\n  text-decoration-line: underline;\n}\n.hover\\:opacity-70:hover{\n  opacity: 0.7;\n}\n.focus\\:bg-accent:focus{\n  background-color: hsl(var(--accent));\n}\n.focus\\:text-accent-foreground:focus{\n  color: hsl(var(--accent-foreground));\n}\n.focus\\:outline-none:focus{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus\\:ring-1:focus{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-2:focus{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-primary:focus{\n  --tw-ring-color: hsl(var(--primary));\n}\n.focus\\:ring-red-500:focus{\n  --tw-ring-opacity: 1;\n  --tw-ring-color: rgb(239 68 68 / var(--tw-ring-opacity, 1));\n}\n.focus\\:ring-ring:focus{\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus\\:ring-offset-1:focus{\n  --tw-ring-offset-width: 1px;\n}\n.focus-visible\\:outline-none:focus-visible{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus-visible\\:ring-0:focus-visible{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus-visible\\:ring-2:focus-visible{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus-visible\\:ring-ring:focus-visible{\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus-visible\\:ring-offset-1:focus-visible{\n  --tw-ring-offset-width: 1px;\n}\n.disabled\\:pointer-events-none:disabled{\n  pointer-events: none;\n}\n.disabled\\:cursor-not-allowed:disabled{\n  cursor: not-allowed;\n}\n.disabled\\:opacity-50:disabled{\n  opacity: 0.5;\n}\n.group:hover .group-hover\\:opacity-100{\n  opacity: 1;\n}\n.data-\\[disabled\\]\\:pointer-events-none[data-disabled]{\n  pointer-events: none;\n}\n.data-\\[side\\=bottom\\]\\:translate-y-1[data-side="bottom"]{\n  --tw-translate-y: 0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[side\\=top\\]\\:-translate-y-1[data-side="top"]{\n  --tw-translate-y: -0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:translate-x-4[data-state="checked"]{\n  --tw-translate-x: 1rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=unchecked\\]\\:translate-x-0[data-state="unchecked"]{\n  --tw-translate-x: 0px;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:bg-primary[data-state="checked"]{\n  background-color: hsl(var(--primary));\n}\n.data-\\[state\\=unchecked\\]\\:bg-input[data-state="unchecked"]{\n  background-color: hsl(var(--input));\n}\n.data-\\[disabled\\]\\:opacity-50[data-disabled]{\n  opacity: 0.5;\n}\n.data-\\[state\\=open\\]\\:animate-in[data-state="open"]{\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:animate-out[data-state="closed"]{\n  animation-name: exit;\n  animation-duration: 150ms;\n  --tw-exit-opacity: initial;\n  --tw-exit-scale: initial;\n  --tw-exit-rotate: initial;\n  --tw-exit-translate-x: initial;\n  --tw-exit-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:fade-out-0[data-state="closed"]{\n  --tw-exit-opacity: 0;\n}\n.data-\\[state\\=open\\]\\:fade-in-0[data-state="open"]{\n  --tw-enter-opacity: 0;\n}\n.data-\\[state\\=closed\\]\\:zoom-out-95[data-state="closed"]{\n  --tw-exit-scale: .95;\n}\n.data-\\[state\\=open\\]\\:zoom-in-95[data-state="open"]{\n  --tw-enter-scale: .95;\n}\n.data-\\[side\\=bottom\\]\\:slide-in-from-top-2[data-side="bottom"]{\n  --tw-enter-translate-y: -0.5rem;\n}\n.data-\\[side\\=left\\]\\:slide-in-from-right-2[data-side="left"]{\n  --tw-enter-translate-x: 0.5rem;\n}\n.data-\\[side\\=right\\]\\:slide-in-from-left-2[data-side="right"]{\n  --tw-enter-translate-x: -0.5rem;\n}\n.data-\\[side\\=top\\]\\:slide-in-from-bottom-2[data-side="top"]{\n  --tw-enter-translate-y: 0.5rem;\n}\n.dark\\:border-amber-800:is(.dark *){\n  --tw-border-opacity: 1;\n  border-color: rgb(146 64 14 / var(--tw-border-opacity, 1));\n}\n.dark\\:border-green-800:is(.dark *){\n  --tw-border-opacity: 1;\n  border-color: rgb(22 101 52 / var(--tw-border-opacity, 1));\n}\n.dark\\:border-red-900:is(.dark *){\n  --tw-border-opacity: 1;\n  border-color: rgb(127 29 29 / var(--tw-border-opacity, 1));\n}\n.dark\\:bg-amber-900\\/30:is(.dark *){\n  background-color: rgb(120 53 15 / 0.3);\n}\n.dark\\:bg-amber-950\\/20:is(.dark *){\n  background-color: rgb(69 26 3 / 0.2);\n}\n.dark\\:bg-blue-900\\/30:is(.dark *){\n  background-color: rgb(30 58 138 / 0.3);\n}\n.dark\\:bg-blue-950\\/20:is(.dark *){\n  background-color: rgb(23 37 84 / 0.2);\n}\n.dark\\:bg-green-950\\/20:is(.dark *){\n  background-color: rgb(5 46 22 / 0.2);\n}\n.dark\\:bg-red-950\\/20:is(.dark *){\n  background-color: rgb(69 10 10 / 0.2);\n}\n.dark\\:text-amber-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(252 211 77 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-blue-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(147 197 253 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-green-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(134 239 172 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-red-200:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(254 202 202 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-red-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(252 165 165 / var(--tw-text-opacity, 1));\n}\n.\\[\\&\\>span\\]\\:line-clamp-1>span{\n  overflow: hidden;\n  display: -webkit-box;\n  -webkit-box-orient: vertical;\n  -webkit-line-clamp: 1;\n}\n.\\[\\&\\>span\\]\\:h-3>span{\n  height: 0.75rem;\n}\n.\\[\\&\\>span\\]\\:w-3>span{\n  width: 0.75rem;\n}\n.data-\\[state\\=checked\\]\\:\\[\\&\\>span\\]\\:translate-x-3>span[data-state="checked"]{\n  --tw-translate-x: 0.75rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.\\[\\&_svg\\]\\:pointer-events-none svg{\n  pointer-events: none;\n}\n.\\[\\&_svg\\]\\:size-4 svg{\n  width: 1rem;\n  height: 1rem;\n}\n.\\[\\&_svg\\]\\:shrink-0 svg{\n  flex-shrink: 0;\n}\n' : "";
-    shadow.appendChild(style);
-    shadow.appendChild(wrapper);
-    reactRoot = (0, import_client.createRoot)(wrapper);
+    container.innerHTML = "";
+    if (!document.getElementById("morbis-resume-css")) {
+      const s = document.createElement("style");
+      s.id = "morbis-resume-css";
+      s.textContent = (true ? '@import url(\'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\');\n\n*, ::before, ::after{\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n\n::backdrop{\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n\n/*\n! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com\n*/\n\n/*\n1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)\n*/\n\n*,\n::before,\n::after {\n  box-sizing: border-box; /* 1 */\n  border-width: 0; /* 2 */\n  border-style: solid; /* 2 */\n  border-color: #e5e7eb; /* 2 */\n}\n\n::before,\n::after {\n  --tw-content: \'\';\n}\n\n/*\n1. Use a consistent sensible line-height in all browsers.\n2. Prevent adjustments of font size after orientation changes in iOS.\n3. Use a more readable tab size.\n4. Use the user\'s configured `sans` font-family by default.\n5. Use the user\'s configured `sans` font-feature-settings by default.\n6. Use the user\'s configured `sans` font-variation-settings by default.\n7. Disable tap highlights on iOS\n*/\n\nhtml,\n:host {\n  line-height: 1.5; /* 1 */\n  -webkit-text-size-adjust: 100%; /* 2 */\n  -moz-tab-size: 4; /* 3 */\n  -o-tab-size: 4;\n     tab-size: 4; /* 3 */\n  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; /* 4 */\n  font-feature-settings: normal; /* 5 */\n  font-variation-settings: normal; /* 6 */\n  -webkit-tap-highlight-color: transparent; /* 7 */\n}\n\n/*\n1. Remove the margin in all browsers.\n2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.\n*/\n\nbody {\n  margin: 0; /* 1 */\n  line-height: inherit; /* 2 */\n}\n\n/*\n1. Add the correct height in Firefox.\n2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n3. Ensure horizontal rules are visible by default.\n*/\n\nhr {\n  height: 0; /* 1 */\n  color: inherit; /* 2 */\n  border-top-width: 1px; /* 3 */\n}\n\n/*\nAdd the correct text decoration in Chrome, Edge, and Safari.\n*/\n\nabbr:where([title]) {\n  -webkit-text-decoration: underline dotted;\n          text-decoration: underline dotted;\n}\n\n/*\nRemove the default font size and weight for headings.\n*/\n\nh1,\nh2,\nh3,\nh4,\nh5,\nh6 {\n  font-size: inherit;\n  font-weight: inherit;\n}\n\n/*\nReset links to optimize for opt-in styling instead of opt-out.\n*/\n\na {\n  color: inherit;\n  text-decoration: inherit;\n}\n\n/*\nAdd the correct font weight in Edge and Safari.\n*/\n\nb,\nstrong {\n  font-weight: bolder;\n}\n\n/*\n1. Use the user\'s configured `mono` font-family by default.\n2. Use the user\'s configured `mono` font-feature-settings by default.\n3. Use the user\'s configured `mono` font-variation-settings by default.\n4. Correct the odd `em` font sizing in all browsers.\n*/\n\ncode,\nkbd,\nsamp,\npre {\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace; /* 1 */\n  font-feature-settings: normal; /* 2 */\n  font-variation-settings: normal; /* 3 */\n  font-size: 1em; /* 4 */\n}\n\n/*\nAdd the correct font size in all browsers.\n*/\n\nsmall {\n  font-size: 80%;\n}\n\n/*\nPrevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\nsub,\nsup {\n  font-size: 75%;\n  line-height: 0;\n  position: relative;\n  vertical-align: baseline;\n}\n\nsub {\n  bottom: -0.25em;\n}\n\nsup {\n  top: -0.5em;\n}\n\n/*\n1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n3. Remove gaps between table borders by default.\n*/\n\ntable {\n  text-indent: 0; /* 1 */\n  border-color: inherit; /* 2 */\n  border-collapse: collapse; /* 3 */\n}\n\n/*\n1. Change the font styles in all browsers.\n2. Remove the margin in Firefox and Safari.\n3. Remove default padding in all browsers.\n*/\n\nbutton,\ninput,\noptgroup,\nselect,\ntextarea {\n  font-family: inherit; /* 1 */\n  font-feature-settings: inherit; /* 1 */\n  font-variation-settings: inherit; /* 1 */\n  font-size: 100%; /* 1 */\n  font-weight: inherit; /* 1 */\n  line-height: inherit; /* 1 */\n  letter-spacing: inherit; /* 1 */\n  color: inherit; /* 1 */\n  margin: 0; /* 2 */\n  padding: 0; /* 3 */\n}\n\n/*\nRemove the inheritance of text transform in Edge and Firefox.\n*/\n\nbutton,\nselect {\n  text-transform: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Remove default button styles.\n*/\n\nbutton,\ninput:where([type=\'button\']),\ninput:where([type=\'reset\']),\ninput:where([type=\'submit\']) {\n  -webkit-appearance: button; /* 1 */\n  background-color: transparent; /* 2 */\n  background-image: none; /* 2 */\n}\n\n/*\nUse the modern Firefox focus style for all focusable elements.\n*/\n\n:-moz-focusring {\n  outline: auto;\n}\n\n/*\nRemove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n:-moz-ui-invalid {\n  box-shadow: none;\n}\n\n/*\nAdd the correct vertical alignment in Chrome and Firefox.\n*/\n\nprogress {\n  vertical-align: baseline;\n}\n\n/*\nCorrect the cursor style of increment and decrement buttons in Safari.\n*/\n\n::-webkit-inner-spin-button,\n::-webkit-outer-spin-button {\n  height: auto;\n}\n\n/*\n1. Correct the odd appearance in Chrome and Safari.\n2. Correct the outline style in Safari.\n*/\n\n[type=\'search\'] {\n  -webkit-appearance: textfield; /* 1 */\n  outline-offset: -2px; /* 2 */\n}\n\n/*\nRemove the inner padding in Chrome and Safari on macOS.\n*/\n\n::-webkit-search-decoration {\n  -webkit-appearance: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Change font properties to `inherit` in Safari.\n*/\n\n::-webkit-file-upload-button {\n  -webkit-appearance: button; /* 1 */\n  font: inherit; /* 2 */\n}\n\n/*\nAdd the correct display in Chrome and Safari.\n*/\n\nsummary {\n  display: list-item;\n}\n\n/*\nRemoves the default spacing and border for appropriate elements.\n*/\n\nblockquote,\ndl,\ndd,\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\nhr,\nfigure,\np,\npre {\n  margin: 0;\n}\n\nfieldset {\n  margin: 0;\n  padding: 0;\n}\n\nlegend {\n  padding: 0;\n}\n\nol,\nul,\nmenu {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n}\n\n/*\nReset default styling for dialogs.\n*/\n\ndialog {\n  padding: 0;\n}\n\n/*\nPrevent resizing textareas horizontally by default.\n*/\n\ntextarea {\n  resize: vertical;\n}\n\n/*\n1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n2. Set the default placeholder color to the user\'s configured gray 400 color.\n*/\n\ninput::-moz-placeholder, textarea::-moz-placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\ninput::placeholder,\ntextarea::placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\n/*\nSet the default cursor for buttons.\n*/\n\nbutton,\n[role="button"] {\n  cursor: pointer;\n}\n\n/*\nMake sure disabled buttons don\'t get the pointer cursor.\n*/\n\n:disabled {\n  cursor: default;\n}\n\n/*\n1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n   This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\nimg,\nsvg,\nvideo,\ncanvas,\naudio,\niframe,\nembed,\nobject {\n  display: block; /* 1 */\n  vertical-align: middle; /* 2 */\n}\n\n/*\nConstrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\nimg,\nvideo {\n  max-width: 100%;\n  height: auto;\n}\n\n/* Make elements with the HTML hidden attribute stay hidden by default */\n\n[hidden]:where(:not([hidden="until-found"])) {\n  display: none;\n}\n\n*,\n  *::before,\n  *::after {\n    box-sizing: border-box;\n  }\n\nhtml {\n    font-family:\n      \'Inter\',\n      -apple-system,\n      BlinkMacSystemFont,\n      \'Segoe UI\',\n      sans-serif;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale;\n  }\n\n:root {\n    --background: 0 0% 100%;\n    --foreground: 222.2 84% 4.9%;\n    --card: 0 0% 100%;\n    --card-foreground: 222.2 84% 4.9%;\n    --popover: 0 0% 100%;\n    --popover-foreground: 222.2 84% 4.9%;\n    --primary: 221.2 83.2% 53.3%;\n    --primary-foreground: 210 40% 98%;\n    --secondary: 210 40% 96.1%;\n    --secondary-foreground: 222.2 47.4% 11.2%;\n    --muted: 210 40% 96.1%;\n    --muted-foreground: 215.4 16.3% 46.9%;\n    --accent: 210 40% 96.1%;\n    --accent-foreground: 222.2 47.4% 11.2%;\n    --destructive: 0 84.2% 60.2%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 214.3 31.8% 91.4%;\n    --input: 214.3 31.8% 91.4%;\n    --ring: 221.2 83.2% 53.3%;\n    --radius: 0.375rem;\n  }\n\n.dark {\n    --background: 222.2 84% 4.9%;\n    --foreground: 210 40% 98%;\n    --card: 222.2 84% 4.9%;\n    --card-foreground: 210 40% 98%;\n    --popover: 222.2 84% 4.9%;\n    --popover-foreground: 210 40% 98%;\n    --primary: 217.2 91.2% 59.8%;\n    --primary-foreground: 222.2 47.4% 11.2%;\n    --secondary: 217.2 32.6% 17.5%;\n    --secondary-foreground: 210 40% 98%;\n    --muted: 217.2 32.6% 17.5%;\n    --muted-foreground: 215 20.2% 65.1%;\n    --accent: 217.2 32.6% 17.5%;\n    --accent-foreground: 210 40% 98%;\n    --destructive: 0 62.8% 30.6%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 217.2 32.6% 17.5%;\n    --input: 217.2 32.6% 17.5%;\n    --ring: 224.3 76.3% 48%;\n    --md-scrollbar: #484d54;\n  }\n\n::-moz-selection {\n    background: #2469f0;\n    color: white;\n  }\n\n::selection {\n    background: #2469f0;\n    color: white;\n  }\n\n* {\n    scrollbar-width: thin;\n    scrollbar-color: #c9cdd4 transparent;\n  }\n\n.dark * {\n    scrollbar-color: var(--md-scrollbar) transparent;\n  }\n\n*::-webkit-scrollbar {\n    width: 6px;\n    height: 6px;\n  }\n\n*::-webkit-scrollbar-track {\n    background: transparent;\n  }\n\n*::-webkit-scrollbar-thumb {\n    background: #c9cdd4;\n    border-radius: 3px;\n  }\n\n.dark *::-webkit-scrollbar-thumb {\n    background: var(--md-scrollbar);\n  }\n\n*::-webkit-scrollbar-thumb:hover {\n    background: #a4a9b3;\n  }\n\n.dark *::-webkit-scrollbar-thumb:hover {\n    background: #636971;\n  }\n.\\!container{\n  width: 100% !important;\n}\n.container{\n  width: 100%;\n}\n@media (min-width: 640px){\n\n  .\\!container{\n    max-width: 640px !important;\n  }\n\n  .container{\n    max-width: 640px;\n  }\n}\n@media (min-width: 768px){\n\n  .\\!container{\n    max-width: 768px !important;\n  }\n\n  .container{\n    max-width: 768px;\n  }\n}\n@media (min-width: 1024px){\n\n  .\\!container{\n    max-width: 1024px !important;\n  }\n\n  .container{\n    max-width: 1024px;\n  }\n}\n@media (min-width: 1280px){\n\n  .\\!container{\n    max-width: 1280px !important;\n  }\n\n  .container{\n    max-width: 1280px;\n  }\n}\n@media (min-width: 1536px){\n\n  .\\!container{\n    max-width: 1536px !important;\n  }\n\n  .container{\n    max-width: 1536px;\n  }\n}\n.pointer-events-none{\n  pointer-events: none;\n}\n.visible{\n  visibility: visible;\n}\n.static{\n  position: static;\n}\n.fixed{\n  position: fixed;\n}\n.absolute{\n  position: absolute;\n}\n.relative{\n  position: relative;\n}\n.bottom-4{\n  bottom: 1rem;\n}\n.left-1\\/2{\n  left: 50%;\n}\n.right-2\\.5{\n  right: 0.625rem;\n}\n.top-1\\/2{\n  top: 50%;\n}\n.z-50{\n  z-index: 50;\n}\n.mx-auto{\n  margin-left: auto;\n  margin-right: auto;\n}\n.-mb-\\[1px\\]{\n  margin-bottom: -1px;\n}\n.mb-1{\n  margin-bottom: 0.25rem;\n}\n.mb-1\\.5{\n  margin-bottom: 0.375rem;\n}\n.mb-3{\n  margin-bottom: 0.75rem;\n}\n.ml-0\\.5{\n  margin-left: 0.125rem;\n}\n.ml-1{\n  margin-left: 0.25rem;\n}\n.mr-1{\n  margin-right: 0.25rem;\n}\n.mr-2{\n  margin-right: 0.5rem;\n}\n.mr-3{\n  margin-right: 0.75rem;\n}\n.mt-0\\.5{\n  margin-top: 0.125rem;\n}\n.mt-1{\n  margin-top: 0.25rem;\n}\n.block{\n  display: block;\n}\n.inline-block{\n  display: inline-block;\n}\n.flex{\n  display: flex;\n}\n.inline-flex{\n  display: inline-flex;\n}\n.\\!table{\n  display: table !important;\n}\n.table{\n  display: table;\n}\n.grid{\n  display: grid;\n}\n.\\!contents{\n  display: contents !important;\n}\n.contents{\n  display: contents;\n}\n.hidden{\n  display: none;\n}\n.size-1\\.5{\n  width: 0.375rem;\n  height: 0.375rem;\n}\n.size-10{\n  width: 2.5rem;\n  height: 2.5rem;\n}\n.size-2\\.5{\n  width: 0.625rem;\n  height: 0.625rem;\n}\n.size-3{\n  width: 0.75rem;\n  height: 0.75rem;\n}\n.size-3\\.5{\n  width: 0.875rem;\n  height: 0.875rem;\n}\n.size-4{\n  width: 1rem;\n  height: 1rem;\n}\n.size-5{\n  width: 1.25rem;\n  height: 1.25rem;\n}\n.h-1{\n  height: 0.25rem;\n}\n.h-1\\.5{\n  height: 0.375rem;\n}\n.h-2{\n  height: 0.5rem;\n}\n.h-24{\n  height: 6rem;\n}\n.h-4{\n  height: 1rem;\n}\n.h-5{\n  height: 1.25rem;\n}\n.h-6{\n  height: 1.5rem;\n}\n.h-7{\n  height: 1.75rem;\n}\n.h-8{\n  height: 2rem;\n}\n.h-9{\n  height: 2.25rem;\n}\n.h-\\[300px\\]{\n  height: 300px;\n}\n.h-\\[var\\(--radix-select-trigger-height\\)\\]{\n  height: var(--radix-select-trigger-height);\n}\n.h-full{\n  height: 100%;\n}\n.max-h-60{\n  max-height: 15rem;\n}\n.max-h-96{\n  max-height: 24rem;\n}\n.max-h-\\[600px\\]{\n  max-height: 600px;\n}\n.min-h-\\[200px\\]{\n  min-height: 200px;\n}\n.w-1\\.5{\n  width: 0.375rem;\n}\n.w-2{\n  width: 0.5rem;\n}\n.w-4{\n  width: 1rem;\n}\n.w-5{\n  width: 1.25rem;\n}\n.w-6{\n  width: 1.5rem;\n}\n.w-7{\n  width: 1.75rem;\n}\n.w-8{\n  width: 2rem;\n}\n.w-9{\n  width: 2.25rem;\n}\n.w-\\[100px\\]{\n  width: 100px;\n}\n.w-\\[120px\\]{\n  width: 120px;\n}\n.w-\\[340px\\]{\n  width: 340px;\n}\n.w-\\[90px\\]{\n  width: 90px;\n}\n.w-full{\n  width: 100%;\n}\n.min-w-0{\n  min-width: 0px;\n}\n.min-w-\\[8rem\\]{\n  min-width: 8rem;\n}\n.min-w-\\[var\\(--radix-select-trigger-width\\)\\]{\n  min-width: var(--radix-select-trigger-width);\n}\n.max-w-\\[120px\\]{\n  max-width: 120px;\n}\n.max-w-\\[200px\\]{\n  max-width: 200px;\n}\n.flex-1{\n  flex: 1 1 0%;\n}\n.flex-shrink{\n  flex-shrink: 1;\n}\n.shrink-0{\n  flex-shrink: 0;\n}\n.-translate-x-1\\/2{\n  --tw-translate-x: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.-translate-y-1\\/2{\n  --tw-translate-y: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.scale-90{\n  --tw-scale-x: .9;\n  --tw-scale-y: .9;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.transform{\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n@keyframes pulse{\n\n  50%{\n    opacity: .5;\n  }\n}\n.animate-pulse{\n  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;\n}\n@keyframes slide-up{\n\n  0%{\n    opacity: 0;\n    transform: translateY(8px);\n  }\n\n  100%{\n    opacity: 1;\n    transform: translateY(0);\n  }\n}\n.animate-slide-up{\n  animation: slide-up 0.15s ease-out;\n}\n.cursor-default{\n  cursor: default;\n}\n.cursor-not-allowed{\n  cursor: not-allowed;\n}\n.cursor-pointer{\n  cursor: pointer;\n}\n.select-none{\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.resize-none{\n  resize: none;\n}\n.resize{\n  resize: both;\n}\n.grid-cols-2{\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n}\n.grid-cols-6{\n  grid-template-columns: repeat(6, minmax(0, 1fr));\n}\n.flex-col{\n  flex-direction: column;\n}\n.flex-wrap{\n  flex-wrap: wrap;\n}\n.items-start{\n  align-items: flex-start;\n}\n.items-center{\n  align-items: center;\n}\n.justify-center{\n  justify-content: center;\n}\n.justify-between{\n  justify-content: space-between;\n}\n.gap-0{\n  gap: 0px;\n}\n.gap-1{\n  gap: 0.25rem;\n}\n.gap-1\\.5{\n  gap: 0.375rem;\n}\n.gap-2{\n  gap: 0.5rem;\n}\n.gap-2\\.5{\n  gap: 0.625rem;\n}\n.gap-3{\n  gap: 0.75rem;\n}\n.gap-4{\n  gap: 1rem;\n}\n.gap-x-6{\n  -moz-column-gap: 1.5rem;\n       column-gap: 1.5rem;\n}\n.gap-y-2{\n  row-gap: 0.5rem;\n}\n.space-y-0\\.5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.125rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.125rem * var(--tw-space-y-reverse));\n}\n.space-y-1 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));\n}\n.space-y-1\\.5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.375rem * var(--tw-space-y-reverse));\n}\n.space-y-2 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));\n}\n.space-y-2\\.5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.625rem * var(--tw-space-y-reverse));\n}\n.space-y-3 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));\n}\n.space-y-4 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1rem * var(--tw-space-y-reverse));\n}\n.space-y-5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1.25rem * var(--tw-space-y-reverse));\n}\n.divide-y > :not([hidden]) ~ :not([hidden]){\n  --tw-divide-y-reverse: 0;\n  border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));\n  border-bottom-width: calc(1px * var(--tw-divide-y-reverse));\n}\n.divide-border > :not([hidden]) ~ :not([hidden]){\n  border-color: hsl(var(--border));\n}\n.overflow-hidden{\n  overflow: hidden;\n}\n.overflow-y-auto{\n  overflow-y: auto;\n}\n.truncate{\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n.whitespace-nowrap{\n  white-space: nowrap;\n}\n.whitespace-pre-wrap{\n  white-space: pre-wrap;\n}\n.break-words{\n  overflow-wrap: break-word;\n}\n.rounded{\n  border-radius: 0.25rem;\n}\n.rounded-full{\n  border-radius: 9999px;\n}\n.rounded-lg{\n  border-radius: 0.5rem;\n}\n.rounded-md{\n  border-radius: 6px;\n}\n.rounded-sm{\n  border-radius: 0.125rem;\n}\n.border{\n  border-width: 1px;\n}\n.border-0{\n  border-width: 0px;\n}\n.border-2{\n  border-width: 2px;\n}\n.border-b{\n  border-bottom-width: 1px;\n}\n.border-b-2{\n  border-bottom-width: 2px;\n}\n.border-l{\n  border-left-width: 1px;\n}\n.border-l-2{\n  border-left-width: 2px;\n}\n.border-t{\n  border-top-width: 1px;\n}\n.border-dashed{\n  border-style: dashed;\n}\n.border-\\[\\#2469f0\\]{\n  --tw-border-opacity: 1;\n  border-color: rgb(36 105 240 / var(--tw-border-opacity, 1));\n}\n.border-amber-200{\n  --tw-border-opacity: 1;\n  border-color: rgb(253 230 138 / var(--tw-border-opacity, 1));\n}\n.border-border{\n  border-color: hsl(var(--border));\n}\n.border-destructive\\/20{\n  border-color: hsl(var(--destructive) / 0.2);\n}\n.border-foreground{\n  border-color: hsl(var(--foreground));\n}\n.border-green-200{\n  --tw-border-opacity: 1;\n  border-color: rgb(187 247 208 / var(--tw-border-opacity, 1));\n}\n.border-input{\n  border-color: hsl(var(--input));\n}\n.border-primary{\n  border-color: hsl(var(--primary));\n}\n.border-primary\\/20{\n  border-color: hsl(var(--primary) / 0.2);\n}\n.border-red-200{\n  --tw-border-opacity: 1;\n  border-color: rgb(254 202 202 / var(--tw-border-opacity, 1));\n}\n.border-red-500{\n  --tw-border-opacity: 1;\n  border-color: rgb(239 68 68 / var(--tw-border-opacity, 1));\n}\n.border-transparent{\n  border-color: transparent;\n}\n.bg-\\[\\#2469f0\\]{\n  --tw-bg-opacity: 1;\n  background-color: rgb(36 105 240 / var(--tw-bg-opacity, 1));\n}\n.bg-accent{\n  background-color: hsl(var(--accent));\n}\n.bg-accent\\/20{\n  background-color: hsl(var(--accent) / 0.2);\n}\n.bg-accent\\/40{\n  background-color: hsl(var(--accent) / 0.4);\n}\n.bg-accent\\/50{\n  background-color: hsl(var(--accent) / 0.5);\n}\n.bg-amber-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(255 251 235 / var(--tw-bg-opacity, 1));\n}\n.bg-amber-50\\/50{\n  background-color: rgb(255 251 235 / 0.5);\n}\n.bg-background{\n  background-color: hsl(var(--background));\n}\n.bg-blue-100{\n  --tw-bg-opacity: 1;\n  background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1));\n}\n.bg-blue-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(239 246 255 / var(--tw-bg-opacity, 1));\n}\n.bg-card{\n  background-color: hsl(var(--card));\n}\n.bg-destructive{\n  background-color: hsl(var(--destructive));\n}\n.bg-destructive\\/10{\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.bg-foreground{\n  background-color: hsl(var(--foreground));\n}\n.bg-green-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(240 253 244 / var(--tw-bg-opacity, 1));\n}\n.bg-green-500{\n  --tw-bg-opacity: 1;\n  background-color: rgb(34 197 94 / var(--tw-bg-opacity, 1));\n}\n.bg-green-600{\n  --tw-bg-opacity: 1;\n  background-color: rgb(22 163 74 / var(--tw-bg-opacity, 1));\n}\n.bg-muted{\n  background-color: hsl(var(--muted));\n}\n.bg-muted-foreground{\n  background-color: hsl(var(--muted-foreground));\n}\n.bg-muted\\/50{\n  background-color: hsl(var(--muted) / 0.5);\n}\n.bg-popover{\n  background-color: hsl(var(--popover));\n}\n.bg-primary{\n  background-color: hsl(var(--primary));\n}\n.bg-primary\\/10{\n  background-color: hsl(var(--primary) / 0.1);\n}\n.bg-red-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 242 242 / var(--tw-bg-opacity, 1));\n}\n.bg-red-500\\/5{\n  background-color: rgb(239 68 68 / 0.05);\n}\n.bg-red-600{\n  --tw-bg-opacity: 1;\n  background-color: rgb(220 38 38 / var(--tw-bg-opacity, 1));\n}\n.bg-secondary{\n  background-color: hsl(var(--secondary));\n}\n.bg-transparent{\n  background-color: transparent;\n}\n.p-0\\.5{\n  padding: 0.125rem;\n}\n.p-1{\n  padding: 0.25rem;\n}\n.p-1\\.5{\n  padding: 0.375rem;\n}\n.p-2{\n  padding: 0.5rem;\n}\n.p-2\\.5{\n  padding: 0.625rem;\n}\n.p-3{\n  padding: 0.75rem;\n}\n.p-4{\n  padding: 1rem;\n}\n.p-8{\n  padding: 2rem;\n}\n.px-0{\n  padding-left: 0px;\n  padding-right: 0px;\n}\n.px-1{\n  padding-left: 0.25rem;\n  padding-right: 0.25rem;\n}\n.px-1\\.5{\n  padding-left: 0.375rem;\n  padding-right: 0.375rem;\n}\n.px-2{\n  padding-left: 0.5rem;\n  padding-right: 0.5rem;\n}\n.px-2\\.5{\n  padding-left: 0.625rem;\n  padding-right: 0.625rem;\n}\n.px-3{\n  padding-left: 0.75rem;\n  padding-right: 0.75rem;\n}\n.px-3\\.5{\n  padding-left: 0.875rem;\n  padding-right: 0.875rem;\n}\n.px-4{\n  padding-left: 1rem;\n  padding-right: 1rem;\n}\n.px-5{\n  padding-left: 1.25rem;\n  padding-right: 1.25rem;\n}\n.py-0{\n  padding-top: 0px;\n  padding-bottom: 0px;\n}\n.py-0\\.5{\n  padding-top: 0.125rem;\n  padding-bottom: 0.125rem;\n}\n.py-1{\n  padding-top: 0.25rem;\n  padding-bottom: 0.25rem;\n}\n.py-1\\.5{\n  padding-top: 0.375rem;\n  padding-bottom: 0.375rem;\n}\n.py-12{\n  padding-top: 3rem;\n  padding-bottom: 3rem;\n}\n.py-2{\n  padding-top: 0.5rem;\n  padding-bottom: 0.5rem;\n}\n.py-2\\.5{\n  padding-top: 0.625rem;\n  padding-bottom: 0.625rem;\n}\n.py-3{\n  padding-top: 0.75rem;\n  padding-bottom: 0.75rem;\n}\n.py-4{\n  padding-top: 1rem;\n  padding-bottom: 1rem;\n}\n.py-6{\n  padding-top: 1.5rem;\n  padding-bottom: 1.5rem;\n}\n.py-8{\n  padding-top: 2rem;\n  padding-bottom: 2rem;\n}\n.pb-1\\.5{\n  padding-bottom: 0.375rem;\n}\n.pb-2{\n  padding-bottom: 0.5rem;\n}\n.pl-2{\n  padding-left: 0.5rem;\n}\n.pl-6{\n  padding-left: 1.5rem;\n}\n.pr-10{\n  padding-right: 2.5rem;\n}\n.pr-3{\n  padding-right: 0.75rem;\n}\n.pr-8{\n  padding-right: 2rem;\n}\n.pt-3{\n  padding-top: 0.75rem;\n}\n.text-left{\n  text-align: left;\n}\n.text-center{\n  text-align: center;\n}\n.font-mono{\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace;\n}\n.text-\\[10px\\]{\n  font-size: 10px;\n}\n.text-\\[11px\\]{\n  font-size: 11px;\n}\n.text-\\[8px\\]{\n  font-size: 8px;\n}\n.text-\\[9px\\]{\n  font-size: 9px;\n}\n.text-md-lg{\n  font-size: 15px;\n  line-height: 24px;\n}\n.text-md-sm{\n  font-size: 12px;\n  line-height: 18px;\n}\n.text-md-xs{\n  font-size: 11px;\n  line-height: 16px;\n}\n.font-bold{\n  font-weight: 700;\n}\n.font-medium{\n  font-weight: 500;\n}\n.font-normal{\n  font-weight: 400;\n}\n.font-semibold{\n  font-weight: 600;\n}\n.uppercase{\n  text-transform: uppercase;\n}\n.leading-relaxed{\n  line-height: 1.625;\n}\n.tracking-wide{\n  letter-spacing: 0.025em;\n}\n.tracking-wider{\n  letter-spacing: 0.05em;\n}\n.text-\\[\\#2469f0\\]{\n  --tw-text-opacity: 1;\n  color: rgb(36 105 240 / var(--tw-text-opacity, 1));\n}\n.text-amber-700{\n  --tw-text-opacity: 1;\n  color: rgb(180 83 9 / var(--tw-text-opacity, 1));\n}\n.text-background{\n  color: hsl(var(--background));\n}\n.text-blue-700{\n  --tw-text-opacity: 1;\n  color: rgb(29 78 216 / var(--tw-text-opacity, 1));\n}\n.text-card-foreground{\n  color: hsl(var(--card-foreground));\n}\n.text-destructive{\n  color: hsl(var(--destructive));\n}\n.text-destructive-foreground{\n  color: hsl(var(--destructive-foreground));\n}\n.text-destructive\\/80{\n  color: hsl(var(--destructive) / 0.8);\n}\n.text-foreground{\n  color: hsl(var(--foreground));\n}\n.text-green-700{\n  --tw-text-opacity: 1;\n  color: rgb(21 128 61 / var(--tw-text-opacity, 1));\n}\n.text-muted-foreground{\n  color: hsl(var(--muted-foreground));\n}\n.text-muted-foreground\\/60{\n  color: hsl(var(--muted-foreground) / 0.6);\n}\n.text-popover-foreground{\n  color: hsl(var(--popover-foreground));\n}\n.text-primary{\n  color: hsl(var(--primary));\n}\n.text-primary-foreground{\n  color: hsl(var(--primary-foreground));\n}\n.text-red-600{\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.text-red-800{\n  --tw-text-opacity: 1;\n  color: rgb(153 27 27 / var(--tw-text-opacity, 1));\n}\n.text-red-900{\n  --tw-text-opacity: 1;\n  color: rgb(127 29 29 / var(--tw-text-opacity, 1));\n}\n.text-secondary-foreground{\n  color: hsl(var(--secondary-foreground));\n}\n.text-white{\n  --tw-text-opacity: 1;\n  color: rgb(255 255 255 / var(--tw-text-opacity, 1));\n}\n.underline-offset-4{\n  text-underline-offset: 4px;\n}\n.antialiased{\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n}\n.opacity-0{\n  opacity: 0;\n}\n.opacity-30{\n  opacity: 0.3;\n}\n.opacity-50{\n  opacity: 0.5;\n}\n.opacity-60{\n  opacity: 0.6;\n}\n.opacity-85{\n  opacity: 0.85;\n}\n.opacity-90{\n  opacity: 0.9;\n}\n.shadow{\n  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-lg{\n  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-md{\n  --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-none{\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-sm{\n  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);\n  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.outline-none{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.outline{\n  outline-style: solid;\n}\n.ring{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.ring-0{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.ring-offset-background{\n  --tw-ring-offset-color: hsl(var(--background));\n}\n.blur{\n  --tw-blur: blur(8px);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.grayscale{\n  --tw-grayscale: grayscale(100%);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.filter{\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.backdrop-filter{\n  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);\n}\n.transition{\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-all{\n  transition-property: all;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-colors{\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-transform{\n  transition-property: transform;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.duration-150{\n  transition-duration: 150ms;\n}\n.duration-200{\n  transition-duration: 200ms;\n}\n.duration-300{\n  transition-duration: 300ms;\n}\n.ease-in-out{\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.ease-out{\n  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);\n}\n@keyframes enter{\n\n  from{\n    opacity: var(--tw-enter-opacity, 1);\n    transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0) scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1)) rotate(var(--tw-enter-rotate, 0));\n  }\n}\n@keyframes exit{\n\n  to{\n    opacity: var(--tw-exit-opacity, 1);\n    transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0) scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1)) rotate(var(--tw-exit-rotate, 0));\n  }\n}\n.animate-in{\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.fade-in{\n  --tw-enter-opacity: 0;\n}\n.duration-150{\n  animation-duration: 150ms;\n}\n.duration-200{\n  animation-duration: 200ms;\n}\n.duration-300{\n  animation-duration: 300ms;\n}\n.ease-in-out{\n  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.ease-out{\n  animation-timing-function: cubic-bezier(0, 0, 0.2, 1);\n}\n.running{\n  animation-play-state: running;\n}\n.placeholder\\:text-muted-foreground::-moz-placeholder{\n  color: hsl(var(--muted-foreground));\n}\n.placeholder\\:text-muted-foreground::placeholder{\n  color: hsl(var(--muted-foreground));\n}\n.last\\:border-0:last-child{\n  border-width: 0px;\n}\n.hover\\:bg-accent:hover{\n  background-color: hsl(var(--accent));\n}\n.hover\\:bg-accent\\/50:hover{\n  background-color: hsl(var(--accent) / 0.5);\n}\n.hover\\:bg-amber-100\\/50:hover{\n  background-color: rgb(254 243 199 / 0.5);\n}\n.hover\\:bg-destructive\\/10:hover{\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.hover\\:bg-destructive\\/90:hover{\n  background-color: hsl(var(--destructive) / 0.9);\n}\n.hover\\:bg-green-700:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(21 128 61 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-primary\\/5:hover{\n  background-color: hsl(var(--primary) / 0.05);\n}\n.hover\\:bg-primary\\/90:hover{\n  background-color: hsl(var(--primary) / 0.9);\n}\n.hover\\:bg-red-500\\/10:hover{\n  background-color: rgb(239 68 68 / 0.1);\n}\n.hover\\:bg-red-700:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(185 28 28 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-secondary\\/80:hover{\n  background-color: hsl(var(--secondary) / 0.8);\n}\n.hover\\:text-accent-foreground:hover{\n  color: hsl(var(--accent-foreground));\n}\n.hover\\:text-destructive:hover{\n  color: hsl(var(--destructive));\n}\n.hover\\:text-foreground:hover{\n  color: hsl(var(--foreground));\n}\n.hover\\:text-red-600:hover{\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.hover\\:underline:hover{\n  text-decoration-line: underline;\n}\n.hover\\:opacity-70:hover{\n  opacity: 0.7;\n}\n.focus\\:bg-accent:focus{\n  background-color: hsl(var(--accent));\n}\n.focus\\:text-accent-foreground:focus{\n  color: hsl(var(--accent-foreground));\n}\n.focus\\:outline-none:focus{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus\\:ring-1:focus{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-2:focus{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-primary:focus{\n  --tw-ring-color: hsl(var(--primary));\n}\n.focus\\:ring-red-500:focus{\n  --tw-ring-opacity: 1;\n  --tw-ring-color: rgb(239 68 68 / var(--tw-ring-opacity, 1));\n}\n.focus\\:ring-ring:focus{\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus\\:ring-offset-1:focus{\n  --tw-ring-offset-width: 1px;\n}\n.focus-visible\\:outline-none:focus-visible{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus-visible\\:ring-0:focus-visible{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus-visible\\:ring-2:focus-visible{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus-visible\\:ring-ring:focus-visible{\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus-visible\\:ring-offset-1:focus-visible{\n  --tw-ring-offset-width: 1px;\n}\n.disabled\\:pointer-events-none:disabled{\n  pointer-events: none;\n}\n.disabled\\:cursor-not-allowed:disabled{\n  cursor: not-allowed;\n}\n.disabled\\:opacity-50:disabled{\n  opacity: 0.5;\n}\n.group:hover .group-hover\\:opacity-100{\n  opacity: 1;\n}\n.data-\\[disabled\\]\\:pointer-events-none[data-disabled]{\n  pointer-events: none;\n}\n.data-\\[side\\=bottom\\]\\:translate-y-1[data-side="bottom"]{\n  --tw-translate-y: 0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[side\\=top\\]\\:-translate-y-1[data-side="top"]{\n  --tw-translate-y: -0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:translate-x-4[data-state="checked"]{\n  --tw-translate-x: 1rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=unchecked\\]\\:translate-x-0[data-state="unchecked"]{\n  --tw-translate-x: 0px;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:bg-primary[data-state="checked"]{\n  background-color: hsl(var(--primary));\n}\n.data-\\[state\\=unchecked\\]\\:bg-input[data-state="unchecked"]{\n  background-color: hsl(var(--input));\n}\n.data-\\[disabled\\]\\:opacity-50[data-disabled]{\n  opacity: 0.5;\n}\n.data-\\[state\\=open\\]\\:animate-in[data-state="open"]{\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:animate-out[data-state="closed"]{\n  animation-name: exit;\n  animation-duration: 150ms;\n  --tw-exit-opacity: initial;\n  --tw-exit-scale: initial;\n  --tw-exit-rotate: initial;\n  --tw-exit-translate-x: initial;\n  --tw-exit-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:fade-out-0[data-state="closed"]{\n  --tw-exit-opacity: 0;\n}\n.data-\\[state\\=open\\]\\:fade-in-0[data-state="open"]{\n  --tw-enter-opacity: 0;\n}\n.data-\\[state\\=closed\\]\\:zoom-out-95[data-state="closed"]{\n  --tw-exit-scale: .95;\n}\n.data-\\[state\\=open\\]\\:zoom-in-95[data-state="open"]{\n  --tw-enter-scale: .95;\n}\n.data-\\[side\\=bottom\\]\\:slide-in-from-top-2[data-side="bottom"]{\n  --tw-enter-translate-y: -0.5rem;\n}\n.data-\\[side\\=left\\]\\:slide-in-from-right-2[data-side="left"]{\n  --tw-enter-translate-x: 0.5rem;\n}\n.data-\\[side\\=right\\]\\:slide-in-from-left-2[data-side="right"]{\n  --tw-enter-translate-x: -0.5rem;\n}\n.data-\\[side\\=top\\]\\:slide-in-from-bottom-2[data-side="top"]{\n  --tw-enter-translate-y: 0.5rem;\n}\n.dark\\:border-amber-800:is(.dark *){\n  --tw-border-opacity: 1;\n  border-color: rgb(146 64 14 / var(--tw-border-opacity, 1));\n}\n.dark\\:border-green-800:is(.dark *){\n  --tw-border-opacity: 1;\n  border-color: rgb(22 101 52 / var(--tw-border-opacity, 1));\n}\n.dark\\:border-red-900:is(.dark *){\n  --tw-border-opacity: 1;\n  border-color: rgb(127 29 29 / var(--tw-border-opacity, 1));\n}\n.dark\\:bg-amber-900\\/30:is(.dark *){\n  background-color: rgb(120 53 15 / 0.3);\n}\n.dark\\:bg-amber-950\\/20:is(.dark *){\n  background-color: rgb(69 26 3 / 0.2);\n}\n.dark\\:bg-blue-900\\/30:is(.dark *){\n  background-color: rgb(30 58 138 / 0.3);\n}\n.dark\\:bg-blue-950\\/20:is(.dark *){\n  background-color: rgb(23 37 84 / 0.2);\n}\n.dark\\:bg-green-950\\/20:is(.dark *){\n  background-color: rgb(5 46 22 / 0.2);\n}\n.dark\\:bg-red-950\\/20:is(.dark *){\n  background-color: rgb(69 10 10 / 0.2);\n}\n.dark\\:text-amber-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(252 211 77 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-blue-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(147 197 253 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-green-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(134 239 172 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-red-200:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(254 202 202 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-red-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(252 165 165 / var(--tw-text-opacity, 1));\n}\n.\\[\\&\\>span\\]\\:line-clamp-1>span{\n  overflow: hidden;\n  display: -webkit-box;\n  -webkit-box-orient: vertical;\n  -webkit-line-clamp: 1;\n}\n.\\[\\&\\>span\\]\\:h-3>span{\n  height: 0.75rem;\n}\n.\\[\\&\\>span\\]\\:w-3>span{\n  width: 0.75rem;\n}\n.data-\\[state\\=checked\\]\\:\\[\\&\\>span\\]\\:translate-x-3>span[data-state="checked"]{\n  --tw-translate-x: 0.75rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.\\[\\&_svg\\]\\:pointer-events-none svg{\n  pointer-events: none;\n}\n.\\[\\&_svg\\]\\:size-4 svg{\n  width: 1rem;\n  height: 1rem;\n}\n.\\[\\&_svg\\]\\:shrink-0 svg{\n  flex-shrink: 0;\n}\n' : "") + `
+      .resume-modal{background:#fff;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,.25);width:90%;max-width:800px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;animation:resume-slideup .25s ease;}
+      @keyframes resume-slideup{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    `;
+      document.head.appendChild(s);
+    }
+    reactRoot = (0, import_client.createRoot)(container);
     const handleSave = async (resumeData) => {
       const body = serializeFormData(resumeData);
       const response = await fetch(ENDPOINT, {
@@ -31461,36 +31513,27 @@ var __morbis_feature = (() => {
         credentials: "same-origin"
       });
       if (!response.ok) throw new Error("HTTP " + response.status);
-      return;
     };
     reactRoot.render(
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(ErrorBoundary, { onError: () => setTimeout(() => closeOverlay(container), 0), children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
         App,
         {
           data,
           onSave: handleSave,
-          onClose: () => {
-            if (reactRoot) {
-              reactRoot.unmount();
-              reactRoot = null;
-            }
-            container.innerHTML = "";
-            container.style.display = "none";
-            document.body.classList.remove("ext-resume-open");
-          }
+          onClose: () => closeOverlay(container)
         }
-      )
+      ) })
     );
     document.body.classList.add("ext-resume-open");
   }
   function setupFloatingButton() {
-    const existing = document.getElementById("ext-resume-float-btn");
-    if (existing) return;
+    if (document.getElementById("ext-resume-float-btn")) return;
     const container = document.createElement("div");
     container.id = "ext-resume-container";
-    container.style.cssText = "position: fixed; inset: 0; z-index: 2147483646; display: none; pointer-events: none;";
+    container.style.cssText = "position: fixed; inset: 0; z-index: 2147483646; display: none; background: rgba(0,0,0,.4); align-items: center; justify-content: center;";
     document.body.appendChild(container);
     const btn = document.createElement("button");
+    overlayBtn = btn;
     btn.id = "ext-resume-float-btn";
     btn.textContent = "RJ";
     btn.title = "Resume Rajal";
@@ -31504,20 +31547,21 @@ var __morbis_feature = (() => {
       btn.style.boxShadow = "0 2px 8px rgba(0,0,0,.2)";
     };
     btn.addEventListener("click", () => {
-      const data = extractFormData();
-      container.style.display = "block";
-      mountReactApp(container, data);
+      if (btn.disabled) return;
+      btn.disabled = true;
+      try {
+        const data = extractFormData();
+        container.style.display = "block";
+        mountReactApp(container, data);
+      } catch {
+        container.style.display = "none";
+        btn.disabled = false;
+      }
     });
     document.body.appendChild(btn);
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && container.style.display === "block") {
-        if (reactRoot) {
-          reactRoot.unmount();
-          reactRoot = null;
-        }
-        container.innerHTML = "";
-        container.style.display = "none";
-        document.body.classList.remove("ext-resume-open");
+        closeOverlay(container);
       }
     });
   }
