@@ -6,19 +6,24 @@ import type { TindakanRow } from './types'
 
 interface Props { rows: TindakanRow[]; onChange: (r: TindakanRow[]) => void }
 
-const ICD9_URL = '/rekam-medik/search?opsi=clauseDiagnose_icd9&q='
+const ICD9_URL = '/rekam-medik/search?opsi=namaicd9&q='
 
 interface Hit { ID: string; KODE: string; NAMA: string }
 
 export function TindakanSection({ rows, onChange }: Props) {
   const [hits, setHits] = useState<Hit[]>([])
   const [hitRow, setHitRow] = useState(-1)
+  const [hitPos, setHitPos] = useState({ top: 0, left: 0, width: 0 })
   const t = useRef<ReturnType<typeof setTimeout>>()
 
-  const search = (q: string, rowIdx: number) => {
+  const search = (q: string, rowIdx: number, el: HTMLInputElement | null) => {
     console.log('[RJ-TIN] search:', q, 'row:', rowIdx)
     clearTimeout(t.current)
     if (q.length < 2) { setHits([]); setHitRow(-1); return }
+    if (el) {
+      const r = el.getBoundingClientRect()
+      setHitPos({ top: r.bottom + 2, left: r.left, width: r.width })
+    }
     t.current = setTimeout(async () => {
       try {
         const r = await fetch(`${ICD9_URL}${encodeURIComponent(q)}`)
@@ -67,15 +72,15 @@ export function TindakanSection({ rows, onChange }: Props) {
             <tbody>
               {rows.map((row, i) => (
                 <tr key={i} className="border-b border-border last:border-0 hover:bg-accent/50">
-                  <td className="px-3 py-1.5" style={{ position: 'relative' }}>
+                  <td className="px-3 py-1.5">
                     <Input
                       type="text" value={row.namaTindakan}
-                      onChange={e => { updateRow(i, { namaTindakan: e.target.value }); search(e.target.value, i) }}
+                      onChange={e => { updateRow(i, { namaTindakan: e.target.value }); search(e.target.value, i, e.target) }}
                       placeholder="Cari tindakan..."
                       className="border-0 bg-transparent px-0 h-7 text-md-sm shadow-none focus-visible:ring-0"
                     />
                     {hits.length > 0 && hitRow === i && (
-                      <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: '#fff', border: '1px solid #d1d5db', borderRadius: '6px', boxShadow: '0 4px 12px rgba(0,0,0,.15)', maxHeight: '200px', overflowY: 'auto' }}>
+                      <div style={{ position: 'fixed', top: hitPos.top, left: hitPos.left, width: hitPos.width, zIndex: 2147483647, background: '#fff', border: '1px solid #d1d5db', borderRadius: '6px', boxShadow: '0 4px 12px rgba(0,0,0,.15)', maxHeight: '200px', overflowY: 'auto' }}>
                         {hits.map((item, ri) => (
                           <div key={item.ID || ri} onClick={() => pick(i, item)}
                             style={{ padding: '6px 10px', cursor: 'pointer', fontSize: '12px', borderBottom: '1px solid #f3f4f6' }}
