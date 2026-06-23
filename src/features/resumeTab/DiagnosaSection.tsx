@@ -1,13 +1,12 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
-import { Input } from '../../ui/components/input'
 import { Button } from '../../ui/components/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/components/select'
 import type { DiagnosaRow } from './types'
 
 interface Props { rows: DiagnosaRow[]; onChange: (r: DiagnosaRow[]) => void }
 
-const ICD10_URL = '/rekam-medik/search?opsi=namaicd&q='
+const ICD10_URL = '/rekam-medik/search?opsi=kodeicd10&q='
 
 interface Hit { ID: string; KODE: string; NAMA: string }
 
@@ -15,36 +14,52 @@ export function DiagnosaSection({ rows, onChange }: Props) {
   const [hits, setHits] = useState<Hit[]>([])
   const [hitRow, setHitRow] = useState(-1)
   const [hitPos, setHitPos] = useState({ top: 0, left: 0, width: 0 })
+  const [errMsg, setErrMsg] = useState('')
   const t = useRef<ReturnType<typeof setTimeout>>()
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([])
+  const updateRow = (i: number, p: Partial<DiagnosaRow>) => onChange(rows.map((r, idx) => idx === i ? { ...r, ...p } : r))
+  const removeRow = (i: number) => onChange(rows.filter((_, idx) => idx !== i))
 
-  const search = (q: string, rowIdx: number, el: HTMLInputElement | null) => {
-    console.log('[RJ-DIAG] search:', q, 'row:', rowIdx)
+  const search = (q: string, rowIdx: number, el: HTMLInputElement) => {
+    setErrMsg('')
     clearTimeout(t.current)
     if (q.length < 2) { setHits([]); setHitRow(-1); return }
-    if (el) {
-      const r = el.getBoundingClientRect()
-      setHitPos({ top: r.bottom + 2, left: r.left, width: r.width })
-    }
+    const r = el.getBoundingClientRect()
+    setHitPos({ top: r.bottom + 2, left: r.left, width: r.width })
     t.current = setTimeout(async () => {
       try {
-        const r = await fetch(`${ICD10_URL}${encodeURIComponent(q)}`)
-        console.log('[RJ-DIAG] fetch status:', r.status)
-        if (!r.ok) return
-        const d = await r.json()
-        console.log('[RJ-DIAG] results:', d?.length || 0)
-        if (Array.isArray(d)) { setHits(d.slice(0, 10)); setHitRow(rowIdx) }
-      } catch (e) { console.error('[RJ-DIAG] fetch error:', e) }
+        const resp = await fetch(`${ICD10_URL}${encodeURIComponent(q)}&limit=10&ts=${Date.now()}`)
+        if (!resp.ok) { setErrMsg('HTTP ' + resp.status); return }
+        const txt = await resp.text()
+        if (!txt) { setErrMsg('Respon kosong'); return }
+        const d = JSON.parse(txt)
+        if (Array.isArray(d)) { setHits(d.slice(0, 15)); setHitRow(rowIdx) }
+        else setErrMsg('Format tidak dikenal')
+      } catch (e) { setErrMsg(String(e)) }
     }, 300)
   }
 
   const pick = (i: number, item: Hit) => {
-    console.log('[RJ-DIAG] picked:', item.NAMA, item.KODE)
-    const next = rows.map((r, idx) => idx === i ? { ...r, kode10: item.KODE, namaDiagnosa: item.NAMA } : r)
-    onChange(next)
-    setHits([])
-    setHitRow(-1)
+    updateRow(i, { kode10: item.KODE, namaDiagnosa: item.NAMA })
+    setHits([]); setHitRow(-1)
   }
+
+  // Native DOM event listeners (works even if React events don't)
+  useEffect(() => {
+    rows.forEach((_, i) => {
+      const no = i + 1
+      const nama = document.getElementById(`rj-nama${no}`) as HTMLInputElement
+      if (nama) {
+        nama.addEventListener('input', () => {
+          updateRow(i, { namaDiagnosa: nama.value })
+          search(nama.value, i, nama)
+        })
+      }
+      const kode = document.getElementById(`rj-kode${no}`) as HTMLInputElement
+      if (kode) {
+        kode.addEventListener('input', () => updateRow(i, { kode10: kode.value }))
+      }
+    })
+  }, [rows.length])
 
   return (
     <div className="px-5 py-4 border-b border-border bg-background">
@@ -68,33 +83,33 @@ export function DiagnosaSection({ rows, onChange }: Props) {
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, i) => (
+            {rows.map((row, i) => {
+              const no = i + 1
+              return (
               <tr key={i} className="border-b border-border last:border-0 hover:bg-accent/50">
                 <td className="px-3 py-1.5">
-                  <Input type="text" value={row.namaDiagnosa}
-                    ref={el => inputRefs.current[i] = el}
-                    onChange={e => { updateRow(i, { namaDiagnosa: e.target.value }); search(e.target.value, i, e.target) }}
+                  <input type="text" id={`rj-nama${no}`} name="nama[]" defaultValue={row.namaDiagnosa}
                     placeholder="Cari diagnosa..."
-                    className="border-0 bg-transparent px-0 h-7 text-md-sm shadow-none focus-visible:ring-0" />
+                    autoComplete="off"
+                    className="flex w-full rounded-md border-input py-1 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-offset-1 border-0 bg-transparent px-0 h-7 text-md-sm shadow-none focus-visible:ring-0" />
+                  <input type="hidden" id={`rj-idicd${no}`} name="idicd[]" defaultValue={row.idicd} />
                   {hits.length > 0 && hitRow === i && (
                     <div style={{ position: 'fixed', top: hitPos.top, left: hitPos.left, width: hitPos.width, zIndex: 2147483647, background: '#fff', border: '1px solid #d1d5db', borderRadius: '6px', boxShadow: '0 4px 12px rgba(0,0,0,.15)', maxHeight: '200px', overflowY: 'auto' }}>
                       {hits.map((item, ri) => (
                         <div key={item.ID || ri} onClick={() => pick(i, item)}
-                          style={{ padding: '6px 10px', cursor: 'pointer', fontSize: '12px', borderBottom: '1px solid #f3f4f6' }}
-                          onMouseEnter={e => (e.currentTarget.style.background = '#f3f4f6')}
-                          onMouseLeave={e => (e.currentTarget.style.background = '')}>
+                          style={{ padding: '6px 10px', cursor: 'pointer', fontSize: '12px', borderBottom: '1px solid #f3f4f6' }}>
                           <div style={{ fontWeight: 500, color: '#1f2937' }}>{item.NAMA}</div>
                           <div style={{ color: '#6b7280', fontSize: '11px' }}>{item.KODE}</div>
                         </div>
                       ))}
                     </div>
                   )}
+                  {errMsg && <div style={{ position: 'fixed', top: hitPos.top, left: hitPos.left, zIndex: 2147483647, background: '#fee2e2', border: '1px solid #ef4444', borderRadius: '6px', padding: '8px', fontSize: '12px', color: '#b91c1c' }}>{errMsg}</div>}
                 </td>
                 <td className="px-3 py-1.5">
-                  <Input type="text" value={row.kode10}
-                    onChange={e => updateRow(i, { kode10: e.target.value })}
+                  <input type="text" id={`rj-kode${no}`} name="kode10[]" defaultValue={row.kode10}
                     placeholder="Kode"
-                    className="border-0 bg-transparent px-0 h-7 text-md-xs font-mono shadow-none focus-visible:ring-0" />
+                    className="flex w-full rounded-md border-input py-1 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-offset-1 border-0 bg-transparent px-0 h-7 text-md-xs font-mono shadow-none focus-visible:ring-0" />
                 </td>
                 <td className="px-3 py-1.5">
                   <Select value={row.kasus} onValueChange={v => updateRow(i, { kasus: v })}>
@@ -125,13 +140,10 @@ export function DiagnosaSection({ rows, onChange }: Props) {
                   </Button>
                 </td>
               </tr>
-            ))}
+            )})}
           </tbody>
         </table>
       </div>
     </div>
   )
-
-  function updateRow(i: number, p: Partial<DiagnosaRow>) { onChange(rows.map((r, idx) => idx === i ? { ...r, ...p } : r)) }
-  function removeRow(i: number) { onChange(rows.filter((_, idx) => idx !== i)) }
 }

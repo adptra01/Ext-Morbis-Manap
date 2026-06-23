@@ -7,7 +7,7 @@ const isRj = location.pathname.includes('rm-rawat-jalan-new')
 
 // ponytail: both pages use same ICD search endpoints
 const AUTOCOMPLETE_URLS = {
-  icd10: '/rekam-medik/search?opsi=namaicd&q=',
+  icd10: '/rekam-medik/search?opsi=kodeicd10&q=',
   icd9: '/rekam-medik/search?opsi=namaicd9&q=',
 }
 

@@ -20,11 +20,11 @@ export function Footer({ onCancel, onSave, saving, hasErrors, lastSaved }: Foote
         )}
         {lastSaved && <span className="text-muted-foreground">Tersimpan pukul {lastSaved}</span>}
       </div>
-      <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm" onClick={onCancel}>
+      <div className="flex items-center gap-3">
+        <Button variant="outline" size="xl" onClick={onCancel}>
           Batal
         </Button>
-        <Button variant="default" size="sm" onClick={onSave} disabled={saving || hasErrors}>
+        <Button variant="default" size="xl" onClick={onSave} disabled={saving || hasErrors}>
           {saving ? 'Menyimpan...' : 'Simpan'}
         </Button>
       </div>

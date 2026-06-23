@@ -24,6 +24,7 @@ function validate(data: ResumeData): ValidationError[] {
   }
 
   data.diagnosa.forEach((d, i) => {
+    if (!d.kode10 && !d.namaDiagnosa) return
     if (d.kode10 && !d.namaDiagnosa) {
       errors.push({ section: `Diagnosa #${i + 1}`, message: 'Nama diagnosa kosong' });
     }
