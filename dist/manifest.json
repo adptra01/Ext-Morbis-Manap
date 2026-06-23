@@ -176,7 +176,9 @@
     {
       "matches": [
         "http://192.168.8.4/v2/m-klaim/detail-v2-refaktor*",
-        "http://103.147.236.140/v2/m-klaim/detail-v2-refaktor*"
+        "http://103.147.236.140/v2/m-klaim/detail-v2-refaktor*",
+        "http://192.168.8.4/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new*",
+        "http://103.147.236.140/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new*"
       ],
       "js": [
         "features/resumeTab.js"

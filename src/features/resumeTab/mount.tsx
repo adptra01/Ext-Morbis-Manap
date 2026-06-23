@@ -3,22 +3,109 @@ import { App } from './App'
 import { ErrorBoundary } from './ErrorBoundary'
 import type { ResumeData, DiagnosaRow, TindakanRow } from './types'
 
+const isRj = location.pathname.includes('rm-rawat-jalan-new')
+
 const AUTOCOMPLETE_URLS = {
-  icd10: '/v2/m-klaim/icd-10/search',
-  icd9: '/v2/m-klaim/icd-9/search',
+  icd10: isRj ? '/rekam-medik/search?opsi=clauseDiagnose_icd10&q=' : '/v2/m-klaim/icd-10/search',
+  icd9: isRj ? '/rekam-medik/search?opsi=clauseDiagnose_icd9&q=' : '/v2/m-klaim/icd-9/search',
 }
 
-const ENDPOINT = '/v2/m-klaim/detail-v2-refaktor/simpan_resume'
+const ENDPOINT = isRj
+  ? '/rekam-medik/control/rm-rawat-jalan'
+  : '/v2/m-klaim/detail-v2-refaktor/simpan_resume'
 
 let reactRoot: Root | null = null
 let overlayBtn: HTMLButtonElement | null = null
 
+// ponytail: parse #resume-view tabel untuk ambil data yang sudah ter-render
+function parseResumeView(): ResumeData | null {
+  const view = document.getElementById('resume-view')
+  if (!view) return null
+  const txt = (label: string): string => {
+    const rows = view.querySelectorAll('table table tr, fieldset table tr')
+    for (const row of rows) {
+      const cells = row.querySelectorAll('td')
+      for (let i = 0; i < cells.length; i++) {
+        if (cells[i].textContent?.trim() === label && cells[i + 1]) {
+          const next = cells[i + 1]
+          // skip the colon td
+          const valCell = next.textContent?.trim() === ':' ? cells[i + 2] : next
+          return valCell?.textContent?.trim() || ''
+        }
+      }
+    }
+    return ''
+  }
+
+  const getVital = (label: string): string => {
+    const fisik = Array.from(view.querySelectorAll('tr')).find(r => r.textContent?.includes('Hasil Pemeriksaan Fisik'))
+    if (!fisik) return ''
+    const table = fisik.nextElementSibling?.querySelector('table')
+    if (!table) return ''
+    const rows = table.querySelectorAll('tr')
+    for (const row of rows) {
+      const cells = row.querySelectorAll('td')
+      for (let i = 0; i < cells.length; i++) {
+        if (cells[i].textContent?.trim() === label && cells[i + 1]) {
+          const next = cells[i + 1]
+          const valCell = next.textContent?.trim() === ':' ? cells[i + 2] : next
+          return valCell?.textContent?.trim() || ''
+        }
+      }
+    }
+    return ''
+  }
+
+  // Parse ICD-10 diagnoses from the ICD X section
+  const diagnosa: DiagnosaRow[] = []
+  const icdSection = Array.from(view.querySelectorAll('tr')).find(r => r.textContent?.includes('ICD X'))
+  if (icdSection) {
+    const icdTable = icdSection.nextElementSibling?.querySelector('table')
+    if (icdTable) {
+      const items = icdTable.querySelectorAll('tr')
+      for (const item of items) {
+        const text = item.textContent?.trim() || ''
+        // Format: "- Nama Diagnosa (KODE) -"
+        const m = text.match(/-\s*(.+?)\s*\(([^)]+)\)\s*-/)
+        if (m) {
+          diagnosa.push({ idicd: '', kode10: m[2], namaDiagnosa: m[1], kasus: '', komplikasi: '' })
+        }
+      }
+    }
+  }
+
+  return {
+    patientInfo: {
+      norm: txt('No. Rekam Medis'),
+      pasien: txt('Nama Pasien'),
+      nama_dokter: '',
+    },
+    clinicalNotes: {
+      anamnesa: txt('Anamnesa'),
+      pemeriksaan_fisik: '',
+      catatan: txt('Diagnosa'),
+      tindakan: txt('Tindakan'),
+      terapi_pengobatan: txt('Terapi Pengobatan'),
+    },
+    vitalSigns: {
+      tensi: getVital('Tensi'),
+      nadi: getVital('Nadi'),
+      suhu: getVital('Suhu'),
+      nafas: getVital('Nafas'),
+      tinggi: getVital('Tinggi'),
+      berat: getVital('Berat'),
+    },
+    diagnosa,
+    tindakan: [],
+  }
+}
+
 function extractFormData(): ResumeData {
+  const fromView = parseResumeView()
+  if (fromView && fromView.patientInfo.norm) return fromView
+
   const doc = document
-
   const getVal = (id: string) => (doc.getElementById(id) as HTMLInputElement)?.value || ''
-
-  // ponytail: support both input and textarea for clinical fields
   const getField = (name: string) => {
     const el = doc.querySelector(`textarea[name="${name}"], input[name="${name}"], #${name}`) as HTMLInputElement | HTMLTextAreaElement | null
     return el?.value || ''
@@ -48,10 +135,8 @@ function extractFormData(): ResumeData {
   }
 
   const diagnosa: DiagnosaRow[] = []
-  // ponytail: try both name patterns (kode10[] for klaim, kode[] and numbered IDs for rm-rawat-jalan)
   const kode10Inputs = doc.querySelectorAll<HTMLInputElement>('input[name="kode10[]"], input[name="kode[]"]')
   if (kode10Inputs.length === 0) {
-    // fallback: numbered IDs like kode1, kode2, kode3
     let i = 1
     while (doc.getElementById(`kode${i}`) || doc.querySelector(`input[name="kode10[]"]:nth-child(${i})`)) {
       const idicd = getVal(`idicd${i}`) || ''
@@ -94,12 +179,9 @@ function extractFormData(): ResumeData {
   return { patientInfo, clinicalNotes, vitalSigns, diagnosa, tindakan }
 }
 
-function serializeFormData(data: ResumeData): string {
+function serializeKlaim(data: ResumeData): string {
   const pairs: [string, string][] = []
-
-  const add = (name: string, value: string | number) => {
-    pairs.push([name, String(value)])
-  }
+  const add = (name: string, value: string | number) => pairs.push([name, String(value)])
 
   add('id_visit', (document.getElementById('id_visit') as HTMLInputElement)?.value || '')
   add('id_rawat_jalan', (document.getElementById('id_rawat_jalan') as HTMLInputElement)?.value || '')
@@ -107,8 +189,7 @@ function serializeFormData(data: ResumeData): string {
   add('id_dokter', (document.getElementById('id_dokter') as HTMLInputElement)?.value || '')
   add('id_bed', (document.getElementById('id_bed') as HTMLInputElement)?.value || '')
 
-  const otherFields = ['noregis', 'norm', 'pasien', 'nama_dokter', 'waktu', 'alergiMakananJSON', 'alergiLingkunganJSON']
-  otherFields.forEach((id) => {
+  ;['noregis', 'norm', 'pasien', 'nama_dokter', 'waktu', 'alergiMakananJSON', 'alergiLingkunganJSON'].forEach((id) => {
     const v = (document.getElementById(id) as HTMLInputElement)?.value
     if (v) add(id, v)
   })
@@ -120,9 +201,7 @@ function serializeFormData(data: ResumeData): string {
     tindakan: data.clinicalNotes.tindakan,
     terapi_pengobatan: data.clinicalNotes.terapi_pengobatan,
   }
-  Object.entries(noteFields).forEach(([name, val]) => {
-    if (val) add(name, val)
-  })
+  Object.entries(noteFields).forEach(([name, val]) => { if (val) add(name, val) })
 
   const vitalFields: Record<string, string> = {
     tensi: data.vitalSigns.tensi,
@@ -132,9 +211,7 @@ function serializeFormData(data: ResumeData): string {
     tinggi: data.vitalSigns.tinggi,
     berat: data.vitalSigns.berat,
   }
-  Object.entries(vitalFields).forEach(([name, val]) => {
-    if (val) add(name, val)
-  })
+  Object.entries(vitalFields).forEach(([name, val]) => { if (val) add(name, val) })
 
   data.diagnosa.forEach((d) => {
     add('idicd[]', d.idicd)
@@ -155,8 +232,60 @@ function serializeFormData(data: ResumeData): string {
   })
 
   add('save', 'Simpan')
-
   return pairs.map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v)).join('&')
+}
+
+function serializeRawatJalan(data: ResumeData): string {
+  const pairs: [string, string][] = []
+  const add = (name: string, value: string | number) => pairs.push([name, String(value)])
+
+  // Copy hidden fields from original form
+  ;['id_visit', 'id_rawat_jalan', 'id_user', 'id_dokter', 'id_bed', 'norm', 'noregis', 'pasien', 'nama_dokter'].forEach((id) => {
+    const v = (document.getElementById(id) as HTMLInputElement)?.value
+    if (v) add(id, v)
+  })
+
+  // Waktu — generate current datetime in DD/MM/YYYY HH:mm:ss format
+  const now = new Date()
+  const pad = (n: number) => n.toString().padStart(2, '0')
+  add('waktu', `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`)
+
+  // Clinical notes
+  add('anamnesa', data.clinicalNotes.anamnesa)
+  if (data.clinicalNotes.pemeriksaan_fisik) add('pemeriksaan_fisik', data.clinicalNotes.pemeriksaan_fisik)
+  if (data.clinicalNotes.catatan) add('catatan', data.clinicalNotes.catatan)
+  if (data.clinicalNotes.tindakan) add('tindakan', data.clinicalNotes.tindakan)
+  if (data.clinicalNotes.terapi_pengobatan) add('terapi_pengobatan', data.clinicalNotes.terapi_pengobatan)
+
+  // Vital signs
+  add('tensi', data.vitalSigns.tensi)
+  if (data.vitalSigns.nadi) add('nadi', data.vitalSigns.nadi)
+  if (data.vitalSigns.suhu) add('suhu', data.vitalSigns.suhu)
+  if (data.vitalSigns.nafas) add('nafas', data.vitalSigns.nafas)
+  if (data.vitalSigns.tinggi) add('tinggi', data.vitalSigns.tinggi)
+  if (data.vitalSigns.berat) add('berat', data.vitalSigns.berat)
+
+  // Diagnosa — uses nama[], idicd[], kode10[], kasus_diagnosa[], komplikasi[]
+  data.diagnosa.forEach((d) => {
+    add('nama[]', d.namaDiagnosa)
+    add('idicd[]', d.idicd)
+    add('kode10[]', d.kode10)
+    add('kasus_diagnosa[]', d.kasus || 'BARU')
+    add('komplikasi[]', d.komplikasi || '')
+  })
+
+  // Tindakan — uses namaTindakan[], kode9[]
+  data.tindakan.forEach((t) => {
+    if (t.namaTindakan) add('namaTindakan[]', t.namaTindakan)
+    add('kode9[]', t.kode9)
+  })
+
+  add('save', 'Simpan')
+  return pairs.map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v)).join('&')
+}
+
+function serializeFormData(data: ResumeData): string {
+  return isRj ? serializeRawatJalan(data) : serializeKlaim(data)
 }
 
 function closeOverlay(container: HTMLElement) {
@@ -177,7 +306,6 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
   }
   container.innerHTML = ''
 
-  // ponytail: inject Tailwind CSS once into head, not shadow DOM
   if (!document.getElementById('morbis-resume-css')) {
     const s = document.createElement('style')
     s.id = 'morbis-resume-css'

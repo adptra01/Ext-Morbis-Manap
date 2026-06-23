@@ -2170,9 +2170,9 @@ var __morbis_feature = (() => {
                   if ("string" === typeof entry.name) {
                     var JSCompiler_temp_const = info;
                     a: {
-                      var name = entry.name, env = entry.env, location = entry.debugLocation;
-                      if (null != location) {
-                        var childStack = formatOwnerStack(location), idx = childStack.lastIndexOf("\n"), lastLine = -1 === idx ? childStack : childStack.slice(idx + 1);
+                      var name = entry.name, env = entry.env, location2 = entry.debugLocation;
+                      if (null != location2) {
+                        var childStack = formatOwnerStack(location2), idx = childStack.lastIndexOf("\n"), lastLine = -1 === idx ? childStack : childStack.slice(idx + 1);
                         if (-1 !== lastLine.indexOf(name)) {
                           var JSCompiler_inline_result = "\n" + lastLine;
                           break a;
@@ -31351,10 +31351,88 @@ var __morbis_feature = (() => {
 
   // src/features/resumeTab/mount.tsx
   var import_jsx_runtime25 = __toESM(require_jsx_runtime(), 1);
-  var ENDPOINT = "/v2/m-klaim/detail-v2-refaktor/simpan_resume";
+  var isRj = location.pathname.includes("rm-rawat-jalan-new");
+  var ENDPOINT = isRj ? "/rekam-medik/control/rm-rawat-jalan" : "/v2/m-klaim/detail-v2-refaktor/simpan_resume";
   var reactRoot = null;
   var overlayBtn = null;
+  function parseResumeView() {
+    const view = document.getElementById("resume-view");
+    if (!view) return null;
+    const txt = (label) => {
+      const rows = view.querySelectorAll("table table tr, fieldset table tr");
+      for (const row of rows) {
+        const cells = row.querySelectorAll("td");
+        for (let i = 0; i < cells.length; i++) {
+          if (cells[i].textContent?.trim() === label && cells[i + 1]) {
+            const next = cells[i + 1];
+            const valCell = next.textContent?.trim() === ":" ? cells[i + 2] : next;
+            return valCell?.textContent?.trim() || "";
+          }
+        }
+      }
+      return "";
+    };
+    const getVital = (label) => {
+      const fisik = Array.from(view.querySelectorAll("tr")).find((r2) => r2.textContent?.includes("Hasil Pemeriksaan Fisik"));
+      if (!fisik) return "";
+      const table = fisik.nextElementSibling?.querySelector("table");
+      if (!table) return "";
+      const rows = table.querySelectorAll("tr");
+      for (const row of rows) {
+        const cells = row.querySelectorAll("td");
+        for (let i = 0; i < cells.length; i++) {
+          if (cells[i].textContent?.trim() === label && cells[i + 1]) {
+            const next = cells[i + 1];
+            const valCell = next.textContent?.trim() === ":" ? cells[i + 2] : next;
+            return valCell?.textContent?.trim() || "";
+          }
+        }
+      }
+      return "";
+    };
+    const diagnosa = [];
+    const icdSection = Array.from(view.querySelectorAll("tr")).find((r2) => r2.textContent?.includes("ICD X"));
+    if (icdSection) {
+      const icdTable = icdSection.nextElementSibling?.querySelector("table");
+      if (icdTable) {
+        const items = icdTable.querySelectorAll("tr");
+        for (const item of items) {
+          const text = item.textContent?.trim() || "";
+          const m = text.match(/-\s*(.+?)\s*\(([^)]+)\)\s*-/);
+          if (m) {
+            diagnosa.push({ idicd: "", kode10: m[2], namaDiagnosa: m[1], kasus: "", komplikasi: "" });
+          }
+        }
+      }
+    }
+    return {
+      patientInfo: {
+        norm: txt("No. Rekam Medis"),
+        pasien: txt("Nama Pasien"),
+        nama_dokter: ""
+      },
+      clinicalNotes: {
+        anamnesa: txt("Anamnesa"),
+        pemeriksaan_fisik: "",
+        catatan: txt("Diagnosa"),
+        tindakan: txt("Tindakan"),
+        terapi_pengobatan: txt("Terapi Pengobatan")
+      },
+      vitalSigns: {
+        tensi: getVital("Tensi"),
+        nadi: getVital("Nadi"),
+        suhu: getVital("Suhu"),
+        nafas: getVital("Nafas"),
+        tinggi: getVital("Tinggi"),
+        berat: getVital("Berat")
+      },
+      diagnosa,
+      tindakan: []
+    };
+  }
   function extractFormData() {
+    const fromView = parseResumeView();
+    if (fromView && fromView.patientInfo.norm) return fromView;
     const doc = document;
     const getVal = (id) => doc.getElementById(id)?.value || "";
     const getField = (name) => {
@@ -31423,18 +31501,15 @@ var __morbis_feature = (() => {
     });
     return { patientInfo, clinicalNotes, vitalSigns, diagnosa, tindakan };
   }
-  function serializeFormData(data) {
+  function serializeKlaim(data) {
     const pairs = [];
-    const add = (name, value) => {
-      pairs.push([name, String(value)]);
-    };
+    const add = (name, value) => pairs.push([name, String(value)]);
     add("id_visit", document.getElementById("id_visit")?.value || "");
     add("id_rawat_jalan", document.getElementById("id_rawat_jalan")?.value || "");
     add("id_user", document.getElementById("id_user")?.value || "");
     add("id_dokter", document.getElementById("id_dokter")?.value || "");
     add("id_bed", document.getElementById("id_bed")?.value || "");
-    const otherFields = ["noregis", "norm", "pasien", "nama_dokter", "waktu", "alergiMakananJSON", "alergiLingkunganJSON"];
-    otherFields.forEach((id) => {
+    ["noregis", "norm", "pasien", "nama_dokter", "waktu", "alergiMakananJSON", "alergiLingkunganJSON"].forEach((id) => {
       const v = document.getElementById(id)?.value;
       if (v) add(id, v);
     });
@@ -31477,6 +31552,44 @@ var __morbis_feature = (() => {
     });
     add("save", "Simpan");
     return pairs.map(([k, v]) => encodeURIComponent(k) + "=" + encodeURIComponent(v)).join("&");
+  }
+  function serializeRawatJalan(data) {
+    const pairs = [];
+    const add = (name, value) => pairs.push([name, String(value)]);
+    ["id_visit", "id_rawat_jalan", "id_user", "id_dokter", "id_bed", "norm", "noregis", "pasien", "nama_dokter"].forEach((id) => {
+      const v = document.getElementById(id)?.value;
+      if (v) add(id, v);
+    });
+    const now = /* @__PURE__ */ new Date();
+    const pad = (n) => n.toString().padStart(2, "0");
+    add("waktu", `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`);
+    add("anamnesa", data.clinicalNotes.anamnesa);
+    if (data.clinicalNotes.pemeriksaan_fisik) add("pemeriksaan_fisik", data.clinicalNotes.pemeriksaan_fisik);
+    if (data.clinicalNotes.catatan) add("catatan", data.clinicalNotes.catatan);
+    if (data.clinicalNotes.tindakan) add("tindakan", data.clinicalNotes.tindakan);
+    if (data.clinicalNotes.terapi_pengobatan) add("terapi_pengobatan", data.clinicalNotes.terapi_pengobatan);
+    add("tensi", data.vitalSigns.tensi);
+    if (data.vitalSigns.nadi) add("nadi", data.vitalSigns.nadi);
+    if (data.vitalSigns.suhu) add("suhu", data.vitalSigns.suhu);
+    if (data.vitalSigns.nafas) add("nafas", data.vitalSigns.nafas);
+    if (data.vitalSigns.tinggi) add("tinggi", data.vitalSigns.tinggi);
+    if (data.vitalSigns.berat) add("berat", data.vitalSigns.berat);
+    data.diagnosa.forEach((d) => {
+      add("nama[]", d.namaDiagnosa);
+      add("idicd[]", d.idicd);
+      add("kode10[]", d.kode10);
+      add("kasus_diagnosa[]", d.kasus || "BARU");
+      add("komplikasi[]", d.komplikasi || "");
+    });
+    data.tindakan.forEach((t) => {
+      if (t.namaTindakan) add("namaTindakan[]", t.namaTindakan);
+      add("kode9[]", t.kode9);
+    });
+    add("save", "Simpan");
+    return pairs.map(([k, v]) => encodeURIComponent(k) + "=" + encodeURIComponent(v)).join("&");
+  }
+  function serializeFormData(data) {
+    return isRj ? serializeRawatJalan(data) : serializeKlaim(data);
   }
   function closeOverlay(container) {
     if (reactRoot) {
