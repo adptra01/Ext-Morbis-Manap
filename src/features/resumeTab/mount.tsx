@@ -378,6 +378,8 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
     s.id = 'morbis-resume-css'
     s.textContent = (typeof SHADOW_CSS !== 'undefined' ? SHADOW_CSS : '') + `
       .resume-modal{background:#fff;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,.25);width:90%;max-width:800px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;animation:resume-slideup .25s ease;}
+      .resume-modal textarea{resize:vertical!important;min-height:60px;}
+      .resume-modal button:not([disabled]){cursor:pointer;}
       @keyframes resume-slideup{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
     `
     document.head.appendChild(s)
@@ -413,6 +415,17 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
   )
 
   document.body.classList.add('ext-resume-open')
+
+  // ponytail: auto-expand textareas inside our modal only
+  setTimeout(() => {
+    container.querySelectorAll('textarea').forEach((tx) => {
+      tx.addEventListener('input', () => {
+        tx.style.height = 'auto'
+        tx.style.height = tx.scrollHeight + 'px'
+      })
+      tx.dispatchEvent(new Event('input'))
+    })
+  }, 50)
 }
 
 function setupFloatingButton() {
@@ -445,7 +458,7 @@ function setupFloatingButton() {
     try {
       const data = extractFormData()
       console.log('[RJ] extracted data:', data)
-      container.style.display = 'block'
+      container.style.display = 'flex'
       mountReactApp(container, data)
     } catch (e) {
       console.error('[RJ] click error:', e)
