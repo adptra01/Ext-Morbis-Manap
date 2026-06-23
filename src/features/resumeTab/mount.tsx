@@ -41,6 +41,39 @@ function parseResumeView(): ResumeData | null {
     return ''
   }
 
+  const getFisik = (): string => {
+    const fisik = Array.from(view.querySelectorAll('tr')).find(r => r.textContent?.includes('Hasil Pemeriksaan Fisik'))
+    if (!fisik) return ''
+    const vtable = fisik.querySelector('td:last-child table, td[colspan] table')
+    if (!vtable) return ''
+    const lines: string[] = []
+    const vitals = ['Tensi', 'Nadi', 'Suhu', 'Nafas', 'Tinggi', 'Berat']
+    const vrows = vtable.querySelectorAll('tr')
+    let lainnya = ''
+    for (const row of vrows) {
+      const cells = row.querySelectorAll('td')
+      let firstInRow = true
+      for (let i = 0; i < cells.length; i++) {
+        const txt = cells[i].textContent?.trim() || ''
+        if (vitals.includes(txt) && i + 2 < cells.length) {
+          const colon = cells[i + 1]?.textContent?.trim() === ':' ? cells[i + 2] : null
+          if (colon) {
+            if (firstInRow) { lines.push(`${txt}: ${colon.textContent?.trim() || ''}`); firstInRow = false }
+            else { lines.push(`${txt}: ${colon.textContent?.trim() || ''}`) }
+            i += 2
+            continue
+          }
+        }
+        // ponytail: 'Lainnya' row has the actual fisik notes
+        if (txt === 'Lainnya' && i + 2 < cells.length) {
+          lainnya = cells[i + 2]?.textContent?.trim() || ''
+        }
+      }
+    }
+    if (lainnya && lainnya.toLowerCase() !== 'cm') lines.push('', lainnya)
+    return lines.join('\n')
+  }
+
   const getVital = (label: string): string => {
     const fisik = Array.from(view.querySelectorAll('tr')).find(r => r.textContent?.includes('Hasil Pemeriksaan Fisik'))
     if (!fisik) return ''
@@ -88,7 +121,7 @@ function parseResumeView(): ResumeData | null {
     },
     clinicalNotes: {
       anamnesa: txt('Anamnesa'),
-      pemeriksaan_fisik: '',
+      pemeriksaan_fisik: getFisik(),
       catatan: txt('Diagnosa'),
       tindakan: txt('Tindakan'),
       terapi_pengobatan: txt('Terapi Pengobatan'),
@@ -126,7 +159,7 @@ function extractFormData(): ResumeData {
 
   const clinicalNotes = {
     anamnesa: getField('anamnesa'),
-    pemeriksaan_fisik: getField('pemeriksaan_fisik') || getField('pemeriksaan') || '',
+    pemeriksaan_fisik: getField('pemeriksaan_fisik') || getField('pemeriksaan') || getField('fisik') || '',
     catatan: getField('catatan'),
     tindakan: getField('tindakan'),
     terapi_pengobatan: getField('terapi_pengobatan'),
