@@ -5,14 +5,18 @@ import type { ResumeData, DiagnosaRow, TindakanRow } from './types'
 
 const isRj = location.pathname.includes('rm-rawat-jalan-new')
 
+// ponytail: both pages use same ICD search endpoints
 const AUTOCOMPLETE_URLS = {
-  icd10: isRj ? '/rekam-medik/search?opsi=clauseDiagnose_icd10&q=' : '/v2/m-klaim/icd-10/search',
-  icd9: isRj ? '/rekam-medik/search?opsi=clauseDiagnose_icd9&q=' : '/v2/m-klaim/icd-9/search',
+  icd10: '/rekam-medik/search?opsi=clauseDiagnose_icd10&q=',
+  icd9: '/rekam-medik/search?opsi=clauseDiagnose_icd9&q=',
 }
 
 const ENDPOINT = isRj
   ? '/rekam-medik/control/rm-rawat-jalan'
   : '/v2/m-klaim/detail-v2-refaktor/simpan_resume'
+
+console.log('[RJ] setup — isRj:', isRj, 'ENDPOINT:', ENDPOINT)
+console.log('[RJ] AUTOCOMPLETE_URLS:', AUTOCOMPLETE_URLS)
 
 let reactRoot: Root | null = null
 let overlayBtn: HTMLButtonElement | null = null
@@ -40,9 +44,10 @@ function parseResumeView(): ResumeData | null {
   const getVital = (label: string): string => {
     const fisik = Array.from(view.querySelectorAll('tr')).find(r => r.textContent?.includes('Hasil Pemeriksaan Fisik'))
     if (!fisik) return ''
-    const table = fisik.nextElementSibling?.querySelector('table')
-    if (!table) return ''
-    const rows = table.querySelectorAll('tr')
+    // ponytail: vitals table is inside the 3rd <td> (colspan), not a sibling row
+    const td = fisik.querySelector('td:last-child table, td[colspan] table')
+    if (!td) return ''
+    const rows = td.querySelectorAll('tr')
     for (const row of rows) {
       const cells = row.querySelectorAll('td')
       for (let i = 0; i < cells.length; i++) {
@@ -60,7 +65,8 @@ function parseResumeView(): ResumeData | null {
   const diagnosa: DiagnosaRow[] = []
   const icdSection = Array.from(view.querySelectorAll('tr')).find(r => r.textContent?.includes('ICD X'))
   if (icdSection) {
-    const icdTable = icdSection.nextElementSibling?.querySelector('table')
+    // ponytail: ICD table is inside the last <td> of the same row
+    const icdTable = icdSection.querySelector('td:last-child table, td[colspan] table')
     if (icdTable) {
       const items = icdTable.querySelectorAll('tr')
       for (const item of items) {
@@ -101,8 +107,8 @@ function parseResumeView(): ResumeData | null {
 }
 
 function extractFormData(): ResumeData {
+  console.log('[RJ] extractFormData — path:', location.pathname)
   const fromView = parseResumeView()
-  if (fromView && fromView.patientInfo.norm) return fromView
 
   const doc = document
   const getVal = (id: string) => (doc.getElementById(id) as HTMLInputElement)?.value || ''
@@ -116,14 +122,16 @@ function extractFormData(): ResumeData {
     pasien: getVal('pasien') || getVal('nama_pasien'),
     nama_dokter: getVal('nama_dokter') || getVal('dokter'),
   }
+  console.log('[RJ] patientInfo:', patientInfo)
 
   const clinicalNotes = {
     anamnesa: getField('anamnesa'),
-    pemeriksaan_fisik: getField('pemeriksaan_fisik'),
+    pemeriksaan_fisik: getField('pemeriksaan_fisik') || getField('pemeriksaan') || '',
     catatan: getField('catatan'),
     tindakan: getField('tindakan'),
     terapi_pengobatan: getField('terapi_pengobatan'),
   }
+  console.log('[RJ] clinicalNotes:', clinicalNotes)
 
   const vitalSigns = {
     tensi: getVal('tensi'),
@@ -133,10 +141,13 @@ function extractFormData(): ResumeData {
     tinggi: getVal('tinggi'),
     berat: getVal('berat'),
   }
+  console.log('[RJ] vitalSigns:', vitalSigns)
 
+  console.log('[RJ] diagnosa extraction start')
   const diagnosa: DiagnosaRow[] = []
   const kode10Inputs = doc.querySelectorAll<HTMLInputElement>('input[name="kode10[]"], input[name="kode[]"]')
   if (kode10Inputs.length === 0) {
+    console.log('[RJ] using numbered ID fallback for diagnosa')
     let i = 1
     while (doc.getElementById(`kode${i}`) || doc.querySelector(`input[name="kode10[]"]:nth-child(${i})`)) {
       const idicd = getVal(`idicd${i}`) || ''
@@ -146,6 +157,7 @@ function extractFormData(): ResumeData {
       i++
     }
   } else {
+    console.log('[RJ] using array-based diagnosa inputs, count:', kode10Inputs.length)
     kode10Inputs.forEach((inp) => {
       const row = inp.closest('tr')
       if (!row) return
@@ -159,6 +171,7 @@ function extractFormData(): ResumeData {
       }
     })
   }
+  console.log('[RJ] diagnosa found:', diagnosa.length, diagnosa)
 
   const tindakan: TindakanRow[] = []
   const kode9Inputs = doc.querySelectorAll<HTMLInputElement>('input[name="kode9[]"]')
@@ -176,6 +189,27 @@ function extractFormData(): ResumeData {
     tindakan.push({ idicdTindakan: idicd, kode9, namaTindakan: nama, komorbid, kategoriProsedur: kategori, snomedProsedur: snomed, codeProsedur })
   })
 
+  // Merge: form data is primary, view data fills gaps
+  if (fromView) {
+    console.log('[RJ] merging from view data')
+    if (!patientInfo.norm) patientInfo.norm = fromView.patientInfo.norm
+    if (!patientInfo.pasien) patientInfo.pasien = fromView.patientInfo.pasien
+    if (!patientInfo.nama_dokter) patientInfo.nama_dokter = fromView.patientInfo.nama_dokter
+    if (!clinicalNotes.anamnesa) clinicalNotes.anamnesa = fromView.clinicalNotes.anamnesa
+    if (!clinicalNotes.pemeriksaan_fisik) clinicalNotes.pemeriksaan_fisik = fromView.clinicalNotes.pemeriksaan_fisik
+    if (!clinicalNotes.catatan) clinicalNotes.catatan = fromView.clinicalNotes.catatan
+    if (!clinicalNotes.tindakan) clinicalNotes.tindakan = fromView.clinicalNotes.tindakan
+    if (!clinicalNotes.terapi_pengobatan) clinicalNotes.terapi_pengobatan = fromView.clinicalNotes.terapi_pengobatan
+    if (!vitalSigns.tensi) vitalSigns.tensi = fromView.vitalSigns.tensi
+    if (!vitalSigns.nadi) vitalSigns.nadi = fromView.vitalSigns.nadi
+    if (!vitalSigns.suhu) vitalSigns.suhu = fromView.vitalSigns.suhu
+    if (!vitalSigns.nafas) vitalSigns.nafas = fromView.vitalSigns.nafas
+    if (!vitalSigns.tinggi) vitalSigns.tinggi = fromView.vitalSigns.tinggi
+    if (!vitalSigns.berat) vitalSigns.berat = fromView.vitalSigns.berat
+    if (diagnosa.length === 0) diagnosa.push(...fromView.diagnosa)
+  }
+
+  console.log('[RJ] final data:', { patientInfo, clinicalNotes, vitalSigns, diagnosa, tindakan })
   return { patientInfo, clinicalNotes, vitalSigns, diagnosa, tindakan }
 }
 
@@ -320,13 +354,19 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
 
   const handleSave = async (resumeData: ResumeData): Promise<void> => {
     const body = serializeFormData(resumeData)
+    console.log('[RJ] save — endpoint:', ENDPOINT)
+    console.log('[RJ] save — body:', body)
     const response = await fetch(ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body,
       credentials: 'same-origin',
     })
-    if (!response.ok) throw new Error('HTTP ' + response.status)
+    if (!response.ok) {
+      console.error('[RJ] save failed:', response.status)
+      throw new Error('HTTP ' + response.status)
+    }
+    console.log('[RJ] save success')
   }
 
   reactRoot.render(
@@ -367,12 +407,15 @@ function setupFloatingButton() {
 
   btn.addEventListener('click', () => {
     if (btn.disabled) return
+    console.log('[RJ] button clicked')
     btn.disabled = true
     try {
       const data = extractFormData()
+      console.log('[RJ] extracted data:', data)
       container.style.display = 'block'
       mountReactApp(container, data)
-    } catch {
+    } catch (e) {
+      console.error('[RJ] click error:', e)
       container.style.display = 'none'
       btn.disabled = false
     }

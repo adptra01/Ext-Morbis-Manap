@@ -8,6 +8,7 @@ import { DiagnosaSection } from './DiagnosaSection';
 import { TindakanSection } from './TindakanSection';
 import { ValidationPanel } from './ValidationPanel';
 import { Footer } from './Footer';
+import { Input } from '../../ui/components/input';
 
 interface AppProps {
   data: ResumeData;
@@ -48,15 +49,20 @@ export function App({ data: initialData, onSave, onClose }: AppProps) {
   const errors = validate(data);
 
   const handleSave = useCallback(async () => {
-    if (errors.length > 0) return;
+    console.log('[RJ-APP] save clicked, errors:', errors.length)
+    if (errors.length > 0) return
     setSaving(true);
     try {
       await onSave(data);
+      console.log('[RJ-APP] save completed')
       setLastSaved(new Date().toLocaleTimeString());
     } finally {
       setSaving(false);
     }
   }, [data, errors, onSave]);
+
+  const updateNotes = (field: string, value: string) =>
+    setData({ ...data, clinicalNotes: { ...data.clinicalNotes, [field]: value } });
 
   return (
     <div className="resume-modal">
@@ -67,9 +73,43 @@ export function App({ data: initialData, onSave, onClose }: AppProps) {
         <ClinicalNotesSection
           anamnesa={data.clinicalNotes.anamnesa}
           pemeriksaan={data.clinicalNotes.pemeriksaan_fisik}
-          onChange={(field, value) => setData({ ...data, clinicalNotes: { ...data.clinicalNotes, [field]: value } })}
+          onChange={(field, value) => updateNotes(field, value)}
         />
         <div className="border-t border-border" />
+
+        <div className="px-5 py-4 border-b border-border bg-background">
+          <h3 className="text-md-sm font-semibold text-foreground mb-3">Catatan Diagnosa</h3>
+          <textarea
+            value={data.clinicalNotes.catatan}
+            onChange={(e) => updateNotes('catatan', e.target.value)}
+            className="w-full h-20 rounded-md border border-input bg-background px-3 py-2 text-md-xs resize-none"
+            placeholder="Catatan diagnosa..."
+          />
+        </div>
+        <div className="border-t border-border" />
+
+        <div className="px-5 py-4 border-b border-border bg-background">
+          <h3 className="text-md-sm font-semibold text-foreground mb-3">Tindakan</h3>
+          <textarea
+            value={data.clinicalNotes.tindakan}
+            onChange={(e) => updateNotes('tindakan', e.target.value)}
+            className="w-full h-20 rounded-md border border-input bg-background px-3 py-2 text-md-xs resize-none"
+            placeholder="Tindakan..."
+          />
+        </div>
+        <div className="border-t border-border" />
+
+        <div className="px-5 py-4 border-b border-border bg-background">
+          <h3 className="text-md-sm font-semibold text-foreground mb-3">Terapi Pengobatan</h3>
+          <textarea
+            value={data.clinicalNotes.terapi_pengobatan}
+            onChange={(e) => updateNotes('terapi_pengobatan', e.target.value)}
+            className="w-full h-20 rounded-md border border-input bg-background px-3 py-2 text-md-xs resize-none"
+            placeholder="Terapi pengobatan..."
+          />
+        </div>
+        <div className="border-t border-border" />
+
         <VitalSignsSection
           vitals={data.vitalSigns}
           onChange={(key, value) => setData({ ...data, vitalSigns: { ...data.vitalSigns, [key]: value } })}
