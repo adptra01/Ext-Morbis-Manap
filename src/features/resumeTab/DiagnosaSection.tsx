@@ -57,6 +57,7 @@ export function DiagnosaSection({ rows, onChange }: Props) {
   }
 
   const pick = (i: number, item: Hit) => {
+    console.log('[PICK DIAGNOSA]', item, '→ row', i)
     updateRow(i, { idicd: item.ID, kode10: item.KODE, namaDiagnosa: item.NAMA })
     setHits([]); setHitRow(-1)
   }
@@ -96,12 +97,12 @@ export function DiagnosaSection({ rows, onChange }: Props) {
               return (
                 <tr key={i} className="border-b border-border last:border-0 hover:bg-accent/50">
                 <td className="px-3 py-1.5">
-                    <input type="text" id={`rj-nama${no}`} name="nama[]" defaultValue={row.namaDiagnosa}
+                    <input type="text" id={`rj-nama${no}`} name="nama[]" value={row.namaDiagnosa}
                       placeholder="Cari diagnosa..."
                       autoComplete="off"
                       onChange={makeSearch(i)}
                       className="flex w-full rounded-md border-input py-2 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-offset-1 border-0 bg-transparent px-0 h-10 text-base shadow-none focus-visible:ring-0" />
-                  <input type="hidden" id={`rj-idicd${no}`} name="idicd[]" defaultValue={row.idicd} />
+                  <input type="hidden" id={`rj-idicd${no}`} name="idicd[]" value={row.idicd} />
                   {hits.length > 0 && hitRow === i && (
                     <div style={{ position: 'fixed', top: hitPos.top, left: hitPos.left, width: hitPos.width, zIndex: 2147483647, background: '#fff', border: '1px solid #d1d5db', borderRadius: '6px', boxShadow: '0 4px 12px rgba(0,0,0,.15)', maxHeight: '200px', overflowY: 'auto' }}>
                       {hits.map((item, ri) => (
@@ -116,7 +117,7 @@ export function DiagnosaSection({ rows, onChange }: Props) {
                   {errMsg && <div style={{ position: 'fixed', top: hitPos.top, left: hitPos.left, zIndex: 2147483647, background: '#fee2e2', border: '1px solid #ef4444', borderRadius: '6px', padding: '8px', fontSize: '12px', color: '#b91c1c' }}>{errMsg}</div>}
                 </td>
                 <td className="px-3 py-1.5">
-                    <input type="text" id={`rj-kode${no}`} name="kode10[]" defaultValue={row.kode10}
+                    <input type="text" id={`rj-kode${no}`} name="kode10[]" value={row.kode10}
                       placeholder="Kode"
                       onChange={makeKodeChange(i)}
                       className="flex w-full rounded-md border-input py-2 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-offset-1 border-0 bg-transparent px-0 h-10 text-sm font-mono shadow-none focus-visible:ring-0" />

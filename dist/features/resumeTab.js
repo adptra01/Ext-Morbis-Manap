@@ -31054,6 +31054,7 @@ var __morbis_feature = (() => {
       }, 300);
     };
     const pick = (i, item) => {
+      console.log("[PICK DIAGNOSA]", item, "\u2192 row", i);
       updateRow(i, { idicd: item.ID, kode10: item.KODE, namaDiagnosa: item.NAMA });
       setHits([]);
       setHitRow(-1);
@@ -31098,14 +31099,14 @@ var __morbis_feature = (() => {
                   type: "text",
                   id: `rj-nama${no}`,
                   name: "nama[]",
-                  defaultValue: row.namaDiagnosa,
+                  value: row.namaDiagnosa,
                   placeholder: "Cari diagnosa...",
                   autoComplete: "off",
                   onChange: makeSearch(i),
                   className: "flex w-full rounded-md border-input py-2 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-offset-1 border-0 bg-transparent px-0 h-10 text-base shadow-none focus-visible:ring-0"
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("input", { type: "hidden", id: `rj-idicd${no}`, name: "idicd[]", defaultValue: row.idicd }),
+              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("input", { type: "hidden", id: `rj-idicd${no}`, name: "idicd[]", value: row.idicd }),
               hits.length > 0 && hitRow === i && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { style: { position: "fixed", top: hitPos.top, left: hitPos.left, width: hitPos.width, zIndex: 2147483647, background: "#fff", border: "1px solid #d1d5db", borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,.15)", maxHeight: "200px", overflowY: "auto" }, children: hits.map((item, ri) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
                 "div",
                 {
@@ -31126,7 +31127,7 @@ var __morbis_feature = (() => {
                 type: "text",
                 id: `rj-kode${no}`,
                 name: "kode10[]",
-                defaultValue: row.kode10,
+                value: row.kode10,
                 placeholder: "Kode",
                 onChange: makeKodeChange(i),
                 className: "flex w-full rounded-md border-input py-2 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-offset-1 border-0 bg-transparent px-0 h-10 text-sm font-mono shadow-none focus-visible:ring-0"
@@ -31220,6 +31221,7 @@ var __morbis_feature = (() => {
       }, 300);
     };
     const pick = (i, item) => {
+      console.log("[PICK TINDAKAN]", item, "\u2192 row", i);
       updateRow(i, { idicdTindakan: item.ID, kode9: item.KODE, namaTindakan: item.NAMA });
       setHits([]);
       setHitRow(-1);
@@ -31265,14 +31267,14 @@ var __morbis_feature = (() => {
                   type: "text",
                   id: `rj-tindakan${no}`,
                   name: "namaTindakan[]",
-                  defaultValue: row.namaTindakan,
+                  value: row.namaTindakan,
                   placeholder: "Cari tindakan...",
                   autoComplete: "off",
                   onChange: makeSearch(i),
                   className: "flex w-full rounded-md border-input py-2 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 border-0 bg-transparent px-0 h-10 text-base shadow-none focus-visible:ring-0"
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("input", { type: "hidden", id: `rj-idicdTindakan${no}`, name: "idicdTindakan[]", defaultValue: row.idicdTindakan }),
+              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("input", { type: "hidden", id: `rj-idicdTindakan${no}`, name: "idicdTindakan[]", value: row.idicdTindakan }),
               hits.length > 0 && hitRow === i && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { style: { position: "fixed", top: hitPos.top, left: hitPos.left, width: hitPos.width, zIndex: 2147483647, background: "#fff", border: "1px solid #d1d5db", borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,.15)", maxHeight: "200px", overflowY: "auto" }, children: hits.map((item, ri) => /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
                 "div",
                 {
@@ -31293,7 +31295,7 @@ var __morbis_feature = (() => {
                 type: "text",
                 id: `rj-kode9${no}`,
                 name: "kode9[]",
-                defaultValue: row.kode9,
+                value: row.kode9,
                 placeholder: "Kode",
                 onChange: makeKodeChange(i),
                 className: "flex w-full rounded-md border-input py-2 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 border-0 bg-transparent px-0 h-10 text-sm font-mono shadow-none focus-visible:ring-0"
@@ -31945,7 +31947,10 @@ var __morbis_feature = (() => {
     const cIdicd = cachedArr("idicd[]");
     const cKasus = cachedArr("kasus_diagnosa[]");
     const cKomplikasi = cachedArr("komplikasi[]");
-    data.diagnosa.forEach((d) => {
+    console.log("[RJ] RAW DIAGNOSA", JSON.stringify(data.diagnosa));
+    const cleanDiagnosa = data.diagnosa.filter((d) => d.idicd?.trim() && d.kode10?.trim() && d.namaDiagnosa?.trim()).filter((d, i, arr) => arr.findIndex((x) => x.idicd === d.idicd) === i);
+    console.log("[RJ] cleanDiagnosa", cleanDiagnosa.length, cleanDiagnosa);
+    cleanDiagnosa.forEach((d) => {
       let idicd = d.idicd;
       if (!idicd && d.kode10) {
         const idx = cKode10.indexOf(d.kode10);
@@ -31954,35 +31959,23 @@ var __morbis_feature = (() => {
       add("nama[]", d.namaDiagnosa);
       add("idicd[]", idicd);
       add("kode10[]", d.kode10);
-      add("kasus_diagnosa[]", d.kasus || cKasus[cKode10.indexOf(d.kode10)] || "");
-      add("komplikasi[]", d.komplikasi || cKomplikasi[cKode10.indexOf(d.kode10)] || "");
+      add("kasus_diagnosa[]", d.kasus || "");
+      add("komplikasi[]", d.komplikasi || "");
     });
+    console.log("[RJ] RAW TINDAKAN", JSON.stringify(data.tindakan));
     console.log("[RJ] kProsedur cache:", cachedArr("kategoriProsedur[]"), "| komorbid cache:", cachedArr("komorbid[]"));
-    const cKode9 = cachedArr("kode9[]");
-    const cIdicdT = cachedArr("idicdTindakan[]");
-    const cNamaT = cachedArr("namaTindakan[]");
     const cKategori = cachedArr("kategoriProsedur[]");
     const cKomorbid = cachedArr("komorbid[]");
-    const tindakanSource = data.tindakan.length > 0 ? data.tindakan : cKode9.map((kode9, i) => ({
-      kode9,
-      idicdTindakan: cIdicdT[i] || "",
-      namaTindakan: cNamaT[i] || "",
-      kategoriProsedur: cKategori[i] || "",
-      komorbid: cKomorbid[i] || ""
-    }));
-    const seen = /* @__PURE__ */ new Set();
-    const tindakanToSend = tindakanSource.filter((t) => {
-      const key = t.kode9 + "|" + t.idicdTindakan;
-      if (!key || seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-    tindakanToSend.forEach((t) => {
+    const cleanTindakan = data.tindakan.filter((t) => t.idicdTindakan?.trim() && t.kode9?.trim() && t.namaTindakan?.trim()).filter((t, i, arr) => arr.findIndex((x) => x.idicdTindakan === t.idicdTindakan && x.kode9 === t.kode9) === i);
+    console.log("[RJ] cleanTindakan", cleanTindakan.length, cleanTindakan);
+    cleanTindakan.forEach((t) => {
+      const cKode9 = cachedArr("kode9[]");
+      const cIdx = cKode9.indexOf(t.kode9);
       add("namaTindakan[]", t.namaTindakan);
       add("kode9[]", t.kode9);
       add("idicdTindakan[]", t.idicdTindakan);
-      add("kategoriProsedur[]", t.kategoriProsedur);
-      add("komorbid[]", t.komorbid);
+      add("kategoriProsedur[]", t.kategoriProsedur || (cIdx >= 0 ? cachedArr("kategoriProsedur[]")[cIdx] || "" : ""));
+      add("komorbid[]", t.komorbid || (cIdx >= 0 ? cachedArr("komorbid[]")[cIdx] || "" : ""));
       if (t.snomedProsedur?.trim()) add("snomedProsedur[]", t.snomedProsedur);
       if (t.codeProsedur?.trim()) add("codeProsedur[]", t.codeProsedur);
     });

@@ -56,6 +56,7 @@ export function TindakanSection({ rows, onChange }: Props) {
   }
 
   const pick = (i: number, item: Hit) => {
+    console.log('[PICK TINDAKAN]', item, '→ row', i)
     updateRow(i, { idicdTindakan: item.ID, kode9: item.KODE, namaTindakan: item.NAMA })
     setHits([]); setHitRow(-1)
   }
@@ -99,11 +100,11 @@ export function TindakanSection({ rows, onChange }: Props) {
                 return (
                 <tr key={i} className="border-b border-border last:border-0 hover:bg-accent/50">
                   <td className="px-3 py-1.5">
-                    <input type="text" id={`rj-tindakan${no}`} name="namaTindakan[]" defaultValue={row.namaTindakan}
+                    <input type="text" id={`rj-tindakan${no}`} name="namaTindakan[]" value={row.namaTindakan}
                       placeholder="Cari tindakan..." autoComplete="off"
                       onChange={makeSearch(i)}
                       className="flex w-full rounded-md border-input py-2 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 border-0 bg-transparent px-0 h-10 text-base shadow-none focus-visible:ring-0" />
-                    <input type="hidden" id={`rj-idicdTindakan${no}`} name="idicdTindakan[]" defaultValue={row.idicdTindakan} />
+                    <input type="hidden" id={`rj-idicdTindakan${no}`} name="idicdTindakan[]" value={row.idicdTindakan} />
                     {hits.length > 0 && hitRow === i && (
                       <div style={{ position: 'fixed', top: hitPos.top, left: hitPos.left, width: hitPos.width, zIndex: 2147483647, background: '#fff', border: '1px solid #d1d5db', borderRadius: '6px', boxShadow: '0 4px 12px rgba(0,0,0,.15)', maxHeight: '200px', overflowY: 'auto' }}>
                         {hits.map((item, ri) => (
@@ -118,7 +119,7 @@ export function TindakanSection({ rows, onChange }: Props) {
                     {errMsg && <div style={{ position: 'fixed', top: hitPos.top, left: hitPos.left, zIndex: 2147483647, background: '#fee2e2', border: '1px solid #ef4444', borderRadius: '6px', padding: '8px', fontSize: '12px', color: '#b91c1c' }}>{errMsg}</div>}
                   </td>
                   <td className="px-3 py-1.5">
-                    <input type="text" id={`rj-kode9${no}`} name="kode9[]" defaultValue={row.kode9}
+                    <input type="text" id={`rj-kode9${no}`} name="kode9[]" value={row.kode9}
                       placeholder="Kode"
                       onChange={makeKodeChange(i)}
                       className="flex w-full rounded-md border-input py-2 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 border-0 bg-transparent px-0 h-10 text-sm font-mono shadow-none focus-visible:ring-0" />

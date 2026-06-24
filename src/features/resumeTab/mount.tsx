@@ -587,7 +587,13 @@ function serializeRawatJalan(data: ResumeData): string {
   const cIdicd = cachedArr('idicd[]')
   const cKasus = cachedArr('kasus_diagnosa[]')
   const cKomplikasi = cachedArr('komplikasi[]')
-  data.diagnosa.forEach((d) => {
+  // ponytail: hanya kirim baris yang lengkap, unik — snapshot final, bukan operasi per baris
+  console.log('[RJ] RAW DIAGNOSA', JSON.stringify(data.diagnosa))
+  const cleanDiagnosa = data.diagnosa
+    .filter(d => d.idicd?.trim() && d.kode10?.trim() && d.namaDiagnosa?.trim())
+    .filter((d, i, arr) => arr.findIndex(x => x.idicd === d.idicd) === i)
+  console.log('[RJ] cleanDiagnosa', cleanDiagnosa.length, cleanDiagnosa)
+  cleanDiagnosa.forEach((d) => {
     let idicd = d.idicd
     if (!idicd && d.kode10) {
       const idx = cKode10.indexOf(d.kode10)
@@ -596,41 +602,30 @@ function serializeRawatJalan(data: ResumeData): string {
     add('nama[]', d.namaDiagnosa)
     add('idicd[]', idicd)
     add('kode10[]', d.kode10)
-    add('kasus_diagnosa[]', d.kasus || cKasus[cKode10.indexOf(d.kode10)] || '')
-    add('komplikasi[]', d.komplikasi || cKomplikasi[cKode10.indexOf(d.kode10)] || '')
+    add('kasus_diagnosa[]', d.kasus || '')
+    add('komplikasi[]', d.komplikasi || '')
   })
 
-  // Tindakan — use cached form state if data.tindakan is empty (detail page)
-  // ponytail: debug cache untuk kategoriProsedur
+  // Tindakan — selalu pakai data.tindakan langsung (tidak fallback ke cache)
+  // ponytail: cache digunakan untuk nilai select (kategoriProsedur, komorbid) bukan untuk rows
+  console.log('[RJ] RAW TINDAKAN', JSON.stringify(data.tindakan))
   console.log('[RJ] kProsedur cache:', cachedArr('kategoriProsedur[]'), '| komorbid cache:', cachedArr('komorbid[]'))
-  const cKode9 = cachedArr('kode9[]')
-  const cIdicdT = cachedArr('idicdTindakan[]')
-  const cNamaT = cachedArr('namaTindakan[]')
   const cKategori = cachedArr('kategoriProsedur[]')
   const cKomorbid = cachedArr('komorbid[]')
-  const tindakanSource = data.tindakan.length > 0
-    ? data.tindakan
-    : cKode9.map((kode9, i) => ({
-        kode9,
-        idicdTindakan: cIdicdT[i] || '',
-        namaTindakan: cNamaT[i] || '',
-        kategoriProsedur: cKategori[i] || '',
-        komorbid: cKomorbid[i] || '',
-      }))
-  // ponytail: dedup by kode9 to prevent duplicate entries from cache
-  const seen = new Set<string>()
-  const tindakanToSend = tindakanSource.filter(t => {
-    const key = t.kode9 + '|' + t.idicdTindakan
-    if (!key || seen.has(key)) return false
-    seen.add(key)
-    return true
-  })
-  tindakanToSend.forEach((t) => {
+  // ponytail: filter lengkap + dedup — snapshot final
+  const cleanTindakan = data.tindakan
+    .filter(t => t.idicdTindakan?.trim() && t.kode9?.trim() && t.namaTindakan?.trim())
+    .filter((t, i, arr) => arr.findIndex(x => x.idicdTindakan === t.idicdTindakan && x.kode9 === t.kode9) === i)
+  console.log('[RJ] cleanTindakan', cleanTindakan.length, cleanTindakan)
+  cleanTindakan.forEach((t) => {
+    // ponytail: fallback kategori & komorbid dari cache by matching kode9 index
+    const cKode9 = cachedArr('kode9[]')
+    const cIdx = cKode9.indexOf(t.kode9)
     add('namaTindakan[]', t.namaTindakan)
     add('kode9[]', t.kode9)
     add('idicdTindakan[]', t.idicdTindakan)
-    add('kategoriProsedur[]', t.kategoriProsedur)
-    add('komorbid[]', t.komorbid)
+    add('kategoriProsedur[]', t.kategoriProsedur || (cIdx >= 0 ? (cachedArr('kategoriProsedur[]')[cIdx] || '') : ''))
+    add('komorbid[]', t.komorbid || (cIdx >= 0 ? (cachedArr('komorbid[]')[cIdx] || '') : ''))
     // ponytail: hanya kirim jika ada nilai — cegah Array to string conversion di Oracle
     if (t.snomedProsedur?.trim()) add('snomedProsedur[]', t.snomedProsedur)
     if (t.codeProsedur?.trim()) add('codeProsedur[]', t.codeProsedur)
