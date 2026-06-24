@@ -19,10 +19,6 @@ interface AppProps {
 function validate(data: ResumeData): ValidationError[] {
   const errors: ValidationError[] = [];
 
-  if (data.diagnosa.length === 0) {
-    errors.push({ section: 'Diagnosa', message: 'Minimal 1 ICD-10 harus dipilih' });
-  }
-
   data.diagnosa.forEach((d, i) => {
     if (!d.kode10 && !d.namaDiagnosa) return
     if (d.kode10 && !d.namaDiagnosa) {

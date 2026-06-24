@@ -31375,9 +31375,6 @@ var __morbis_feature = (() => {
   var import_jsx_runtime24 = __toESM(require_jsx_runtime(), 1);
   function validate(data) {
     const errors = [];
-    if (data.diagnosa.length === 0) {
-      errors.push({ section: "Diagnosa", message: "Minimal 1 ICD-10 harus dipilih" });
-    }
     data.diagnosa.forEach((d, i) => {
       if (!d.kode10 && !d.namaDiagnosa) return;
       if (d.kode10 && !d.namaDiagnosa) {
