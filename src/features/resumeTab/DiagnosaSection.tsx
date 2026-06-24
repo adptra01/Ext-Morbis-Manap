@@ -127,7 +127,7 @@ export function DiagnosaSection({ rows, onChange }: Props) {
                     <SelectTrigger className="h-10 w-full border-border text-sm">
                       <SelectValue placeholder="Pilih Kasus" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-[1050]">
                       <SelectItem value="BARU">Baru</SelectItem>
                       <SelectItem value="LAMA">Lama</SelectItem>
                     </SelectContent>
@@ -138,7 +138,7 @@ export function DiagnosaSection({ rows, onChange }: Props) {
                     <SelectTrigger className="h-10 w-full border-border text-sm">
                       <SelectValue placeholder="Pilih" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-[1050]">
                       <SelectItem value="YA">Ya</SelectItem>
                       <SelectItem value="TIDAK">Tidak</SelectItem>
                     </SelectContent>

@@ -802,7 +802,7 @@ function setupFloatingButton() {
 
   const container = document.createElement('div')
   container.id = 'ext-resume-container'
-  container.style.cssText = 'position: fixed; inset: 0; z-index: 2147483646; display: none; background: rgba(0,0,0,.4); align-items: center; justify-content: center;'
+  container.style.cssText = 'position: fixed; inset: 0; z-index: 1000; display: none; background: rgba(0,0,0,.4); align-items: center; justify-content: center;'
   document.body.appendChild(container)
 
   const btn = document.createElement('button')

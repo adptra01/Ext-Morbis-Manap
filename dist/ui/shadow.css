@@ -705,6 +705,9 @@ html {
 .z-50{
   z-index: 50;
 }
+.z-\[1050\]{
+  z-index: 1050;
+}
 .mx-auto{
   margin-left: auto;
   margin-right: auto;

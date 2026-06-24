@@ -149,7 +149,7 @@ export function TindakanSection({ rows, onChange }: Props) {
                       <SelectTrigger className="h-10 w-full border-border text-sm">
                         <SelectValue placeholder="Pilih Jenis" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="z-[1050]">
                         {JENIS_OPTIONS.map(o => (
                           <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
                         ))}
@@ -161,7 +161,7 @@ export function TindakanSection({ rows, onChange }: Props) {
                       <SelectTrigger className="h-10 w-full border-border text-sm">
                         <SelectValue placeholder="Pilih Kategori" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="z-[1050]">
                         {KATEGORI_OPTIONS.map(o => (
                           <SelectItem key={o.value || 'empty'} value={o.value}>{o.label}</SelectItem>
                         ))}
