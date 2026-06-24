@@ -31396,11 +31396,21 @@ var __morbis_feature = (() => {
     const [saving, setSaving] = (0, import_react11.useState)(false);
     const [lastSaved, setLastSaved] = (0, import_react11.useState)(null);
     const [saveAttempted, setSaveAttempted] = (0, import_react11.useState)(false);
+    const hadDiagnosaInitially = (0, import_react11.useRef)(data.diagnosa.some((d) => d.idicd?.trim()));
     const errors = saveAttempted ? validate(data) : [];
     const handleSave = (0, import_react11.useCallback)(async () => {
+      console.log("[RJ-APP] SAVE DIAGNOSA", JSON.stringify(data.diagnosa));
+      console.log("[RJ-APP] SAVE TINDAKAN", JSON.stringify(data.tindakan));
       setSaveAttempted(true);
       const v = validate(data);
       if (v.length > 0) return;
+      const cleanD = data.diagnosa.filter((d) => d.idicd?.trim() && d.kode10?.trim() && d.namaDiagnosa?.trim());
+      if (hadDiagnosaInitially.current && cleanD.length === 0) {
+        const ok = window.confirm(
+          "Semua diagnosa telah dihapus.\n\nSistem Morbis biasanya tidak menghapus ICD yang sudah tersimpan ketika daftar diagnosa dikosongkan.\n\nJika dilanjutkan, ICD sebelumnya kemungkinan tetap tersimpan.\n\nTetap simpan?"
+        );
+        if (!ok) return;
+      }
       setSaving(true);
       try {
         await onSave(data);

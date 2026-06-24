@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import type { ResumeData, ValidationError } from './types';
 import { Header } from './Header';
 import { InfoBanner } from './InfoBanner';
@@ -44,13 +44,29 @@ export function App({ data: initialData, onSave, onClose }: AppProps) {
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [saveAttempted, setSaveAttempted] = useState(false);
 
+  // ponytail: flag apakah ada ICD di awal — untuk warning hapus semua
+  const hadDiagnosaInitially = useRef(data.diagnosa.some(d => d.idicd?.trim()))
+
   // ponytail: only validate after user clicks Simpan, not on every keystroke
   const errors = saveAttempted ? validate(data) : [];
 
   const handleSave = useCallback(async () => {
+    console.log('[RJ-APP] SAVE DIAGNOSA', JSON.stringify(data.diagnosa))
+    console.log('[RJ-APP] SAVE TINDAKAN', JSON.stringify(data.tindakan))
     setSaveAttempted(true)
     const v = validate(data)
     if (v.length > 0) return
+    // ponytail: warning jika user hapus semua ICD — backend tidak support delete total
+    const cleanD = data.diagnosa.filter(d => d.idicd?.trim() && d.kode10?.trim() && d.namaDiagnosa?.trim())
+    if (hadDiagnosaInitially.current && cleanD.length === 0) {
+      const ok = window.confirm(
+        'Semua diagnosa telah dihapus.\n\n' +
+        'Sistem Morbis biasanya tidak menghapus ICD yang sudah tersimpan ketika daftar diagnosa dikosongkan.\n\n' +
+        'Jika dilanjutkan, ICD sebelumnya kemungkinan tetap tersimpan.\n\n' +
+        'Tetap simpan?'
+      )
+      if (!ok) return
+    }
     setSaving(true);
     try {
       await onSave(data);
