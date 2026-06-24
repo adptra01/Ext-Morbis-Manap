@@ -500,10 +500,6 @@ function serializeKlaim(data: ResumeData): string {
     add('idicdTindakan[]', t.idicdTindakan)
     add('kode9[]', t.kode9)
     add('namaTindakan[]', t.namaTindakan)
-    add('komorbid[]', t.komorbid)
-    add('kategoriProsedur[]', t.kategoriProsedur)
-    add('snomedProsedur[]', t.snomedProsedur)
-    add('codeProsedur[]', t.codeProsedur || t.kode9)
   })
 
   add('save', 'Simpan')
@@ -606,29 +602,22 @@ function serializeRawatJalan(data: ResumeData): string {
     add('komplikasi[]', d.komplikasi || '')
   })
 
-  // Tindakan — selalu pakai data.tindakan langsung (tidak fallback ke cache)
-  // ponytail: cache digunakan untuk nilai select (kategoriProsedur, komorbid) bukan untuk rows
+  // Tindakan — selalu pakai data.tindakan langsung
   console.log('[RJ] RAW TINDAKAN', JSON.stringify(data.tindakan))
-  console.log('[RJ] kProsedur cache:', cachedArr('kategoriProsedur[]'), '| komorbid cache:', cachedArr('komorbid[]'))
-  const cKategori = cachedArr('kategoriProsedur[]')
-  const cKomorbid = cachedArr('komorbid[]')
   // ponytail: filter lengkap + dedup — snapshot final
   const cleanTindakan = data.tindakan
     .filter(t => t.idicdTindakan?.trim() && t.kode9?.trim() && t.namaTindakan?.trim())
     .filter((t, i, arr) => arr.findIndex(x => x.idicdTindakan === t.idicdTindakan && x.kode9 === t.kode9) === i)
   console.log('[RJ] cleanTindakan', cleanTindakan.length, cleanTindakan)
   cleanTindakan.forEach((t) => {
-    // ponytail: fallback kategori & komorbid dari cache by matching kode9 index
-    const cKode9 = cachedArr('kode9[]')
-    const cIdx = cKode9.indexOf(t.kode9)
     add('namaTindakan[]', t.namaTindakan)
     add('kode9[]', t.kode9)
     add('idicdTindakan[]', t.idicdTindakan)
-    add('kategoriProsedur[]', t.kategoriProsedur || (cIdx >= 0 ? (cachedArr('kategoriProsedur[]')[cIdx] || '') : ''))
-    add('komorbid[]', t.komorbid || (cIdx >= 0 ? (cachedArr('komorbid[]')[cIdx] || '') : ''))
-    // ponytail: hanya kirim jika ada nilai — cegah Array to string conversion di Oracle
-    if (t.snomedProsedur?.trim()) add('snomedProsedur[]', t.snomedProsedur)
-    if (t.codeProsedur?.trim()) add('codeProsedur[]', t.codeProsedur)
+    add('kategoriProsedur[]', t.kategoriProsedur || '')
+    add('komorbid[]', t.komorbid || '')
+    // ponytail: selalu kirim — backend PHP mengharapkan field ini ada (walau kosong)
+    add('snomedProsedur[]', t.snomedProsedur || '')
+    add('codeProsedur[]', t.codeProsedur || '')
   })
 
   add('save', 'Simpan')
@@ -681,9 +670,26 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
       body,
       credentials: 'same-origin',
     })
+    const text = await response.text()
     if (!response.ok) {
-      console.error('[RJ] save failed:', response.status)
+      console.error('[RJ] save failed:', response.status, text)
       throw new Error('HTTP ' + response.status)
+    }
+    // ponytail: Morbis returns 200 even with PHP warnings/notices in HTML body
+    // Filter out third-party JS noise (New Relic, etc.)
+    const phpPattern = /(?:<b>)?(?:Notice|Warning|Fatal error|Parse error|Catchable fatal error)(?:<\/b>)?\s*:\s*[^<]*/gi
+    const phpErrors: string[] = []
+    let m
+    while ((m = phpPattern.exec(text)) !== null) {
+      let line = m[0].trim().replace(/<[^>]+>/g, '')
+      if (!line) continue
+      // Skip third-party JS warnings (New Relic, Google Analytics, etc.)
+      if (/github\.com\/newrelic|newrelic-browser|google-analytics|googletagmanager/i.test(line)) continue
+      phpErrors.push(line)
+    }
+    if (phpErrors.length > 0) {
+      console.error('[RJ] PHP errors:', phpErrors)
+      throw new Error(phpErrors.join('\n'))
     }
     console.log('[RJ] save success')
     // Reset cache so next edit picks up fresh data

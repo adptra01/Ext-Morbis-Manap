@@ -1,11 +1,29 @@
 import { useState, useRef } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
 import { Button } from '../../ui/components/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/components/select'
 import type { TindakanRow } from './types'
 
 interface Props { rows: TindakanRow[]; onChange: (r: TindakanRow[]) => void }
 
 const ICD9_URL = '/rekam-medik/search?opsi=clauseDiagnose_icd9&q='
+
+const JENIS_OPTIONS = [
+  { value: 'Primer', label: 'Utama (Primer)' },
+  { value: 'Sekunder', label: 'Tambahan (Sekunder)' },
+]
+
+const KATEGORI_OPTIONS = [
+  { value: '', label: 'Pilih Kategori Prosedur' },
+  { value: '24642003', label: 'Layanan Psikiatri' },
+  { value: '409063005', label: 'Konseling' },
+  { value: '409073007', label: 'Edukasi' },
+  { value: '387713003', label: 'Tindakan Bedah' },
+  { value: '103693007', label: 'Pemeriksaan Diagnostik' },
+  { value: '46947000', label: 'Manipulasi Terapi' },
+  { value: '410606002', label: 'Pelayanan Sosial' },
+  { value: '277132007', label: 'Tindakan Terapeutik' },
+]
 
 interface Hit { ID: string; KODE: string; NAMA: string }
 
@@ -85,13 +103,15 @@ export function TindakanSection({ rows, onChange }: Props) {
           <p className="text-md-xs text-muted-foreground mt-1">Klik "Tambah Tindakan" untuk menambahkan</p>
         </div>
       ) : (
-        <div className="border border-border rounded-md overflow-hidden">
-          <table className="w-full text-md-xs">
+        <div className="border border-border rounded-md overflow-x-auto">
+          <table className="w-full text-md-xs" style={{ minWidth: 650 }}>
             <thead>
               <tr className="border-b border-border bg-muted/50">
-                <th className="text-left font-semibold text-muted-foreground px-3 py-2" style={{ width: '55%' }}>Nama Tindakan</th>
-                <th className="text-left font-semibold text-muted-foreground px-3 py-2" style={{ width: '20%' }}>Kode ICD-9</th>
-                <th className="pr-3 py-2" style={{ width: '8%' }}></th>
+                <th className="text-left font-semibold text-muted-foreground px-3 py-2" style={{ width: '30%' }}>Nama Tindakan</th>
+                <th className="text-left font-semibold text-muted-foreground px-3 py-2" style={{ width: '10%' }}>Kode ICD-9</th>
+                <th className="text-left font-semibold text-muted-foreground px-3 py-2" style={{ width: '18%' }}>Jenis</th>
+                <th className="text-left font-semibold text-muted-foreground px-3 py-2" style={{ width: '28%' }}>Kategori Prosedur *</th>
+                <th className="pr-3 py-2" style={{ width: '5%' }}></th>
               </tr>
             </thead>
             <tbody>
@@ -123,6 +143,30 @@ export function TindakanSection({ rows, onChange }: Props) {
                       placeholder="Kode"
                       onChange={makeKodeChange(i)}
                       className="flex w-full rounded-md border-input py-2 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 border-0 bg-transparent px-0 h-10 text-sm font-mono shadow-none focus-visible:ring-0" />
+                  </td>
+                  <td className="px-3 py-1.5">
+                    <Select value={row.komorbid} onValueChange={v => updateRow(i, { komorbid: v })}>
+                      <SelectTrigger className="h-10 w-full border-border text-sm">
+                        <SelectValue placeholder="Pilih Jenis" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {JENIS_OPTIONS.map(o => (
+                          <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </td>
+                  <td className="px-3 py-1.5">
+                    <Select value={row.kategoriProsedur} onValueChange={v => updateRow(i, { kategoriProsedur: v })}>
+                      <SelectTrigger className="h-10 w-full border-border text-sm">
+                        <SelectValue placeholder="Pilih Kategori" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {KATEGORI_OPTIONS.map(o => (
+                          <SelectItem key={o.value || 'empty'} value={o.value}>{o.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </td>
                   <td className="pr-3 py-1.5">
                     <Button variant="ghost" size="icon" onClick={() => removeRow(i)}

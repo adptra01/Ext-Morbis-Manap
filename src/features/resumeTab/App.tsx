@@ -33,6 +33,10 @@ function validate(data: ResumeData): ValidationError[] {
     if (!t.kode9) return;
     if (!t.namaTindakan)
       errors.push({ section: `Tindakan #${i + 1}`, message: 'Nama tindakan kosong' });
+    // ponytail: native Morbis blocks submit when kategoriProsedur is empty
+    if (t.idicdTindakan?.trim() && t.kode9?.trim() && t.namaTindakan?.trim() && !t.kategoriProsedur?.trim()) {
+      errors.push({ section: `Tindakan #${i + 1}`, message: 'Kategori Prosedur belum dipilih' });
+    }
   });
 
   return errors;
@@ -43,35 +47,41 @@ export function App({ data: initialData, onSave, onClose }: AppProps) {
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [saveAttempted, setSaveAttempted] = useState(false);
+  const [warnings, setWarnings] = useState<ValidationError[]>([]);
+  const [extraErrors, setExtraErrors] = useState<ValidationError[]>([]);
 
   // ponytail: flag apakah ada ICD di awal — untuk warning hapus semua
   const hadDiagnosaInitially = useRef(data.diagnosa.some(d => d.idicd?.trim()))
 
   // ponytail: only validate after user clicks Simpan, not on every keystroke
-  const errors = saveAttempted ? validate(data) : [];
+  const validationErrors = saveAttempted ? validate(data) : []
+  const allErrors = [...validationErrors, ...extraErrors]
+  const hasBlocking = validationErrors.length > 0
 
   const handleSave = useCallback(async () => {
     console.log('[RJ-APP] SAVE DIAGNOSA', JSON.stringify(data.diagnosa))
     console.log('[RJ-APP] SAVE TINDAKAN', JSON.stringify(data.tindakan))
     setSaveAttempted(true)
+    setWarnings([])
+    setExtraErrors([])
     const v = validate(data)
     if (v.length > 0) return
-    // ponytail: warning jika user hapus semua ICD — backend tidak support delete total
+    // ponytail: non-blocking warning — backend tidak support delete total
     const cleanD = data.diagnosa.filter(d => d.idicd?.trim() && d.kode10?.trim() && d.namaDiagnosa?.trim())
     if (hadDiagnosaInitially.current && cleanD.length === 0) {
-      const ok = window.confirm(
-        'Semua diagnosa telah dihapus.\n\n' +
-        'Sistem Morbis biasanya tidak menghapus ICD yang sudah tersimpan ketika daftar diagnosa dikosongkan.\n\n' +
-        'Jika dilanjutkan, ICD sebelumnya kemungkinan tetap tersimpan.\n\n' +
-        'Tetap simpan?'
-      )
-      if (!ok) return
+      setWarnings([{
+        section: 'Diagnosa',
+        message: 'Semua diagnosa telah dihapus. Sistem Morbis biasanya tidak menghapus ICD yang sudah tersimpan ketika daftar diagnosa dikosongkan.'
+      }])
     }
     setSaving(true);
     try {
       await onSave(data);
       console.log('[RJ-APP] save completed')
       setLastSaved(new Date().toLocaleTimeString());
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e)
+      setExtraErrors([{ section: 'Server', message: msg }])
     } finally {
       setSaving(false);
     }
@@ -142,10 +152,10 @@ export function App({ data: initialData, onSave, onClose }: AppProps) {
         />
       </div>
 
-      <ValidationPanel errors={errors} />
+      <ValidationPanel errors={allErrors} warnings={warnings} />
       <Footer
         saving={saving}
-        hasErrors={errors.length > 0}
+        hasErrors={hasBlocking}
         lastSaved={lastSaved}
         onSave={handleSave}
         onCancel={onClose}
