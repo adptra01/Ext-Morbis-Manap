@@ -1,3 +1,112 @@
+/* ── Priority config for sorting tindakan / terapi items ── */
+// ponytail: patterns checked in order — first match wins. Items that don't
+// match any pattern sort last (weight 999). Add/remove patterns as needed.
+const ITEM_PRIORITIES: { pattern: string; weight: number }[] = [
+  { pattern: 'periksa.*dokter', weight: 1 },
+  { pattern: 'konsultasi', weight: 2 },
+  { pattern: 'tindakan utama', weight: 3 },
+  { pattern: 'lab', weight: 10 },
+  { pattern: 'glukosa', weight: 11 },
+  { pattern: 'hba1c', weight: 12 },
+  { pattern: 'hb a1c', weight: 12 },
+]
+
+function sortItemsByPriority(items: string[]): string[] {
+  const regexCache = new Map<string, RegExp>()
+  return [...items].sort((a, b) => {
+    const weightOf = (item: string): number => {
+      const lower = item.toLowerCase().trim()
+      for (const p of ITEM_PRIORITIES) {
+        if (!regexCache.has(p.pattern)) {
+          regexCache.set(p.pattern, new RegExp(p.pattern, 'i'))
+        }
+        if (regexCache.get(p.pattern)!.test(lower)) return p.weight
+      }
+      return 999
+    }
+    return weightOf(a) - weightOf(b)
+  })
+}
+
+function formatItemText(item: string): string {
+  if (!item) return ''
+  const t = item.trim()
+  if (!t) return ''
+  return t.charAt(0).toUpperCase() + t.slice(1)
+}
+
+function formatAsList(items: string[]): string {
+  return items.map(formatItemText).join('\n')
+}
+
+// ponytail: extract tindakan & terapi obat dari DOM halaman rincian cetak
+function extractBillingFromDOM(): { tindakan: string; terapiPengobatan: string } {
+  const container = document.getElementById('pembayaran-gabung') || document.body
+  const tindakanLines: string[] = []
+  const terapiLines: string[] = []
+
+  // ---------- Tindakan (ALL sections) ----------
+  // Walk EVERY row in the billing table. Any row where the first cell is a
+  // number (item index) is a line item. This catches LABORATORIUM, VISITE,
+  // TINDAKAN, and any other section in a single pass.
+  const allRows = container.querySelectorAll<HTMLTableRowElement>('tr')
+  let inActionSection = false
+  for (const row of allRows) {
+    const text = row.textContent?.trim() || ''
+
+    // Detect section headers — bold elements mark new sections
+    const bold = row.querySelector('b')
+    if (bold && !text.match(/^\d/)) {
+      // Section header like "TINDAKAN", "LABORATORIUM", "VISITE" etc.
+      inActionSection = true
+      continue
+    }
+
+    // Detect "Total" / "Sub Total" rows — stop current section
+    if (inActionSection && (text.includes('Total') || text.includes('Sub Total'))) {
+      inActionSection = false
+      continue
+    }
+
+    // If in an action section and row has a numbered first cell
+    if (inActionSection) {
+      const cells = Array.from(row.querySelectorAll('td'))
+      if (cells.length >= 5 && cells[0]?.textContent?.trim().match(/^\d+\.?$/)) {
+        const nama = cells[2]?.textContent?.trim() || ''
+        const frek = cells[4]?.textContent?.trim() || '1'
+        tindakanLines.push(frek && frek !== '1' ? `${nama} (${frek})` : nama)
+      }
+    }
+  }
+
+  // ---------- Obat (Terapi Pengobatan) ----------
+  const resepHeader = Array.from(container.querySelectorAll('b')).find(b => b.textContent?.includes('Biaya Resep'))
+  if (resepHeader) {
+    let row = resepHeader.closest('tr')?.nextElementSibling as HTMLTableRowElement | null
+    while (row && !row.textContent?.includes('Sub Total')) {
+      if (row.getAttribute('valign') === 'top') {
+        const cells = Array.from(row.querySelectorAll('td'))
+        const raw = cells[1]?.textContent?.trim() || ''
+        const match = raw.match(/^\d+\s+(.*)/)
+        const nama = match ? match[1] : raw
+        const freq = cells[2]?.textContent?.trim() || ''
+        terapiLines.push(freq ? `${nama} (${freq})` : nama)
+      }
+      row = row.nextElementSibling as HTMLTableRowElement | null
+    }
+  }
+
+  // Sort and format items before returning
+  const sortedTindakan = sortItemsByPriority(tindakanLines)
+  const sortedTerapi = sortItemsByPriority(terapiLines)
+
+  console.log('[RJ] extracted billing lines:', { tindakanLines, terapiLines, sortedTindakan, sortedTerapi })
+  return {
+    tindakan: formatAsList(sortedTindakan),
+    terapiPengobatan: formatAsList(sortedTerapi),
+  }
+}
+
 import { createRoot, type Root } from 'react-dom/client'
 import { App } from './App'
 import { ErrorBoundary } from './ErrorBoundary'
@@ -8,12 +117,10 @@ const isRj = location.pathname.includes('rm-rawat-jalan-new')
 // ponytail: both pages use same ICD search endpoints
 const AUTOCOMPLETE_URLS = {
   icd10: '/rekam-medik/search?opsi=kodeicd10&q=',
-  icd9: '/rekam-medik/search?opsi=namaicd9&q=',
+  icd9: '/rekam-medik/search?opsi=clauseDiagnose_icd9&q=',
 }
 
-const ENDPOINT = isRj
-  ? '/rekam-medik/control/rm-rawat-jalan'
-  : '/v2/m-klaim/detail-v2-refaktor/simpan_resume'
+const ENDPOINT = '/rekam-medik/control/rm-rawat-jalan'
 
 console.log('[RJ] setup — isRj:', isRj, 'ENDPOINT:', ENDPOINT)
 console.log('[RJ] AUTOCOMPLETE_URLS:', AUTOCOMPLETE_URLS)
@@ -46,32 +153,25 @@ function parseResumeView(): ResumeData | null {
     if (!fisik) return ''
     const vtable = fisik.querySelector('td:last-child table, td[colspan] table')
     if (!vtable) return ''
-    const lines: string[] = []
-    const vitals = ['Tensi', 'Nadi', 'Suhu', 'Nafas', 'Tinggi', 'Berat']
-    const vrows = vtable.querySelectorAll('tr')
-    let lainnya = ''
-    for (const row of vrows) {
+    // ponytail: only extract "Lainnya" — vitals already handled by VitalSignsSection
+    const lainnyaRow = Array.from(vtable.querySelectorAll('tr')).find(row => {
       const cells = row.querySelectorAll('td')
-      let firstInRow = true
-      for (let i = 0; i < cells.length; i++) {
-        const txt = cells[i].textContent?.trim() || ''
-        if (vitals.includes(txt) && i + 2 < cells.length) {
-          const colon = cells[i + 1]?.textContent?.trim() === ':' ? cells[i + 2] : null
-          if (colon) {
-            if (firstInRow) { lines.push(`${txt}: ${colon.textContent?.trim() || ''}`); firstInRow = false }
-            else { lines.push(`${txt}: ${colon.textContent?.trim() || ''}`) }
-            i += 2
-            continue
-          }
-        }
-        // ponytail: 'Lainnya' row has the actual fisik notes
-        if (txt === 'Lainnya' && i + 2 < cells.length) {
-          lainnya = cells[i + 2]?.textContent?.trim() || ''
-        }
+      return Array.from(cells).some(c => c.textContent?.trim() === 'Lainnya')
+    })
+    if (!lainnyaRow) return ''
+    const cells = lainnyaRow.querySelectorAll('td')
+    for (let i = 0; i < cells.length; i++) {
+      if (cells[i].textContent?.trim() === 'Lainnya' && i + 2 < cells.length) {
+        const raw = cells[i + 2]?.textContent?.trim() || ''
+        // Filter out vital sign lines from "Lainnya" content
+        const vitalPrefixes = ['Tensi:', 'Nadi:', 'Suhu:', 'Nafas:', 'Tinggi:', 'Berat:', 'Lainnya:']
+        return raw.split('\n').filter(line => {
+          const t = line.trim()
+          return t && !vitalPrefixes.some(p => t.startsWith(p))
+        }).join('\n')
       }
     }
-    if (lainnya && lainnya.toLowerCase() !== 'cm') lines.push('', lainnya)
-    return lines.join('\n')
+    return ''
   }
 
   const getVital = (label: string): string => {
@@ -113,6 +213,8 @@ function parseResumeView(): ResumeData | null {
     }
   }
 
+  const tindakan: TindakanRow[] = []
+
   return {
     patientInfo: {
       norm: txt('No. Rekam Medis'),
@@ -135,7 +237,7 @@ function parseResumeView(): ResumeData | null {
       berat: getVital('Berat'),
     },
     diagnosa,
-    tindakan: [],
+    tindakan,
   }
 }
 
@@ -145,24 +247,39 @@ function extractFormData(): ResumeData {
 
   const doc = document
   const getVal = (id: string) => (doc.getElementById(id) as HTMLInputElement)?.value || ''
-  const getField = (name: string) => {
-    const el = doc.querySelector(`textarea[name="${name}"], input[name="${name}"], #${name}`) as HTMLInputElement | HTMLTextAreaElement | null
-    return el?.value || ''
-  }
+const getField = (name: string) => {
+  const el = doc.querySelector(`textarea[name="${name}"], input[name="${name}"], #${name}, select[name="${name}"]`) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null
+  if (!el) return ''
+  if ('tagName' in el && el.tagName === 'SELECT') return (el as HTMLSelectElement).value
+  return (el as HTMLInputElement | HTMLTextAreaElement).value || ''
+}
+const getRadio = (name: string): string => {
+  const checked = doc.querySelector(`input[name="${name}"]:checked`) as HTMLInputElement | null
+  return checked?.value || ''
+}
 
   const patientInfo = {
     norm: getVal('norm') || getVal('no_rm'),
     pasien: getVal('pasien') || getVal('nama_pasien'),
     nama_dokter: getVal('nama_dokter') || getVal('dokter'),
+    id_visit: getVal('id_visit') || new URLSearchParams(location.search).get('id_visit') || (typeof cachedFormState?.['id_visit'] === 'string' ? cachedFormState['id_visit'] as string : ''),
+    id_rawat_jalan: getVal('id_rawat_jalan') || new URLSearchParams(location.search).get('id') || (typeof cachedFormState?.['id_rawat_jalan'] === 'string' ? cachedFormState['id_rawat_jalan'] as string : ''),
+    id_user: getVal('id_user') || (typeof cachedFormState?.['id_user'] === 'string' ? cachedFormState['id_user'] as string : '') || '1',
+    id_dokter: getVal('id_dokter') || (typeof cachedFormState?.['id_dokter'] === 'string' ? cachedFormState['id_dokter'] as string : ''),
+    id_bed: getVal('id_bed') || (typeof cachedFormState?.['id_bed'] === 'string' ? cachedFormState['id_bed'] as string : ''),
+    noregis: getVal('noregis') || (typeof cachedFormState?.['noregis'] === 'string' ? cachedFormState['noregis'] as string : ''),
   }
   console.log('[RJ] patientInfo:', patientInfo)
 
   const clinicalNotes = {
     anamnesa: getField('anamnesa'),
     pemeriksaan_fisik: getField('pemeriksaan_fisik') || getField('pemeriksaan') || getField('fisik') || '',
-    catatan: getField('catatan'),
-    tindakan: getField('tindakan'),
-    terapi_pengobatan: getField('terapi_pengobatan'),
+    catatan: getField('catatan') || '',
+    tindakan: getField('tindakan') || getField('namaTindakan'),
+    terapi_pengobatan: getField('terapi_pengobatan') || '',
+    jenis_kasus: getField('jenis_kasus'),
+    status_kasus: getRadio('status_kasus'),
+    tindak_lanjut: getField('tindak_lanjut'),
   }
   console.log('[RJ] clinicalNotes:', clinicalNotes)
 
@@ -206,6 +323,26 @@ function extractFormData(): ResumeData {
   }
   console.log('[RJ] diagnosa found:', diagnosa.length, diagnosa)
 
+  // Fallback diagnosa dari cachedFormState (detail page)
+  if (diagnosa.length === 0 && cachedFormState) {
+    const cKode10 = Array.isArray(cachedFormState['kode10[]']) ? cachedFormState['kode10[]'] : []
+    const cNama = Array.isArray(cachedFormState['nama[]']) ? cachedFormState['nama[]'] : []
+    const cIdicd = Array.isArray(cachedFormState['idicd[]']) ? cachedFormState['idicd[]'] : []
+    const cKasus = Array.isArray(cachedFormState['kasus_diagnosa[]']) ? cachedFormState['kasus_diagnosa[]'] : []
+    const cKomplikasi = Array.isArray(cachedFormState['komplikasi[]']) ? cachedFormState['komplikasi[]'] : []
+    cKode10.forEach((kode10, i) => {
+      if (kode10) {
+        diagnosa.push({
+          idicd: cIdicd[i] || '',
+          kode10,
+          namaDiagnosa: cNama[i] || '',
+          kasus: cKasus[i] || '',
+          komplikasi: cKomplikasi[i] || '',
+        })
+      }
+    })
+  }
+
   const tindakan: TindakanRow[] = []
   const kode9Inputs = doc.querySelectorAll<HTMLInputElement>('input[name="kode9[]"]')
   kode9Inputs.forEach((inp) => {
@@ -221,25 +358,83 @@ function extractFormData(): ResumeData {
     const codeProsedur = (row.querySelector<HTMLInputElement>('input[name="codeProsedur[]"]')?.value) || kode9
     tindakan.push({ idicdTindakan: idicd, kode9, namaTindakan: nama, komorbid, kategoriProsedur: kategori, snomedProsedur: snomed, codeProsedur })
   })
+  // Fallback: pakai cachedFormState untuk detail page (fetch dari form page)
+  if (tindakan.length === 0 && cachedFormState) {
+    const cKode9 = Array.isArray(cachedFormState['kode9[]']) ? cachedFormState['kode9[]'] : []
+    const cNamaT = Array.isArray(cachedFormState['namaTindakan[]']) ? cachedFormState['namaTindakan[]'] : []
+    const cIdicdT = Array.isArray(cachedFormState['idicdTindakan[]']) ? cachedFormState['idicdTindakan[]'] : []
+    const cKomorbid = Array.isArray(cachedFormState['komorbid[]']) ? cachedFormState['komorbid[]'] : []
+    const cKategori = Array.isArray(cachedFormState['kategoriProsedur[]']) ? cachedFormState['kategoriProsedur[]'] : []
+    cKode9.forEach((kode9, i) => {
+      if (kode9) {
+        tindakan.push({
+          idicdTindakan: cIdicdT[i] || '',
+          kode9,
+          namaTindakan: cNamaT[i] || '',
+          komorbid: cKomorbid[i] || '',
+          kategoriProsedur: cKategori[i] || '',
+        })
+      }
+    })
+  }
 
   // Merge: form data is primary, view data fills gaps
+  // ponytail: always merge fromView if present, then override with billing data if still empty
   if (fromView) {
     console.log('[RJ] merging from view data')
-    if (!patientInfo.norm) patientInfo.norm = fromView.patientInfo.norm
-    if (!patientInfo.pasien) patientInfo.pasien = fromView.patientInfo.pasien
-    if (!patientInfo.nama_dokter) patientInfo.nama_dokter = fromView.patientInfo.nama_dokter
-    if (!clinicalNotes.anamnesa) clinicalNotes.anamnesa = fromView.clinicalNotes.anamnesa
-    if (!clinicalNotes.pemeriksaan_fisik) clinicalNotes.pemeriksaan_fisik = fromView.clinicalNotes.pemeriksaan_fisik
-    if (!clinicalNotes.catatan) clinicalNotes.catatan = fromView.clinicalNotes.catatan
-    if (!clinicalNotes.tindakan) clinicalNotes.tindakan = fromView.clinicalNotes.tindakan
-    if (!clinicalNotes.terapi_pengobatan) clinicalNotes.terapi_pengobatan = fromView.clinicalNotes.terapi_pengobatan
-    if (!vitalSigns.tensi) vitalSigns.tensi = fromView.vitalSigns.tensi
-    if (!vitalSigns.nadi) vitalSigns.nadi = fromView.vitalSigns.nadi
-    if (!vitalSigns.suhu) vitalSigns.suhu = fromView.vitalSigns.suhu
-    if (!vitalSigns.nafas) vitalSigns.nafas = fromView.vitalSigns.nafas
-    if (!vitalSigns.tinggi) vitalSigns.tinggi = fromView.vitalSigns.tinggi
-    if (!vitalSigns.berat) vitalSigns.berat = fromView.vitalSigns.berat
+    // Prioritaskan data dari form, lalu dari view
+    patientInfo.norm = patientInfo.norm || fromView.patientInfo.norm
+    patientInfo.pasien = patientInfo.pasien || fromView.patientInfo.pasien
+    patientInfo.nama_dokter = patientInfo.nama_dokter || fromView.patientInfo.nama_dokter
+
+    clinicalNotes.anamnesa = clinicalNotes.anamnesa || fromView.clinicalNotes.anamnesa
+    clinicalNotes.pemeriksaan_fisik = clinicalNotes.pemeriksaan_fisik || fromView.clinicalNotes.pemeriksaan_fisik
+    clinicalNotes.catatan = clinicalNotes.catatan || fromView.clinicalNotes.catatan
+    // ponytail: clinicalNotes.tindakan/terapi_pengobatan dari view tetap rendah prioritasnya, karena akan diisi dari billing jika kosong
+    clinicalNotes.tindakan = clinicalNotes.tindakan || fromView.clinicalNotes.tindakan
+    clinicalNotes.terapi_pengobatan = clinicalNotes.terapi_pengobatan || fromView.clinicalNotes.terapi_pengobatan
+
+    vitalSigns.tensi = vitalSigns.tensi || fromView.vitalSigns.tensi
+    vitalSigns.nadi = vitalSigns.nadi || fromView.vitalSigns.nadi
+    vitalSigns.suhu = vitalSigns.suhu || fromView.vitalSigns.suhu
+    vitalSigns.nafas = vitalSigns.nafas || fromView.vitalSigns.nafas
+    vitalSigns.tinggi = vitalSigns.tinggi || fromView.vitalSigns.tinggi
+    vitalSigns.berat = vitalSigns.berat || fromView.vitalSigns.berat
+    // Diagnosa dari view hanya ditambahkan jika form tidak punya diagnosa
     if (diagnosa.length === 0) diagnosa.push(...fromView.diagnosa)
+    // Tindakan dari view hanya ditambahkan jika form tidak punya tindakan
+    if (tindakan.length === 0) tindakan.push(...fromView.tindakan)
+  }
+
+  // ponytail: setelah merge dari view, cek apakah clinicalNotes.tindakan/terapi_pengobatan masih kosong (atau '-')
+  // Hanya isi dari billing jika belum terisi dari form atau view
+  if (!clinicalNotes.tindakan || clinicalNotes.tindakan === '-' || !clinicalNotes.terapi_pengobatan || clinicalNotes.terapi_pengobatan === '-') {
+    const billing = extractBillingFromDOM()
+    console.log('[RJ] billing from DOM:', billing)
+    if (billing.tindakan && (!clinicalNotes.tindakan || clinicalNotes.tindakan === '-')) {
+      clinicalNotes.tindakan = billing.tindakan
+    }
+    if (billing.terapiPengobatan && (!clinicalNotes.terapi_pengobatan || clinicalNotes.terapi_pengobatan === '-')) {
+      clinicalNotes.terapi_pengobatan = billing.terapiPengobatan
+    }
+    console.log('[RJ] after DOM merge with billing:', { clinicalNotes })
+  }
+
+  // Fallback ke cachedFormState untuk clinical notes yang masih kosong (detail page)
+  if (cachedFormState) {
+    const noteFields: Record<string, string> = {
+      anamnesa: clinicalNotes.anamnesa,
+      pemeriksaan_fisik: clinicalNotes.pemeriksaan_fisik,
+      catatan: clinicalNotes.catatan,
+      tindakan: clinicalNotes.tindakan,
+      terapi_pengobatan: clinicalNotes.terapi_pengobatan,
+    }
+    for (const [key, val] of Object.entries(noteFields)) {
+      if (!val || val === '-') {
+        const cached = cachedFormState[key]
+        if (typeof cached === 'string' && cached) clinicalNotes[key] = cached
+      }
+    }
   }
 
   console.log('[RJ] final data:', { patientInfo, clinicalNotes, vitalSigns, diagnosa, tindakan })
@@ -250,16 +445,29 @@ function serializeKlaim(data: ResumeData): string {
   const pairs: [string, string][] = []
   const add = (name: string, value: string | number) => pairs.push([name, String(value)])
 
-  add('id_visit', (document.getElementById('id_visit') as HTMLInputElement)?.value || '')
-  add('id_rawat_jalan', (document.getElementById('id_rawat_jalan') as HTMLInputElement)?.value || '')
-  add('id_user', (document.getElementById('id_user') as HTMLInputElement)?.value || '')
-  add('id_dokter', (document.getElementById('id_dokter') as HTMLInputElement)?.value || '')
-  add('id_bed', (document.getElementById('id_bed') as HTMLInputElement)?.value || '')
-
-  ;['noregis', 'norm', 'pasien', 'nama_dokter', 'waktu', 'alergiMakananJSON', 'alergiLingkunganJSON'].forEach((id) => {
-    const v = (document.getElementById(id) as HTMLInputElement)?.value
-    if (v) add(id, v)
+  // Use name-based lookup so fields are found regardless of HTML id mismatch
+  ;['id_visit', 'id_rawat_jalan', 'id_dokter', 'id_bed', 'noregis', 'norm', 'pasien', 'nama_dokter', 'id_user'].forEach((name) => {
+    const el = document.querySelector(`input[name="${name}"]`) as HTMLInputElement | null
+    if (el?.value) add(name, el.value)
   })
+
+  // Add fields where name!=id or type=select/radio needs special handling
+  const dokterEl = document.querySelector('input[name="nama_dokter"]') as HTMLInputElement | null
+  if (dokterEl?.value) add('nama_dokter', dokterEl.value)
+
+  const jenisKasusEl = document.querySelector('select[name="jenis_kasus"]') as HTMLSelectElement | null
+  if (jenisKasusEl?.value) add('jenis_kasus', jenisKasusEl.value)
+
+  const tindakLanjutEl = document.querySelector('select[name="tindak_lanjut"]') as HTMLSelectElement | null
+  if (tindakLanjutEl?.value) add('tindak_lanjut', tindakLanjutEl.value)
+
+  const statusKasusEl = document.querySelector('input[name="status_kasus"]:checked') as HTMLInputElement | null
+  if (statusKasusEl?.value) add('status_kasus', statusKasusEl.value)
+
+  // Waktu — generate current
+  const now = new Date()
+  const pad = (n: number) => n.toString().padStart(2, '0')
+  add('waktu', `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`)
 
   const noteFields: Record<string, string> = {
     anamnesa: data.clinicalNotes.anamnesa,
@@ -306,45 +514,126 @@ function serializeRawatJalan(data: ResumeData): string {
   const pairs: [string, string][] = []
   const add = (name: string, value: string | number) => pairs.push([name, String(value)])
 
-  // Copy hidden fields from original form
-  ;['id_visit', 'id_rawat_jalan', 'id_user', 'id_dokter', 'id_bed', 'norm', 'noregis', 'pasien', 'nama_dokter'].forEach((id) => {
-    const v = (document.getElementById(id) as HTMLInputElement)?.value
-    if (v) add(id, v)
-  })
+  // ponytail: debug cachedFormState
+  if (!cachedFormState?.['id_bed']) console.log('[RJ] MISS id_bed — cfs keys:', Object.keys(cachedFormState || {}).join(','))
+
+  // Read from current page DOM
+  const el = (name: string) => (document.querySelector(`input[name="${name}"]`) as HTMLInputElement | null)?.value || ''
+  const sel = (id: string) => (document.getElementById(id) as HTMLSelectElement | null)?.value || ''
+  const radioChecked = (name: string) => (document.querySelector(`input[name="${name}"]:checked`) as HTMLInputElement | null)?.value || ''
+  // Hidden / patient fields: always send so PHP $_POST['x'] exists
+  // Fallback to cached form state fetched from RJ form page
+  const fs = (name: string) => {
+    const val = (typeof cachedFormState?.[name] === 'string' ? cachedFormState[name] as string : '')
+    return val
+  }
+
+  // Hidden / patient fields: always send so PHP $_POST['x'] exists
+  // Prefer data.patientInfo (passed through React state), then DOM, then cache
+  const pi = (name: string) => (data.patientInfo as Record<string, string | undefined>)?.[name] || ''
+  add('id_visit', pi('id_visit') || el('id_visit') || new URLSearchParams(location.search).get('id_visit') || fs('id_visit'))
+  add('id_rawat_jalan', pi('id_rawat_jalan') || el('id_rawat_jalan') || new URLSearchParams(location.search).get('id') || fs('id_rawat_jalan'))
+  add('id_user', pi('id_user') || el('id_user') || fs('id_user') || '1')
+  add('id_dokter', pi('id_dokter') || el('id_dokter') || fs('id_dokter') || '')
+  add('id_bed', pi('id_bed') || el('id_bed') || fs('id_bed') || '')
+  // ponytail: debug untuk lacak id_bed kosong
+  if (!pi('id_bed') && !el('id_bed') && !fs('id_bed')) console.log('[RJ] id_bed STILL empty')
+  add('norm', pi('norm') || el('norm') || fs('norm') || '')
+  add('noregis', pi('noregis') || el('noregis') || fs('noregis') || '')
+  add('pasien', pi('pasien') || el('pasien') || fs('pasien') || '')
+  add('nama_dokter', pi('nama_dokter') || el('nama_dokter') || fs('nama_dokter') || '')
+
+  // Dropdown / select fields — fallback to cached form state
+  add('jenis_kasus', sel('jenis_kasus') || fs('jenis_kasus') || '')
+  add('tindak_lanjut', sel('tindak_lanjut') || fs('tindak_lanjut') || '')
+  add('status_kasus', radioChecked('status_kasus') || fs('status_kasus') || 'BARU')
+  add('rujukan', sel('rujukan') || fs('rujukan') || '')
+  add('keadaan_keluar', sel('keadaan_keluar') || fs('keadaan_keluar') || '')
+  add('cara_keluar', sel('cara_keluar') || fs('cara_keluar') || '')
+  add('pemeriksaan_lanjut', sel('pemeriksaan_lanjut') || fs('pemeriksaan_lanjut') || '')
+  add('pulang_berkas', el('pulang_berkas') || fs('pulang_berkas') || '')
+  add('composition_diet', el('composition_diet') || (document.getElementById('composition_diet') as HTMLTextAreaElement | null)?.value || fs('composition_diet') || '')
+  // Alergi fields — prevent "Array to string conversion" by always sending '[]' as string
+  add('alergiMakananJSON', el('alergiMakananJSON') || fs('alergiMakananJSON') || '[]')
+  add('alergiLingkunganJSON', el('alergiLingkunganJSON') || fs('alergiLingkunganJSON') || '[]')
 
   // Waktu — generate current datetime in DD/MM/YYYY HH:mm:ss format
   const now = new Date()
   const pad = (n: number) => n.toString().padStart(2, '0')
   add('waktu', `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`)
 
-  // Clinical notes
-  add('anamnesa', data.clinicalNotes.anamnesa)
-  if (data.clinicalNotes.pemeriksaan_fisik) add('pemeriksaan_fisik', data.clinicalNotes.pemeriksaan_fisik)
-  if (data.clinicalNotes.catatan) add('catatan', data.clinicalNotes.catatan)
-  if (data.clinicalNotes.tindakan) add('tindakan', data.clinicalNotes.tindakan)
-  if (data.clinicalNotes.terapi_pengobatan) add('terapi_pengobatan', data.clinicalNotes.terapi_pengobatan)
+  // Clinical notes — convert newlines to <br/> so m-klaim renders 1 item per line
+  const toHtml = (val: string) => val.replace(/\n/g, '<br/>')
+  add('anamnesa', toHtml(data.clinicalNotes.anamnesa))
+  add('pemeriksaan_fisik', toHtml(data.clinicalNotes.pemeriksaan_fisik))
+  add('catatan', toHtml(data.clinicalNotes.catatan))
+  add('tindakan', toHtml(data.clinicalNotes.tindakan))
+  add('terapi_pengobatan', toHtml(data.clinicalNotes.terapi_pengobatan))
 
-  // Vital signs
-  add('tensi', data.vitalSigns.tensi)
-  if (data.vitalSigns.nadi) add('nadi', data.vitalSigns.nadi)
-  if (data.vitalSigns.suhu) add('suhu', data.vitalSigns.suhu)
-  if (data.vitalSigns.nafas) add('nafas', data.vitalSigns.nafas)
-  if (data.vitalSigns.tinggi) add('tinggi', data.vitalSigns.tinggi)
-  if (data.vitalSigns.berat) add('berat', data.vitalSigns.berat)
+  // Vital signs — strip all units (native sends "36.6" not "36.6 C")
+  const cleanVital = (val: string): string => val.match(/^([\d/.]+)/)?.[0] || ''
+  add('tensi', cleanVital(data.vitalSigns.tensi))
+  add('nadi', cleanVital(data.vitalSigns.nadi))
+  add('suhu', cleanVital(data.vitalSigns.suhu))
+  add('nafas', cleanVital(data.vitalSigns.nafas))
+  add('tinggi', cleanVital(data.vitalSigns.tinggi))
+  add('berat', cleanVital(data.vitalSigns.berat))
 
   // Diagnosa — uses nama[], idicd[], kode10[], kasus_diagnosa[], komplikasi[]
+  // Match idicd[] from cached form state by kode10 for fields missing on detail page
+  const cachedArr = (name: string): string[] =>
+    Array.isArray(cachedFormState?.[name]) ? cachedFormState![name] as string[] : []
+  const cKode10 = cachedArr('kode10[]')
+  const cIdicd = cachedArr('idicd[]')
+  const cKasus = cachedArr('kasus_diagnosa[]')
+  const cKomplikasi = cachedArr('komplikasi[]')
   data.diagnosa.forEach((d) => {
+    let idicd = d.idicd
+    if (!idicd && d.kode10) {
+      const idx = cKode10.indexOf(d.kode10)
+      if (idx >= 0 && cIdicd[idx]) idicd = cIdicd[idx]
+    }
     add('nama[]', d.namaDiagnosa)
-    add('idicd[]', d.idicd)
+    add('idicd[]', idicd)
     add('kode10[]', d.kode10)
-    add('kasus_diagnosa[]', d.kasus || 'BARU')
-    add('komplikasi[]', d.komplikasi || '')
+    add('kasus_diagnosa[]', d.kasus || cKasus[cKode10.indexOf(d.kode10)] || '')
+    add('komplikasi[]', d.komplikasi || cKomplikasi[cKode10.indexOf(d.kode10)] || '')
   })
 
-  // Tindakan — uses namaTindakan[], kode9[]
-  data.tindakan.forEach((t) => {
-    if (t.namaTindakan) add('namaTindakan[]', t.namaTindakan)
+  // Tindakan — use cached form state if data.tindakan is empty (detail page)
+  // ponytail: debug cache untuk kategoriProsedur
+  console.log('[RJ] kProsedur cache:', cachedArr('kategoriProsedur[]'), '| komorbid cache:', cachedArr('komorbid[]'))
+  const cKode9 = cachedArr('kode9[]')
+  const cIdicdT = cachedArr('idicdTindakan[]')
+  const cNamaT = cachedArr('namaTindakan[]')
+  const cKategori = cachedArr('kategoriProsedur[]')
+  const cKomorbid = cachedArr('komorbid[]')
+  const tindakanSource = data.tindakan.length > 0
+    ? data.tindakan
+    : cKode9.map((kode9, i) => ({
+        kode9,
+        idicdTindakan: cIdicdT[i] || '',
+        namaTindakan: cNamaT[i] || '',
+        kategoriProsedur: cKategori[i] || '',
+        komorbid: cKomorbid[i] || '',
+      }))
+  // ponytail: dedup by kode9 to prevent duplicate entries from cache
+  const seen = new Set<string>()
+  const tindakanToSend = tindakanSource.filter(t => {
+    const key = t.kode9 + '|' + t.idicdTindakan
+    if (!key || seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+  tindakanToSend.forEach((t) => {
+    add('namaTindakan[]', t.namaTindakan)
     add('kode9[]', t.kode9)
+    add('idicdTindakan[]', t.idicdTindakan)
+    add('kategoriProsedur[]', t.kategoriProsedur)
+    add('komorbid[]', t.komorbid)
+    // ponytail: hanya kirim jika ada nilai — cegah Array to string conversion di Oracle
+    if (t.snomedProsedur?.trim()) add('snomedProsedur[]', t.snomedProsedur)
+    if (t.codeProsedur?.trim()) add('codeProsedur[]', t.codeProsedur)
   })
 
   add('save', 'Simpan')
@@ -352,7 +641,7 @@ function serializeRawatJalan(data: ResumeData): string {
 }
 
 function serializeFormData(data: ResumeData): string {
-  return isRj ? serializeRawatJalan(data) : serializeKlaim(data)
+  return serializeRawatJalan(data)
 }
 
 function closeOverlay(container: HTMLElement) {
@@ -402,6 +691,8 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
       throw new Error('HTTP ' + response.status)
     }
     console.log('[RJ] save success')
+    // Reset cache so next edit picks up fresh data
+    cachedFormState = null
   }
 
   reactRoot.render(
@@ -428,7 +719,84 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
   }, 50)
 }
 
+/* ── Fetch ALL form state from RJ form page (hidden, select, radio, etc.) ── */
+let cachedFormState: Record<string, string | string[]> | null = null
+
+async function fetchFormState(): Promise<Record<string, string | string[]>> {
+  const idVisit = new URLSearchParams(location.search).get('id_visit')
+  if (!idVisit) return {}
+
+  const url = `${location.origin}/rekam-medik/rm-rawat-jalan-new?id_visit=${idVisit}`
+  try {
+    const resp = await fetch(url, { credentials: 'same-origin' })
+    const html = await resp.text()
+    const doc = new DOMParser().parseFromString(html, 'text/html')
+
+    const state: Record<string, string | string[]> = {}
+
+    // Hidden and text inputs
+    doc.querySelectorAll<HTMLInputElement>('input[type="hidden"], input[type="text"]').forEach(el => {
+      if (el.name && !el.name.endsWith('[]')) state[el.name] = el.value
+    })
+
+    // Textareas
+    doc.querySelectorAll<HTMLTextAreaElement>('textarea').forEach(el => {
+      if (el.name) state[el.name] = el.value
+    })
+
+    // Selects (by id AND name) — accumulate array selects, overwrite singles
+    doc.querySelectorAll<HTMLSelectElement>('select').forEach(el => {
+      if (el.id) state[el.id] = el.value
+      if (el.name) {
+        if (el.name.endsWith('[]')) {
+          if (!Array.isArray(state[el.name])) state[el.name] = []
+          ;(state[el.name] as string[]).push(el.value)
+        } else {
+          state[el.name] = el.value
+        }
+      }
+    })
+
+    // Radios (checked only)
+    doc.querySelectorAll<HTMLInputElement>('input[type="radio"]:checked').forEach(el => {
+      if (el.name) state[el.name] = el.value
+    })
+
+    // Array inputs (idicd[], kode10[], nama[], etc.) — collect all values per name
+    const arrayNames = new Set<string>()
+    doc.querySelectorAll<HTMLInputElement>('input[name$="[]"]').forEach(el => {
+      if (el.name) arrayNames.add(el.name)
+    })
+    for (const name of arrayNames) {
+      const values: string[] = []
+      doc.querySelectorAll<HTMLInputElement>(`input[name="${name}"]`).forEach(el => {
+        if (el.value) values.push(el.value)
+      })
+      if (values.length > 0) state[name] = values
+    }
+
+    console.log('[RJ] fetched form state:', state)
+    return state
+  } catch (e) {
+    console.error('[RJ] failed to fetch form state:', e)
+    return {}
+  }
+}
+
 function setupFloatingButton() {
+  // ponytail: enable only on the specific claim detail page
+  const targetPage = 'http://103.147.236.140/v2/m-klaim/detail-v2-refaktor'
+  if (!location.href.startsWith(targetPage)) {
+    console.log('[RJ] not target page (' + location.href + '), RJ disabled')
+    return
+  }
+
+  // Optional: check if id_visit is present in URL to be safe
+  const urlParams = new URLSearchParams(location.search)
+  if (!urlParams.has('id_visit')) {
+    console.log('[RJ] no id_visit in URL, RJ disabled')
+    return
+  }
   if (document.getElementById('ext-resume-float-btn')) return
 
   const container = document.createElement('div')
@@ -451,13 +819,29 @@ function setupFloatingButton() {
   btn.onmouseenter = () => { btn.style.transform = 'translateY(-50%) scale(1.05)'; btn.style.boxShadow = '0 4px 16px rgba(36,105,240,.35)' }
   btn.onmouseleave = () => { btn.style.transform = 'translateY(-50%)'; btn.style.boxShadow = '0 2px 8px rgba(0,0,0,.2)' }
 
-  btn.addEventListener('click', () => {
+  btn.addEventListener('click', async () => {
     if (btn.disabled) return
     console.log('[RJ] button clicked')
     btn.disabled = true
     try {
+      // Fetch ALL form state from form page before opening modal
+      if (!cachedFormState) {
+        cachedFormState = await fetchFormState()
+      }
       const data = extractFormData()
       console.log('[RJ] extracted data:', data)
+      // ponytail: kalau form & view kosong, ambil dari DOM
+      if (!data.clinicalNotes.tindakan || data.clinicalNotes.tindakan === '-' || !data.clinicalNotes.terapi_pengobatan || data.clinicalNotes.terapi_pengobatan === '-') {
+        const billing = extractBillingFromDOM()
+        console.log('[RJ] billing from DOM:', billing)
+        if (billing.tindakan && (!data.clinicalNotes.tindakan || data.clinicalNotes.tindakan === '-')) {
+          data.clinicalNotes.tindakan = billing.tindakan
+        }
+        if (billing.terapiPengobatan && (!data.clinicalNotes.terapi_pengobatan || data.clinicalNotes.terapi_pengobatan === '-')) {
+          data.clinicalNotes.terapi_pengobatan = billing.terapiPengobatan
+        }
+        console.log('[RJ] after DOM merge:', data)
+      }
       container.style.display = 'flex'
       mountReactApp(container, data)
     } catch (e) {

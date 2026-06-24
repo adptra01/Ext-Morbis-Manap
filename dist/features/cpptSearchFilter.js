@@ -1,26 +1,126 @@
-"use strict";var __morbis_feature=(()=>{function I(){return window}var c={background:"#ffffff",foreground:"#0a0a0e",card:"#ffffff",cardForeground:"#0a0a0e",primary:"#2469f0",primaryForeground:"#f8fafc",primaryHover:"#1d58cc",secondary:"#f1f5f9",secondaryForeground:"#1e293b",muted:"#f1f5f9",mutedForeground:"#64748b",accent:"#f1f5f9",accentForeground:"#1e293b",destructive:"#ef4444",destructiveForeground:"#f8fafc",border:"#e2e8f0",input:"#e2e8f0",ring:"#2469f0",success:"#1b8a4b",successBg:"#eaf6ef",warning:"#c47a1a",warningBg:"#fef4e4",error:"#ef4444",errorBg:"#fef2f2",info:"#2469f0",infoBg:"#eef3ff"};var R=new Set;function A(e,t){if(R.has(e)){let o=document.getElementById(e);if(o)return o}let r=document.createElement("style");return r.id=e,r.textContent=t,document.head.appendChild(r),R.add(e),r}A("ext-shared-animations",`
+"use strict";
+var __morbis_feature = (() => {
+  // src/features/shared/types.ts
+  function getMorbisGlobals() {
+    return window;
+  }
+
+  // src/shared/ui/colors.ts
+  var colors = {
+    background: "#ffffff",
+    foreground: "#0a0a0e",
+    card: "#ffffff",
+    cardForeground: "#0a0a0e",
+    primary: "#2469f0",
+    primaryForeground: "#f8fafc",
+    primaryHover: "#1d58cc",
+    secondary: "#f1f5f9",
+    secondaryForeground: "#1e293b",
+    muted: "#f1f5f9",
+    mutedForeground: "#64748b",
+    accent: "#f1f5f9",
+    accentForeground: "#1e293b",
+    destructive: "#ef4444",
+    destructiveForeground: "#f8fafc",
+    border: "#e2e8f0",
+    input: "#e2e8f0",
+    ring: "#2469f0",
+    /* semantic shortcuts */
+    success: "#1b8a4b",
+    successBg: "#eaf6ef",
+    warning: "#c47a1a",
+    warningBg: "#fef4e4",
+    error: "#ef4444",
+    errorBg: "#fef2f2",
+    info: "#2469f0",
+    infoBg: "#eef3ff"
+  };
+
+  // src/shared/ui/index.ts
+  var injectedSheets = /* @__PURE__ */ new Set();
+  function injectCSS(id, css) {
+    if (injectedSheets.has(id)) {
+      const existing = document.getElementById(id);
+      if (existing) return existing;
+    }
+    const style = document.createElement("style");
+    style.id = id;
+    style.textContent = css;
+    document.head.appendChild(style);
+    injectedSheets.add(id);
+    return style;
+  }
+  injectCSS(
+    "ext-shared-animations",
+    `
   @keyframes fadeSlideIn {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
   }
-`);var z=I(),V="ext-cppt-search-style",Y="ext-cppt-no-results";function J(){let e=window.location.pathname;return/\/admisi\/pelaksanaan_pelayanan\/cppt\/?$/.test(e)?"rajal":/\/admisi\/detail-rawat-inap\/cppt\/?$/.test(e)?"ranap":null}function W(e){if(e.id==="history_cppt")return!0;let r=e.querySelector("tr");if(r){let o=Array.from(r.querySelectorAll("th, td")).map(s=>s.textContent?.trim().toLowerCase()||"");if(["waktu","penginput","subyektif","obyektif","assessment","instruksi"].filter(s=>o.some(i=>i.includes(s))).length>=2)return!0}return!!e.textContent?.toLowerCase().includes("cppt")}function j(){return Array.from(document.querySelectorAll("table")).filter(W)}function D(e){let t=e.querySelector("thead tr")||e.querySelector("tr");return t?Array.from(t.querySelectorAll("th, td")).map(r=>r.textContent?.trim()||"").filter(r=>r.length>0):[]}function E(e,...t){for(let r of t){let o=e.findIndex(n=>n.toLowerCase().includes(r));if(o!==-1)return o}return-1}function Q(){A(V,`
+`
+  );
+
+  // src/features/cpptSearchFilter.ts
+  var g = getMorbisGlobals();
+  var CPPT_STYLE_ID = "ext-cppt-search-style";
+  var CPPT_NO_RESULTS_CLASS = "ext-cppt-no-results";
+  function getCpptPageType() {
+    const path = window.location.pathname;
+    if (/\/admisi\/pelaksanaan_pelayanan\/cppt\/?$/.test(path)) return "rajal";
+    if (/\/admisi\/detail-rawat-inap\/cppt\/?$/.test(path)) return "ranap";
+    return null;
+  }
+  function isCpptTable(table) {
+    const byId = table.id === "history_cppt";
+    if (byId) return true;
+    const firstRow = table.querySelector("tr");
+    if (firstRow) {
+      const texts = Array.from(firstRow.querySelectorAll("th, td")).map(
+        (c) => c.textContent?.trim().toLowerCase() || ""
+      );
+      const keywords = ["waktu", "penginput", "subyektif", "obyektif", "assessment", "instruksi"];
+      const matchCount = keywords.filter((k) => texts.some((t) => t.includes(k))).length;
+      if (matchCount >= 2) return true;
+    }
+    if (table.textContent?.toLowerCase().includes("cppt")) return true;
+    return false;
+  }
+  function findCpptTables() {
+    return Array.from(document.querySelectorAll("table")).filter(isCpptTable);
+  }
+  function getHeaderTexts(table) {
+    const headerRow = table.querySelector("thead tr") || table.querySelector("tr");
+    if (!headerRow) return [];
+    return Array.from(headerRow.querySelectorAll("th, td")).map((h) => h.textContent?.trim() || "").filter((t) => t.length > 0);
+  }
+  function getColumnIndex(headers, ...keywords) {
+    for (const kw of keywords) {
+      const idx = headers.findIndex((h) => h.toLowerCase().includes(kw));
+      if (idx !== -1) return idx;
+    }
+    return -1;
+  }
+  function injectStyles() {
+    injectCSS(
+      CPPT_STYLE_ID,
+      `
     .ext-cppt-filter-bar {
       display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
       padding: 12px 16px; margin: 10px 0;
-      background: ${c.muted};
-      border: 1px solid ${c.border}; border-radius: 8px;
+      background: ${colors.muted};
+      border: 1px solid ${colors.border}; border-radius: 8px;
     }
     .ext-cppt-filter-bar .ext-cppt-label {
-      font-weight: 600; font-size: 13px; color: ${c.foreground}; margin-right: 4px;
+      font-weight: 600; font-size: 13px; color: ${colors.foreground}; margin-right: 4px;
     }
     .ext-cppt-filter-bar input, .ext-cppt-filter-bar select {
-      padding: 6px 10px; border: 1px solid ${c.input}; border-radius: 5px;
-      font-size: 13px; background: ${c.background}; color: ${c.foreground};
+      padding: 6px 10px; border: 1px solid ${colors.input}; border-radius: 5px;
+      font-size: 13px; background: ${colors.background}; color: ${colors.foreground};
       outline: none; transition: border-color 0.15s;
       min-width: 0;
     }
     .ext-cppt-filter-bar input:focus, .ext-cppt-filter-bar select:focus {
-      border-color: ${c.primary}; box-shadow: 0 0 0 2px ${c.primary}26;
+      border-color: ${colors.primary}; box-shadow: 0 0 0 2px ${colors.primary}26;
     }
     .ext-cppt-filter-bar input.ext-cppt-search-input { flex: 1 1 180px; min-width: 140px; }
     .ext-cppt-filter-bar select.ext-cppt-dokter-select { flex: 0 1 160px; }
@@ -30,12 +130,12 @@
       cursor: pointer; font-size: 12px; font-weight: 600;
       transition: all 0.15s; white-space: nowrap;
     }
-    .ext-cppt-filter-bar .ext-cppt-btn-clear { background: ${c.error}; color: white; }
+    .ext-cppt-filter-bar .ext-cppt-btn-clear { background: ${colors.error}; color: white; }
     .ext-cppt-filter-bar .ext-cppt-btn-clear:hover { background: #dc2626; }
     .ext-cppt-no-results {
       padding: 30px 20px; text-align: center;
-      color: ${c.mutedForeground}; font-size: 14px; font-weight: 500;
-      background: #fafafa; border: 1px dashed ${c.border};
+      color: ${colors.mutedForeground}; font-size: 14px; font-weight: 500;
+      background: #fafafa; border: 1px dashed ${colors.border};
       border-radius: 8px; margin: 10px 0;
     }
     .ext-cppt-table-wrapper {
@@ -46,23 +146,281 @@
       page-break-inside: avoid !important;
     }
     .ext-cppt-filtered-row { display: none !important; }
-  `)}function C(e){return Array.from(e.querySelectorAll("tr")).filter(t=>t.querySelector("td"))}function X(e,t){let r=new Set;for(let o of e){let a=o.querySelectorAll("td")[t]?.textContent?.trim();a&&a.length>0&&r.add(a)}return Array.from(r).sort()}function Z(e){let t=e.match(/(\d{2})\/(\d{2})\/(\d{4})/);return t?t[3]+"-"+t[2]+"-"+t[1]:e}function O(e){return"ext_cppt_filter_"+e}function N(e){return"cppt"+e+"_"}function ee(e){try{let t=sessionStorage.getItem(O(e));if(t)return JSON.parse(t)}catch{}return{search:"",dokter:"",tanggalAwal:"",tanggalAkhir:""}}function M(e,t){try{sessionStorage.setItem(O(t),JSON.stringify(e))}catch{}}function te(e){let t=new URLSearchParams(window.location.search),r=N(e);return{search:t.get(r+"search")||"",dokter:t.get(r+"dokter")||"",tanggalAwal:t.get(r+"tgl_awal")||"",tanggalAkhir:t.get(r+"tgl_akhir")||""}}function _(e,t){let r=new URL(window.location.href),o=r.searchParams,n=N(t),a=(i,l)=>{l?o.set(i,l):o.delete(i)};a(n+"search",e.search),a(n+"dokter",e.dokter),a(n+"tgl_awal",e.tanggalAwal),a(n+"tgl_akhir",e.tanggalAkhir);let s=r.pathname+"?"+o.toString();s!==window.location.pathname+"?"+window.location.search.slice(1)&&window.history.replaceState(null,"",s)}function S(e,t,r,o,n){let a=0;for(let s of t){let i=s.querySelectorAll("td");if(i.length===0){a++;continue}let l=!0,p=i[r]?.textContent?.trim()||"",g=Z(p.toLowerCase()),f=i[o]?.textContent?.trim().toLowerCase()||"",m=Array.from(i).map(x=>x.textContent?.trim().toLowerCase()||"").join(" ");if(e.search){let x=e.search.toLowerCase();m.includes(x)||(l=!1)}l&&e.dokter&&f!==e.dokter.toLowerCase()&&(l=!1),l&&e.tanggalAwal&&g<e.tanggalAwal&&(l=!1),l&&e.tanggalAkhir&&g>e.tanggalAkhir&&(l=!1),s.classList.toggle("ext-cppt-filtered-row",!l),l&&a++}n&&(n.style.display=a===0&&t.length>0?"block":"none")}function q(e,t){let r="ext-cppt-filter-"+t;if(e.parentElement?.classList.contains("ext-cppt-table-wrapper"))return;let o=document.getElementById(r);if(o){let d=o.closest(".ext-cppt-table-wrapper");d&&d.remove()}let n=document.getElementById("ext-cppt-nores-"+t);n&&n.remove();let a=D(e),s=E(a,"waktu","masuk","tanggal"),i=E(a,"penginput","dokter","pembuat");if(i===-1&&s===-1)return;let l=document.createElement("div");l.id=r,l.className="ext-cppt-filter-bar";let p=te(t);M(p,t);let g="ext-cppt-search-"+t,f="ext-cppt-dokter-"+t,m="ext-cppt-tgl-awal-"+t,x="ext-cppt-tgl-akhir-"+t,B="ext-cppt-clear-"+t,U="ext-cppt-nores-"+t;l.innerHTML=`
+  `
+    );
+  }
+  function getDataRows(table) {
+    return Array.from(table.querySelectorAll("tr")).filter((r) => r.querySelector("td"));
+  }
+  function getUniqueDokters(rows, dokterColIdx) {
+    const set = /* @__PURE__ */ new Set();
+    for (const row of rows) {
+      const cells = row.querySelectorAll("td");
+      const val = cells[dokterColIdx]?.textContent?.trim();
+      if (val && val.length > 0) set.add(val);
+    }
+    return Array.from(set).sort();
+  }
+  function normalizeDateForCompare(s) {
+    const m = s.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+    if (m) return m[3] + "-" + m[2] + "-" + m[1];
+    return s;
+  }
+  function getStorageKey(tableIdx) {
+    return "ext_cppt_filter_" + tableIdx;
+  }
+  function getUrlPrefix(tableIdx) {
+    return "cppt" + tableIdx + "_";
+  }
+  function getStoredFilters(tableIdx) {
+    try {
+      const raw = sessionStorage.getItem(getStorageKey(tableIdx));
+      if (raw) return JSON.parse(raw);
+    } catch {
+    }
+    return { search: "", dokter: "", tanggalAwal: "", tanggalAkhir: "" };
+  }
+  function storeFilters(state, tableIdx) {
+    try {
+      sessionStorage.setItem(getStorageKey(tableIdx), JSON.stringify(state));
+    } catch {
+    }
+  }
+  function restoreFiltersFromUrl(tableIdx) {
+    const p = new URLSearchParams(window.location.search);
+    const prefix = getUrlPrefix(tableIdx);
+    return {
+      search: p.get(prefix + "search") || "",
+      dokter: p.get(prefix + "dokter") || "",
+      tanggalAwal: p.get(prefix + "tgl_awal") || "",
+      tanggalAkhir: p.get(prefix + "tgl_akhir") || ""
+    };
+  }
+  function syncUrlParams(state, tableIdx) {
+    const url = new URL(window.location.href);
+    const p = url.searchParams;
+    const prefix = getUrlPrefix(tableIdx);
+    const setIf = (key, val) => {
+      if (val) p.set(key, val);
+      else p.delete(key);
+    };
+    setIf(prefix + "search", state.search);
+    setIf(prefix + "dokter", state.dokter);
+    setIf(prefix + "tgl_awal", state.tanggalAwal);
+    setIf(prefix + "tgl_akhir", state.tanggalAkhir);
+    const newUrl = url.pathname + "?" + p.toString();
+    if (newUrl !== window.location.pathname + "?" + window.location.search.slice(1)) {
+      window.history.replaceState(null, "", newUrl);
+    }
+  }
+  function applyFilters(state, rows, tanggalIdx, dokterIdx, noResultsEl) {
+    let visibleCount = 0;
+    for (const row of rows) {
+      const cells = row.querySelectorAll("td");
+      if (cells.length === 0) {
+        visibleCount++;
+        continue;
+      }
+      let show = true;
+      const rawTanggal = cells[tanggalIdx]?.textContent?.trim() || "";
+      const tanggalText = normalizeDateForCompare(rawTanggal.toLowerCase());
+      const dokterText = cells[dokterIdx]?.textContent?.trim().toLowerCase() || "";
+      const fullText = Array.from(cells).map((c) => c.textContent?.trim().toLowerCase() || "").join(" ");
+      if (state.search) {
+        const q = state.search.toLowerCase();
+        if (!fullText.includes(q)) show = false;
+      }
+      if (show && state.dokter) {
+        if (dokterText !== state.dokter.toLowerCase()) show = false;
+      }
+      if (show && state.tanggalAwal) {
+        if (tanggalText < state.tanggalAwal) show = false;
+      }
+      if (show && state.tanggalAkhir) {
+        if (tanggalText > state.tanggalAkhir) show = false;
+      }
+      row.classList.toggle("ext-cppt-filtered-row", !show);
+      if (show) visibleCount++;
+    }
+    if (noResultsEl) {
+      noResultsEl.style.display = visibleCount === 0 && rows.length > 0 ? "block" : "none";
+    }
+  }
+  function injectFilterForTable(table, tableIdx) {
+    const containerId = "ext-cppt-filter-" + tableIdx;
+    if (table.parentElement?.classList.contains("ext-cppt-table-wrapper")) return;
+    const orphaned = document.getElementById(containerId);
+    if (orphaned) {
+      const orphanedWrapper = orphaned.closest(".ext-cppt-table-wrapper");
+      if (orphanedWrapper) orphanedWrapper.remove();
+    }
+    const orphanedNoRes = document.getElementById("ext-cppt-nores-" + tableIdx);
+    if (orphanedNoRes) orphanedNoRes.remove();
+    const headers = getHeaderTexts(table);
+    const tanggalIdx = getColumnIndex(headers, "waktu", "masuk", "tanggal");
+    const dokterIdx = getColumnIndex(headers, "penginput", "dokter", "pembuat");
+    if (dokterIdx === -1 && tanggalIdx === -1) return;
+    const container = document.createElement("div");
+    container.id = containerId;
+    container.className = "ext-cppt-filter-bar";
+    const state = restoreFiltersFromUrl(tableIdx);
+    storeFilters(state, tableIdx);
+    const searchId = "ext-cppt-search-" + tableIdx;
+    const dokterSelId = "ext-cppt-dokter-" + tableIdx;
+    const tglAwalId = "ext-cppt-tgl-awal-" + tableIdx;
+    const tglAkhirId = "ext-cppt-tgl-akhir-" + tableIdx;
+    const clearId = "ext-cppt-clear-" + tableIdx;
+    const noResultsId = "ext-cppt-nores-" + tableIdx;
+    container.innerHTML = `
     <span class="ext-cppt-label">Cari:</span>
-    <input type="text" id="${g}" class="ext-cppt-search-input"
-      placeholder="Cari..." value="${F(p.search)}">
+    <input type="text" id="${searchId}" class="ext-cppt-search-input"
+      placeholder="Cari..." value="${htmlEncode(state.search)}">
 
     <span class="ext-cppt-label">Penginput:</span>
-    <select id="${f}" class="ext-cppt-dokter-select">
+    <select id="${dokterSelId}" class="ext-cppt-dokter-select">
       <option value="">Semua Dokter</option>
     </select>
 
     <span class="ext-cppt-label">Dari:</span>
-    <input type="date" id="${m}" class="ext-cppt-date-input"
-      value="${F(p.tanggalAwal)}">
+    <input type="date" id="${tglAwalId}" class="ext-cppt-date-input"
+      value="${htmlEncode(state.tanggalAwal)}">
 
     <span class="ext-cppt-label">S/d:</span>
-    <input type="date" id="${x}" class="ext-cppt-date-input"
-      value="${F(p.tanggalAkhir)}">
+    <input type="date" id="${tglAkhirId}" class="ext-cppt-date-input"
+      value="${htmlEncode(state.tanggalAkhir)}">
 
-    <button class="ext-cppt-btn ext-cppt-btn-clear" id="${B}">Reset</button>
-  `;let $=e.parentNode,G=$?getComputedStyle($).display:"unknown";console.log("[CPPT Filter] Table #"+t+" parent display:",G);let b=document.createElement("div");b.className="ext-cppt-table-wrapper",b.style.cssText="display:block !important;width:100% !important;clear:both;flex:0 0 100%;box-sizing:border-box",$?.insertBefore(b,e),b.appendChild(l),b.appendChild(e);let u=document.createElement("div");u.id=U,u.className=Y,u.textContent="Tidak ada data yang sesuai dengan filter.",u.style.display="none",b.appendChild(u),console.log("[CPPT Filter] Injected filter #"+t+" before table:",e.id||"(no id)");let h=document.getElementById(f),P=C(e);if(i!==-1&&h){let d=X(P,i);for(let L of d){let T=document.createElement("option");T.value=L,T.textContent=L,L===p.dokter&&(T.selected=!0),h.appendChild(T)}}let y=document.getElementById(g),w=document.getElementById(m),v=document.getElementById(x),K=document.getElementById(B),H;function k(){clearTimeout(H),H=setTimeout(()=>{let d={search:y?.value||"",dokter:h?.value||"",tanggalAwal:w?.value||"",tanggalAkhir:v?.value||""};M(d,t),_(d,t),S(d,C(e),s,i,u)},250)}y?.addEventListener("input",k),h?.addEventListener("change",k),w?.addEventListener("input",k),v?.addEventListener("input",k),K?.addEventListener("click",()=>{y&&(y.value=""),h&&(h.value=""),w&&(w.value=""),v&&(v.value="");let d={search:"",dokter:"",tanggalAwal:"",tanggalAkhir:""};M(d,t),_(d,t),S(d,C(e),s,i,u)}),S(p,P,s,i,u)}function F(e){return e.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}function ne(){if(!J())return;document.readyState==="loading"?document.addEventListener("DOMContentLoaded",()=>{setTimeout(r,500)}):setTimeout(r,500),new MutationObserver(()=>{let o=j();for(let n=0;n<o.length;n++){let a=o[n];if(!a.parentElement?.classList.contains("ext-cppt-table-wrapper")){let s=document.getElementById("ext-cppt-filter-"+n);if(s){let i=s.closest(".ext-cppt-table-wrapper");i&&i.remove()}q(a,n)}}}).observe(document.body,{childList:!0,subtree:!0});function r(){let o=j();if(o.length!==0){Q(),console.log("[CPPT Filter] Found "+o.length+" CPPT table(s)");for(let n=0;n<o.length;n++)console.log("[CPPT Filter] Table #"+n+": id="+(o[n].id||"(none)")+" parent="+(o[n].parentNode?.className||"(none)")+" rows="+o[n].querySelectorAll("tr").length),q(o[n],n);for(let n=0;n<o.length;n++){let a=o[n];new MutationObserver(()=>{let i=ee(n);if(i.search||i.dokter||i.tanggalAwal||i.tanggalAkhir){let p=D(a),g=E(p,"waktu","masuk","tanggal"),f=E(p,"penginput","dokter","pembuat"),m="ext-cppt-nores-"+n;S(i,C(a),g,f,document.getElementById(m))}}).observe(a,{childList:!0,subtree:!0})}}}}typeof z.featureModules<"u"?z.featureModules.cpptSearchFilter={name:"CPPT Search & Filter",description:"Cari dan filter data CPPT per tabel (Riwayat CPPT & History Kunjungan)",run:ne}:console.warn("[CPPT Search] featureModules not defined, registration skipped");})();
+    <button class="ext-cppt-btn ext-cppt-btn-clear" id="${clearId}">Reset</button>
+  `;
+    const parentEl = table.parentNode;
+    const parentDisplay = parentEl ? getComputedStyle(parentEl).display : "unknown";
+    console.log("[CPPT Filter] Table #" + tableIdx + " parent display:", parentDisplay);
+    const wrapper = document.createElement("div");
+    wrapper.className = "ext-cppt-table-wrapper";
+    wrapper.style.cssText = "display:block !important;width:100% !important;clear:both;flex:0 0 100%;box-sizing:border-box";
+    parentEl?.insertBefore(wrapper, table);
+    wrapper.appendChild(container);
+    wrapper.appendChild(table);
+    const noResults = document.createElement("div");
+    noResults.id = noResultsId;
+    noResults.className = CPPT_NO_RESULTS_CLASS;
+    noResults.textContent = "Tidak ada data yang sesuai dengan filter.";
+    noResults.style.display = "none";
+    wrapper.appendChild(noResults);
+    console.log(
+      "[CPPT Filter] Injected filter #" + tableIdx + " before table:",
+      table.id || "(no id)"
+    );
+    const dokterSelect = document.getElementById(dokterSelId);
+    const rows = getDataRows(table);
+    if (dokterIdx !== -1 && dokterSelect) {
+      const dokters = getUniqueDokters(rows, dokterIdx);
+      for (const d of dokters) {
+        const opt = document.createElement("option");
+        opt.value = d;
+        opt.textContent = d;
+        if (d === state.dokter) opt.selected = true;
+        dokterSelect.appendChild(opt);
+      }
+    }
+    const searchInput = document.getElementById(searchId);
+    const tglAwalInput = document.getElementById(tglAwalId);
+    const tglAkhirInput = document.getElementById(tglAkhirId);
+    const clearBtn = document.getElementById(clearId);
+    let debounceTimer;
+    function readAndApply() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        const s = {
+          search: searchInput?.value || "",
+          dokter: dokterSelect?.value || "",
+          tanggalAwal: tglAwalInput?.value || "",
+          tanggalAkhir: tglAkhirInput?.value || ""
+        };
+        storeFilters(s, tableIdx);
+        syncUrlParams(s, tableIdx);
+        applyFilters(s, getDataRows(table), tanggalIdx, dokterIdx, noResults);
+      }, 250);
+    }
+    searchInput?.addEventListener("input", readAndApply);
+    dokterSelect?.addEventListener("change", readAndApply);
+    tglAwalInput?.addEventListener("input", readAndApply);
+    tglAkhirInput?.addEventListener("input", readAndApply);
+    clearBtn?.addEventListener("click", () => {
+      if (searchInput) searchInput.value = "";
+      if (dokterSelect) dokterSelect.value = "";
+      if (tglAwalInput) tglAwalInput.value = "";
+      if (tglAkhirInput) tglAkhirInput.value = "";
+      const cleared = { search: "", dokter: "", tanggalAwal: "", tanggalAkhir: "" };
+      storeFilters(cleared, tableIdx);
+      syncUrlParams(cleared, tableIdx);
+      applyFilters(cleared, getDataRows(table), tanggalIdx, dokterIdx, noResults);
+    });
+    applyFilters(state, rows, tanggalIdx, dokterIdx, noResults);
+  }
+  function htmlEncode(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function initCpptSearchFilter() {
+    const pageType = getCpptPageType();
+    if (!pageType) return;
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => {
+        setTimeout(tryInject, 500);
+      });
+    } else {
+      setTimeout(tryInject, 500);
+    }
+    const bodyObserver = new MutationObserver(() => {
+      const tables = findCpptTables();
+      for (let i = 0; i < tables.length; i++) {
+        const table = tables[i];
+        if (!table.parentElement?.classList.contains("ext-cppt-table-wrapper")) {
+          const orphaned = document.getElementById("ext-cppt-filter-" + i);
+          if (orphaned) {
+            const wrapper = orphaned.closest(".ext-cppt-table-wrapper");
+            if (wrapper) wrapper.remove();
+          }
+          injectFilterForTable(table, i);
+        }
+      }
+    });
+    bodyObserver.observe(document.body, { childList: true, subtree: true });
+    function tryInject() {
+      const tables = findCpptTables();
+      if (tables.length === 0) return;
+      injectStyles();
+      console.log("[CPPT Filter] Found " + tables.length + " CPPT table(s)");
+      for (let i = 0; i < tables.length; i++) {
+        console.log(
+          "[CPPT Filter] Table #" + i + ": id=" + (tables[i].id || "(none)") + " parent=" + (tables[i].parentNode?.className || "(none)") + " rows=" + tables[i].querySelectorAll("tr").length
+        );
+        injectFilterForTable(tables[i], i);
+      }
+      for (let i = 0; i < tables.length; i++) {
+        const table = tables[i];
+        const tableObserver = new MutationObserver(() => {
+          const state = getStoredFilters(i);
+          const hasActiveFilter = state.search || state.dokter || state.tanggalAwal || state.tanggalAkhir;
+          if (hasActiveFilter) {
+            const h = getHeaderTexts(table);
+            const tglIdx = getColumnIndex(h, "waktu", "masuk", "tanggal");
+            const dokIdx = getColumnIndex(h, "penginput", "dokter", "pembuat");
+            const noresId = "ext-cppt-nores-" + i;
+            applyFilters(state, getDataRows(table), tglIdx, dokIdx, document.getElementById(noresId));
+          }
+        });
+        tableObserver.observe(table, { childList: true, subtree: true });
+      }
+    }
+  }
+  if (typeof g.featureModules !== "undefined") {
+    g.featureModules.cpptSearchFilter = {
+      name: "CPPT Search & Filter",
+      description: "Cari dan filter data CPPT per tabel (Riwayat CPPT & History Kunjungan)",
+      run: initCpptSearchFilter
+    };
+  } else {
+    console.warn("[CPPT Search] featureModules not defined, registration skipped");
+  }
+})();
+//# sourceMappingURL=cpptSearchFilter.js.map

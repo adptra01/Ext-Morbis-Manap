@@ -2,6 +2,12 @@ export interface PatientInfo {
   norm: string
   pasien: string
   nama_dokter: string
+  id_visit?: string
+  id_rawat_jalan?: string
+  id_user?: string
+  id_dokter?: string
+  id_bed?: string
+  noregis?: string
 }
 
 export interface VitalSigns {

@@ -46,12 +46,15 @@ export function App({ data: initialData, onSave, onClose }: AppProps) {
   const [data, setData] = useState<ResumeData>(initialData);
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
+  const [saveAttempted, setSaveAttempted] = useState(false);
 
-  const errors = validate(data);
+  // ponytail: only validate after user clicks Simpan, not on every keystroke
+  const errors = saveAttempted ? validate(data) : [];
 
   const handleSave = useCallback(async () => {
-    console.log('[RJ-APP] save clicked, errors:', errors.length)
-    if (errors.length > 0) return
+    setSaveAttempted(true)
+    const v = validate(data)
+    if (v.length > 0) return
     setSaving(true);
     try {
       await onSave(data);
@@ -60,7 +63,7 @@ export function App({ data: initialData, onSave, onClose }: AppProps) {
     } finally {
       setSaving(false);
     }
-  }, [data, errors, onSave]);
+  }, [data, onSave]);
 
   const updateNotes = (field: string, value: string) =>
     setData({ ...data, clinicalNotes: { ...data.clinicalNotes, [field]: value } });
@@ -74,7 +77,7 @@ export function App({ data: initialData, onSave, onClose }: AppProps) {
         <ClinicalNotesSection
           anamnesa={data.clinicalNotes.anamnesa}
           pemeriksaan={data.clinicalNotes.pemeriksaan_fisik}
-          onChange={(field, value) => updateNotes(field, value)}
+          onChange={(field, value) => updateNotes(field === 'pemeriksaan' ? 'pemeriksaan_fisik' : field, value)}
         />
         <div className="border-t border-border" />
 
@@ -134,6 +137,7 @@ export function App({ data: initialData, onSave, onClose }: AppProps) {
         lastSaved={lastSaved}
         onSave={handleSave}
         onCancel={onClose}
+        onRefresh={() => location.reload()}
       />
     </div>
   );

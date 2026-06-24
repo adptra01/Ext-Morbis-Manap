@@ -6,9 +6,10 @@ interface FooterProps {
   saving?: boolean;
   hasErrors?: boolean;
   lastSaved?: string | null;
+  onRefresh?: () => void;
 }
 
-export function Footer({ onCancel, onSave, saving, hasErrors, lastSaved }: FooterProps) {
+export function Footer({ onCancel, onSave, saving, hasErrors, lastSaved, onRefresh }: FooterProps) {
   return (
     <div className="flex items-center justify-between px-6 py-4 border-t border-border shrink-0 text-md-xs" style={{ background: '#f8fafc' }}>
       <div className="flex items-center gap-3">
@@ -21,6 +22,11 @@ export function Footer({ onCancel, onSave, saving, hasErrors, lastSaved }: Foote
         {lastSaved && <span className="text-muted-foreground">Tersimpan pukul {lastSaved}</span>}
       </div>
       <div className="flex items-center gap-3">
+        {onRefresh && (
+          <Button variant="outline" size="xl" onClick={onRefresh} className="px-6 py-3">
+            Refresh
+          </Button>
+        )}
         <Button variant="outline" size="xl" onClick={onCancel} className="px-6 py-3">
           Batal
         </Button>
