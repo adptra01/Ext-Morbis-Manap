@@ -784,6 +784,42 @@ async function fetchFormState(): Promise<Record<string, string | string[]>> {
   }
 }
 
+/* ── Fetch prescription history from history/resep page ── */
+async function fetchPrescriptionHistory(idVisit: string): Promise<string | null> {
+  const url = `${location.origin}/admisi/pelaksanaan_pelayanan/history/resep?id=${idVisit}`
+  try {
+    const resp = await fetch(url, { credentials: 'same-origin' })
+    const html = await resp.text()
+    const doc = new DOMParser().parseFromString(html, 'text/html')
+    const headers = doc.querySelectorAll('h5')
+    let tebusHeader: Element | null = null
+    for (const h of headers) {
+      if (h.textContent?.trim() === 'Resep yang ditebus') {
+        tebusHeader = h
+        break
+      }
+    }
+    if (!tebusHeader) return null
+    let table = tebusHeader.nextElementSibling
+    while (table && table.tagName !== 'TABLE') table = table.nextElementSibling
+    if (!table) return null
+    const lines: string[] = []
+    const rows = table.querySelectorAll('tr')
+    for (let i = 1; i < rows.length; i++) {
+      const cells = rows[i].querySelectorAll('td')
+      if (cells.length < 8) continue
+      const nama = cells[1]?.textContent?.trim()
+      const aturan = cells[7]?.textContent?.trim()
+      const jumlah = cells[5]?.textContent?.trim()
+      if (nama) lines.push(`${nama} — ${aturan || '-'} — ${jumlah || '-'}`)
+    }
+    return lines.length ? lines.join('\n') : null
+  } catch (e) {
+    console.error('[RJ] failed to fetch prescription history:', e)
+    return null
+  }
+}
+
 function setupFloatingButton() {
   // ponytail: enable only on the specific claim detail page
   const targetPage = 'http://103.147.236.140/v2/m-klaim/detail-v2-refaktor'
@@ -826,19 +862,27 @@ function setupFloatingButton() {
     btn.disabled = true
     try {
       // Fetch ALL form state from form page before opening modal
+      const idVisit = new URLSearchParams(location.search).get('id_visit') || ''
       if (!cachedFormState) {
         cachedFormState = await fetchFormState()
       }
+      const prescriptionText = idVisit ? await fetchPrescriptionHistory(idVisit) : null
       const data = extractFormData()
-      console.log('[RJ] extracted data:', data)
+      console.log('[RJ] extracted data:', { data, prescriptionText })
+      // ponytail: prescription history is richer than billing DOM
+      if (prescriptionText && (!data.clinicalNotes.terapi_pengobatan || data.clinicalNotes.terapi_pengobatan === '-')) {
+        data.clinicalNotes.terapi_pengobatan = prescriptionText
+      }
       // ponytail: kalau form & view kosong, ambil dari DOM
-      if (!data.clinicalNotes.tindakan || data.clinicalNotes.tindakan === '-' || !data.clinicalNotes.terapi_pengobatan || data.clinicalNotes.terapi_pengobatan === '-') {
+      const needTindakan = !data.clinicalNotes.tindakan || data.clinicalNotes.tindakan === '-'
+      const needTerapi = !data.clinicalNotes.terapi_pengobatan || data.clinicalNotes.terapi_pengobatan === '-'
+      if (needTindakan || needTerapi) {
         const billing = extractBillingFromDOM()
         console.log('[RJ] billing from DOM:', billing)
-        if (billing.tindakan && (!data.clinicalNotes.tindakan || data.clinicalNotes.tindakan === '-')) {
+        if (billing.tindakan && needTindakan) {
           data.clinicalNotes.tindakan = billing.tindakan
         }
-        if (billing.terapiPengobatan && (!data.clinicalNotes.terapi_pengobatan || data.clinicalNotes.terapi_pengobatan === '-')) {
+        if (billing.terapiPengobatan && needTerapi) {
           data.clinicalNotes.terapi_pengobatan = billing.terapiPengobatan
         }
         console.log('[RJ] after DOM merge:', data)
