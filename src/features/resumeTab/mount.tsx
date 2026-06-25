@@ -869,10 +869,8 @@ function setupFloatingButton() {
       const prescriptionText = idVisit ? await fetchPrescriptionHistory(idVisit) : null
       const data = extractFormData()
       console.log('[RJ] extracted data:', { data, prescriptionText })
-      // ponytail: prescription history is richer than billing DOM
-      if (prescriptionText && (!data.clinicalNotes.terapi_pengobatan || data.clinicalNotes.terapi_pengobatan === '-')) {
-        data.clinicalNotes.terapi_pengobatan = prescriptionText
-      }
+      // ponytail: prescription history overrides billing/cached data
+      if (prescriptionText) data.clinicalNotes.terapi_pengobatan = prescriptionText
       // ponytail: kalau form & view kosong, ambil dari DOM
       const needTindakan = !data.clinicalNotes.tindakan || data.clinicalNotes.tindakan === '-'
       const needTerapi = !data.clinicalNotes.terapi_pengobatan || data.clinicalNotes.terapi_pengobatan === '-'

@@ -32238,9 +32238,7 @@ var __morbis_feature = (() => {
         const prescriptionText = idVisit ? await fetchPrescriptionHistory(idVisit) : null;
         const data = extractFormData();
         console.log("[RJ] extracted data:", { data, prescriptionText });
-        if (prescriptionText && (!data.clinicalNotes.terapi_pengobatan || data.clinicalNotes.terapi_pengobatan === "-")) {
-          data.clinicalNotes.terapi_pengobatan = prescriptionText;
-        }
+        if (prescriptionText) data.clinicalNotes.terapi_pengobatan = prescriptionText;
         const needTindakan = !data.clinicalNotes.tindakan || data.clinicalNotes.tindakan === "-";
         const needTerapi = !data.clinicalNotes.terapi_pengobatan || data.clinicalNotes.terapi_pengobatan === "-";
         if (needTindakan || needTerapi) {
