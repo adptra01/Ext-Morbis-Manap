@@ -784,40 +784,60 @@ async function fetchFormState(): Promise<Record<string, string | string[]>> {
   }
 }
 
-/* ── Fetch prescription history from history/resep page ── */
-async function fetchPrescriptionHistory(idVisit: string): Promise<string | null> {
-  const url = `${location.origin}/admisi/pelaksanaan_pelayanan/history/resep?id=${idVisit}`
-  try {
-    const resp = await fetch(url, { credentials: 'same-origin' })
-    const html = await resp.text()
-    const doc = new DOMParser().parseFromString(html, 'text/html')
-    const headers = doc.querySelectorAll('h5')
-    let tebusHeader: Element | null = null
-    for (const h of headers) {
-      if (h.textContent?.trim() === 'Resep yang ditebus') {
-        tebusHeader = h
-        break
-      }
-    }
-    if (!tebusHeader) return null
-    let table = tebusHeader.nextElementSibling
-    while (table && table.tagName !== 'TABLE') table = table.nextElementSibling
-    if (!table) return null
-    const lines: string[] = []
-    const rows = table.querySelectorAll('tr')
-    for (let i = 1; i < rows.length; i++) {
-      const cells = rows[i].querySelectorAll('td')
-      if (cells.length < 8) continue
-      const nama = cells[1]?.textContent?.trim()
-      const aturan = cells[7]?.textContent?.trim()
-      const jumlah = cells[5]?.textContent?.trim()
-      if (nama) lines.push(`${nama} — ${aturan || '-'} — ${jumlah || '-'}`)
-    }
-    return lines.length ? lines.join('\n') : null
-  } catch (e) {
-    console.error('[RJ] failed to fetch prescription history:', e)
-    return null
+/* ── Fetch ALL prescription histories from history/resep pages ── */
+function findAllResepIdsFromPage(): string[] {
+  const ids: string[] = []
+  for (const el of document.querySelectorAll('p, td')) {
+    const m = el.textContent?.trim().match(/No Resep\s*:\s*(\d+)/i)
+    if (m && !ids.includes(m[1])) ids.push(m[1])
   }
+  return ids
+}
+
+async function parseResepTable(url: string): Promise<string[]> {
+  const resp = await fetch(url, { credentials: 'same-origin' })
+  const html = await resp.text()
+  const doc = new DOMParser().parseFromString(html, 'text/html')
+  const headers = doc.querySelectorAll('h5')
+  let tebusHeader: Element | null = null
+  for (const h of headers) {
+    if (h.textContent?.trim() === 'Resep yang ditebus') { tebusHeader = h; break }
+  }
+  if (!tebusHeader) return []
+  let table = tebusHeader.nextElementSibling
+  while (table && table.tagName !== 'TABLE') table = table.nextElementSibling
+  if (!table) return []
+  const lines: string[] = []
+  const rows = table.querySelectorAll('tr')
+  for (let i = 1; i < rows.length; i++) {
+    const cells = rows[i].querySelectorAll('td')
+    if (cells.length < 8) continue
+    const nama = cells[1]?.textContent?.trim()
+    const aturan = cells[7]?.textContent?.trim()
+    const jumlah = cells[5]?.textContent?.trim()
+    if (nama) lines.push(`${nama} - ${aturan || '-'}`)
+  }
+  return lines
+}
+
+async function fetchAllPrescriptionHistories(): Promise<string | null> {
+  const resepIds = findAllResepIdsFromPage()
+  if (!resepIds.length) return null
+  const results = await Promise.all(
+    resepIds.map(id => {
+      const url = `${location.origin}/admisi/pelaksanaan_pelayanan/history/resep?id=${id}`
+      return parseResepTable(url)
+    })
+  )
+  const seen = new Set<string>()
+  const allLines: string[] = []
+  for (const lines of results) {
+    for (const line of lines) {
+      const nama = line.split(' - ')[0]
+      if (!seen.has(nama)) { seen.add(nama); allLines.push(line) }
+    }
+  }
+  return allLines.length ? allLines.join('\n') : null
 }
 
 function setupFloatingButton() {
@@ -862,11 +882,10 @@ function setupFloatingButton() {
     btn.disabled = true
     try {
       // Fetch ALL form state from form page before opening modal
-      const idVisit = new URLSearchParams(location.search).get('id_visit') || ''
       if (!cachedFormState) {
         cachedFormState = await fetchFormState()
       }
-      const prescriptionText = idVisit ? await fetchPrescriptionHistory(idVisit) : null
+      const prescriptionText = await fetchAllPrescriptionHistories()
       const data = extractFormData()
       console.log('[RJ] extracted data:', { data, prescriptionText })
       // ponytail: prescription history overrides billing/cached data
