@@ -192,7 +192,8 @@ var __morbis_feature = (() => {
     XMLHttpRequest.prototype.open = function(method, url) {
       const urlStr = typeof url === "string" ? url : url.href;
       xhrMap.set(this, { url: urlStr, method, start: Date.now() });
-      return origOpen.apply(this, arguments);
+      const args = [method, url];
+      return origOpen.apply(this, args);
     };
     XMLHttpRequest.prototype.send = function(body) {
       const meta = xhrMap.get(this);
@@ -203,7 +204,8 @@ var __morbis_feature = (() => {
           recordResponse(meta.url, this.status, this.responseText, Date.now() - meta.start);
         });
       }
-      return origSend.apply(this, arguments);
+      const args = body !== void 0 ? [body] : [];
+      return origSend.apply(this, args);
     };
     return () => {
       window.fetch = origFetch;
@@ -240,6 +242,11 @@ var __morbis_feature = (() => {
     const store = await getStore();
     store.observations.push(obs);
     await saveStore(store);
+  }
+  async function getObservations(pageType) {
+    const store = await getStore();
+    if (pageType) return store.observations.filter((o) => o.pageType === pageType);
+    return store.observations;
   }
   async function updateDependencies(obs) {
     const store = await getStore();
@@ -320,15 +327,183 @@ var __morbis_feature = (() => {
     return { changed, unchanged, added, removed };
   }
 
+  // src/features/operationMigration/engine/compareEngine.ts
+  var FIELD_CATEGORIES = {
+    id_kunjungan: "ID_KUNJUNGAN",
+    id_visit: "ID_VISIT",
+    id_permintaan: "ID_PERMINTAAN",
+    id_induk_all: "ID_INDUK_ALL",
+    "data[id_detail_billing][]": "ID_DETAIL_BILLING"
+  };
+  function categorizeField(name) {
+    if (FIELD_CATEGORIES[name]) return FIELD_CATEGORIES[name];
+    if (name.includes("[id_detail_billing]")) return "ID_DETAIL_BILLING";
+    if (name.includes("billing") || name.includes("tarif") || name.includes("biaya")) return "BILLING";
+    if (name.includes("status") || name.includes("is_active")) return "STATUS";
+    if (name.startsWith("data[") || name.startsWith("tindakan")) return "DATA_TINDAKAN";
+    return "OTHER";
+  }
+  function compareSnapshots(A, B) {
+    const changes = [];
+    const allKeys = /* @__PURE__ */ new Set([...Object.keys(A.form.inputs), ...Object.keys(B.form.inputs)]);
+    const category = categorizeField;
+    for (const key of allKeys) {
+      const from = A.form.inputs[key] ?? "";
+      const to = B.form.inputs[key] ?? "";
+      if (from === "" && to !== "") continue;
+      if (from !== "" && to === "") continue;
+      if (from === to) continue;
+      changes.push({
+        field: key,
+        from,
+        to,
+        action: "REPLACE",
+        confidence: 0.5,
+        category: category(key)
+      });
+    }
+    const idPairs = [
+      ["idIndukAll", "id_induk_all"],
+      ["idPermintaan", "id_permintaan"],
+      ["idVisit", "id_visit"],
+      ["idKunjungan", "id_kunjungan"]
+    ];
+    for (const [prop, label] of idPairs) {
+      if (A[prop] !== B[prop] && A[prop] !== null && B[prop] !== null) {
+        changes.push({
+          field: label,
+          from: A[prop] ?? "",
+          to: B[prop] ?? "",
+          action: "REPLACE",
+          confidence: 1,
+          category: category(label)
+        });
+      }
+    }
+    return changes;
+  }
+  function categorizeChanges(fieldChanges) {
+    const map = {};
+    for (const c of fieldChanges) {
+      const cat = c.category;
+      if (!map[cat]) map[cat] = [];
+      map[cat].push(c);
+    }
+    return map;
+  }
+
+  // src/features/operationMigration/engine/dependencyMapper.ts
+  var ID_ENTITIES = ["id_kunjungan", "id_visit", "id_permintaan", "id_induk_all", "id_detail_billing"];
+  function findIdField(changes) {
+    const idChange = changes.find((c) => ID_ENTITIES.includes(c.field));
+    return idChange?.field ?? null;
+  }
+  function findRelatedFields(changes, idField) {
+    return changes.filter((c) => c.field !== idField && c.category !== "OTHER").map((c) => c.field);
+  }
+  function buildDependencyGraph(observations) {
+    const links = [];
+    const linkMap = /* @__PURE__ */ new Map();
+    for (const obs of observations) {
+      if (!obs.snapshotA || !obs.snapshotB) continue;
+      const allKeys = /* @__PURE__ */ new Set([
+        ...Object.keys(obs.snapshotA.form.inputs),
+        ...Object.keys(obs.snapshotB.form.inputs)
+      ]);
+      const changedFields = [...allKeys].filter(
+        (k) => obs.snapshotA.form.inputs[k] !== obs.snapshotB.form.inputs[k]
+      );
+      const idField = findIdField(changedFields.map((f) => ({ field: f, category: "OTHER" })));
+      if (!idField) continue;
+      const related = findRelatedFields(
+        changedFields.map((f) => ({
+          field: f,
+          from: obs.snapshotA.form.inputs[f] ?? "",
+          to: obs.snapshotB.form.inputs[f] ?? "",
+          action: "REPLACE",
+          confidence: 0,
+          category: "OTHER"
+        })),
+        idField
+      );
+      for (const relatedField of related) {
+        const key = `${idField}->${relatedField}`;
+        const existing = linkMap.get(key);
+        if (existing) {
+          existing.count++;
+          existing.confidence = Math.min(existing.count / observations.length, 1);
+        } else {
+          linkMap.set(key, {
+            fromId: idField,
+            toId: relatedField,
+            via: obs.pageType,
+            pageType: obs.pageType,
+            count: 1,
+            confidence: 1 / observations.length
+          });
+        }
+      }
+    }
+    for (const link of linkMap.values()) {
+      links.push(link);
+    }
+    const propagationPaths = [];
+    for (const start of ID_ENTITIES) {
+      const path = [start];
+      const outgoing = links.filter((l) => l.fromId === start);
+      for (const link of outgoing) {
+        if (!path.includes(link.toId)) path.push(link.toId);
+      }
+      if (path.length > 1) propagationPaths.push(path);
+    }
+    const confidence = links.length > 0 ? links.reduce((sum, l) => sum + l.confidence, 0) / links.length : 0;
+    return { links, idEntities: [...ID_ENTITIES], propagationPaths, confidence };
+  }
+  function summarizeEvidence(observations) {
+    const total = observations.length;
+    if (total === 0) return "Belum ada observasi";
+    const byPage = {};
+    for (const o of observations) {
+      byPage[o.pageType] = (byPage[o.pageType] || 0) + 1;
+    }
+    const pageSummary = Object.entries(byPage).sort((a, b) => b[1] - a[1]).map(([p, c]) => `${p}=${c}`).join(", ");
+    const withDelta = observations.filter((o) => o.delta && o.delta.changed.length > 0).length;
+    return `${total} observasi, ${withDelta} dengan perubahan, per halaman: ${pageSummary}`;
+  }
+
   // src/features/operationMigration/index.ts
   var g = getMorbisGlobals();
   var OBSERVER_PAGES = ["SOURCE", "SOURCE_AWAL_RANAP", "SOURCE_AWAL_RAJAL"];
-  var networkUnsub = null;
   function log(msg) {
     console.log("[Migration]", msg);
   }
   function generateObservationId() {
     return `obs_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+  }
+  function updatePanelPhase2(obs) {
+    const el = document.getElementById("ext-migration-engine");
+    if (!el) return;
+    const fieldChanges = obs.snapshotA && obs.snapshotB ? compareSnapshots(obs.snapshotA, obs.snapshotB) : [];
+    const cat = categorizeChanges(fieldChanges);
+    el.innerHTML = `
+    <div style="color:#4fc3f7;font-weight:bold;margin:6px 0 4px">Phase 2 \u2014 Compare Engine</div>
+    <div>Perubahan: ${fieldChanges.length} field</div>
+    ${Object.entries(cat).map(([k, v]) => v.length > 0 ? `<div style="color:#888;font-size:10px;margin-left:8px">${k}: ${v.length}</div>` : "").join("")}
+  `;
+  }
+  async function refreshPanelSummary() {
+    const el = document.getElementById("ext-migration-summary");
+    if (!el) return;
+    const obs = await getObservations();
+    const graph = buildDependencyGraph(obs);
+    el.innerHTML = `
+    <div style="color:#4fc3f7;font-weight:bold;margin:6px 0 4px">Phase 2 \u2014 Dependency Mapper</div>
+    <div>Observasi: ${obs.length}</div>
+    <div>Dependensi: ${graph.links.length} link</div>
+    <div>Confidence: ${(graph.confidence * 100).toFixed(0)}%</div>
+    <div style="color:#888;font-size:10px;margin-top:2px">${summarizeEvidence(obs)}</div>
+    ${graph.propagationPaths.length > 0 ? `<div style="color:#888;font-size:10px;margin-top:2px">Paths: ${graph.propagationPaths.map((p) => p.join("\u2192")).join(" | ")}</div>` : ""}
+  `;
   }
   async function onPageLoad() {
     const pageType = detectPageType();
@@ -340,7 +515,7 @@ var __morbis_feature = (() => {
     if (OBSERVER_PAGES.includes(pageType)) {
       await saveSnapshotA();
       log("Snapshot A disimpan");
-      networkUnsub = startNetworkObserver();
+      startNetworkObserver();
     }
     if (pageType === "SOURCE") {
       injectObserverPanel(label, snap);
@@ -376,6 +551,8 @@ var __morbis_feature = (() => {
     log(`Berubah: ${delta.changed.length} | Tetap: ${delta.unchanged.length}`);
     if (delta.changed.length > 0) log(`Field: ${delta.changed.join(", ")}`);
     if (bpjsRequests.length > 0) log(`\u26A0\uFE0F  BPJS: ${bpjsRequests.length} request`);
+    updatePanelPhase2(obs);
+    refreshPanelSummary();
     await clearSnapshots();
   }
   function injectObserverPanel(label, snap) {
@@ -392,7 +569,7 @@ var __morbis_feature = (() => {
     const toggle = document.createElement("button");
     toggle.id = "ext-migration-toggle";
     toggle.textContent = "\u{1F50D}";
-    toggle.title = "Operation Migration Framework - Observer";
+    toggle.title = "Operation Migration Framework";
     toggle.style.cssText = `
     position: fixed; top: 10px; right: 10px; z-index: 100000;
     width: 36px; height: 36px; border-radius: 50%;
@@ -403,7 +580,7 @@ var __morbis_feature = (() => {
   `;
     panel.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;border-bottom:1px solid #333;padding-bottom:6px">
-      <strong style="color:#4fc3f7">\u{1F50D} Migration Observer</strong>
+      <strong style="color:#4fc3f7">\u{1F50D} Migration Framework</strong>
       <span id="ext-migration-close" style="cursor:pointer;color:#888;font-size:14px">\u2715</span>
     </div>
     <div style="margin-bottom:6px">
@@ -430,6 +607,8 @@ var __morbis_feature = (() => {
       <span style="color:#888">Detail billing:</span>
       <span style="color:#fff">${snap.detailBillingIds.length} item</span>
     </div>
+    <div id="ext-migration-engine"></div>
+    <div id="ext-migration-summary"></div>
     <div id="ext-migration-status" style="margin-top:6px;padding-top:6px;border-top:1px solid #333;color:#888;font-size:11px">
       Mode: AUDIT (read-only)
     </div>
@@ -443,6 +622,7 @@ var __morbis_feature = (() => {
     panel.querySelector("#ext-migration-close")?.addEventListener("click", () => {
       panel.style.display = "none";
     });
+    refreshPanelSummary();
   }
   async function init() {
     const pageType = detectPageType();

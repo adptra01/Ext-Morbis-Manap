@@ -125,11 +125,30 @@ export interface MigrationValidation {
   checks: MigrationCheck[]
 }
 
+export type FieldCategory = 'ID_KUNJUNGAN' | 'ID_VISIT' | 'ID_PERMINTAAN' | 'ID_INDUK_ALL' | 'ID_DETAIL_BILLING' | 'BILLING' | 'STATUS' | 'DATA_TINDAKAN' | 'OTHER'
+
 export interface FieldChange {
   field: string
   from: string
   to: string
   action: 'REPLACE' | 'CLEAR' | 'KEEP'
+  confidence: number
+  category: FieldCategory
+}
+
+export interface DependencyLink {
+  fromId: string
+  toId: string
+  via: string
+  pageType: PageType
+  count: number
+  confidence: number
+}
+
+export interface DependencyGraph {
+  links: DependencyLink[]
+  idEntities: string[]
+  propagationPaths: string[][]
   confidence: number
 }
 

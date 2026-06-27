@@ -1,8 +1,11 @@
+import type { Observation } from './shared/types.js'
 import { getMorbisGlobals } from '../shared/types.js'
 import { detectPageType, getPageTypeLabel } from './observer/pageDetector.js'
 import { captureSnapshot, saveSnapshotA, saveSnapshotB, clearSnapshots, getSnapshotA, getSnapshotB } from './observer/snapshot.js'
 import { startNetworkObserver, getCapturedRequests } from './observer/networkSniffer.js'
-import { saveObservation, computeDelta, updateDependencies } from './storage/evidenceStore.js'
+import { saveObservation, computeDelta, updateDependencies, getObservations } from './storage/evidenceStore.js'
+import { compareSnapshots, categorizeChanges } from './engine/compareEngine.js'
+import { buildDependencyGraph, summarizeEvidence } from './engine/dependencyMapper.js'
 
 const g = getMorbisGlobals()
 const OBSERVER_PAGES = ['SOURCE', 'SOURCE_AWAL_RANAP', 'SOURCE_AWAL_RAJAL']
@@ -13,6 +16,33 @@ function log(msg: string): void {
 
 function generateObservationId(): string {
   return `obs_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`
+}
+
+function updatePanelPhase2(obs: Observation): void {
+  const el = document.getElementById('ext-migration-engine')
+  if (!el) return
+  const fieldChanges = obs.snapshotA && obs.snapshotB ? compareSnapshots(obs.snapshotA, obs.snapshotB) : []
+  const cat = categorizeChanges(fieldChanges)
+  el.innerHTML = `
+    <div style="color:#4fc3f7;font-weight:bold;margin:6px 0 4px">Phase 2 — Compare Engine</div>
+    <div>Perubahan: ${fieldChanges.length} field</div>
+    ${Object.entries(cat).map(([k, v]) => v.length > 0 ? `<div style="color:#888;font-size:10px;margin-left:8px">${k}: ${v.length}</div>` : '').join('')}
+  `
+}
+
+async function refreshPanelSummary(): Promise<void> {
+  const el = document.getElementById('ext-migration-summary')
+  if (!el) return
+  const obs = await getObservations()
+  const graph = buildDependencyGraph(obs)
+  el.innerHTML = `
+    <div style="color:#4fc3f7;font-weight:bold;margin:6px 0 4px">Phase 2 — Dependency Mapper</div>
+    <div>Observasi: ${obs.length}</div>
+    <div>Dependensi: ${graph.links.length} link</div>
+    <div>Confidence: ${(graph.confidence * 100).toFixed(0)}%</div>
+    <div style="color:#888;font-size:10px;margin-top:2px">${summarizeEvidence(obs)}</div>
+    ${graph.propagationPaths.length > 0 ? `<div style="color:#888;font-size:10px;margin-top:2px">Paths: ${graph.propagationPaths.map(p => p.join('→')).join(' | ')}</div>` : ''}
+  `
 }
 
 async function onPageLoad(): Promise<void> {
@@ -75,6 +105,8 @@ async function onPageReload(): Promise<void> {
   if (delta.changed.length > 0) log(`Field: ${delta.changed.join(', ')}`)
   if (bpjsRequests.length > 0) log(`⚠️  BPJS: ${bpjsRequests.length} request`)
 
+  updatePanelPhase2(obs)
+  refreshPanelSummary()
   await clearSnapshots()
 }
 
@@ -94,7 +126,7 @@ function injectObserverPanel(label: string, snap: ReturnType<typeof captureSnaps
   const toggle = document.createElement('button')
   toggle.id = 'ext-migration-toggle'
   toggle.textContent = '🔍'
-  toggle.title = 'Operation Migration Framework - Observer'
+  toggle.title = 'Operation Migration Framework'
   toggle.style.cssText = `
     position: fixed; top: 10px; right: 10px; z-index: 100000;
     width: 36px; height: 36px; border-radius: 50%;
@@ -106,7 +138,7 @@ function injectObserverPanel(label: string, snap: ReturnType<typeof captureSnaps
 
   panel.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;border-bottom:1px solid #333;padding-bottom:6px">
-      <strong style="color:#4fc3f7">🔍 Migration Observer</strong>
+      <strong style="color:#4fc3f7">🔍 Migration Framework</strong>
       <span id="ext-migration-close" style="cursor:pointer;color:#888;font-size:14px">✕</span>
     </div>
     <div style="margin-bottom:6px">
@@ -133,6 +165,8 @@ function injectObserverPanel(label: string, snap: ReturnType<typeof captureSnaps
       <span style="color:#888">Detail billing:</span>
       <span style="color:#fff">${snap.detailBillingIds.length} item</span>
     </div>
+    <div id="ext-migration-engine"></div>
+    <div id="ext-migration-summary"></div>
     <div id="ext-migration-status" style="margin-top:6px;padding-top:6px;border-top:1px solid #333;color:#888;font-size:11px">
       Mode: AUDIT (read-only)
     </div>
@@ -149,6 +183,8 @@ function injectObserverPanel(label: string, snap: ReturnType<typeof captureSnaps
   panel.querySelector('#ext-migration-close')?.addEventListener('click', () => {
     panel.style.display = 'none'
   })
+
+  refreshPanelSummary()
 }
 
 async function init(): Promise<void> {
@@ -159,14 +195,12 @@ async function init(): Promise<void> {
 
   await onPageLoad()
 
-  // Cek apakah ini post-submit reload (Snapshot B sudah ada)
   const b = await getSnapshotB()
   if (b) {
     await onPageReload()
   }
 }
 
-// Register sebagai FeatureModule (untuk flow konfigurasi nanti)
 if (typeof g.featureModules !== 'undefined') {
   g.featureModules.operationMigration = {
     id: 'operationMigration',
@@ -187,5 +221,4 @@ if (typeof g.featureModules !== 'undefined') {
   }
 }
 
-// Self-execute tanpa perlu config (Phase 1: Observer)
 init()
