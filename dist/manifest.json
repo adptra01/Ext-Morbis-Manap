@@ -96,6 +96,7 @@
         "features/shared/cookieFilterStorage.js",
         "features/doctorFilterPersistence.js",
         "features/cpptSearchFilter.js",
+        "features/operationMigration/index.js",
         "init.js"
       ],
       "run_at": "document_end",
@@ -219,6 +220,25 @@
       ],
       "run_at": "document_idle",
       "world": "MAIN",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "http://192.168.8.4/admisi/informasi/data-kunjungan*",
+        "http://103.147.236.140/admisi/informasi/data-kunjungan*",
+        "http://192.168.8.4/admisi/edit-kunjungan*",
+        "http://103.147.236.140/admisi/edit-kunjungan*",
+        "http://192.168.8.4/billing/billing*",
+        "http://103.147.236.140/billing/billing*",
+        "http://192.168.8.4/admisi/detail-rawat-inap/new-pemeriksaan-lab*",
+        "http://103.147.236.140/admisi/detail-rawat-inap/new-pemeriksaan-lab*"
+      ],
+      "js": [
+        "core.js",
+        "features/operationMigration/index.js",
+        "init.js"
+      ],
+      "run_at": "document_end",
       "all_frames": false
     }
   ],

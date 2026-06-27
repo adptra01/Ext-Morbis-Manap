@@ -15,6 +15,7 @@
     "format:check": "prettier --check \"src/**/*.{ts,js,json,html,css}\"",
     "typecheck": "tsc --noEmit",
     "clean": "rimraf dist",
+    "audit": "node scripts/audit-features.mjs",
     "pack": "npm run build && node scripts/pack.mjs",
     "deploy": "npm run pack && node scripts/deploy.mjs",
     "test": "vitest run",

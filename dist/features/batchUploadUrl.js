@@ -883,8 +883,7 @@ var __morbis_feature = (() => {
       runBatchQueue();
     }
   }
-  function isMklaimDetailPage() {
-    if (!/^\/v2\/m-klaim\/detail-v2-refaktor\/?$/.test(window.location.pathname)) return false;
+  function hasIdVisitParam() {
     return !!new URLSearchParams(window.location.search).get("id_visit");
   }
   async function crawlDokumenPasienToSidepanel() {
@@ -1054,7 +1053,7 @@ var __morbis_feature = (() => {
   function initBatchUploadUrlFeature() {
     if (!g.currentConfig?.features?.batchUpload?.enabled || !g.ExtensionCore.isFeatureAllowed("batchUpload"))
       return;
-    if (!isMklaimDetailPage()) return;
+    if (!hasIdVisitParam()) return;
     chrome.runtime.sendMessage({
       type: "PAGE_CONTEXT",
       feature: "mKlaimDetail",
@@ -1101,8 +1100,10 @@ var __morbis_feature = (() => {
   }
   if (typeof g.featureModules !== "undefined") {
     g.featureModules.batchUpload = {
+      id: "batchUpload",
       name: "Upload Dokumen Ulang",
       description: "Upload Dokumen Ulang via paste URL dengan metadata extraction otomatis",
+      match: { regex: /^\/v2\/m-klaim\/detail-v2-refaktor\/?$/ },
       run: initBatchUploadUrlFeature
     };
   } else {

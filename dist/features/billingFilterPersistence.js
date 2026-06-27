@@ -165,8 +165,10 @@ var __morbis_feature = (() => {
   }
   if (typeof g.featureModules !== "undefined") {
     g.featureModules.billingFilterPersistence = {
+      id: "billingFilterPersistence",
       name: "Billing Filter Persistence State",
       description: "Simpan otomatis filter verifikasi billing agar tidak perlu diketik ulang",
+      match: { pathname: "/billing/pembayaran-new/billing-verifikasi" },
       run: runBillingFilterPersistence
     };
   } else {

@@ -8,6 +8,7 @@
  */
 
 import { getMorbisGlobals } from './shared/types.js';
+import type { FeatureMatch } from './shared/types.js';
 
 const g = getMorbisGlobals();
 
@@ -85,8 +86,7 @@ function getContext(): PersistenceContext | null {
   const path = window.location.pathname;
   for (const key of Object.keys(PERSISTENCE_MAP)) {
     const ctx = PERSISTENCE_MAP[key];
-    if (!path.includes(ctx.pattern)) continue;
-    if (ctx.excludePattern && path.includes(ctx.excludePattern)) continue;
+    if (path !== ctx.pattern && path !== ctx.pattern + '/') continue;
 
     if (!g.currentConfig?.features?.[key]?.enabled) return null;
     if (!g.ExtensionCore.isFeatureAllowed(key)) return null;
@@ -245,13 +245,27 @@ const featureMeta: Record<string, { name: string; description: string }> = {
   },
 };
 
+const FEATURE_MATCHES: Record<string, FeatureMatch> = {
+  filterPersistence: { pathname: '/v2/m-klaim' },
+  billingFilterPersistence: { pathname: '/billing/pembayaran-new/billing-verifikasi' },
+  doctorFilterPersistence: {
+    oneOf: [
+      { pathname: '/admisi/pelaksanaan_pelayanan' },
+      { pathname: '/admisi/pelaksanaan-operasi' },
+      { pathname: '/admisi/detail-rawat-inap' },
+    ],
+  },
+};
+
 if (typeof g.featureModules !== 'undefined') {
   Object.keys(PERSISTENCE_MAP).forEach(function (key) {
     if (g.featureModules[key]) return;
 
     g.featureModules[key] = {
+      id: key,
       name: featureMeta[key]?.name || key,
       description: featureMeta[key]?.description || '',
+      match: FEATURE_MATCHES[key],
       run: runFilterPersistenceFeature,
     };
   });

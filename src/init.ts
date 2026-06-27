@@ -1,8 +1,9 @@
-import type { ExtensionConfig, CustomUrl, Role } from './types.js';
+import type { ExtensionConfig, CustomUrl, Role, FeatureModule, FeatureContext } from './types.js';
+import { matchPage, normalizePath } from './features/shared/featureMatch.js';
 
 declare global {
   interface Window {
-    featureModules: Record<string, { name: string; description?: string; run: () => void }>;
+    featureModules: Record<string, FeatureModule>;
     ExtensionCore: {
       ROLES: Record<string, Role>;
       getCurrentRole: () => Role;
@@ -17,7 +18,7 @@ declare global {
     log: (...args: unknown[]) => void;
     OpenDetailExtension: {
       getConfig: () => ExtensionConfig | null;
-      getFeatures: () => Record<string, { name: string; description?: string; run: () => void }>;
+      getFeatures: () => Record<string, FeatureModule>;
       isEnabled: () => boolean;
       refresh: () => Promise<void>;
     };
@@ -88,6 +89,13 @@ async function initExtension(): Promise<void> {
     document.documentElement.removeAttribute('data-ext-resume-modal');
   }
 
+  const ctx: FeatureContext = {
+    pathname: normalizePath(window.location.pathname),
+    url: new URL(window.location.href),
+    document: window.document,
+    window: window,
+  };
+
   for (const [key, module] of Object.entries(window.featureModules)) {
     const featureConfig = cfg?.features?.[key];
 
@@ -99,6 +107,16 @@ async function initExtension(): Promise<void> {
       window.log(
         `Feature ${key} skipped: disabled or not allowed for role ${window.ExtensionCore.getCurrentRole()}`,
       );
+      continue;
+    }
+
+    if (!matchPage(module.match, ctx)) {
+      window.log(`Feature ${key} skipped: URL mismatch`);
+      continue;
+    }
+
+    if (module.enabledWhen && !module.enabledWhen(ctx)) {
+      window.log(`Feature ${key} skipped: enabledWhen returned false`);
       continue;
     }
 

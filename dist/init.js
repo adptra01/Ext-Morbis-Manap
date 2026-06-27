@@ -1,6 +1,32 @@
 // MORBIS Ext Unofficial - init.js (Built with esbuild)
 "use strict";
 var __morbis_init = (() => {
+  // src/features/shared/featureMatch.ts
+  function normalizePath(path) {
+    const normalized = path.replace(/\/+/g, "/").replace(/\/+$/, "");
+    if (normalized === "") return "/";
+    return normalized.startsWith("/") ? normalized : "/" + normalized;
+  }
+  var EVALUATORS = [
+    (m, c) => m.pathname !== void 0 && c.pathname !== m.pathname ? { matched: false, reason: `expected pathname "${m.pathname}"` } : null,
+    (m, c) => m.prefix !== void 0 && !c.pathname.startsWith(m.prefix) ? { matched: false, reason: `expected prefix "${m.prefix}"` } : null,
+    (m, c) => m.regex !== void 0 && !m.regex.test(c.pathname) ? { matched: false, reason: `regex ${m.regex} failed` } : null,
+    (m, c) => m.oneOf !== void 0 && !m.oneOf.some((e) => evaluate(e, c).matched) ? { matched: false, reason: "no oneOf matched" } : null,
+    (m, c) => m.exclude?.some((e) => evaluate(e, c).matched) ? { matched: false, reason: "excluded" } : null,
+    (m, c) => m.requiredSelectors?.some((sel) => !c.document.querySelector(sel)) ? { matched: false, reason: "missing required element" } : null
+  ];
+  function evaluate(match, ctx) {
+    for (const fn of EVALUATORS) {
+      const result = fn(match, ctx);
+      if (result) return result;
+    }
+    return { matched: true };
+  }
+  function matchPage(match, ctx) {
+    if (!match) return false;
+    return evaluate(match, ctx).matched;
+  }
+
   // src/init.ts
   async function initExtension() {
     window.log("Menginisialisasi Open Detail Extension (Modular)");
@@ -55,12 +81,26 @@ var __morbis_init = (() => {
     } else {
       document.documentElement.removeAttribute("data-ext-resume-modal");
     }
+    const ctx = {
+      pathname: normalizePath(window.location.pathname),
+      url: new URL(window.location.href),
+      document: window.document,
+      window
+    };
     for (const [key, module] of Object.entries(window.featureModules)) {
       const featureConfig = cfg?.features?.[key];
       if (featureConfig === void 0 || !featureConfig.enabled || !window.ExtensionCore.isFeatureAllowed(key)) {
         window.log(
           `Feature ${key} skipped: disabled or not allowed for role ${window.ExtensionCore.getCurrentRole()}`
         );
+        continue;
+      }
+      if (!matchPage(module.match, ctx)) {
+        window.log(`Feature ${key} skipped: URL mismatch`);
+        continue;
+      }
+      if (module.enabledWhen && !module.enabledWhen(ctx)) {
+        window.log(`Feature ${key} skipped: enabledWhen returned false`);
         continue;
       }
       window.log(`Running feature: ${module.name}`);

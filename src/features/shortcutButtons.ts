@@ -371,8 +371,15 @@ function runWithObserver(fn: () => void, checkExist: () => boolean): void {
 
 if (typeof g.featureModules !== 'undefined') {
   g.featureModules.shortcutButtons = {
+    id: 'shortcutButtons',
     name: 'Shortcut Buttons',
     description: 'Tampilkan shortcut buttons ke halaman pelaksanaan Rajal/Ranap',
+    match: {
+      oneOf: [
+        { prefix: '/admisi/pelaksanaan_pelayanan/' },
+        { prefix: '/admisi/detail-rawat-inap/' },
+      ],
+    },
     run: () => {
       runWithObserver(
         renderShortcutButtons,

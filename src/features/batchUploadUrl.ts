@@ -785,8 +785,7 @@ function startBatchUpload(): void {
   }
 }
 
-function isMklaimDetailPage(): boolean {
-  if (!/^\/v2\/m-klaim\/detail-v2-refaktor\/?$/.test(window.location.pathname)) return false;
+function hasIdVisitParam(): boolean {
   return !!new URLSearchParams(window.location.search).get('id_visit');
 }
 
@@ -991,7 +990,7 @@ function initBatchUploadUrlFeature(): void {
     !g.ExtensionCore.isFeatureAllowed('batchUpload')
   )
     return;
-  if (!isMklaimDetailPage()) return;
+  if (!hasIdVisitParam()) return;
 
   // Report page context on load
   chrome.runtime.sendMessage({
@@ -1047,8 +1046,10 @@ function initBatchUploadUrlFeature(): void {
 
 if (typeof g.featureModules !== 'undefined') {
   g.featureModules.batchUpload = {
+    id: 'batchUpload',
     name: 'Upload Dokumen Ulang',
     description: 'Upload Dokumen Ulang via paste URL dengan metadata extraction otomatis',
+    match: { regex: /^\/v2\/m-klaim\/detail-v2-refaktor\/?$/ },
     run: initBatchUploadUrlFeature,
   };
 } else {

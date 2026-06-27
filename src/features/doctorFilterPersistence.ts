@@ -64,11 +64,11 @@ const DOCTOR_FILTER_CONFIGS: DoctorFilterConfigs = {
 };
 
 function getCurrentPageConfig(): DoctorFilterConfig | null {
-  const url = window.location.href;
+  const pathname = window.location.pathname;
 
   for (const [, config] of Object.entries(DOCTOR_FILTER_CONFIGS)) {
-    if (!url.includes(config.urlPattern)) continue;
-    if (config.excludePattern && url.includes(config.excludePattern)) continue;
+    const targetPath = '/' + config.urlPattern;
+    if (pathname !== targetPath && pathname !== targetPath + '/') continue;
     return config;
   }
   return null;
@@ -221,8 +221,16 @@ function runDoctorFilterPersistence(): void {
 
 if (typeof g.featureModules !== 'undefined') {
   g.featureModules.doctorFilterPersistence = {
+    id: 'doctorFilterPersistence',
     name: 'Doctor Filter Persistence State',
     description: 'Simpan otomatis filter pelaksanaan dokter agar tidak perlu diketik ulang',
+    match: {
+      oneOf: [
+        { pathname: '/admisi/pelaksanaan_pelayanan' },
+        { pathname: '/admisi/pelaksanaan-operasi' },
+        { pathname: '/admisi/detail-rawat-inap' },
+      ],
+    },
     run: runDoctorFilterPersistence,
   };
 } else {

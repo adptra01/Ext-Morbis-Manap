@@ -22857,7 +22857,9 @@ var __morbis_feature = (() => {
   var g = globalThis;
   if (typeof g.featureModules !== "undefined") {
     g.featureModules.consultationEnhancer = {
+      id: "consultationEnhancer",
       name: "Consultation Enhancer",
+      match: { prefix: "/admisi/pengajuan_konsultasi/konsultasi" },
       run: () => {
       }
     };

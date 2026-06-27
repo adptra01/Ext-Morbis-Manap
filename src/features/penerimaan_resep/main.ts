@@ -357,8 +357,10 @@ function runResepTools(): void {
 
 if (typeof g.featureModules !== 'undefined') {
   g.featureModules.resepTools = {
+    id: 'resepTools',
     name: 'Resep Tools',
     description: 'Validasi aturan pakai, UI dosis kondisional, print safety lock',
+    match: { prefix: '/admisi/pelaksanaan_pelayanan/resep' },
     run: runResepTools,
   };
 } else {

@@ -571,12 +571,8 @@ async function startBatchDelete(): Promise<void> {
   isDeletingProcess = false;
 }
 
-function isBatchDeleteTargetPage(): boolean {
-  const path = window.location.pathname;
-  const match = /^\/v2\/m-klaim\/detail-v2-refaktor\/?$/.test(path);
-  const hasIdVisit = !!new URLSearchParams(window.location.search).get('id_visit');
-  console.log('[BatchDelete] URL check:', { path, pathMatch: match, hasIdVisit });
-  return match && hasIdVisit;
+function hasIdVisitParam(): boolean {
+  return !!new URLSearchParams(window.location.search).get('id_visit');
 }
 
 // --- Sidepanel specific wrappers ---
@@ -712,7 +708,7 @@ async function startBatchDeleteToSidepanel(): Promise<void> {
 }
 
 function initBatchDeleteFeature(): void {
-  if (!isBatchDeleteTargetPage()) return;
+  if (!hasIdVisitParam()) return;
   if (!g.currentConfig?.features?.batchDelete?.enabled) return;
   if (!g.ExtensionCore.isFeatureAllowed('batchDelete')) return;
 
@@ -787,8 +783,10 @@ function initBatchDeleteFeature(): void {
 
 if (typeof g.featureModules !== 'undefined') {
   g.featureModules.batchDelete = {
+    id: 'batchDelete',
     name: 'Batch Delete Dokumen',
     description: 'Hapus multiple dokumen sekaligus',
+    match: { regex: /^\/v2\/m-klaim\/detail-v2-refaktor\/?$/ },
     run: initBatchDeleteFeature,
   };
 }

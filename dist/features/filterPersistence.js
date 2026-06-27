@@ -69,8 +69,7 @@ var __morbis_feature = (() => {
     const path = window.location.pathname;
     for (const key of Object.keys(PERSISTENCE_MAP)) {
       const ctx = PERSISTENCE_MAP[key];
-      if (!path.includes(ctx.pattern)) continue;
-      if (ctx.excludePattern && path.includes(ctx.excludePattern)) continue;
+      if (path !== ctx.pattern && path !== ctx.pattern + "/") continue;
       if (!g.currentConfig?.features?.[key]?.enabled) return null;
       if (!g.ExtensionCore.isFeatureAllowed(key)) return null;
       return ctx;
@@ -192,12 +191,25 @@ var __morbis_feature = (() => {
       description: "Simpan otomatis filter pelaksanaan dokter agar tidak perlu diketik ulang"
     }
   };
+  var FEATURE_MATCHES = {
+    filterPersistence: { pathname: "/v2/m-klaim" },
+    billingFilterPersistence: { pathname: "/billing/pembayaran-new/billing-verifikasi" },
+    doctorFilterPersistence: {
+      oneOf: [
+        { pathname: "/admisi/pelaksanaan_pelayanan" },
+        { pathname: "/admisi/pelaksanaan-operasi" },
+        { pathname: "/admisi/detail-rawat-inap" }
+      ]
+    }
+  };
   if (typeof g.featureModules !== "undefined") {
     Object.keys(PERSISTENCE_MAP).forEach(function(key) {
       if (g.featureModules[key]) return;
       g.featureModules[key] = {
+        id: key,
         name: featureMeta[key]?.name || key,
         description: featureMeta[key]?.description || "",
+        match: FEATURE_MATCHES[key],
         run: runFilterPersistenceFeature
       };
     });

@@ -265,8 +265,10 @@ function runOpenDetailInNewTabFeature(): void {
 
 if (typeof g.featureModules !== 'undefined') {
   g.featureModules.openDetailInNewTab = {
+    id: 'openDetailInNewTab',
     name: 'Do Not Open Detail in New Tab',
     description: 'Override tombol detail agar buka di tab yang sama (mencegah new tab)',
+    match: { prefix: '/v2/m-klaim/' },
     run: runOpenDetailInNewTabFeature,
   };
 } else {

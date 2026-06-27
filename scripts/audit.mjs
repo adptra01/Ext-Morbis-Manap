@@ -10,6 +10,7 @@ const scripts = [
   { name: 'Manifest Auditor', path: 'js/manifest-auditor.js' },
   { name: 'Persistence Check', path: 'js/persistence-check.js' },
   { name: 'Asset Master', path: 'js/asset-master.js' },
+  { name: 'Feature Audit', path: 'audit-features.mjs' },
 ];
 
 async function main() {

@@ -166,8 +166,10 @@ function runScrollButtonsFeature(): void {
 
 if (typeof g.featureModules !== 'undefined') {
   g.featureModules.scrollButtons = {
+    id: 'scrollButtons',
     name: 'Scroll Buttons (Top/Bottom)',
     description: 'Tombol scroll otomatis ke atas dan bawah halaman detail',
+    match: { pathname: '/v2/m-klaim/detail-v2-refaktor' },
     run: runScrollButtonsFeature,
   };
 } else {

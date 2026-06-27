@@ -5,9 +5,11 @@ export type {
   Role,
   ExtensionConfig,
   CustomUrl,
-  FeatureModule,
 } from './shared/types';
 
+export type { FeatureModule, FeatureMatch, FeatureContext } from './features/shared/types';
+
+export { matchPage, normalizePath } from './features/shared/featureMatch.js';
 export { MessageTypes } from './shared/messaging';
 export type { MessageType } from './shared/messaging';
 
@@ -20,7 +22,6 @@ export interface MessagePayload {
   url?: string;
   id?: string;
 
-  // Batch / tab-action fields
   feature?: string;
   data?: Record<string, unknown>;
   action?: string;

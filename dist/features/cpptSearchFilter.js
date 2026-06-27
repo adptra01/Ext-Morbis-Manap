@@ -415,8 +415,15 @@ var __morbis_feature = (() => {
   }
   if (typeof g.featureModules !== "undefined") {
     g.featureModules.cpptSearchFilter = {
+      id: "cpptSearchFilter",
       name: "CPPT Search & Filter",
       description: "Cari dan filter data CPPT per tabel (Riwayat CPPT & History Kunjungan)",
+      match: {
+        oneOf: [
+          { pathname: "/admisi/pelaksanaan_pelayanan/cppt" },
+          { pathname: "/admisi/detail-rawat-inap/cppt" }
+        ]
+      },
       run: initCpptSearchFilter
     };
   } else {

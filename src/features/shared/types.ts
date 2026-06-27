@@ -1,11 +1,25 @@
-/**
- * Shared types for feature modules.
- * All feature files import from this to avoid duplicate global declarations.
- */
+export interface FeatureMatch {
+  pathname?: string;
+  prefix?: string;
+  regex?: RegExp;
+  oneOf?: FeatureMatch[];
+  exclude?: FeatureMatch[];
+  requiredSelectors?: string[];
+}
+
+export interface FeatureContext {
+  pathname: string;
+  url: URL;
+  document: Document;
+  window: Window;
+}
 
 export interface FeatureModule {
+  id: string;
   name: string;
   description?: string;
+  match: FeatureMatch;
+  enabledWhen?: (ctx: FeatureContext) => boolean;
   run: () => void;
 }
 
@@ -16,7 +30,7 @@ export interface MorbisConfig {
 }
 
 export interface MorbisGlobals {
-  featureModules: Record<string, { name: string; description?: string; run: () => void }>;
+  featureModules: Record<string, FeatureModule>;
   currentConfig: MorbisConfig;
   ExtensionCore: {
     ROLES: Record<string, string>;
@@ -38,7 +52,7 @@ export interface MorbisGlobals {
   removeClearAllFilterButton: () => void;
   OpenDetailExtension: {
     getConfig: () => MorbisConfig | null;
-    getFeatures: () => Record<string, { name: string; description?: string; run: () => void }>;
+    getFeatures: () => Record<string, FeatureModule>;
     isEnabled: () => boolean;
     refresh: () => Promise<void>;
   };
@@ -55,7 +69,5 @@ export function getMorbisGlobals(): MorbisGlobals {
   return window as unknown as MorbisGlobals;
 }
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
 declare const _doc: Document;
 declare const _chrome: typeof chrome;
-/* eslint-enable @typescript-eslint/no-unused-vars */
