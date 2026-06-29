@@ -1,6 +1,1599 @@
-import{_ as e,a as t,b as n,c as r,d as i,f as a,g as o,h as s,i as c,l,m as u,n as d,o as f,p,r as m,s as h,t as g,u as _,v,x as y,y as b}from"./chunks/button-o_Zl2Vrn.js";var x=a(`check`,[[`path`,{d:`M20 6 9 17l-5-5`,key:`1gmf2c`}]]),S=a(`circle-alert`,[[`circle`,{cx:`12`,cy:`12`,r:`10`,key:`1mglay`}],[`line`,{x1:`12`,x2:`12`,y1:`8`,y2:`12`,key:`1pkeuh`}],[`line`,{x1:`12`,x2:`12.01`,y1:`16`,y2:`16`,key:`4dfq90`}]]),C=a(`eye`,[[`path`,{d:`M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0`,key:`1nclc0`}],[`circle`,{cx:`12`,cy:`12`,r:`3`,key:`1v7zrd`}]]),w=a(`info`,[[`circle`,{cx:`12`,cy:`12`,r:`10`,key:`1mglay`}],[`path`,{d:`M12 16v-4`,key:`1dtifu`}],[`path`,{d:`M12 8h.01`,key:`e9boi3`}]]),T=a(`search`,[[`path`,{d:`m21 21-4.34-4.34`,key:`14j7rj`}],[`circle`,{cx:`11`,cy:`11`,r:`8`,key:`4ej97u`}]]),E=a(`trash-2`,[[`path`,{d:`M10 11v6`,key:`nco0om`}],[`path`,{d:`M14 11v6`,key:`outv1u`}],[`path`,{d:`M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6`,key:`miytrc`}],[`path`,{d:`M3 6h18`,key:`d0wm0j`}],[`path`,{d:`M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2`,key:`e791ji`}]]),D=a(`triangle-alert`,[[`path`,{d:`m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3`,key:`wmoenq`}],[`path`,{d:`M12 9v4`,key:`juzpu7`}],[`path`,{d:`M12 17h.01`,key:`p32p05`}]]),O=a(`upload`,[[`path`,{d:`M12 3v12`,key:`1x0j5s`}],[`path`,{d:`m17 8-5-5-5 5`,key:`7q97r8`}],[`path`,{d:`M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4`,key:`ih7n3h`}]]),k=b(),A=y(n(),1),j=`theme`;function M(){let[e,t]=(0,A.useState)(()=>(typeof chrome<`u`&&chrome.storage?.sync,`system`)),[n,r]=(0,A.useState)(!1);(0,A.useEffect)(()=>{chrome.storage.sync.get(j,e=>{let n=e[j]||`system`;t(n),i(n)})},[]);let i=(0,A.useCallback)(e=>{let t;t=e===`system`?window.matchMedia(`(prefers-color-scheme: dark)`).matches:e===`dark`,document.documentElement.classList.toggle(`dark`,t),r(t)},[]),a=(0,A.useCallback)(e=>{t(e),i(e),chrome.storage.sync.set({[j]:e})},[i]);return(0,A.useEffect)(()=>{let t=window.matchMedia(`(prefers-color-scheme: dark)`),n=()=>{e===`system`&&i(`system`)};return t.addEventListener(`change`,n),()=>t.removeEventListener(`change`,n)},[e,i]),{theme:e,resolved:n,setTheme:a}}var N=o(),P={default:`bg-primary/10 text-primary border-primary/20`,success:`bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800`,warning:`bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800`,danger:`bg-destructive/10 text-destructive border-destructive/20`},F={default:w,success:x,warning:D,danger:r};function I({variant:e=`default`,icon:t,children:n,className:i,onDismiss:a}){let o=F[e];return(0,N.jsxs)(`span`,{className:u(`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold`,P[e],i),children:[t&&(0,N.jsx)(o,{className:`size-3`}),n,a&&(0,N.jsx)(`button`,{onClick:a,className:`ml-0.5 hover:opacity-70`,"aria-label":`Dismiss`,children:(0,N.jsx)(r,{className:`size-2.5`})})]})}var L=[{value:`casemix`,label:`Casemix`},{value:`kasir`,label:`Kasir`},{value:`dokter`,label:`Dokter`},{value:`apotek`,label:`Apotek`},{value:`admin`,label:`Admin`}];function R({value:e,onChange:n}){return(0,N.jsxs)(m,{value:e,onValueChange:e=>n(e),children:[(0,N.jsx)(f,{className:`w-[120px]`,children:(0,N.jsx)(h,{})}),(0,N.jsx)(c,{children:L.map(e=>(0,N.jsx)(t,{value:e.value,children:e.label},e.value))})]})}function z({enabled:e,role:t,onToggle:n,onRoleChange:r}){return(0,N.jsxs)(`div`,{className:`rounded-lg border bg-card text-card-foreground shadow-sm p-3 flex items-center justify-between`,children:[(0,N.jsxs)(`div`,{className:`flex items-center gap-3`,children:[(0,N.jsx)(p,{checked:e,onCheckedChange:n}),(0,N.jsxs)(`div`,{children:[(0,N.jsxs)(`div`,{className:`flex items-center gap-2`,children:[(0,N.jsx)(`span`,{className:`text-md-sm font-semibold text-foreground`,children:`MORBIS Ext`}),e&&(0,N.jsx)(I,{variant:`success`,children:`Aktif`})]}),(0,N.jsx)(`p`,{className:`text-md-xs text-muted-foreground mt-0.5`,children:e?`Extension aktif di halaman ini`:`Extension tidak aktif`})]})]}),(0,N.jsx)(R,{value:t,onChange:e=>r(e)})]})}function B({features:e,enabledFeatures:n,role:r,disabled:i,onToggle:a,onModeChange:o}){let s=e.filter(e=>e.roles.includes(r)),l=s.filter(e=>n[e.key]).length;return(0,N.jsxs)(`div`,{children:[(0,N.jsx)(`div`,{className:`flex items-center justify-between mb-3`,children:(0,N.jsxs)(`p`,{className:`text-md-xs text-muted-foreground font-medium`,children:[l,` dari `,s.length,` aktif`]})}),s.length===0&&(0,N.jsx)(`div`,{className:`text-center py-8`,children:(0,N.jsx)(`p`,{className:`text-md-sm text-muted-foreground`,children:`Tidak ada fitur untuk role ini`})}),(0,N.jsx)(`div`,{className:`space-y-0.5`,children:s.map(e=>{let r=!!n[e.key];return(0,N.jsxs)(`div`,{className:`
+import {
+  _ as e,
+  a as t,
+  b as n,
+  c as r,
+  d as i,
+  f as a,
+  g as o,
+  h as s,
+  i as c,
+  l,
+  m as u,
+  n as d,
+  o as f,
+  p,
+  r as m,
+  s as h,
+  t as g,
+  u as _,
+  v,
+  x as y,
+  y as b,
+} from './chunks/button-B6ZB2sdo.js';
+var x = a(`check`, [[`path`, { d: `M20 6 9 17l-5-5`, key: `1gmf2c` }]]),
+  S = a(`circle-alert`, [
+    [`circle`, { cx: `12`, cy: `12`, r: `10`, key: `1mglay` }],
+    [`line`, { x1: `12`, x2: `12`, y1: `8`, y2: `12`, key: `1pkeuh` }],
+    [`line`, { x1: `12`, x2: `12.01`, y1: `16`, y2: `16`, key: `4dfq90` }],
+  ]),
+  C = a(`eye`, [
+    [
+      `path`,
+      {
+        d: `M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0`,
+        key: `1nclc0`,
+      },
+    ],
+    [`circle`, { cx: `12`, cy: `12`, r: `3`, key: `1v7zrd` }],
+  ]),
+  w = a(`info`, [
+    [`circle`, { cx: `12`, cy: `12`, r: `10`, key: `1mglay` }],
+    [`path`, { d: `M12 16v-4`, key: `1dtifu` }],
+    [`path`, { d: `M12 8h.01`, key: `e9boi3` }],
+  ]),
+  T = a(`search`, [
+    [`path`, { d: `m21 21-4.34-4.34`, key: `14j7rj` }],
+    [`circle`, { cx: `11`, cy: `11`, r: `8`, key: `4ej97u` }],
+  ]),
+  E = a(`trash-2`, [
+    [`path`, { d: `M10 11v6`, key: `nco0om` }],
+    [`path`, { d: `M14 11v6`, key: `outv1u` }],
+    [`path`, { d: `M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6`, key: `miytrc` }],
+    [`path`, { d: `M3 6h18`, key: `d0wm0j` }],
+    [`path`, { d: `M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2`, key: `e791ji` }],
+  ]),
+  D = a(`triangle-alert`, [
+    [
+      `path`,
+      {
+        d: `m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3`,
+        key: `wmoenq`,
+      },
+    ],
+    [`path`, { d: `M12 9v4`, key: `juzpu7` }],
+    [`path`, { d: `M12 17h.01`, key: `p32p05` }],
+  ]),
+  O = a(`upload`, [
+    [`path`, { d: `M12 3v12`, key: `1x0j5s` }],
+    [`path`, { d: `m17 8-5-5-5 5`, key: `7q97r8` }],
+    [`path`, { d: `M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4`, key: `ih7n3h` }],
+  ]),
+  k = b(),
+  A = y(n(), 1),
+  j = `theme`;
+function M() {
+  let [e, t] = (0, A.useState)(() => (typeof chrome < `u` && chrome.storage?.sync, `system`)),
+    [n, r] = (0, A.useState)(!1);
+  (0, A.useEffect)(() => {
+    chrome.storage.sync.get(j, (e) => {
+      let n = e[j] || `system`;
+      (t(n), i(n));
+    });
+  }, []);
+  let i = (0, A.useCallback)((e) => {
+      let t;
+      ((t =
+        e === `system` ? window.matchMedia(`(prefers-color-scheme: dark)`).matches : e === `dark`),
+        document.documentElement.classList.toggle(`dark`, t),
+        r(t));
+    }, []),
+    a = (0, A.useCallback)(
+      (e) => {
+        (t(e), i(e), chrome.storage.sync.set({ [j]: e }));
+      },
+      [i],
+    );
+  return (
+    (0, A.useEffect)(() => {
+      let t = window.matchMedia(`(prefers-color-scheme: dark)`),
+        n = () => {
+          e === `system` && i(`system`);
+        };
+      return (t.addEventListener(`change`, n), () => t.removeEventListener(`change`, n));
+    }, [e, i]),
+    { theme: e, resolved: n, setTheme: a }
+  );
+}
+var N = o(),
+  P = {
+    default: `bg-primary/10 text-primary border-primary/20`,
+    success: `bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800`,
+    warning: `bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800`,
+    danger: `bg-destructive/10 text-destructive border-destructive/20`,
+  },
+  F = { default: w, success: x, warning: D, danger: r };
+function I({ variant: e = `default`, icon: t, children: n, className: i, onDismiss: a }) {
+  let o = F[e];
+  return (0, N.jsxs)(`span`, {
+    className: u(
+      `inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold`,
+      P[e],
+      i,
+    ),
+    children: [
+      t && (0, N.jsx)(o, { className: `size-3` }),
+      n,
+      a &&
+        (0, N.jsx)(`button`, {
+          onClick: a,
+          className: `ml-0.5 hover:opacity-70`,
+          'aria-label': `Dismiss`,
+          children: (0, N.jsx)(r, { className: `size-2.5` }),
+        }),
+    ],
+  });
+}
+var L = [
+  { value: `casemix`, label: `Casemix` },
+  { value: `kasir`, label: `Kasir` },
+  { value: `dokter`, label: `Dokter` },
+  { value: `apotek`, label: `Apotek` },
+  { value: `admin`, label: `Admin` },
+];
+function R({ value: e, onChange: n }) {
+  return (0, N.jsxs)(m, {
+    value: e,
+    onValueChange: (e) => n(e),
+    children: [
+      (0, N.jsx)(f, { className: `w-[120px]`, children: (0, N.jsx)(h, {}) }),
+      (0, N.jsx)(c, {
+        children: L.map((e) => (0, N.jsx)(t, { value: e.value, children: e.label }, e.value)),
+      }),
+    ],
+  });
+}
+function z({ enabled: e, role: t, onToggle: n, onRoleChange: r }) {
+  return (0, N.jsxs)(`div`, {
+    className: `rounded-lg border bg-card text-card-foreground shadow-sm p-3 flex items-center justify-between`,
+    children: [
+      (0, N.jsxs)(`div`, {
+        className: `flex items-center gap-3`,
+        children: [
+          (0, N.jsx)(p, { checked: e, onCheckedChange: n }),
+          (0, N.jsxs)(`div`, {
+            children: [
+              (0, N.jsxs)(`div`, {
+                className: `flex items-center gap-2`,
+                children: [
+                  (0, N.jsx)(`span`, {
+                    className: `text-md-sm font-semibold text-foreground`,
+                    children: `MORBIS Ext`,
+                  }),
+                  e && (0, N.jsx)(I, { variant: `success`, children: `Aktif` }),
+                ],
+              }),
+              (0, N.jsx)(`p`, {
+                className: `text-md-xs text-muted-foreground mt-0.5`,
+                children: e ? `Extension aktif di halaman ini` : `Extension tidak aktif`,
+              }),
+            ],
+          }),
+        ],
+      }),
+      (0, N.jsx)(R, { value: t, onChange: (e) => r(e) }),
+    ],
+  });
+}
+function B({
+  features: e,
+  enabledFeatures: n,
+  role: r,
+  disabled: i,
+  onToggle: a,
+  onModeChange: o,
+}) {
+  let s = e.filter((e) => e.roles.includes(r)),
+    l = s.filter((e) => n[e.key]).length;
+  return (0, N.jsxs)(`div`, {
+    children: [
+      (0, N.jsx)(`div`, {
+        className: `flex items-center justify-between mb-3`,
+        children: (0, N.jsxs)(`p`, {
+          className: `text-md-xs text-muted-foreground font-medium`,
+          children: [l, ` dari `, s.length, ` aktif`],
+        }),
+      }),
+      s.length === 0 &&
+        (0, N.jsx)(`div`, {
+          className: `text-center py-8`,
+          children: (0, N.jsx)(`p`, {
+            className: `text-md-sm text-muted-foreground`,
+            children: `Tidak ada fitur untuk role ini`,
+          }),
+        }),
+      (0, N.jsx)(`div`, {
+        className: `space-y-0.5`,
+        children: s.map((e) => {
+          let r = !!n[e.key];
+          return (0, N.jsxs)(
+            `div`,
+            {
+              className: `
                 flex items-center justify-between px-3 py-2.5 rounded-md
-                ${r?`bg-accent`:``}
-                ${e.comingSoon?`opacity-60`:`cursor-pointer hover:bg-accent`}
-              `,onClick:()=>{!e.comingSoon&&!i&&a(e.key,!r)},children:[(0,N.jsxs)(`div`,{className:`flex-1 min-w-0 mr-3`,children:[(0,N.jsxs)(`div`,{className:`flex items-center gap-2`,children:[(0,N.jsx)(`span`,{className:`text-md-sm font-medium text-foreground`,children:e.name}),e.comingSoon&&(0,N.jsx)(`span`,{className:`text-[10px] font-semibold text-amber-700 bg-amber-50 dark:bg-amber-900/30 dark:text-amber-300 px-1.5 py-0.5 rounded-full`,children:`CS`})]}),(0,N.jsx)(`p`,{className:`text-md-xs text-muted-foreground mt-0.5 truncate`,children:e.desc})]}),(0,N.jsxs)(`div`,{className:`flex items-center gap-1.5 shrink-0`,children:[e.key===`openDetailInNewTab`&&e.modes&&n[e.key]&&(0,N.jsxs)(m,{value:e.mode||`same-tab`,onValueChange:t=>o(e.key,t),children:[(0,N.jsx)(f,{className:`h-7 text-md-xs w-[100px]`,onClick:e=>e.stopPropagation(),children:(0,N.jsx)(h,{})}),(0,N.jsx)(c,{children:Object.entries(e.modes).map(([e,n])=>(0,N.jsx)(t,{value:e,className:`text-md-xs`,children:n},e))})]}),(0,N.jsx)(p,{checked:r,onCheckedChange:t=>{e.comingSoon||a(e.key,t)},disabled:i||e.comingSoon})]})]},e.key)})})]})}var V=e=>{try{let t=new URL(e);return t.protocol===`http:`||t.protocol===`https:`}catch{return!1}};function H({urls:e,onAdd:t,onRemove:n,onToggle:a}){let[o,s]=(0,A.useState)(``),[c,l]=(0,A.useState)(null),u=()=>{let n=o.trim();if(!n){l(`Masukkan URL terlebih dahulu`);return}if(!V(n)){l(`Format URL tidak valid`);return}if(e.find(e=>e.url===n)){l(`URL sudah ada`);return}l(null),t(n),s(``)};return(0,N.jsxs)(`div`,{className:`space-y-3`,children:[(0,N.jsxs)(`div`,{className:`flex gap-2`,children:[(0,N.jsx)(d,{type:`text`,value:o,onChange:e=>{s(e.target.value),l(null)},onKeyDown:e=>e.key===`Enter`&&u(),placeholder:`http://192.168.1.100`,className:`flex-1`}),(0,N.jsxs)(g,{variant:`default`,size:`sm`,onClick:u,children:[(0,N.jsx)(i,{className:`size-3.5`}),`Add`]})]}),c&&(0,N.jsx)(`p`,{className:`text-md-xs text-destructive`,role:`alert`,children:c}),e.length===0&&!c&&(0,N.jsx)(`div`,{className:`text-center py-8`,children:(0,N.jsx)(`p`,{className:`text-md-sm text-muted-foreground`,children:`Belum ada domain`})}),(0,N.jsx)(`div`,{className:`space-y-1`,children:e.map(e=>(0,N.jsxs)(`div`,{className:`flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent group ${e.isDefault?`bg-blue-50 dark:bg-blue-950/20`:``}`,children:[(0,N.jsx)(p,{checked:e.enabled,onCheckedChange:t=>a(e.id,t)}),(0,N.jsx)(`span`,{className:`flex-1 text-md-xs text-foreground truncate font-mono`,children:e.url}),e.isDefault&&(0,N.jsx)(`span`,{className:`text-[10px] font-semibold text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-900/30 px-1.5 py-0.5 rounded`,children:`DEFAULT`}),(0,N.jsx)(`button`,{onClick:()=>n(e.id),disabled:e.isDefault,"aria-label":`Hapus ${e.url}`,className:`p-1 rounded transition-colors ${e.isDefault?`opacity-30 cursor-not-allowed`:`opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive`}`,title:e.isDefault?`URL default tidak dapat dihapus`:`Hapus`,children:(0,N.jsx)(r,{className:`size-3.5`})})]},e.id))})]})}function U({tabId:e}){let[t,n]=(0,A.useState)(`manual`),[i,a]=(0,A.useState)(``),[o,s]=(0,A.useState)([]),[c,l]=(0,A.useState)(!1),[u,f]=(0,A.useState)(0),[p,m]=(0,A.useState)(``),[h,v]=(0,A.useState)(``),[y,b]=(0,A.useState)(!1),x=(0,A.useCallback)(async(t,n)=>{try{await chrome.runtime.sendMessage({type:`TAB_ACTION`,tabId:e,action:t,payload:n})}catch(e){console.error(`Error sending tab action:`,e)}},[e]);(0,A.useEffect)(()=>{let e=e=>{if(e.type===`TAB_ACTION_RESULT`){let{action:t,data:n}=e;if(t===`BATCH_UPLOAD_PROGRESS`){let{percent:e,status:t,items:r,finished:i}=n;f(e),m(t),r&&s(r),i&&(l(!1),b(!0))}else t===`BATCH_UPLOAD_ANALYZE_RESULT`?(s(n.items),m(`${n.items.length} URL siap diproses`),l(!1)):t===`BATCH_UPLOAD_CRAWL_RESULT`?(s(n.items),m(`${n.items.length} dokumen berhasil ditemukan!`),l(!1)):t===`BATCH_UPLOAD_ERROR`&&(m(`Error: ${n.error}`),l(!1))}};return chrome.runtime.onMessage.addListener(e),()=>chrome.runtime.onMessage.removeListener(e)},[]);let w=()=>{if(!i.trim()){alert(`Silakan paste URL terlebih dahulu`);return}l(!0),m(`Menganalisis URL...`),x(`BATCH_UPLOAD_ANALYZE`,{inputText:i})},E=()=>{l(!0),m(`Mencari dokumen di rekam medis...`),x(`BATCH_UPLOAD_CRAWL`,null)},D=e=>{let t=[...o];t[e].selected=!t[e].selected,s(t),x(`BATCH_UPLOAD_UPDATE_ITEMS`,{items:t})},k=(e,t)=>{let n=[...o];n[e].keterangan=t,s(n),x(`BATCH_UPLOAD_UPDATE_ITEMS`,{items:n})},j=e=>{let t=[...o];t.splice(e,1),s(t),x(`BATCH_UPLOAD_UPDATE_ITEMS`,{items:t})},M=e=>{x(`BATCH_UPLOAD_PREVIEW`,{url:e.url,filename:e.filename})},P=()=>{let e=o.filter(e=>e.selected!==!1).length;if(e===0){alert(`Tidak ada dokumen yang dipilih untuk diupload.`);return}confirm(`Upload ${e} dokumen? Proses ini tidak dapat dibatalkan.`)&&(l(!0),f(0),m(`Memulai upload...`),x(`BATCH_UPLOAD_START`,null))},F=()=>{if(o.length===0){alert(`Tidak ada URL untuk ditest`);return}l(!0),m(`Testing single upload...`),x(`BATCH_UPLOAD_TEST_SINGLE`,null)},L=()=>{chrome.tabs.reload(e)},R=o.filter(e=>{if(!h)return!0;let t=h.toLowerCase();return e.filename.toLowerCase().includes(t)||e.keterangan.toLowerCase().includes(t)||e.norm.toLowerCase().includes(t)}),z=o.filter(e=>e.selected!==!1).length;return(0,N.jsxs)(`div`,{className:`space-y-4`,children:[(0,N.jsxs)(`div`,{className:`flex gap-4 border-b border-border pb-2`,children:[(0,N.jsx)(`button`,{onClick:()=>{c||n(`manual`)},className:`flex-1 pb-1.5 text-md-xs font-semibold border-b-2 text-center transition-all ${t===`manual`?`border-primary text-primary`:`border-transparent text-muted-foreground hover:text-foreground`}`,disabled:c,children:`Mode Manual (Paste URL)`}),(0,N.jsx)(`button`,{onClick:()=>{c||n(`auto`)},className:`flex-1 pb-1.5 text-md-xs font-semibold border-b-2 text-center transition-all ${t===`auto`?`border-primary text-primary`:`border-transparent text-muted-foreground hover:text-foreground`}`,disabled:c,children:`Auto-Crawl Rekam Medis`})]}),t===`manual`?(0,N.jsxs)(`div`,{className:`space-y-2`,children:[(0,N.jsx)(`label`,{className:`text-md-xs font-medium text-muted-foreground`,children:`Paste URL Dokumen (satu per baris):`}),(0,N.jsx)(`textarea`,{value:i,onChange:e=>a(e.target.value),disabled:c,placeholder:`https://example.com/dokumen1.pdf
-https://example.com/dokumen2.jpg`,className:`w-full h-24 p-2 text-md-xs border border-input rounded-md bg-background resize-none focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50`}),(0,N.jsxs)(g,{size:`sm`,onClick:w,disabled:c||!i.trim(),className:`w-full`,children:[(0,N.jsx)(T,{className:`size-3.5 mr-1`}),` Analisis URL`]})]}):(0,N.jsxs)(`div`,{className:`space-y-2`,children:[(0,N.jsx)(`p`,{className:`text-md-xs text-muted-foreground`,children:`Mendeteksi dokumen otomatis dari halaman Rekam Medis pasien ini.`}),(0,N.jsxs)(g,{size:`sm`,variant:`outline`,onClick:E,disabled:c,className:`w-full border-primary/20 hover:bg-primary/5 text-primary`,children:[(0,N.jsx)(T,{className:`size-3.5 mr-1`}),` Cari Dokumen Pasien Otomatis`]})]}),p&&(0,N.jsxs)(`div`,{className:`p-2.5 bg-accent/40 rounded-md border border-border space-y-1.5 animate-in fade-in duration-200`,children:[(0,N.jsxs)(`div`,{className:`flex items-center justify-between`,children:[(0,N.jsx)(`span`,{className:`text-[11px] font-medium text-foreground truncate max-w-[200px]`,children:p}),c&&u>0&&(0,N.jsxs)(`span`,{className:`text-[10px] font-semibold text-primary`,children:[Math.round(u),`%`]})]}),c&&u>0&&(0,N.jsx)(`div`,{className:`w-full h-1 bg-muted rounded-full overflow-hidden`,children:(0,N.jsx)(`div`,{className:`h-full bg-primary transition-all duration-300`,style:{width:`${u}%`}})})]}),o.length>0&&(0,N.jsxs)(`div`,{className:`space-y-2`,children:[(0,N.jsxs)(`div`,{className:`flex items-center justify-between`,children:[(0,N.jsxs)(`span`,{className:`text-md-xs font-semibold`,children:[`Preview (`,z,` / `,o.length,` dipilih)`]}),t===`auto`&&(0,N.jsx)(d,{placeholder:`Cari...`,value:h,onChange:e=>v(e.target.value),className:`h-6 max-w-[120px] text-[11px]`})]}),(0,N.jsxs)(`div`,{className:`max-h-60 overflow-y-auto border border-border rounded-md divide-y divide-border bg-card`,children:[R.map((e,t)=>(0,N.jsxs)(`div`,{className:`p-2 text-md-xs flex items-start gap-2 transition-colors ${e.selected===!1?`opacity-60`:`bg-accent/20`}`,children:[(0,N.jsx)(`input`,{type:`checkbox`,checked:e.selected!==!1,onChange:()=>D(t),disabled:c,className:`mt-0.5 rounded border-input text-primary focus:ring-primary size-3.5`}),(0,N.jsxs)(`div`,{className:`flex-1 min-w-0 space-y-1`,children:[(0,N.jsxs)(`div`,{className:`flex items-start justify-between gap-1`,children:[(0,N.jsxs)(`span`,{className:`font-medium text-foreground truncate block`,title:e.filename,children:[t+1,`. `,e.filename]}),e.status!==`pending`&&(0,N.jsx)(I,{variant:e.status===`success`?`success`:`danger`,className:`shrink-0 scale-90`,children:e.status===`success`?`Sukses`:`Gagal`})]}),e.tglFileTabel?(0,N.jsxs)(`div`,{className:`text-[10px] text-muted-foreground flex gap-1.5`,children:[(0,N.jsxs)(`span`,{children:[`Dibuat: `,e.tglFileTabel]}),(0,N.jsx)(`span`,{children:`|`}),(0,N.jsxs)(`span`,{children:[`Unggah: `,e.tglUploadTabel]})]}):(0,N.jsxs)(`div`,{className:`text-[10px] text-muted-foreground flex gap-1.5`,children:[(0,N.jsxs)(`span`,{children:[`NORM: `,e.norm||`-`]}),(0,N.jsx)(`span`,{children:`|`}),(0,N.jsxs)(`span`,{children:[`Tgl Klaim: `,e.tanggal]})]}),(0,N.jsx)(d,{value:e.keterangan,onChange:e=>k(t,e.target.value),placeholder:`Keterangan...`,disabled:c,className:`h-6 text-[10px] py-0 px-1.5`}),e.error&&(0,N.jsxs)(`p`,{className:`text-[10px] text-destructive flex items-center gap-1`,children:[(0,N.jsx)(S,{className:`size-3 shrink-0`}),` `,e.error]})]}),(0,N.jsxs)(`div`,{className:`flex flex-col gap-1.5 shrink-0`,children:[(0,N.jsx)(`button`,{onClick:()=>M(e),className:`p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-all`,title:`Preview File`,children:(0,N.jsx)(C,{className:`size-3.5`})}),(0,N.jsx)(`button`,{onClick:()=>j(t),disabled:c,className:`p-1 hover:bg-destructive/10 rounded text-muted-foreground hover:text-destructive transition-all disabled:opacity-50`,title:`Buang dari Antrian`,children:(0,N.jsx)(r,{className:`size-3.5`})})]})]},t)),R.length===0&&(0,N.jsx)(`div`,{className:`p-4 text-center text-muted-foreground text-md-xs`,children:`Tidak ada dokumen yang cocok.`})]})]}),(0,N.jsx)(`div`,{className:`flex gap-2`,children:y?(0,N.jsxs)(g,{onClick:L,variant:`default`,className:`w-full bg-green-600 hover:bg-green-700 text-white`,children:[(0,N.jsx)(_,{className:`size-3.5 mr-1`}),` Reload Halaman`]}):(0,N.jsxs)(N.Fragment,{children:[(0,N.jsx)(g,{variant:`outline`,size:`sm`,onClick:F,disabled:c||o.length===0,className:`flex-1 text-amber-700 border-amber-200 bg-amber-50/50 hover:bg-amber-100/50 dark:text-amber-300 dark:border-amber-800 dark:bg-amber-950/20`,children:`Test 1 URL`}),(0,N.jsxs)(g,{variant:`default`,size:`sm`,onClick:P,disabled:c||o.length===0||z===0,className:`flex-1`,children:[(0,N.jsx)(O,{className:`size-3.5 mr-1`}),` Mulai Upload`]})]})})]})}function W({tabId:e}){let[t,n]=(0,A.useState)([]),[r,i]=(0,A.useState)(!1),[a,o]=(0,A.useState)(0),[s,c]=(0,A.useState)(``),[l,u]=(0,A.useState)(``),[f,p]=(0,A.useState)(!1),m=(0,A.useCallback)(async(t,n)=>{try{await chrome.runtime.sendMessage({type:`TAB_ACTION`,tabId:e,action:t,payload:n})}catch(e){console.error(`Error sending tab action:`,e)}},[e]);(0,A.useEffect)(()=>{let e=e=>{if(e.type===`TAB_ACTION_RESULT`){let{action:r,data:a}=e;if(r===`BATCH_DELETE_PROGRESS`){let{percent:e,status:t,items:r,finished:s}=a;o(e),c(t),r&&n(r),s&&(i(!1),p(!0))}else if(r===`BATCH_DELETE_CRAWL_RESULT`)n(a.items),c(`${a.items.length} dokumen ditemukan.`),i(!1);else if(r===`BATCH_DELETE_SINGLE_RESULT`){let{index:e,success:r,error:o}=a,s=[...t];r?(s.splice(e,1),c(`Dokumen berhasil dihapus.`)):(s[e].status=`error`,c(`Gagal menghapus: ${o}`)),n(s),i(!1)}else r===`BATCH_DELETE_ERROR`&&(c(`Error: ${a.error}`),i(!1))}};return chrome.runtime.onMessage.addListener(e),()=>chrome.runtime.onMessage.removeListener(e)},[t]);let h=()=>{i(!0),c(`Mencari dokumen pasien...`),m(`BATCH_DELETE_CRAWL`,null)},v=e=>{let r=[...t];r[e].selected=!r[e].selected,n(r),m(`BATCH_DELETE_UPDATE_ITEMS`,{items:r})},y=e=>{m(`BATCH_DELETE_PREVIEW`,{url:e.url,filename:e.filename})},b=e=>{let n=t[e];n&&confirm(`Hapus dokumen ini?\n\n${n.filename}\nID: ${n.id_dokumen}\n\nTindakan ini tidak bisa di-undo.`)&&(i(!0),c(`Menghapus: ${n.filename}...`),m(`BATCH_DELETE_SINGLE`,{index:e,id_dokumen:n.id_dokumen}))},x=()=>{let e=t.filter(e=>e.selected).length;if(e===0){alert(`Pilih dokumen untuk dihapus`);return}confirm(`Hapus ${e} dokumen? TINDAKAN INI BERSIFAT PERMANEN DAN TIDAK BISA DIUNDO!`)&&(i(!0),o(0),c(`Memulai penghapusan massal...`),m(`BATCH_DELETE_START`,null))},S=()=>{chrome.tabs.reload(e)},w=t.filter(e=>{if(!l)return!0;let t=l.toLowerCase();return e.filename.toLowerCase().includes(t)||e.keterangan.toLowerCase().includes(t)||e.id_dokumen.toLowerCase().includes(t)}),O=t.filter(e=>e.selected).length;return(0,N.jsxs)(`div`,{className:`space-y-4`,children:[(0,N.jsxs)(`div`,{className:`p-3 bg-red-50 dark:bg-red-950/20 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-900 rounded-md space-y-1.5`,children:[(0,N.jsxs)(`div`,{className:`flex items-center gap-1.5 font-semibold text-md-xs text-red-900 dark:text-red-200`,children:[(0,N.jsx)(D,{className:`size-4 shrink-0`}),(0,N.jsx)(`span`,{children:`PERHATIAN!`})]}),(0,N.jsxs)(`p`,{className:`text-[11px] leading-relaxed opacity-90`,children:[`File yang dihapus `,(0,N.jsx)(`strong`,{children:`tidak dapat dikembalikan`}),`. Tindakan ini bersifat permanen dan seketika menghapus dari database server.`]})]}),(0,N.jsx)(`div`,{className:`space-y-2`,children:(0,N.jsxs)(g,{size:`sm`,variant:`outline`,onClick:h,disabled:r,className:`w-full border-primary/20 hover:bg-primary/5 text-primary`,children:[(0,N.jsx)(T,{className:`size-3.5 mr-1`}),` Cari Dokumen Pasien`]})}),s&&(0,N.jsxs)(`div`,{className:`p-2.5 bg-accent/40 rounded-md border border-border space-y-1.5 animate-in fade-in duration-200`,children:[(0,N.jsxs)(`div`,{className:`flex items-center justify-between`,children:[(0,N.jsx)(`span`,{className:`text-[11px] font-medium text-foreground truncate max-w-[200px]`,children:s}),r&&a>0&&(0,N.jsxs)(`span`,{className:`text-[10px] font-semibold text-primary`,children:[Math.round(a),`%`]})]}),r&&a>0&&(0,N.jsx)(`div`,{className:`w-full h-1 bg-muted rounded-full overflow-hidden`,children:(0,N.jsx)(`div`,{className:`h-full bg-primary transition-all duration-300`,style:{width:`${a}%`}})})]}),t.length>0&&(0,N.jsxs)(`div`,{className:`space-y-2`,children:[(0,N.jsxs)(`div`,{className:`flex items-center justify-between`,children:[(0,N.jsxs)(`span`,{className:`text-md-xs font-semibold`,children:[`Preview (`,O,` / `,t.length,` dipilih)`]}),(0,N.jsx)(d,{placeholder:`Cari...`,value:l,onChange:e=>u(e.target.value),className:`h-6 max-w-[120px] text-[11px]`})]}),(0,N.jsxs)(`div`,{className:`max-h-60 overflow-y-auto border border-border rounded-md divide-y divide-border bg-card`,children:[w.map((e,t)=>(0,N.jsxs)(`div`,{className:`p-2 text-md-xs flex items-start gap-2 transition-colors ${e.selected?`bg-red-500/5 border-l-2 border-red-500`:`opacity-85`}`,children:[(0,N.jsx)(`input`,{type:`checkbox`,checked:e.selected,onChange:()=>v(t),disabled:r,className:`mt-0.5 rounded border-input text-red-600 focus:ring-red-500 size-3.5`}),(0,N.jsxs)(`div`,{className:`flex-1 min-w-0 space-y-1`,children:[(0,N.jsxs)(`div`,{className:`flex items-start justify-between gap-1`,children:[(0,N.jsxs)(`span`,{className:`font-medium text-foreground truncate block`,title:e.filename,children:[t+1,`. `,e.filename]}),e.status!==`pending`&&(0,N.jsx)(I,{variant:e.status===`success`?`success`:e.status===`deleting`?`warning`:`danger`,className:`shrink-0 scale-90`,children:e.status===`success`?`Sukses`:e.status===`deleting`?`...`:`Gagal`})]}),(0,N.jsxs)(`div`,{className:`text-[10px] text-muted-foreground flex gap-1.5`,children:[(0,N.jsxs)(`span`,{children:[`ID: `,(0,N.jsx)(`strong`,{className:`text-foreground`,children:e.id_dokumen})]}),(0,N.jsx)(`span`,{children:`|`}),(0,N.jsx)(`span`,{children:e.tglFile})]}),(0,N.jsx)(`p`,{className:`text-[10px] text-muted-foreground truncate`,children:e.keterangan||`-`})]}),(0,N.jsxs)(`div`,{className:`flex flex-col gap-1.5 shrink-0`,children:[(0,N.jsx)(`button`,{onClick:()=>y(e),className:`p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-all`,title:`Preview File`,children:(0,N.jsx)(C,{className:`size-3.5`})}),(0,N.jsx)(`button`,{onClick:()=>b(t),disabled:r,className:`p-1 hover:bg-red-500/10 rounded text-muted-foreground hover:text-red-600 transition-all disabled:opacity-50`,title:`Hapus Dokumen`,children:(0,N.jsx)(E,{className:`size-3.5`})})]})]},t)),w.length===0&&(0,N.jsx)(`div`,{className:`p-4 text-center text-muted-foreground text-md-xs`,children:`Tidak ada dokumen yang cocok.`})]})]}),(0,N.jsx)(`div`,{className:`flex gap-2`,children:f?(0,N.jsxs)(g,{onClick:S,variant:`default`,className:`w-full bg-green-600 hover:bg-green-700 text-white`,children:[(0,N.jsx)(_,{className:`size-3.5 mr-1`}),` Reload Halaman`]}):(0,N.jsxs)(g,{variant:`destructive`,size:`sm`,onClick:x,disabled:r||t.length===0||O===0,className:`w-full bg-red-600 hover:bg-red-700 text-white disabled:opacity-50`,children:[(0,N.jsx)(E,{className:`size-3.5 mr-1`}),` Hapus Terpilih (`,O,`)`]})})]})}function G({data:e}){let t=[{label:`No. RM / Nama`,value:`${e.noRm??``} — ${e.nama??``}`},{label:`Unit Asal → Unit Tujuan`,value:`${e.unitAsal??`-`} → ${e.unitTujuan??`-`}`},{label:`Dokter`,value:`${e.dokterMengajukan??`-`} → ${e.dokterKonsultasi??`-`}`},{label:`Tanggal Pengajuan`,value:e.tanggal??`-`}];return e.permintaan&&t.push({label:`Permintaan Konsultasi`,value:e.permintaan}),e.kesan&&t.push({label:`Kesan`,value:e.kesan}),e.anjuran&&t.push({label:`Anjuran`,value:e.anjuran}),(0,N.jsxs)(`div`,{className:`space-y-3`,children:[(0,N.jsx)(`h3`,{className:`text-md-sm font-semibold text-foreground`,children:`Detail Konsultasi`}),t.map((e,t)=>(0,N.jsxs)(`div`,{children:[(0,N.jsx)(`label`,{className:`text-[11px] font-semibold text-muted-foreground uppercase tracking-wide`,children:e.label}),(0,N.jsx)(`div`,{className:`mt-0.5 text-md-sm text-foreground bg-accent/50 rounded-md px-3 py-2 leading-relaxed whitespace-pre-wrap break-words`,children:e.value})]},t))]})}var K=[{id:`resep`,label:`History Resep`},{id:`dokumen`,label:`Dokumen Pasien`},{id:`cppt`,label:`CPPT`},{id:`penunjang`,label:`Penunjang Medis`}],q={resep:{url:`/admisi/pengajuan_konsultasi/tabel-resep`,method:`POST`,getData:e=>({id_visit:e.visit,id_pasien:e.noRm,page:`1`})},dokumen:{url:`/admisi/pengajuan_konsultasi/tabel-dok`,method:`POST`,getData:e=>({id_visit:e.visit,id_pasien:e.noRm,page:`1`})},cppt:{url:`/admisi/pengajuan_konsultasi/tabel-cppt`,method:`POST`,getData:e=>({id_visit:e.visit,id_pasien:e.noRm,page:`1`})},penunjang:{url:`/admisi/modal/modal-history-penunjang-v2`,method:`GET`,getData:e=>({norm:e.noRm,id_visit:e.visit})}};function J({data:e}){let[t,n]=(0,A.useState)(K[0].id),[r,i]=(0,A.useState)({}),[a,o]=(0,A.useState)({}),s=async t=>{if(r[t]||a[t])return;o(e=>({...e,[t]:!0}));let n=q[t],s=`${e.baseUrl||`http://103.147.236.140`}${n.url}`,c=n.getData(e);try{let e=await chrome.runtime.sendMessage({type:`PROXY_FETCH`,url:s,method:n.method,data:c});i(n=>({...n,[t]:e?.success?e.html:`<div style="color:red;padding:20px;">Gagal memuat</div>`}))}catch{i(e=>({...e,[t]:`<div style="color:red;padding:20px;">Gagal memuat</div>`}))}finally{o(e=>({...e,[t]:!1}))}};return!r[K[0].id]&&!a[K[0].id]&&s(K[0].id),(0,N.jsxs)(`div`,{className:`space-y-3`,children:[(0,N.jsx)(`h3`,{className:`text-md-sm font-semibold text-foreground`,children:`Info Pasien`}),(0,N.jsx)(`div`,{className:`flex border-b border-border`,children:K.map(e=>(0,N.jsx)(`button`,{onClick:()=>{n(e.id),s(e.id)},className:`px-3 py-1.5 text-[11px] font-medium border-b-2 transition-colors -mb-[1px] ${t===e.id?`text-foreground border-foreground`:`text-muted-foreground border-transparent hover:text-foreground`}`,children:e.label},e.id))}),(0,N.jsx)(`div`,{children:a[t]?(0,N.jsx)(`div`,{className:`text-center py-12 text-muted-foreground text-md-sm`,children:`Memuat...`}):r[t]?(0,N.jsx)(`div`,{className:`text-md-sm leading-relaxed`,dangerouslySetInnerHTML:{__html:r[t]}}):null})]})}function Y({onReload:e,onReset:t}){return(0,N.jsxs)(`div`,{className:`flex items-center justify-between px-4 py-3 border-t border-border`,children:[(0,N.jsxs)(g,{variant:`ghost`,size:`sm`,onClick:e,children:[(0,N.jsx)(_,{className:`size-3.5`}),`Reload Halaman`]}),(0,N.jsxs)(g,{variant:`ghost`,size:`sm`,onClick:t,children:[(0,N.jsx)(l,{className:`size-3.5`}),`Reset Default`]})]})}function X(e){return Object.entries(e).map(([e,t])=>({key:e,name:t.name||e,desc:t.description||``,roles:t.allowedRoles||[],mode:t.mode,modes:t.modes,comingSoon:t.comingSoon}))}function Z(e){let t={};for(let[n,r]of Object.entries(e||{}))t[n]=r.enabled??!1;return t}var ee=[{key:`openDetailInNewTab`,name:`Open Detail`,desc:`Buka detail di tab baru`,roles:[`casemix`,`kasir`,`dokter`,`admin`]},{key:`shortcutButtons`,name:`Shortcut Buttons`,desc:`Tombol akses cepat di tabel`,roles:[`casemix`,`kasir`,`admin`]},{key:`filterPersistence`,name:`Filter Persistence`,desc:`Simpan state filter`,roles:[`casemix`,`kasir`,`apotek`,`dokter`,`admin`]},{key:`scrollButtons`,name:`Scroll Buttons`,desc:`Tombol scroll cepat`,roles:[`casemix`,`kasir`,`apotek`,`dokter`,`admin`]},{key:`batchUpload`,name:`Batch Upload URL`,desc:`Upload URL berkas`,roles:[`casemix`,`admin`]},{key:`resumeValidator`,name:`Resume Validator`,desc:`Validasi resume rawat inap`,roles:[`casemix`,`dokter`]},{key:`resumeModal`,name:`Resume Rajal`,desc:`Edit resume rawat jalan`,roles:[`casemix`,`dokter`]},{key:`ttvEditor`,name:`TTV Editor`,desc:`Edit tanda vital`,roles:[`dokter`,`admin`]},{key:`cpptSearchFilter`,name:`CPPT Search`,desc:`Cari & filter CPPT`,roles:[`casemix`]},{key:`antrianTools`,name:`Antrian Tools`,desc:`Tools halaman antrian`,roles:[`admin`]},{key:`consultationEnhancer`,name:`Konsultasi`,desc:`Enhancer halaman konsultasi`,roles:[`dokter`]},{key:`batchDelete`,name:`Batch Delete`,desc:`Hapus file massal`,roles:[`admin`]},{key:`fixJasaPelayanan`,name:`Fix Jasa Pelayanan`,desc:`Perbaikan jasa pelayanan`,roles:[`admin`]},{key:`doctorFilterPersistence`,name:`Doctor Filter`,desc:`Simpan filter dokter`,roles:[`dokter`]},{key:`billingFilterPersistence`,name:`Billing Filter`,desc:`Simpan filter billing`,roles:[`kasir`]},{key:`resepTools`,name:`Penerimaan Resep`,desc:`Tools penerimaan resep`,roles:[`admin`]}],Q=[{id:`default-1`,url:`http://103.147.236.140`,enabled:!0,isDefault:!0},{id:`default-2`,url:`http://192.168.8.4`,enabled:!0,isDefault:!0}];function te(){let[t,n]=(0,A.useState)(!0),[r,i]=(0,A.useState)(`casemix`),[a,o]=(0,A.useState)(`features`),[c,l]=(0,A.useState)(`upload`),[u,d]=(0,A.useState)({}),[f,p]=(0,A.useState)(ee),[m,h]=(0,A.useState)(Q),[g,_]=(0,A.useState)(null),[y,b]=(0,A.useState)(null),[x,S]=(0,A.useState)(null),{theme:C,resolved:w,setTheme:T}=M();(0,A.useEffect)(()=>{chrome.tabs.query({active:!0,currentWindow:!0},e=>{let t=e[0]?.id;t&&(b(t),v({type:`GET_PAGE_CONTEXT`}).then(e=>{e?.context&&(S(e.context),o(`tools`))}).catch(console.error))});let e=e=>{e.type===`PAGE_CONTEXT`&&(S({feature:e.feature,data:e.data}),o(`tools`))};return chrome.runtime.onMessage.addListener(e),()=>chrome.runtime.onMessage.removeListener(e)},[]),(0,A.useEffect)(()=>{v({type:e.GET_ALL}).then(e=>{e?.config&&(n(e.config.extensionEnabled),i(e.config.currentRole),d(Z(e.config.features||{})),e.config.features&&p(X(e.config.features))),e?.urls&&h(e.urls)}).catch(()=>{chrome.storage.sync.get([`extensionConfig`,`extensionCustomUrls`],e=>{e.extensionConfig&&(n(e.extensionConfig.extensionEnabled),i(e.extensionConfig.currentRole),d(Z(e.extensionConfig.features||{})),e.extensionConfig.features&&p(X(e.extensionConfig.features))),e.extensionCustomUrls&&h(e.extensionCustomUrls)})})},[]);let E=(0,A.useCallback)(e=>{_(e),setTimeout(()=>_(null),2500)},[]),D=(0,A.useCallback)(()=>{let r=!t;n(r),v({type:e.TOGGLE_EXTENSION,enabled:r}).catch(()=>E(`Gagal mengubah status extension`)),E(r?`Extension diaktifkan`:`Extension dinonaktifkan`)},[t,E]),O=(0,A.useCallback)(t=>{i(t),v({type:e.SET_ROLE,role:t}).catch(()=>E(`Gagal mengubah role`))},[E]),k=(0,A.useCallback)((t,n)=>{d({...u,[t]:n}),v({type:e.TOGGLE_FEATURE,key:t,enabled:n}).catch(()=>E(`Gagal mengubah fitur`)),E(n?`${t} diaktifkan`:`${t} dinonaktifkan`)},[u,E]),j=(0,A.useCallback)(t=>{let n=`url-`+Date.now();h([...m,{id:n,url:t,enabled:!0,isDefault:!1}]),v({type:e.ADD_URL,url:t}).catch(()=>E(`Gagal menambah domain`)),E(`Domain ditambahkan`)},[m,E]),P=(0,A.useCallback)(t=>{h(m.filter(e=>e.id!==t)),v({type:e.DELETE_URL,id:t}).catch(()=>E(`Gagal menghapus domain`)),E(`Domain dihapus`)},[m,E]),F=(0,A.useCallback)((t,n)=>{h(m.map(e=>e.id===t?{...e,enabled:n}:e)),v({type:e.TOGGLE_URL,id:t,enabled:n}).catch(()=>E(`Gagal mengubah domain`))},[m,E]),I=(0,A.useCallback)((t,n)=>{v({type:e.CHANGE_FEATURE_MODE,key:t,mode:n}).catch(()=>E(`Gagal mengubah mode`)),E(`Mode berhasil diubah`)},[E]),L=(0,A.useCallback)(()=>{chrome.tabs.query({active:!0,currentWindow:!0},e=>{e[0]?.id&&chrome.tabs.reload(e[0].id)})},[]),R=(0,A.useCallback)(()=>{confirm(`Apakah Anda yakin ingin mereset ke pengaturan default?`)&&v({type:e.RESET_CONFIG}).then(()=>{d({}),h(Q),i(`casemix`),n(!0),E(`Reset ke default`),L()}).catch(()=>{E(`Gagal mereset konfigurasi`)})},[L,E]);return(0,N.jsx)(s,{children:(0,N.jsxs)(`div`,{className:`flex flex-col h-full bg-background`,children:[(0,N.jsxs)(`div`,{className:`flex items-center justify-between px-4 py-2.5 border-b border-border`,children:[(0,N.jsxs)(`div`,{className:`flex items-center gap-2`,children:[(0,N.jsx)(`div`,{className:`w-6 h-6 rounded-md bg-[#2469f0] flex items-center justify-center`,children:(0,N.jsx)(`span`,{className:`text-white text-md-xs font-bold`,children:`M`})}),(0,N.jsx)(`span`,{className:`text-md-sm font-semibold text-foreground`,children:`MORBIS Ext`}),(0,N.jsx)(`span`,{className:`text-[10px] font-semibold text-blue-700 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-300 px-1.5 py-0.5 rounded-full`,children:`v1.2`})]}),(0,N.jsx)(`div`,{className:`flex items-center gap-1`,children:(0,N.jsx)(`button`,{onClick:()=>T(C===`dark`?`light`:`dark`),className:`p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors`,title:`Toggle dark mode`,children:w?(0,N.jsxs)(`svg`,{width:`16`,height:`16`,viewBox:`0 0 24 24`,fill:`none`,stroke:`currentColor`,strokeWidth:`2`,children:[(0,N.jsx)(`circle`,{cx:`12`,cy:`12`,r:`5`}),(0,N.jsx)(`path`,{d:`M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42`})]}):(0,N.jsx)(`svg`,{width:`16`,height:`16`,viewBox:`0 0 24 24`,fill:`none`,stroke:`currentColor`,strokeWidth:`2`,children:(0,N.jsx)(`path`,{d:`M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z`})})})})]}),(0,N.jsx)(`div`,{className:`px-4 py-3`,children:(0,N.jsx)(z,{enabled:t,role:r,onToggle:D,onRoleChange:O})}),(0,N.jsxs)(`div`,{className:`flex gap-0 px-4 border-b border-border`,children:[(0,N.jsx)(`button`,{onClick:()=>o(`features`),className:`px-4 py-2 text-md-sm font-medium border-b-2 transition-colors -mb-[1px] ${a===`features`?`text-[#2469f0] border-[#2469f0]`:`text-muted-foreground border-transparent hover:text-foreground`}`,children:`Fitur`}),(0,N.jsx)(`button`,{onClick:()=>o(`domain`),className:`px-4 py-2 text-md-sm font-medium border-b-2 transition-colors -mb-[1px] ${a===`domain`?`text-[#2469f0] border-[#2469f0]`:`text-muted-foreground border-transparent hover:text-foreground`}`,children:`Domain`}),(0,N.jsxs)(`button`,{onClick:()=>o(`tools`),className:`px-4 py-2 text-md-sm font-medium border-b-2 transition-colors -mb-[1px] flex items-center gap-1.5 ${a===`tools`?`text-[#2469f0] border-[#2469f0]`:`text-muted-foreground border-transparent hover:text-foreground`}`,children:[(0,N.jsx)(`span`,{children:`Aksi Halaman`}),x&&(0,N.jsx)(`span`,{className:`size-1.5 bg-primary rounded-full inline-block animate-pulse shrink-0`})]})]}),(0,N.jsxs)(`div`,{className:`flex-1 overflow-y-auto px-4 py-3`,children:[a===`features`&&(0,N.jsx)(B,{features:f,enabledFeatures:u,role:r,disabled:!t,onToggle:k,onModeChange:I}),a===`domain`&&(0,N.jsx)(H,{urls:m,onAdd:j,onRemove:P,onToggle:F}),a===`tools`&&(0,N.jsxs)(`div`,{className:`space-y-4`,children:[x?.feature===`mKlaimDetail`&&y&&(0,N.jsxs)(`div`,{className:`space-y-4`,children:[(0,N.jsxs)(`div`,{className:`flex p-1 bg-muted rounded-lg`,children:[(0,N.jsx)(`button`,{onClick:()=>l(`upload`),className:`flex-1 py-1 text-[11px] font-semibold rounded-md transition-all ${c===`upload`?`bg-background text-foreground shadow-sm`:`text-muted-foreground hover:text-foreground`}`,children:`Upload Dokumen`}),(0,N.jsx)(`button`,{onClick:()=>l(`delete`),className:`flex-1 py-1 text-[11px] font-semibold rounded-md transition-all ${c===`delete`?`bg-background text-foreground shadow-sm`:`text-muted-foreground hover:text-foreground`}`,children:`Hapus Dokumen`})]}),c===`upload`?(0,N.jsx)(U,{tabId:y}):(0,N.jsx)(W,{tabId:y})]}),x?.feature===`batchUpload`&&y&&(0,N.jsx)(U,{tabId:y}),x?.feature===`batchDelete`&&y&&(0,N.jsx)(W,{tabId:y}),x?.feature===`consultationDetail`&&x?.data&&(0,N.jsx)(G,{data:x.data}),x?.feature===`consultationInfo`&&x?.data&&(0,N.jsx)(J,{data:x.data}),(!x||!y)&&(0,N.jsxs)(`div`,{className:`text-center py-12 px-4 space-y-2.5`,children:[(0,N.jsx)(`div`,{className:`size-10 rounded-full bg-accent flex items-center justify-center mx-auto text-muted-foreground`,children:(0,N.jsx)(`svg`,{className:`size-5`,fill:`none`,stroke:`currentColor`,strokeWidth:`2.5`,viewBox:`0 0 24 24`,children:(0,N.jsx)(`path`,{strokeLinecap:`round`,strokeLinejoin:`round`,d:`M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z`})})}),(0,N.jsx)(`h3`,{className:`text-md-sm font-semibold text-foreground`,children:`Tidak Ada Aksi Halaman`}),(0,N.jsx)(`p`,{className:`text-md-xs text-muted-foreground leading-relaxed`,children:`Buka halaman detail rekam medis pasien di SIMRS Morbis untuk mengaktifkan peralatan halaman (batch upload / batch delete).`})]})]})]}),(0,N.jsx)(Y,{onReload:L,onReset:R}),g&&(0,N.jsx)(`div`,{className:`fixed bottom-4 left-1/2 -translate-x-1/2 z-50 animate-slide-up`,role:`alert`,children:(0,N.jsx)(`div`,{className:`px-4 py-2 bg-foreground text-background text-md-sm rounded-lg shadow-lg`,children:g})})]})})}var $=document.getElementById(`app`);$&&(0,k.createRoot)($).render((0,N.jsx)(te,{}));
+                ${r ? `bg-accent` : ``}
+                ${e.comingSoon ? `opacity-60` : `cursor-pointer hover:bg-accent`}
+              `,
+              onClick: () => {
+                !e.comingSoon && !i && a(e.key, !r);
+              },
+              children: [
+                (0, N.jsxs)(`div`, {
+                  className: `flex-1 min-w-0 mr-3`,
+                  children: [
+                    (0, N.jsxs)(`div`, {
+                      className: `flex items-center gap-2`,
+                      children: [
+                        (0, N.jsx)(`span`, {
+                          className: `text-md-sm font-medium text-foreground`,
+                          children: e.name,
+                        }),
+                        e.comingSoon &&
+                          (0, N.jsx)(`span`, {
+                            className: `text-[10px] font-semibold text-amber-700 bg-amber-50 dark:bg-amber-900/30 dark:text-amber-300 px-1.5 py-0.5 rounded-full`,
+                            children: `CS`,
+                          }),
+                      ],
+                    }),
+                    (0, N.jsx)(`p`, {
+                      className: `text-md-xs text-muted-foreground mt-0.5 truncate`,
+                      children: e.desc,
+                    }),
+                  ],
+                }),
+                (0, N.jsxs)(`div`, {
+                  className: `flex items-center gap-1.5 shrink-0`,
+                  children: [
+                    e.key === `openDetailInNewTab` &&
+                      e.modes &&
+                      n[e.key] &&
+                      (0, N.jsxs)(m, {
+                        value: e.mode || `same-tab`,
+                        onValueChange: (t) => o(e.key, t),
+                        children: [
+                          (0, N.jsx)(f, {
+                            className: `h-7 text-md-xs w-[100px]`,
+                            onClick: (e) => e.stopPropagation(),
+                            children: (0, N.jsx)(h, {}),
+                          }),
+                          (0, N.jsx)(c, {
+                            children: Object.entries(e.modes).map(([e, n]) =>
+                              (0, N.jsx)(t, { value: e, className: `text-md-xs`, children: n }, e),
+                            ),
+                          }),
+                        ],
+                      }),
+                    (0, N.jsx)(p, {
+                      checked: r,
+                      onCheckedChange: (t) => {
+                        e.comingSoon || a(e.key, t);
+                      },
+                      disabled: i || e.comingSoon,
+                    }),
+                  ],
+                }),
+              ],
+            },
+            e.key,
+          );
+        }),
+      }),
+    ],
+  });
+}
+var V = (e) => {
+  try {
+    let t = new URL(e);
+    return t.protocol === `http:` || t.protocol === `https:`;
+  } catch {
+    return !1;
+  }
+};
+function H({ urls: e, onAdd: t, onRemove: n, onToggle: a }) {
+  let [o, s] = (0, A.useState)(``),
+    [c, l] = (0, A.useState)(null),
+    u = () => {
+      let n = o.trim();
+      if (!n) {
+        l(`Masukkan URL terlebih dahulu`);
+        return;
+      }
+      if (!V(n)) {
+        l(`Format URL tidak valid`);
+        return;
+      }
+      if (e.find((e) => e.url === n)) {
+        l(`URL sudah ada`);
+        return;
+      }
+      (l(null), t(n), s(``));
+    };
+  return (0, N.jsxs)(`div`, {
+    className: `space-y-3`,
+    children: [
+      (0, N.jsxs)(`div`, {
+        className: `flex gap-2`,
+        children: [
+          (0, N.jsx)(d, {
+            type: `text`,
+            value: o,
+            onChange: (e) => {
+              (s(e.target.value), l(null));
+            },
+            onKeyDown: (e) => e.key === `Enter` && u(),
+            placeholder: `http://192.168.1.100`,
+            className: `flex-1`,
+          }),
+          (0, N.jsxs)(g, {
+            variant: `default`,
+            size: `sm`,
+            onClick: u,
+            children: [(0, N.jsx)(i, { className: `size-3.5` }), `Add`],
+          }),
+        ],
+      }),
+      c &&
+        (0, N.jsx)(`p`, { className: `text-md-xs text-destructive`, role: `alert`, children: c }),
+      e.length === 0 &&
+        !c &&
+        (0, N.jsx)(`div`, {
+          className: `text-center py-8`,
+          children: (0, N.jsx)(`p`, {
+            className: `text-md-sm text-muted-foreground`,
+            children: `Belum ada domain`,
+          }),
+        }),
+      (0, N.jsx)(`div`, {
+        className: `space-y-1`,
+        children: e.map((e) =>
+          (0, N.jsxs)(
+            `div`,
+            {
+              className: `flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent group ${e.isDefault ? `bg-blue-50 dark:bg-blue-950/20` : ``}`,
+              children: [
+                (0, N.jsx)(p, { checked: e.enabled, onCheckedChange: (t) => a(e.id, t) }),
+                (0, N.jsx)(`span`, {
+                  className: `flex-1 text-md-xs text-foreground truncate font-mono`,
+                  children: e.url,
+                }),
+                e.isDefault &&
+                  (0, N.jsx)(`span`, {
+                    className: `text-[10px] font-semibold text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-900/30 px-1.5 py-0.5 rounded`,
+                    children: `DEFAULT`,
+                  }),
+                (0, N.jsx)(`button`, {
+                  onClick: () => n(e.id),
+                  disabled: e.isDefault,
+                  'aria-label': `Hapus ${e.url}`,
+                  className: `p-1 rounded transition-colors ${e.isDefault ? `opacity-30 cursor-not-allowed` : `opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive`}`,
+                  title: e.isDefault ? `URL default tidak dapat dihapus` : `Hapus`,
+                  children: (0, N.jsx)(r, { className: `size-3.5` }),
+                }),
+              ],
+            },
+            e.id,
+          ),
+        ),
+      }),
+    ],
+  });
+}
+function U({ tabId: e }) {
+  let [t, n] = (0, A.useState)(`manual`),
+    [i, a] = (0, A.useState)(``),
+    [o, s] = (0, A.useState)([]),
+    [c, l] = (0, A.useState)(!1),
+    [u, f] = (0, A.useState)(0),
+    [p, m] = (0, A.useState)(``),
+    [h, v] = (0, A.useState)(``),
+    [y, b] = (0, A.useState)(!1),
+    x = (0, A.useCallback)(
+      async (t, n) => {
+        try {
+          await chrome.runtime.sendMessage({ type: `TAB_ACTION`, tabId: e, action: t, payload: n });
+        } catch (e) {
+          console.error(`Error sending tab action:`, e);
+        }
+      },
+      [e],
+    );
+  (0, A.useEffect)(() => {
+    let e = (e) => {
+      if (e.type === `TAB_ACTION_RESULT`) {
+        let { action: t, data: n } = e;
+        if (t === `BATCH_UPLOAD_PROGRESS`) {
+          let { percent: e, status: t, items: r, finished: i } = n;
+          (f(e), m(t), r && s(r), i && (l(!1), b(!0)));
+        } else
+          t === `BATCH_UPLOAD_ANALYZE_RESULT`
+            ? (s(n.items), m(`${n.items.length} URL siap diproses`), l(!1))
+            : t === `BATCH_UPLOAD_CRAWL_RESULT`
+              ? (s(n.items), m(`${n.items.length} dokumen berhasil ditemukan!`), l(!1))
+              : t === `BATCH_UPLOAD_ERROR` && (m(`Error: ${n.error}`), l(!1));
+      }
+    };
+    return (
+      chrome.runtime.onMessage.addListener(e),
+      () => chrome.runtime.onMessage.removeListener(e)
+    );
+  }, []);
+  let w = () => {
+      if (!i.trim()) {
+        alert(`Silakan paste URL terlebih dahulu`);
+        return;
+      }
+      (l(!0), m(`Menganalisis URL...`), x(`BATCH_UPLOAD_ANALYZE`, { inputText: i }));
+    },
+    E = () => {
+      (l(!0), m(`Mencari dokumen di rekam medis...`), x(`BATCH_UPLOAD_CRAWL`, null));
+    },
+    D = (e) => {
+      let t = [...o];
+      ((t[e].selected = !t[e].selected), s(t), x(`BATCH_UPLOAD_UPDATE_ITEMS`, { items: t }));
+    },
+    k = (e, t) => {
+      let n = [...o];
+      ((n[e].keterangan = t), s(n), x(`BATCH_UPLOAD_UPDATE_ITEMS`, { items: n }));
+    },
+    j = (e) => {
+      let t = [...o];
+      (t.splice(e, 1), s(t), x(`BATCH_UPLOAD_UPDATE_ITEMS`, { items: t }));
+    },
+    M = (e) => {
+      x(`BATCH_UPLOAD_PREVIEW`, { url: e.url, filename: e.filename });
+    },
+    P = () => {
+      let e = o.filter((e) => e.selected !== !1).length;
+      if (e === 0) {
+        alert(`Tidak ada dokumen yang dipilih untuk diupload.`);
+        return;
+      }
+      confirm(`Upload ${e} dokumen? Proses ini tidak dapat dibatalkan.`) &&
+        (l(!0), f(0), m(`Memulai upload...`), x(`BATCH_UPLOAD_START`, null));
+    },
+    F = () => {
+      if (o.length === 0) {
+        alert(`Tidak ada URL untuk ditest`);
+        return;
+      }
+      (l(!0), m(`Testing single upload...`), x(`BATCH_UPLOAD_TEST_SINGLE`, null));
+    },
+    L = () => {
+      chrome.tabs.reload(e);
+    },
+    R = o.filter((e) => {
+      if (!h) return !0;
+      let t = h.toLowerCase();
+      return (
+        e.filename.toLowerCase().includes(t) ||
+        e.keterangan.toLowerCase().includes(t) ||
+        e.norm.toLowerCase().includes(t)
+      );
+    }),
+    z = o.filter((e) => e.selected !== !1).length;
+  return (0, N.jsxs)(`div`, {
+    className: `space-y-4`,
+    children: [
+      (0, N.jsxs)(`div`, {
+        className: `flex gap-4 border-b border-border pb-2`,
+        children: [
+          (0, N.jsx)(`button`, {
+            onClick: () => {
+              c || n(`manual`);
+            },
+            className: `flex-1 pb-1.5 text-md-xs font-semibold border-b-2 text-center transition-all ${t === `manual` ? `border-primary text-primary` : `border-transparent text-muted-foreground hover:text-foreground`}`,
+            disabled: c,
+            children: `Mode Manual (Paste URL)`,
+          }),
+          (0, N.jsx)(`button`, {
+            onClick: () => {
+              c || n(`auto`);
+            },
+            className: `flex-1 pb-1.5 text-md-xs font-semibold border-b-2 text-center transition-all ${t === `auto` ? `border-primary text-primary` : `border-transparent text-muted-foreground hover:text-foreground`}`,
+            disabled: c,
+            children: `Auto-Crawl Rekam Medis`,
+          }),
+        ],
+      }),
+      t === `manual`
+        ? (0, N.jsxs)(`div`, {
+            className: `space-y-2`,
+            children: [
+              (0, N.jsx)(`label`, {
+                className: `text-md-xs font-medium text-muted-foreground`,
+                children: `Paste URL Dokumen (satu per baris):`,
+              }),
+              (0, N.jsx)(`textarea`, {
+                value: i,
+                onChange: (e) => a(e.target.value),
+                disabled: c,
+                placeholder: `https://example.com/dokumen1.pdf
+https://example.com/dokumen2.jpg`,
+                className: `w-full h-24 p-2 text-md-xs border border-input rounded-md bg-background resize-none focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50`,
+              }),
+              (0, N.jsxs)(g, {
+                size: `sm`,
+                onClick: w,
+                disabled: c || !i.trim(),
+                className: `w-full`,
+                children: [(0, N.jsx)(T, { className: `size-3.5 mr-1` }), ` Analisis URL`],
+              }),
+            ],
+          })
+        : (0, N.jsxs)(`div`, {
+            className: `space-y-2`,
+            children: [
+              (0, N.jsx)(`p`, {
+                className: `text-md-xs text-muted-foreground`,
+                children: `Mendeteksi dokumen otomatis dari halaman Rekam Medis pasien ini.`,
+              }),
+              (0, N.jsxs)(g, {
+                size: `sm`,
+                variant: `outline`,
+                onClick: E,
+                disabled: c,
+                className: `w-full border-primary/20 hover:bg-primary/5 text-primary`,
+                children: [
+                  (0, N.jsx)(T, { className: `size-3.5 mr-1` }),
+                  ` Cari Dokumen Pasien Otomatis`,
+                ],
+              }),
+            ],
+          }),
+      p &&
+        (0, N.jsxs)(`div`, {
+          className: `p-2.5 bg-accent/40 rounded-md border border-border space-y-1.5 animate-in fade-in duration-200`,
+          children: [
+            (0, N.jsxs)(`div`, {
+              className: `flex items-center justify-between`,
+              children: [
+                (0, N.jsx)(`span`, {
+                  className: `text-[11px] font-medium text-foreground truncate max-w-[200px]`,
+                  children: p,
+                }),
+                c &&
+                  u > 0 &&
+                  (0, N.jsxs)(`span`, {
+                    className: `text-[10px] font-semibold text-primary`,
+                    children: [Math.round(u), `%`],
+                  }),
+              ],
+            }),
+            c &&
+              u > 0 &&
+              (0, N.jsx)(`div`, {
+                className: `w-full h-1 bg-muted rounded-full overflow-hidden`,
+                children: (0, N.jsx)(`div`, {
+                  className: `h-full bg-primary transition-all duration-300`,
+                  style: { width: `${u}%` },
+                }),
+              }),
+          ],
+        }),
+      o.length > 0 &&
+        (0, N.jsxs)(`div`, {
+          className: `space-y-2`,
+          children: [
+            (0, N.jsxs)(`div`, {
+              className: `flex items-center justify-between`,
+              children: [
+                (0, N.jsxs)(`span`, {
+                  className: `text-md-xs font-semibold`,
+                  children: [`Preview (`, z, ` / `, o.length, ` dipilih)`],
+                }),
+                t === `auto` &&
+                  (0, N.jsx)(d, {
+                    placeholder: `Cari...`,
+                    value: h,
+                    onChange: (e) => v(e.target.value),
+                    className: `h-6 max-w-[120px] text-[11px]`,
+                  }),
+              ],
+            }),
+            (0, N.jsxs)(`div`, {
+              className: `max-h-60 overflow-y-auto border border-border rounded-md divide-y divide-border bg-card`,
+              children: [
+                R.map((e, t) =>
+                  (0, N.jsxs)(
+                    `div`,
+                    {
+                      className: `p-2 text-md-xs flex items-start gap-2 transition-colors ${e.selected === !1 ? `opacity-60` : `bg-accent/20`}`,
+                      children: [
+                        (0, N.jsx)(`input`, {
+                          type: `checkbox`,
+                          checked: e.selected !== !1,
+                          onChange: () => D(t),
+                          disabled: c,
+                          className: `mt-0.5 rounded border-input text-primary focus:ring-primary size-3.5`,
+                        }),
+                        (0, N.jsxs)(`div`, {
+                          className: `flex-1 min-w-0 space-y-1`,
+                          children: [
+                            (0, N.jsxs)(`div`, {
+                              className: `flex items-start justify-between gap-1`,
+                              children: [
+                                (0, N.jsxs)(`span`, {
+                                  className: `font-medium text-foreground truncate block`,
+                                  title: e.filename,
+                                  children: [t + 1, `. `, e.filename],
+                                }),
+                                e.status !== `pending` &&
+                                  (0, N.jsx)(I, {
+                                    variant: e.status === `success` ? `success` : `danger`,
+                                    className: `shrink-0 scale-90`,
+                                    children: e.status === `success` ? `Sukses` : `Gagal`,
+                                  }),
+                              ],
+                            }),
+                            e.tglFileTabel
+                              ? (0, N.jsxs)(`div`, {
+                                  className: `text-[10px] text-muted-foreground flex gap-1.5`,
+                                  children: [
+                                    (0, N.jsxs)(`span`, { children: [`Dibuat: `, e.tglFileTabel] }),
+                                    (0, N.jsx)(`span`, { children: `|` }),
+                                    (0, N.jsxs)(`span`, {
+                                      children: [`Unggah: `, e.tglUploadTabel],
+                                    }),
+                                  ],
+                                })
+                              : (0, N.jsxs)(`div`, {
+                                  className: `text-[10px] text-muted-foreground flex gap-1.5`,
+                                  children: [
+                                    (0, N.jsxs)(`span`, { children: [`NORM: `, e.norm || `-`] }),
+                                    (0, N.jsx)(`span`, { children: `|` }),
+                                    (0, N.jsxs)(`span`, { children: [`Tgl Klaim: `, e.tanggal] }),
+                                  ],
+                                }),
+                            (0, N.jsx)(d, {
+                              value: e.keterangan,
+                              onChange: (e) => k(t, e.target.value),
+                              placeholder: `Keterangan...`,
+                              disabled: c,
+                              className: `h-6 text-[10px] py-0 px-1.5`,
+                            }),
+                            e.error &&
+                              (0, N.jsxs)(`p`, {
+                                className: `text-[10px] text-destructive flex items-center gap-1`,
+                                children: [
+                                  (0, N.jsx)(S, { className: `size-3 shrink-0` }),
+                                  ` `,
+                                  e.error,
+                                ],
+                              }),
+                          ],
+                        }),
+                        (0, N.jsxs)(`div`, {
+                          className: `flex flex-col gap-1.5 shrink-0`,
+                          children: [
+                            (0, N.jsx)(`button`, {
+                              onClick: () => M(e),
+                              className: `p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-all`,
+                              title: `Preview File`,
+                              children: (0, N.jsx)(C, { className: `size-3.5` }),
+                            }),
+                            (0, N.jsx)(`button`, {
+                              onClick: () => j(t),
+                              disabled: c,
+                              className: `p-1 hover:bg-destructive/10 rounded text-muted-foreground hover:text-destructive transition-all disabled:opacity-50`,
+                              title: `Buang dari Antrian`,
+                              children: (0, N.jsx)(r, { className: `size-3.5` }),
+                            }),
+                          ],
+                        }),
+                      ],
+                    },
+                    t,
+                  ),
+                ),
+                R.length === 0 &&
+                  (0, N.jsx)(`div`, {
+                    className: `p-4 text-center text-muted-foreground text-md-xs`,
+                    children: `Tidak ada dokumen yang cocok.`,
+                  }),
+              ],
+            }),
+          ],
+        }),
+      (0, N.jsx)(`div`, {
+        className: `flex gap-2`,
+        children: y
+          ? (0, N.jsxs)(g, {
+              onClick: L,
+              variant: `default`,
+              className: `w-full bg-green-600 hover:bg-green-700 text-white`,
+              children: [(0, N.jsx)(_, { className: `size-3.5 mr-1` }), ` Reload Halaman`],
+            })
+          : (0, N.jsxs)(N.Fragment, {
+              children: [
+                (0, N.jsx)(g, {
+                  variant: `outline`,
+                  size: `sm`,
+                  onClick: F,
+                  disabled: c || o.length === 0,
+                  className: `flex-1 text-amber-700 border-amber-200 bg-amber-50/50 hover:bg-amber-100/50 dark:text-amber-300 dark:border-amber-800 dark:bg-amber-950/20`,
+                  children: `Test 1 URL`,
+                }),
+                (0, N.jsxs)(g, {
+                  variant: `default`,
+                  size: `sm`,
+                  onClick: P,
+                  disabled: c || o.length === 0 || z === 0,
+                  className: `flex-1`,
+                  children: [(0, N.jsx)(O, { className: `size-3.5 mr-1` }), ` Mulai Upload`],
+                }),
+              ],
+            }),
+      }),
+    ],
+  });
+}
+function W({ tabId: e }) {
+  let [t, n] = (0, A.useState)([]),
+    [r, i] = (0, A.useState)(!1),
+    [a, o] = (0, A.useState)(0),
+    [s, c] = (0, A.useState)(``),
+    [l, u] = (0, A.useState)(``),
+    [f, p] = (0, A.useState)(!1),
+    m = (0, A.useCallback)(
+      async (t, n) => {
+        try {
+          await chrome.runtime.sendMessage({ type: `TAB_ACTION`, tabId: e, action: t, payload: n });
+        } catch (e) {
+          console.error(`Error sending tab action:`, e);
+        }
+      },
+      [e],
+    );
+  (0, A.useEffect)(() => {
+    let e = (e) => {
+      if (e.type === `TAB_ACTION_RESULT`) {
+        let { action: r, data: a } = e;
+        if (r === `BATCH_DELETE_PROGRESS`) {
+          let { percent: e, status: t, items: r, finished: s } = a;
+          (o(e), c(t), r && n(r), s && (i(!1), p(!0)));
+        } else if (r === `BATCH_DELETE_CRAWL_RESULT`)
+          (n(a.items), c(`${a.items.length} dokumen ditemukan.`), i(!1));
+        else if (r === `BATCH_DELETE_SINGLE_RESULT`) {
+          let { index: e, success: r, error: o } = a,
+            s = [...t];
+          (r
+            ? (s.splice(e, 1), c(`Dokumen berhasil dihapus.`))
+            : ((s[e].status = `error`), c(`Gagal menghapus: ${o}`)),
+            n(s),
+            i(!1));
+        } else r === `BATCH_DELETE_ERROR` && (c(`Error: ${a.error}`), i(!1));
+      }
+    };
+    return (
+      chrome.runtime.onMessage.addListener(e),
+      () => chrome.runtime.onMessage.removeListener(e)
+    );
+  }, [t]);
+  let h = () => {
+      (i(!0), c(`Mencari dokumen pasien...`), m(`BATCH_DELETE_CRAWL`, null));
+    },
+    v = (e) => {
+      let r = [...t];
+      ((r[e].selected = !r[e].selected), n(r), m(`BATCH_DELETE_UPDATE_ITEMS`, { items: r }));
+    },
+    y = (e) => {
+      m(`BATCH_DELETE_PREVIEW`, { url: e.url, filename: e.filename });
+    },
+    b = (e) => {
+      let n = t[e];
+      n &&
+        confirm(
+          `Hapus dokumen ini?\n\n${n.filename}\nID: ${n.id_dokumen}\n\nTindakan ini tidak bisa di-undo.`,
+        ) &&
+        (i(!0),
+        c(`Menghapus: ${n.filename}...`),
+        m(`BATCH_DELETE_SINGLE`, { index: e, id_dokumen: n.id_dokumen }));
+    },
+    x = () => {
+      let e = t.filter((e) => e.selected).length;
+      if (e === 0) {
+        alert(`Pilih dokumen untuk dihapus`);
+        return;
+      }
+      confirm(`Hapus ${e} dokumen? TINDAKAN INI BERSIFAT PERMANEN DAN TIDAK BISA DIUNDO!`) &&
+        (i(!0), o(0), c(`Memulai penghapusan massal...`), m(`BATCH_DELETE_START`, null));
+    },
+    S = () => {
+      chrome.tabs.reload(e);
+    },
+    w = t.filter((e) => {
+      if (!l) return !0;
+      let t = l.toLowerCase();
+      return (
+        e.filename.toLowerCase().includes(t) ||
+        e.keterangan.toLowerCase().includes(t) ||
+        e.id_dokumen.toLowerCase().includes(t)
+      );
+    }),
+    O = t.filter((e) => e.selected).length;
+  return (0, N.jsxs)(`div`, {
+    className: `space-y-4`,
+    children: [
+      (0, N.jsxs)(`div`, {
+        className: `p-3 bg-red-50 dark:bg-red-950/20 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-900 rounded-md space-y-1.5`,
+        children: [
+          (0, N.jsxs)(`div`, {
+            className: `flex items-center gap-1.5 font-semibold text-md-xs text-red-900 dark:text-red-200`,
+            children: [
+              (0, N.jsx)(D, { className: `size-4 shrink-0` }),
+              (0, N.jsx)(`span`, { children: `PERHATIAN!` }),
+            ],
+          }),
+          (0, N.jsxs)(`p`, {
+            className: `text-[11px] leading-relaxed opacity-90`,
+            children: [
+              `File yang dihapus `,
+              (0, N.jsx)(`strong`, { children: `tidak dapat dikembalikan` }),
+              `. Tindakan ini bersifat permanen dan seketika menghapus dari database server.`,
+            ],
+          }),
+        ],
+      }),
+      (0, N.jsx)(`div`, {
+        className: `space-y-2`,
+        children: (0, N.jsxs)(g, {
+          size: `sm`,
+          variant: `outline`,
+          onClick: h,
+          disabled: r,
+          className: `w-full border-primary/20 hover:bg-primary/5 text-primary`,
+          children: [(0, N.jsx)(T, { className: `size-3.5 mr-1` }), ` Cari Dokumen Pasien`],
+        }),
+      }),
+      s &&
+        (0, N.jsxs)(`div`, {
+          className: `p-2.5 bg-accent/40 rounded-md border border-border space-y-1.5 animate-in fade-in duration-200`,
+          children: [
+            (0, N.jsxs)(`div`, {
+              className: `flex items-center justify-between`,
+              children: [
+                (0, N.jsx)(`span`, {
+                  className: `text-[11px] font-medium text-foreground truncate max-w-[200px]`,
+                  children: s,
+                }),
+                r &&
+                  a > 0 &&
+                  (0, N.jsxs)(`span`, {
+                    className: `text-[10px] font-semibold text-primary`,
+                    children: [Math.round(a), `%`],
+                  }),
+              ],
+            }),
+            r &&
+              a > 0 &&
+              (0, N.jsx)(`div`, {
+                className: `w-full h-1 bg-muted rounded-full overflow-hidden`,
+                children: (0, N.jsx)(`div`, {
+                  className: `h-full bg-primary transition-all duration-300`,
+                  style: { width: `${a}%` },
+                }),
+              }),
+          ],
+        }),
+      t.length > 0 &&
+        (0, N.jsxs)(`div`, {
+          className: `space-y-2`,
+          children: [
+            (0, N.jsxs)(`div`, {
+              className: `flex items-center justify-between`,
+              children: [
+                (0, N.jsxs)(`span`, {
+                  className: `text-md-xs font-semibold`,
+                  children: [`Preview (`, O, ` / `, t.length, ` dipilih)`],
+                }),
+                (0, N.jsx)(d, {
+                  placeholder: `Cari...`,
+                  value: l,
+                  onChange: (e) => u(e.target.value),
+                  className: `h-6 max-w-[120px] text-[11px]`,
+                }),
+              ],
+            }),
+            (0, N.jsxs)(`div`, {
+              className: `max-h-60 overflow-y-auto border border-border rounded-md divide-y divide-border bg-card`,
+              children: [
+                w.map((e, t) =>
+                  (0, N.jsxs)(
+                    `div`,
+                    {
+                      className: `p-2 text-md-xs flex items-start gap-2 transition-colors ${e.selected ? `bg-red-500/5 border-l-2 border-red-500` : `opacity-85`}`,
+                      children: [
+                        (0, N.jsx)(`input`, {
+                          type: `checkbox`,
+                          checked: e.selected,
+                          onChange: () => v(t),
+                          disabled: r,
+                          className: `mt-0.5 rounded border-input text-red-600 focus:ring-red-500 size-3.5`,
+                        }),
+                        (0, N.jsxs)(`div`, {
+                          className: `flex-1 min-w-0 space-y-1`,
+                          children: [
+                            (0, N.jsxs)(`div`, {
+                              className: `flex items-start justify-between gap-1`,
+                              children: [
+                                (0, N.jsxs)(`span`, {
+                                  className: `font-medium text-foreground truncate block`,
+                                  title: e.filename,
+                                  children: [t + 1, `. `, e.filename],
+                                }),
+                                e.status !== `pending` &&
+                                  (0, N.jsx)(I, {
+                                    variant:
+                                      e.status === `success`
+                                        ? `success`
+                                        : e.status === `deleting`
+                                          ? `warning`
+                                          : `danger`,
+                                    className: `shrink-0 scale-90`,
+                                    children:
+                                      e.status === `success`
+                                        ? `Sukses`
+                                        : e.status === `deleting`
+                                          ? `...`
+                                          : `Gagal`,
+                                  }),
+                              ],
+                            }),
+                            (0, N.jsxs)(`div`, {
+                              className: `text-[10px] text-muted-foreground flex gap-1.5`,
+                              children: [
+                                (0, N.jsxs)(`span`, {
+                                  children: [
+                                    `ID: `,
+                                    (0, N.jsx)(`strong`, {
+                                      className: `text-foreground`,
+                                      children: e.id_dokumen,
+                                    }),
+                                  ],
+                                }),
+                                (0, N.jsx)(`span`, { children: `|` }),
+                                (0, N.jsx)(`span`, { children: e.tglFile }),
+                              ],
+                            }),
+                            (0, N.jsx)(`p`, {
+                              className: `text-[10px] text-muted-foreground truncate`,
+                              children: e.keterangan || `-`,
+                            }),
+                          ],
+                        }),
+                        (0, N.jsxs)(`div`, {
+                          className: `flex flex-col gap-1.5 shrink-0`,
+                          children: [
+                            (0, N.jsx)(`button`, {
+                              onClick: () => y(e),
+                              className: `p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-all`,
+                              title: `Preview File`,
+                              children: (0, N.jsx)(C, { className: `size-3.5` }),
+                            }),
+                            (0, N.jsx)(`button`, {
+                              onClick: () => b(t),
+                              disabled: r,
+                              className: `p-1 hover:bg-red-500/10 rounded text-muted-foreground hover:text-red-600 transition-all disabled:opacity-50`,
+                              title: `Hapus Dokumen`,
+                              children: (0, N.jsx)(E, { className: `size-3.5` }),
+                            }),
+                          ],
+                        }),
+                      ],
+                    },
+                    t,
+                  ),
+                ),
+                w.length === 0 &&
+                  (0, N.jsx)(`div`, {
+                    className: `p-4 text-center text-muted-foreground text-md-xs`,
+                    children: `Tidak ada dokumen yang cocok.`,
+                  }),
+              ],
+            }),
+          ],
+        }),
+      (0, N.jsx)(`div`, {
+        className: `flex gap-2`,
+        children: f
+          ? (0, N.jsxs)(g, {
+              onClick: S,
+              variant: `default`,
+              className: `w-full bg-green-600 hover:bg-green-700 text-white`,
+              children: [(0, N.jsx)(_, { className: `size-3.5 mr-1` }), ` Reload Halaman`],
+            })
+          : (0, N.jsxs)(g, {
+              variant: `destructive`,
+              size: `sm`,
+              onClick: x,
+              disabled: r || t.length === 0 || O === 0,
+              className: `w-full bg-red-600 hover:bg-red-700 text-white disabled:opacity-50`,
+              children: [
+                (0, N.jsx)(E, { className: `size-3.5 mr-1` }),
+                ` Hapus Terpilih (`,
+                O,
+                `)`,
+              ],
+            }),
+      }),
+    ],
+  });
+}
+function G({ data: e }) {
+  let t = [
+    { label: `No. RM / Nama`, value: `${e.noRm ?? ``} — ${e.nama ?? ``}` },
+    { label: `Unit Asal → Unit Tujuan`, value: `${e.unitAsal ?? `-`} → ${e.unitTujuan ?? `-`}` },
+    { label: `Dokter`, value: `${e.dokterMengajukan ?? `-`} → ${e.dokterKonsultasi ?? `-`}` },
+    { label: `Tanggal Pengajuan`, value: e.tanggal ?? `-` },
+  ];
+  return (
+    e.permintaan && t.push({ label: `Permintaan Konsultasi`, value: e.permintaan }),
+    e.kesan && t.push({ label: `Kesan`, value: e.kesan }),
+    e.anjuran && t.push({ label: `Anjuran`, value: e.anjuran }),
+    (0, N.jsxs)(`div`, {
+      className: `space-y-3`,
+      children: [
+        (0, N.jsx)(`h3`, {
+          className: `text-md-sm font-semibold text-foreground`,
+          children: `Detail Konsultasi`,
+        }),
+        t.map((e, t) =>
+          (0, N.jsxs)(
+            `div`,
+            {
+              children: [
+                (0, N.jsx)(`label`, {
+                  className: `text-[11px] font-semibold text-muted-foreground uppercase tracking-wide`,
+                  children: e.label,
+                }),
+                (0, N.jsx)(`div`, {
+                  className: `mt-0.5 text-md-sm text-foreground bg-accent/50 rounded-md px-3 py-2 leading-relaxed whitespace-pre-wrap break-words`,
+                  children: e.value,
+                }),
+              ],
+            },
+            t,
+          ),
+        ),
+      ],
+    })
+  );
+}
+var K = [
+    { id: `resep`, label: `History Resep` },
+    { id: `dokumen`, label: `Dokumen Pasien` },
+    { id: `cppt`, label: `CPPT` },
+    { id: `penunjang`, label: `Penunjang Medis` },
+  ],
+  q = {
+    resep: {
+      url: `/admisi/pengajuan_konsultasi/tabel-resep`,
+      method: `POST`,
+      getData: (e) => ({ id_visit: e.visit, id_pasien: e.noRm, page: `1` }),
+    },
+    dokumen: {
+      url: `/admisi/pengajuan_konsultasi/tabel-dok`,
+      method: `POST`,
+      getData: (e) => ({ id_visit: e.visit, id_pasien: e.noRm, page: `1` }),
+    },
+    cppt: {
+      url: `/admisi/pengajuan_konsultasi/tabel-cppt`,
+      method: `POST`,
+      getData: (e) => ({ id_visit: e.visit, id_pasien: e.noRm, page: `1` }),
+    },
+    penunjang: {
+      url: `/admisi/modal/modal-history-penunjang-v2`,
+      method: `GET`,
+      getData: (e) => ({ norm: e.noRm, id_visit: e.visit }),
+    },
+  };
+function J({ data: e }) {
+  let [t, n] = (0, A.useState)(K[0].id),
+    [r, i] = (0, A.useState)({}),
+    [a, o] = (0, A.useState)({}),
+    s = async (t) => {
+      if (r[t] || a[t]) return;
+      o((e) => ({ ...e, [t]: !0 }));
+      let n = q[t],
+        s = `${e.baseUrl || `http://103.147.236.140`}${n.url}`,
+        c = n.getData(e);
+      try {
+        let e = await chrome.runtime.sendMessage({
+          type: `PROXY_FETCH`,
+          url: s,
+          method: n.method,
+          data: c,
+        });
+        i((n) => ({
+          ...n,
+          [t]: e?.success ? e.html : `<div style="color:red;padding:20px;">Gagal memuat</div>`,
+        }));
+      } catch {
+        i((e) => ({ ...e, [t]: `<div style="color:red;padding:20px;">Gagal memuat</div>` }));
+      } finally {
+        o((e) => ({ ...e, [t]: !1 }));
+      }
+    };
+  return (
+    !r[K[0].id] && !a[K[0].id] && s(K[0].id),
+    (0, N.jsxs)(`div`, {
+      className: `space-y-3`,
+      children: [
+        (0, N.jsx)(`h3`, {
+          className: `text-md-sm font-semibold text-foreground`,
+          children: `Info Pasien`,
+        }),
+        (0, N.jsx)(`div`, {
+          className: `flex border-b border-border`,
+          children: K.map((e) =>
+            (0, N.jsx)(
+              `button`,
+              {
+                onClick: () => {
+                  (n(e.id), s(e.id));
+                },
+                className: `px-3 py-1.5 text-[11px] font-medium border-b-2 transition-colors -mb-[1px] ${t === e.id ? `text-foreground border-foreground` : `text-muted-foreground border-transparent hover:text-foreground`}`,
+                children: e.label,
+              },
+              e.id,
+            ),
+          ),
+        }),
+        (0, N.jsx)(`div`, {
+          children: a[t]
+            ? (0, N.jsx)(`div`, {
+                className: `text-center py-12 text-muted-foreground text-md-sm`,
+                children: `Memuat...`,
+              })
+            : r[t]
+              ? (0, N.jsx)(`div`, {
+                  className: `text-md-sm leading-relaxed`,
+                  dangerouslySetInnerHTML: { __html: r[t] },
+                })
+              : null,
+        }),
+      ],
+    })
+  );
+}
+function Y({ onReload: e, onReset: t }) {
+  return (0, N.jsxs)(`div`, {
+    className: `flex items-center justify-between px-4 py-3 border-t border-border`,
+    children: [
+      (0, N.jsxs)(g, {
+        variant: `ghost`,
+        size: `sm`,
+        onClick: e,
+        children: [(0, N.jsx)(_, { className: `size-3.5` }), `Reload Halaman`],
+      }),
+      (0, N.jsxs)(g, {
+        variant: `ghost`,
+        size: `sm`,
+        onClick: t,
+        children: [(0, N.jsx)(l, { className: `size-3.5` }), `Reset Default`],
+      }),
+    ],
+  });
+}
+function X(e) {
+  return Object.entries(e).map(([e, t]) => ({
+    key: e,
+    name: t.name || e,
+    desc: t.description || ``,
+    roles: t.allowedRoles || [],
+    mode: t.mode,
+    modes: t.modes,
+    comingSoon: t.comingSoon,
+  }));
+}
+function Z(e) {
+  let t = {};
+  for (let [n, r] of Object.entries(e || {})) t[n] = r.enabled ?? !1;
+  return t;
+}
+var ee = [
+    {
+      key: `openDetailInNewTab`,
+      name: `Open Detail`,
+      desc: `Buka detail di tab baru`,
+      roles: [`casemix`, `kasir`, `dokter`, `admin`],
+    },
+    {
+      key: `shortcutButtons`,
+      name: `Shortcut Buttons`,
+      desc: `Tombol akses cepat di tabel`,
+      roles: [`casemix`, `kasir`, `admin`],
+    },
+    {
+      key: `filterPersistence`,
+      name: `Filter Persistence`,
+      desc: `Simpan state filter`,
+      roles: [`casemix`, `kasir`, `apotek`, `dokter`, `admin`],
+    },
+    {
+      key: `scrollButtons`,
+      name: `Scroll Buttons`,
+      desc: `Tombol scroll cepat`,
+      roles: [`casemix`, `kasir`, `apotek`, `dokter`, `admin`],
+    },
+    {
+      key: `batchUpload`,
+      name: `Batch Upload URL`,
+      desc: `Upload URL berkas`,
+      roles: [`casemix`, `admin`],
+    },
+    {
+      key: `resumeValidator`,
+      name: `Resume Validator`,
+      desc: `Validasi resume rawat inap`,
+      roles: [`casemix`, `dokter`],
+    },
+    {
+      key: `resumeModal`,
+      name: `Resume Rajal`,
+      desc: `Edit resume rawat jalan`,
+      roles: [`casemix`, `dokter`],
+    },
+    { key: `ttvEditor`, name: `TTV Editor`, desc: `Edit tanda vital`, roles: [`dokter`, `admin`] },
+    {
+      key: `cpptSearchFilter`,
+      name: `CPPT Search`,
+      desc: `Cari & filter CPPT`,
+      roles: [`casemix`],
+    },
+    { key: `antrianTools`, name: `Antrian Tools`, desc: `Tools halaman antrian`, roles: [`admin`] },
+    {
+      key: `consultationEnhancer`,
+      name: `Konsultasi`,
+      desc: `Enhancer halaman konsultasi`,
+      roles: [`dokter`],
+    },
+    { key: `batchDelete`, name: `Batch Delete`, desc: `Hapus file massal`, roles: [`admin`] },
+    {
+      key: `fixJasaPelayanan`,
+      name: `Fix Jasa Pelayanan`,
+      desc: `Perbaikan jasa pelayanan`,
+      roles: [`admin`],
+    },
+    {
+      key: `doctorFilterPersistence`,
+      name: `Doctor Filter`,
+      desc: `Simpan filter dokter`,
+      roles: [`dokter`],
+    },
+    {
+      key: `billingFilterPersistence`,
+      name: `Billing Filter`,
+      desc: `Simpan filter billing`,
+      roles: [`kasir`],
+    },
+    {
+      key: `resepTools`,
+      name: `Penerimaan Resep`,
+      desc: `Tools penerimaan resep`,
+      roles: [`admin`],
+    },
+  ],
+  Q = [
+    { id: `default-1`, url: `http://103.147.236.140`, enabled: !0, isDefault: !0 },
+    { id: `default-2`, url: `http://192.168.8.4`, enabled: !0, isDefault: !0 },
+  ];
+function te() {
+  let [t, n] = (0, A.useState)(!0),
+    [r, i] = (0, A.useState)(`casemix`),
+    [a, o] = (0, A.useState)(`features`),
+    [c, l] = (0, A.useState)(`upload`),
+    [u, d] = (0, A.useState)({}),
+    [f, p] = (0, A.useState)(ee),
+    [m, h] = (0, A.useState)(Q),
+    [g, _] = (0, A.useState)(null),
+    [y, b] = (0, A.useState)(null),
+    [x, S] = (0, A.useState)(null),
+    { theme: C, resolved: w, setTheme: T } = M();
+  ((0, A.useEffect)(() => {
+    chrome.tabs.query({ active: !0, currentWindow: !0 }, (e) => {
+      let t = e[0]?.id;
+      t &&
+        (b(t),
+        v({ type: `GET_PAGE_CONTEXT` })
+          .then((e) => {
+            e?.context && (S(e.context), o(`tools`));
+          })
+          .catch(console.error));
+    });
+    let e = (e) => {
+      e.type === `PAGE_CONTEXT` && (S({ feature: e.feature, data: e.data }), o(`tools`));
+    };
+    return (
+      chrome.runtime.onMessage.addListener(e),
+      () => chrome.runtime.onMessage.removeListener(e)
+    );
+  }, []),
+    (0, A.useEffect)(() => {
+      v({ type: e.GET_ALL })
+        .then((e) => {
+          (e?.config &&
+            (n(e.config.extensionEnabled),
+            i(e.config.currentRole),
+            d(Z(e.config.features || {})),
+            e.config.features && p(X(e.config.features))),
+            e?.urls && h(e.urls));
+        })
+        .catch(() => {
+          chrome.storage.sync.get([`extensionConfig`, `extensionCustomUrls`], (e) => {
+            (e.extensionConfig &&
+              (n(e.extensionConfig.extensionEnabled),
+              i(e.extensionConfig.currentRole),
+              d(Z(e.extensionConfig.features || {})),
+              e.extensionConfig.features && p(X(e.extensionConfig.features))),
+              e.extensionCustomUrls && h(e.extensionCustomUrls));
+          });
+        });
+    }, []));
+  let E = (0, A.useCallback)((e) => {
+      (_(e), setTimeout(() => _(null), 2500));
+    }, []),
+    D = (0, A.useCallback)(() => {
+      let r = !t;
+      (n(r),
+        v({ type: e.TOGGLE_EXTENSION, enabled: r }).catch(() =>
+          E(`Gagal mengubah status extension`),
+        ),
+        E(r ? `Extension diaktifkan` : `Extension dinonaktifkan`));
+    }, [t, E]),
+    O = (0, A.useCallback)(
+      (t) => {
+        (i(t), v({ type: e.SET_ROLE, role: t }).catch(() => E(`Gagal mengubah role`)));
+      },
+      [E],
+    ),
+    k = (0, A.useCallback)(
+      (t, n) => {
+        (d({ ...u, [t]: n }),
+          v({ type: e.TOGGLE_FEATURE, key: t, enabled: n }).catch(() => E(`Gagal mengubah fitur`)),
+          E(n ? `${t} diaktifkan` : `${t} dinonaktifkan`));
+      },
+      [u, E],
+    ),
+    j = (0, A.useCallback)(
+      (t) => {
+        let n = `url-` + Date.now();
+        (h([...m, { id: n, url: t, enabled: !0, isDefault: !1 }]),
+          v({ type: e.ADD_URL, url: t }).catch(() => E(`Gagal menambah domain`)),
+          E(`Domain ditambahkan`));
+      },
+      [m, E],
+    ),
+    P = (0, A.useCallback)(
+      (t) => {
+        (h(m.filter((e) => e.id !== t)),
+          v({ type: e.DELETE_URL, id: t }).catch(() => E(`Gagal menghapus domain`)),
+          E(`Domain dihapus`));
+      },
+      [m, E],
+    ),
+    F = (0, A.useCallback)(
+      (t, n) => {
+        (h(m.map((e) => (e.id === t ? { ...e, enabled: n } : e))),
+          v({ type: e.TOGGLE_URL, id: t, enabled: n }).catch(() => E(`Gagal mengubah domain`)));
+      },
+      [m, E],
+    ),
+    I = (0, A.useCallback)(
+      (t, n) => {
+        (v({ type: e.CHANGE_FEATURE_MODE, key: t, mode: n }).catch(() => E(`Gagal mengubah mode`)),
+          E(`Mode berhasil diubah`));
+      },
+      [E],
+    ),
+    L = (0, A.useCallback)(() => {
+      chrome.tabs.query({ active: !0, currentWindow: !0 }, (e) => {
+        e[0]?.id && chrome.tabs.reload(e[0].id);
+      });
+    }, []),
+    R = (0, A.useCallback)(() => {
+      confirm(`Apakah Anda yakin ingin mereset ke pengaturan default?`) &&
+        v({ type: e.RESET_CONFIG })
+          .then(() => {
+            (d({}), h(Q), i(`casemix`), n(!0), E(`Reset ke default`), L());
+          })
+          .catch(() => {
+            E(`Gagal mereset konfigurasi`);
+          });
+    }, [L, E]);
+  return (0, N.jsx)(s, {
+    children: (0, N.jsxs)(`div`, {
+      className: `flex flex-col h-full bg-background`,
+      children: [
+        (0, N.jsxs)(`div`, {
+          className: `flex items-center justify-between px-4 py-2.5 border-b border-border`,
+          children: [
+            (0, N.jsxs)(`div`, {
+              className: `flex items-center gap-2`,
+              children: [
+                (0, N.jsx)(`div`, {
+                  className: `w-6 h-6 rounded-md bg-[#2469f0] flex items-center justify-center`,
+                  children: (0, N.jsx)(`span`, {
+                    className: `text-white text-md-xs font-bold`,
+                    children: `M`,
+                  }),
+                }),
+                (0, N.jsx)(`span`, {
+                  className: `text-md-sm font-semibold text-foreground`,
+                  children: `MORBIS Ext`,
+                }),
+                (0, N.jsx)(`span`, {
+                  className: `text-[10px] font-semibold text-blue-700 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-300 px-1.5 py-0.5 rounded-full`,
+                  children: `v1.2`,
+                }),
+              ],
+            }),
+            (0, N.jsx)(`div`, {
+              className: `flex items-center gap-1`,
+              children: (0, N.jsx)(`button`, {
+                onClick: () => T(C === `dark` ? `light` : `dark`),
+                className: `p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors`,
+                title: `Toggle dark mode`,
+                children: w
+                  ? (0, N.jsxs)(`svg`, {
+                      width: `16`,
+                      height: `16`,
+                      viewBox: `0 0 24 24`,
+                      fill: `none`,
+                      stroke: `currentColor`,
+                      strokeWidth: `2`,
+                      children: [
+                        (0, N.jsx)(`circle`, { cx: `12`, cy: `12`, r: `5` }),
+                        (0, N.jsx)(`path`, {
+                          d: `M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42`,
+                        }),
+                      ],
+                    })
+                  : (0, N.jsx)(`svg`, {
+                      width: `16`,
+                      height: `16`,
+                      viewBox: `0 0 24 24`,
+                      fill: `none`,
+                      stroke: `currentColor`,
+                      strokeWidth: `2`,
+                      children: (0, N.jsx)(`path`, {
+                        d: `M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z`,
+                      }),
+                    }),
+              }),
+            }),
+          ],
+        }),
+        (0, N.jsx)(`div`, {
+          className: `px-4 py-3`,
+          children: (0, N.jsx)(z, { enabled: t, role: r, onToggle: D, onRoleChange: O }),
+        }),
+        (0, N.jsxs)(`div`, {
+          className: `flex gap-0 px-4 border-b border-border`,
+          children: [
+            (0, N.jsx)(`button`, {
+              onClick: () => o(`features`),
+              className: `px-4 py-2 text-md-sm font-medium border-b-2 transition-colors -mb-[1px] ${a === `features` ? `text-[#2469f0] border-[#2469f0]` : `text-muted-foreground border-transparent hover:text-foreground`}`,
+              children: `Fitur`,
+            }),
+            (0, N.jsx)(`button`, {
+              onClick: () => o(`domain`),
+              className: `px-4 py-2 text-md-sm font-medium border-b-2 transition-colors -mb-[1px] ${a === `domain` ? `text-[#2469f0] border-[#2469f0]` : `text-muted-foreground border-transparent hover:text-foreground`}`,
+              children: `Domain`,
+            }),
+            (0, N.jsxs)(`button`, {
+              onClick: () => o(`tools`),
+              className: `px-4 py-2 text-md-sm font-medium border-b-2 transition-colors -mb-[1px] flex items-center gap-1.5 ${a === `tools` ? `text-[#2469f0] border-[#2469f0]` : `text-muted-foreground border-transparent hover:text-foreground`}`,
+              children: [
+                (0, N.jsx)(`span`, { children: `Aksi Halaman` }),
+                x &&
+                  (0, N.jsx)(`span`, {
+                    className: `size-1.5 bg-primary rounded-full inline-block animate-pulse shrink-0`,
+                  }),
+              ],
+            }),
+          ],
+        }),
+        (0, N.jsxs)(`div`, {
+          className: `flex-1 overflow-y-auto px-4 py-3`,
+          children: [
+            a === `features` &&
+              (0, N.jsx)(B, {
+                features: f,
+                enabledFeatures: u,
+                role: r,
+                disabled: !t,
+                onToggle: k,
+                onModeChange: I,
+              }),
+            a === `domain` && (0, N.jsx)(H, { urls: m, onAdd: j, onRemove: P, onToggle: F }),
+            a === `tools` &&
+              (0, N.jsxs)(`div`, {
+                className: `space-y-4`,
+                children: [
+                  x?.feature === `mKlaimDetail` &&
+                    y &&
+                    (0, N.jsxs)(`div`, {
+                      className: `space-y-4`,
+                      children: [
+                        (0, N.jsxs)(`div`, {
+                          className: `flex p-1 bg-muted rounded-lg`,
+                          children: [
+                            (0, N.jsx)(`button`, {
+                              onClick: () => l(`upload`),
+                              className: `flex-1 py-1 text-[11px] font-semibold rounded-md transition-all ${c === `upload` ? `bg-background text-foreground shadow-sm` : `text-muted-foreground hover:text-foreground`}`,
+                              children: `Upload Dokumen`,
+                            }),
+                            (0, N.jsx)(`button`, {
+                              onClick: () => l(`delete`),
+                              className: `flex-1 py-1 text-[11px] font-semibold rounded-md transition-all ${c === `delete` ? `bg-background text-foreground shadow-sm` : `text-muted-foreground hover:text-foreground`}`,
+                              children: `Hapus Dokumen`,
+                            }),
+                          ],
+                        }),
+                        c === `upload` ? (0, N.jsx)(U, { tabId: y }) : (0, N.jsx)(W, { tabId: y }),
+                      ],
+                    }),
+                  x?.feature === `batchUpload` && y && (0, N.jsx)(U, { tabId: y }),
+                  x?.feature === `batchDelete` && y && (0, N.jsx)(W, { tabId: y }),
+                  x?.feature === `consultationDetail` && x?.data && (0, N.jsx)(G, { data: x.data }),
+                  x?.feature === `consultationInfo` && x?.data && (0, N.jsx)(J, { data: x.data }),
+                  (!x || !y) &&
+                    (0, N.jsxs)(`div`, {
+                      className: `text-center py-12 px-4 space-y-2.5`,
+                      children: [
+                        (0, N.jsx)(`div`, {
+                          className: `size-10 rounded-full bg-accent flex items-center justify-center mx-auto text-muted-foreground`,
+                          children: (0, N.jsx)(`svg`, {
+                            className: `size-5`,
+                            fill: `none`,
+                            stroke: `currentColor`,
+                            strokeWidth: `2.5`,
+                            viewBox: `0 0 24 24`,
+                            children: (0, N.jsx)(`path`, {
+                              strokeLinecap: `round`,
+                              strokeLinejoin: `round`,
+                              d: `M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z`,
+                            }),
+                          }),
+                        }),
+                        (0, N.jsx)(`h3`, {
+                          className: `text-md-sm font-semibold text-foreground`,
+                          children: `Tidak Ada Aksi Halaman`,
+                        }),
+                        (0, N.jsx)(`p`, {
+                          className: `text-md-xs text-muted-foreground leading-relaxed`,
+                          children: `Buka halaman detail rekam medis pasien di SIMRS Morbis untuk mengaktifkan peralatan halaman (batch upload / batch delete).`,
+                        }),
+                      ],
+                    }),
+                ],
+              }),
+          ],
+        }),
+        (0, N.jsx)(Y, { onReload: L, onReset: R }),
+        g &&
+          (0, N.jsx)(`div`, {
+            className: `fixed bottom-4 left-1/2 -translate-x-1/2 z-50 animate-slide-up`,
+            role: `alert`,
+            children: (0, N.jsx)(`div`, {
+              className: `px-4 py-2 bg-foreground text-background text-md-sm rounded-lg shadow-lg`,
+              children: g,
+            }),
+          }),
+      ],
+    }),
+  });
+}
+var $ = document.getElementById(`app`);
+$ && (0, k.createRoot)($).render((0, N.jsx)(te, {}));
