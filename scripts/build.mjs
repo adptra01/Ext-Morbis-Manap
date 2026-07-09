@@ -67,6 +67,7 @@ async function compileFeatureFiles() {
     'antrianTools.ts',
     'ttvEditor.ts',
     'resumeTab/mount.tsx',
+    'resumeRanapTab/mount.tsx',
     'pindahOperasi/main.ts',
   ];
 
@@ -82,7 +83,7 @@ async function compileFeatureFiles() {
     try {
       const extraOptions = {};
       // Inject compiled CSS into resumeTab bundle (runs in world:MAIN, no chrome.runtime access)
-      if (relativePath.includes('resumeTab/')) {
+      if (relativePath.includes('resumeTab/') || relativePath.includes('resumeRanapTab/')) {
         const cssPath = join(distDir, 'ui', 'shadow.css');
         if (existsSync(cssPath)) {
           const cssContent = readFileSync(cssPath, 'utf-8');

@@ -20,7 +20,7 @@ import {
   v,
   x as y,
   y as b,
-} from './chunks/button-B6ZB2sdo.js';
+} from './chunks/button-CN99qBLV.js';
 var x = a(`check`, [[`path`, { d: `M20 6 9 17l-5-5`, key: `1gmf2c` }]]),
   S = a(`circle-alert`, [
     [`circle`, { cx: `12`, cy: `12`, r: `10`, key: `1mglay` }],
@@ -1359,7 +1359,8 @@ function te() {
     ),
     k = (0, A.useCallback)(
       (t, n) => {
-        (d({ ...u, [t]: n }),
+        let r = { ...u, [t]: n };
+        (d(r),
           v({ type: e.TOGGLE_FEATURE, key: t, enabled: n }).catch(() => E(`Gagal mengubah fitur`)),
           E(n ? `${t} diaktifkan` : `${t} dinonaktifkan`));
       },
@@ -1367,8 +1368,9 @@ function te() {
     ),
     j = (0, A.useCallback)(
       (t) => {
-        let n = `url-` + Date.now();
-        (h([...m, { id: n, url: t, enabled: !0, isDefault: !1 }]),
+        let n = `url-` + Date.now(),
+          r = [...m, { id: n, url: t, enabled: !0, isDefault: !1 }];
+        (h(r),
           v({ type: e.ADD_URL, url: t }).catch(() => E(`Gagal menambah domain`)),
           E(`Domain ditambahkan`));
       },
@@ -1376,7 +1378,8 @@ function te() {
     ),
     P = (0, A.useCallback)(
       (t) => {
-        (h(m.filter((e) => e.id !== t)),
+        let n = m.filter((e) => e.id !== t);
+        (h(n),
           v({ type: e.DELETE_URL, id: t }).catch(() => E(`Gagal menghapus domain`)),
           E(`Domain dihapus`));
       },
@@ -1384,7 +1387,8 @@ function te() {
     ),
     F = (0, A.useCallback)(
       (t, n) => {
-        (h(m.map((e) => (e.id === t ? { ...e, enabled: n } : e))),
+        let r = m.map((e) => (e.id === t ? { ...e, enabled: n } : e));
+        (h(r),
           v({ type: e.TOGGLE_URL, id: t, enabled: n }).catch(() => E(`Gagal mengubah domain`)));
       },
       [m, E],

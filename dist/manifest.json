@@ -45,9 +45,7 @@
         "features/openDetail.js",
         "features/shortcutButtons.js",
         "features/filterPersistence.js",
-        "features/simplifyBilling.js",
         "features/scrollButtons.js",
-        "features/printOptimization.js",
         "features/batchUploadUrl.js",
         "features/batchDeleteFiles.js",
         "init.js"
@@ -139,16 +137,6 @@
     },
     {
       "matches": [
-        "http://192.168.8.4/billing/pembayaran-new/billing-verifikasi*",
-        "http://103.147.236.140/billing/pembayaran-new/billing-verifikasi*"
-      ],
-      "js": ["features/autoVerifBilling.js"],
-      "run_at": "document_end",
-      "world": "MAIN",
-      "all_frames": false
-    },
-    {
-      "matches": [
         "http://192.168.8.4/admisi/detail-rawat-inap/tambah-resume-ri*",
         "http://103.147.236.140/admisi/detail-rawat-inap/tambah-resume-ri*"
       ],
@@ -176,7 +164,7 @@
         "http://192.168.8.4/rekam-medik/rm-rawat-jalan-new*",
         "http://103.147.236.140/rekam-medik/rm-rawat-jalan-new*"
       ],
-      "js": ["features/resumeTab.js"],
+      "js": ["features/resumeTab.js", "features/resumeRanapTab.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
