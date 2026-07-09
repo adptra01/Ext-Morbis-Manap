@@ -1,3 +1,14 @@
+export interface IcdItem {
+  id: string;
+  kode: string;
+  nama: string;
+}
+
+export interface SelectOption {
+  value: string;
+  label: string;
+}
+
 export interface RanapFormData {
   // Hidden / meta
   id_visit: string;
@@ -33,11 +44,13 @@ export interface RanapFormData {
   obat_plg: string;
   tindakan_dua: string;
   jenis_kasus: string;
-  // ICD hidden IDs (submit as-is)
+  // ICD display + hidden IDs
+  kode_diagnosa_utama: string;
+  diagnosa_utama_nama: string;
   id_diagnosa_utama: string;
-  ket_diagnosa_utama: string;
-  id_diagnosa_sekunder: string[];
-  id_tindakan_hidden: string[];
+  icd_sekunder: IcdItem[];
+  icd_tindakan: IcdItem[];
+  icd_nosokomial: IcdItem[];
   // Kondisi pulang
   ku: string;
   kes: string;

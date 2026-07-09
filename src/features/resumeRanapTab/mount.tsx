@@ -3,7 +3,7 @@
 import { createRoot, type Root } from 'react-dom/client';
 import { App } from './App';
 import { ErrorBoundary } from './ErrorBoundary';
-import type { RanapFormData } from './types';
+import type { RanapFormData, IcdItem } from './types';
 
 const FORM_URL = '/admisi/detail-rawat-inap/edit-resume-ri';
 const ENDPOINT = '/rekam-medik/control/edit-resume-rawat-inap';
@@ -27,8 +27,28 @@ function arrVal(doc: Document, name: string): string[] {
     .filter(Boolean);
 }
 
+function extractIcdItems(doc: Document, prefix: string, ids: string[]): IcdItem[] {
+  const items: IcdItem[] = [];
+  let i = 1;
+  while (doc.querySelector(`#${prefix}${i}`)) {
+    const kodeEl = doc.querySelector<HTMLInputElement>(`#kode_${prefix}${i}`);
+    const namaEl = doc.querySelector<HTMLInputElement>(`#${prefix}${i}`);
+    items.push({
+      kode: kodeEl?.value ?? '',
+      nama: namaEl?.value ?? '',
+      id: ids[i - 1] ?? '',
+    });
+    i++;
+  }
+  return items;
+}
+
 function parseFormHtml(html: string): RanapFormData {
   const doc = new DOMParser().parseFromString(html, 'text/html');
+
+  const idsSekunder = arrVal(doc, 'id_diagnosa_sekunder[]');
+  const idsTindakan = arrVal(doc, 'id_tindakan[]');
+  const idsNosokomial = arrVal(doc, 'id_nosokomial[]');
 
   return {
     id_visit: val(doc, 'id_visit'),
@@ -64,11 +84,13 @@ function parseFormHtml(html: string): RanapFormData {
     obat_plg: ta(doc, 'obat_plg'),
     tindakan_dua: ta(doc, 'tindakan_dua'),
     jenis_kasus: val(doc, 'jenis_kasus'),
-    // ICD hidden IDs
+    // ICD
+    kode_diagnosa_utama: doc.querySelector<HTMLInputElement>('#kode_diagnosa_utama')?.value ?? '',
+    diagnosa_utama_nama: doc.querySelector<HTMLInputElement>('#diagnosa_utama')?.value ?? '',
     id_diagnosa_utama: val(doc, 'id_diagnosa_utama'),
-    ket_diagnosa_utama: val(doc, 'ket_diagnosa_utama'),
-    id_diagnosa_sekunder: arrVal(doc, 'id_diagnosa_sekunder[]'),
-    id_tindakan_hidden: arrVal(doc, 'id_tindakan[]'),
+    icd_sekunder: extractIcdItems(doc, 'diagnosa_sekunder', idsSekunder),
+    icd_tindakan: extractIcdItems(doc, 'tindakan', idsTindakan),
+    icd_nosokomial: extractIcdItems(doc, 'nosokomial', idsNosokomial),
     // Kondisi pulang
     ku: val(doc, 'ku'),
     kes: val(doc, 'kes'),
@@ -157,9 +179,9 @@ function serializeFormData(data: RanapFormData): string {
   add('tindakan_dua', data.tindakan_dua);
   add('jenis_kasus', data.jenis_kasus);
   add('id_diagnosa_utama', data.id_diagnosa_utama);
-  add('ket_diagnosa_utama', data.ket_diagnosa_utama);
-  data.id_diagnosa_sekunder.forEach((id) => add('id_diagnosa_sekunder[]', id));
-  data.id_tindakan_hidden.forEach((id) => add('id_tindakan[]', id));
+  data.icd_sekunder.forEach((item) => add('id_diagnosa_sekunder[]', item.id));
+  data.icd_tindakan.forEach((item) => add('id_tindakan[]', item.id));
+  data.icd_nosokomial.forEach((item) => add('id_nosokomial[]', item.id));
   add('ku', data.ku);
   add('kes', data.kes);
   add('td_pulang', data.td_pulang);
@@ -233,10 +255,30 @@ function mountReactApp(data: RanapFormData) {
       <App data={data} onSave={handleSave} onClose={closeOverlay} />
     </ErrorBoundary>,
   );
+
+  setTimeout(() => {
+    container.querySelectorAll('textarea').forEach((tx) => {
+      tx.addEventListener('input', () => {
+        tx.style.height = 'auto';
+        tx.style.height = tx.scrollHeight + 'px';
+      });
+      tx.dispatchEvent(new Event('input'));
+    });
+  }, 0);
 }
 
-function init() {
+async function isFeatureEnabled(): Promise<boolean> {
+  try {
+    const result = await chrome.storage.sync.get('extensionConfig');
+    return result.extensionConfig?.features?.resumeRanap?.enabled === true;
+  } catch {
+    return true;
+  }
+}
+
+async function init() {
   if (!location.href.startsWith('http://103.147.236.140/v2/m-klaim/detail-v2-refaktor')) return;
+  if (!(await isFeatureEnabled())) return;
   const idVisit = new URLSearchParams(location.search).get('id_visit');
   if (!idVisit) return;
   const jenis =
@@ -275,5 +317,5 @@ function init() {
   document.body.appendChild(overlayBtn);
 }
 
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => init());
 else init();

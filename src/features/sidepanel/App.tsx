@@ -57,6 +57,12 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
     desc: 'Edit resume rawat jalan',
     roles: ['casemix', 'dokter'],
   },
+  {
+    key: 'resumeRanap',
+    name: 'Resume Ranap',
+    desc: 'Popup edit resume rawat inap',
+    roles: ['casemix', 'dokter'],
+  },
   { key: 'ttvEditor', name: 'TTV Editor', desc: 'Edit tanda vital', roles: ['dokter', 'admin'] },
   { key: 'cpptSearchFilter', name: 'CPPT Search', desc: 'Cari & filter CPPT', roles: ['casemix'] },
   { key: 'antrianTools', name: 'Antrian Tools', desc: 'Tools halaman antrian', roles: ['admin'] },
@@ -108,7 +114,10 @@ export function App() {
   const [urls, setUrls] = useState<CustomUrl[]>(DEFAULT_URLS);
   const [toast, setToast] = useState<string | null>(null);
   const [tabId, setTabId] = useState<number | null>(null);
-  const [pageContext, setPageContext] = useState<{ feature: string; data: Record<string, unknown> } | null>(null);
+  const [pageContext, setPageContext] = useState<{
+    feature: string;
+    data: Record<string, unknown>;
+  } | null>(null);
   const { theme, resolved, setTheme } = useDarkMode();
 
   // Load active tab ID & context
@@ -441,13 +450,26 @@ export function App() {
               {(!pageContext || !tabId) && (
                 <div className="text-center py-12 px-4 space-y-2.5">
                   <div className="size-10 rounded-full bg-accent flex items-center justify-center mx-auto text-muted-foreground">
-                    <svg className="size-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    <svg
+                      className="size-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
                     </svg>
                   </div>
-                  <h3 className="text-md-sm font-semibold text-foreground">Tidak Ada Aksi Halaman</h3>
+                  <h3 className="text-md-sm font-semibold text-foreground">
+                    Tidak Ada Aksi Halaman
+                  </h3>
                   <p className="text-md-xs text-muted-foreground leading-relaxed">
-                    Buka halaman detail rekam medis pasien di SIMRS Morbis untuk mengaktifkan peralatan halaman (batch upload / batch delete).
+                    Buka halaman detail rekam medis pasien di SIMRS Morbis untuk mengaktifkan
+                    peralatan halaman (batch upload / batch delete).
                   </p>
                 </div>
               )}

@@ -129,6 +129,12 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       name: 'Resume Rajal Tab',
       description: 'Tab resume rawat jalan di halaman detail M-KLAIM',
     },
+    resumeRanap: {
+      enabled: true,
+      allowedRoles: ['casemix', 'dokter'],
+      name: 'Resume Ranap Tab',
+      description: 'Popup edit resume rawat inap di halaman detail M-KLAIM',
+    },
   },
 };
 
@@ -437,8 +443,7 @@ chrome.runtime.onMessage.addListener(
       case 'TAB_ACTION': {
         (async () => {
           const targetTabId = (validated as unknown as Record<string, unknown>).tabId as
-            | number
-            | undefined;
+            number | undefined;
           if (!targetTabId) {
             sendResponse({ success: false });
             return;

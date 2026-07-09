@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react';
-import type { RanapFormData } from './types';
+import { useState, useCallback, useRef, useEffect, type FormEvent } from 'react';
+import type { RanapFormData, IcdItem, SelectOption } from './types';
 
 interface Props {
   data: RanapFormData;
@@ -28,9 +28,15 @@ const L = ({ c }: { c: string }) => (
     {c}
   </label>
 );
-const In = ({ v, onChange }: { v: string; onChange: (v: string) => void }) => (
-  <input value={v} onChange={(e) => onChange(e.target.value)} style={inputStyle} />
-);
+const In = ({
+  v,
+  onChange,
+  ...rest
+}: {
+  v: string;
+  onChange: (v: string) => void;
+  [k: string]: unknown;
+}) => <input value={v} onChange={(e) => onChange(e.target.value)} style={inputStyle} {...rest} />;
 const Ta = ({
   v,
   onChange,
@@ -51,88 +57,271 @@ const Fs = ({ lbl, children }: { lbl: string; children: React.ReactNode }) => (
   </fieldset>
 );
 
-const JENIS_KASUS = [
-  'Pilih jenis kasus',
-  'Jantung',
-  'Bedah Onkologi',
-  'Fisioterapi',
-  'Okupasi',
-  'Gigi',
-  'Jiwa',
-  'Mata',
-  'Paru',
-  'Syaraf',
-  'Urologi',
-  'Rehab Medis',
-  'Kulit Kelamin',
-  'Bedah Syaraf',
-  'Geriatri',
-  'Paru - Paru',
-  'Psikiatri',
-  'Non Bedah',
-  'Bedah',
-  'Orthopedi',
-  'Psikologi',
-  'Tht',
-  'Anak',
-  'Kebidanan dan Kandungan',
-  'Penyakit Dalam',
+const JENIS_KASUS: SelectOption[] = [
+  { value: '', label: 'Pilih jenis kasus' },
+  { value: '203', label: 'Jantung' },
+  { value: '209', label: 'Bedah Onkologi' },
+  { value: '215', label: 'Fisioterapi' },
+  { value: '220', label: 'Okupasi' },
+  { value: '204', label: 'Gigi' },
+  { value: '206', label: 'Jiwa' },
+  { value: '207', label: 'Mata' },
+  { value: '211', label: 'Paru' },
+  { value: '212', label: 'Syaraf' },
+  { value: '214', label: 'Urologi' },
+  { value: '223', label: 'Rehab Medis' },
+  { value: '226', label: 'Kulit Kelamin' },
+  { value: '216', label: 'Bedah Syaraf' },
+  { value: '219', label: 'Geriatri' },
+  { value: '221', label: 'Paru - Paru' },
+  { value: '217', label: 'Psikiatri' },
+  { value: '181', label: 'Kulit Kelamin' },
+  { value: '205', label: 'Non Bedah' },
+  { value: '208', label: 'Bedah' },
+  { value: '218', label: 'Orthopedi' },
+  { value: '224', label: 'Psikologi' },
+  { value: '225', label: 'Tht' },
+  { value: '210', label: 'Anak' },
+  { value: '213', label: 'Kebidanan dan Kandungan' },
+  { value: '222', label: 'Penyakit Dalam' },
+  { value: '228', label: 'Gigi' },
 ];
-const KEADAAN_KELUAR = [
-  'Pilih keadaan keluar',
-  'Aps / Atas Permintaan Sendiri',
-  'Batal Rawat Inap',
-  'Belum Sembuh',
-  'Dirujuk Lebih Tinggi',
-  'Melarikan Diri',
-  'Meninggal < 48 Jam',
-  'Meninggal > 8 Jam',
-  'Meninggal >= 48 jam',
-  'Pulang Hidup',
+const KEADAAN_KELUAR: SelectOption[] = [
+  { value: '', label: 'Pilih keadaan keluar' },
+  { value: '31', label: 'Aps / Atas Permintaan Sendiri' },
+  { value: '73', label: 'Batal Rawat Inap' },
+  { value: '30', label: 'Belum Sembuh' },
+  { value: '121', label: 'Dirujuk Lebih Tinggi' },
+  { value: '181', label: 'Melarikan Diri' },
+  { value: '32', label: 'Meninggal < 48 Jam' },
+  { value: '74', label: 'Meninggal > 8 Jam' },
+  { value: '33', label: 'Meninggal >= 48 jam' },
+  { value: '87', label: 'Pulang Hidup' },
 ];
-const CARA_KELUAR = [
-  'Pilih cara keluar',
-  'APS/Paksa',
-  'Atas Permintaan Sendiri',
-  'Atas Persetujuan Dokter',
-  'Batal Rawat Inap',
-  'Di Rujuk',
-  'Diijinkan Pulang',
-  'Dirujuk',
-  'Dirujuk Lebih Rendah',
-  'Dirujuk Puskesmas',
-  'Dirujuk ke Dokter',
-  'Dirujuk ke Panti',
-  'Ke Rumah Sakit',
-  'Lain-lain',
-  'Masih Menginap',
-  'Masuk Rawat Inap',
-  'Melarikan Diri',
-  'Meninggal',
-  'Meninggal Kurang 48 Jam',
-  'Meninggal Lebih 48 Jam',
-  'Pulang Hidup',
+const CARA_KELUAR: SelectOption[] = [
+  { value: '', label: 'Pilih cara keluar' },
+  { value: '167', label: 'APS/Paksa' },
+  { value: '35', label: 'Atas Permintaan Sendiri' },
+  { value: '142', label: 'Atas Persetujuan Dokter' },
+  { value: '201', label: 'Batal Rawat Inap' },
+  { value: '141', label: 'Di Rujuk' },
+  { value: '51', label: 'Diijinkan Pulang' },
+  { value: '163', label: 'Dirujuk' },
+  { value: '164', label: 'Dirujuk Lebih Rendah' },
+  { value: '165', label: 'Dirujuk Puskesmas' },
+  { value: '162', label: 'Dirujuk ke Dokter' },
+  { value: '166', label: 'Dirujuk ke Panti' },
+  { value: '168', label: 'Ke Rumah Sakit' },
+  { value: '72', label: 'Lain-lain' },
+  { value: '169', label: 'Masih Menginap' },
+  { value: '57', label: 'Masuk Rawat Inap' },
+  { value: '58', label: 'Melarikan Diri' },
+  { value: '143', label: 'Meninggal' },
+  { value: '170', label: 'Meninggal Kurang 48 Jam' },
+  { value: '171', label: 'Meninggal Lebih 48 Jam' },
+  { value: '161', label: 'Pulang Hidup' },
 ];
-const PEMERIKSAAN_LANJUT = [
-  'Pilih pemeriksaan lanjut',
-  'Bangsal',
-  'Kontrol',
-  'Lainnya',
-  'Poliklinik RS',
-  'Puskesmas',
-  'RS Lain',
-  'Tidak Ada',
+const PEMERIKSAAN_LANJUT: SelectOption[] = [
+  { value: '', label: 'Pilih pemeriksaan lanjut' },
+  { value: '52', label: 'Bangsal' },
+  { value: '88', label: 'Kontrol' },
+  { value: '11', label: 'Lainnya' },
+  { value: '8', label: 'Poliklinik RS' },
+  { value: '10', label: 'Puskesmas' },
+  { value: '9', label: 'RS Lain' },
+  { value: '49', label: 'Tidak Ada' },
 ];
 
-function Sel({ v, onChange, opts }: { v: string; onChange: (v: string) => void; opts: string[] }) {
+function Sel({
+  v,
+  onChange,
+  opts,
+}: {
+  v: string;
+  onChange: (v: string) => void;
+  opts: SelectOption[];
+}) {
+  const match = opts.find((o) => o.value === v);
   return (
-    <select value={v} onChange={(e) => onChange(e.target.value)} style={inputStyle}>
+    <select value={match ? v : ''} onChange={(e) => onChange(e.target.value)} style={inputStyle}>
       {opts.map((o) => (
-        <option key={o} value={o}>
-          {o}
+        <option key={o.value} value={o.value}>
+          {o.label}
         </option>
       ))}
+      {!match && v ? (
+        <option value={v} disabled>
+          {v}
+        </option>
+      ) : null}
     </select>
+  );
+}
+
+const thStyle: React.CSSProperties = {
+  fontSize: 10,
+  fontWeight: 700,
+  color: '#374151',
+  padding: '2px 4px',
+  borderBottom: '1px solid #d1d5db',
+  textAlign: 'left',
+};
+const tdStyle: React.CSSProperties = { padding: '2px 2px' };
+const smallBtn: React.CSSProperties = {
+  padding: '2px 8px',
+  fontSize: 10,
+  borderRadius: 4,
+  border: '1px solid #d1d5db',
+  background: '#fff',
+  cursor: 'pointer',
+};
+
+interface IcdAutocompleteProps {
+  kode: string;
+  nama: string;
+  icdType: 'icd10' | 'icd9';
+  onPick: (kode: string, nama: string, id: string) => void;
+}
+
+interface Hit {
+  ID: string;
+  KODE: string;
+  NAMA: string;
+}
+
+function IcdAutocomplete({ kode, nama, icdType, onPick }: IcdAutocompleteProps) {
+  const [suggestions, setSuggestions] = useState<Hit[]>([]);
+  const [show, setShow] = useState(false);
+  const [kodeInput, setKodeInput] = useState(kode);
+  const [namaInput, setNamaInput] = useState(nama);
+  const [activeIdx, setActiveIdx] = useState(-1);
+  const timer = useRef<ReturnType<typeof setTimeout>>();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const search = useCallback(
+    async (q: string) => {
+      if (q.length < 3) {
+        setSuggestions([]);
+        setShow(false);
+        return;
+      }
+      const opsi = icdType === 'icd9' ? 'clauseDiagnose_icd9' : 'kodeicd10';
+      const url = `/rekam-medik/search?opsi=${opsi}&q=${encodeURIComponent(q)}${icdType === 'icd9' ? '&limit=10' : ''}`;
+      try {
+        const res = await fetch(url, { credentials: 'same-origin' });
+        const text = await res.text();
+        let hits: Hit[];
+        try {
+          hits = JSON.parse(text);
+        } catch {
+          hits = text
+            .split('\n')
+            .filter(Boolean)
+            .map((line) => {
+              const parts = line.split('|');
+              return { ID: parts[2] || '', KODE: parts[1] || '', NAMA: parts[0] || '' };
+            });
+        }
+        setSuggestions(hits);
+        setShow(hits.length > 0);
+        setActiveIdx(-1);
+      } catch {
+        /* ignore */
+      }
+    },
+    [icdType],
+  );
+
+  const handleKodeChange = (val: string) => {
+    setKodeInput(val);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => search(val), 300);
+  };
+
+  const pick = (hit: Hit) => {
+    setKodeInput(hit.KODE);
+    setNamaInput(hit.NAMA);
+    setShow(false);
+    onPick(hit.KODE, hit.NAMA, hit.ID);
+  };
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setShow(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const handleKey = (e: React.KeyboardEvent) => {
+    if (!show) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveIdx((i) => Math.min(i + 1, suggestions.length - 1));
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveIdx((i) => Math.max(i - 1, 0));
+    }
+    if (e.key === 'Enter' && activeIdx >= 0) {
+      e.preventDefault();
+      pick(suggestions[activeIdx]);
+    }
+    if (e.key === 'Escape') setShow(false);
+  };
+
+  return (
+    <div ref={containerRef} style={{ position: 'relative' }}>
+      <div style={{ display: 'flex', gap: 4 }}>
+        <input
+          value={kodeInput}
+          onChange={(e) => handleKodeChange(e.target.value)}
+          onKeyDown={handleKey}
+          placeholder="Kode"
+          style={{ ...inputStyle, width: '40%', fontSize: 11 }}
+        />
+        <input
+          value={namaInput}
+          onChange={(e) => setNamaInput(e.target.value)}
+          onKeyDown={handleKey}
+          placeholder="Nama"
+          style={{ ...inputStyle, width: '60%', fontSize: 11 }}
+        />
+      </div>
+      {show && suggestions.length > 0 ? (
+        <div
+          style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0,
+            zIndex: 100,
+            background: '#fff',
+            border: '1px solid #d1d5db',
+            borderRadius: 4,
+            maxHeight: 160,
+            overflow: 'auto',
+            boxShadow: '0 4px 12px rgba(0,0,0,.15)',
+          }}
+        >
+          {suggestions.map((hit, i) => (
+            <div
+              key={hit.ID}
+              onClick={() => pick(hit)}
+              style={{
+                padding: '3px 6px',
+                fontSize: 11,
+                cursor: 'pointer',
+                background: i === activeIdx ? '#f0fdf4' : '#fff',
+                borderBottom: '1px solid #f3f4f6',
+              }}
+            >
+              <span style={{ fontWeight: 600 }}>{hit.KODE}</span> — {hit.NAMA}
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -156,6 +345,36 @@ export function App({ data, onSave, onClose }: Props) {
       setSaving(false);
     }
   };
+
+  const updateSekunder = (i: number, item: IcdItem) => {
+    const arr = [...d.icd_sekunder];
+    arr[i] = item;
+    p({ icd_sekunder: arr });
+  };
+  const addSekunder = () =>
+    p({ icd_sekunder: [...d.icd_sekunder, { id: '', kode: '', nama: '' }] });
+  const removeSekunder = (i: number) =>
+    p({ icd_sekunder: d.icd_sekunder.filter((_, idx) => idx !== i) });
+
+  const updateTindakan = (i: number, item: IcdItem) => {
+    const arr = [...d.icd_tindakan];
+    arr[i] = item;
+    p({ icd_tindakan: arr });
+  };
+  const addTindakan = () =>
+    p({ icd_tindakan: [...d.icd_tindakan, { id: '', kode: '', nama: '' }] });
+  const removeTindakan = (i: number) =>
+    p({ icd_tindakan: d.icd_tindakan.filter((_, idx) => idx !== i) });
+
+  const updateNosokomial = (i: number, item: IcdItem) => {
+    const arr = [...d.icd_nosokomial];
+    arr[i] = item;
+    p({ icd_nosokomial: arr });
+  };
+  const addNosokomial = () =>
+    p({ icd_nosokomial: [...d.icd_nosokomial, { id: '', kode: '', nama: '' }] });
+  const removeNosokomial = (i: number) =>
+    p({ icd_nosokomial: d.icd_nosokomial.filter((_, idx) => idx !== i) });
 
   return (
     <form onSubmit={handleSubmit} className="ri-modal" onClick={(e) => e.stopPropagation()}>
@@ -220,11 +439,11 @@ export function App({ data, onSave, onClose }: Props) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             <div>
               <L c="Dokter Rawat Bersama" />
-              <In v={d.dokter_bersama} onChange={(v) => p({ dokter_bersama: v })} />
+              <Ta v={d.dokter_bersama} onChange={(v) => p({ dokter_bersama: v })} rows={2} />
             </div>
             <div>
               <L c="Alasan / Indikasi Rawat" />
-              <In v={d.alasan_rawat} onChange={(v) => p({ alasan_rawat: v })} />
+              <Ta v={d.alasan_rawat} onChange={(v) => p({ alasan_rawat: v })} rows={2} />
             </div>
             <div style={{ gridColumn: '1 / -1' }}>
               <L c="Anamnesa" />
@@ -304,6 +523,160 @@ export function App({ data, onSave, onClose }: Props) {
               <L c="Jenis Kasus" />
               <Sel v={d.jenis_kasus} onChange={(v) => p({ jenis_kasus: v })} opts={JENIS_KASUS} />
             </div>
+          </div>
+        </Fs>
+
+        {/* ICD */}
+        <Fs lbl="ICD">
+          {/* Diagnosa Utama */}
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginBottom: 4 }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: '#374151', width: 120 }}>
+                Diagnosa Utama *
+              </span>
+            </div>
+            <IcdAutocomplete
+              kode={d.kode_diagnosa_utama}
+              nama={d.diagnosa_utama_nama}
+              icdType="icd10"
+              onPick={(kode, nama, id) =>
+                p({ kode_diagnosa_utama: kode, diagnosa_utama_nama: nama, id_diagnosa_utama: id })
+              }
+            />
+          </div>
+
+          {/* Diagnosa Sekunder */}
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: '#374151' }}>
+                Diagnosa Sekunder
+              </span>
+              <button type="button" onClick={addSekunder} style={smallBtn}>
+                + Tambah
+              </button>
+            </div>
+            {d.icd_sekunder.length > 0 ? (
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr>
+                    <th style={thStyle}>Kode</th>
+                    <th style={thStyle}>Nama</th>
+                    <th style={{ ...thStyle, width: 40 }}></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {d.icd_sekunder.map((item, i) => (
+                    <tr key={i}>
+                      <td style={tdStyle}>
+                        <IcdAutocomplete
+                          kode={item.kode}
+                          nama={item.nama}
+                          icdType="icd10"
+                          onPick={(kode, nama, id) =>
+                            updateSekunder(i, { ...item, kode, nama, id })
+                          }
+                        />
+                      </td>
+                      <td style={tdStyle}>
+                        <button type="button" onClick={() => removeSekunder(i)} style={smallBtn}>
+                          ✕
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <span style={{ fontSize: 11, color: '#9ca3af' }}>Belum ada diagnosa sekunder</span>
+            )}
+          </div>
+
+          {/* Tindakan */}
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: '#374151' }}>Tindakan</span>
+              <button type="button" onClick={addTindakan} style={smallBtn}>
+                + Tambah
+              </button>
+            </div>
+            {d.icd_tindakan.length > 0 ? (
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr>
+                    <th style={thStyle}>Kode</th>
+                    <th style={thStyle}>Nama</th>
+                    <th style={{ ...thStyle, width: 40 }}></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {d.icd_tindakan.map((item, i) => (
+                    <tr key={i}>
+                      <td style={tdStyle}>
+                        <IcdAutocomplete
+                          kode={item.kode}
+                          nama={item.nama}
+                          icdType="icd9"
+                          onPick={(kode, nama, id) =>
+                            updateTindakan(i, { ...item, kode, nama, id })
+                          }
+                        />
+                      </td>
+                      <td style={tdStyle}>
+                        <button type="button" onClick={() => removeTindakan(i)} style={smallBtn}>
+                          ✕
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <span style={{ fontSize: 11, color: '#9ca3af' }}>Belum ada tindakan</span>
+            )}
+          </div>
+
+          {/* Nosokomial */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: '#374151' }}>Nosokomial</span>
+              <button type="button" onClick={addNosokomial} style={smallBtn}>
+                + Tambah
+              </button>
+            </div>
+            {d.icd_nosokomial.length > 0 ? (
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr>
+                    <th style={thStyle}>Kode</th>
+                    <th style={thStyle}>Nama</th>
+                    <th style={{ ...thStyle, width: 40 }}></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {d.icd_nosokomial.map((item, i) => (
+                    <tr key={i}>
+                      <td style={tdStyle}>
+                        <IcdAutocomplete
+                          kode={item.kode}
+                          nama={item.nama}
+                          icdType="icd10"
+                          onPick={(kode, nama, id) =>
+                            updateNosokomial(i, { ...item, kode, nama, id })
+                          }
+                        />
+                      </td>
+                      <td style={tdStyle}>
+                        <button type="button" onClick={() => removeNosokomial(i)} style={smallBtn}>
+                          ✕
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <span style={{ fontSize: 11, color: '#9ca3af' }}>Belum ada nosokomial</span>
+            )}
           </div>
         </Fs>
 

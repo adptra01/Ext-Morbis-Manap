@@ -27546,11 +27546,12 @@ var __morbis_feature = (() => {
       style: { display: 'block', fontSize: 11, fontWeight: 600, color: '#374151', marginBottom: 1 },
       children: c,
     });
-  var In = ({ v, onChange }) =>
+  var In = ({ v, onChange, ...rest }) =>
     /* @__PURE__ */ (0, import_jsx_runtime.jsx)('input', {
       value: v,
       onChange: (e) => onChange(e.target.value),
       style: inputStyle,
+      ...rest,
     });
   var Ta = ({ v, onChange, rows = 3 }) =>
     /* @__PURE__ */ (0, import_jsx_runtime.jsx)('textarea', {
@@ -27576,85 +27577,258 @@ var __morbis_feature = (() => {
       ],
     });
   var JENIS_KASUS = [
-    'Pilih jenis kasus',
-    'Jantung',
-    'Bedah Onkologi',
-    'Fisioterapi',
-    'Okupasi',
-    'Gigi',
-    'Jiwa',
-    'Mata',
-    'Paru',
-    'Syaraf',
-    'Urologi',
-    'Rehab Medis',
-    'Kulit Kelamin',
-    'Bedah Syaraf',
-    'Geriatri',
-    'Paru - Paru',
-    'Psikiatri',
-    'Non Bedah',
-    'Bedah',
-    'Orthopedi',
-    'Psikologi',
-    'Tht',
-    'Anak',
-    'Kebidanan dan Kandungan',
-    'Penyakit Dalam',
+    { value: '', label: 'Pilih jenis kasus' },
+    { value: '203', label: 'Jantung' },
+    { value: '209', label: 'Bedah Onkologi' },
+    { value: '215', label: 'Fisioterapi' },
+    { value: '220', label: 'Okupasi' },
+    { value: '204', label: 'Gigi' },
+    { value: '206', label: 'Jiwa' },
+    { value: '207', label: 'Mata' },
+    { value: '211', label: 'Paru' },
+    { value: '212', label: 'Syaraf' },
+    { value: '214', label: 'Urologi' },
+    { value: '223', label: 'Rehab Medis' },
+    { value: '226', label: 'Kulit Kelamin' },
+    { value: '216', label: 'Bedah Syaraf' },
+    { value: '219', label: 'Geriatri' },
+    { value: '221', label: 'Paru - Paru' },
+    { value: '217', label: 'Psikiatri' },
+    { value: '181', label: 'Kulit Kelamin' },
+    { value: '205', label: 'Non Bedah' },
+    { value: '208', label: 'Bedah' },
+    { value: '218', label: 'Orthopedi' },
+    { value: '224', label: 'Psikologi' },
+    { value: '225', label: 'Tht' },
+    { value: '210', label: 'Anak' },
+    { value: '213', label: 'Kebidanan dan Kandungan' },
+    { value: '222', label: 'Penyakit Dalam' },
+    { value: '228', label: 'Gigi' },
   ];
   var KEADAAN_KELUAR = [
-    'Pilih keadaan keluar',
-    'Aps / Atas Permintaan Sendiri',
-    'Batal Rawat Inap',
-    'Belum Sembuh',
-    'Dirujuk Lebih Tinggi',
-    'Melarikan Diri',
-    'Meninggal < 48 Jam',
-    'Meninggal > 8 Jam',
-    'Meninggal >= 48 jam',
-    'Pulang Hidup',
+    { value: '', label: 'Pilih keadaan keluar' },
+    { value: '31', label: 'Aps / Atas Permintaan Sendiri' },
+    { value: '73', label: 'Batal Rawat Inap' },
+    { value: '30', label: 'Belum Sembuh' },
+    { value: '121', label: 'Dirujuk Lebih Tinggi' },
+    { value: '181', label: 'Melarikan Diri' },
+    { value: '32', label: 'Meninggal < 48 Jam' },
+    { value: '74', label: 'Meninggal > 8 Jam' },
+    { value: '33', label: 'Meninggal >= 48 jam' },
+    { value: '87', label: 'Pulang Hidup' },
   ];
   var CARA_KELUAR = [
-    'Pilih cara keluar',
-    'APS/Paksa',
-    'Atas Permintaan Sendiri',
-    'Atas Persetujuan Dokter',
-    'Batal Rawat Inap',
-    'Di Rujuk',
-    'Diijinkan Pulang',
-    'Dirujuk',
-    'Dirujuk Lebih Rendah',
-    'Dirujuk Puskesmas',
-    'Dirujuk ke Dokter',
-    'Dirujuk ke Panti',
-    'Ke Rumah Sakit',
-    'Lain-lain',
-    'Masih Menginap',
-    'Masuk Rawat Inap',
-    'Melarikan Diri',
-    'Meninggal',
-    'Meninggal Kurang 48 Jam',
-    'Meninggal Lebih 48 Jam',
-    'Pulang Hidup',
+    { value: '', label: 'Pilih cara keluar' },
+    { value: '167', label: 'APS/Paksa' },
+    { value: '35', label: 'Atas Permintaan Sendiri' },
+    { value: '142', label: 'Atas Persetujuan Dokter' },
+    { value: '201', label: 'Batal Rawat Inap' },
+    { value: '141', label: 'Di Rujuk' },
+    { value: '51', label: 'Diijinkan Pulang' },
+    { value: '163', label: 'Dirujuk' },
+    { value: '164', label: 'Dirujuk Lebih Rendah' },
+    { value: '165', label: 'Dirujuk Puskesmas' },
+    { value: '162', label: 'Dirujuk ke Dokter' },
+    { value: '166', label: 'Dirujuk ke Panti' },
+    { value: '168', label: 'Ke Rumah Sakit' },
+    { value: '72', label: 'Lain-lain' },
+    { value: '169', label: 'Masih Menginap' },
+    { value: '57', label: 'Masuk Rawat Inap' },
+    { value: '58', label: 'Melarikan Diri' },
+    { value: '143', label: 'Meninggal' },
+    { value: '170', label: 'Meninggal Kurang 48 Jam' },
+    { value: '171', label: 'Meninggal Lebih 48 Jam' },
+    { value: '161', label: 'Pulang Hidup' },
   ];
   var PEMERIKSAAN_LANJUT = [
-    'Pilih pemeriksaan lanjut',
-    'Bangsal',
-    'Kontrol',
-    'Lainnya',
-    'Poliklinik RS',
-    'Puskesmas',
-    'RS Lain',
-    'Tidak Ada',
+    { value: '', label: 'Pilih pemeriksaan lanjut' },
+    { value: '52', label: 'Bangsal' },
+    { value: '88', label: 'Kontrol' },
+    { value: '11', label: 'Lainnya' },
+    { value: '8', label: 'Poliklinik RS' },
+    { value: '10', label: 'Puskesmas' },
+    { value: '9', label: 'RS Lain' },
+    { value: '49', label: 'Tidak Ada' },
   ];
   function Sel({ v, onChange, opts }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsx)('select', {
-      value: v,
+    const match = opts.find((o) => o.value === v);
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('select', {
+      value: match ? v : '',
       onChange: (e) => onChange(e.target.value),
       style: inputStyle,
-      children: opts.map((o) =>
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)('option', { value: o, children: o }, o),
-      ),
+      children: [
+        opts.map((o) =>
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+            'option',
+            { value: o.value, children: o.label },
+            o.value,
+          ),
+        ),
+        !match && v
+          ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)('option', {
+              value: v,
+              disabled: true,
+              children: v,
+            })
+          : null,
+      ],
+    });
+  }
+  var thStyle = {
+    fontSize: 10,
+    fontWeight: 700,
+    color: '#374151',
+    padding: '2px 4px',
+    borderBottom: '1px solid #d1d5db',
+    textAlign: 'left',
+  };
+  var tdStyle = { padding: '2px 2px' };
+  var smallBtn = {
+    padding: '2px 8px',
+    fontSize: 10,
+    borderRadius: 4,
+    border: '1px solid #d1d5db',
+    background: '#fff',
+    cursor: 'pointer',
+  };
+  function IcdAutocomplete({ kode, nama, icdType, onPick }) {
+    const [suggestions, setSuggestions] = (0, import_react.useState)([]);
+    const [show, setShow] = (0, import_react.useState)(false);
+    const [kodeInput, setKodeInput] = (0, import_react.useState)(kode);
+    const [namaInput, setNamaInput] = (0, import_react.useState)(nama);
+    const [activeIdx, setActiveIdx] = (0, import_react.useState)(-1);
+    const timer = (0, import_react.useRef)();
+    const containerRef = (0, import_react.useRef)(null);
+    const search = (0, import_react.useCallback)(
+      async (q) => {
+        if (q.length < 3) {
+          setSuggestions([]);
+          setShow(false);
+          return;
+        }
+        const opsi = icdType === 'icd9' ? 'clauseDiagnose_icd9' : 'kodeicd10';
+        const url = `/rekam-medik/search?opsi=${opsi}&q=${encodeURIComponent(q)}${icdType === 'icd9' ? '&limit=10' : ''}`;
+        try {
+          const res = await fetch(url, { credentials: 'same-origin' });
+          const text = await res.text();
+          let hits;
+          try {
+            hits = JSON.parse(text);
+          } catch {
+            hits = text
+              .split('\n')
+              .filter(Boolean)
+              .map((line) => {
+                const parts = line.split('|');
+                return { ID: parts[2] || '', KODE: parts[1] || '', NAMA: parts[0] || '' };
+              });
+          }
+          setSuggestions(hits);
+          setShow(hits.length > 0);
+          setActiveIdx(-1);
+        } catch {}
+      },
+      [icdType],
+    );
+    const handleKodeChange = (val2) => {
+      setKodeInput(val2);
+      clearTimeout(timer.current);
+      timer.current = setTimeout(() => search(val2), 300);
+    };
+    const pick = (hit) => {
+      setKodeInput(hit.KODE);
+      setNamaInput(hit.NAMA);
+      setShow(false);
+      onPick(hit.KODE, hit.NAMA, hit.ID);
+    };
+    (0, import_react.useEffect)(() => {
+      const handleClick = (e) => {
+        if (containerRef.current && !containerRef.current.contains(e.target)) setShow(false);
+      };
+      document.addEventListener('mousedown', handleClick);
+      return () => document.removeEventListener('mousedown', handleClick);
+    }, []);
+    const handleKey = (e) => {
+      if (!show) return;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setActiveIdx((i) => Math.min(i + 1, suggestions.length - 1));
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setActiveIdx((i) => Math.max(i - 1, 0));
+      }
+      if (e.key === 'Enter' && activeIdx >= 0) {
+        e.preventDefault();
+        pick(suggestions[activeIdx]);
+      }
+      if (e.key === 'Escape') setShow(false);
+    };
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
+      ref: containerRef,
+      style: { position: 'relative' },
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
+          style: { display: 'flex', gap: 4 },
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('input', {
+              value: kodeInput,
+              onChange: (e) => handleKodeChange(e.target.value),
+              onKeyDown: handleKey,
+              placeholder: 'Kode',
+              style: { ...inputStyle, width: '40%', fontSize: 11 },
+            }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('input', {
+              value: namaInput,
+              onChange: (e) => setNamaInput(e.target.value),
+              onKeyDown: handleKey,
+              placeholder: 'Nama',
+              style: { ...inputStyle, width: '60%', fontSize: 11 },
+            }),
+          ],
+        }),
+        show && suggestions.length > 0
+          ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)('div', {
+              style: {
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                right: 0,
+                zIndex: 100,
+                background: '#fff',
+                border: '1px solid #d1d5db',
+                borderRadius: 4,
+                maxHeight: 160,
+                overflow: 'auto',
+                boxShadow: '0 4px 12px rgba(0,0,0,.15)',
+              },
+              children: suggestions.map((hit, i) =>
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                  'div',
+                  {
+                    onClick: () => pick(hit),
+                    style: {
+                      padding: '3px 6px',
+                      fontSize: 11,
+                      cursor: 'pointer',
+                      background: i === activeIdx ? '#f0fdf4' : '#fff',
+                      borderBottom: '1px solid #f3f4f6',
+                    },
+                    children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
+                        style: { fontWeight: 600 },
+                        children: hit.KODE,
+                      }),
+                      ' \u2014 ',
+                      hit.NAMA,
+                    ],
+                  },
+                  hit.ID,
+                ),
+              ),
+            })
+          : null,
+      ],
     });
   }
   function App({ data, onSave, onClose }) {
@@ -27675,6 +27849,31 @@ var __morbis_feature = (() => {
         setSaving(false);
       }
     };
+    const updateSekunder = (i, item) => {
+      const arr = [...d.icd_sekunder];
+      arr[i] = item;
+      p({ icd_sekunder: arr });
+    };
+    const addSekunder = () =>
+      p({ icd_sekunder: [...d.icd_sekunder, { id: '', kode: '', nama: '' }] });
+    const removeSekunder = (i) => p({ icd_sekunder: d.icd_sekunder.filter((_, idx) => idx !== i) });
+    const updateTindakan = (i, item) => {
+      const arr = [...d.icd_tindakan];
+      arr[i] = item;
+      p({ icd_tindakan: arr });
+    };
+    const addTindakan = () =>
+      p({ icd_tindakan: [...d.icd_tindakan, { id: '', kode: '', nama: '' }] });
+    const removeTindakan = (i) => p({ icd_tindakan: d.icd_tindakan.filter((_, idx) => idx !== i) });
+    const updateNosokomial = (i, item) => {
+      const arr = [...d.icd_nosokomial];
+      arr[i] = item;
+      p({ icd_nosokomial: arr });
+    };
+    const addNosokomial = () =>
+      p({ icd_nosokomial: [...d.icd_nosokomial, { id: '', kode: '', nama: '' }] });
+    const removeNosokomial = (i) =>
+      p({ icd_nosokomial: d.icd_nosokomial.filter((_, idx) => idx !== i) });
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('form', {
       onSubmit: handleSubmit,
       className: 'ri-modal',
@@ -27763,9 +27962,10 @@ var __morbis_feature = (() => {
                   /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
                     children: [
                       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(L, { c: 'Dokter Rawat Bersama' }),
-                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(In, {
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Ta, {
                         v: d.dokter_bersama,
                         onChange: (v) => p({ dokter_bersama: v }),
+                        rows: 2,
                       }),
                     ],
                   }),
@@ -27774,9 +27974,10 @@ var __morbis_feature = (() => {
                       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(L, {
                         c: 'Alasan / Indikasi Rawat',
                       }),
-                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(In, {
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Ta, {
                         v: d.alasan_rawat,
                         onChange: (v) => p({ alasan_rawat: v }),
+                        rows: 2,
                       }),
                     ],
                   }),
@@ -27963,6 +28164,285 @@ var __morbis_feature = (() => {
                   }),
                 ],
               }),
+            }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Fs, {
+              lbl: 'ICD',
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
+                  style: { marginBottom: 8 },
+                  children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)('div', {
+                      style: { display: 'flex', gap: 4, alignItems: 'center', marginBottom: 4 },
+                      children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
+                        style: { fontSize: 11, fontWeight: 600, color: '#374151', width: 120 },
+                        children: 'Diagnosa Utama *',
+                      }),
+                    }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(IcdAutocomplete, {
+                      kode: d.kode_diagnosa_utama,
+                      nama: d.diagnosa_utama_nama,
+                      icdType: 'icd10',
+                      onPick: (kode, nama, id) =>
+                        p({
+                          kode_diagnosa_utama: kode,
+                          diagnosa_utama_nama: nama,
+                          id_diagnosa_utama: id,
+                        }),
+                    }),
+                  ],
+                }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
+                  style: { marginBottom: 8 },
+                  children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
+                      style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 },
+                      children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
+                          style: { fontSize: 11, fontWeight: 600, color: '#374151' },
+                          children: 'Diagnosa Sekunder',
+                        }),
+                        /* @__PURE__ */ (0, import_jsx_runtime.jsx)('button', {
+                          type: 'button',
+                          onClick: addSekunder,
+                          style: smallBtn,
+                          children: '+ Tambah',
+                        }),
+                      ],
+                    }),
+                    d.icd_sekunder.length > 0
+                      ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('table', {
+                          style: { width: '100%', borderCollapse: 'collapse' },
+                          children: [
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('thead', {
+                              children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('tr', {
+                                children: [
+                                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)('th', {
+                                    style: thStyle,
+                                    children: 'Kode',
+                                  }),
+                                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)('th', {
+                                    style: thStyle,
+                                    children: 'Nama',
+                                  }),
+                                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)('th', {
+                                    style: { ...thStyle, width: 40 },
+                                  }),
+                                ],
+                              }),
+                            }),
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('tbody', {
+                              children: d.icd_sekunder.map((item, i) =>
+                                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                                  'tr',
+                                  {
+                                    children: [
+                                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)('td', {
+                                        style: tdStyle,
+                                        children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                                          IcdAutocomplete,
+                                          {
+                                            kode: item.kode,
+                                            nama: item.nama,
+                                            icdType: 'icd10',
+                                            onPick: (kode, nama, id) =>
+                                              updateSekunder(i, { ...item, kode, nama, id }),
+                                          },
+                                        ),
+                                      }),
+                                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)('td', {
+                                        style: tdStyle,
+                                        children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                                          'button',
+                                          {
+                                            type: 'button',
+                                            onClick: () => removeSekunder(i),
+                                            style: smallBtn,
+                                            children: '\u2715',
+                                          },
+                                        ),
+                                      }),
+                                    ],
+                                  },
+                                  i,
+                                ),
+                              ),
+                            }),
+                          ],
+                        })
+                      : /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
+                          style: { fontSize: 11, color: '#9ca3af' },
+                          children: 'Belum ada diagnosa sekunder',
+                        }),
+                  ],
+                }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
+                  style: { marginBottom: 8 },
+                  children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
+                      style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 },
+                      children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
+                          style: { fontSize: 11, fontWeight: 600, color: '#374151' },
+                          children: 'Tindakan',
+                        }),
+                        /* @__PURE__ */ (0, import_jsx_runtime.jsx)('button', {
+                          type: 'button',
+                          onClick: addTindakan,
+                          style: smallBtn,
+                          children: '+ Tambah',
+                        }),
+                      ],
+                    }),
+                    d.icd_tindakan.length > 0
+                      ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('table', {
+                          style: { width: '100%', borderCollapse: 'collapse' },
+                          children: [
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('thead', {
+                              children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('tr', {
+                                children: [
+                                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)('th', {
+                                    style: thStyle,
+                                    children: 'Kode',
+                                  }),
+                                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)('th', {
+                                    style: thStyle,
+                                    children: 'Nama',
+                                  }),
+                                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)('th', {
+                                    style: { ...thStyle, width: 40 },
+                                  }),
+                                ],
+                              }),
+                            }),
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('tbody', {
+                              children: d.icd_tindakan.map((item, i) =>
+                                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                                  'tr',
+                                  {
+                                    children: [
+                                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)('td', {
+                                        style: tdStyle,
+                                        children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                                          IcdAutocomplete,
+                                          {
+                                            kode: item.kode,
+                                            nama: item.nama,
+                                            icdType: 'icd9',
+                                            onPick: (kode, nama, id) =>
+                                              updateTindakan(i, { ...item, kode, nama, id }),
+                                          },
+                                        ),
+                                      }),
+                                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)('td', {
+                                        style: tdStyle,
+                                        children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                                          'button',
+                                          {
+                                            type: 'button',
+                                            onClick: () => removeTindakan(i),
+                                            style: smallBtn,
+                                            children: '\u2715',
+                                          },
+                                        ),
+                                      }),
+                                    ],
+                                  },
+                                  i,
+                                ),
+                              ),
+                            }),
+                          ],
+                        })
+                      : /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
+                          style: { fontSize: 11, color: '#9ca3af' },
+                          children: 'Belum ada tindakan',
+                        }),
+                  ],
+                }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
+                  children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
+                      style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 },
+                      children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
+                          style: { fontSize: 11, fontWeight: 600, color: '#374151' },
+                          children: 'Nosokomial',
+                        }),
+                        /* @__PURE__ */ (0, import_jsx_runtime.jsx)('button', {
+                          type: 'button',
+                          onClick: addNosokomial,
+                          style: smallBtn,
+                          children: '+ Tambah',
+                        }),
+                      ],
+                    }),
+                    d.icd_nosokomial.length > 0
+                      ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('table', {
+                          style: { width: '100%', borderCollapse: 'collapse' },
+                          children: [
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('thead', {
+                              children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('tr', {
+                                children: [
+                                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)('th', {
+                                    style: thStyle,
+                                    children: 'Kode',
+                                  }),
+                                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)('th', {
+                                    style: thStyle,
+                                    children: 'Nama',
+                                  }),
+                                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)('th', {
+                                    style: { ...thStyle, width: 40 },
+                                  }),
+                                ],
+                              }),
+                            }),
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('tbody', {
+                              children: d.icd_nosokomial.map((item, i) =>
+                                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                                  'tr',
+                                  {
+                                    children: [
+                                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)('td', {
+                                        style: tdStyle,
+                                        children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                                          IcdAutocomplete,
+                                          {
+                                            kode: item.kode,
+                                            nama: item.nama,
+                                            icdType: 'icd10',
+                                            onPick: (kode, nama, id) =>
+                                              updateNosokomial(i, { ...item, kode, nama, id }),
+                                          },
+                                        ),
+                                      }),
+                                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)('td', {
+                                        style: tdStyle,
+                                        children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                                          'button',
+                                          {
+                                            type: 'button',
+                                            onClick: () => removeNosokomial(i),
+                                            style: smallBtn,
+                                            children: '\u2715',
+                                          },
+                                        ),
+                                      }),
+                                    ],
+                                  },
+                                  i,
+                                ),
+                              ),
+                            }),
+                          ],
+                        })
+                      : /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
+                          style: { fontSize: 11, color: '#9ca3af' },
+                          children: 'Belum ada nosokomial',
+                        }),
+                  ],
+                }),
+              ],
             }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Fs, {
               lbl: 'Kondisi Pulang',
@@ -28193,8 +28673,26 @@ var __morbis_feature = (() => {
       .map((el) => el.value)
       .filter(Boolean);
   }
+  function extractIcdItems(doc, prefix, ids) {
+    const items = [];
+    let i = 1;
+    while (doc.querySelector(`#${prefix}${i}`)) {
+      const kodeEl = doc.querySelector(`#kode_${prefix}${i}`);
+      const namaEl = doc.querySelector(`#${prefix}${i}`);
+      items.push({
+        kode: kodeEl?.value ?? '',
+        nama: namaEl?.value ?? '',
+        id: ids[i - 1] ?? '',
+      });
+      i++;
+    }
+    return items;
+  }
   function parseFormHtml(html) {
     const doc = new DOMParser().parseFromString(html, 'text/html');
+    const idsSekunder = arrVal(doc, 'id_diagnosa_sekunder[]');
+    const idsTindakan = arrVal(doc, 'id_tindakan[]');
+    const idsNosokomial = arrVal(doc, 'id_nosokomial[]');
     return {
       id_visit: val(doc, 'id_visit'),
       id_resume_inap: val(doc, 'id_resume_inap'),
@@ -28229,11 +28727,13 @@ var __morbis_feature = (() => {
       obat_plg: ta(doc, 'obat_plg'),
       tindakan_dua: ta(doc, 'tindakan_dua'),
       jenis_kasus: val(doc, 'jenis_kasus'),
-      // ICD hidden IDs
+      // ICD
+      kode_diagnosa_utama: doc.querySelector('#kode_diagnosa_utama')?.value ?? '',
+      diagnosa_utama_nama: doc.querySelector('#diagnosa_utama')?.value ?? '',
       id_diagnosa_utama: val(doc, 'id_diagnosa_utama'),
-      ket_diagnosa_utama: val(doc, 'ket_diagnosa_utama'),
-      id_diagnosa_sekunder: arrVal(doc, 'id_diagnosa_sekunder[]'),
-      id_tindakan_hidden: arrVal(doc, 'id_tindakan[]'),
+      icd_sekunder: extractIcdItems(doc, 'diagnosa_sekunder', idsSekunder),
+      icd_tindakan: extractIcdItems(doc, 'tindakan', idsTindakan),
+      icd_nosokomial: extractIcdItems(doc, 'nosokomial', idsNosokomial),
       // Kondisi pulang
       ku: val(doc, 'ku'),
       kes: val(doc, 'kes'),
@@ -28314,9 +28814,9 @@ var __morbis_feature = (() => {
     add('tindakan_dua', data.tindakan_dua);
     add('jenis_kasus', data.jenis_kasus);
     add('id_diagnosa_utama', data.id_diagnosa_utama);
-    add('ket_diagnosa_utama', data.ket_diagnosa_utama);
-    data.id_diagnosa_sekunder.forEach((id) => add('id_diagnosa_sekunder[]', id));
-    data.id_tindakan_hidden.forEach((id) => add('id_tindakan[]', id));
+    data.icd_sekunder.forEach((item) => add('id_diagnosa_sekunder[]', item.id));
+    data.icd_tindakan.forEach((item) => add('id_tindakan[]', item.id));
+    data.icd_nosokomial.forEach((item) => add('id_nosokomial[]', item.id));
     add('ku', data.ku);
     add('kes', data.kes);
     add('td_pulang', data.td_pulang);
@@ -28389,9 +28889,27 @@ var __morbis_feature = (() => {
         }),
       }),
     );
+    setTimeout(() => {
+      container.querySelectorAll('textarea').forEach((tx) => {
+        tx.addEventListener('input', () => {
+          tx.style.height = 'auto';
+          tx.style.height = tx.scrollHeight + 'px';
+        });
+        tx.dispatchEvent(new Event('input'));
+      });
+    }, 0);
   }
-  function init() {
+  async function isFeatureEnabled() {
+    try {
+      const result = await chrome.storage.sync.get('extensionConfig');
+      return result.extensionConfig?.features?.resumeRanap?.enabled === true;
+    } catch {
+      return true;
+    }
+  }
+  async function init() {
     if (!location.href.startsWith('http://103.147.236.140/v2/m-klaim/detail-v2-refaktor')) return;
+    if (!(await isFeatureEnabled())) return;
     const idVisit = new URLSearchParams(location.search).get('id_visit');
     if (!idVisit) return;
     const jenis =
@@ -28425,7 +28943,8 @@ var __morbis_feature = (() => {
     };
     document.body.appendChild(overlayBtn);
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  if (document.readyState === 'loading')
+    document.addEventListener('DOMContentLoaded', () => init());
   else init();
 })();
 /*! Bundled license information:
