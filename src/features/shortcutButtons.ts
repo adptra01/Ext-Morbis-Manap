@@ -22,10 +22,10 @@ injectCSS(
 
 const SHORTCUT_URLS = {
   rajal: '/admisi/pelaksanaan_pelayanan/halaman-utama',
-  ranap: '/admisi/detail-rawat-inap/input-tindakan',
+  ranap: '/admisi/detail-rawat-inap/resume-ri',
   dokumenPasien: '/admisi/pelaksanaan_pelayanan/dokumen-pasien',
   editResumeRajal: '/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new',
-  editResumeRanap: '/rekam-medik/resume-rawat-inap',
+  editResumeRanap: '/admisi/detail-rawat-inap/resume-ri',
   triageIgd: '/admisi/pelaksanaan_pelayanan/triage_terintegrasi',
 };
 
@@ -153,7 +153,7 @@ function editResumeUrl(): string | null {
     const qs = idRj ? `id_visit=${id}&id=${idRj}&page=6` : `id_visit=${id}&page=6`;
     return buildUrl(SHORTCUT_URLS.editResumeRajal, qs);
   }
-  if (isRawatInap()) return buildUrl(SHORTCUT_URLS.editResumeRanap, `id_visit=${id}`);
+  if (isRawatInap()) return buildUrl(SHORTCUT_URLS.editResumeRanap, `idVisit=${id}`);
   return null;
 }
 
