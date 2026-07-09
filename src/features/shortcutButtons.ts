@@ -181,12 +181,10 @@ function isTargetPage(): boolean {
 }
 
 function renderShortcutButtons(): void {
-  if (
-    !(
-      g.currentConfig?.features?.shortcutButtons?.enabled &&
-      g.ExtensionCore.isFeatureAllowed('shortcutButtons')
-    )
-  )
+  if (!(
+    g.currentConfig?.features?.shortcutButtons?.enabled &&
+    g.ExtensionCore.isFeatureAllowed('shortcutButtons')
+  ))
     return;
   if (!isTargetPage() || document.querySelector('[data-shortcut-buttons]')) return;
   if (!extractIdVisit()) return;
@@ -378,6 +376,7 @@ if (typeof g.featureModules !== 'undefined') {
       oneOf: [
         { prefix: '/admisi/pelaksanaan_pelayanan/' },
         { prefix: '/admisi/detail-rawat-inap/' },
+        { prefix: '/v2/m-klaim/detail-v2-refaktor' },
       ],
     },
     run: () => {

@@ -67,6 +67,7 @@ async function compileFeatureFiles() {
     'antrianTools.ts',
     'ttvEditor.ts',
     'resumeTab/mount.tsx',
+    'pindahOperasi/main.ts',
   ];
 
   for (const relativePath of tsFiles) {

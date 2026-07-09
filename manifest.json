@@ -99,6 +99,17 @@
     },
     {
       "matches": [
+        "http://192.168.8.4/admisi/pelaksanaan_pelayanan/edit-operasi*",
+        "http://103.147.236.140/admisi/pelaksanaan_pelayanan/edit-operasi*",
+        "http://192.168.8.4/admisi/detail-rawat-inap/edit-operasi*",
+        "http://103.147.236.140/admisi/detail-rawat-inap/edit-operasi*"
+      ],
+      "js": ["features/pindahOperasi/main.js"],
+      "run_at": "document_end",
+      "all_frames": false
+    },
+    {
+      "matches": [
         "http://192.168.8.4/inventory/penjualan-bebas*",
         "http://103.147.236.140/inventory/penjualan-bebas*"
       ],
