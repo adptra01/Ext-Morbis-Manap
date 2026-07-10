@@ -112,9 +112,9 @@ function toggleDeleteUIProcessingState(isDeleting: boolean): void {
   });
 
   document
-    .querySelectorAll<
-      HTMLInputElement | HTMLButtonElement
-    >('#' + BATCH_DELETE_CONFIG.previewId + ' input, #' + BATCH_DELETE_CONFIG.previewId + ' button')
+    .querySelectorAll<HTMLInputElement | HTMLButtonElement>(
+      '#' + BATCH_DELETE_CONFIG.previewId + ' input, #' + BATCH_DELETE_CONFIG.previewId + ' button',
+    )
     .forEach((el) => (el.disabled = isDeleting));
 
   togglePageButtonState(isDeleting);
@@ -124,7 +124,9 @@ function replaceButtonsWithReload(): void {
   const buttonsContainer = document.querySelector('.ext-modal-buttons');
   if (buttonsContainer) {
     buttonsContainer.innerHTML =
-      '<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">' + Icons.refresh + ' Reload Halaman</span></button>';
+      '<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">' +
+      Icons.refresh +
+      ' Reload Halaman</span></button>';
     document.getElementById('ext-reload-btn')?.addEventListener('click', () => {
       window.location.reload();
     });
@@ -146,40 +148,6 @@ async function deleteDokumen(dokumenId: string): Promise<boolean> {
   } catch (err) {
     console.error('[Delete Dokumen] Error:', err);
     return false;
-  }
-}
-
-function renderBatchDeleteButton(): void {
-  if (document.getElementById('ext-batch-delete-btn')) return;
-
-  injectSharedCSS();
-
-  const btn = document.createElement('button');
-  btn.id = 'ext-batch-delete-btn';
-  btn.type = 'button';
-  btn.textContent = 'Hapus Dokumen';
-
-  btn.addEventListener('click', showBatchDeleteModal);
-
-  let container: HTMLElement | null = null;
-  const uploadBtn = document.getElementById('ext-batch-url-btn');
-
-  if (uploadBtn && uploadBtn.parentNode) {
-    container = uploadBtn.parentNode as HTMLElement;
-    container.insertBefore(btn, uploadBtn.nextSibling);
-  } else {
-    container =
-      document.querySelector('.panel-heading') ||
-      document.querySelector('[id*="upload"]') ||
-      document.querySelector('.panel') ||
-      document.querySelector('main') ||
-      document.body;
-
-    if (container) {
-      container.appendChild(btn);
-    } else {
-      console.error('[BatchDelete] No suitable container found!');
-    }
   }
 }
 
@@ -234,7 +202,9 @@ function showBatchDeleteModal(): void {
         .getElementById('ext-fetch-files-btn')
         ?.addEventListener('click', crawlDokumenPasienDelete);
       document.getElementById('ext-start-delete-btn')?.addEventListener('click', startBatchDelete);
-      document.getElementById('ext-delete-search-input')?.addEventListener('input', updateDeletePreview);
+      document
+        .getElementById('ext-delete-search-input')
+        ?.addEventListener('input', updateDeletePreview);
 
       modal?.addEventListener('click', function (e) {
         if (e.target === modal) closeBatchDeleteModal();
@@ -266,7 +236,9 @@ function closeBatchDeleteModal(): void {
   const buttonsContainer = document.querySelector('.ext-modal-buttons');
   if (buttonsContainer) {
     buttonsContainer.innerHTML =
-      '<button id="ext-delete-cancel-btn" class="ext-btn ext-btn-secondary">Batal</button><button id="ext-start-delete-btn" class="ext-btn ext-btn-danger disabled"><span style="display:inline-flex;align-items:center;gap:6px;">' + Icons.trash + '</span> Hapus Terpilih</button>';
+      '<button id="ext-delete-cancel-btn" class="ext-btn ext-btn-secondary">Batal</button><button id="ext-start-delete-btn" class="ext-btn ext-btn-danger disabled"><span style="display:inline-flex;align-items:center;gap:6px;">' +
+      Icons.trash +
+      '</span> Hapus Terpilih</button>';
     document
       .getElementById('ext-delete-cancel-btn')
       ?.addEventListener('click', closeBatchDeleteModal);
@@ -406,22 +378,29 @@ function updateDeletePreview(): void {
   const query = (searchInput?.value || '').toLowerCase();
 
   if (!deleteQueue || deleteQueue.length === 0) {
-    if (previewEl) { previewEl.style.display = 'none'; previewEl.innerHTML = ''; }
+    if (previewEl) {
+      previewEl.style.display = 'none';
+      previewEl.innerHTML = '';
+    }
     if (searchWrap) searchWrap.style.display = 'none';
     if (searchInput) searchInput.value = '';
     if (startBtn) startBtn.disabled = true;
-    if (statusEl) { statusEl.textContent = ''; statusEl.style.color = '#4b5563'; }
+    if (statusEl) {
+      statusEl.textContent = '';
+      statusEl.style.color = '#4b5563';
+    }
     return;
   }
 
   if (searchWrap) searchWrap.style.display = 'block';
   const filtered = deleteQueue
     .map((item, idx) => ({ item, idx }))
-    .filter(({ item }) =>
-      !query ||
-      item.filename.toLowerCase().includes(query) ||
-      item.keterangan.toLowerCase().includes(query) ||
-      item.id_dokumen.toLowerCase().includes(query)
+    .filter(
+      ({ item }) =>
+        !query ||
+        item.filename.toLowerCase().includes(query) ||
+        item.keterangan.toLowerCase().includes(query) ||
+        item.id_dokumen.toLowerCase().includes(query),
     );
 
   if (previewEl) {
@@ -522,7 +501,8 @@ async function startBatchDelete(): Promise<void> {
   isDeletingProcess = true;
   toggleDeleteUIProcessingState(true);
 
-  let success = 0, fail = 0;
+  let success = 0,
+    fail = 0;
   const progressEl = document.getElementById(BATCH_DELETE_CONFIG.progressId) as HTMLElement | null;
   const progressFill = progressEl?.querySelector('.progress-fill') as HTMLElement | null;
   const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
@@ -582,11 +562,13 @@ async function crawlDokumenPasienDeleteToSidepanel(): Promise<void> {
   const idVisit = urlParams.get('id_visit');
 
   if (!idVisit) {
-    chrome.runtime.sendMessage({
-      type: 'TAB_ACTION_RESULT',
-      action: 'BATCH_DELETE_ERROR',
-      data: { error: 'Parameter id_visit tidak ditemukan di URL.' },
-    }).catch(console.error);
+    chrome.runtime
+      .sendMessage({
+        type: 'TAB_ACTION_RESULT',
+        action: 'BATCH_DELETE_ERROR',
+        data: { error: 'Parameter id_visit tidak ditemukan di URL.' },
+      })
+      .catch(console.error);
     return;
   }
 
@@ -636,17 +618,21 @@ async function crawlDokumenPasienDeleteToSidepanel(): Promise<void> {
       });
     }
 
-    chrome.runtime.sendMessage({
-      type: 'TAB_ACTION_RESULT',
-      action: 'BATCH_DELETE_CRAWL_RESULT',
-      data: { items: deleteQueue },
-    }).catch(console.error);
+    chrome.runtime
+      .sendMessage({
+        type: 'TAB_ACTION_RESULT',
+        action: 'BATCH_DELETE_CRAWL_RESULT',
+        data: { items: deleteQueue },
+      })
+      .catch(console.error);
   } catch (err) {
-    chrome.runtime.sendMessage({
-      type: 'TAB_ACTION_RESULT',
-      action: 'BATCH_DELETE_ERROR',
-      data: { error: (err as Error).message },
-    }).catch(console.error);
+    chrome.runtime
+      .sendMessage({
+        type: 'TAB_ACTION_RESULT',
+        action: 'BATCH_DELETE_ERROR',
+        data: { error: (err as Error).message },
+      })
+      .catch(console.error);
   }
 }
 
@@ -655,33 +641,42 @@ async function deleteSingleFromQueueToSidepanel(index: number, id_dokumen: strin
   if (!item) return;
 
   const ok = await deleteDokumen(id_dokumen);
-  chrome.runtime.sendMessage({
-    type: 'TAB_ACTION_RESULT',
-    action: 'BATCH_DELETE_SINGLE_RESULT',
-    data: { index, success: ok, error: ok ? undefined : 'Gagal memproses penghapusan di server.' },
-  }).catch(console.error);
+  chrome.runtime
+    .sendMessage({
+      type: 'TAB_ACTION_RESULT',
+      action: 'BATCH_DELETE_SINGLE_RESULT',
+      data: {
+        index,
+        success: ok,
+        error: ok ? undefined : 'Gagal memproses penghapusan di server.',
+      },
+    })
+    .catch(console.error);
 }
 
 async function startBatchDeleteToSidepanel(): Promise<void> {
   const selected = deleteQueue.filter((i) => i.selected);
   if (selected.length === 0) return;
 
-  let success = 0, fail = 0;
+  let success = 0,
+    fail = 0;
 
   for (let i = 0; i < selected.length; i++) {
     const item = selected[i];
     item.status = 'deleting';
 
-    chrome.runtime.sendMessage({
-      type: 'TAB_ACTION_RESULT',
-      action: 'BATCH_DELETE_PROGRESS',
-      data: {
-        percent: (i / selected.length) * 100,
-        status: `Menghapus: ${item.filename} (${i + 1}/${selected.length})...`,
-        items: deleteQueue,
-        finished: false,
-      },
-    }).catch(console.error);
+    chrome.runtime
+      .sendMessage({
+        type: 'TAB_ACTION_RESULT',
+        action: 'BATCH_DELETE_PROGRESS',
+        data: {
+          percent: (i / selected.length) * 100,
+          status: `Menghapus: ${item.filename} (${i + 1}/${selected.length})...`,
+          items: deleteQueue,
+          finished: false,
+        },
+      })
+      .catch(console.error);
 
     const ok = await deleteDokumen(item.id_dokumen);
     if (ok) {
@@ -692,16 +687,18 @@ async function startBatchDeleteToSidepanel(): Promise<void> {
       fail++;
     }
 
-    chrome.runtime.sendMessage({
-      type: 'TAB_ACTION_RESULT',
-      action: 'BATCH_DELETE_PROGRESS',
-      data: {
-        percent: ((i + 1) / selected.length) * 100,
-        status: `Diproses ${i + 1}/${selected.length} - Sukses: ${success}, Gagal: ${fail}`,
-        items: deleteQueue,
-        finished: i === selected.length - 1,
-      },
-    }).catch(console.error);
+    chrome.runtime
+      .sendMessage({
+        type: 'TAB_ACTION_RESULT',
+        action: 'BATCH_DELETE_PROGRESS',
+        data: {
+          percent: ((i + 1) / selected.length) * 100,
+          status: `Diproses ${i + 1}/${selected.length} - Sukses: ${success}, Gagal: ${fail}`,
+          items: deleteQueue,
+          finished: i === selected.length - 1,
+        },
+      })
+      .catch(console.error);
 
     await new Promise((r) => setTimeout(r, BATCH_DELETE_CONFIG.delayBetweenDelete));
   }
@@ -741,14 +738,16 @@ function initBatchDeleteFeature(): void {
     // Let's see: on `/v2/m-klaim/detail-v2-refaktor`, we have both features.
     // Let's report 'mKlaimDetail' from both content scripts, and in the sidepanel, we can show a sub-tab to toggle between "Upload Dokumen" and "Hapus Dokumen"!
     // Wow, this is an incredibly elegant design! It fits perfectly in the side panel's single view.
-    
-    chrome.runtime.sendMessage({
-      type: 'PAGE_CONTEXT',
-      feature: 'mKlaimDetail',
-      data: {
-        idVisit: new URLSearchParams(window.location.search).get('id_visit'),
-      },
-    }).catch(console.error);
+
+    chrome.runtime
+      .sendMessage({
+        type: 'PAGE_CONTEXT',
+        feature: 'mKlaimDetail',
+        data: {
+          idVisit: new URLSearchParams(window.location.search).get('id_visit'),
+        },
+      })
+      .catch(console.error);
 
     // Add message listener
     chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
@@ -774,12 +773,13 @@ function initBatchDeleteFeature(): void {
       return true;
     });
 
-    setTimeout(renderBatchDeleteButton, 500);
-    console.log('[BatchDelete] Init complete, button should be rendered');
+    console.log('[BatchDelete] Init complete');
   } catch (err) {
     console.error('[BatchDelete] Init error:', err);
   }
 }
+
+(window as any).batchDeleteShowModal = showBatchDeleteModal;
 
 if (typeof g.featureModules !== 'undefined') {
   g.featureModules.batchDelete = {

@@ -61,7 +61,7 @@ async function compileFeatureFiles() {
     'batchDeleteFiles.ts',
     'batchUploadUrl.ts',
     'openDetail.ts',
-    'shortcutButtons.ts',
+    'toolbar.ts',
     'cpptSearchFilter.ts',
     'resumeValidator.ts',
     'antrianTools.ts',

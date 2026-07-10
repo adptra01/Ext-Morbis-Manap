@@ -43,7 +43,7 @@
         "core.js",
         "features/shared/cookieFilterStorage.js",
         "features/openDetail.js",
-        "features/shortcutButtons.js",
+        "features/toolbar.js",
         "features/filterPersistence.js",
         "features/scrollButtons.js",
         "features/batchUploadUrl.js",

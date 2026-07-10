@@ -1,5 +1,5 @@
 import { getMorbisGlobals } from './shared/types.js';
-import { injectSharedCSS, showInlinePreviewSafe, Icons } from './shared/batchUtils.js';
+import { showInlinePreviewSafe, Icons } from './shared/batchUtils.js';
 
 const g = getMorbisGlobals();
 
@@ -119,88 +119,6 @@ function parseMetadataFromUrl(url: string): BatchItem {
   }
 }
 
-function renderBatchUploadButton(): void {
-  if (document.getElementById('ext-batch-url-btn')) return;
-
-  const btn = document.createElement('button');
-  btn.id = 'ext-batch-url-btn';
-  btn.type = 'button';
-  btn.textContent = 'Upload Dokumen Ulang';
-  btn.style.cssText =
-    'margin: 8px 0 4px 10px; padding: 10px 22px; background: #2563eb; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; display: block; transition: all 0.15s ease; letter-spacing: -0.1px; box-shadow: 0 2px 8px rgba(37,99,235,0.2);';
-
-  btn.addEventListener('click', showBatchUploadModal);
-  btn.addEventListener('mouseenter', () => (btn.style.background = '#1d4ed8'));
-  btn.addEventListener('mouseleave', () => (btn.style.background = '#2563eb'));
-
-  if (!document.getElementById('ext-batch-url-style')) {
-    const style = document.createElement('style');
-    style.id = 'ext-batch-url-style';
-    style.textContent = `
-      #${BATCH_UPLOAD_URL_CONFIG.textareaId} {
-        width: 100%; height: 150px; padding: 12px; border: 1px solid #e2e8f0;
-        border-radius: 10px; font-size: 12px; resize: vertical;
-        background: #f8fafc; color: #1e293b;
-        transition: border-color 0.15s ease; box-sizing: border-box;
-      }
-      #${BATCH_UPLOAD_URL_CONFIG.textareaId}:focus {
-        border-color: #94a3b8; box-shadow: 0 0 0 3px rgba(148,163,184,0.1);
-        background: #fff; outline: none;
-      }
-      #${BATCH_UPLOAD_URL_CONFIG.previewId} {
-        margin-top: 15px; max-height: none; overflow-y: visible;
-        border: 1px solid #f1f5f9; border-radius: 10px; padding: 12px;
-      }
-      #${BATCH_UPLOAD_URL_CONFIG.progressId} {
-        width: 100%; height: 6px; background: #f1f5f9;
-        border-radius: 3px; margin: 12px 0; display: none; overflow: hidden;
-      }
-      #${BATCH_UPLOAD_URL_CONFIG.progressId} .progress-fill {
-        height: 100%; background: #2563eb; border-radius: 3px;
-        width: 0%; transition: width 0.3s cubic-bezier(0.16,1,0.3,1);
-      }
-      .ext-input-label {
-        display: block; margin-bottom: 6px; font-weight: 600;
-        font-size: 13px; color: #334155;
-      }
-      .ext-mode-radio {
-        display: flex; gap: 20px; align-items: center; margin-bottom: 16px;
-        font-size: 13px; color: #475569;
-      }
-      .ext-mode-radio label { cursor: pointer; display: flex; align-items: center; gap: 6px; }
-      .ext-mode-radio input[type="radio"] { accent-color: #2563eb; }
-      .ext-upload-search-wrap { display: none; margin-bottom: 10px; }
-      .ext-keterangan-input {
-        width: 100%; padding: 6px 10px; font-size: 11px;
-        border: 1px solid #e2e8f0; border-radius: 6px; outline: none;
-        color: #475569; background: #f8fafc; box-sizing: border-box;
-        margin-top: 5px; transition: border-color 0.15s ease;
-      }
-      .ext-keterangan-input:focus { border-color: #94a3b8; background: #fff; }
-      .ext-keterangan-input::placeholder { color: #94a3b8; }
-      .ext-inline-preview-spinner {
-        width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.15);
-        border-top: 4px solid #fff; border-radius: 50%;
-        animation: ext-spin 0.8s linear infinite;
-      }
-      @keyframes ext-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    `;
-    document.head.appendChild(style);
-  }
-
-  injectSharedCSS();
-
-  const uploadSection = document.querySelector('.panel-heading, [id*="upload"], [class*="upload"]');
-  if (uploadSection) {
-    uploadSection.appendChild(btn);
-  } else {
-    const form = document.querySelector('form[action*="uploda-dokumen"]');
-    if (form) {
-      form.parentNode?.insertBefore(btn, form);
-    }
-  }
-}
-
 function showBatchUploadModal(): void {
   let modal = document.getElementById(BATCH_UPLOAD_URL_CONFIG.modalId) as HTMLElement | null;
   if (!modal) {
@@ -275,7 +193,9 @@ function showBatchUploadModal(): void {
       });
 
       document.getElementById('ext-crawl-btn')?.addEventListener('click', crawlDokumenPasien);
-      document.getElementById('ext-upload-search-input')?.addEventListener('input', () => updatePreview(batchQueue));
+      document
+        .getElementById('ext-upload-search-input')
+        ?.addEventListener('input', () => updatePreview(batchQueue));
 
       modal?.addEventListener('click', function (e: Event) {
         if (e.target === modal) closeBatchModal();
@@ -301,14 +221,18 @@ function closeBatchModal(): void {
     updatePreview([]);
     updateProgress(0);
     updateStatus('');
-    const searchInput = document.getElementById('ext-upload-search-input') as HTMLInputElement | null;
+    const searchInput = document.getElementById(
+      'ext-upload-search-input',
+    ) as HTMLInputElement | null;
     if (searchInput) searchInput.value = '';
     const searchWrap = document.getElementById('ext-upload-search-wrap');
     if (searchWrap) searchWrap.style.display = 'none';
     const buttonsContainer = document.querySelector('.ext-modal-buttons');
     if (buttonsContainer) {
       buttonsContainer.innerHTML =
-        '<button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Batal</button><button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 URL</button><button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>' + Icons.upload + ' Mulai Upload</button>';
+        '<button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Batal</button><button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 URL</button><button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>' +
+        Icons.upload +
+        ' Mulai Upload</button>';
       document.getElementById('ext-cancel-btn')?.addEventListener('click', closeBatchModal);
       document.getElementById('ext-test-single-btn')?.addEventListener('click', testSingleUpload);
       document.getElementById('ext-start-upload-btn')?.addEventListener('click', startBatchUpload);
@@ -323,7 +247,8 @@ function updatePreview(items: BatchItem[]): void {
   const startBtn = document.getElementById('ext-start-upload-btn') as HTMLButtonElement | null;
   const searchWrap = document.getElementById('ext-upload-search-wrap');
   const searchInput = document.getElementById('ext-upload-search-input') as HTMLInputElement | null;
-  const isAutoMode = (document.getElementById('ext-auto-section') as HTMLElement)?.style.display !== 'none';
+  const isAutoMode =
+    (document.getElementById('ext-auto-section') as HTMLElement)?.style.display !== 'none';
   const query = (searchInput?.value || '').toLowerCase();
 
   if (!items || items.length === 0) {
@@ -338,10 +263,12 @@ function updatePreview(items: BatchItem[]): void {
 
   const filtered = items
     .map((item, i) => ({ item, i }))
-    .filter(({ item }) =>
-      !query || item.filename.toLowerCase().includes(query) ||
-      item.keterangan.toLowerCase().includes(query) ||
-      item.norm.toLowerCase().includes(query)
+    .filter(
+      ({ item }) =>
+        !query ||
+        item.filename.toLowerCase().includes(query) ||
+        item.keterangan.toLowerCase().includes(query) ||
+        item.norm.toLowerCase().includes(query),
     );
 
   if (previewEl) previewEl.style.display = 'block';
@@ -730,7 +657,9 @@ async function runBatchQueue(): Promise<void> {
   const buttonsContainer = document.querySelector('.ext-modal-buttons');
   if (buttonsContainer) {
     buttonsContainer.innerHTML =
-      '<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">' + Icons.refresh + ' Reload Halaman</span></button>';
+      '<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">' +
+      Icons.refresh +
+      ' Reload Halaman</span></button>';
     document
       .getElementById('ext-reload-btn')
       ?.addEventListener('click', () => window.location.reload());
@@ -795,11 +724,13 @@ async function crawlDokumenPasienToSidepanel(): Promise<void> {
   const urlParams = new URLSearchParams(window.location.search);
   const idVisit = urlParams.get('id_visit');
   if (!idVisit) {
-    chrome.runtime.sendMessage({
-      type: 'TAB_ACTION_RESULT',
-      action: 'BATCH_UPLOAD_ERROR',
-      data: { error: 'Parameter id_visit tidak ditemukan di URL.' },
-    }).catch(console.error);
+    chrome.runtime
+      .sendMessage({
+        type: 'TAB_ACTION_RESULT',
+        action: 'BATCH_UPLOAD_ERROR',
+        data: { error: 'Parameter id_visit tidak ditemukan di URL.' },
+      })
+      .catch(console.error);
     return;
   }
 
@@ -838,11 +769,13 @@ async function crawlDokumenPasienToSidepanel(): Promise<void> {
     }
 
     if (urls.length === 0) {
-      chrome.runtime.sendMessage({
-        type: 'TAB_ACTION_RESULT',
-        action: 'BATCH_UPLOAD_CRAWL_RESULT',
-        data: { items: [] },
-      }).catch(console.error);
+      chrome.runtime
+        .sendMessage({
+          type: 'TAB_ACTION_RESULT',
+          action: 'BATCH_UPLOAD_CRAWL_RESULT',
+          data: { items: [] },
+        })
+        .catch(console.error);
       return;
     }
 
@@ -856,17 +789,21 @@ async function crawlDokumenPasienToSidepanel(): Promise<void> {
       return metadata;
     });
 
-    chrome.runtime.sendMessage({
-      type: 'TAB_ACTION_RESULT',
-      action: 'BATCH_UPLOAD_CRAWL_RESULT',
-      data: { items: batchQueue },
-    }).catch(console.error);
+    chrome.runtime
+      .sendMessage({
+        type: 'TAB_ACTION_RESULT',
+        action: 'BATCH_UPLOAD_CRAWL_RESULT',
+        data: { items: batchQueue },
+      })
+      .catch(console.error);
   } catch (err) {
-    chrome.runtime.sendMessage({
-      type: 'TAB_ACTION_RESULT',
-      action: 'BATCH_UPLOAD_ERROR',
-      data: { error: (err as Error).message },
-    }).catch(console.error);
+    chrome.runtime
+      .sendMessage({
+        type: 'TAB_ACTION_RESULT',
+        action: 'BATCH_UPLOAD_ERROR',
+        data: { error: (err as Error).message },
+      })
+      .catch(console.error);
   }
 }
 
@@ -875,11 +812,13 @@ async function runBatchQueueToSidepanel(): Promise<void> {
   const idVisitStr = urlParams.get('id_visit') || '';
 
   if (!idVisitStr) {
-    chrome.runtime.sendMessage({
-      type: 'TAB_ACTION_RESULT',
-      action: 'BATCH_UPLOAD_ERROR',
-      data: { error: 'ID Visit tidak ditemukan di URL' },
-    }).catch(console.error);
+    chrome.runtime
+      .sendMessage({
+        type: 'TAB_ACTION_RESULT',
+        action: 'BATCH_UPLOAD_ERROR',
+        data: { error: 'ID Visit tidak ditemukan di URL' },
+      })
+      .catch(console.error);
     return;
   }
 
@@ -889,11 +828,13 @@ async function runBatchQueueToSidepanel(): Promise<void> {
   const total = itemsToUpload.length;
 
   if (total === 0) {
-    chrome.runtime.sendMessage({
-      type: 'TAB_ACTION_RESULT',
-      action: 'BATCH_UPLOAD_ERROR',
-      data: { error: 'Tidak ada dokumen yang dipilih.' },
-    }).catch(console.error);
+    chrome.runtime
+      .sendMessage({
+        type: 'TAB_ACTION_RESULT',
+        action: 'BATCH_UPLOAD_ERROR',
+        data: { error: 'Tidak ada dokumen yang dipilih.' },
+      })
+      .catch(console.error);
     return;
   }
 
@@ -901,16 +842,18 @@ async function runBatchQueueToSidepanel(): Promise<void> {
     const metadata = itemsToUpload[i];
     metadata.status = 'uploading';
 
-    chrome.runtime.sendMessage({
-      type: 'TAB_ACTION_RESULT',
-      action: 'BATCH_UPLOAD_PROGRESS',
-      data: {
-        percent: (i / total) * 100,
-        status: `Mengupload: ${metadata.filename} (${i + 1}/${total})...`,
-        items: batchQueue,
-        finished: false,
-      },
-    }).catch(console.error);
+    chrome.runtime
+      .sendMessage({
+        type: 'TAB_ACTION_RESULT',
+        action: 'BATCH_UPLOAD_PROGRESS',
+        data: {
+          percent: (i / total) * 100,
+          status: `Mengupload: ${metadata.filename} (${i + 1}/${total})...`,
+          items: batchQueue,
+          finished: false,
+        },
+      })
+      .catch(console.error);
 
     try {
       const result = await processAndUploadSingleUrl(metadata, idVisitStr);
@@ -928,16 +871,18 @@ async function runBatchQueueToSidepanel(): Promise<void> {
       errorCount++;
     }
 
-    chrome.runtime.sendMessage({
-      type: 'TAB_ACTION_RESULT',
-      action: 'BATCH_UPLOAD_PROGRESS',
-      data: {
-        percent: ((i + 1) / total) * 100,
-        status: `Diproses: ${i + 1}/${total} - Sukses: ${successCount}, Gagal: ${errorCount}`,
-        items: batchQueue,
-        finished: i === total - 1,
-      },
-    }).catch(console.error);
+    chrome.runtime
+      .sendMessage({
+        type: 'TAB_ACTION_RESULT',
+        action: 'BATCH_UPLOAD_PROGRESS',
+        data: {
+          percent: ((i + 1) / total) * 100,
+          status: `Diproses: ${i + 1}/${total} - Sukses: ${successCount}, Gagal: ${errorCount}`,
+          items: batchQueue,
+          finished: i === total - 1,
+        },
+      })
+      .catch(console.error);
   }
 }
 
@@ -948,16 +893,18 @@ async function testSingleUploadToSidepanel(): Promise<void> {
   const idVisitStr = urlParams.get('id_visit') || '';
 
   firstItem.status = 'uploading';
-  chrome.runtime.sendMessage({
-    type: 'TAB_ACTION_RESULT',
-    action: 'BATCH_UPLOAD_PROGRESS',
-    data: {
-      percent: 50,
-      status: `Testing single upload: ${firstItem.filename}...`,
-      items: batchQueue,
-      finished: false,
-    },
-  }).catch(console.error);
+  chrome.runtime
+    .sendMessage({
+      type: 'TAB_ACTION_RESULT',
+      action: 'BATCH_UPLOAD_PROGRESS',
+      data: {
+        percent: 50,
+        status: `Testing single upload: ${firstItem.filename}...`,
+        items: batchQueue,
+        finished: false,
+      },
+    })
+    .catch(console.error);
 
   try {
     const result = await processAndUploadSingleUrl(firstItem, idVisitStr);
@@ -972,16 +919,18 @@ async function testSingleUploadToSidepanel(): Promise<void> {
     firstItem.error = (error as Error).message;
   }
 
-  chrome.runtime.sendMessage({
-    type: 'TAB_ACTION_RESULT',
-    action: 'BATCH_UPLOAD_PROGRESS',
-    data: {
-      percent: 100,
-      status: firstItem.status === 'success' ? 'Test upload sukses!' : 'Test upload gagal!',
-      items: batchQueue,
-      finished: true,
-    },
-  }).catch(console.error);
+  chrome.runtime
+    .sendMessage({
+      type: 'TAB_ACTION_RESULT',
+      action: 'BATCH_UPLOAD_PROGRESS',
+      data: {
+        percent: 100,
+        status: firstItem.status === 'success' ? 'Test upload sukses!' : 'Test upload gagal!',
+        items: batchQueue,
+        finished: true,
+      },
+    })
+    .catch(console.error);
 }
 
 function initBatchUploadUrlFeature(): void {
@@ -993,14 +942,16 @@ function initBatchUploadUrlFeature(): void {
   if (!hasIdVisitParam()) return;
 
   // Report page context on load
-  chrome.runtime.sendMessage({
-    type: 'PAGE_CONTEXT',
-    feature: 'mKlaimDetail',
-    data: {
-      idVisit: new URLSearchParams(window.location.search).get('id_visit'),
-      tanggalMasuk: getTanggalMasukFromPage(),
-    },
-  }).catch(console.error);
+  chrome.runtime
+    .sendMessage({
+      type: 'PAGE_CONTEXT',
+      feature: 'mKlaimDetail',
+      data: {
+        idVisit: new URLSearchParams(window.location.search).get('id_visit'),
+        tanggalMasuk: getTanggalMasukFromPage(),
+      },
+    })
+    .catch(console.error);
 
   // Set up tab action receiver
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
@@ -1009,11 +960,13 @@ function initBatchUploadUrlFeature(): void {
       if (action === 'BATCH_UPLOAD_ANALYZE') {
         const urls = extractUrls(payload.inputText);
         batchQueue = urls.map((url) => parseMetadataFromUrl(url));
-        chrome.runtime.sendMessage({
-          type: 'TAB_ACTION_RESULT',
-          action: 'BATCH_UPLOAD_ANALYZE_RESULT',
-          data: { items: batchQueue },
-        }).catch(console.error);
+        chrome.runtime
+          .sendMessage({
+            type: 'TAB_ACTION_RESULT',
+            action: 'BATCH_UPLOAD_ANALYZE_RESULT',
+            data: { items: batchQueue },
+          })
+          .catch(console.error);
       } else if (action === 'BATCH_UPLOAD_CRAWL') {
         crawlDokumenPasienToSidepanel();
       } else if (action === 'BATCH_UPLOAD_UPDATE_ITEMS') {
@@ -1029,20 +982,16 @@ function initBatchUploadUrlFeature(): void {
       }
       sendResponse({ success: true });
     } else if (message.type === 'BATCH_UPLOAD_ACTION') {
-       // Handle specific BATCH_UPLOAD_ACTION if needed, or alias to TAB_ACTION
-       // Based on current implementation, TAB_ACTION covers it.
-       // Leaving it here as a placeholder or to handle explicitly if design evolves.
-       sendResponse({ success: true });
+      // Handle specific BATCH_UPLOAD_ACTION if needed, or alias to TAB_ACTION
+      // Based on current implementation, TAB_ACTION covers it.
+      // Leaving it here as a placeholder or to handle explicitly if design evolves.
+      sendResponse({ success: true });
     }
     return true;
   });
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', renderBatchUploadButton);
-  } else {
-    setTimeout(renderBatchUploadButton, 1000);
-  }
 }
+
+(window as any).batchUploadShowModal = showBatchUploadModal;
 
 if (typeof g.featureModules !== 'undefined') {
   g.featureModules.batchUpload = {
