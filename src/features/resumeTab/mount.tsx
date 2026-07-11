@@ -1099,10 +1099,22 @@ function setupFloatingButton() {
   });
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', setupFloatingButton);
-} else {
-  setupFloatingButton();
+async function isFeatureEnabled(): Promise<boolean> {
+  try {
+    const result = await chrome.storage.sync.get('extensionConfig');
+    return result.extensionConfig?.features?.resumeModal?.enabled === true;
+  } catch {
+    return true;
+  }
 }
+
+(async () => {
+  if (!(await isFeatureEnabled())) return;
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupFloatingButton);
+  } else {
+    setupFloatingButton();
+  }
+})();
 
 export {};
