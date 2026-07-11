@@ -12,6 +12,8 @@ const TOOLBAR_URLS = {
   editResumeRajal: '/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new',
   editResumeRanap: '/admisi/detail-rawat-inap/resume-ri',
   triageIgd: '/admisi/pelaksanaan_pelayanan/triage_terintegrasi',
+  spri: '/admisi/detail-rawat-inap/surat-pengantar-ri',
+  pengkajianIgd: '/admisi/detail-rawat-inap/pengkajian-awal-ri/igd',
 };
 
 const BTN_STYLES = {
@@ -20,6 +22,8 @@ const BTN_STYLES = {
   dokumenPasien: { text: 'Dokumen Pasien', bg: '#8b5cf6', hover: '#7c3aed' },
   editResume: { text: 'Edit Resume', bg: colors.warning, hover: '#d97706' },
   triageIgd: { text: 'Triage IGD', bg: '#ec4899', hover: '#db2777' },
+  spri: { text: 'SPRI', bg: '#0891b2', hover: '#0e7490' },
+  pengkajianIgd: { text: 'Pengkajian Awal IGD', bg: '#d946ef', hover: '#c026d3' },
   backMklaim: { text: 'Kembali ke M-KLAIM', bg: colors.error, hover: '#dc2626' },
 };
 
@@ -90,6 +94,18 @@ function triageIgdUrl(): string | null {
   return id
     ? buildUrl(TOOLBAR_URLS.triageIgd, `id_visit=${id}&status_periksa=belum&page=51`)
     : null;
+}
+
+function spriUrl(): string | null {
+  if (!isRawatInap()) return null;
+  const id = extractIdVisit();
+  return id ? buildUrl(TOOLBAR_URLS.spri, `id_visit=${id}`) : null;
+}
+
+function pengkajianIgdUrl(): string | null {
+  if (!isRawatInap()) return null;
+  const id = extractIdVisit();
+  return id ? buildUrl(TOOLBAR_URLS.pengkajianIgd, `idVisit=${id}`) : null;
 }
 
 function mklaimBaseUrl(): string {
@@ -242,6 +258,10 @@ function renderToolbar(): void {
       if (rj) bar.appendChild(createLink(rj, BTN_STYLES.rajal));
     }
     if (isRawatInap()) {
+      const spri = spriUrl();
+      if (spri) bar.appendChild(createLink(spri, BTN_STYLES.spri));
+      const pkIgd = pengkajianIgdUrl();
+      if (pkIgd) bar.appendChild(createLink(pkIgd, BTN_STYLES.pengkajianIgd));
       const ri = ranapUrl();
       if (ri) bar.appendChild(createLink(ri, BTN_STYLES.ranap));
     }
