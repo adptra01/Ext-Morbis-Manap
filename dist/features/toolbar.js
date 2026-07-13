@@ -204,6 +204,7 @@ var __morbis_feature = (() => {
   }
   function createBtn(text, bg, hover, onClick) {
     const btn = document.createElement('button');
+    btn.type = 'button';
     btn.textContent = text;
     Object.assign(btn.style, {
       display: 'inline-flex',

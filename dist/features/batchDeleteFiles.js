@@ -799,7 +799,11 @@ Tindakan ini tidak bisa di-undo.`,
       .sendMessage({
         type: 'TAB_ACTION_RESULT',
         action: 'BATCH_DELETE_SINGLE_RESULT',
-        data: { index, success: ok, error: ok ? void 0 : 'Gagal memproses penghapusan di server.' },
+        data: {
+          index,
+          success: ok,
+          error: ok ? void 0 : 'Gagal memproses penghapusan di server.',
+        },
       })
       .catch(console.error);
   }

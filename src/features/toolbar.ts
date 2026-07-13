@@ -174,6 +174,7 @@ function createBtn(
   onClick: () => void,
 ): HTMLButtonElement {
   const btn = document.createElement('button');
+  btn.type = 'button';
   btn.textContent = text;
   Object.assign(btn.style, {
     display: 'inline-flex',
