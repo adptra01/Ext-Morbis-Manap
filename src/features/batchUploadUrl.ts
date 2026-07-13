@@ -1,5 +1,5 @@
 import { getMorbisGlobals } from './shared/types.js';
-import { showInlinePreviewSafe, Icons } from './shared/batchUtils.js';
+import { injectSharedCSS, showInlinePreviewSafe, Icons } from './shared/batchUtils.js';
 
 const g = getMorbisGlobals();
 
@@ -933,6 +933,50 @@ async function testSingleUploadToSidepanel(): Promise<void> {
     .catch(console.error);
 }
 
+function injectBatchUploadCSS(): void {
+  if (document.getElementById('ext-batch-url-style')) return;
+  const style = document.createElement('style');
+  style.id = 'ext-batch-url-style';
+  style.textContent = `
+    #${BATCH_UPLOAD_URL_CONFIG.textareaId} {
+      width:100%;height:150px;padding:12px;border:1px solid #e2e8f0;
+      border-radius:10px;font-size:12px;resize:vertical;
+      background:#f8fafc;color:#1e293b;
+      transition:border-color .15s ease;box-sizing:border-box;
+    }
+    #${BATCH_UPLOAD_URL_CONFIG.textareaId}:focus {
+      border-color:#94a3b8;box-shadow:0 0 0 3px rgba(148,163,184,.1);
+      background:#fff;outline:none;
+    }
+    #${BATCH_UPLOAD_URL_CONFIG.previewId} {
+      margin-top:15px;max-height:none;overflow-y:visible;
+      border:1px solid #f1f5f9;border-radius:10px;padding:12px;
+    }
+    #${BATCH_UPLOAD_URL_CONFIG.progressId} .progress-fill {
+      height:100%;background:#2563eb;border-radius:3px;
+      width:0%;transition:width .3s cubic-bezier(.16,1,.3,1);
+    }
+    .ext-input-label{display:block;margin-bottom:6px;font-weight:600;font-size:13px;color:#334155}
+    .ext-mode-radio{display:flex;gap:20px;align-items:center;margin-bottom:16px;font-size:13px;color:#475569}
+    .ext-mode-radio label{cursor:pointer;display:flex;align-items:center;gap:6px}
+    .ext-mode-radio input[type="radio"]{accent-color:#2563eb}
+    .ext-upload-search-wrap{display:none;margin-bottom:10px}
+    .ext-keterangan-input{
+      width:100%;padding:6px 10px;font-size:11px;border:1px solid #e2e8f0;border-radius:6px;
+      outline:none;color:#475569;background:#f8fafc;box-sizing:border-box;margin-top:5px;
+    }
+    .ext-keterangan-input:focus{border-color:#94a3b8;background:#fff}
+    .ext-keterangan-input::placeholder{color:#94a3b8}
+    .ext-inline-preview-spinner{
+      width:40px;height:40px;border:4px solid rgba(255,255,255,.15);
+      border-top:4px solid #fff;border-radius:50%;animation:ext-spin .8s linear infinite
+    }
+    @keyframes ext-spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+  `;
+  document.head.appendChild(style);
+  injectSharedCSS();
+}
+
 function initBatchUploadUrlFeature(): void {
   if (
     !g.currentConfig?.features?.batchUpload?.enabled ||
@@ -940,6 +984,8 @@ function initBatchUploadUrlFeature(): void {
   )
     return;
   if (!hasIdVisitParam()) return;
+
+  injectBatchUploadCSS();
 
   // Report page context on load
   chrome.runtime
