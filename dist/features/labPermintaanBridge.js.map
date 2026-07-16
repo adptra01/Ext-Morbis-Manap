@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/features/labPermintaanBridge.ts"],
+  "sourcesContent": ["(function () {\n  function extractPermintaanId() {\n    const els = document.querySelectorAll('[onclick*=\"edit_pengajuan\"]');\n    if (!els.length) {\n      console.log('[labBridge] No edit_pengajuan found');\n      return;\n    }\n    let count = 0;\n    els.forEach((el) => {\n      const onclick = el.getAttribute('onclick');\n      const match = onclick?.match(/edit_pengajuan\\((\\d+),\\s*(\\d+),\\s*(\\d+)\\)/);\n      if (match) {\n        const [, id_lab, id_visit, id_permintaan] = match;\n        localStorage.setItem(`lab_permintaan_${id_lab}`, id_permintaan);\n        localStorage.setItem(`lab_visit_${id_lab}`, id_visit);\n        count++;\n      }\n    });\n    console.log(`[labBridge] Stored ${count} permintaan mappings`);\n  }\n\n  if (document.readyState === 'complete') extractPermintaanId();\n  else window.addEventListener('load', extractPermintaanId);\n})();\n"],
+  "mappings": ";;;AAAA,GAAC,WAAY;AACX,aAAS,sBAAsB;AAC7B,YAAM,MAAM,SAAS,iBAAiB,6BAA6B;AACnE,UAAI,CAAC,IAAI,QAAQ;AACf,gBAAQ,IAAI,qCAAqC;AACjD;AAAA,MACF;AACA,UAAI,QAAQ;AACZ,UAAI,QAAQ,CAAC,OAAO;AAClB,cAAM,UAAU,GAAG,aAAa,SAAS;AACzC,cAAM,QAAQ,SAAS,MAAM,2CAA2C;AACxE,YAAI,OAAO;AACT,gBAAM,CAAC,EAAE,QAAQ,UAAU,aAAa,IAAI;AAC5C,uBAAa,QAAQ,kBAAkB,MAAM,IAAI,aAAa;AAC9D,uBAAa,QAAQ,aAAa,MAAM,IAAI,QAAQ;AACpD;AAAA,QACF;AAAA,MACF,CAAC;AACD,cAAQ,IAAI,sBAAsB,KAAK,sBAAsB;AAAA,IAC/D;AAEA,QAAI,SAAS,eAAe,WAAY,qBAAoB;AAAA,QACvD,QAAO,iBAAiB,QAAQ,mBAAmB;AAAA,EAC1D,GAAG;",
+  "names": []
+}
