@@ -1,0 +1,50 @@
+name: Deploy dist to main
+
+on:
+  push:
+    branches: [dev]
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Deploy dist → main (orphan-style)
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+          # Create orphan branch state
+          ORPHAN=$(mktemp -d)
+          cp -r dist "$ORPHAN/dist"
+          cp README.md "$ORPHAN/README.md"
+
+          cat > "$ORPHAN/.gitignore" << 'EOF'
+          # main branch — only dist/ + README.md are tracked
+          /*
+          !.gitignore
+          !README.md
+          !dist/
+          !dist/**
+          EOF
+
+          cd "$ORPHAN"
+          git init
+          git add -A
+          git commit -m "deploy: $(date -u +'%Y-%m-%d %H:%M UTC')"
+
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:main --force

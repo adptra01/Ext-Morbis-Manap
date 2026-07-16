@@ -20,10 +20,10 @@ Buka halaman [GitHub Repo → deploy](https://github.com/adptra01/Ext-Morbis-Man
 
 Windows akan menampilkan dua dialog — klik **Yes** lalu **OK**:
 
-| Dialog ① | Dialog ② |
-|----------|----------|
-| Klik **Yes** | Klik **OK** |
-| *"Adding information can unintentionally change or delete values..."* | *"The keys and values... have been successfully added to the registry."* |
+| Dialog ①                                                              | Dialog ②                                                                 |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Klik **Yes**                                                          | Klik **OK**                                                              |
+| _"Adding information can unintentionally change or delete values..."_ | _"The keys and values... have been successfully added to the registry."_ |
 
 ### Langkah 3: Buka Browser
 
@@ -39,12 +39,12 @@ Windows akan menampilkan dua dialog — klik **Yes** lalu **OK**:
 
 Buka halaman extensions browser Anda:
 
-| Browser | Buka alamat ini |
-|---------|-----------------|
-| **Edge** | `edge://extensions/` |
-| **Chrome** | `chrome://extensions/` |
-| **Firefox** | `about:addons` |
-| **Brave** | `brave://extensions/` |
+| Browser     | Buka alamat ini        |
+| ----------- | ---------------------- |
+| **Edge**    | `edge://extensions/`   |
+| **Chrome**  | `chrome://extensions/` |
+| **Firefox** | `about:addons`         |
+| **Brave**   | `brave://extensions/`  |
 
 Cari **MORBIS Ext Unofficial** di daftar:
 
@@ -54,32 +54,58 @@ Cari **MORBIS Ext Unofficial** di daftar:
 
 ## Troubleshooting
 
-| Masalah | Solusi |
-|---------|--------|
-| Ekstensi tidak muncul | Tutup **semua** jendela browser, lalu buka kembali |
-| Masih tidak muncul | Pastikan komputer terkoneksi internet |
-| Gagal di satu browser | Coba browser lain (semua didukung) |
-| Peringatan "Not from Web Store" | Normal — ekstensi internal, abaikan saja |
+| Masalah                         | Solusi                                             |
+| ------------------------------- | -------------------------------------------------- |
+| Ekstensi tidak muncul           | Tutup **semua** jendela browser, lalu buka kembali |
+| Masih tidak muncul              | Pastikan komputer terkoneksi internet              |
+| Gagal di satu browser           | Coba browser lain (semua didukung)                 |
+| Peringatan "Not from Web Store" | Normal — ekstensi internal, abaikan saja           |
 
 ---
 
 ## Yang TIDAK Perlu Dilakukan
 
-| ❌ | ✅ |
-|----|----|
-| Download source code | **Double-click file `.reg`** |
-| Buka GitHub | |
-| Ekstrak folder | |
-| Install program tambahan | |
-| Restart komputer | |
+| ❌                       | ✅                           |
+| ------------------------ | ---------------------------- |
+| Download source code     | **Double-click file `.reg`** |
+| Buka GitHub              |                              |
+| Ekstrak folder           |                              |
+| Install program tambahan |                              |
+| Restart komputer         |                              |
 
 ---
 
 ## Browser Didukung
 
 | Microsoft Edge | Google Chrome | Mozilla Firefox | Brave |
-|:---:|:---:|:---:|:---:|
-| ✅ | ✅ | ✅ | ✅ |
+| :------------: | :-----------: | :-------------: | :---: |
+|       ✅       |      ✅       |       ✅        |  ✅   |
+
+---
+
+## Branching Strategy
+
+| Branch   | Isi                                         | Tujuan                        |
+| -------- | ------------------------------------------- | ----------------------------- |
+| **dev**  | Semua source code (`src/`, `scripts/`, dll) | Pengembangan                  |
+| **main** | Hanya `dist/` + `README.md` + `.gitignore`  | Distribusi / Chrome Web Store |
+
+### `dev` → `main` (CI/CD)
+
+Push ke `dev` otomatis:
+
+1. `npm ci && npm run build`
+2. Push `dist/` + `README.md` + `.gitignore` ke `main` (force)
+
+Pemasang cukup akses `main` — tidak perlu lihat source.
+
+### Perbedaan dengan Branch Biasa
+
+`main` adalah **orphan-like** — tidak ada riwayat source code, hanya artefak build. Ini karena:
+
+- Ukuran repo tetap kecil untuk pemasang
+- Source code tidak perlu di-download siapa pun yang hanya pasang
+- History `main` linier dan bersih
 
 ---
 
