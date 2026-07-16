@@ -47,6 +47,7 @@ var __morbis_bg = (() => {
     DOKTER: 'dokter',
     APOTEK: 'apotek',
     ADMIN: 'admin',
+    LABOR: 'labor',
   };
   var DEFAULT_CUSTOM_URLS = [
     { id: 'default-1', url: 'http://192.168.8.4', enabled: true, isDefault: true },
@@ -162,6 +163,12 @@ var __morbis_bg = (() => {
         allowedRoles: ['casemix', 'dokter'],
         name: 'Resume Ranap Tab',
         description: 'Popup edit resume rawat inap di halaman detail M-KLAIM',
+      },
+      labHistory: {
+        enabled: true,
+        allowedRoles: ['labor'],
+        name: 'Riwayat Permintaan Lab',
+        description: 'Tombol lihat riwayat permintaan lab di halaman input hasil',
       },
     },
   };

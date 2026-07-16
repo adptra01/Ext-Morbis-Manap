@@ -17,6 +17,7 @@ const ROLES = {
   DOKTER: 'dokter',
   APOTEK: 'apotek',
   ADMIN: 'admin',
+  LABOR: 'labor',
 } as const;
 
 const DEFAULT_CUSTOM_URLS: CustomUrl[] = [
@@ -134,6 +135,12 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       allowedRoles: ['casemix', 'dokter'],
       name: 'Resume Ranap Tab',
       description: 'Popup edit resume rawat inap di halaman detail M-KLAIM',
+    },
+    labHistory: {
+      enabled: true,
+      allowedRoles: ['labor'],
+      name: 'Riwayat Permintaan Lab',
+      description: 'Tombol lihat riwayat permintaan lab di halaman input hasil',
     },
   },
 };

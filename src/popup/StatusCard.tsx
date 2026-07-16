@@ -21,6 +21,7 @@ const ROLES: { value: Role; label: string }[] = [
   { value: 'dokter', label: 'Dokter' },
   { value: 'apotek', label: 'Apotek' },
   { value: 'admin', label: 'Admin' },
+  { value: 'labor', label: 'Labor' },
 ];
 
 const ROLE_LABELS: Record<Role, string> = {
@@ -29,6 +30,7 @@ const ROLE_LABELS: Record<Role, string> = {
   dokter: 'Dokter',
   apotek: 'Apotek',
   admin: 'Admin',
+  labor: 'Labor',
 };
 
 export function StatusCard({ enabled, role, onToggle, onRoleChange }: StatusCardProps) {

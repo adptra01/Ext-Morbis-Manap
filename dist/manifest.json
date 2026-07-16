@@ -205,10 +205,22 @@
         "http://192.168.8.4/billing/billing*",
         "http://103.147.236.140/billing/billing*",
         "http://192.168.8.4/admisi/detail-rawat-inap/new-pemeriksaan-lab*",
-        "http://103.147.236.140/admisi/detail-rawat-inap/new-pemeriksaan-lab*"
+        "http://103.147.236.140/admisi/detail-rawat-inap/new-pemeriksaan-lab*",
+        "http://192.168.8.4/laboratorium/input-hasil/input-hasil-pa*",
+        "http://103.147.236.140/laboratorium/input-hasil/input-hasil-pa*"
       ],
       "js": ["core.js", "init.js"],
       "run_at": "document_end",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "http://192.168.8.4/laboratorium/input-hasil/input-hasil-pa*",
+        "http://103.147.236.140/laboratorium/input-hasil/input-hasil-pa*"
+      ],
+      "js": ["features/inputHasilPa.js"],
+      "run_at": "document_idle",
+      "world": "MAIN",
       "all_frames": false
     }
   ],

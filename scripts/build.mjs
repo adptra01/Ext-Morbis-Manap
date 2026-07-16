@@ -62,6 +62,7 @@ async function compileFeatureFiles() {
     'batchUploadUrl.ts',
     'openDetail.ts',
     'toolbar.ts',
+    'inputHasilPa.ts',
     'cpptSearchFilter.ts',
     'resumeValidator.ts',
     'antrianTools.ts',

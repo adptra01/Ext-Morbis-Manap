@@ -28,8 +28,16 @@ var y = _(n(), 1),
     { value: `dokter`, label: `Dokter` },
     { value: `apotek`, label: `Apotek` },
     { value: `admin`, label: `Admin` },
+    { value: `labor`, label: `Labor` },
   ],
-  C = { casemix: `Casemix`, kasir: `Kasir`, dokter: `Dokter`, apotek: `Apotek`, admin: `Admin` };
+  C = {
+    casemix: `Casemix`,
+    kasir: `Kasir`,
+    dokter: `Dokter`,
+    apotek: `Apotek`,
+    admin: `Admin`,
+    labor: `Labor`,
+  };
 function w({ enabled: e, role: n, onToggle: r, onRoleChange: i }) {
   return (0, x.jsxs)(`div`, {
     className: `flex items-center justify-between`,

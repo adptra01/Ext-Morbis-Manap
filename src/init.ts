@@ -89,6 +89,13 @@ async function initExtension(): Promise<void> {
     document.documentElement.removeAttribute('data-ext-resume-modal');
   }
 
+  const lhCfg = cfg?.features?.labHistory;
+  if (lhCfg?.enabled && window.ExtensionCore.isFeatureAllowed('labHistory')) {
+    document.documentElement.setAttribute('data-ext-lab-history', '1');
+  } else {
+    document.documentElement.removeAttribute('data-ext-lab-history');
+  }
+
   const ctx: FeatureContext = {
     pathname: normalizePath(window.location.pathname),
     url: new URL(window.location.href),
