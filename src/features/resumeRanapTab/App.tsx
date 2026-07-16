@@ -7,37 +7,92 @@ interface Props {
   onClose: () => void;
 }
 
-const inputStyle: React.CSSProperties = {
+const theme = {
+  primary: '#0d9488',
+  primaryDark: '#0f766e',
+  primaryLight: '#f0fdf4',
+  primaryBorder: '#99f6e4',
+  text: '#1e293b',
+  textMuted: '#64748b',
+  border: '#e2e8f0',
+  bg: '#f8fafc',
+  cardBg: '#ffffff',
+  radius: 8,
+  font: "'Inter','Segoe UI',system-ui,-apple-system,sans-serif",
+  shadow: '0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04)',
+};
+
+const inputBase: React.CSSProperties = {
   width: '100%',
-  padding: '4px 6px',
-  border: '1px solid #d1d5db',
-  borderRadius: 6,
-  fontSize: 12,
+  padding: '7px 10px',
+  border: `1px solid ${theme.border}`,
+  borderRadius: theme.radius,
+  fontSize: 13,
+  fontFamily: theme.font,
+  color: theme.text,
+  background: theme.cardBg,
   boxSizing: 'border-box',
+  outline: 'none',
+  transition: 'border-color .15s, box-shadow .15s',
 };
-const taStyle: React.CSSProperties = {
-  ...inputStyle,
-  fontFamily: 'monospace',
-  resize: 'vertical',
-  minHeight: 50,
-};
-const L = ({ c }: { c: string }) => (
-  <label
-    style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#374151', marginBottom: 1 }}
-  >
-    {c}
-  </label>
-);
-const In = ({
+
+function inputFocus(
+  e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+) {
+  e.target.style.borderColor = theme.primary;
+  e.target.style.boxShadow = `0 0 0 3px ${theme.primaryBorder}`;
+}
+function inputBlur(
+  e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+) {
+  e.target.style.borderColor = theme.border;
+  e.target.style.boxShadow = 'none';
+}
+
+function L({ c, req }: { c: string; req?: boolean }) {
+  return (
+    <label
+      style={{
+        display: 'block',
+        fontSize: 11,
+        fontWeight: 600,
+        color: theme.textMuted,
+        textTransform: 'uppercase',
+        letterSpacing: '0.04em',
+        marginBottom: 3,
+      }}
+    >
+      {c}
+      {req && <span style={{ color: '#dc2626', marginLeft: 2 }}>*</span>}
+    </label>
+  );
+}
+
+function In({
   v,
   onChange,
+  type,
   ...rest
 }: {
   v: string;
   onChange: (v: string) => void;
+  type?: string;
   [k: string]: unknown;
-}) => <input value={v} onChange={(e) => onChange(e.target.value)} style={inputStyle} {...rest} />;
-const Ta = ({
+}) {
+  return (
+    <input
+      value={v}
+      onChange={(e) => onChange(e.target.value)}
+      onFocus={inputFocus}
+      onBlur={inputBlur}
+      type={type || 'text'}
+      style={inputBase}
+      {...rest}
+    />
+  );
+}
+
+function Ta({
   v,
   onChange,
   rows = 3,
@@ -45,16 +100,121 @@ const Ta = ({
   v: string;
   onChange: (v: string) => void;
   rows?: number;
-}) => <textarea value={v} onChange={(e) => onChange(e.target.value)} rows={rows} style={taStyle} />;
-const Fs = ({ lbl, children }: { lbl: string; children: React.ReactNode }) => (
-  <fieldset
-    style={{ border: '1px solid #e5e7eb', borderRadius: 8, marginBottom: 10, padding: '6px 10px' }}
+}) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (el) {
+      el.style.height = 'auto';
+      el.style.height = Math.max(el.scrollHeight, rows * 20) + 'px';
+    }
+  }, [v, rows]);
+  return (
+    <textarea
+      ref={ref}
+      value={v}
+      onChange={(e) => {
+        onChange(e.target.value);
+        e.target.style.height = 'auto';
+        e.target.style.height = e.target.scrollHeight + 'px';
+      }}
+      onFocus={inputFocus}
+      onBlur={inputBlur}
+      rows={rows}
+      style={{
+        ...inputBase,
+        fontFamily: theme.font,
+        resize: 'vertical',
+        minHeight: 50,
+        lineHeight: 1.5,
+      }}
+    />
+  );
+}
+
+function Card({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        background: theme.cardBg,
+        border: `1px solid ${theme.border}`,
+        borderRadius: theme.radius,
+        marginBottom: 12,
+        overflow: 'hidden',
+      }}
+    >
+      <div
+        style={{
+          padding: '8px 14px',
+          background: theme.primaryLight,
+          borderBottom: `1px solid ${theme.primaryBorder}`,
+          fontSize: 13,
+          fontWeight: 700,
+          color: theme.primaryDark,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+        }}
+      >
+        <span style={{ fontSize: 16 }}>●</span>
+        {title}
+      </div>
+      <div style={{ padding: '12px 14px' }}>{children}</div>
+    </div>
+  );
+}
+
+function Sel({
+  v,
+  onChange,
+  opts,
+}: {
+  v: string;
+  onChange: (v: string) => void;
+  opts: SelectOption[];
+}) {
+  const match = opts.find((o) => o.value === v);
+  return (
+    <select
+      value={match ? v : ''}
+      onChange={(e) => onChange(e.target.value)}
+      onFocus={inputFocus}
+      onBlur={inputBlur}
+      style={inputBase}
+    >
+      {opts.map((o) => (
+        <option key={o.value} value={o.value}>
+          {o.label}
+        </option>
+      ))}
+      {!match && v ? (
+        <option value={v} disabled>
+          {v}
+        </option>
+      ) : null}
+    </select>
+  );
+}
+
+const Grid2 = ({ children }: { children: React.ReactNode }) => (
+  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>{children}</div>
+);
+const Grid3 = ({ children }: { children: React.ReactNode }) => (
+  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>{children}</div>
+);
+const GridAuto = ({ children, min = '100px' }: { children: React.ReactNode; min?: string }) => (
+  <div
+    style={{
+      display: 'grid',
+      gridTemplateColumns: `repeat(auto-fill, minmax(${min}, 1fr))`,
+      gap: 10,
+    }}
   >
-    <legend style={{ fontSize: 12, fontWeight: 700, color: '#059669', padding: '0 6px' }}>
-      {lbl}
-    </legend>
     {children}
-  </fieldset>
+  </div>
+);
+const Full = ({ children }: { children: React.ReactNode }) => (
+  <div style={{ gridColumn: '1 / -1' }}>{children}</div>
 );
 
 const JENIS_KASUS: SelectOption[] = [
@@ -86,6 +246,7 @@ const JENIS_KASUS: SelectOption[] = [
   { value: '222', label: 'Penyakit Dalam' },
   { value: '228', label: 'Gigi' },
 ];
+
 const KEADAAN_KELUAR: SelectOption[] = [
   { value: '', label: 'Pilih keadaan keluar' },
   { value: '31', label: 'Aps / Atas Permintaan Sendiri' },
@@ -98,6 +259,7 @@ const KEADAAN_KELUAR: SelectOption[] = [
   { value: '33', label: 'Meninggal >= 48 jam' },
   { value: '87', label: 'Pulang Hidup' },
 ];
+
 const CARA_KELUAR: SelectOption[] = [
   { value: '', label: 'Pilih cara keluar' },
   { value: '167', label: 'APS/Paksa' },
@@ -121,6 +283,7 @@ const CARA_KELUAR: SelectOption[] = [
   { value: '171', label: 'Meninggal Lebih 48 Jam' },
   { value: '161', label: 'Pulang Hidup' },
 ];
+
 const PEMERIKSAAN_LANJUT: SelectOption[] = [
   { value: '', label: 'Pilih pemeriksaan lanjut' },
   { value: '52', label: 'Bangsal' },
@@ -132,70 +295,50 @@ const PEMERIKSAAN_LANJUT: SelectOption[] = [
   { value: '49', label: 'Tidak Ada' },
 ];
 
-function Sel({
-  v,
-  onChange,
-  opts,
-}: {
-  v: string;
-  onChange: (v: string) => void;
-  opts: SelectOption[];
-}) {
-  const match = opts.find((o) => o.value === v);
-  return (
-    <select value={match ? v : ''} onChange={(e) => onChange(e.target.value)} style={inputStyle}>
-      {opts.map((o) => (
-        <option key={o.value} value={o.value}>
-          {o.label}
-        </option>
-      ))}
-      {!match && v ? (
-        <option value={v} disabled>
-          {v}
-        </option>
-      ) : null}
-    </select>
-  );
-}
-
-const thStyle: React.CSSProperties = {
-  fontSize: 10,
-  fontWeight: 700,
-  color: '#374151',
-  padding: '2px 4px',
-  borderBottom: '1px solid #d1d5db',
-  textAlign: 'left',
-};
-const tdStyle: React.CSSProperties = { padding: '2px 2px' };
 const smallBtn: React.CSSProperties = {
-  padding: '2px 8px',
-  fontSize: 10,
-  borderRadius: 4,
-  border: '1px solid #d1d5db',
-  background: '#fff',
+  padding: '4px 10px',
+  fontSize: 11,
+  fontWeight: 600,
+  borderRadius: 6,
+  border: `1px solid ${theme.border}`,
+  background: theme.cardBg,
+  color: theme.text,
   cursor: 'pointer',
+  transition: 'background .15s',
 };
 
-interface IcdAutocompleteProps {
-  kode: string;
-  nama: string;
-  icdType: 'icd10' | 'icd9';
-  onPick: (kode: string, nama: string, id: string) => void;
-}
+const dangerBtn: React.CSSProperties = {
+  ...smallBtn,
+  border: '1px solid #fecaca',
+  color: '#dc2626',
+  background: '#fef2f2',
+  padding: '2px 8px',
+  fontSize: 11,
+};
 
-interface Hit {
+interface Hitt {
   ID: string;
   KODE: string;
   NAMA: string;
 }
 
-function IcdAutocomplete({ kode, nama, icdType, onPick }: IcdAutocompleteProps) {
-  const [suggestions, setSuggestions] = useState<Hit[]>([]);
+function IcdAutocomplete({
+  kode,
+  nama,
+  icdType,
+  onPick,
+}: {
+  kode: string;
+  nama: string;
+  icdType: 'icd10' | 'icd9';
+  onPick: (kode: string, nama: string, id: string) => void;
+}) {
+  const [suggestions, setSuggestions] = useState<Hitt[]>([]);
   const [show, setShow] = useState(false);
   const [kodeInput, setKodeInput] = useState(kode);
   const [namaInput, setNamaInput] = useState(nama);
   const [activeIdx, setActiveIdx] = useState(-1);
-  const timer = useRef<ReturnType<typeof setTimeout>>();
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const search = useCallback(
@@ -210,7 +353,7 @@ function IcdAutocomplete({ kode, nama, icdType, onPick }: IcdAutocompleteProps) 
       try {
         const res = await fetch(url, { credentials: 'same-origin' });
         const text = await res.text();
-        let hits: Hit[];
+        let hits: Hitt[];
         try {
           hits = JSON.parse(text);
         } catch {
@@ -238,7 +381,7 @@ function IcdAutocomplete({ kode, nama, icdType, onPick }: IcdAutocompleteProps) 
     timer.current = setTimeout(() => search(val), 300);
   };
 
-  const pick = (hit: Hit) => {
+  const pick = (hit: Hitt) => {
     setKodeInput(hit.KODE);
     setNamaInput(hit.NAMA);
     setShow(false);
@@ -273,22 +416,30 @@ function IcdAutocomplete({ kode, nama, icdType, onPick }: IcdAutocompleteProps) 
   return (
     <div ref={containerRef} style={{ position: 'relative' }}>
       <div style={{ display: 'flex', gap: 4 }}>
-        <input
-          value={kodeInput}
-          onChange={(e) => handleKodeChange(e.target.value)}
-          onKeyDown={handleKey}
-          placeholder="Kode"
-          style={{ ...inputStyle, width: '40%', fontSize: 11 }}
-        />
-        <input
-          value={namaInput}
-          onChange={(e) => setNamaInput(e.target.value)}
-          onKeyDown={handleKey}
-          placeholder="Nama"
-          style={{ ...inputStyle, width: '60%', fontSize: 11 }}
-        />
+        <div style={{ flex: '0 0 35%' }}>
+          <input
+            value={kodeInput}
+            onChange={(e) => handleKodeChange(e.target.value)}
+            onKeyDown={handleKey}
+            onFocus={inputFocus}
+            onBlur={inputBlur}
+            placeholder="Kode"
+            style={{ ...inputBase, fontSize: 12, fontFamily: 'ui-monospace, monospace' }}
+          />
+        </div>
+        <div style={{ flex: 1 }}>
+          <input
+            value={namaInput}
+            onChange={(e) => setNamaInput(e.target.value)}
+            onKeyDown={handleKey}
+            onFocus={inputFocus}
+            onBlur={inputBlur}
+            placeholder="Nama diagnosis"
+            style={{ ...inputBase, fontSize: 12 }}
+          />
+        </div>
       </div>
-      {show && suggestions.length > 0 ? (
+      {show && suggestions.length > 0 && (
         <div
           style={{
             position: 'absolute',
@@ -296,31 +447,107 @@ function IcdAutocomplete({ kode, nama, icdType, onPick }: IcdAutocompleteProps) 
             left: 0,
             right: 0,
             zIndex: 100,
-            background: '#fff',
-            border: '1px solid #d1d5db',
-            borderRadius: 4,
-            maxHeight: 160,
+            background: theme.cardBg,
+            border: `1px solid ${theme.border}`,
+            borderRadius: theme.radius,
+            maxHeight: 180,
             overflow: 'auto',
-            boxShadow: '0 4px 12px rgba(0,0,0,.15)',
+            boxShadow: '0 8px 24px rgba(0,0,0,.12)',
+            marginTop: 2,
           }}
         >
           {suggestions.map((hit, i) => (
             <div
               key={hit.ID}
               onClick={() => pick(hit)}
+              onMouseEnter={() => setActiveIdx(i)}
               style={{
-                padding: '3px 6px',
-                fontSize: 11,
+                padding: '5px 10px',
+                fontSize: 12,
                 cursor: 'pointer',
-                background: i === activeIdx ? '#f0fdf4' : '#fff',
-                borderBottom: '1px solid #f3f4f6',
+                background: i === activeIdx ? theme.primaryLight : theme.cardBg,
+                borderBottom: `1px solid ${theme.border}`,
+                transition: 'background .1s',
               }}
             >
-              <span style={{ fontWeight: 600 }}>{hit.KODE}</span> — {hit.NAMA}
+              <span
+                style={{
+                  fontWeight: 700,
+                  color: theme.primaryDark,
+                  fontFamily: 'ui-monospace, monospace',
+                }}
+              >
+                {hit.KODE}
+              </span>
+              <span style={{ color: theme.textMuted, marginLeft: 6 }}>{hit.NAMA}</span>
             </div>
           ))}
         </div>
-      ) : null}
+      )}
+    </div>
+  );
+}
+
+function IcdList({
+  items,
+  icdType,
+  onChange,
+  onAdd,
+  onRemove,
+  label,
+  emptyText,
+}: {
+  items: IcdItem[];
+  icdType: 'icd10' | 'icd9';
+  onChange: (i: number, item: IcdItem) => void;
+  onAdd: () => void;
+  onRemove: (i: number) => void;
+  label: string;
+  emptyText: string;
+}) {
+  return (
+    <div style={{ marginBottom: items.length ? 10 : 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: theme.textMuted,
+            textTransform: 'uppercase',
+            letterSpacing: '0.04em',
+          }}
+        >
+          {label}
+        </span>
+        <button type="button" onClick={onAdd} style={smallBtn}>
+          + Tambah
+        </button>
+      </div>
+      {items.length > 0 ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {items.map((item, i) => (
+            <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
+              <div style={{ flex: 1 }}>
+                <IcdAutocomplete
+                  kode={item.kode}
+                  nama={item.nama}
+                  icdType={icdType}
+                  onPick={(kode, nama, id) => onChange(i, { ...item, kode, nama, id })}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => onRemove(i)}
+                style={{ ...dangerBtn, marginTop: 1 }}
+              >
+                Hapus
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <span style={{ fontSize: 12, color: theme.textMuted }}>{emptyText}</span>
+      )}
     </div>
   );
 }
@@ -377,66 +604,108 @@ export function App({ data, onSave, onClose }: Props) {
     p({ icd_nosokomial: d.icd_nosokomial.filter((_, idx) => idx !== i) });
 
   return (
-    <form onSubmit={handleSubmit} className="ri-modal" onClick={(e) => e.stopPropagation()}>
+    <form
+      onSubmit={handleSubmit}
+      className="ri-modal"
+      onClick={(e) => e.stopPropagation()}
+      style={{ fontFamily: theme.font }}
+    >
+      {/* HEADER */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '10px 20px',
-          borderBottom: '1px solid #e5e7eb',
-          background: '#059669',
+          padding: '12px 20px',
+          background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.primaryDark} 100%)`,
           color: '#fff',
+          flexShrink: 0,
         }}
       >
-        <span style={{ fontSize: 15, fontWeight: 700 }}>Resume Rawat Inap</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+          </svg>
+          <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.01em' }}>
+            Resume Rawat Inap
+          </span>
+        </div>
         <button
           type="button"
           onClick={onClose}
           style={{
-            background: 'none',
+            background: 'rgba(255,255,255,.15)',
             border: 'none',
             color: '#fff',
-            fontSize: 20,
+            width: 30,
+            height: 30,
+            borderRadius: 6,
+            fontSize: 16,
             cursor: 'pointer',
-            lineHeight: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'background .15s',
           }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,.25)')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,.15)')}
         >
           ✕
         </button>
       </div>
 
-      <div style={{ overflow: 'auto', padding: '12px 16px', flex: 1 }}>
-        {/* Patient info */}
+      {/* CONTENT */}
+      <div style={{ overflow: 'auto', padding: '14px 18px', flex: 1, background: theme.bg }}>
+        {/* Patient banner */}
         <div
           style={{
             display: 'flex',
-            gap: 14,
+            gap: 16,
             flexWrap: 'wrap',
-            marginBottom: 10,
+            alignItems: 'center',
+            marginBottom: 14,
+            padding: '10px 14px',
+            background: theme.cardBg,
+            border: `1px solid ${theme.border}`,
+            borderRadius: theme.radius,
             fontSize: 12,
-            background: '#f0fdf4',
-            padding: '6px 12px',
-            borderRadius: 8,
+            boxShadow: theme.shadow,
           }}
         >
-          <span>
-            <b>RM:</b> {d.norm}
-          </span>
-          <span>
-            <b>Pasien:</b> {d.pasien}
-          </span>
-          <span>
-            <b>Reg:</b> {d.noreg}
-          </span>
-          <span>
-            <b>Unit:</b> {d.unit}
-          </span>
+          {[
+            { label: 'RM', value: d.norm },
+            { label: 'Pasien', value: d.pasien },
+            { label: 'Reg', value: d.noreg },
+            { label: 'Unit', value: d.unit },
+          ].map((item) => (
+            <span key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span
+                style={{
+                  fontWeight: 700,
+                  color: theme.primaryDark,
+                  fontSize: 11,
+                  textTransform: 'uppercase',
+                }}
+              >
+                {item.label}
+              </span>
+              <span style={{ color: theme.text }}>{item.value}</span>
+            </span>
+          ))}
         </div>
 
         {/* Ringkasan */}
-        <Fs lbl="Ringkasan">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        <Card title="Ringkasan">
+          <Grid2>
             <div>
               <L c="Dokter Rawat Bersama" />
               <Ta v={d.dokter_bersama} onChange={(v) => p({ dokter_bersama: v })} rows={2} />
@@ -445,26 +714,20 @@ export function App({ data, onSave, onClose }: Props) {
               <L c="Alasan / Indikasi Rawat" />
               <Ta v={d.alasan_rawat} onChange={(v) => p({ alasan_rawat: v })} rows={2} />
             </div>
-            <div style={{ gridColumn: '1 / -1' }}>
+            <Full>
               <L c="Anamnesa" />
               <Ta v={d.anamnesa} onChange={(v) => p({ anamnesa: v })} rows={4} />
-            </div>
-            <div style={{ gridColumn: '1 / -1' }}>
+            </Full>
+            <Full>
               <L c="Riwayat Penyakit" />
               <Ta v={d.riwayat_penyakit} onChange={(v) => p({ riwayat_penyakit: v })} rows={3} />
-            </div>
-          </div>
-        </Fs>
+            </Full>
+          </Grid2>
+        </Card>
 
         {/* Vital Sign */}
-        <Fs lbl="Vital Sign">
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))',
-              gap: 6,
-            }}
-          >
+        <Card title="Vital Sign">
+          <GridAuto min="90px">
             {(['tensi', 'nadi', 'suhu', 'spo2', 'nafas'] as const).map((k) => (
               <div key={k}>
                 <L c={k.toUpperCase()} />
@@ -473,26 +736,26 @@ export function App({ data, onSave, onClose }: Props) {
             ))}
             {(['gcs_e', 'gcs_m', 'gcs_v'] as const).map((k) => (
               <div key={k}>
-                <L c={k.toUpperCase().replace('_', ' ')} />
+                <L c={k.replace('_', ' ').toUpperCase()} />
                 <In v={d[k]} onChange={(v) => p({ [k]: v })} />
               </div>
             ))}
-          </div>
-        </Fs>
+          </GridAuto>
+        </Card>
 
         {/* Pemeriksaan & Diagnosa */}
-        <Fs lbl="Pemeriksaan & Diagnosa">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            <div style={{ gridColumn: '1 / -1' }}>
+        <Card title="Pemeriksaan & Diagnosa">
+          <Grid2>
+            <Full>
               <L c="Pemeriksaan Fisik" />
               <Ta v={d.fisik_text} onChange={(v) => p({ fisik_text: v })} rows={5} />
-            </div>
-            <div style={{ gridColumn: '1 / -1' }}>
+            </Full>
+            <Full>
               <L c="Hasil Pemeriksaan Diagnostik (Lab, Rontgen, dll)" />
               <Ta v={d.laborat} onChange={(v) => p({ laborat: v })} rows={4} />
-            </div>
+            </Full>
             <div>
-              <L c="Diagnosa Utama" />
+              <L c="Diagnosa Utama" req />
               <Ta v={d.diagnosa_primary} onChange={(v) => p({ diagnosa_primary: v })} rows={2} />
             </div>
             <div>
@@ -507,34 +770,29 @@ export function App({ data, onSave, onClose }: Props) {
               <L c="Prosedur / Operasi" />
               <Ta v={d.tindakan} onChange={(v) => p({ tindakan: v })} rows={2} />
             </div>
-            <div style={{ gridColumn: '1 / -1' }}>
+            <Full>
               <L c="Pengobatan" />
               <Ta v={d.terapi_pengobatan} onChange={(v) => p({ terapi_pengobatan: v })} rows={4} />
-            </div>
-            <div style={{ gridColumn: '1 / -1' }}>
+            </Full>
+            <Full>
               <L c="Obat Pulang" />
               <Ta v={d.obat_plg} onChange={(v) => p({ obat_plg: v })} rows={3} />
-            </div>
-            <div style={{ gridColumn: '1 / -1' }}>
+            </Full>
+            <Full>
               <L c="Tindakan" />
               <Ta v={d.tindakan_dua} onChange={(v) => p({ tindakan_dua: v })} rows={4} />
-            </div>
+            </Full>
             <div>
               <L c="Jenis Kasus" />
               <Sel v={d.jenis_kasus} onChange={(v) => p({ jenis_kasus: v })} opts={JENIS_KASUS} />
             </div>
-          </div>
-        </Fs>
+          </Grid2>
+        </Card>
 
         {/* ICD */}
-        <Fs lbl="ICD">
-          {/* Diagnosa Utama */}
-          <div style={{ marginBottom: 8 }}>
-            <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginBottom: 4 }}>
-              <span style={{ fontSize: 11, fontWeight: 600, color: '#374151', width: 120 }}>
-                Diagnosa Utama *
-              </span>
-            </div>
+        <Card title="ICD">
+          <div style={{ marginBottom: 12 }}>
+            <L c="Diagnosa Utama" req />
             <IcdAutocomplete
               kode={d.kode_diagnosa_utama}
               nama={d.diagnosa_utama_nama}
@@ -545,150 +803,40 @@ export function App({ data, onSave, onClose }: Props) {
             />
           </div>
 
-          {/* Diagnosa Sekunder */}
-          <div style={{ marginBottom: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
-              <span style={{ fontSize: 11, fontWeight: 600, color: '#374151' }}>
-                Diagnosa Sekunder
-              </span>
-              <button type="button" onClick={addSekunder} style={smallBtn}>
-                + Tambah
-              </button>
-            </div>
-            {d.icd_sekunder.length > 0 ? (
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr>
-                    <th style={thStyle}>Kode</th>
-                    <th style={thStyle}>Nama</th>
-                    <th style={{ ...thStyle, width: 40 }}></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {d.icd_sekunder.map((item, i) => (
-                    <tr key={i}>
-                      <td style={tdStyle}>
-                        <IcdAutocomplete
-                          kode={item.kode}
-                          nama={item.nama}
-                          icdType="icd10"
-                          onPick={(kode, nama, id) =>
-                            updateSekunder(i, { ...item, kode, nama, id })
-                          }
-                        />
-                      </td>
-                      <td style={tdStyle}>
-                        <button type="button" onClick={() => removeSekunder(i)} style={smallBtn}>
-                          ✕
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <span style={{ fontSize: 11, color: '#9ca3af' }}>Belum ada diagnosa sekunder</span>
-            )}
-          </div>
+          <IcdList
+            items={d.icd_sekunder}
+            icdType="icd10"
+            onChange={updateSekunder}
+            onAdd={addSekunder}
+            onRemove={removeSekunder}
+            label="Diagnosa Sekunder"
+            emptyText="Belum ada diagnosa sekunder"
+          />
 
-          {/* Tindakan */}
-          <div style={{ marginBottom: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
-              <span style={{ fontSize: 11, fontWeight: 600, color: '#374151' }}>Tindakan</span>
-              <button type="button" onClick={addTindakan} style={smallBtn}>
-                + Tambah
-              </button>
-            </div>
-            {d.icd_tindakan.length > 0 ? (
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr>
-                    <th style={thStyle}>Kode</th>
-                    <th style={thStyle}>Nama</th>
-                    <th style={{ ...thStyle, width: 40 }}></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {d.icd_tindakan.map((item, i) => (
-                    <tr key={i}>
-                      <td style={tdStyle}>
-                        <IcdAutocomplete
-                          kode={item.kode}
-                          nama={item.nama}
-                          icdType="icd9"
-                          onPick={(kode, nama, id) =>
-                            updateTindakan(i, { ...item, kode, nama, id })
-                          }
-                        />
-                      </td>
-                      <td style={tdStyle}>
-                        <button type="button" onClick={() => removeTindakan(i)} style={smallBtn}>
-                          ✕
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <span style={{ fontSize: 11, color: '#9ca3af' }}>Belum ada tindakan</span>
-            )}
-          </div>
+          <IcdList
+            items={d.icd_tindakan}
+            icdType="icd9"
+            onChange={updateTindakan}
+            onAdd={addTindakan}
+            onRemove={removeTindakan}
+            label="Tindakan"
+            emptyText="Belum ada tindakan"
+          />
 
-          {/* Nosokomial */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
-              <span style={{ fontSize: 11, fontWeight: 600, color: '#374151' }}>Nosokomial</span>
-              <button type="button" onClick={addNosokomial} style={smallBtn}>
-                + Tambah
-              </button>
-            </div>
-            {d.icd_nosokomial.length > 0 ? (
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr>
-                    <th style={thStyle}>Kode</th>
-                    <th style={thStyle}>Nama</th>
-                    <th style={{ ...thStyle, width: 40 }}></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {d.icd_nosokomial.map((item, i) => (
-                    <tr key={i}>
-                      <td style={tdStyle}>
-                        <IcdAutocomplete
-                          kode={item.kode}
-                          nama={item.nama}
-                          icdType="icd10"
-                          onPick={(kode, nama, id) =>
-                            updateNosokomial(i, { ...item, kode, nama, id })
-                          }
-                        />
-                      </td>
-                      <td style={tdStyle}>
-                        <button type="button" onClick={() => removeNosokomial(i)} style={smallBtn}>
-                          ✕
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <span style={{ fontSize: 11, color: '#9ca3af' }}>Belum ada nosokomial</span>
-            )}
-          </div>
-        </Fs>
+          <IcdList
+            items={d.icd_nosokomial}
+            icdType="icd10"
+            onChange={updateNosokomial}
+            onAdd={addNosokomial}
+            onRemove={removeNosokomial}
+            label="Infeksi Nosokomial"
+            emptyText="Belum ada nosokomial"
+          />
+        </Card>
 
         {/* Kondisi Pulang */}
-        <Fs lbl="Kondisi Pulang">
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-              gap: 6,
-            }}
-          >
+        <Card title="Kondisi Pulang">
+          <GridAuto min="100px">
             {(
               [
                 'ku',
@@ -705,16 +853,16 @@ export function App({ data, onSave, onClose }: Props) {
                 <In v={d[k]} onChange={(v) => p({ [k]: v })} />
               </div>
             ))}
-            <div style={{ gridColumn: '1 / -1' }}>
+            <Full>
               <L c="Catatan Kondisi Pulang" />
               <Ta v={d.catatan_keluar} onChange={(v) => p({ catatan_keluar: v })} rows={2} />
-            </div>
-          </div>
-        </Fs>
+            </Full>
+          </GridAuto>
+        </Card>
 
         {/* Keluar */}
-        <Fs lbl="Keluar">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        <Card title="Keluar">
+          <Grid2>
             <div>
               <L c="Keadaan Keluar" />
               <Sel
@@ -747,59 +895,79 @@ export function App({ data, onSave, onClose }: Props) {
               <L c="Kelas" />
               <In v={d.kelas} onChange={(v) => p({ kelas: v })} />
             </div>
-            <div>
-              <L c="Penyebab Kematian" />
-              <Ta v={d.penyebab_kematian} onChange={(v) => p({ penyebab_kematian: v })} rows={2} />
-            </div>
-            <div style={{ gridColumn: '1 / -1' }}>
+            <Full>
               <L c="Instruksi Pulang" />
               <Ta v={d.instruksi_pulang} onChange={(v) => p({ instruksi_pulang: v })} rows={3} />
-            </div>
-          </div>
-        </Fs>
+            </Full>
+            <Full>
+              <L c="Penyebab Kematian" />
+              <Ta v={d.penyebab_kematian} onChange={(v) => p({ penyebab_kematian: v })} rows={2} />
+            </Full>
+          </Grid2>
+        </Card>
       </div>
 
-      {/* footer */}
+      {/* FOOTER */}
       <div
         style={{
           display: 'flex',
           justifyContent: 'flex-end',
           gap: 8,
-          padding: '8px 16px',
-          borderTop: '1px solid #e5e7eb',
+          padding: '10px 18px',
+          borderTop: `1px solid ${theme.border}`,
           alignItems: 'center',
+          flexShrink: 0,
+          background: theme.cardBg,
         }}
       >
         {error && (
-          <span style={{ color: '#dc2626', fontSize: 12, marginRight: 'auto' }}>{error}</span>
+          <div
+            style={{
+              color: '#dc2626',
+              fontSize: 12,
+              marginRight: 'auto',
+              background: '#fef2f2',
+              padding: '4px 10px',
+              borderRadius: 6,
+              border: '1px solid #fecaca',
+            }}
+          >
+            {error}
+          </div>
         )}
         <button
           type="button"
           onClick={onClose}
           style={{
-            padding: '6px 16px',
-            borderRadius: 6,
-            border: '1px solid #d1d5db',
-            background: '#fff',
+            padding: '7px 18px',
+            borderRadius: theme.radius,
+            border: `1px solid ${theme.border}`,
+            background: theme.cardBg,
             fontSize: 12,
-            cursor: 'pointer',
             fontWeight: 600,
+            color: theme.text,
+            cursor: 'pointer',
+            transition: 'background .15s',
           }}
           disabled={saving}
+          onMouseEnter={(e) => (e.currentTarget.style.background = theme.bg)}
+          onMouseLeave={(e) => (e.currentTarget.style.background = theme.cardBg)}
         >
           Batal
         </button>
         <button
           type="submit"
           style={{
-            padding: '6px 16px',
-            borderRadius: 6,
-            border: '1px solid #059669',
-            background: '#059669',
+            padding: '7px 22px',
+            borderRadius: theme.radius,
+            border: 'none',
+            background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.primaryDark} 100%)`,
             color: '#fff',
             fontSize: 12,
+            fontWeight: 700,
             cursor: 'pointer',
-            fontWeight: 600,
+            transition: 'opacity .15s',
+            opacity: saving ? 0.6 : 1,
           }}
           disabled={saving}
         >

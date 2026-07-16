@@ -27527,54 +27527,183 @@ var __morbis_feature = (() => {
   // src/features/resumeRanapTab/App.tsx
   var import_react = __toESM(require_react(), 1);
   var import_jsx_runtime = __toESM(require_jsx_runtime(), 1);
-  var inputStyle = {
+  var theme = {
+    primary: '#0d9488',
+    primaryDark: '#0f766e',
+    primaryLight: '#f0fdf4',
+    primaryBorder: '#99f6e4',
+    text: '#1e293b',
+    textMuted: '#64748b',
+    border: '#e2e8f0',
+    bg: '#f8fafc',
+    cardBg: '#ffffff',
+    radius: 8,
+    font: "'Inter','Segoe UI',system-ui,-apple-system,sans-serif",
+    shadow: '0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04)',
+  };
+  var inputBase = {
     width: '100%',
-    padding: '4px 6px',
-    border: '1px solid #d1d5db',
-    borderRadius: 6,
-    fontSize: 12,
+    padding: '7px 10px',
+    border: `1px solid ${theme.border}`,
+    borderRadius: theme.radius,
+    fontSize: 13,
+    fontFamily: theme.font,
+    color: theme.text,
+    background: theme.cardBg,
     boxSizing: 'border-box',
+    outline: 'none',
+    transition: 'border-color .15s, box-shadow .15s',
   };
-  var taStyle = {
-    ...inputStyle,
-    fontFamily: 'monospace',
-    resize: 'vertical',
-    minHeight: 50,
-  };
-  var L = ({ c }) =>
-    /* @__PURE__ */ (0, import_jsx_runtime.jsx)('label', {
-      style: { display: 'block', fontSize: 11, fontWeight: 600, color: '#374151', marginBottom: 1 },
-      children: c,
-    });
-  var In = ({ v, onChange, ...rest }) =>
-    /* @__PURE__ */ (0, import_jsx_runtime.jsx)('input', {
-      value: v,
-      onChange: (e) => onChange(e.target.value),
-      style: inputStyle,
-      ...rest,
-    });
-  var Ta = ({ v, onChange, rows = 3 }) =>
-    /* @__PURE__ */ (0, import_jsx_runtime.jsx)('textarea', {
-      value: v,
-      onChange: (e) => onChange(e.target.value),
-      rows,
-      style: taStyle,
-    });
-  var Fs = ({ lbl, children }) =>
-    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('fieldset', {
+  function inputFocus(e) {
+    e.target.style.borderColor = theme.primary;
+    e.target.style.boxShadow = `0 0 0 3px ${theme.primaryBorder}`;
+  }
+  function inputBlur(e) {
+    e.target.style.borderColor = theme.border;
+    e.target.style.boxShadow = 'none';
+  }
+  function L({ c, req }) {
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('label', {
       style: {
-        border: '1px solid #e5e7eb',
-        borderRadius: 8,
-        marginBottom: 10,
-        padding: '6px 10px',
+        display: 'block',
+        fontSize: 11,
+        fontWeight: 600,
+        color: theme.textMuted,
+        textTransform: 'uppercase',
+        letterSpacing: '0.04em',
+        marginBottom: 3,
       },
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)('legend', {
-          style: { fontSize: 12, fontWeight: 700, color: '#059669', padding: '0 6px' },
-          children: lbl,
-        }),
-        children,
+        c,
+        req &&
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
+            style: { color: '#dc2626', marginLeft: 2 },
+            children: '*',
+          }),
       ],
+    });
+  }
+  function In({ v, onChange, type, ...rest }) {
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsx)('input', {
+      value: v,
+      onChange: (e) => onChange(e.target.value),
+      onFocus: inputFocus,
+      onBlur: inputBlur,
+      type: type || 'text',
+      style: inputBase,
+      ...rest,
+    });
+  }
+  function Ta({ v, onChange, rows = 3 }) {
+    const ref = (0, import_react.useRef)(null);
+    (0, import_react.useEffect)(() => {
+      const el = ref.current;
+      if (el) {
+        el.style.height = 'auto';
+        el.style.height = Math.max(el.scrollHeight, rows * 20) + 'px';
+      }
+    }, [v, rows]);
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsx)('textarea', {
+      ref,
+      value: v,
+      onChange: (e) => {
+        onChange(e.target.value);
+        e.target.style.height = 'auto';
+        e.target.style.height = e.target.scrollHeight + 'px';
+      },
+      onFocus: inputFocus,
+      onBlur: inputBlur,
+      rows,
+      style: {
+        ...inputBase,
+        fontFamily: theme.font,
+        resize: 'vertical',
+        minHeight: 50,
+        lineHeight: 1.5,
+      },
+    });
+  }
+  function Card({ title, children }) {
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
+      style: {
+        background: theme.cardBg,
+        border: `1px solid ${theme.border}`,
+        borderRadius: theme.radius,
+        marginBottom: 12,
+        overflow: 'hidden',
+      },
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
+          style: {
+            padding: '8px 14px',
+            background: theme.primaryLight,
+            borderBottom: `1px solid ${theme.primaryBorder}`,
+            fontSize: 13,
+            fontWeight: 700,
+            color: theme.primaryDark,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+          },
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
+              style: { fontSize: 16 },
+              children: '\u25CF',
+            }),
+            title,
+          ],
+        }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)('div', {
+          style: { padding: '12px 14px' },
+          children,
+        }),
+      ],
+    });
+  }
+  function Sel({ v, onChange, opts }) {
+    const match = opts.find((o) => o.value === v);
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('select', {
+      value: match ? v : '',
+      onChange: (e) => onChange(e.target.value),
+      onFocus: inputFocus,
+      onBlur: inputBlur,
+      style: inputBase,
+      children: [
+        opts.map((o) =>
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+            'option',
+            { value: o.value, children: o.label },
+            o.value,
+          ),
+        ),
+        !match && v
+          ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)('option', {
+              value: v,
+              disabled: true,
+              children: v,
+            })
+          : null,
+      ],
+    });
+  }
+  var Grid2 = ({ children }) =>
+    /* @__PURE__ */ (0, import_jsx_runtime.jsx)('div', {
+      style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 },
+      children,
+    });
+  var GridAuto = ({ children, min = '100px' }) =>
+    /* @__PURE__ */ (0, import_jsx_runtime.jsx)('div', {
+      style: {
+        display: 'grid',
+        gridTemplateColumns: `repeat(auto-fill, minmax(${min}, 1fr))`,
+        gap: 10,
+      },
+      children,
+    });
+  var Full = ({ children }) =>
+    /* @__PURE__ */ (0, import_jsx_runtime.jsx)('div', {
+      style: { gridColumn: '1 / -1' },
+      children,
     });
   var JENIS_KASUS = [
     { value: '', label: 'Pilih jenis kasus' },
@@ -27650,46 +27779,24 @@ var __morbis_feature = (() => {
     { value: '9', label: 'RS Lain' },
     { value: '49', label: 'Tidak Ada' },
   ];
-  function Sel({ v, onChange, opts }) {
-    const match = opts.find((o) => o.value === v);
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('select', {
-      value: match ? v : '',
-      onChange: (e) => onChange(e.target.value),
-      style: inputStyle,
-      children: [
-        opts.map((o) =>
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-            'option',
-            { value: o.value, children: o.label },
-            o.value,
-          ),
-        ),
-        !match && v
-          ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)('option', {
-              value: v,
-              disabled: true,
-              children: v,
-            })
-          : null,
-      ],
-    });
-  }
-  var thStyle = {
-    fontSize: 10,
-    fontWeight: 700,
-    color: '#374151',
-    padding: '2px 4px',
-    borderBottom: '1px solid #d1d5db',
-    textAlign: 'left',
-  };
-  var tdStyle = { padding: '2px 2px' };
   var smallBtn = {
-    padding: '2px 8px',
-    fontSize: 10,
-    borderRadius: 4,
-    border: '1px solid #d1d5db',
-    background: '#fff',
+    padding: '4px 10px',
+    fontSize: 11,
+    fontWeight: 600,
+    borderRadius: 6,
+    border: `1px solid ${theme.border}`,
+    background: theme.cardBg,
+    color: theme.text,
     cursor: 'pointer',
+    transition: 'background .15s',
+  };
+  var dangerBtn = {
+    ...smallBtn,
+    border: '1px solid #fecaca',
+    color: '#dc2626',
+    background: '#fef2f2',
+    padding: '2px 8px',
+    fontSize: 11,
   };
   function IcdAutocomplete({ kode, nama, icdType, onPick }) {
     const [suggestions, setSuggestions] = (0, import_react.useState)([]);
@@ -27697,7 +27804,7 @@ var __morbis_feature = (() => {
     const [kodeInput, setKodeInput] = (0, import_react.useState)(kode);
     const [namaInput, setNamaInput] = (0, import_react.useState)(nama);
     const [activeIdx, setActiveIdx] = (0, import_react.useState)(-1);
-    const timer = (0, import_react.useRef)();
+    const timer = (0, import_react.useRef)(void 0);
     const containerRef = (0, import_react.useRef)(null);
     const search = (0, import_react.useCallback)(
       async (q) => {
@@ -27771,63 +27878,144 @@ var __morbis_feature = (() => {
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
           style: { display: 'flex', gap: 4 },
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('input', {
-              value: kodeInput,
-              onChange: (e) => handleKodeChange(e.target.value),
-              onKeyDown: handleKey,
-              placeholder: 'Kode',
-              style: { ...inputStyle, width: '40%', fontSize: 11 },
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('div', {
+              style: { flex: '0 0 35%' },
+              children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)('input', {
+                value: kodeInput,
+                onChange: (e) => handleKodeChange(e.target.value),
+                onKeyDown: handleKey,
+                onFocus: inputFocus,
+                onBlur: inputBlur,
+                placeholder: 'Kode',
+                style: { ...inputBase, fontSize: 12, fontFamily: 'ui-monospace, monospace' },
+              }),
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('input', {
-              value: namaInput,
-              onChange: (e) => setNamaInput(e.target.value),
-              onKeyDown: handleKey,
-              placeholder: 'Nama',
-              style: { ...inputStyle, width: '60%', fontSize: 11 },
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('div', {
+              style: { flex: 1 },
+              children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)('input', {
+                value: namaInput,
+                onChange: (e) => setNamaInput(e.target.value),
+                onKeyDown: handleKey,
+                onFocus: inputFocus,
+                onBlur: inputBlur,
+                placeholder: 'Nama diagnosis',
+                style: { ...inputBase, fontSize: 12 },
+              }),
             }),
           ],
         }),
-        show && suggestions.length > 0
-          ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)('div', {
+        show &&
+          suggestions.length > 0 &&
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)('div', {
+            style: {
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              zIndex: 100,
+              background: theme.cardBg,
+              border: `1px solid ${theme.border}`,
+              borderRadius: theme.radius,
+              maxHeight: 180,
+              overflow: 'auto',
+              boxShadow: '0 8px 24px rgba(0,0,0,.12)',
+              marginTop: 2,
+            },
+            children: suggestions.map((hit, i) =>
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                'div',
+                {
+                  onClick: () => pick(hit),
+                  onMouseEnter: () => setActiveIdx(i),
+                  style: {
+                    padding: '5px 10px',
+                    fontSize: 12,
+                    cursor: 'pointer',
+                    background: i === activeIdx ? theme.primaryLight : theme.cardBg,
+                    borderBottom: `1px solid ${theme.border}`,
+                    transition: 'background .1s',
+                  },
+                  children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
+                      style: {
+                        fontWeight: 700,
+                        color: theme.primaryDark,
+                        fontFamily: 'ui-monospace, monospace',
+                      },
+                      children: hit.KODE,
+                    }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
+                      style: { color: theme.textMuted, marginLeft: 6 },
+                      children: hit.NAMA,
+                    }),
+                  ],
+                },
+                hit.ID,
+              ),
+            ),
+          }),
+      ],
+    });
+  }
+  function IcdList({ items, icdType, onChange, onAdd, onRemove, label, emptyText }) {
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
+      style: { marginBottom: items.length ? 10 : 0 },
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
+          style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 },
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
               style: {
-                position: 'absolute',
-                top: '100%',
-                left: 0,
-                right: 0,
-                zIndex: 100,
-                background: '#fff',
-                border: '1px solid #d1d5db',
-                borderRadius: 4,
-                maxHeight: 160,
-                overflow: 'auto',
-                boxShadow: '0 4px 12px rgba(0,0,0,.15)',
+                fontSize: 11,
+                fontWeight: 600,
+                color: theme.textMuted,
+                textTransform: 'uppercase',
+                letterSpacing: '0.04em',
               },
-              children: suggestions.map((hit, i) =>
+              children: label,
+            }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('button', {
+              type: 'button',
+              onClick: onAdd,
+              style: smallBtn,
+              children: '+ Tambah',
+            }),
+          ],
+        }),
+        items.length > 0
+          ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)('div', {
+              style: { display: 'flex', flexDirection: 'column', gap: 6 },
+              children: items.map((item, i) =>
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
                   'div',
                   {
-                    onClick: () => pick(hit),
-                    style: {
-                      padding: '3px 6px',
-                      fontSize: 11,
-                      cursor: 'pointer',
-                      background: i === activeIdx ? '#f0fdf4' : '#fff',
-                      borderBottom: '1px solid #f3f4f6',
-                    },
+                    style: { display: 'flex', gap: 6, alignItems: 'flex-start' },
                     children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
-                        style: { fontWeight: 600 },
-                        children: hit.KODE,
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)('div', {
+                        style: { flex: 1 },
+                        children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(IcdAutocomplete, {
+                          kode: item.kode,
+                          nama: item.nama,
+                          icdType,
+                          onPick: (kode, nama, id) => onChange(i, { ...item, kode, nama, id }),
+                        }),
                       }),
-                      ' \u2014 ',
-                      hit.NAMA,
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)('button', {
+                        type: 'button',
+                        onClick: () => onRemove(i),
+                        style: { ...dangerBtn, marginTop: 1 },
+                        children: 'Hapus',
+                      }),
                     ],
                   },
-                  hit.ID,
+                  i,
                 ),
               ),
             })
-          : null,
+          : /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
+              style: { fontSize: 12, color: theme.textMuted },
+              children: emptyText,
+            }),
       ],
     });
   }
@@ -27878,86 +28066,114 @@ var __morbis_feature = (() => {
       onSubmit: handleSubmit,
       className: 'ri-modal',
       onClick: (e) => e.stopPropagation(),
+      style: { fontFamily: theme.font },
       children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
           style: {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '10px 20px',
-            borderBottom: '1px solid #e5e7eb',
-            background: '#059669',
+            padding: '12px 20px',
+            background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.primaryDark} 100%)`,
             color: '#fff',
+            flexShrink: 0,
           },
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
-              style: { fontSize: 15, fontWeight: 700 },
-              children: 'Resume Rawat Inap',
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
+              style: { display: 'flex', alignItems: 'center', gap: 10 },
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)('svg', {
+                  width: '20',
+                  height: '20',
+                  viewBox: '0 0 24 24',
+                  fill: 'none',
+                  stroke: 'currentColor',
+                  strokeWidth: '2',
+                  strokeLinecap: 'round',
+                  strokeLinejoin: 'round',
+                  children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)('path', {
+                    d: 'M22 12h-4l-3 9L9 3l-3 9H2',
+                  }),
+                }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
+                  style: { fontSize: 15, fontWeight: 700, letterSpacing: '0.01em' },
+                  children: 'Resume Rawat Inap',
+                }),
+              ],
             }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)('button', {
               type: 'button',
               onClick: onClose,
               style: {
-                background: 'none',
+                background: 'rgba(255,255,255,.15)',
                 border: 'none',
                 color: '#fff',
-                fontSize: 20,
+                width: 30,
+                height: 30,
+                borderRadius: 6,
+                fontSize: 16,
                 cursor: 'pointer',
-                lineHeight: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'background .15s',
               },
+              onMouseEnter: (e) => (e.currentTarget.style.background = 'rgba(255,255,255,.25)'),
+              onMouseLeave: (e) => (e.currentTarget.style.background = 'rgba(255,255,255,.15)'),
               children: '\u2715',
             }),
           ],
         }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
-          style: { overflow: 'auto', padding: '12px 16px', flex: 1 },
+          style: { overflow: 'auto', padding: '14px 18px', flex: 1, background: theme.bg },
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('div', {
               style: {
                 display: 'flex',
-                gap: 14,
+                gap: 16,
                 flexWrap: 'wrap',
-                marginBottom: 10,
+                alignItems: 'center',
+                marginBottom: 14,
+                padding: '10px 14px',
+                background: theme.cardBg,
+                border: `1px solid ${theme.border}`,
+                borderRadius: theme.radius,
                 fontSize: 12,
-                background: '#f0fdf4',
-                padding: '6px 12px',
-                borderRadius: 8,
+                boxShadow: theme.shadow,
               },
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('span', {
-                  children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)('b', { children: 'RM:' }),
-                    ' ',
-                    d.norm,
-                  ],
-                }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('span', {
-                  children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)('b', { children: 'Pasien:' }),
-                    ' ',
-                    d.pasien,
-                  ],
-                }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('span', {
-                  children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)('b', { children: 'Reg:' }),
-                    ' ',
-                    d.noreg,
-                  ],
-                }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('span', {
-                  children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)('b', { children: 'Unit:' }),
-                    ' ',
-                    d.unit,
-                  ],
-                }),
-              ],
+                { label: 'RM', value: d.norm },
+                { label: 'Pasien', value: d.pasien },
+                { label: 'Reg', value: d.noreg },
+                { label: 'Unit', value: d.unit },
+              ].map((item) =>
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                  'span',
+                  {
+                    style: { display: 'flex', alignItems: 'center', gap: 4 },
+                    children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
+                        style: {
+                          fontWeight: 700,
+                          color: theme.primaryDark,
+                          fontSize: 11,
+                          textTransform: 'uppercase',
+                        },
+                        children: item.label,
+                      }),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
+                        style: { color: theme.text },
+                        children: item.value,
+                      }),
+                    ],
+                  },
+                  item.label,
+                ),
+              ),
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Fs, {
-              lbl: 'Ringkasan',
-              children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
-                style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 },
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
+              title: 'Ringkasan',
+              children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid2, {
                 children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
                     children: [
@@ -27981,8 +28197,7 @@ var __morbis_feature = (() => {
                       }),
                     ],
                   }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
-                    style: { gridColumn: '1 / -1' },
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Full, {
                     children: [
                       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(L, { c: 'Anamnesa' }),
                       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Ta, {
@@ -27992,8 +28207,7 @@ var __morbis_feature = (() => {
                       }),
                     ],
                   }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
-                    style: { gridColumn: '1 / -1' },
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Full, {
                     children: [
                       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(L, { c: 'Riwayat Penyakit' }),
                       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Ta, {
@@ -28006,14 +28220,10 @@ var __morbis_feature = (() => {
                 ],
               }),
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Fs, {
-              lbl: 'Vital Sign',
-              children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
-                style: {
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))',
-                  gap: 6,
-                },
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
+              title: 'Vital Sign',
+              children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(GridAuto, {
+                min: '90px',
                 children: [
                   ['tensi', 'nadi', 'suhu', 'spo2', 'nafas'].map((k) =>
                     /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
@@ -28036,7 +28246,7 @@ var __morbis_feature = (() => {
                       {
                         children: [
                           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(L, {
-                            c: k.toUpperCase().replace('_', ' '),
+                            c: k.replace('_', ' ').toUpperCase(),
                           }),
                           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(In, {
                             v: d[k],
@@ -28050,13 +28260,11 @@ var __morbis_feature = (() => {
                 ],
               }),
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Fs, {
-              lbl: 'Pemeriksaan & Diagnosa',
-              children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
-                style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 },
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
+              title: 'Pemeriksaan & Diagnosa',
+              children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid2, {
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
-                    style: { gridColumn: '1 / -1' },
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Full, {
                     children: [
                       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(L, { c: 'Pemeriksaan Fisik' }),
                       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Ta, {
@@ -28066,8 +28274,7 @@ var __morbis_feature = (() => {
                       }),
                     ],
                   }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
-                    style: { gridColumn: '1 / -1' },
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Full, {
                     children: [
                       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(L, {
                         c: 'Hasil Pemeriksaan Diagnostik (Lab, Rontgen, dll)',
@@ -28081,7 +28288,10 @@ var __morbis_feature = (() => {
                   }),
                   /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
                     children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(L, { c: 'Diagnosa Utama' }),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(L, {
+                        c: 'Diagnosa Utama',
+                        req: true,
+                      }),
                       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Ta, {
                         v: d.diagnosa_primary,
                         onChange: (v) => p({ diagnosa_primary: v }),
@@ -28119,8 +28329,7 @@ var __morbis_feature = (() => {
                       }),
                     ],
                   }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
-                    style: { gridColumn: '1 / -1' },
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Full, {
                     children: [
                       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(L, { c: 'Pengobatan' }),
                       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Ta, {
@@ -28130,8 +28339,7 @@ var __morbis_feature = (() => {
                       }),
                     ],
                   }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
-                    style: { gridColumn: '1 / -1' },
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Full, {
                     children: [
                       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(L, { c: 'Obat Pulang' }),
                       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Ta, {
@@ -28141,8 +28349,7 @@ var __morbis_feature = (() => {
                       }),
                     ],
                   }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
-                    style: { gridColumn: '1 / -1' },
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Full, {
                     children: [
                       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(L, { c: 'Tindakan' }),
                       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Ta, {
@@ -28165,18 +28372,15 @@ var __morbis_feature = (() => {
                 ],
               }),
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Fs, {
-              lbl: 'ICD',
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Card, {
+              title: 'ICD',
               children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
-                  style: { marginBottom: 8 },
+                  style: { marginBottom: 12 },
                   children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)('div', {
-                      style: { display: 'flex', gap: 4, alignItems: 'center', marginBottom: 4 },
-                      children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
-                        style: { fontSize: 11, fontWeight: 600, color: '#374151', width: 120 },
-                        children: 'Diagnosa Utama *',
-                      }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(L, {
+                      c: 'Diagnosa Utama',
+                      req: true,
                     }),
                     /* @__PURE__ */ (0, import_jsx_runtime.jsx)(IcdAutocomplete, {
                       kode: d.kode_diagnosa_utama,
@@ -28191,267 +28395,39 @@ var __morbis_feature = (() => {
                     }),
                   ],
                 }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
-                  style: { marginBottom: 8 },
-                  children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
-                      style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 },
-                      children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
-                          style: { fontSize: 11, fontWeight: 600, color: '#374151' },
-                          children: 'Diagnosa Sekunder',
-                        }),
-                        /* @__PURE__ */ (0, import_jsx_runtime.jsx)('button', {
-                          type: 'button',
-                          onClick: addSekunder,
-                          style: smallBtn,
-                          children: '+ Tambah',
-                        }),
-                      ],
-                    }),
-                    d.icd_sekunder.length > 0
-                      ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('table', {
-                          style: { width: '100%', borderCollapse: 'collapse' },
-                          children: [
-                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('thead', {
-                              children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('tr', {
-                                children: [
-                                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)('th', {
-                                    style: thStyle,
-                                    children: 'Kode',
-                                  }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)('th', {
-                                    style: thStyle,
-                                    children: 'Nama',
-                                  }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)('th', {
-                                    style: { ...thStyle, width: 40 },
-                                  }),
-                                ],
-                              }),
-                            }),
-                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('tbody', {
-                              children: d.icd_sekunder.map((item, i) =>
-                                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
-                                  'tr',
-                                  {
-                                    children: [
-                                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)('td', {
-                                        style: tdStyle,
-                                        children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                                          IcdAutocomplete,
-                                          {
-                                            kode: item.kode,
-                                            nama: item.nama,
-                                            icdType: 'icd10',
-                                            onPick: (kode, nama, id) =>
-                                              updateSekunder(i, { ...item, kode, nama, id }),
-                                          },
-                                        ),
-                                      }),
-                                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)('td', {
-                                        style: tdStyle,
-                                        children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                                          'button',
-                                          {
-                                            type: 'button',
-                                            onClick: () => removeSekunder(i),
-                                            style: smallBtn,
-                                            children: '\u2715',
-                                          },
-                                        ),
-                                      }),
-                                    ],
-                                  },
-                                  i,
-                                ),
-                              ),
-                            }),
-                          ],
-                        })
-                      : /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
-                          style: { fontSize: 11, color: '#9ca3af' },
-                          children: 'Belum ada diagnosa sekunder',
-                        }),
-                  ],
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(IcdList, {
+                  items: d.icd_sekunder,
+                  icdType: 'icd10',
+                  onChange: updateSekunder,
+                  onAdd: addSekunder,
+                  onRemove: removeSekunder,
+                  label: 'Diagnosa Sekunder',
+                  emptyText: 'Belum ada diagnosa sekunder',
                 }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
-                  style: { marginBottom: 8 },
-                  children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
-                      style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 },
-                      children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
-                          style: { fontSize: 11, fontWeight: 600, color: '#374151' },
-                          children: 'Tindakan',
-                        }),
-                        /* @__PURE__ */ (0, import_jsx_runtime.jsx)('button', {
-                          type: 'button',
-                          onClick: addTindakan,
-                          style: smallBtn,
-                          children: '+ Tambah',
-                        }),
-                      ],
-                    }),
-                    d.icd_tindakan.length > 0
-                      ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('table', {
-                          style: { width: '100%', borderCollapse: 'collapse' },
-                          children: [
-                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('thead', {
-                              children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('tr', {
-                                children: [
-                                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)('th', {
-                                    style: thStyle,
-                                    children: 'Kode',
-                                  }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)('th', {
-                                    style: thStyle,
-                                    children: 'Nama',
-                                  }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)('th', {
-                                    style: { ...thStyle, width: 40 },
-                                  }),
-                                ],
-                              }),
-                            }),
-                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('tbody', {
-                              children: d.icd_tindakan.map((item, i) =>
-                                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
-                                  'tr',
-                                  {
-                                    children: [
-                                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)('td', {
-                                        style: tdStyle,
-                                        children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                                          IcdAutocomplete,
-                                          {
-                                            kode: item.kode,
-                                            nama: item.nama,
-                                            icdType: 'icd9',
-                                            onPick: (kode, nama, id) =>
-                                              updateTindakan(i, { ...item, kode, nama, id }),
-                                          },
-                                        ),
-                                      }),
-                                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)('td', {
-                                        style: tdStyle,
-                                        children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                                          'button',
-                                          {
-                                            type: 'button',
-                                            onClick: () => removeTindakan(i),
-                                            style: smallBtn,
-                                            children: '\u2715',
-                                          },
-                                        ),
-                                      }),
-                                    ],
-                                  },
-                                  i,
-                                ),
-                              ),
-                            }),
-                          ],
-                        })
-                      : /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
-                          style: { fontSize: 11, color: '#9ca3af' },
-                          children: 'Belum ada tindakan',
-                        }),
-                  ],
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(IcdList, {
+                  items: d.icd_tindakan,
+                  icdType: 'icd9',
+                  onChange: updateTindakan,
+                  onAdd: addTindakan,
+                  onRemove: removeTindakan,
+                  label: 'Tindakan',
+                  emptyText: 'Belum ada tindakan',
                 }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
-                  children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
-                      style: { display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 },
-                      children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
-                          style: { fontSize: 11, fontWeight: 600, color: '#374151' },
-                          children: 'Nosokomial',
-                        }),
-                        /* @__PURE__ */ (0, import_jsx_runtime.jsx)('button', {
-                          type: 'button',
-                          onClick: addNosokomial,
-                          style: smallBtn,
-                          children: '+ Tambah',
-                        }),
-                      ],
-                    }),
-                    d.icd_nosokomial.length > 0
-                      ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('table', {
-                          style: { width: '100%', borderCollapse: 'collapse' },
-                          children: [
-                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('thead', {
-                              children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('tr', {
-                                children: [
-                                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)('th', {
-                                    style: thStyle,
-                                    children: 'Kode',
-                                  }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)('th', {
-                                    style: thStyle,
-                                    children: 'Nama',
-                                  }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)('th', {
-                                    style: { ...thStyle, width: 40 },
-                                  }),
-                                ],
-                              }),
-                            }),
-                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('tbody', {
-                              children: d.icd_nosokomial.map((item, i) =>
-                                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
-                                  'tr',
-                                  {
-                                    children: [
-                                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)('td', {
-                                        style: tdStyle,
-                                        children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                                          IcdAutocomplete,
-                                          {
-                                            kode: item.kode,
-                                            nama: item.nama,
-                                            icdType: 'icd10',
-                                            onPick: (kode, nama, id) =>
-                                              updateNosokomial(i, { ...item, kode, nama, id }),
-                                          },
-                                        ),
-                                      }),
-                                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)('td', {
-                                        style: tdStyle,
-                                        children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                                          'button',
-                                          {
-                                            type: 'button',
-                                            onClick: () => removeNosokomial(i),
-                                            style: smallBtn,
-                                            children: '\u2715',
-                                          },
-                                        ),
-                                      }),
-                                    ],
-                                  },
-                                  i,
-                                ),
-                              ),
-                            }),
-                          ],
-                        })
-                      : /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
-                          style: { fontSize: 11, color: '#9ca3af' },
-                          children: 'Belum ada nosokomial',
-                        }),
-                  ],
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(IcdList, {
+                  items: d.icd_nosokomial,
+                  icdType: 'icd10',
+                  onChange: updateNosokomial,
+                  onAdd: addNosokomial,
+                  onRemove: removeNosokomial,
+                  label: 'Infeksi Nosokomial',
+                  emptyText: 'Belum ada nosokomial',
                 }),
               ],
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Fs, {
-              lbl: 'Kondisi Pulang',
-              children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
-                style: {
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-                  gap: 6,
-                },
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
+              title: 'Kondisi Pulang',
+              children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(GridAuto, {
+                min: '100px',
                 children: [
                   [
                     'ku',
@@ -28478,8 +28454,7 @@ var __morbis_feature = (() => {
                       k,
                     ),
                   ),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
-                    style: { gridColumn: '1 / -1' },
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Full, {
                     children: [
                       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(L, {
                         c: 'Catatan Kondisi Pulang',
@@ -28494,10 +28469,9 @@ var __morbis_feature = (() => {
                 ],
               }),
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Fs, {
-              lbl: 'Keluar',
-              children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
-                style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 },
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Card, {
+              title: 'Keluar',
+              children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Grid2, {
                 children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
                     children: [
@@ -28556,24 +28530,23 @@ var __morbis_feature = (() => {
                       }),
                     ],
                   }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
-                    children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(L, { c: 'Penyebab Kematian' }),
-                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Ta, {
-                        v: d.penyebab_kematian,
-                        onChange: (v) => p({ penyebab_kematian: v }),
-                        rows: 2,
-                      }),
-                    ],
-                  }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
-                    style: { gridColumn: '1 / -1' },
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Full, {
                     children: [
                       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(L, { c: 'Instruksi Pulang' }),
                       /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Ta, {
                         v: d.instruksi_pulang,
                         onChange: (v) => p({ instruksi_pulang: v }),
                         rows: 3,
+                      }),
+                    ],
+                  }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Full, {
+                    children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(L, { c: 'Penyebab Kematian' }),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Ta, {
+                        v: d.penyebab_kematian,
+                        onChange: (v) => p({ penyebab_kematian: v }),
+                        rows: 2,
                       }),
                     ],
                   }),
@@ -28587,42 +28560,58 @@ var __morbis_feature = (() => {
             display: 'flex',
             justifyContent: 'flex-end',
             gap: 8,
-            padding: '8px 16px',
-            borderTop: '1px solid #e5e7eb',
+            padding: '10px 18px',
+            borderTop: `1px solid ${theme.border}`,
             alignItems: 'center',
+            flexShrink: 0,
+            background: theme.cardBg,
           },
           children: [
             error &&
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)('span', {
-                style: { color: '#dc2626', fontSize: 12, marginRight: 'auto' },
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)('div', {
+                style: {
+                  color: '#dc2626',
+                  fontSize: 12,
+                  marginRight: 'auto',
+                  background: '#fef2f2',
+                  padding: '4px 10px',
+                  borderRadius: 6,
+                  border: '1px solid #fecaca',
+                },
                 children: error,
               }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)('button', {
               type: 'button',
               onClick: onClose,
               style: {
-                padding: '6px 16px',
-                borderRadius: 6,
-                border: '1px solid #d1d5db',
-                background: '#fff',
+                padding: '7px 18px',
+                borderRadius: theme.radius,
+                border: `1px solid ${theme.border}`,
+                background: theme.cardBg,
                 fontSize: 12,
-                cursor: 'pointer',
                 fontWeight: 600,
+                color: theme.text,
+                cursor: 'pointer',
+                transition: 'background .15s',
               },
               disabled: saving,
+              onMouseEnter: (e) => (e.currentTarget.style.background = theme.bg),
+              onMouseLeave: (e) => (e.currentTarget.style.background = theme.cardBg),
               children: 'Batal',
             }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)('button', {
               type: 'submit',
               style: {
-                padding: '6px 16px',
-                borderRadius: 6,
-                border: '1px solid #059669',
-                background: '#059669',
+                padding: '7px 22px',
+                borderRadius: theme.radius,
+                border: 'none',
+                background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.primaryDark} 100%)`,
                 color: '#fff',
                 fontSize: 12,
+                fontWeight: 700,
                 cursor: 'pointer',
-                fontWeight: 600,
+                transition: 'opacity .15s',
+                opacity: saving ? 0.6 : 1,
               },
               disabled: saving,
               children: saving ? 'Menyimpan...' : 'Simpan',
@@ -28859,7 +28848,7 @@ var __morbis_feature = (() => {
       s.id = 'ext-ri-css';
       s.textContent = `
       .ri-modal{background:#fff;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,.25);width:94%;max-width:900px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;animation:ri-up .25s ease}
-      .ri-modal textarea{resize:vertical!important}
+      .ri-modal textarea,.ri-modal input,.ri-modal select{resize:vertical!important;pointer-events:auto!important}
       @keyframes ri-up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
     `;
       document.head.appendChild(s);

@@ -227,7 +227,7 @@ function mountReactApp(data: RanapFormData) {
     s.id = 'ext-ri-css';
     s.textContent = `
       .ri-modal{background:#fff;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,.25);width:94%;max-width:900px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;animation:ri-up .25s ease}
-      .ri-modal textarea{resize:vertical!important}
+      .ri-modal textarea,.ri-modal input,.ri-modal select{resize:vertical!important;pointer-events:auto!important}
       @keyframes ri-up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
     `;
     document.head.appendChild(s);
