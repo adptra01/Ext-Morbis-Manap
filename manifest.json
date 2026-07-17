@@ -187,5 +187,5 @@
       "matches": ["http://*/*"]
     }
   ],
-  "optional_host_permissions": ["http://*/*", "https://*/*"]
+  "optional_host_permissions": ["https://*/*"]
 }
