@@ -52,6 +52,12 @@ function pindahOperasi(): void {
 }
 
 function init(): void {
+  const loginPaths = ['/login', '/auth', '/signin', '/masuk', '/keluar', '/logout'];
+  if (
+    loginPaths.some((p) => location.pathname.toLowerCase().includes(p)) ||
+    document.querySelectorAll('input[type="password"]').length > 0
+  )
+    return;
   if (document.getElementById('simpan-pindah')) return;
 
   const simpan = document.querySelector<HTMLElement>(
