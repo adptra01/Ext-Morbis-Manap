@@ -57,7 +57,6 @@ function extractBillingFromDOM(): { tindakan: string; terapiPengobatan: string }
     // Detect section headers — bold elements mark new sections
     const bold = row.querySelector('b');
     if (bold && !text.match(/^\d/)) {
-      // Section header like "TINDAKAN", "LABORATORIUM", "VISITE" etc.
       inActionSection = true;
       continue;
     }
@@ -98,7 +97,6 @@ function extractBillingFromDOM(): { tindakan: string; terapiPengobatan: string }
     }
   }
 
-  // Sort and format items before returning
   const sortedTindakan = sortItemsByPriority(tindakanLines);
   const sortedTerapi = sortItemsByPriority(terapiLines);
 
@@ -121,7 +119,6 @@ import type { ResumeData, DiagnosaRow, TindakanRow } from './types';
 
 const isRj = location.pathname.includes('rm-rawat-jalan-new');
 
-// ponytail: both pages use same ICD search endpoints
 const AUTOCOMPLETE_URLS = {
   icd10: '/rekam-medik/search?opsi=kodeicd10&q=',
   icd9: '/rekam-medik/search?opsi=clauseDiagnose_icd9&q=',
@@ -129,13 +126,9 @@ const AUTOCOMPLETE_URLS = {
 
 const ENDPOINT = '/rekam-medik/control/rm-rawat-jalan';
 
-console.log('[RJ] setup — isRj:', isRj, 'ENDPOINT:', ENDPOINT);
-console.log('[RJ] AUTOCOMPLETE_URLS:', AUTOCOMPLETE_URLS);
-
 let reactRoot: Root | null = null;
 let overlayBtn: HTMLButtonElement | null = null;
 
-// ponytail: parse #resume-view tabel untuk ambil data yang sudah ter-render
 function parseResumeView(): ResumeData | null {
   const view = document.getElementById('resume-view');
   if (!view) return null;
@@ -146,7 +139,6 @@ function parseResumeView(): ResumeData | null {
       for (let i = 0; i < cells.length; i++) {
         if (cells[i].textContent?.trim() === label && cells[i + 1]) {
           const next = cells[i + 1];
-          // skip the colon td
           const valCell = next.textContent?.trim() === ':' ? cells[i + 2] : next;
           return valCell?.textContent?.trim() || '';
         }
@@ -162,7 +154,6 @@ function parseResumeView(): ResumeData | null {
     if (!fisik) return '';
     const vtable = fisik.querySelector('td:last-child table, td[colspan] table');
     if (!vtable) return '';
-    // ponytail: only extract "Lainnya" — vitals already handled by VitalSignsSection
     const lainnyaRow = Array.from(vtable.querySelectorAll('tr')).find((row) => {
       const cells = row.querySelectorAll('td');
       return Array.from(cells).some((c) => c.textContent?.trim() === 'Lainnya');
@@ -172,7 +163,6 @@ function parseResumeView(): ResumeData | null {
     for (let i = 0; i < cells.length; i++) {
       if (cells[i].textContent?.trim() === 'Lainnya' && i + 2 < cells.length) {
         const raw = cells[i + 2]?.textContent?.trim() || '';
-        // Filter out vital sign lines from "Lainnya" content
         const vitalPrefixes = [
           'Tensi:',
           'Nadi:',
@@ -199,7 +189,6 @@ function parseResumeView(): ResumeData | null {
       r.textContent?.includes('Hasil Pemeriksaan Fisik'),
     );
     if (!fisik) return '';
-    // ponytail: vitals table is inside the 3rd <td> (colspan), not a sibling row
     const td = fisik.querySelector('td:last-child table, td[colspan] table');
     if (!td) return '';
     const rows = td.querySelectorAll('tr');
@@ -216,19 +205,16 @@ function parseResumeView(): ResumeData | null {
     return '';
   };
 
-  // Parse ICD-10 diagnoses from the ICD X section
   const diagnosa: DiagnosaRow[] = [];
   const icdSection = Array.from(view.querySelectorAll('tr')).find((r) =>
     r.textContent?.includes('ICD X'),
   );
   if (icdSection) {
-    // ponytail: ICD table is inside the last <td> of the same row
     const icdTable = icdSection.querySelector('td:last-child table, td[colspan] table');
     if (icdTable) {
       const items = icdTable.querySelectorAll('tr');
       for (const item of items) {
         const text = item.textContent?.trim() || '';
-        // Format: "- Nama Diagnosa (KODE) -"
         const m = text.match(/-\s*(.+?)\s*\(([^)]+)\)\s*-/);
         if (m) {
           diagnosa.push({ idicd: '', kode10: m[2], namaDiagnosa: m[1], kasus: '', komplikasi: '' });
@@ -322,7 +308,6 @@ function extractFormData(): ResumeData {
         ? (cachedFormState['noregis'] as string)
         : ''),
   };
-  console.log('[RJ] patientInfo:', patientInfo);
 
   const clinicalNotes = {
     anamnesa: getField('anamnesa'),
@@ -335,7 +320,6 @@ function extractFormData(): ResumeData {
     status_kasus: getRadio('status_kasus'),
     tindak_lanjut: getField('tindak_lanjut'),
   };
-  console.log('[RJ] clinicalNotes:', clinicalNotes);
 
   const vitalSigns = {
     tensi: getVal('tensi'),
@@ -345,15 +329,12 @@ function extractFormData(): ResumeData {
     tinggi: getVal('tinggi'),
     berat: getVal('berat'),
   };
-  console.log('[RJ] vitalSigns:', vitalSigns);
 
-  console.log('[RJ] diagnosa extraction start');
   const diagnosa: DiagnosaRow[] = [];
   const kode10Inputs = doc.querySelectorAll<HTMLInputElement>(
     'input[name="kode10[]"], input[name="kode[]"]',
   );
   if (kode10Inputs.length === 0) {
-    console.log('[RJ] using numbered ID fallback for diagnosa');
     let i = 1;
     while (
       doc.getElementById(`kode${i}`) ||
@@ -367,7 +348,6 @@ function extractFormData(): ResumeData {
       i++;
     }
   } else {
-    console.log('[RJ] using array-based diagnosa inputs, count:', kode10Inputs.length);
     kode10Inputs.forEach((inp) => {
       const row = inp.closest('tr');
       if (!row) return;
@@ -386,9 +366,7 @@ function extractFormData(): ResumeData {
       }
     });
   }
-  console.log('[RJ] diagnosa found:', diagnosa.length, diagnosa);
 
-  // Fallback diagnosa dari cachedFormState (detail page)
   if (diagnosa.length === 0 && cachedFormState) {
     const cKode10 = Array.isArray(cachedFormState['kode10[]']) ? cachedFormState['kode10[]'] : [];
     const cNama = Array.isArray(cachedFormState['nama[]']) ? cachedFormState['nama[]'] : [];
@@ -438,7 +416,6 @@ function extractFormData(): ResumeData {
       codeProsedur,
     });
   });
-  // Fallback: pakai cachedFormState untuk detail page (fetch dari form page)
   if (tindakan.length === 0 && cachedFormState) {
     const cKode9 = Array.isArray(cachedFormState['kode9[]']) ? cachedFormState['kode9[]'] : [];
     const cNamaT = Array.isArray(cachedFormState['namaTindakan[]'])
@@ -466,11 +443,7 @@ function extractFormData(): ResumeData {
     });
   }
 
-  // Merge: form data is primary, view data fills gaps
-  // ponytail: always merge fromView if present, then override with billing data if still empty
   if (fromView) {
-    console.log('[RJ] merging from view data');
-    // Prioritaskan data dari form, lalu dari view
     patientInfo.norm = patientInfo.norm || fromView.patientInfo.norm;
     patientInfo.pasien = patientInfo.pasien || fromView.patientInfo.pasien;
     patientInfo.nama_dokter = patientInfo.nama_dokter || fromView.patientInfo.nama_dokter;
@@ -479,7 +452,6 @@ function extractFormData(): ResumeData {
     clinicalNotes.pemeriksaan_fisik =
       clinicalNotes.pemeriksaan_fisik || fromView.clinicalNotes.pemeriksaan_fisik;
     clinicalNotes.catatan = clinicalNotes.catatan || fromView.clinicalNotes.catatan;
-    // ponytail: clinicalNotes.tindakan/terapi_pengobatan dari view tetap rendah prioritasnya, karena akan diisi dari billing jika kosong
     clinicalNotes.tindakan = clinicalNotes.tindakan || fromView.clinicalNotes.tindakan;
     clinicalNotes.terapi_pengobatan =
       clinicalNotes.terapi_pengobatan || fromView.clinicalNotes.terapi_pengobatan;
@@ -490,14 +462,10 @@ function extractFormData(): ResumeData {
     vitalSigns.nafas = vitalSigns.nafas || fromView.vitalSigns.nafas;
     vitalSigns.tinggi = vitalSigns.tinggi || fromView.vitalSigns.tinggi;
     vitalSigns.berat = vitalSigns.berat || fromView.vitalSigns.berat;
-    // Diagnosa dari view hanya ditambahkan jika form tidak punya diagnosa
     if (diagnosa.length === 0) diagnosa.push(...fromView.diagnosa);
-    // Tindakan dari view hanya ditambahkan jika form tidak punya tindakan
     if (tindakan.length === 0) tindakan.push(...fromView.tindakan);
   }
 
-  // ponytail: setelah merge dari view, cek apakah clinicalNotes.tindakan/terapi_pengobatan masih kosong (atau '-')
-  // Hanya isi dari billing jika belum terisi dari form atau view
   if (
     !clinicalNotes.tindakan ||
     clinicalNotes.tindakan === '-' ||
@@ -505,7 +473,6 @@ function extractFormData(): ResumeData {
     clinicalNotes.terapi_pengobatan === '-'
   ) {
     const billing = extractBillingFromDOM();
-    console.log('[RJ] billing from DOM:', billing);
     if (billing.tindakan && (!clinicalNotes.tindakan || clinicalNotes.tindakan === '-')) {
       clinicalNotes.tindakan = billing.tindakan;
     }
@@ -515,10 +482,8 @@ function extractFormData(): ResumeData {
     ) {
       clinicalNotes.terapi_pengobatan = billing.terapiPengobatan;
     }
-    console.log('[RJ] after DOM merge with billing:', { clinicalNotes });
   }
 
-  // Fallback ke cachedFormState untuk clinical notes yang masih kosong (detail page)
   if (cachedFormState) {
     const noteFields: Record<string, string> = {
       anamnesa: clinicalNotes.anamnesa,
@@ -535,7 +500,6 @@ function extractFormData(): ResumeData {
     }
   }
 
-  console.log('[RJ] final data:', { patientInfo, clinicalNotes, vitalSigns, diagnosa, tindakan });
   return { patientInfo, clinicalNotes, vitalSigns, diagnosa, tindakan };
 }
 
@@ -543,7 +507,6 @@ function serializeKlaim(data: ResumeData): string {
   const pairs: [string, string][] = [];
   const add = (name: string, value: string | number) => pairs.push([name, String(value)]);
 
-  // Use name-based lookup so fields are found regardless of HTML id mismatch
   [
     'id_visit',
     'id_rawat_jalan',
@@ -559,7 +522,6 @@ function serializeKlaim(data: ResumeData): string {
     if (el?.value) add(name, el.value);
   });
 
-  // Add fields where name!=id or type=select/radio needs special handling
   const dokterEl = document.querySelector('input[name="nama_dokter"]') as HTMLInputElement | null;
   if (dokterEl?.value) add('nama_dokter', dokterEl.value);
 
@@ -578,7 +540,6 @@ function serializeKlaim(data: ResumeData): string {
   ) as HTMLInputElement | null;
   if (statusKasusEl?.value) add('status_kasus', statusKasusEl.value);
 
-  // Waktu — generate current
   const now = new Date();
   const pad = (n: number) => n.toString().padStart(2, '0');
   add(
@@ -631,11 +592,9 @@ function serializeRawatJalan(data: ResumeData): string {
   const pairs: [string, string][] = [];
   const add = (name: string, value: string | number) => pairs.push([name, String(value)]);
 
-  // ponytail: debug cachedFormState
   if (!cachedFormState?.['id_bed'])
     console.log('[RJ] MISS id_bed — cfs keys:', Object.keys(cachedFormState || {}).join(','));
 
-  // Read from current page DOM
   const el = (name: string) =>
     (document.querySelector(`input[name="${name}"]`) as HTMLInputElement | null)?.value || '';
   const sel = (id: string) =>
@@ -643,16 +602,12 @@ function serializeRawatJalan(data: ResumeData): string {
   const radioChecked = (name: string) =>
     (document.querySelector(`input[name="${name}"]:checked`) as HTMLInputElement | null)?.value ||
     '';
-  // Hidden / patient fields: always send so PHP $_POST['x'] exists
-  // Fallback to cached form state fetched from RJ form page
   const fs = (name: string) => {
     const val =
       typeof cachedFormState?.[name] === 'string' ? (cachedFormState[name] as string) : '';
     return val;
   };
 
-  // Hidden / patient fields: always send so PHP $_POST['x'] exists
-  // Prefer data.patientInfo (passed through React state), then DOM, then cache
   const pi = (name: string) =>
     (data.patientInfo as Record<string, string | undefined>)?.[name] || '';
   add(
@@ -672,14 +627,12 @@ function serializeRawatJalan(data: ResumeData): string {
   add('id_user', pi('id_user') || el('id_user') || fs('id_user') || '1');
   add('id_dokter', pi('id_dokter') || el('id_dokter') || fs('id_dokter') || '');
   add('id_bed', pi('id_bed') || el('id_bed') || fs('id_bed') || '');
-  // ponytail: debug untuk lacak id_bed kosong
   if (!pi('id_bed') && !el('id_bed') && !fs('id_bed')) console.log('[RJ] id_bed STILL empty');
   add('norm', pi('norm') || el('norm') || fs('norm') || '');
   add('noregis', pi('noregis') || el('noregis') || fs('noregis') || '');
   add('pasien', pi('pasien') || el('pasien') || fs('pasien') || '');
   add('nama_dokter', pi('nama_dokter') || el('nama_dokter') || fs('nama_dokter') || '');
 
-  // Dropdown / select fields — fallback to cached form state
   add('jenis_kasus', sel('jenis_kasus') || fs('jenis_kasus') || '');
   add('tindak_lanjut', sel('tindak_lanjut') || fs('tindak_lanjut') || '');
   add('status_kasus', radioChecked('status_kasus') || fs('status_kasus') || 'BARU');
@@ -695,11 +648,9 @@ function serializeRawatJalan(data: ResumeData): string {
       fs('composition_diet') ||
       '',
   );
-  // Alergi fields — prevent "Array to string conversion" by always sending '[]' as string
   add('alergiMakananJSON', el('alergiMakananJSON') || fs('alergiMakananJSON') || '[]');
   add('alergiLingkunganJSON', el('alergiLingkunganJSON') || fs('alergiLingkunganJSON') || '[]');
 
-  // Waktu — generate current datetime in DD/MM/YYYY HH:mm:ss format
   const now = new Date();
   const pad = (n: number) => n.toString().padStart(2, '0');
   add(
@@ -707,7 +658,6 @@ function serializeRawatJalan(data: ResumeData): string {
     `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`,
   );
 
-  // Clinical notes — convert newlines to <br/> so m-klaim renders 1 item per line
   const toHtml = (val: string) => val.replace(/\n/g, '<br/>');
   add('anamnesa', toHtml(data.clinicalNotes.anamnesa));
   add('pemeriksaan_fisik', toHtml(data.clinicalNotes.pemeriksaan_fisik));
@@ -715,7 +665,6 @@ function serializeRawatJalan(data: ResumeData): string {
   add('tindakan', toHtml(data.clinicalNotes.tindakan));
   add('terapi_pengobatan', toHtml(data.clinicalNotes.terapi_pengobatan));
 
-  // Vital signs — strip all units (native sends "36.6" not "36.6 C")
   const cleanVital = (val: string): string => val.match(/^([\d/.]+)/)?.[0] || '';
   add('tensi', cleanVital(data.vitalSigns.tensi));
   add('nadi', cleanVital(data.vitalSigns.nadi));
@@ -724,20 +673,15 @@ function serializeRawatJalan(data: ResumeData): string {
   add('tinggi', cleanVital(data.vitalSigns.tinggi));
   add('berat', cleanVital(data.vitalSigns.berat));
 
-  // Diagnosa — uses nama[], idicd[], kode10[], kasus_diagnosa[], komplikasi[]
-  // Match idicd[] from cached form state by kode10 for fields missing on detail page
   const cachedArr = (name: string): string[] =>
     Array.isArray(cachedFormState?.[name]) ? (cachedFormState![name] as string[]) : [];
   const cKode10 = cachedArr('kode10[]');
   const cIdicd = cachedArr('idicd[]');
   const cKasus = cachedArr('kasus_diagnosa[]');
   const cKomplikasi = cachedArr('komplikasi[]');
-  // ponytail: hanya kirim baris yang lengkap, unik — snapshot final, bukan operasi per baris
-  console.log('[RJ] RAW DIAGNOSA', JSON.stringify(data.diagnosa));
   const cleanDiagnosa = data.diagnosa
     .filter((d) => d.idicd?.trim() && d.kode10?.trim() && d.namaDiagnosa?.trim())
     .filter((d, i, arr) => arr.findIndex((x) => x.idicd === d.idicd) === i);
-  console.log('[RJ] cleanDiagnosa', cleanDiagnosa.length, cleanDiagnosa);
   cleanDiagnosa.forEach((d) => {
     let idicd = d.idicd;
     if (!idicd && d.kode10) {
@@ -751,23 +695,18 @@ function serializeRawatJalan(data: ResumeData): string {
     add('komplikasi[]', d.komplikasi || '');
   });
 
-  // Tindakan — selalu pakai data.tindakan langsung
-  console.log('[RJ] RAW TINDAKAN', JSON.stringify(data.tindakan));
-  // ponytail: filter lengkap + dedup — snapshot final
   const cleanTindakan = data.tindakan
     .filter((t) => t.idicdTindakan?.trim() && t.kode9?.trim() && t.namaTindakan?.trim())
     .filter(
       (t, i, arr) =>
         arr.findIndex((x) => x.idicdTindakan === t.idicdTindakan && x.kode9 === t.kode9) === i,
     );
-  console.log('[RJ] cleanTindakan', cleanTindakan.length, cleanTindakan);
   cleanTindakan.forEach((t) => {
     add('namaTindakan[]', t.namaTindakan);
     add('kode9[]', t.kode9);
     add('idicdTindakan[]', t.idicdTindakan);
     add('kategoriProsedur[]', t.kategoriProsedur || '');
     add('komorbid[]', t.komorbid || '');
-    // ponytail: selalu kirim — backend PHP mengharapkan field ini ada (walau kosong)
     add('snomedProsedur[]', t.snomedProsedur || '');
     add('codeProsedur[]', t.codeProsedur || '');
   });
@@ -798,16 +737,59 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
   }
   container.innerHTML = '';
 
+  if (!document.getElementById('morbis-resume-fonts')) {
+    const link = document.createElement('link');
+    link.id = 'morbis-resume-fonts';
+    link.rel = 'stylesheet';
+    link.href =
+      'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Lexend:wght@400;500;600;700&display=swap';
+    document.head.appendChild(link);
+  }
+
   if (!document.getElementById('morbis-resume-css')) {
     const s = document.createElement('style');
     s.id = 'morbis-resume-css';
     s.textContent =
       (typeof SHADOW_CSS !== 'undefined' ? SHADOW_CSS : '') +
       `
-      .resume-modal{background:#fff;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,.25);width:90%;max-width:800px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;animation:resume-slideup .25s ease;}
-      .resume-modal textarea{resize:vertical!important;min-height:60px;}
-      .resume-modal button:not([disabled]){cursor:pointer;}
-      @keyframes resume-slideup{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+      .resume-modal * {
+        font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+        box-sizing: border-box;
+      }
+      .resume-modal {
+        background: #f8f6f3;
+        border-radius: 20px;
+        box-shadow: 0 25px 60px rgba(0,0,0,.3);
+        width: 94%;
+        max-width: 900px;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        animation: resume-slideup .3s ease;
+        font-size: 16px;
+        line-height: 1.6;
+        color: #1a1d23;
+      }
+      .resume-modal h1, .resume-modal h2, .resume-modal h3 { font-family: 'Lexend', system-ui, sans-serif; }
+      .resume-modal textarea,
+      .resume-modal input,
+      .resume-modal select {
+        font-size: 16px !important;
+        min-height: 48px !important;
+        pointer-events: auto !important;
+      }
+      .resume-modal textarea {
+        resize: vertical !important;
+        min-height: 120px !important;
+      }
+      .resume-modal .ri-modal textarea,
+      .resume-modal .ri-modal input,
+      .resume-modal .ri-modal select {
+        pointer-events: auto !important;
+      }
+      .resume-modal button { cursor: pointer; min-height: 48px; }
+      @keyframes resume-slideup { from { opacity: 0; transform: translateY(24px) } to { opacity: 1; transform: translateY(0) } }
     `;
     document.head.appendChild(s);
   }
@@ -816,8 +798,6 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
 
   const handleSave = async (resumeData: ResumeData): Promise<void> => {
     const body = serializeFormData(resumeData);
-    console.log('[RJ] save — endpoint:', ENDPOINT);
-    console.log('[RJ] save — body:', body);
     const response = await fetch(ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -829,8 +809,6 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
       console.error('[RJ] save failed:', response.status, text);
       throw new Error('HTTP ' + response.status);
     }
-    // ponytail: Morbis returns 200 even with PHP warnings/notices in HTML body
-    // Filter out third-party JS noise (New Relic, etc.)
     const phpPattern =
       /(?:<b>)?(?:Notice|Warning|Fatal error|Parse error|Catchable fatal error)(?:<\/b>)?\s*:\s*[^<]*/gi;
     const phpErrors: string[] = [];
@@ -838,7 +816,6 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
     while ((m = phpPattern.exec(text)) !== null) {
       let line = m[0].trim().replace(/<[^>]+>/g, '');
       if (!line) continue;
-      // Skip third-party JS warnings (New Relic, Google Analytics, etc.)
       if (/github\.com\/newrelic|newrelic-browser|google-analytics|googletagmanager/i.test(line))
         continue;
       phpErrors.push(line);
@@ -847,8 +824,6 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
       console.error('[RJ] PHP errors:', phpErrors);
       throw new Error(phpErrors.join('\n'));
     }
-    console.log('[RJ] save success');
-    // Reset cache so next edit picks up fresh data
     cachedFormState = null;
   };
 
@@ -860,19 +835,18 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
 
   document.body.classList.add('ext-resume-open');
 
-  // ponytail: auto-expand textareas inside our modal only
   setTimeout(() => {
     container.querySelectorAll('textarea').forEach((tx) => {
+      tx.style.height = 'auto';
+      tx.style.height = tx.scrollHeight + 'px';
       tx.addEventListener('input', () => {
         tx.style.height = 'auto';
         tx.style.height = tx.scrollHeight + 'px';
       });
-      tx.dispatchEvent(new Event('input'));
     });
   }, 50);
 }
 
-/* ── Fetch ALL form state from RJ form page (hidden, select, radio, etc.) ── */
 let cachedFormState: Record<string, string | string[]> | null = null;
 
 async function fetchFormState(): Promise<Record<string, string | string[]>> {
@@ -887,19 +861,16 @@ async function fetchFormState(): Promise<Record<string, string | string[]>> {
 
     const state: Record<string, string | string[]> = {};
 
-    // Hidden and text inputs
     doc
       .querySelectorAll<HTMLInputElement>('input[type="hidden"], input[type="text"]')
       .forEach((el) => {
         if (el.name && !el.name.endsWith('[]')) state[el.name] = el.value;
       });
 
-    // Textareas
     doc.querySelectorAll<HTMLTextAreaElement>('textarea').forEach((el) => {
       if (el.name) state[el.name] = el.value;
     });
 
-    // Selects (by id AND name) — accumulate array selects, overwrite singles
     doc.querySelectorAll<HTMLSelectElement>('select').forEach((el) => {
       if (el.id) state[el.id] = el.value;
       if (el.name) {
@@ -912,12 +883,10 @@ async function fetchFormState(): Promise<Record<string, string | string[]>> {
       }
     });
 
-    // Radios (checked only)
     doc.querySelectorAll<HTMLInputElement>('input[type="radio"]:checked').forEach((el) => {
       if (el.name) state[el.name] = el.value;
     });
 
-    // Array inputs (idicd[], kode10[], nama[], etc.) — collect all values per name
     const arrayNames = new Set<string>();
     doc.querySelectorAll<HTMLInputElement>('input[name$="[]"]').forEach((el) => {
       if (el.name) arrayNames.add(el.name);
@@ -930,7 +899,6 @@ async function fetchFormState(): Promise<Record<string, string | string[]>> {
       if (values.length > 0) state[name] = values;
     }
 
-    console.log('[RJ] fetched form state:', state);
     return state;
   } catch (e) {
     console.error('[RJ] failed to fetch form state:', e);
@@ -938,7 +906,6 @@ async function fetchFormState(): Promise<Record<string, string | string[]>> {
   }
 }
 
-/* ── Fetch ALL prescription histories from history/resep pages ── */
 function findAllResepIdsFromPage(): string[] {
   const ids: string[] = [];
   for (const el of document.querySelectorAll('p, td')) {
@@ -1001,26 +968,20 @@ async function fetchAllPrescriptionHistories(): Promise<string | null> {
 }
 
 function setupFloatingButton() {
-  // ponytail: enable only on the specific claim detail page
-  const targetPage = 'http://103.147.236.140/v2/m-klaim/detail-v2-refaktor';
-  if (!location.href.startsWith(targetPage)) {
-    console.log('[RJ] not target page (' + location.href + '), RJ disabled');
+  const targetPage = '/v2/m-klaim/detail-v2-refaktor';
+  if (!location.href.startsWith(location.origin + targetPage)) {
     return;
   }
 
-  // Optional: check if id_visit is present in URL to be safe
   const urlParams = new URLSearchParams(location.search);
   if (!urlParams.has('id_visit')) {
-    console.log('[RJ] no id_visit in URL, RJ disabled');
     return;
   }
-  // Skip on INAP pages (handled by resumeRanapTab)
   const jenis =
     document.querySelector<HTMLInputElement>('input[name=jenis]')?.value ??
     document.querySelector<HTMLSelectElement>('select[name=jenis]')?.value ??
     '';
   if (jenis.toUpperCase().includes('INAP')) {
-    console.log('[RJ] INAP visit, RJ disabled');
     return;
   }
   if (document.getElementById('ext-resume-float-btn')) return;
@@ -1038,14 +999,13 @@ function setupFloatingButton() {
   btn.title = 'Resume Rajal';
   btn.style.cssText =
     'position:fixed;right:16px;top:50%;transform:translateY(-50%);z-index:2147483645;' +
-    'width:44px;height:44px;border-radius:10px;border:none;' +
-    'background:#2469f0;color:white;font-size:13px;font-weight:700;' +
+    'width:48px;height:48px;border-radius:12px;border:none;' +
+    'background:#2b5f8a;color:white;font-size:14px;font-weight:700;' +
     'cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);' +
-    'transition:transform .15s,box-shadow .15s;' +
-    'font-family:Inter,-apple-system,sans-serif;';
+    'transition:transform .15s,box-shadow .15s;';
   btn.onmouseenter = () => {
     btn.style.transform = 'translateY(-50%) scale(1.05)';
-    btn.style.boxShadow = '0 4px 16px rgba(36,105,240,.35)';
+    btn.style.boxShadow = '0 4px 16px rgba(43,95,138,.35)';
   };
   btn.onmouseleave = () => {
     btn.style.transform = 'translateY(-50%)';
@@ -1054,32 +1014,25 @@ function setupFloatingButton() {
 
   btn.addEventListener('click', async () => {
     if (btn.disabled) return;
-    console.log('[RJ] button clicked');
     btn.disabled = true;
     try {
-      // Fetch ALL form state from form page before opening modal
       if (!cachedFormState) {
         cachedFormState = await fetchFormState();
       }
       const prescriptionText = await fetchAllPrescriptionHistories();
       const data = extractFormData();
-      console.log('[RJ] extracted data:', { data, prescriptionText });
-      // ponytail: prescription history overrides billing/cached data
       if (prescriptionText) data.clinicalNotes.terapi_pengobatan = prescriptionText;
-      // ponytail: kalau form & view kosong, ambil dari DOM
       const needTindakan = !data.clinicalNotes.tindakan || data.clinicalNotes.tindakan === '-';
       const needTerapi =
         !data.clinicalNotes.terapi_pengobatan || data.clinicalNotes.terapi_pengobatan === '-';
       if (needTindakan || needTerapi) {
         const billing = extractBillingFromDOM();
-        console.log('[RJ] billing from DOM:', billing);
         if (billing.tindakan && needTindakan) {
           data.clinicalNotes.tindakan = billing.tindakan;
         }
         if (billing.terapiPengobatan && needTerapi) {
           data.clinicalNotes.terapi_pengobatan = billing.terapiPengobatan;
         }
-        console.log('[RJ] after DOM merge:', data);
       }
       container.style.display = 'flex';
       mountReactApp(container, data);
