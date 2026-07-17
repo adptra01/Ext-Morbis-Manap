@@ -216,6 +216,12 @@ function renderToolbar(): void {
   if (!anyFeatureEnabled()) return;
   if (!isTargetPage() || document.querySelector('[data-toolbar]')) return;
   if (!extractIdVisit()) return;
+  const loginPaths = ['/login', '/auth', '/signin', '/masuk', '/keluar', '/logout'];
+  if (
+    loginPaths.some((p) => window.location.pathname.toLowerCase().includes(p)) ||
+    document.querySelectorAll('input[type="password"]').length > 0
+  )
+    return;
 
   const bar = document.createElement('div');
   bar.dataset.toolbar = 'true';
