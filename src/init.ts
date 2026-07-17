@@ -44,6 +44,14 @@ async function initExtension(): Promise<void> {
     return;
   }
 
+  const path = window.location.pathname.toLowerCase();
+  const loginPaths = ['/login', '/auth', '/signin', '/masuk', '/keluar', '/logout'];
+  const hasPwField = document.querySelectorAll('input[type="password"]').length > 0;
+  if (loginPaths.some((p) => path.includes(p)) || hasPwField) {
+    window.log('Halaman login terdeteksi, skip semua fitur');
+    return;
+  }
+
   const cfg = window.currentConfig;
   const fixJasaCfg = cfg?.features?.fixJasaPelayanan;
   if (fixJasaCfg?.enabled && window.ExtensionCore.isFeatureAllowed('fixJasaPelayanan')) {
