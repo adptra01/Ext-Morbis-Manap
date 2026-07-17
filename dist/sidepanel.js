@@ -20,7 +20,7 @@ import {
   v,
   x as y,
   y as b,
-} from './chunks/button-BAjB4v5j.js';
+} from './chunks/button-Bsklaqj_.js';
 var x = a(`check`, [[`path`, { d: `M20 6 9 17l-5-5`, key: `1gmf2c` }]]),
   S = a(`circle-alert`, [
     [`circle`, { cx: `12`, cy: `12`, r: `10`, key: `1mglay` }],
@@ -1105,7 +1105,7 @@ function J({ data: e }) {
       if (r[t] || a[t]) return;
       o((e) => ({ ...e, [t]: !0 }));
       let n = q[t],
-        s = `${e.baseUrl || `http://103.147.236.140`}${n.url}`,
+        s = `${e.baseUrl || ``}${n.url}`,
         c = n.getData(e);
       try {
         let e = await chrome.runtime.sendMessage({

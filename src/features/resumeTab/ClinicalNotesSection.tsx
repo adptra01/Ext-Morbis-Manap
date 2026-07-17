@@ -10,29 +10,31 @@ export function ClinicalNotesSection({
   onChange,
 }: ClinicalNotesSectionProps) {
   return (
-    <div className="px-5 py-4 border-b border-border bg-background">
-      <h3 className="text-md-sm font-semibold text-foreground mb-3">Data Klinis</h3>
-      <div className="grid grid-cols-2 gap-4">
+    <div className="py-5">
+      <h3 className="text-[18px] font-bold text-[#1a1d23] mb-4 font-['Lexend',system-ui,sans-serif]">
+        Data Klinis
+      </h3>
+      <div className="space-y-5">
         <div>
-          <label className="block text-[10px] font-semibold text-muted-foreground uppercase mb-1.5 ml-1">
-            Anamnesa
-          </label>
+          <label className="block text-[15px] font-semibold text-[#4a4e57] mb-2">Anamnesa</label>
           <textarea
             value={anamnesa}
             onChange={(e) => onChange('anamnesa', e.target.value)}
-            className="w-full h-24 rounded-md border border-input bg-background px-3 py-2 text-md-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+            className="w-full rounded-xl border-2 border-[#e2ddd7] bg-white px-4 py-3 text-[16px] leading-relaxed text-[#1a1d23] placeholder:text-[#a0988f] outline-none transition-colors focus:border-[#2b5f8a] focus:shadow-[0_0_0_3px_rgba(43,95,138,0.15)] resize-y"
             placeholder="Keluhan pasien..."
+            rows={4}
           />
         </div>
         <div>
-          <label className="block text-[10px] font-semibold text-muted-foreground uppercase mb-1.5 ml-1">
+          <label className="block text-[15px] font-semibold text-[#4a4e57] mb-2">
             Pemeriksaan Fisik
           </label>
           <textarea
             value={pemeriksaan}
             onChange={(e) => onChange('pemeriksaan', e.target.value)}
-            className="w-full h-24 rounded-md border border-input bg-background px-3 py-2 text-md-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+            className="w-full rounded-xl border-2 border-[#e2ddd7] bg-white px-4 py-3 text-[16px] leading-relaxed text-[#1a1d23] placeholder:text-[#a0988f] outline-none transition-colors focus:border-[#2b5f8a] focus:shadow-[0_0_0_3px_rgba(43,95,138,0.15)] resize-y"
             placeholder="Hasil pemeriksaan..."
+            rows={4}
           />
         </div>
       </div>

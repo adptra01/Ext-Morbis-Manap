@@ -27533,7 +27533,7 @@ var __morbis_feature = (() => {
   var import_client = __toESM(require_client(), 1);
 
   // src/features/resumeTab/App.tsx
-  var import_react11 = __toESM(require_react(), 1);
+  var import_react10 = __toESM(require_react(), 1);
 
   // node_modules/lucide-react/dist/esm/createLucideIcon.mjs
   var import_react3 = __toESM(require_react(), 1);
@@ -27662,21 +27662,13 @@ var __morbis_feature = (() => {
   var __iconNode = [['path', { d: 'm6 9 6 6 6-6', key: 'qrunsl' }]];
   var ChevronDown = createLucideIcon('chevron-down', __iconNode);
 
-  // node_modules/lucide-react/dist/esm/icons/file-text.mjs
+  // node_modules/lucide-react/dist/esm/icons/circle-x.mjs
   var __iconNode2 = [
-    [
-      'path',
-      {
-        d: 'M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z',
-        key: '1oefj6',
-      },
-    ],
-    ['path', { d: 'M14 2v5a1 1 0 0 0 1 1h5', key: 'wfsgrz' }],
-    ['path', { d: 'M10 9H8', key: 'b1mrlr' }],
-    ['path', { d: 'M16 13H8', key: 't4e002' }],
-    ['path', { d: 'M16 17H8', key: 'z1uh3a' }],
+    ['circle', { cx: '12', cy: '12', r: '10', key: '1mglay' }],
+    ['path', { d: 'm15 9-6 6', key: '1uzhvr' }],
+    ['path', { d: 'm9 9 6 6', key: 'z0biqf' }],
   ];
-  var FileText = createLucideIcon('file-text', __iconNode2);
+  var CircleX = createLucideIcon('circle-x', __iconNode2);
 
   // node_modules/lucide-react/dist/esm/icons/plus.mjs
   var __iconNode3 = [
@@ -27685,18 +27677,39 @@ var __morbis_feature = (() => {
   ];
   var Plus = createLucideIcon('plus', __iconNode3);
 
-  // node_modules/lucide-react/dist/esm/icons/trash-2.mjs
+  // node_modules/lucide-react/dist/esm/icons/rotate-ccw.mjs
   var __iconNode4 = [
+    ['path', { d: 'M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8', key: '1357e3' }],
+    ['path', { d: 'M3 3v5h5', key: '1xhq8a' }],
+  ];
+  var RotateCcw = createLucideIcon('rotate-ccw', __iconNode4);
+
+  // node_modules/lucide-react/dist/esm/icons/save.mjs
+  var __iconNode5 = [
+    [
+      'path',
+      {
+        d: 'M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z',
+        key: '1c8476',
+      },
+    ],
+    ['path', { d: 'M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7', key: '1ydtos' }],
+    ['path', { d: 'M7 3v4a1 1 0 0 0 1 1h7', key: 't51u73' }],
+  ];
+  var Save = createLucideIcon('save', __iconNode5);
+
+  // node_modules/lucide-react/dist/esm/icons/trash-2.mjs
+  var __iconNode6 = [
     ['path', { d: 'M10 11v6', key: 'nco0om' }],
     ['path', { d: 'M14 11v6', key: 'outv1u' }],
     ['path', { d: 'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6', key: 'miytrc' }],
     ['path', { d: 'M3 6h18', key: 'd0wm0j' }],
     ['path', { d: 'M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2', key: 'e791ji' }],
   ];
-  var Trash2 = createLucideIcon('trash-2', __iconNode4);
+  var Trash2 = createLucideIcon('trash-2', __iconNode6);
 
   // node_modules/lucide-react/dist/esm/icons/triangle-alert.mjs
-  var __iconNode5 = [
+  var __iconNode7 = [
     [
       'path',
       {
@@ -27707,14 +27720,275 @@ var __morbis_feature = (() => {
     ['path', { d: 'M12 9v4', key: 'juzpu7' }],
     ['path', { d: 'M12 17h.01', key: 'p32p05' }],
   ];
-  var TriangleAlert = createLucideIcon('triangle-alert', __iconNode5);
+  var TriangleAlert = createLucideIcon('triangle-alert', __iconNode7);
 
   // node_modules/lucide-react/dist/esm/icons/x.mjs
-  var __iconNode6 = [
+  var __iconNode8 = [
     ['path', { d: 'M18 6 6 18', key: '1bl5f8' }],
     ['path', { d: 'm6 6 12 12', key: 'd8bk6v' }],
   ];
-  var X = createLucideIcon('x', __iconNode6);
+  var X = createLucideIcon('x', __iconNode8);
+
+  // src/features/resumeTab/Header.tsx
+  var import_jsx_runtime = __toESM(require_jsx_runtime(), 1);
+  function Header({ title, onClose }) {
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
+      className: 'flex items-center justify-between px-6 py-4 shrink-0',
+      style: {
+        background: 'linear-gradient(135deg, #2b5f8a 0%, #1f4a6e 100%)',
+      },
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
+          className: 'flex items-center gap-3',
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('div', {
+              className: 'flex items-center justify-center w-10 h-10 rounded-xl bg-white/15',
+              children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('svg', {
+                width: '20',
+                height: '20',
+                viewBox: '0 0 24 24',
+                fill: 'none',
+                stroke: 'white',
+                strokeWidth: '2',
+                strokeLinecap: 'round',
+                strokeLinejoin: 'round',
+                children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)('path', {
+                    d: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z',
+                  }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)('polyline', {
+                    points: '14 2 14 8 20 8',
+                  }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)('line', {
+                    x1: '16',
+                    y1: '13',
+                    x2: '8',
+                    y2: '13',
+                  }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)('line', {
+                    x1: '16',
+                    y1: '17',
+                    x2: '8',
+                    y2: '17',
+                  }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)('polyline', {
+                    points: '10 9 9 9 8 9',
+                  }),
+                ],
+              }),
+            }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)('h2', {
+              className:
+                "text-[20px] font-bold text-white tracking-tight font-['Lexend',system-ui,sans-serif]",
+              children: title,
+            }),
+          ],
+        }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)('button', {
+          onClick: onClose,
+          className:
+            'w-11 h-11 rounded-xl flex items-center justify-center text-white/70 hover:text-white hover:bg-white/15 transition-all',
+          'aria-label': 'Tutup',
+          children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(X, { className: 'h-6 w-6' }),
+        }),
+      ],
+    });
+  }
+
+  // src/features/resumeTab/InfoBanner.tsx
+  var import_jsx_runtime2 = __toESM(require_jsx_runtime(), 1);
+  function InfoBanner({ data }) {
+    return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)('div', {
+      className: 'rounded-xl p-5 flex flex-wrap items-center gap-x-8 gap-y-3',
+      style: {
+        background: 'linear-gradient(135deg, #f0ebe4 0%, #f8f6f3 100%)',
+        border: '1px solid #e2ddd7',
+      },
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)('div', {
+          className: 'flex items-center gap-3',
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)('div', {
+              className: 'flex items-center justify-center w-10 h-10 rounded-full bg-[#2b5f8a]/10',
+              children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)('svg', {
+                width: '18',
+                height: '18',
+                viewBox: '0 0 24 24',
+                fill: 'none',
+                stroke: '#2b5f8a',
+                strokeWidth: '2',
+                strokeLinecap: 'round',
+                strokeLinejoin: 'round',
+                children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)('path', {
+                    d: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2',
+                  }),
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)('circle', {
+                    cx: '12',
+                    cy: '7',
+                    r: '4',
+                  }),
+                ],
+              }),
+            }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)('div', {
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)('div', {
+                  className: 'text-[11px] font-bold text-[#8a7f72] uppercase tracking-wider',
+                  children: 'RM',
+                }),
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)('div', {
+                  className: 'text-[18px] font-bold text-[#1a1d23] font-mono',
+                  children: data.norm || '\u2014',
+                }),
+              ],
+            }),
+          ],
+        }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)('div', {
+          className: 'w-px h-10 bg-[#e2ddd7]',
+        }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)('div', {
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)('div', {
+              className: 'text-[11px] font-bold text-[#8a7f72] uppercase tracking-wider',
+              children: 'Pasien',
+            }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)('div', {
+              className: 'text-[18px] font-bold text-[#1a1d23]',
+              children: data.pasien || '\u2014',
+            }),
+          ],
+        }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)('div', {
+          className: 'w-px h-10 bg-[#e2ddd7]',
+        }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)('div', {
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)('div', {
+              className: 'text-[11px] font-bold text-[#8a7f72] uppercase tracking-wider',
+              children: 'Dokter',
+            }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)('div', {
+              className: 'text-[18px] font-bold text-[#1a1d23]',
+              children: data.nama_dokter || '\u2014',
+            }),
+          ],
+        }),
+      ],
+    });
+  }
+
+  // src/features/resumeTab/ClinicalNotesSection.tsx
+  var import_jsx_runtime3 = __toESM(require_jsx_runtime(), 1);
+  function ClinicalNotesSection({ anamnesa, pemeriksaan, onChange }) {
+    return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)('div', {
+      className: 'py-5',
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('h3', {
+          className:
+            "text-[18px] font-bold text-[#1a1d23] mb-4 font-['Lexend',system-ui,sans-serif]",
+          children: 'Data Klinis',
+        }),
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)('div', {
+          className: 'space-y-5',
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)('div', {
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('label', {
+                  className: 'block text-[15px] font-semibold text-[#4a4e57] mb-2',
+                  children: 'Anamnesa',
+                }),
+                /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('textarea', {
+                  value: anamnesa,
+                  onChange: (e) => onChange('anamnesa', e.target.value),
+                  className:
+                    'w-full rounded-xl border-2 border-[#e2ddd7] bg-white px-4 py-3 text-[16px] leading-relaxed text-[#1a1d23] placeholder:text-[#a0988f] outline-none transition-colors focus:border-[#2b5f8a] focus:shadow-[0_0_0_3px_rgba(43,95,138,0.15)] resize-y',
+                  placeholder: 'Keluhan pasien...',
+                  rows: 4,
+                }),
+              ],
+            }),
+            /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)('div', {
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('label', {
+                  className: 'block text-[15px] font-semibold text-[#4a4e57] mb-2',
+                  children: 'Pemeriksaan Fisik',
+                }),
+                /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('textarea', {
+                  value: pemeriksaan,
+                  onChange: (e) => onChange('pemeriksaan', e.target.value),
+                  className:
+                    'w-full rounded-xl border-2 border-[#e2ddd7] bg-white px-4 py-3 text-[16px] leading-relaxed text-[#1a1d23] placeholder:text-[#a0988f] outline-none transition-colors focus:border-[#2b5f8a] focus:shadow-[0_0_0_3px_rgba(43,95,138,0.15)] resize-y',
+                  placeholder: 'Hasil pemeriksaan...',
+                  rows: 4,
+                }),
+              ],
+            }),
+          ],
+        }),
+      ],
+    });
+  }
+
+  // src/features/resumeTab/VitalSignsSection.tsx
+  var import_jsx_runtime4 = __toESM(require_jsx_runtime(), 1);
+  function VitalSignsSection({ vitals, onChange }) {
+    const fields = [
+      { key: 'tensi', label: 'Tensi', unit: 'mmHg', placeholder: '120/80' },
+      { key: 'nadi', label: 'Nadi', unit: 'x/mnt', placeholder: '80' },
+      { key: 'suhu', label: 'Suhu', unit: '\xB0C', placeholder: '36.5' },
+      { key: 'nafas', label: 'Nafas', unit: 'x/mnt', placeholder: '20' },
+      { key: 'berat', label: 'Berat', unit: 'kg', placeholder: '60' },
+      { key: 'tinggi', label: 'Tinggi', unit: 'cm', placeholder: '165' },
+    ];
+    return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('h3', {
+          className:
+            "text-[18px] font-bold text-[#1a1d23] mb-4 font-['Lexend',system-ui,sans-serif]",
+          children: 'Tanda Vital',
+        }),
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('div', {
+          className: 'grid grid-cols-2 sm:grid-cols-3 gap-4',
+          children: fields.map((f) =>
+            /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(
+              'div',
+              {
+                children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('label', {
+                    className: 'block text-[14px] font-semibold text-[#4a4e57] mb-1.5 ml-1',
+                    children: f.label,
+                  }),
+                  /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
+                    className: 'relative',
+                    children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('input', {
+                        value: vitals[f.key],
+                        onChange: (e) => onChange(f.key, e.target.value),
+                        placeholder: f.placeholder,
+                        className:
+                          'w-full h-12 rounded-xl border-2 border-[#e2ddd7] bg-white px-4 pr-14 text-[16px] text-[#1a1d23] placeholder:text-[#a0988f] outline-none transition-colors focus:border-[#2b5f8a] focus:shadow-[0_0_0_3px_rgba(43,95,138,0.15)]',
+                      }),
+                      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('span', {
+                        className:
+                          'absolute right-3 top-1/2 -translate-y-1/2 text-[13px] font-semibold text-[#a0988f] pointer-events-none',
+                        children: f.unit,
+                      }),
+                    ],
+                  }),
+                ],
+              },
+              f.key,
+            ),
+          ),
+        }),
+      ],
+    });
+  }
+
+  // src/features/resumeTab/DiagnosaSection.tsx
+  var import_react8 = __toESM(require_react(), 1);
 
   // src/ui/components/button.tsx
   var import_react4 = __toESM(require_react(), 1);
@@ -32175,7 +32449,7 @@ var __morbis_feature = (() => {
   }
 
   // src/ui/components/button.tsx
-  var import_jsx_runtime = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime5 = __toESM(require_jsx_runtime(), 1);
   var buttonVariants = cva(
     'inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md text-md-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
     {
@@ -32206,7 +32480,7 @@ var __morbis_feature = (() => {
   );
   var Button = (0, import_react4.forwardRef)(
     ({ className, variant, size: size4, ...props }, ref) => {
-      return /* @__PURE__ */ (0, import_jsx_runtime.jsx)('button', {
+      return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('button', {
         className: cn(buttonVariants({ variant, size: size4, className })),
         ref,
         ...props,
@@ -32215,221 +32489,8 @@ var __morbis_feature = (() => {
   );
   Button.displayName = 'Button';
 
-  // src/features/resumeTab/Header.tsx
-  var import_jsx_runtime2 = __toESM(require_jsx_runtime(), 1);
-  function Header({ title, onClose }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)('div', {
-      className: 'flex items-center justify-between px-6 py-4 border-b border-border shrink-0',
-      style: { background: 'linear-gradient(135deg, #f0f7ff 0%, #f8fafc 100%)' },
-      children: [
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)('div', {
-          className: 'flex items-center gap-2.5',
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)('div', {
-              className: 'flex items-center justify-center w-8 h-8 rounded-lg',
-              style: { background: '#2563eb' },
-              children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(FileText, {
-                className: 'h-4 w-4 text-white',
-              }),
-            }),
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)('h2', {
-              className: 'text-lg font-bold text-foreground tracking-tight',
-              children: title,
-            }),
-          ],
-        }),
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Button, {
-          variant: 'ghost',
-          size: 'icon',
-          onClick: onClose,
-          className: 'h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-white/50',
-          children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(X, { className: 'h-4.5 w-4.5' }),
-        }),
-      ],
-    });
-  }
-
-  // src/features/resumeTab/InfoBanner.tsx
-  var import_jsx_runtime3 = __toESM(require_jsx_runtime(), 1);
-  function InfoBanner({ data }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)('div', {
-      className:
-        'flex flex-wrap items-center gap-x-6 gap-y-2 px-5 py-3 bg-muted/50 border-b border-border text-md-xs shrink-0',
-      children: [
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)('div', {
-          className: 'flex flex-col',
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('span', {
-              className: 'text-muted-foreground uppercase tracking-wider font-semibold text-[9px]',
-              children: 'No. RM',
-            }),
-            /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('span', {
-              className: 'text-md-sm font-mono font-medium text-foreground',
-              children: data.norm,
-            }),
-          ],
-        }),
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)('div', {
-          className: 'flex flex-col border-l border-border pl-6',
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('span', {
-              className: 'text-muted-foreground uppercase tracking-wider font-semibold text-[9px]',
-              children: 'Nama Pasien',
-            }),
-            /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('span', {
-              className: 'text-md-sm font-medium text-foreground',
-              children: data.pasien,
-            }),
-          ],
-        }),
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)('div', {
-          className: 'flex flex-col border-l border-border pl-6',
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('span', {
-              className: 'text-muted-foreground uppercase tracking-wider font-semibold text-[9px]',
-              children: 'Dokter',
-            }),
-            /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('span', {
-              className: 'text-md-sm font-medium text-foreground',
-              children: data.nama_dokter,
-            }),
-          ],
-        }),
-      ],
-    });
-  }
-
-  // src/features/resumeTab/ClinicalNotesSection.tsx
-  var import_jsx_runtime4 = __toESM(require_jsx_runtime(), 1);
-  function ClinicalNotesSection({ anamnesa, pemeriksaan, onChange }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
-      className: 'px-5 py-4 border-b border-border bg-background',
-      children: [
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('h3', {
-          className: 'text-md-sm font-semibold text-foreground mb-3',
-          children: 'Data Klinis',
-        }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
-          className: 'grid grid-cols-2 gap-4',
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
-              children: [
-                /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('label', {
-                  className:
-                    'block text-[10px] font-semibold text-muted-foreground uppercase mb-1.5 ml-1',
-                  children: 'Anamnesa',
-                }),
-                /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('textarea', {
-                  value: anamnesa,
-                  onChange: (e) => onChange('anamnesa', e.target.value),
-                  className:
-                    'w-full h-24 rounded-md border border-input bg-background px-3 py-2 text-md-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 resize-none',
-                  placeholder: 'Keluhan pasien...',
-                }),
-              ],
-            }),
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
-              children: [
-                /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('label', {
-                  className:
-                    'block text-[10px] font-semibold text-muted-foreground uppercase mb-1.5 ml-1',
-                  children: 'Pemeriksaan Fisik',
-                }),
-                /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('textarea', {
-                  value: pemeriksaan,
-                  onChange: (e) => onChange('pemeriksaan', e.target.value),
-                  className:
-                    'w-full h-24 rounded-md border border-input bg-background px-3 py-2 text-md-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 resize-none',
-                  placeholder: 'Hasil pemeriksaan...',
-                }),
-              ],
-            }),
-          ],
-        }),
-      ],
-    });
-  }
-
-  // src/ui/components/input.tsx
-  var import_react5 = __toESM(require_react(), 1);
-  var import_jsx_runtime5 = __toESM(require_jsx_runtime(), 1);
-  var Input = (0, import_react5.forwardRef)(({ className, type, ...props }, ref) => {
-    return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('input', {
-      type,
-      className: cn(
-        'flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-md-sm text-foreground',
-        'placeholder:text-muted-foreground',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
-        'disabled:cursor-not-allowed disabled:opacity-50',
-        className,
-      ),
-      ref,
-      ...props,
-    });
-  });
-  Input.displayName = 'Input';
-
-  // src/features/resumeTab/VitalSignsSection.tsx
-  var import_jsx_runtime6 = __toESM(require_jsx_runtime(), 1);
-  function VitalSignsSection({ vitals, onChange }) {
-    const fields = [
-      { key: 'tensi', label: 'Tensi', unit: 'mmHg', placeholder: '120/80' },
-      { key: 'nadi', label: 'Nadi', unit: 'x/mnt', placeholder: '80' },
-      { key: 'suhu', label: 'Suhu', unit: '\xB0C', placeholder: '36.5' },
-      { key: 'nafas', label: 'Nafas', unit: 'x/mnt', placeholder: '20' },
-      { key: 'berat', label: 'Berat', unit: 'kg', placeholder: '60' },
-      { key: 'tinggi', label: 'Tinggi', unit: 'cm', placeholder: '165' },
-    ];
-    return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)('div', {
-      className: 'px-5 py-4 border-b border-border bg-background',
-      children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('h3', {
-          className: 'text-md-sm font-semibold text-foreground mb-3',
-          children: 'Tanda Vital',
-        }),
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('div', {
-          className: 'grid grid-cols-6 gap-3',
-          children: fields.map((f) =>
-            /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)(
-              'div',
-              {
-                className: 'space-y-1.5',
-                children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('label', {
-                    className: 'text-[10px] font-semibold text-muted-foreground uppercase ml-1',
-                    children: f.label,
-                  }),
-                  /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)('div', {
-                    className: 'relative',
-                    children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(Input, {
-                        value: vitals[f.key],
-                        onChange: (e) => onChange(f.key, e.target.value),
-                        placeholder: f.placeholder,
-                        className: 'pr-10 text-md-xs h-9',
-                      }),
-                      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('span', {
-                        className:
-                          'absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] font-medium text-muted-foreground/60 pointer-events-none',
-                        children: f.unit,
-                      }),
-                    ],
-                  }),
-                ],
-              },
-              f.key,
-            ),
-          ),
-        }),
-      ],
-    });
-  }
-
-  // src/features/resumeTab/DiagnosaSection.tsx
-  var import_react9 = __toESM(require_react(), 1);
-
   // src/ui/components/select.tsx
-  var import_react8 = __toESM(require_react(), 1);
+  var import_react7 = __toESM(require_react(), 1);
 
   // node_modules/@radix-ui/react-select/dist/index.mjs
   var React32 = __toESM(require_react(), 1);
@@ -32464,7 +32525,7 @@ var __morbis_feature = (() => {
 
   // node_modules/@radix-ui/react-context/dist/index.mjs
   var React = __toESM(require_react(), 1);
-  var import_jsx_runtime7 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime6 = __toESM(require_jsx_runtime(), 1);
   function createContextScope(scopeName, createContextScopeDeps = []) {
     let defaultContexts = [];
     function createContext32(rootComponentName, defaultContext) {
@@ -32476,7 +32537,7 @@ var __morbis_feature = (() => {
         const { scope, children, ...context } = props;
         const Context = scope?.[scopeName]?.[index2] || BaseContext;
         const value = React.useMemo(() => context, Object.values(context));
-        return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Context.Provider, { value, children });
+        return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(Context.Provider, { value, children });
       };
       Provider.displayName = rootComponentName + 'Provider';
       function useContext22(consumerName, scope, options2 = {}) {
@@ -32701,9 +32762,9 @@ var __morbis_feature = (() => {
   var use = React3[' use '.trim().toString()];
 
   // node_modules/@radix-ui/react-collection/dist/index.mjs
-  var import_jsx_runtime8 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime7 = __toESM(require_jsx_runtime(), 1);
   var React22 = __toESM(require_react(), 1);
-  var import_jsx_runtime9 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime8 = __toESM(require_jsx_runtime(), 1);
   function createCollection(name) {
     const PROVIDER_NAME2 = name + 'CollectionProvider';
     const [createCollectionContext, createCollectionScope2] = createContextScope(PROVIDER_NAME2);
@@ -32715,7 +32776,7 @@ var __morbis_feature = (() => {
       const { scope, children } = props;
       const ref = React4.useRef(null);
       const itemMap = React4.useRef(/* @__PURE__ */ new Map()).current;
-      return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(CollectionProviderImpl, {
+      return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(CollectionProviderImpl, {
         scope,
         itemMap,
         collectionRef: ref,
@@ -32729,7 +32790,7 @@ var __morbis_feature = (() => {
       const { scope, children } = props;
       const context = useCollectionContext(COLLECTION_SLOT_NAME, scope);
       const composedRefs = useComposedRefs(forwardedRef, context.collectionRef);
-      return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(CollectionSlotImpl, {
+      return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(CollectionSlotImpl, {
         ref: composedRefs,
         children,
       });
@@ -32747,7 +32808,7 @@ var __morbis_feature = (() => {
         context.itemMap.set(ref, { ref, ...itemData });
         return () => void context.itemMap.delete(ref);
       });
-      return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(CollectionItemSlotImpl, {
+      return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(CollectionItemSlotImpl, {
         ...{ [ITEM_DATA_ATTR]: '' },
         ref: composedRefs,
         children,
@@ -32777,7 +32838,7 @@ var __morbis_feature = (() => {
 
   // node_modules/@radix-ui/react-direction/dist/index.mjs
   var React5 = __toESM(require_react(), 1);
-  var import_jsx_runtime10 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime9 = __toESM(require_jsx_runtime(), 1);
   var DirectionContext = React5.createContext(void 0);
   function useDirection(localDir) {
     const globalDir = React5.useContext(DirectionContext);
@@ -32790,7 +32851,7 @@ var __morbis_feature = (() => {
   // node_modules/@radix-ui/react-primitive/dist/index.mjs
   var React6 = __toESM(require_react(), 1);
   var ReactDOM = __toESM(require_react_dom(), 1);
-  var import_jsx_runtime11 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime10 = __toESM(require_jsx_runtime(), 1);
   var NODES = [
     'a',
     'button',
@@ -32818,7 +32879,7 @@ var __morbis_feature = (() => {
       if (typeof window !== 'undefined') {
         window[/* @__PURE__ */ Symbol.for('radix-ui')] = true;
       }
-      return /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Comp, {
+      return /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(Comp, {
         ...primitiveProps,
         ref: forwardedRef,
       });
@@ -32846,7 +32907,7 @@ var __morbis_feature = (() => {
   }
 
   // node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs
-  var import_jsx_runtime12 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime11 = __toESM(require_jsx_runtime(), 1);
   var DISMISSABLE_LAYER_NAME = 'DismissableLayer';
   var CONTEXT_UPDATE = 'dismissableLayer.update';
   var POINTER_DOWN_OUTSIDE = 'dismissableLayer.pointerDownOutside';
@@ -32978,7 +33039,7 @@ var __morbis_feature = (() => {
       document.addEventListener(CONTEXT_UPDATE, handleUpdate);
       return () => document.removeEventListener(CONTEXT_UPDATE, handleUpdate);
     }, []);
-    return /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Primitive.div, {
+    return /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Primitive.div, {
       ...layerProps,
       ref: composedRefs,
       style: {
@@ -33012,7 +33073,7 @@ var __morbis_feature = (() => {
         };
       }
     }, [context.branches]);
-    return /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Primitive.div, {
+    return /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Primitive.div, {
       ...props,
       ref: composedRefs,
     });
@@ -33216,7 +33277,7 @@ var __morbis_feature = (() => {
 
   // node_modules/@radix-ui/react-focus-scope/dist/index.mjs
   var React10 = __toESM(require_react(), 1);
-  var import_jsx_runtime13 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime12 = __toESM(require_jsx_runtime(), 1);
   var AUTOFOCUS_ON_MOUNT = 'focusScope.autoFocusOnMount';
   var AUTOFOCUS_ON_UNMOUNT = 'focusScope.autoFocusOnUnmount';
   var EVENT_OPTIONS = { bubbles: false, cancelable: true };
@@ -33339,7 +33400,7 @@ var __morbis_feature = (() => {
       },
       [loop, trapped, focusScope.paused],
     );
-    return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Primitive.div, {
+    return /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Primitive.div, {
       tabIndex: -1,
       ...scopeProps,
       ref: composedRefs,
@@ -35220,11 +35281,11 @@ var __morbis_feature = (() => {
 
   // node_modules/@floating-ui/react-dom/dist/floating-ui.react-dom.mjs
   var React13 = __toESM(require_react(), 1);
-  var import_react6 = __toESM(require_react(), 1);
+  var import_react5 = __toESM(require_react(), 1);
   var ReactDOM2 = __toESM(require_react_dom(), 1);
   var isClient = typeof document !== 'undefined';
   var noop = function noop2() {};
-  var index = isClient ? import_react6.useLayoutEffect : noop;
+  var index = isClient ? import_react5.useLayoutEffect : noop;
   function deepEqual(a, b) {
     if (a === b) {
       return true;
@@ -35533,11 +35594,11 @@ var __morbis_feature = (() => {
 
   // node_modules/@radix-ui/react-arrow/dist/index.mjs
   var React14 = __toESM(require_react(), 1);
-  var import_jsx_runtime14 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime13 = __toESM(require_jsx_runtime(), 1);
   var NAME = 'Arrow';
   var Arrow = React14.forwardRef((props, forwardedRef) => {
     const { children, width = 10, height = 5, ...arrowProps } = props;
-    return /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Primitive.svg, {
+    return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Primitive.svg, {
       ...arrowProps,
       ref: forwardedRef,
       width,
@@ -35546,7 +35607,7 @@ var __morbis_feature = (() => {
       preserveAspectRatio: 'none',
       children: props.asChild
         ? children
-        : /* @__PURE__ */ (0, import_jsx_runtime14.jsx)('polygon', { points: '0,0 30,0 15,10' }),
+        : /* @__PURE__ */ (0, import_jsx_runtime13.jsx)('polygon', { points: '0,0 30,0 15,10' }),
     });
   });
   Arrow.displayName = NAME;
@@ -35592,7 +35653,7 @@ var __morbis_feature = (() => {
   }
 
   // node_modules/@radix-ui/react-popper/dist/index.mjs
-  var import_jsx_runtime15 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime14 = __toESM(require_jsx_runtime(), 1);
   var POPPER_NAME = 'Popper';
   var [createPopperContext, createPopperScope] = createContextScope(POPPER_NAME);
   var [PopperProvider, usePopperContext] = createPopperContext(POPPER_NAME);
@@ -35600,7 +35661,7 @@ var __morbis_feature = (() => {
     const { __scopePopper, children } = props;
     const [anchor, setAnchor] = React16.useState(null);
     const [placementState, setPlacementState] = React16.useState(void 0);
-    return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(PopperProvider, {
+    return /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(PopperProvider, {
       scope: __scopePopper,
       anchor,
       onAnchorChange: setAnchor,
@@ -35643,7 +35704,7 @@ var __morbis_feature = (() => {
     const placedAlign = sideAndAlign?.[1];
     return virtualRef
       ? null
-      : /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Primitive.div, {
+      : /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Primitive.div, {
           'data-radix-popper-side': placedSide,
           'data-radix-popper-align': placedAlign,
           ...anchorProps,
@@ -35762,7 +35823,7 @@ var __morbis_feature = (() => {
     useLayoutEffect2(() => {
       if (content) setContentZIndex(window.getComputedStyle(content).zIndex);
     }, [content]);
-    return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)('div', {
+    return /* @__PURE__ */ (0, import_jsx_runtime14.jsx)('div', {
       ref: refs.setFloating,
       'data-radix-popper-content-wrapper': '',
       style: {
@@ -35784,7 +35845,7 @@ var __morbis_feature = (() => {
         }),
       },
       dir: props.dir,
-      children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(PopperContentProvider, {
+      children: /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(PopperContentProvider, {
         scope: __scopePopper,
         placedSide,
         placedAlign,
@@ -35792,7 +35853,7 @@ var __morbis_feature = (() => {
         arrowX,
         arrowY,
         shouldHideArrow: cannotCenterArrow,
-        children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Primitive.div, {
+        children: /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Primitive.div, {
           'data-side': placedSide,
           'data-align': placedAlign,
           ...contentProps,
@@ -35823,7 +35884,7 @@ var __morbis_feature = (() => {
       // we have to use an extra wrapper because `ResizeObserver` (used by `useSize`)
       // doesn't report size as we'd expect on SVG elements.
       // it reports their bounding box which is effectively the largest path inside the SVG.
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)('span', {
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)('span', {
         ref: contentContext.onArrowChange,
         style: {
           position: 'absolute',
@@ -35844,7 +35905,7 @@ var __morbis_feature = (() => {
           }[contentContext.placedSide],
           visibility: contentContext.shouldHideArrow ? 'hidden' : void 0,
         },
-        children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Root, {
+        children: /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Root, {
           ...arrowProps,
           ref: forwardedRef,
           style: {
@@ -35903,7 +35964,7 @@ var __morbis_feature = (() => {
   // node_modules/@radix-ui/react-portal/dist/index.mjs
   var React17 = __toESM(require_react(), 1);
   var ReactDOM3 = __toESM(require_react_dom(), 1);
-  var import_jsx_runtime16 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime15 = __toESM(require_jsx_runtime(), 1);
   var PORTAL_NAME = 'Portal';
   var Portal = React17.forwardRef((props, forwardedRef) => {
     const { container: containerProp, ...portalProps } = props;
@@ -35912,7 +35973,7 @@ var __morbis_feature = (() => {
     const container = containerProp || (mounted && globalThis?.document?.body);
     return container
       ? ReactDOM3.createPortal(
-          /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Primitive.div, {
+          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Primitive.div, {
             ...portalProps,
             ref: forwardedRef,
           }),
@@ -36172,7 +36233,7 @@ var __morbis_feature = (() => {
 
   // node_modules/@radix-ui/react-visually-hidden/dist/index.mjs
   var React21 = __toESM(require_react(), 1);
-  var import_jsx_runtime17 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime16 = __toESM(require_jsx_runtime(), 1);
   var VISUALLY_HIDDEN_STYLES = Object.freeze({
     // See: https://github.com/twbs/bootstrap/blob/main/scss/mixins/_visually-hidden.scss
     position: 'absolute',
@@ -36188,7 +36249,7 @@ var __morbis_feature = (() => {
   });
   var NAME2 = 'VisuallyHidden';
   var VisuallyHidden = React21.forwardRef((props, forwardedRef) => {
-    return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Primitive.span, {
+    return /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Primitive.span, {
       ...props,
       ref: forwardedRef,
       style: { ...VISUALLY_HIDDEN_STYLES, ...props.style },
@@ -36383,9 +36444,9 @@ var __morbis_feature = (() => {
   }
 
   // node_modules/use-callback-ref/dist/es2015/useRef.js
-  var import_react7 = __toESM(require_react());
+  var import_react6 = __toESM(require_react());
   function useCallbackRef2(initialValue, callback) {
-    var ref = (0, import_react7.useState)(function () {
+    var ref = (0, import_react6.useState)(function () {
       return {
         // value
         value: initialValue,
@@ -37222,7 +37283,7 @@ var __morbis_feature = (() => {
   var Combination_default = ReactRemoveScroll;
 
   // node_modules/@radix-ui/react-select/dist/index.mjs
-  var import_jsx_runtime18 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime17 = __toESM(require_jsx_runtime(), 1);
   var OPEN_KEYS = [' ', 'Enter', 'ArrowUp', 'ArrowDown'];
   var SELECTION_KEYS = [' ', 'Enter'];
   var SELECT_NAME = 'Select';
@@ -37321,14 +37382,14 @@ var __morbis_feature = (() => {
       nativeSelectKey,
       isFormControl,
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Root2, {
+    return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Root2, {
       ...popperScope,
-      children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectProviderImpl, {
+      children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(SelectProviderImpl, {
         scope: __scopeSelect,
         ...context,
-        children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Collection.Provider, {
+        children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Collection.Provider, {
           scope: __scopeSelect,
-          children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectNativeOptionsProvider, {
+          children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(SelectNativeOptionsProvider, {
             scope: __scopeSelect,
             onNativeOptionAdd: handleNativeOptionAdd,
             onNativeOptionRemove: handleNativeOptionRemove,
@@ -37343,15 +37404,15 @@ var __morbis_feature = (() => {
   SelectProvider.displayName = PROVIDER_NAME;
   var Select = (props) => {
     const { __scopeSelect, children, ...providerProps } = props;
-    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectProvider, {
+    return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(SelectProvider, {
       __scopeSelect,
       ...providerProps,
       internal_do_not_use_render: ({ isFormControl }) =>
-        /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(import_jsx_runtime18.Fragment, {
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(import_jsx_runtime17.Fragment, {
           children: [
             children,
             isFormControl
-              ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectBubbleInput, {
+              ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(SelectBubbleInput, {
                   __scopeSelect,
                 })
               : null,
@@ -37389,10 +37450,10 @@ var __morbis_feature = (() => {
         };
       }
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Anchor, {
+    return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Anchor, {
       asChild: true,
       ...popperScope,
-      children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.button, {
+      children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Primitive.button, {
         type: 'button',
         role: 'combobox',
         'aria-controls': context.open ? context.contentId : void 0,
@@ -37448,12 +37509,12 @@ var __morbis_feature = (() => {
       onValueNodeHasChildrenChange(hasChildren);
     }, [onValueNodeHasChildrenChange, hasChildren]);
     const showPlaceholder = shouldShowPlaceholder(context.value);
-    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.span, {
+    return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Primitive.span, {
       ...valueProps,
       asChild: showPlaceholder ? false : valueProps.asChild,
       ref: composedRefs,
       style: { pointerEvents: 'none' },
-      children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+      children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
         React32.Fragment,
         { children: showPlaceholder ? placeholder : children },
         showPlaceholder ? 'placeholder' : 'value',
@@ -37464,7 +37525,7 @@ var __morbis_feature = (() => {
   var ICON_NAME = 'SelectIcon';
   var SelectIcon = React32.forwardRef((props, forwardedRef) => {
     const { __scopeSelect, children, ...iconProps } = props;
-    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.span, {
+    return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Primitive.span, {
       'aria-hidden': true,
       ...iconProps,
       ref: forwardedRef,
@@ -37478,10 +37539,10 @@ var __morbis_feature = (() => {
   });
   var SelectPortal = (props) => {
     const { __scopeSelect, forceMount, ...portalProps } = props;
-    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(PortalProvider, {
+    return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(PortalProvider, {
       scope: props.__scopeSelect,
       forceMount,
-      children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Portal, {
+      children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Portal, {
         asChild: true,
         ...portalProps,
       }),
@@ -37497,15 +37558,15 @@ var __morbis_feature = (() => {
     useLayoutEffect2(() => {
       setFragment(new DocumentFragment());
     }, []);
-    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Presence, {
+    return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Presence, {
       present: forceMount || context.open,
       children: ({ present }) =>
         present
-          ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectContentImpl, {
+          ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(SelectContentImpl, {
               ...contentProps,
               ref: forwardedRef,
             })
-          : /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectContentFragment, {
+          : /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(SelectContentFragment, {
               ...contentProps,
               fragment,
             }),
@@ -37516,11 +37577,11 @@ var __morbis_feature = (() => {
     const { __scopeSelect, children, fragment } = props;
     if (!fragment) return null;
     return ReactDOM4.createPortal(
-      /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectContentProvider, {
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(SelectContentProvider, {
         scope: __scopeSelect,
-        children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Collection.Slot, {
+        children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Collection.Slot, {
           scope: __scopeSelect,
-          children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)('div', {
+          children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)('div', {
             ref: forwardedRef,
             children,
           }),
@@ -37680,7 +37741,7 @@ var __morbis_feature = (() => {
             avoidCollisions,
           }
         : {};
-    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectContentProvider, {
+    return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(SelectContentProvider, {
       scope: __scopeSelect,
       content,
       viewport,
@@ -37694,10 +37755,10 @@ var __morbis_feature = (() => {
       position,
       isPositioned,
       searchRef,
-      children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Combination_default, {
+      children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Combination_default, {
         as: Slot,
         allowPinchZoom: true,
-        children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(FocusScope, {
+        children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(FocusScope, {
           asChild: true,
           trapped: context.open,
           onMountAutoFocus: (event) => {
@@ -37707,14 +37768,14 @@ var __morbis_feature = (() => {
             context.trigger?.focus({ preventScroll: true });
             event.preventDefault();
           }),
-          children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(DismissableLayer, {
+          children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(DismissableLayer, {
             asChild: true,
             disableOutsidePointerEvents: true,
             onEscapeKeyDown,
             onPointerDownOutside,
             onFocusOutside: (event) => event.preventDefault(),
             onDismiss: () => context.onOpenChange(false),
-            children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectPosition, {
+            children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(SelectPosition, {
               role: 'listbox',
               id: context.contentId,
               'data-state': context.open ? 'open' : 'closed',
@@ -37903,12 +37964,12 @@ var __morbis_feature = (() => {
       },
       [position, focusSelectedItem],
     );
-    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectViewportProvider, {
+    return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(SelectViewportProvider, {
       scope: __scopeSelect,
       contentWrapper,
       shouldExpandOnScrollRef,
       onScrollButtonChange: handleScrollButtonChange,
-      children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)('div', {
+      children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)('div', {
         ref: setContentWrapper,
         style: {
           display: 'flex',
@@ -37916,7 +37977,7 @@ var __morbis_feature = (() => {
           position: 'fixed',
           zIndex: contentZIndex,
         },
-        children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.div, {
+        children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Primitive.div, {
           ...popperProps,
           ref: composedRefs,
           style: {
@@ -37941,7 +38002,7 @@ var __morbis_feature = (() => {
       ...popperProps
     } = props;
     const popperScope = usePopperScope(__scopeSelect);
-    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Content, {
+    return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Content, {
       ...popperScope,
       ...popperProps,
       ref: forwardedRef,
@@ -37971,17 +38032,17 @@ var __morbis_feature = (() => {
     const viewportContext = useSelectViewportContext(VIEWPORT_NAME, __scopeSelect);
     const composedRefs = useComposedRefs(forwardedRef, contentContext.onViewportChange);
     const prevScrollTopRef = React32.useRef(0);
-    return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(import_jsx_runtime18.Fragment, {
+    return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(import_jsx_runtime17.Fragment, {
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)('style', {
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsx)('style', {
           dangerouslySetInnerHTML: {
             __html: `[data-radix-select-viewport]{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;}[data-radix-select-viewport]::-webkit-scrollbar{display:none}`,
           },
           nonce,
         }),
-        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Collection.Slot, {
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Collection.Slot, {
           scope: __scopeSelect,
-          children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.div, {
+          children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Primitive.div, {
             'data-radix-select-viewport': '',
             role: 'presentation',
             ...viewportProps,
@@ -38034,10 +38095,10 @@ var __morbis_feature = (() => {
   var SelectGroup = React32.forwardRef((props, forwardedRef) => {
     const { __scopeSelect, ...groupProps } = props;
     const groupId = useId();
-    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectGroupContextProvider, {
+    return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(SelectGroupContextProvider, {
       scope: __scopeSelect,
       id: groupId,
-      children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.div, {
+      children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Primitive.div, {
         role: 'group',
         'aria-labelledby': groupId,
         ...groupProps,
@@ -38050,7 +38111,7 @@ var __morbis_feature = (() => {
   var SelectLabel = React32.forwardRef((props, forwardedRef) => {
     const { __scopeSelect, ...labelProps } = props;
     const groupContext = useSelectGroupContext(LABEL_NAME, __scopeSelect);
-    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.div, {
+    return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Primitive.div, {
       id: groupContext.id,
       ...labelProps,
       ref: forwardedRef,
@@ -38084,7 +38145,7 @@ var __morbis_feature = (() => {
         context.onOpenChange(false);
       }
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectItemContextProvider, {
+    return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(SelectItemContextProvider, {
       scope: __scopeSelect,
       value,
       disabled,
@@ -38093,12 +38154,12 @@ var __morbis_feature = (() => {
       onItemTextChange: React32.useCallback((node) => {
         setTextValue((prevTextValue) => prevTextValue || (node?.textContent ?? '').trim());
       }, []),
-      children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Collection.ItemSlot, {
+      children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Collection.ItemSlot, {
         scope: __scopeSelect,
         value,
         disabled,
         textValue,
-        children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.div, {
+        children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Primitive.div, {
           role: 'option',
           'aria-labelledby': textId,
           'data-highlighted': isFocused ? '' : void 0,
@@ -38173,7 +38234,7 @@ var __morbis_feature = (() => {
     const textContent = itemTextNode?.textContent;
     const nativeOption = React32.useMemo(
       () =>
-        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
           'option',
           { value: itemContext.value, disabled: itemContext.disabled, children: textContent },
           itemContext.value,
@@ -38185,9 +38246,9 @@ var __morbis_feature = (() => {
       onNativeOptionAdd(nativeOption);
       return () => onNativeOptionRemove(nativeOption);
     }, [onNativeOptionAdd, onNativeOptionRemove, nativeOption]);
-    return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(import_jsx_runtime18.Fragment, {
+    return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(import_jsx_runtime17.Fragment, {
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.span, {
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Primitive.span, {
           id: itemContext.textId,
           ...itemTextProps,
           ref: composedRefs,
@@ -38207,7 +38268,7 @@ var __morbis_feature = (() => {
     const { __scopeSelect, ...itemIndicatorProps } = props;
     const itemContext = useSelectItemContext(ITEM_INDICATOR_NAME, __scopeSelect);
     return itemContext.isSelected
-      ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.span, {
+      ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Primitive.span, {
           'aria-hidden': true,
           ...itemIndicatorProps,
           ref: forwardedRef,
@@ -38235,7 +38296,7 @@ var __morbis_feature = (() => {
       }
     }, [contentContext.viewport, contentContext.isPositioned]);
     return canScrollUp
-      ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectScrollButtonImpl, {
+      ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(SelectScrollButtonImpl, {
           ...props,
           ref: composedRefs,
           onAutoScroll: () => {
@@ -38269,7 +38330,7 @@ var __morbis_feature = (() => {
       }
     }, [contentContext.viewport, contentContext.isPositioned]);
     return canScrollDown
-      ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectScrollButtonImpl, {
+      ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(SelectScrollButtonImpl, {
           ...props,
           ref: composedRefs,
           onAutoScroll: () => {
@@ -38300,7 +38361,7 @@ var __morbis_feature = (() => {
       const activeItem = getItems().find((item) => item.ref.current === document.activeElement);
       activeItem?.ref.current?.scrollIntoView({ block: 'nearest' });
     }, [getItems]);
-    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.div, {
+    return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Primitive.div, {
       'aria-hidden': true,
       ...scrollIndicatorProps,
       ref: forwardedRef,
@@ -38324,7 +38385,7 @@ var __morbis_feature = (() => {
   var SEPARATOR_NAME = 'SelectSeparator';
   var SelectSeparator = React32.forwardRef((props, forwardedRef) => {
     const { __scopeSelect, ...separatorProps } = props;
-    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.div, {
+    return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Primitive.div, {
       'aria-hidden': true,
       ...separatorProps,
       ref: forwardedRef,
@@ -38337,7 +38398,7 @@ var __morbis_feature = (() => {
     const popperScope = usePopperScope(__scopeSelect);
     const contentContext = useSelectContentContext(ARROW_NAME2, __scopeSelect);
     return contentContext.position === 'popper'
-      ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Arrow2, {
+      ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Arrow2, {
           ...popperScope,
           ...arrowProps,
           ref: forwardedRef,
@@ -38369,7 +38430,7 @@ var __morbis_feature = (() => {
         select.dispatchEvent(event);
       }
     }, [prevValue, selectValue]);
-    return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(
+    return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(
       Primitive.select,
       {
         'aria-hidden': true,
@@ -38386,7 +38447,7 @@ var __morbis_feature = (() => {
         defaultValue: selectValue,
         children: [
           shouldShowPlaceholder(value) && !hasEmptyValueOption
-            ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)('option', { value: '' })
+            ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)('option', { value: '' })
             : null,
           Array.from(nativeOptions),
         ],
@@ -38443,11 +38504,11 @@ var __morbis_feature = (() => {
   }
 
   // src/ui/components/select.tsx
-  var import_jsx_runtime19 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime18 = __toESM(require_jsx_runtime(), 1);
   var Select2 = Select;
   var SelectValue2 = SelectValue;
-  var SelectTrigger2 = (0, import_react8.forwardRef)(({ className, children, ...props }, ref) =>
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(SelectTrigger, {
+  var SelectTrigger2 = (0, import_react7.forwardRef)(({ className, children, ...props }, ref) =>
+    /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(SelectTrigger, {
       ref,
       className: cn(
         'flex h-8 w-full items-center justify-between gap-1 rounded-md border border-input bg-background px-2.5 py-1 text-md-sm text-foreground',
@@ -38459,9 +38520,9 @@ var __morbis_feature = (() => {
       ...props,
       children: [
         children,
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectIcon, {
+        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectIcon, {
           asChild: true,
-          children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(ChevronDown, {
+          children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(ChevronDown, {
             className: 'h-4 w-4 opacity-50',
           }),
         }),
@@ -38469,10 +38530,10 @@ var __morbis_feature = (() => {
     }),
   );
   SelectTrigger2.displayName = SelectTrigger.displayName;
-  var SelectContent2 = (0, import_react8.forwardRef)(
+  var SelectContent2 = (0, import_react7.forwardRef)(
     ({ className, children, position = 'popper', ...props }, ref) =>
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectPortal, {
-        children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectContent, {
+      /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectPortal, {
+        children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectContent, {
           ref,
           className: cn(
             'relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md',
@@ -38486,7 +38547,7 @@ var __morbis_feature = (() => {
           ),
           position,
           ...props,
-          children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectViewport, {
+          children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectViewport, {
             className: cn(
               'p-1',
               position === 'popper' &&
@@ -38498,8 +38559,8 @@ var __morbis_feature = (() => {
       }),
   );
   SelectContent2.displayName = SelectContent.displayName;
-  var SelectItem2 = (0, import_react8.forwardRef)(({ className, children, ...props }, ref) =>
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectItem, {
+  var SelectItem2 = (0, import_react7.forwardRef)(({ className, children, ...props }, ref) =>
+    /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectItem, {
       ref,
       className: cn(
         'relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-md-sm outline-none',
@@ -38508,21 +38569,21 @@ var __morbis_feature = (() => {
         className,
       ),
       ...props,
-      children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectItemText, { children }),
+      children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectItemText, { children }),
     }),
   );
   SelectItem2.displayName = SelectItem.displayName;
 
   // src/features/resumeTab/DiagnosaSection.tsx
-  var import_jsx_runtime20 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime19 = __toESM(require_jsx_runtime(), 1);
   var ICD10_URL = '/rekam-medik/search?opsi=kodeicd10&q=';
   function DiagnosaSection({ rows, onChange }) {
-    const [hits, setHits] = (0, import_react9.useState)([]);
-    const [hitRow, setHitRow] = (0, import_react9.useState)(-1);
-    const [hitPos, setHitPos] = (0, import_react9.useState)({ top: 0, left: 0, width: 0 });
-    const [errMsg, setErrMsg] = (0, import_react9.useState)('');
-    const t = (0, import_react9.useRef)();
-    const abortRef = (0, import_react9.useRef)();
+    const [hits, setHits] = (0, import_react8.useState)([]);
+    const [hitRow, setHitRow] = (0, import_react8.useState)(-1);
+    const [hitPos, setHitPos] = (0, import_react8.useState)({ top: 0, left: 0, width: 0 });
+    const [errMsg, setErrMsg] = (0, import_react8.useState)('');
+    const t = (0, import_react8.useRef)();
+    const abortRef = (0, import_react8.useRef)();
     const updateRow = (i, p) => onChange(rows.map((r2, idx) => (idx === i ? { ...r2, ...p } : r2)));
     const removeRow = (i) => onChange(rows.filter((_, idx) => idx !== i));
     const search = (q, rowIdx, el) => {
@@ -38574,7 +38635,6 @@ var __morbis_feature = (() => {
       }, 300);
     };
     const pick = (i, item) => {
-      console.log('[PICK DIAGNOSA]', item, '\u2192 row', i);
       updateRow(i, { idicd: item.ID, kode10: item.KODE, namaDiagnosa: item.NAMA });
       setHits([]);
       setHitRow(-1);
@@ -38586,24 +38646,26 @@ var __morbis_feature = (() => {
     const makeKodeChange = (i) => (e) => {
       updateRow(i, { kode10: e.target.value });
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('div', {
-      className: 'px-5 py-4 border-b border-border bg-background',
+    return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)('div', {
+      className: 'px-5 py-4 border-b border-[#e2ddd7] bg-[#f8f6f3]',
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('div', {
-          className: 'flex items-center justify-between mb-3',
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)('div', {
+          className: 'flex items-center justify-between mb-4',
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('h3', {
-              className: 'text-md-sm font-semibold text-foreground',
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)('h3', {
+              className:
+                "text-[18px] font-bold text-[#1a1d23] font-['Lexend',system-ui,sans-serif]",
               children: [
-                'Diagnosa (ICD-10) ',
+                'Diagnosa (ICD-10)',
+                ' ',
                 rows.length > 0 &&
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('span', {
-                    className: 'text-muted-foreground font-normal',
+                  /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)('span', {
+                    className: 'font-normal text-[#a0988f]',
                     children: ['(', rows.length, ')'],
                   }),
               ],
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(Button, {
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(Button, {
               variant: 'default',
               size: 'lg',
               onClick: () =>
@@ -38613,235 +38675,293 @@ var __morbis_feature = (() => {
                 ]),
               className: 'px-5 py-2.5 text-sm font-semibold',
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Plus, { className: 'size-4' }),
+                /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Plus, { className: 'size-4' }),
                 ' Tambah Diagnosa',
               ],
             }),
           ],
         }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('div', {
-          className: 'border border-border rounded-md overflow-hidden',
-          children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('table', {
-            className: 'w-full text-md-xs',
-            children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('thead', {
-                children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('tr', {
-                  className: 'border-b border-border bg-muted/50',
-                  children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('th', {
-                      className: 'text-left font-semibold text-muted-foreground px-3 py-2',
-                      style: { width: '35%' },
-                      children: 'Nama Diagnosa',
-                    }),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('th', {
-                      className: 'text-left font-semibold text-muted-foreground px-3 py-2',
-                      style: { width: '14%' },
-                      children: 'Kode ICD-10',
-                    }),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('th', {
-                      className: 'text-left font-semibold text-muted-foreground px-3 py-2',
-                      style: { width: '15%' },
-                      children: 'Kasus',
-                    }),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('th', {
-                      className: 'text-left font-semibold text-muted-foreground px-3 py-2',
-                      style: { width: '15%' },
-                      children: 'Komplikasi',
-                    }),
-                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('th', {
-                      className: 'pr-3 py-2',
-                      style: { width: '8%' },
-                    }),
-                  ],
+        rows.length === 0
+          ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)('div', {
+              className:
+                'border-2 border-dashed border-[#e2ddd7] rounded-xl py-8 text-center bg-white',
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime19.jsx)('p', {
+                  className: 'text-[16px] text-[#a0988f]',
+                  children: 'Belum ada diagnosa',
                 }),
-              }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('tbody', {
-                children: rows.map((row, i) => {
-                  const no = i + 1;
-                  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
-                    'tr',
-                    {
-                      className: 'border-b border-border last:border-0 hover:bg-accent/50',
-                      children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('td', {
-                          className: 'px-3 py-1.5',
-                          children: [
-                            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('input', {
-                              type: 'text',
-                              id: `rj-nama${no}`,
-                              name: 'nama[]',
-                              value: row.namaDiagnosa,
-                              placeholder: 'Cari diagnosa...',
-                              autoComplete: 'off',
-                              onChange: makeSearch(i),
-                              className:
-                                'flex w-full rounded-md border-input py-2 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-offset-1 border-0 bg-transparent px-0 h-10 text-base shadow-none focus-visible:ring-0',
-                            }),
-                            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('input', {
-                              type: 'hidden',
-                              id: `rj-idicd${no}`,
-                              name: 'idicd[]',
-                              value: row.idicd,
-                            }),
-                            hits.length > 0 &&
-                              hitRow === i &&
-                              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('div', {
-                                style: {
-                                  position: 'fixed',
-                                  top: hitPos.top,
-                                  left: hitPos.left,
-                                  width: hitPos.width,
-                                  zIndex: 2147483647,
-                                  background: '#fff',
-                                  border: '1px solid #d1d5db',
-                                  borderRadius: '6px',
-                                  boxShadow: '0 4px 12px rgba(0,0,0,.15)',
-                                  maxHeight: '200px',
-                                  overflowY: 'auto',
-                                },
-                                children: hits.map((item, ri) =>
-                                  /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
-                                    'div',
-                                    {
-                                      onClick: () => pick(i, item),
-                                      style: {
-                                        padding: '6px 10px',
-                                        cursor: 'pointer',
-                                        fontSize: '12px',
-                                        borderBottom: '1px solid #f3f4f6',
-                                      },
-                                      children: [
-                                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('div', {
-                                          style: { fontWeight: 500, color: '#1f2937' },
-                                          children: item.NAMA,
-                                        }),
-                                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('div', {
-                                          style: { color: '#6b7280', fontSize: '11px' },
-                                          children: item.KODE,
-                                        }),
-                                      ],
+                /* @__PURE__ */ (0, import_jsx_runtime19.jsx)('p', {
+                  className: 'text-[14px] text-[#a0988f] mt-1',
+                  children: 'Klik "Tambah Diagnosa" untuk menambahkan',
+                }),
+              ],
+            })
+          : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)('div', {
+              className: 'space-y-3',
+              children: rows.map((row, i) => {
+                const no = i + 1;
+                return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(
+                  'div',
+                  {
+                    className: 'bg-white rounded-xl border-2 border-[#e2ddd7] p-4',
+                    children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)('div', {
+                        className: 'grid grid-cols-1 md:grid-cols-2 gap-3',
+                        children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)('div', {
+                            className: 'md:col-span-2',
+                            children: [
+                              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)('label', {
+                                className: 'block text-[14px] font-semibold text-[#4a4540] mb-1',
+                                children: 'Nama Diagnosa',
+                              }),
+                              /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)('div', {
+                                style: { position: 'relative' },
+                                children: [
+                                  /* @__PURE__ */ (0, import_jsx_runtime19.jsx)('input', {
+                                    type: 'text',
+                                    id: `rj-nama${no}`,
+                                    name: 'nama[]',
+                                    value: row.namaDiagnosa,
+                                    placeholder: 'Cari diagnosa...',
+                                    autoComplete: 'off',
+                                    onChange: makeSearch(i),
+                                    style: {
+                                      height: 48,
+                                      fontSize: 16,
+                                      borderRadius: 10,
+                                      border: '2px solid #e2ddd7',
+                                      outline: 'none',
+                                      padding: '0 12px',
+                                      width: '100%',
+                                      color: '#1a1d23',
+                                      backgroundColor: '#fff',
                                     },
-                                    item.ID || ri,
-                                  ),
-                                ),
+                                    onFocus: (e) => {
+                                      e.target.style.borderColor = '#2b5f8a';
+                                      e.target.style.boxShadow = '0 0 0 3px rgba(43,95,138,0.15)';
+                                    },
+                                    onBlur: (e) => {
+                                      e.target.style.borderColor = '#e2ddd7';
+                                      e.target.style.boxShadow = 'none';
+                                    },
+                                  }),
+                                  /* @__PURE__ */ (0, import_jsx_runtime19.jsx)('input', {
+                                    type: 'hidden',
+                                    id: `rj-idicd${no}`,
+                                    name: 'idicd[]',
+                                    value: row.idicd,
+                                  }),
+                                  hits.length > 0 &&
+                                    hitRow === i &&
+                                    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)('div', {
+                                      style: {
+                                        position: 'fixed',
+                                        top: hitPos.top,
+                                        left: hitPos.left,
+                                        width: hitPos.width,
+                                        zIndex: 2147483647,
+                                        background: '#fff',
+                                        border: '2px solid #d1d5db',
+                                        borderRadius: '10px',
+                                        boxShadow: '0 8px 24px rgba(0,0,0,.15)',
+                                        maxHeight: '240px',
+                                        overflowY: 'auto',
+                                      },
+                                      children: hits.map((item, ri) =>
+                                        /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(
+                                          'div',
+                                          {
+                                            onClick: () => pick(i, item),
+                                            style: {
+                                              padding: '10px 14px',
+                                              cursor: 'pointer',
+                                              fontSize: '14px',
+                                              borderBottom: '1px solid #f3f4f6',
+                                            },
+                                            children: [
+                                              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)('div', {
+                                                style: { fontWeight: 500, color: '#1f2937' },
+                                                children: item.NAMA,
+                                              }),
+                                              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)('div', {
+                                                style: { color: '#6b7280', fontSize: '12px' },
+                                                children: item.KODE,
+                                              }),
+                                            ],
+                                          },
+                                          item.ID || ri,
+                                        ),
+                                      ),
+                                    }),
+                                  errMsg &&
+                                    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)('div', {
+                                      style: {
+                                        position: 'fixed',
+                                        top: hitPos.top,
+                                        left: hitPos.left,
+                                        zIndex: 2147483647,
+                                        background: '#fee2e2',
+                                        border: '2px solid #ef4444',
+                                        borderRadius: '10px',
+                                        padding: '10px',
+                                        fontSize: '14px',
+                                        color: '#b91c1c',
+                                      },
+                                      children: errMsg,
+                                    }),
+                                ],
                               }),
-                            errMsg &&
-                              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('div', {
+                            ],
+                          }),
+                          /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)('div', {
+                            children: [
+                              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)('label', {
+                                className: 'block text-[14px] font-semibold text-[#4a4540] mb-1',
+                                children: 'Kode ICD-10',
+                              }),
+                              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)('input', {
+                                type: 'text',
+                                id: `rj-kode${no}`,
+                                name: 'kode10[]',
+                                value: row.kode10,
+                                placeholder: 'Kode',
+                                onChange: makeKodeChange(i),
                                 style: {
-                                  position: 'fixed',
-                                  top: hitPos.top,
-                                  left: hitPos.left,
-                                  zIndex: 2147483647,
-                                  background: '#fee2e2',
-                                  border: '1px solid #ef4444',
-                                  borderRadius: '6px',
-                                  padding: '8px',
-                                  fontSize: '12px',
-                                  color: '#b91c1c',
+                                  height: 48,
+                                  fontSize: 16,
+                                  borderRadius: 10,
+                                  border: '2px solid #e2ddd7',
+                                  outline: 'none',
+                                  padding: '0 12px',
+                                  width: '100%',
+                                  color: '#1a1d23',
+                                  backgroundColor: '#fff',
+                                  fontFamily: "'Courier New',monospace",
                                 },
-                                children: errMsg,
+                                onFocus: (e) => {
+                                  e.target.style.borderColor = '#2b5f8a';
+                                  e.target.style.boxShadow = '0 0 0 3px rgba(43,95,138,0.15)';
+                                },
+                                onBlur: (e) => {
+                                  e.target.style.borderColor = '#e2ddd7';
+                                  e.target.style.boxShadow = 'none';
+                                },
                               }),
-                          ],
-                        }),
-                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('td', {
-                          className: 'px-3 py-1.5',
-                          children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('input', {
-                            type: 'text',
-                            id: `rj-kode${no}`,
-                            name: 'kode10[]',
-                            value: row.kode10,
-                            placeholder: 'Kode',
-                            onChange: makeKodeChange(i),
-                            className:
-                              'flex w-full rounded-md border-input py-2 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-offset-1 border-0 bg-transparent px-0 h-10 text-sm font-mono shadow-none focus-visible:ring-0',
+                            ],
                           }),
-                        }),
-                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('td', {
-                          className: 'px-3 py-1.5',
-                          children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(Select2, {
-                            value: row.kasus,
-                            onValueChange: (v) => updateRow(i, { kasus: v }),
+                          /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)('div', {
                             children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectTrigger2, {
-                                className: 'h-10 w-full border-border text-sm',
-                                children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
-                                  SelectValue2,
-                                  { placeholder: 'Pilih Kasus' },
-                                ),
+                              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)('label', {
+                                className: 'block text-[14px] font-semibold text-[#4a4540] mb-1',
+                                children: 'Kasus',
                               }),
-                              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(SelectContent2, {
-                                className: 'z-[1050]',
+                              /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(Select2, {
+                                value: row.kasus,
+                                onValueChange: (v) => updateRow(i, { kasus: v }),
                                 children: [
-                                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectItem2, {
-                                    value: 'BARU',
-                                    children: 'Baru',
+                                  /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectTrigger2, {
+                                    style: {
+                                      height: 48,
+                                      borderRadius: 10,
+                                      border: '2px solid #e2ddd7',
+                                      backgroundColor: '#fff',
+                                      fontSize: 16,
+                                      paddingLeft: 12,
+                                      width: '100%',
+                                    },
+                                    children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+                                      SelectValue2,
+                                      { placeholder: 'Pilih Kasus' },
+                                    ),
                                   }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectItem2, {
-                                    value: 'LAMA',
-                                    children: 'Lama',
+                                  /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(SelectContent2, {
+                                    className: 'z-[1050]',
+                                    children: [
+                                      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectItem2, {
+                                        value: 'BARU',
+                                        children: 'Baru',
+                                      }),
+                                      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectItem2, {
+                                        value: 'LAMA',
+                                        children: 'Lama',
+                                      }),
+                                    ],
                                   }),
                                 ],
                               }),
                             ],
                           }),
-                        }),
-                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('td', {
-                          className: 'px-3 py-1.5',
-                          children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(Select2, {
-                            value: row.komplikasi,
-                            onValueChange: (v) => updateRow(i, { komplikasi: v }),
+                          /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)('div', {
                             children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectTrigger2, {
-                                className: 'h-10 w-full border-border text-sm',
-                                children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
-                                  SelectValue2,
-                                  { placeholder: 'Pilih' },
-                                ),
+                              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)('label', {
+                                className: 'block text-[14px] font-semibold text-[#4a4540] mb-1',
+                                children: 'Komplikasi',
                               }),
-                              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(SelectContent2, {
-                                className: 'z-[1050]',
+                              /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(Select2, {
+                                value: row.komplikasi,
+                                onValueChange: (v) => updateRow(i, { komplikasi: v }),
                                 children: [
-                                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectItem2, {
-                                    value: 'YA',
-                                    children: 'Ya',
+                                  /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectTrigger2, {
+                                    style: {
+                                      height: 48,
+                                      borderRadius: 10,
+                                      border: '2px solid #e2ddd7',
+                                      backgroundColor: '#fff',
+                                      fontSize: 16,
+                                      paddingLeft: 12,
+                                      width: '100%',
+                                    },
+                                    children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+                                      SelectValue2,
+                                      { placeholder: 'Pilih' },
+                                    ),
                                   }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectItem2, {
-                                    value: 'TIDAK',
-                                    children: 'Tidak',
+                                  /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(SelectContent2, {
+                                    className: 'z-[1050]',
+                                    children: [
+                                      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectItem2, {
+                                        value: 'YA',
+                                        children: 'Ya',
+                                      }),
+                                      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectItem2, {
+                                        value: 'TIDAK',
+                                        children: 'Tidak',
+                                      }),
+                                    ],
                                   }),
                                 ],
                               }),
                             ],
                           }),
-                        }),
-                        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('td', {
-                          className: 'pr-3 py-1.5',
-                          children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Button, {
-                            variant: 'ghost',
-                            size: 'icon',
-                            onClick: () => removeRow(i),
-                            className: 'h-7 w-7 text-muted-foreground hover:text-destructive',
-                            children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Trash2, {
-                              className: 'size-3.5',
-                            }),
+                        ],
+                      }),
+                      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)('div', {
+                        className: 'flex justify-end mt-3',
+                        children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Button, {
+                          variant: 'ghost',
+                          size: 'icon',
+                          onClick: () => removeRow(i),
+                          style: { height: 40, width: 40, color: '#a0988f', borderRadius: 8 },
+                          className: 'hover:text-[#dc2626]',
+                          children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Trash2, {
+                            className: 'size-5',
                           }),
                         }),
-                      ],
-                    },
-                    i,
-                  );
-                }),
+                      }),
+                    ],
+                  },
+                  i,
+                );
               }),
-            ],
-          }),
-        }),
+            }),
       ],
     });
   }
 
   // src/features/resumeTab/TindakanSection.tsx
-  var import_react10 = __toESM(require_react(), 1);
-  var import_jsx_runtime21 = __toESM(require_jsx_runtime(), 1);
+  var import_react9 = __toESM(require_react(), 1);
+  var import_jsx_runtime20 = __toESM(require_jsx_runtime(), 1);
   var ICD9_URL = '/rekam-medik/search?opsi=clauseDiagnose_icd9&q=';
   var JENIS_OPTIONS = [
     { value: 'Primer', label: 'Utama (Primer)' },
@@ -38859,12 +38979,12 @@ var __morbis_feature = (() => {
     { value: '277132007', label: 'Tindakan Terapeutik' },
   ];
   function TindakanSection({ rows, onChange }) {
-    const [hits, setHits] = (0, import_react10.useState)([]);
-    const [hitRow, setHitRow] = (0, import_react10.useState)(-1);
-    const [hitPos, setHitPos] = (0, import_react10.useState)({ top: 0, left: 0, width: 0 });
-    const [errMsg, setErrMsg] = (0, import_react10.useState)('');
-    const t = (0, import_react10.useRef)();
-    const abortRef = (0, import_react10.useRef)();
+    const [hits, setHits] = (0, import_react9.useState)([]);
+    const [hitRow, setHitRow] = (0, import_react9.useState)(-1);
+    const [hitPos, setHitPos] = (0, import_react9.useState)({ top: 0, left: 0, width: 0 });
+    const [errMsg, setErrMsg] = (0, import_react9.useState)('');
+    const t = (0, import_react9.useRef)();
+    const abortRef = (0, import_react9.useRef)();
     const updateRow = (i, p) => onChange(rows.map((r2, idx) => (idx === i ? { ...r2, ...p } : r2)));
     const removeRow = (i) => onChange(rows.filter((_, idx) => idx !== i));
     const search = (q, rowIdx, el) => {
@@ -38918,7 +39038,6 @@ var __morbis_feature = (() => {
       }, 300);
     };
     const pick = (i, item) => {
-      console.log('[PICK TINDAKAN]', item, '\u2192 row', i);
       updateRow(i, { idicdTindakan: item.ID, kode9: item.KODE, namaTindakan: item.NAMA });
       setHits([]);
       setHitRow(-1);
@@ -38930,24 +39049,26 @@ var __morbis_feature = (() => {
     const makeKodeChange = (i) => (e) => {
       updateRow(i, { kode9: e.target.value });
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
-      className: 'px-5 py-4 border-b border-border bg-background',
+    return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('div', {
+      className: 'px-5 py-4 border-b border-[#e2ddd7] bg-[#f8f6f3]',
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
-          className: 'flex items-center justify-between mb-3',
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('div', {
+          className: 'flex items-center justify-between mb-4',
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('h3', {
-              className: 'text-md-sm font-semibold text-foreground',
+            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('h3', {
+              className:
+                "text-[18px] font-bold text-[#1a1d23] font-['Lexend',system-ui,sans-serif]",
               children: [
-                'Tindakan (ICD-9) ',
+                'Tindakan (ICD-9)',
+                ' ',
                 rows.length > 0 &&
-                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('span', {
-                    className: 'text-muted-foreground font-normal',
+                  /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('span', {
+                    className: 'font-normal text-[#a0988f]',
                     children: ['(', rows.length, ')'],
                   }),
               ],
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(Button, {
+            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(Button, {
               variant: 'default',
               size: 'lg',
               onClick: () =>
@@ -38965,181 +39086,210 @@ var __morbis_feature = (() => {
                 ]),
               className: 'px-5 py-2.5 text-sm font-semibold',
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Plus, { className: 'size-4' }),
+                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Plus, { className: 'size-4' }),
                 ' Tambah Tindakan',
               ],
             }),
           ],
         }),
         rows.length === 0
-          ? /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
-              className: 'border border-dashed border-border rounded-md py-6 text-center',
+          ? /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('div', {
+              className:
+                'border-2 border-dashed border-[#e2ddd7] rounded-xl py-8 text-center bg-white',
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('p', {
-                  className: 'text-md-sm text-muted-foreground',
+                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('p', {
+                  className: 'text-[16px] text-[#a0988f]',
                   children: 'Belum ada tindakan',
                 }),
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('p', {
-                  className: 'text-md-xs text-muted-foreground mt-1',
+                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('p', {
+                  className: 'text-[14px] text-[#a0988f] mt-1',
                   children: 'Klik "Tambah Tindakan" untuk menambahkan',
                 }),
               ],
             })
-          : /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
-              className: 'border border-border rounded-md overflow-x-auto',
-              children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('table', {
-                className: 'w-full text-md-xs',
-                style: { minWidth: 650 },
-                children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('thead', {
-                    children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('tr', {
-                      className: 'border-b border-border bg-muted/50',
-                      children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('th', {
-                          className: 'text-left font-semibold text-muted-foreground px-3 py-2',
-                          style: { width: '30%' },
-                          children: 'Nama Tindakan',
-                        }),
-                        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('th', {
-                          className: 'text-left font-semibold text-muted-foreground px-3 py-2',
-                          style: { width: '10%' },
-                          children: 'Kode ICD-9',
-                        }),
-                        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('th', {
-                          className: 'text-left font-semibold text-muted-foreground px-3 py-2',
-                          style: { width: '18%' },
-                          children: 'Jenis',
-                        }),
-                        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('th', {
-                          className: 'text-left font-semibold text-muted-foreground px-3 py-2',
-                          style: { width: '28%' },
-                          children: 'Kategori Prosedur *',
-                        }),
-                        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('th', {
-                          className: 'pr-3 py-2',
-                          style: { width: '5%' },
-                        }),
-                      ],
-                    }),
-                  }),
-                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('tbody', {
-                    children: rows.map((row, i) => {
-                      const no = i + 1;
-                      return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
-                        'tr',
-                        {
-                          className: 'border-b border-border last:border-0 hover:bg-accent/50',
-                          children: [
-                            /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('td', {
-                              className: 'px-3 py-1.5',
-                              children: [
-                                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('input', {
-                                  type: 'text',
-                                  id: `rj-tindakan${no}`,
-                                  name: 'namaTindakan[]',
-                                  value: row.namaTindakan,
-                                  placeholder: 'Cari tindakan...',
-                                  autoComplete: 'off',
-                                  onChange: makeSearch(i),
-                                  className:
-                                    'flex w-full rounded-md border-input py-2 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 border-0 bg-transparent px-0 h-10 text-base shadow-none focus-visible:ring-0',
-                                }),
-                                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('input', {
-                                  type: 'hidden',
-                                  id: `rj-idicdTindakan${no}`,
-                                  name: 'idicdTindakan[]',
-                                  value: row.idicdTindakan,
-                                }),
-                                hits.length > 0 &&
-                                  hitRow === i &&
-                                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
+          : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('div', {
+              className: 'space-y-3',
+              children: rows.map((row, i) => {
+                const no = i + 1;
+                return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+                  'div',
+                  {
+                    className: 'bg-white rounded-xl border-2 border-[#e2ddd7] p-4',
+                    children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('div', {
+                        className: 'grid grid-cols-1 md:grid-cols-2 gap-3',
+                        children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('div', {
+                            className: 'md:col-span-2',
+                            children: [
+                              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('label', {
+                                className: 'block text-[14px] font-semibold text-[#4a4540] mb-1',
+                                children: 'Nama Tindakan',
+                              }),
+                              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('div', {
+                                style: { position: 'relative' },
+                                children: [
+                                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('input', {
+                                    type: 'text',
+                                    id: `rj-tindakan${no}`,
+                                    name: 'namaTindakan[]',
+                                    value: row.namaTindakan,
+                                    placeholder: 'Cari tindakan...',
+                                    autoComplete: 'off',
+                                    onChange: makeSearch(i),
                                     style: {
-                                      position: 'fixed',
-                                      top: hitPos.top,
-                                      left: hitPos.left,
-                                      width: hitPos.width,
-                                      zIndex: 2147483647,
-                                      background: '#fff',
-                                      border: '1px solid #d1d5db',
-                                      borderRadius: '6px',
-                                      boxShadow: '0 4px 12px rgba(0,0,0,.15)',
-                                      maxHeight: '200px',
-                                      overflowY: 'auto',
+                                      height: 48,
+                                      fontSize: 16,
+                                      borderRadius: 10,
+                                      border: '2px solid #e2ddd7',
+                                      outline: 'none',
+                                      padding: '0 12px',
+                                      width: '100%',
+                                      color: '#1a1d23',
+                                      backgroundColor: '#fff',
                                     },
-                                    children: hits.map((item, ri) =>
-                                      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
-                                        'div',
-                                        {
-                                          onClick: () => pick(i, item),
-                                          style: {
-                                            padding: '6px 10px',
-                                            cursor: 'pointer',
-                                            fontSize: '12px',
-                                            borderBottom: '1px solid #f3f4f6',
+                                    onFocus: (e) => {
+                                      e.target.style.borderColor = '#2b5f8a';
+                                      e.target.style.boxShadow = '0 0 0 3px rgba(43,95,138,0.15)';
+                                    },
+                                    onBlur: (e) => {
+                                      e.target.style.borderColor = '#e2ddd7';
+                                      e.target.style.boxShadow = 'none';
+                                    },
+                                  }),
+                                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('input', {
+                                    type: 'hidden',
+                                    id: `rj-idicdTindakan${no}`,
+                                    name: 'idicdTindakan[]',
+                                    value: row.idicdTindakan,
+                                  }),
+                                  hits.length > 0 &&
+                                    hitRow === i &&
+                                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('div', {
+                                      style: {
+                                        position: 'fixed',
+                                        top: hitPos.top,
+                                        left: hitPos.left,
+                                        width: hitPos.width,
+                                        zIndex: 2147483647,
+                                        background: '#fff',
+                                        border: '2px solid #d1d5db',
+                                        borderRadius: '10px',
+                                        boxShadow: '0 8px 24px rgba(0,0,0,.15)',
+                                        maxHeight: '240px',
+                                        overflowY: 'auto',
+                                      },
+                                      children: hits.map((item, ri) =>
+                                        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+                                          'div',
+                                          {
+                                            onClick: () => pick(i, item),
+                                            style: {
+                                              padding: '10px 14px',
+                                              cursor: 'pointer',
+                                              fontSize: '14px',
+                                              borderBottom: '1px solid #f3f4f6',
+                                            },
+                                            children: [
+                                              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('div', {
+                                                style: { fontWeight: 500, color: '#1f2937' },
+                                                children: item.NAMA,
+                                              }),
+                                              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('div', {
+                                                style: { color: '#6b7280', fontSize: '12px' },
+                                                children: item.KODE,
+                                              }),
+                                            ],
                                           },
-                                          children: [
-                                            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
-                                              style: { fontWeight: 500, color: '#1f2937' },
-                                              children: item.NAMA,
-                                            }),
-                                            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
-                                              style: { color: '#6b7280', fontSize: '11px' },
-                                              children: item.KODE,
-                                            }),
-                                          ],
-                                        },
-                                        item.ID || ri,
+                                          item.ID || ri,
+                                        ),
                                       ),
-                                    ),
-                                  }),
-                                errMsg &&
-                                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
-                                    style: {
-                                      position: 'fixed',
-                                      top: hitPos.top,
-                                      left: hitPos.left,
-                                      zIndex: 2147483647,
-                                      background: '#fee2e2',
-                                      border: '1px solid #ef4444',
-                                      borderRadius: '6px',
-                                      padding: '8px',
-                                      fontSize: '12px',
-                                      color: '#b91c1c',
-                                    },
-                                    children: errMsg,
-                                  }),
-                              ],
-                            }),
-                            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('td', {
-                              className: 'px-3 py-1.5',
-                              children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('input', {
+                                    }),
+                                  errMsg &&
+                                    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('div', {
+                                      style: {
+                                        position: 'fixed',
+                                        top: hitPos.top,
+                                        left: hitPos.left,
+                                        zIndex: 2147483647,
+                                        background: '#fee2e2',
+                                        border: '2px solid #ef4444',
+                                        borderRadius: '10px',
+                                        padding: '10px',
+                                        fontSize: '14px',
+                                        color: '#b91c1c',
+                                      },
+                                      children: errMsg,
+                                    }),
+                                ],
+                              }),
+                            ],
+                          }),
+                          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('div', {
+                            children: [
+                              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('label', {
+                                className: 'block text-[14px] font-semibold text-[#4a4540] mb-1',
+                                children: 'Kode ICD-9',
+                              }),
+                              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('input', {
                                 type: 'text',
                                 id: `rj-kode9${no}`,
                                 name: 'kode9[]',
                                 value: row.kode9,
                                 placeholder: 'Kode',
                                 onChange: makeKodeChange(i),
-                                className:
-                                  'flex w-full rounded-md border-input py-2 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 border-0 bg-transparent px-0 h-10 text-sm font-mono shadow-none focus-visible:ring-0',
+                                style: {
+                                  height: 48,
+                                  fontSize: 16,
+                                  borderRadius: 10,
+                                  border: '2px solid #e2ddd7',
+                                  outline: 'none',
+                                  padding: '0 12px',
+                                  width: '100%',
+                                  color: '#1a1d23',
+                                  backgroundColor: '#fff',
+                                  fontFamily: "'Courier New',monospace",
+                                },
+                                onFocus: (e) => {
+                                  e.target.style.borderColor = '#2b5f8a';
+                                  e.target.style.boxShadow = '0 0 0 3px rgba(43,95,138,0.15)';
+                                },
+                                onBlur: (e) => {
+                                  e.target.style.borderColor = '#e2ddd7';
+                                  e.target.style.boxShadow = 'none';
+                                },
                               }),
-                            }),
-                            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('td', {
-                              className: 'px-3 py-1.5',
-                              children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(Select2, {
+                            ],
+                          }),
+                          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('div', {
+                            children: [
+                              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('label', {
+                                className: 'block text-[14px] font-semibold text-[#4a4540] mb-1',
+                                children: 'Jenis',
+                              }),
+                              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(Select2, {
                                 value: row.komorbid,
                                 onValueChange: (v) => updateRow(i, { komorbid: v }),
                                 children: [
-                                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SelectTrigger2, {
-                                    className: 'h-10 w-full border-border text-sm',
-                                    children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+                                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectTrigger2, {
+                                    style: {
+                                      height: 48,
+                                      borderRadius: 10,
+                                      border: '2px solid #e2ddd7',
+                                      backgroundColor: '#fff',
+                                      fontSize: 16,
+                                      paddingLeft: 12,
+                                      width: '100%',
+                                    },
+                                    children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
                                       SelectValue2,
                                       { placeholder: 'Pilih Jenis' },
                                     ),
                                   }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SelectContent2, {
+                                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectContent2, {
                                     className: 'z-[1050]',
                                     children: JENIS_OPTIONS.map((o) =>
-                                      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+                                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
                                         SelectItem2,
                                         { value: o.value, children: o.label },
                                         o.value,
@@ -39148,24 +39298,37 @@ var __morbis_feature = (() => {
                                   }),
                                 ],
                               }),
-                            }),
-                            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('td', {
-                              className: 'px-3 py-1.5',
-                              children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(Select2, {
+                            ],
+                          }),
+                          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('div', {
+                            children: [
+                              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('label', {
+                                className: 'block text-[14px] font-semibold text-[#4a4540] mb-1',
+                                children: 'Kategori Prosedur *',
+                              }),
+                              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(Select2, {
                                 value: row.kategoriProsedur,
                                 onValueChange: (v) => updateRow(i, { kategoriProsedur: v }),
                                 children: [
-                                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SelectTrigger2, {
-                                    className: 'h-10 w-full border-border text-sm',
-                                    children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+                                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectTrigger2, {
+                                    style: {
+                                      height: 48,
+                                      borderRadius: 10,
+                                      border: '2px solid #e2ddd7',
+                                      backgroundColor: '#fff',
+                                      fontSize: 16,
+                                      paddingLeft: 12,
+                                      width: '100%',
+                                    },
+                                    children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
                                       SelectValue2,
                                       { placeholder: 'Pilih Kategori' },
                                     ),
                                   }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SelectContent2, {
+                                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectContent2, {
                                     className: 'z-[1050]',
                                     children: KATEGORI_OPTIONS.map((o) =>
-                                      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+                                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
                                         SelectItem2,
                                         { value: o.value, children: o.label },
                                         o.value || 'empty',
@@ -39174,26 +39337,27 @@ var __morbis_feature = (() => {
                                   }),
                                 ],
                               }),
-                            }),
-                            /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('td', {
-                              className: 'pr-3 py-1.5',
-                              children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Button, {
-                                variant: 'ghost',
-                                size: 'icon',
-                                onClick: () => removeRow(i),
-                                className: 'h-7 w-7 text-muted-foreground hover:text-destructive',
-                                children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Trash2, {
-                                  className: 'size-3.5',
-                                }),
-                              }),
-                            }),
-                          ],
-                        },
-                        i,
-                      );
-                    }),
-                  }),
-                ],
+                            ],
+                          }),
+                        ],
+                      }),
+                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('div', {
+                        className: 'flex justify-end mt-3',
+                        children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Button, {
+                          variant: 'ghost',
+                          size: 'icon',
+                          onClick: () => removeRow(i),
+                          style: { height: 40, width: 40, color: '#a0988f', borderRadius: 8 },
+                          className: 'hover:text-[#dc2626]',
+                          children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Trash2, {
+                            className: 'size-5',
+                          }),
+                        }),
+                      }),
+                    ],
+                  },
+                  i,
+                );
               }),
             }),
       ],
@@ -39201,35 +39365,35 @@ var __morbis_feature = (() => {
   }
 
   // src/features/resumeTab/ValidationPanel.tsx
-  var import_jsx_runtime22 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime21 = __toESM(require_jsx_runtime(), 1);
   function ValidationPanel({ errors, warnings = [] }) {
     const hasAny = errors.length > 0 || warnings.length > 0;
     if (!hasAny) return null;
-    return /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(import_jsx_runtime22.Fragment, {
+    return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(import_jsx_runtime21.Fragment, {
       children: [
         warnings.length > 0 &&
-          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('div', {
-            className: 'px-5 py-3 bg-amber-50 border-t border-amber-200',
+          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
+            className: 'px-6 py-4 border-t-2 border-[#e2ddd7] bg-[#fefce8]',
             role: 'alert',
-            children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
-              className: 'flex items-start gap-2',
+            children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
+              className: 'flex items-start gap-3',
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(TriangleAlert, {
-                  className: 'size-4 text-amber-600 shrink-0 mt-0.5',
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(TriangleAlert, {
+                  className: 'size-5 text-[#b45309] shrink-0 mt-0.5',
                 }),
-                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
                   children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('p', {
-                      className: 'text-md-xs font-semibold text-amber-800 mb-1',
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('p', {
+                      className: 'text-[15px] font-bold text-[#92400e] mb-1',
                       children: 'Perhatian',
                     }),
-                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('ul', {
-                      className: 'space-y-0.5',
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('ul', {
+                      className: 'space-y-1',
                       children: warnings.map((w, i) =>
-                        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
+                        /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
                           'li',
                           {
-                            className: 'text-md-xs text-amber-700',
+                            className: 'text-[14px] text-[#a16207]',
                             children: [w.section, ': ', w.message],
                           },
                           i,
@@ -39242,28 +39406,28 @@ var __morbis_feature = (() => {
             }),
           }),
         errors.length > 0 &&
-          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('div', {
-            className: 'px-5 py-3 bg-destructive/10 border-t border-destructive/20',
+          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
+            className: 'px-6 py-4 border-t-2 border-[#e2ddd7] bg-[#fef2f2]',
             role: 'alert',
-            children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
-              className: 'flex items-start gap-2',
+            children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
+              className: 'flex items-start gap-3',
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(TriangleAlert, {
-                  className: 'size-4 text-destructive shrink-0 mt-0.5',
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(TriangleAlert, {
+                  className: 'size-5 text-[#b91c1c] shrink-0 mt-0.5',
                 }),
-                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
                   children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('p', {
-                      className: 'text-md-xs font-semibold text-destructive mb-1',
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('p', {
+                      className: 'text-[15px] font-bold text-[#991b1b] mb-1',
                       children: ['Terdapat ', errors.length, ' kesalahan'],
                     }),
-                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('ul', {
-                      className: 'space-y-0.5',
+                    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('ul', {
+                      className: 'space-y-1',
                       children: errors.map((err, i) =>
-                        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
+                        /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
                           'li',
                           {
-                            className: 'text-md-xs text-destructive/80',
+                            className: 'text-[14px] text-[#b91c1c]/80',
                             children: [err.section, ': ', err.message],
                           },
                           i,
@@ -39280,59 +39444,75 @@ var __morbis_feature = (() => {
   }
 
   // src/features/resumeTab/Footer.tsx
-  var import_jsx_runtime23 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime22 = __toESM(require_jsx_runtime(), 1);
   function Footer({ onCancel, onSave, saving, hasErrors, lastSaved, onRefresh }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('div', {
-      className:
-        'flex items-center justify-between px-6 py-4 border-t border-border shrink-0 text-md-xs',
-      style: { background: '#f8fafc' },
+    return /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
+      className: 'flex items-center justify-between px-6 py-4 border-t-2 border-[#e2ddd7] shrink-0',
+      style: { background: '#f8f6f3' },
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('div', {
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
           className: 'flex items-center gap-3',
           children: [
             hasErrors &&
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('span', {
-                className: 'text-destructive flex items-center gap-1',
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('span', {
+                className: 'text-[#b91c1c] flex items-center gap-1.5 text-[14px] font-medium',
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('span', {
-                    className: 'inline-block w-1.5 h-1.5 rounded-full bg-destructive',
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('span', {
+                    className: 'inline-block w-2 h-2 rounded-full bg-[#b91c1c]',
                   }),
                   'Validasi gagal',
                 ],
               }),
             lastSaved &&
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('span', {
-                className: 'text-muted-foreground',
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('span', {
+                className: 'text-[#6b7280] text-[14px]',
                 children: ['Tersimpan pukul ', lastSaved],
+              }),
+            saving &&
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('span', {
+                className: 'text-[#2b5f8a] text-[14px] font-medium flex items-center gap-1.5',
+                children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(RotateCcw, {
+                    className: 'h-4 w-4 animate-spin',
+                  }),
+                  'Menyimpan...',
+                ],
               }),
           ],
         }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('div', {
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
           className: 'flex items-center gap-3',
           children: [
             onRefresh &&
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Button, {
-                variant: 'outline',
-                size: 'xl',
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('button', {
                 onClick: onRefresh,
-                className: 'px-6 py-3',
-                children: 'Refresh',
+                className:
+                  'h-12 px-5 rounded-xl border-2 border-[#e2ddd7] bg-white text-[15px] font-semibold text-[#4a4e57] hover:bg-[#f0ece6] transition-all flex items-center gap-2',
+                children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(RotateCcw, {
+                    className: 'h-4 w-4',
+                  }),
+                  'Segarkan',
+                ],
               }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Button, {
-              variant: 'outline',
-              size: 'xl',
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('button', {
               onClick: onCancel,
-              className: 'px-6 py-3',
-              children: 'Batal',
+              className:
+                'h-12 px-5 rounded-xl border-2 border-[#e2ddd7] bg-white text-[15px] font-semibold text-[#4a4e57] hover:bg-[#f0ece6] transition-all flex items-center gap-2',
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(CircleX, { className: 'h-4 w-4' }),
+                'Batal',
+              ],
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Button, {
-              variant: 'default',
-              size: 'xl',
+            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('button', {
               onClick: onSave,
               disabled: saving || hasErrors,
-              className: 'px-8 py-3',
-              style: { boxShadow: '0 4px 14px rgba(37,99,235,0.3)', padding: '0 32px' },
-              children: saving ? 'Menyimpan...' : 'Simpan',
+              className:
+                'h-12 px-8 rounded-xl bg-[#2b7a4a] text-white text-[16px] font-bold hover:bg-[#23663d] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-2 shadow-[0_4px_14px_rgba(43,122,74,0.3)]',
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Save, { className: 'h-5 w-5' }),
+                saving ? 'Menyimpan...' : 'Simpan',
+              ],
             }),
           ],
         }),
@@ -39341,7 +39521,7 @@ var __morbis_feature = (() => {
   }
 
   // src/features/resumeTab/App.tsx
-  var import_jsx_runtime24 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime23 = __toESM(require_jsx_runtime(), 1);
   function validate(data) {
     const errors = [];
     data.diagnosa.forEach((d, i) => {
@@ -39369,21 +39549,19 @@ var __morbis_feature = (() => {
     return errors;
   }
   function App({ data: initialData, onSave, onClose }) {
-    const [data, setData] = (0, import_react11.useState)(initialData);
-    const [saving, setSaving] = (0, import_react11.useState)(false);
-    const [lastSaved, setLastSaved] = (0, import_react11.useState)(null);
-    const [saveAttempted, setSaveAttempted] = (0, import_react11.useState)(false);
-    const [warnings, setWarnings] = (0, import_react11.useState)([]);
-    const [extraErrors, setExtraErrors] = (0, import_react11.useState)([]);
-    const hadDiagnosaInitially = (0, import_react11.useRef)(
+    const [data, setData] = (0, import_react10.useState)(initialData);
+    const [saving, setSaving] = (0, import_react10.useState)(false);
+    const [lastSaved, setLastSaved] = (0, import_react10.useState)(null);
+    const [saveAttempted, setSaveAttempted] = (0, import_react10.useState)(false);
+    const [warnings, setWarnings] = (0, import_react10.useState)([]);
+    const [extraErrors, setExtraErrors] = (0, import_react10.useState)([]);
+    const hadDiagnosaInitially = (0, import_react10.useRef)(
       data.diagnosa.some((d) => d.idicd?.trim()),
     );
     const validationErrors = saveAttempted ? validate(data) : [];
     const allErrors = [...validationErrors, ...extraErrors];
     const hasBlocking = validationErrors.length > 0;
-    const handleSave = (0, import_react11.useCallback)(async () => {
-      console.log('[RJ-APP] SAVE DIAGNOSA', JSON.stringify(data.diagnosa));
-      console.log('[RJ-APP] SAVE TINDAKAN', JSON.stringify(data.tindakan));
+    const handleSave = (0, import_react10.useCallback)(async () => {
       setSaveAttempted(true);
       setWarnings([]);
       setExtraErrors([]);
@@ -39404,7 +39582,6 @@ var __morbis_feature = (() => {
       setSaving(true);
       try {
         await onSave(data);
-        console.log('[RJ-APP] save completed');
         setLastSaved(/* @__PURE__ */ new Date().toLocaleTimeString());
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
@@ -39415,106 +39592,112 @@ var __morbis_feature = (() => {
     }, [data, onSave]);
     const updateNotes = (field, value) =>
       setData({ ...data, clinicalNotes: { ...data.clinicalNotes, [field]: value } });
-    return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)('div', {
+    return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('div', {
       className: 'resume-modal',
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Header, { title: 'Resume Rajal', onClose }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)('div', {
-          className: 'flex-1 overflow-y-auto px-5 py-4 space-y-5',
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Header, {
+          title: 'Resume Rawat Jalan',
+          onClose,
+        }),
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('div', {
+          className: 'flex-1 overflow-y-auto px-6 py-5 space-y-6',
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(InfoBanner, { data: data.patientInfo }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(ClinicalNotesSection, {
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(InfoBanner, { data: data.patientInfo }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(ClinicalNotesSection, {
               anamnesa: data.clinicalNotes.anamnesa,
               pemeriksaan: data.clinicalNotes.pemeriksaan_fisik,
               onChange: (field, value) =>
                 updateNotes(field === 'pemeriksaan' ? 'pemeriksaan_fisik' : field, value),
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)('div', {
-              className: 'border-t border-border',
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('hr', {
+              className: 'border-t-2 border-[#e2ddd7]',
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)('div', {
-              className: 'px-5 py-4 border-b border-border bg-background',
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('div', {
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime24.jsx)('h3', {
-                  className: 'text-md-sm font-semibold text-foreground mb-3',
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('h3', {
+                  className:
+                    "text-[18px] font-bold text-[#1a1d23] mb-4 font-['Lexend',system-ui,sans-serif]",
                   children: 'Catatan Diagnosa',
                 }),
-                /* @__PURE__ */ (0, import_jsx_runtime24.jsx)('textarea', {
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('textarea', {
                   value: data.clinicalNotes.catatan,
                   onChange: (e) => updateNotes('catatan', e.target.value),
                   className:
-                    'w-full h-20 rounded-md border border-input bg-background px-3 py-2 text-md-xs resize-none',
+                    'w-full rounded-xl border-2 border-[#e2ddd7] bg-white px-4 py-3 text-[16px] leading-relaxed text-[#1a1d23] placeholder:text-[#a0988f] outline-none transition-colors focus:border-[#2b5f8a] focus:shadow-[0_0_0_3px_rgba(43,95,138,0.15)] resize-y',
                   placeholder: 'Catatan diagnosa...',
+                  rows: 3,
                 }),
               ],
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)('div', {
-              className: 'border-t border-border',
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('hr', {
+              className: 'border-t-2 border-[#e2ddd7]',
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)('div', {
-              className: 'px-5 py-4 border-b border-border bg-background',
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('div', {
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime24.jsx)('h3', {
-                  className: 'text-md-sm font-semibold text-foreground mb-3',
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('h3', {
+                  className:
+                    "text-[18px] font-bold text-[#1a1d23] mb-4 font-['Lexend',system-ui,sans-serif]",
                   children: 'Tindakan',
                 }),
-                /* @__PURE__ */ (0, import_jsx_runtime24.jsx)('textarea', {
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('textarea', {
                   value: data.clinicalNotes.tindakan,
                   onChange: (e) => updateNotes('tindakan', e.target.value),
                   className:
-                    'w-full h-20 rounded-md border border-input bg-background px-3 py-2 text-md-xs resize-none',
+                    'w-full rounded-xl border-2 border-[#e2ddd7] bg-white px-4 py-3 text-[16px] leading-relaxed text-[#1a1d23] placeholder:text-[#a0988f] outline-none transition-colors focus:border-[#2b5f8a] focus:shadow-[0_0_0_3px_rgba(43,95,138,0.15)] resize-y',
                   placeholder: 'Tindakan...',
+                  rows: 3,
                 }),
               ],
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)('div', {
-              className: 'border-t border-border',
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('hr', {
+              className: 'border-t-2 border-[#e2ddd7]',
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)('div', {
-              className: 'px-5 py-4 border-b border-border bg-background',
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('div', {
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime24.jsx)('h3', {
-                  className: 'text-md-sm font-semibold text-foreground mb-3',
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('h3', {
+                  className:
+                    "text-[18px] font-bold text-[#1a1d23] mb-4 font-['Lexend',system-ui,sans-serif]",
                   children: 'Terapi Pengobatan',
                 }),
-                /* @__PURE__ */ (0, import_jsx_runtime24.jsx)('textarea', {
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('textarea', {
                   value: data.clinicalNotes.terapi_pengobatan,
                   onChange: (e) => updateNotes('terapi_pengobatan', e.target.value),
                   className:
-                    'w-full h-20 rounded-md border border-input bg-background px-3 py-2 text-md-xs resize-none',
+                    'w-full rounded-xl border-2 border-[#e2ddd7] bg-white px-4 py-3 text-[16px] leading-relaxed text-[#1a1d23] placeholder:text-[#a0988f] outline-none transition-colors focus:border-[#2b5f8a] focus:shadow-[0_0_0_3px_rgba(43,95,138,0.15)] resize-y',
                   placeholder: 'Terapi pengobatan...',
+                  rows: 3,
                 }),
               ],
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)('div', {
-              className: 'border-t border-border',
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('hr', {
+              className: 'border-t-2 border-[#e2ddd7]',
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(VitalSignsSection, {
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(VitalSignsSection, {
               vitals: data.vitalSigns,
               onChange: (key, value) =>
                 setData({ ...data, vitalSigns: { ...data.vitalSigns, [key]: value } }),
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)('div', {
-              className: 'border-t border-border',
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('hr', {
+              className: 'border-t-2 border-[#e2ddd7]',
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(DiagnosaSection, {
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(DiagnosaSection, {
               rows: data.diagnosa,
               onChange: (diagnosa) => setData({ ...data, diagnosa }),
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)('div', {
-              className: 'border-t border-border',
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('hr', {
+              className: 'border-t-2 border-[#e2ddd7]',
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(TindakanSection, {
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(TindakanSection, {
               rows: data.tindakan,
               onChange: (tindakan) => setData({ ...data, tindakan }),
             }),
           ],
         }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(ValidationPanel, {
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(ValidationPanel, {
           errors: allErrors,
           warnings,
         }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Footer, {
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Footer, {
           saving,
           hasErrors: hasBlocking,
           lastSaved,
@@ -39527,8 +39710,8 @@ var __morbis_feature = (() => {
   }
 
   // src/features/resumeTab/ErrorBoundary.tsx
-  var import_react12 = __toESM(require_react(), 1);
-  var ErrorBoundary = class extends import_react12.Component {
+  var import_react11 = __toESM(require_react(), 1);
+  var ErrorBoundary = class extends import_react11.Component {
     constructor() {
       super(...arguments);
       this.state = { hasError: false };
@@ -39546,7 +39729,7 @@ var __morbis_feature = (() => {
   };
 
   // src/features/resumeTab/mount.tsx
-  var import_jsx_runtime25 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime24 = __toESM(require_jsx_runtime(), 1);
   var ITEM_PRIORITIES = [
     { pattern: 'periksa.*dokter', weight: 1 },
     { pattern: 'konsultasi', weight: 2 },
@@ -39638,13 +39821,7 @@ var __morbis_feature = (() => {
     };
   }
   var isRj = location.pathname.includes('rm-rawat-jalan-new');
-  var AUTOCOMPLETE_URLS = {
-    icd10: '/rekam-medik/search?opsi=kodeicd10&q=',
-    icd9: '/rekam-medik/search?opsi=clauseDiagnose_icd9&q=',
-  };
   var ENDPOINT = '/rekam-medik/control/rm-rawat-jalan';
-  console.log('[RJ] setup \u2014 isRj:', isRj, 'ENDPOINT:', ENDPOINT);
-  console.log('[RJ] AUTOCOMPLETE_URLS:', AUTOCOMPLETE_URLS);
   var reactRoot = null;
   var overlayBtn = null;
   function parseResumeView() {
@@ -39814,7 +39991,6 @@ var __morbis_feature = (() => {
         getVal('noregis') ||
         (typeof cachedFormState?.['noregis'] === 'string' ? cachedFormState['noregis'] : ''),
     };
-    console.log('[RJ] patientInfo:', patientInfo);
     const clinicalNotes = {
       anamnesa: getField('anamnesa'),
       pemeriksaan_fisik:
@@ -39826,7 +40002,6 @@ var __morbis_feature = (() => {
       status_kasus: getRadio('status_kasus'),
       tindak_lanjut: getField('tindak_lanjut'),
     };
-    console.log('[RJ] clinicalNotes:', clinicalNotes);
     const vitalSigns = {
       tensi: getVal('tensi'),
       nadi: getVal('nadi'),
@@ -39835,12 +40010,9 @@ var __morbis_feature = (() => {
       tinggi: getVal('tinggi'),
       berat: getVal('berat'),
     };
-    console.log('[RJ] vitalSigns:', vitalSigns);
-    console.log('[RJ] diagnosa extraction start');
     const diagnosa = [];
     const kode10Inputs = doc.querySelectorAll('input[name="kode10[]"], input[name="kode[]"]');
     if (kode10Inputs.length === 0) {
-      console.log('[RJ] using numbered ID fallback for diagnosa');
       let i = 1;
       while (
         doc.getElementById(`kode${i}`) ||
@@ -39854,7 +40026,6 @@ var __morbis_feature = (() => {
         i++;
       }
     } else {
-      console.log('[RJ] using array-based diagnosa inputs, count:', kode10Inputs.length);
       kode10Inputs.forEach((inp) => {
         const row = inp.closest('tr');
         if (!row) return;
@@ -39869,7 +40040,6 @@ var __morbis_feature = (() => {
         }
       });
     }
-    console.log('[RJ] diagnosa found:', diagnosa.length, diagnosa);
     if (diagnosa.length === 0 && cachedFormState) {
       const cKode10 = Array.isArray(cachedFormState['kode10[]']) ? cachedFormState['kode10[]'] : [];
       const cNama = Array.isArray(cachedFormState['nama[]']) ? cachedFormState['nama[]'] : [];
@@ -39942,7 +40112,6 @@ var __morbis_feature = (() => {
       });
     }
     if (fromView) {
-      console.log('[RJ] merging from view data');
       patientInfo.norm = patientInfo.norm || fromView.patientInfo.norm;
       patientInfo.pasien = patientInfo.pasien || fromView.patientInfo.pasien;
       patientInfo.nama_dokter = patientInfo.nama_dokter || fromView.patientInfo.nama_dokter;
@@ -39969,7 +40138,6 @@ var __morbis_feature = (() => {
       clinicalNotes.terapi_pengobatan === '-'
     ) {
       const billing = extractBillingFromDOM();
-      console.log('[RJ] billing from DOM:', billing);
       if (billing.tindakan && (!clinicalNotes.tindakan || clinicalNotes.tindakan === '-')) {
         clinicalNotes.tindakan = billing.tindakan;
       }
@@ -39979,7 +40147,6 @@ var __morbis_feature = (() => {
       ) {
         clinicalNotes.terapi_pengobatan = billing.terapiPengobatan;
       }
-      console.log('[RJ] after DOM merge with billing:', { clinicalNotes });
     }
     if (cachedFormState) {
       const noteFields = {
@@ -39996,7 +40163,6 @@ var __morbis_feature = (() => {
         }
       }
     }
-    console.log('[RJ] final data:', { patientInfo, clinicalNotes, vitalSigns, diagnosa, tindakan });
     return { patientInfo, clinicalNotes, vitalSigns, diagnosa, tindakan };
   }
   function serializeRawatJalan(data) {
@@ -40080,11 +40246,9 @@ var __morbis_feature = (() => {
     const cIdicd = cachedArr('idicd[]');
     const cKasus = cachedArr('kasus_diagnosa[]');
     const cKomplikasi = cachedArr('komplikasi[]');
-    console.log('[RJ] RAW DIAGNOSA', JSON.stringify(data.diagnosa));
     const cleanDiagnosa = data.diagnosa
       .filter((d) => d.idicd?.trim() && d.kode10?.trim() && d.namaDiagnosa?.trim())
       .filter((d, i, arr) => arr.findIndex((x) => x.idicd === d.idicd) === i);
-    console.log('[RJ] cleanDiagnosa', cleanDiagnosa.length, cleanDiagnosa);
     cleanDiagnosa.forEach((d) => {
       let idicd = d.idicd;
       if (!idicd && d.kode10) {
@@ -40097,14 +40261,12 @@ var __morbis_feature = (() => {
       add('kasus_diagnosa[]', d.kasus || '');
       add('komplikasi[]', d.komplikasi || '');
     });
-    console.log('[RJ] RAW TINDAKAN', JSON.stringify(data.tindakan));
     const cleanTindakan = data.tindakan
       .filter((t) => t.idicdTindakan?.trim() && t.kode9?.trim() && t.namaTindakan?.trim())
       .filter(
         (t, i, arr) =>
           arr.findIndex((x) => x.idicdTindakan === t.idicdTindakan && x.kode9 === t.kode9) === i,
       );
-    console.log('[RJ] cleanTindakan', cleanTindakan.length, cleanTindakan);
     cleanTindakan.forEach((t) => {
       add('namaTindakan[]', t.namaTindakan);
       add('kode9[]', t.kode9);
@@ -40136,26 +40298,66 @@ var __morbis_feature = (() => {
       reactRoot = null;
     }
     container.innerHTML = '';
+    if (!document.getElementById('morbis-resume-fonts')) {
+      const link = document.createElement('link');
+      link.id = 'morbis-resume-fonts';
+      link.rel = 'stylesheet';
+      link.href =
+        'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Lexend:wght@400;500;600;700&display=swap';
+      document.head.appendChild(link);
+    }
     if (!document.getElementById('morbis-resume-css')) {
       const s = document.createElement('style');
       s.id = 'morbis-resume-css';
       s.textContent =
         (true
-          ? '@import url(\'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\');\n\n*, ::before, ::after{\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n\n::backdrop{\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n\n/*\n! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com\n*/\n\n/*\n1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)\n*/\n\n*,\n::before,\n::after {\n  box-sizing: border-box; /* 1 */\n  border-width: 0; /* 2 */\n  border-style: solid; /* 2 */\n  border-color: #e5e7eb; /* 2 */\n}\n\n::before,\n::after {\n  --tw-content: \'\';\n}\n\n/*\n1. Use a consistent sensible line-height in all browsers.\n2. Prevent adjustments of font size after orientation changes in iOS.\n3. Use a more readable tab size.\n4. Use the user\'s configured `sans` font-family by default.\n5. Use the user\'s configured `sans` font-feature-settings by default.\n6. Use the user\'s configured `sans` font-variation-settings by default.\n7. Disable tap highlights on iOS\n*/\n\nhtml,\n:host {\n  line-height: 1.5; /* 1 */\n  -webkit-text-size-adjust: 100%; /* 2 */\n  -moz-tab-size: 4; /* 3 */\n  -o-tab-size: 4;\n     tab-size: 4; /* 3 */\n  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; /* 4 */\n  font-feature-settings: normal; /* 5 */\n  font-variation-settings: normal; /* 6 */\n  -webkit-tap-highlight-color: transparent; /* 7 */\n}\n\n/*\n1. Remove the margin in all browsers.\n2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.\n*/\n\nbody {\n  margin: 0; /* 1 */\n  line-height: inherit; /* 2 */\n}\n\n/*\n1. Add the correct height in Firefox.\n2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n3. Ensure horizontal rules are visible by default.\n*/\n\nhr {\n  height: 0; /* 1 */\n  color: inherit; /* 2 */\n  border-top-width: 1px; /* 3 */\n}\n\n/*\nAdd the correct text decoration in Chrome, Edge, and Safari.\n*/\n\nabbr:where([title]) {\n  -webkit-text-decoration: underline dotted;\n          text-decoration: underline dotted;\n}\n\n/*\nRemove the default font size and weight for headings.\n*/\n\nh1,\nh2,\nh3,\nh4,\nh5,\nh6 {\n  font-size: inherit;\n  font-weight: inherit;\n}\n\n/*\nReset links to optimize for opt-in styling instead of opt-out.\n*/\n\na {\n  color: inherit;\n  text-decoration: inherit;\n}\n\n/*\nAdd the correct font weight in Edge and Safari.\n*/\n\nb,\nstrong {\n  font-weight: bolder;\n}\n\n/*\n1. Use the user\'s configured `mono` font-family by default.\n2. Use the user\'s configured `mono` font-feature-settings by default.\n3. Use the user\'s configured `mono` font-variation-settings by default.\n4. Correct the odd `em` font sizing in all browsers.\n*/\n\ncode,\nkbd,\nsamp,\npre {\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace; /* 1 */\n  font-feature-settings: normal; /* 2 */\n  font-variation-settings: normal; /* 3 */\n  font-size: 1em; /* 4 */\n}\n\n/*\nAdd the correct font size in all browsers.\n*/\n\nsmall {\n  font-size: 80%;\n}\n\n/*\nPrevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\nsub,\nsup {\n  font-size: 75%;\n  line-height: 0;\n  position: relative;\n  vertical-align: baseline;\n}\n\nsub {\n  bottom: -0.25em;\n}\n\nsup {\n  top: -0.5em;\n}\n\n/*\n1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n3. Remove gaps between table borders by default.\n*/\n\ntable {\n  text-indent: 0; /* 1 */\n  border-color: inherit; /* 2 */\n  border-collapse: collapse; /* 3 */\n}\n\n/*\n1. Change the font styles in all browsers.\n2. Remove the margin in Firefox and Safari.\n3. Remove default padding in all browsers.\n*/\n\nbutton,\ninput,\noptgroup,\nselect,\ntextarea {\n  font-family: inherit; /* 1 */\n  font-feature-settings: inherit; /* 1 */\n  font-variation-settings: inherit; /* 1 */\n  font-size: 100%; /* 1 */\n  font-weight: inherit; /* 1 */\n  line-height: inherit; /* 1 */\n  letter-spacing: inherit; /* 1 */\n  color: inherit; /* 1 */\n  margin: 0; /* 2 */\n  padding: 0; /* 3 */\n}\n\n/*\nRemove the inheritance of text transform in Edge and Firefox.\n*/\n\nbutton,\nselect {\n  text-transform: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Remove default button styles.\n*/\n\nbutton,\ninput:where([type=\'button\']),\ninput:where([type=\'reset\']),\ninput:where([type=\'submit\']) {\n  -webkit-appearance: button; /* 1 */\n  background-color: transparent; /* 2 */\n  background-image: none; /* 2 */\n}\n\n/*\nUse the modern Firefox focus style for all focusable elements.\n*/\n\n:-moz-focusring {\n  outline: auto;\n}\n\n/*\nRemove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n:-moz-ui-invalid {\n  box-shadow: none;\n}\n\n/*\nAdd the correct vertical alignment in Chrome and Firefox.\n*/\n\nprogress {\n  vertical-align: baseline;\n}\n\n/*\nCorrect the cursor style of increment and decrement buttons in Safari.\n*/\n\n::-webkit-inner-spin-button,\n::-webkit-outer-spin-button {\n  height: auto;\n}\n\n/*\n1. Correct the odd appearance in Chrome and Safari.\n2. Correct the outline style in Safari.\n*/\n\n[type=\'search\'] {\n  -webkit-appearance: textfield; /* 1 */\n  outline-offset: -2px; /* 2 */\n}\n\n/*\nRemove the inner padding in Chrome and Safari on macOS.\n*/\n\n::-webkit-search-decoration {\n  -webkit-appearance: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Change font properties to `inherit` in Safari.\n*/\n\n::-webkit-file-upload-button {\n  -webkit-appearance: button; /* 1 */\n  font: inherit; /* 2 */\n}\n\n/*\nAdd the correct display in Chrome and Safari.\n*/\n\nsummary {\n  display: list-item;\n}\n\n/*\nRemoves the default spacing and border for appropriate elements.\n*/\n\nblockquote,\ndl,\ndd,\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\nhr,\nfigure,\np,\npre {\n  margin: 0;\n}\n\nfieldset {\n  margin: 0;\n  padding: 0;\n}\n\nlegend {\n  padding: 0;\n}\n\nol,\nul,\nmenu {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n}\n\n/*\nReset default styling for dialogs.\n*/\n\ndialog {\n  padding: 0;\n}\n\n/*\nPrevent resizing textareas horizontally by default.\n*/\n\ntextarea {\n  resize: vertical;\n}\n\n/*\n1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n2. Set the default placeholder color to the user\'s configured gray 400 color.\n*/\n\ninput::-moz-placeholder, textarea::-moz-placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\ninput::placeholder,\ntextarea::placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\n/*\nSet the default cursor for buttons.\n*/\n\nbutton,\n[role="button"] {\n  cursor: pointer;\n}\n\n/*\nMake sure disabled buttons don\'t get the pointer cursor.\n*/\n\n:disabled {\n  cursor: default;\n}\n\n/*\n1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n   This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\nimg,\nsvg,\nvideo,\ncanvas,\naudio,\niframe,\nembed,\nobject {\n  display: block; /* 1 */\n  vertical-align: middle; /* 2 */\n}\n\n/*\nConstrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\nimg,\nvideo {\n  max-width: 100%;\n  height: auto;\n}\n\n/* Make elements with the HTML hidden attribute stay hidden by default */\n\n[hidden]:where(:not([hidden="until-found"])) {\n  display: none;\n}\n\n*,\n  *::before,\n  *::after {\n    box-sizing: border-box;\n  }\n\nhtml {\n    font-family:\n      \'Inter\',\n      -apple-system,\n      BlinkMacSystemFont,\n      \'Segoe UI\',\n      sans-serif;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale;\n  }\n\n:root {\n    --background: 0 0% 100%;\n    --foreground: 222.2 84% 4.9%;\n    --card: 0 0% 100%;\n    --card-foreground: 222.2 84% 4.9%;\n    --popover: 0 0% 100%;\n    --popover-foreground: 222.2 84% 4.9%;\n    --primary: 221.2 83.2% 53.3%;\n    --primary-foreground: 210 40% 98%;\n    --secondary: 210 40% 96.1%;\n    --secondary-foreground: 222.2 47.4% 11.2%;\n    --muted: 210 40% 96.1%;\n    --muted-foreground: 215.4 16.3% 46.9%;\n    --accent: 210 40% 96.1%;\n    --accent-foreground: 222.2 47.4% 11.2%;\n    --destructive: 0 84.2% 60.2%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 214.3 31.8% 91.4%;\n    --input: 214.3 31.8% 91.4%;\n    --ring: 221.2 83.2% 53.3%;\n    --radius: 0.375rem;\n  }\n\n.dark {\n    --background: 222.2 84% 4.9%;\n    --foreground: 210 40% 98%;\n    --card: 222.2 84% 4.9%;\n    --card-foreground: 210 40% 98%;\n    --popover: 222.2 84% 4.9%;\n    --popover-foreground: 210 40% 98%;\n    --primary: 217.2 91.2% 59.8%;\n    --primary-foreground: 222.2 47.4% 11.2%;\n    --secondary: 217.2 32.6% 17.5%;\n    --secondary-foreground: 210 40% 98%;\n    --muted: 217.2 32.6% 17.5%;\n    --muted-foreground: 215 20.2% 65.1%;\n    --accent: 217.2 32.6% 17.5%;\n    --accent-foreground: 210 40% 98%;\n    --destructive: 0 62.8% 30.6%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 217.2 32.6% 17.5%;\n    --input: 217.2 32.6% 17.5%;\n    --ring: 224.3 76.3% 48%;\n    --md-scrollbar: #484d54;\n  }\n\n::-moz-selection {\n    background: #2469f0;\n    color: white;\n  }\n\n::selection {\n    background: #2469f0;\n    color: white;\n  }\n\n* {\n    scrollbar-width: thin;\n    scrollbar-color: #c9cdd4 transparent;\n  }\n\n.dark * {\n    scrollbar-color: var(--md-scrollbar) transparent;\n  }\n\n*::-webkit-scrollbar {\n    width: 6px;\n    height: 6px;\n  }\n\n*::-webkit-scrollbar-track {\n    background: transparent;\n  }\n\n*::-webkit-scrollbar-thumb {\n    background: #c9cdd4;\n    border-radius: 3px;\n  }\n\n.dark *::-webkit-scrollbar-thumb {\n    background: var(--md-scrollbar);\n  }\n\n*::-webkit-scrollbar-thumb:hover {\n    background: #a4a9b3;\n  }\n\n.dark *::-webkit-scrollbar-thumb:hover {\n    background: #636971;\n  }\n.\\!container{\n  width: 100% !important;\n}\n.container{\n  width: 100%;\n}\n@media (min-width: 640px){\n\n  .\\!container{\n    max-width: 640px !important;\n  }\n\n  .container{\n    max-width: 640px;\n  }\n}\n@media (min-width: 768px){\n\n  .\\!container{\n    max-width: 768px !important;\n  }\n\n  .container{\n    max-width: 768px;\n  }\n}\n@media (min-width: 1024px){\n\n  .\\!container{\n    max-width: 1024px !important;\n  }\n\n  .container{\n    max-width: 1024px;\n  }\n}\n@media (min-width: 1280px){\n\n  .\\!container{\n    max-width: 1280px !important;\n  }\n\n  .container{\n    max-width: 1280px;\n  }\n}\n@media (min-width: 1536px){\n\n  .\\!container{\n    max-width: 1536px !important;\n  }\n\n  .container{\n    max-width: 1536px;\n  }\n}\n.pointer-events-none{\n  pointer-events: none;\n}\n.visible{\n  visibility: visible;\n}\n.collapse{\n  visibility: collapse;\n}\n.static{\n  position: static;\n}\n.fixed{\n  position: fixed;\n}\n.absolute{\n  position: absolute;\n}\n.relative{\n  position: relative;\n}\n.bottom-4{\n  bottom: 1rem;\n}\n.left-1\\/2{\n  left: 50%;\n}\n.right-2\\.5{\n  right: 0.625rem;\n}\n.top-1\\/2{\n  top: 50%;\n}\n.z-50{\n  z-index: 50;\n}\n.z-\\[1050\\]{\n  z-index: 1050;\n}\n.mx-auto{\n  margin-left: auto;\n  margin-right: auto;\n}\n.-mb-\\[1px\\]{\n  margin-bottom: -1px;\n}\n.mb-1{\n  margin-bottom: 0.25rem;\n}\n.mb-1\\.5{\n  margin-bottom: 0.375rem;\n}\n.mb-3{\n  margin-bottom: 0.75rem;\n}\n.ml-0\\.5{\n  margin-left: 0.125rem;\n}\n.ml-1{\n  margin-left: 0.25rem;\n}\n.mr-1{\n  margin-right: 0.25rem;\n}\n.mr-2{\n  margin-right: 0.5rem;\n}\n.mr-3{\n  margin-right: 0.75rem;\n}\n.mt-0\\.5{\n  margin-top: 0.125rem;\n}\n.mt-1{\n  margin-top: 0.25rem;\n}\n.block{\n  display: block;\n}\n.inline-block{\n  display: inline-block;\n}\n.flex{\n  display: flex;\n}\n.inline-flex{\n  display: inline-flex;\n}\n.\\!table{\n  display: table !important;\n}\n.table{\n  display: table;\n}\n.grid{\n  display: grid;\n}\n.\\!contents{\n  display: contents !important;\n}\n.contents{\n  display: contents;\n}\n.hidden{\n  display: none;\n}\n.size-1\\.5{\n  width: 0.375rem;\n  height: 0.375rem;\n}\n.size-10{\n  width: 2.5rem;\n  height: 2.5rem;\n}\n.size-2\\.5{\n  width: 0.625rem;\n  height: 0.625rem;\n}\n.size-3{\n  width: 0.75rem;\n  height: 0.75rem;\n}\n.size-3\\.5{\n  width: 0.875rem;\n  height: 0.875rem;\n}\n.size-4{\n  width: 1rem;\n  height: 1rem;\n}\n.size-5{\n  width: 1.25rem;\n  height: 1.25rem;\n}\n.h-1{\n  height: 0.25rem;\n}\n.h-1\\.5{\n  height: 0.375rem;\n}\n.h-10{\n  height: 2.5rem;\n}\n.h-11{\n  height: 2.75rem;\n}\n.h-2{\n  height: 0.5rem;\n}\n.h-20{\n  height: 5rem;\n}\n.h-24{\n  height: 6rem;\n}\n.h-4{\n  height: 1rem;\n}\n.h-5{\n  height: 1.25rem;\n}\n.h-6{\n  height: 1.5rem;\n}\n.h-7{\n  height: 1.75rem;\n}\n.h-8{\n  height: 2rem;\n}\n.h-9{\n  height: 2.25rem;\n}\n.h-\\[300px\\]{\n  height: 300px;\n}\n.h-\\[var\\(--radix-select-trigger-height\\)\\]{\n  height: var(--radix-select-trigger-height);\n}\n.h-full{\n  height: 100%;\n}\n.max-h-60{\n  max-height: 15rem;\n}\n.max-h-96{\n  max-height: 24rem;\n}\n.max-h-\\[600px\\]{\n  max-height: 600px;\n}\n.min-h-\\[200px\\]{\n  min-height: 200px;\n}\n.w-1\\.5{\n  width: 0.375rem;\n}\n.w-2{\n  width: 0.5rem;\n}\n.w-4{\n  width: 1rem;\n}\n.w-5{\n  width: 1.25rem;\n}\n.w-6{\n  width: 1.5rem;\n}\n.w-7{\n  width: 1.75rem;\n}\n.w-8{\n  width: 2rem;\n}\n.w-9{\n  width: 2.25rem;\n}\n.w-\\[100px\\]{\n  width: 100px;\n}\n.w-\\[120px\\]{\n  width: 120px;\n}\n.w-\\[340px\\]{\n  width: 340px;\n}\n.w-\\[90px\\]{\n  width: 90px;\n}\n.w-full{\n  width: 100%;\n}\n.min-w-0{\n  min-width: 0px;\n}\n.min-w-\\[8rem\\]{\n  min-width: 8rem;\n}\n.min-w-\\[var\\(--radix-select-trigger-width\\)\\]{\n  min-width: var(--radix-select-trigger-width);\n}\n.max-w-\\[120px\\]{\n  max-width: 120px;\n}\n.max-w-\\[200px\\]{\n  max-width: 200px;\n}\n.flex-1{\n  flex: 1 1 0%;\n}\n.flex-shrink{\n  flex-shrink: 1;\n}\n.shrink-0{\n  flex-shrink: 0;\n}\n.-translate-x-1\\/2{\n  --tw-translate-x: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.-translate-y-1\\/2{\n  --tw-translate-y: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.scale-90{\n  --tw-scale-x: .9;\n  --tw-scale-y: .9;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.transform{\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n@keyframes pulse{\n\n  50%{\n    opacity: .5;\n  }\n}\n.animate-pulse{\n  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;\n}\n@keyframes slide-up{\n\n  0%{\n    opacity: 0;\n    transform: translateY(8px);\n  }\n\n  100%{\n    opacity: 1;\n    transform: translateY(0);\n  }\n}\n.animate-slide-up{\n  animation: slide-up 0.15s ease-out;\n}\n.cursor-default{\n  cursor: default;\n}\n.cursor-not-allowed{\n  cursor: not-allowed;\n}\n.cursor-pointer{\n  cursor: pointer;\n}\n.select-none{\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.resize-none{\n  resize: none;\n}\n.resize{\n  resize: both;\n}\n.grid-cols-2{\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n}\n.grid-cols-6{\n  grid-template-columns: repeat(6, minmax(0, 1fr));\n}\n.flex-col{\n  flex-direction: column;\n}\n.flex-wrap{\n  flex-wrap: wrap;\n}\n.items-start{\n  align-items: flex-start;\n}\n.items-center{\n  align-items: center;\n}\n.justify-center{\n  justify-content: center;\n}\n.justify-between{\n  justify-content: space-between;\n}\n.gap-0{\n  gap: 0px;\n}\n.gap-1{\n  gap: 0.25rem;\n}\n.gap-1\\.5{\n  gap: 0.375rem;\n}\n.gap-2{\n  gap: 0.5rem;\n}\n.gap-2\\.5{\n  gap: 0.625rem;\n}\n.gap-3{\n  gap: 0.75rem;\n}\n.gap-4{\n  gap: 1rem;\n}\n.gap-x-6{\n  -moz-column-gap: 1.5rem;\n       column-gap: 1.5rem;\n}\n.gap-y-2{\n  row-gap: 0.5rem;\n}\n.space-y-0\\.5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.125rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.125rem * var(--tw-space-y-reverse));\n}\n.space-y-1 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));\n}\n.space-y-1\\.5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.375rem * var(--tw-space-y-reverse));\n}\n.space-y-2 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));\n}\n.space-y-2\\.5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.625rem * var(--tw-space-y-reverse));\n}\n.space-y-3 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));\n}\n.space-y-4 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1rem * var(--tw-space-y-reverse));\n}\n.space-y-5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1.25rem * var(--tw-space-y-reverse));\n}\n.divide-y > :not([hidden]) ~ :not([hidden]){\n  --tw-divide-y-reverse: 0;\n  border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));\n  border-bottom-width: calc(1px * var(--tw-divide-y-reverse));\n}\n.divide-border > :not([hidden]) ~ :not([hidden]){\n  border-color: hsl(var(--border));\n}\n.overflow-hidden{\n  overflow: hidden;\n}\n.overflow-x-auto{\n  overflow-x: auto;\n}\n.overflow-y-auto{\n  overflow-y: auto;\n}\n.truncate{\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n.whitespace-nowrap{\n  white-space: nowrap;\n}\n.whitespace-pre-wrap{\n  white-space: pre-wrap;\n}\n.break-words{\n  overflow-wrap: break-word;\n}\n.rounded{\n  border-radius: 0.25rem;\n}\n.rounded-full{\n  border-radius: 9999px;\n}\n.rounded-lg{\n  border-radius: 0.5rem;\n}\n.rounded-md{\n  border-radius: 6px;\n}\n.rounded-sm{\n  border-radius: 0.125rem;\n}\n.border{\n  border-width: 1px;\n}\n.border-0{\n  border-width: 0px;\n}\n.border-2{\n  border-width: 2px;\n}\n.border-b{\n  border-bottom-width: 1px;\n}\n.border-b-2{\n  border-bottom-width: 2px;\n}\n.border-l{\n  border-left-width: 1px;\n}\n.border-l-2{\n  border-left-width: 2px;\n}\n.border-t{\n  border-top-width: 1px;\n}\n.border-dashed{\n  border-style: dashed;\n}\n.border-\\[\\#2469f0\\]{\n  --tw-border-opacity: 1;\n  border-color: rgb(36 105 240 / var(--tw-border-opacity, 1));\n}\n.border-amber-200{\n  --tw-border-opacity: 1;\n  border-color: rgb(253 230 138 / var(--tw-border-opacity, 1));\n}\n.border-border{\n  border-color: hsl(var(--border));\n}\n.border-destructive\\/20{\n  border-color: hsl(var(--destructive) / 0.2);\n}\n.border-foreground{\n  border-color: hsl(var(--foreground));\n}\n.border-green-200{\n  --tw-border-opacity: 1;\n  border-color: rgb(187 247 208 / var(--tw-border-opacity, 1));\n}\n.border-input{\n  border-color: hsl(var(--input));\n}\n.border-primary{\n  border-color: hsl(var(--primary));\n}\n.border-primary\\/20{\n  border-color: hsl(var(--primary) / 0.2);\n}\n.border-red-200{\n  --tw-border-opacity: 1;\n  border-color: rgb(254 202 202 / var(--tw-border-opacity, 1));\n}\n.border-red-500{\n  --tw-border-opacity: 1;\n  border-color: rgb(239 68 68 / var(--tw-border-opacity, 1));\n}\n.border-transparent{\n  border-color: transparent;\n}\n.bg-\\[\\#2469f0\\]{\n  --tw-bg-opacity: 1;\n  background-color: rgb(36 105 240 / var(--tw-bg-opacity, 1));\n}\n.bg-accent{\n  background-color: hsl(var(--accent));\n}\n.bg-accent\\/20{\n  background-color: hsl(var(--accent) / 0.2);\n}\n.bg-accent\\/40{\n  background-color: hsl(var(--accent) / 0.4);\n}\n.bg-accent\\/50{\n  background-color: hsl(var(--accent) / 0.5);\n}\n.bg-amber-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(255 251 235 / var(--tw-bg-opacity, 1));\n}\n.bg-amber-50\\/50{\n  background-color: rgb(255 251 235 / 0.5);\n}\n.bg-background{\n  background-color: hsl(var(--background));\n}\n.bg-blue-100{\n  --tw-bg-opacity: 1;\n  background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1));\n}\n.bg-blue-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(239 246 255 / var(--tw-bg-opacity, 1));\n}\n.bg-card{\n  background-color: hsl(var(--card));\n}\n.bg-destructive{\n  background-color: hsl(var(--destructive));\n}\n.bg-destructive\\/10{\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.bg-foreground{\n  background-color: hsl(var(--foreground));\n}\n.bg-green-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(240 253 244 / var(--tw-bg-opacity, 1));\n}\n.bg-green-500{\n  --tw-bg-opacity: 1;\n  background-color: rgb(34 197 94 / var(--tw-bg-opacity, 1));\n}\n.bg-green-600{\n  --tw-bg-opacity: 1;\n  background-color: rgb(22 163 74 / var(--tw-bg-opacity, 1));\n}\n.bg-muted{\n  background-color: hsl(var(--muted));\n}\n.bg-muted-foreground{\n  background-color: hsl(var(--muted-foreground));\n}\n.bg-muted\\/50{\n  background-color: hsl(var(--muted) / 0.5);\n}\n.bg-popover{\n  background-color: hsl(var(--popover));\n}\n.bg-primary{\n  background-color: hsl(var(--primary));\n}\n.bg-primary\\/10{\n  background-color: hsl(var(--primary) / 0.1);\n}\n.bg-red-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 242 242 / var(--tw-bg-opacity, 1));\n}\n.bg-red-500\\/5{\n  background-color: rgb(239 68 68 / 0.05);\n}\n.bg-red-600{\n  --tw-bg-opacity: 1;\n  background-color: rgb(220 38 38 / var(--tw-bg-opacity, 1));\n}\n.bg-secondary{\n  background-color: hsl(var(--secondary));\n}\n.bg-transparent{\n  background-color: transparent;\n}\n.p-0\\.5{\n  padding: 0.125rem;\n}\n.p-1{\n  padding: 0.25rem;\n}\n.p-1\\.5{\n  padding: 0.375rem;\n}\n.p-2{\n  padding: 0.5rem;\n}\n.p-2\\.5{\n  padding: 0.625rem;\n}\n.p-3{\n  padding: 0.75rem;\n}\n.p-4{\n  padding: 1rem;\n}\n.p-8{\n  padding: 2rem;\n}\n.px-0{\n  padding-left: 0px;\n  padding-right: 0px;\n}\n.px-1{\n  padding-left: 0.25rem;\n  padding-right: 0.25rem;\n}\n.px-1\\.5{\n  padding-left: 0.375rem;\n  padding-right: 0.375rem;\n}\n.px-2{\n  padding-left: 0.5rem;\n  padding-right: 0.5rem;\n}\n.px-2\\.5{\n  padding-left: 0.625rem;\n  padding-right: 0.625rem;\n}\n.px-3{\n  padding-left: 0.75rem;\n  padding-right: 0.75rem;\n}\n.px-3\\.5{\n  padding-left: 0.875rem;\n  padding-right: 0.875rem;\n}\n.px-4{\n  padding-left: 1rem;\n  padding-right: 1rem;\n}\n.px-5{\n  padding-left: 1.25rem;\n  padding-right: 1.25rem;\n}\n.px-6{\n  padding-left: 1.5rem;\n  padding-right: 1.5rem;\n}\n.px-8{\n  padding-left: 2rem;\n  padding-right: 2rem;\n}\n.py-0{\n  padding-top: 0px;\n  padding-bottom: 0px;\n}\n.py-0\\.5{\n  padding-top: 0.125rem;\n  padding-bottom: 0.125rem;\n}\n.py-1{\n  padding-top: 0.25rem;\n  padding-bottom: 0.25rem;\n}\n.py-1\\.5{\n  padding-top: 0.375rem;\n  padding-bottom: 0.375rem;\n}\n.py-12{\n  padding-top: 3rem;\n  padding-bottom: 3rem;\n}\n.py-2{\n  padding-top: 0.5rem;\n  padding-bottom: 0.5rem;\n}\n.py-2\\.5{\n  padding-top: 0.625rem;\n  padding-bottom: 0.625rem;\n}\n.py-3{\n  padding-top: 0.75rem;\n  padding-bottom: 0.75rem;\n}\n.py-4{\n  padding-top: 1rem;\n  padding-bottom: 1rem;\n}\n.py-6{\n  padding-top: 1.5rem;\n  padding-bottom: 1.5rem;\n}\n.py-8{\n  padding-top: 2rem;\n  padding-bottom: 2rem;\n}\n.pb-1\\.5{\n  padding-bottom: 0.375rem;\n}\n.pb-2{\n  padding-bottom: 0.5rem;\n}\n.pl-2{\n  padding-left: 0.5rem;\n}\n.pl-6{\n  padding-left: 1.5rem;\n}\n.pr-10{\n  padding-right: 2.5rem;\n}\n.pr-3{\n  padding-right: 0.75rem;\n}\n.pr-8{\n  padding-right: 2rem;\n}\n.pt-3{\n  padding-top: 0.75rem;\n}\n.text-left{\n  text-align: left;\n}\n.text-center{\n  text-align: center;\n}\n.font-mono{\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace;\n}\n.text-\\[10px\\]{\n  font-size: 10px;\n}\n.text-\\[11px\\]{\n  font-size: 11px;\n}\n.text-\\[8px\\]{\n  font-size: 8px;\n}\n.text-\\[9px\\]{\n  font-size: 9px;\n}\n.text-base{\n  font-size: 1rem;\n  line-height: 1.5rem;\n}\n.text-lg{\n  font-size: 1.125rem;\n  line-height: 1.75rem;\n}\n.text-md-sm{\n  font-size: 12px;\n  line-height: 18px;\n}\n.text-md-xs{\n  font-size: 11px;\n  line-height: 16px;\n}\n.text-sm{\n  font-size: 0.875rem;\n  line-height: 1.25rem;\n}\n.font-bold{\n  font-weight: 700;\n}\n.font-medium{\n  font-weight: 500;\n}\n.font-normal{\n  font-weight: 400;\n}\n.font-semibold{\n  font-weight: 600;\n}\n.uppercase{\n  text-transform: uppercase;\n}\n.leading-relaxed{\n  line-height: 1.625;\n}\n.tracking-tight{\n  letter-spacing: -0.025em;\n}\n.tracking-wide{\n  letter-spacing: 0.025em;\n}\n.tracking-wider{\n  letter-spacing: 0.05em;\n}\n.text-\\[\\#2469f0\\]{\n  --tw-text-opacity: 1;\n  color: rgb(36 105 240 / var(--tw-text-opacity, 1));\n}\n.text-amber-600{\n  --tw-text-opacity: 1;\n  color: rgb(217 119 6 / var(--tw-text-opacity, 1));\n}\n.text-amber-700{\n  --tw-text-opacity: 1;\n  color: rgb(180 83 9 / var(--tw-text-opacity, 1));\n}\n.text-amber-800{\n  --tw-text-opacity: 1;\n  color: rgb(146 64 14 / var(--tw-text-opacity, 1));\n}\n.text-background{\n  color: hsl(var(--background));\n}\n.text-blue-700{\n  --tw-text-opacity: 1;\n  color: rgb(29 78 216 / var(--tw-text-opacity, 1));\n}\n.text-card-foreground{\n  color: hsl(var(--card-foreground));\n}\n.text-destructive{\n  color: hsl(var(--destructive));\n}\n.text-destructive-foreground{\n  color: hsl(var(--destructive-foreground));\n}\n.text-destructive\\/80{\n  color: hsl(var(--destructive) / 0.8);\n}\n.text-foreground{\n  color: hsl(var(--foreground));\n}\n.text-green-700{\n  --tw-text-opacity: 1;\n  color: rgb(21 128 61 / var(--tw-text-opacity, 1));\n}\n.text-muted-foreground{\n  color: hsl(var(--muted-foreground));\n}\n.text-muted-foreground\\/60{\n  color: hsl(var(--muted-foreground) / 0.6);\n}\n.text-popover-foreground{\n  color: hsl(var(--popover-foreground));\n}\n.text-primary{\n  color: hsl(var(--primary));\n}\n.text-primary-foreground{\n  color: hsl(var(--primary-foreground));\n}\n.text-red-600{\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.text-red-800{\n  --tw-text-opacity: 1;\n  color: rgb(153 27 27 / var(--tw-text-opacity, 1));\n}\n.text-red-900{\n  --tw-text-opacity: 1;\n  color: rgb(127 29 29 / var(--tw-text-opacity, 1));\n}\n.text-secondary-foreground{\n  color: hsl(var(--secondary-foreground));\n}\n.text-white{\n  --tw-text-opacity: 1;\n  color: rgb(255 255 255 / var(--tw-text-opacity, 1));\n}\n.underline-offset-4{\n  text-underline-offset: 4px;\n}\n.antialiased{\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n}\n.opacity-0{\n  opacity: 0;\n}\n.opacity-30{\n  opacity: 0.3;\n}\n.opacity-50{\n  opacity: 0.5;\n}\n.opacity-60{\n  opacity: 0.6;\n}\n.opacity-85{\n  opacity: 0.85;\n}\n.opacity-90{\n  opacity: 0.9;\n}\n.shadow{\n  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-lg{\n  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-md{\n  --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-none{\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-sm{\n  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);\n  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.outline-none{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.outline{\n  outline-style: solid;\n}\n.ring{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.ring-0{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.ring-offset-background{\n  --tw-ring-offset-color: hsl(var(--background));\n}\n.blur{\n  --tw-blur: blur(8px);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.grayscale{\n  --tw-grayscale: grayscale(100%);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.filter{\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.backdrop-filter{\n  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);\n}\n.transition{\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-all{\n  transition-property: all;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-colors{\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-transform{\n  transition-property: transform;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.duration-150{\n  transition-duration: 150ms;\n}\n.duration-200{\n  transition-duration: 200ms;\n}\n.duration-300{\n  transition-duration: 300ms;\n}\n.ease-in-out{\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.ease-out{\n  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);\n}\n@keyframes enter{\n\n  from{\n    opacity: var(--tw-enter-opacity, 1);\n    transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0) scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1)) rotate(var(--tw-enter-rotate, 0));\n  }\n}\n@keyframes exit{\n\n  to{\n    opacity: var(--tw-exit-opacity, 1);\n    transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0) scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1)) rotate(var(--tw-exit-rotate, 0));\n  }\n}\n.animate-in{\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.fade-in{\n  --tw-enter-opacity: 0;\n}\n.duration-150{\n  animation-duration: 150ms;\n}\n.duration-200{\n  animation-duration: 200ms;\n}\n.duration-300{\n  animation-duration: 300ms;\n}\n.ease-in-out{\n  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.ease-out{\n  animation-timing-function: cubic-bezier(0, 0, 0.2, 1);\n}\n.running{\n  animation-play-state: running;\n}\n.placeholder\\:text-muted-foreground::-moz-placeholder{\n  color: hsl(var(--muted-foreground));\n}\n.placeholder\\:text-muted-foreground::placeholder{\n  color: hsl(var(--muted-foreground));\n}\n.last\\:border-0:last-child{\n  border-width: 0px;\n}\n.hover\\:bg-accent:hover{\n  background-color: hsl(var(--accent));\n}\n.hover\\:bg-accent\\/50:hover{\n  background-color: hsl(var(--accent) / 0.5);\n}\n.hover\\:bg-amber-100\\/50:hover{\n  background-color: rgb(254 243 199 / 0.5);\n}\n.hover\\:bg-destructive\\/10:hover{\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.hover\\:bg-destructive\\/90:hover{\n  background-color: hsl(var(--destructive) / 0.9);\n}\n.hover\\:bg-green-700:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(21 128 61 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-primary\\/5:hover{\n  background-color: hsl(var(--primary) / 0.05);\n}\n.hover\\:bg-primary\\/90:hover{\n  background-color: hsl(var(--primary) / 0.9);\n}\n.hover\\:bg-red-500\\/10:hover{\n  background-color: rgb(239 68 68 / 0.1);\n}\n.hover\\:bg-red-700:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(185 28 28 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-secondary\\/80:hover{\n  background-color: hsl(var(--secondary) / 0.8);\n}\n.hover\\:bg-white\\/50:hover{\n  background-color: rgb(255 255 255 / 0.5);\n}\n.hover\\:text-accent-foreground:hover{\n  color: hsl(var(--accent-foreground));\n}\n.hover\\:text-destructive:hover{\n  color: hsl(var(--destructive));\n}\n.hover\\:text-foreground:hover{\n  color: hsl(var(--foreground));\n}\n.hover\\:text-red-600:hover{\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.hover\\:underline:hover{\n  text-decoration-line: underline;\n}\n.hover\\:opacity-70:hover{\n  opacity: 0.7;\n}\n.focus\\:bg-accent:focus{\n  background-color: hsl(var(--accent));\n}\n.focus\\:text-accent-foreground:focus{\n  color: hsl(var(--accent-foreground));\n}\n.focus\\:outline-none:focus{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus\\:ring-1:focus{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-2:focus{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-primary:focus{\n  --tw-ring-color: hsl(var(--primary));\n}\n.focus\\:ring-red-500:focus{\n  --tw-ring-opacity: 1;\n  --tw-ring-color: rgb(239 68 68 / var(--tw-ring-opacity, 1));\n}\n.focus\\:ring-ring:focus{\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus\\:ring-offset-1:focus{\n  --tw-ring-offset-width: 1px;\n}\n.focus-visible\\:outline-none:focus-visible{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus-visible\\:ring-0:focus-visible{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus-visible\\:ring-2:focus-visible{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus-visible\\:ring-ring:focus-visible{\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus-visible\\:ring-offset-1:focus-visible{\n  --tw-ring-offset-width: 1px;\n}\n.disabled\\:pointer-events-none:disabled{\n  pointer-events: none;\n}\n.disabled\\:cursor-not-allowed:disabled{\n  cursor: not-allowed;\n}\n.disabled\\:opacity-50:disabled{\n  opacity: 0.5;\n}\n.group:hover .group-hover\\:opacity-100{\n  opacity: 1;\n}\n.data-\\[disabled\\]\\:pointer-events-none[data-disabled]{\n  pointer-events: none;\n}\n.data-\\[side\\=bottom\\]\\:translate-y-1[data-side="bottom"]{\n  --tw-translate-y: 0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[side\\=top\\]\\:-translate-y-1[data-side="top"]{\n  --tw-translate-y: -0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:translate-x-4[data-state="checked"]{\n  --tw-translate-x: 1rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=unchecked\\]\\:translate-x-0[data-state="unchecked"]{\n  --tw-translate-x: 0px;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:bg-primary[data-state="checked"]{\n  background-color: hsl(var(--primary));\n}\n.data-\\[state\\=unchecked\\]\\:bg-input[data-state="unchecked"]{\n  background-color: hsl(var(--input));\n}\n.data-\\[disabled\\]\\:opacity-50[data-disabled]{\n  opacity: 0.5;\n}\n.data-\\[state\\=open\\]\\:animate-in[data-state="open"]{\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:animate-out[data-state="closed"]{\n  animation-name: exit;\n  animation-duration: 150ms;\n  --tw-exit-opacity: initial;\n  --tw-exit-scale: initial;\n  --tw-exit-rotate: initial;\n  --tw-exit-translate-x: initial;\n  --tw-exit-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:fade-out-0[data-state="closed"]{\n  --tw-exit-opacity: 0;\n}\n.data-\\[state\\=open\\]\\:fade-in-0[data-state="open"]{\n  --tw-enter-opacity: 0;\n}\n.data-\\[state\\=closed\\]\\:zoom-out-95[data-state="closed"]{\n  --tw-exit-scale: .95;\n}\n.data-\\[state\\=open\\]\\:zoom-in-95[data-state="open"]{\n  --tw-enter-scale: .95;\n}\n.data-\\[side\\=bottom\\]\\:slide-in-from-top-2[data-side="bottom"]{\n  --tw-enter-translate-y: -0.5rem;\n}\n.data-\\[side\\=left\\]\\:slide-in-from-right-2[data-side="left"]{\n  --tw-enter-translate-x: 0.5rem;\n}\n.data-\\[side\\=right\\]\\:slide-in-from-left-2[data-side="right"]{\n  --tw-enter-translate-x: -0.5rem;\n}\n.data-\\[side\\=top\\]\\:slide-in-from-bottom-2[data-side="top"]{\n  --tw-enter-translate-y: 0.5rem;\n}\n.dark\\:border-amber-800:is(.dark *){\n  --tw-border-opacity: 1;\n  border-color: rgb(146 64 14 / var(--tw-border-opacity, 1));\n}\n.dark\\:border-green-800:is(.dark *){\n  --tw-border-opacity: 1;\n  border-color: rgb(22 101 52 / var(--tw-border-opacity, 1));\n}\n.dark\\:border-red-900:is(.dark *){\n  --tw-border-opacity: 1;\n  border-color: rgb(127 29 29 / var(--tw-border-opacity, 1));\n}\n.dark\\:bg-amber-900\\/30:is(.dark *){\n  background-color: rgb(120 53 15 / 0.3);\n}\n.dark\\:bg-amber-950\\/20:is(.dark *){\n  background-color: rgb(69 26 3 / 0.2);\n}\n.dark\\:bg-blue-900\\/30:is(.dark *){\n  background-color: rgb(30 58 138 / 0.3);\n}\n.dark\\:bg-blue-950\\/20:is(.dark *){\n  background-color: rgb(23 37 84 / 0.2);\n}\n.dark\\:bg-green-950\\/20:is(.dark *){\n  background-color: rgb(5 46 22 / 0.2);\n}\n.dark\\:bg-red-950\\/20:is(.dark *){\n  background-color: rgb(69 10 10 / 0.2);\n}\n.dark\\:text-amber-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(252 211 77 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-blue-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(147 197 253 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-green-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(134 239 172 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-red-200:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(254 202 202 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-red-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(252 165 165 / var(--tw-text-opacity, 1));\n}\n.\\[\\&\\>span\\]\\:line-clamp-1>span{\n  overflow: hidden;\n  display: -webkit-box;\n  -webkit-box-orient: vertical;\n  -webkit-line-clamp: 1;\n}\n.\\[\\&\\>span\\]\\:h-3>span{\n  height: 0.75rem;\n}\n.\\[\\&\\>span\\]\\:w-3>span{\n  width: 0.75rem;\n}\n.data-\\[state\\=checked\\]\\:\\[\\&\\>span\\]\\:translate-x-3>span[data-state="checked"]{\n  --tw-translate-x: 0.75rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.\\[\\&_svg\\]\\:pointer-events-none svg{\n  pointer-events: none;\n}\n.\\[\\&_svg\\]\\:size-4 svg{\n  width: 1rem;\n  height: 1rem;\n}\n.\\[\\&_svg\\]\\:shrink-0 svg{\n  flex-shrink: 0;\n}\n'
+          ? '@import url(\'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\');\n\n*, ::before, ::after{\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n\n::backdrop{\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n\n/*\n! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com\n*/\n\n/*\n1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)\n*/\n\n*,\n::before,\n::after {\n  box-sizing: border-box; /* 1 */\n  border-width: 0; /* 2 */\n  border-style: solid; /* 2 */\n  border-color: #e5e7eb; /* 2 */\n}\n\n::before,\n::after {\n  --tw-content: \'\';\n}\n\n/*\n1. Use a consistent sensible line-height in all browsers.\n2. Prevent adjustments of font size after orientation changes in iOS.\n3. Use a more readable tab size.\n4. Use the user\'s configured `sans` font-family by default.\n5. Use the user\'s configured `sans` font-feature-settings by default.\n6. Use the user\'s configured `sans` font-variation-settings by default.\n7. Disable tap highlights on iOS\n*/\n\nhtml,\n:host {\n  line-height: 1.5; /* 1 */\n  -webkit-text-size-adjust: 100%; /* 2 */\n  -moz-tab-size: 4; /* 3 */\n  -o-tab-size: 4;\n     tab-size: 4; /* 3 */\n  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; /* 4 */\n  font-feature-settings: normal; /* 5 */\n  font-variation-settings: normal; /* 6 */\n  -webkit-tap-highlight-color: transparent; /* 7 */\n}\n\n/*\n1. Remove the margin in all browsers.\n2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.\n*/\n\nbody {\n  margin: 0; /* 1 */\n  line-height: inherit; /* 2 */\n}\n\n/*\n1. Add the correct height in Firefox.\n2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n3. Ensure horizontal rules are visible by default.\n*/\n\nhr {\n  height: 0; /* 1 */\n  color: inherit; /* 2 */\n  border-top-width: 1px; /* 3 */\n}\n\n/*\nAdd the correct text decoration in Chrome, Edge, and Safari.\n*/\n\nabbr:where([title]) {\n  -webkit-text-decoration: underline dotted;\n          text-decoration: underline dotted;\n}\n\n/*\nRemove the default font size and weight for headings.\n*/\n\nh1,\nh2,\nh3,\nh4,\nh5,\nh6 {\n  font-size: inherit;\n  font-weight: inherit;\n}\n\n/*\nReset links to optimize for opt-in styling instead of opt-out.\n*/\n\na {\n  color: inherit;\n  text-decoration: inherit;\n}\n\n/*\nAdd the correct font weight in Edge and Safari.\n*/\n\nb,\nstrong {\n  font-weight: bolder;\n}\n\n/*\n1. Use the user\'s configured `mono` font-family by default.\n2. Use the user\'s configured `mono` font-feature-settings by default.\n3. Use the user\'s configured `mono` font-variation-settings by default.\n4. Correct the odd `em` font sizing in all browsers.\n*/\n\ncode,\nkbd,\nsamp,\npre {\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace; /* 1 */\n  font-feature-settings: normal; /* 2 */\n  font-variation-settings: normal; /* 3 */\n  font-size: 1em; /* 4 */\n}\n\n/*\nAdd the correct font size in all browsers.\n*/\n\nsmall {\n  font-size: 80%;\n}\n\n/*\nPrevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\nsub,\nsup {\n  font-size: 75%;\n  line-height: 0;\n  position: relative;\n  vertical-align: baseline;\n}\n\nsub {\n  bottom: -0.25em;\n}\n\nsup {\n  top: -0.5em;\n}\n\n/*\n1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n3. Remove gaps between table borders by default.\n*/\n\ntable {\n  text-indent: 0; /* 1 */\n  border-color: inherit; /* 2 */\n  border-collapse: collapse; /* 3 */\n}\n\n/*\n1. Change the font styles in all browsers.\n2. Remove the margin in Firefox and Safari.\n3. Remove default padding in all browsers.\n*/\n\nbutton,\ninput,\noptgroup,\nselect,\ntextarea {\n  font-family: inherit; /* 1 */\n  font-feature-settings: inherit; /* 1 */\n  font-variation-settings: inherit; /* 1 */\n  font-size: 100%; /* 1 */\n  font-weight: inherit; /* 1 */\n  line-height: inherit; /* 1 */\n  letter-spacing: inherit; /* 1 */\n  color: inherit; /* 1 */\n  margin: 0; /* 2 */\n  padding: 0; /* 3 */\n}\n\n/*\nRemove the inheritance of text transform in Edge and Firefox.\n*/\n\nbutton,\nselect {\n  text-transform: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Remove default button styles.\n*/\n\nbutton,\ninput:where([type=\'button\']),\ninput:where([type=\'reset\']),\ninput:where([type=\'submit\']) {\n  -webkit-appearance: button; /* 1 */\n  background-color: transparent; /* 2 */\n  background-image: none; /* 2 */\n}\n\n/*\nUse the modern Firefox focus style for all focusable elements.\n*/\n\n:-moz-focusring {\n  outline: auto;\n}\n\n/*\nRemove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n:-moz-ui-invalid {\n  box-shadow: none;\n}\n\n/*\nAdd the correct vertical alignment in Chrome and Firefox.\n*/\n\nprogress {\n  vertical-align: baseline;\n}\n\n/*\nCorrect the cursor style of increment and decrement buttons in Safari.\n*/\n\n::-webkit-inner-spin-button,\n::-webkit-outer-spin-button {\n  height: auto;\n}\n\n/*\n1. Correct the odd appearance in Chrome and Safari.\n2. Correct the outline style in Safari.\n*/\n\n[type=\'search\'] {\n  -webkit-appearance: textfield; /* 1 */\n  outline-offset: -2px; /* 2 */\n}\n\n/*\nRemove the inner padding in Chrome and Safari on macOS.\n*/\n\n::-webkit-search-decoration {\n  -webkit-appearance: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Change font properties to `inherit` in Safari.\n*/\n\n::-webkit-file-upload-button {\n  -webkit-appearance: button; /* 1 */\n  font: inherit; /* 2 */\n}\n\n/*\nAdd the correct display in Chrome and Safari.\n*/\n\nsummary {\n  display: list-item;\n}\n\n/*\nRemoves the default spacing and border for appropriate elements.\n*/\n\nblockquote,\ndl,\ndd,\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\nhr,\nfigure,\np,\npre {\n  margin: 0;\n}\n\nfieldset {\n  margin: 0;\n  padding: 0;\n}\n\nlegend {\n  padding: 0;\n}\n\nol,\nul,\nmenu {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n}\n\n/*\nReset default styling for dialogs.\n*/\n\ndialog {\n  padding: 0;\n}\n\n/*\nPrevent resizing textareas horizontally by default.\n*/\n\ntextarea {\n  resize: vertical;\n}\n\n/*\n1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n2. Set the default placeholder color to the user\'s configured gray 400 color.\n*/\n\ninput::-moz-placeholder, textarea::-moz-placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\ninput::placeholder,\ntextarea::placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\n/*\nSet the default cursor for buttons.\n*/\n\nbutton,\n[role="button"] {\n  cursor: pointer;\n}\n\n/*\nMake sure disabled buttons don\'t get the pointer cursor.\n*/\n\n:disabled {\n  cursor: default;\n}\n\n/*\n1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n   This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\nimg,\nsvg,\nvideo,\ncanvas,\naudio,\niframe,\nembed,\nobject {\n  display: block; /* 1 */\n  vertical-align: middle; /* 2 */\n}\n\n/*\nConstrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\nimg,\nvideo {\n  max-width: 100%;\n  height: auto;\n}\n\n/* Make elements with the HTML hidden attribute stay hidden by default */\n\n[hidden]:where(:not([hidden="until-found"])) {\n  display: none;\n}\n\n*,\n  *::before,\n  *::after {\n    box-sizing: border-box;\n  }\n\nhtml {\n    font-family:\n      \'Inter\',\n      -apple-system,\n      BlinkMacSystemFont,\n      \'Segoe UI\',\n      sans-serif;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale;\n  }\n\n:root {\n    --background: 0 0% 100%;\n    --foreground: 222.2 84% 4.9%;\n    --card: 0 0% 100%;\n    --card-foreground: 222.2 84% 4.9%;\n    --popover: 0 0% 100%;\n    --popover-foreground: 222.2 84% 4.9%;\n    --primary: 221.2 83.2% 53.3%;\n    --primary-foreground: 210 40% 98%;\n    --secondary: 210 40% 96.1%;\n    --secondary-foreground: 222.2 47.4% 11.2%;\n    --muted: 210 40% 96.1%;\n    --muted-foreground: 215.4 16.3% 46.9%;\n    --accent: 210 40% 96.1%;\n    --accent-foreground: 222.2 47.4% 11.2%;\n    --destructive: 0 84.2% 60.2%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 214.3 31.8% 91.4%;\n    --input: 214.3 31.8% 91.4%;\n    --ring: 221.2 83.2% 53.3%;\n    --radius: 0.375rem;\n  }\n\n.dark {\n    --background: 222.2 84% 4.9%;\n    --foreground: 210 40% 98%;\n    --card: 222.2 84% 4.9%;\n    --card-foreground: 210 40% 98%;\n    --popover: 222.2 84% 4.9%;\n    --popover-foreground: 210 40% 98%;\n    --primary: 217.2 91.2% 59.8%;\n    --primary-foreground: 222.2 47.4% 11.2%;\n    --secondary: 217.2 32.6% 17.5%;\n    --secondary-foreground: 210 40% 98%;\n    --muted: 217.2 32.6% 17.5%;\n    --muted-foreground: 215 20.2% 65.1%;\n    --accent: 217.2 32.6% 17.5%;\n    --accent-foreground: 210 40% 98%;\n    --destructive: 0 62.8% 30.6%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 217.2 32.6% 17.5%;\n    --input: 217.2 32.6% 17.5%;\n    --ring: 224.3 76.3% 48%;\n    --md-scrollbar: #484d54;\n  }\n\n::-moz-selection {\n    background: #2469f0;\n    color: white;\n  }\n\n::selection {\n    background: #2469f0;\n    color: white;\n  }\n\n* {\n    scrollbar-width: thin;\n    scrollbar-color: #c9cdd4 transparent;\n  }\n\n.dark * {\n    scrollbar-color: var(--md-scrollbar) transparent;\n  }\n\n*::-webkit-scrollbar {\n    width: 6px;\n    height: 6px;\n  }\n\n*::-webkit-scrollbar-track {\n    background: transparent;\n  }\n\n*::-webkit-scrollbar-thumb {\n    background: #c9cdd4;\n    border-radius: 3px;\n  }\n\n.dark *::-webkit-scrollbar-thumb {\n    background: var(--md-scrollbar);\n  }\n\n*::-webkit-scrollbar-thumb:hover {\n    background: #a4a9b3;\n  }\n\n.dark *::-webkit-scrollbar-thumb:hover {\n    background: #636971;\n  }\n.\\!container{\n  width: 100% !important;\n}\n.container{\n  width: 100%;\n}\n@media (min-width: 640px){\n\n  .\\!container{\n    max-width: 640px !important;\n  }\n\n  .container{\n    max-width: 640px;\n  }\n}\n@media (min-width: 768px){\n\n  .\\!container{\n    max-width: 768px !important;\n  }\n\n  .container{\n    max-width: 768px;\n  }\n}\n@media (min-width: 1024px){\n\n  .\\!container{\n    max-width: 1024px !important;\n  }\n\n  .container{\n    max-width: 1024px;\n  }\n}\n@media (min-width: 1280px){\n\n  .\\!container{\n    max-width: 1280px !important;\n  }\n\n  .container{\n    max-width: 1280px;\n  }\n}\n@media (min-width: 1536px){\n\n  .\\!container{\n    max-width: 1536px !important;\n  }\n\n  .container{\n    max-width: 1536px;\n  }\n}\n.pointer-events-none{\n  pointer-events: none;\n}\n.visible{\n  visibility: visible;\n}\n.static{\n  position: static;\n}\n.fixed{\n  position: fixed;\n}\n.absolute{\n  position: absolute;\n}\n.relative{\n  position: relative;\n}\n.bottom-4{\n  bottom: 1rem;\n}\n.left-1\\/2{\n  left: 50%;\n}\n.right-3{\n  right: 0.75rem;\n}\n.top-1\\/2{\n  top: 50%;\n}\n.z-50{\n  z-index: 50;\n}\n.z-\\[1050\\]{\n  z-index: 1050;\n}\n.mx-auto{\n  margin-left: auto;\n  margin-right: auto;\n}\n.-mb-\\[1px\\]{\n  margin-bottom: -1px;\n}\n.mb-1{\n  margin-bottom: 0.25rem;\n}\n.mb-1\\.5{\n  margin-bottom: 0.375rem;\n}\n.mb-2{\n  margin-bottom: 0.5rem;\n}\n.mb-3{\n  margin-bottom: 0.75rem;\n}\n.mb-4{\n  margin-bottom: 1rem;\n}\n.ml-0\\.5{\n  margin-left: 0.125rem;\n}\n.ml-1{\n  margin-left: 0.25rem;\n}\n.mr-1{\n  margin-right: 0.25rem;\n}\n.mr-2{\n  margin-right: 0.5rem;\n}\n.mr-3{\n  margin-right: 0.75rem;\n}\n.mt-0\\.5{\n  margin-top: 0.125rem;\n}\n.mt-1{\n  margin-top: 0.25rem;\n}\n.mt-3{\n  margin-top: 0.75rem;\n}\n.block{\n  display: block;\n}\n.inline-block{\n  display: inline-block;\n}\n.flex{\n  display: flex;\n}\n.inline-flex{\n  display: inline-flex;\n}\n.\\!table{\n  display: table !important;\n}\n.table{\n  display: table;\n}\n.grid{\n  display: grid;\n}\n.\\!contents{\n  display: contents !important;\n}\n.contents{\n  display: contents;\n}\n.hidden{\n  display: none;\n}\n.size-1\\.5{\n  width: 0.375rem;\n  height: 0.375rem;\n}\n.size-10{\n  width: 2.5rem;\n  height: 2.5rem;\n}\n.size-2\\.5{\n  width: 0.625rem;\n  height: 0.625rem;\n}\n.size-3{\n  width: 0.75rem;\n  height: 0.75rem;\n}\n.size-3\\.5{\n  width: 0.875rem;\n  height: 0.875rem;\n}\n.size-4{\n  width: 1rem;\n  height: 1rem;\n}\n.size-5{\n  width: 1.25rem;\n  height: 1.25rem;\n}\n.h-1{\n  height: 0.25rem;\n}\n.h-10{\n  height: 2.5rem;\n}\n.h-11{\n  height: 2.75rem;\n}\n.h-12{\n  height: 3rem;\n}\n.h-2{\n  height: 0.5rem;\n}\n.h-24{\n  height: 6rem;\n}\n.h-4{\n  height: 1rem;\n}\n.h-5{\n  height: 1.25rem;\n}\n.h-6{\n  height: 1.5rem;\n}\n.h-7{\n  height: 1.75rem;\n}\n.h-8{\n  height: 2rem;\n}\n.h-9{\n  height: 2.25rem;\n}\n.h-\\[300px\\]{\n  height: 300px;\n}\n.h-\\[var\\(--radix-select-trigger-height\\)\\]{\n  height: var(--radix-select-trigger-height);\n}\n.h-full{\n  height: 100%;\n}\n.max-h-60{\n  max-height: 15rem;\n}\n.max-h-96{\n  max-height: 24rem;\n}\n.max-h-\\[600px\\]{\n  max-height: 600px;\n}\n.min-h-\\[200px\\]{\n  min-height: 200px;\n}\n.w-10{\n  width: 2.5rem;\n}\n.w-11{\n  width: 2.75rem;\n}\n.w-2{\n  width: 0.5rem;\n}\n.w-4{\n  width: 1rem;\n}\n.w-5{\n  width: 1.25rem;\n}\n.w-6{\n  width: 1.5rem;\n}\n.w-7{\n  width: 1.75rem;\n}\n.w-8{\n  width: 2rem;\n}\n.w-9{\n  width: 2.25rem;\n}\n.w-\\[100px\\]{\n  width: 100px;\n}\n.w-\\[120px\\]{\n  width: 120px;\n}\n.w-\\[340px\\]{\n  width: 340px;\n}\n.w-\\[90px\\]{\n  width: 90px;\n}\n.w-full{\n  width: 100%;\n}\n.w-px{\n  width: 1px;\n}\n.min-w-0{\n  min-width: 0px;\n}\n.min-w-\\[8rem\\]{\n  min-width: 8rem;\n}\n.min-w-\\[var\\(--radix-select-trigger-width\\)\\]{\n  min-width: var(--radix-select-trigger-width);\n}\n.max-w-\\[120px\\]{\n  max-width: 120px;\n}\n.max-w-\\[200px\\]{\n  max-width: 200px;\n}\n.flex-1{\n  flex: 1 1 0%;\n}\n.flex-shrink{\n  flex-shrink: 1;\n}\n.shrink-0{\n  flex-shrink: 0;\n}\n.-translate-x-1\\/2{\n  --tw-translate-x: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.-translate-y-1\\/2{\n  --tw-translate-y: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.scale-90{\n  --tw-scale-x: .9;\n  --tw-scale-y: .9;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.transform{\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n@keyframes pulse{\n\n  50%{\n    opacity: .5;\n  }\n}\n.animate-pulse{\n  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;\n}\n@keyframes slide-up{\n\n  0%{\n    opacity: 0;\n    transform: translateY(8px);\n  }\n\n  100%{\n    opacity: 1;\n    transform: translateY(0);\n  }\n}\n.animate-slide-up{\n  animation: slide-up 0.15s ease-out;\n}\n@keyframes spin{\n\n  to{\n    transform: rotate(360deg);\n  }\n}\n.animate-spin{\n  animation: spin 1s linear infinite;\n}\n.cursor-default{\n  cursor: default;\n}\n.cursor-not-allowed{\n  cursor: not-allowed;\n}\n.cursor-pointer{\n  cursor: pointer;\n}\n.select-none{\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.resize-none{\n  resize: none;\n}\n.resize-y{\n  resize: vertical;\n}\n.resize{\n  resize: both;\n}\n.grid-cols-1{\n  grid-template-columns: repeat(1, minmax(0, 1fr));\n}\n.grid-cols-2{\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n}\n.flex-col{\n  flex-direction: column;\n}\n.flex-wrap{\n  flex-wrap: wrap;\n}\n.items-start{\n  align-items: flex-start;\n}\n.items-center{\n  align-items: center;\n}\n.justify-end{\n  justify-content: flex-end;\n}\n.justify-center{\n  justify-content: center;\n}\n.justify-between{\n  justify-content: space-between;\n}\n.gap-0{\n  gap: 0px;\n}\n.gap-1{\n  gap: 0.25rem;\n}\n.gap-1\\.5{\n  gap: 0.375rem;\n}\n.gap-2{\n  gap: 0.5rem;\n}\n.gap-2\\.5{\n  gap: 0.625rem;\n}\n.gap-3{\n  gap: 0.75rem;\n}\n.gap-4{\n  gap: 1rem;\n}\n.gap-x-8{\n  -moz-column-gap: 2rem;\n       column-gap: 2rem;\n}\n.gap-y-3{\n  row-gap: 0.75rem;\n}\n.space-y-0\\.5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.125rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.125rem * var(--tw-space-y-reverse));\n}\n.space-y-1 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));\n}\n.space-y-1\\.5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.375rem * var(--tw-space-y-reverse));\n}\n.space-y-2 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));\n}\n.space-y-2\\.5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.625rem * var(--tw-space-y-reverse));\n}\n.space-y-3 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));\n}\n.space-y-4 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1rem * var(--tw-space-y-reverse));\n}\n.space-y-5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1.25rem * var(--tw-space-y-reverse));\n}\n.space-y-6 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1.5rem * var(--tw-space-y-reverse));\n}\n.divide-y > :not([hidden]) ~ :not([hidden]){\n  --tw-divide-y-reverse: 0;\n  border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));\n  border-bottom-width: calc(1px * var(--tw-divide-y-reverse));\n}\n.divide-border > :not([hidden]) ~ :not([hidden]){\n  border-color: hsl(var(--border));\n}\n.overflow-hidden{\n  overflow: hidden;\n}\n.overflow-y-auto{\n  overflow-y: auto;\n}\n.truncate{\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n.whitespace-nowrap{\n  white-space: nowrap;\n}\n.whitespace-pre-wrap{\n  white-space: pre-wrap;\n}\n.break-words{\n  overflow-wrap: break-word;\n}\n.rounded{\n  border-radius: 0.25rem;\n}\n.rounded-full{\n  border-radius: 9999px;\n}\n.rounded-lg{\n  border-radius: 0.5rem;\n}\n.rounded-md{\n  border-radius: 6px;\n}\n.rounded-sm{\n  border-radius: 0.125rem;\n}\n.rounded-xl{\n  border-radius: 0.75rem;\n}\n.border{\n  border-width: 1px;\n}\n.border-2{\n  border-width: 2px;\n}\n.border-b{\n  border-bottom-width: 1px;\n}\n.border-b-2{\n  border-bottom-width: 2px;\n}\n.border-l-2{\n  border-left-width: 2px;\n}\n.border-t{\n  border-top-width: 1px;\n}\n.border-t-2{\n  border-top-width: 2px;\n}\n.border-dashed{\n  border-style: dashed;\n}\n.border-\\[\\#2469f0\\]{\n  --tw-border-opacity: 1;\n  border-color: rgb(36 105 240 / var(--tw-border-opacity, 1));\n}\n.border-\\[\\#e2ddd7\\]{\n  --tw-border-opacity: 1;\n  border-color: rgb(226 221 215 / var(--tw-border-opacity, 1));\n}\n.border-amber-200{\n  --tw-border-opacity: 1;\n  border-color: rgb(253 230 138 / var(--tw-border-opacity, 1));\n}\n.border-border{\n  border-color: hsl(var(--border));\n}\n.border-destructive\\/20{\n  border-color: hsl(var(--destructive) / 0.2);\n}\n.border-foreground{\n  border-color: hsl(var(--foreground));\n}\n.border-green-200{\n  --tw-border-opacity: 1;\n  border-color: rgb(187 247 208 / var(--tw-border-opacity, 1));\n}\n.border-input{\n  border-color: hsl(var(--input));\n}\n.border-primary{\n  border-color: hsl(var(--primary));\n}\n.border-primary\\/20{\n  border-color: hsl(var(--primary) / 0.2);\n}\n.border-red-200{\n  --tw-border-opacity: 1;\n  border-color: rgb(254 202 202 / var(--tw-border-opacity, 1));\n}\n.border-red-500{\n  --tw-border-opacity: 1;\n  border-color: rgb(239 68 68 / var(--tw-border-opacity, 1));\n}\n.border-transparent{\n  border-color: transparent;\n}\n.bg-\\[\\#2469f0\\]{\n  --tw-bg-opacity: 1;\n  background-color: rgb(36 105 240 / var(--tw-bg-opacity, 1));\n}\n.bg-\\[\\#2b5f8a\\]\\/10{\n  background-color: rgb(43 95 138 / 0.1);\n}\n.bg-\\[\\#2b7a4a\\]{\n  --tw-bg-opacity: 1;\n  background-color: rgb(43 122 74 / var(--tw-bg-opacity, 1));\n}\n.bg-\\[\\#b91c1c\\]{\n  --tw-bg-opacity: 1;\n  background-color: rgb(185 28 28 / var(--tw-bg-opacity, 1));\n}\n.bg-\\[\\#e2ddd7\\]{\n  --tw-bg-opacity: 1;\n  background-color: rgb(226 221 215 / var(--tw-bg-opacity, 1));\n}\n.bg-\\[\\#f8f6f3\\]{\n  --tw-bg-opacity: 1;\n  background-color: rgb(248 246 243 / var(--tw-bg-opacity, 1));\n}\n.bg-\\[\\#fef2f2\\]{\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 242 242 / var(--tw-bg-opacity, 1));\n}\n.bg-\\[\\#fefce8\\]{\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 252 232 / var(--tw-bg-opacity, 1));\n}\n.bg-accent{\n  background-color: hsl(var(--accent));\n}\n.bg-accent\\/20{\n  background-color: hsl(var(--accent) / 0.2);\n}\n.bg-accent\\/40{\n  background-color: hsl(var(--accent) / 0.4);\n}\n.bg-accent\\/50{\n  background-color: hsl(var(--accent) / 0.5);\n}\n.bg-amber-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(255 251 235 / var(--tw-bg-opacity, 1));\n}\n.bg-amber-50\\/50{\n  background-color: rgb(255 251 235 / 0.5);\n}\n.bg-background{\n  background-color: hsl(var(--background));\n}\n.bg-blue-100{\n  --tw-bg-opacity: 1;\n  background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1));\n}\n.bg-blue-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(239 246 255 / var(--tw-bg-opacity, 1));\n}\n.bg-card{\n  background-color: hsl(var(--card));\n}\n.bg-destructive{\n  background-color: hsl(var(--destructive));\n}\n.bg-destructive\\/10{\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.bg-foreground{\n  background-color: hsl(var(--foreground));\n}\n.bg-green-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(240 253 244 / var(--tw-bg-opacity, 1));\n}\n.bg-green-500{\n  --tw-bg-opacity: 1;\n  background-color: rgb(34 197 94 / var(--tw-bg-opacity, 1));\n}\n.bg-green-600{\n  --tw-bg-opacity: 1;\n  background-color: rgb(22 163 74 / var(--tw-bg-opacity, 1));\n}\n.bg-muted{\n  background-color: hsl(var(--muted));\n}\n.bg-muted-foreground{\n  background-color: hsl(var(--muted-foreground));\n}\n.bg-popover{\n  background-color: hsl(var(--popover));\n}\n.bg-primary{\n  background-color: hsl(var(--primary));\n}\n.bg-primary\\/10{\n  background-color: hsl(var(--primary) / 0.1);\n}\n.bg-red-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 242 242 / var(--tw-bg-opacity, 1));\n}\n.bg-red-500\\/5{\n  background-color: rgb(239 68 68 / 0.05);\n}\n.bg-red-600{\n  --tw-bg-opacity: 1;\n  background-color: rgb(220 38 38 / var(--tw-bg-opacity, 1));\n}\n.bg-secondary{\n  background-color: hsl(var(--secondary));\n}\n.bg-white{\n  --tw-bg-opacity: 1;\n  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));\n}\n.bg-white\\/15{\n  background-color: rgb(255 255 255 / 0.15);\n}\n.p-0\\.5{\n  padding: 0.125rem;\n}\n.p-1{\n  padding: 0.25rem;\n}\n.p-1\\.5{\n  padding: 0.375rem;\n}\n.p-2{\n  padding: 0.5rem;\n}\n.p-2\\.5{\n  padding: 0.625rem;\n}\n.p-3{\n  padding: 0.75rem;\n}\n.p-4{\n  padding: 1rem;\n}\n.p-5{\n  padding: 1.25rem;\n}\n.p-8{\n  padding: 2rem;\n}\n.px-1{\n  padding-left: 0.25rem;\n  padding-right: 0.25rem;\n}\n.px-1\\.5{\n  padding-left: 0.375rem;\n  padding-right: 0.375rem;\n}\n.px-2{\n  padding-left: 0.5rem;\n  padding-right: 0.5rem;\n}\n.px-2\\.5{\n  padding-left: 0.625rem;\n  padding-right: 0.625rem;\n}\n.px-3{\n  padding-left: 0.75rem;\n  padding-right: 0.75rem;\n}\n.px-3\\.5{\n  padding-left: 0.875rem;\n  padding-right: 0.875rem;\n}\n.px-4{\n  padding-left: 1rem;\n  padding-right: 1rem;\n}\n.px-5{\n  padding-left: 1.25rem;\n  padding-right: 1.25rem;\n}\n.px-6{\n  padding-left: 1.5rem;\n  padding-right: 1.5rem;\n}\n.px-8{\n  padding-left: 2rem;\n  padding-right: 2rem;\n}\n.py-0{\n  padding-top: 0px;\n  padding-bottom: 0px;\n}\n.py-0\\.5{\n  padding-top: 0.125rem;\n  padding-bottom: 0.125rem;\n}\n.py-1{\n  padding-top: 0.25rem;\n  padding-bottom: 0.25rem;\n}\n.py-1\\.5{\n  padding-top: 0.375rem;\n  padding-bottom: 0.375rem;\n}\n.py-12{\n  padding-top: 3rem;\n  padding-bottom: 3rem;\n}\n.py-2{\n  padding-top: 0.5rem;\n  padding-bottom: 0.5rem;\n}\n.py-2\\.5{\n  padding-top: 0.625rem;\n  padding-bottom: 0.625rem;\n}\n.py-3{\n  padding-top: 0.75rem;\n  padding-bottom: 0.75rem;\n}\n.py-4{\n  padding-top: 1rem;\n  padding-bottom: 1rem;\n}\n.py-5{\n  padding-top: 1.25rem;\n  padding-bottom: 1.25rem;\n}\n.py-8{\n  padding-top: 2rem;\n  padding-bottom: 2rem;\n}\n.pb-1\\.5{\n  padding-bottom: 0.375rem;\n}\n.pb-2{\n  padding-bottom: 0.5rem;\n}\n.pl-2{\n  padding-left: 0.5rem;\n}\n.pr-14{\n  padding-right: 3.5rem;\n}\n.pr-8{\n  padding-right: 2rem;\n}\n.pt-3{\n  padding-top: 0.75rem;\n}\n.text-center{\n  text-align: center;\n}\n.font-\\[\\\'Lexend\\\'\\2c system-ui\\2c sans-serif\\]{\n  font-family: \'Lexend\',system-ui,sans-serif;\n}\n.font-mono{\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace;\n}\n.text-\\[10px\\]{\n  font-size: 10px;\n}\n.text-\\[11px\\]{\n  font-size: 11px;\n}\n.text-\\[13px\\]{\n  font-size: 13px;\n}\n.text-\\[14px\\]{\n  font-size: 14px;\n}\n.text-\\[15px\\]{\n  font-size: 15px;\n}\n.text-\\[16px\\]{\n  font-size: 16px;\n}\n.text-\\[18px\\]{\n  font-size: 18px;\n}\n.text-\\[20px\\]{\n  font-size: 20px;\n}\n.text-\\[8px\\]{\n  font-size: 8px;\n}\n.text-\\[9px\\]{\n  font-size: 9px;\n}\n.text-base{\n  font-size: 1rem;\n  line-height: 1.5rem;\n}\n.text-md-sm{\n  font-size: 12px;\n  line-height: 18px;\n}\n.text-md-xs{\n  font-size: 11px;\n  line-height: 16px;\n}\n.text-sm{\n  font-size: 0.875rem;\n  line-height: 1.25rem;\n}\n.font-bold{\n  font-weight: 700;\n}\n.font-medium{\n  font-weight: 500;\n}\n.font-normal{\n  font-weight: 400;\n}\n.font-semibold{\n  font-weight: 600;\n}\n.uppercase{\n  text-transform: uppercase;\n}\n.leading-relaxed{\n  line-height: 1.625;\n}\n.tracking-tight{\n  letter-spacing: -0.025em;\n}\n.tracking-wide{\n  letter-spacing: 0.025em;\n}\n.tracking-wider{\n  letter-spacing: 0.05em;\n}\n.text-\\[\\#1a1d23\\]{\n  --tw-text-opacity: 1;\n  color: rgb(26 29 35 / var(--tw-text-opacity, 1));\n}\n.text-\\[\\#2469f0\\]{\n  --tw-text-opacity: 1;\n  color: rgb(36 105 240 / var(--tw-text-opacity, 1));\n}\n.text-\\[\\#2b5f8a\\]{\n  --tw-text-opacity: 1;\n  color: rgb(43 95 138 / var(--tw-text-opacity, 1));\n}\n.text-\\[\\#4a4540\\]{\n  --tw-text-opacity: 1;\n  color: rgb(74 69 64 / var(--tw-text-opacity, 1));\n}\n.text-\\[\\#4a4e57\\]{\n  --tw-text-opacity: 1;\n  color: rgb(74 78 87 / var(--tw-text-opacity, 1));\n}\n.text-\\[\\#6b7280\\]{\n  --tw-text-opacity: 1;\n  color: rgb(107 114 128 / var(--tw-text-opacity, 1));\n}\n.text-\\[\\#8a7f72\\]{\n  --tw-text-opacity: 1;\n  color: rgb(138 127 114 / var(--tw-text-opacity, 1));\n}\n.text-\\[\\#92400e\\]{\n  --tw-text-opacity: 1;\n  color: rgb(146 64 14 / var(--tw-text-opacity, 1));\n}\n.text-\\[\\#991b1b\\]{\n  --tw-text-opacity: 1;\n  color: rgb(153 27 27 / var(--tw-text-opacity, 1));\n}\n.text-\\[\\#a0988f\\]{\n  --tw-text-opacity: 1;\n  color: rgb(160 152 143 / var(--tw-text-opacity, 1));\n}\n.text-\\[\\#a16207\\]{\n  --tw-text-opacity: 1;\n  color: rgb(161 98 7 / var(--tw-text-opacity, 1));\n}\n.text-\\[\\#b45309\\]{\n  --tw-text-opacity: 1;\n  color: rgb(180 83 9 / var(--tw-text-opacity, 1));\n}\n.text-\\[\\#b91c1c\\]{\n  --tw-text-opacity: 1;\n  color: rgb(185 28 28 / var(--tw-text-opacity, 1));\n}\n.text-\\[\\#b91c1c\\]\\/80{\n  color: rgb(185 28 28 / 0.8);\n}\n.text-amber-700{\n  --tw-text-opacity: 1;\n  color: rgb(180 83 9 / var(--tw-text-opacity, 1));\n}\n.text-background{\n  color: hsl(var(--background));\n}\n.text-blue-700{\n  --tw-text-opacity: 1;\n  color: rgb(29 78 216 / var(--tw-text-opacity, 1));\n}\n.text-card-foreground{\n  color: hsl(var(--card-foreground));\n}\n.text-destructive{\n  color: hsl(var(--destructive));\n}\n.text-destructive-foreground{\n  color: hsl(var(--destructive-foreground));\n}\n.text-foreground{\n  color: hsl(var(--foreground));\n}\n.text-green-700{\n  --tw-text-opacity: 1;\n  color: rgb(21 128 61 / var(--tw-text-opacity, 1));\n}\n.text-muted-foreground{\n  color: hsl(var(--muted-foreground));\n}\n.text-popover-foreground{\n  color: hsl(var(--popover-foreground));\n}\n.text-primary{\n  color: hsl(var(--primary));\n}\n.text-primary-foreground{\n  color: hsl(var(--primary-foreground));\n}\n.text-red-600{\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.text-red-800{\n  --tw-text-opacity: 1;\n  color: rgb(153 27 27 / var(--tw-text-opacity, 1));\n}\n.text-red-900{\n  --tw-text-opacity: 1;\n  color: rgb(127 29 29 / var(--tw-text-opacity, 1));\n}\n.text-secondary-foreground{\n  color: hsl(var(--secondary-foreground));\n}\n.text-white{\n  --tw-text-opacity: 1;\n  color: rgb(255 255 255 / var(--tw-text-opacity, 1));\n}\n.text-white\\/70{\n  color: rgb(255 255 255 / 0.7);\n}\n.underline-offset-4{\n  text-underline-offset: 4px;\n}\n.antialiased{\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n}\n.opacity-0{\n  opacity: 0;\n}\n.opacity-30{\n  opacity: 0.3;\n}\n.opacity-50{\n  opacity: 0.5;\n}\n.opacity-60{\n  opacity: 0.6;\n}\n.opacity-85{\n  opacity: 0.85;\n}\n.opacity-90{\n  opacity: 0.9;\n}\n.shadow{\n  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-\\[0_4px_14px_rgba\\(43\\2c 122\\2c 74\\2c 0\\.3\\)\\]{\n  --tw-shadow: 0 4px 14px rgba(43,122,74,0.3);\n  --tw-shadow-colored: 0 4px 14px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-lg{\n  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-md{\n  --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-sm{\n  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);\n  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.outline-none{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.outline{\n  outline-style: solid;\n}\n.ring{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.ring-0{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.blur{\n  --tw-blur: blur(8px);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.grayscale{\n  --tw-grayscale: grayscale(100%);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.filter{\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.backdrop-filter{\n  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);\n}\n.transition{\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-all{\n  transition-property: all;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-colors{\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-transform{\n  transition-property: transform;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.duration-150{\n  transition-duration: 150ms;\n}\n.duration-200{\n  transition-duration: 200ms;\n}\n.duration-300{\n  transition-duration: 300ms;\n}\n.ease-in-out{\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.ease-out{\n  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);\n}\n@keyframes enter{\n\n  from{\n    opacity: var(--tw-enter-opacity, 1);\n    transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0) scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1)) rotate(var(--tw-enter-rotate, 0));\n  }\n}\n@keyframes exit{\n\n  to{\n    opacity: var(--tw-exit-opacity, 1);\n    transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0) scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1)) rotate(var(--tw-exit-rotate, 0));\n  }\n}\n.animate-in{\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.fade-in{\n  --tw-enter-opacity: 0;\n}\n.duration-150{\n  animation-duration: 150ms;\n}\n.duration-200{\n  animation-duration: 200ms;\n}\n.duration-300{\n  animation-duration: 300ms;\n}\n.ease-in-out{\n  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.ease-out{\n  animation-timing-function: cubic-bezier(0, 0, 0.2, 1);\n}\n.running{\n  animation-play-state: running;\n}\n.placeholder\\:text-\\[\\#a0988f\\]::-moz-placeholder{\n  --tw-text-opacity: 1;\n  color: rgb(160 152 143 / var(--tw-text-opacity, 1));\n}\n.placeholder\\:text-\\[\\#a0988f\\]::placeholder{\n  --tw-text-opacity: 1;\n  color: rgb(160 152 143 / var(--tw-text-opacity, 1));\n}\n.placeholder\\:text-muted-foreground::-moz-placeholder{\n  color: hsl(var(--muted-foreground));\n}\n.placeholder\\:text-muted-foreground::placeholder{\n  color: hsl(var(--muted-foreground));\n}\n.hover\\:bg-\\[\\#23663d\\]:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(35 102 61 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-\\[\\#f0ece6\\]:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(240 236 230 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-accent:hover{\n  background-color: hsl(var(--accent));\n}\n.hover\\:bg-amber-100\\/50:hover{\n  background-color: rgb(254 243 199 / 0.5);\n}\n.hover\\:bg-destructive\\/10:hover{\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.hover\\:bg-destructive\\/90:hover{\n  background-color: hsl(var(--destructive) / 0.9);\n}\n.hover\\:bg-green-700:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(21 128 61 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-primary\\/5:hover{\n  background-color: hsl(var(--primary) / 0.05);\n}\n.hover\\:bg-primary\\/90:hover{\n  background-color: hsl(var(--primary) / 0.9);\n}\n.hover\\:bg-red-500\\/10:hover{\n  background-color: rgb(239 68 68 / 0.1);\n}\n.hover\\:bg-red-700:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(185 28 28 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-secondary\\/80:hover{\n  background-color: hsl(var(--secondary) / 0.8);\n}\n.hover\\:bg-white\\/15:hover{\n  background-color: rgb(255 255 255 / 0.15);\n}\n.hover\\:text-\\[\\#dc2626\\]:hover{\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.hover\\:text-accent-foreground:hover{\n  color: hsl(var(--accent-foreground));\n}\n.hover\\:text-destructive:hover{\n  color: hsl(var(--destructive));\n}\n.hover\\:text-foreground:hover{\n  color: hsl(var(--foreground));\n}\n.hover\\:text-red-600:hover{\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.hover\\:text-white:hover{\n  --tw-text-opacity: 1;\n  color: rgb(255 255 255 / var(--tw-text-opacity, 1));\n}\n.hover\\:underline:hover{\n  text-decoration-line: underline;\n}\n.hover\\:opacity-70:hover{\n  opacity: 0.7;\n}\n.focus\\:border-\\[\\#2b5f8a\\]:focus{\n  --tw-border-opacity: 1;\n  border-color: rgb(43 95 138 / var(--tw-border-opacity, 1));\n}\n.focus\\:bg-accent:focus{\n  background-color: hsl(var(--accent));\n}\n.focus\\:text-accent-foreground:focus{\n  color: hsl(var(--accent-foreground));\n}\n.focus\\:shadow-\\[0_0_0_3px_rgba\\(43\\2c 95\\2c 138\\2c 0\\.15\\)\\]:focus{\n  --tw-shadow: 0 0 0 3px rgba(43,95,138,0.15);\n  --tw-shadow-colored: 0 0 0 3px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.focus\\:outline-none:focus{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus\\:ring-1:focus{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-2:focus{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-primary:focus{\n  --tw-ring-color: hsl(var(--primary));\n}\n.focus\\:ring-red-500:focus{\n  --tw-ring-opacity: 1;\n  --tw-ring-color: rgb(239 68 68 / var(--tw-ring-opacity, 1));\n}\n.focus\\:ring-ring:focus{\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus\\:ring-offset-1:focus{\n  --tw-ring-offset-width: 1px;\n}\n.focus-visible\\:outline-none:focus-visible{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus-visible\\:ring-2:focus-visible{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus-visible\\:ring-ring:focus-visible{\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus-visible\\:ring-offset-1:focus-visible{\n  --tw-ring-offset-width: 1px;\n}\n.disabled\\:pointer-events-none:disabled{\n  pointer-events: none;\n}\n.disabled\\:cursor-not-allowed:disabled{\n  cursor: not-allowed;\n}\n.disabled\\:opacity-40:disabled{\n  opacity: 0.4;\n}\n.disabled\\:opacity-50:disabled{\n  opacity: 0.5;\n}\n.group:hover .group-hover\\:opacity-100{\n  opacity: 1;\n}\n.data-\\[disabled\\]\\:pointer-events-none[data-disabled]{\n  pointer-events: none;\n}\n.data-\\[side\\=bottom\\]\\:translate-y-1[data-side="bottom"]{\n  --tw-translate-y: 0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[side\\=top\\]\\:-translate-y-1[data-side="top"]{\n  --tw-translate-y: -0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:translate-x-4[data-state="checked"]{\n  --tw-translate-x: 1rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=unchecked\\]\\:translate-x-0[data-state="unchecked"]{\n  --tw-translate-x: 0px;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:bg-primary[data-state="checked"]{\n  background-color: hsl(var(--primary));\n}\n.data-\\[state\\=unchecked\\]\\:bg-input[data-state="unchecked"]{\n  background-color: hsl(var(--input));\n}\n.data-\\[disabled\\]\\:opacity-50[data-disabled]{\n  opacity: 0.5;\n}\n.data-\\[state\\=open\\]\\:animate-in[data-state="open"]{\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:animate-out[data-state="closed"]{\n  animation-name: exit;\n  animation-duration: 150ms;\n  --tw-exit-opacity: initial;\n  --tw-exit-scale: initial;\n  --tw-exit-rotate: initial;\n  --tw-exit-translate-x: initial;\n  --tw-exit-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:fade-out-0[data-state="closed"]{\n  --tw-exit-opacity: 0;\n}\n.data-\\[state\\=open\\]\\:fade-in-0[data-state="open"]{\n  --tw-enter-opacity: 0;\n}\n.data-\\[state\\=closed\\]\\:zoom-out-95[data-state="closed"]{\n  --tw-exit-scale: .95;\n}\n.data-\\[state\\=open\\]\\:zoom-in-95[data-state="open"]{\n  --tw-enter-scale: .95;\n}\n.data-\\[side\\=bottom\\]\\:slide-in-from-top-2[data-side="bottom"]{\n  --tw-enter-translate-y: -0.5rem;\n}\n.data-\\[side\\=left\\]\\:slide-in-from-right-2[data-side="left"]{\n  --tw-enter-translate-x: 0.5rem;\n}\n.data-\\[side\\=right\\]\\:slide-in-from-left-2[data-side="right"]{\n  --tw-enter-translate-x: -0.5rem;\n}\n.data-\\[side\\=top\\]\\:slide-in-from-bottom-2[data-side="top"]{\n  --tw-enter-translate-y: 0.5rem;\n}\n.dark\\:border-amber-800:is(.dark *){\n  --tw-border-opacity: 1;\n  border-color: rgb(146 64 14 / var(--tw-border-opacity, 1));\n}\n.dark\\:border-green-800:is(.dark *){\n  --tw-border-opacity: 1;\n  border-color: rgb(22 101 52 / var(--tw-border-opacity, 1));\n}\n.dark\\:border-red-900:is(.dark *){\n  --tw-border-opacity: 1;\n  border-color: rgb(127 29 29 / var(--tw-border-opacity, 1));\n}\n.dark\\:bg-amber-900\\/30:is(.dark *){\n  background-color: rgb(120 53 15 / 0.3);\n}\n.dark\\:bg-amber-950\\/20:is(.dark *){\n  background-color: rgb(69 26 3 / 0.2);\n}\n.dark\\:bg-blue-900\\/30:is(.dark *){\n  background-color: rgb(30 58 138 / 0.3);\n}\n.dark\\:bg-blue-950\\/20:is(.dark *){\n  background-color: rgb(23 37 84 / 0.2);\n}\n.dark\\:bg-green-950\\/20:is(.dark *){\n  background-color: rgb(5 46 22 / 0.2);\n}\n.dark\\:bg-red-950\\/20:is(.dark *){\n  background-color: rgb(69 10 10 / 0.2);\n}\n.dark\\:text-amber-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(252 211 77 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-blue-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(147 197 253 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-green-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(134 239 172 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-red-200:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(254 202 202 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-red-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(252 165 165 / var(--tw-text-opacity, 1));\n}\n@media (min-width: 640px){\n\n  .sm\\:grid-cols-3{\n    grid-template-columns: repeat(3, minmax(0, 1fr));\n  }\n}\n@media (min-width: 768px){\n\n  .md\\:col-span-2{\n    grid-column: span 2 / span 2;\n  }\n\n  .md\\:grid-cols-2{\n    grid-template-columns: repeat(2, minmax(0, 1fr));\n  }\n}\n.\\[\\&\\>span\\]\\:line-clamp-1>span{\n  overflow: hidden;\n  display: -webkit-box;\n  -webkit-box-orient: vertical;\n  -webkit-line-clamp: 1;\n}\n.\\[\\&\\>span\\]\\:h-3>span{\n  height: 0.75rem;\n}\n.\\[\\&\\>span\\]\\:w-3>span{\n  width: 0.75rem;\n}\n.data-\\[state\\=checked\\]\\:\\[\\&\\>span\\]\\:translate-x-3>span[data-state="checked"]{\n  --tw-translate-x: 0.75rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.\\[\\&_svg\\]\\:pointer-events-none svg{\n  pointer-events: none;\n}\n.\\[\\&_svg\\]\\:size-4 svg{\n  width: 1rem;\n  height: 1rem;\n}\n.\\[\\&_svg\\]\\:shrink-0 svg{\n  flex-shrink: 0;\n}\n'
           : '') +
         `
-      .resume-modal{background:#fff;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,.25);width:90%;max-width:800px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;animation:resume-slideup .25s ease;}
-      .resume-modal textarea{resize:vertical!important;min-height:60px;}
-      .resume-modal button:not([disabled]){cursor:pointer;}
-      @keyframes resume-slideup{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+      .resume-modal * {
+        font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+        box-sizing: border-box;
+      }
+      .resume-modal {
+        background: #f8f6f3;
+        border-radius: 20px;
+        box-shadow: 0 25px 60px rgba(0,0,0,.3);
+        width: 94%;
+        max-width: 900px;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        animation: resume-slideup .3s ease;
+        font-size: 16px;
+        line-height: 1.6;
+        color: #1a1d23;
+      }
+      .resume-modal h1, .resume-modal h2, .resume-modal h3 { font-family: 'Lexend', system-ui, sans-serif; }
+      .resume-modal textarea,
+      .resume-modal input,
+      .resume-modal select {
+        font-size: 16px !important;
+        min-height: 48px !important;
+        pointer-events: auto !important;
+      }
+      .resume-modal textarea {
+        resize: vertical !important;
+        min-height: 120px !important;
+      }
+      .resume-modal .ri-modal textarea,
+      .resume-modal .ri-modal input,
+      .resume-modal .ri-modal select {
+        pointer-events: auto !important;
+      }
+      .resume-modal button { cursor: pointer; min-height: 48px; }
+      @keyframes resume-slideup { from { opacity: 0; transform: translateY(24px) } to { opacity: 1; transform: translateY(0) } }
     `;
       document.head.appendChild(s);
     }
     reactRoot = (0, import_client.createRoot)(container);
     const handleSave = async (resumeData) => {
       const body = serializeFormData(resumeData);
-      console.log('[RJ] save \u2014 endpoint:', ENDPOINT);
-      console.log('[RJ] save \u2014 body:', body);
       const response = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -40182,13 +40384,12 @@ var __morbis_feature = (() => {
         console.error('[RJ] PHP errors:', phpErrors);
         throw new Error(phpErrors.join('\n'));
       }
-      console.log('[RJ] save success');
       cachedFormState = null;
     };
     reactRoot.render(
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(ErrorBoundary, {
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(ErrorBoundary, {
         onError: () => setTimeout(() => closeOverlay(container), 0),
-        children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(App, {
+        children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(App, {
           data,
           onSave: handleSave,
           onClose: () => closeOverlay(container),
@@ -40198,11 +40399,12 @@ var __morbis_feature = (() => {
     document.body.classList.add('ext-resume-open');
     setTimeout(() => {
       container.querySelectorAll('textarea').forEach((tx) => {
+        tx.style.height = 'auto';
+        tx.style.height = tx.scrollHeight + 'px';
         tx.addEventListener('input', () => {
           tx.style.height = 'auto';
           tx.style.height = tx.scrollHeight + 'px';
         });
-        tx.dispatchEvent(new Event('input'));
       });
     }, 50);
   }
@@ -40247,7 +40449,6 @@ var __morbis_feature = (() => {
         });
         if (values.length > 0) state[name] = values;
       }
-      console.log('[RJ] fetched form state:', state);
       return state;
     } catch (e) {
       console.error('[RJ] failed to fetch form state:', e);
@@ -40313,14 +40514,12 @@ var __morbis_feature = (() => {
     return allLines.length ? allLines.join('\n') : null;
   }
   function setupFloatingButton() {
-    const targetPage = 'http://103.147.236.140/v2/m-klaim/detail-v2-refaktor';
-    if (!location.href.startsWith(targetPage)) {
-      console.log('[RJ] not target page (' + location.href + '), RJ disabled');
+    const targetPage = '/v2/m-klaim/detail-v2-refaktor';
+    if (!location.href.startsWith(location.origin + targetPage)) {
       return;
     }
     const urlParams = new URLSearchParams(location.search);
     if (!urlParams.has('id_visit')) {
-      console.log('[RJ] no id_visit in URL, RJ disabled');
       return;
     }
     const jenis =
@@ -40328,7 +40527,6 @@ var __morbis_feature = (() => {
       document.querySelector('select[name=jenis]')?.value ??
       '';
     if (jenis.toUpperCase().includes('INAP')) {
-      console.log('[RJ] INAP visit, RJ disabled');
       return;
     }
     if (document.getElementById('ext-resume-float-btn')) return;
@@ -40343,10 +40541,10 @@ var __morbis_feature = (() => {
     btn.textContent = 'RJ';
     btn.title = 'Resume Rajal';
     btn.style.cssText =
-      'position:fixed;right:16px;top:50%;transform:translateY(-50%);z-index:2147483645;width:44px;height:44px;border-radius:10px;border:none;background:#2469f0;color:white;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);transition:transform .15s,box-shadow .15s;font-family:Inter,-apple-system,sans-serif;';
+      'position:fixed;right:16px;top:50%;transform:translateY(-50%);z-index:2147483645;width:48px;height:48px;border-radius:12px;border:none;background:#2b5f8a;color:white;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);transition:transform .15s,box-shadow .15s;';
     btn.onmouseenter = () => {
       btn.style.transform = 'translateY(-50%) scale(1.05)';
-      btn.style.boxShadow = '0 4px 16px rgba(36,105,240,.35)';
+      btn.style.boxShadow = '0 4px 16px rgba(43,95,138,.35)';
     };
     btn.onmouseleave = () => {
       btn.style.transform = 'translateY(-50%)';
@@ -40354,7 +40552,6 @@ var __morbis_feature = (() => {
     };
     btn.addEventListener('click', async () => {
       if (btn.disabled) return;
-      console.log('[RJ] button clicked');
       btn.disabled = true;
       try {
         if (!cachedFormState) {
@@ -40362,21 +40559,18 @@ var __morbis_feature = (() => {
         }
         const prescriptionText = await fetchAllPrescriptionHistories();
         const data = extractFormData();
-        console.log('[RJ] extracted data:', { data, prescriptionText });
         if (prescriptionText) data.clinicalNotes.terapi_pengobatan = prescriptionText;
         const needTindakan = !data.clinicalNotes.tindakan || data.clinicalNotes.tindakan === '-';
         const needTerapi =
           !data.clinicalNotes.terapi_pengobatan || data.clinicalNotes.terapi_pengobatan === '-';
         if (needTindakan || needTerapi) {
           const billing = extractBillingFromDOM();
-          console.log('[RJ] billing from DOM:', billing);
           if (billing.tindakan && needTindakan) {
             data.clinicalNotes.tindakan = billing.tindakan;
           }
           if (billing.terapiPengobatan && needTerapi) {
             data.clinicalNotes.terapi_pengobatan = billing.terapiPengobatan;
           }
-          console.log('[RJ] after DOM merge:', data);
         }
         container.style.display = 'flex';
         mountReactApp(container, data);
@@ -40478,8 +40672,10 @@ lucide-react/dist/esm/context.mjs:
 lucide-react/dist/esm/Icon.mjs:
 lucide-react/dist/esm/createLucideIcon.mjs:
 lucide-react/dist/esm/icons/chevron-down.mjs:
-lucide-react/dist/esm/icons/file-text.mjs:
+lucide-react/dist/esm/icons/circle-x.mjs:
 lucide-react/dist/esm/icons/plus.mjs:
+lucide-react/dist/esm/icons/rotate-ccw.mjs:
+lucide-react/dist/esm/icons/save.mjs:
 lucide-react/dist/esm/icons/trash-2.mjs:
 lucide-react/dist/esm/icons/triangle-alert.mjs:
 lucide-react/dist/esm/icons/x.mjs:

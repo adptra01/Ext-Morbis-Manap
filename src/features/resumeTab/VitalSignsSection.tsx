@@ -1,5 +1,3 @@
-import { Input } from '../../ui/components/input';
-
 interface VitalSignsSectionProps {
   vitals: {
     tensi: string;
@@ -23,22 +21,24 @@ export function VitalSignsSection({ vitals, onChange }: VitalSignsSectionProps) 
   ];
 
   return (
-    <div className="px-5 py-4 border-b border-border bg-background">
-      <h3 className="text-md-sm font-semibold text-foreground mb-3">Tanda Vital</h3>
-      <div className="grid grid-cols-6 gap-3">
+    <div>
+      <h3 className="text-[18px] font-bold text-[#1a1d23] mb-4 font-['Lexend',system-ui,sans-serif]">
+        Tanda Vital
+      </h3>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {fields.map((f) => (
-          <div key={f.key} className="space-y-1.5">
-            <label className="text-[10px] font-semibold text-muted-foreground uppercase ml-1">
+          <div key={f.key}>
+            <label className="block text-[14px] font-semibold text-[#4a4e57] mb-1.5 ml-1">
               {f.label}
             </label>
             <div className="relative">
-              <Input
+              <input
                 value={vitals[f.key as keyof typeof vitals]}
                 onChange={(e) => onChange(f.key, e.target.value)}
                 placeholder={f.placeholder}
-                className="pr-10 text-md-xs h-9"
+                className="w-full h-12 rounded-xl border-2 border-[#e2ddd7] bg-white px-4 pr-14 text-[16px] text-[#1a1d23] placeholder:text-[#a0988f] outline-none transition-colors focus:border-[#2b5f8a] focus:shadow-[0_0_0_3px_rgba(43,95,138,0.15)]"
               />
-              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] font-medium text-muted-foreground/60 pointer-events-none">
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[13px] font-semibold text-[#a0988f] pointer-events-none">
                 {f.unit}
               </span>
             </div>

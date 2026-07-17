@@ -247,13 +247,11 @@ var __morbis_bg = (() => {
     }
   }
   async function broadcastConfigChange() {
-    const tabs = await chrome.tabs.query({});
+    const [tabs, urls] = await Promise.all([chrome.tabs.query({}), loadUrls()]);
+    const enabledBases = urls.filter((u) => u.enabled).map((u) => u.url);
+    if (enabledBases.length === 0) return;
     for (const tab of tabs) {
-      if (
-        tab.id &&
-        tab.url &&
-        (tab.url.includes('192.168.8.4') || tab.url.includes('103.147.236.140'))
-      ) {
+      if (tab.id && tab.url && enabledBases.some((base) => tab.url.startsWith(base))) {
         chrome.tabs.sendMessage(tab.id, { type: 'CONFIG_CHANGED' }).catch(() => {});
       }
     }

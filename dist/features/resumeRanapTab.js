@@ -28897,7 +28897,7 @@ var __morbis_feature = (() => {
     }
   }
   async function init() {
-    if (!location.href.startsWith('http://103.147.236.140/v2/m-klaim/detail-v2-refaktor')) return;
+    if (!location.href.startsWith(location.origin + '/v2/m-klaim/detail-v2-refaktor')) return;
     if (!(await isFeatureEnabled())) return;
     const idVisit = new URLSearchParams(location.search).get('id_visit');
     if (!idVisit) return;
