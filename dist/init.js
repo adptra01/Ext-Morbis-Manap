@@ -60,6 +60,13 @@ var __morbis_init = (() => {
       window.log('URL tidak ada dalam daftar diizinkan, skip semua fitur');
       return;
     }
+    const path = window.location.pathname.toLowerCase();
+    const loginPaths = ['/login', '/auth', '/signin', '/masuk', '/keluar', '/logout'];
+    const hasPwField = document.querySelectorAll('input[type="password"]').length > 0;
+    if (loginPaths.some((p) => path.includes(p)) || hasPwField) {
+      window.log('Halaman login terdeteksi, skip semua fitur');
+      return;
+    }
     const cfg = window.currentConfig;
     const fixJasaCfg = cfg?.features?.fixJasaPelayanan;
     if (fixJasaCfg?.enabled && window.ExtensionCore.isFeatureAllowed('fixJasaPelayanan')) {
@@ -104,6 +111,12 @@ var __morbis_init = (() => {
       document.documentElement.setAttribute('data-ext-lab-history', '1');
     } else {
       document.documentElement.removeAttribute('data-ext-lab-history');
+    }
+    const lkCfg = cfg?.features?.laporanKasirTime;
+    if (lkCfg?.enabled && window.ExtensionCore.isFeatureAllowed('laporanKasirTime')) {
+      document.documentElement.setAttribute('data-ext-laporan-kasir-time', '1');
+    } else {
+      document.documentElement.removeAttribute('data-ext-laporan-kasir-time');
     }
     const ctx = {
       pathname: normalizePath(window.location.pathname),

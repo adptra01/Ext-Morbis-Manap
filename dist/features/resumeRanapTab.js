@@ -28899,6 +28899,12 @@ var __morbis_feature = (() => {
   async function init() {
     if (!location.href.startsWith(location.origin + '/v2/m-klaim/detail-v2-refaktor')) return;
     if (!(await isFeatureEnabled())) return;
+    const loginPaths = ['/login', '/auth', '/signin', '/masuk', '/keluar', '/logout'];
+    if (
+      loginPaths.some((p) => location.pathname.toLowerCase().includes(p)) ||
+      document.querySelectorAll('input[type="password"]').length > 0
+    )
+      return;
     const idVisit = new URLSearchParams(location.search).get('id_visit');
     if (!idVisit) return;
     const jenis =

@@ -40595,8 +40595,16 @@ var __morbis_feature = (() => {
       return true;
     }
   }
+  function isLoginPage() {
+    const loginPaths = ['/login', '/auth', '/signin', '/masuk', '/keluar', '/logout'];
+    return (
+      loginPaths.some((p) => location.pathname.toLowerCase().includes(p)) ||
+      document.querySelectorAll('input[type="password"]').length > 0
+    );
+  }
   (async () => {
     if (!(await isFeatureEnabled())) return;
+    if (isLoginPage()) return;
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', setupFloatingButton);
     } else {

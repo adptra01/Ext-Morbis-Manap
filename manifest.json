@@ -162,6 +162,7 @@
     {
       "matches": [
         "http://*/admisi/informasi/data-kunjungan*",
+        "http://*/admisi/informasi/laporan-kasir*",
         "http://*/admisi/edit-kunjungan*",
         "http://*/billing/billing*",
         "http://*/admisi/detail-rawat-inap/new-pemeriksaan-lab*",
@@ -174,6 +175,13 @@
     {
       "matches": ["http://*/laboratorium/input-hasil/input-hasil-pa*"],
       "js": ["features/inputHasilPa.js"],
+      "run_at": "document_idle",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
+      "matches": ["http://*/admisi/informasi/laporan-kasir*"],
+      "js": ["features/laporanKasirTime.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false

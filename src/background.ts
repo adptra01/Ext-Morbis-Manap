@@ -142,6 +142,12 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       name: 'Riwayat Permintaan Lab',
       description: 'Tombol lihat riwayat permintaan lab di halaman input hasil',
     },
+    laporanKasirTime: {
+      enabled: true,
+      allowedRoles: ['kasir', 'admin'],
+      name: 'Laporan Kasir Time Integration',
+      description: 'Flatpickr datetime, auto-fill kemarin/hari ini 12:00, tampilkan waktu di tabel',
+    },
   },
 };
 

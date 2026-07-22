@@ -104,6 +104,13 @@ async function initExtension(): Promise<void> {
     document.documentElement.removeAttribute('data-ext-lab-history');
   }
 
+  const lkCfg = cfg?.features?.laporanKasirTime;
+  if (lkCfg?.enabled && window.ExtensionCore.isFeatureAllowed('laporanKasirTime')) {
+    document.documentElement.setAttribute('data-ext-laporan-kasir-time', '1');
+  } else {
+    document.documentElement.removeAttribute('data-ext-laporan-kasir-time');
+  }
+
   const ctx: FeatureContext = {
     pathname: normalizePath(window.location.pathname),
     url: new URL(window.location.href),
