@@ -1,0 +1,906 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_json",
+      "label": "tsconfig.json",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions",
+      "label": "compilerOptions",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L2"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_target",
+      "label": "target",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L3"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_module",
+      "label": "module",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L4"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_lib",
+      "label": "lib",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L5"
+    },
+    {
+      "id": "ref_es2020",
+      "label": "ES2020",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L5"
+    },
+    {
+      "id": "ref_dom",
+      "label": "DOM",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L5"
+    },
+    {
+      "id": "ref_dom_iterable",
+      "label": "DOM.Iterable",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L5"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_outdir",
+      "label": "outDir",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_rootdir",
+      "label": "rootDir",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L7"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_strict",
+      "label": "strict",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L8"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_esmoduleinterop",
+      "label": "esModuleInterop",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L9"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_skiplibcheck",
+      "label": "skipLibCheck",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L10"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_forceconsistentcasinginfilenames",
+      "label": "forceConsistentCasingInFileNames",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L11"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_resolvejsonmodule",
+      "label": "resolveJsonModule",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L12"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_declaration",
+      "label": "declaration",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L13"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_declarationmap",
+      "label": "declarationMap",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L14"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_sourcemap",
+      "label": "sourceMap",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L15"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_moduleresolution",
+      "label": "moduleResolution",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L16"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_allowsyntheticdefaultimports",
+      "label": "allowSyntheticDefaultImports",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L17"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_jsx",
+      "label": "jsx",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L18"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_jsximportsource",
+      "label": "jsxImportSource",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L19"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_nounusedlocals",
+      "label": "noUnusedLocals",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L20"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_nounusedparameters",
+      "label": "noUnusedParameters",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L21"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_noimplicitreturns",
+      "label": "noImplicitReturns",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L22"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_nofallthroughcasesinswitch",
+      "label": "noFallthroughCasesInSwitch",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L23"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_types",
+      "label": "types",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L24"
+    },
+    {
+      "id": "ref_chrome",
+      "label": "chrome",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L24"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_include",
+      "label": "include",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L26"
+    },
+    {
+      "id": "ref_src_types_ts",
+      "label": "src/types.ts",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L26"
+    },
+    {
+      "id": "ref_src_core_ts",
+      "label": "src/core.ts",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L26"
+    },
+    {
+      "id": "ref_src_background_ts",
+      "label": "src/background.ts",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L26"
+    },
+    {
+      "id": "ref_src_init_ts",
+      "label": "src/init.ts",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L26"
+    },
+    {
+      "id": "ref_src_shared_ts",
+      "label": "src/shared/**/*.ts",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L26"
+    },
+    {
+      "id": "ref_src_ui_ts",
+      "label": "src/ui/**/*.ts",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L26"
+    },
+    {
+      "id": "ref_src_ui_tsx",
+      "label": "src/ui/**/*.tsx",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L26"
+    },
+    {
+      "id": "ref_src_popup_ts",
+      "label": "src/popup/**/*.ts",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L26"
+    },
+    {
+      "id": "ref_src_popup_tsx",
+      "label": "src/popup/**/*.tsx",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L26"
+    },
+    {
+      "id": "ref_src_features_sidepanel_ts",
+      "label": "src/features/sidepanel/**/*.ts",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L26"
+    },
+    {
+      "id": "ref_src_features_sidepanel_tsx",
+      "label": "src/features/sidepanel/**/*.tsx",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L26"
+    },
+    {
+      "id": "ref_src_features_shared_ts",
+      "label": "src/features/shared/*.ts",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L26"
+    },
+    {
+      "id": "ref_src_features_fixjasapelayanan_ts",
+      "label": "src/features/fixJasaPelayanan.ts",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L26"
+    },
+    {
+      "id": "ref_src_features_filterpersistence_ts",
+      "label": "src/features/filterPersistence.ts",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L26"
+    },
+    {
+      "id": "ref_src_features_billingfilterpersistence_ts",
+      "label": "src/features/billingFilterPersistence.ts",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L26"
+    },
+    {
+      "id": "ref_src_features_doctorfilterpersistence_ts",
+      "label": "src/features/doctorFilterPersistence.ts",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L26"
+    },
+    {
+      "id": "ref_src_features_scrollbuttons_ts",
+      "label": "src/features/scrollButtons.ts",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L26"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tsconfig_exclude",
+      "label": "exclude",
+      "file_type": "code",
+      "source_file": "tsconfig.json",
+      "source_location": "L45"
+    },
+    {
+      "id": "ref_node_modules",
+      "label": "node_modules",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L45"
+    },
+    {
+      "id": "ref_dist",
+      "label": "dist",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L45"
+    },
+    {
+      "id": "ref_case",
+      "label": "case",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L45"
+    },
+    {
+      "id": "ref_docs",
+      "label": "docs",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L45"
+    },
+    {
+      "id": "ref_deploy",
+      "label": "deploy",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L45"
+    },
+    {
+      "id": "ref_tool",
+      "label": "tool",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L45"
+    },
+    {
+      "id": "ref_test_results",
+      "label": "test-results",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L45"
+    },
+    {
+      "id": "ref_tests",
+      "label": "tests",
+      "file_type": "concept",
+      "source_file": "tsconfig.json",
+      "source_location": "L45"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_target",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_module",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_lib",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_lib",
+      "target": "ref_es2020",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L5",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_lib",
+      "target": "ref_dom",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L5",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_lib",
+      "target": "ref_dom_iterable",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L5",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_outdir",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_rootdir",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_strict",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_esmoduleinterop",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_skiplibcheck",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_forceconsistentcasinginfilenames",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_resolvejsonmodule",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_declaration",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_declarationmap",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_sourcemap",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_moduleresolution",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_allowsyntheticdefaultimports",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_jsx",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_jsximportsource",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_nounusedlocals",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_nounusedparameters",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_noimplicitreturns",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_nofallthroughcasesinswitch",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_types",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_compileroptions_types",
+      "target": "ref_chrome",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L24",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_include",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_include",
+      "target": "ref_src_types_ts",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L26",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_include",
+      "target": "ref_src_core_ts",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L26",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_include",
+      "target": "ref_src_background_ts",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L26",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_include",
+      "target": "ref_src_init_ts",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L26",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_include",
+      "target": "ref_src_shared_ts",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L26",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_include",
+      "target": "ref_src_ui_ts",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L26",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_include",
+      "target": "ref_src_ui_tsx",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L26",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_include",
+      "target": "ref_src_popup_ts",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L26",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_include",
+      "target": "ref_src_popup_tsx",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L26",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_include",
+      "target": "ref_src_features_sidepanel_ts",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L26",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_include",
+      "target": "ref_src_features_sidepanel_tsx",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L26",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_include",
+      "target": "ref_src_features_shared_ts",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L26",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_include",
+      "target": "ref_src_features_fixjasapelayanan_ts",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L26",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_include",
+      "target": "ref_src_features_filterpersistence_ts",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L26",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_include",
+      "target": "ref_src_features_billingfilterpersistence_ts",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L26",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_include",
+      "target": "ref_src_features_doctorfilterpersistence_ts",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L26",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_include",
+      "target": "ref_src_features_scrollbuttons_ts",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L26",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tsconfig_exclude",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L45",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_exclude",
+      "target": "ref_node_modules",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L45",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_exclude",
+      "target": "ref_dist",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L45",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_exclude",
+      "target": "ref_case",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L45",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_exclude",
+      "target": "ref_docs",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L45",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_exclude",
+      "target": "ref_deploy",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L45",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_exclude",
+      "target": "ref_tool",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L45",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_exclude",
+      "target": "ref_test_results",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L45",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tsconfig_exclude",
+      "target": "ref_tests",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "tsconfig.json",
+      "source_location": "L45",
+      "weight": 1.0,
+      "context": "import"
+    }
+  ]
+}

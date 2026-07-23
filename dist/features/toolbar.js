@@ -71,7 +71,7 @@ var __morbis_feature = (() => {
     editResumeRanap: '/admisi/detail-rawat-inap/resume-ri',
     triageIgd: '/admisi/pelaksanaan_pelayanan/triage_terintegrasi',
     spri: '/admisi/detail-rawat-inap/surat-pengantar-ri',
-    pengkajianIgd: '/admisi/detail-rawat-inap/pengkajian-awal-ri/igd',
+    pengkajianIgd: '/admisi/pelaksanaan_pelayanan/pengkajian_awal_rj/igd',
   };
   var BTN_STYLES = {
     rajal: { text: 'Pelayanan Rawat Jalan', bg: colors.primary, hover: colors.primaryHover },
@@ -146,9 +146,8 @@ var __morbis_feature = (() => {
     return id ? buildUrl(TOOLBAR_URLS.spri, `id_visit=${id}`) : null;
   }
   function pengkajianIgdUrl() {
-    if (!isRawatInap()) return null;
     const id = extractIdVisit();
-    return id ? buildUrl(TOOLBAR_URLS.pengkajianIgd, `idVisit=${id}`) : null;
+    return id ? buildUrl(TOOLBAR_URLS.pengkajianIgd, `id_visit=${id}&page=87&jenis=igd`) : null;
   }
   function mklaimBaseUrl() {
     return `${window.location.origin}/v2/m-klaim`;
