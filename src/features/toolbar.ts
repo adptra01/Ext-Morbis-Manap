@@ -13,7 +13,7 @@ const TOOLBAR_URLS = {
   editResumeRanap: '/admisi/detail-rawat-inap/resume-ri',
   triageIgd: '/admisi/pelaksanaan_pelayanan/triage_terintegrasi',
   spri: '/admisi/detail-rawat-inap/surat-pengantar-ri',
-  pengkajianIgd: '/admisi/detail-rawat-inap/pengkajian-awal-ri/igd',
+  pengkajianIgd: '/admisi/pelaksanaan_pelayanan/pengkajian_awal_rj/igd',
 };
 
 const BTN_STYLES = {
@@ -103,9 +103,8 @@ function spriUrl(): string | null {
 }
 
 function pengkajianIgdUrl(): string | null {
-  if (!isRawatInap()) return null;
   const id = extractIdVisit();
-  return id ? buildUrl(TOOLBAR_URLS.pengkajianIgd, `idVisit=${id}`) : null;
+  return id ? buildUrl(TOOLBAR_URLS.pengkajianIgd, `id_visit=${id}&page=87&jenis=igd`) : null;
 }
 
 function mklaimBaseUrl(): string {
