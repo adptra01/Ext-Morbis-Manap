@@ -1,4 +1,4 @@
-import { createDayCounter } from './antrianCounter';
+import { createDayCounter, dateKey } from './antrianCounter';
 
 (function () {
   const MAX_WAIT = 100;
@@ -62,6 +62,32 @@ import { createDayCounter } from './antrianCounter';
     return String(s || '').replace(/\D/g, '');
   }
 
+  // Urutan index loket di mesin (`polinama-{i}`): 3/5 loncat & tidak urut.
+  // Selalu bangun dari DOM polinama-* kalau ada, jaga order server berubah;
+  // fallback ke order tetap. Match nama loket dari get_data_call (NAMA).
+  const NAMA_ORDER: string[] = ['Loket 1', 'Loket 2', 'Loket 3', 'Loket 5', 'Loket 6', 'Loket 4'];
+  function namaOrder(): string[] {
+    const out: string[] = [];
+    document.querySelectorAll<HTMLElement>('[id^="polinama-"]').forEach(function (el) {
+      const m = /^polinama-(\d+)$/.exec(el.id);
+      if (!m) return;
+      const v = (el as HTMLInputElement).value || el.textContent || '';
+      if (v) out[Number(m[1])] = v;
+    });
+    return out.length && out.every(Boolean) ? out : NAMA_ORDER;
+  }
+  function loketIndexByName(nama: string): number {
+    const n = nama
+      .replace(/^LOKET\s+/i, '')
+      .trim()
+      .toUpperCase();
+    const order = namaOrder();
+    for (let i = 0; i < order.length; i++) {
+      if (order[i] && order[i].toUpperCase() === n) return i;
+    }
+    return -1;
+  }
+
   // Seed awal hari dari angka live per loket yang di-render SERVER (#nomor-{i})
   // = counter antrian nyata per loket (86, 20, 8, ...). Max-nya = nomor terbesar
   // yang SUDAH dikeluarkan -> global mulai max+1, tidak tabrakan dengan tiket
@@ -112,10 +138,19 @@ import { createDayCounter } from './antrianCounter';
     }
   }
 
-  function broadcastGlobal(n: number): void {
+  function broadcastGlobal(n: number, loketIndex: number, loketNumber: number): void {
     if (socketOpen && socket) {
       try {
-        socket.send(JSON.stringify({ channel: WS_CHANNEL, type: 'gcounter', value: n }));
+        socket.send(
+          JSON.stringify({
+            channel: WS_CHANNEL,
+            type: 'gcounter',
+            value: n,
+            loket: loketIndex,
+            local: loketNumber,
+            date: dateKey(),
+          }),
+        );
       } catch {
         /* noop */
       }
@@ -131,8 +166,23 @@ import { createDayCounter } from './antrianCounter';
     }
     if (!data || data.channel !== WS_CHANNEL || data.type !== 'gcounter') return;
     const v = parseInt(String(data.value || '0'), 10);
-    // Display/counter menerima broadcast: sinkronkan counter global hari ini.
-    counter.syncGlobal(v);
+    // Broadcast mesin (Phase 2) ikut membawa loket + nomor lokal + tanggal
+    // sehingga display bisa membangun mapping lokal->global via recordTicket.
+    const loket = parseInt(String((data as { loket?: unknown }).loket ?? '-1'), 10);
+    const local = parseInt(String((data as { local?: unknown }).local ?? '0'), 10);
+    const date = String((data as { date?: unknown }).date || '');
+    if (Number.isInteger(loket) && loket >= 0 && local > 0 && v > 0) {
+      counter.recordTicket(loket, local, v, date ? parseDate(date) : undefined);
+    } else {
+      counter.syncGlobal(v);
+    }
+  }
+
+  // parse "YYYY-MM-DD" jadi Date utk key tanggal. Fallback: hari ini.
+  function parseDate(s: string): Date {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+    if (!m) return new Date();
+    return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
   }
 
   // ==================== MESIN ANTRIAN ====================
@@ -214,8 +264,11 @@ import { createDayCounter } from './antrianCounter';
             const isOk = data && typeof data === 'object' && (data as { status?: number }).status;
             if (isOk === 200) {
               const idx = lastAntrianIndex;
-              const n = counter.allocGlobalCounter(idx);
-              broadcastGlobal(n);
+              // nomor LOKAL server dari respon simpan-antrian (data.antrianSelanjutnya).
+              const d = data as { antrianSelanjutnya?: unknown };
+              const loketNumber = parseInt(String(d?.antrianSelanjutnya || '0'), 10) || 0;
+              const n = counter.allocGlobalCounter(idx, loketNumber);
+              broadcastGlobal(n, idx, loketNumber);
               const namaLoket = document.getElementById(
                 'polinama-' + idx,
               ) as HTMLInputElement | null;
@@ -246,17 +299,16 @@ import { createDayCounter } from './antrianCounter';
     startV2Polling();
   }
 
-  // Tampilkan nomor global terbar hanya pada elemen "nomor utam o". Kartu
-  // carousel (.card) dibiarkan membaca ws terpisah agar tidak bentrok layout.
+  // Tampilkan nomor global terbaru. Di V2 target utk `#antrian-aktif-nomor`
+  // DITANGANI polling (mapping lokal->global). `applyDisplayGlobal` hanya
+  // mengisi kartu carousel non-V2 & element lain, JANGAN menimpa nomor utam.
   function applyDisplayGlobal(): void {
     const g = counter.readGlobal();
     if (g <= 0) return;
-    document
-      .querySelectorAll<HTMLElement>('#antrian-aktif-nomor, [id^="nomortampil-"]')
-      .forEach(function (el) {
-        if (el.closest('.card')) return;
-        if (onlyDigits(el.textContent || '') !== String(g)) el.textContent = String(g);
-      });
+    document.querySelectorAll<HTMLElement>('[id^="nomortampil-"]').forEach(function (el) {
+      if (el.closest('.card')) return;
+      if (onlyDigits(el.textContent || '') !== String(g)) el.textContent = String(g);
+    });
   }
 
   function initCounter(): void {
@@ -285,11 +337,18 @@ import { createDayCounter } from './antrianCounter';
               NAMA?: string;
             } | null;
             if (!r) return;
-            const globalN = counter.readGlobal();
             const nomorEl = document.getElementById('antrian-aktif-nomor');
             const loketEl = document.getElementById('antrian-aktif-loket');
-            if (nomorEl && globalN > 0) nomorEl.textContent = String(globalN);
-            else if (nomorEl && r.NOMOR != null) nomorEl.textContent = String(r.NOMOR);
+            // Nomor yang sedang dipanggil dr server = nomor LOKAL (mis. 16) utk
+            // loket tertentu. Phase 2: petakan ke nomor GLOBAL via order harian.
+            const calledLocal = parseInt(String(r.NOMOR ?? '0'), 10);
+            const idx = loketIndexByName(String(r.NAMA || ''));
+            const globalN = idx >= 0 ? counter.globalAtCall(idx, calledLocal) : 0;
+            if (nomorEl) {
+              const shown = globalN > 0 ? globalN : calledLocal; // fallback tampil lokal
+              if (onlyDigits(nomorEl.textContent || '') !== String(shown))
+                nomorEl.textContent = String(shown);
+            }
             if (loketEl && r.NAMA) {
               const nama = String(r.NAMA)
                 .replace(/^LOKET\s+/i, '')

@@ -12,10 +12,14 @@ var __morbis_feature = (() => {
         const raw = store.getItem(keyFor(d));
         if (raw) {
           const o = JSON.parse(raw);
-          return { g: Number.isFinite(o?.g) && o.g > 0 ? o.g : 0, loket: o?.loket || {} };
+          return {
+            g: Number.isFinite(o?.g) && o.g > 0 ? o.g : 0,
+            loket: o?.loket || {},
+            order: o?.order || {},
+          };
         }
       } catch {}
-      return { g: 0, loket: {} };
+      return { g: 0, loket: {}, order: {} };
     }
     function writeDay(s, d = /* @__PURE__ */ new Date()) {
       try {
@@ -25,18 +29,26 @@ var __morbis_feature = (() => {
     function readGlobal(d = /* @__PURE__ */ new Date()) {
       return readDay(d).g;
     }
-    function allocGlobalCounter(loketIndex, d = /* @__PURE__ */ new Date()) {
+    function ensureOrder(s, idx) {
+      if (!s.order[idx]) s.order[idx] = { base: 0, globals: [] };
+      return s.order[idx];
+    }
+    function allocGlobalCounter(loketIndex, loketNumber, d = /* @__PURE__ */ new Date()) {
       const s = readDay(d);
       const n = s.g + 1;
       s.g = n;
       s.loket[loketIndex] = n;
+      const o = ensureOrder(s, loketIndex);
+      if (o.globals.length === 0) o.base = loketNumber;
+      o.globals.push(n);
       writeDay(s, d);
       return n;
     }
     function seedGlobal(max, perLoket, d = /* @__PURE__ */ new Date()) {
       const s = readDay(d);
-      for (const [idx, v] of Object.entries(perLoket)) {
-        if (!(s.loket[Number(idx)] > 0)) s.loket[Number(idx)] = v;
+      for (const [k, v] of Object.entries(perLoket)) {
+        const idx = Number(k);
+        if (!(s.loket[idx] > 0)) s.loket[idx] = v;
       }
       if (max > s.g) s.g = max;
       writeDay(s, d);
@@ -52,7 +64,35 @@ var __morbis_feature = (() => {
         writeDay(s, d);
       }
     }
-    return { readDay, writeDay, readGlobal, allocGlobalCounter, seedGlobal, lastLoket, syncGlobal };
+    function recordTicket(loketIndex, loketNumber, global, d = /* @__PURE__ */ new Date()) {
+      const s = readDay(d);
+      if (global > s.g) s.g = global;
+      if (global > (s.loket[loketIndex] || 0)) s.loket[loketIndex] = global;
+      const o = ensureOrder(s, loketIndex);
+      if (o.globals.length === 0) o.base = loketNumber;
+      if (!o.globals.includes(global)) o.globals.push(global);
+      writeDay(s, d);
+    }
+    function globalAtCall(loketIndex, calledLocal, d = /* @__PURE__ */ new Date()) {
+      if (calledLocal <= 0) return 0;
+      const s = readDay(d);
+      const o = s.order[loketIndex];
+      if (!o || o.globals.length === 0 || o.base <= 0) return 0;
+      const pos = calledLocal - o.base;
+      if (pos < 0 || pos >= o.globals.length) return 0;
+      return o.globals[pos];
+    }
+    return {
+      readDay,
+      writeDay,
+      readGlobal,
+      allocGlobalCounter,
+      seedGlobal,
+      lastLoket,
+      syncGlobal,
+      recordTicket,
+      globalAtCall,
+    };
   }
 
   // src/features/antrianTools.ts
@@ -104,6 +144,28 @@ var __morbis_feature = (() => {
     function onlyDigits(s) {
       return String(s || '').replace(/\D/g, '');
     }
+    const NAMA_ORDER = ['Loket 1', 'Loket 2', 'Loket 3', 'Loket 5', 'Loket 6', 'Loket 4'];
+    function namaOrder() {
+      const out = [];
+      document.querySelectorAll('[id^="polinama-"]').forEach(function (el) {
+        const m = /^polinama-(\d+)$/.exec(el.id);
+        if (!m) return;
+        const v = el.value || el.textContent || '';
+        if (v) out[Number(m[1])] = v;
+      });
+      return out.length && out.every(Boolean) ? out : NAMA_ORDER;
+    }
+    function loketIndexByName(nama) {
+      const n = nama
+        .replace(/^LOKET\s+/i, '')
+        .trim()
+        .toUpperCase();
+      const order = namaOrder();
+      for (let i = 0; i < order.length; i++) {
+        if (order[i] && order[i].toUpperCase() === n) return i;
+      }
+      return -1;
+    }
     function seedGlobalCounter() {
       let max = 0;
       const perLoket = {};
@@ -141,10 +203,19 @@ var __morbis_feature = (() => {
         };
       } catch {}
     }
-    function broadcastGlobal(n) {
+    function broadcastGlobal(n, loketIndex, loketNumber) {
       if (socketOpen && socket) {
         try {
-          socket.send(JSON.stringify({ channel: WS_CHANNEL, type: 'gcounter', value: n }));
+          socket.send(
+            JSON.stringify({
+              channel: WS_CHANNEL,
+              type: 'gcounter',
+              value: n,
+              loket: loketIndex,
+              local: loketNumber,
+              date: dateKey(),
+            }),
+          );
         } catch {}
       }
     }
@@ -157,7 +228,19 @@ var __morbis_feature = (() => {
       }
       if (!data || data.channel !== WS_CHANNEL || data.type !== 'gcounter') return;
       const v = parseInt(String(data.value || '0'), 10);
-      counter.syncGlobal(v);
+      const loket = parseInt(String(data.loket ?? '-1'), 10);
+      const local = parseInt(String(data.local ?? '0'), 10);
+      const date = String(data.date || '');
+      if (Number.isInteger(loket) && loket >= 0 && local > 0 && v > 0) {
+        counter.recordTicket(loket, local, v, date ? parseDate(date) : void 0);
+      } else {
+        counter.syncGlobal(v);
+      }
+    }
+    function parseDate(s) {
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+      if (!m) return /* @__PURE__ */ new Date();
+      return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
     }
     let lastAntrianIndex = -1;
     function initMesinAntrian() {
@@ -211,8 +294,10 @@ var __morbis_feature = (() => {
               const isOk = data && typeof data === 'object' && data.status;
               if (isOk === 200) {
                 const idx = lastAntrianIndex;
-                const n = counter.allocGlobalCounter(idx);
-                broadcastGlobal(n);
+                const d = data;
+                const loketNumber = parseInt(String(d?.antrianSelanjutnya || '0'), 10) || 0;
+                const n = counter.allocGlobalCounter(idx, loketNumber);
+                broadcastGlobal(n, idx, loketNumber);
                 const namaLoket = document.getElementById('polinama-' + idx);
                 const tampil = document.getElementById('nomortampil-' + idx);
                 if (tampil) tampil.textContent = String(n);
@@ -239,12 +324,10 @@ var __morbis_feature = (() => {
     function applyDisplayGlobal() {
       const g = counter.readGlobal();
       if (g <= 0) return;
-      document
-        .querySelectorAll('#antrian-aktif-nomor, [id^="nomortampil-"]')
-        .forEach(function (el) {
-          if (el.closest('.card')) return;
-          if (onlyDigits(el.textContent || '') !== String(g)) el.textContent = String(g);
-        });
+      document.querySelectorAll('[id^="nomortampil-"]').forEach(function (el) {
+        if (el.closest('.card')) return;
+        if (onlyDigits(el.textContent || '') !== String(g)) el.textContent = String(g);
+      });
     }
     function initCounter() {
       connectGlobalWs();
@@ -266,11 +349,16 @@ var __morbis_feature = (() => {
               if (ct.includes('text/html') || ct.includes('text/plain')) return;
               const r = JSON.parse(xhr.responseText);
               if (!r) return;
-              const globalN = counter.readGlobal();
               const nomorEl = document.getElementById('antrian-aktif-nomor');
               const loketEl = document.getElementById('antrian-aktif-loket');
-              if (nomorEl && globalN > 0) nomorEl.textContent = String(globalN);
-              else if (nomorEl && r.NOMOR != null) nomorEl.textContent = String(r.NOMOR);
+              const calledLocal = parseInt(String(r.NOMOR ?? '0'), 10);
+              const idx = loketIndexByName(String(r.NAMA || ''));
+              const globalN = idx >= 0 ? counter.globalAtCall(idx, calledLocal) : 0;
+              if (nomorEl) {
+                const shown = globalN > 0 ? globalN : calledLocal;
+                if (onlyDigits(nomorEl.textContent || '') !== String(shown))
+                  nomorEl.textContent = String(shown);
+              }
               if (loketEl && r.NAMA) {
                 const nama = String(r.NAMA)
                   .replace(/^LOKET\s+/i, '')
