@@ -360,6 +360,31 @@ var __morbis_feature = (() => {
       seedGlobalCounter();
       applyDisplayGlobal();
       setInterval(applyDisplayGlobal, 2e3);
+      hookCallTTS();
+    }
+    function hookCallTTS() {
+      intervalPoll(() => {
+        const w = window;
+        const origCall = w.call;
+        if (typeof origCall !== 'function' || origCall.__extTtsHooked) return;
+        const wrapped = function (antrian, nama) {
+          const idx = selectedLoketIndex();
+          let spoken = antrian;
+          if (idx >= 0) {
+            const g = counter.globalAtCall(idx, parseInt(String(antrian), 10));
+            if (g > 0) spoken = String(g);
+          }
+          return origCall.apply(this, [spoken, nama]);
+        };
+        wrapped.__extTtsHooked = true;
+        w.call = wrapped;
+      });
+    }
+    function selectedLoketIndex() {
+      const sel = document.querySelector('select#no_loket');
+      if (!sel) return -1;
+      const opt = sel.options[sel.selectedIndex];
+      return opt ? loketIndexByName(opt.text || opt.value) : -1;
     }
     function startV2Polling() {
       const tick = () => {

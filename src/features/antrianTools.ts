@@ -1,4 +1,4 @@
-import { createDayCounter, dateKey } from './antrianCounter';
+import { createDayCounter, dateKey, type DayState } from './antrianCounter';
 
 (function () {
   const MAX_WAIT = 100;
@@ -185,7 +185,7 @@ import { createDayCounter, dateKey } from './antrianCounter';
       // Recovery display (baru nyala/restart): restore state harian penuh dari
       // mesin supaya mapping lokal->global langsung ada, tak menunggu broadcast
       // tiket berikutnya. Hanya terima utk tanggal HARI INI (hindari state lama).
-      const snap = (data as { state?: unknown; date?: unknown }).state;
+      const snap = (data as { state?: DayState }).state;
       const date = String((data as { date?: unknown }).date || '');
       if (snap && date) {
         const d = parseDate(date);
@@ -345,6 +345,43 @@ import { createDayCounter, dateKey } from './antrianCounter';
     seedGlobalCounter();
     applyDisplayGlobal();
     setInterval(applyDisplayGlobal, 2000);
+    hookCallTTS();
+  }
+
+  // ==================== PHASE 3 — TTS PEMANGGILAN (counter) ====================
+  // Petugas nggak perlu diubah; server calling tetap jalan apa adanya. Kita hanya
+  // menukar nomor LOKAL (antrian) yg dibacakan petugas -> nomor GLOBAL via mapping
+  // order harian, konsisten dgn V2 current-called. Wrapper aman: tanpa mapping
+  // (fallback <=0) berperilaku persis seperti aslinya. `loket` counter dibaca
+  // dari select #no_loket (saat petugas belum pilih, abai -> TTS lokal).
+  function hookCallTTS(): void {
+    intervalPoll(() => {
+      const w = window as unknown as Record<string, unknown>;
+      const origCall = w.call as ((antrian: string, nama: string) => unknown) | undefined;
+      if (
+        typeof origCall !== 'function' ||
+        (origCall as { __extTtsHooked?: boolean }).__extTtsHooked
+      )
+        return;
+      const wrapped = function (this: unknown, antrian: string, nama: string) {
+        const idx = selectedLoketIndex();
+        let spoken = antrian;
+        if (idx >= 0) {
+          const g = counter.globalAtCall(idx, parseInt(String(antrian), 10));
+          if (g > 0) spoken = String(g);
+        }
+        return origCall.apply(this, [spoken, nama]);
+      };
+      (wrapped as { __extTtsHooked?: boolean }).__extTtsHooked = true;
+      w.call = wrapped;
+    });
+  }
+
+  function selectedLoketIndex(): number {
+    const sel = document.querySelector<HTMLSelectElement>('select#no_loket');
+    if (!sel) return -1;
+    const opt = sel.options[sel.selectedIndex];
+    return opt ? loketIndexByName(opt.text || opt.value) : -1;
   }
 
   // Polling fallback: WebSocket (ws://:8088) sering putus/blokir, layar membeku.
