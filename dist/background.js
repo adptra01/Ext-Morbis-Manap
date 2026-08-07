@@ -144,7 +144,8 @@ var __morbis_bg = (() => {
         enabled: true,
         allowedRoles: ['admin'],
         name: 'Antrian Tools',
-        description: 'Penomoran unik per loket (L1-001), auto cetak struk, tombol fullscreen',
+        description:
+          'Penomoran unik per loket (L1-001), polling layar antrian, auto cetak, fullscreen',
       },
       ttvEditor: {
         enabled: true,

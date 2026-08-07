@@ -17,6 +17,7 @@ var __morbis_feature = (() => {
     }, 50);
     function init() {
       const path = window.location.pathname;
+      showActiveBadge();
       if (path.includes('/mesin-antrian')) {
         initMesinAntrian();
         return;
@@ -30,6 +31,15 @@ var __morbis_feature = (() => {
         return;
       }
       if (path.includes('/antrian')) initDisplay();
+    }
+    function showActiveBadge() {
+      injectCSS('ext-antrian-badge-css', [
+        '#ext-antrian-badge { position:fixed; bottom:12px; left:12px; z-index:999999; padding:4px 10px; border-radius:8px; background:rgba(0,0,0,0.6); color:#4ade80; font:600 11px/1.4 monospace; letter-spacing:0.5px; }',
+      ]);
+      const badge = document.createElement('div');
+      badge.id = 'ext-antrian-badge';
+      badge.textContent = 'ANTRIAN TOOLS AKTIF';
+      document.body.appendChild(badge);
     }
     function loketNum(text) {
       const m = String(text || '').match(/\d+/);
@@ -150,9 +160,54 @@ var __morbis_feature = (() => {
     }
     function initDisplay() {
       watchPrefixes();
+      const nomorEl = document.getElementById('antrian-aktif-nomor');
+      if (!nomorEl) return;
+      const loketEl = document.getElementById('antrian-aktif-loket');
+      const t = (nomorEl.textContent || '').trim();
+      if (loketEl && /^\d+$/.test(t))
+        nomorEl.textContent = formatQueue(loketNum(loketEl.textContent || ''), t);
+      startV2Polling();
     }
     function initCounter() {
       watchPrefixes();
+    }
+    function startV2Polling() {
+      const tick = function () {
+        try {
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', '/public/counter-antrian/data', true);
+          xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+          xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+          xhr.timeout = 1e4;
+          xhr.onload = function () {
+            try {
+              const ct = xhr.getResponseHeader('Content-Type') || '';
+              if (ct.includes('text/html') || ct.includes('text/plain')) return;
+              const r = JSON.parse(xhr.responseText);
+              if (!r || r.NOMOR == null) return;
+              const nomorEl = document.getElementById('antrian-aktif-nomor');
+              const loketEl = document.getElementById('antrian-aktif-loket');
+              if (!nomorEl) return;
+              const prefix = loketNum(loketEl?.textContent || '');
+              const num = String(r.NOMOR);
+              const padded = prefix && /^\d+$/.test(num) ? formatQueue(prefix, num) : num;
+              if ((nomorEl.textContent || '').trim() !== padded) nomorEl.textContent = padded;
+              if (loketEl) {
+                const nama = String(r.NAMA || '-')
+                  .replace(/^LOKET\s+/i, '')
+                  .toUpperCase();
+                const loketText = 'LOKET ' + nama;
+                if ((loketEl.textContent || '').trim() !== loketText)
+                  loketEl.textContent = loketText;
+              }
+            } catch {}
+          };
+          const loket = new URLSearchParams(window.location.search).get('loket') || '';
+          xhr.send('option=get_data_call&loket=' + encodeURIComponent(loket));
+        } catch {}
+      };
+      tick();
+      setInterval(tick, 5e3);
     }
     function addFullscreenButton() {
       injectCSS('ext-antrian-fullscreen-css', [
