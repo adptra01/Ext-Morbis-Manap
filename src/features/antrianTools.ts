@@ -1,3 +1,5 @@
+import { createDayCounter } from './antrianCounter';
+
 (function () {
   const MAX_WAIT = 100;
   let waited = 0;
@@ -50,47 +52,32 @@
   // disimpan di localStorage (persisten di mesin) lalu disiarkan lewat ws ke
   // display/counter sehingga semua layar menampilkan satu nomor yang sama.
 
-  const GLOBAL_KEY = 'dev_antrian_global';
   const WS_CHANNEL = 'dev_antrianLoket';
+  const counter = createDayCounter({
+    getItem: (k) => localStorage.getItem(k),
+    setItem: (k, v) => localStorage.setItem(k, v),
+  });
 
   function onlyDigits(s: unknown): string {
     return String(s || '').replace(/\D/g, '');
   }
 
-  function readGlobal(): number {
-    const n = parseInt(localStorage.getItem(GLOBAL_KEY) || '0', 10);
-    return Number.isFinite(n) && n > 0 ? n : 0;
-  }
-
-  function writeGlobal(n: number): void {
-    try {
-      localStorage.setItem(GLOBAL_KEY, String(n));
-    } catch {
-      /* quota / private mode */
-    }
-  }
-
-  // Alokasi nomor berikutnya: monotonik global lintas loket.
-  function allocGlobalCounter(): number {
-    const n = readGlobal() + 1;
-    writeGlobal(n);
-    return n;
-  }
-
-  // Seed awal: jangan bentrok dengan nomor lokal yang sudah tampil
-  // (mis. suatu loket ada 83 -> global mulai 84, unik terhadap tiket lama).
+  // Seed awal hari dari angka live per loket yang di-render SERVER (#nomor-{i})
+  // = counter antrian nyata per loket (86, 20, 8, ...). Max-nya = nomor terbesar
+  // yang SUDAH dikeluarkan -> global mulai max+1, tidak tabrakan dengan tiket
+  // lama. Config max counter (1000) di /admisi/data-counter hanya cap, bukan
+  // nomor berjalan; halaman itu juga login-locked, tak bisa dibaca browser kiosk.
   function seedGlobalCounter(): void {
-    let max = readGlobal();
+    let max = 0;
+    const perLoket: Record<number, number> = {};
     document.querySelectorAll<HTMLElement>('[id^="nomor-"]').forEach(function (el) {
-      const val = (el as HTMLInputElement).value ?? (el.textContent || '0');
-      const v = parseInt(val, 10);
+      const m = /^nomor-(\d+)$/.exec(el.id);
+      if (!m) return;
+      const v = parseInt((el as HTMLInputElement).value || '0', 10);
       if (v > max) max = v;
+      if (v > 0) perLoket[Number(m[1])] = v;
     });
-    document.querySelectorAll<HTMLElement>('[id^="id-"]').forEach(function (el) {
-      const v = parseInt(el.getAttribute('value') || el.textContent || '0', 10);
-      if (v > max) max = v;
-    });
-    if (max > readGlobal()) writeGlobal(max);
+    counter.seedGlobal(max, perLoket);
   }
 
   let socket: WebSocket | null = null;
@@ -144,7 +131,8 @@
     }
     if (!data || data.channel !== WS_CHANNEL || data.type !== 'gcounter') return;
     const v = parseInt(String(data.value || '0'), 10);
-    if (v > 0 && v > readGlobal()) writeGlobal(v);
+    // Display/counter menerima broadcast: sinkronkan counter global hari ini.
+    counter.syncGlobal(v);
   }
 
   // ==================== MESIN ANTRIAN ====================
@@ -161,14 +149,16 @@
     hookPrintAjax();
   }
 
-  // Tampilkan nomor global terbaru di tiap kartu loket di mesin.
+  // Tiap kartu loket menampilkan nomor GLOBAL terakhir yang diberikan ke LOKET
+  // ITU (relasi nomor->loket), bukan menimpa semua kartu dengan satu angka yang
+  // sama. Sumber = peta loket di state harian.
   function applyMesinGlobal(): void {
-    const g = readGlobal();
-    if (g <= 0) return;
     for (let i = 0; i < 30; i++) {
       const el = document.getElementById('nomortampil-' + i);
       if (!el) continue;
-      if (onlyDigits(el.textContent || '') !== String(g)) el.textContent = String(g);
+      const last = counter.lastLoket(i);
+      if (last <= 0) continue;
+      if (onlyDigits(el.textContent || '') !== String(last)) el.textContent = String(last);
     }
   }
 
@@ -223,9 +213,9 @@
             }
             const isOk = data && typeof data === 'object' && (data as { status?: number }).status;
             if (isOk === 200) {
-              const n = allocGlobalCounter();
-              broadcastGlobal(n);
               const idx = lastAntrianIndex;
+              const n = counter.allocGlobalCounter(idx);
+              broadcastGlobal(n);
               const namaLoket = document.getElementById(
                 'polinama-' + idx,
               ) as HTMLInputElement | null;
@@ -259,7 +249,7 @@
   // Tampilkan nomor global terbar hanya pada elemen "nomor utam o". Kartu
   // carousel (.card) dibiarkan membaca ws terpisah agar tidak bentrok layout.
   function applyDisplayGlobal(): void {
-    const g = readGlobal();
+    const g = counter.readGlobal();
     if (g <= 0) return;
     document
       .querySelectorAll<HTMLElement>('#antrian-aktif-nomor, [id^="nomortampil-"]')
@@ -295,7 +285,7 @@
               NAMA?: string;
             } | null;
             if (!r) return;
-            const globalN = readGlobal();
+            const globalN = counter.readGlobal();
             const nomorEl = document.getElementById('antrian-aktif-nomor');
             const loketEl = document.getElementById('antrian-aktif-loket');
             if (nomorEl && globalN > 0) nomorEl.textContent = String(globalN);

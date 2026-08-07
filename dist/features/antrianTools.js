@@ -1,5 +1,60 @@
 'use strict';
 var __morbis_feature = (() => {
+  // src/features/antrianCounter.ts
+  function dateKey(d = /* @__PURE__ */ new Date()) {
+    const p = (x) => String(x).padStart(2, '0');
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+  }
+  function createDayCounter(store) {
+    const keyFor = (d) => 'dev_antrian_global_' + dateKey(d);
+    function readDay(d = /* @__PURE__ */ new Date()) {
+      try {
+        const raw = store.getItem(keyFor(d));
+        if (raw) {
+          const o = JSON.parse(raw);
+          return { g: Number.isFinite(o?.g) && o.g > 0 ? o.g : 0, loket: o?.loket || {} };
+        }
+      } catch {}
+      return { g: 0, loket: {} };
+    }
+    function writeDay(s, d = /* @__PURE__ */ new Date()) {
+      try {
+        store.setItem(keyFor(d), JSON.stringify(s));
+      } catch {}
+    }
+    function readGlobal(d = /* @__PURE__ */ new Date()) {
+      return readDay(d).g;
+    }
+    function allocGlobalCounter(loketIndex, d = /* @__PURE__ */ new Date()) {
+      const s = readDay(d);
+      const n = s.g + 1;
+      s.g = n;
+      s.loket[loketIndex] = n;
+      writeDay(s, d);
+      return n;
+    }
+    function seedGlobal(max, perLoket, d = /* @__PURE__ */ new Date()) {
+      const s = readDay(d);
+      for (const [idx, v] of Object.entries(perLoket)) {
+        if (!(s.loket[Number(idx)] > 0)) s.loket[Number(idx)] = v;
+      }
+      if (max > s.g) s.g = max;
+      writeDay(s, d);
+      return s.g;
+    }
+    function lastLoket(idx, d = /* @__PURE__ */ new Date()) {
+      return readDay(d).loket[idx] || 0;
+    }
+    function syncGlobal(v, d = /* @__PURE__ */ new Date()) {
+      if (v > 0 && v > readGlobal(d)) {
+        const s = readDay(d);
+        s.g = v;
+        writeDay(s, d);
+      }
+    }
+    return { readDay, writeDay, readGlobal, allocGlobalCounter, seedGlobal, lastLoket, syncGlobal };
+  }
+
   // src/features/antrianTools.ts
   (function () {
     const MAX_WAIT = 100;
@@ -41,37 +96,25 @@ var __morbis_feature = (() => {
       badge.textContent = 'ANTRIAN TOOLS AKTIF';
       document.body.appendChild(badge);
     }
-    const GLOBAL_KEY = 'dev_antrian_global';
     const WS_CHANNEL = 'dev_antrianLoket';
+    const counter = createDayCounter({
+      getItem: (k) => localStorage.getItem(k),
+      setItem: (k, v) => localStorage.setItem(k, v),
+    });
     function onlyDigits(s) {
       return String(s || '').replace(/\D/g, '');
     }
-    function readGlobal() {
-      const n = parseInt(localStorage.getItem(GLOBAL_KEY) || '0', 10);
-      return Number.isFinite(n) && n > 0 ? n : 0;
-    }
-    function writeGlobal(n) {
-      try {
-        localStorage.setItem(GLOBAL_KEY, String(n));
-      } catch {}
-    }
-    function allocGlobalCounter() {
-      const n = readGlobal() + 1;
-      writeGlobal(n);
-      return n;
-    }
     function seedGlobalCounter() {
-      let max = readGlobal();
+      let max = 0;
+      const perLoket = {};
       document.querySelectorAll('[id^="nomor-"]').forEach(function (el) {
-        const val = el.value ?? (el.textContent || '0');
-        const v = parseInt(val, 10);
+        const m = /^nomor-(\d+)$/.exec(el.id);
+        if (!m) return;
+        const v = parseInt(el.value || '0', 10);
         if (v > max) max = v;
+        if (v > 0) perLoket[Number(m[1])] = v;
       });
-      document.querySelectorAll('[id^="id-"]').forEach(function (el) {
-        const v = parseInt(el.getAttribute('value') || el.textContent || '0', 10);
-        if (v > max) max = v;
-      });
-      if (max > readGlobal()) writeGlobal(max);
+      counter.seedGlobal(max, perLoket);
     }
     let socket = null;
     let socketOpen = false;
@@ -114,7 +157,7 @@ var __morbis_feature = (() => {
       }
       if (!data || data.channel !== WS_CHANNEL || data.type !== 'gcounter') return;
       const v = parseInt(String(data.value || '0'), 10);
-      if (v > 0 && v > readGlobal()) writeGlobal(v);
+      counter.syncGlobal(v);
     }
     let lastAntrianIndex = -1;
     function initMesinAntrian() {
@@ -127,12 +170,12 @@ var __morbis_feature = (() => {
       hookPrintAjax();
     }
     function applyMesinGlobal() {
-      const g = readGlobal();
-      if (g <= 0) return;
       for (let i = 0; i < 30; i++) {
         const el = document.getElementById('nomortampil-' + i);
         if (!el) continue;
-        if (onlyDigits(el.textContent || '') !== String(g)) el.textContent = String(g);
+        const last = counter.lastLoket(i);
+        if (last <= 0) continue;
+        if (onlyDigits(el.textContent || '') !== String(last)) el.textContent = String(last);
       }
     }
     function trackAntrianIndex() {
@@ -167,9 +210,9 @@ var __morbis_feature = (() => {
               }
               const isOk = data && typeof data === 'object' && data.status;
               if (isOk === 200) {
-                const n = allocGlobalCounter();
-                broadcastGlobal(n);
                 const idx = lastAntrianIndex;
+                const n = counter.allocGlobalCounter(idx);
+                broadcastGlobal(n);
                 const namaLoket = document.getElementById('polinama-' + idx);
                 const tampil = document.getElementById('nomortampil-' + idx);
                 if (tampil) tampil.textContent = String(n);
@@ -194,7 +237,7 @@ var __morbis_feature = (() => {
       startV2Polling();
     }
     function applyDisplayGlobal() {
-      const g = readGlobal();
+      const g = counter.readGlobal();
       if (g <= 0) return;
       document
         .querySelectorAll('#antrian-aktif-nomor, [id^="nomortampil-"]')
@@ -223,7 +266,7 @@ var __morbis_feature = (() => {
               if (ct.includes('text/html') || ct.includes('text/plain')) return;
               const r = JSON.parse(xhr.responseText);
               if (!r) return;
-              const globalN = readGlobal();
+              const globalN = counter.readGlobal();
               const nomorEl = document.getElementById('antrian-aktif-nomor');
               const loketEl = document.getElementById('antrian-aktif-loket');
               if (nomorEl && globalN > 0) nomorEl.textContent = String(globalN);
