@@ -18,7 +18,33 @@ var __morbis_feature = (() => {
     function init() {
       const path = window.location.pathname;
       if (!path.includes('/mesin-antrian')) return;
+      addFullscreenButton();
       patchMesinAntrianPrint();
+    }
+    function addFullscreenButton() {
+      injectCSS('ext-antrian-fullscreen-css', [
+        '#ext-fullscreen-btn { position:fixed; top:16px; right:16px; z-index:999999; width:48px; height:48px; border:none; border-radius:12px; background:rgba(0,0,0,0.55); color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,0.3); }',
+        '#ext-fullscreen-btn:hover { background:rgba(0,0,0,0.75); }',
+      ]);
+      const btn = document.createElement('button');
+      btn.id = 'ext-fullscreen-btn';
+      btn.title = 'Mode Layar Penuh';
+      btn.innerHTML =
+        '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>';
+      btn.addEventListener('click', toggleFullscreen);
+      document.body.appendChild(btn);
+    }
+    function toggleFullscreen() {
+      const doc = document;
+      const el = document.documentElement;
+      const isFullscreen = Boolean(document.fullscreenElement || doc.webkitFullscreenElement);
+      if (isFullscreen) {
+        if (document.exitFullscreen) document.exitFullscreen();
+        else if (doc.webkitExitFullscreen) doc.webkitExitFullscreen();
+      } else {
+        if (el.requestFullscreen) el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      }
     }
     let lastAntrianIndex = -1;
     function patchMesinAntrianPrint() {
@@ -96,6 +122,13 @@ var __morbis_feature = (() => {
           iframe.remove();
         }, 500);
       }, 300);
+    }
+    function injectCSS(id, rules) {
+      if (document.getElementById(id)) return;
+      const s = document.createElement('style');
+      s.id = id;
+      s.textContent = rules.join('\n');
+      document.head.appendChild(s);
     }
     function escapeHtml(s) {
       return s
