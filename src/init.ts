@@ -104,11 +104,33 @@ async function initExtension(): Promise<void> {
     document.documentElement.removeAttribute('data-ext-lab-history');
   }
 
+  const ldtCfg = cfg?.features?.labDataTables;
+  if (ldtCfg?.enabled && window.ExtensionCore.isFeatureAllowed('labDataTables')) {
+    document.documentElement.setAttribute('data-ext-lab-datatables', '1');
+  } else {
+    document.documentElement.removeAttribute('data-ext-lab-datatables');
+  }
+
   const lkCfg = cfg?.features?.laporanKasirTime;
   if (lkCfg?.enabled && window.ExtensionCore.isFeatureAllowed('laporanKasirTime')) {
     document.documentElement.setAttribute('data-ext-laporan-kasir-time', '1');
   } else {
     document.documentElement.removeAttribute('data-ext-laporan-kasir-time');
+  }
+
+  const cbCfg = cfg?.features?.cancelBatal;
+  console.log('[CancelBatal] init check - cfg?.features?.cancelBatal:', cbCfg);
+  if (cbCfg?.enabled && window.ExtensionCore.isFeatureAllowed('cancelBatal')) {
+    document.documentElement.setAttribute('data-ext-cancel-batal', '1');
+    console.log('[CancelBatal] ENABLED - attribute set to 1');
+  } else {
+    document.documentElement.removeAttribute('data-ext-cancel-batal');
+    console.log(
+      '[CancelBatal] DISABLED or not allowed - attribute removed, enabled:',
+      cbCfg?.enabled,
+      'isFeatureAllowed:',
+      window.ExtensionCore?.isFeatureAllowed('cancelBatal'),
+    );
   }
 
   const ctx: FeatureContext = {

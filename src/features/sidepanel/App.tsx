@@ -65,7 +65,12 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
   },
   { key: 'ttvEditor', name: 'TTV Editor', desc: 'Edit tanda vital', roles: ['dokter', 'admin'] },
   { key: 'cpptSearchFilter', name: 'CPPT Search', desc: 'Cari & filter CPPT', roles: ['casemix'] },
-  { key: 'antrianTools', name: 'Antrian Tools', desc: 'Tools halaman antrian', roles: ['admin'] },
+  {
+    key: 'antrianTools',
+    name: 'Antrian Tools',
+    desc: 'Auto cetak struk antrian',
+    roles: ['admin'],
+  },
   {
     key: 'consultationEnhancer',
     name: 'Konsultasi',

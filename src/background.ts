@@ -114,9 +114,9 @@ const DEFAULT_CONFIG: ExtensionConfig = {
     },
     antrianTools: {
       enabled: true,
-      allowedRoles: ['casemix', 'admin'],
+      allowedRoles: ['admin'],
       name: 'Antrian Tools',
-      description: 'Sederhanakan antrian jadi 1 jalur & perbaiki tombol reset antrian',
+      description: 'Auto cetak struk antrian saat loket diklik di mesin antrian',
     },
     ttvEditor: {
       enabled: true,
@@ -142,11 +142,23 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       name: 'Riwayat Permintaan Lab',
       description: 'Tombol lihat riwayat permintaan lab di halaman input hasil',
     },
+    labDataTables: {
+      enabled: false,
+      allowedRoles: ['labor', 'kasir', 'admin'],
+      name: 'DataTables Input Hasil Lab',
+      description: 'Search, pagination, page length, dan tampilan rapi untuk tabel hasil lab',
+    },
     laporanKasirTime: {
       enabled: true,
       allowedRoles: ['kasir', 'admin'],
       name: 'Laporan Kasir Time Integration',
       description: 'Flatpickr datetime, auto-fill kemarin/hari ini 12:00, tampilkan waktu di tabel',
+    },
+    cancelBatal: {
+      enabled: false,
+      allowedRoles: ['admin'],
+      name: 'Tombol Batal (Lab & Radiologi)',
+      description: 'Tambahkan tombol Batal pada tab Sudah Diinput di Lab dan Radiologi',
     },
   },
 };

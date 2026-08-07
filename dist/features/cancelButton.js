@@ -1,0 +1,92 @@
+'use strict';
+var __morbis_feature = (() => {
+  // src/features/cancelButton.ts
+  (function () {
+    'use strict';
+    const EXT_CLASS = 'ext-batal';
+    const INTERVAL_MS = 3e3;
+    function isEnabled() {
+      return document.documentElement.getAttribute('data-ext-cancel-batal') === '1';
+    }
+    function getIdFromOnclick(el) {
+      if (!el) return null;
+      const onclick = el.getAttribute('onclick');
+      if (!onclick) return null;
+      const m = onclick.match(/\d+/g);
+      return m ? m.map(Number) : null;
+    }
+    function injectLab() {
+      document.querySelectorAll('table tbody tr').forEach((row) => {
+        if (row.querySelector('.' + EXT_CLASS)) return;
+        const editEl = row.querySelector('[onclick*="edit_hasil"],[onclick*="cetak_nota"]');
+        if (!editEl) return;
+        const aksiCell = editEl.closest('td');
+        if (!aksiCell) return;
+        const params = getIdFromOnclick(editEl);
+        if (!params || params.length < 1) return;
+        const idLab = String(params[0]);
+        const visitCell = row.querySelector('td:nth-child(4)');
+        const idVisit = visitCell?.textContent?.trim() || '';
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-danger btn-sm ' + EXT_CLASS;
+        btn.style.marginLeft = '5px';
+        btn.innerHTML = '<i class="fa fa-trash"></i> Batal';
+        btn.onclick = () => {
+          if (typeof window.batal === 'function') {
+            window.batal(idLab, idVisit);
+          } else {
+            alert('Fungsi batal() tidak ditemukan. Refresh halaman dan coba lagi.');
+          }
+        };
+        aksiCell.appendChild(btn);
+      });
+    }
+    function injectRadio() {
+      document.querySelectorAll('table tbody tr').forEach((row) => {
+        if (row.querySelector('.' + EXT_CLASS)) return;
+        const editEl = row.querySelector(
+          '[onclick*="editBacaan"],[onclick*="showAddFotoRadiologi"]',
+        );
+        if (!editEl) return;
+        const aksiCell = editEl.closest('td');
+        if (!aksiCell) return;
+        const params = getIdFromOnclick(editEl);
+        if (!params || params.length < 1) return;
+        const id = String(params[0]);
+        const idVisit = params.length >= 3 ? String(params[2]) : '';
+        const link = document.createElement('a');
+        link.className = 'delete ' + EXT_CLASS;
+        link.style.cssText = 'cursor:pointer;display:block;color:red;margin-top:2px;';
+        link.textContent = 'Batal';
+        link.onclick = () => {
+          const w = window;
+          if (typeof w.batal_radiologi === 'function') {
+            w.batal_radiologi(id);
+          } else if (typeof w.batal_pengajuan === 'function') {
+            w.batal_pengajuan(id, idVisit);
+          } else {
+            alert('Fungsi pembatalan radiologi tidak ditemukan. Refresh halaman dan coba lagi.');
+          }
+        };
+        aksiCell.appendChild(document.createElement('br'));
+        aksiCell.appendChild(link);
+      });
+    }
+    function run() {
+      if (!isEnabled()) return;
+      const path = location.pathname;
+      if (/\/laboratorium\/input-hasil/.test(path)) {
+        injectLab();
+      } else if (/\/admisi\/radiologi\/pemeriksaan/.test(path)) {
+        injectRadio();
+      }
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', run);
+    } else {
+      run();
+    }
+    setInterval(run, INTERVAL_MS);
+  })();
+})();
+//# sourceMappingURL=cancelButton.js.map

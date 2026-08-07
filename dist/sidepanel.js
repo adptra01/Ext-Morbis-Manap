@@ -1257,7 +1257,12 @@ var ee = [
       desc: `Cari & filter CPPT`,
       roles: [`casemix`],
     },
-    { key: `antrianTools`, name: `Antrian Tools`, desc: `Tools halaman antrian`, roles: [`admin`] },
+    {
+      key: `antrianTools`,
+      name: `Antrian Tools`,
+      desc: `Auto cetak struk antrian`,
+      roles: [`admin`],
+    },
     {
       key: `consultationEnhancer`,
       name: `Konsultasi`,
