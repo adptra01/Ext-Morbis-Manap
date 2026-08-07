@@ -103,12 +103,44 @@ describe('globalAtCall (Phase 2) — nomor lokal server -> nomor global', () => 
     expect(c.globalAtCall(0, 3, D1)).toBe(9); // cocok
   });
 
-  it('mulai siang (base = tiket pertama ekstensi), tiket lama fallback lokal', () => {
+it('mulai siang (base = tiket pertama ekstensi), tiket lama fallback lokal', () => {
     const c = createDayCounter(memStore());
     // server Loket1 sudah sampai lokal 88 sebelum ekstensi load
     c.allocGlobalCounter(0, 89, D1); // tiket pertama ext: lokal89 -> global1
     c.allocGlobalCounter(0, 90, D1); //            lokal90 -> global2
     expect(c.globalAtCall(0, 89, D1)).toBe(1);
     expect(c.globalAtCall(0, 88, D1)).toBe(0); // tiket pra-ekstensi -> fallback
+  });
+});
+
+describe('restoreDay (Phase 2 recovery) — snapshot ws utk display baru nyala', () => {
+  it('snapshot lebih baru menimpa state kosong display', () => {
+    const c = createDayCounter(memStore());
+    // Mesin punya state harian penuh (global 5, order loket0 [1,4] utk lokal 1,2)
+    const src = createDayCounter(memStore());
+    src.allocGlobalCounter(0, 1, D1); // -> g1
+    src.allocGlobalCounter(1, 1, D1); // -> g2
+    src.allocGlobalCounter(0, 2, D1); // -> g3
+    src.allocGlobalCounter(1, 2, D1); // -> g4
+    const snapshot = src.readDay(D1);
+
+    // Display baru nyala: state kosong (g=0)
+    expect(c.readGlobal(D1)).toBe(0);
+    c.restoreDay(snapshot, D1);
+    // Mapping lokal->global langsung tersedia, tanpa nunggu broadcast berikutnya
+    expect(c.globalAtCall(0, 1, D1)).toBe(1);
+    expect(c.globalAtCall(0, 2, D1)).toBe(3);
+    expect(c.globalAtCall(1, 1, D1)).toBe(2);
+    expect(c.globalAtCall(1, 2, D1)).toBe(4);
+  });
+
+  it('snapshot tidak menimpa state display yang sudah lebih baru', () => {
+    const c = createDayCounter(memStore());
+    c.allocGlobalCounter(0, 1, D1); // display sudah g1
+    const stale = createDayCounter(memStore());
+    stale.allocGlobalCounter(0, 1, D1); // snapshot hanya g1 (src g=1)
+    c.restoreDay(stale.readDay(D1), D1); // g==1, tak lebih baru
+    c.allocGlobalCounter(0, 2, D1); // display lanjut ke g2
+    expect(c.readGlobal(D1)).toBe(2);
   });
 });

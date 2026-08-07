@@ -82,6 +82,11 @@ var __morbis_feature = (() => {
       if (pos < 0 || pos >= o.globals.length) return 0;
       return o.globals[pos];
     }
+    function restoreDay(s, d = /* @__PURE__ */ new Date()) {
+      const cur = readDay(d);
+      if (s.g <= cur.g) return;
+      writeDay(s, d);
+    }
     return {
       readDay,
       writeDay,
@@ -90,6 +95,7 @@ var __morbis_feature = (() => {
       seedGlobal,
       lastLoket,
       syncGlobal,
+      restoreDay,
       recordTicket,
       globalAtCall,
     };
@@ -113,7 +119,8 @@ var __morbis_feature = (() => {
     function init() {
       const path = window.location.pathname;
       showActiveBadge();
-      if (path.includes('/mesin-antrian')) {
+      isMeson = path.includes('/mesin-antrian');
+      if (isMeson) {
         initMesinAntrian();
         return;
       }
@@ -136,6 +143,7 @@ var __morbis_feature = (() => {
       badge.textContent = 'ANTRIAN TOOLS AKTIF';
       document.body.appendChild(badge);
     }
+    let isMeson = false;
     const WS_CHANNEL = 'dev_antrianLoket';
     const counter = createDayCounter({
       getItem: (k) => localStorage.getItem(k),
@@ -188,6 +196,7 @@ var __morbis_feature = (() => {
         socket = new WebSocket(wsUrl());
         socket.onopen = () => {
           socketOpen = true;
+          if (isMeson) sendSnapshot();
         };
         socket.onclose = () => {
           socketOpen = false;
@@ -203,20 +212,27 @@ var __morbis_feature = (() => {
         };
       } catch {}
     }
-    function broadcastGlobal(n, loketIndex, loketNumber) {
+    function sendJson(payload) {
       if (socketOpen && socket) {
         try {
-          socket.send(
-            JSON.stringify({
-              channel: WS_CHANNEL,
-              type: 'gcounter',
-              value: n,
-              loket: loketIndex,
-              local: loketNumber,
-              date: dateKey(),
-            }),
-          );
+          socket.send(JSON.stringify(payload));
         } catch {}
+      }
+    }
+    function broadcastGlobal(n, loketIndex, loketNumber) {
+      sendJson({
+        channel: WS_CHANNEL,
+        type: 'gcounter',
+        value: n,
+        loket: loketIndex,
+        local: loketNumber,
+        date: dateKey(),
+      });
+    }
+    function sendSnapshot() {
+      const d = counter.readDay();
+      if (d.g > 0 || Object.keys(d.order).length > 0) {
+        sendJson({ channel: WS_CHANNEL, type: 'snapshot', state: d, date: dateKey() });
       }
     }
     function handleWsMessage(raw) {
@@ -226,7 +242,17 @@ var __morbis_feature = (() => {
       } catch {
         return;
       }
-      if (!data || data.channel !== WS_CHANNEL || data.type !== 'gcounter') return;
+      if (!data || data.channel !== WS_CHANNEL) return;
+      if (data.type === 'snapshot') {
+        const snap = data.state;
+        const date2 = String(data.date || '');
+        if (snap && date2) {
+          const d = parseDate(date2);
+          if (d && dateKey(d) === dateKey(/* @__PURE__ */ new Date())) counter.restoreDay(snap, d);
+        }
+        return;
+      }
+      if (data.type !== 'gcounter') return;
       const v = parseInt(String(data.value || '0'), 10);
       const loket = parseInt(String(data.loket ?? '-1'), 10);
       const local = parseInt(String(data.local ?? '0'), 10);

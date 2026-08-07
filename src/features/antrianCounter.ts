@@ -139,6 +139,13 @@ export function createDayCounter(store: CounterStore) {
     return o.globals[pos];
   }
 
+  /** Restore seluruh state harian dr snapshot ws (recovery display baru nyala). */
+  function restoreDay(s: DayState, d: Date = new Date()): void {
+    const cur = readDay(d);
+    if (s.g <= cur.g) return; // snapshot tak lebih baru -> abaikan
+    writeDay(s, d);
+  }
+
   return {
     readDay,
     writeDay,
@@ -147,6 +154,7 @@ export function createDayCounter(store: CounterStore) {
     seedGlobal,
     lastLoket,
     syncGlobal,
+    restoreDay,
     recordTicket,
     globalAtCall,
   };

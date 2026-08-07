@@ -19,7 +19,8 @@ import { createDayCounter, dateKey } from './antrianCounter';
   function init(): void {
     const path = window.location.pathname;
     showActiveBadge();
-    if (path.includes('/mesin-antrian')) {
+    isMeson = path.includes('/mesin-antrian');
+    if (isMeson) {
       initMesinAntrian();
       return;
     }
@@ -51,6 +52,8 @@ import { createDayCounter, dateKey } from './antrianCounter';
   // adalah halaman mesin (satu-satunya tempat antrian diproses); nilai counter
   // disimpan di localStorage (persisten di mesin) lalu disiarkan lewat ws ke
   // display/counter sehingga semua layar menampilkan satu nomor yang sama.
+
+  let isMeson = false;
 
   const WS_CHANNEL = 'dev_antrianLoket';
   const counter = createDayCounter({
@@ -118,6 +121,10 @@ import { createDayCounter, dateKey } from './antrianCounter';
       socket = new WebSocket(wsUrl());
       socket.onopen = () => {
         socketOpen = true;
+        // Meson = authority state harian. Begitu ws konek, kirim snapshot hari
+        // ini supaya display yang baru nyala / restart langsung punya riwayat
+        // mapping lokal->global utk RECOVERY, tak harus nunggu tiket berikutnya.
+        if (isMeson) sendSnapshot();
       };
       socket.onclose = () => {
         socketOpen = false;
@@ -138,22 +145,31 @@ import { createDayCounter, dateKey } from './antrianCounter';
     }
   }
 
-  function broadcastGlobal(n: number, loketIndex: number, loketNumber: number): void {
+  function sendJson(payload: Record<string, unknown>): void {
     if (socketOpen && socket) {
       try {
-        socket.send(
-          JSON.stringify({
-            channel: WS_CHANNEL,
-            type: 'gcounter',
-            value: n,
-            loket: loketIndex,
-            local: loketNumber,
-            date: dateKey(),
-          }),
-        );
+        socket.send(JSON.stringify(payload));
       } catch {
         /* noop */
       }
+    }
+  }
+
+  function broadcastGlobal(n: number, loketIndex: number, loketNumber: number): void {
+    sendJson({
+      channel: WS_CHANNEL,
+      type: 'gcounter',
+      value: n,
+      loket: loketIndex,
+      local: loketNumber,
+      date: dateKey(),
+    });
+  }
+
+  function sendSnapshot(): void {
+    const d = counter.readDay();
+    if (d.g > 0 || Object.keys(d.order).length > 0) {
+      sendJson({ channel: WS_CHANNEL, type: 'snapshot', state: d, date: dateKey() });
     }
   }
 
@@ -164,7 +180,20 @@ import { createDayCounter, dateKey } from './antrianCounter';
     } catch {
       return;
     }
-    if (!data || data.channel !== WS_CHANNEL || data.type !== 'gcounter') return;
+    if (!data || data.channel !== WS_CHANNEL) return;
+    if (data.type === 'snapshot') {
+      // Recovery display (baru nyala/restart): restore state harian penuh dari
+      // mesin supaya mapping lokal->global langsung ada, tak menunggu broadcast
+      // tiket berikutnya. Hanya terima utk tanggal HARI INI (hindari state lama).
+      const snap = (data as { state?: unknown; date?: unknown }).state;
+      const date = String((data as { date?: unknown }).date || '');
+      if (snap && date) {
+        const d = parseDate(date);
+        if (d && dateKey(d) === dateKey(new Date())) counter.restoreDay(snap, d);
+      }
+      return;
+    }
+    if (data.type !== 'gcounter') return;
     const v = parseInt(String(data.value || '0'), 10);
     // Broadcast mesin (Phase 2) ikut membawa loket + nomor lokal + tanggal
     // sehingga display bisa membangun mapping lokal->global via recordTicket.
