@@ -146,6 +146,14 @@ export function createDayCounter(store: CounterStore) {
     writeDay(s, d);
   }
 
+  /** Phase 3B: terjemah nomor "next" (lokal) -> global, fallback nomor lokal saat
+   * mapping tak tersedia / loket tak dikenal. `loketNumber` = nomor LOKAL server. */
+  function translateNext(loketIndex: number, loketNumber: number, d: Date = new Date()): number {
+    if (loketIndex < 0 || loketNumber <= 0) return loketNumber; // loket invalid -> fallback
+    const g = globalAtCall(loketIndex, loketNumber, d);
+    return g > 0 ? g : loketNumber;
+  }
+
   return {
     readDay,
     writeDay,
@@ -157,5 +165,6 @@ export function createDayCounter(store: CounterStore) {
     restoreDay,
     recordTicket,
     globalAtCall,
+    translateNext,
   };
 }

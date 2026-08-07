@@ -144,3 +144,40 @@ describe('restoreDay (Phase 2 recovery) — snapshot ws utk display baru nyala',
     expect(c.readGlobal(D1)).toBe(2);
   });
 });
+
+describe('translateNext (Phase 3B) — next lokal -> global, fallback lokal', () => {
+  it('mapping ada -> global', () => {
+    const c = createDayCounter(memStore());
+    c.allocGlobalCounter(1, 16, D1); // loket1 lokal16 -> g1
+    expect(c.translateNext(1, 16, D1)).toBe(1);
+  });
+
+  it('localhost interleaving: tiap loket urutan lokal masing-masing dipetakan', () => {
+    const c = createDayCounter(memStore());
+    c.allocGlobalCounter(1, 10, D1); // loket1 lokal10 -> g1
+    c.allocGlobalCounter(2, 30, D1); // loket2 lokal30 -> g2
+    c.allocGlobalCounter(1, 11, D1); // loket1 lokal11 -> g3
+    expect(c.translateNext(1, 10, D1)).toBe(1);
+    expect(c.translateNext(1, 11, D1)).toBe(3);
+    expect(c.translateNext(2, 30, D1)).toBe(2);
+  });
+
+  it('mapping tidak ada -> fallback nomor lokal', () => {
+    const c = createDayCounter(memStore());
+    c.allocGlobalCounter(1, 16, D1);
+    expect(c.translateNext(1, 999, D1)).toBe(999); // lokal belum diterjemahkan
+  });
+
+  it('loket invalid -> fallback nomor lokal', () => {
+    const c = createDayCounter(memStore());
+    c.allocGlobalCounter(1, 16, D1);
+    expect(c.translateNext(-1, 16, D1)).toBe(16);
+    expect(c.translateNext(5, 0, D1)).toBe(0); // bola
+  });
+
+  it('cross-day tidak bocor: mapping hari ini utk tiket kemarin -> fallback', () => {
+    const c = createDayCounter(memStore());
+    c.allocGlobalCounter(1, 16, D1);
+    expect(c.translateNext(1, 20, D2)).toBe(20);
+  });
+});

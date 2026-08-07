@@ -87,6 +87,11 @@ var __morbis_feature = (() => {
       if (s.g <= cur.g) return;
       writeDay(s, d);
     }
+    function translateNext(loketIndex, loketNumber, d = /* @__PURE__ */ new Date()) {
+      if (loketIndex < 0 || loketNumber <= 0) return loketNumber;
+      const g = globalAtCall(loketIndex, loketNumber, d);
+      return g > 0 ? g : loketNumber;
+    }
     return {
       readDay,
       writeDay,
@@ -98,6 +103,7 @@ var __morbis_feature = (() => {
       restoreDay,
       recordTicket,
       globalAtCall,
+      translateNext,
     };
   }
 
@@ -346,6 +352,23 @@ var __morbis_feature = (() => {
       const nomorEl = document.getElementById('antrian-aktif-nomor');
       if (!nomorEl) return;
       startV2Polling();
+      translateNextCards();
+      setInterval(translateNextCards, 1500);
+    }
+    function translateNextCards() {
+      const wrap = document.getElementById('isi-val');
+      if (!wrap) return;
+      wrap.querySelectorAll('.card').forEach(function (card) {
+        const isi = card.querySelector('.isi');
+        const namaEl = card.querySelector('.nama-antrian');
+        if (!isi || !namaEl) return;
+        const loketIdx = loketIndexByName(namaEl.textContent || '');
+        const local = parseInt(onlyDigits(isi.textContent || ''), 10);
+        if (loketIdx < 0 || Number.isNaN(local)) return;
+        const g = counter.translateNext(loketIdx, local);
+        const cur = onlyDigits(isi.textContent || '');
+        if (String(g) !== cur) isi.textContent = String(g);
+      });
     }
     function applyDisplayGlobal() {
       const g = counter.readGlobal();

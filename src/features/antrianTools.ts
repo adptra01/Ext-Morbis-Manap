@@ -326,6 +326,29 @@ import { createDayCounter, dateKey, type DayState } from './antrianCounter';
     const nomorEl = document.getElementById('antrian-aktif-nomor');
     if (!nomorEl) return; // bukan halaman v2
     startV2Polling();
+    translateNextCards();
+    setInterval(translateNextCards, 1500);
+  }
+
+  // ==================== PHASE 3B — NEXT QUEUE (V2 "Antrian Selanjutnya") ====
+  // `#isi-val` diisi server via .load('/public/counter-antrian/display-val-v2')
+  // berisi kartu per loket (nomor LOKAL). Terjemah tiap kartu -> global via
+  // translateNext, tanpa menyentuh #isi (halaman counter) maupun server. Guard
+  // "sudah global" mencegah DOM mutation loop saat polling menulis ulang.
+  function translateNextCards(): void {
+    const wrap = document.getElementById('isi-val');
+    if (!wrap) return;
+    wrap.querySelectorAll<HTMLElement>('.card').forEach(function (card) {
+      const isi = card.querySelector<HTMLElement>('.isi');
+      const namaEl = card.querySelector<HTMLElement>('.nama-antrian');
+      if (!isi || !namaEl) return;
+      const loketIdx = loketIndexByName(namaEl.textContent || '');
+      const local = parseInt(onlyDigits(isi.textContent || ''), 10);
+      if (loketIdx < 0 || Number.isNaN(local)) return;
+      const g = counter.translateNext(loketIdx, local);
+      const cur = onlyDigits(isi.textContent || '');
+      if (String(g) !== cur) isi.textContent = String(g);
+    });
   }
 
   // Tampilkan nomor global terbaru. Di V2 target utk `#antrian-aktif-nomor`
