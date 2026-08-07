@@ -1260,7 +1260,7 @@ var ee = [
     {
       key: `antrianTools`,
       name: `Antrian Tools`,
-      desc: `Auto cetak struk antrian`,
+      desc: `Penomoran unik per loket (L1-001) + auto cetak`,
       roles: [`admin`],
     },
     {

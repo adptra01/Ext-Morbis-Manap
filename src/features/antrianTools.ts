@@ -16,9 +16,184 @@
 
   function init(): void {
     const path = window.location.pathname;
-    if (!path.includes('/mesin-antrian')) return;
+    if (path.includes('/mesin-antrian')) {
+      initMesinAntrian();
+      return;
+    }
+    if (path.includes('/view-antrian') || path.includes('/display-val')) {
+      initDisplay();
+      return;
+    }
+    if (path.includes('/counter-antrian/counter')) {
+      initCounter();
+      return;
+    }
+    if (path.includes('/antrian')) initDisplay();
+  }
+
+  // ==================== SHARED: UNIQUE PREFIX L{n}-{3 digit} ====================
+
+  function loketNum(text: string): string {
+    const m = String(text || '').match(/\d+/);
+    return m ? m[0] : '';
+  }
+
+  function pad3(n: unknown): string {
+    return String(n).trim().padStart(3, '0');
+  }
+
+  function formatQueue(prefix: string, num: unknown): string {
+    return 'L' + prefix + '-' + pad3(num);
+  }
+
+  // Prefix nomor tampil (.isi) tiap kartu loket: "71" -> "L1-071"
+  function prefixCards(root: Document | Element): void {
+    root.querySelectorAll('.card').forEach(function (card) {
+      const nameEl = card.querySelector('.nama-antrian');
+      const isiEl = card.querySelector('.isi');
+      if (!nameEl || !isiEl) return;
+      const prefix = loketNum(nameEl.textContent || '');
+      if (!prefix) return;
+      const t = (isiEl.textContent || '').trim();
+      if (/^\d+$/.test(t)) {
+        isiEl.textContent = formatQueue(prefix, t);
+      } else {
+        const spaced = t.match(/^L(\d+)\s+(\d+)$/);
+        if (spaced) isiEl.textContent = formatQueue(spaced[1], spaced[2]);
+      }
+    });
+  }
+
+  function watchPrefixes(): void {
+    const apply = function () {
+      prefixCards(document);
+    };
+    apply();
+    const obs = new MutationObserver(function () {
+      apply();
+    });
+    obs.observe(document.body, { childList: true, subtree: true });
+    setInterval(apply, 3000);
+  }
+
+  // ==================== MESIN ANTRIAN ====================
+
+  let lastAntrianIndex = -1;
+
+  function initMesinAntrian(): void {
     addFullscreenButton();
-    patchMesinAntrianPrint();
+    applyMesinPrefixes();
+    setInterval(applyMesinPrefixes, 2000);
+    trackAntrianIndex();
+    hookPrintAjax();
+  }
+
+  // Isi kode per loket + prefix nomor tampil. Server kirim kode kosong,
+  // jadi ambil dari polinama ("Loket 1" -> "L1").
+  function applyMesinPrefixes(): void {
+    for (let i = 0; i < 30; i++) {
+      const polinamaEl = document.getElementById('polinama-' + i) as HTMLInputElement | null;
+      const kodeEl = document.getElementById('kode-' + i) as HTMLInputElement | null;
+      const tampilEl = document.getElementById('nomortampil-' + i);
+      if (!polinamaEl) continue;
+      const prefix = loketNum(polinamaEl.value);
+      if (!prefix) continue;
+      if (kodeEl) kodeEl.value = 'L' + prefix;
+      if (tampilEl) {
+        const t = (tampilEl.textContent || '').trim();
+        if (/^\d+$/.test(t)) {
+          tampilEl.textContent = formatQueue(prefix, t);
+        } else {
+          const spaced = t.match(/^L(\d+)\s+(\d+)$/);
+          if (spaced) tampilEl.textContent = formatQueue(spaced[1], spaced[2]);
+        }
+      }
+    }
+  }
+
+  function trackAntrianIndex(): void {
+    intervalPoll(function () {
+      const w = window as unknown as Record<string, unknown>;
+      const antrian = w.antrian as ((a: number) => unknown) | undefined;
+      if (
+        typeof antrian !== 'function' ||
+        (antrian as { __extPrintHooked?: boolean }).__extPrintHooked
+      )
+        return;
+      const wrapped = function (a: number) {
+        lastAntrianIndex = a;
+        return antrian(a);
+      };
+      (wrapped as { __extPrintHooked?: boolean }).__extPrintHooked = true;
+      w.antrian = wrapped;
+    });
+  }
+
+  // Hook jQuery ajax: setelah server konfirmasi, cetak tiket berformat L{n}-{3digit}
+  function hookPrintAjax(): void {
+    intervalPoll(function () {
+      const w = window as unknown as Record<string, unknown>;
+      const $ = w.$ as { ajax?: unknown } | undefined;
+      const origAjax = $?.ajax as ((settings: unknown) => unknown) | undefined;
+      if (
+        typeof origAjax !== 'function' ||
+        (origAjax as { __extPrintHooked?: boolean }).__extPrintHooked
+      )
+        return;
+
+      const wrapped = function (this: unknown, settings: unknown) {
+        const opts = (settings && typeof settings === 'object' ? settings : { url: settings }) as {
+          url?: string;
+          type?: string;
+          success?: (data: unknown, ...rest: unknown[]) => unknown;
+        };
+        const url = String(opts.url || '');
+        const method = String(opts.type || 'GET').toUpperCase();
+        if (url.includes('/mesin-antrian/control/mesin-antrian') && method === 'POST') {
+          const origSuccess = opts.success;
+          opts.success = function (data: unknown, ...rest: unknown[]) {
+            // Biarkan fungsi asli jalan dulu (update #nomor, ws, swal, reload)
+            let result: unknown;
+            if (typeof origSuccess === 'function') {
+              result = (origSuccess as (data: unknown, ...rest: unknown[]) => unknown).apply(this, [
+                data,
+                ...rest,
+              ]);
+            }
+            const d = data as { status?: number; antrianSelanjutnya?: number | string } | null;
+            if (d && typeof d === 'object' && d.status === 200) {
+              const idx = lastAntrianIndex;
+              const namaLoket = document.getElementById(
+                'polinama-' + idx,
+              ) as HTMLInputElement | null;
+              const kode = document.getElementById('kode-' + idx) as HTMLInputElement | null;
+              const prefix = kode ? loketNum(kode.value) : '';
+              if (prefix && namaLoket && d.antrianSelanjutnya != null) {
+                // Normalisasi tampilan nomor yang ditulis fungsi asli ("L1 82" -> "L1-082")
+                const tampil = document.getElementById('nomortampil-' + idx);
+                if (tampil)
+                  tampil.textContent = formatQueue(prefix, Number(d.antrianSelanjutnya) + 1);
+                cetakStrukAntrian(formatQueue(prefix, d.antrianSelanjutnya), namaLoket.value);
+              }
+            }
+            return result;
+          };
+        }
+        return (origAjax as (settings: unknown) => unknown).apply(this, [opts]);
+      };
+      (wrapped as { __extPrintHooked?: boolean }).__extPrintHooked = true;
+      ($ as { ajax: unknown }).ajax = wrapped;
+    });
+  }
+
+  // ==================== DISPLAY (TV) & COUNTER (PETUGAS) ====================
+
+  function initDisplay(): void {
+    watchPrefixes();
+  }
+
+  function initCounter(): void {
+    watchPrefixes();
   }
 
   // ==================== FULLSCREEN BUTTON ====================
@@ -51,80 +226,6 @@
       if (el.requestFullscreen) el.requestFullscreen();
       else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
     }
-  }
-
-  // ==================== AUTO PRINT TICKET ====================
-
-  let lastAntrianIndex = -1;
-
-  function patchMesinAntrianPrint(): void {
-    // Track which counter card triggered the queue request
-    intervalPoll(function () {
-      const w = window as unknown as Record<string, unknown>;
-      const antrian = w.antrian as ((a: number) => unknown) | undefined;
-      if (
-        typeof antrian !== 'function' ||
-        (antrian as { __extPrintHooked?: boolean }).__extPrintHooked
-      )
-        return;
-      const wrapped = function (a: number) {
-        lastAntrianIndex = a;
-        return antrian(a);
-      };
-      (wrapped as { __extPrintHooked?: boolean }).__extPrintHooked = true;
-      w.antrian = wrapped;
-    });
-
-    // Hook jQuery ajax: print ticket only after server confirms queue entry
-    intervalPoll(function () {
-      const w = window as unknown as Record<string, unknown>;
-      const $ = w.$ as { ajax?: unknown } | undefined;
-      const origAjax = $?.ajax as ((settings: unknown) => unknown) | undefined;
-      if (
-        typeof origAjax !== 'function' ||
-        (origAjax as { __extPrintHooked?: boolean }).__extPrintHooked
-      )
-        return;
-
-      const wrapped = function (this: unknown, settings: unknown) {
-        const opts = (settings && typeof settings === 'object' ? settings : { url: settings }) as {
-          url?: string;
-          type?: string;
-          success?: (data: unknown, ...rest: unknown[]) => unknown;
-        };
-        const url = String(opts.url || '');
-        const method = String(opts.type || 'GET').toUpperCase();
-        if (url.includes('/mesin-antrian/control/mesin-antrian') && method === 'POST') {
-          const origSuccess = opts.success;
-          opts.success = function (data: unknown, ...rest: unknown[]) {
-            const d = data as { status?: number; antrianSelanjutnya?: unknown } | null;
-            if (d && typeof d === 'object' && d.status === 200) {
-              const idx = lastAntrianIndex;
-              const namaLoket = document.getElementById(
-                'polinama-' + idx,
-              ) as HTMLInputElement | null;
-              const kode = document.getElementById('kode-' + idx) as HTMLInputElement | null;
-              if (kode && namaLoket && d.antrianSelanjutnya != null) {
-                cetakStrukAntrian(
-                  String(kode.value) + ' ' + String(d.antrianSelanjutnya),
-                  String(namaLoket.value),
-                );
-              }
-            }
-            if (typeof origSuccess === 'function') {
-              return (origSuccess as (data: unknown, ...rest: unknown[]) => unknown).apply(this, [
-                data,
-                ...rest,
-              ]);
-            }
-            return undefined;
-          };
-        }
-        return (origAjax as (settings: unknown) => unknown).apply(this, [opts]);
-      };
-      (wrapped as { __extPrintHooked?: boolean }).__extPrintHooked = true;
-      ($ as { ajax: unknown }).ajax = wrapped;
-    });
   }
 
   // Hidden iframe instead of window.open: ajax callback is not a user gesture,

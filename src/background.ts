@@ -116,7 +116,7 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       enabled: true,
       allowedRoles: ['admin'],
       name: 'Antrian Tools',
-      description: 'Auto cetak struk antrian saat loket diklik di mesin antrian',
+      description: 'Penomoran unik per loket (L1-001), auto cetak struk, tombol fullscreen',
     },
     ttvEditor: {
       enabled: true,

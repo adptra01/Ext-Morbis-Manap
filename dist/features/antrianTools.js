@@ -17,9 +17,142 @@ var __morbis_feature = (() => {
     }, 50);
     function init() {
       const path = window.location.pathname;
-      if (!path.includes('/mesin-antrian')) return;
+      if (path.includes('/mesin-antrian')) {
+        initMesinAntrian();
+        return;
+      }
+      if (path.includes('/view-antrian') || path.includes('/display-val')) {
+        initDisplay();
+        return;
+      }
+      if (path.includes('/counter-antrian/counter')) {
+        initCounter();
+        return;
+      }
+      if (path.includes('/antrian')) initDisplay();
+    }
+    function loketNum(text) {
+      const m = String(text || '').match(/\d+/);
+      return m ? m[0] : '';
+    }
+    function pad3(n) {
+      return String(n).trim().padStart(3, '0');
+    }
+    function formatQueue(prefix, num) {
+      return 'L' + prefix + '-' + pad3(num);
+    }
+    function prefixCards(root) {
+      root.querySelectorAll('.card').forEach(function (card) {
+        const nameEl = card.querySelector('.nama-antrian');
+        const isiEl = card.querySelector('.isi');
+        if (!nameEl || !isiEl) return;
+        const prefix = loketNum(nameEl.textContent || '');
+        if (!prefix) return;
+        const t = (isiEl.textContent || '').trim();
+        if (/^\d+$/.test(t)) {
+          isiEl.textContent = formatQueue(prefix, t);
+        } else {
+          const spaced = t.match(/^L(\d+)\s+(\d+)$/);
+          if (spaced) isiEl.textContent = formatQueue(spaced[1], spaced[2]);
+        }
+      });
+    }
+    function watchPrefixes() {
+      const apply = function () {
+        prefixCards(document);
+      };
+      apply();
+      const obs = new MutationObserver(function () {
+        apply();
+      });
+      obs.observe(document.body, { childList: true, subtree: true });
+      setInterval(apply, 3e3);
+    }
+    let lastAntrianIndex = -1;
+    function initMesinAntrian() {
       addFullscreenButton();
-      patchMesinAntrianPrint();
+      applyMesinPrefixes();
+      setInterval(applyMesinPrefixes, 2e3);
+      trackAntrianIndex();
+      hookPrintAjax();
+    }
+    function applyMesinPrefixes() {
+      for (let i = 0; i < 30; i++) {
+        const polinamaEl = document.getElementById('polinama-' + i);
+        const kodeEl = document.getElementById('kode-' + i);
+        const tampilEl = document.getElementById('nomortampil-' + i);
+        if (!polinamaEl) continue;
+        const prefix = loketNum(polinamaEl.value);
+        if (!prefix) continue;
+        if (kodeEl) kodeEl.value = 'L' + prefix;
+        if (tampilEl) {
+          const t = (tampilEl.textContent || '').trim();
+          if (/^\d+$/.test(t)) {
+            tampilEl.textContent = formatQueue(prefix, t);
+          } else {
+            const spaced = t.match(/^L(\d+)\s+(\d+)$/);
+            if (spaced) tampilEl.textContent = formatQueue(spaced[1], spaced[2]);
+          }
+        }
+      }
+    }
+    function trackAntrianIndex() {
+      intervalPoll(function () {
+        const w = window;
+        const antrian = w.antrian;
+        if (typeof antrian !== 'function' || antrian.__extPrintHooked) return;
+        const wrapped = function (a) {
+          lastAntrianIndex = a;
+          return antrian(a);
+        };
+        wrapped.__extPrintHooked = true;
+        w.antrian = wrapped;
+      });
+    }
+    function hookPrintAjax() {
+      intervalPoll(function () {
+        const w = window;
+        const $ = w.$;
+        const origAjax = $?.ajax;
+        if (typeof origAjax !== 'function' || origAjax.__extPrintHooked) return;
+        const wrapped = function (settings) {
+          const opts = settings && typeof settings === 'object' ? settings : { url: settings };
+          const url = String(opts.url || '');
+          const method = String(opts.type || 'GET').toUpperCase();
+          if (url.includes('/mesin-antrian/control/mesin-antrian') && method === 'POST') {
+            const origSuccess = opts.success;
+            opts.success = function (data, ...rest) {
+              let result;
+              if (typeof origSuccess === 'function') {
+                result = origSuccess.apply(this, [data, ...rest]);
+              }
+              const d = data;
+              if (d && typeof d === 'object' && d.status === 200) {
+                const idx = lastAntrianIndex;
+                const namaLoket = document.getElementById('polinama-' + idx);
+                const kode = document.getElementById('kode-' + idx);
+                const prefix = kode ? loketNum(kode.value) : '';
+                if (prefix && namaLoket && d.antrianSelanjutnya != null) {
+                  const tampil = document.getElementById('nomortampil-' + idx);
+                  if (tampil)
+                    tampil.textContent = formatQueue(prefix, Number(d.antrianSelanjutnya) + 1);
+                  cetakStrukAntrian(formatQueue(prefix, d.antrianSelanjutnya), namaLoket.value);
+                }
+              }
+              return result;
+            };
+          }
+          return origAjax.apply(this, [opts]);
+        };
+        wrapped.__extPrintHooked = true;
+        $.ajax = wrapped;
+      });
+    }
+    function initDisplay() {
+      watchPrefixes();
+    }
+    function initCounter() {
+      watchPrefixes();
     }
     function addFullscreenButton() {
       injectCSS('ext-antrian-fullscreen-css', [
@@ -45,55 +178,6 @@ var __morbis_feature = (() => {
         if (el.requestFullscreen) el.requestFullscreen();
         else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
       }
-    }
-    let lastAntrianIndex = -1;
-    function patchMesinAntrianPrint() {
-      intervalPoll(function () {
-        const w = window;
-        const antrian = w.antrian;
-        if (typeof antrian !== 'function' || antrian.__extPrintHooked) return;
-        const wrapped = function (a) {
-          lastAntrianIndex = a;
-          return antrian(a);
-        };
-        wrapped.__extPrintHooked = true;
-        w.antrian = wrapped;
-      });
-      intervalPoll(function () {
-        const w = window;
-        const $ = w.$;
-        const origAjax = $?.ajax;
-        if (typeof origAjax !== 'function' || origAjax.__extPrintHooked) return;
-        const wrapped = function (settings) {
-          const opts = settings && typeof settings === 'object' ? settings : { url: settings };
-          const url = String(opts.url || '');
-          const method = String(opts.type || 'GET').toUpperCase();
-          if (url.includes('/mesin-antrian/control/mesin-antrian') && method === 'POST') {
-            const origSuccess = opts.success;
-            opts.success = function (data, ...rest) {
-              const d = data;
-              if (d && typeof d === 'object' && d.status === 200) {
-                const idx = lastAntrianIndex;
-                const namaLoket = document.getElementById('polinama-' + idx);
-                const kode = document.getElementById('kode-' + idx);
-                if (kode && namaLoket && d.antrianSelanjutnya != null) {
-                  cetakStrukAntrian(
-                    String(kode.value) + ' ' + String(d.antrianSelanjutnya),
-                    String(namaLoket.value),
-                  );
-                }
-              }
-              if (typeof origSuccess === 'function') {
-                return origSuccess.apply(this, [data, ...rest]);
-              }
-              return void 0;
-            };
-          }
-          return origAjax.apply(this, [opts]);
-        };
-        wrapped.__extPrintHooked = true;
-        $.ajax = wrapped;
-      });
     }
     function cetakStrukAntrian(nomor, loket) {
       const iframe = document.createElement('iframe');
