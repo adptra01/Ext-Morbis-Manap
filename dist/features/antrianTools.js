@@ -41,86 +41,115 @@ var __morbis_feature = (() => {
       badge.textContent = 'ANTRIAN TOOLS AKTIF';
       document.body.appendChild(badge);
     }
-    function loketNum(text) {
-      const m = String(text || '').match(/\d+/);
-      return m ? m[0] : '';
+    const GLOBAL_KEY = 'dev_antrian_global';
+    const WS_CHANNEL = 'dev_antrianLoket';
+    function onlyDigits(s) {
+      return String(s || '').replace(/\D/g, '');
     }
-    function pad3(n) {
-      return String(n).trim().padStart(3, '0');
+    function readGlobal() {
+      const n = parseInt(localStorage.getItem(GLOBAL_KEY) || '0', 10);
+      return Number.isFinite(n) && n > 0 ? n : 0;
     }
-    function formatQueue(prefix, num) {
-      return 'L' + prefix + '-' + pad3(num);
+    function writeGlobal(n) {
+      try {
+        localStorage.setItem(GLOBAL_KEY, String(n));
+      } catch {}
     }
-    function prefixCards(root) {
-      root.querySelectorAll('.card').forEach(function (card) {
-        const nameEl = card.querySelector('.nama-antrian');
-        const isiEl = card.querySelector('.isi');
-        if (!nameEl || !isiEl) return;
-        const prefix = loketNum(nameEl.textContent || '');
-        if (!prefix) return;
-        const t = (isiEl.textContent || '').trim();
-        if (/^\d+$/.test(t)) {
-          isiEl.textContent = formatQueue(prefix, t);
-        } else {
-          const spaced = t.match(/^L(\d+)\s+(\d+)$/);
-          if (spaced) isiEl.textContent = formatQueue(spaced[1], spaced[2]);
-        }
+    function allocGlobalCounter() {
+      const n = readGlobal() + 1;
+      writeGlobal(n);
+      return n;
+    }
+    function seedGlobalCounter() {
+      let max = readGlobal();
+      document.querySelectorAll('[id^="nomor-"]').forEach(function (el) {
+        const val = el.value ?? (el.textContent || '0');
+        const v = parseInt(val, 10);
+        if (v > max) max = v;
       });
-    }
-    function watchPrefixes() {
-      const apply = function () {
-        prefixCards(document);
-      };
-      apply();
-      const obs = new MutationObserver(function () {
-        apply();
+      document.querySelectorAll('[id^="id-"]').forEach(function (el) {
+        const v = parseInt(el.getAttribute('value') || el.textContent || '0', 10);
+        if (v > max) max = v;
       });
-      obs.observe(document.body, { childList: true, subtree: true });
-      setInterval(apply, 3e3);
+      if (max > readGlobal()) writeGlobal(max);
+    }
+    let socket = null;
+    let socketOpen = false;
+    function wsUrl() {
+      return (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.hostname + ':8088';
+    }
+    function connectGlobalWs() {
+      try {
+        socket = new WebSocket(wsUrl());
+        socket.onopen = () => {
+          socketOpen = true;
+        };
+        socket.onclose = () => {
+          socketOpen = false;
+          setTimeout(connectGlobalWs, 4e3);
+        };
+        socket.onerror = () => {
+          try {
+            socket?.close();
+          } catch {}
+        };
+        socket.onmessage = (ev) => {
+          handleWsMessage(String(ev.data || ''));
+        };
+      } catch {}
+    }
+    function broadcastGlobal(n) {
+      if (socketOpen && socket) {
+        try {
+          socket.send(JSON.stringify({ channel: WS_CHANNEL, type: 'gcounter', value: n }));
+        } catch {}
+      }
+    }
+    function handleWsMessage(raw) {
+      let data = null;
+      try {
+        data = JSON.parse(raw);
+      } catch {
+        return;
+      }
+      if (!data || data.channel !== WS_CHANNEL || data.type !== 'gcounter') return;
+      const v = parseInt(String(data.value || '0'), 10);
+      if (v > 0 && v > readGlobal()) writeGlobal(v);
     }
     let lastAntrianIndex = -1;
     function initMesinAntrian() {
       addFullscreenButton();
-      applyMesinPrefixes();
-      setInterval(applyMesinPrefixes, 2e3);
+      connectGlobalWs();
+      seedGlobalCounter();
+      applyMesinGlobal();
+      setInterval(applyMesinGlobal, 2e3);
       trackAntrianIndex();
       hookPrintAjax();
     }
-    function applyMesinPrefixes() {
+    function applyMesinGlobal() {
+      const g = readGlobal();
+      if (g <= 0) return;
       for (let i = 0; i < 30; i++) {
-        const polinamaEl = document.getElementById('polinama-' + i);
-        const kodeEl = document.getElementById('kode-' + i);
-        const tampilEl = document.getElementById('nomortampil-' + i);
-        if (!polinamaEl) continue;
-        const prefix = loketNum(polinamaEl.value);
-        if (!prefix) continue;
-        if (kodeEl) kodeEl.value = 'L' + prefix;
-        if (tampilEl) {
-          const t = (tampilEl.textContent || '').trim();
-          if (/^\d+$/.test(t)) {
-            tampilEl.textContent = formatQueue(prefix, t);
-          } else {
-            const spaced = t.match(/^L(\d+)\s+(\d+)$/);
-            if (spaced) tampilEl.textContent = formatQueue(spaced[1], spaced[2]);
-          }
-        }
+        const el = document.getElementById('nomortampil-' + i);
+        if (!el) continue;
+        if (onlyDigits(el.textContent || '') !== String(g)) el.textContent = String(g);
       }
     }
     function trackAntrianIndex() {
-      intervalPoll(function () {
+      intervalPoll(() => {
         const w = window;
         const antrian = w.antrian;
-        if (typeof antrian !== 'function' || antrian.__extPrintHooked) return;
+        if (typeof antrian !== 'function' || antrian.__extTrackHooked) return;
         const wrapped = function (a) {
           lastAntrianIndex = a;
           return antrian(a);
         };
-        wrapped.__extPrintHooked = true;
+        wrapped.__extTrackHooked = true;
         w.antrian = wrapped;
       });
     }
     function hookPrintAjax() {
-      intervalPoll(function () {
+      intervalPoll(() => {
         const w = window;
         const $ = w.$;
         const origAjax = $?.ajax;
@@ -136,18 +165,15 @@ var __morbis_feature = (() => {
               if (typeof origSuccess === 'function') {
                 result = origSuccess.apply(this, [data, ...rest]);
               }
-              const d = data;
-              if (d && typeof d === 'object' && d.status === 200) {
+              const isOk = data && typeof data === 'object' && data.status;
+              if (isOk === 200) {
+                const n = allocGlobalCounter();
+                broadcastGlobal(n);
                 const idx = lastAntrianIndex;
                 const namaLoket = document.getElementById('polinama-' + idx);
-                const kode = document.getElementById('kode-' + idx);
-                const prefix = kode ? loketNum(kode.value) : '';
-                if (prefix && namaLoket && d.antrianSelanjutnya != null) {
-                  const tampil = document.getElementById('nomortampil-' + idx);
-                  if (tampil)
-                    tampil.textContent = formatQueue(prefix, Number(d.antrianSelanjutnya) + 1);
-                  cetakStrukAntrian(formatQueue(prefix, d.antrianSelanjutnya), namaLoket.value);
-                }
+                const tampil = document.getElementById('nomortampil-' + idx);
+                if (tampil) tampil.textContent = String(n);
+                if (namaLoket) cetakStrukAntrian(String(n), namaLoket.value);
               }
               return result;
             };
@@ -159,41 +185,51 @@ var __morbis_feature = (() => {
       });
     }
     function initDisplay() {
-      watchPrefixes();
+      connectGlobalWs();
+      seedGlobalCounter();
+      applyDisplayGlobal();
+      setInterval(applyDisplayGlobal, 2e3);
       const nomorEl = document.getElementById('antrian-aktif-nomor');
       if (!nomorEl) return;
-      const loketEl = document.getElementById('antrian-aktif-loket');
-      const t = (nomorEl.textContent || '').trim();
-      if (loketEl && /^\d+$/.test(t))
-        nomorEl.textContent = formatQueue(loketNum(loketEl.textContent || ''), t);
       startV2Polling();
     }
+    function applyDisplayGlobal() {
+      const g = readGlobal();
+      if (g <= 0) return;
+      document
+        .querySelectorAll('#antrian-aktif-nomor, [id^="nomortampil-"]')
+        .forEach(function (el) {
+          if (el.closest('.card')) return;
+          if (onlyDigits(el.textContent || '') !== String(g)) el.textContent = String(g);
+        });
+    }
     function initCounter() {
-      watchPrefixes();
+      connectGlobalWs();
+      seedGlobalCounter();
+      applyDisplayGlobal();
+      setInterval(applyDisplayGlobal, 2e3);
     }
     function startV2Polling() {
-      const tick = function () {
+      const tick = () => {
         try {
           const xhr = new XMLHttpRequest();
           xhr.open('POST', '/public/counter-antrian/data', true);
           xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
           xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
           xhr.timeout = 1e4;
-          xhr.onload = function () {
+          xhr.onload = () => {
             try {
               const ct = xhr.getResponseHeader('Content-Type') || '';
               if (ct.includes('text/html') || ct.includes('text/plain')) return;
               const r = JSON.parse(xhr.responseText);
-              if (!r || r.NOMOR == null) return;
+              if (!r) return;
+              const globalN = readGlobal();
               const nomorEl = document.getElementById('antrian-aktif-nomor');
               const loketEl = document.getElementById('antrian-aktif-loket');
-              if (!nomorEl) return;
-              const prefix = loketNum(loketEl?.textContent || '');
-              const num = String(r.NOMOR);
-              const padded = prefix && /^\d+$/.test(num) ? formatQueue(prefix, num) : num;
-              if ((nomorEl.textContent || '').trim() !== padded) nomorEl.textContent = padded;
-              if (loketEl) {
-                const nama = String(r.NAMA || '-')
+              if (nomorEl && globalN > 0) nomorEl.textContent = String(globalN);
+              else if (nomorEl && r.NOMOR != null) nomorEl.textContent = String(r.NOMOR);
+              if (loketEl && r.NAMA) {
+                const nama = String(r.NAMA)
                   .replace(/^LOKET\s+/i, '')
                   .toUpperCase();
                 const loketText = 'LOKET ' + nama;

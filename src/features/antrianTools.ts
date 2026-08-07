@@ -43,49 +43,108 @@
     document.body.appendChild(badge);
   }
 
-  // ==================== SHARED: UNIQUE PREFIX L{n}-{3 digit} ====================
+  // ==================== GLOBAL COUNTER (via WebSocket) ====================
+  // Tujuan: tiap tiket diberi nomor GLOBAL unik yang terus bertambah di SEMUA
+  // loket (1, 2, 3, 4, ...), bukan per-loket yang saling duplikat. Authority-nya
+  // adalah halaman mesin (satu-satunya tempat antrian diproses); nilai counter
+  // disimpan di localStorage (persisten di mesin) lalu disiarkan lewat ws ke
+  // display/counter sehingga semua layar menampilkan satu nomor yang sama.
 
-  function loketNum(text: string): string {
-    const m = String(text || '').match(/\d+/);
-    return m ? m[0] : '';
+  const GLOBAL_KEY = 'dev_antrian_global';
+  const WS_CHANNEL = 'dev_antrianLoket';
+
+  function onlyDigits(s: unknown): string {
+    return String(s || '').replace(/\D/g, '');
   }
 
-  function pad3(n: unknown): string {
-    return String(n).trim().padStart(3, '0');
+  function readGlobal(): number {
+    const n = parseInt(localStorage.getItem(GLOBAL_KEY) || '0', 10);
+    return Number.isFinite(n) && n > 0 ? n : 0;
   }
 
-  function formatQueue(prefix: string, num: unknown): string {
-    return 'L' + prefix + '-' + pad3(num);
+  function writeGlobal(n: number): void {
+    try {
+      localStorage.setItem(GLOBAL_KEY, String(n));
+    } catch {
+      /* quota / private mode */
+    }
   }
 
-  // Prefix nomor tampil (.isi) tiap kartu loket: "71" -> "L1-071"
-  function prefixCards(root: Document | Element): void {
-    root.querySelectorAll('.card').forEach(function (card) {
-      const nameEl = card.querySelector('.nama-antrian');
-      const isiEl = card.querySelector('.isi');
-      if (!nameEl || !isiEl) return;
-      const prefix = loketNum(nameEl.textContent || '');
-      if (!prefix) return;
-      const t = (isiEl.textContent || '').trim();
-      if (/^\d+$/.test(t)) {
-        isiEl.textContent = formatQueue(prefix, t);
-      } else {
-        const spaced = t.match(/^L(\d+)\s+(\d+)$/);
-        if (spaced) isiEl.textContent = formatQueue(spaced[1], spaced[2]);
+  // Alokasi nomor berikutnya: monotonik global lintas loket.
+  function allocGlobalCounter(): number {
+    const n = readGlobal() + 1;
+    writeGlobal(n);
+    return n;
+  }
+
+  // Seed awal: jangan bentrok dengan nomor lokal yang sudah tampil
+  // (mis. suatu loket ada 83 -> global mulai 84, unik terhadap tiket lama).
+  function seedGlobalCounter(): void {
+    let max = readGlobal();
+    document.querySelectorAll<HTMLElement>('[id^="nomor-"]').forEach(function (el) {
+      const val = (el as HTMLInputElement).value ?? (el.textContent || '0');
+      const v = parseInt(val, 10);
+      if (v > max) max = v;
+    });
+    document.querySelectorAll<HTMLElement>('[id^="id-"]').forEach(function (el) {
+      const v = parseInt(el.getAttribute('value') || el.textContent || '0', 10);
+      if (v > max) max = v;
+    });
+    if (max > readGlobal()) writeGlobal(max);
+  }
+
+  let socket: WebSocket | null = null;
+  let socketOpen = false;
+
+  function wsUrl(): string {
+    return (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.hostname + ':8088';
+  }
+
+  function connectGlobalWs(): void {
+    try {
+      socket = new WebSocket(wsUrl());
+      socket.onopen = () => {
+        socketOpen = true;
+      };
+      socket.onclose = () => {
+        socketOpen = false;
+        setTimeout(connectGlobalWs, 4000);
+      };
+      socket.onerror = () => {
+        try {
+          socket?.close();
+        } catch {
+          /* noop */
+        }
+      };
+      socket.onmessage = (ev) => {
+        handleWsMessage(String(ev.data || ''));
+      };
+    } catch {
+      /* ws unavailable */
+    }
+  }
+
+  function broadcastGlobal(n: number): void {
+    if (socketOpen && socket) {
+      try {
+        socket.send(JSON.stringify({ channel: WS_CHANNEL, type: 'gcounter', value: n }));
+      } catch {
+        /* noop */
       }
-    });
+    }
   }
 
-  function watchPrefixes(): void {
-    const apply = function () {
-      prefixCards(document);
-    };
-    apply();
-    const obs = new MutationObserver(function () {
-      apply();
-    });
-    obs.observe(document.body, { childList: true, subtree: true });
-    setInterval(apply, 3000);
+  function handleWsMessage(raw: string): void {
+    let data: { channel?: string; type?: string; value?: unknown } | null = null;
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      return;
+    }
+    if (!data || data.channel !== WS_CHANNEL || data.type !== 'gcounter') return;
+    const v = parseInt(String(data.value || '0'), 10);
+    if (v > 0 && v > readGlobal()) writeGlobal(v);
   }
 
   // ==================== MESIN ANTRIAN ====================
@@ -94,56 +153,47 @@
 
   function initMesinAntrian(): void {
     addFullscreenButton();
-    applyMesinPrefixes();
-    setInterval(applyMesinPrefixes, 2000);
+    connectGlobalWs();
+    seedGlobalCounter();
+    applyMesinGlobal();
+    setInterval(applyMesinGlobal, 2000);
     trackAntrianIndex();
     hookPrintAjax();
   }
 
-  // Isi kode per loket + prefix nomor tampil. Server kirim kode kosong,
-  // jadi ambil dari polinama ("Loket 1" -> "L1").
-  function applyMesinPrefixes(): void {
+  // Tampilkan nomor global terbaru di tiap kartu loket di mesin.
+  function applyMesinGlobal(): void {
+    const g = readGlobal();
+    if (g <= 0) return;
     for (let i = 0; i < 30; i++) {
-      const polinamaEl = document.getElementById('polinama-' + i) as HTMLInputElement | null;
-      const kodeEl = document.getElementById('kode-' + i) as HTMLInputElement | null;
-      const tampilEl = document.getElementById('nomortampil-' + i);
-      if (!polinamaEl) continue;
-      const prefix = loketNum(polinamaEl.value);
-      if (!prefix) continue;
-      if (kodeEl) kodeEl.value = 'L' + prefix;
-      if (tampilEl) {
-        const t = (tampilEl.textContent || '').trim();
-        if (/^\d+$/.test(t)) {
-          tampilEl.textContent = formatQueue(prefix, t);
-        } else {
-          const spaced = t.match(/^L(\d+)\s+(\d+)$/);
-          if (spaced) tampilEl.textContent = formatQueue(spaced[1], spaced[2]);
-        }
-      }
+      const el = document.getElementById('nomortampil-' + i);
+      if (!el) continue;
+      if (onlyDigits(el.textContent || '') !== String(g)) el.textContent = String(g);
     }
   }
 
   function trackAntrianIndex(): void {
-    intervalPoll(function () {
+    intervalPoll(() => {
       const w = window as unknown as Record<string, unknown>;
       const antrian = w.antrian as ((a: number) => unknown) | undefined;
       if (
         typeof antrian !== 'function' ||
-        (antrian as { __extPrintHooked?: boolean }).__extPrintHooked
+        (antrian as { __extTrackHooked?: boolean }).__extTrackHooked
       )
         return;
       const wrapped = function (a: number) {
         lastAntrianIndex = a;
         return antrian(a);
       };
-      (wrapped as { __extPrintHooked?: boolean }).__extPrintHooked = true;
+      (wrapped as { __extTrackHooked?: boolean }).__extTrackHooked = true;
       w.antrian = wrapped;
     });
   }
 
-  // Hook jQuery ajax: setelah server konfirmasi, cetak tiket berformat L{n}-{3digit}
+  // Hook jQuery ajax: setelah server mengonfirmasi, alokasikan nomor GLOBAL,
+  // tampilkan + broadcast, lalu cetak tiket dengan nomor global tersebut.
   function hookPrintAjax(): void {
-    intervalPoll(function () {
+    intervalPoll(() => {
       const w = window as unknown as Record<string, unknown>;
       const $ = w.$ as { ajax?: unknown } | undefined;
       const origAjax = $?.ajax as ((settings: unknown) => unknown) | undefined;
@@ -164,7 +214,6 @@
         if (url.includes('/mesin-antrian/control/mesin-antrian') && method === 'POST') {
           const origSuccess = opts.success;
           opts.success = function (data: unknown, ...rest: unknown[]) {
-            // Biarkan fungsi asli jalan dulu (update #nomor, ws, swal, reload)
             let result: unknown;
             if (typeof origSuccess === 'function') {
               result = (origSuccess as (data: unknown, ...rest: unknown[]) => unknown).apply(this, [
@@ -172,21 +221,17 @@
                 ...rest,
               ]);
             }
-            const d = data as { status?: number; antrianSelanjutnya?: number | string } | null;
-            if (d && typeof d === 'object' && d.status === 200) {
+            const isOk = data && typeof data === 'object' && (data as { status?: number }).status;
+            if (isOk === 200) {
+              const n = allocGlobalCounter();
+              broadcastGlobal(n);
               const idx = lastAntrianIndex;
               const namaLoket = document.getElementById(
                 'polinama-' + idx,
               ) as HTMLInputElement | null;
-              const kode = document.getElementById('kode-' + idx) as HTMLInputElement | null;
-              const prefix = kode ? loketNum(kode.value) : '';
-              if (prefix && namaLoket && d.antrianSelanjutnya != null) {
-                // Normalisasi tampilan nomor yang ditulis fungsi asli ("L1 82" -> "L1-082")
-                const tampil = document.getElementById('nomortampil-' + idx);
-                if (tampil)
-                  tampil.textContent = formatQueue(prefix, Number(d.antrianSelanjutnya) + 1);
-                cetakStrukAntrian(formatQueue(prefix, d.antrianSelanjutnya), namaLoket.value);
-              }
+              const tampil = document.getElementById('nomortampil-' + idx);
+              if (tampil) tampil.textContent = String(n);
+              if (namaLoket) cetakStrukAntrian(String(n), namaLoket.value);
             }
             return result;
           };
@@ -201,32 +246,47 @@
   // ==================== DISPLAY (TV) & COUNTER (PETUGAS) ====================
 
   function initDisplay(): void {
-    watchPrefixes(); // v1: kartu carousel (.card .isi)
+    connectGlobalWs();
+    seedGlobalCounter();
+    applyDisplayGlobal();
+    setInterval(applyDisplayGlobal, 2000);
+
     const nomorEl = document.getElementById('antrian-aktif-nomor');
     if (!nomorEl) return; // bukan halaman v2
-    // v2: prefix nomor awal yang di-render server ("72" -> "L1-072")
-    const loketEl = document.getElementById('antrian-aktif-loket');
-    const t = (nomorEl.textContent || '').trim();
-    if (loketEl && /^\d+$/.test(t))
-      nomorEl.textContent = formatQueue(loketNum(loketEl.textContent || ''), t);
     startV2Polling();
   }
 
-  function initCounter(): void {
-    watchPrefixes();
+  // Tampilkan nomor global terbar hanya pada elemen "nomor utam o". Kartu
+  // carousel (.card) dibiarkan membaca ws terpisah agar tidak bentrok layout.
+  function applyDisplayGlobal(): void {
+    const g = readGlobal();
+    if (g <= 0) return;
+    document
+      .querySelectorAll<HTMLElement>('#antrian-aktif-nomor, [id^="nomortampil-"]')
+      .forEach(function (el) {
+        if (el.closest('.card')) return;
+        if (onlyDigits(el.textContent || '') !== String(g)) el.textContent = String(g);
+      });
   }
 
-  // Polling fallback: WebSocket (ws://host:8088) sering putus/blokir, layar beku.
-  // Cek data terbaru tiap 5 detik, pakai XHR biar tetap jalan walau jQuery gagal load.
+  function initCounter(): void {
+    connectGlobalWs();
+    seedGlobalCounter();
+    applyDisplayGlobal();
+    setInterval(applyDisplayGlobal, 2000);
+  }
+
+  // Polling fallback: WebSocket (ws://:8088) sering putus/blokir, layar membeku.
+  // CEK data terbaru tiap 5 detik, pakai XHR biar tetap jalan walau jQuery gagal load.
   function startV2Polling(): void {
-    const tick = function () {
+    const tick = () => {
       try {
         const xhr = new XMLHttpRequest();
         xhr.open('POST', '/public/counter-antrian/data', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
         xhr.timeout = 10000;
-        xhr.onload = function () {
+        xhr.onload = () => {
           try {
             const ct = xhr.getResponseHeader('Content-Type') || '';
             if (ct.includes('text/html') || ct.includes('text/plain')) return; // session expired
@@ -234,16 +294,14 @@
               NOMOR?: string | number;
               NAMA?: string;
             } | null;
-            if (!r || r.NOMOR == null) return;
+            if (!r) return;
+            const globalN = readGlobal();
             const nomorEl = document.getElementById('antrian-aktif-nomor');
             const loketEl = document.getElementById('antrian-aktif-loket');
-            if (!nomorEl) return;
-            const prefix = loketNum(loketEl?.textContent || '');
-            const num = String(r.NOMOR);
-            const padded = prefix && /^\d+$/.test(num) ? formatQueue(prefix, num) : num;
-            if ((nomorEl.textContent || '').trim() !== padded) nomorEl.textContent = padded;
-            if (loketEl) {
-              const nama = String(r.NAMA || '-')
+            if (nomorEl && globalN > 0) nomorEl.textContent = String(globalN);
+            else if (nomorEl && r.NOMOR != null) nomorEl.textContent = String(r.NOMOR);
+            if (loketEl && r.NAMA) {
+              const nama = String(r.NAMA)
                 .replace(/^LOKET\s+/i, '')
                 .toUpperCase();
               const loketText = 'LOKET ' + nama;
@@ -284,7 +342,9 @@
       webkitExitFullscreen?: () => void;
       webkitFullscreenElement?: Element | null;
     };
-    const el = document.documentElement as HTMLElement & { webkitRequestFullscreen?: () => void };
+    const el = document.documentElement as HTMLElement & {
+      webkitRequestFullscreen?: () => void;
+    };
     const isFullscreen = Boolean(document.fullscreenElement || doc.webkitFullscreenElement);
     if (isFullscreen) {
       if (document.exitFullscreen) document.exitFullscreen();
