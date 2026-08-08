@@ -6,6 +6,7 @@ import { StatusCard } from './StatusCard';
 import { FeaturesPanel } from './FeaturesPanel';
 import { DomainPanel } from './DomainPanel';
 import { Footer } from './Footer';
+import { UsageLogPanel } from './UsageLogPanel';
 
 async function loadAll(): Promise<{ config: ExtensionConfig | null; urls: CustomUrl[] }> {
   try {
@@ -242,6 +243,11 @@ export function App() {
             onRemove={handleRemoveUrl}
             onToggle={handleToggleUrl}
           />
+        </div>
+
+        {/* Usage Log Section */}
+        <div className="px-4 pb-2">
+          <UsageLogPanel />
         </div>
 
         {/* Footer */}

@@ -45,6 +45,33 @@ var __morbis_init = (() => {
     return evaluate(match, ctx).matched;
   }
 
+  // src/features/shared/usageLog.ts
+  var KEY = 'extUsageLog';
+  var MAX_AGE_MS = 7 * 24 * 60 * 60 * 1e3;
+  var MAX_ENTRIES = 2e3;
+  async function logUsage(feature, event, ok, detail) {
+    try {
+      const { [KEY]: existing } = await chrome.storage.local.get(KEY);
+      const now = Date.now();
+      const entry = {
+        ts: now,
+        feature,
+        event,
+        ok,
+        detail:
+          detail instanceof Error
+            ? `${detail.name}: ${detail.message}`
+            : detail !== void 0
+              ? String(detail)
+              : void 0,
+        url: typeof location !== 'undefined' ? location.href : void 0,
+      };
+      const kept = (existing ?? []).filter((e) => now - e.ts < MAX_AGE_MS).concat(entry);
+      const trimmed = kept.slice(-MAX_ENTRIES);
+      await chrome.storage.local.set({ [KEY]: trimmed });
+    } catch {}
+  }
+
   // src/init.ts
   async function initExtension() {
     window.log('Menginisialisasi Open Detail Extension (Modular)');
@@ -151,28 +178,56 @@ var __morbis_init = (() => {
         !featureConfig.enabled ||
         !window.ExtensionCore.isFeatureAllowed(key)
       ) {
+        logUsage(
+          key,
+          'skip',
+          true,
+          'disabled or not allowed for role ' + window.ExtensionCore.getCurrentRole(),
+        );
         window.log(
           `Feature ${key} skipped: disabled or not allowed for role ${window.ExtensionCore.getCurrentRole()}`,
         );
         continue;
       }
       if (!matchPage(module.match, ctx)) {
+        logUsage(key, 'skip', true, 'URL mismatch');
         window.log(`Feature ${key} skipped: URL mismatch`);
         continue;
       }
       if (module.enabledWhen && !module.enabledWhen(ctx)) {
+        logUsage(key, 'skip', true, 'enabledWhen returned false');
         window.log(`Feature ${key} skipped: enabledWhen returned false`);
         continue;
       }
       window.log(`Running feature: ${module.name}`);
+      logUsage(key, 'run', true, module.name);
       try {
         module.run();
       } catch (error) {
         console.error(`[OpenDetail Extension] Error running feature ${key}:`, error);
+        logUsage(key, 'run', false, error instanceof Error ? error : String(error));
       }
     }
     window.log('Extension initialized successfully');
   }
+  window.addEventListener('message', (event) => {
+    const data = event.data;
+    const entry = data?.__extUsageLog;
+    if (!entry || !entry.feature) return;
+    logUsage(entry.feature, entry.event ?? 'event', entry.ok ?? true, entry.detail);
+  });
+  window.addEventListener('error', (event) => {
+    logUsage('global', 'error', false, `${event.message} @ ${event.filename}:${event.lineno}`);
+  });
+  window.addEventListener('unhandledrejection', (event) => {
+    const reason = event.reason;
+    logUsage(
+      'global',
+      'unhandledrejection',
+      false,
+      reason instanceof Error ? `${reason.name}: ${reason.message}` : String(reason ?? 'unknown'),
+    );
+  });
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initExtension);
   } else {

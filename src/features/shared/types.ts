@@ -23,6 +23,16 @@ export interface FeatureModule {
   run: () => void;
 }
 
+/** Satu entry log penggunaan/error fitur (usageLog.ts). */
+export interface UsageLogEntry {
+  ts: number;
+  feature: string;
+  event: string;
+  ok: boolean;
+  detail?: string;
+  url?: string;
+}
+
 export interface MorbisConfig {
   extensionEnabled: boolean;
   currentRole: string;
@@ -68,6 +78,3 @@ export interface MorbisGlobals {
 export function getMorbisGlobals(): MorbisGlobals {
   return window as unknown as MorbisGlobals;
 }
-
-declare const _doc: Document;
-declare const _chrome: typeof chrome;

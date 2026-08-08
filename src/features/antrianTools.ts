@@ -112,6 +112,16 @@ import { createDayCounter, dateKey, type DayState } from './antrianCounter';
   let socket: WebSocket | null = null;
   let socketOpen = false;
 
+  // Log usage via postMessage -> diteruskan isolated world (init.ts) ke
+  // chrome.storage.local. Script ini jalan di world:"MAIN" tanpa chrome API.
+  function extLog(event: string, ok: boolean, detail?: unknown): void {
+    try {
+      window.postMessage({ __extUsageLog: { feature: 'antrianTools', event, ok, detail } }, '*');
+    } catch {
+      /* noop */
+    }
+  }
+
   function wsUrl(): string {
     // Transport global lintas jaringan: tunnel Cloudflare (antrian-ws-relay di
     // server minipacs). Semua client (mesin/TV/counter) pakai SATU endpoint yg
@@ -124,6 +134,7 @@ import { createDayCounter, dateKey, type DayState } from './antrianCounter';
       socket = new WebSocket(wsUrl());
       socket.onopen = () => {
         socketOpen = true;
+        extLog('ws_open', true, wsUrl());
         // Meson = authority state harian. Begitu ws konek, kirim snapshot hari
         // ini supaya display yang baru nyala / restart langsung punya riwayat
         // mapping lokal->global utk RECOVERY, tak harus nunggu tiket berikutnya.
@@ -131,9 +142,11 @@ import { createDayCounter, dateKey, type DayState } from './antrianCounter';
       };
       socket.onclose = () => {
         socketOpen = false;
+        extLog('ws_close', true);
         setTimeout(connectGlobalWs, 4000);
       };
       socket.onerror = () => {
+        extLog('ws_error', false, wsUrl());
         try {
           socket?.close();
         } catch {
@@ -143,7 +156,8 @@ import { createDayCounter, dateKey, type DayState } from './antrianCounter';
       socket.onmessage = (ev) => {
         handleWsMessage(String(ev.data || ''));
       };
-    } catch {
+    } catch (e) {
+      extLog('ws_connect_failed', false, e instanceof Error ? e.message : String(e));
       /* ws unavailable */
     }
   }
@@ -159,6 +173,7 @@ import { createDayCounter, dateKey, type DayState } from './antrianCounter';
   }
 
   function broadcastGlobal(n: number, loketIndex: number, loketNumber: number): void {
+    extLog('broadcast_gcounter', true, `g=${n} loket=${loketIndex} local=${loketNumber}`);
     sendJson({
       channel: WS_CHANNEL,
       type: 'gcounter',
@@ -172,6 +187,7 @@ import { createDayCounter, dateKey, type DayState } from './antrianCounter';
   function sendSnapshot(): void {
     const d = counter.readDay();
     if (d.g > 0 || Object.keys(d.order).length > 0) {
+      extLog('send_snapshot', true, `g=${d.g} loket=${Object.keys(d.order).length}`);
       sendJson({ channel: WS_CHANNEL, type: 'snapshot', state: d, date: dateKey() });
     }
   }
@@ -194,6 +210,7 @@ import { createDayCounter, dateKey, type DayState } from './antrianCounter';
         const d = parseDate(date);
         if (d && dateKey(d) === dateKey(new Date())) counter.restoreDay(snap, d);
       }
+      extLog('recv_snapshot', true, `g=${snap?.g}`);
       return;
     }
     if (data.type !== 'gcounter') return;

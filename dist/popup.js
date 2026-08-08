@@ -18,7 +18,7 @@ import {
   v as g,
   x as _,
   y as v,
-} from './chunks/button-Bsklaqj_.js';
+} from './chunks/button-CO7QLSFO.js';
 var y = _(n(), 1),
   b = v(),
   x = a(),
@@ -297,7 +297,122 @@ function D({ onReload: e, onReset: t }) {
     ],
   });
 }
-async function O() {
+var O = `extUsageLog`;
+async function k() {
+  try {
+    let { [O]: e } = await chrome.storage.local.get(O);
+    return [...(e ?? [])].reverse();
+  } catch {
+    return [];
+  }
+}
+async function A() {
+  try {
+    await chrome.storage.local.remove(O);
+  } catch {}
+}
+function j(e) {
+  let t = new Date(e),
+    n = (e) => String(e).padStart(2, `0`);
+  return `${t.getDate()}/${t.getMonth() + 1} ${n(t.getHours())}:${n(t.getMinutes())}:${n(t.getSeconds())}`;
+}
+function M() {
+  let [e, t] = (0, y.useState)([]),
+    [n, r] = (0, y.useState)(!1),
+    i = (0, y.useCallback)(() => {
+      k().then((e) => t(e.slice(0, 50)));
+    }, []);
+  (0, y.useEffect)(() => {
+    n && i();
+  }, [n, i]);
+  let a = e.filter((e) => !e.ok).length,
+    o = (0, y.useCallback)(() => {
+      confirm(`Hapus semua log penggunaan di komputer ini?`) &&
+        A().then(() => {
+          (t([]), i());
+        });
+    }, [i]);
+  return n
+    ? (0, x.jsxs)(`div`, {
+        className: `border border-border rounded-md bg-background`,
+        children: [
+          (0, x.jsxs)(`div`, {
+            className: `flex items-center justify-between px-3 py-1.5 border-b border-border`,
+            children: [
+              (0, x.jsx)(`span`, {
+                className: `text-[10px] font-semibold text-muted-foreground uppercase tracking-wider`,
+                children: `Log Penggunaan (7 hari terakhir)`,
+              }),
+              (0, x.jsxs)(`div`, {
+                className: `flex gap-1`,
+                children: [
+                  (0, x.jsx)(`button`, {
+                    onClick: o,
+                    className: `text-[10px] px-2 py-0.5 rounded bg-destructive/10 text-destructive hover:bg-destructive/20`,
+                    children: `Hapus`,
+                  }),
+                  (0, x.jsx)(`button`, {
+                    onClick: () => r(!1),
+                    className: `text-[10px] px-2 py-0.5 rounded bg-accent text-foreground`,
+                    children: `Tutup`,
+                  }),
+                ],
+              }),
+            ],
+          }),
+          (0, x.jsxs)(`div`, {
+            className: `max-h-[220px] overflow-y-auto p-1.5 space-y-1 font-mono text-[10px]`,
+            children: [
+              e.length === 0 &&
+                (0, x.jsx)(`p`, {
+                  className: `text-muted-foreground p-1`,
+                  children: `Belum ada log.`,
+                }),
+              e.map((e, t) =>
+                (0, x.jsxs)(
+                  `div`,
+                  {
+                    className: `flex gap-1.5 items-start rounded px-1.5 py-1 ${e.ok ? `bg-muted/40` : `bg-destructive/10`}`,
+                    children: [
+                      (0, x.jsx)(`span`, {
+                        className: `text-muted-foreground shrink-0`,
+                        children: j(e.ts),
+                      }),
+                      (0, x.jsx)(`span`, {
+                        className: e.ok ? `text-foreground` : `text-destructive`,
+                        children: e.feature,
+                      }),
+                      (0, x.jsx)(`span`, { className: `text-muted-foreground`, children: e.event }),
+                      e.detail &&
+                        (0, x.jsx)(`span`, {
+                          className: `text-muted-foreground truncate max-w-[140px]`,
+                          children: e.detail,
+                        }),
+                    ],
+                  },
+                  t,
+                ),
+              ),
+            ],
+          }),
+        ],
+      })
+    : (0, x.jsxs)(`button`, {
+        onClick: () => r(!0),
+        className: `w-full flex items-center justify-between px-3 py-2 rounded-md border border-border bg-background hover:bg-accent text-md-xs`,
+        children: [
+          (0, x.jsx)(`span`, {
+            className: `text-muted-foreground`,
+            children: `Log Penggunaan (7 hari)`,
+          }),
+          (0, x.jsx)(`span`, {
+            className: `text-md-xs font-semibold ${a > 0 ? `text-red-500` : `text-green-500`}`,
+            children: e.length === 0 ? `muat…` : `${e.length} entri${a > 0 ? ` · ${a} error` : ``}`,
+          }),
+        ],
+      });
+}
+async function N() {
   try {
     let t = await g({ type: e.GET_ALL });
     if (t?.config) return { config: t.config, urls: t.urls ?? [] };
@@ -308,18 +423,18 @@ async function O() {
     urls: t.extensionCustomUrls ?? [],
   };
 }
-function k() {
+function P() {
   chrome.tabs.query({ active: !0, currentWindow: !0 }, (e) => {
     e[0]?.id && (chrome.tabs.reload(e[0].id), window.close());
   });
 }
-function A() {
+function F() {
   let [t, n] = (0, y.useState)(!0),
     [r, i] = (0, y.useState)(null),
     [a, s] = (0, y.useState)([]),
     [c, l] = (0, y.useState)(null);
   (0, y.useEffect)(() => {
-    O().then((e) => {
+    N().then((e) => {
       (i(e.config), s(e.urls), n(!1));
     });
   }, []);
@@ -334,7 +449,7 @@ function A() {
           u(`Gagal mengubah status extension`),
         ),
         u(t ? `Extension diaktifkan` : `Extension dinonaktifkan`),
-        k());
+        P());
     }, [r, u]),
     f = (0, y.useCallback)(
       (t) => {
@@ -342,7 +457,7 @@ function A() {
           (i({ ...r, currentRole: t }),
           g({ type: e.SET_ROLE, role: t }).catch(() => u(`Gagal mengubah role`)),
           u(`Role berhasil diubah`),
-          k());
+          P());
       },
       [r, u],
     ),
@@ -351,7 +466,7 @@ function A() {
         r?.features[t] &&
           (i({ ...r, features: { ...r.features, [t]: { ...r.features[t], enabled: n } } }),
           g({ type: e.TOGGLE_FEATURE, key: t, enabled: n }).catch(() => u(`Gagal mengubah fitur`)),
-          k());
+          P());
       },
       [r, u],
     ),
@@ -370,7 +485,7 @@ function A() {
         (s((e) => [...e, n]),
           g({ type: e.ADD_URL, url: t }).catch(() => u(`Gagal menambah URL`)),
           u(`URL berhasil ditambahkan`),
-          k());
+          P());
       },
       [u],
     ),
@@ -378,7 +493,7 @@ function A() {
       (t) => {
         (s((e) => e.filter((e) => e.id !== t)),
           g({ type: e.DELETE_URL, id: t }).catch(() => u(`Gagal menghapus URL`)),
-          k());
+          P());
       },
       [u],
     ),
@@ -386,7 +501,7 @@ function A() {
       (t, n) => {
         (s((e) => e.map((e) => (e.id === t ? { ...e, enabled: n } : e))),
           g({ type: e.TOGGLE_URL, id: t, enabled: n }).catch(() => u(`Gagal mengubah URL`)),
-          k());
+          P());
       },
       [u],
     ),
@@ -395,8 +510,8 @@ function A() {
         (g({ type: e.RESET_CONFIG }).catch(() => u(`Gagal mereset konfigurasi`)),
         l(`Reset ke default`),
         setTimeout(() => {
-          O().then((e) => {
-            (i(e.config), s(e.urls), k());
+          N().then((e) => {
+            (i(e.config), s(e.urls), P());
           });
         }, 500));
     }, [u]);
@@ -481,7 +596,8 @@ function A() {
                   (0, x.jsx)(E, { urls: a, onAdd: h, onRemove: _, onToggle: v }),
                 ],
               }),
-              (0, x.jsx)(D, { onReload: k, onReset: b }),
+              (0, x.jsx)(`div`, { className: `px-4 pb-2`, children: (0, x.jsx)(M, {}) }),
+              (0, x.jsx)(D, { onReload: P, onReset: b }),
               c &&
                 (0, x.jsx)(`div`, {
                   className: `fixed bottom-4 left-1/2 -translate-x-1/2 z-50 animate-slide-up`,
@@ -502,5 +618,5 @@ function A() {
           }),
         });
 }
-var j = document.getElementById(`root`);
-j && (0, b.createRoot)(j).render((0, x.jsx)(A, {}));
+var I = document.getElementById(`root`);
+I && (0, b.createRoot)(I).render((0, x.jsx)(F, {}));

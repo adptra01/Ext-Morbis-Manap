@@ -194,6 +194,11 @@ var __morbis_feature = (() => {
     }
     let socket = null;
     let socketOpen = false;
+    function extLog(event, ok, detail) {
+      try {
+        window.postMessage({ __extUsageLog: { feature: 'antrianTools', event, ok, detail } }, '*');
+      } catch {}
+    }
     function wsUrl() {
       return 'ws://antrian-relay.rsud-manap.systemwebsite.my.id';
     }
@@ -202,13 +207,16 @@ var __morbis_feature = (() => {
         socket = new WebSocket(wsUrl());
         socket.onopen = () => {
           socketOpen = true;
+          extLog('ws_open', true, wsUrl());
           if (isMeson) sendSnapshot();
         };
         socket.onclose = () => {
           socketOpen = false;
+          extLog('ws_close', true);
           setTimeout(connectGlobalWs, 4e3);
         };
         socket.onerror = () => {
+          extLog('ws_error', false, wsUrl());
           try {
             socket?.close();
           } catch {}
@@ -216,7 +224,9 @@ var __morbis_feature = (() => {
         socket.onmessage = (ev) => {
           handleWsMessage(String(ev.data || ''));
         };
-      } catch {}
+      } catch (e) {
+        extLog('ws_connect_failed', false, e instanceof Error ? e.message : String(e));
+      }
     }
     function sendJson(payload) {
       if (socketOpen && socket) {
@@ -226,6 +236,7 @@ var __morbis_feature = (() => {
       }
     }
     function broadcastGlobal(n, loketIndex, loketNumber) {
+      extLog('broadcast_gcounter', true, `g=${n} loket=${loketIndex} local=${loketNumber}`);
       sendJson({
         channel: WS_CHANNEL,
         type: 'gcounter',
@@ -238,6 +249,7 @@ var __morbis_feature = (() => {
     function sendSnapshot() {
       const d = counter.readDay();
       if (d.g > 0 || Object.keys(d.order).length > 0) {
+        extLog('send_snapshot', true, `g=${d.g} loket=${Object.keys(d.order).length}`);
         sendJson({ channel: WS_CHANNEL, type: 'snapshot', state: d, date: dateKey() });
       }
     }
@@ -256,6 +268,7 @@ var __morbis_feature = (() => {
           const d = parseDate(date2);
           if (d && dateKey(d) === dateKey(/* @__PURE__ */ new Date())) counter.restoreDay(snap, d);
         }
+        extLog('recv_snapshot', true, `g=${snap?.g}`);
         return;
       }
       if (data.type !== 'gcounter') return;

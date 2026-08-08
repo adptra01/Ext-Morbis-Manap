@@ -1,5 +1,6 @@
 import type { ExtensionConfig, CustomUrl, Role, FeatureModule, FeatureContext } from './types.js';
 import { matchPage, normalizePath } from './features/shared/featureMatch.js';
+import { logUsage } from './features/shared/usageLog.js';
 
 declare global {
   interface Window {
@@ -148,6 +149,12 @@ async function initExtension(): Promise<void> {
       !featureConfig.enabled ||
       !window.ExtensionCore.isFeatureAllowed(key)
     ) {
+      logUsage(
+        key,
+        'skip',
+        true,
+        'disabled or not allowed for role ' + window.ExtensionCore.getCurrentRole(),
+      );
       window.log(
         `Feature ${key} skipped: disabled or not allowed for role ${window.ExtensionCore.getCurrentRole()}`,
       );
@@ -155,25 +162,55 @@ async function initExtension(): Promise<void> {
     }
 
     if (!matchPage(module.match, ctx)) {
+      logUsage(key, 'skip', true, 'URL mismatch');
       window.log(`Feature ${key} skipped: URL mismatch`);
       continue;
     }
 
     if (module.enabledWhen && !module.enabledWhen(ctx)) {
+      logUsage(key, 'skip', true, 'enabledWhen returned false');
       window.log(`Feature ${key} skipped: enabledWhen returned false`);
       continue;
     }
 
     window.log(`Running feature: ${module.name}`);
+    logUsage(key, 'run', true, module.name);
     try {
       module.run();
     } catch (error) {
       console.error(`[OpenDetail Extension] Error running feature ${key}:`, error);
+      logUsage(key, 'run', false, error instanceof Error ? error : String(error));
     }
   }
 
   window.log('Extension initialized successfully');
 }
+
+// Global error handler: tangkap error tak terduga di halaman + bridge log dari
+// script world:"MAIN" (yang TIDAK punya akses chrome.storage, mis. antrianTools).
+// MAIN world kirim window.postMessage({__extUsageLog: {...}}) -> diteruskan ke logUsage.
+window.addEventListener('message', (event: MessageEvent) => {
+  const data = event.data as {
+    __extUsageLog?: { feature?: string; event?: string; ok?: boolean; detail?: unknown };
+  } | null;
+  const entry = data?.__extUsageLog;
+  if (!entry || !entry.feature) return;
+  logUsage(entry.feature, entry.event ?? 'event', entry.ok ?? true, entry.detail);
+});
+
+window.addEventListener('error', (event: ErrorEvent) => {
+  logUsage('global', 'error', false, `${event.message} @ ${event.filename}:${event.lineno}`);
+});
+
+window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => {
+  const reason = event.reason;
+  logUsage(
+    'global',
+    'unhandledrejection',
+    false,
+    reason instanceof Error ? `${reason.name}: ${reason.message}` : String(reason ?? 'unknown'),
+  );
+});
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initExtension);
