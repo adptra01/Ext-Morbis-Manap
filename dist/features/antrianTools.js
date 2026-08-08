@@ -195,7 +195,7 @@ var __morbis_feature = (() => {
     let socket = null;
     let socketOpen = false;
     function wsUrl() {
-      return (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.hostname + ':8088';
+      return 'ws://antrian-relay.rsud-manap.systemwebsite.my.id';
     }
     function connectGlobalWs() {
       try {

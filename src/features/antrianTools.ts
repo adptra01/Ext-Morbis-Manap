@@ -113,7 +113,10 @@ import { createDayCounter, dateKey, type DayState } from './antrianCounter';
   let socketOpen = false;
 
   function wsUrl(): string {
-    return (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.hostname + ':8088';
+    // Transport global lintas jaringan: tunnel Cloudflare (antrian-ws-relay di
+    // server minipacs). Semua client (mesin/TV/counter) pakai SATU endpoint yg
+    // sama, tak peduli MORBIS diakses via IP berbeda (103.147.236.140 vs 192.168.8.4).
+    return 'ws://antrian-relay.rsud-manap.systemwebsite.my.id';
   }
 
   function connectGlobalWs(): void {
