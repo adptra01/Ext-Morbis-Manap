@@ -113,8 +113,8 @@
 
   function buildSpokenText(nomor: string, loket: string): string {
     const n = nomor || '';
-    if (!loket) return `Nomor ${n}`;
-    return `Nomor ${n}, silakan ke ${loket.toUpperCase()}`;
+    if (!loket) return `nomor antrian ${n}`;
+    return `nomor antrian ${n} di loket ${loket.toUpperCase()}`;
   }
 
   /* ---- AUTO-PRINT (mesin) ---- */
@@ -178,7 +178,7 @@
           (opt?.text || opt.value || '').replace(/^LOKET\s+/i, '').toUpperCase(),
         );
         const wrapped = function (this: unknown, antrian: string, nama: string) {
-          const spoken = buildSpokenText(antrian, 'Loket ' + loketName);
+          const spoken = buildSpokenText(antrian, loketName);
           speak(spoken);
           extLog('tts_call', true, { antrian, loket: loketName, spoken });
           return origCall.apply(this, [antrian, nama]);
@@ -220,7 +220,7 @@
             if (lastActive !== nomor + '|' + loket) {
               lastActive = nomor + '|' + loket;
               renderCard(loket, nomor);
-              speak(buildSpokenText(nomor, 'Loket ' + loket));
+              speak(buildSpokenText(nomor, loket));
               extLog('display_active', true, { nomor, loket });
             }
           } catch {

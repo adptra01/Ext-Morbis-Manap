@@ -98,8 +98,8 @@ var __morbis_feature = (() => {
     }
     function buildSpokenText(nomor, loket) {
       const n = nomor || '';
-      if (!loket) return `Nomor ${n}`;
-      return `Nomor ${n}, silakan ke ${loket.toUpperCase()}`;
+      if (!loket) return `nomor antrian ${n}`;
+      return `nomor antrian ${n} di loket ${loket.toUpperCase()}`;
     }
     function cetakStrukAntrian(nomor, loket) {
       const iframe = document.createElement('iframe');
@@ -156,7 +156,7 @@ var __morbis_feature = (() => {
             (opt?.text || opt.value || '').replace(/^LOKET\s+/i, '').toUpperCase(),
           );
           const wrapped = function (antrian, nama) {
-            const spoken = buildSpokenText(antrian, 'Loket ' + loketName);
+            const spoken = buildSpokenText(antrian, loketName);
             speak(spoken);
             extLog('tts_call', true, { antrian, loket: loketName, spoken });
             return origCall.apply(this, [antrian, nama]);
@@ -197,7 +197,7 @@ var __morbis_feature = (() => {
               if (lastActive !== nomor + '|' + loket) {
                 lastActive = nomor + '|' + loket;
                 renderCard(loket, nomor);
-                speak(buildSpokenText(nomor, 'Loket ' + loket));
+                speak(buildSpokenText(nomor, loket));
                 extLog('display_active', true, { nomor, loket });
               }
             } catch {}
