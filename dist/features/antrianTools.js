@@ -38,6 +38,7 @@ var __morbis_feature = (() => {
       }
     }
     function addFullscreenButton() {
+      if (document.getElementById('ext-fullscreen-btn')) return;
       const btn = document.createElement('button');
       btn.id = 'ext-fullscreen-btn';
       btn.title = 'Fullscreen / Fit Screen Device';
@@ -98,8 +99,8 @@ var __morbis_feature = (() => {
     }
     function buildSpokenText(nomor, loket) {
       const n = nomor || '';
-      if (!loket) return `nomor antrian ${n}`;
-      return `nomor antrian ${n} di loket ${loket.toUpperCase()}`;
+      if (!loket) return `Nomor antrian ${n}`;
+      return `Nomor antrian ${n}, ke loket ${loket.toUpperCase()}`;
     }
     function buildStrukHtml(nomor, loket) {
       return `<html><head><style>@page{ size: 80mm 120mm; margin:0; } body{font-family:"Courier New",Courier,monospace;width:70mm;margin:0 auto;padding:20px 10px;text-align:center;color:#000;} .header{border-bottom:2px dashed #000;padding-bottom:10px;margin-bottom:15px;} .nomor{font-size:64px;font-weight:bold;margin:20px 0;} .loket{font-size:20px;font-weight:bold;margin-bottom:10px;} .footer{border-top:2px dashed #000;padding-top:10px;margin-top:20px;font-size:13px;}</style></head><body><div class="header"><h2>RSUD H. ABDUL MANAP</h2><small>SISTEM ANTRIAN</small></div>${loket ? `<div class="loket">${loket.toUpperCase()}</div>` : ''}<div>NOMOR ANTRIAN ANDA</div><div class="nomor">${nomor}</div><div>Mohon menunggu nomor Anda dipanggil</div><div class="footer">${/* @__PURE__ */ new Date().toLocaleString('id-ID')}</div></body></html>`;
@@ -144,9 +145,10 @@ var __morbis_feature = (() => {
       const path = window.location.pathname;
       const isViewAntrian = path.endsWith('/counter-antrian/view-antrian');
       showActiveBadge();
-      if (path.includes('/mesin-antrian')) addFullscreenButton();
-      if (isViewAntrian) addFullscreenButton();
-      if (path.includes('/counter-antrian/counter')) addFullscreenButton();
+      const initMesin = () => {
+        addFullscreenButton();
+        intervalPoll(attachPrintClick);
+      };
       const attachPrintClick = () => {
         document.querySelectorAll('[onclick^="antrian("]').forEach((card) => {
           if (card.__extPrintHooked) return;
@@ -155,18 +157,29 @@ var __morbis_feature = (() => {
             'click',
             () => {
               const nomorEl = card.querySelector('[id^="nomortampil-"]');
-              const nomor = onlyDigits(nomorEl?.textContent || '');
+              const nomor =
+                onlyDigits(nomorEl?.textContent || '') ||
+                onlyDigits(card.querySelector('[id^="nomor-"]')?.getAttribute('value') || '');
               if (!nomor) return;
-              const idx = card.id.replace('nomortampil-', '');
-              cetakStrukAntrian(nomor, '');
-              extLog('mesin_ticket', true, { idx, nomor });
+              const m = String(card.getAttribute('onclick') || '').match(/antrian\((\d+)\)/);
+              const idx = m ? m[1] : '';
+              const loket = String(
+                card.querySelector('[id^="polinama-"]')?.getAttribute('value') || '',
+              )
+                .trim()
+                .toUpperCase();
+              cetakStrukAntrian(nomor, loket);
+              extLog('mesin_ticket', true, { idx, nomor, loket });
             },
             true,
             // capture: jalan sebelum event server (antrian) & sebelum reload
           );
         });
       };
-      intervalPoll(attachPrintClick);
+      const initCounter = () => {
+        addFullscreenButton();
+        hookCallTTS();
+      };
       function hookCallTTS() {
         intervalPoll(() => {
           const w = window;
@@ -189,7 +202,7 @@ var __morbis_feature = (() => {
           w.call = wrapped;
         });
       }
-      function initDisplay() {
+      const initDisplay = () => {
         addFullscreenButton();
         injectCSS('ext-antrian-display-css', [
           // stage: 40% card kiri, 60% area kanan kosong
@@ -217,7 +230,7 @@ var __morbis_feature = (() => {
           '@keyframes extMarquee{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}',
           '@media(max-width:768px){#ext-display-footer{height:32px;}.ext-marquee span{font-size:11px;}}',
         ]);
-        let lastActive = '';
+        let lastCallId = '';
         const pollActive = () => {
           const xhr = new XMLHttpRequest();
           xhr.open('POST', '/public/counter-antrian/data', true);
@@ -235,10 +248,11 @@ var __morbis_feature = (() => {
                   .replace(/^LOKET\s+/i, '')
                   .toUpperCase()
                   .trim() || '-';
-              if (lastActive !== nomor + '|' + loket) {
-                lastActive = nomor + '|' + loket;
+              const callId = String(r.ID || '');
+              if (callId && callId !== lastCallId) {
+                lastCallId = callId;
                 speak(buildSpokenText(nomor, loket));
-                extLog('display_active', true, { nomor, loket });
+                extLog('display_active', true, { nomor, loket, id: callId });
               }
             } catch {}
           };
@@ -247,13 +261,13 @@ var __morbis_feature = (() => {
         };
         pollActive();
         intervalPoll(pollActive);
-      }
+      };
       if (path.includes('/mesin-antrian')) {
-        addFullscreenButton();
+        initMesin();
       } else if (isViewAntrian) {
         initDisplay();
       } else if (path.includes('/counter-antrian/counter')) {
-        hookCallTTS();
+        initCounter();
       }
     }
     window.addEventListener('beforeunload', () => {

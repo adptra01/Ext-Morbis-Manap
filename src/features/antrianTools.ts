@@ -47,6 +47,7 @@
   }
 
   function addFullscreenButton(): void {
+    if (document.getElementById('ext-fullscreen-btn')) return; // anti-duplikat
     const btn = document.createElement('button');
     btn.id = 'ext-fullscreen-btn';
     btn.title = 'Fullscreen / Fit Screen Device';
@@ -113,8 +114,8 @@
 
   function buildSpokenText(nomor: string, loket: string): string {
     const n = nomor || '';
-    if (!loket) return `nomor antrian ${n}`;
-    return `nomor antrian ${n} di loket ${loket.toUpperCase()}`;
+    if (!loket) return `Nomor antrian ${n}`;
+    return `Nomor antrian ${n}, ke loket ${loket.toUpperCase()}`;
   }
 
   /* ---- AUTO-PRINT (mesin) ---- */
@@ -167,10 +168,11 @@
     // redesign display HANYA di view-antrian v1 (bukan view-antrian-v2)
     const isViewAntrian = path.endsWith('/counter-antrian/view-antrian');
     showActiveBadge();
-    if (path.includes('/mesin-antrian')) addFullscreenButton();
-    if (isViewAntrian) addFullscreenButton();
-    if (path.includes('/counter-antrian/counter')) addFullscreenButton();
-    /* ---- MESIN (print saat card antrian diklik) ---- */
+    /* ---- MESIN (auto-print saat card antrian diklik) ---- */
+    const initMesin = () => {
+      addFullscreenButton();
+      intervalPoll(attachPrintClick);
+    };
     const attachPrintClick = () => {
       // card mesin punya onclick="antrian(N)"; klik di mana pun di card = ambil antrian
       document.querySelectorAll('[onclick^="antrian("]').forEach((card) => {
@@ -180,19 +182,31 @@
           'click',
           () => {
             const nomorEl = card.querySelector('[id^="nomortampil-"]');
-            const nomor = onlyDigits(nomorEl?.textContent || '');
+            const nomor =
+              onlyDigits(nomorEl?.textContent || '') ||
+              onlyDigits(card.querySelector('[id^="nomor-"]')?.getAttribute('value') || '');
             if (!nomor) return;
-            const idx = (card as HTMLElement).id.replace('nomortampil-', '');
-            // ponytail: nomor tampil = antrian yang baru diambil, bukan panggilan loket
-            cetakStrukAntrian(nomor, '');
-            extLog('mesin_ticket', true, { idx, nomor });
+            const m = String((card as HTMLElement).getAttribute('onclick') || '').match(
+              /antrian\((\d+)\)/,
+            );
+            const idx = m ? m[1] : '';
+            const loket = String(
+              card.querySelector('[id^="polinama-"]')?.getAttribute('value') || '',
+            )
+              .trim()
+              .toUpperCase();
+            cetakStrukAntrian(nomor, loket);
+            extLog('mesin_ticket', true, { idx, nomor, loket });
           },
           true, // capture: jalan sebelum event server (antrian) & sebelum reload
         );
       });
     };
-    intervalPoll(attachPrintClick);
     /* ---- COUNTER ---- */
+    const initCounter = () => {
+      addFullscreenButton();
+      hookCallTTS(); // sudah punya retry intervalPoll internal
+    };
     function hookCallTTS(): void {
       intervalPoll(() => {
         const w = window as unknown as Record<string, unknown>;
@@ -216,7 +230,7 @@
       });
     }
     /* ---- DISPLAY (v1) ---- */
-    function initDisplay(): void {
+    const initDisplay = () => {
       addFullscreenButton();
       // konsep "Papan Antrian": stage navy gelap, nomor monospace raksasa (rasa tiket mesin),
       // aksen amber, sweep cahaya saat nomor muncul, chip "Berikutnya" dari input hidden asli.
@@ -248,7 +262,7 @@
         '@media(max-width:768px){#ext-display-footer{height:32px;}.ext-marquee span{font-size:11px;}}',
       ]);
       // TTS saat nomor panggilan berubah (suara TV)
-      let lastActive = '';
+      let lastCallId = '';
       const pollActive = () => {
         const xhr = new XMLHttpRequest();
         xhr.open('POST', '/public/counter-antrian/data', true);
@@ -266,10 +280,12 @@
                 .replace(/^LOKET\s+/i, '')
                 .toUpperCase()
                 .trim() || '-';
-            if (lastActive !== nomor + '|' + loket) {
-              lastActive = nomor + '|' + loket;
+            // dedup via ID panggilan: nomor sama dipanggil ulang tetap bersuara
+            const callId = String(r.ID || '');
+            if (callId && callId !== lastCallId) {
+              lastCallId = callId;
               speak(buildSpokenText(nomor, loket));
-              extLog('display_active', true, { nomor, loket });
+              extLog('display_active', true, { nomor, loket, id: callId });
             }
           } catch {
             /* parse error */
@@ -280,14 +296,14 @@
       };
       pollActive();
       intervalPoll(pollActive);
-    }
+    };
     /* ---- ROUTING ---- */
     if (path.includes('/mesin-antrian')) {
-      addFullscreenButton();
+      initMesin();
     } else if (isViewAntrian) {
       initDisplay();
     } else if (path.includes('/counter-antrian/counter')) {
-      hookCallTTS();
+      initCounter();
     }
   }
 
