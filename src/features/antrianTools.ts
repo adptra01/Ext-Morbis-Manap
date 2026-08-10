@@ -148,22 +148,22 @@
     if (path.includes('/mesin-antrian')) addFullscreenButton();
     if (path.includes('/view-antrian') || path.includes('/display-val')) addFullscreenButton();
     if (path.includes('/counter-antrian/counter')) addFullscreenButton();
-    /* ---- MESIN (auto-print) ---- */
-    const lastNumbers: Record<string, string> = {};
-    const pollTicket = () => {
+    /* ---- MESIN (print saat nomor diklik) ---- */
+    const attachPrintClick = () => {
       document.querySelectorAll('[id^="nomortampil-"]').forEach((el) => {
-        const idx = el.id.replace('nomortampil-', '');
-        const nomor = onlyDigits(el.textContent || '');
-        if (!nomor) return;
-        if (lastNumbers[idx] === nomor) return;
-        lastNumbers[idx] = nomor;
-        // ponytail: idx "0" = antrian yang baru diambil, bukan panggilan loket
-        cetakStrukAntrian(nomor, idx === '0' ? '' : 'LOKET ' + idx);
-        speak(buildSpokenText(nomor, idx === '0' ? '' : 'LOKET ' + idx));
-        extLog('mesin_ticket', true, { idx, nomor });
+        if ((el as any).__extPrintHooked) return;
+        (el as any).__extPrintHooked = true;
+        el.addEventListener('click', () => {
+          const idx = el.id.replace('nomortampil-', '');
+          const nomor = onlyDigits(el.textContent || '');
+          if (!nomor) return;
+          // ponytail: idx "0" = antrian yang baru diambil, bukan panggilan loket
+          cetakStrukAntrian(nomor, idx === '0' ? '' : 'LOKET ' + idx);
+          extLog('mesin_ticket', true, { idx, nomor });
+        });
       });
     };
-    intervalPoll(pollTicket);
+    intervalPoll(attachPrintClick);
     /* ---- COUNTER ---- */
     function hookCallTTS(): void {
       intervalPoll(() => {

@@ -129,20 +129,20 @@ var __morbis_feature = (() => {
       if (path.includes('/mesin-antrian')) addFullscreenButton();
       if (path.includes('/view-antrian') || path.includes('/display-val')) addFullscreenButton();
       if (path.includes('/counter-antrian/counter')) addFullscreenButton();
-      const lastNumbers = {};
-      const pollTicket = () => {
+      const attachPrintClick = () => {
         document.querySelectorAll('[id^="nomortampil-"]').forEach((el) => {
-          const idx = el.id.replace('nomortampil-', '');
-          const nomor = onlyDigits(el.textContent || '');
-          if (!nomor) return;
-          if (lastNumbers[idx] === nomor) return;
-          lastNumbers[idx] = nomor;
-          cetakStrukAntrian(nomor, idx === '0' ? '' : 'LOKET ' + idx);
-          speak(buildSpokenText(nomor, idx === '0' ? '' : 'LOKET ' + idx));
-          extLog('mesin_ticket', true, { idx, nomor });
+          if (el.__extPrintHooked) return;
+          el.__extPrintHooked = true;
+          el.addEventListener('click', () => {
+            const idx = el.id.replace('nomortampil-', '');
+            const nomor = onlyDigits(el.textContent || '');
+            if (!nomor) return;
+            cetakStrukAntrian(nomor, idx === '0' ? '' : 'LOKET ' + idx);
+            extLog('mesin_ticket', true, { idx, nomor });
+          });
         });
       };
-      intervalPoll(pollTicket);
+      intervalPoll(attachPrintClick);
       function hookCallTTS() {
         intervalPoll(() => {
           const w = window;
@@ -235,20 +235,20 @@ var __morbis_feature = (() => {
       }
       if (path.includes('/mesin-antrian')) {
         addFullscreenButton();
-        const lastNumbers2 = {};
-        const pollTicket2 = () => {
+        const lastNumbers = {};
+        const pollTicket = () => {
           document.querySelectorAll('[id^="nomortampil-"]').forEach((el) => {
             const idx = el.id.replace('nomortampil-', '');
             const nomor = onlyDigits(el.textContent || '');
             if (!nomor) return;
-            if (lastNumbers2[idx] === nomor) return;
-            lastNumbers2[idx] = nomor;
+            if (lastNumbers[idx] === nomor) return;
+            lastNumbers[idx] = nomor;
             cetakStrukAntrian(nomor, 'LOKET ' + idx);
             speak(buildSpokenText(nomor, 'LOKET ' + idx));
             extLog('mesin_ticket', true, { idx, nomor });
           });
         };
-        intervalPoll(pollTicket2);
+        intervalPoll(pollTicket);
       } else if (path.includes('/view-antrian') || path.includes('/display-val')) {
         initDisplay();
       } else if (path.includes('/counter-antrian/counter')) {
