@@ -192,7 +192,7 @@ var __morbis_feature = (() => {
         addFullscreenButton();
         injectCSS('ext-antrian-display-css', [
           // stage
-          '#isi-val .card,.carousel-item .card{position:relative;width:100%;min-width:0;margin:0;float:none;border:none;border-radius:28px;overflow:hidden;background:radial-gradient(120% 140% at 20% 0%,rgba(45,212,191,.28) 0%,transparent 55%),radial-gradient(130% 150% at 85% 100%,rgba(30,58,138,.9) 0%,transparent 60%),linear-gradient(160deg,#071b33 0%,#0e2f5c 55%,#123f5e 100%);box-shadow:0 30px 80px rgba(2,10,25,.55),inset 0 1px 0 rgba(255,255,255,.08);}',
+          '#isi-val .card,.carousel-item .card{position:relative;width:40%;min-width:0;margin:0;float:left;border:none;border-radius:28px;overflow:hidden;background:radial-gradient(120% 140% at 20% 0%,rgba(45,212,191,.28) 0%,transparent 55%),radial-gradient(130% 150% at 85% 100%,rgba(30,58,138,.9) 0%,transparent 60%),linear-gradient(160deg,#071b33 0%,#0e2f5c 55%,#123f5e 100%);box-shadow:0 30px 80px rgba(2,10,25,.55),inset 0 1px 0 rgba(255,255,255,.08);}',
           // garis amber di tepi atas
           '#isi-val .card::before,.carousel-item .card::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,transparent,#f5b82e,transparent);opacity:.85;z-index:2;}',
           // sweep cahaya saat konten dimuat (AJAX reload memicu ulang animasi)
