@@ -142,9 +142,10 @@ var __morbis_feature = (() => {
     }
     function init() {
       const path = window.location.pathname;
+      const isViewAntrian = path.endsWith('/counter-antrian/view-antrian');
       showActiveBadge();
       if (path.includes('/mesin-antrian')) addFullscreenButton();
-      if (path.includes('/view-antrian') || path.includes('/display-val')) addFullscreenButton();
+      if (isViewAntrian) addFullscreenButton();
       if (path.includes('/counter-antrian/counter')) addFullscreenButton();
       const attachPrintClick = () => {
         document.querySelectorAll('[onclick^="antrian("]').forEach((card) => {
@@ -191,22 +192,12 @@ var __morbis_feature = (() => {
       function initDisplay() {
         addFullscreenButton();
         injectCSS('ext-antrian-display-css', [
-          // stage
-          '#isi-val .card,.carousel-item .card{position:relative;width:40%;min-width:0;margin:0;float:left;border:none;border-radius:28px;overflow:hidden;background:radial-gradient(120% 140% at 20% 0%,rgba(45,212,191,.28) 0%,transparent 55%),radial-gradient(130% 150% at 85% 100%,rgba(30,58,138,.9) 0%,transparent 60%),linear-gradient(160deg,#071b33 0%,#0e2f5c 55%,#123f5e 100%);box-shadow:0 30px 80px rgba(2,10,25,.55),inset 0 1px 0 rgba(255,255,255,.08);}',
-          // garis amber di tepi atas
-          '#isi-val .card::before,.carousel-item .card::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,transparent,#f5b82e,transparent);opacity:.85;z-index:2;}',
-          // sweep cahaya saat konten dimuat (AJAX reload memicu ulang animasi)
-          '#isi-val .card::after,.carousel-item .card::after{content:"";position:absolute;top:-60%;left:-80%;width:60%;height:220%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.14),transparent);transform:rotate(12deg);pointer-events:none;animation:extSweep 2.4s ease-in-out .3s 1;z-index:2;}',
-          '@keyframes extSweep{0%{left:-80%;}60%{left:130%;}100%{left:130%;}}',
-          // komposisi
-          '#isi-val .head,.carousel-item .head{text-align:center;padding:32px 24px;color:#f8fafc;min-height:72vh;display:flex;flex-direction:column;align-items:center;justify-content:center;}',
-          // kicker "ANTRIAN"
-          '#isi-val .judul,.carousel-item .judul{margin:0 0 6px;font-family:"Segoe UI",system-ui,sans-serif;font-size:clamp(14px,2.2vw,26px);font-weight:600;letter-spacing:.45em;text-transform:uppercase;color:#f5b82e;text-indent:.45em;}',
-          // nomor — monospace, rasa tiket mesin
-          '#isi-val .isi,.carousel-item .isi{font-family:"Cascadia Mono",Consolas,"SF Mono",ui-monospace,monospace;font-size:clamp(96px,18vw,260px);font-weight:700;line-height:1.05;color:#fff;font-variant-numeric:tabular-nums;text-shadow:0 4px 18px rgba(0,0,0,.45),0 0 60px rgba(245,184,46,.35);animation:extPop .5s cubic-bezier(.2,.8,.3,1.2) both;}',
-          '@keyframes extPop{from{opacity:0;transform:scale(.86) translateY(14px);}to{opacity:1;transform:none;}}',
-          // nama antrian — pill teal
-          '#isi-val .nama-antrian,.carousel-item .nama-antrian{margin:18px 0 0;padding:10px 28px;font-family:"Segoe UI",system-ui,sans-serif;font-size:clamp(18px,3vw,40px);font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#e2f3f1;border:1px solid rgba(45,212,191,.55);border-radius:999px;background:rgba(20,184,166,.12);text-shadow:0 2px 8px rgba(0,0,0,.4);}',
+          // stage: 40% card kiri, 60% area kanan kosong
+          '#isi-val .card,.carousel-item .card{position:relative;width:40%;min-width:0;margin:0 auto 0 0;float:none;border:none;border-radius:5px;overflow:hidden;background:#17da80;box-shadow:0 4px 8px 0 rgba(0,0,0,0.2);}',
+          '#isi-val .head,.carousel-item .head{text-align:center;padding:40px 24px;color:#fff;}',
+          '#isi-val .judul,.carousel-item .judul{margin:0 0 10px;font-size:2em;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#fff;}',
+          '#isi-val .isi,.carousel-item .isi{font-size:120px;font-weight:900;color:#fff;line-height:1;text-shadow:0 6px 24px rgba(0,0,0,.4);}#isi-val .isi,.carousel-item .isi{-webkit-text-stroke:2px #0e5a63;}',
+          '#isi-val .nama-antrian,.carousel-item .nama-antrian{margin:16px 0 0;font-size:2em;font-weight:700;color:#fff;text-transform:uppercase;text-shadow:0 2px 8px rgba(0,0,0,.4);}',
           // chip "Berikutnya → N" dari input hidden asli (#id-N punya value nomor berikutnya)
           '#id-1,#id-2,#id-3,#id-4,#id-5{display:block!important;visibility:hidden;position:fixed;bottom:18px;left:18px;z-index:50;margin:0;border:0;padding:0;}',
           '#id-1::after,#id-2::after,#id-3::after,#id-4::after,#id-5::after{visibility:visible;content:"Berikutnya \\2192  " attr(value);display:inline-block;padding:8px 18px;font-family:"Cascadia Mono",Consolas,monospace;font-size:clamp(14px,1.6vw,22px);font-weight:600;color:#f5b82e;background:rgba(7,27,51,.72);border:1px solid rgba(245,184,46,.4);border-radius:999px;white-space:nowrap;}',
@@ -259,7 +250,7 @@ var __morbis_feature = (() => {
       }
       if (path.includes('/mesin-antrian')) {
         addFullscreenButton();
-      } else if (path.includes('/view-antrian') || path.includes('/display-val')) {
+      } else if (isViewAntrian) {
         initDisplay();
       } else if (path.includes('/counter-antrian/counter')) {
         hookCallTTS();
