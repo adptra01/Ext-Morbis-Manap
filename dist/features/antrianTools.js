@@ -85,11 +85,29 @@ var __morbis_feature = (() => {
       badge.addEventListener('click', enterFullscreen);
       document.body.appendChild(badge);
     }
+    function pickVoice() {
+      try {
+        const vs = speechSynthesis.getVoices() || [];
+        const idLang = (v) => (v.lang || '').toLowerCase().startsWith('id');
+        const online = (v) => !v.localService;
+        return (
+          vs.find((v) => idLang(v) && online(v)) ||
+          vs.find((v) => idLang(v)) ||
+          vs.find((v) => online(v)) ||
+          vs[0] ||
+          null
+        );
+      } catch {
+        return null;
+      }
+    }
     function speak(msg) {
       try {
         if ('speechSynthesis' in window) {
           const u = new SpeechSynthesisUtterance(msg);
           u.lang = 'id';
+          const voice = pickVoice();
+          if (voice) u.voice = voice;
           u.volume = 1;
           u.rate = 0.9;
           speechSynthesis.cancel();
@@ -108,6 +126,10 @@ var __morbis_feature = (() => {
       };
       window.addEventListener('pointerdown', unlock);
       window.addEventListener('keydown', unlock);
+      try {
+        speechSynthesis.getVoices();
+        speechSynthesis.addEventListener?.('voiceschanged', () => {});
+      } catch {}
       setInterval(() => {
         if (!speechSynthesis.speaking && !speechSynthesis.pending) {
           speechSynthesis.speak(new SpeechSynthesisUtterance(''));
@@ -118,6 +140,31 @@ var __morbis_feature = (() => {
       const n = nomor || '';
       if (!loket) return `Nomor antrian ${n}`;
       return `Nomor antrian ${n}, ke loket ${loket.toUpperCase()}`;
+    }
+    let _audioCtx = null;
+    function chime() {
+      try {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return;
+        _audioCtx = _audioCtx || new Ctx();
+        if (_audioCtx.state === 'suspended') void _audioCtx.resume();
+        const now = _audioCtx.currentTime;
+        [
+          [880, 0],
+          [1175, 0.28],
+        ].forEach(([f, t]) => {
+          const osc = _audioCtx.createOscillator();
+          const gain = _audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = f;
+          gain.gain.setValueAtTime(1e-4, now + t);
+          gain.gain.exponentialRampToValueAtTime(0.35, now + t + 0.02);
+          gain.gain.exponentialRampToValueAtTime(1e-4, now + t + 0.3);
+          osc.connect(gain).connect(_audioCtx.destination);
+          osc.start(now + t);
+          osc.stop(now + t + 0.35);
+        });
+      } catch {}
     }
     function buildStrukHtml(nomor, loket) {
       return `<html><head><style>@page{ size: 80mm 120mm; margin:0; } body{font-family:"Courier New",Courier,monospace;width:70mm;margin:0 auto;padding:20px 10px;text-align:center;color:#000;} .header{border-bottom:2px dashed #000;padding-bottom:10px;margin-bottom:15px;} .nomor{font-size:64px;font-weight:bold;margin:20px 0;} .loket{font-size:20px;font-weight:bold;margin-bottom:10px;} .footer{border-top:2px dashed #000;padding-top:10px;margin-top:20px;font-size:13px;}</style></head><body><div class="header"><h2>RSUD H. ABDUL MANAP</h2><small>SISTEM ANTRIAN</small></div>${loket ? `<div class="loket">${loket.toUpperCase()}</div>` : ''}<div>NOMOR ANTRIAN ANDA</div><div class="nomor">${nomor}</div><div>Mohon menunggu nomor Anda dipanggil</div><div class="footer">${/* @__PURE__ */ new Date().toLocaleString('id-ID')}</div></body></html>`;
@@ -167,6 +214,8 @@ var __morbis_feature = (() => {
         intervalPoll(attachPrintClick);
       };
       const attachPrintClick = () => {
+        let lastPrintKey = '';
+        let lastPrintAt = 0;
         document.querySelectorAll('[onclick^="antrian("]').forEach((card) => {
           if (card.__extPrintHooked) return;
           card.__extPrintHooked = true;
@@ -185,6 +234,11 @@ var __morbis_feature = (() => {
               )
                 .trim()
                 .toUpperCase();
+              const key = nomor + '|' + loket;
+              const isDup = key === lastPrintKey && Date.now() - lastPrintAt <= 4e3;
+              lastPrintKey = key;
+              lastPrintAt = Date.now();
+              if (isDup) return;
               cetakStrukAntrian(nomor, loket);
               extLog('mesin_ticket', true, { idx, nomor, loket });
             },
@@ -249,17 +303,50 @@ var __morbis_feature = (() => {
           '@media(max-width:768px){#ext-display-footer{height:32px;}.ext-marquee span{font-size:11px;}}',
         ]);
         let lastCallId = '';
+        let failCount = 0;
+        const offlineBadge = () => {
+          let el = document.getElementById('ext-offline-badge');
+          if (!el) {
+            el = document.createElement('div');
+            el.id = 'ext-offline-badge';
+            Object.assign(el.style, {
+              position: 'fixed',
+              top: '16px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: '999999',
+              padding: '8px 20px',
+              borderRadius: '999px',
+              background: 'rgba(180,0,0,.85)',
+              color: '#fff',
+              font: '700 14px/1.4 system-ui, sans-serif',
+            });
+            document.body.appendChild(el);
+          }
+          el.textContent = 'KONEKSI TERPUTUS';
+        };
+        const hideOfflineBadge = () => {
+          document.getElementById('ext-offline-badge')?.remove();
+        };
         const pollActive = () => {
           const xhr = new XMLHttpRequest();
           xhr.open('POST', '/public/counter-antrian/data', true);
           xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
           xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
           xhr.timeout = 1e4;
+          const onFail = () => {
+            if (++failCount >= 3) offlineBadge();
+            extLog('display_poll_fail', true, { failCount });
+          };
+          xhr.onerror = onFail;
+          xhr.ontimeout = onFail;
           xhr.onload = () => {
             try {
               const txt = String(xhr.responseText || '').trim();
               if (!txt.startsWith('{')) return;
               const r = JSON.parse(txt);
+              failCount = 0;
+              hideOfflineBadge();
               const nomor = onlyDigits(r.NOMOR || '0');
               const loket =
                 String(r.NAMA || '')
@@ -269,7 +356,8 @@ var __morbis_feature = (() => {
               const callId = String(r.ID || '');
               if (callId && callId !== lastCallId) {
                 lastCallId = callId;
-                speak(buildSpokenText(nomor, loket));
+                chime();
+                setTimeout(() => speak(buildSpokenText(nomor, loket)), 450);
                 extLog('display_active', true, { nomor, loket, id: callId });
               }
             } catch {}

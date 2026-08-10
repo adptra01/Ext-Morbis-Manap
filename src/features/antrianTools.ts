@@ -97,11 +97,32 @@
   }
 
   /* ---- SPEECH (TTS) ---- */
+  // Pilih suara online (Google) lebih dulu — jauh lebih natural daripada espeak offline.
+  // Chrome memuat daftar suara async; unlockTts() memicu getVoices() + voiceschanged.
+  function pickVoice(): SpeechSynthesisVoice | null {
+    try {
+      const vs = speechSynthesis.getVoices() || [];
+      const idLang = (v: SpeechSynthesisVoice) => (v.lang || '').toLowerCase().startsWith('id');
+      const online = (v: SpeechSynthesisVoice) => !v.localService;
+      return (
+        vs.find((v) => idLang(v) && online(v)) ||
+        vs.find((v) => idLang(v)) ||
+        vs.find((v) => online(v)) ||
+        vs[0] ||
+        null
+      );
+    } catch {
+      return null;
+    }
+  }
+
   function speak(msg: string): void {
     try {
       if ('speechSynthesis' in window) {
         const u = new SpeechSynthesisUtterance(msg);
         u.lang = 'id';
+        const voice = pickVoice();
+        if (voice) u.voice = voice;
         u.volume = 1;
         u.rate = 0.9;
         speechSynthesis.cancel();
@@ -127,6 +148,16 @@
     };
     window.addEventListener('pointerdown', unlock);
     window.addEventListener('keydown', unlock);
+    // Muat daftar suara sejak awal — voice Google (online) baru muncul setelah
+    // voiceschanged; tanpa ini pickVoice() hanya melihat suara offline saat speak pertama.
+    try {
+      speechSynthesis.getVoices();
+      speechSynthesis.addEventListener?.('voiceschanged', () => {
+        /* cukup memicu pemuatan daftar */
+      });
+    } catch {
+      /* ignore */
+    }
     // ponytail: keepalive — Chrome mengunci speechSynthesis setelah diam ~15 detik;
     // utterance kosong rutin saat idle menjaganya tetap hidup di kiosk.
     setInterval(() => {
