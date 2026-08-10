@@ -96,14 +96,39 @@ var __morbis_feature = (() => {
       }
     }
     let _ttsDead = false;
+    function pickLocalVoice() {
+      try {
+        const vs = speechSynthesis.getVoices() || [];
+        const idLang = (v) => (v.lang || '').toLowerCase().startsWith('id');
+        const local = (v) => !!v.localService;
+        return vs.find((v) => idLang(v) && local(v)) || vs.find((v) => local(v)) || null;
+      } catch {
+        return null;
+      }
+    }
+    function speakLocal(msg) {
+      try {
+        const u = new SpeechSynthesisUtterance(msg);
+        u.lang = 'id';
+        const v = pickLocalVoice();
+        if (v) u.voice = v;
+        u.volume = 1;
+        u.rate = 0.9;
+        speechSynthesis.cancel();
+        speechSynthesis.speak(u);
+      } catch {}
+    }
     function speakGoogleMp3(msg) {
       try {
         const a = new Audio(
           'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=id&q=' +
             encodeURIComponent(msg),
         );
-        void a.play().catch(() => {});
-      } catch {}
+        a.onerror = () => speakLocal(msg);
+        void a.play().catch(() => speakLocal(msg));
+      } catch {
+        speakLocal(msg);
+      }
     }
     function speak(msg) {
       if ('speechSynthesis' in window && !_ttsDead) {

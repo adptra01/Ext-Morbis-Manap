@@ -116,17 +116,44 @@
   // Ceiling: endpoint translate_tts tidak resmi, bisa kena rate-limit; upgrade ke
   // provider berbayar (ResponsiveVoice dll) jika sering gagal di lapangan.
   let _ttsDead = false;
+  // Lapis 3: suara lokal sistem (espeak/Microsoft) — jaring terakhir saat internet mati.
+  // Robotik, tapi lebih baik daripada diam. Hanya dipakai kalau MP3 Google pun gagal.
+  function pickLocalVoice(): SpeechSynthesisVoice | null {
+    try {
+      const vs = speechSynthesis.getVoices() || [];
+      const idLang = (v: SpeechSynthesisVoice) => (v.lang || '').toLowerCase().startsWith('id');
+      const local = (v: SpeechSynthesisVoice) => !!v.localService;
+      return vs.find((v) => idLang(v) && local(v)) || vs.find((v) => local(v)) || null;
+    } catch {
+      return null;
+    }
+  }
+
+  function speakLocal(msg: string): void {
+    try {
+      const u = new SpeechSynthesisUtterance(msg);
+      u.lang = 'id';
+      const v = pickLocalVoice();
+      if (v) u.voice = v;
+      u.volume = 1;
+      u.rate = 0.9;
+      speechSynthesis.cancel();
+      speechSynthesis.speak(u);
+    } catch {
+      /* ignore */
+    }
+  }
+
   function speakGoogleMp3(msg: string): void {
     try {
       const a = new Audio(
         'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=id&q=' +
           encodeURIComponent(msg),
       );
-      void a.play().catch(() => {
-        /* autoplay masih diblokir — unlockTts di gesture pertama mencakup ini */
-      });
+      a.onerror = () => speakLocal(msg); // internet mati / endpoint ditolak → suara lokal
+      void a.play().catch(() => speakLocal(msg)); // gagal mulai (autoplay/network) → suara lokal
     } catch {
-      /* ignore */
+      speakLocal(msg);
     }
   }
 
