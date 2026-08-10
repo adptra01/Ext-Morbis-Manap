@@ -112,6 +112,30 @@
     }
   }
 
+  function unlockTts(): void {
+    // Chrome autoplay policy: speechSynthesis diblokir tanpa user gesture.
+    // Layar kiosk display tidak pernah diklik — unlock di gesture pertama (fullscreen btn/badge).
+    const unlock = () => {
+      try {
+        speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+      } catch {
+        /* ignore */
+      }
+      window.removeEventListener('pointerdown', unlock);
+      window.removeEventListener('keydown', unlock);
+      extLog('tts_unlocked', true);
+    };
+    window.addEventListener('pointerdown', unlock);
+    window.addEventListener('keydown', unlock);
+    // ponytail: keepalive — Chrome mengunci speechSynthesis setelah diam ~15 detik;
+    // utterance kosong rutin saat idle menjaganya tetap hidup di kiosk.
+    setInterval(() => {
+      if (!speechSynthesis.speaking && !speechSynthesis.pending) {
+        speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+      }
+    }, 10000);
+  }
+
   function buildSpokenText(nomor: string, loket: string): string {
     const n = nomor || '';
     if (!loket) return `Nomor antrian ${n}`;
@@ -232,6 +256,7 @@
     /* ---- DISPLAY (v1) ---- */
     const initDisplay = () => {
       addFullscreenButton();
+      unlockTts(); // kiosk tanpa klik: buka kunci speechSynthesis di gesture pertama
       // konsep "Papan Antrian": stage navy gelap, nomor monospace raksasa (rasa tiket mesin),
       // aksen amber, sweep cahaya saat nomor muncul, chip "Berikutnya" dari input hidden asli.
       injectCSS('ext-antrian-display-css', [
@@ -271,9 +296,11 @@
         xhr.timeout = 10000;
         xhr.onload = () => {
           try {
-            const ct = xhr.getResponseHeader('Content-Type') || '';
-            if (ct.includes('text/html') || ct.includes('text/plain')) return;
-            const r: any = JSON.parse(xhr.responseText);
+            // server balas JSON dengan Content-Type text/html — jangan guard header,
+            // cek isi body mulai '{' (halaman login HTML / error terlewat aman)
+            const txt = String(xhr.responseText || '').trim();
+            if (!txt.startsWith('{')) return;
+            const r: any = JSON.parse(txt);
             const nomor = onlyDigits(r.NOMOR || '0');
             const loket =
               String(r.NAMA || '')
@@ -295,7 +322,8 @@
         xhr.send('option=get_data_call&loket=' + encodeURIComponent(loketFromUrl));
       };
       pollActive();
-      intervalPoll(pollActive);
+      // ponytail: polling permanen — intervalPoll() mati setelah 5 detik (bug TTS mati)
+      setInterval(pollActive, 1500);
     };
     /* ---- ROUTING ---- */
     if (path.includes('/mesin-antrian')) {

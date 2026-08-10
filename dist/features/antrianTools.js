@@ -97,6 +97,23 @@ var __morbis_feature = (() => {
         }
       } catch {}
     }
+    function unlockTts() {
+      const unlock = () => {
+        try {
+          speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+        } catch {}
+        window.removeEventListener('pointerdown', unlock);
+        window.removeEventListener('keydown', unlock);
+        extLog('tts_unlocked', true);
+      };
+      window.addEventListener('pointerdown', unlock);
+      window.addEventListener('keydown', unlock);
+      setInterval(() => {
+        if (!speechSynthesis.speaking && !speechSynthesis.pending) {
+          speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+        }
+      }, 1e4);
+    }
     function buildSpokenText(nomor, loket) {
       const n = nomor || '';
       if (!loket) return `Nomor antrian ${n}`;
@@ -204,6 +221,7 @@ var __morbis_feature = (() => {
       }
       const initDisplay = () => {
         addFullscreenButton();
+        unlockTts();
         injectCSS('ext-antrian-display-css', [
           // stage: 40% card kiri, 60% area kanan kosong
           '#isi-val .card,.carousel-item .card{position:relative;width:40%;min-width:0;margin:0 auto 0 0;float:none;border:none;border-radius:5px;overflow:hidden;background:#17da80;box-shadow:0 4px 8px 0 rgba(0,0,0,0.2);}',
@@ -239,9 +257,9 @@ var __morbis_feature = (() => {
           xhr.timeout = 1e4;
           xhr.onload = () => {
             try {
-              const ct = xhr.getResponseHeader('Content-Type') || '';
-              if (ct.includes('text/html') || ct.includes('text/plain')) return;
-              const r = JSON.parse(xhr.responseText);
+              const txt = String(xhr.responseText || '').trim();
+              if (!txt.startsWith('{')) return;
+              const r = JSON.parse(txt);
               const nomor = onlyDigits(r.NOMOR || '0');
               const loket =
                 String(r.NAMA || '')
@@ -260,7 +278,7 @@ var __morbis_feature = (() => {
           xhr.send('option=get_data_call&loket=' + encodeURIComponent(loketFromUrl));
         };
         pollActive();
-        intervalPoll(pollActive);
+        setInterval(pollActive, 1500);
       };
       if (path.includes('/mesin-antrian')) {
         initMesin();
