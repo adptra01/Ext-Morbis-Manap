@@ -113,8 +113,8 @@
 
   function buildSpokenText(nomor: string, loket: string): string {
     const n = nomor || '';
-    const l = (loket || 'Loket').toUpperCase();
-    return `Nomor ${n}, silakan ke ${l}`;
+    if (!loket) return `Nomor ${n}`;
+    return `Nomor ${n}, silakan ke ${loket.toUpperCase()}`;
   }
 
   /* ---- AUTO-PRINT (mesin) ---- */
@@ -127,7 +127,7 @@
     if (!doc) return;
     doc.open();
     doc.write(
-      `<html><head><style>@page{ size: 80mm 120mm; margin:0; } body{font-family:"Courier New",Courier,monospace;width:70mm;margin:0 auto;padding:20px 10px;text-align:center;color:#000;} .header{border-bottom:2px dashed #000;padding-bottom:10px;margin-bottom:15px;} .nomor{font-size:64px;font-weight:bold;margin:20px 0;} .loket{font-size:20px;font-weight:bold;margin-bottom:10px;} .footer{border-top:2px dashed #000;padding-top:10px;margin-top:20px;font-size:13px;}</style></head><body><div class="header"><h2>RSUD H. ABDUL MANAP</h2><small>SISTEM ANTRIAN</small></div><div class="loket">${loket.toUpperCase()}</div><div>NOMOR ANTRIAN ANDA</div><div class="nomor">${nomor}</div><div>Mohon menunggu nomor Anda dipanggil</div><div class="footer">${new Date().toLocaleString('id-ID')}</div></body></html>`,
+      `<html><head><style>@page{ size: 80mm 120mm; margin:0; } body{font-family:"Courier New",Courier,monospace;width:70mm;margin:0 auto;padding:20px 10px;text-align:center;color:#000;} .header{border-bottom:2px dashed #000;padding-bottom:10px;margin-bottom:15px;} .nomor{font-size:64px;font-weight:bold;margin:20px 0;} .loket{font-size:20px;font-weight:bold;margin-bottom:10px;} .footer{border-top:2px dashed #000;padding-top:10px;margin-top:20px;font-size:13px;}</style></head><body><div class="header"><h2>RSUD H. ABDUL MANAP</h2><small>SISTEM ANTRIAN</small></div>${loket ? `<div class="loket">${loket.toUpperCase()}</div>` : ''}<div>NOMOR ANTRIAN ANDA</div><div class="nomor">${nomor}</div><div>Mohon menunggu nomor Anda dipanggil</div><div class="footer">${new Date().toLocaleString('id-ID')}</div></body></html>`,
     );
     doc.close();
     setTimeout(() => {
@@ -157,8 +157,9 @@
         if (!nomor) return;
         if (lastNumbers[idx] === nomor) return;
         lastNumbers[idx] = nomor;
-        cetakStrukAntrian(nomor, 'LOKET ' + idx);
-        speak(buildSpokenText(nomor, 'LOKET ' + idx));
+        // ponytail: idx "0" = antrian yang baru diambil, bukan panggilan loket
+        cetakStrukAntrian(nomor, idx === '0' ? '' : 'LOKET ' + idx);
+        speak(buildSpokenText(nomor, idx === '0' ? '' : 'LOKET ' + idx));
         extLog('mesin_ticket', true, { idx, nomor });
       });
     };
