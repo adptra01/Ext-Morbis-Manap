@@ -99,18 +99,14 @@
   /* ---- SPEECH (TTS) ---- */
   // Pilih suara online (Google) lebih dulu — jauh lebih natural daripada espeak offline.
   // Chrome memuat daftar suara async; unlockTts() memicu getVoices() + voiceschanged.
+  // espeak (localService) sengaja TIDAK dipakai — robotik; kalau tak ada voice online,
+  // kembalikan null dan speak() langsung beralih ke MP3 Google TTS.
   function pickVoice(): SpeechSynthesisVoice | null {
     try {
       const vs = speechSynthesis.getVoices() || [];
       const idLang = (v: SpeechSynthesisVoice) => (v.lang || '').toLowerCase().startsWith('id');
       const online = (v: SpeechSynthesisVoice) => !v.localService;
-      return (
-        vs.find((v) => idLang(v) && online(v)) ||
-        vs.find((v) => idLang(v)) ||
-        vs.find((v) => online(v)) ||
-        vs[0] ||
-        null
-      );
+      return vs.find((v) => idLang(v) && online(v)) || vs.find((v) => online(v)) || null;
     } catch {
       return null;
     }
@@ -137,10 +133,15 @@
   function speak(msg: string): void {
     if ('speechSynthesis' in window && !_ttsDead) {
       try {
+        const voice = pickVoice();
+        // voice online (Google) belum siap → langsung MP3, jangan espeak robotik
+        if (!voice) {
+          speakGoogleMp3(msg);
+          return;
+        }
         const u = new SpeechSynthesisUtterance(msg);
         u.lang = 'id';
-        const voice = pickVoice();
-        if (voice) u.voice = voice;
+        u.voice = voice;
         u.volume = 1;
         u.rate = 0.9;
         let started = false;
@@ -186,7 +187,9 @@
     try {
       speechSynthesis.getVoices();
       speechSynthesis.addEventListener?.('voiceschanged', () => {
-        /* cukup memicu pemuatan daftar */
+        // Chrome butuh beberapa detik setelah startup untuk memuat mesin suara Google.
+        // Begitu voice online siap, izinkan speechSynthesis lagi (fallback MP3 di-bypass).
+        if (pickVoice()) _ttsDead = false;
       });
     } catch {
       /* ignore */

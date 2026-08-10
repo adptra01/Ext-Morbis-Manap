@@ -90,13 +90,7 @@ var __morbis_feature = (() => {
         const vs = speechSynthesis.getVoices() || [];
         const idLang = (v) => (v.lang || '').toLowerCase().startsWith('id');
         const online = (v) => !v.localService;
-        return (
-          vs.find((v) => idLang(v) && online(v)) ||
-          vs.find((v) => idLang(v)) ||
-          vs.find((v) => online(v)) ||
-          vs[0] ||
-          null
-        );
+        return vs.find((v) => idLang(v) && online(v)) || vs.find((v) => online(v)) || null;
       } catch {
         return null;
       }
@@ -114,10 +108,14 @@ var __morbis_feature = (() => {
     function speak(msg) {
       if ('speechSynthesis' in window && !_ttsDead) {
         try {
+          const voice = pickVoice();
+          if (!voice) {
+            speakGoogleMp3(msg);
+            return;
+          }
           const u = new SpeechSynthesisUtterance(msg);
           u.lang = 'id';
-          const voice = pickVoice();
-          if (voice) u.voice = voice;
+          u.voice = voice;
           u.volume = 1;
           u.rate = 0.9;
           let started = false;
@@ -155,7 +153,9 @@ var __morbis_feature = (() => {
       window.addEventListener('keydown', unlock);
       try {
         speechSynthesis.getVoices();
-        speechSynthesis.addEventListener?.('voiceschanged', () => {});
+        speechSynthesis.addEventListener?.('voiceschanged', () => {
+          if (pickVoice()) _ttsDead = false;
+        });
       } catch {}
       setInterval(() => {
         if (!speechSynthesis.speaking && !speechSynthesis.pending) {
