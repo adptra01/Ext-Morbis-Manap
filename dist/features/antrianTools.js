@@ -101,7 +101,26 @@ var __morbis_feature = (() => {
       if (!loket) return `nomor antrian ${n}`;
       return `nomor antrian ${n} di loket ${loket.toUpperCase()}`;
     }
+    function buildStrukHtml(nomor, loket) {
+      return `<html><head><style>@page{ size: 80mm 120mm; margin:0; } body{font-family:"Courier New",Courier,monospace;width:70mm;margin:0 auto;padding:20px 10px;text-align:center;color:#000;} .header{border-bottom:2px dashed #000;padding-bottom:10px;margin-bottom:15px;} .nomor{font-size:64px;font-weight:bold;margin:20px 0;} .loket{font-size:20px;font-weight:bold;margin-bottom:10px;} .footer{border-top:2px dashed #000;padding-top:10px;margin-top:20px;font-size:13px;}</style></head><body><div class="header"><h2>RSUD H. ABDUL MANAP</h2><small>SISTEM ANTRIAN</small></div>${loket ? `<div class="loket">${loket.toUpperCase()}</div>` : ''}<div>NOMOR ANTRIAN ANDA</div><div class="nomor">${nomor}</div><div>Mohon menunggu nomor Anda dipanggil</div><div class="footer">${/* @__PURE__ */ new Date().toLocaleString('id-ID')}</div></body></html>`;
+    }
     function cetakStrukAntrian(nomor, loket) {
+      const html = buildStrukHtml(nomor, loket);
+      const w = window.open('', '_blank', 'width=340,height=520');
+      if (w) {
+        w.document.open();
+        w.document.write(html);
+        w.document.close();
+        setTimeout(() => {
+          try {
+            w.focus();
+            w.print();
+          } catch (e) {
+            console.warn('[antrianTools] print gagal', e);
+          }
+        }, 250);
+        return;
+      }
       const iframe = document.createElement('iframe');
       iframe.style.cssText =
         'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;';
@@ -109,9 +128,7 @@ var __morbis_feature = (() => {
       const doc = iframe.contentDocument;
       if (!doc) return;
       doc.open();
-      doc.write(
-        `<html><head><style>@page{ size: 80mm 120mm; margin:0; } body{font-family:"Courier New",Courier,monospace;width:70mm;margin:0 auto;padding:20px 10px;text-align:center;color:#000;} .header{border-bottom:2px dashed #000;padding-bottom:10px;margin-bottom:15px;} .nomor{font-size:64px;font-weight:bold;margin:20px 0;} .loket{font-size:20px;font-weight:bold;margin-bottom:10px;} .footer{border-top:2px dashed #000;padding-top:10px;margin-top:20px;font-size:13px;}</style></head><body><div class="header"><h2>RSUD H. ABDUL MANAP</h2><small>SISTEM ANTRIAN</small></div>${loket ? `<div class="loket">${loket.toUpperCase()}</div>` : ''}<div>NOMOR ANTRIAN ANDA</div><div class="nomor">${nomor}</div><div>Mohon menunggu nomor Anda dipanggil</div><div class="footer">${/* @__PURE__ */ new Date().toLocaleString('id-ID')}</div></body></html>`,
-      );
+      doc.write(html);
       doc.close();
       setTimeout(() => {
         try {
@@ -130,16 +147,22 @@ var __morbis_feature = (() => {
       if (path.includes('/view-antrian') || path.includes('/display-val')) addFullscreenButton();
       if (path.includes('/counter-antrian/counter')) addFullscreenButton();
       const attachPrintClick = () => {
-        document.querySelectorAll('[id^="nomortampil-"]').forEach((el) => {
-          if (el.__extPrintHooked) return;
-          el.__extPrintHooked = true;
-          el.addEventListener('click', () => {
-            const idx = el.id.replace('nomortampil-', '');
-            const nomor = onlyDigits(el.textContent || '');
-            if (!nomor) return;
-            cetakStrukAntrian(nomor, idx === '0' ? '' : 'LOKET ' + idx);
-            extLog('mesin_ticket', true, { idx, nomor });
-          });
+        document.querySelectorAll('[onclick^="antrian("]').forEach((card) => {
+          if (card.__extPrintHooked) return;
+          card.__extPrintHooked = true;
+          card.addEventListener(
+            'click',
+            () => {
+              const nomorEl = card.querySelector('[id^="nomortampil-"]');
+              const nomor = onlyDigits(nomorEl?.textContent || '');
+              if (!nomor) return;
+              const idx = card.id.replace('nomortampil-', '');
+              cetakStrukAntrian(nomor, '');
+              extLog('mesin_ticket', true, { idx, nomor });
+            },
+            true,
+            // capture: jalan sebelum event server (antrian) & sebelum reload
+          );
         });
       };
       intervalPoll(attachPrintClick);
@@ -168,13 +191,12 @@ var __morbis_feature = (() => {
       function initDisplay() {
         addFullscreenButton();
         injectCSS('ext-antrian-display-css', [
-          '#ext-display-active{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:99998;pointer-events:none;}',
-          '.ext-display-card{border-radius:20px;box-shadow:0 12px 36px rgba(0,0,0,.35);background:#fff;padding:48px 32px;text-align:center;min-width:260px;}',
-          '.ext-display-card .loket{font-size:24px;text-transform:uppercase;color:#6b7280;margin-bottom:16px;font-weight:700;}',
-          '.ext-display-card .nomor{font-size:72px;font-weight:900;color:#111827;line-height:1;}',
-          '@media(max-width:768px){.ext-display-card{padding:32px;font-size:1.2em;}}',
-          '#ext-display-print-btn{position:fixed;bottom:24px;right:24px;z-index:99999;padding:12px 18px;border:none;border-radius:10px;background:#2563eb;color:#fff;font:700 13px sans-serif;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.25);}',
-          '#ext-display-print-btn:hover{background:#1d4ed8;}',
+          '#isi-val .card, .carousel-item .card{background:linear-gradient(135deg,#1e3a8a 0%,#2dd4bf 100%);box-shadow:0 12px 36px rgba(0,0,0,.35);border-radius:20px;width:90%;min-width:0;margin:24px auto;float:none;border:none;}',
+          '#isi-val .head, .carousel-item .head{text-align:center;padding:40px;color:#fff;}',
+          '#isi-val .judul, .carousel-item .judul{font-size:2.2em;color:rgba(255,255,255,.85);margin:0 0 12px;letter-spacing:.05em;}',
+          '#isi-val .isi, .carousel-item .isi{font-size:10em;font-weight:700;color:#fff;line-height:1;text-shadow:0 6px 24px rgba(0,0,0,.3);}',
+          '#isi-val .nama-antrian, .carousel-item .nama-antrian{font-size:3em;color:#fff;margin:16px 0 0;text-transform:uppercase;text-shadow:0 4px 16px rgba(0,0,0,.3);}',
+          '@media(max-width:768px){#isi-val .isi,.carousel-item .isi{font-size:5em;}#isi-val .nama-antrian,.carousel-item .nama-antrian{font-size:1.6em;}}',
         ]);
         let lastActive = '';
         const pollActive = () => {
@@ -196,7 +218,6 @@ var __morbis_feature = (() => {
                   .trim() || '-';
               if (lastActive !== nomor + '|' + loket) {
                 lastActive = nomor + '|' + loket;
-                renderCard(loket, nomor);
                 speak(buildSpokenText(nomor, loket));
                 extLog('display_active', true, { nomor, loket });
               }
@@ -207,31 +228,6 @@ var __morbis_feature = (() => {
         };
         pollActive();
         intervalPoll(pollActive);
-        function renderCard(loket, nomor) {
-          let wrapper = document.getElementById('ext-display-active');
-          if (!wrapper) {
-            wrapper = document.createElement('div');
-            wrapper.id = 'ext-display-active';
-            wrapper.innerHTML =
-              '<div class="ext-display-card"><div class="loket"></div><div class="nomor"></div></div>';
-            document.body.appendChild(wrapper);
-          }
-          const card = wrapper.querySelector('.ext-display-card');
-          if (!card) return;
-          const loketEl = card.querySelector('.loket');
-          const nomorEl = card.querySelector('.nomor');
-          if (loketEl) loketEl.textContent = 'LOKET ' + loket;
-          if (nomorEl) nomorEl.textContent = nomor;
-        }
-        const printBtn = document.createElement('button');
-        printBtn.id = 'ext-display-print-btn';
-        printBtn.textContent = 'Cetak Struk';
-        printBtn.title = 'Cetak Struk Antrian';
-        printBtn.addEventListener('click', () => {
-          const parts = lastActive.split('|');
-          if (parts[0]) cetakStrukAntrian(parts[0], 'LOKET ' + parts[1]);
-        });
-        document.body.appendChild(printBtn);
       }
       if (path.includes('/mesin-antrian')) {
         addFullscreenButton();
