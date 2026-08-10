@@ -142,6 +142,36 @@
     return `Nomor antrian ${n}, ke loket ${loket.toUpperCase()}`;
   }
 
+  /* ---- CHIME (bel 2 nada sebelum TTS) ---- */
+  let _audioCtx: AudioContext | null = null;
+  function chime(): void {
+    try {
+      const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!Ctx) return;
+      _audioCtx = _audioCtx || new Ctx();
+      // unlock di dalam gesture yang sama (autoplay policy)
+      if (_audioCtx.state === 'suspended') void _audioCtx.resume();
+      const now = _audioCtx.currentTime;
+      [
+        [880, 0],
+        [1175, 0.28],
+      ].forEach(([f, t]) => {
+        const osc = _audioCtx!.createOscillator();
+        const gain = _audioCtx!.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = f as number;
+        gain.gain.setValueAtTime(0.0001, now + (t as number));
+        gain.gain.exponentialRampToValueAtTime(0.35, now + (t as number) + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + (t as number) + 0.3);
+        osc.connect(gain).connect(_audioCtx!.destination);
+        osc.start(now + (t as number));
+        osc.stop(now + (t as number) + 0.35);
+      });
+    } catch {
+      /* audio tak tersedia */
+    }
+  }
+
   /* ---- AUTO-PRINT (mesin) ---- */
   function buildStrukHtml(nomor: string, loket: string): string {
     return `<html><head><style>@page{ size: 80mm 120mm; margin:0; } body{font-family:"Courier New",Courier,monospace;width:70mm;margin:0 auto;padding:20px 10px;text-align:center;color:#000;} .header{border-bottom:2px dashed #000;padding-bottom:10px;margin-bottom:15px;} .nomor{font-size:64px;font-weight:bold;margin:20px 0;} .loket{font-size:20px;font-weight:bold;margin-bottom:10px;} .footer{border-top:2px dashed #000;padding-top:10px;margin-top:20px;font-size:13px;}</style></head><body><div class="header"><h2>RSUD H. ABDUL MANAP</h2><small>SISTEM ANTRIAN</small></div>${loket ? `<div class="loket">${loket.toUpperCase()}</div>` : ''}<div>NOMOR ANTRIAN ANDA</div><div class="nomor">${nomor}</div><div>Mohon menunggu nomor Anda dipanggil</div><div class="footer">${new Date().toLocaleString('id-ID')}</div></body></html>`;
@@ -296,12 +326,44 @@
       ]);
       // TTS saat nomor panggilan berubah (suara TV)
       let lastCallId = '';
+      // offline indicator: 3x gagal berturut-turut → badge "KONEKSI TERPUTUS"
+      let failCount = 0;
+      const offlineBadge = () => {
+        let el = document.getElementById('ext-offline-badge');
+        if (!el) {
+          el = document.createElement('div');
+          el.id = 'ext-offline-badge';
+          Object.assign(el.style, {
+            position: 'fixed',
+            top: '16px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: '999999',
+            padding: '8px 20px',
+            borderRadius: '999px',
+            background: 'rgba(180,0,0,.85)',
+            color: '#fff',
+            font: '700 14px/1.4 system-ui, sans-serif',
+          });
+          document.body.appendChild(el);
+        }
+        el.textContent = 'KONEKSI TERPUTUS';
+      };
+      const hideOfflineBadge = () => {
+        document.getElementById('ext-offline-badge')?.remove();
+      };
       const pollActive = () => {
         const xhr = new XMLHttpRequest();
         xhr.open('POST', '/public/counter-antrian/data', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
         xhr.timeout = 10000;
+        const onFail = () => {
+          if (++failCount >= 3) offlineBadge();
+          extLog('display_poll_fail', true, { failCount });
+        };
+        xhr.onerror = onFail;
+        xhr.ontimeout = onFail;
         xhr.onload = () => {
           try {
             // server balas JSON dengan Content-Type text/html — jangan guard header,
@@ -309,6 +371,8 @@
             const txt = String(xhr.responseText || '').trim();
             if (!txt.startsWith('{')) return;
             const r: any = JSON.parse(txt);
+            failCount = 0;
+            hideOfflineBadge();
             const nomor = onlyDigits(r.NOMOR || '0');
             const loket =
               String(r.NAMA || '')
@@ -319,7 +383,8 @@
             const callId = String(r.ID || '');
             if (callId && callId !== lastCallId) {
               lastCallId = callId;
-              speak(buildSpokenText(nomor, loket));
+              chime(); // bel dulu, baru suara (perhatian di ruang tunggu)
+              setTimeout(() => speak(buildSpokenText(nomor, loket)), 450);
               extLog('display_active', true, { nomor, loket, id: callId });
             }
           } catch {
