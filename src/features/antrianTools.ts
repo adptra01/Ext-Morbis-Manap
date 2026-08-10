@@ -261,21 +261,6 @@
     /* ---- ROUTING ---- */
     if (path.includes('/mesin-antrian')) {
       addFullscreenButton();
-      /* polling for auto-print */
-      const lastNumbers: Record<string, string> = {};
-      const pollTicket = () => {
-        document.querySelectorAll('[id^="nomortampil-"]').forEach((el) => {
-          const idx = el.id.replace('nomortampil-', '');
-          const nomor = onlyDigits(el.textContent || '');
-          if (!nomor) return;
-          if (lastNumbers[idx] === nomor) return;
-          lastNumbers[idx] = nomor;
-          cetakStrukAntrian(nomor, 'LOKET ' + idx);
-          speak(buildSpokenText(nomor, 'LOKET ' + idx));
-          extLog('mesin_ticket', true, { idx, nomor });
-        });
-      };
-      intervalPoll(pollTicket);
     } else if (path.includes('/view-antrian') || path.includes('/display-val')) {
       initDisplay();
     } else if (path.includes('/counter-antrian/counter')) {
