@@ -116,20 +116,53 @@
     }
   }
 
-  function speak(msg: string): void {
+  // ponytail: fallback MP3 Google TTS — hanya jika speechSynthesis macet/error.
+  // Ceiling: endpoint translate_tts tidak resmi, bisa kena rate-limit; upgrade ke
+  // provider berbayar (ResponsiveVoice dll) jika sering gagal di lapangan.
+  let _ttsDead = false;
+  function speakGoogleMp3(msg: string): void {
     try {
-      if ('speechSynthesis' in window) {
+      const a = new Audio(
+        'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=id&q=' +
+          encodeURIComponent(msg),
+      );
+      void a.play().catch(() => {
+        /* autoplay masih diblokir — unlockTts di gesture pertama mencakup ini */
+      });
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function speak(msg: string): void {
+    if ('speechSynthesis' in window && !_ttsDead) {
+      try {
         const u = new SpeechSynthesisUtterance(msg);
         u.lang = 'id';
         const voice = pickVoice();
         if (voice) u.voice = voice;
         u.volume = 1;
         u.rate = 0.9;
+        let started = false;
+        const fallback = () => {
+          if (!started && !speechSynthesis.speaking) {
+            _ttsDead = true; // sesi ini: speechSynthesis nyangkut, pakai MP3
+            speechSynthesis.cancel();
+            speakGoogleMp3(msg);
+          }
+        };
+        u.onstart = () => {
+          started = true;
+        };
+        u.onerror = fallback;
+        setTimeout(fallback, 1500); // tak pernah mulai dalam 1.5s → MP3
         speechSynthesis.cancel();
         speechSynthesis.speak(u);
+      } catch {
+        speakGoogleMp3(msg);
       }
-    } catch {
-      /* ignore */
+    } else {
+      speakGoogleMp3(msg);
     }
   }
 

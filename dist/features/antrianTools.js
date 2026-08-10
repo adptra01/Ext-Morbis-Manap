@@ -101,19 +101,46 @@ var __morbis_feature = (() => {
         return null;
       }
     }
-    function speak(msg) {
+    let _ttsDead = false;
+    function speakGoogleMp3(msg) {
       try {
-        if ('speechSynthesis' in window) {
+        const a = new Audio(
+          'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=id&q=' +
+            encodeURIComponent(msg),
+        );
+        void a.play().catch(() => {});
+      } catch {}
+    }
+    function speak(msg) {
+      if ('speechSynthesis' in window && !_ttsDead) {
+        try {
           const u = new SpeechSynthesisUtterance(msg);
           u.lang = 'id';
           const voice = pickVoice();
           if (voice) u.voice = voice;
           u.volume = 1;
           u.rate = 0.9;
+          let started = false;
+          const fallback = () => {
+            if (!started && !speechSynthesis.speaking) {
+              _ttsDead = true;
+              speechSynthesis.cancel();
+              speakGoogleMp3(msg);
+            }
+          };
+          u.onstart = () => {
+            started = true;
+          };
+          u.onerror = fallback;
+          setTimeout(fallback, 1500);
           speechSynthesis.cancel();
           speechSynthesis.speak(u);
+        } catch {
+          speakGoogleMp3(msg);
         }
-      } catch {}
+      } else {
+        speakGoogleMp3(msg);
+      }
     }
     function unlockTts() {
       const unlock = () => {
