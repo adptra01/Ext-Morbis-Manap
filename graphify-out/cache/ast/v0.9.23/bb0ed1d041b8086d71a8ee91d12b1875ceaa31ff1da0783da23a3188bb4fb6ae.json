@@ -1,0 +1,319 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_md",
+      "label": "scroll-buttons.md",
+      "file_type": "document",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_tombol_scroll",
+      "label": "Tombol Scroll",
+      "file_type": "document",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_gambaran_fitur_dan_tujuan",
+      "label": "Gambaran Fitur dan Tujuan",
+      "file_type": "document",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L3"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_masalah_yang_diselesaikan_untuk_pengguna",
+      "label": "Masalah yang Diselesaikan untuk Pengguna",
+      "file_type": "document",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_detail_implementasi_teknis",
+      "label": "Detail Implementasi Teknis",
+      "file_type": "document",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L16"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_panduan_penggunaan_langkah_demi_langkah",
+      "label": "Panduan Penggunaan Langkah demi Langkah",
+      "file_type": "document",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L27"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_analisis_kode",
+      "label": "Analisis Kode",
+      "file_type": "document",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L36"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_fungsi_utama",
+      "label": "Fungsi Utama",
+      "file_type": "document",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L38"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_metode_deteksi",
+      "label": "Metode Deteksi",
+      "file_type": "document",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L62"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_teknik_modifikasi",
+      "label": "Teknik Modifikasi",
+      "file_type": "document",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L79"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_opsi_konfigurasi",
+      "label": "Opsi Konfigurasi",
+      "file_type": "document",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L87"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_edge_cases_dan_keterbatasan",
+      "label": "Edge Cases dan Keterbatasan",
+      "file_type": "document",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L109"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_edge_cases_yang_ditangani",
+      "label": "Edge Cases yang Ditangani",
+      "file_type": "document",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L111"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_keterbatasan",
+      "label": "Keterbatasan",
+      "file_type": "document",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L117"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_contoh_perubahan_dom",
+      "label": "Contoh Perubahan DOM",
+      "file_type": "document",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L123"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_kontainer_tombol_scroll",
+      "label": "Kontainer Tombol Scroll",
+      "file_type": "document",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L125"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_efek_hover_tombol",
+      "label": "Efek Hover Tombol",
+      "file_type": "document",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L137"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_state_visibilitas",
+      "label": "State Visibilitas",
+      "file_type": "document",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L146"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_penyembunyian_cetak",
+      "label": "Penyembunyian Cetak",
+      "file_type": "document",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L159"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_implementasi_pengguliran_halus",
+      "label": "Implementasi Pengguliran Halus",
+      "file_type": "document",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L168"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_tombol_scroll",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_tombol_scroll",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_gambaran_fitur_dan_tujuan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_tombol_scroll",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_masalah_yang_diselesaikan_untuk_pengguna",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_tombol_scroll",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_detail_implementasi_teknis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_tombol_scroll",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_panduan_penggunaan_langkah_demi_langkah",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_tombol_scroll",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_analisis_kode",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_analisis_kode",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_fungsi_utama",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_analisis_kode",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_metode_deteksi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L62",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_analisis_kode",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_teknik_modifikasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L79",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_tombol_scroll",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_opsi_konfigurasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L87",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_tombol_scroll",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_edge_cases_dan_keterbatasan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L109",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_edge_cases_dan_keterbatasan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_edge_cases_yang_ditangani",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L111",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_edge_cases_dan_keterbatasan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_keterbatasan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L117",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_tombol_scroll",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_contoh_perubahan_dom",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L123",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_contoh_perubahan_dom",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_kontainer_tombol_scroll",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L125",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_contoh_perubahan_dom",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_efek_hover_tombol",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L137",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_contoh_perubahan_dom",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_state_visibilitas",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L146",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_contoh_perubahan_dom",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_penyembunyian_cetak",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L159",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_contoh_perubahan_dom",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_scroll_buttons_implementasi_pengguliran_halus",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/scroll-buttons.md",
+      "source_location": "L168",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -216,14 +216,44 @@
     /* ---- DISPLAY (v1) ---- */
     function initDisplay(): void {
       addFullscreenButton();
-      // poles elemen asli display-val (dimuat AJAX ke #isi-val): gradient biru + font besar putih
+      // konsep "Papan Antrian": stage navy gelap, nomor monospace raksasa (rasa tiket mesin),
+      // aksen amber, sweep cahaya saat nomor muncul, chip "Berikutnya" dari input hidden asli.
       injectCSS('ext-antrian-display-css', [
-        '#isi-val .card, .carousel-item .card{background:linear-gradient(135deg,#1e3a8a 0%,#2dd4bf 100%);box-shadow:0 12px 36px rgba(0,0,0,.35);border-radius:20px;width:90%;min-width:0;margin:24px auto;float:none;border:none;}',
-        '#isi-val .head, .carousel-item .head{text-align:center;padding:40px;color:#fff;}',
-        '#isi-val .judul, .carousel-item .judul{font-size:2.2em;color:rgba(255,255,255,.85);margin:0 0 12px;letter-spacing:.05em;}',
-        '#isi-val .isi, .carousel-item .isi{font-size:10em;font-weight:700;color:#fff;line-height:1;text-shadow:0 6px 24px rgba(0,0,0,.3);}',
-        '#isi-val .nama-antrian, .carousel-item .nama-antrian{font-size:3em;color:#fff;margin:16px 0 0;text-transform:uppercase;text-shadow:0 4px 16px rgba(0,0,0,.3);}',
-        '@media(max-width:768px){#isi-val .isi,.carousel-item .isi{font-size:5em;}#isi-val .nama-antrian,.carousel-item .nama-antrian{font-size:1.6em;}}',
+        // stage
+        '#isi-val .card,.carousel-item .card{position:relative;width:100%;min-width:0;margin:0;float:none;border:none;border-radius:28px;overflow:hidden;background:radial-gradient(120% 140% at 20% 0%,rgba(45,212,191,.28) 0%,transparent 55%),radial-gradient(130% 150% at 85% 100%,rgba(30,58,138,.9) 0%,transparent 60%),linear-gradient(160deg,#071b33 0%,#0e2f5c 55%,#123f5e 100%);box-shadow:0 30px 80px rgba(2,10,25,.55),inset 0 1px 0 rgba(255,255,255,.08);}',
+        // garis amber di tepi atas
+        '#isi-val .card::before,.carousel-item .card::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,transparent,#f5b82e,transparent);opacity:.85;z-index:2;}',
+        // sweep cahaya saat konten dimuat (AJAX reload memicu ulang animasi)
+        '#isi-val .card::after,.carousel-item .card::after{content:"";position:absolute;top:-60%;left:-80%;width:60%;height:220%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.14),transparent);transform:rotate(12deg);pointer-events:none;animation:extSweep 2.4s ease-in-out .3s 1;z-index:2;}',
+        '@keyframes extSweep{0%{left:-80%;}60%{left:130%;}100%{left:130%;}}',
+        // komposisi
+        '#isi-val .head,.carousel-item .head{text-align:center;padding:32px 24px;color:#f8fafc;min-height:72vh;display:flex;flex-direction:column;align-items:center;justify-content:center;}',
+        // kicker "ANTRIAN"
+        '#isi-val .judul,.carousel-item .judul{margin:0 0 6px;font-family:"Segoe UI",system-ui,sans-serif;font-size:clamp(14px,2.2vw,26px);font-weight:600;letter-spacing:.45em;text-transform:uppercase;color:#f5b82e;text-indent:.45em;}',
+        // nomor — monospace, rasa tiket mesin
+        '#isi-val .isi,.carousel-item .isi{font-family:"Cascadia Mono",Consolas,"SF Mono",ui-monospace,monospace;font-size:clamp(96px,18vw,260px);font-weight:700;line-height:1.05;color:#fff;font-variant-numeric:tabular-nums;text-shadow:0 4px 18px rgba(0,0,0,.45),0 0 60px rgba(245,184,46,.35);animation:extPop .5s cubic-bezier(.2,.8,.3,1.2) both;}',
+        '@keyframes extPop{from{opacity:0;transform:scale(.86) translateY(14px);}to{opacity:1;transform:none;}}',
+        // nama antrian — pill teal
+        '#isi-val .nama-antrian,.carousel-item .nama-antrian{margin:18px 0 0;padding:10px 28px;font-family:"Segoe UI",system-ui,sans-serif;font-size:clamp(18px,3vw,40px);font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#e2f3f1;border:1px solid rgba(45,212,191,.55);border-radius:999px;background:rgba(20,184,166,.12);text-shadow:0 2px 8px rgba(0,0,0,.4);}',
+        // chip "Berikutnya → N" dari input hidden asli (#id-N punya value nomor berikutnya)
+        '#id-1,#id-2,#id-3,#id-4,#id-5{display:block!important;visibility:hidden;position:fixed;bottom:18px;left:18px;z-index:50;margin:0;border:0;padding:0;}',
+        '#id-1::after,#id-2::after,#id-3::after,#id-4::after,#id-5::after{visibility:visible;content:"Berikutnya \\2192  " attr(value);display:inline-block;padding:8px 18px;font-family:"Cascadia Mono",Consolas,monospace;font-size:clamp(14px,1.6vw,22px);font-weight:600;color:#f5b82e;background:rgba(7,27,51,.72);border:1px solid rgba(245,184,46,.4);border-radius:999px;white-space:nowrap;}',
+        '@media(max-width:768px){#isi-val .isi,.carousel-item .isi{font-size:clamp(64px,20vw,120px);}#isi-val .nama-antrian,.carousel-item .nama-antrian{font-size:clamp(14px,4vw,22px);padding:8px 16px;}}',
+      ]);
+      // footer marquee
+      if (!document.getElementById('ext-display-footer')) {
+        const footer = document.createElement('footer');
+        footer.id = 'ext-display-footer';
+        footer.innerHTML =
+          '<div class="ext-marquee"><span>Mohon tetap menjaga protokol kesehatan. Untuk informasi lebih lanjut, silahkan menghubungi Call Center 0741-5910180 atau kunjungi website kami https://simanap.rsudkotajambi.id/</span></div>';
+        document.body.appendChild(footer);
+      }
+      injectCSS('ext-display-footer-css', [
+        '#ext-display-footer{position:fixed;bottom:0;left:0;right:0;height:40px;background:linear-gradient(90deg,#071b33 0%,#0e2f5c 100%);border-top:1px solid rgba(245,184,46,.35);z-index:9999;overflow:hidden;}',
+        '.ext-marquee{display:flex;width:max-content;height:100%;align-items:center;padding-left:100%;white-space:nowrap;animation:extMarquee 25s linear infinite;}',
+        '.ext-marquee span{display:inline-block;padding:0 48px;font-family:"Segoe UI",system-ui,sans-serif;font-size:clamp(12px,1.4vw,16px);font-weight:500;color:#cfeffa;text-shadow:0 1px 2px rgba(0,0,0,.6);}',
+        '@keyframes extMarquee{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}',
+        '@media(max-width:768px){#ext-display-footer{height:32px;}.ext-marquee span{font-size:11px;}}',
       ]);
       // TTS saat nomor panggilan berubah (suara TV)
       let lastActive = '';

@@ -1,0 +1,1103 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_md",
+      "label": "UI_MODERNIZATION_ANALYSIS.md",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_ui_modernization_analysis_morbis_extension",
+      "label": "UI Modernization Analysis \u2014 MORBIS Extension",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_executive_summary",
+      "label": "Executive Summary",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L10"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_1_architecture_overview",
+      "label": "1. Architecture Overview",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L26"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_1_1_project_structure",
+      "label": "1.1 Project Structure",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L28"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_1_2_entry_points",
+      "label": "1.2 Entry Points",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L109"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_1_3_build_system_architecture",
+      "label": "1.3 Build System Architecture",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L118"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_2_component_inventory",
+      "label": "2. Component Inventory",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L139"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_2_1_popup_components_src_popup",
+      "label": "2.1 Popup Components (`src/popup/`)",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L141"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_2_2_sidepanel_components_src_features_sidepanel",
+      "label": "2.2 Sidepanel Components (`src/features/sidepanel/`)",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L151"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_2_3_shared_components_src_ui_components",
+      "label": "2.3 Shared Components (`src/ui/components/`)",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L162"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_2_4_resumetab_components_src_features_resumetab",
+      "label": "2.4 ResumeTab Components (`src/features/resumeTab/`)",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L170"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_3_component_duplication_analysis",
+      "label": "3. Component Duplication Analysis",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L187"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_3_1_popup_vs_sidepanel_overlap",
+      "label": "3.1 Popup vs Sidepanel Overlap",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L189"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_3_2_why_duplicated",
+      "label": "3.2 Why Duplicated?",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L199"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_3_3_impact_of_duplication",
+      "label": "3.3 Impact of Duplication",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L206"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_4_styling_system_deep_dive",
+      "label": "4. Styling System Deep Dive",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L233"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_4_1_css_architecture",
+      "label": "4.1 CSS Architecture",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L235"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_4_2_tailwind_configuration",
+      "label": "4.2 Tailwind Configuration",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L258"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_4_3_css_variables_in_src_ui_globals_css",
+      "label": "4.3 CSS Variables (in `src/ui/globals.css`)",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L318"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_4_4_styling_pattern_analysis",
+      "label": "4.4 Styling Pattern Analysis",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L341"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_4_5_design_systems_comparison",
+      "label": "4.5 Design Systems Comparison",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L354"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_5_state_management_architecture",
+      "label": "5. State Management Architecture",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L368"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_5_1_data_flow",
+      "label": "5.1 Data Flow",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L370"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_5_2_initialization_sequence",
+      "label": "5.2 Initialization Sequence",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L415"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_5_3_state_update_pattern",
+      "label": "5.3 State Update Pattern",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L461"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_5_4_message_types_from_src_shared_messaging_ts",
+      "label": "5.4 Message Types (from `src/shared/messaging.ts`)",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L490"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_6_browser_api_integration",
+      "label": "6. Browser API Integration",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L510"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_6_1_chrome_api_surface_in_ui_components",
+      "label": "6.1 Chrome API Surface in UI Components",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L512"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_6_2_components_safe_to_modernize_no_chrome_api",
+      "label": "6.2 Components SAFE to modernize (NO chrome API)",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L523"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_6_3_components_high_risk_do_not_touch_first",
+      "label": "6.3 Components HIGH RISK (DO NOT TOUCH first)",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L535"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_7_risk_matrix",
+      "label": "7. Risk Matrix",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L546"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_7_1_by_component",
+      "label": "7.1 By Component",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L548"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_7_2_by_functionality",
+      "label": "7.2 By Functionality",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L570"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_8_accessibility_review",
+      "label": "8. Accessibility Review",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L585"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_8_1_current_state",
+      "label": "8.1 Current State",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L587"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_8_2_critical_accessibility_issues",
+      "label": "8.2 Critical Accessibility Issues",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L598"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_9_key_constraints_insights",
+      "label": "9. Key Constraints & Insights",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L607"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_9_1_constraints",
+      "label": "9.1 Constraints",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L609"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_9_2_insights",
+      "label": "9.2 Insights",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L622"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_10_library_comparison",
+      "label": "10. Library Comparison",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L642"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_winner_shadcn_ui",
+      "label": "Winner: **shadcn/ui**",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L656"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_11_migration_strategy",
+      "label": "11. Migration Strategy",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L680"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_phase_0_setup_30_min",
+      "label": "Phase 0: Setup (30 min)",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L682"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_phase_1_replace_pure_presentational_low_risk_2_hours",
+      "label": "Phase 1: Replace Pure Presentational (LOW RISK \u2014 2 hours)",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L700"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_phase_2_consolidate_duplicates_medium_risk_4_hours",
+      "label": "Phase 2: Consolidate Duplicates (MEDIUM RISK \u2014 4 hours)",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L713"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_phase_3_design_polish_low_risk_2_hours",
+      "label": "Phase 3: Design Polish (LOW RISK \u2014 2 hours)",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L728"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_out_of_scope_phase_4",
+      "label": "Out of Scope (Phase 4+)",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L737"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_12_component_mapping",
+      "label": "12. Component Mapping",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L747"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_12_1_proposed_migration_table",
+      "label": "12.1 Proposed Migration Table",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L749"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_12_2_unchanged_components",
+      "label": "12.2 Unchanged Components",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L768"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_12_3_component_transformation_risk_map",
+      "label": "12.3 Component Transformation Risk Map",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L780"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_13_safe_implementation_plan",
+      "label": "13. Safe Implementation Plan",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L800"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_13_1_execution_order",
+      "label": "13.1 Execution Order",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L802"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_13_2_rollback_strategy",
+      "label": "13.2 Rollback Strategy",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L816"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_13_3_testing_protocol",
+      "label": "13.3 Testing Protocol",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L837"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_14_files_impact_report",
+      "label": "14. Files Impact Report",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L854"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_14_1_files_that_will_be_modified",
+      "label": "14.1 Files That WILL Be Modified",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L856"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_14_2_files_that_will_not_be_modified",
+      "label": "14.2 Files That Will NOT Be Modified",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L879"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_15_final_recommendation",
+      "label": "15. Final Recommendation",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L896"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_recommended_action_proceed_with_shadcn_ui_migration",
+      "label": "Recommended Action: \u2705 **Proceed with shadcn/ui migration**",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L898"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_why_now_is_the_right_time",
+      "label": "Why NOW is the right time",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L904"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_why_wait_if",
+      "label": "Why WAIT if...",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L911"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_execution_phases_summary",
+      "label": "Execution Phases Summary",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L917"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_alignment_with_constraints",
+      "label": "Alignment with Constraints",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L928"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_final_verdict",
+      "label": "Final Verdict",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L940"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_appendix_a_react_version",
+      "label": "Appendix A: React Version",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L950"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_appendix_b_current_bundle_sizes",
+      "label": "Appendix B: Current Bundle Sizes",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L963"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_appendix_c_css_variable_coverage",
+      "label": "Appendix C: CSS Variable Coverage",
+      "file_type": "document",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L976"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_ui_modernization_analysis_morbis_extension",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_ui_modernization_analysis_morbis_extension",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_executive_summary",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_ui_modernization_analysis_morbis_extension",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_1_architecture_overview",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_1_architecture_overview",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_1_1_project_structure",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_1_architecture_overview",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_1_2_entry_points",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L109",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_1_architecture_overview",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_1_3_build_system_architecture",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L118",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_ui_modernization_analysis_morbis_extension",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_2_component_inventory",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L139",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_2_component_inventory",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_2_1_popup_components_src_popup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L141",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_2_component_inventory",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_2_2_sidepanel_components_src_features_sidepanel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L151",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_2_component_inventory",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_2_3_shared_components_src_ui_components",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L162",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_2_component_inventory",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_2_4_resumetab_components_src_features_resumetab",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L170",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_ui_modernization_analysis_morbis_extension",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_3_component_duplication_analysis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L187",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_3_component_duplication_analysis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_3_1_popup_vs_sidepanel_overlap",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L189",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_3_component_duplication_analysis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_3_2_why_duplicated",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L199",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_3_component_duplication_analysis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_3_3_impact_of_duplication",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L206",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_ui_modernization_analysis_morbis_extension",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_4_styling_system_deep_dive",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L233",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_4_styling_system_deep_dive",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_4_1_css_architecture",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L235",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_4_styling_system_deep_dive",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_4_2_tailwind_configuration",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L258",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_4_styling_system_deep_dive",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_4_3_css_variables_in_src_ui_globals_css",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L318",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_4_styling_system_deep_dive",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_4_4_styling_pattern_analysis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L341",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_4_styling_system_deep_dive",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_4_5_design_systems_comparison",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L354",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_ui_modernization_analysis_morbis_extension",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_5_state_management_architecture",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L368",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_5_state_management_architecture",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_5_1_data_flow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L370",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_5_state_management_architecture",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_5_2_initialization_sequence",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L415",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_5_state_management_architecture",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_5_3_state_update_pattern",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L461",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_5_state_management_architecture",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_5_4_message_types_from_src_shared_messaging_ts",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L490",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_ui_modernization_analysis_morbis_extension",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_6_browser_api_integration",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L510",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_6_browser_api_integration",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_6_1_chrome_api_surface_in_ui_components",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L512",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_6_browser_api_integration",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_6_2_components_safe_to_modernize_no_chrome_api",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L523",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_6_browser_api_integration",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_6_3_components_high_risk_do_not_touch_first",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L535",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_ui_modernization_analysis_morbis_extension",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_7_risk_matrix",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L546",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_7_risk_matrix",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_7_1_by_component",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L548",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_7_risk_matrix",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_7_2_by_functionality",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L570",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_ui_modernization_analysis_morbis_extension",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_8_accessibility_review",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L585",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_8_accessibility_review",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_8_1_current_state",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L587",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_8_accessibility_review",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_8_2_critical_accessibility_issues",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L598",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_ui_modernization_analysis_morbis_extension",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_9_key_constraints_insights",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L607",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_9_key_constraints_insights",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_9_1_constraints",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L609",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_9_key_constraints_insights",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_9_2_insights",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L622",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_ui_modernization_analysis_morbis_extension",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_10_library_comparison",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L642",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_10_library_comparison",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_winner_shadcn_ui",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L656",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_ui_modernization_analysis_morbis_extension",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_11_migration_strategy",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L680",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_11_migration_strategy",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_phase_0_setup_30_min",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L682",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_11_migration_strategy",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_phase_1_replace_pure_presentational_low_risk_2_hours",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L700",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_11_migration_strategy",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_phase_2_consolidate_duplicates_medium_risk_4_hours",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L713",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_11_migration_strategy",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_phase_3_design_polish_low_risk_2_hours",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L728",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_11_migration_strategy",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_out_of_scope_phase_4",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L737",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_ui_modernization_analysis_morbis_extension",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_12_component_mapping",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L747",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_12_component_mapping",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_12_1_proposed_migration_table",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L749",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_12_component_mapping",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_12_2_unchanged_components",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L768",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_12_component_mapping",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_12_3_component_transformation_risk_map",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L780",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_ui_modernization_analysis_morbis_extension",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_13_safe_implementation_plan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L800",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_13_safe_implementation_plan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_13_1_execution_order",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L802",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_13_safe_implementation_plan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_13_2_rollback_strategy",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L816",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_13_safe_implementation_plan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_13_3_testing_protocol",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L837",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_ui_modernization_analysis_morbis_extension",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_14_files_impact_report",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L854",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_14_files_impact_report",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_14_1_files_that_will_be_modified",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L856",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_14_files_impact_report",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_14_2_files_that_will_not_be_modified",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L879",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_ui_modernization_analysis_morbis_extension",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_15_final_recommendation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L896",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_15_final_recommendation",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_recommended_action_proceed_with_shadcn_ui_migration",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L898",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_15_final_recommendation",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_why_now_is_the_right_time",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L904",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_15_final_recommendation",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_why_wait_if",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L911",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_15_final_recommendation",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_execution_phases_summary",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L917",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_15_final_recommendation",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_alignment_with_constraints",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L928",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_15_final_recommendation",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_final_verdict",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L940",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_ui_modernization_analysis_morbis_extension",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_appendix_a_react_version",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L950",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_ui_modernization_analysis_morbis_extension",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_appendix_b_current_bundle_sizes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L963",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_ui_modernization_analysis_morbis_extension",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_modernization_analysis_appendix_c_css_variable_coverage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI_MODERNIZATION_ANALYSIS.md",
+      "source_location": "L976",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

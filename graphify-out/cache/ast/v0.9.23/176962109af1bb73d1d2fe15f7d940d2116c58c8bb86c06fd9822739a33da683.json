@@ -1,0 +1,303 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_md",
+      "label": "PANDUAN_PENGUNAAN.md",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_panduan_penggunaan_untuk_staf_rs",
+      "label": "Panduan Penggunaan untuk Staf RS",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_informasi_penting",
+      "label": "\ud83c\udfaf Informasi Penting",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L3"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_pembagian_peran_penting_dipahami",
+      "label": "\ud83d\udc65 Pembagian Peran (Penting Dipahami)",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L13"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_cara_kerja_di_balik_layar",
+      "label": "\ud83e\ude84 Cara Kerja \"Di Balik Layar\"",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L26"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_cara_install_sangat_mudah",
+      "label": "\ud83d\ude80 Cara Install (Sangat Mudah)",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L48"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_langkah_1_dapatkan_file",
+      "label": "Langkah 1: Dapatkan File",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L50"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_langkah_2_install",
+      "label": "Langkah 2: Install",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L64"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_langkah_3_selesai",
+      "label": "Langkah 3: Selesai!",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L86"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_apa_yang_terjadi",
+      "label": "\u2753 Apa yang Terjadi?",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L94"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_cek_instalasi",
+      "label": "\u2705 Cek Instalasi",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L116"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_jika_ekstensi_tidak_muncul",
+      "label": "\ud83d\udd27 Jika Ekstensi Tidak Muncul",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L133"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_1_restart_browser",
+      "label": "1. Restart Browser",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L137"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_2_cek_internet",
+      "label": "2. Cek Internet",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L143"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_3_coba_browser_lain",
+      "label": "3. Coba Browser Lain",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L148"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_4_hubungi_it",
+      "label": "4. Hubungi IT",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L153"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_apa_yang_tidak_perlu_anda_lakukan",
+      "label": "\ud83d\udeab Apa yang TIDAK Perlu Anda Lakukan?",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L163"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_hubungi_it",
+      "label": "\ud83d\udcde Hubungi IT",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L177"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_selesai",
+      "label": "\ud83c\udf89 Selesai!",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L189"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_panduan_penggunaan_untuk_staf_rs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_panduan_penggunaan_untuk_staf_rs",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_informasi_penting",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_panduan_penggunaan_untuk_staf_rs",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_pembagian_peran_penting_dipahami",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_pembagian_peran_penting_dipahami",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_cara_kerja_di_balik_layar",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_panduan_penggunaan_untuk_staf_rs",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_cara_install_sangat_mudah",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L48",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_cara_install_sangat_mudah",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_langkah_1_dapatkan_file",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L50",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_cara_install_sangat_mudah",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_langkah_2_install",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L64",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_cara_install_sangat_mudah",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_langkah_3_selesai",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L86",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_panduan_penggunaan_untuk_staf_rs",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_apa_yang_terjadi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L94",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_panduan_penggunaan_untuk_staf_rs",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_cek_instalasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L116",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_panduan_penggunaan_untuk_staf_rs",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_jika_ekstensi_tidak_muncul",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L133",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_jika_ekstensi_tidak_muncul",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_1_restart_browser",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L137",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_jika_ekstensi_tidak_muncul",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_2_cek_internet",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L143",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_jika_ekstensi_tidak_muncul",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_3_coba_browser_lain",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L148",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_jika_ekstensi_tidak_muncul",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_4_hubungi_it",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L153",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_panduan_penggunaan_untuk_staf_rs",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_apa_yang_tidak_perlu_anda_lakukan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L163",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_panduan_penggunaan_untuk_staf_rs",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_hubungi_it",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L177",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_panduan_penggunaan_untuk_staf_rs",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_pengunaan_selesai",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_PENGUNAAN.md",
+      "source_location": "L189",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

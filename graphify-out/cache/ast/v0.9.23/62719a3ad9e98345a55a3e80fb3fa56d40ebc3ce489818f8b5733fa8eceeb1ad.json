@@ -1,0 +1,943 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_md",
+      "label": "MCP_ARCHITECTURE.md",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_morbis_ext_unofficial_mcp_architecture_extension_build_strategy",
+      "label": "Morbis Ext Unofficial \u2014 MCP Architecture & Extension Build Strategy",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_table_of_contents",
+      "label": "Table of Contents",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L11"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_recommended_mcp_skills",
+      "label": "1. Recommended MCP Skills",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L22"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_1_morbis_his_scraper_enhanced",
+      "label": "1.1 `morbis-his-scraper` (Enhanced)",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L24"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_2_playwright_e2e_runner",
+      "label": "1.2 `playwright-e2e-runner`",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L93"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_3_context_memory",
+      "label": "1.3 `context-memory`",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L157"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_4_dom_diff_analyzer",
+      "label": "1.4 `dom-diff-analyzer`",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L216"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_5_feature_pattern_matcher",
+      "label": "1.5 `feature-pattern-matcher`",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L275"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_6_session_orchestrator",
+      "label": "1.6 `session-orchestrator`",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L330"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_7_structured_output_validator",
+      "label": "1.7 `structured-output-validator`",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L390"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_8_context_summarizer",
+      "label": "1.8 `context-summarizer`",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L441"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_2_architecture_design",
+      "label": "2. Architecture Design",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L494"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_2_1_overall_architecture",
+      "label": "2.1 Overall Architecture",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L496"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_2_2_communication_flow",
+      "label": "2.2 Communication Flow",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L543"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_2_3_orchestration_pattern_sequential_dag_with_parallel_leaves",
+      "label": "2.3 Orchestration Pattern: Sequential DAG with Parallel Leaves",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L568"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_2_4_context_lifecycle",
+      "label": "2.4 Context Lifecycle",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L613"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_2_5_memory_lifecycle",
+      "label": "2.5 Memory Lifecycle",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L637"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_2_6_fallback_strategy",
+      "label": "2.6 Fallback Strategy",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L659"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_2_7_error_handling_strategy",
+      "label": "2.7 Error Handling Strategy",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L669"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_extension_build_requirements",
+      "label": "3. Extension Build Requirements",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L691"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_1_tech_stack_already_implemented_phase_1",
+      "label": "3.1 Tech Stack (Already Implemented \u2014 Phase 1)",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L693"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_2_typescript_architecture_current_state",
+      "label": "3.2 TypeScript Architecture (Current State)",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L704"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_3_folder_structure_target_full_migration",
+      "label": "3.3 Folder Structure (Target \u2014 Full Migration)",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L739"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_4_dependency_management",
+      "label": "3.4 Dependency Management",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L793"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_5_ipc_transport_strategy",
+      "label": "3.5 IPC/Transport Strategy",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L826"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_6_configuration_system",
+      "label": "3.6 Configuration System",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L846"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_7_logging_strategy",
+      "label": "3.7 Logging Strategy",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L865"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_8_testing_strategy",
+      "label": "3.8 Testing Strategy",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L893"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_9_observability_debugging_setup",
+      "label": "3.9 Observability/Debugging Setup",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L928"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_10_deployment_pipeline",
+      "label": "3.10 Deployment Pipeline",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L944"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_optimization_reliability",
+      "label": "4. Optimization & Reliability",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L964"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_1_reducing_latency",
+      "label": "4.1 Reducing Latency",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L966"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_2_minimizing_token_usage",
+      "label": "4.2 Minimizing Token Usage",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L977"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_3_caching_context",
+      "label": "4.3 Caching Context",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L987"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_4_preventing_hallucination",
+      "label": "4.4 Preventing Hallucination",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1001"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_5_improving_context_retention",
+      "label": "4.5 Improving Context Retention",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1011"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_6_improving_tool_reliability",
+      "label": "4.6 Improving Tool Reliability",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1026"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_7_concurrency_handling",
+      "label": "4.7 Concurrency Handling",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1036"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_8_retry_mechanism",
+      "label": "4.8 Retry Mechanism",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1054"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_9_failover_strategy",
+      "label": "4.9 Failover Strategy",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1075"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_5_tradeoff_analysis",
+      "label": "5. Tradeoff Analysis",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1087"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_5_1_typescript_migration",
+      "label": "5.1 TypeScript Migration",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1089"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_5_2_esbuild_vs_webpack",
+      "label": "5.2 esbuild vs Webpack",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1101"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_5_3_mcp_server_architecture",
+      "label": "5.3 MCP Server Architecture",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1113"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_5_4_sqlite_vs_json_for_memory",
+      "label": "5.4 SQLite vs JSON for Memory",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1125"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_5_5_event_driven_vs_request_driven",
+      "label": "5.5 Event-driven vs Request-driven",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1137"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_6_implementation_roadmap",
+      "label": "6. Implementation Roadmap",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1151"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_6_1_mvp_architecture_week_1_2_done",
+      "label": "6.1 MVP Architecture (Week 1-2) \u2014 DONE",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1153"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_6_2_full_typescript_migration_build_system_done",
+      "label": "6.2 Full TypeScript Migration & Build System \u2014 DONE",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1167"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_6_3_mcp_server_testing_done",
+      "label": "6.3 MCP Server & Testing \u2014 DONE",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1180"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_6_4_ci_cd_pipeline_done",
+      "label": "6.4 CI/CD Pipeline \u2014 DONE",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1195"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_6_5_implementation_checklist",
+      "label": "6.5 Implementation Checklist",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1202"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_6_6_risk_analysis",
+      "label": "6.6 Risk Analysis",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1217"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_6_7_technical_debt_consideration",
+      "label": "6.7 Technical Debt Consideration",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1227"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_appendix_quick_reference",
+      "label": "Appendix: Quick Reference",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1246"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_build_commands",
+      "label": "Build Commands",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1248"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_mcp_server_commands",
+      "label": "MCP Server Commands",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1266"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_extension_testing",
+      "label": "Extension Testing",
+      "file_type": "document",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1275"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_morbis_ext_unofficial_mcp_architecture_extension_build_strategy",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_morbis_ext_unofficial_mcp_architecture_extension_build_strategy",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_table_of_contents",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_morbis_ext_unofficial_mcp_architecture_extension_build_strategy",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_recommended_mcp_skills",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_recommended_mcp_skills",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_1_morbis_his_scraper_enhanced",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_recommended_mcp_skills",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_2_playwright_e2e_runner",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L93",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_recommended_mcp_skills",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_3_context_memory",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L157",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_recommended_mcp_skills",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_4_dom_diff_analyzer",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L216",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_recommended_mcp_skills",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_5_feature_pattern_matcher",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L275",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_recommended_mcp_skills",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_6_session_orchestrator",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L330",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_recommended_mcp_skills",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_7_structured_output_validator",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L390",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_recommended_mcp_skills",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_1_8_context_summarizer",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L441",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_morbis_ext_unofficial_mcp_architecture_extension_build_strategy",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_2_architecture_design",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L494",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_2_architecture_design",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_2_1_overall_architecture",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L496",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_2_architecture_design",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_2_2_communication_flow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L543",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_2_architecture_design",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_2_3_orchestration_pattern_sequential_dag_with_parallel_leaves",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L568",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_2_architecture_design",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_2_4_context_lifecycle",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L613",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_2_architecture_design",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_2_5_memory_lifecycle",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L637",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_2_architecture_design",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_2_6_fallback_strategy",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L659",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_2_architecture_design",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_2_7_error_handling_strategy",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L669",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_morbis_ext_unofficial_mcp_architecture_extension_build_strategy",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_extension_build_requirements",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L691",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_extension_build_requirements",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_1_tech_stack_already_implemented_phase_1",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L693",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_extension_build_requirements",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_2_typescript_architecture_current_state",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L704",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_extension_build_requirements",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_3_folder_structure_target_full_migration",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L739",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_extension_build_requirements",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_4_dependency_management",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L793",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_extension_build_requirements",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_5_ipc_transport_strategy",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L826",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_extension_build_requirements",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_6_configuration_system",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L846",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_extension_build_requirements",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_7_logging_strategy",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L865",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_extension_build_requirements",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_8_testing_strategy",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L893",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_extension_build_requirements",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_9_observability_debugging_setup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L928",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_extension_build_requirements",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_3_10_deployment_pipeline",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L944",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_morbis_ext_unofficial_mcp_architecture_extension_build_strategy",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_optimization_reliability",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L964",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_optimization_reliability",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_1_reducing_latency",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L966",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_optimization_reliability",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_2_minimizing_token_usage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L977",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_optimization_reliability",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_3_caching_context",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L987",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_optimization_reliability",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_4_preventing_hallucination",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1001",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_optimization_reliability",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_5_improving_context_retention",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1011",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_optimization_reliability",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_6_improving_tool_reliability",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1026",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_optimization_reliability",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_7_concurrency_handling",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1036",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_optimization_reliability",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_8_retry_mechanism",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1054",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_optimization_reliability",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_4_9_failover_strategy",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1075",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_morbis_ext_unofficial_mcp_architecture_extension_build_strategy",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_5_tradeoff_analysis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1087",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_5_tradeoff_analysis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_5_1_typescript_migration",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1089",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_5_tradeoff_analysis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_5_2_esbuild_vs_webpack",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1101",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_5_tradeoff_analysis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_5_3_mcp_server_architecture",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1113",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_5_tradeoff_analysis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_5_4_sqlite_vs_json_for_memory",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1125",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_5_tradeoff_analysis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_5_5_event_driven_vs_request_driven",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1137",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_morbis_ext_unofficial_mcp_architecture_extension_build_strategy",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_6_implementation_roadmap",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1151",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_6_implementation_roadmap",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_6_1_mvp_architecture_week_1_2_done",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1153",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_6_implementation_roadmap",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_6_2_full_typescript_migration_build_system_done",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1167",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_6_implementation_roadmap",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_6_3_mcp_server_testing_done",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1180",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_6_implementation_roadmap",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_6_4_ci_cd_pipeline_done",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1195",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_6_implementation_roadmap",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_6_5_implementation_checklist",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1202",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_6_implementation_roadmap",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_6_6_risk_analysis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1217",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_6_implementation_roadmap",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_6_7_technical_debt_consideration",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1227",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_morbis_ext_unofficial_mcp_architecture_extension_build_strategy",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_appendix_quick_reference",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1246",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_appendix_quick_reference",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_build_commands",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1248",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_appendix_quick_reference",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_mcp_server_commands",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1266",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_appendix_quick_reference",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_mcp_architecture_extension_testing",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/MCP_ARCHITECTURE.md",
+      "source_location": "L1275",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -1,0 +1,93 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agent_browser_json",
+      "label": "agent-browser.json",
+      "file_type": "code",
+      "source_file": "agent-browser.json",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agent_browser_schema",
+      "label": "$schema",
+      "file_type": "code",
+      "source_file": "agent-browser.json",
+      "source_location": "L2"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agent_browser_sessionname",
+      "label": "sessionName",
+      "file_type": "code",
+      "source_file": "agent-browser.json",
+      "source_location": "L3"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agent_browser_profile",
+      "label": "profile",
+      "file_type": "code",
+      "source_file": "agent-browser.json",
+      "source_location": "L4"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agent_browser_headed",
+      "label": "headed",
+      "file_type": "code",
+      "source_file": "agent-browser.json",
+      "source_location": "L5"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agent_browser_hidescrollbars",
+      "label": "hideScrollbars",
+      "file_type": "code",
+      "source_file": "agent-browser.json",
+      "source_location": "L6"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agent_browser_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agent_browser_schema",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "agent-browser.json",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agent_browser_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agent_browser_sessionname",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "agent-browser.json",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agent_browser_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agent_browser_profile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "agent-browser.json",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agent_browser_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agent_browser_headed",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "agent-browser.json",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agent_browser_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agent_browser_hidescrollbars",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "agent-browser.json",
+      "source_location": "L6",
+      "weight": 1.0
+    }
+  ]
+}

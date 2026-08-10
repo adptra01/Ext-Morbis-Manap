@@ -1,0 +1,815 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_md",
+      "label": "README.md",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_open_detail_in_new_tab_dokumentasi_ekstensi_browser",
+      "label": "Open Detail in New Tab - Dokumentasi Ekstensi Browser",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_gambaran_umum",
+      "label": "Gambaran Umum",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L3"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_tujuan_utama",
+      "label": "Tujuan Utama",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_sistem_target",
+      "label": "Sistem Target",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L10"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_fitur",
+      "label": "Fitur",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L15"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_1_mode_open_detail",
+      "label": "1. Mode Open Detail",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L17"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_2_tombol_shortcut",
+      "label": "2. Tombol Shortcut",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L45"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_3_persistensi_filter_state",
+      "label": "3. Persistensi Filter State",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L67"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_4_sederhanakan_penagihan_ringkas_rincian_biaya",
+      "label": "4. Sederhanakan Penagihan (Ringkas Rincian Biaya)",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L89"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_5_tombol_scroll_atas_bawah",
+      "label": "5. Tombol Scroll (Atas/Bawah)",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L119"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_6_optimisasi_cetak",
+      "label": "6. Optimisasi Cetak",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L137"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_arsitektur_teknis",
+      "label": "Arsitektur Teknis",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L154"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_struktur_ekstensi",
+      "label": "Struktur Ekstensi",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L156"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_konfigurasi_manifest",
+      "label": "Konfigurasi Manifest",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L177"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_sistem_konfigurasi",
+      "label": "Sistem Konfigurasi",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L195"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_arsitektur_content_script",
+      "label": "Arsitektur Content Script",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L202"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_instalasi_setup",
+      "label": "Instalasi & Setup",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L208"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_1_instalasi_ekstensi",
+      "label": "1. Instalasi Ekstensi",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L210"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_2_konfigurasi_awal",
+      "label": "2. Konfigurasi Awal",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L218"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_3_manajemen_url",
+      "label": "3. Manajemen URL",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L225"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_opsi_konfigurasi",
+      "label": "Opsi Konfigurasi",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L231"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_pengaturan_tingkat_ekstensi",
+      "label": "Pengaturan Tingkat Ekstensi",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L233"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_pengaturan_spesifik_fitur",
+      "label": "Pengaturan Spesifik Fitur",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L237"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_panduan_penggunaan",
+      "label": "Panduan Penggunaan",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L262"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_operasi_dasar",
+      "label": "Operasi Dasar",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L264"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_fitur_lanjutan",
+      "label": "Fitur Lanjutan",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L272"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_pemecahan_masalah",
+      "label": "Pemecahan Masalah",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L278"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_pengembangan_kustomisasi",
+      "label": "Pengembangan & Kustomisasi",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L284"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_menambahkan_fitur_baru",
+      "label": "Menambahkan Fitur Baru",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L286"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_kustomisasi_pola_url",
+      "label": "Kustomisasi Pola URL",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L293"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_kustomisasi_selector",
+      "label": "Kustomisasi Selector",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L304"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_build_deployment",
+      "label": "Build & Deployment",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L314"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_keamanan_privasi",
+      "label": "Keamanan & Privasi",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L320"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_izin_yang_digunakan",
+      "label": "Izin yang Digunakan",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L322"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_penanganan_data",
+      "label": "Penanganan Data",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L328"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_fitur_keamanan",
+      "label": "Fitur Keamanan",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L334"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_kompatibilitas",
+      "label": "Kompatibilitas",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L340"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_dukungan_browser",
+      "label": "Dukungan Browser",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L342"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_kompatibilitas_versi_simrs",
+      "label": "Kompatibilitas Versi SIMRS",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L348"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_persyaratan_sistem",
+      "label": "Persyaratan Sistem",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L355"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_changelog",
+      "label": "Changelog",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L361"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_versi_1_2_0",
+      "label": "Versi 1.2.0",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L363"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_versi_1_1_0",
+      "label": "Versi 1.1.0",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L370"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_versi_1_0_0",
+      "label": "Versi 1.0.0",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L376"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_dukungan_maintenance",
+      "label": "Dukungan & Maintenance",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L383"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_pelaporan_issue",
+      "label": "Pelaporan Issue",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L385"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_permintaan_fitur",
+      "label": "Permintaan Fitur",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L391"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_berkontribusi",
+      "label": "Berkontribusi",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L396"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_lisensi",
+      "label": "Lisensi",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L403"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_readme_ucapan_terima_kasih",
+      "label": "Ucapan Terima Kasih",
+      "file_type": "document",
+      "source_file": "docs/README.md",
+      "source_location": "L407"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_open_detail_in_new_tab_dokumentasi_ekstensi_browser",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_open_detail_in_new_tab_dokumentasi_ekstensi_browser",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_gambaran_umum",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_gambaran_umum",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_tujuan_utama",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_gambaran_umum",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_sistem_target",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_open_detail_in_new_tab_dokumentasi_ekstensi_browser",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_fitur",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_fitur",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_1_mode_open_detail",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_fitur",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_2_tombol_shortcut",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L45",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_fitur",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_3_persistensi_filter_state",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L67",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_fitur",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_4_sederhanakan_penagihan_ringkas_rincian_biaya",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L89",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_fitur",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_5_tombol_scroll_atas_bawah",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L119",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_fitur",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_6_optimisasi_cetak",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L137",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_open_detail_in_new_tab_dokumentasi_ekstensi_browser",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_arsitektur_teknis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L154",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_arsitektur_teknis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_struktur_ekstensi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L156",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_arsitektur_teknis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_konfigurasi_manifest",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L177",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_arsitektur_teknis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_sistem_konfigurasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L195",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_arsitektur_teknis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_arsitektur_content_script",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L202",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_open_detail_in_new_tab_dokumentasi_ekstensi_browser",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_instalasi_setup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L208",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_instalasi_setup",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_1_instalasi_ekstensi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L210",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_instalasi_setup",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_2_konfigurasi_awal",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L218",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_instalasi_setup",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_3_manajemen_url",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L225",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_open_detail_in_new_tab_dokumentasi_ekstensi_browser",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_opsi_konfigurasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L231",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_opsi_konfigurasi",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_pengaturan_tingkat_ekstensi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L233",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_opsi_konfigurasi",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_pengaturan_spesifik_fitur",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L237",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_open_detail_in_new_tab_dokumentasi_ekstensi_browser",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_panduan_penggunaan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L262",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_panduan_penggunaan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_operasi_dasar",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L264",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_panduan_penggunaan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_fitur_lanjutan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L272",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_panduan_penggunaan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_pemecahan_masalah",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L278",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_open_detail_in_new_tab_dokumentasi_ekstensi_browser",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_pengembangan_kustomisasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L284",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_pengembangan_kustomisasi",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_menambahkan_fitur_baru",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L286",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_pengembangan_kustomisasi",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_kustomisasi_pola_url",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L293",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_pengembangan_kustomisasi",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_kustomisasi_selector",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L304",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_pengembangan_kustomisasi",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_build_deployment",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L314",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_open_detail_in_new_tab_dokumentasi_ekstensi_browser",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_keamanan_privasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L320",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_keamanan_privasi",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_izin_yang_digunakan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L322",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_keamanan_privasi",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_penanganan_data",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L328",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_keamanan_privasi",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_fitur_keamanan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L334",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_open_detail_in_new_tab_dokumentasi_ekstensi_browser",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_kompatibilitas",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L340",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_kompatibilitas",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_dukungan_browser",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L342",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_kompatibilitas",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_kompatibilitas_versi_simrs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L348",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_kompatibilitas",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_persyaratan_sistem",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L355",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_open_detail_in_new_tab_dokumentasi_ekstensi_browser",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_changelog",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L361",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_changelog",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_versi_1_2_0",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L363",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_changelog",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_versi_1_1_0",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L370",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_changelog",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_versi_1_0_0",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L376",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_open_detail_in_new_tab_dokumentasi_ekstensi_browser",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_dukungan_maintenance",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L383",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_dukungan_maintenance",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_pelaporan_issue",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L385",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_dukungan_maintenance",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_permintaan_fitur",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L391",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_dukungan_maintenance",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_berkontribusi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L396",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_open_detail_in_new_tab_dokumentasi_ekstensi_browser",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_lisensi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L403",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_readme_open_detail_in_new_tab_dokumentasi_ekstensi_browser",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_readme_ucapan_terima_kasih",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/README.md",
+      "source_location": "L407",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

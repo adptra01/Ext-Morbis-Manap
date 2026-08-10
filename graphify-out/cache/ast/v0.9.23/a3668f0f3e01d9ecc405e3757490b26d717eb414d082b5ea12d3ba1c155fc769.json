@@ -1,0 +1,79 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_mcp_servers_morbis_devtools_readme_md",
+      "label": "README.md",
+      "file_type": "document",
+      "source_file": "mcp-servers/morbis-devtools/README.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_mcp_servers_morbis_devtools_readme_morbis_devtools_mcp_server",
+      "label": "Morbis DevTools MCP Server",
+      "file_type": "document",
+      "source_file": "mcp-servers/morbis-devtools/README.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_mcp_servers_morbis_devtools_readme_setup",
+      "label": "Setup",
+      "file_type": "document",
+      "source_file": "mcp-servers/morbis-devtools/README.md",
+      "source_location": "L5"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_mcp_servers_morbis_devtools_readme_usage",
+      "label": "Usage",
+      "file_type": "document",
+      "source_file": "mcp-servers/morbis-devtools/README.md",
+      "source_location": "L14"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_mcp_servers_morbis_devtools_readme_tools",
+      "label": "Tools",
+      "file_type": "document",
+      "source_file": "mcp-servers/morbis-devtools/README.md",
+      "source_location": "L20"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_mcp_servers_morbis_devtools_readme_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_mcp_servers_morbis_devtools_readme_morbis_devtools_mcp_server",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "mcp-servers/morbis-devtools/README.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_mcp_servers_morbis_devtools_readme_morbis_devtools_mcp_server",
+      "target": "mnt_diskd_projects_ext_morbis_manap_mcp_servers_morbis_devtools_readme_setup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "mcp-servers/morbis-devtools/README.md",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_mcp_servers_morbis_devtools_readme_morbis_devtools_mcp_server",
+      "target": "mnt_diskd_projects_ext_morbis_manap_mcp_servers_morbis_devtools_readme_usage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "mcp-servers/morbis-devtools/README.md",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_mcp_servers_morbis_devtools_readme_morbis_devtools_mcp_server",
+      "target": "mnt_diskd_projects_ext_morbis_manap_mcp_servers_morbis_devtools_readme_tools",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "mcp-servers/morbis-devtools/README.md",
+      "source_location": "L20",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

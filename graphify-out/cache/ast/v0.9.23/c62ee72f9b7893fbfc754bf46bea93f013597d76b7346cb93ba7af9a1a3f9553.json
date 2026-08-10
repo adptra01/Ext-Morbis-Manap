@@ -1,0 +1,127 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_code_review_checklist_md",
+      "label": "code-review-checklist.md",
+      "file_type": "document",
+      "source_file": "docs/code-review-checklist.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_code_review_checklist_code_review_checklist",
+      "label": "Code Review Checklist",
+      "file_type": "document",
+      "source_file": "docs/code-review-checklist.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_code_review_checklist_feature_registration",
+      "label": "Feature Registration",
+      "file_type": "document",
+      "source_file": "docs/code-review-checklist.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_code_review_checklist_url_gating",
+      "label": "URL Gating",
+      "file_type": "document",
+      "source_file": "docs/code-review-checklist.md",
+      "source_location": "L17"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_code_review_checklist_enabledwhen",
+      "label": "enabledWhen",
+      "file_type": "document",
+      "source_file": "docs/code-review-checklist.md",
+      "source_location": "L25"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_code_review_checklist_regression",
+      "label": "Regression",
+      "file_type": "document",
+      "source_file": "docs/code-review-checklist.md",
+      "source_location": "L31"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_code_review_checklist_build_test",
+      "label": "Build & Test",
+      "file_type": "document",
+      "source_file": "docs/code-review-checklist.md",
+      "source_location": "L37"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_code_review_checklist_dokumentasi",
+      "label": "Dokumentasi",
+      "file_type": "document",
+      "source_file": "docs/code-review-checklist.md",
+      "source_location": "L44"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_code_review_checklist_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_code_review_checklist_code_review_checklist",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/code-review-checklist.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_code_review_checklist_code_review_checklist",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_code_review_checklist_feature_registration",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/code-review-checklist.md",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_code_review_checklist_code_review_checklist",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_code_review_checklist_url_gating",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/code-review-checklist.md",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_code_review_checklist_code_review_checklist",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_code_review_checklist_enabledwhen",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/code-review-checklist.md",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_code_review_checklist_code_review_checklist",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_code_review_checklist_regression",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/code-review-checklist.md",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_code_review_checklist_code_review_checklist",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_code_review_checklist_build_test",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/code-review-checklist.md",
+      "source_location": "L37",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_code_review_checklist_code_review_checklist",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_code_review_checklist_dokumentasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/code-review-checklist.md",
+      "source_location": "L44",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

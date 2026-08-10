@@ -1,0 +1,613 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_json",
+      "label": "manifest.json",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_manifest_version",
+      "label": "manifest_version",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L2"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_name",
+      "label": "name",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L3"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_version",
+      "label": "version",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L4"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_browser_specific_settings",
+      "label": "browser_specific_settings",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L5"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_browser_specific_settings_gecko",
+      "label": "gecko",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L6"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_gecko_id",
+      "label": "id",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L7"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_gecko_update_url",
+      "label": "update_url",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L8"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_update_url",
+      "label": "update_url",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L11"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_description",
+      "label": "description",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L12"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_author",
+      "label": "author",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L13"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_icons",
+      "label": "icons",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L14"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_icons_16",
+      "label": "16",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L15"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_icons_32",
+      "label": "32",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L16"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_icons_48",
+      "label": "48",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L17"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_icons_128",
+      "label": "128",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L18"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_background",
+      "label": "background",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L20"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_background_service_worker",
+      "label": "service_worker",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L21"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_action",
+      "label": "action",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L23"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_action_default_popup",
+      "label": "default_popup",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L24"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_action_default_title",
+      "label": "default_title",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L25"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_side_panel",
+      "label": "side_panel",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L27"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_side_panel_default_path",
+      "label": "default_path",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L28"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_content_security_policy",
+      "label": "content_security_policy",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L30"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_content_security_policy_extension_pages",
+      "label": "extension_pages",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L31"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_content_scripts",
+      "label": "content_scripts",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L33"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_permissions",
+      "label": "permissions",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L218"
+    },
+    {
+      "id": "ref_activetab",
+      "label": "activeTab",
+      "file_type": "concept",
+      "source_file": "manifest.json",
+      "source_location": "L218"
+    },
+    {
+      "id": "ref_alarms",
+      "label": "alarms",
+      "file_type": "concept",
+      "source_file": "manifest.json",
+      "source_location": "L218"
+    },
+    {
+      "id": "ref_offscreen",
+      "label": "offscreen",
+      "file_type": "concept",
+      "source_file": "manifest.json",
+      "source_location": "L218"
+    },
+    {
+      "id": "ref_scripting",
+      "label": "scripting",
+      "file_type": "concept",
+      "source_file": "manifest.json",
+      "source_location": "L218"
+    },
+    {
+      "id": "ref_sidepanel",
+      "label": "sidePanel",
+      "file_type": "concept",
+      "source_file": "manifest.json",
+      "source_location": "L218"
+    },
+    {
+      "id": "ref_storage",
+      "label": "storage",
+      "file_type": "concept",
+      "source_file": "manifest.json",
+      "source_location": "L218"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_host_permissions",
+      "label": "host_permissions",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L219"
+    },
+    {
+      "id": "ref_http",
+      "label": "http://*/*",
+      "file_type": "concept",
+      "source_file": "manifest.json",
+      "source_location": "L219"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_web_accessible_resources",
+      "label": "web_accessible_resources",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L220"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_manifest_optional_host_permissions",
+      "label": "optional_host_permissions",
+      "file_type": "code",
+      "source_file": "manifest.json",
+      "source_location": "L226"
+    },
+    {
+      "id": "ref_https",
+      "label": "https://*/*",
+      "file_type": "concept",
+      "source_file": "manifest.json",
+      "source_location": "L226"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_manifest_version",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_name",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_version",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_browser_specific_settings",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_browser_specific_settings",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_browser_specific_settings_gecko",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_browser_specific_settings_gecko",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_gecko_id",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_browser_specific_settings_gecko",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_gecko_update_url",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_update_url",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_description",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_author",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_icons",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_icons",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_icons_16",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_icons",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_icons_32",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_icons",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_icons_48",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_icons",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_icons_128",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_background",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_background",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_background_service_worker",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_action",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_action",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_action_default_popup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_action",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_action_default_title",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_side_panel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_side_panel",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_side_panel_default_path",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_content_security_policy",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_content_security_policy",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_content_security_policy_extension_pages",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_content_scripts",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L33",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_permissions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L218",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_permissions",
+      "target": "ref_activetab",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L218",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_permissions",
+      "target": "ref_alarms",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L218",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_permissions",
+      "target": "ref_offscreen",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L218",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_permissions",
+      "target": "ref_scripting",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L218",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_permissions",
+      "target": "ref_sidepanel",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L218",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_permissions",
+      "target": "ref_storage",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L218",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_host_permissions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L219",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_host_permissions",
+      "target": "ref_http",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L219",
+      "weight": 1.0,
+      "context": "import"
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_web_accessible_resources",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L220",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_json",
+      "target": "mnt_diskd_projects_ext_morbis_manap_manifest_optional_host_permissions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L226",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_manifest_optional_host_permissions",
+      "target": "ref_https",
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "manifest.json",
+      "source_location": "L226",
+      "weight": 1.0,
+      "context": "import"
+    }
+  ]
+}

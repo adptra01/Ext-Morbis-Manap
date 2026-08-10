@@ -1,0 +1,431 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_md",
+      "label": "laporan-simulasi.md",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_laporan_simulasi_e2e_simrs",
+      "label": "Laporan Simulasi E2E SIMRS",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_peta_aliran_data_field_resume_sumber_form",
+      "label": "Peta Aliran Data: Field Resume \u2192 Sumber Form",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L17"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_1_data_pasien_registrasi_system_generated",
+      "label": "1. Data Pasien & Registrasi (System Generated)",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L19"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_2_diagnosis",
+      "label": "2. Diagnosis",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L28"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_3_tindakan",
+      "label": "3. Tindakan",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L40"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_4_ttv_pemeriksaan_fisik",
+      "label": "4. TTV / Pemeriksaan Fisik",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L48"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_5_kondisi_keluar",
+      "label": "5. Kondisi Keluar",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L61"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_6_resume_klinis",
+      "label": "6. Resume Klinis",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L69"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_7_cppt_catatan_perkembangan",
+      "label": "7. CPPT (Catatan Perkembangan)",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L75"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_8_asesmen_awal_ri",
+      "label": "8. Asesmen Awal RI",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L87"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_9_obat_resep",
+      "label": "9. Obat (Resep)",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L101"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_status_form_submission_per_halaman",
+      "label": "Status Form Submission per Halaman",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L109"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_root_cause_analysis_per_bug_updated",
+      "label": "Root Cause Analysis per Bug (Updated)",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L126"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_bug_1_diagnosis_tidak_sesuai_di_resume",
+      "label": "Bug #1: Diagnosis Tidak Sesuai di Resume",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L128"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_bug_2_tindakan_tidak_tampil_di_resume",
+      "label": "Bug #2: Tindakan Tidak Tampil di Resume",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L134"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_bug_3_gcs_tidak_lengkap_di_resume",
+      "label": "Bug #3: GCS Tidak Lengkap di Resume",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L140"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_bug_4_spo2_autofill_kondisi_keluar",
+      "label": "Bug #4: SPO2 Autofill Kondisi Keluar",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L146"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_rekomendasi_teknis",
+      "label": "Rekomendasi Teknis",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L154"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_form_submit_mechanism",
+      "label": "Form Submit Mechanism",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L156"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_priority_actions",
+      "label": "Priority Actions",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L165"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_field_name_reference_quick_lookup",
+      "label": "Field Name Reference (Quick Lookup)",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L175"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_pengkajian_awal_igd",
+      "label": "Pengkajian Awal IGD",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L177"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_asesmen_awal_ri_page_1",
+      "label": "Asesmen Awal RI (Page 1)",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L191"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_cppt",
+      "label": "CPPT",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L202"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_input_tindakan",
+      "label": "Input Tindakan",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L213"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_resep",
+      "label": "Resep",
+      "file_type": "document",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L222"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_laporan_simulasi_e2e_simrs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_laporan_simulasi_e2e_simrs",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_peta_aliran_data_field_resume_sumber_form",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_peta_aliran_data_field_resume_sumber_form",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_1_data_pasien_registrasi_system_generated",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_peta_aliran_data_field_resume_sumber_form",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_2_diagnosis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_peta_aliran_data_field_resume_sumber_form",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_3_tindakan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_peta_aliran_data_field_resume_sumber_form",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_4_ttv_pemeriksaan_fisik",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L48",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_peta_aliran_data_field_resume_sumber_form",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_5_kondisi_keluar",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L61",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_peta_aliran_data_field_resume_sumber_form",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_6_resume_klinis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L69",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_peta_aliran_data_field_resume_sumber_form",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_7_cppt_catatan_perkembangan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L75",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_peta_aliran_data_field_resume_sumber_form",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_8_asesmen_awal_ri",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L87",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_peta_aliran_data_field_resume_sumber_form",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_9_obat_resep",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L101",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_laporan_simulasi_e2e_simrs",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_status_form_submission_per_halaman",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L109",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_laporan_simulasi_e2e_simrs",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_root_cause_analysis_per_bug_updated",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L126",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_root_cause_analysis_per_bug_updated",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_bug_1_diagnosis_tidak_sesuai_di_resume",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L128",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_root_cause_analysis_per_bug_updated",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_bug_2_tindakan_tidak_tampil_di_resume",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L134",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_root_cause_analysis_per_bug_updated",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_bug_3_gcs_tidak_lengkap_di_resume",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L140",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_root_cause_analysis_per_bug_updated",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_bug_4_spo2_autofill_kondisi_keluar",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L146",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_laporan_simulasi_e2e_simrs",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_rekomendasi_teknis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L154",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_rekomendasi_teknis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_form_submit_mechanism",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L156",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_rekomendasi_teknis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_priority_actions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L165",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_laporan_simulasi_e2e_simrs",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_field_name_reference_quick_lookup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L175",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_field_name_reference_quick_lookup",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_pengkajian_awal_igd",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L177",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_field_name_reference_quick_lookup",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_asesmen_awal_ri_page_1",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L191",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_field_name_reference_quick_lookup",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_cppt",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L202",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_field_name_reference_quick_lookup",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_input_tindakan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L213",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_field_name_reference_quick_lookup",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_laporan_simulasi_resep",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/laporan-simulasi.md",
+      "source_location": "L222",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

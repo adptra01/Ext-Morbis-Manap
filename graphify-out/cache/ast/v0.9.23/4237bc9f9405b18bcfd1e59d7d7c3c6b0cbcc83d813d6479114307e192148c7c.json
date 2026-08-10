@@ -1,0 +1,143 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_md",
+      "label": "SKILL.md",
+      "file_type": "document",
+      "source_file": "skills/ponytail/SKILL.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_ponytail",
+      "label": "Ponytail",
+      "file_type": "document",
+      "source_file": "skills/ponytail/SKILL.md",
+      "source_location": "L16"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_persistence",
+      "label": "Persistence",
+      "file_type": "document",
+      "source_file": "skills/ponytail/SKILL.md",
+      "source_location": "L22"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_the_ladder",
+      "label": "The ladder",
+      "file_type": "document",
+      "source_file": "skills/ponytail/SKILL.md",
+      "source_location": "L28"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_rules",
+      "label": "Rules",
+      "file_type": "document",
+      "source_file": "skills/ponytail/SKILL.md",
+      "source_location": "L42"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_output",
+      "label": "Output",
+      "file_type": "document",
+      "source_file": "skills/ponytail/SKILL.md",
+      "source_location": "L52"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_intensity",
+      "label": "Intensity",
+      "file_type": "document",
+      "source_file": "skills/ponytail/SKILL.md",
+      "source_location": "L63"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_when_not_to_be_lazy",
+      "label": "When NOT to be lazy",
+      "file_type": "document",
+      "source_file": "skills/ponytail/SKILL.md",
+      "source_location": "L76"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_boundaries",
+      "label": "Boundaries",
+      "file_type": "document",
+      "source_file": "skills/ponytail/SKILL.md",
+      "source_location": "L94"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_ponytail",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "skills/ponytail/SKILL.md",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_ponytail",
+      "target": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_persistence",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "skills/ponytail/SKILL.md",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_ponytail",
+      "target": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_the_ladder",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "skills/ponytail/SKILL.md",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_ponytail",
+      "target": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_rules",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "skills/ponytail/SKILL.md",
+      "source_location": "L42",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_ponytail",
+      "target": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_output",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "skills/ponytail/SKILL.md",
+      "source_location": "L52",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_ponytail",
+      "target": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_intensity",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "skills/ponytail/SKILL.md",
+      "source_location": "L63",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_ponytail",
+      "target": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_when_not_to_be_lazy",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "skills/ponytail/SKILL.md",
+      "source_location": "L76",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_ponytail",
+      "target": "mnt_diskd_projects_ext_morbis_manap_skills_ponytail_skill_boundaries",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "skills/ponytail/SKILL.md",
+      "source_location": "L94",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

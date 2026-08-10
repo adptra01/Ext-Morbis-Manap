@@ -1,0 +1,303 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_md",
+      "label": "simplify-billing.md",
+      "file_type": "document",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_sederhanakan_penagihan",
+      "label": "Sederhanakan Penagihan",
+      "file_type": "document",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_gambaran_fitur_dan_tujuan",
+      "label": "Gambaran Fitur dan Tujuan",
+      "file_type": "document",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L3"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_masalah_yang_diselesaikan_untuk_pengguna",
+      "label": "Masalah yang Diselesaikan untuk Pengguna",
+      "file_type": "document",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_detail_implementasi_teknis",
+      "label": "Detail Implementasi Teknis",
+      "file_type": "document",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L16"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_panduan_penggunaan_langkah_demi_langkah",
+      "label": "Panduan Penggunaan Langkah demi Langkah",
+      "file_type": "document",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L27"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_analisis_kode",
+      "label": "Analisis Kode",
+      "file_type": "document",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L36"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_fungsi_utama",
+      "label": "Fungsi Utama",
+      "file_type": "document",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L38"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_metode_deteksi",
+      "label": "Metode Deteksi",
+      "file_type": "document",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L64"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_teknik_modifikasi",
+      "label": "Teknik Modifikasi",
+      "file_type": "document",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L78"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_opsi_konfigurasi",
+      "label": "Opsi Konfigurasi",
+      "file_type": "document",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L86"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_edge_cases_dan_keterbatasan",
+      "label": "Edge Cases dan Keterbatasan",
+      "file_type": "document",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L102"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_edge_cases_yang_ditangani",
+      "label": "Edge Cases yang Ditangani",
+      "file_type": "document",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L104"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_keterbatasan",
+      "label": "Keterbatasan",
+      "file_type": "document",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L110"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_contoh_perubahan_dom",
+      "label": "Contoh Perubahan DOM",
+      "file_type": "document",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L116"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_bagian_tabel_detail_asli",
+      "label": "Bagian Tabel Detail Asli",
+      "file_type": "document",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L118"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_tampilan_ringkasan_yang_disederhanakan",
+      "label": "Tampilan Ringkasan yang Disederhanakan",
+      "file_type": "document",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L149"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_tombol_toggle",
+      "label": "Tombol Toggle",
+      "file_type": "document",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L172"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_css_spesifik_cetak",
+      "label": "CSS Spesifik Cetak",
+      "file_type": "document",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L181"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_sederhanakan_penagihan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_sederhanakan_penagihan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_gambaran_fitur_dan_tujuan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_sederhanakan_penagihan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_masalah_yang_diselesaikan_untuk_pengguna",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_sederhanakan_penagihan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_detail_implementasi_teknis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_sederhanakan_penagihan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_panduan_penggunaan_langkah_demi_langkah",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_sederhanakan_penagihan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_analisis_kode",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_analisis_kode",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_fungsi_utama",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_analisis_kode",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_metode_deteksi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L64",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_analisis_kode",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_teknik_modifikasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L78",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_sederhanakan_penagihan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_opsi_konfigurasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L86",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_sederhanakan_penagihan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_edge_cases_dan_keterbatasan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L102",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_edge_cases_dan_keterbatasan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_edge_cases_yang_ditangani",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L104",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_edge_cases_dan_keterbatasan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_keterbatasan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L110",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_sederhanakan_penagihan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_contoh_perubahan_dom",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L116",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_contoh_perubahan_dom",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_bagian_tabel_detail_asli",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L118",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_contoh_perubahan_dom",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_tampilan_ringkasan_yang_disederhanakan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L149",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_contoh_perubahan_dom",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_tombol_toggle",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L172",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_contoh_perubahan_dom",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_features_simplify_billing_css_spesifik_cetak",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/simplify-billing.md",
+      "source_location": "L181",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -1,0 +1,623 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_md",
+      "label": "PANDUAN_DEPLOYMENT.md",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment_morbis_ext_unofficial",
+      "label": "Panduan Deployment MORBIS Ext Unofficial",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_perhatian_penting_sebelum_memulai",
+      "label": "\u26a0\ufe0f PERHATIAN PENTING SEBELUM MEMULAI",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L3"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_siapa_yang_melakukan_pack_extension",
+      "label": "Siapa yang Melakukan \"Pack Extension\"?",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L5"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_tentang_lokasi_folder",
+      "label": "Tentang Lokasi Folder",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L15"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_universal_browser_support",
+      "label": "\ud83c\udf10 Universal Browser Support",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L25"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_file_yang_telah_dibuat",
+      "label": "\ud83d\udcc1 File yang Telah Dibuat",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L38"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_1_manifest_json_update_urls",
+      "label": "1. manifest.json (Update URLs)",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L40"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_2_update_xml_chromium_browsers",
+      "label": "2. update.xml (Chromium Browsers)",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L58"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_3_updates_json_firefox",
+      "label": "3. updates.json (Firefox)",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L65"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_4_install_morbis_ext_reg",
+      "label": "4. Install_Morbis_Ext.reg",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L72"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment",
+      "label": "\ud83d\ude80 Panduan Deployment",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L79"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_langkah_1_pack_ekstensi_hanya_developer_it",
+      "label": "Langkah 1: Pack Ekstensi (Hanya Developer/IT)",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L81"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_untuk_chromium_browsers_chrome_edge_brave",
+      "label": "Untuk Chromium Browsers (Chrome, Edge, Brave)",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L83"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_untuk_firefox",
+      "label": "Untuk Firefox",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L127"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_langkah_2_push_ke_github",
+      "label": "Langkah 2: Push ke GitHub",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L167"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_langkah_3_install_di_komputer_user_end_user",
+      "label": "Langkah 3: Install di Komputer User (End User)",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L192"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_konfigurasi_github_pages",
+      "label": "\u2699\ufe0f Konfigurasi GitHub Pages",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L219"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_verifikasi_instalasi",
+      "label": "\ud83d\udd0d Verifikasi Instalasi",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L229"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_cek_di_browser",
+      "label": "Cek di Browser:",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L231"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_cek_registry",
+      "label": "Cek Registry:",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L239"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_update_untuk_versi_berikutnya",
+      "label": "\ud83d\udcdd Update untuk Versi Berikutnya",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L260"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_ketika_update_ke_v1_3_0",
+      "label": "Ketika Update ke v1.3.0:",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L262"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_chromium_browsers_chrome_edge_brave",
+      "label": "Chromium Browsers (Chrome, Edge, Brave)",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L264"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_firefox",
+      "label": "Firefox",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L278"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_keamanan_best_practices",
+      "label": "\ud83d\udd10 Keamanan & Best Practices",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L300"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_troubleshooting",
+      "label": "\ud83d\udc1b Troubleshooting",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L314"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_chromium_browsers_chrome_edge_brave_316",
+      "label": "Chromium Browsers (Chrome, Edge, Brave)",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L316"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_browser_firefox",
+      "label": "Browser Firefox",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L328"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_file_pem_hilang",
+      "label": "File .pem Hilang?",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L338"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_ringkasan_file",
+      "label": "\ud83d\udcca Ringkasan File",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L350"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_bantuan",
+      "label": "\ud83d\udcde Bantuan",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L363"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_extension_ids",
+      "label": "Extension IDs",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L365"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_urls",
+      "label": "URLs",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L369"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_files",
+      "label": "Files",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L374"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_strategi_deployment_universal",
+      "label": "\ud83d\udd04 Strategi Deployment Universal",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L381"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_catatan_untuk_end_user",
+      "label": "\ud83d\udcdd Catatan untuk End User",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L399"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_apa_yang_perlu_dilakukan_staf_rs",
+      "label": "Apa yang Perlu Dilakukan Staf RS?",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L401"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_cara_install_manual_tanpa_registry",
+      "label": "Cara Install Manual (Tanpa Registry)",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L413"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment_morbis_ext_unofficial",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_perhatian_penting_sebelum_memulai",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_perhatian_penting_sebelum_memulai",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_siapa_yang_melakukan_pack_extension",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_perhatian_penting_sebelum_memulai",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_tentang_lokasi_folder",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_universal_browser_support",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_file_yang_telah_dibuat",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_file_yang_telah_dibuat",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_1_manifest_json_update_urls",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_file_yang_telah_dibuat",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_2_update_xml_chromium_browsers",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L58",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_file_yang_telah_dibuat",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_3_updates_json_firefox",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L65",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_file_yang_telah_dibuat",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_4_install_morbis_ext_reg",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L72",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L79",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_langkah_1_pack_ekstensi_hanya_developer_it",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L81",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_langkah_1_pack_ekstensi_hanya_developer_it",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_untuk_chromium_browsers_chrome_edge_brave",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L83",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_langkah_1_pack_ekstensi_hanya_developer_it",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_untuk_firefox",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L127",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_langkah_2_push_ke_github",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L167",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_langkah_3_install_di_komputer_user_end_user",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L192",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_konfigurasi_github_pages",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L219",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_verifikasi_instalasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L229",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_verifikasi_instalasi",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_cek_di_browser",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L231",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_verifikasi_instalasi",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_cek_registry",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L239",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_update_untuk_versi_berikutnya",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L260",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_update_untuk_versi_berikutnya",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_ketika_update_ke_v1_3_0",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L262",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_ketika_update_ke_v1_3_0",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_chromium_browsers_chrome_edge_brave",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L264",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_ketika_update_ke_v1_3_0",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_firefox",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L278",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_keamanan_best_practices",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L300",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_troubleshooting",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L314",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_troubleshooting",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_chromium_browsers_chrome_edge_brave_316",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L316",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_troubleshooting",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_browser_firefox",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L328",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_troubleshooting",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_file_pem_hilang",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L338",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_ringkasan_file",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L350",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_bantuan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L363",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_bantuan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_extension_ids",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L365",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_bantuan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_urls",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L369",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_bantuan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_files",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L374",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_strategi_deployment_universal",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L381",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_catatan_untuk_end_user",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L399",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_catatan_untuk_end_user",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_apa_yang_perlu_dilakukan_staf_rs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L401",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_catatan_untuk_end_user",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_cara_install_manual_tanpa_registry",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L413",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}
