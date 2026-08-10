@@ -198,6 +198,9 @@
       intervalPoll(attachPrintClick);
     };
     const attachPrintClick = () => {
+      // ponytail: anti print ganda — klik ganda sebelum reload 1s (server reload setelah simpan)
+      let lastPrintKey = '';
+      let lastPrintAt = 0;
       // card mesin punya onclick="antrian(N)"; klik di mana pun di card = ambil antrian
       document.querySelectorAll('[onclick^="antrian("]').forEach((card) => {
         if ((card as any).__extPrintHooked) return;
@@ -219,6 +222,11 @@
             )
               .trim()
               .toUpperCase();
+            const key = nomor + '|' + loket;
+            const isDup = key === lastPrintKey && Date.now() - lastPrintAt <= 4000;
+            lastPrintKey = key;
+            lastPrintAt = Date.now();
+            if (isDup) return; // skip print ganda untuk nomor sama
             cetakStrukAntrian(nomor, loket);
             extLog('mesin_ticket', true, { idx, nomor, loket });
           },
