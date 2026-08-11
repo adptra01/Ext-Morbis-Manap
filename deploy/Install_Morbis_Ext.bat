@@ -36,6 +36,16 @@ reg add "HKLM\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist" /
 reg add "HKLM\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallAllowlist" /v "1" /t REG_SZ /d "%EXT_ID%" /f >nul 2>&1
 
 echo.
+echo Menyiapkan Autoplay untuk Suara TTS Antrian...
+REM TTS antrian (Google voice / MP3 / chime) diblokir Chrome tanpa user gesture.
+REM Policy AutoplayAllowed=1 = izinkan autoplay semua situs (setara
+REM --autoplay-policy=no-user-gesture-required) agar display antrian
+REM berbunyi tanpa perlu diklik terlebih dahulu.
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge\AutoplayAllowed" /v "1" /t REG_DWORD /d "1" /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Google\Chrome\AutoplayAllowed" /v "1" /t REG_DWORD /d "1" /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\BraveSoftware\Brave\AutoplayAllowed" /v "1" /t REG_DWORD /d "1" /f >nul 2>&1
+
+echo.
 echo ===================================================
 echo  INSTALASI SELESAI DAN SUKSES!
 echo ===================================================

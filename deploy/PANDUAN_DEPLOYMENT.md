@@ -226,6 +226,27 @@ regedit /s "Install_Morbis_Ext.reg"
 
 ---
 
+## 🔊 Suara TTS Antrian Tidak Bunyi (Display Kiosk)
+
+Display antrian dibuka otomatis & **tidak pernah diklik** → Chrome memblokir semua
+suara (speechSynthesis, chime, MP3) karena Autoplay Policy. Bukan bug ekstensi —
+request TTS tetap dikirim (cek Network → `translate_tts`) tapi diblokir browser.
+
+**Fix:** `Install_Morbis_Ext.bat` sudah menyetel policy `AutoplayAllowed=1`
+untuk Edge/Chrome/Brave (setara `--autoplay-policy=no-user-gesture-required`).
+
+```cmd
+reg add "HKLM\SOFTWARE\Policies\Google\Chrome\AutoplayAllowed" /v "1" /t REG_DWORD /d "1" /f
+```
+
+Setelah set policy, **restart browser** (tutup semua jendela, buka lagi).
+Verifikasi: buka `chrome://policy` → cari `AutoplayAllowed` → `Set level: True`.
+
+Role yang dapat memakai fitur **Antrian Tools**: `admin` dan `pendaftaran`
+(pilih role di popup ekstensi / side panel).
+
+---
+
 ## 🔍 Verifikasi Instalasi
 
 ### Cek di Browser:
