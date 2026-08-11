@@ -493,7 +493,7 @@
         '.ext-logo span{font-size:11px;color:#6b7280;text-align:center;font-weight:600;line-height:1.2;}',
         '.ext-logo-img{width:100%;height:100%;object-fit:cover;}',
         // header h1: rata tengah vertikal terhadap logo (tanpa padding-top yang mendorong teks turun)
-        '.ext-titles{display:flex;flex-direction:column;justify-content:center;min-width:0;}',
+        '.ext-titles{display:flex;flex-direction:column;justify-content:center;min-width:0;margin-bottom:5px;}',
         '.ext-titles h1{margin:0;text-align:left;width:auto;padding-left:0;font-size:clamp(24px,2.4vw,32px);font-weight:800;color:#1e2421;line-height:1.1;}',
         '.ext-titles p{margin:5px 0 0;font-size:clamp(14px,1.3vw,16px);color:#059669;font-weight:500;font-style:italic;text-align:left;width:auto;}',
         // panel tanggal+jam: rounded rectangle (bukan pill), tanggal kecil uppercase, jam dominan
