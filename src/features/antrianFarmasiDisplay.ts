@@ -85,6 +85,7 @@ declare global {
     ID?: string | number | null;
     NOMOR?: string | number;
     COUNTER?: string | number;
+    KODE?: string;
     NAMA?: string;
     NAMA_PASIEN?: string;
     NAMA_UNIT?: string;
@@ -92,6 +93,9 @@ declare global {
     ID_PASIEN?: string | number;
     LOKET?: string | number;
     STATUS?: string | number;
+    STATUS_PANGGIL?: string | number;
+    WAKTU_PENERIMAAN?: string | null;
+    WAKTU_PENYERAHAN?: string | null;
   };
 
   // Output normalize: dua daftar terpisah untuk render.
@@ -114,10 +118,11 @@ declare global {
    * API Adapter — fetch data_call, validasi ketat.
    * ============================================================ */
   async function fetchCallData(): Promise<RawRow[]> {
-    const res = await fetch(LIST_URL, {
-      method: 'POST',
+    // GET (bukan POST): endpoint mengembalikan data hanya utk GET ?type=data_call.
+    // Verifikasi kiosk: GET → 3 record; POST body type=data_call → HTTP 200 tapi [].
+    const res = await fetch(LIST_URL + '?type=data_call', {
+      method: 'GET',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-      body: 'type=data_call',
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text();
@@ -130,12 +135,13 @@ declare global {
   }
 
   /* ============================================================
-   * Normalize — pemetaan eksplisit struktur backend.
-   *   STATUS=0   → kontrak merepresentasikan panggilan aktif ("sedang dipanggil")
-   *   WAKTU_PENERIMAAN ada → "SIAP DIAMBIL"
-   * Karena endpoint data_call tidak memberi WAKTU_PENERIMAAN, panel SIAP DIAMBIL
-   * diisi baris yang bukan STATUS=0 (penyerahan). Jika backend berubah, ini titik
-   * satu-satunya yang perlu disesuaikan.
+   * Normalize — pemetaan eksplisit struktur backend (tervalidasi data nyata).
+   * Klasifikasi ground truth (kiosk, 2026-08-12):
+   *   STATUS=0                 → PANGGILAN (sedang dipanggil) — contoh ID 78890
+   *   WAKTU_PENERIMAAN ada     → SIAP DIAMBIL (sudah diterima, belum diserahkan)
+   *                              — contoh ID 78887/78891 (STATUS=4)
+   *   selain itu               → IGNORE (jangan salah klasifikasi)
+   * Catatan: jangan pakai STATUS=='1' utk ready — data nyata memakai STATUS=4.
    * ============================================================ */
   function normalize(rows: RawRow[]): QueueView {
     const panggilan: ViewRow[] = [];
@@ -145,20 +151,20 @@ declare global {
       const v: ViewRow = {
         id: String(r.ID),
         nomor: r.COUNTER != null ? String(r.COUNTER) : r.NOMOR != null ? String(r.NOMOR) : '',
-        kode: r.NAMA || 'BT',
+        kode: r.KODE || r.NAMA || 'BT',
         namaPasien: r.NAMA_PASIEN ?? '',
         unit: r.NAMA_UNIT ?? '',
         jenis: r.JENIS === 'tunggal' ? 'tunggal' : 'racikan',
         rm: r.ID_PASIEN != null ? String(r.ID_PASIEN) : '',
       };
-      // STATUS dari backend (antrian_penjualan.status, dipetakan ke STATUS_PANGGIL).
-      // STATUS=0 → panggilan aktif (VALID per kontrak backend WHERE pap.status=0, BUKAN batal).
-      // STATUS=1 → sudah dipanggil / siap diambil (penyerahan).
-      // Nilai lain/appear tersamar → abaikan row (jangan salah klasifikasi ke salah satu panel).
       const st = String(r.STATUS).trim();
+      const diterima =
+        r.WAKTU_PENERIMAAN != null && String(r.WAKTU_PENERIMAAN).trim() !== '';
+      const diserahkan =
+        r.WAKTU_PENYERAHAN != null && String(r.WAKTU_PENYERAHAN).trim() !== '';
       if (st === '0') panggilan.push(v);
-      else if (st === '1') siapDiambil.push(v);
-      // status lain: lewati
+      else if (diterima && !diserahkan) siapDiambil.push(v);
+      // status lain tanpa tanda penerimaan: lewati
     }
     return { panggilan, siapDiambil };
   }
@@ -499,10 +505,10 @@ declare global {
   }
 
   /* ============================================================
-   * START — SELURUH fitur tergate role apotek.
-   * Tanpa gate data-ext-antrian-farmasi (role != apotek) → tidak
-   * ada render, tidak ada TTS, tidak ada polling. Board dibiarkan
-   * sesuai native MORBIS.
+   * START — SELURUH fitur.
+   * Self-gated oleh manifest (hanya disuntik pada halaman display
+   * antrian farmasi). startWithRole idempotent; dipanggil langsung
+   * begitu skrip load, tanpa menunggu init.ts.
    * ============================================================ */
   function startWithRole(): void {
     if (started) return; // idempotent: jangan buat watcher/listener/polling ganda
@@ -517,12 +523,16 @@ declare global {
     }
   }
 
-  // Gate di-set init.ts di document_end (hanya bila role apotek + enabled).
-  const gateTimer = setInterval(() => {
-    if (document.documentElement.getAttribute('data-ext-antrian-farmasi') === '1') {
-      clearInterval(gateTimer);
-      startWithRole();
-    }
-  }, 200);
-  setTimeout(() => clearInterval(gateTimer), 8000);
+  /* ============================================================
+   * START — self-gated oleh manifest itu sendiri.
+   * Skrip ini HANYA disuntik pada halaman display antrian farmasi
+   * (pola matches view-call-websocet-v2 di manifest.json).
+   * Kehadiran skrip di halaman sudah menjadi validasi cukup —
+   * halaman display ini PUBLIK dan TIDAK me-load init.ts, sehingga
+   * attribute data-ext-antrian-farmasi tidak pernah dibuat di sini.
+   * Self-gate menghilangkan ketergantungan pada producer yang tidak
+   * ikut dimuat (root cause started:false).
+   * wsHealth/polling/TTS TIDAK disentuh; hanya gate yang diubah.
+   * ============================================================ */
+  startWithRole(); // idempotent (guard started) — tidak ada dobel watcher/listener
 })();

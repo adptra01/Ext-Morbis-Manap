@@ -60,10 +60,9 @@ var __morbis_feature = (() => {
     const WATCH_MS = 3e3;
     const STALE_MAX = 4;
     async function fetchCallData() {
-      const res = await fetch(LIST_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" },
-        body: "type=data_call"
+      const res = await fetch(LIST_URL + "?type=data_call", {
+        method: "GET",
+        headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" }
       });
       if (!res.ok) throw new Error("HTTP " + res.status);
       const text = await res.text();
@@ -81,15 +80,17 @@ var __morbis_feature = (() => {
         const v = {
           id: String(r.ID),
           nomor: r.COUNTER != null ? String(r.COUNTER) : r.NOMOR != null ? String(r.NOMOR) : "",
-          kode: r.NAMA || "BT",
+          kode: r.KODE || r.NAMA || "BT",
           namaPasien: r.NAMA_PASIEN ?? "",
           unit: r.NAMA_UNIT ?? "",
           jenis: r.JENIS === "tunggal" ? "tunggal" : "racikan",
           rm: r.ID_PASIEN != null ? String(r.ID_PASIEN) : ""
         };
         const st = String(r.STATUS).trim();
+        const diterima = r.WAKTU_PENERIMAAN != null && String(r.WAKTU_PENERIMAAN).trim() !== "";
+        const diserahkan = r.WAKTU_PENYERAHAN != null && String(r.WAKTU_PENYERAHAN).trim() !== "";
         if (st === "0") panggilan.push(v);
-        else if (st === "1") siapDiambil.push(v);
+        else if (diterima && !diserahkan) siapDiambil.push(v);
       }
       return { panggilan, siapDiambil };
     }
@@ -337,13 +338,7 @@ var __morbis_feature = (() => {
         watchTimer = setInterval(watch, WATCH_MS);
       }
     }
-    const gateTimer = setInterval(() => {
-      if (document.documentElement.getAttribute("data-ext-antrian-farmasi") === "1") {
-        clearInterval(gateTimer);
-        startWithRole();
-      }
-    }, 200);
-    setTimeout(() => clearInterval(gateTimer), 8e3);
+    startWithRole();
   })();
 })();
 //# sourceMappingURL=antrianFarmasiDisplay.js.map
