@@ -247,6 +247,45 @@ Role yang dapat memakai fitur **Antrian Tools**: `admin` dan `pendaftaran`
 
 ---
 
+## 🖨️ Print Tiket Muncul Preview / Fullscreen Mesin Lepas
+
+### Kenapa terjadi
+
+Klik "Ambil Nomor" → `window.print()` → Chrome selalu membuka **Print Preview**
+(permukaan browser, bukan halaman). Karena itu kiosk keluar fullscreen saat
+preview muncul. Halaman web **tidak bisa** memicu silent print tanpa salah satu
+dari: flag `--kiosk-printing`, atau native print host.
+
+### Yang sudah diperbaiki di ekstensi (v1.2.1+)
+
+`cetakStrukAntrian()` tidak lagi memakai `window.open` (popup blank yang bikin
+preview kosong & tambah lepas fullscreen) — sekarang print lewat **iframe
+tersembunyi** di halaman yang sama.
+
+### Fix silent print (PC mesin antrian)
+
+Tutup semua Chrome, lalu jalankan Chrome kiosk dengan flag `--kiosk-printing`
+(print langsung ke **default printer**, tanpa dialog, fullscreen tetap aktif):
+
+```cmd
+"C:\Program Files\Google\Chrome\Application\chrome.exe" --kiosk "http://SERVER/public/mesin-antrian" --kiosk-printing
+```
+
+> Pastikan **default printer Windows = printer Epson tiket** (Settings →
+> Bluetooth & devices → Printers → Set as default), dan ukuran kertas default
+> driver sudah `80mm` agar hasil tidak terpotong.
+
+Verifikasi: klik ambil nomor → tiket langsung keluar, **tanpa** preview,
+**tanpa** keluar fullscreen.
+
+### Kalau flag tidak bisa dipakai
+
+Opsi cadangan = native print host (extension di-build dengan native messaging):
+lebih besar biayanya, baru perlu dibuat kalau flag di atas tidak bisa
+diterapkan di PC mesin.
+
+---
+
 ## 🔍 Verifikasi Instalasi
 
 ### Cek di Browser:

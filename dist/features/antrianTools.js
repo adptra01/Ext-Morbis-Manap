@@ -233,26 +233,14 @@ var __morbis_feature = (() => {
     }
     function cetakStrukAntrian(nomor, loket) {
       const html = buildStrukHtml(nomor, loket);
-      const w = window.open("", "_blank", "width=340,height=520");
-      if (w) {
-        w.document.open();
-        w.document.write(html);
-        w.document.close();
-        setTimeout(() => {
-          try {
-            w.focus();
-            w.print();
-          } catch (e) {
-            console.warn("[antrianTools] print gagal", e);
-          }
-        }, 250);
-        return;
-      }
       const iframe = document.createElement("iframe");
       iframe.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;";
       document.body.appendChild(iframe);
       const doc = iframe.contentDocument;
-      if (!doc) return;
+      if (!doc) {
+        iframe.remove();
+        return;
+      }
       doc.open();
       doc.write(html);
       doc.close();

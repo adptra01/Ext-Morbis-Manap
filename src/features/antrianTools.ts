@@ -299,34 +299,24 @@
 
   function cetakStrukAntrian(nomor: string, loket: string): void {
     const html = buildStrukHtml(nomor, loket);
-    // print via window terpisah: tidak hilang saat halaman mesin reload 1 detik setelah klik
-    const w = window.open('', '_blank', 'width=340,height=520');
-    if (w) {
-      w.document.open();
-      w.document.write(html);
-      w.document.close();
-      setTimeout(() => {
-        try {
-          w.focus();
-          w.print();
-        } catch (e) {
-          console.warn('[antrianTools] print gagal', e);
-        }
-      }, 250);
-      return;
-    }
-    // ponytail: fallback iframe bila popup diblokir
+    // print via iframe tersembunyi di halaman yang sama — TANPA window.open:
+    // window terpisah = popup blank yang bikin fullscreen mesin lepas + preview kosong.
+    // (popup diblokir kiosk & butuh gestur; iframe cukup dan tetap jalan saat reload 1s)
     const iframe = document.createElement('iframe');
     iframe.style.cssText =
       'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;';
     document.body.appendChild(iframe);
     const doc = iframe.contentDocument;
-    if (!doc) return;
+    if (!doc) {
+      iframe.remove();
+      return;
+    }
     doc.open();
     doc.write(html);
     doc.close();
     setTimeout(() => {
       try {
+        // silent print TANPA preview: nyalakan flag --kiosk-printing di Chrome mesin
         iframe.contentWindow?.focus();
         iframe.contentWindow?.print();
       } catch (e) {
