@@ -12,13 +12,55 @@ var __morbis_feature = (() => {
     return { row: newest, signature };
   }
 
+  // src/features/shared/wsHealth.ts
+  function nextHealth(state, action, config) {
+    if (action.type === 'we-wrote') {
+      return {
+        next: { ...state, nativeSig: action.signal, staleStreak: 0, ourSig: action.signal },
+        startPolling: false,
+        stopPolling: false,
+      };
+    }
+    const sig = action.signal;
+    if (sig !== state.nativeSig) {
+      const recovered = sig !== state.ourSig;
+      return {
+        next: {
+          ...state,
+          nativeActive: recovered ? true : state.nativeActive,
+          nativeSig: sig,
+          staleStreak: 0,
+          ourSig: recovered ? '' : state.ourSig,
+        },
+        startPolling: !state.nativeActive && !recovered,
+        // masih fallback & bukan tulis sendiri → lanjut polling
+        stopPolling: state.nativeActive === false && recovered,
+        // pulih dari fallback → berhenti polling
+      };
+    }
+    const streak = state.nativeActive ? state.staleStreak + 1 : state.staleStreak;
+    if (state.nativeActive && streak >= config.staleMax) {
+      return {
+        next: { ...state, nativeActive: false, staleStreak: 0 },
+        startPolling: true,
+        stopPolling: false,
+      };
+    }
+    return {
+      next: { ...state, staleStreak: streak },
+      startPolling: false,
+      stopPolling: false,
+    };
+  }
+
   // src/features/antrianFarmasiDisplay.ts
   (function () {
     const LIST_URL = '/public/antrian-farmasi-v2/list-antrian-v2';
-    const POLL_MS = 5e3;
-    const MAX_BACKOFF_MS = 6e4;
+    const POLL_LADDER_MS = [3e3, 5e3, 1e4, 15e3];
     const CALL_DELAY_MS = 1200;
     const GAP_MS = 400;
+    const WATCH_MS = 3e3;
+    const STALE_MAX = 4;
     async function fetchCallData() {
       const res = await fetch(LIST_URL, {
         method: 'POST',
@@ -80,12 +122,13 @@ var __morbis_feature = (() => {
         const s = document.querySelector(SIAP_SEL);
         if (s) s.innerHTML = panelHtml('Siap Diambil', view.siapDiambil);
       }
+      onWeWrote();
     }
     let announcedId = '';
     const synth = window.speechSynthesis;
     const RealSpeak = synth.speak.bind(synth);
     let busy = false;
-    let queue = [];
+    const queue = [];
     function next() {
       if (busy || queue.length === 0) return;
       busy = true;
@@ -163,6 +206,10 @@ var __morbis_feature = (() => {
       } catch {}
     }
     function announce(row) {
+      if (!audioUnlocked) {
+        console.warn('[FarmasiDisplay] audio belum unlocked \u2014 TTS/bell dilewati');
+        return;
+      }
       const kalimat =
         'Nomor antrian ' +
         numberToWords(row.nomor) +
@@ -175,59 +222,92 @@ var __morbis_feature = (() => {
         speak(kalimat);
       }, CALL_DELAY_MS);
     }
-    function unlockTts() {
-      const unlock = () => {
-        try {
-          synth.getVoices();
-          RealSpeak.call(synth, new SpeechSynthesisUtterance(''));
-        } catch {}
-        document.removeEventListener('pointerdown', unlock);
-        document.removeEventListener('keydown', unlock);
-      };
-      document.addEventListener('pointerdown', unlock);
-      document.addEventListener('keydown', unlock);
+    let audioUnlocked = false;
+    function unlockAudio() {
+      if (audioUnlocked) return;
+      audioUnlocked = true;
+      document.removeEventListener('pointerdown', unlockAudio);
+      document.removeEventListener('keydown', unlockAudio);
+      console.log('[FarmasiDisplay] audio unlocked via gesture');
     }
+    document.addEventListener('pointerdown', unlockAudio);
+    document.addEventListener('keydown', unlockAudio);
     let voiceEnabled = false;
-    let timer = null;
-    let backoff = POLL_MS;
-    function schedule() {
-      if (timer) window.clearTimeout(timer);
-      timer = window.setTimeout(() => void tick(), backoff);
+    let watchTimer = null;
+    let pollTimer = null;
+    const healthCfg = { staleMax: STALE_MAX };
+    let health = { nativeActive: true, staleStreak: 0, nativeSig: '', ourSig: '' };
+    function domSignal() {
+      const p = document.querySelector(PANGGILAN_SEL);
+      const s = document.querySelector(SIAP_SEL);
+      return (p ? (p.textContent ?? '') : '') + '|' + (s ? (s.textContent ?? '') : '');
     }
-    async function tick() {
+    function onWeWrote() {
+      health = nextHealth(health, { type: 'we-wrote', signal: domSignal() }, healthCfg).next;
+    }
+    function stopPolling() {
+      if (pollTimer) {
+        window.clearTimeout(pollTimer);
+        pollTimer = null;
+      }
+    }
+    function schedulePoll() {
+      if (health.nativeActive || pollTimer) return;
+      if (!voiceEnabled) return;
+      pollTimer = window.setTimeout(() => void pollFallback(), POLL_LADDER_MS[ladderIdx]);
+    }
+    let ladderIdx = 0;
+    async function pollFallback() {
+      pollTimer = null;
       try {
         const rows = await fetchCallData();
-        backoff = POLL_MS;
+        ladderIdx = 0;
         const view = normalize(rows);
         if (view.panggilan.length > 0 || view.siapDiambil.length > 0) {
           renderDisplay(view);
-        }
-        if (voiceEnabled && view.panggilan.length > 0) {
-          const { row, signature } = pickAnnounce(
-            view.panggilan.map((r) => ({
-              ID: r.id,
-              NOMOR: r.nomor,
-              COUNTER: r.nomor,
-              NAMA_PASIEN: r.namaPasien,
-            })),
-            announcedId,
-          );
-          if (row && signature) {
-            announcedId = signature;
-            const hit = view.panggilan.find((x) => x.id === row.ID);
-            if (hit) announce(hit);
-          }
+          maybeAnnounce(view);
         }
       } catch (error) {
-        backoff = Math.min(backoff * 2, MAX_BACKOFF_MS);
-        console.warn('[FarmasiDisplay] data_call gagal (backoff ' + backoff + 'ms):', error);
+        ladderIdx = Math.min(ladderIdx + 1, POLL_LADDER_MS.length - 1);
+        console.warn(
+          '[FarmasiDisplay] fallback gagal (backoff ' + POLL_LADDER_MS[ladderIdx] + 'ms):',
+          error,
+        );
+      } finally {
+        schedulePoll();
       }
-      schedule();
+    }
+    function maybeAnnounce(view) {
+      if (!voiceEnabled || view.panggilan.length === 0) return;
+      const { row, signature } = pickAnnounce(
+        view.panggilan.map((r) => ({
+          ID: r.id,
+          NOMOR: r.nomor,
+          COUNTER: r.nomor,
+          NAMA_PASIEN: r.namaPasien,
+        })),
+        announcedId,
+      );
+      if (row && signature) {
+        announcedId = signature;
+        const hit = view.panggilan.find((x) => x.id === row.ID);
+        if (hit) announce(hit);
+      }
+    }
+    function watch() {
+      const result = nextHealth(health, { type: 'observe', signal: domSignal() }, healthCfg);
+      health = result.next;
+      if (result.startPolling) {
+        ladderIdx = 0;
+        schedulePoll();
+      } else if (result.stopPolling) {
+        stopPolling();
+      }
     }
     function startWithRole() {
       voiceEnabled = true;
-      unlockTts();
-      void tick();
+      health = { ...health, nativeSig: domSignal() };
+      watchTimer = window.setInterval(watch, WATCH_MS);
     }
     const gateTimer = setInterval(() => {
       if (document.documentElement.getAttribute('data-ext-antrian-farmasi') === '1') {
