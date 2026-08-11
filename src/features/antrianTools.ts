@@ -400,35 +400,79 @@
     const initDisplay = () => {
       addFullscreenButton();
       unlockTts(); // kiosk tanpa klik: buka kunci speechSynthesis di gesture pertama
-      // konsep display (referensi gambar kedua): card biru–tosca di kiri (±40%),
-      // area kanan kosong total. Isi card HANYA label "Antrian Saat Ini" + nomor besar —
-      // teks layanan/loket (.nama-antrian) dan chip "Berikutnya" (input hidden) dihapus.
-      injectCSS('ext-antrian-display-css', [
-        // stage: card kiri 40%, 60% kanan negative space
-        '#isi-val .card,.carousel-item .card{position:relative;width:40%;min-width:0;margin:0 auto 0 0;float:none;border:1px solid rgba(255,255,255,.15);border-radius:14px;overflow:hidden;background:linear-gradient(135deg,#1C398E 0%,#0F80A4 50%,#0CA7A9 100%);box-shadow:0 8px 20px rgba(0,0,0,.18);}',
-        '#isi-val .head,.carousel-item .head{text-align:center;padding:32px 24px;color:#fff;}',
-        '#isi-val .judul,.carousel-item .judul{margin:0 0 12px;font-size:clamp(24px,2.5vw,32px);font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#fff;}',
-        '#isi-val .isi,.carousel-item .isi{font-size:clamp(90px,14vw,110px);font-weight:800;color:#fff;line-height:1;text-shadow:0 4px 8px rgba(0,0,0,.2);}',
-        // HANYA label + nomor — nama layanan / "Loket Klinik" disembunyikan
-        '#isi-val .nama-antrian,.carousel-item .nama-antrian{display:none!important;}',
-        // panel "Antrian Selanjutnya" dihapus — chip berikutnya (input hidden #id-N) ikut hilang
-        '#id-1,#id-2,#id-3,#id-4,#id-5,#id-1::after,#id-2::after,#id-3::after,#id-4::after,#id-5::after{display:none!important;content:none!important;}',
-        '@media(max-width:768px){#isi-val .isi,.carousel-item .isi{font-size:clamp(64px,20vw,90px);}#isi-val .judul,.carousel-item .judul{font-size:clamp(16px,4vw,22px);}}',
-      ]);
-      // footer marquee
-      if (!document.getElementById('ext-display-footer')) {
-        const footer = document.createElement('footer');
-        footer.id = 'ext-display-footer';
-        footer.innerHTML =
-          '<div class="ext-marquee"><span>Mohon tetap menjaga protokol kesehatan. Untuk informasi lebih lanjut, silahkan menghubungi Call Center 0741-5910180 atau kunjungi website kami https://simanap.rsudkotajambi.id/</span></div>';
-        document.body.appendChild(footer);
-      }
-      injectCSS('ext-display-footer-css', [
-        '#ext-display-footer{position:fixed;bottom:0;left:0;right:0;height:40px;background:linear-gradient(90deg,#071b33 0%,#0e2f5c 100%);border-top:1px solid rgba(245,184,46,.35);z-index:9999;overflow:hidden;}',
+      // REDESIGN TOTAL: overlay UI lengkap (fixed, menutup halaman server sepenuhnya).
+      // Tidak bergantung DOM asli — header, card, footer dibangun sendiri dengan konsep
+      // referensi gambar kedua (clean white + deep blue + teal accent + soft shadow).
+      const ui = document.createElement('div');
+      ui.id = 'ext-display-ui';
+      ui.innerHTML =
+        '<div class="ext-head">' +
+        '  <div class="ext-brand">' +
+        '    <img class="ext-logo" alt="logo RSUD" />' +
+        '    <div class="ext-titles"><h1>RSUD H. ABDUL MANAP</h1><p>Melayani Dengan Sepenuh Hati</p></div>' +
+        '  </div>' +
+        '  <div class="ext-clock"><span class="ext-date"></span><span class="ext-time"></span></div>' +
+        '</div>' +
+        '<main class="ext-main">' +
+        '  <section class="ext-card">' +
+        '    <h2 class="ext-label">Antrian Saat Ini</h2>' +
+        '    <div class="ext-number">--</div>' +
+        '  </section>' +
+        '</main>' +
+        '<footer class="ext-foot"><div class="ext-marquee"><span>Mohon tetap menjaga protokol kesehatan. Untuk informasi lebih lanjut, silahkan menghubungi Call Center 0741-5910180 atau kunjungi website kami https://simanap.rsudkotajambi.id/</span></div></footer>';
+      document.body.appendChild(ui);
+
+      // logo: pakai dari halaman server bila ada, fallback sembunyikan gambar
+      const logoEl = ui.querySelector('.ext-logo') as HTMLImageElement;
+      const serverLogo = document.querySelector(
+        'img[src*="logo" i], .logo img, img[alt*="logo" i]',
+      ) as HTMLImageElement | null;
+      if (serverLogo?.src) logoEl.src = serverLogo.src;
+      else logoEl.style.display = 'none';
+
+      // jam & tanggal live
+      const dateEl = ui.querySelector('.ext-date') as HTMLElement;
+      const timeEl = ui.querySelector('.ext-time') as HTMLElement;
+      const tick = () => {
+        const d = new Date();
+        dateEl.textContent = d
+          .toLocaleDateString('id-ID', {
+            weekday: 'long',
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+          })
+          .toUpperCase();
+        timeEl.textContent =
+          d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) +
+          ' WIB';
+      };
+      tick();
+      setInterval(tick, 1000);
+
+      injectCSS('ext-display-ui-css', [
+        // layout overlay: header (auto) / main (flex-1, card kiri) / footer (40px)
+        '#ext-display-ui{position:fixed;inset:0;z-index:999998;display:flex;flex-direction:column;background:#F8FAFC;font-family:"Segoe UI",system-ui,sans-serif;overflow:hidden;}',
+        // header flat putih, garis tipis, logo kiri + jam kanan
+        '.ext-head{display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:1px solid #E2E8F0;box-shadow:0 1px 3px rgba(15,23,42,.06);padding:14px 28px;z-index:1;}',
+        '.ext-brand{display:flex;align-items:center;gap:16px;min-width:0;}',
+        '.ext-logo{height:56px;width:56px;object-fit:contain;flex-shrink:0;}',
+        '.ext-titles h1{margin:0;font-size:clamp(18px,2vw,24px);font-weight:700;color:#0F172A;letter-spacing:.02em;}',
+        '.ext-titles p{margin:2px 0 0;font-size:clamp(11px,1.2vw,14px);color:#64748B;}',
+        '.ext-clock{display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right;}',
+        '.ext-date{font-size:clamp(11px,1.2vw,14px);font-weight:600;color:#64748B;}',
+        '.ext-time{font-size:clamp(20px,2.6vw,30px);font-weight:700;color:#0F172A;line-height:1;}',
+        // main: card kiri 40%, area kanan kosong (negative space)
+        '.ext-main{flex:1;display:flex;align-items:center;padding:40px 6vw;}',
+        '.ext-card{width:40%;min-width:280px;background:linear-gradient(135deg,#173B8F 0%,#145E9E 55%,#0E8F9A 100%);border:1px solid rgba(255,255,255,.12);border-radius:20px;box-shadow:0 12px 32px rgba(15,23,42,.14);padding:48px 32px;text-align:center;color:#fff;}',
+        '.ext-label{margin:0 0 20px;font-size:clamp(18px,2vw,26px);font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:rgba(255,255,255,.85);}',
+        '.ext-number{font-size:clamp(110px,16vw,150px);font-weight:700;line-height:.95;letter-spacing:-4px;color:#fff;word-break:break-all;}',
+        // footer marquee biru tua
+        '.ext-foot{height:40px;background:#0F2F6F;border-top:1px solid rgba(255,255,255,.08);overflow:hidden;z-index:1;}',
         '.ext-marquee{display:flex;width:max-content;height:100%;align-items:center;padding-left:100%;white-space:nowrap;animation:extMarquee 25s linear infinite;}',
-        '.ext-marquee span{display:inline-block;padding:0 48px;font-family:"Segoe UI",system-ui,sans-serif;font-size:clamp(12px,1.4vw,16px);font-weight:500;color:#cfeffa;text-shadow:0 1px 2px rgba(0,0,0,.6);}',
+        '.ext-marquee span{display:inline-block;padding:0 48px;font-size:clamp(12px,1.4vw,15px);font-weight:500;color:rgba(255,255,255,.85);}',
         '@keyframes extMarquee{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}',
-        '@media(max-width:768px){#ext-display-footer{height:32px;}.ext-marquee span{font-size:11px;}}',
+        '@media(max-width:768px){.ext-main{padding:24px 4vw;}.ext-card{width:90%;padding:32px 20px;}.ext-number{font-size:clamp(80px,24vw,110px);}.ext-head{padding:10px 16px;}.ext-logo{height:40px;width:40px;}.ext-foot{height:32px;}.ext-marquee span{font-size:11px;}}',
       ]);
       // TTS saat nomor panggilan berubah (suara TV)
       let lastCallId = '';
@@ -458,6 +502,8 @@
       const hideOfflineBadge = () => {
         document.getElementById('ext-offline-badge')?.remove();
       };
+      // elemen nomor di overlay redesign (bukan .isi halaman server)
+      const numberEl = ui.querySelector('.ext-number') as HTMLElement;
       const pollActive = () => {
         const xhr = new XMLHttpRequest();
         xhr.open('POST', '/public/counter-antrian/data', true);
@@ -480,6 +526,7 @@
             failCount = 0;
             hideOfflineBadge();
             const nomor = onlyDigits(r.NOMOR || '0');
+            numberEl.textContent = nomor || '--';
             // TTS pakai NOMOR LOKET pemanggil (r.LOKET), bukan nama klinik (r.NAMA)
             const loket =
               String(r.LOKET || '')
