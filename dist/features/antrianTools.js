@@ -435,6 +435,14 @@ var __morbis_feature = (() => {
           document.getElementById("ext-offline-badge")?.remove();
         };
         const numberEl = ui.querySelector(".ext-number");
+        let pollAlive = false;
+        let lastSync = null;
+        const statusBox = { span: null };
+        const renderStatus = () => {
+          if (!statusBox.span) return;
+          statusBox.span.textContent = pollAlive ? `\u25CF polling OK \xB7 ${numberEl.textContent} \xB7 ${lastSync || "--"}` : "\u25CF POLLING MATI";
+          statusBox.span.style.color = pollAlive ? "#6ee7b7" : "#fca5a5";
+        };
         const pollActive = () => {
           const xhr = new XMLHttpRequest();
           xhr.open("POST", "/public/counter-antrian/data", true);
@@ -443,6 +451,8 @@ var __morbis_feature = (() => {
           xhr.timeout = 1e4;
           const onFail = () => {
             if (++failCount >= 3) offlineBadge();
+            pollAlive = false;
+            renderStatus();
             extLog("display_poll_fail", true, { failCount });
           };
           xhr.onerror = onFail;
@@ -454,6 +464,9 @@ var __morbis_feature = (() => {
               const r = JSON.parse(txt);
               failCount = 0;
               hideOfflineBadge();
+              pollAlive = true;
+              lastSync = (/* @__PURE__ */ new Date()).toLocaleTimeString("id-ID");
+              renderStatus();
               const nomor = onlyDigits(r.NOMOR || "0");
               const newVal = nomor || "--";
               if (newVal !== numberEl.textContent) {
@@ -478,6 +491,52 @@ var __morbis_feature = (() => {
         };
         pollActive();
         setInterval(pollActive, 1500);
+        const testBtn = document.createElement("button");
+        testBtn.id = "ext-test-call";
+        testBtn.innerHTML = '<span class="ext-test-title">TEST PANGGILAN</span><span class="ext-test-status">cek status\u2026</span>';
+        Object.assign(testBtn.style, {
+          position: "fixed",
+          bottom: "10px",
+          right: "10px",
+          zIndex: "999999",
+          padding: "6px 12px",
+          borderRadius: "10px",
+          background: "rgba(0,0,0,0.55)",
+          color: "#fff",
+          border: "1px solid rgba(255,255,255,0.25)",
+          cursor: "pointer",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "2px",
+          backdropFilter: "blur(3px)",
+          fontFamily: "monospace",
+          pointerEvents: "auto",
+          lineHeight: "1.2",
+          textTransform: "none"
+        });
+        testBtn.title = "Uji lokal: tampilkan nomor test + bel ding-dong + suara. Polling server lanjut dan mengembalikan nomor asli dalam ~1.5 detik.";
+        statusBox.span = testBtn.querySelector(".ext-test-status");
+        testBtn.addEventListener("click", () => {
+          try {
+            const Ctx = window.AudioContext || window.webkitAudioContext;
+            if (Ctx && !_audioCtx) _audioCtx = new Ctx();
+            void _audioCtx?.resume();
+          } catch {
+          }
+          const cur = parseInt(numberEl.textContent.replace(/\D/g, ""), 10);
+          const testNum = String((Number.isFinite(cur) ? cur : 0) + 1);
+          numberEl.textContent = testNum;
+          numberEl.classList.remove("calling");
+          void numberEl.offsetWidth;
+          numberEl.classList.add("calling");
+          chime();
+          setTimeout(() => speak(buildSpokenText(testNum, "TEST")), 450);
+          renderStatus();
+          extLog("display_test", true, { nomor: testNum });
+        });
+        document.body.appendChild(testBtn);
+        renderStatus();
       };
       if (path.includes("/mesin-antrian")) {
         initMesin();
