@@ -10,7 +10,7 @@
     s.id = 'ext-mesin-loader-css';
     // selector di-scope ke attribute feature: tanpa attribute, CSS ini inert
     s.textContent =
-      'html[data-ext-antrian-tools] body{background:#E9F5EE!important;}' +
+      'html[data-ext-antrian-tools] body{background:#D5E9DB!important;}' +
       // #isi inline style server (style.display) tidak menang atas !important;
       // konten lama tak pernah sempat terlihat sejak first paint
       'html[data-ext-antrian-tools] #isi{display:none!important;}' +
@@ -27,7 +27,7 @@
     l.id = 'ext-mesin-loader';
     l.style.cssText =
       'position:fixed;inset:0;z-index:999990;display:flex;align-items:center;justify-content:center;' +
-      'background:#E9F5EE;font-family:Inter,"Segoe UI",system-ui,sans-serif;';
+      'background:#D5E9DB;font-family:Inter,"Segoe UI",system-ui,sans-serif;';
     l.innerHTML =
       '<div style="display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center;">' +
       '<img src="/assets/images/logo/Kota Jambi.png" alt="" style="width:72px;height:72px;object-fit:contain;">' +
