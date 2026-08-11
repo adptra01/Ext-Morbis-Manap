@@ -121,6 +121,23 @@
     }
   }
 
+  // Buka kunci speechSynthesis di gesture pertama (kiosk/TV tanpa interaksi awal:
+  // Chrome menahan TTS sampai ada user gesture; utterance kosong sekali cukup).
+  function unlockTts(): void {
+    const unlock = (): void => {
+      try {
+        window.speechSynthesis?.getVoices();
+        window.speechSynthesis?.speak(new SpeechSynthesisUtterance(''));
+      } catch {
+        /* ignore */
+      }
+      document.removeEventListener('pointerdown', unlock);
+      document.removeEventListener('keydown', unlock);
+    };
+    document.addEventListener('pointerdown', unlock);
+    document.addEventListener('keydown', unlock);
+  }
+
   setInterval(() => void pollCall(), POLL_MS);
   void pollCall();
 })();

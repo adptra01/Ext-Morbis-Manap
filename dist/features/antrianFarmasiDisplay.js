@@ -81,6 +81,19 @@ var __morbis_feature = (() => {
         console.warn("[FarmasiDisplay] Polling gagal, akan retry:", error);
       }
     }
+    function unlockTts() {
+      const unlock = () => {
+        try {
+          window.speechSynthesis?.getVoices();
+          window.speechSynthesis?.speak(new SpeechSynthesisUtterance(""));
+        } catch {
+        }
+        document.removeEventListener("pointerdown", unlock);
+        document.removeEventListener("keydown", unlock);
+      };
+      document.addEventListener("pointerdown", unlock);
+      document.addEventListener("keydown", unlock);
+    }
     setInterval(() => void pollCall(), POLL_MS);
     void pollCall();
   })();
