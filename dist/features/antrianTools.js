@@ -70,15 +70,16 @@ var __morbis_feature = (() => {
       badge.textContent = "ANTRIAN TOOLS AKTIF";
       Object.assign(badge.style, {
         position: "fixed",
-        bottom: "20px",
-        left: "20px",
+        bottom: "8px",
+        left: "8px",
         zIndex: "999999",
-        padding: "8px 16px",
-        borderRadius: "10px",
-        background: "rgba(0,100,0,0.8)",
-        color: "#fff",
-        font: "700 12px/1.4 monospace",
+        padding: "3px 8px",
+        borderRadius: "999px",
+        background: "rgba(0,80,0,0.45)",
+        color: "rgba(255,255,255,0.75)",
+        font: "600 9px/1.4 monospace",
         backdropFilter: "blur(3px)",
+        pointerEvents: "auto",
         cursor: "pointer"
       });
       badge.title = "Fullscreen mode";
@@ -370,32 +371,33 @@ var __morbis_feature = (() => {
         injectCSS("ext-display-ui-css", [
           // layout overlay fullscreen
           '#ext-display-ui{position:fixed;inset:0;z-index:999998;display:flex;flex-direction:column;background:linear-gradient(135deg,#10b981 0%,#34d399 50%,#059669 100%);font-family:"Inter","Segoe UI",system-ui,sans-serif;padding:16px;overflow:hidden;}',
-          // header: kartu putih rounded, branding kiri + jam kanan
-          ".ext-head{background:#fff;border-radius:16px;box-shadow:0 10px 15px -3px rgba(0,0,0,.1);padding:16px 24px;display:flex;flex-direction:row;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap;z-index:1;}",
-          ".ext-brand{display:flex;align-items:center;gap:16px;min-width:0;}",
-          ".ext-logo{width:72px;height:72px;background:#e5e7eb;border-radius:9999px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:2px solid #6ee7b7;box-shadow:0 1px 2px rgba(0,0,0,.05);flex-shrink:0;}",
+          // header: kartu putih lega (tinggi ~90px), logo kiri + pill jam kanan
+          ".ext-head{background:#fff;border-radius:18px;box-shadow:0 10px 15px -3px rgba(0,0,0,.1);padding:20px 32px;display:flex;flex-direction:row;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap;z-index:1;min-height:92px;}",
+          ".ext-brand{display:flex;align-items:center;gap:18px;min-width:0;}",
+          ".ext-logo{width:78px;height:78px;background:#e5e7eb;border-radius:9999px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:2px solid #6ee7b7;box-shadow:0 1px 2px rgba(0,0,0,.05);flex-shrink:0;}",
           ".ext-logo span{font-size:11px;color:#6b7280;text-align:center;font-weight:600;line-height:1.2;}",
           ".ext-logo-img{width:100%;height:100%;object-fit:cover;}",
-          ".ext-titles h1{margin:0;font-size:clamp(18px,2.4vw,30px);font-weight:800;color:#111827;line-height:1.15;}",
-          ".ext-titles p{margin:4px 0 0;font-size:clamp(14px,1.6vw,18px);color:#047857;font-weight:500;font-style:italic;}",
-          ".ext-clock{background:#f0fdf4;border-radius:9999px;padding:10px 20px;box-shadow:inset 0 2px 4px rgba(0,0,0,.06);border:1px solid #a7f3d0;text-align:center;}",
-          ".ext-clock #datetime{font-size:clamp(14px,1.6vw,20px);font-weight:600;color:#064e3b;letter-spacing:.02em;white-space:nowrap;}",
-          // main: wadah putih-soft rounded, card kiri 50%, kanan kosong
-          ".ext-main{flex:1;display:flex;align-items:stretch;background:#f0fdf4;border-radius:24px;box-shadow:0 25px 50px -12px rgba(0,0,0,.25);padding:24px 32px;border:4px solid rgba(255,255,255,.5);margin-bottom:24px;z-index:1;}",
-          ".ext-card{width:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#065f46 0%,#047857 50%,#064e3b 100%);border-radius:24px;padding:32px;box-shadow:0 25px 50px -12px rgba(0,0,0,.25);border:4px solid rgba(255,255,255,.2);position:relative;overflow:hidden;text-align:center;}",
+          ".ext-titles h1{margin:0;font-size:clamp(24px,2.4vw,32px);font-weight:800;color:#111827;line-height:1.15;}",
+          ".ext-titles p{margin:5px 0 0;font-size:clamp(14px,1.3vw,16px);color:#059669;font-weight:500;font-style:italic;}",
+          ".ext-clock{background:#f0fdf7;border-radius:9999px;padding:10px 22px;box-shadow:0 1px 2px rgba(0,0,0,.05);border:1px solid #a7e8d2;text-align:center;}",
+          ".ext-clock #datetime{font-size:clamp(14px,1.4vw,18px);font-weight:600;color:#145c48;letter-spacing:.02em;white-space:nowrap;}",
+          // main: wadah off-white lembut (#F1FBF7), padding konsisten 36px
+          ".ext-main{flex:1;display:flex;align-items:stretch;background:#f1fbf7;border-radius:18px;box-shadow:0 12px 30px rgba(15,23,42,.16);padding:36px;border:1px solid rgba(255,255,255,.5);margin-bottom:24px;z-index:1;}",
+          // card: 47% kiri (margin kanan lebih besar — empty space dominan), grup konten di tengah
+          ".ext-card{width:47%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(circle at 80% 15%,rgba(34,197,154,.18),transparent 35%),linear-gradient(135deg,#066B57 0%,#08775F 45%,#087A67 100%);border:1px solid rgba(255,255,255,.20);border-radius:18px;padding:32px;box-shadow:0 12px 30px rgba(15,23,42,.16);position:relative;overflow:hidden;text-align:center;}",
           ".ext-glow{position:absolute;background:rgba(255,255,255,.05);border-radius:9999px;filter:blur(64px);pointer-events:none;}",
           ".ext-glow-tr{top:0;right:0;width:256px;height:256px;transform:translate(20%,-20%);}",
           ".ext-glow-bl{bottom:0;left:0;width:192px;height:192px;transform:translate(-16%,16%);}",
-          ".ext-card h2{margin:0 0 16px;font-size:clamp(28px,4vw,44px);font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:.15em;text-align:center;text-shadow:0 4px 6px rgba(0,0,0,.2);z-index:1;}",
-          ".ext-number{font-size:clamp(120px,18vw,220px);font-weight:900;color:#fff;line-height:.9;text-align:center;text-shadow:0 10px 20px rgba(0,0,0,.4);letter-spacing:-.02em;word-break:break-all;z-index:1;}",
-          ".ext-void{width:50%;}",
-          // footer: pill gradient hijau + marquee
-          ".ext-foot{background:linear-gradient(90deg,#065f46 0%,#10b981 100%);border-radius:9999px;box-shadow:0 10px 15px -3px rgba(0,0,0,.1);border:2px solid rgba(110,231,183,.3);overflow:hidden;z-index:1;}",
-          ".ext-marquee{display:flex;width:max-content;height:100%;align-items:center;padding-left:100%;white-space:nowrap;animation:extMarquee 25s linear infinite;padding-top:12px;padding-bottom:12px;}",
-          ".ext-marquee span{display:inline-block;padding:0 48px;font-size:clamp(14px,1.6vw,18px);font-weight:500;color:#fff;white-space:nowrap;}",
+          ".ext-card h2{margin:0;font-size:clamp(24px,2.2vw,32px);font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.15em;text-align:center;text-shadow:0 4px 6px rgba(0,0,0,.2);z-index:1;}",
+          ".ext-number{font-size:clamp(120px,10vw,180px);font-weight:800;color:#fff;line-height:.9;text-align:center;text-shadow:0 10px 20px rgba(0,0,0,.4);letter-spacing:-.02em;word-break:break-all;z-index:1;}",
+          ".ext-void{flex:1;}",
+          // footer: satu bar unified, lebih tinggi (52px) supaya pengumuman mudah dibaca
+          ".ext-foot{height:52px;background:linear-gradient(90deg,#065f46 0%,#10b981 100%);border-radius:9999px;box-shadow:0 10px 15px -3px rgba(0,0,0,.1);border:1px solid rgba(110,231,183,.3);overflow:hidden;z-index:1;display:flex;align-items:center;}",
+          ".ext-marquee{display:flex;width:max-content;height:100%;align-items:center;padding-left:100%;white-space:nowrap;animation:extMarquee 25s linear infinite;}",
+          ".ext-marquee span{display:inline-block;padding:0 48px;font-size:clamp(14px,1.5vw,17px);font-weight:500;color:#fff;white-space:nowrap;}",
           "@keyframes extMarquee{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}",
           // mobile: stack vertikal, card full lebar
-          "@media(max-width:768px){#ext-display-ui{padding:10px;}.ext-head{padding:12px 16px;flex-direction:column;align-items:center;text-align:center;}.ext-main{flex-direction:column;padding:16px;}.ext-card{width:100%;padding:24px;}.ext-number{font-size:clamp(90px,30vw,140px);}.ext-void{display:none;}.ext-clock{padding:8px 16px;}}"
+          "@media(max-width:768px){#ext-display-ui{padding:10px;}.ext-head{padding:14px 18px;flex-direction:column;align-items:center;text-align:center;min-height:0;}.ext-main{flex-direction:column;padding:20px;}.ext-card{width:100%;padding:24px;}.ext-number{font-size:clamp(90px,30vw,140px);}.ext-void{display:none;}.ext-clock{padding:8px 16px;}}"
         ]);
         let lastCallId = "";
         let failCount = 0;
