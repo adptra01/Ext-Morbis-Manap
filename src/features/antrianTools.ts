@@ -488,7 +488,7 @@
         '.ext-clock{background:#f0fdf7;border-radius:9999px;padding:10px 22px;box-shadow:0 1px 2px rgba(0,0,0,.05);border:1px solid #a7e8d2;text-align:center;}',
         '.ext-clock #datetime{font-size:clamp(14px,1.4vw,18px);font-weight:600;color:#145c48;letter-spacing:.02em;white-space:nowrap;}',
         // main: wadah off-white lembut (#F1FBF7), padding konsisten 36px
-        '.ext-main{flex:1;display:flex;align-items:stretch;background:#f1fbf7;border-radius:18px;box-shadow:0 12px 30px rgba(15,23,42,.16);padding:36px;border:1px solid rgba(255,255,255,.5);margin-bottom:24px;z-index:1;}',
+        '.ext-main{flex:1;display:flex;align-items:stretch;background:#f1fbf7;border-radius:24px;box-shadow:0 12px 30px rgba(15,23,42,.16);padding:36px;border:1px solid rgba(255,255,255,.5);margin-bottom:24px;z-index:1;}',
         // card: 47% kiri (margin kanan lebih besar — empty space dominan), grup konten di tengah
         '.ext-card{width:47%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(circle at 80% 15%,rgba(34,197,154,.18),transparent 35%),linear-gradient(135deg,#066B57 0%,#08775F 45%,#087A67 100%);border:1px solid rgba(255,255,255,.20);border-radius:18px;padding:32px;box-shadow:0 12px 30px rgba(15,23,42,.16);position:relative;overflow:hidden;text-align:center;}',
         '.ext-glow{position:absolute;background:rgba(255,255,255,.05);border-radius:9999px;filter:blur(64px);pointer-events:none;}',
@@ -504,8 +504,10 @@
         '.ext-marquee{display:flex;width:max-content;height:100%;align-items:center;padding-left:100%;white-space:nowrap;animation:extMarquee 25s linear infinite;}',
         '.ext-marquee span{display:inline-block;padding:0 48px;font-size:clamp(14px,1.5vw,17px);font-weight:500;color:#fff;white-space:nowrap;}',
         '@keyframes extMarquee{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}',
-        // mobile: stack vertikal, card full lebar
-        '@media(max-width:768px){#ext-display-ui{padding:10px;}.ext-head{padding:14px 18px;flex-direction:column;align-items:center;text-align:center;min-height:0;}.ext-main{flex-direction:column;padding:20px;}.ext-card{/* width:100%; */padding:24px;}.ext-number{font-size:clamp(90px,30vw,140px);}.ext-void{display:none;}.ext-clock{padding:8px 16px;}}',
+        // tablet 768-1199px: card mengembang 55-65%, negative space dikurangi, padding diperkecil
+        '@media(min-width:768px) and (max-width:1199px){.ext-head{padding:16px 24px;min-height:84px;}.ext-main{padding:28px;border-radius:20px;}.ext-card{width:62%;padding:28px;gap:12px;}.ext-number{font-size:clamp(140px,12vw,180px);}}',
+        // mobile <768px: card full lebar (100%), kanan hilang, header/footer diringkas
+        '@media(max-width:767px){#ext-display-ui{padding:10px;gap:14px;}.ext-head{padding:14px 18px;flex-direction:column;align-items:center;text-align:center;min-height:0;margin-bottom:0;}.ext-brand{gap:12px;}.ext-logo{width:54px;height:54px;border-width:1px;}.ext-titles h1{font-size:clamp(20px,5.5vw,24px);line-height:1.2;}.ext-titles p{font-size:13px;}.ext-clock{padding:8px 14px;}.ext-clock #datetime{font-size:12px;}.ext-main{flex:1 0 auto;flex-direction:column;padding:14px;border-radius:18px;margin-bottom:0;}.ext-card{width:100%;max-width:none;height:clamp(360px,58vh,520px);padding:24px;gap:14px;}.ext-number{font-size:clamp(100px,20vw,150px);}.ext-void{display:none;}.ext-foot{height:42px;}.ext-marquee span{font-size:13px;padding:0 32px;}}',
       ]);
       // TTS saat nomor panggilan berubah (suara TV)
       let lastCallId = '';
