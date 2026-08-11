@@ -122,7 +122,7 @@ const DEFAULT_CONFIG: ExtensionConfig = {
     },
     antrianFarmasi: {
       enabled: true,
-      allowedRoles: ['admin', 'apotek'],
+      allowedRoles: ['apotek'],
       name: 'Antrian Farmasi Voice',
       description:
         'Display farmasi: fallback polling saat WS mati + TTS panggil pasien (nomor + nama + depo, 2×)',
