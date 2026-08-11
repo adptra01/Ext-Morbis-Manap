@@ -341,9 +341,9 @@
     const path = window.location.pathname;
     // redesign display HANYA di view-antrian v1 (bukan view-antrian-v2)
     const isViewAntrian = path.endsWith('/counter-antrian/view-antrian');
-    showActiveBadge();
     /* ---- MESIN (auto-print saat card antrian diklik) ---- */
     const initMesin = () => {
+      showActiveBadge();
       addFullscreenButton();
       intervalPoll(attachPrintClick);
     };
@@ -386,6 +386,7 @@
     };
     /* ---- COUNTER ---- */
     const initCounter = () => {
+      showActiveBadge();
       addFullscreenButton();
       hookCallTTS(); // sudah punya retry intervalPoll internal
     };
@@ -413,7 +414,6 @@
     }
     /* ---- DISPLAY (v1) ---- */
     const initDisplay = () => {
-      addFullscreenButton();
       unlockTts(); // kiosk tanpa klik: buka kunci speechSynthesis di gesture pertama
       // REDESIGN: overlay UI mengikuti HTML target halaman view-antrian
       // (Tailwind emerald — RSUD H. Abdul Manap): header putih, card hijau tua 50%
@@ -437,7 +437,14 @@
         '  </section>' +
         '  <section class="ext-void" aria-hidden="true"></section>' +
         '</main>' +
-        '<footer class="ext-foot"><div class="ext-marquee"><span>Pengumuman: Mohon tetap menjaga protokol kesehatan. Untuk informasi lebih lanjut, hubungi Call Center: 0741-5910180 atau kunjungi Website: https://simanap.rsudkotajambi.id/.</span></div></footer>';
+        '<footer class="ext-foot"><div class="ext-marquee"><span>Pengumuman: Mohon tetap menjaga protokol kesehatan. Untuk informasi lebih lanjut, hubungi Call Center: 0741-5910180 atau kunjungi Website: https://simanap.rsudkotajambi.id/.</span></div></footer>' +
+        // control bar: badge status + fullscreen + test panggilan dalam satu baris di bawah footer
+        '<div class="ext-controls">' +
+        '  <button class="ext-c-badge" title="Fullscreen mode">ANTRIAN TOOLS AKTIF</button>' +
+        '  <span class="ext-c-spacer"></span>' +
+        '  <button class="ext-c-fs" title="Fullscreen / Fit Screen Device"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>' +
+        '  <button class="ext-c-test" title="Uji lokal: nomor + bel + suara"><span class="ext-test-title">TEST PANGGILAN</span><span class="ext-test-status">cek status\u2026</span></button>' +
+        '</div>';
       document.body.appendChild(ui);
 
       // logo: pakai dari halaman server bila ada, fallback teks "LOGO RSUD"
@@ -478,8 +485,9 @@
       injectCSS('ext-display-ui-css', [
         // layout overlay fullscreen
         '#ext-display-ui{position:fixed;inset:0;z-index:999998;display:flex;flex-direction:column;background:linear-gradient(135deg,#10b981 0%,#34d399 50%,#059669 100%);font-family:"Inter","Segoe UI",system-ui,sans-serif;padding:16px;overflow:hidden;}',
-        // header: kartu putih lega (tinggi ~90px), logo kiri + pill jam kanan
-        '.ext-head{background:#fff;border-radius:18px;box-shadow:0 10px 15px -3px rgba(0,0,0,.1);padding:20px 32px;display:flex;flex-direction:row;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap;z-index:1;min-height:92px;}',
+        // header: kartu putih lega (tinggi ~90px), logo kiri + pill jam kanan; shrink-0 + box-sizing
+        // mencegah header ikut menyusut/overflow saat viewport pendek (main yang mengecil)
+        '.ext-head{background:#fff;border-radius:18px;box-shadow:0 10px 15px -3px rgba(0,0,0,.1);padding:20px 32px;display:flex;flex-direction:row;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap;z-index:1;min-height:92px;flex-shrink:0;box-sizing:border-box;max-width:100%;}',
         '.ext-brand{display:flex;align-items:center;gap:8px;min-width:0;}',
         '.ext-logo{width:78px;height:78px;background:#e5e7eb;border-radius:9999px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:2px solid #6ee7b7;box-shadow:0 1px 2px rgba(0,0,0,.05);flex-shrink:0;}',
         '.ext-logo span{font-size:11px;color:#6b7280;text-align:center;font-weight:600;line-height:1.2;}',
@@ -510,6 +518,14 @@
         '.ext-marquee{display:flex;width:max-content;height:100%;align-items:center;padding-left:100%;white-space:nowrap;animation:extMarquee 25s linear infinite;}',
         '.ext-marquee span{display:inline-block;padding:0 48px;font-size:clamp(14px,1.5vw,17px);font-weight:500;color:#fff;white-space:nowrap;}',
         '@keyframes extMarquee{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}',
+        // control bar bawah: badge + fullscreen + test dalam satu baris, di bawah footer
+        '.ext-controls{display:flex;align-items:center;gap:8px;z-index:1;flex-shrink:0;margin-top:8px;padding:0 4px;box-sizing:border-box;width:100%;}',
+        '.ext-c-spacer{flex:1;}',
+        '.ext-c-badge{background:rgba(0,80,0,.45);color:rgba(255,255,255,.75);border:1px solid rgba(110,231,183,.25);border-radius:999px;padding:4px 10px;font:600 10px/1.4 monospace;cursor:pointer;backdrop-filter:blur(3px);border:none;flex-shrink:0;}',
+        '.ext-c-fs{width:34px;height:34px;border:none;border-radius:10px;background:rgba(0,0,0,.55);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.3);flex-shrink:0;}',
+        '.ext-c-test{background:rgba(0,0,0,.55);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:5px 12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;backdrop-filter:blur(3px);font-family:monospace;line-height:1.2;flex-shrink:0;}',
+        '.ext-test-title{font-size:10px;font-weight:700;}',
+        '.ext-test-status{font-size:9px;}',
         // tablet 768-1199px: card mengembang 55-65%, negative space dikurangi, padding diperkecil
         '@media(min-width:768px) and (max-width:1199px){.ext-head{padding:16px 24px;min-height:84px;}.ext-main{padding:28px;border-radius:20px;}.ext-card{width:62%;padding:28px;gap:12px;}.ext-number{font-size:clamp(140px,12vw,180px);}}',
         // mobile <768px: card full lebar (100%), kanan hilang, header/footer diringkas
@@ -616,36 +632,13 @@
       // ponytail: polling permanen — intervalPoll() mati setelah 5 detik (bug TTS mati)
       setInterval(pollActive, 1500);
 
-      /* ---- TEST PANGGILAN (uji di lokasi: nomor + animasi + bell + TTS + status) ---- */
-      const testBtn = document.createElement('button');
-      testBtn.id = 'ext-test-call';
-      testBtn.innerHTML =
-        '<span class="ext-test-title">TEST PANGGILAN</span>' +
-        '<span class="ext-test-status">cek status\u2026</span>';
-      Object.assign(testBtn.style, {
-        position: 'fixed',
-        bottom: '10px',
-        right: '10px',
-        zIndex: '999999',
-        padding: '6px 12px',
-        borderRadius: '10px',
-        background: 'rgba(0,0,0,0.55)',
-        color: '#fff',
-        border: '1px solid rgba(255,255,255,0.25)',
-        cursor: 'pointer',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '2px',
-        backdropFilter: 'blur(3px)',
-        fontFamily: 'monospace',
-        pointerEvents: 'auto',
-        lineHeight: '1.2',
-        textTransform: 'none',
-      });
-      testBtn.title =
-        'Uji lokal: tampilkan nomor test + bel ding-dong + suara. ' +
-        'Polling server lanjut dan mengembalikan nomor asli dalam ~1.5 detik.';
+      /* ---- CONTROL BAR (badge + fullscreen + test panggilan, satu baris bawah) ---- */
+      const controls = ui.querySelector('.ext-controls') as HTMLElement;
+      const fsBtn = controls.querySelector('.ext-c-fs') as HTMLButtonElement;
+      const badgeBtn = controls.querySelector('.ext-c-badge') as HTMLButtonElement;
+      const testBtn = controls.querySelector('.ext-c-test') as HTMLButtonElement;
+      fsBtn.addEventListener('click', enterFullscreen);
+      badgeBtn.addEventListener('click', enterFullscreen);
       statusBox.span = testBtn.querySelector('.ext-test-status') as HTMLElement;
       testBtn.addEventListener('click', () => {
         // gesture ini membuka/resume AudioContext (Autoplay policy) agar bell berbunyi
@@ -667,7 +660,6 @@
         renderStatus();
         extLog('display_test', true, { nomor: testNum });
       });
-      document.body.appendChild(testBtn);
       renderStatus();
     };
     /* ---- ROUTING ---- */
