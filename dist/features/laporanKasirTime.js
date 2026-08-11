@@ -5,12 +5,8 @@ var __morbis_feature = (() => {
     if (!window.location.pathname.includes("laporan-kasir")) return;
     (function pollFlag() {
       const flag = document.documentElement.getAttribute("data-ext-laporan-kasir-time");
-      if (flag === "0") return;
-      if (flag === "1" || document.readyState === "complete") {
-        run();
-        return;
-      }
-      setTimeout(pollFlag, 100);
+      if (flag !== "1") return;
+      run();
     })();
     function run() {
       const pad = (n) => (n < 10 ? "0" : "") + n;

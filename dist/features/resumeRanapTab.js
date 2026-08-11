@@ -22869,12 +22869,7 @@ var __morbis_feature = (() => {
     }, 0);
   }
   async function isFeatureEnabled() {
-    try {
-      const result = await chrome.storage.sync.get("extensionConfig");
-      return result.extensionConfig?.features?.resumeRanap?.enabled === true;
-    } catch {
-      return true;
-    }
+    return document.documentElement.getAttribute("data-ext-resume-ranap") === "1";
   }
   async function init() {
     if (!location.href.startsWith(location.origin + "/v2/m-klaim/detail-v2-refaktor")) return;

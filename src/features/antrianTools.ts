@@ -328,6 +328,9 @@
 
   /* ---- INIT (no external calls) ---- */
   function init(): void {
+    // gate: hanya jalan jika fitur enabled + role diizinkan (attribute di-set init.ts
+    // document_end; fitur ini MAIN world tidak punya chrome.storage)
+    if (document.documentElement.getAttribute('data-ext-antrian-tools') !== '1') return;
     const path = window.location.pathname;
     // redesign display HANYA di view-antrian v1 (bukan view-antrian-v2)
     const isViewAntrian = path.endsWith('/counter-antrian/view-antrian');

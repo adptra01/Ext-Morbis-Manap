@@ -5,16 +5,12 @@ var __morbis_feature = (() => {
     if (!window.location.pathname.includes("laboratorium/input-hasil/view-lab")) return;
     (function pollFlag() {
       const flag = document.documentElement.getAttribute("data-ext-lab-datatables");
-      if (flag === "0") {
+      if (flag !== "1") {
         console.log("[LabDT] disabled");
         return;
       }
-      if (flag === "1" || document.readyState === "complete") {
-        console.log("[LabDT] start, flag=" + flag);
-        run();
-        return;
-      }
-      setTimeout(pollFlag, 100);
+      console.log("[LabDT] start");
+      run();
     })();
     function run() {
       const JQUERY_URL = "https://code.jquery.com/jquery-3.7.1.min.js";

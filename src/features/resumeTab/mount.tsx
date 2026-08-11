@@ -1052,13 +1052,10 @@ function setupFloatingButton() {
   });
 }
 
-async function isFeatureEnabled(): Promise<boolean> {
-  try {
-    const result = await chrome.storage.sync.get('extensionConfig');
-    return result.extensionConfig?.features?.resumeModal?.enabled === true;
-  } catch {
-    return true;
-  }
+function isFeatureEnabled(): boolean {
+  // MAIN world tidak punya chrome.storage (dulu catch → return true = SELALU aktif).
+  // Gate via attribute yang di-set init.ts (isolated) berdasarkan config + role.
+  return document.documentElement.getAttribute('data-ext-resume-modal') === '1';
 }
 
 function isLoginPage(): boolean {
@@ -1069,8 +1066,8 @@ function isLoginPage(): boolean {
   );
 }
 
-(async () => {
-  if (!(await isFeatureEnabled())) return;
+(() => {
+  if (!isFeatureEnabled()) return;
   if (isLoginPage()) return;
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', setupFloatingButton);

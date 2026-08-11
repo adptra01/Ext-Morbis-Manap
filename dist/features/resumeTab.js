@@ -32772,20 +32772,15 @@ var __morbis_feature = (() => {
       }
     });
   }
-  async function isFeatureEnabled() {
-    try {
-      const result = await chrome.storage.sync.get("extensionConfig");
-      return result.extensionConfig?.features?.resumeModal?.enabled === true;
-    } catch {
-      return true;
-    }
+  function isFeatureEnabled() {
+    return document.documentElement.getAttribute("data-ext-resume-modal") === "1";
   }
   function isLoginPage() {
     const loginPaths = ["/login", "/auth", "/signin", "/masuk", "/keluar", "/logout"];
     return loginPaths.some((p) => location.pathname.toLowerCase().includes(p)) || document.querySelectorAll('input[type="password"]').length > 0;
   }
-  (async () => {
-    if (!await isFeatureEnabled()) return;
+  (() => {
+    if (!isFeatureEnabled()) return;
     if (isLoginPage()) return;
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", setupFloatingButton);

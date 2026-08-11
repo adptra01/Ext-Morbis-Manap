@@ -43,6 +43,18 @@ var __morbis_feature = (() => {
       }
     });
   }
+  async function isAllowed() {
+    try {
+      const result = await chrome.storage.sync.get("extensionConfig");
+      const cfg = result.extensionConfig;
+      if (!cfg || cfg.extensionEnabled !== true) return false;
+      const role = cfg.currentRole ?? "casemix";
+      const allowed = cfg.features?.pindahOperasi?.allowedRoles ?? ["admin"];
+      return allowed.includes(role);
+    } catch {
+      return false;
+    }
+  }
   function init() {
     const loginPaths = ["/login", "/auth", "/signin", "/masuk", "/keluar", "/logout"];
     if (loginPaths.some((p) => location.pathname.toLowerCase().includes(p)) || document.querySelectorAll('input[type="password"]').length > 0)
@@ -62,9 +74,15 @@ var __morbis_feature = (() => {
     console.log("[PindahOperasi] Button added");
   }
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
+    document.addEventListener("DOMContentLoaded", () => {
+      isAllowed().then((ok) => {
+        if (ok) init();
+      });
+    });
   } else {
-    init();
+    isAllowed().then((ok) => {
+      if (ok) init();
+    });
   }
 })();
 //# sourceMappingURL=main.js.map

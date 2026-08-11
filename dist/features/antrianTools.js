@@ -255,6 +255,7 @@ var __morbis_feature = (() => {
       }, 300);
     }
     function init() {
+      if (document.documentElement.getAttribute("data-ext-antrian-tools") !== "1") return;
       const path = window.location.pathname;
       const isViewAntrian = path.endsWith("/counter-antrian/view-antrian");
       const initMesin = () => {

@@ -51,6 +51,20 @@ function pindahOperasi(): void {
     });
 }
 
+async function isAllowed(): Promise<boolean> {
+  try {
+    const result = await chrome.storage.sync.get('extensionConfig');
+    const cfg = result.extensionConfig;
+    if (!cfg || cfg.extensionEnabled !== true) return false;
+    const role = cfg.currentRole ?? 'casemix';
+    // default admin; kalau nanti ada key pindahOperasi di config, pakai allowedRoles-nya
+    const allowed = cfg.features?.pindahOperasi?.allowedRoles ?? ['admin'];
+    return allowed.includes(role);
+  } catch {
+    return false; // ISOLATED world: chrome.storage tersedia; gagal baca = jangan jalan
+  }
+}
+
 function init(): void {
   const loginPaths = ['/login', '/auth', '/signin', '/masuk', '/keluar', '/logout'];
   if (
@@ -77,7 +91,13 @@ function init(): void {
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('DOMContentLoaded', () => {
+    isAllowed().then((ok) => {
+      if (ok) init();
+    });
+  });
 } else {
-  init();
+  isAllowed().then((ok) => {
+    if (ok) init();
+  });
 }

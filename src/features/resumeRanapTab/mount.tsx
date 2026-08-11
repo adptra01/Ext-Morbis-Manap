@@ -268,12 +268,9 @@ function mountReactApp(data: RanapFormData) {
 }
 
 async function isFeatureEnabled(): Promise<boolean> {
-  try {
-    const result = await chrome.storage.sync.get('extensionConfig');
-    return result.extensionConfig?.features?.resumeRanap?.enabled === true;
-  } catch {
-    return true;
-  }
+  // MAIN world tidak punya chrome.storage (dulu catch → return true = SELALU aktif).
+  // Gate via attribute yang di-set init.ts (isolated) berdasarkan config + role.
+  return document.documentElement.getAttribute('data-ext-resume-ranap') === '1';
 }
 
 async function init() {

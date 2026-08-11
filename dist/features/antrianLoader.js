@@ -7,11 +7,13 @@ var __morbis_feature = (() => {
       if (document.getElementById("ext-mesin-loader-css")) return;
       const s = document.createElement("style");
       s.id = "ext-mesin-loader-css";
-      s.textContent = "html,body{background:#E9F5EE!important;}#isi{display:none!important;}@keyframes ext-m-load{0%{transform:translateX(-100%);}100%{transform:translateX(350%);}}";
+      s.textContent = "html[data-ext-antrian-tools] body{background:#E9F5EE!important;}html[data-ext-antrian-tools] #isi{display:none!important;}@keyframes ext-m-load{0%{transform:translateX(-100%);}100%{transform:translateX(350%);}}";
       (document.head || document.documentElement).appendChild(s);
     }
     function addOverlay() {
-      if (!document.body || document.getElementById("ext-mesin-loader")) return;
+      if (!document.body) return;
+      if (document.documentElement.getAttribute("data-ext-antrian-tools") !== "1") return;
+      if (document.getElementById("ext-mesin-loader")) return;
       const l = document.createElement("div");
       l.id = "ext-mesin-loader";
       l.style.cssText = 'position:fixed;inset:0;z-index:999990;display:flex;align-items:center;justify-content:center;background:#E9F5EE;font-family:Inter,"Segoe UI",system-ui,sans-serif;';
@@ -22,10 +24,13 @@ var __morbis_feature = (() => {
     hideOld();
     if (document.body) {
       addOverlay();
-    } else {
-      obs = new MutationObserver(addOverlay);
-      obs.observe(document.documentElement, { childList: true });
     }
+    obs = new MutationObserver(addOverlay);
+    obs.observe(document.documentElement, {
+      childList: true,
+      attributes: true,
+      attributeFilter: ["data-ext-antrian-tools"]
+    });
   })();
 })();
 //# sourceMappingURL=antrianLoader.js.map

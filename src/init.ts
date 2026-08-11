@@ -98,6 +98,13 @@ async function initExtension(): Promise<void> {
     document.documentElement.removeAttribute('data-ext-resume-modal');
   }
 
+  const rrCfg = cfg?.features?.resumeRanap;
+  if (rrCfg?.enabled && window.ExtensionCore.isFeatureAllowed('resumeRanap')) {
+    document.documentElement.setAttribute('data-ext-resume-ranap', '1');
+  } else {
+    document.documentElement.removeAttribute('data-ext-resume-ranap');
+  }
+
   const lhCfg = cfg?.features?.labHistory;
   if (lhCfg?.enabled && window.ExtensionCore.isFeatureAllowed('labHistory')) {
     document.documentElement.setAttribute('data-ext-lab-history', '1');

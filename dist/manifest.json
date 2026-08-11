@@ -80,7 +80,8 @@
       "matches": [
         "http://*/admisi/pelaksanaan-operasi*",
         "http://*/admisi/pelaksanaan_pelayanan*",
-        "http://*/admisi/detail-rawat-inap*"
+        "http://*/admisi/detail-rawat-inap*",
+        "http://*/rekam-medik/rm-rawat-jalan-new*"
       ],
       "js": [
         "core.js",

@@ -3,12 +3,8 @@
 
   (function pollFlag() {
     const flag = document.documentElement.getAttribute('data-ext-laporan-kasir-time');
-    if (flag === '0') return;
-    if (flag === '1' || document.readyState === 'complete') {
-      run();
-      return;
-    }
-    setTimeout(pollFlag, 100);
+    if (flag !== '1') return; // gate ketat: extension disabled / role tak sesuai → tidak jalan
+    run();
   })();
 
   function run() {
