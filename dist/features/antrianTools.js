@@ -326,7 +326,7 @@ var __morbis_feature = (() => {
           (el) => el.addEventListener("click", enterFullscreen)
         );
         injectCSS("ext-mesin-ui-css", [
-          '#ext-mesin-ui{position:fixed;inset:0;z-index:999998;display:flex;flex-direction:column;background:#C2DCCB;color:#212529;font-family:"Inter","Segoe UI",system-ui,sans-serif;overflow-y:auto;}',
+          '#ext-mesin-ui{position:fixed;inset:0;z-index:999998;display:flex;flex-direction:column;background:#D5E9DB;color:#212529;font-family:"Inter","Segoe UI",system-ui,sans-serif;overflow-y:auto;}',
           `#ext-mesin-ui .ms{font-family:"Material Symbols Outlined",sans-serif;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;font-size:inherit;line-height:1;}`,
           // TopAppBar
           ".ext-m-head{background:#fff;color:#0f5132;box-shadow:0 1px 3px rgba(0,0,0,.08);display:flex;justify-content:space-between;align-items:center;padding:0 24px;min-height:80px;flex-shrink:0;}",
@@ -353,7 +353,7 @@ var __morbis_feature = (() => {
           // Kiosk button card
           ".ext-m-card{flex:1 1 300px;max-width:448px;background:#fff;border:1px solid #e9ecef;border-radius:24px;padding:32px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.04);transition:all .3s;font-family:inherit;}",
           ".ext-m-card:hover{background:#d1e7dd66;border-color:#0f5132;box-shadow:0 10px 24px rgba(0,0,0,.09);transform:translateY(-4px);}",
-          ".ext-m-ico{background:#C2DCCB;color:#0f5132;width:160px;height:160px;border-radius:999px;display:flex;align-items:center;justify-content:center;transition:transform .3s;}",
+          ".ext-m-ico{background:#D5E9DB;color:#0f5132;width:160px;height:160px;border-radius:999px;display:flex;align-items:center;justify-content:center;transition:transform .3s;}",
           ".ext-m-card:hover .ext-m-ico{transform:scale(1.1);}",
           ".ext-m-ico .ms{font-size:80px;}",
           ".ext-m-ico-num{font-size:64px;font-weight:700;color:#0f5132;letter-spacing:-.02em;line-height:1;}",
