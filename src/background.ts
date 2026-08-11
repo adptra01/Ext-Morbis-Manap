@@ -18,6 +18,7 @@ const ROLES = {
   APOTEK: 'apotek',
   ADMIN: 'admin',
   LABOR: 'labor',
+  PENDAFTARAN: 'pendaftaran',
 } as const;
 
 const DEFAULT_CUSTOM_URLS: CustomUrl[] = [
@@ -114,7 +115,7 @@ const DEFAULT_CONFIG: ExtensionConfig = {
     },
     antrianTools: {
       enabled: true,
-      allowedRoles: ['admin'],
+      allowedRoles: ['admin', 'pendaftaran'],
       name: 'Antrian Tools',
       description:
         'Penomoran unik per loket (L1-001), polling layar antrian, auto cetak, fullscreen',
@@ -198,6 +199,15 @@ function migrateConfig(config: ExtensionConfig | null): ExtensionConfig {
   for (const key of ['filterPersistence', 'doctorFilterPersistence']) {
     if (newFeatures[key]) {
       (newFeatures[key] as { allowedRoles: string[] }).allowedRoles = [...Object.values(ROLES)];
+    }
+  }
+
+  // Antrian Tools: pastikan role admin & pendaftaran selalu diizinkan (config lama yang
+  // tersimpan hanya punya ['admin'] harus otomatis dapat role pendaftaran juga)
+  if (newFeatures['antrianTools']) {
+    const at = newFeatures['antrianTools'] as { allowedRoles: string[] };
+    for (const r of ['admin', 'pendaftaran'] as const) {
+      if (!at.allowedRoles.includes(r)) at.allowedRoles.push(r);
     }
   }
 

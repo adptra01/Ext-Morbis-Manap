@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 var __morbis_feature = (() => {
   // src/features/shared/types.ts
   function getMorbisGlobals() {
@@ -6,10 +6,10 @@ var __morbis_feature = (() => {
   }
 
   // src/features/shared/batchUtils.ts
-  var BATCH_UTILS_STYLE_ID = 'ext-batch-shared-style';
+  var BATCH_UTILS_STYLE_ID = "ext-batch-shared-style";
   function injectSharedCSS() {
     if (document.getElementById(BATCH_UTILS_STYLE_ID)) return;
-    const style = document.createElement('style');
+    const style = document.createElement("style");
     style.id = BATCH_UTILS_STYLE_ID;
     style.textContent = `
     .ext-modal-content {
@@ -167,7 +167,7 @@ var __morbis_feature = (() => {
     upload: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`,
     file: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
     check: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
-    arrowRight: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`,
+    arrowRight: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`
   };
   function iconWrap(iconSvg, size) {
     const s = size || 18;
@@ -175,7 +175,7 @@ var __morbis_feature = (() => {
   }
   async function showInlinePreviewSafe(url, filename) {
     try {
-      const response = await fetch(url, { method: 'GET', mode: 'cors', credentials: 'omit' });
+      const response = await fetch(url, { method: "GET", mode: "cors", credentials: "omit" });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
@@ -185,24 +185,22 @@ var __morbis_feature = (() => {
     }
   }
   function showInlinePreview(previewUrl, filename, originalUrl, onCleanup) {
-    const existing = document.getElementById('ext-inline-preview-modal');
+    const existing = document.getElementById("ext-inline-preview-modal");
     if (existing) existing.remove();
-    const ext = filename.toLowerCase().split('.').pop() || '';
-    const isPdf = ext === 'pdf';
-    const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
-    const modal = document.createElement('div');
-    modal.id = 'ext-inline-preview-modal';
-    modal.style.cssText =
-      'position:fixed !important;top:0 !important;left:0 !important;width:100vw !important;height:100vh !important;background:rgba(15,23,42,0.88) !important;z-index:10001 !important;display:flex !important;align-items:center !important;justify-content:center !important;flex-direction:column !important;padding:20px !important;box-sizing:border-box !important;backdrop-filter:blur(8px) !important;-webkit-backdrop-filter:blur(8px) !important;';
-    let contentHtml =
-      '<div class="ext-inline-preview-loading" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:#fff;"><div class="ext-inline-preview-spinner"></div><div style="font-size:14px;">Loading preview...</div></div>';
+    const ext = filename.toLowerCase().split(".").pop() || "";
+    const isPdf = ext === "pdf";
+    const isImage = ["jpg", "jpeg", "png", "gif", "webp"].includes(ext);
+    const modal = document.createElement("div");
+    modal.id = "ext-inline-preview-modal";
+    modal.style.cssText = "position:fixed !important;top:0 !important;left:0 !important;width:100vw !important;height:100vh !important;background:rgba(15,23,42,0.88) !important;z-index:10001 !important;display:flex !important;align-items:center !important;justify-content:center !important;flex-direction:column !important;padding:20px !important;box-sizing:border-box !important;backdrop-filter:blur(8px) !important;-webkit-backdrop-filter:blur(8px) !important;";
+    let contentHtml = '<div class="ext-inline-preview-loading" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:#fff;"><div class="ext-inline-preview-spinner"></div><div style="font-size:14px;">Loading preview...</div></div>';
     if (isPdf)
       contentHtml = `<iframe id="ext-inline-preview-iframe" src="${previewUrl}" style="width:100%;height:100%;border:none;display:block;border-radius:12px;"></iframe>`;
     else if (isImage)
       contentHtml = `<img id="ext-inline-preview-img" src="${previewUrl}" alt="Image Preview" style="width:100%;height:100%;border:none;display:block;object-fit:contain;border-radius:12px;">`;
     else
       contentHtml = `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:15px;color:#64748b;background:#f8fafc;flex-direction:column;gap:16px;border-radius:12px;">${Icons.file}<div>Preview not available for this format</div></div>`;
-    const safeFilename = filename.replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    const safeFilename = filename.replace(/"/g, "&quot;").replace(/</g, "&lt;");
     modal.innerHTML = `
     <div style="position:absolute;top:20px;right:20px;display:flex;gap:10px;align-items:center;background:rgba(15,23,42,0.8);padding:10px 16px;border-radius:12px;backdrop-filter:blur(12px);z-index:10002;border:1px solid rgba(255,255,255,0.1);">
       <span style="color:#e2e8f0;font-size:13px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">${safeFilename}</span>
@@ -212,35 +210,33 @@ var __morbis_feature = (() => {
     <div style="width:clamp(400px,90vw,1200px);height:clamp(300px,90vh,800px);background:white;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,0.4);overflow:hidden;position:relative;">${contentHtml}</div>
   `;
     document.body.appendChild(modal);
-    document.getElementById('ext-preview-close')?.addEventListener('click', () => {
+    document.getElementById("ext-preview-close")?.addEventListener("click", () => {
       if (onCleanup) onCleanup();
       modal.remove();
     });
-    document.getElementById('ext-preview-newtab')?.addEventListener('click', () => {
-      window.open(originalUrl || previewUrl, '_blank');
+    document.getElementById("ext-preview-newtab")?.addEventListener("click", () => {
+      window.open(originalUrl || previewUrl, "_blank");
       if (onCleanup) onCleanup();
       modal.remove();
     });
-    modal.addEventListener('click', (e) => {
+    modal.addEventListener("click", (e) => {
       if (e.target === modal) {
         if (onCleanup) onCleanup();
         modal.remove();
       }
     });
-    document.addEventListener('keydown', function handler(ev) {
-      if (ev.key === 'Escape') {
+    document.addEventListener("keydown", function handler(ev) {
+      if (ev.key === "Escape") {
         if (onCleanup) onCleanup();
         modal.remove();
-        document.removeEventListener('keydown', handler);
+        document.removeEventListener("keydown", handler);
       }
     });
     if (isPdf || isImage) {
       const loadCheck = setInterval(() => {
-        const loaded = isPdf
-          ? document.getElementById('ext-inline-preview-iframe')?.getAttribute('src')
-          : document.getElementById('ext-inline-preview-img')?.complete;
+        const loaded = isPdf ? document.getElementById("ext-inline-preview-iframe")?.getAttribute("src") : document.getElementById("ext-inline-preview-img")?.complete;
         if (loaded) {
-          const container = modal.querySelector('.ext-inline-preview-loading');
+          const container = modal.querySelector(".ext-inline-preview-loading");
           if (container) container.remove();
           clearInterval(loadCheck);
         }
@@ -251,22 +247,22 @@ var __morbis_feature = (() => {
   // src/features/batchDeleteFiles.ts
   var g = getMorbisGlobals();
   var BATCH_DELETE_CONFIG = {
-    deleteEndpoint: '/admisi/pelaksanaan_pelayanan/dokumen-pasien/control?sub=hapus',
-    fetchListUrl: '/admisi/pelaksanaan_pelayanan/dokumen-pasien',
+    deleteEndpoint: "/admisi/pelaksanaan_pelayanan/dokumen-pasien/control?sub=hapus",
+    fetchListUrl: "/admisi/pelaksanaan_pelayanan/dokumen-pasien",
     maxConcurrent: 1,
     maxBatchSize: 10,
     delayBetweenDelete: 500,
-    modalId: 'ext-batch-delete-modal',
-    previewId: 'ext-delete-preview-list',
-    progressId: 'ext-delete-progress-bar',
-    statusId: 'ext-delete-status-text',
+    modalId: "ext-batch-delete-modal",
+    previewId: "ext-delete-preview-list",
+    progressId: "ext-delete-progress-bar",
+    statusId: "ext-delete-status-text"
   };
   var deleteQueue = [];
   var isDeletingProcess = false;
   function injectBatchDeleteCSS() {
-    if (document.getElementById('ext-batch-delete-style')) return;
-    const style = document.createElement('style');
-    style.id = 'ext-batch-delete-style';
+    if (document.getElementById("ext-batch-delete-style")) return;
+    const style = document.createElement("style");
+    style.id = "ext-batch-delete-style";
     style.textContent = `
     .ext-batch-delete-modal {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -294,26 +290,26 @@ var __morbis_feature = (() => {
   }
   function togglePageButtonState(isDisabled) {
     const allButtons = document.querySelectorAll(
-      'button:not(#ext-batch-delete-btn):not([disabled])',
+      "button:not(#ext-batch-delete-btn):not([disabled])"
     );
     allButtons.forEach((btn) => {
       if (isDisabled) {
         btn.disabled = true;
-        btn.dataset.extWasEnabled = 'true';
+        btn.dataset.extWasEnabled = "true";
       } else {
-        if (btn.dataset.extWasEnabled === 'true') {
+        if (btn.dataset.extWasEnabled === "true") {
           btn.disabled = false;
           delete btn.dataset.extWasEnabled;
         }
       }
     });
-    const formElements = document.querySelectorAll('form input, form button, form a');
+    const formElements = document.querySelectorAll("form input, form button, form a");
     formElements.forEach((el) => {
       if (isDisabled) {
         el.disabled = true;
-        el.dataset.extWasEnabled = 'true';
+        el.dataset.extWasEnabled = "true";
       } else {
-        if (el.dataset.extWasEnabled === 'true') {
+        if (el.dataset.extWasEnabled === "true") {
           el.disabled = false;
           delete el.dataset.extWasEnabled;
         }
@@ -322,38 +318,29 @@ var __morbis_feature = (() => {
   }
   function toggleDeleteUIProcessingState(isDeleting) {
     const elementsToToggle = [
-      'ext-delete-close-btn',
-      'ext-delete-cancel-btn',
-      'ext-fetch-files-btn',
-      'ext-start-delete-btn',
+      "ext-delete-close-btn",
+      "ext-delete-cancel-btn",
+      "ext-fetch-files-btn",
+      "ext-start-delete-btn"
     ];
     elementsToToggle.forEach((id) => {
       const el = document.getElementById(id);
       if (el) {
         el.disabled = isDeleting;
-        el.style.opacity = isDeleting ? '0.5' : '1';
-        el.style.cursor = isDeleting ? 'not-allowed' : 'pointer';
+        el.style.opacity = isDeleting ? "0.5" : "1";
+        el.style.cursor = isDeleting ? "not-allowed" : "pointer";
       }
     });
-    document
-      .querySelectorAll(
-        '#' +
-          BATCH_DELETE_CONFIG.previewId +
-          ' input, #' +
-          BATCH_DELETE_CONFIG.previewId +
-          ' button',
-      )
-      .forEach((el) => (el.disabled = isDeleting));
+    document.querySelectorAll(
+      "#" + BATCH_DELETE_CONFIG.previewId + " input, #" + BATCH_DELETE_CONFIG.previewId + " button"
+    ).forEach((el) => el.disabled = isDeleting);
     togglePageButtonState(isDeleting);
   }
   function replaceButtonsWithReload() {
-    const buttonsContainer = document.querySelector('.ext-modal-buttons');
+    const buttonsContainer = document.querySelector(".ext-modal-buttons");
     if (buttonsContainer) {
-      buttonsContainer.innerHTML =
-        '<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">' +
-        Icons.refresh +
-        ' Reload Halaman</span></button>';
-      document.getElementById('ext-reload-btn')?.addEventListener('click', () => {
+      buttonsContainer.innerHTML = '<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">' + Icons.refresh + " Reload Halaman</span></button>";
+      document.getElementById("ext-reload-btn")?.addEventListener("click", () => {
         window.location.reload();
       });
     }
@@ -361,24 +348,24 @@ var __morbis_feature = (() => {
   async function deleteDokumen(dokumenId) {
     try {
       const formData = new FormData();
-      formData.append('id', dokumenId);
+      formData.append("id", dokumenId);
       const res = await fetch(BATCH_DELETE_CONFIG.deleteEndpoint, {
-        method: 'POST',
+        method: "POST",
         body: formData,
-        credentials: 'same-origin',
+        credentials: "same-origin"
       });
       return res.ok;
     } catch (err) {
-      console.error('[Delete Dokumen] Error:', err);
+      console.error("[Delete Dokumen] Error:", err);
       return false;
     }
   }
   function showBatchDeleteModal() {
     let modal = document.getElementById(BATCH_DELETE_CONFIG.modalId);
     if (!modal) {
-      modal = document.createElement('div');
+      modal = document.createElement("div");
       modal.id = BATCH_DELETE_CONFIG.modalId;
-      modal.className = 'ext-batch-delete-modal';
+      modal.className = "ext-batch-delete-modal";
       modal.innerHTML = `
       <div class="ext-modal-content">
         <div class="ext-modal-header">
@@ -410,80 +397,65 @@ var __morbis_feature = (() => {
     `;
       document.body.appendChild(modal);
       setTimeout(() => {
-        document
-          .getElementById('ext-delete-close-btn')
-          ?.addEventListener('click', closeBatchDeleteModal);
-        document
-          .getElementById('ext-delete-cancel-btn')
-          ?.addEventListener('click', closeBatchDeleteModal);
-        document
-          .getElementById('ext-fetch-files-btn')
-          ?.addEventListener('click', crawlDokumenPasienDelete);
-        document
-          .getElementById('ext-start-delete-btn')
-          ?.addEventListener('click', startBatchDelete);
-        document
-          .getElementById('ext-delete-search-input')
-          ?.addEventListener('input', updateDeletePreview);
-        modal?.addEventListener('click', function (e) {
+        document.getElementById("ext-delete-close-btn")?.addEventListener("click", closeBatchDeleteModal);
+        document.getElementById("ext-delete-cancel-btn")?.addEventListener("click", closeBatchDeleteModal);
+        document.getElementById("ext-fetch-files-btn")?.addEventListener("click", crawlDokumenPasienDelete);
+        document.getElementById("ext-start-delete-btn")?.addEventListener("click", startBatchDelete);
+        document.getElementById("ext-delete-search-input")?.addEventListener("input", updateDeletePreview);
+        modal?.addEventListener("click", function(e) {
           if (e.target === modal) closeBatchDeleteModal();
         });
       }, 50);
     }
-    modal.classList.add('show');
+    modal.classList.add("show");
   }
   function closeBatchDeleteModal() {
     const modal = document.getElementById(BATCH_DELETE_CONFIG.modalId);
-    if (modal) modal.classList.remove('show');
+    if (modal) modal.classList.remove("show");
     deleteQueue = [];
     isDeletingProcess = false;
     const previewEl = document.getElementById(BATCH_DELETE_CONFIG.previewId);
     const progressEl = document.getElementById(BATCH_DELETE_CONFIG.progressId);
     const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
     if (previewEl) {
-      previewEl.style.display = 'none';
-      previewEl.innerHTML = '';
+      previewEl.style.display = "none";
+      previewEl.innerHTML = "";
     }
-    if (progressEl) progressEl.style.display = 'none';
-    if (statusEl) statusEl.textContent = '';
-    const buttonsContainer = document.querySelector('.ext-modal-buttons');
+    if (progressEl) progressEl.style.display = "none";
+    if (statusEl) statusEl.textContent = "";
+    const buttonsContainer = document.querySelector(".ext-modal-buttons");
     if (buttonsContainer) {
-      buttonsContainer.innerHTML =
-        '<button id="ext-delete-cancel-btn" class="ext-btn ext-btn-secondary">Batal</button><button id="ext-start-delete-btn" class="ext-btn ext-btn-danger disabled"><span style="display:inline-flex;align-items:center;gap:6px;">' +
-        Icons.trash +
-        '</span> Hapus Terpilih</button>';
-      document
-        .getElementById('ext-delete-cancel-btn')
-        ?.addEventListener('click', closeBatchDeleteModal);
-      document.getElementById('ext-start-delete-btn')?.addEventListener('click', startBatchDelete);
+      buttonsContainer.innerHTML = '<button id="ext-delete-cancel-btn" class="ext-btn ext-btn-secondary">Batal</button><button id="ext-start-delete-btn" class="ext-btn ext-btn-danger disabled"><span style="display:inline-flex;align-items:center;gap:6px;">' + Icons.trash + "</span> Hapus Terpilih</button>";
+      document.getElementById("ext-delete-cancel-btn")?.addEventListener("click", closeBatchDeleteModal);
+      document.getElementById("ext-start-delete-btn")?.addEventListener("click", startBatchDelete);
     }
     toggleDeleteUIProcessingState(false);
   }
   async function crawlDokumenPasienDelete() {
     const urlParams = new URLSearchParams(window.location.search);
-    const idVisit = urlParams.get('id_visit');
-    console.log('[BatchDelete] Current URL:', window.location.href);
-    console.log('[BatchDelete] id_visit found:', idVisit);
+    const idVisit = urlParams.get("id_visit");
+    console.log("[BatchDelete] Current URL:", window.location.href);
+    console.log("[BatchDelete] id_visit found:", idVisit);
     if (!idVisit) {
-      console.error('[BatchDelete] id_visit not found in URL!');
+      console.error("[BatchDelete] id_visit not found in URL!");
       alert(
-        'Parameter id_visit tidak ditemukan di URL saat ini.\n\nPastikan buka dari halaman detail pasien.',
+        "Parameter id_visit tidak ditemukan di URL saat ini.\n\nPastikan buka dari halaman detail pasien."
       );
       return;
     }
-    const fetchBtn = document.getElementById('ext-fetch-files-btn');
+    const fetchBtn = document.getElementById("ext-fetch-files-btn");
     if (fetchBtn) {
       fetchBtn.disabled = true;
-      fetchBtn.textContent = 'Mencari...';
+      fetchBtn.textContent = "Mencari...";
     }
     try {
       const targetUrl = `${window.location.origin}${BATCH_DELETE_CONFIG.fetchListUrl}?id_visit=${idVisit}&page=85&id_kunjungan=`;
       const response = await fetch(targetUrl);
-      if (!response.ok) throw new Error('Gagal memuat halaman dokumen pasien');
+      if (!response.ok) throw new Error("Gagal memuat halaman dokumen pasien");
       const html = await response.text();
-      const doc = new DOMParser().parseFromString(html, 'text/html');
-      const rows = doc.querySelectorAll('table.data-list.tabel tr');
-      console.log('[BatchDelete] Total rows found:', rows.length);
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const rows = doc.querySelectorAll("table.data-list.tabel tr");
+      console.log("[BatchDelete] Total rows found:", rows.length);
       deleteQueue = [];
       for (let i = 1; i < rows.length; i++) {
         const tr = rows[i];
@@ -491,20 +463,20 @@ var __morbis_feature = (() => {
         let id_dokumen = null;
         console.log(`[BatchDelete] Row ${i}: deleteBtn found:`, !!deleteBtn);
         if (deleteBtn) {
-          const onclickStr = deleteBtn.getAttribute('onclick');
+          const onclickStr = deleteBtn.getAttribute("onclick");
           const match = onclickStr?.match(/hapus\(([^)]+)\)/);
           if (match) {
-            id_dokumen = match[1].replace(/['"]/g, '').trim();
+            id_dokumen = match[1].replace(/['"]/g, "").trim();
           }
         }
         if (!id_dokumen) continue;
-        const linkEl = tr.querySelector('td:nth-child(2) a');
-        const filename = tr.cells[1]?.textContent?.trim() || 'unknown';
-        const keterangan = tr.cells[2]?.textContent?.trim() || '-';
-        const tglFile = tr.cells[3]?.textContent?.trim() || '-';
-        const tglUpload = tr.cells[4]?.textContent?.trim() || '-';
-        const href = linkEl?.getAttribute('href') || '';
-        const url = href.startsWith('http') ? href : `${window.location.origin}${href}`;
+        const linkEl = tr.querySelector("td:nth-child(2) a");
+        const filename = tr.cells[1]?.textContent?.trim() || "unknown";
+        const keterangan = tr.cells[2]?.textContent?.trim() || "-";
+        const tglFile = tr.cells[3]?.textContent?.trim() || "-";
+        const tglUpload = tr.cells[4]?.textContent?.trim() || "-";
+        const href = linkEl?.getAttribute("href") || "";
+        const url = href.startsWith("http") ? href : `${window.location.origin}${href}`;
         deleteQueue.push({
           id_dokumen,
           filename,
@@ -513,27 +485,27 @@ var __morbis_feature = (() => {
           tglUpload,
           url,
           selected: false,
-          status: 'pending',
+          status: "pending"
         });
       }
       if (deleteQueue.length === 0) {
-        console.error('[BatchDelete] No documents found in queue!');
+        console.error("[BatchDelete] No documents found in queue!");
         const statusEl2 = document.getElementById(BATCH_DELETE_CONFIG.statusId);
-        if (statusEl2) statusEl2.textContent = 'Tidak ada dokumen ditemukan.';
+        if (statusEl2) statusEl2.textContent = "Tidak ada dokumen ditemukan.";
         return;
       }
-      console.log('[BatchDelete] Queue populated with', deleteQueue.length, 'documents');
+      console.log("[BatchDelete] Queue populated with", deleteQueue.length, "documents");
       updateDeletePreview();
       const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
       if (statusEl) statusEl.textContent = `${deleteQueue.length} dokumen siap dihapus!`;
     } catch (err) {
-      console.error('[Batch Delete] Crawl error:', err);
+      console.error("[Batch Delete] Crawl error:", err);
       const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
-      if (statusEl) statusEl.textContent = 'Error: ' + err.message;
+      if (statusEl) statusEl.textContent = "Error: " + err.message;
     } finally {
       if (fetchBtn) {
         fetchBtn.disabled = false;
-        fetchBtn.textContent = 'Cari Dokumen Pasien';
+        fetchBtn.textContent = "Cari Dokumen Pasien";
       }
     }
   }
@@ -547,11 +519,11 @@ var __morbis_feature = (() => {
 ${item.filename}
 ID: ${item.id_dokumen}
 
-Tindakan ini tidak bisa di-undo.`,
+Tindakan ini tidak bisa di-undo.`
     );
     if (!yes) return;
     const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
-    item.status = 'deleting';
+    item.status = "deleting";
     updateDeletePreview();
     if (statusEl) statusEl.textContent = `Menghapus 1 dokumen: ${item.filename}...`;
     const ok = await deleteDokumen(item.id_dokumen);
@@ -559,70 +531,59 @@ Tindakan ini tidak bisa di-undo.`,
       deleteQueue.splice(index, 1);
       if (statusEl) statusEl.textContent = `Sukses menghapus: ${item.filename}`;
     } else {
-      item.status = 'error';
+      item.status = "error";
       if (statusEl) statusEl.textContent = `Gagal menghapus: ${item.filename}`;
     }
     updateDeletePreview();
   }
   function updateDeletePreview() {
     const previewEl = document.getElementById(BATCH_DELETE_CONFIG.previewId);
-    const startBtn = document.getElementById('ext-start-delete-btn');
+    const startBtn = document.getElementById("ext-start-delete-btn");
     const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
-    const searchWrap = document.getElementById('ext-delete-search-wrap');
-    const searchInput = document.getElementById('ext-delete-search-input');
-    const query = (searchInput?.value || '').toLowerCase();
+    const searchWrap = document.getElementById("ext-delete-search-wrap");
+    const searchInput = document.getElementById("ext-delete-search-input");
+    const query = (searchInput?.value || "").toLowerCase();
     if (!deleteQueue || deleteQueue.length === 0) {
       if (previewEl) {
-        previewEl.style.display = 'none';
-        previewEl.innerHTML = '';
+        previewEl.style.display = "none";
+        previewEl.innerHTML = "";
       }
-      if (searchWrap) searchWrap.style.display = 'none';
-      if (searchInput) searchInput.value = '';
+      if (searchWrap) searchWrap.style.display = "none";
+      if (searchInput) searchInput.value = "";
       if (startBtn) startBtn.disabled = true;
       if (statusEl) {
-        statusEl.textContent = '';
-        statusEl.style.color = '#4b5563';
+        statusEl.textContent = "";
+        statusEl.style.color = "#4b5563";
       }
       return;
     }
-    if (searchWrap) searchWrap.style.display = 'block';
-    const filtered = deleteQueue
-      .map((item, idx) => ({ item, idx }))
-      .filter(
-        ({ item }) =>
-          !query ||
-          item.filename.toLowerCase().includes(query) ||
-          item.keterangan.toLowerCase().includes(query) ||
-          item.id_dokumen.toLowerCase().includes(query),
-      );
+    if (searchWrap) searchWrap.style.display = "block";
+    const filtered = deleteQueue.map((item, idx) => ({ item, idx })).filter(
+      ({ item }) => !query || item.filename.toLowerCase().includes(query) || item.keterangan.toLowerCase().includes(query) || item.id_dokumen.toLowerCase().includes(query)
+    );
     if (previewEl) {
-      previewEl.style.display = 'block';
-      previewEl.style.borderRadius = '6px';
+      previewEl.style.display = "block";
+      previewEl.style.borderRadius = "6px";
     }
-    previewEl.innerHTML =
-      '<div style="padding:10px 16px;background:#f8fafc;border-bottom:1px solid #f1f5f9;font-size:11px;font-weight:700;color:#1e293b;text-transform:uppercase;letter-spacing:0.5px;">Dokumen Pasien <span style="color:#64748b;font-weight:400;">(' +
-      deleteQueue.length +
-      ' dokumen, <span style="color:#dc2626;">' +
-      deleteQueue.filter((i) => i.selected).length +
-      '</span> dipilih)</span></div>';
+    previewEl.innerHTML = '<div style="padding:10px 16px;background:#f8fafc;border-bottom:1px solid #f1f5f9;font-size:11px;font-weight:700;color:#1e293b;text-transform:uppercase;letter-spacing:0.5px;">Dokumen Pasien <span style="color:#64748b;font-weight:400;">(' + deleteQueue.length + ' dokumen, <span style="color:#dc2626;">' + deleteQueue.filter((i) => i.selected).length + "</span> dipilih)</span></div>";
     if (filtered.length === 0) {
-      const empty = document.createElement('div');
-      empty.style.cssText = 'padding:32px;text-align:center;font-size:13px;color:#94a3b8;';
-      empty.textContent = 'Tidak ada dokumen yang cocok dengan pencarian.';
+      const empty = document.createElement("div");
+      empty.style.cssText = "padding:32px;text-align:center;font-size:13px;color:#94a3b8;";
+      empty.textContent = "Tidak ada dokumen yang cocok dengan pencarian.";
       previewEl?.appendChild(empty);
     }
     filtered.forEach(({ item, idx }) => {
-      const itemEl = document.createElement('div');
-      itemEl.className = 'ext-delete-preview-item';
-      if (item.selected) itemEl.classList.add('selected');
+      const itemEl = document.createElement("div");
+      itemEl.className = "ext-delete-preview-item";
+      if (item.selected) itemEl.classList.add("selected");
       const isDisabled = isDeletingProcess;
       itemEl.innerHTML = `
       <label class="ext-checkbox-label" style="flex:1;min-width:0;">
-        <input type="checkbox" data-index="${idx}" class="ext-checkbox" ${item.selected ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>
+        <input type="checkbox" data-index="${idx}" class="ext-checkbox" ${item.selected ? "checked" : ""} ${isDisabled ? "disabled" : ""}>
         <div style="flex: 1; min-width: 0;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
             <strong style="font-size: 13px; color: #000000; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${idx + 1}. ${item.filename}</strong>
-            ${item.status !== 'pending' ? `<span class="ext-status-badge" data-status="${item.status}">${item.status === 'success' ? 'Selesai' : item.status === 'error' ? 'Gagal' : item.status === 'deleting' ? '...' : item.status}</span>` : ''}
+            ${item.status !== "pending" ? `<span class="ext-status-badge" data-status="${item.status}">${item.status === "success" ? "Selesai" : item.status === "error" ? "Gagal" : item.status === "deleting" ? "..." : item.status}</span>` : ""}
           </div>
           <div style="font-size: 11px; color: #4b5563; margin-top: 6px; display: flex; gap: 8px; flex-wrap: wrap;">
             <span>ID: <strong style="color: #111827;">${item.id_dokumen}</strong></span>
@@ -634,24 +595,24 @@ Tindakan ini tidak bisa di-undo.`,
           <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">${item.keterangan}</div>
         </div>
       </label>
-      <button data-index="${idx}" class="ext-delete-preview-btn" ${isDisabled ? 'disabled' : ''}>${Icons.eye} Preview</button>
-      <button data-index="${idx}" class="ext-delete-single-btn" title="Hapus Dokumen Ini" ${isDisabled ? 'disabled' : ''}>${Icons.trash}</button>
+      <button data-index="${idx}" class="ext-delete-preview-btn" ${isDisabled ? "disabled" : ""}>${Icons.eye} Preview</button>
+      <button data-index="${idx}" class="ext-delete-single-btn" title="Hapus Dokumen Ini" ${isDisabled ? "disabled" : ""}>${Icons.trash}</button>
     `;
       const checkbox = itemEl.querySelector('input[type="checkbox"]');
       if (!isDeletingProcess && checkbox) {
-        checkbox.addEventListener('change', (e) => {
+        checkbox.addEventListener("change", (e) => {
           deleteQueue[idx].selected = e.target.checked;
           updateDeletePreview();
         });
       }
-      const actionButtons = itemEl.querySelectorAll('button');
+      const actionButtons = itemEl.querySelectorAll("button");
       const previewBtn = actionButtons[0];
       const deleteBtn = actionButtons[1];
       if (!isDeletingProcess) {
-        previewBtn.addEventListener('click', () => {
+        previewBtn.addEventListener("click", () => {
           showInlinePreviewSafe(deleteQueue[idx].url, deleteQueue[idx].filename);
         });
-        deleteBtn.addEventListener('click', () => {
+        deleteBtn.addEventListener("click", () => {
           deleteSingleFromQueue(idx);
         });
       }
@@ -662,9 +623,9 @@ Tindakan ini tidak bisa di-undo.`,
       startBtn.disabled = selectedCount === 0 || isDeletingProcess;
       startBtn.textContent = `Hapus ${selectedCount} Dokumen`;
       if (selectedCount > 0 && !isDeletingProcess) {
-        startBtn.classList.remove('disabled');
+        startBtn.classList.remove("disabled");
       } else {
-        startBtn.classList.add('disabled');
+        startBtn.classList.add("disabled");
       }
     }
   }
@@ -672,35 +633,34 @@ Tindakan ini tidak bisa di-undo.`,
     if (isDeletingProcess) return;
     const selected = deleteQueue.filter((i) => i.selected);
     if (selected.length === 0) {
-      alert('Pilih dokumen untuk dihapus');
+      alert("Pilih dokumen untuk dihapus");
       return;
     }
     if (!confirm(`Hapus ${selected.length} dokumen? TIDAK BISA DIUNDO!`)) return;
     isDeletingProcess = true;
     toggleDeleteUIProcessingState(true);
-    let success = 0,
-      fail = 0;
+    let success = 0, fail = 0;
     const progressEl = document.getElementById(BATCH_DELETE_CONFIG.progressId);
-    const progressFill = progressEl?.querySelector('.progress-fill');
+    const progressFill = progressEl?.querySelector(".progress-fill");
     const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
-    if (progressEl) progressEl.style.display = 'block';
-    if (progressFill) progressFill.style.width = '0%';
-    if (statusEl) statusEl.style.color = '#fcd34d';
+    if (progressEl) progressEl.style.display = "block";
+    if (progressFill) progressFill.style.width = "0%";
+    if (statusEl) statusEl.style.color = "#fcd34d";
     for (let i = 0; i < selected.length; i++) {
       const item = selected[i];
-      item.status = 'deleting';
+      item.status = "deleting";
       const ok = await deleteDokumen(item.id_dokumen);
       if (ok) {
-        item.status = 'success';
+        item.status = "success";
         success++;
       } else {
-        item.status = 'error';
+        item.status = "error";
         fail++;
       }
       updateDeletePreview();
       if (progressFill && statusEl) {
-        const pct = ((i + 1) / selected.length) * 100;
-        progressFill.style.width = pct + '%';
+        const pct = (i + 1) / selected.length * 100;
+        progressFill.style.width = pct + "%";
         statusEl.textContent = `Diproses ${i + 1}/${selected.length} - Sukses: ${success}, Gagal: ${fail}`;
       }
       await new Promise((r) => setTimeout(r, BATCH_DELETE_CONFIG.delayBetweenDelete));
@@ -708,12 +668,12 @@ Tindakan ini tidak bisa di-undo.`,
     const finalStatus = `Selesai! Sukses: ${success}, Gagal: ${fail}`;
     if (statusEl) {
       statusEl.textContent = finalStatus;
-      statusEl.style.color = fail > 0 ? '#000000' : '#6ee7b7';
+      statusEl.style.color = fail > 0 ? "#000000" : "#6ee7b7";
     }
     if (fail > 0) {
       console.log(
-        'Failed deletes:',
-        deleteQueue.filter((item) => item.status === 'error'),
+        "Failed deletes:",
+        deleteQueue.filter((item) => item.status === "error")
       );
     }
     alert(finalStatus);
@@ -721,48 +681,46 @@ Tindakan ini tidak bisa di-undo.`,
     isDeletingProcess = false;
   }
   function hasIdVisitParam() {
-    return !!new URLSearchParams(window.location.search).get('id_visit');
+    return !!new URLSearchParams(window.location.search).get("id_visit");
   }
   async function crawlDokumenPasienDeleteToSidepanel() {
     const urlParams = new URLSearchParams(window.location.search);
-    const idVisit = urlParams.get('id_visit');
+    const idVisit = urlParams.get("id_visit");
     if (!idVisit) {
-      chrome.runtime
-        .sendMessage({
-          type: 'TAB_ACTION_RESULT',
-          action: 'BATCH_DELETE_ERROR',
-          data: { error: 'Parameter id_visit tidak ditemukan di URL.' },
-        })
-        .catch(console.error);
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_DELETE_ERROR",
+        data: { error: "Parameter id_visit tidak ditemukan di URL." }
+      }).catch(console.error);
       return;
     }
     try {
       const targetUrl = `${window.location.origin}${BATCH_DELETE_CONFIG.fetchListUrl}?id_visit=${idVisit}&page=85&id_kunjungan=`;
       const response = await fetch(targetUrl);
-      if (!response.ok) throw new Error('Gagal memuat halaman dokumen pasien');
+      if (!response.ok) throw new Error("Gagal memuat halaman dokumen pasien");
       const html = await response.text();
-      const doc = new DOMParser().parseFromString(html, 'text/html');
-      const rows = doc.querySelectorAll('table.data-list.tabel tr');
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const rows = doc.querySelectorAll("table.data-list.tabel tr");
       deleteQueue = [];
       for (let i = 1; i < rows.length; i++) {
         const tr = rows[i];
         const deleteBtn = tr.querySelector('button[onclick*="hapus"]');
         let id_dokumen = null;
         if (deleteBtn) {
-          const onclickStr = deleteBtn.getAttribute('onclick');
+          const onclickStr = deleteBtn.getAttribute("onclick");
           const match = onclickStr?.match(/hapus\(([^)]+)\)/);
           if (match) {
-            id_dokumen = match[1].replace(/['"]/g, '').trim();
+            id_dokumen = match[1].replace(/['"]/g, "").trim();
           }
         }
         if (!id_dokumen) continue;
-        const linkEl = tr.querySelector('td:nth-child(2) a');
-        const filename = tr.cells[1]?.textContent?.trim() || 'unknown';
-        const keterangan = tr.cells[2]?.textContent?.trim() || '-';
-        const tglFile = tr.cells[3]?.textContent?.trim() || '-';
-        const tglUpload = tr.cells[4]?.textContent?.trim() || '-';
-        const href = linkEl?.getAttribute('href') || '';
-        const url = href.startsWith('http') ? href : `${window.location.origin}${href}`;
+        const linkEl = tr.querySelector("td:nth-child(2) a");
+        const filename = tr.cells[1]?.textContent?.trim() || "unknown";
+        const keterangan = tr.cells[2]?.textContent?.trim() || "-";
+        const tglFile = tr.cells[3]?.textContent?.trim() || "-";
+        const tglUpload = tr.cells[4]?.textContent?.trim() || "-";
+        const href = linkEl?.getAttribute("href") || "";
+        const url = href.startsWith("http") ? href : `${window.location.origin}${href}`;
         deleteQueue.push({
           id_dokumen,
           filename,
@@ -771,136 +729,123 @@ Tindakan ini tidak bisa di-undo.`,
           tglUpload,
           url,
           selected: false,
-          status: 'pending',
+          status: "pending"
         });
       }
-      chrome.runtime
-        .sendMessage({
-          type: 'TAB_ACTION_RESULT',
-          action: 'BATCH_DELETE_CRAWL_RESULT',
-          data: { items: deleteQueue },
-        })
-        .catch(console.error);
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_DELETE_CRAWL_RESULT",
+        data: { items: deleteQueue }
+      }).catch(console.error);
     } catch (err) {
-      chrome.runtime
-        .sendMessage({
-          type: 'TAB_ACTION_RESULT',
-          action: 'BATCH_DELETE_ERROR',
-          data: { error: err.message },
-        })
-        .catch(console.error);
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_DELETE_ERROR",
+        data: { error: err.message }
+      }).catch(console.error);
     }
   }
   async function deleteSingleFromQueueToSidepanel(index, id_dokumen) {
     const item = deleteQueue[index];
     if (!item) return;
     const ok = await deleteDokumen(id_dokumen);
-    chrome.runtime
-      .sendMessage({
-        type: 'TAB_ACTION_RESULT',
-        action: 'BATCH_DELETE_SINGLE_RESULT',
-        data: {
-          index,
-          success: ok,
-          error: ok ? void 0 : 'Gagal memproses penghapusan di server.',
-        },
-      })
-      .catch(console.error);
+    chrome.runtime.sendMessage({
+      type: "TAB_ACTION_RESULT",
+      action: "BATCH_DELETE_SINGLE_RESULT",
+      data: {
+        index,
+        success: ok,
+        error: ok ? void 0 : "Gagal memproses penghapusan di server."
+      }
+    }).catch(console.error);
   }
   async function startBatchDeleteToSidepanel() {
     const selected = deleteQueue.filter((i) => i.selected);
     if (selected.length === 0) return;
-    let success = 0,
-      fail = 0;
+    let success = 0, fail = 0;
     for (let i = 0; i < selected.length; i++) {
       const item = selected[i];
-      item.status = 'deleting';
-      chrome.runtime
-        .sendMessage({
-          type: 'TAB_ACTION_RESULT',
-          action: 'BATCH_DELETE_PROGRESS',
-          data: {
-            percent: (i / selected.length) * 100,
-            status: `Menghapus: ${item.filename} (${i + 1}/${selected.length})...`,
-            items: deleteQueue,
-            finished: false,
-          },
-        })
-        .catch(console.error);
+      item.status = "deleting";
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_DELETE_PROGRESS",
+        data: {
+          percent: i / selected.length * 100,
+          status: `Menghapus: ${item.filename} (${i + 1}/${selected.length})...`,
+          items: deleteQueue,
+          finished: false
+        }
+      }).catch(console.error);
       const ok = await deleteDokumen(item.id_dokumen);
       if (ok) {
-        item.status = 'success';
+        item.status = "success";
         success++;
       } else {
-        item.status = 'error';
+        item.status = "error";
         fail++;
       }
-      chrome.runtime
-        .sendMessage({
-          type: 'TAB_ACTION_RESULT',
-          action: 'BATCH_DELETE_PROGRESS',
-          data: {
-            percent: ((i + 1) / selected.length) * 100,
-            status: `Diproses ${i + 1}/${selected.length} - Sukses: ${success}, Gagal: ${fail}`,
-            items: deleteQueue,
-            finished: i === selected.length - 1,
-          },
-        })
-        .catch(console.error);
+      chrome.runtime.sendMessage({
+        type: "TAB_ACTION_RESULT",
+        action: "BATCH_DELETE_PROGRESS",
+        data: {
+          percent: (i + 1) / selected.length * 100,
+          status: `Diproses ${i + 1}/${selected.length} - Sukses: ${success}, Gagal: ${fail}`,
+          items: deleteQueue,
+          finished: i === selected.length - 1
+        }
+      }).catch(console.error);
       await new Promise((r) => setTimeout(r, BATCH_DELETE_CONFIG.delayBetweenDelete));
     }
   }
   function initBatchDeleteFeature() {
     if (!hasIdVisitParam()) return;
     if (!g.currentConfig?.features?.batchDelete?.enabled) return;
-    if (!g.ExtensionCore.isFeatureAllowed('batchDelete')) return;
+    if (!g.ExtensionCore.isFeatureAllowed("batchDelete")) return;
     try {
-      console.log('[BatchDelete] Init starting...');
+      console.log("[BatchDelete] Init starting...");
       injectBatchDeleteCSS();
-      chrome.runtime
-        .sendMessage({
-          type: 'PAGE_CONTEXT',
-          feature: 'mKlaimDetail',
-          data: {
-            idVisit: new URLSearchParams(window.location.search).get('id_visit'),
-          },
-        })
-        .catch(console.error);
+      chrome.runtime.sendMessage({
+        type: "PAGE_CONTEXT",
+        feature: "mKlaimDetail",
+        data: {
+          idVisit: new URLSearchParams(window.location.search).get("id_visit")
+        }
+      }).catch(console.error);
       chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-        if (message.type === 'TAB_ACTION') {
+        if (message.type === "TAB_ACTION") {
           const { action, payload } = message;
-          if (action === 'BATCH_DELETE_CRAWL') {
+          if (action === "BATCH_DELETE_CRAWL") {
             crawlDokumenPasienDeleteToSidepanel();
-          } else if (action === 'BATCH_DELETE_UPDATE_ITEMS') {
+          } else if (action === "BATCH_DELETE_UPDATE_ITEMS") {
             deleteQueue = payload.items;
-          } else if (action === 'BATCH_DELETE_PREVIEW') {
+          } else if (action === "BATCH_DELETE_PREVIEW") {
             showInlinePreviewSafe(payload.url, payload.filename).catch(() => {
-              window.open(payload.url, '_blank');
+              window.open(payload.url, "_blank");
             });
-          } else if (action === 'BATCH_DELETE_SINGLE') {
+          } else if (action === "BATCH_DELETE_SINGLE") {
             deleteSingleFromQueueToSidepanel(payload.index, payload.id_dokumen);
-          } else if (action === 'BATCH_DELETE_START') {
+          } else if (action === "BATCH_DELETE_START") {
             startBatchDeleteToSidepanel();
           }
           sendResponse({ success: true });
-        } else if (message.type === 'BATCH_DELETE_ACTION') {
+        } else if (message.type === "BATCH_DELETE_ACTION") {
           sendResponse({ success: true });
         }
         return true;
       });
-      console.log('[BatchDelete] Init complete');
+      console.log("[BatchDelete] Init complete");
     } catch (err) {
-      console.error('[BatchDelete] Init error:', err);
+      console.error("[BatchDelete] Init error:", err);
     }
   }
   window.batchDeleteShowModal = showBatchDeleteModal;
-  if (typeof g.featureModules !== 'undefined') {
+  if (typeof g.featureModules !== "undefined") {
     g.featureModules.batchDelete = {
-      id: 'batchDelete',
-      name: 'Batch Delete Dokumen',
-      description: 'Hapus multiple dokumen sekaligus',
+      id: "batchDelete",
+      name: "Batch Delete Dokumen",
+      description: "Hapus multiple dokumen sekaligus",
       match: { regex: /^\/v2\/m-klaim\/detail-v2-refaktor\/?$/ },
-      run: initBatchDeleteFeature,
+      run: initBatchDeleteFeature
     };
   }
 })();

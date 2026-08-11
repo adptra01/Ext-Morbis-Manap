@@ -7,6 +7,7 @@ export const ROLES: Record<string, Role> = {
   APOTEK: 'apotek',
   ADMIN: 'admin',
   LABOR: 'labor',
+  PENDAFTARAN: 'pendaftaran',
 };
 
 declare global {

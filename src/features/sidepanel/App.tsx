@@ -69,7 +69,7 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
     key: 'antrianTools',
     name: 'Antrian Tools',
     desc: 'Penomoran unik per loket (L1-001) + auto cetak',
-    roles: ['admin'],
+    roles: ['admin', 'pendaftaran'],
   },
   {
     key: 'consultationEnhancer',

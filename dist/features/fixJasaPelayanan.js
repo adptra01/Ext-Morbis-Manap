@@ -1,15 +1,15 @@
-'use strict';
+"use strict";
 var __morbis_feature = (() => {
   // src/features/fixJasaPelayanan.ts
-  (function () {
+  (function() {
     const MAX_WAIT = 100;
     let waited = 0;
-    const check = setInterval(function () {
+    const check = setInterval(function() {
       waited++;
-      const enabled = document.documentElement.getAttribute('data-ext-fix-jasa');
+      const enabled = document.documentElement.getAttribute("data-ext-fix-jasa");
       if (enabled !== null) {
         clearInterval(check);
-        if (enabled !== '1') return;
+        if (enabled !== "1") return;
         patchFunction();
       } else if (waited >= MAX_WAIT) {
         clearInterval(check);
@@ -18,14 +18,14 @@ var __morbis_feature = (() => {
     function patchFunction() {
       const MAX_RETRIES = 50;
       let retries = 0;
-      const poll = setInterval(function () {
+      const poll = setInterval(function() {
         retries++;
         const w = window;
-        if (typeof w.hitungJsPelayananFeatEmbal === 'function') {
+        if (typeof w.hitungJsPelayananFeatEmbal === "function") {
           clearInterval(poll);
           const originalFn = w.hitungJsPelayananFeatEmbal;
-          w.hitungJsPelayananFeatEmbal = function (...args) {
-            const el = document.querySelector('#jasa_pelayanan');
+          w.hitungJsPelayananFeatEmbal = function(...args) {
+            const el = document.querySelector("#jasa_pelayanan");
             if (!el) {
               originalFn.apply(this, args);
               return;
