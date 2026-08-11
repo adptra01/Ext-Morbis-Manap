@@ -130,8 +130,8 @@
     "semantic_hash": "9c37603255e4b6451a2787d949978f88"
   },
   "src/background.ts": {
-    "mtime": 1786457640.563937,
-    "ast_hash": "3d036d6e9f56fc1c83be367e1b373955",
+    "mtime": 1786459859.8734248,
+    "ast_hash": "a31ed8bbc0957a83b1da13512f850fef",
     "semantic_hash": ""
   },
   "src/core.ts": {
@@ -355,9 +355,9 @@
     "semantic_hash": ""
   },
   "src/features/shared/utils.ts": {
-    "mtime": 1786334597.8505385,
-    "ast_hash": "864479b3c33e9d3aa5622ab972477d8c",
-    "semantic_hash": "864479b3c33e9d3aa5622ab972477d8c"
+    "mtime": 1786460393.5972123,
+    "ast_hash": "2925e86bc1fdec3606c425d16c772554",
+    "semantic_hash": ""
   },
   "src/features/shortcutButtons.ts": {
     "mtime": 1786334597.8526917,
@@ -440,8 +440,8 @@
     "semantic_hash": "586fbed293040c21739d426d41014e44"
   },
   "src/init.ts": {
-    "mtime": 1786457638.6509402,
-    "ast_hash": "b09e56112e93fa2cc025c8f63ab546e9",
+    "mtime": 1786459881.8404253,
+    "ast_hash": "f4670284f9a8be8fe70861930d8ae576",
     "semantic_hash": ""
   },
   "src/popup/App.tsx": {
@@ -830,8 +830,8 @@
     "semantic_hash": ""
   },
   "src/features/antrianFarmasiDisplay.ts": {
-    "mtime": 1786457901.5567348,
-    "ast_hash": "017fba2e4053ff624bde607f06ea0d25",
+    "mtime": 1786460159.0194056,
+    "ast_hash": "150c8f4247f03fa6671ea6dd19a51988",
     "semantic_hash": ""
   }
 }

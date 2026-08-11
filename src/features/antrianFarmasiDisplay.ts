@@ -16,8 +16,6 @@
  *
  * Role: hanya aktif bila admin/apotek (gate data-ext-antrian-farmasi di init.ts).
  */
-import { numberToWords } from './shared/utils.js';
-
 (function () {
   const CHANNEL = 'dev_antrianPemanggilanFarmasi';
   const POLL_MS = 3000;
@@ -25,6 +23,30 @@ import { numberToWords } from './shared/utils.js';
   const GAP_MS = 400; // jeda antar repetisi
 
   const CHECK_URL = '/public/antrian-farmasi-v2/data-call-v2?do=check_antrian';
+
+  /* numberToWords – konversi angka (0-999) ke kata Bahasa Indonesia.
+   * Dipakai untuk TTS farmasi agar nomor terbaca jelas. Didefinisikan lokal
+   * (bukan import dari shared/utils) supaya TIDAK menarik side-effect global
+   * module shared (window.SharedBatchUtils, console.log) ke halaman display.
+   */
+  const N2W_SATUAN = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas'];
+  function numberToWords(n: number | string): string {
+    const num = Math.abs(Math.trunc(Number(n)));
+    if (!Number.isFinite(num)) return String(n);
+    const two = (x: number): string => {
+      if (x < 12) return N2W_SATUAN[x];
+      if (x < 20) return N2W_SATUAN[x - 10] + ' belas';
+      if (x < 100) return (x % 10 === 0 ? N2W_SATUAN[x / 10] + ' puluh' : N2W_SATUAN[Math.trunc(x / 10)] + ' puluh ' + N2W_SATUAN[x % 10]);
+      return '';
+    };
+    if (num === 0) return 'nol';
+    if (num < 100) return two(num);
+    if (num < 1000) {
+      const r = num % 100;
+      return (num < 200 ? 'seratus' : two(Math.trunc(num / 100)) + ' ratus') + (r ? ' ' + two(r) : '');
+    }
+    return String(num); // > 999 → angka polos
+  }
 
   const RealWS = window.WebSocket;
   let lastCallId = '';
