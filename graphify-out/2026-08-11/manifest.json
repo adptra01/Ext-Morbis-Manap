@@ -20,9 +20,9 @@
     "semantic_hash": "1c81c707c2c78ac69e6f893b2c201d70"
   },
   "deploy/updates.json": {
-    "mtime": 1786334597.2584035,
-    "ast_hash": "d3a35b5c9fb355ca09fee7a539064307",
-    "semantic_hash": "d3a35b5c9fb355ca09fee7a539064307"
+    "mtime": 1786383683.9205043,
+    "ast_hash": "56deb63124010cdd15929c24caa3990b",
+    "semantic_hash": ""
   },
   "eslint.config.js": {
     "mtime": 1786334597.3750832,
@@ -60,8 +60,8 @@
     "semantic_hash": "7d0cbe8cf25240a82865d175a94ebffc"
   },
   "manifest.json": {
-    "mtime": 1786334597.6442118,
-    "ast_hash": "8df0d4e254b0bdc34db1d436cf404e09",
+    "mtime": 1786398557.591856,
+    "ast_hash": "f40f0c876b6018e2851c8728b74ba98a",
     "semantic_hash": ""
   },
   "mcp-servers/morbis-devtools/server.py": {
@@ -140,8 +140,8 @@
     "semantic_hash": "5c939d888f140df550a38a85cab5bcf8"
   },
   "src/features/antrianTools.ts": {
-    "mtime": 1786335130.6963246,
-    "ast_hash": "79533d452b87cb694fa0c12490f22331",
+    "mtime": 1786407134.7180233,
+    "ast_hash": "0911c1eb3fe927e2c2c775439a18ea7e",
     "semantic_hash": ""
   },
   "src/features/batchDeleteFiles.ts": {
@@ -560,9 +560,9 @@
     "semantic_hash": "c6050e8167089c3a99c05a2b91e8be23"
   },
   "vite.config.ts": {
-    "mtime": 1786334597.9782038,
-    "ast_hash": "0b5a036a9f94d06aaadb8fa8cb729f8e",
-    "semantic_hash": "0b5a036a9f94d06aaadb8fa8cb729f8e"
+    "mtime": 1786383552.844073,
+    "ast_hash": "3a73907044c3c92e86048f03a7b90cbf",
+    "semantic_hash": ""
   },
   "vitest.config.ts": {
     "mtime": 1786334597.9791896,
@@ -575,8 +575,8 @@
     "semantic_hash": ""
   },
   "pack/package.json": {
-    "mtime": 1786334597.6573977,
-    "ast_hash": "468409b99e679729d623c870fe444890",
+    "mtime": 1786383681.1044905,
+    "ast_hash": "917c582fa9b998b1c27b69d363a9ea98",
     "semantic_hash": ""
   },
   "popup/main.tsx": {
@@ -817,6 +817,11 @@
   "icons/icon48.png": {
     "mtime": 1786334597.63964,
     "ast_hash": "1e6d59f980ca546a28acf37e8774169c",
+    "semantic_hash": ""
+  },
+  "docs/features/antrian-tools-redesign.md": {
+    "mtime": 1786380955.3692923,
+    "ast_hash": "a96049258d63195acdc0138aa7f354b1",
     "semantic_hash": ""
   }
 }

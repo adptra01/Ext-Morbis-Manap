@@ -319,11 +319,11 @@ var __morbis_feature = (() => {
           if (origCall.__extTtsHooked) return;
           const sel = document.querySelector("select#no_loket");
           if (!sel) return;
-          const opt = sel.options[sel.selectedIndex];
-          const loketName = String(
-            (opt?.text || opt.value || "").replace(/^LOKET\s+/i, "").toUpperCase()
-          );
           const wrapped = function(antrian, nama) {
+            const opt = sel.options[sel.selectedIndex];
+            const loketName = String(
+              (opt?.text || opt.value || "").replace(/^LOKET\s+/i, "").toUpperCase()
+            );
             const spoken = buildSpokenText(antrian, loketName);
             speak(spoken);
             extLog("tts_call", true, { antrian, loket: loketName, spoken });
@@ -428,7 +428,8 @@ var __morbis_feature = (() => {
             el.id = "ext-offline-badge";
             Object.assign(el.style, {
               position: "fixed",
-              top: "16px",
+              bottom: "64px",
+              // di bawah card, di atas footer — bukan nutup header
               left: "50%",
               transform: "translateX(-50%)",
               zIndex: "999999",
@@ -449,18 +450,21 @@ var __morbis_feature = (() => {
         let pollAlive = false;
         let lastSync = null;
         const statusBox = { span: null };
+        let reqSeq = 0;
         const renderStatus = () => {
           if (!statusBox.span) return;
           statusBox.span.textContent = pollAlive ? `\u25CF polling OK \xB7 ${numberEl.textContent} \xB7 ${lastSync || "--"}` : "\u25CF POLLING MATI";
           statusBox.span.style.color = pollAlive ? "#6ee7b7" : "#fca5a5";
         };
         const pollActive = () => {
+          const seq = ++reqSeq;
           const xhr = new XMLHttpRequest();
           xhr.open("POST", "/public/counter-antrian/data", true);
           xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
           xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
           xhr.timeout = 1e4;
           const onFail = () => {
+            if (seq !== reqSeq) return;
             if (++failCount >= 3) offlineBadge();
             pollAlive = false;
             renderStatus();
@@ -469,6 +473,7 @@ var __morbis_feature = (() => {
           xhr.onerror = onFail;
           xhr.ontimeout = onFail;
           xhr.onload = () => {
+            if (seq !== reqSeq) return;
             try {
               const txt = String(xhr.responseText || "").trim();
               if (!txt.startsWith("{")) return;

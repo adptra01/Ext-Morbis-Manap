@@ -978,7 +978,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "init",
-      "community": 27,
+      "community": 26,
       "community_name": "core.ts",
       "norm_label": "init.js"
     },
@@ -989,7 +989,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "init_initextension",
-      "community": 27,
+      "community": 26,
       "community_name": "core.ts",
       "norm_label": "initextension()"
     },
@@ -2298,7 +2298,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "package_devdependencies_class_variance_authority",
-      "community": 50,
+      "community": 156,
       "community_name": "class-variance-authority",
       "norm_label": "class-variance-authority"
     },
@@ -2309,7 +2309,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "class_variance_authority",
-      "community": 50,
+      "community": 156,
       "community_name": "class-variance-authority",
       "norm_label": "class-variance-authority"
     },
@@ -2320,8 +2320,8 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "package_devdependencies_clsx",
-      "community": 51,
-      "community_name": "clsx",
+      "community": 50,
+      "community_name": "class-variance-authority",
       "norm_label": "clsx"
     },
     {
@@ -2331,8 +2331,8 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "clsx",
-      "community": 51,
-      "community_name": "clsx",
+      "community": 50,
+      "community_name": "class-variance-authority",
       "norm_label": "clsx"
     },
     {
@@ -4113,7 +4113,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_core",
-      "community": 27,
+      "community": 26,
       "community_name": "core.ts",
       "norm_label": "core.ts"
     },
@@ -4124,7 +4124,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_core_roles",
-      "community": 27,
+      "community": 26,
       "community_name": "core.ts",
       "norm_label": "roles"
     },
@@ -4135,7 +4135,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "src_core_window",
-      "community": 27,
+      "community": 26,
       "community_name": "core.ts",
       "norm_label": "window"
     },
@@ -4146,7 +4146,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "src_core_log",
-      "community": 27,
+      "community": 26,
       "community_name": "core.ts",
       "norm_label": "log()"
     },
@@ -4157,7 +4157,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "src_core_loadconfig",
-      "community": 27,
+      "community": 26,
       "community_name": "core.ts",
       "norm_label": "loadconfig()"
     },
@@ -4168,7 +4168,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "src_core_loadcustomurls",
-      "community": 27,
+      "community": 26,
       "community_name": "core.ts",
       "norm_label": "loadcustomurls()"
     },
@@ -4179,7 +4179,7 @@
       "source_location": "L73",
       "_origin": "ast",
       "id": "src_core_savecustomurls",
-      "community": 27,
+      "community": 26,
       "community_name": "core.ts",
       "norm_label": "savecustomurls()"
     },
@@ -4190,7 +4190,7 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "src_core_saveconfig",
-      "community": 27,
+      "community": 26,
       "community_name": "core.ts",
       "norm_label": "saveconfig()"
     },
@@ -4201,7 +4201,7 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "src_core_getcurrentrole",
-      "community": 27,
+      "community": 26,
       "community_name": "core.ts",
       "norm_label": "getcurrentrole()"
     },
@@ -4212,7 +4212,7 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "src_core_setcurrentrole",
-      "community": 27,
+      "community": 26,
       "community_name": "core.ts",
       "norm_label": "setcurrentrole()"
     },
@@ -4223,7 +4223,7 @@
       "source_location": "L102",
       "_origin": "ast",
       "id": "src_core_isfeatureallowed",
-      "community": 27,
+      "community": 26,
       "community_name": "core.ts",
       "norm_label": "isfeatureallowed()"
     },
@@ -4234,7 +4234,7 @@
       "source_location": "L108",
       "_origin": "ast",
       "id": "src_core_extensioncore",
-      "community": 27,
+      "community": 26,
       "community_name": "core.ts",
       "norm_label": "extensioncore"
     },
@@ -4319,7 +4319,7 @@
       "label": "showActiveBadge()",
       "file_type": "code",
       "source_file": "src/features/antrianTools.ts",
-      "source_location": "L76",
+      "source_location": "L77",
       "_origin": "ast",
       "id": "src_features_antriantools_showactivebadge",
       "community": 13,
@@ -4327,10 +4327,54 @@
       "norm_label": "showactivebadge()"
     },
     {
+      "label": "pickVoice()",
+      "file_type": "code",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L104",
+      "_origin": "ast",
+      "id": "src_features_antriantools_pickvoice",
+      "community": 13,
+      "community_name": "antrianTools.ts",
+      "norm_label": "pickvoice()"
+    },
+    {
+      "label": "pickLocalVoice()",
+      "file_type": "code",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L121",
+      "_origin": "ast",
+      "id": "src_features_antriantools_picklocalvoice",
+      "community": 13,
+      "community_name": "antrianTools.ts",
+      "norm_label": "picklocalvoice()"
+    },
+    {
+      "label": "speakLocal()",
+      "file_type": "code",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L132",
+      "_origin": "ast",
+      "id": "src_features_antriantools_speaklocal",
+      "community": 13,
+      "community_name": "antrianTools.ts",
+      "norm_label": "speaklocal()"
+    },
+    {
+      "label": "speakGoogleMp3()",
+      "file_type": "code",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L147",
+      "_origin": "ast",
+      "id": "src_features_antriantools_speakgooglemp3",
+      "community": 13,
+      "community_name": "antrianTools.ts",
+      "norm_label": "speakgooglemp3()"
+    },
+    {
       "label": "speak()",
       "file_type": "code",
       "source_file": "src/features/antrianTools.ts",
-      "source_location": "L99",
+      "source_location": "L160",
       "_origin": "ast",
       "id": "src_features_antriantools_speak",
       "community": 13,
@@ -4338,10 +4382,21 @@
       "norm_label": "speak()"
     },
     {
+      "label": "unlockTts()",
+      "file_type": "code",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L199",
+      "_origin": "ast",
+      "id": "src_features_antriantools_unlocktts",
+      "community": 13,
+      "community_name": "antrianTools.ts",
+      "norm_label": "unlocktts()"
+    },
+    {
       "label": "buildSpokenText()",
       "file_type": "code",
       "source_file": "src/features/antrianTools.ts",
-      "source_location": "L114",
+      "source_location": "L246",
       "_origin": "ast",
       "id": "src_features_antriantools_buildspokentext",
       "community": 13,
@@ -4349,10 +4404,21 @@
       "norm_label": "buildspokentext()"
     },
     {
+      "label": "chime()",
+      "file_type": "code",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L253",
+      "_origin": "ast",
+      "id": "src_features_antriantools_chime",
+      "community": 13,
+      "community_name": "antrianTools.ts",
+      "norm_label": "chime()"
+    },
+    {
       "label": "buildStrukHtml()",
       "file_type": "code",
       "source_file": "src/features/antrianTools.ts",
-      "source_location": "L121",
+      "source_location": "L285",
       "_origin": "ast",
       "id": "src_features_antriantools_buildstrukhtml",
       "community": 13,
@@ -4363,7 +4429,7 @@
       "label": "cetakStrukAntrian()",
       "file_type": "code",
       "source_file": "src/features/antrianTools.ts",
-      "source_location": "L125",
+      "source_location": "L289",
       "_origin": "ast",
       "id": "src_features_antriantools_cetakstrukantrian",
       "community": 13,
@@ -4374,7 +4440,7 @@
       "label": "init()",
       "file_type": "code",
       "source_file": "src/features/antrianTools.ts",
-      "source_location": "L165",
+      "source_location": "L329",
       "_origin": "ast",
       "id": "src_features_antriantools_init",
       "community": 13,
@@ -5499,8 +5565,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_features_cpptsearchfilter",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "cpptsearchfilter.ts"
     },
     {
@@ -5510,8 +5576,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "src_features_cpptsearchfilter_g",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "g"
     },
     {
@@ -5521,8 +5587,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "src_features_cpptsearchfilter_cpptfilterstate",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "cpptfilterstate"
     },
     {
@@ -5532,8 +5598,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "src_features_cpptsearchfilter_cpptpagetype",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "cpptpagetype"
     },
     {
@@ -5543,8 +5609,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "src_features_cpptsearchfilter_getcpptpagetype",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "getcpptpagetype()"
     },
     {
@@ -5554,8 +5620,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "src_features_cpptsearchfilter_iscppttable",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "iscppttable()"
     },
     {
@@ -5565,8 +5631,8 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "src_features_cpptsearchfilter_findcppttables",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "findcppttables()"
     },
     {
@@ -5576,8 +5642,8 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "src_features_cpptsearchfilter_getheadertexts",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "getheadertexts()"
     },
     {
@@ -5587,8 +5653,8 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "src_features_cpptsearchfilter_getcolumnindex",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "getcolumnindex()"
     },
     {
@@ -5609,8 +5675,8 @@
       "source_location": "L114",
       "_origin": "ast",
       "id": "src_features_cpptsearchfilter_getdatarows",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "getdatarows()"
     },
     {
@@ -5620,8 +5686,8 @@
       "source_location": "L118",
       "_origin": "ast",
       "id": "src_features_cpptsearchfilter_getuniquedokters",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "getuniquedokters()"
     },
     {
@@ -5631,8 +5697,8 @@
       "source_location": "L128",
       "_origin": "ast",
       "id": "src_features_cpptsearchfilter_normalizedateforcompare",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "normalizedateforcompare()"
     },
     {
@@ -5642,8 +5708,8 @@
       "source_location": "L134",
       "_origin": "ast",
       "id": "src_features_cpptsearchfilter_getstoragekey",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "getstoragekey()"
     },
     {
@@ -5653,8 +5719,8 @@
       "source_location": "L138",
       "_origin": "ast",
       "id": "src_features_cpptsearchfilter_geturlprefix",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "geturlprefix()"
     },
     {
@@ -5664,8 +5730,8 @@
       "source_location": "L142",
       "_origin": "ast",
       "id": "src_features_cpptsearchfilter_getstoredfilters",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "getstoredfilters()"
     },
     {
@@ -5675,8 +5741,8 @@
       "source_location": "L152",
       "_origin": "ast",
       "id": "src_features_cpptsearchfilter_storefilters",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "storefilters()"
     },
     {
@@ -5686,8 +5752,8 @@
       "source_location": "L160",
       "_origin": "ast",
       "id": "src_features_cpptsearchfilter_restorefiltersfromurl",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "restorefiltersfromurl()"
     },
     {
@@ -5697,8 +5763,8 @@
       "source_location": "L171",
       "_origin": "ast",
       "id": "src_features_cpptsearchfilter_syncurlparams",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "syncurlparams()"
     },
     {
@@ -5708,8 +5774,8 @@
       "source_location": "L189",
       "_origin": "ast",
       "id": "src_features_cpptsearchfilter_applyfilters",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "applyfilters()"
     },
     {
@@ -5719,8 +5785,8 @@
       "source_location": "L237",
       "_origin": "ast",
       "id": "src_features_cpptsearchfilter_injectfilterfortable",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "injectfilterfortable()"
     },
     {
@@ -5730,8 +5796,8 @@
       "source_location": "L369",
       "_origin": "ast",
       "id": "src_features_cpptsearchfilter_htmlencode",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "htmlencode()"
     },
     {
@@ -5741,8 +5807,8 @@
       "source_location": "L377",
       "_origin": "ast",
       "id": "src_features_cpptsearchfilter_initcpptsearchfilter",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "initcpptsearchfilter()"
     },
     {
@@ -5873,7 +5939,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_features_filterpersistence",
-      "community": 6,
+      "community": 27,
       "community_name": "filterPersistence.ts",
       "norm_label": "filterpersistence.ts"
     },
@@ -5884,7 +5950,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "src_features_filterpersistence_g",
-      "community": 6,
+      "community": 27,
       "community_name": "filterPersistence.ts",
       "norm_label": "g"
     },
@@ -5895,7 +5961,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "src_features_filterpersistence_persistencecontext",
-      "community": 6,
+      "community": 27,
       "community_name": "filterPersistence.ts",
       "norm_label": "persistencecontext"
     },
@@ -5906,7 +5972,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "src_features_filterpersistence_persistence_map",
-      "community": 6,
+      "community": 27,
       "community_name": "filterPersistence.ts",
       "norm_label": "persistence_map"
     },
@@ -5917,7 +5983,7 @@
       "source_location": "L79",
       "_origin": "ast",
       "id": "src_features_filterpersistence_legacy_storage_keys",
-      "community": 6,
+      "community": 27,
       "community_name": "filterPersistence.ts",
       "norm_label": "legacy_storage_keys"
     },
@@ -5928,7 +5994,7 @@
       "source_location": "L85",
       "_origin": "ast",
       "id": "src_features_filterpersistence_getcontext",
-      "community": 6,
+      "community": 27,
       "community_name": "filterPersistence.ts",
       "norm_label": "getcontext()"
     },
@@ -5939,7 +6005,7 @@
       "source_location": "L99",
       "_origin": "ast",
       "id": "src_features_filterpersistence_savefilter",
-      "community": 6,
+      "community": 27,
       "community_name": "filterPersistence.ts",
       "norm_label": "savefilter()"
     },
@@ -5950,7 +6016,7 @@
       "source_location": "L115",
       "_origin": "ast",
       "id": "src_features_filterpersistence_restorefilter",
-      "community": 6,
+      "community": 27,
       "community_name": "filterPersistence.ts",
       "norm_label": "restorefilter()"
     },
@@ -5961,7 +6027,7 @@
       "source_location": "L147",
       "_origin": "ast",
       "id": "src_features_filterpersistence_clearfilter",
-      "community": 6,
+      "community": 27,
       "community_name": "filterPersistence.ts",
       "norm_label": "clearfilter()"
     },
@@ -5972,7 +6038,7 @@
       "source_location": "L163",
       "_origin": "ast",
       "id": "src_features_filterpersistence_getfilterscope",
-      "community": 6,
+      "community": 27,
       "community_name": "filterPersistence.ts",
       "norm_label": "getfilterscope()"
     },
@@ -5983,7 +6049,7 @@
       "source_location": "L173",
       "_origin": "ast",
       "id": "src_features_filterpersistence_attachfilterlisteners",
-      "community": 6,
+      "community": 27,
       "community_name": "filterPersistence.ts",
       "norm_label": "attachfilterlisteners()"
     },
@@ -5994,7 +6060,7 @@
       "source_location": "L202",
       "_origin": "ast",
       "id": "src_features_filterpersistence_runfilterpersistencefeature",
-      "community": 6,
+      "community": 27,
       "community_name": "filterPersistence.ts",
       "norm_label": "runfilterpersistencefeature()"
     },
@@ -6005,7 +6071,7 @@
       "source_location": "L233",
       "_origin": "ast",
       "id": "src_features_filterpersistence_featuremeta",
-      "community": 6,
+      "community": 27,
       "community_name": "filterPersistence.ts",
       "norm_label": "featuremeta"
     },
@@ -6016,7 +6082,7 @@
       "source_location": "L248",
       "_origin": "ast",
       "id": "src_features_filterpersistence_feature_matches",
-      "community": 6,
+      "community": 27,
       "community_name": "filterPersistence.ts",
       "norm_label": "feature_matches"
     },
@@ -6049,8 +6115,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_features_inputhasilpa",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "inputhasilpa.ts"
     },
     {
@@ -6060,8 +6126,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "src_features_inputhasilpa_injectbutton",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "injectbutton()"
     },
     {
@@ -6071,8 +6137,8 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "src_features_inputhasilpa_tryinject",
-      "community": 49,
-      "community_name": "Header.tsx",
+      "community": 0,
+      "community_name": "cpptSearchFilter.ts",
       "norm_label": "tryinject()"
     },
     {
@@ -8722,8 +8788,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_features_shared_types",
-      "community": 6,
-      "community_name": "filterPersistence.ts",
+      "community": 23,
+      "community_name": "src/types.ts",
       "norm_label": "features/shared/types.ts"
     },
     {
@@ -8766,8 +8832,8 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "src_features_shared_types_usagelogentry",
-      "community": 6,
-      "community_name": "filterPersistence.ts",
+      "community": 23,
+      "community_name": "src/types.ts",
       "norm_label": "usagelogentry"
     },
     {
@@ -8777,8 +8843,8 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "src_features_shared_types_morbisconfig",
-      "community": 6,
-      "community_name": "filterPersistence.ts",
+      "community": 23,
+      "community_name": "src/types.ts",
       "norm_label": "morbisconfig"
     },
     {
@@ -8788,8 +8854,8 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "src_features_shared_types_morbisglobals",
-      "community": 6,
-      "community_name": "filterPersistence.ts",
+      "community": 23,
+      "community_name": "src/types.ts",
       "norm_label": "morbisglobals"
     },
     {
@@ -8810,8 +8876,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_features_shared_usagelog",
-      "community": 6,
-      "community_name": "filterPersistence.ts",
+      "community": 23,
+      "community_name": "src/types.ts",
       "norm_label": "usagelog.ts"
     },
     {
@@ -8832,8 +8898,8 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "src_features_shared_usagelog_getusagelog",
-      "community": 6,
-      "community_name": "filterPersistence.ts",
+      "community": 23,
+      "community_name": "src/types.ts",
       "norm_label": "getusagelog()"
     },
     {
@@ -8843,8 +8909,8 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "src_features_shared_usagelog_clearusagelog",
-      "community": 6,
-      "community_name": "filterPersistence.ts",
+      "community": 23,
+      "community_name": "src/types.ts",
       "norm_label": "clearusagelog()"
     },
     {
@@ -9217,8 +9283,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_features_sidepanel_consultationinfopanel",
-      "community": 120,
-      "community_name": "ConsultationInfoPanel.tsx",
+      "community": 10,
+      "community_name": "sidepanel/App.tsx",
       "norm_label": "consultationinfopanel.tsx"
     },
     {
@@ -9228,8 +9294,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "src_features_sidepanel_consultationinfopanel_props",
-      "community": 120,
-      "community_name": "ConsultationInfoPanel.tsx",
+      "community": 10,
+      "community_name": "sidepanel/App.tsx",
       "norm_label": "props"
     },
     {
@@ -9239,8 +9305,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "src_features_sidepanel_consultationinfopanel_tabs",
-      "community": 120,
-      "community_name": "ConsultationInfoPanel.tsx",
+      "community": 10,
+      "community_name": "sidepanel/App.tsx",
       "norm_label": "tabs"
     },
     {
@@ -9250,8 +9316,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "src_features_sidepanel_consultationinfopanel_tab_ep",
-      "community": 120,
-      "community_name": "ConsultationInfoPanel.tsx",
+      "community": 10,
+      "community_name": "sidepanel/App.tsx",
       "norm_label": "tab_ep"
     },
     {
@@ -9261,8 +9327,8 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "src_features_sidepanel_consultationinfopanel_consultationinfopanel",
-      "community": 120,
-      "community_name": "ConsultationInfoPanel.tsx",
+      "community": 10,
+      "community_name": "sidepanel/App.tsx",
       "norm_label": "consultationinfopanel()"
     },
     {
@@ -9349,8 +9415,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_features_sidepanel_footer",
-      "community": 11,
-      "community_name": "button.tsx",
+      "community": 10,
+      "community_name": "sidepanel/App.tsx",
       "norm_label": "sidepanel/footer.tsx"
     },
     {
@@ -9360,8 +9426,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "src_features_sidepanel_footer_footerprops",
-      "community": 11,
-      "community_name": "button.tsx",
+      "community": 10,
+      "community_name": "sidepanel/App.tsx",
       "norm_label": "footerprops"
     },
     {
@@ -9371,8 +9437,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "src_features_sidepanel_footer_footer",
-      "community": 11,
-      "community_name": "button.tsx",
+      "community": 10,
+      "community_name": "sidepanel/App.tsx",
       "norm_label": "footer()"
     },
     {
@@ -9404,8 +9470,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "src_features_sidepanel_roleselector_roleselectorprops",
-      "community": 19,
-      "community_name": "popup/StatusCard.tsx",
+      "community": 10,
+      "community_name": "sidepanel/App.tsx",
       "norm_label": "roleselectorprops"
     },
     {
@@ -9536,8 +9602,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_features_toolbar",
-      "community": 0,
-      "community_name": "cpptSearchFilter.ts",
+      "community": 51,
+      "community_name": "clsx",
       "norm_label": "toolbar.ts"
     },
     {
@@ -9547,8 +9613,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "src_features_toolbar_g",
-      "community": 0,
-      "community_name": "cpptSearchFilter.ts",
+      "community": 51,
+      "community_name": "clsx",
       "norm_label": "g"
     },
     {
@@ -9558,8 +9624,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "src_features_toolbar_toolbar_urls",
-      "community": 0,
-      "community_name": "cpptSearchFilter.ts",
+      "community": 51,
+      "community_name": "clsx",
       "norm_label": "toolbar_urls"
     },
     {
@@ -9569,8 +9635,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "src_features_toolbar_btn_styles",
-      "community": 0,
-      "community_name": "cpptSearchFilter.ts",
+      "community": 51,
+      "community_name": "clsx",
       "norm_label": "btn_styles"
     },
     {
@@ -9580,8 +9646,8 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "src_features_toolbar_extractparam",
-      "community": 0,
-      "community_name": "cpptSearchFilter.ts",
+      "community": 51,
+      "community_name": "clsx",
       "norm_label": "extractparam()"
     },
     {
@@ -9591,8 +9657,8 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "src_features_toolbar_getjeniskunjungan",
-      "community": 0,
-      "community_name": "cpptSearchFilter.ts",
+      "community": 51,
+      "community_name": "clsx",
       "norm_label": "getjeniskunjungan()"
     },
     {
@@ -9602,8 +9668,8 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "src_features_toolbar_israwatjalan",
-      "community": 0,
-      "community_name": "cpptSearchFilter.ts",
+      "community": 51,
+      "community_name": "clsx",
       "norm_label": "israwatjalan()"
     },
     {
@@ -9613,8 +9679,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "src_features_toolbar_israwatinap",
-      "community": 0,
-      "community_name": "cpptSearchFilter.ts",
+      "community": 51,
+      "community_name": "clsx",
       "norm_label": "israwatinap()"
     },
     {
@@ -9624,8 +9690,8 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "src_features_toolbar_extractidvisit",
-      "community": 0,
-      "community_name": "cpptSearchFilter.ts",
+      "community": 51,
+      "community_name": "clsx",
       "norm_label": "extractidvisit()"
     },
     {
@@ -9635,8 +9701,8 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "src_features_toolbar_extractidrawatjalan",
-      "community": 0,
-      "community_name": "cpptSearchFilter.ts",
+      "community": 51,
+      "community_name": "clsx",
       "norm_label": "extractidrawatjalan()"
     },
     {
@@ -9646,8 +9712,8 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "src_features_toolbar_buildurl",
-      "community": 0,
-      "community_name": "cpptSearchFilter.ts",
+      "community": 51,
+      "community_name": "clsx",
       "norm_label": "buildurl()"
     },
     {
@@ -9657,8 +9723,8 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "src_features_toolbar_rajalurl",
-      "community": 0,
-      "community_name": "cpptSearchFilter.ts",
+      "community": 51,
+      "community_name": "clsx",
       "norm_label": "rajalurl()"
     },
     {
@@ -9668,8 +9734,8 @@
       "source_location": "L69",
       "_origin": "ast",
       "id": "src_features_toolbar_ranapurl",
-      "community": 0,
-      "community_name": "cpptSearchFilter.ts",
+      "community": 51,
+      "community_name": "clsx",
       "norm_label": "ranapurl()"
     },
     {
@@ -9679,8 +9745,8 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "src_features_toolbar_dokumenpasienurl",
-      "community": 0,
-      "community_name": "cpptSearchFilter.ts",
+      "community": 51,
+      "community_name": "clsx",
       "norm_label": "dokumenpasienurl()"
     },
     {
@@ -9690,8 +9756,8 @@
       "source_location": "L79",
       "_origin": "ast",
       "id": "src_features_toolbar_editresumeurl",
-      "community": 0,
-      "community_name": "cpptSearchFilter.ts",
+      "community": 51,
+      "community_name": "clsx",
       "norm_label": "editresumeurl()"
     },
     {
@@ -9701,8 +9767,8 @@
       "source_location": "L91",
       "_origin": "ast",
       "id": "src_features_toolbar_triageigdurl",
-      "community": 0,
-      "community_name": "cpptSearchFilter.ts",
+      "community": 51,
+      "community_name": "clsx",
       "norm_label": "triageigdurl()"
     },
     {
@@ -9712,8 +9778,8 @@
       "source_location": "L99",
       "_origin": "ast",
       "id": "src_features_toolbar_spriurl",
-      "community": 0,
-      "community_name": "cpptSearchFilter.ts",
+      "community": 51,
+      "community_name": "clsx",
       "norm_label": "spriurl()"
     },
     {
@@ -9723,8 +9789,8 @@
       "source_location": "L105",
       "_origin": "ast",
       "id": "src_features_toolbar_pengkajianigdurl",
-      "community": 0,
-      "community_name": "cpptSearchFilter.ts",
+      "community": 51,
+      "community_name": "clsx",
       "norm_label": "pengkajianigdurl()"
     },
     {
@@ -9734,8 +9800,8 @@
       "source_location": "L110",
       "_origin": "ast",
       "id": "src_features_toolbar_mklaimbaseurl",
-      "community": 0,
-      "community_name": "cpptSearchFilter.ts",
+      "community": 51,
+      "community_name": "clsx",
       "norm_label": "mklaimbaseurl()"
     },
     {
@@ -9745,8 +9811,8 @@
       "source_location": "L114",
       "_origin": "ast",
       "id": "src_features_toolbar_istargetpage",
-      "community": 0,
-      "community_name": "cpptSearchFilter.ts",
+      "community": 51,
+      "community_name": "clsx",
       "norm_label": "istargetpage()"
     },
     {
@@ -9756,8 +9822,8 @@
       "source_location": "L123",
       "_origin": "ast",
       "id": "src_features_toolbar_createlink",
-      "community": 0,
-      "community_name": "cpptSearchFilter.ts",
+      "community": 51,
+      "community_name": "clsx",
       "norm_label": "createlink()"
     },
     {
@@ -9767,8 +9833,8 @@
       "source_location": "L169",
       "_origin": "ast",
       "id": "src_features_toolbar_createbtn",
-      "community": 0,
-      "community_name": "cpptSearchFilter.ts",
+      "community": 51,
+      "community_name": "clsx",
       "norm_label": "createbtn()"
     },
     {
@@ -9778,8 +9844,8 @@
       "source_location": "L207",
       "_origin": "ast",
       "id": "src_features_toolbar_anyfeatureenabled",
-      "community": 0,
-      "community_name": "cpptSearchFilter.ts",
+      "community": 51,
+      "community_name": "clsx",
       "norm_label": "anyfeatureenabled()"
     },
     {
@@ -9789,8 +9855,8 @@
       "source_location": "L214",
       "_origin": "ast",
       "id": "src_features_toolbar_rendertoolbar",
-      "community": 0,
-      "community_name": "cpptSearchFilter.ts",
+      "community": 51,
+      "community_name": "clsx",
       "norm_label": "rendertoolbar()"
     },
     {
@@ -9866,8 +9932,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "src_init_window",
-      "community": 23,
-      "community_name": "src/types.ts",
+      "community": 120,
+      "community_name": "ConsultationInfoPanel.tsx",
       "norm_label": "window"
     },
     {
@@ -9932,8 +9998,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_popup_domainpanel",
-      "community": 23,
-      "community_name": "src/types.ts",
+      "community": 11,
+      "community_name": "button.tsx",
       "norm_label": "popup/domainpanel.tsx"
     },
     {
@@ -9943,8 +10009,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "src_popup_domainpanel_domainpanelprops",
-      "community": 23,
-      "community_name": "src/types.ts",
+      "community": 11,
+      "community_name": "button.tsx",
       "norm_label": "domainpanelprops"
     },
     {
@@ -9954,8 +10020,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "src_popup_domainpanel_domainpanel",
-      "community": 23,
-      "community_name": "src/types.ts",
+      "community": 11,
+      "community_name": "button.tsx",
       "norm_label": "domainpanel()"
     },
     {
@@ -9998,8 +10064,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_popup_footer",
-      "community": 11,
-      "community_name": "button.tsx",
+      "community": 25,
+      "community_name": "popup/App.tsx",
       "norm_label": "popup/footer.tsx"
     },
     {
@@ -10009,8 +10075,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "src_popup_footer_footerprops",
-      "community": 11,
-      "community_name": "button.tsx",
+      "community": 25,
+      "community_name": "popup/App.tsx",
       "norm_label": "footerprops"
     },
     {
@@ -10020,8 +10086,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "src_popup_footer_footer",
-      "community": 11,
-      "community_name": "button.tsx",
+      "community": 25,
+      "community_name": "popup/App.tsx",
       "norm_label": "footer()"
     },
     {
@@ -10086,8 +10152,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_popup_usagelogpanel",
-      "community": 6,
-      "community_name": "filterPersistence.ts",
+      "community": 23,
+      "community_name": "src/types.ts",
       "norm_label": "usagelogpanel.tsx"
     },
     {
@@ -10097,8 +10163,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "src_popup_usagelogpanel_fmttime",
-      "community": 6,
-      "community_name": "filterPersistence.ts",
+      "community": 23,
+      "community_name": "src/types.ts",
       "norm_label": "fmttime()"
     },
     {
@@ -10108,8 +10174,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "src_popup_usagelogpanel_usagelogpanel",
-      "community": 6,
-      "community_name": "filterPersistence.ts",
+      "community": 23,
+      "community_name": "src/types.ts",
       "norm_label": "usagelogpanel()"
     },
     {
@@ -10119,8 +10185,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_popup_types",
-      "community": 23,
-      "community_name": "src/types.ts",
+      "community": 120,
+      "community_name": "ConsultationInfoPanel.tsx",
       "norm_label": "popup/types.ts"
     },
     {
@@ -10130,8 +10196,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "src_popup_types_popupstate",
-      "community": 23,
-      "community_name": "src/types.ts",
+      "community": 120,
+      "community_name": "ConsultationInfoPanel.tsx",
       "norm_label": "popupstate"
     },
     {
@@ -10262,8 +10328,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_shared_storage",
-      "community": 26,
-      "community_name": "Role",
+      "community": 120,
+      "community_name": "ConsultationInfoPanel.tsx",
       "norm_label": "storage.ts"
     },
     {
@@ -10273,8 +10339,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "src_shared_storage_getconfig",
-      "community": 26,
-      "community_name": "Role",
+      "community": 120,
+      "community_name": "ConsultationInfoPanel.tsx",
       "norm_label": "getconfig()"
     },
     {
@@ -10284,8 +10350,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "src_shared_storage_saveconfig",
-      "community": 26,
-      "community_name": "Role",
+      "community": 120,
+      "community_name": "ConsultationInfoPanel.tsx",
       "norm_label": "saveconfig()"
     },
     {
@@ -10295,8 +10361,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "src_shared_storage_geturls",
-      "community": 26,
-      "community_name": "Role",
+      "community": 120,
+      "community_name": "ConsultationInfoPanel.tsx",
       "norm_label": "geturls()"
     },
     {
@@ -10306,8 +10372,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "src_shared_storage_saveurls",
-      "community": 26,
-      "community_name": "Role",
+      "community": 120,
+      "community_name": "ConsultationInfoPanel.tsx",
       "norm_label": "saveurls()"
     },
     {
@@ -10317,8 +10383,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "src_shared_storage_getconfigwithfallback",
-      "community": 26,
-      "community_name": "Role",
+      "community": 120,
+      "community_name": "ConsultationInfoPanel.tsx",
       "norm_label": "getconfigwithfallback()"
     },
     {
@@ -10328,8 +10394,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_shared_types",
-      "community": 23,
-      "community_name": "src/types.ts",
+      "community": 120,
+      "community_name": "ConsultationInfoPanel.tsx",
       "norm_label": "src/shared/types.ts"
     },
     {
@@ -10361,8 +10427,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "src_shared_types_extensionconfig",
-      "community": 23,
-      "community_name": "src/types.ts",
+      "community": 120,
+      "community_name": "ConsultationInfoPanel.tsx",
       "norm_label": "extensionconfig"
     },
     {
@@ -10372,8 +10438,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "src_shared_types_customurl",
-      "community": 23,
-      "community_name": "src/types.ts",
+      "community": 120,
+      "community_name": "ConsultationInfoPanel.tsx",
       "norm_label": "customurl"
     },
     {
@@ -10383,8 +10449,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "src_shared_types_featuremodule",
-      "community": 23,
-      "community_name": "src/types.ts",
+      "community": 120,
+      "community_name": "ConsultationInfoPanel.tsx",
       "norm_label": "featuremodule"
     },
     {
@@ -10570,8 +10636,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "src_types_messagepayload",
-      "community": 23,
-      "community_name": "src/types.ts",
+      "community": 26,
+      "community_name": "core.ts",
       "norm_label": "messagepayload"
     },
     {
@@ -10746,8 +10812,8 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "src_ui_components_button_button",
-      "community": 11,
-      "community_name": "button.tsx",
+      "community": 19,
+      "community_name": "popup/StatusCard.tsx",
       "norm_label": "button"
     },
     {
@@ -10834,8 +10900,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "src_ui_components_switch_switch",
-      "community": 10,
-      "community_name": "sidepanel/App.tsx",
+      "community": 11,
+      "community_name": "button.tsx",
       "norm_label": "switch"
     },
     {
@@ -16249,6 +16315,424 @@
       "community": 84,
       "community_name": "A. Developer Rules",
       "norm_label": "rule a8 \u2014 `exclude` hanya untuk filtering, bukan positive match"
+    },
+    {
+      "label": "antrian-tools-redesign.md",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "antrian-tools-redesign.md"
+    },
+    {
+      "label": "Antrian Tools \u2014 Analisis, Rencana & Dokumentasi Implementasi",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_antrian_tools_analisis_rencana_dokumentasi_implementasi",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "antrian tools \u2014 analisis, rencana & dokumentasi implementasi"
+    },
+    {
+      "label": "A. Analisis Kode Mendalam",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L17",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_a_analisis_kode_mendalam",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "a. analisis kode mendalam"
+    },
+    {
+      "label": "A.0 Arsitektur Ekstensi (konteks)",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L19",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_a_0_arsitektur_ekstensi_konteks",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "a.0 arsitektur ekstensi (konteks)"
+    },
+    {
+      "label": "A.1 Halaman 1 \u2014 Mesin Antrian (`/public/mesin-antrian`)",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L31",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_a_1_halaman_1_mesin_antrian_public_mesin_antrian",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "a.1 halaman 1 \u2014 mesin antrian (`/public/mesin-antrian`)"
+    },
+    {
+      "label": "A.1.1 Struktur DOM asli (server)",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L33",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_a_1_1_struktur_dom_asli_server",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "a.1.1 struktur dom asli (server)"
+    },
+    {
+      "label": "A.1.2 Alur ambil tiket (fungsi server `antrian(a)`)",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L68",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_a_1_2_alur_ambil_tiket_fungsi_server_antrian_a",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "a.1.2 alur ambil tiket (fungsi server `antrian(a)`)"
+    },
+    {
+      "label": "A.1.3 Perilaku ekstensi saat ini (antrianTools.ts)",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L86",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_a_1_3_perilaku_ekstensi_saat_ini_antriantools_ts",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "a.1.3 perilaku ekstensi saat ini (antriantools.ts)"
+    },
+    {
+      "label": "A.2 Halaman 2 \u2014 Counter (`/counter-antrian/counter`)",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L99",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_a_2_halaman_2_counter_counter_antrian_counter",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "a.2 halaman 2 \u2014 counter (`/counter-antrian/counter`)"
+    },
+    {
+      "label": "A.2.1 Kondisi akses",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L101",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_a_2_1_kondisi_akses",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "a.2.1 kondisi akses"
+    },
+    {
+      "label": "A.2.2 Perilaku ekstensi saat ini",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L109",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_a_2_2_perilaku_ekstensi_saat_ini",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "a.2.2 perilaku ekstensi saat ini"
+    },
+    {
+      "label": "A.3 Halaman 3 \u2014 Display TV (`/public/counter-antrian/view-antrian`)",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L120",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_a_3_halaman_3_display_tv_public_counter_antrian_view_antrian",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "a.3 halaman 3 \u2014 display tv (`/public/counter-antrian/view-antrian`)"
+    },
+    {
+      "label": "A.3.1 Struktur & alur server (v1)",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L122",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_a_3_1_struktur_alur_server_v1",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "a.3.1 struktur & alur server (v1)"
+    },
+    {
+      "label": "A.3.2 Perilaku ekstensi saat ini (display v1)",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L136",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_a_3_2_perilaku_ekstensi_saat_ini_display_v1",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "a.3.2 perilaku ekstensi saat ini (display v1)"
+    },
+    {
+      "label": "A.3.3 Catatan: versi `view-antrian-v2` sudah ada di server",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L146",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_a_3_3_catatan_versi_view_antrian_v2_sudah_ada_di_server",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "a.3.3 catatan: versi `view-antrian-v2` sudah ada di server"
+    },
+    {
+      "label": "B. Rencana Implementasi Terstruktur",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L156",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_b_rencana_implementasi_terstruktur",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "b. rencana implementasi terstruktur"
+    },
+    {
+      "label": "B.1 Keputusan yang harus diklarifikasi (sebelum kode)",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L158",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_b_1_keputusan_yang_harus_diklarifikasi_sebelum_kode",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "b.1 keputusan yang harus diklarifikasi (sebelum kode)"
+    },
+    {
+      "label": "B.2 Urutan implementasi optimal",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L175",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_b_2_urutan_implementasi_optimal",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "b.2 urutan implementasi optimal"
+    },
+    {
+      "label": "B.3 Perubahan per halaman (ringkas)",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L185",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_b_3_perubahan_per_halaman_ringkas",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "b.3 perubahan per halaman (ringkas)"
+    },
+    {
+      "label": "B.3.1 Mesin (`/public/mesin-antrian`)",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L187",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_b_3_1_mesin_public_mesin_antrian",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "b.3.1 mesin (`/public/mesin-antrian`)"
+    },
+    {
+      "label": "B.3.2 Display v1 (`/public/counter-antrian/view-antrian`)",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L195",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_b_3_2_display_v1_public_counter_antrian_view_antrian",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "b.3.2 display v1 (`/public/counter-antrian/view-antrian`)"
+    },
+    {
+      "label": "B.3.3 Counter (`/counter-antrian/counter`)",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L204",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_b_3_3_counter_counter_antrian_counter",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "b.3.3 counter (`/counter-antrian/counter`)"
+    },
+    {
+      "label": "B.4 Integrasi antar halaman",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L210",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_b_4_integrasi_antar_halaman",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "b.4 integrasi antar halaman"
+    },
+    {
+      "label": "B.5 Potential issues & solusi",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L222",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_b_5_potential_issues_solusi",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "b.5 potential issues & solusi"
+    },
+    {
+      "label": "C. Dokumentasi / Spesifikasi Implementasi",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L237",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_c_dokumentasi_spesifikasi_implementasi",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "c. dokumentasi / spesifikasi implementasi"
+    },
+    {
+      "label": "C.1 Halaman Mesin",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L239",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_c_1_halaman_mesin",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "c.1 halaman mesin"
+    },
+    {
+      "label": "C.1.1 Routing (di `init()`)",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L241",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_c_1_1_routing_di_init",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "c.1.1 routing (di `init()`)"
+    },
+    {
+      "label": "C.1.2 `initMesin()`",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L253",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_c_1_2_initmesin",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "c.1.2 `initmesin()`"
+    },
+    {
+      "label": "C.1.3 Struk 80mm (template existing, disempurnakan)",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L266",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_c_1_3_struk_80mm_template_existing_disempurnakan",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "c.1.3 struk 80mm (template existing, disempurnakan)"
+    },
+    {
+      "label": "C.1.4 Print",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L280",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_c_1_4_print",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "c.1.4 print"
+    },
+    {
+      "label": "C.2 Halaman Display v1",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L287",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_c_2_halaman_display_v1",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "c.2 halaman display v1"
+    },
+    {
+      "label": "C.2.1 Visual (pertahankan, per komit terakhir)",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L289",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_c_2_1_visual_pertahankan_per_komit_terakhir",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "c.2.1 visual (pertahankan, per komit terakhir)"
+    },
+    {
+      "label": "C.2.2 TTS panggilan",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L297",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_c_2_2_tts_panggilan",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "c.2.2 tts panggilan"
+    },
+    {
+      "label": "C.3 Halaman Counter",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L322",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_c_3_halaman_counter",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "c.3 halaman counter"
+    },
+    {
+      "label": "C.3.1 `hookCallTTS()`",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L324",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_c_3_1_hookcalltts",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "c.3.1 `hookcalltts()`"
+    },
+    {
+      "label": "C.4 Logging (konsisten)",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L333",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_c_4_logging_konsisten",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "c.4 logging (konsisten)"
+    },
+    {
+      "label": "C.5 Checklist verifikasi (lapangan)",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L342",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_c_5_checklist_verifikasi_lapangan",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "c.5 checklist verifikasi (lapangan)"
+    },
+    {
+      "label": "Lampiran: referensi endpoint (diverifikasi live)",
+      "file_type": "document",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L369",
+      "_origin": "ast",
+      "id": "docs_features_antrian_tools_redesign_lampiran_referensi_endpoint_diverifikasi_live",
+      "community": 49,
+      "community_name": "Header.tsx",
+      "norm_label": "lampiran: referensi endpoint (diverifikasi live)"
     },
     {
       "label": "batch-refactor.md",
@@ -24042,7 +24526,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/features/antrianTools.ts",
-      "source_location": "L114",
+      "source_location": "L246",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_features_antriantools",
@@ -24053,7 +24537,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/features/antrianTools.ts",
-      "source_location": "L121",
+      "source_location": "L285",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_features_antriantools",
@@ -24064,11 +24548,22 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/features/antrianTools.ts",
-      "source_location": "L125",
+      "source_location": "L289",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_features_antriantools",
       "target": "src_features_antriantools_cetakstrukantrian",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L253",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_features_antriantools",
+      "target": "src_features_antriantools_chime",
       "confidence_score": 1.0
     },
     {
@@ -24097,7 +24592,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/features/antrianTools.ts",
-      "source_location": "L165",
+      "source_location": "L329",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_features_antriantools",
@@ -24141,7 +24636,29 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/features/antrianTools.ts",
-      "source_location": "L76",
+      "source_location": "L121",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_features_antriantools",
+      "target": "src_features_antriantools_picklocalvoice",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L104",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_features_antriantools",
+      "target": "src_features_antriantools_pickvoice",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L77",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_features_antriantools",
@@ -24152,7 +24669,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/features/antrianTools.ts",
-      "source_location": "L99",
+      "source_location": "L160",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_features_antriantools",
@@ -24160,11 +24677,44 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L147",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_features_antriantools",
+      "target": "src_features_antriantools_speakgooglemp3",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L132",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_features_antriantools",
+      "target": "src_features_antriantools_speaklocal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L199",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_features_antriantools",
+      "target": "src_features_antriantools_unlocktts",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/features/antrianTools.ts",
-      "source_location": "L181",
+      "source_location": "L352",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_features_antriantools_init",
@@ -24176,7 +24726,19 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/features/antrianTools.ts",
-      "source_location": "L192",
+      "source_location": "L409",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_features_antriantools_init",
+      "target": "src_features_antriantools_injectcss",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L337",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_features_antriantools_init",
@@ -24188,10 +24750,22 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/features/antrianTools.ts",
-      "source_location": "L186",
+      "source_location": "L370",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_features_antriantools_init",
+      "target": "src_features_antriantools_extlog",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L221",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_features_antriantools_unlocktts",
       "target": "src_features_antriantools_extlog",
       "confidence_score": 1.0
     },
@@ -24200,7 +24774,7 @@
       "context": "argument",
       "confidence": "INFERRED",
       "source_file": "src/features/antrianTools.ts",
-      "source_location": "L72",
+      "source_location": "L73",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_features_antriantools_addfullscreenbutton",
@@ -24212,7 +24786,7 @@
       "context": "argument",
       "confidence": "INFERRED",
       "source_file": "src/features/antrianTools.ts",
-      "source_location": "L94",
+      "source_location": "L95",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_features_antriantools_showactivebadge",
@@ -24224,7 +24798,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/features/antrianTools.ts",
-      "source_location": "L168",
+      "source_location": "L336",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_features_antriantools_init",
@@ -24236,7 +24810,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/features/antrianTools.ts",
-      "source_location": "L167",
+      "source_location": "L333",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_features_antriantools_init",
@@ -24248,7 +24822,139 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/features/antrianTools.ts",
-      "source_location": "L126",
+      "source_location": "L163",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_features_antriantools_speak",
+      "target": "src_features_antriantools_pickvoice",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L232",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_features_antriantools_unlocktts",
+      "target": "src_features_antriantools_pickvoice",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L136",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_features_antriantools_speaklocal",
+      "target": "src_features_antriantools_picklocalvoice",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L153",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_features_antriantools_speakgooglemp3",
+      "target": "src_features_antriantools_speaklocal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L141",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_features_antriantools_speaklocal",
+      "target": "src_features_antriantools_speak",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L166",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_features_antriantools_speak",
+      "target": "src_features_antriantools_speakgooglemp3",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L497",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_features_antriantools_init",
+      "target": "src_features_antriantools_speak",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L204",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_features_antriantools_unlocktts",
+      "target": "src_features_antriantools_speak",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L406",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_features_antriantools_init",
+      "target": "src_features_antriantools_unlocktts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L497",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_features_antriantools_init",
+      "target": "src_features_antriantools_buildspokentext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L496",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_features_antriantools_init",
+      "target": "src_features_antriantools_chime",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/antrianTools.ts",
+      "source_location": "L290",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_features_antriantools_cetakstrukantrian",
@@ -24260,7 +24966,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/features/antrianTools.ts",
-      "source_location": "L185",
+      "source_location": "L369",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_features_antriantools_init",
@@ -43080,6 +43786,413 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L17",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign",
+      "target": "docs_features_antrian_tools_redesign_a_analisis_kode_mendalam",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign",
+      "target": "docs_features_antrian_tools_redesign_antrian_tools_analisis_rencana_dokumentasi_implementasi",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L156",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign",
+      "target": "docs_features_antrian_tools_redesign_b_rencana_implementasi_terstruktur",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L237",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign",
+      "target": "docs_features_antrian_tools_redesign_c_dokumentasi_spesifikasi_implementasi",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_a_analisis_kode_mendalam",
+      "target": "docs_features_antrian_tools_redesign_a_0_arsitektur_ekstensi_konteks",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L31",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_a_analisis_kode_mendalam",
+      "target": "docs_features_antrian_tools_redesign_a_1_halaman_1_mesin_antrian_public_mesin_antrian",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L99",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_a_analisis_kode_mendalam",
+      "target": "docs_features_antrian_tools_redesign_a_2_halaman_2_counter_counter_antrian_counter",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L120",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_a_analisis_kode_mendalam",
+      "target": "docs_features_antrian_tools_redesign_a_3_halaman_3_display_tv_public_counter_antrian_view_antrian",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L33",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_a_1_halaman_1_mesin_antrian_public_mesin_antrian",
+      "target": "docs_features_antrian_tools_redesign_a_1_1_struktur_dom_asli_server",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L68",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_a_1_halaman_1_mesin_antrian_public_mesin_antrian",
+      "target": "docs_features_antrian_tools_redesign_a_1_2_alur_ambil_tiket_fungsi_server_antrian_a",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L86",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_a_1_halaman_1_mesin_antrian_public_mesin_antrian",
+      "target": "docs_features_antrian_tools_redesign_a_1_3_perilaku_ekstensi_saat_ini_antriantools_ts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L101",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_a_2_halaman_2_counter_counter_antrian_counter",
+      "target": "docs_features_antrian_tools_redesign_a_2_1_kondisi_akses",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L109",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_a_2_halaman_2_counter_counter_antrian_counter",
+      "target": "docs_features_antrian_tools_redesign_a_2_2_perilaku_ekstensi_saat_ini",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L122",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_a_3_halaman_3_display_tv_public_counter_antrian_view_antrian",
+      "target": "docs_features_antrian_tools_redesign_a_3_1_struktur_alur_server_v1",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L136",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_a_3_halaman_3_display_tv_public_counter_antrian_view_antrian",
+      "target": "docs_features_antrian_tools_redesign_a_3_2_perilaku_ekstensi_saat_ini_display_v1",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L146",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_a_3_halaman_3_display_tv_public_counter_antrian_view_antrian",
+      "target": "docs_features_antrian_tools_redesign_a_3_3_catatan_versi_view_antrian_v2_sudah_ada_di_server",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L158",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_b_rencana_implementasi_terstruktur",
+      "target": "docs_features_antrian_tools_redesign_b_1_keputusan_yang_harus_diklarifikasi_sebelum_kode",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L175",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_b_rencana_implementasi_terstruktur",
+      "target": "docs_features_antrian_tools_redesign_b_2_urutan_implementasi_optimal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L185",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_b_rencana_implementasi_terstruktur",
+      "target": "docs_features_antrian_tools_redesign_b_3_perubahan_per_halaman_ringkas",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L210",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_b_rencana_implementasi_terstruktur",
+      "target": "docs_features_antrian_tools_redesign_b_4_integrasi_antar_halaman",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L222",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_b_rencana_implementasi_terstruktur",
+      "target": "docs_features_antrian_tools_redesign_b_5_potential_issues_solusi",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L187",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_b_3_perubahan_per_halaman_ringkas",
+      "target": "docs_features_antrian_tools_redesign_b_3_1_mesin_public_mesin_antrian",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L195",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_b_3_perubahan_per_halaman_ringkas",
+      "target": "docs_features_antrian_tools_redesign_b_3_2_display_v1_public_counter_antrian_view_antrian",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L204",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_b_3_perubahan_per_halaman_ringkas",
+      "target": "docs_features_antrian_tools_redesign_b_3_3_counter_counter_antrian_counter",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L239",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_c_dokumentasi_spesifikasi_implementasi",
+      "target": "docs_features_antrian_tools_redesign_c_1_halaman_mesin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L287",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_c_dokumentasi_spesifikasi_implementasi",
+      "target": "docs_features_antrian_tools_redesign_c_2_halaman_display_v1",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L322",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_c_dokumentasi_spesifikasi_implementasi",
+      "target": "docs_features_antrian_tools_redesign_c_3_halaman_counter",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L333",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_c_dokumentasi_spesifikasi_implementasi",
+      "target": "docs_features_antrian_tools_redesign_c_4_logging_konsisten",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L342",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_c_dokumentasi_spesifikasi_implementasi",
+      "target": "docs_features_antrian_tools_redesign_c_5_checklist_verifikasi_lapangan",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L369",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_c_dokumentasi_spesifikasi_implementasi",
+      "target": "docs_features_antrian_tools_redesign_lampiran_referensi_endpoint_diverifikasi_live",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L241",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_c_1_halaman_mesin",
+      "target": "docs_features_antrian_tools_redesign_c_1_1_routing_di_init",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L253",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_c_1_halaman_mesin",
+      "target": "docs_features_antrian_tools_redesign_c_1_2_initmesin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L266",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_c_1_halaman_mesin",
+      "target": "docs_features_antrian_tools_redesign_c_1_3_struk_80mm_template_existing_disempurnakan",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L280",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_c_1_halaman_mesin",
+      "target": "docs_features_antrian_tools_redesign_c_1_4_print",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L289",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_c_2_halaman_display_v1",
+      "target": "docs_features_antrian_tools_redesign_c_2_1_visual_pertahankan_per_komit_terakhir",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L297",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_c_2_halaman_display_v1",
+      "target": "docs_features_antrian_tools_redesign_c_2_2_tts_panggilan",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/antrian-tools-redesign.md",
+      "source_location": "L324",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "docs_features_antrian_tools_redesign_c_3_halaman_counter",
+      "target": "docs_features_antrian_tools_redesign_c_3_1_hookcalltts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "docs/features/batch-refactor.md",
       "source_location": "L1",
       "weight": 1.0,
@@ -45246,5 +46359,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "663cf403f1df4caf8be1d722b8f23b0c2a6d28aa"
+  "built_at_commit": "1c169a1296fe043a7f0cceb7ea749f66ffc7a33a"
 }

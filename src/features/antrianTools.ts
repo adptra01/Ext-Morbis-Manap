@@ -398,11 +398,12 @@
         if ((origCall as any).__extTtsHooked) return;
         const sel = document.querySelector('select#no_loket') as HTMLSelectElement | null;
         if (!sel) return;
-        const opt = sel.options[sel.selectedIndex];
-        const loketName = String(
-          (opt?.text || opt.value || '').replace(/^LOKET\s+/i, '').toUpperCase(),
-        );
         const wrapped = function (this: unknown, antrian: string, nama: string) {
+          // baca LOKET saat dipanggil, bukan saat hook — user bisa ganti loket tanpa reload
+          const opt = sel.options[sel.selectedIndex];
+          const loketName = String(
+            (opt?.text || opt.value || '').replace(/^LOKET\s+/i, '').toUpperCase(),
+          );
           const spoken = buildSpokenText(antrian, loketName);
           speak(spoken);
           extLog('tts_call', true, { antrian, loket: loketName, spoken });
@@ -542,7 +543,7 @@
           el.id = 'ext-offline-badge';
           Object.assign(el.style, {
             position: 'fixed',
-            top: '16px',
+            bottom: '64px', // di bawah card, di atas footer — bukan nutup header
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: '999999',
@@ -565,6 +566,9 @@
       let pollAlive = false;
       let lastSync: string | null = null;
       const statusBox = { span: null as HTMLElement | null };
+      // seq guard: timeout 10s > interval 1.5s → request lama yang timeout jangan
+      // dianggap gagal kalau request terbaru sudah sukses
+      let reqSeq = 0;
       const renderStatus = () => {
         if (!statusBox.span) return;
         statusBox.span.textContent = pollAlive
@@ -573,12 +577,14 @@
         statusBox.span.style.color = pollAlive ? '#6ee7b7' : '#fca5a5';
       };
       const pollActive = () => {
+        const seq = ++reqSeq;
         const xhr = new XMLHttpRequest();
         xhr.open('POST', '/public/counter-antrian/data', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
         xhr.timeout = 10000;
         const onFail = () => {
+          if (seq !== reqSeq) return; // respon basi dari request yang lebih lama
           if (++failCount >= 3) offlineBadge();
           pollAlive = false;
           renderStatus();
@@ -587,6 +593,7 @@
         xhr.onerror = onFail;
         xhr.ontimeout = onFail;
         xhr.onload = () => {
+          if (seq !== reqSeq) return; // jangan update UI dari respon basi
           try {
             // server balas JSON dengan Content-Type text/html — jangan guard header,
             // cek isi body mulai '{' (halaman login HTML / error terlewat aman)
