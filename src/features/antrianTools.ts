@@ -414,79 +414,93 @@
     const initDisplay = () => {
       addFullscreenButton();
       unlockTts(); // kiosk tanpa klik: buka kunci speechSynthesis di gesture pertama
-      // REDESIGN TOTAL: overlay UI lengkap (fixed, menutup halaman server sepenuhnya).
-      // Tidak bergantung DOM asli — header, card, footer dibangun sendiri dengan konsep
-      // referensi gambar kedua (clean white + deep blue + teal accent + soft shadow).
+      // REDESIGN: overlay UI mengikuti HTML target halaman view-antrian
+      // (Tailwind emerald — RSUD H. Abdul Manap): header putih, card hijau tua 50%
+      // kiri, kanan kosong, footer gradient rounded-full + marquee.
       const ui = document.createElement('div');
       ui.id = 'ext-display-ui';
       ui.innerHTML =
-        '<div class="ext-head">' +
+        '<header class="ext-head">' +
         '  <div class="ext-brand">' +
-        '    <img class="ext-logo" alt="logo RSUD" />' +
-        '    <div class="ext-titles"><h1>RSUD H. ABDUL MANAP</h1><p>Melayani Dengan Sepenuh Hati</p></div>' +
+        '    <div class="ext-logo"><img class="ext-logo-img" alt="logo RSUD" /></div>' +
+        '    <div class="ext-titles"><h1>RSUD H. ABDUL MANAP KOTA JAMBI</h1><p>Melayani Dengan Setulus Hati</p></div>' +
         '  </div>' +
-        '  <div class="ext-clock"><span class="ext-date"></span><span class="ext-time"></span></div>' +
-        '</div>' +
+        '  <div class="ext-clock"><div id="datetime">Memuat waktu...</div></div>' +
+        '</header>' +
         '<main class="ext-main">' +
         '  <section class="ext-card">' +
-        '    <h2 class="ext-label">Antrian Saat Ini</h2>' +
+        '    <div class="ext-glow ext-glow-tr"></div>' +
+        '    <div class="ext-glow ext-glow-bl"></div>' +
+        '    <h2>Antrian Saat Ini</h2>' +
         '    <div class="ext-number">--</div>' +
         '  </section>' +
+        '  <section class="ext-void" aria-hidden="true"></section>' +
         '</main>' +
-        '<footer class="ext-foot"><div class="ext-marquee"><span>Mohon tetap menjaga protokol kesehatan. Untuk informasi lebih lanjut, silahkan menghubungi Call Center 0741-5910180 atau kunjungi website kami https://simanap.rsudkotajambi.id/</span></div></footer>';
+        '<footer class="ext-foot"><div class="ext-marquee"><span>Pengumuman: Mohon tetap menjaga protokol kesehatan. Untuk informasi lebih lanjut, hubungi Call Center: 0741-5910180 atau kunjungi Website: https://simanap.rsudkotajambi.id/.</span></div></footer>';
       document.body.appendChild(ui);
 
-      // logo: pakai dari halaman server bila ada, fallback sembunyikan gambar
-      const logoEl = ui.querySelector('.ext-logo') as HTMLImageElement;
+      // logo: pakai dari halaman server bila ada, fallback teks "LOGO RSUD"
+      const logoImg = ui.querySelector('.ext-logo-img') as HTMLImageElement;
       const serverLogo = document.querySelector(
         'img[src*="logo" i], .logo img, img[alt*="logo" i]',
       ) as HTMLImageElement | null;
-      if (serverLogo?.src) logoEl.src = serverLogo.src;
-      else logoEl.style.display = 'none';
+      if (serverLogo?.src) logoImg.src = serverLogo.src;
+      else {
+        logoImg.remove();
+        const logoBox = ui.querySelector('.ext-logo') as HTMLElement;
+        logoBox.innerHTML = '<span>LOGO<br/>RSUD</span>';
+      }
 
-      // jam & tanggal live
-      const dateEl = ui.querySelector('.ext-date') as HTMLElement;
-      const timeEl = ui.querySelector('.ext-time') as HTMLElement;
+      // jam & tanggal live (id="datetime" sama seperti HTML target)
+      const datetimeEl = ui.querySelector('#datetime') as HTMLElement;
       const tick = () => {
-        const d = new Date();
-        dateEl.textContent = d
-          .toLocaleDateString('id-ID', {
-            weekday: 'long',
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric',
-          })
-          .toUpperCase();
-        timeEl.textContent =
-          d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) +
-          ' WIB';
+        const now = new Date();
+        const options: Intl.DateTimeFormatOptions = {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        };
+        const dateString = now.toLocaleDateString('id-ID', options);
+        const timeString = now.toLocaleTimeString('id-ID', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        });
+        datetimeEl.textContent = `${dateString} - ${timeString} WIB`;
       };
       tick();
       setInterval(tick, 1000);
 
       injectCSS('ext-display-ui-css', [
-        // layout overlay: header (auto) / main (flex-1, card kiri) / footer (40px)
-        '#ext-display-ui{position:fixed;inset:0;z-index:999998;display:flex;flex-direction:column;background:#F8FAFC;font-family:"Segoe UI",system-ui,sans-serif;overflow:hidden;}',
-        // header flat putih, garis tipis, logo kiri + jam kanan
-        '.ext-head{display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:1px solid #E2E8F0;box-shadow:0 1px 3px rgba(15,23,42,.06);padding:14px 28px;z-index:1;}',
+        // layout overlay fullscreen
+        '#ext-display-ui{position:fixed;inset:0;z-index:999998;display:flex;flex-direction:column;background:linear-gradient(135deg,#10b981 0%,#34d399 50%,#059669 100%);font-family:"Inter","Segoe UI",system-ui,sans-serif;padding:16px;overflow:hidden;}',
+        // header: kartu putih rounded, branding kiri + jam kanan
+        '.ext-head{background:#fff;border-radius:16px;box-shadow:0 10px 15px -3px rgba(0,0,0,.1);padding:16px 24px;display:flex;flex-direction:row;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap;z-index:1;}',
         '.ext-brand{display:flex;align-items:center;gap:16px;min-width:0;}',
-        '.ext-logo{height:56px;width:56px;object-fit:contain;flex-shrink:0;}',
-        '.ext-titles h1{margin:0;font-size:clamp(18px,2vw,24px);font-weight:700;color:#0F172A;letter-spacing:.02em;}',
-        '.ext-titles p{margin:2px 0 0;font-size:clamp(11px,1.2vw,14px);color:#64748B;}',
-        '.ext-clock{display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right;}',
-        '.ext-date{font-size:clamp(11px,1.2vw,14px);font-weight:600;color:#64748B;}',
-        '.ext-time{font-size:clamp(20px,2.6vw,30px);font-weight:700;color:#0F172A;line-height:1;}',
-        // main: card kiri 40%, area kanan kosong (negative space)
-        '.ext-main{flex:1;display:flex;align-items:center;padding:40px 6vw;}',
-        '.ext-card{width:40%;min-width:280px;background:linear-gradient(135deg,#173B8F 0%,#145E9E 55%,#0E8F9A 100%);border:1px solid rgba(255,255,255,.12);border-radius:20px;box-shadow:0 12px 32px rgba(15,23,42,.14);padding:48px 32px;text-align:center;color:#fff;}',
-        '.ext-label{margin:0 0 20px;font-size:clamp(18px,2vw,26px);font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:rgba(255,255,255,.85);}',
-        '.ext-number{font-size:clamp(110px,16vw,150px);font-weight:700;line-height:.95;letter-spacing:-4px;color:#fff;word-break:break-all;}',
-        // footer marquee biru tua
-        '.ext-foot{height:40px;background:#0F2F6F;border-top:1px solid rgba(255,255,255,.08);overflow:hidden;z-index:1;}',
-        '.ext-marquee{display:flex;width:max-content;height:100%;align-items:center;padding-left:100%;white-space:nowrap;animation:extMarquee 25s linear infinite;}',
-        '.ext-marquee span{display:inline-block;padding:0 48px;font-size:clamp(12px,1.4vw,15px);font-weight:500;color:rgba(255,255,255,.85);}',
+        '.ext-logo{width:72px;height:72px;background:#e5e7eb;border-radius:9999px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:2px solid #6ee7b7;box-shadow:0 1px 2px rgba(0,0,0,.05);flex-shrink:0;}',
+        '.ext-logo span{font-size:11px;color:#6b7280;text-align:center;font-weight:600;line-height:1.2;}',
+        '.ext-logo-img{width:100%;height:100%;object-fit:cover;}',
+        '.ext-titles h1{margin:0;font-size:clamp(18px,2.4vw,30px);font-weight:800;color:#111827;line-height:1.15;}',
+        '.ext-titles p{margin:4px 0 0;font-size:clamp(14px,1.6vw,18px);color:#047857;font-weight:500;font-style:italic;}',
+        '.ext-clock{background:#f0fdf4;border-radius:9999px;padding:10px 20px;box-shadow:inset 0 2px 4px rgba(0,0,0,.06);border:1px solid #a7f3d0;text-align:center;}',
+        '.ext-clock #datetime{font-size:clamp(14px,1.6vw,20px);font-weight:600;color:#064e3b;letter-spacing:.02em;white-space:nowrap;}',
+        // main: wadah putih-soft rounded, card kiri 50%, kanan kosong
+        '.ext-main{flex:1;display:flex;align-items:stretch;background:#f0fdf4;border-radius:24px;box-shadow:0 25px 50px -12px rgba(0,0,0,.25);padding:24px 32px;border:4px solid rgba(255,255,255,.5);margin-bottom:24px;z-index:1;}',
+        '.ext-card{width:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#065f46 0%,#047857 50%,#064e3b 100%);border-radius:24px;padding:32px;box-shadow:0 25px 50px -12px rgba(0,0,0,.25);border:4px solid rgba(255,255,255,.2);position:relative;overflow:hidden;text-align:center;}',
+        '.ext-glow{position:absolute;background:rgba(255,255,255,.05);border-radius:9999px;filter:blur(64px);pointer-events:none;}',
+        '.ext-glow-tr{top:0;right:0;width:256px;height:256px;transform:translate(20%,-20%);}',
+        '.ext-glow-bl{bottom:0;left:0;width:192px;height:192px;transform:translate(-16%,16%);}',
+        '.ext-card h2{margin:0 0 16px;font-size:clamp(28px,4vw,44px);font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:.15em;text-align:center;text-shadow:0 4px 6px rgba(0,0,0,.2);z-index:1;}',
+        '.ext-number{font-size:clamp(120px,18vw,220px);font-weight:900;color:#fff;line-height:.9;text-align:center;text-shadow:0 10px 20px rgba(0,0,0,.4);letter-spacing:-.02em;word-break:break-all;z-index:1;}',
+        '.ext-void{width:50%;}',
+        // footer: pill gradient hijau + marquee
+        '.ext-foot{background:linear-gradient(90deg,#065f46 0%,#10b981 100%);border-radius:9999px;box-shadow:0 10px 15px -3px rgba(0,0,0,.1);border:2px solid rgba(110,231,183,.3);overflow:hidden;z-index:1;}',
+        '.ext-marquee{display:flex;width:max-content;height:100%;align-items:center;padding-left:100%;white-space:nowrap;animation:extMarquee 25s linear infinite;padding-top:12px;padding-bottom:12px;}',
+        '.ext-marquee span{display:inline-block;padding:0 48px;font-size:clamp(14px,1.6vw,18px);font-weight:500;color:#fff;white-space:nowrap;}',
         '@keyframes extMarquee{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}',
-        '@media(max-width:768px){.ext-main{padding:24px 4vw;}.ext-card{width:90%;padding:32px 20px;}.ext-number{font-size:clamp(80px,24vw,110px);}.ext-head{padding:10px 16px;}.ext-logo{height:40px;width:40px;}.ext-foot{height:32px;}.ext-marquee span{font-size:11px;}}',
+        // mobile: stack vertikal, card full lebar
+        '@media(max-width:768px){#ext-display-ui{padding:10px;}.ext-head{padding:12px 16px;flex-direction:column;align-items:center;text-align:center;}.ext-main{flex-direction:column;padding:16px;}.ext-card{width:100%;padding:24px;}.ext-number{font-size:clamp(90px,30vw,140px);}.ext-void{display:none;}.ext-clock{padding:8px 16px;}}',
       ]);
       // TTS saat nomor panggilan berubah (suara TV)
       let lastCallId = '';
