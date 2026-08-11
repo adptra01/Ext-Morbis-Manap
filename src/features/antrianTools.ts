@@ -194,12 +194,25 @@
     }
   }
 
+  let _audioCtx: AudioContext | null = null; // dibuka di gesture pertama (unlockTts)
+
   function unlockTts(): void {
-    // Chrome autoplay policy: speechSynthesis diblokir tanpa user gesture.
+    // Chrome autoplay policy: speechSynthesis + AudioContext diblokir tanpa user gesture.
     // Layar kiosk display tidak pernah diklik — unlock di gesture pertama (fullscreen btn/badge).
     const unlock = () => {
       try {
         speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+      } catch {
+        /* ignore */
+      }
+      // AudioContext hanya boleh dibuat/diresume DI DALAM gesture yang sama.
+      // chime() hanya berbunyi setelah ini (state 'running').
+      try {
+        const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+        if (Ctx && !_audioCtx) _audioCtx = new Ctx();
+        void _audioCtx?.resume().catch(() => {
+          /* tetap diam jika masih diblokir */
+        });
       } catch {
         /* ignore */
       }
@@ -237,14 +250,16 @@
   }
 
   /* ---- CHIME (bel 2 nada sebelum TTS) ---- */
-  let _audioCtx: AudioContext | null = null;
   function chime(): void {
     try {
       const Ctx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!Ctx) return;
-      _audioCtx = _audioCtx || new Ctx();
-      // unlock di dalam gesture yang sama (autoplay policy)
-      if (_audioCtx.state === 'suspended') void _audioCtx.resume();
+      if (!Ctx || !_audioCtx) return; // belum di-unlock (tanpa gesture) → diam, TTS tetap jalan
+      if (_audioCtx.state !== 'running') {
+        void _audioCtx.resume().catch(() => {
+          /* masih diblokir autoplay — lewati chime, jangan error ke konsol */
+        });
+        return;
+      }
       const now = _audioCtx.currentTime;
       [
         [880, 0],
