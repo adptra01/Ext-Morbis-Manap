@@ -482,8 +482,8 @@
         '.ext-logo{width:78px;height:78px;background:#e5e7eb;border-radius:9999px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:2px solid #6ee7b7;box-shadow:0 1px 2px rgba(0,0,0,.05);flex-shrink:0;}',
         '.ext-logo span{font-size:11px;color:#6b7280;text-align:center;font-weight:600;line-height:1.2;}',
         '.ext-logo-img{width:100%;height:100%;object-fit:cover;}',
-        // mockup header h1: padding-top 18px, rata kiri, warna #1e2421 (tidak ada padding-left:100px)
-        '.ext-titles h1{margin:0;padding-top:18px;text-align:left;width:auto;font-size:clamp(24px,2.4vw,32px);font-weight:800;color:#1e2421;line-height:1.15;}',
+        // mockup header h1: padding-top 18px, rata kiri, warna #1e2421; padding-left:0 menimpa `header h1` punya server (100px)
+        '.ext-titles h1{margin:0;padding-top:18px;text-align:left;width:auto;padding-left:0;font-size:clamp(24px,2.4vw,32px);font-weight:800;color:#1e2421;line-height:1.15;}',
         '.ext-titles p{margin:5px 0 0;font-size:clamp(14px,1.3vw,16px);color:#059669;font-weight:500;font-style:italic;text-align:left;width:auto;}',
         '.ext-clock{background:#f0fdf7;border-radius:9999px;padding:10px 22px;box-shadow:0 1px 2px rgba(0,0,0,.05);border:1px solid #a7e8d2;text-align:center;}',
         '.ext-clock #datetime{font-size:clamp(14px,1.4vw,18px);font-weight:600;color:#145c48;letter-spacing:.02em;white-space:nowrap;}',
