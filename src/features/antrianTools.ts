@@ -465,11 +465,13 @@ ui.innerHTML =
         '  </div>' +
         '</main>' +
         '<footer class="ext-m-foot">' +
-        '  <div class="ext-m-copy">© 2024 RSUD H. Abdul Manap Kota Jambi — Melayani dengan Hati · ' +
+        '  <div class="ext-m-copy">© ' + new Date().getFullYear() + ' RSUD H. Abdul Manap Kota Jambi — Melayani dengan Hati · ' +
         '    <a href="https://simanap.rsudkotajambi.id/">https://simanap.rsudkotajambi.id/</a></div>' +
         '  <div class="ext-m-links"><a href="#">Panduan Pengguna</a><a href="#">Syarat &amp; Ketentuan</a><a href="#">Hubungi Kami</a></div>' +
         '</footer>';
       document.body.appendChild(ui);
+      // tutup overlay loading dari antrianLoader (document_start) — UI baru sudah tampil
+      document.getElementById('ext-mesin-loader')?.remove();
       // badge + tombol fullscreen: klik = toggle fullscreen (pengganti yang dulu floating)
       ui.querySelectorAll('.ext-m-badge, .ext-m-fs').forEach((el) =>
         el.addEventListener('click', enterFullscreen),

@@ -149,6 +149,12 @@
       "all_frames": false
     },
     {
+      "matches": ["http://*/public/mesin-antrian*"],
+      "js": ["features/antrianLoader.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    },
+    {
       "matches": [
         "http://*/public/mesin-antrian*",
         "http://*/public/counter-antrian/view-antrian*",
