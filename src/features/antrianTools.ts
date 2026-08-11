@@ -341,11 +341,187 @@
     const path = window.location.pathname;
     // redesign display HANYA di view-antrian v1 (bukan view-antrian-v2)
     const isViewAntrian = path.endsWith('/counter-antrian/view-antrian');
-    /* ---- MESIN (auto-print saat card antrian diklik) ---- */
+    /* ---- MESIN (redesign UI + auto-print saat card antrian diklik) ---- */
+    // Redesign: overlay baru (design 2026: Inter + Material Symbols, hijau & putih)
+    // di atas halaman server. Card baru membawa hidden input + onclick yang SAMA
+    // (nomor-i/poli-i/...) sehingga logika server tetap jalan tanpa sentuhan:
+    // - server antrian(N) membaca #poli-N dkk via jQuery → AJAX simpan → ws → cetak → reload
+    // - attachPrintClick() menangkap klik → cetak struk (pakai #nomortampil-#nomor)
     const initMesin = () => {
-      showActiveBadge();
-      addFullscreenButton();
+      // badge + tombol fullscreen sekarang dirender di header redesign (renderMesinUI)
+      intervalPoll(renderMesinUI);
       intervalPoll(attachPrintClick);
+    };
+    // ponytail: map ikon kecil, polinama baru di luar daftar = person_add (default daftar)
+    const MESIN_ICON_RULES: Array<[RegExp, string]> = [
+      [/(klinik|umum|pendaftaran|poli)/i, 'person_add'],
+      [/(igd|ugd|gawat|darurat|emergency)/i, 'emergency'],
+      [/(anak|bayi|neonatus)/i, 'child_care'],
+      [/(gigi)/i, 'dentistry'],
+      [/(mata)/i, 'visibility'],
+      [/(kandungan|obgyn|kebidanan|bidan)/i, 'pregnant_woman'],
+      [/(jantung)/i, 'favorite'],
+      [/(saraf|neurologi)/i, 'psychology'],
+      [/(paru|respirasi)/i, 'air'],
+      [/(bedah|operasi)/i, 'bloodtype'],
+      [/(rehabilitasi|fisio)/i, 'accessibility_new'],
+      [/(lab|laboratorium)/i, 'biotech'],
+    ];
+    const mesinIcon = (polinama: string): string => {
+      const rule = MESIN_ICON_RULES.find(([re]) => re.test(polinama));
+      return rule ? rule[1] : 'person_add';
+    };
+    const renderMesinUI = () => {
+      if (document.getElementById('ext-mesin-ui')) return; // sudah dirender
+      const cards = Array.from(document.querySelectorAll('[onclick^="antrian("]'));
+      if (!cards.length) return; // card server belum ada — dipanggil ulang oleh intervalPoll
+      const esc = (s: unknown) =>
+        String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      const polis = cards.map((card) => {
+        const val = (prefix: string) =>
+          card.querySelector(`[id^="${prefix}-"]`)?.getAttribute('value') || '';
+        const m = String((card as HTMLElement).getAttribute('onclick') || '').match(/antrian\((\d+)\)/);
+        return {
+          idx: m ? m[1] : '',
+          nomor: val('nomor'),
+          poli: val('poli'),
+          polinama: val('polinama'),
+          max: val('max'),
+          penjamin: val('penjamin'),
+          kode: val('kode'),
+          nomorTampil: onlyDigits(
+            card.querySelector('[id^="nomortampil-"]')?.textContent || val('nomor'),
+          ),
+        };
+      });
+      // font: Inter + Material Symbols (sekali saja)
+      if (!document.getElementById('ext-mesin-fonts')) {
+        const frag = document.createDocumentFragment();
+        ['https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap',
+         'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap',
+        ].forEach((href) => {
+          const l = document.createElement('link');
+          l.id = 'ext-mesin-fonts';
+          l.rel = 'stylesheet';
+          l.href = href;
+          frag.appendChild(l);
+        });
+        document.head.appendChild(frag);
+      }
+      const ui = document.createElement('div');
+      ui.id = 'ext-mesin-ui';
+ui.innerHTML =
+        '<header class="ext-m-head">' +
+        '  <div class="ext-m-brand">' +
+        '    <img class="ext-m-logo" src="/assets/images/logo/Kota Jambi.png" alt="Logo RSUD H. Abdul Manap" ' +
+        '      onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">' +
+        '    <span class="ms ext-m-logo-fallback" aria-hidden="true" style="display:none;">medical_services</span>' +
+        '    <div class="ext-m-titles">' +
+        '      <span class="ext-m-title">RSUD H. Abdul Manap Kota Jambi</span>' +
+        '      <span class="ext-m-sub">Melayani Dengan Setulus Hati</span>' +
+        '    </div>' +
+        '  </div>' +
+        '  <div class="ext-m-actions">' +
+        '    <button class="ext-m-badge" type="button" title="Fullscreen / Fit Screen Device">ANTRIAN TOOLS AKTIF</button>' +
+        '    <button class="ext-m-fs" type="button" title="Fullscreen / Fit Screen Device">' +
+        '      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
+        '        <path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>' +
+        '      </svg>' +
+        '    </button>' +
+        '  </div>' +
+        '</header>' +
+        '<main class="ext-m-main">' +
+        '  <div class="ext-m-decor" aria-hidden="true"></div>' +
+        '  <div class="ext-m-content">' +
+        '    <div class="ext-m-heading">' +
+        '      <h1>Silakan Ambil Nomor Antrian Anda</h1>' +
+        '      <p>Pilih kategori layanan yang Anda butuhkan untuk melanjutkan</p>' +
+        '    </div>' +
+        '    <div class="ext-m-grid">' +
+        polis
+          .map(
+            (p) =>
+              `<button class="ext-m-card" type="button" onclick="antrian(${p.idx})">` +
+              `<input type="hidden" id="nomor-${p.idx}" value="${esc(p.nomor)}">` +
+              `<input type="hidden" id="poli-${p.idx}" value="${esc(p.poli)}">` +
+              `<input type="hidden" id="polinama-${p.idx}" value="${esc(p.polinama)}">` +
+              `<input type="hidden" id="max-${p.idx}" value="${esc(p.max)}">` +
+              `<input type="hidden" id="penjamin-${p.idx}" value="${esc(p.penjamin)}">` +
+              `<input type="hidden" id="kode-${p.idx}" value="${esc(p.kode)}">` +
+              `<span class="ext-m-ico"><span class="ms" aria-hidden="true">${mesinIcon(p.polinama)}</span></span>` +
+              `<span class="ext-m-label">${esc(p.polinama).toUpperCase() || 'ANTRIAN'}</span>` +
+              (p.nomorTampil ? `<span class="ext-m-num">Nomor berikutnya: ${esc(p.nomorTampil)}</span>` : '') +
+              '</button>',
+          )
+          .join('') +
+        '    </div>' +
+        '    <div class="ext-m-hint">' +
+        '      <span class="ms" aria-hidden="true">touch_app</span>' +
+        '      Sentuh layar untuk memilih kategori layanan' +
+        '    </div>' +
+        '  </div>' +
+        '</main>' +
+        '<footer class="ext-m-foot">' +
+        '  <div class="ext-m-copy">© 2024 RSUD H. Abdul Manap Kota Jambi — Melayani dengan Hati · ' +
+        '    <a href="https://simanap.rsudkotajambi.id/">https://simanap.rsudkotajambi.id/</a></div>' +
+        '  <div class="ext-m-links"><a href="#">Panduan Pengguna</a><a href="#">Syarat &amp; Ketentuan</a><a href="#">Hubungi Kami</a></div>' +
+        '</footer>';
+      document.body.appendChild(ui);
+      // badge + tombol fullscreen: klik = toggle fullscreen (pengganti yang dulu floating)
+      ui.querySelectorAll('.ext-m-badge, .ext-m-fs').forEach((el) =>
+        el.addEventListener('click', enterFullscreen),
+      );
+      injectCSS('ext-mesin-ui-css', [
+        '#ext-mesin-ui{position:fixed;inset:0;z-index:999998;display:flex;flex-direction:column;background:#E9F5EE;color:#212529;font-family:"Inter","Segoe UI",system-ui,sans-serif;overflow-y:auto;}',
+        '#ext-mesin-ui .ms{font-family:"Material Symbols Outlined",sans-serif;font-variation-settings:\'FILL\' 1,\'wght\' 400,\'GRAD\' 0,\'opsz\' 24;font-size:inherit;line-height:1;}',
+        // TopAppBar
+        '.ext-m-head{background:#fff;color:#198754;box-shadow:0 1px 3px rgba(0,0,0,.08);display:flex;justify-content:space-between;align-items:center;padding:0 24px;min-height:80px;flex-shrink:0;}',
+        '.ext-m-brand{display:flex;align-items:center;gap:16px;cursor:pointer;transition:transform .1s;}',
+        '.ext-m-brand:active{transform:scale(.95);}',
+        '.ext-m-logo{width:57px;height:57px;object-fit:contain;flex-shrink:0;}',
+        '.ext-m-logo-fallback{font-size:44px;color:#198754;align-items:center;justify-content:center;width:57px;height:57px;flex-shrink:0;}',
+        '.ext-m-titles{display:flex;flex-direction:column;}',
+        '.ext-m-title{font-size:20px;font-weight:700;color:#198754;line-height:1.25;}',
+        '.ext-m-sub{font-size:12px;font-weight:600;color:rgba(25,135,84,.72);letter-spacing:.08em;text-transform:uppercase;}',
+        '.ext-m-actions{display:flex;align-items:center;gap:12px;flex-shrink:0;}',
+        // badge "ANTRIAN TOOLS AKTIF" + tombol fullscreen (kanan atas, ganti Emergency & 2 ikon)
+        '.ext-m-badge{background:rgba(0,80,0,.45);color:rgba(255,255,255,.85);padding:6px 14px;border-radius:999px;font:600 10px/1.4 monospace;backdrop-filter:blur(3px);cursor:pointer;border:none;letter-spacing:.04em;transition:background .15s;}',
+        '.ext-m-badge:hover{background:rgba(0,80,0,.65);}',
+        '.ext-m-fs{width:42px;height:42px;border:none;border-radius:12px;background:rgba(0,0,0,.55);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:background .15s;}',
+        '.ext-m-fs:hover{background:rgba(0,0,0,.75);}',
+        // Main
+        '.ext-m-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;position:relative;overflow:hidden;}',
+        '.ext-m-decor{position:absolute;inset:0;pointer-events:none;opacity:.2;background:radial-gradient(circle at 50% 50%,#d1e7dd 0%,transparent 60%);}',
+        '.ext-m-content{position:relative;z-index:1;width:100%;max-width:1152px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:48px;}',
+        '.ext-m-heading h1{font-size:36px;font-weight:700;color:#198754;letter-spacing:-.025em;margin:0 0 12px;}',
+        '.ext-m-heading p{font-size:18px;color:#495057;margin:0;}',
+        '.ext-m-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:32px;width:100%;}',
+        // Kiosk button card
+        '.ext-m-card{flex:1 1 300px;max-width:448px;background:#fff;border:1px solid #e9ecef;border-radius:24px;padding:32px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.04);transition:all .3s;font-family:inherit;}',
+        '.ext-m-card:hover{background:#d1e7dd66;border-color:#198754;box-shadow:0 10px 24px rgba(0,0,0,.09);transform:translateY(-4px);}',
+        '.ext-m-ico{background:#E9F5EE;color:#198754;width:160px;height:160px;border-radius:999px;display:flex;align-items:center;justify-content:center;transition:transform .3s;}',
+        '.ext-m-card:hover .ext-m-ico{transform:scale(1.1);}',
+        '.ext-m-ico .ms{font-size:80px;}',
+        '.ext-m-label{font-size:24px;font-weight:700;color:#212529;text-align:center;width:100%;}',
+        '.ext-m-card:hover .ext-m-label{color:#198754;}',
+        '.ext-m-num{font-size:14px;color:#495057;font-weight:600;}',
+        // Instruction pill (pulse)
+        '.ext-m-hint{margin-top:8px;display:flex;align-items:center;gap:8px;background:#fff;padding:12px 24px;border-radius:999px;box-shadow:0 1px 2px rgba(0,0,0,.04);border:1px solid #e9ecef;color:#495057;font-size:18px;animation:ext-m-pulse 2s ease-in-out infinite;}',
+        '.ext-m-hint .ms{color:#198754;font-size:24px;}',
+        '@keyframes ext-m-pulse{0%,100%{opacity:1;}50%{opacity:.55;}}',
+        // Footer
+        '.ext-m-foot{background:#fff;border-top:1px solid #e9ecef;color:#495057;display:flex;flex-direction:column;gap:10px;justify-content:space-between;align-items:center;padding:20px 24px;flex-shrink:0;}',
+        '.ext-m-foot a{color:#198754;text-decoration:none;font-weight:500;}',
+        '.ext-m-foot a:hover{text-decoration:underline;}',
+        '.ext-m-copy{font-size:14px;text-align:center;}',
+        '.ext-m-links{display:flex;gap:24px;font-size:14px;}',
+        // sembunyikan konten lama server (style.display server tidak menang atas !important)
+        '#isi{display:none!important;}',
+        // responsive
+        '@media(min-width:768px){.ext-m-head{padding:0 48px;}.ext-m-title{font-size:24px;}.ext-m-main{padding:48px 48px;}.ext-m-heading h1{font-size:48px;}.ext-m-heading p{font-size:20px;}.ext-m-card{padding:32px;}.ext-m-foot{flex-direction:row;padding:24px 48px;}}',
+        '@media(max-width:767px){.ext-m-head{padding:0 16px;min-height:72px;gap:8px;}.ext-m-title{font-size:18px;}.ext-m-sub{font-size:10px;}.ext-m-logo{width:46px;height:46px;}.ext-m-brand{gap:10px;}.ext-m-badge{display:none;}.ext-m-fs{width:38px;height:38px;border-radius:10px;}.ext-m-ico{width:120px;height:120px;}.ext-m-ico .ms{font-size:60px;}.ext-m-main{padding:36px 16px;}.ext-m-content{gap:36px;}.ext-m-hint{font-size:15px;padding:10px 16px;}}',
+      ]);
+      extLog('mesin_ui', true, { polis: polis.length });
     };
     const attachPrintClick = () => {
       // ponytail: anti print ganda — klik ganda sebelum reload 1s (server reload setelah simpan)
