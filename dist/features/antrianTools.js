@@ -398,7 +398,7 @@ var __morbis_feature = (() => {
           ".ext-marquee span{display:inline-block;padding:0 48px;font-size:clamp(14px,1.5vw,17px);font-weight:500;color:#fff;white-space:nowrap;}",
           "@keyframes extMarquee{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}",
           // mobile: stack vertikal, card full lebar
-          "@media(max-width:768px){#ext-display-ui{padding:10px;}.ext-head{padding:14px 18px;flex-direction:column;align-items:center;text-align:center;min-height:0;}.ext-main{flex-direction:column;padding:20px;}.ext-card{width:100%;padding:24px;}.ext-number{font-size:clamp(90px,30vw,140px);}.ext-void{display:none;}.ext-clock{padding:8px 16px;}}"
+          "@media(max-width:768px){#ext-display-ui{padding:10px;}.ext-head{padding:14px 18px;flex-direction:column;align-items:center;text-align:center;min-height:0;}.ext-main{flex-direction:column;padding:20px;}.ext-card{/* width:100%; */padding:24px;}.ext-number{font-size:clamp(90px,30vw,140px);}.ext-void{display:none;}.ext-clock{padding:8px 16px;}}"
         ]);
         let lastCallId = "";
         let failCount = 0;
