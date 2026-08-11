@@ -69,6 +69,7 @@ async function compileFeatureFiles() {
     'resumeValidator.ts',
     'antrianTools.ts',
     'antrianLoader.ts',
+    'antrianFarmasi.ts',
     'ttvEditor.ts',
     'cancelButton.ts',
     'resumeTab/mount.tsx',

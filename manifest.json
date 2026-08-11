@@ -167,6 +167,19 @@
       "all_frames": false
     },
     {
+      "matches": ["http://*/public/antrian-farmasi-v2/view-call-websocet-v2*"],
+      "js": ["core.js", "init.js"],
+      "run_at": "document_end",
+      "all_frames": false
+    },
+    {
+      "matches": ["http://*/public/antrian-farmasi-v2/view-call-websocet-v2*"],
+      "js": ["features/antrianFarmasi.js"],
+      "run_at": "document_idle",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
       "matches": [
         "http://*/admisi/informasi/data-kunjungan*",
         "http://*/admisi/informasi/laporan-kasir*",
