@@ -433,7 +433,7 @@
         '    <div class="ext-glow ext-glow-tr"></div>' +
         '    <div class="ext-glow ext-glow-bl"></div>' +
         '    <h2>Antrian Saat Ini</h2>' +
-        '    <div class="ext-number">--</div>' +
+        '    <div class="ext-number" aria-live="polite">--</div>' +
         '  </section>' +
         '  <section class="ext-void" aria-hidden="true"></section>' +
         '</main>' +
@@ -494,8 +494,10 @@
         '.ext-glow{position:absolute;background:rgba(255,255,255,.05);border-radius:9999px;filter:blur(64px);pointer-events:none;}',
         '.ext-glow-tr{top:0;right:0;width:256px;height:256px;transform:translate(20%,-20%);}',
         '.ext-glow-bl{bottom:0;left:0;width:192px;height:192px;transform:translate(-16%,16%);}',
-        '.ext-card h2{margin:0;font-size:clamp(24px,2.2vw,32px);font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.15em;text-align:center;text-shadow:0 4px 6px rgba(0,0,0,.2);z-index:1;}',
-        '.ext-number{font-size:clamp(120px,10vw,180px);font-weight:800;color:#fff;line-height:.9;text-align:center;text-shadow:0 10px 20px rgba(0,0,0,.4);letter-spacing:-.02em;word-break:break-all;z-index:1;}',
+        '.ext-card h2{margin:0;font-size:clamp(24px,2.2vw,32px);font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.2em;text-align:center;text-shadow:0 4px 6px rgba(0,0,0,.2);z-index:1;}',
+        '.ext-number{font-size:clamp(140px,9vw,180px);font-weight:800;color:#fff;line-height:.9;text-align:center;text-shadow:0 4px 10px rgba(0,0,0,.35);letter-spacing:-.02em;word-break:break-all;z-index:1;}',
+        '.ext-number.calling{animation:extCalling .5s ease-out;}',
+        '@keyframes extCalling{0%{transform:scale(.92);opacity:.7;}60%{transform:scale(1.04);opacity:1;}100%{transform:scale(1);}}',
         '.ext-void{flex:1;}',
         // footer: satu bar unified, lebih tinggi (52px) supaya pengumuman mudah dibaca
         '.ext-foot{height:52px;background:linear-gradient(90deg,#065f46 0%,#10b981 100%);border-radius:9999px;box-shadow:0 10px 15px -3px rgba(0,0,0,.1);border:1px solid rgba(110,231,183,.3);overflow:hidden;z-index:1;display:flex;align-items:center;}',
@@ -557,7 +559,14 @@
             failCount = 0;
             hideOfflineBadge();
             const nomor = onlyDigits(r.NOMOR || '0');
-            numberEl.textContent = nomor || '--';
+            const newVal = nomor || '--';
+            if (newVal !== numberEl.textContent) {
+              numberEl.textContent = newVal;
+              // calling animation: restart via reflow
+              numberEl.classList.remove('calling');
+              void numberEl.offsetWidth;
+              numberEl.classList.add('calling');
+            }
             // TTS pakai NOMOR LOKET pemanggil (r.LOKET), bukan nama klinik (r.NAMA)
             const loket =
               String(r.LOKET || '')
