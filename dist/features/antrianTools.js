@@ -333,16 +333,16 @@ var __morbis_feature = (() => {
         addFullscreenButton();
         unlockTts();
         injectCSS("ext-antrian-display-css", [
-          // stage: 40% card kiri, 60% area kanan kosong
-          "#isi-val .card,.carousel-item .card{position:relative;width:40%;min-width:0;margin:0 auto 0 0;float:none;border:none;border-radius:5px;overflow:hidden;background:#17da80;box-shadow:0 4px 8px 0 rgba(0,0,0,0.2);}",
-          "#isi-val .head,.carousel-item .head{text-align:center;padding:40px 24px;color:#fff;}",
-          "#isi-val .judul,.carousel-item .judul{margin:0 0 10px;font-size:2em;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#fff;}",
-          "#isi-val .isi,.carousel-item .isi{font-size:120px;font-weight:900;color:#fff;line-height:1;text-shadow:0 6px 24px rgba(0,0,0,.4);}#isi-val .isi,.carousel-item .isi{-webkit-text-stroke:2px #0e5a63;}",
-          "#isi-val .nama-antrian,.carousel-item .nama-antrian{margin:16px 0 0;font-size:2em;font-weight:700;color:#fff;text-transform:uppercase;text-shadow:0 2px 8px rgba(0,0,0,.4);}",
-          // chip "Berikutnya → N" dari input hidden asli (#id-N punya value nomor berikutnya)
-          "#id-1,#id-2,#id-3,#id-4,#id-5{display:block!important;visibility:hidden;position:fixed;bottom:18px;left:18px;z-index:50;margin:0;border:0;padding:0;}",
-          '#id-1::after,#id-2::after,#id-3::after,#id-4::after,#id-5::after{visibility:visible;content:"Berikutnya \\2192  " attr(value);display:inline-block;padding:8px 18px;font-family:"Cascadia Mono",Consolas,monospace;font-size:clamp(14px,1.6vw,22px);font-weight:600;color:#f5b82e;background:rgba(7,27,51,.72);border:1px solid rgba(245,184,46,.4);border-radius:999px;white-space:nowrap;}',
-          "@media(max-width:768px){#isi-val .isi,.carousel-item .isi{font-size:clamp(64px,20vw,120px);}#isi-val .nama-antrian,.carousel-item .nama-antrian{font-size:clamp(14px,4vw,22px);padding:8px 16px;}}"
+          // stage: card kiri 40%, 60% kanan negative space
+          "#isi-val .card,.carousel-item .card{position:relative;width:40%;min-width:0;margin:0 auto 0 0;float:none;border:1px solid rgba(255,255,255,.15);border-radius:14px;overflow:hidden;background:linear-gradient(135deg,#1C398E 0%,#0F80A4 50%,#0CA7A9 100%);box-shadow:0 8px 20px rgba(0,0,0,.18);}",
+          "#isi-val .head,.carousel-item .head{text-align:center;padding:32px 24px;color:#fff;}",
+          "#isi-val .judul,.carousel-item .judul{margin:0 0 12px;font-size:clamp(24px,2.5vw,32px);font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#fff;}",
+          "#isi-val .isi,.carousel-item .isi{font-size:clamp(90px,14vw,110px);font-weight:800;color:#fff;line-height:1;text-shadow:0 4px 8px rgba(0,0,0,.2);}",
+          // HANYA label + nomor — nama layanan / "Loket Klinik" disembunyikan
+          "#isi-val .nama-antrian,.carousel-item .nama-antrian{display:none!important;}",
+          // panel "Antrian Selanjutnya" dihapus — chip berikutnya (input hidden #id-N) ikut hilang
+          "#id-1,#id-2,#id-3,#id-4,#id-5,#id-1::after,#id-2::after,#id-3::after,#id-4::after,#id-5::after{display:none!important;content:none!important;}",
+          "@media(max-width:768px){#isi-val .isi,.carousel-item .isi{font-size:clamp(64px,20vw,90px);}#isi-val .judul,.carousel-item .judul{font-size:clamp(16px,4vw,22px);}}"
         ]);
         if (!document.getElementById("ext-display-footer")) {
           const footer = document.createElement("footer");
