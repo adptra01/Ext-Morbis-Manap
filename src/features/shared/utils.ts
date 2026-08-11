@@ -170,4 +170,32 @@ window.SharedBatchUtils = {
   showErrorToast,
 };
 
+const SATUAN = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas'];
+
+/**
+ * numberToWords – konversi angka (0–999) ke kata Bahasa Indonesia.
+ * Deterministik: tidak bergantung voice id-ID browser yang mungkin hilang.
+ * Contoh: 13 → "tiga belas", 104 → "seratus empat", 0 → "nol".
+ */
+export function numberToWords(n: number | string): string {
+  const num = Math.abs(Math.trunc(Number(n)));
+  if (!Number.isFinite(num)) return String(n);
+
+  const twoDigits = (x: number): string => {
+    if (x < 12) return SATUAN[x];
+    if (x < 20) return SATUAN[x - 10] + ' belas';
+    if (x < 100) return (x < 20 ? '' : twoDigits(Math.trunc(x / 10)) + ' puluh ' + SATUAN[x % 10]).trim();
+    return '';
+  };
+
+  if (num === 0) return 'nol';
+  if (num < 100) return twoDigits(num);
+  if (num < 1000) {
+    const r = num % 100;
+    return (num < 200 ? 'seratus' : twoDigits(Math.trunc(num / 100)) + ' ratus') + (r ? ' ' + twoDigits(r) : '');
+  }
+  // > 999: tidak perlu kata per-angka berlebihan untuk panggilan farmasi.
+  return String(num);
+}
+
 console.log('[SharedUtils] Loaded');

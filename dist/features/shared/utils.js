@@ -23,6 +23,7 @@ var __morbis_feature = (() => {
   __export(utils_exports, {
     fetchFileFromUrl: () => fetchFileFromUrl,
     injectSharedCSS: () => injectSharedCSS,
+    numberToWords: () => numberToWords,
     safeFetch: () => safeFetch,
     showErrorToast: () => showErrorToast,
     toggleProcessingState: () => toggleProcessingState
@@ -149,6 +150,24 @@ var __morbis_feature = (() => {
     toggleProcessingState,
     showErrorToast
   };
+  var SATUAN = ["", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "delapan", "sembilan", "sepuluh", "sebelas"];
+  function numberToWords(n) {
+    const num = Math.abs(Math.trunc(Number(n)));
+    if (!Number.isFinite(num)) return String(n);
+    const twoDigits = (x) => {
+      if (x < 12) return SATUAN[x];
+      if (x < 20) return SATUAN[x - 10] + " belas";
+      if (x < 100) return (x < 20 ? "" : twoDigits(Math.trunc(x / 10)) + " puluh " + SATUAN[x % 10]).trim();
+      return "";
+    };
+    if (num === 0) return "nol";
+    if (num < 100) return twoDigits(num);
+    if (num < 1e3) {
+      const r = num % 100;
+      return (num < 200 ? "seratus" : twoDigits(Math.trunc(num / 100)) + " ratus") + (r ? " " + twoDigits(r) : "");
+    }
+    return String(num);
+  }
   console.log("[SharedUtils] Loaded");
   return __toCommonJS(utils_exports);
 })();

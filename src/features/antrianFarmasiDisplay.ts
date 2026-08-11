@@ -3,25 +3,27 @@
  * Halaman /public/antrian-farmasi-v2/view-call-websocet-v2 hanya ter-update
  * lewat WebSocket ws://host:8088. Saat WS mati (sering), papan & TTS beku.
  *
- * Strategi (tidak menyentuh UI MORBIS, tidak memanggil window.call()):
- *  1. document_start MAIN: ganti window.WebSocket dengan stub yang TIDAK
- *     menyambung ke mana-mana (menghentikan error "connection failed").
- *     Halaman menempelkan ws.onmessage ke instance stub kita — karena itu
- *     "mekanisme asli" halaman tetap bisa kita picu walau call/listtable
- *     tidak tersedia sebagai global dari konteks extension.
- *  2. Polling POST check_antrian tiap 3 detik (endpoint yang sama dipakai
- *     halaman di dalam handler WS).
- *  3. ID panggilan berubah → picu ws.onmessage dengan sinyal
- *     {channel:'dev_antrianPemanggilanFarmasi'} → kode asli MORBIS menarik
- *     data sendiri (check_antrian) lalu render nomor + list + bell + TTS.
+ * Fase:
+ *  A) Transport — ganti window.WebSocket dengan stub (document_start MAIN):
+ *     polling POST check_antrian tiap 3 detik; ID berubah → picu ws.onmessage
+ *     {channel:'dev_antrianPemanggilanFarmasi'} → kode asli MORBIS menarik data
+ *     sendiri lalu render nomor + daftar + bell (+ native speak). call/listtable
+ *     sengaja TIDAK dipanggil langsung dari extension (tidak global).
+ *  B) Farmasi Voice — native speechSynthesis.speak() dibungkam (teks MANAP
+ *     garbled "BT 13DEPO RAJAL", tanpa nama pasien). Extension menjadi satu-satunya
+ *     sumber voice dengan format betul + nama pasien + depo, diulang 2× via queue
+ *     (menunggu onend, tidak pernah cancel() panggilan yang sedang berjalan).
  *
- * Lifecycle polling: error (5xx/4xx/timeout/network) hanya di-log, polling
- * tidak pernah berhenti. Dedupe by ID saja — panggil ulang (repeat call, ID
- * sama) sengaja tidak dideteksi agar tidak ada TTS ganda/loop.
+ * Role: hanya aktif bila admin/apotek (gate data-ext-antrian-farmasi di init.ts).
  */
+import { numberToWords } from './shared/utils.js';
+
 (function () {
   const CHANNEL = 'dev_antrianPemanggilanFarmasi';
   const POLL_MS = 3000;
+  const CALL_DELAY_MS = 1600; // jeda bell native (durasi audio unine) sebelum voice #1
+  const GAP_MS = 400; // jeda antar repetisi
+
   const CHECK_URL = '/public/antrian-farmasi-v2/data-call-v2?do=check_antrian';
 
   const RealWS = window.WebSocket;
@@ -29,6 +31,9 @@
   let firstPoll = true;
   const fakes: FakeWS[] = [];
 
+  /* ============================================================
+   * A) WebSocket stub + polling transport
+   * ============================================================ */
   class FakeWS {
     static CONNECTING = 0;
     static OPEN = 1;
@@ -45,7 +50,6 @@
     constructor(url: string) {
       this.url = url;
       fakes.push(this);
-      // tandai "koneksi terbuka" sesaat setelah halaman memasang handler
       setTimeout(() => {
         if (typeof this.onopen === 'function') this.onopen(new Event('open'));
       }, 0);
@@ -69,6 +73,82 @@
   Object.assign(OverrideWS, { CONNECTING: 0, OPEN: 1, CLOSING: 2, CLOSED: 3 });
   window.WebSocket = OverrideWS;
 
+  /* ============================================================
+   * B1) Bungkam native TTS MORBIS (ganti speak → no-op di document_start).
+   * smooth cancel() supaya sintesis pending (kalau ada) tidak terganggu.
+   * ============================================================ */
+  const synth = window.speechSynthesis;
+  const RealSpeak = synth.speak.bind(synth);
+
+  /* ============================================================
+   * WS STUB — selalu aktif sejak document_start (sebelum inline
+   * script halaman new WebSocket(':8088')) agar tidak ada error
+   * "connection failed". Aktif baik fitur aktif maupun tidak.
+   * ============================================================ */
+
+  /* ============================================================
+   * B2) Extension voice + antrian (queue) — i18n angka id-ID.
+   * ============================================================ */
+  function toIdVoice(): SpeechSynthesisVoice | null {
+    try {
+      const vl = synth.getVoices();
+      return vl.find((v) => v.lang && v.lang.toLowerCase().startsWith('id')) ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  // Antrian: jalankan berurutan, tunggu onend, tidak pernah cancel() item berjalan.
+  let busy = false;
+  let queue: string[] = [];
+  function nextSpeak(): void {
+    if (busy || queue.length === 0) return;
+    busy = true;
+    const text = queue.shift() as string;
+    let done = false;
+    const finish = (): void => {
+      if (done) return;
+      done = true;
+      busy = false;
+      setTimeout(() => nextSpeak(), GAP_MS);
+    };
+    try {
+      const u = new SpeechSynthesisUtterance(text);
+      const v = toIdVoice();
+      if (v) u.voice = v;
+      u.lang = 'id-ID';
+      u.rate = 0.8;
+      u.pitch = 0.9;
+      u.volume = 1;
+      u.onend = finish;
+      u.onerror = finish;
+      RealSpeak.call(synth, u);
+      // voice missing / impl malas melempar onend → jangan gantung queue selamanya.
+      setTimeout(finish, 20000);
+    } catch {
+      finish();
+    }
+  }
+
+  function enqueue(text: string): void {
+    queue.push(text);
+    nextSpeak();
+  }
+
+  // Voice panggilan farmasi: "Nomor antrian tiga belas, atas nama Amat Safuan,
+  // silakan menuju Depo Rajal." diulang 2×.
+  function announceCall(nomor: number | string, namaPasien: string, depo: string): void {
+    const n = numberToWords(nomor);
+    const pasien = (namaPasien || '').trim();
+    const d = (depo || '').trim();
+    const sentence = `Nomor antrian ${n}, atas nama ${pasien}, silakan menuju ${d}.`;
+    enqueue(sentence);
+    enqueue(sentence);
+  }
+
+  /* ============================================================
+   * C) Pipeline: trigger native → delayed voice (setelah bell).
+   * ============================================================ */
   function fireOnMessage(): void {
     const payload = JSON.stringify({ channel: CHANNEL, message: 'poll' });
     for (const f of fakes) {
@@ -81,6 +161,18 @@
       }
     }
   }
+
+  function handleNewCall(data: { COUNTER?: string | number; NAMA_PASIEN?: string; NAMA_DEPO?: string }): void {
+    fireOnMessage(); // update UI + bell (bell async di halaman)
+    setTimeout(() => {
+      announceCall(data.COUNTER ?? '', data.NAMA_PASIEN ?? '', data.NAMA_DEPO ?? '');
+    }, CALL_DELAY_MS);
+  }
+
+  /* ============================================================
+   * D) Polling persistent (error → warn, lanjut; tak pernah berhenti).
+   * ============================================================ */
+  type Row = { ID?: string | number | null; COUNTER?: string | number; NAMA_PASIEN?: string; NAMA_DEPO?: string };
 
   async function pollCall(): Promise<void> {
     try {
@@ -95,8 +187,7 @@
         return;
       }
 
-      const data = (await response.json()) as { ID?: string | number | null } | null;
-
+      const data = (await response.json()) as Row | null;
       if (!data || data.ID === undefined || data.ID === null) {
         console.warn('[FarmasiDisplay] Response tidak memiliki ID', data);
         return;
@@ -114,20 +205,22 @@
       }
 
       lastCallId = currentId;
-      fireOnMessage();
+      handleNewCall(data);
     } catch (error) {
       // timeout / network error → log, lanjut poll berikutnya
       console.warn('[FarmasiDisplay] Polling gagal, akan retry:', error);
     }
   }
 
-  // Buka kunci speechSynthesis di gesture pertama (kiosk/TV tanpa interaksi awal:
-  // Chrome menahan TTS sampai ada user gesture; utterance kosong sekali cukup).
+  /* ============================================================
+   * E) Audio unlock gesture kiosk (Chrome menahan TTS sampai user gesture).
+   * ============================================================ */
   function unlockTts(): void {
     const unlock = (): void => {
       try {
-        window.speechSynthesis?.getVoices();
-        window.speechSynthesis?.speak(new SpeechSynthesisUtterance(''));
+        synth.getVoices();
+        // trigger asli supaya browser menganggap synth "digunakan" di gesture
+        RealSpeak.call(synth, new SpeechSynthesisUtterance(''));
       } catch {
         /* ignore */
       }
@@ -138,6 +231,33 @@
     document.addEventListener('keydown', unlock);
   }
 
-  setInterval(() => void pollCall(), POLL_MS);
-  void pollCall();
+  /* ============================================================
+   * START — WS stub sudah terpasang. Fitur (polling + voice)
+   * hanya mutlak aktif bila role admin/apotek (gate diset init.ts
+   * di document_end → muncul sesaat setelah halaman ter-render).
+   * ============================================================ */
+  function start(): void {
+    // Bungkam native TTS MORBIS (teks MANAP garbled tanpa nama pasien).
+    // Hanya saat feature aktif → kalau nonaktif, native voice tetap normal.
+    synth.speak = function (
+      this: SpeechSynthesis,
+      _utterance: SpeechSynthesisUtterance,
+    ): void {
+      return;
+    } as typeof synth.speak;
+
+    unlockTts();
+    setInterval(() => void pollCall(), POLL_MS);
+    void pollCall();
+  }
+
+  // document_start belum punya gate (diset init.ts di document_end).
+  // Tunggu atribut hingga ±8 detik; kalau tak muncul → fitur nonaktif.
+  const gateTimer = setInterval(() => {
+    if (document.documentElement.getAttribute('data-ext-antrian-farmasi') === '1') {
+      clearInterval(gateTimer);
+      start();
+    }
+  }, 200);
+  setTimeout(() => clearInterval(gateTimer), 8000);
 })();

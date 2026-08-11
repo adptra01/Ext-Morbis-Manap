@@ -147,6 +147,12 @@ var __morbis_bg = (() => {
         name: "Antrian Tools",
         description: "Penomoran unik per loket (L1-001), polling layar antrian, auto cetak, fullscreen"
       },
+      antrianFarmasi: {
+        enabled: true,
+        allowedRoles: ["admin", "apotek"],
+        name: "Antrian Farmasi Voice",
+        description: "Display farmasi: fallback polling saat WS mati + TTS panggil pasien (nomor + nama + depo, 2\xD7)"
+      },
       ttvEditor: {
         enabled: true,
         allowedRoles: ["casemix", "dokter"],
