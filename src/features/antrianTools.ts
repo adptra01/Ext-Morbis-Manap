@@ -448,9 +448,12 @@ ui.innerHTML =
               `<input type="hidden" id="max-${p.idx}" value="${esc(p.max)}">` +
               `<input type="hidden" id="penjamin-${p.idx}" value="${esc(p.penjamin)}">` +
               `<input type="hidden" id="kode-${p.idx}" value="${esc(p.kode)}">` +
-              `<span class="ext-m-ico"><span class="ms" aria-hidden="true">${mesinIcon(p.polinama)}</span></span>` +
+              `<span class="ext-m-ico">` +
+              (p.nomorTampil
+                ? `<span class="ext-m-ico-num">${esc(p.nomorTampil)}</span>`
+                : `<span class="ms" aria-hidden="true">${mesinIcon(p.polinama)}</span>`) +
+              '</span>' +
               `<span class="ext-m-label">${esc(p.polinama).toUpperCase() || 'ANTRIAN'}</span>` +
-              (p.nomorTampil ? `<span class="ext-m-num">Nomor berikutnya: ${esc(p.nomorTampil)}</span>` : '') +
               '</button>',
           )
           .join('') +
@@ -502,9 +505,9 @@ ui.innerHTML =
         '.ext-m-ico{background:#E9F5EE;color:#198754;width:160px;height:160px;border-radius:999px;display:flex;align-items:center;justify-content:center;transition:transform .3s;}',
         '.ext-m-card:hover .ext-m-ico{transform:scale(1.1);}',
         '.ext-m-ico .ms{font-size:80px;}',
+        '.ext-m-ico-num{font-size:64px;font-weight:700;color:#198754;letter-spacing:-.02em;line-height:1;}',
         '.ext-m-label{font-size:24px;font-weight:700;color:#212529;text-align:center;width:100%;}',
         '.ext-m-card:hover .ext-m-label{color:#198754;}',
-        '.ext-m-num{font-size:14px;color:#495057;font-weight:600;}',
         // Instruction pill (pulse)
         '.ext-m-hint{margin-top:8px;display:flex;align-items:center;gap:8px;background:#fff;padding:12px 24px;border-radius:999px;box-shadow:0 1px 2px rgba(0,0,0,.04);border:1px solid #e9ecef;color:#495057;font-size:18px;animation:ext-m-pulse 2s ease-in-out infinite;}',
         '.ext-m-hint .ms{color:#198754;font-size:24px;}',
@@ -519,7 +522,7 @@ ui.innerHTML =
         '#isi{display:none!important;}',
         // responsive
         '@media(min-width:768px){.ext-m-head{padding:0 48px;}.ext-m-title{font-size:24px;}.ext-m-main{padding:48px 48px;}.ext-m-heading h1{font-size:48px;}.ext-m-heading p{font-size:20px;}.ext-m-card{padding:32px;}.ext-m-foot{flex-direction:row;padding:24px 48px;}}',
-        '@media(max-width:767px){.ext-m-head{padding:0 16px;min-height:72px;gap:8px;}.ext-m-title{font-size:18px;}.ext-m-sub{font-size:10px;}.ext-m-logo{width:46px;height:46px;}.ext-m-brand{gap:10px;}.ext-m-badge{display:none;}.ext-m-fs{width:38px;height:38px;border-radius:10px;}.ext-m-ico{width:120px;height:120px;}.ext-m-ico .ms{font-size:60px;}.ext-m-main{padding:36px 16px;}.ext-m-content{gap:36px;}.ext-m-hint{font-size:15px;padding:10px 16px;}}',
+        '@media(max-width:767px){.ext-m-head{padding:0 16px;min-height:72px;gap:8px;}.ext-m-title{font-size:18px;}.ext-m-sub{font-size:10px;}.ext-m-logo{width:46px;height:46px;}.ext-m-brand{gap:10px;}.ext-m-badge{display:none;}.ext-m-fs{width:38px;height:38px;border-radius:10px;}.ext-m-ico{width:120px;height:120px;}.ext-m-ico .ms{font-size:60px;}.ext-m-ico-num{font-size:52px;}.ext-m-main{padding:36px 16px;}.ext-m-content{gap:36px;}.ext-m-hint{font-size:15px;padding:10px 16px;}}',
       ]);
       extLog('mesin_ui', true, { polis: polis.length });
     };
