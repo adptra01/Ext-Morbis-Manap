@@ -205,6 +205,7 @@ var __morbis_feature = (() => {
     function unlockAudio() {
       if (audioUnlocked) return;
       audioUnlocked = true;
+      updateDebugState({ audioUnlocked: true });
       document.removeEventListener("pointerdown", unlockAudio);
       document.removeEventListener("keydown", unlockAudio);
       console.log("[FarmasiDisplay] audio unlocked via gesture");
@@ -212,9 +213,28 @@ var __morbis_feature = (() => {
     document.addEventListener("pointerdown", unlockAudio);
     document.addEventListener("keydown", unlockAudio);
     let voiceEnabled = false;
+    let started = false;
+    let watchTimer = null;
     let pollTimer = null;
     const healthCfg = { staleMax: STALE_MAX };
     let health = { nativeActive: true, staleStreak: 0, nativeSig: "", ourSig: "" };
+    const debugEnabled = new URLSearchParams(window.location.search).get("debug") === "1";
+    const debugState = {
+      started: false,
+      mode: "NATIVE",
+      nativeActive: true,
+      pollingActive: false,
+      lastNativeActivity: null,
+      lastPoll: null,
+      lastDataCount: null,
+      lastAnnouncement: null,
+      audioUnlocked: false
+    };
+    function updateDebugState(patch) {
+      if (!debugEnabled) return;
+      Object.assign(debugState, patch);
+      window.__ANTRIAN_FARMASI_DEBUG__ = { ...debugState };
+    }
     function domSignal() {
       const p = document.querySelector(PANGGILAN_SEL);
       const s = document.querySelector(SIAP_SEL);
@@ -240,8 +260,10 @@ var __morbis_feature = (() => {
       try {
         const rows = await fetchCallData();
         ladderIdx = 0;
+        updateDebugState({ lastPoll: Date.now(), lastDataCount: rows.length });
         const view = normalize(rows);
         if (view.panggilan.length > 0 || view.siapDiambil.length > 0) {
+          console.info("[AFD] POLL success rows=" + rows.length);
           renderDisplay(view);
           maybeAnnounce(view);
         }
@@ -268,24 +290,52 @@ var __morbis_feature = (() => {
       );
       if (row && signature) {
         announcedId = signature;
+        updateDebugState({ lastAnnouncement: signature });
+        console.info("[AFD] ANNOUNCE " + signature);
         const hit = view.panggilan.find((x) => x.id === row.ID);
         if (hit) announce(hit);
+      } else if (signature === announcedId && signature !== "") {
+        console.info("[AFD] duplicate ignored " + signature);
       }
     }
+    let lastMode = "NATIVE";
     function watch() {
       const result = nextHealth(health, { type: "observe", signal: domSignal() }, healthCfg);
       health = result.next;
       if (result.startPolling) {
         ladderIdx = 0;
         schedulePoll();
+        if (lastMode !== "FALLBACK") {
+          lastMode = "FALLBACK";
+          console.info("[AFD] MODE=FALLBACK");
+        }
+        updateDebugState({ mode: "FALLBACK", nativeActive: false, pollingActive: true });
       } else if (result.stopPolling) {
         stopPolling();
+        if (lastMode !== "NATIVE") {
+          lastMode = "NATIVE";
+          console.info("[AFD] MODE=NATIVE");
+        }
+        updateDebugState({
+          mode: "NATIVE",
+          nativeActive: true,
+          pollingActive: false,
+          lastNativeActivity: Date.now()
+        });
+      } else if (!health.nativeActive && lastMode !== "FALLBACK") {
+        lastMode = "FALLBACK";
+        updateDebugState({ mode: "FALLBACK", nativeActive: false, pollingActive: true });
       }
     }
     function startWithRole() {
+      if (started) return;
+      started = true;
+      updateDebugState({ started: true });
       voiceEnabled = true;
       health = { ...health, nativeSig: domSignal() };
-      window.setInterval(watch, WATCH_MS);
+      if (watchTimer === null) {
+        watchTimer = setInterval(watch, WATCH_MS);
+      }
     }
     const gateTimer = setInterval(() => {
       if (document.documentElement.getAttribute("data-ext-antrian-farmasi") === "1") {

@@ -35,6 +35,27 @@
 import { pickAnnounce } from './shared/queueRule';
 import { nextHealth, type HealthState } from './shared/wsHealth';
 
+// Observability (debug) — snapshot baca-saja, bukan sumber kebenaran.
+// Hanya dibuat bila URL memakai ?debug=1; production normal tetap bersih
+// dan perilaku identik dengan/tanpa debug.
+type AntrianFarmasiDebugState = {
+  started: boolean;
+  mode: 'NATIVE' | 'FALLBACK';
+  nativeActive: boolean;
+  pollingActive: boolean;
+  lastNativeActivity: number | null;
+  lastPoll: number | null;
+  lastDataCount: number | null;
+  lastAnnouncement: string | null;
+  audioUnlocked: boolean;
+};
+
+declare global {
+  interface Window {
+    __ANTRIAN_FARMASI_DEBUG__?: AntrianFarmasiDebugState;
+  }
+}
+
 (function () {
   const LIST_URL = '/public/antrian-farmasi-v2/list-antrian-v2';
   // Adaptive backoff polling fallback (hanya saat native membeku): setiap gagal naik
@@ -43,10 +64,12 @@ import { nextHealth, type HealthState } from './shared/wsHealth';
   const CALL_DELAY_MS = 1200; // jeda bell sebelum voice
   const GAP_MS = 400;
 
-  // C1 — WS-health via probe aktivitas DOM native (baca-only). Bukan instrumentasi
-  // window.WebSocket; extension "mengamati", bukan "mengambil alih".
-  const WATCH_MS = 3000; // periodik baca signal DOM native
-  const STALE_MAX = 4; // 4× diam berturut-turut ≈ 12s → anggap WS mati, mulai polling
+  // C1 — Native Activity Health Monitor: probe aktivitas DOM antrian (baca-only).
+  // Bukan instrumentasi window.WebSocket — extension "mengamati konsekuensi transport
+  // native", bukan merekayasa WebSocket-nya. Nama file wsHealth.ts dipertahankan
+  // (internal), namun yang sebenarnya diamati adalah aktivitas display native.
+  const WATCH_MS = 3000; // periodik baca signal DOM antrian native
+  const STALE_MAX = 4; // 4× diam berturut-turut ≈ 12s → anggap native membeku, mulai polling
 
   /* ============================================================
    * WebSocket native MORBIS → BIARKAN berjalan normal. Extension
@@ -312,6 +335,7 @@ import { nextHealth, type HealthState } from './shared/wsHealth';
   function unlockAudio(): void {
     if (audioUnlocked) return;
     audioUnlocked = true;
+    updateDebugState({ audioUnlocked: true });
     document.removeEventListener('pointerdown', unlockAudio);
     document.removeEventListener('keydown', unlockAudio);
     console.log('[FarmasiDisplay] audio unlocked via gesture');
@@ -333,10 +357,32 @@ import { nextHealth, type HealthState } from './shared/wsHealth';
    * perubahan eksternal/native (recovery) → tanpa feedback-loop.
    * ============================================================ */
   let voiceEnabled = false;
+  let started = false; // idempotency: cegah watcher/listener/polling ganda
+  let watchTimer: ReturnType<typeof setInterval> | null = null;
   let pollTimer: number | null = null;
   const healthCfg = { staleMax: STALE_MAX };
   // State mesin; nativeActive awal true → percaya WS hidup, jangan polling.
   let health: HealthState = { nativeActive: true, staleStreak: 0, nativeSig: '', ourSig: '' };
+
+  // Observability — debug SNAPSHOT (hanya jika ?debug=1). Debug tidak
+  // pernah menjadi sumber kebenaran perilaku; ia hanya cermin state internal.
+  const debugEnabled = new URLSearchParams(window.location.search).get('debug') === '1';
+  const debugState: AntrianFarmasiDebugState = {
+    started: false,
+    mode: 'NATIVE',
+    nativeActive: true,
+    pollingActive: false,
+    lastNativeActivity: null,
+    lastPoll: null,
+    lastDataCount: null,
+    lastAnnouncement: null,
+    audioUnlocked: false,
+  };
+  function updateDebugState(patch: Partial<AntrianFarmasiDebugState>): void {
+    if (!debugEnabled) return;
+    Object.assign(debugState, patch);
+    window.__ANTRIAN_FARMASI_DEBUG__ = { ...debugState };
+  }
 
   // Signal aktivitas DOM (read-only; tidak mengubah apa pun).
   function domSignal(): string {
@@ -370,10 +416,12 @@ import { nextHealth, type HealthState } from './shared/wsHealth';
     try {
       const rows = await fetchCallData();
       ladderIdx = 0; // sukses → reset backoff ke anak tangga awal
+      updateDebugState({ lastPoll: Date.now(), lastDataCount: rows.length });
 
       // Hanya sentuh DOM bila ada data valid; []/gagal → pertahankan DOM native.
       const view = normalize(rows);
       if (view.panggilan.length > 0 || view.siapDiambil.length > 0) {
+        console.info('[AFD] POLL success rows=' + rows.length);
         renderDisplay(view);
         maybeAnnounce(view);
       }
@@ -390,6 +438,8 @@ import { nextHealth, type HealthState } from './shared/wsHealth';
   }
 
   // TTS: dedup signature (dipanggil bila ada data baru). audioUnlocked header di announce().
+  // Observability: log ANNOUNCE hanya saat benar-benar bicara, dan duplicate ignored
+  // saat signature sama — tidak log data pasien, cukup signature.
   function maybeAnnounce(view: QueueView): void {
     if (!voiceEnabled || view.panggilan.length === 0) return;
     const { row, signature } = pickAnnounce(
@@ -403,22 +453,48 @@ import { nextHealth, type HealthState } from './shared/wsHealth';
     );
     if (row && signature) {
       announcedId = signature;
+      updateDebugState({ lastAnnouncement: signature });
+      console.info('[AFD] ANNOUNCE ' + signature);
       const hit = view.panggilan.find((x) => x.id === row.ID);
       if (hit) announce(hit);
+    } else if (signature === announcedId && signature !== '') {
+      console.info('[AFD] duplicate ignored ' + signature);
     }
   }
 
   // MODE 1/2 switch — pengamatan aktivitas DOM native (tiap WATCH_MS).
+  // Observability: hanya UPDATE debug snapshot + log SATU KALI saat mode berubah.
+  let lastMode: 'NATIVE' | 'FALLBACK' = 'NATIVE';
   function watch(): void {
     const result = nextHealth(health, { type: 'observe', signal: domSignal() }, healthCfg);
     health = result.next;
+
     if (result.startPolling) {
       // Native membeku → mulai fallback polling (MODE 2).
       ladderIdx = 0;
       schedulePoll();
+      if (lastMode !== 'FALLBACK') {
+        lastMode = 'FALLBACK';
+        console.info('[AFD] MODE=FALLBACK');
+      }
+      updateDebugState({ mode: 'FALLBACK', nativeActive: false, pollingActive: true });
     } else if (result.stopPolling) {
       // Native hidup kembali → hentikan polling (kembali MODE 1).
       stopPolling();
+      if (lastMode !== 'NATIVE') {
+        lastMode = 'NATIVE';
+        console.info('[AFD] MODE=NATIVE');
+      }
+      updateDebugState({
+        mode: 'NATIVE',
+        nativeActive: true,
+        pollingActive: false,
+        lastNativeActivity: Date.now(),
+      });
+    } else if (!health.nativeActive && lastMode !== 'FALLBACK') {
+      // Fallback berjalan diam-diam; pastikan snapshot konsisten dengan mode.
+      lastMode = 'FALLBACK';
+      updateDebugState({ mode: 'FALLBACK', nativeActive: false, pollingActive: true });
     }
   }
 
@@ -429,9 +505,16 @@ import { nextHealth, type HealthState } from './shared/wsHealth';
    * sesuai native MORBIS.
    * ============================================================ */
   function startWithRole(): void {
+    if (started) return; // idempotent: jangan buat watcher/listener/polling ganda
+    started = true;
+    updateDebugState({ started: true });
+
     voiceEnabled = true; // suara hanya untuk role terotorisasi; TTS native tidak dioverride
     health = { ...health, nativeSig: domSignal() }; // baseline aktivitas native awal
-    window.setInterval(watch, WATCH_MS); // pengamatan WS; polling baru bila native membeku
+    if (watchTimer === null) {
+      // pengamatan aktivitas DOM native; polling fallback baru menyala bila native membeku
+      watchTimer = setInterval(watch, WATCH_MS);
+    }
   }
 
   // Gate di-set init.ts di document_end (hanya bila role apotek + enabled).
