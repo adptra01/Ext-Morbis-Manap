@@ -84,13 +84,6 @@ async function initExtension(): Promise<void> {
     document.documentElement.removeAttribute('data-ext-antrian-tools');
   }
 
-  const afCfg = cfg?.features?.antrianFarmasi;
-  if (afCfg?.enabled && window.ExtensionCore.isFeatureAllowed('antrianFarmasi')) {
-    document.documentElement.setAttribute('data-ext-antrian-farmasi', '1');
-  } else {
-    document.documentElement.removeAttribute('data-ext-antrian-farmasi');
-  }
-
   const ttvCfg = cfg?.features?.ttvEditor;
   if (ttvCfg?.enabled && window.ExtensionCore.isFeatureAllowed('ttvEditor')) {
     document.documentElement.setAttribute('data-ext-ttv-editor', '1');

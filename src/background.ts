@@ -113,12 +113,6 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       name: 'Resume Validator',
       description: 'Validasi ketat form resume rawat inap agar tidak gagal simpan tanpa error',
     },
-    antrianFarmasi: {
-      enabled: true,
-      allowedRoles: ['admin', 'pendaftaran'],
-      name: 'Antrian Farmasi Display',
-      description: 'Fallback WebSocket mati + TTS panggilan di layar antrian farmasi',
-    },
     antrianTools: {
       enabled: true,
       allowedRoles: ['admin', 'pendaftaran'],

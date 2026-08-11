@@ -214,20 +214,9 @@
         "http://*/public/antrian-farmasi-v2/view-call-websocet-v2*"
       ],
       "js": [
-        "core.js",
-        "init.js"
+        "features/antrianFarmasiDisplay.js"
       ],
-      "run_at": "document_end",
-      "all_frames": false
-    },
-    {
-      "matches": [
-        "http://*/public/antrian-farmasi-v2/view-call-websocet-v2*"
-      ],
-      "js": [
-        "features/antrianFarmasi.js"
-      ],
-      "run_at": "document_idle",
+      "run_at": "document_start",
       "world": "MAIN",
       "all_frames": false
     },
