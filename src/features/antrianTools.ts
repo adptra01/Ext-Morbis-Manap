@@ -252,14 +252,10 @@
   /* ---- CHIME (bel 2 nada sebelum TTS) ---- */
   function chime(): void {
     try {
-      const Ctx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!Ctx || !_audioCtx) return; // belum di-unlock (tanpa gesture) → diam, TTS tetap jalan
-      if (_audioCtx.state !== 'running') {
-        void _audioCtx.resume().catch(() => {
-          /* masih diblokir autoplay — lewati chime, jangan error ke konsol */
-        });
-        return;
-      }
+      // TIDAK pernah resume() di sini — Chrome mencatat error "not allowed to start"
+      // setiap resume tanpa gesture, dan resume() dari polling tidak pernah berhasil.
+      // Hanya unlockTts() (di dalam gesture) yang membuat & me-resume context.
+      if (!_audioCtx || _audioCtx.state !== 'running') return; // belum di-unlock → diam
       const now = _audioCtx.currentTime;
       [
         [880, 0],

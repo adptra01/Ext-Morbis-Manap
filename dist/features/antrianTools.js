@@ -165,10 +165,16 @@ var __morbis_feature = (() => {
         speakGoogleMp3(msg);
       }
     }
+    let _audioCtx = null;
     function unlockTts() {
       const unlock = () => {
         try {
           speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+        } catch {}
+        try {
+          const Ctx = window.AudioContext || window.webkitAudioContext;
+          if (Ctx && !_audioCtx) _audioCtx = new Ctx();
+          void _audioCtx?.resume().catch(() => {});
         } catch {}
         window.removeEventListener('pointerdown', unlock);
         window.removeEventListener('keydown', unlock);
@@ -193,13 +199,9 @@ var __morbis_feature = (() => {
       if (!loket) return `Nomor antrian ${n}`;
       return `Nomor antrian ${n}, ke loket ${loket.toUpperCase()}`;
     }
-    let _audioCtx = null;
     function chime() {
       try {
-        const Ctx = window.AudioContext || window.webkitAudioContext;
-        if (!Ctx) return;
-        _audioCtx = _audioCtx || new Ctx();
-        if (_audioCtx.state === 'suspended') void _audioCtx.resume();
+        if (!_audioCtx || _audioCtx.state !== 'running') return;
         const now = _audioCtx.currentTime;
         [
           [880, 0],
@@ -401,7 +403,7 @@ var __morbis_feature = (() => {
               hideOfflineBadge();
               const nomor = onlyDigits(r.NOMOR || '0');
               const loket =
-                String(r.NAMA || '')
+                String(r.LOKET || '')
                   .replace(/^LOKET\s+/i, '')
                   .toUpperCase()
                   .trim() || '-';
