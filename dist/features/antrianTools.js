@@ -203,25 +203,27 @@ var __morbis_feature = (() => {
       if (!loket) return `Nomor antrian ${n}`;
       return `Nomor antrian ${n}, ke loket ${loket.toUpperCase()}`;
     }
+    function bellNote(ctx, freq, at, dur, vol) {
+      [1, 2, 2.76, 5.4].forEach((h, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = freq * h;
+        const amp = vol * [1, 0.5, 0.3, 0.15][i] * (i === 0 ? 1 : 0.6);
+        gain.gain.setValueAtTime(1e-4, at);
+        gain.gain.exponentialRampToValueAtTime(amp, at + 0.01);
+        gain.gain.exponentialRampToValueAtTime(1e-4, at + dur);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(at);
+        osc.stop(at + dur + 0.05);
+      });
+    }
     function chime() {
       try {
         if (!_audioCtx || _audioCtx.state !== "running") return;
         const now = _audioCtx.currentTime;
-        [
-          [880, 0],
-          [1175, 0.28]
-        ].forEach(([f, t]) => {
-          const osc = _audioCtx.createOscillator();
-          const gain = _audioCtx.createGain();
-          osc.type = "sine";
-          osc.frequency.value = f;
-          gain.gain.setValueAtTime(1e-4, now + t);
-          gain.gain.exponentialRampToValueAtTime(0.35, now + t + 0.02);
-          gain.gain.exponentialRampToValueAtTime(1e-4, now + t + 0.3);
-          osc.connect(gain).connect(_audioCtx.destination);
-          osc.start(now + t);
-          osc.stop(now + t + 0.35);
-        });
+        bellNote(_audioCtx, 659.25, now, 0.9, 0.5);
+        bellNote(_audioCtx, 523.25, now + 0.28, 1.1, 0.5);
       } catch {
       }
     }

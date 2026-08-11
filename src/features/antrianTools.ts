@@ -250,6 +250,32 @@
   }
 
   /* ---- CHIME (bel 2 nada sebelum TTS) ---- */
+  // Sintesis bell "ding-dong": nada E5 → C5 dengan harmonik + decay eksponensial
+  // (timbre bel nyata, bukan bip sinus polos). WebAudio murni → jalan offline,
+  // tanpa file audio eksternal.
+  function bellNote(
+    ctx: AudioContext,
+    freq: number,
+    at: number,
+    dur: number,
+    vol: number,
+  ): void {
+    // harmonik bell: fundamental + 2x + 2.76x (inharmonik, karakter bel) + 5.4x
+    [1, 2, 2.76, 5.4].forEach((h, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq * h;
+      const amp = vol * [1, 0.5, 0.3, 0.15][i] * (i === 0 ? 1 : 0.6);
+      gain.gain.setValueAtTime(0.0001, at);
+      gain.gain.exponentialRampToValueAtTime(amp, at + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(at);
+      osc.stop(at + dur + 0.05);
+    });
+  }
+
   function chime(): void {
     try {
       // TIDAK pernah resume() di sini — Chrome mencatat error "not allowed to start"
@@ -257,21 +283,9 @@
       // Hanya unlockTts() (di dalam gesture) yang membuat & me-resume context.
       if (!_audioCtx || _audioCtx.state !== 'running') return; // belum di-unlock → diam
       const now = _audioCtx.currentTime;
-      [
-        [880, 0],
-        [1175, 0.28],
-      ].forEach(([f, t]) => {
-        const osc = _audioCtx!.createOscillator();
-        const gain = _audioCtx!.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = f as number;
-        gain.gain.setValueAtTime(0.0001, now + (t as number));
-        gain.gain.exponentialRampToValueAtTime(0.35, now + (t as number) + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + (t as number) + 0.3);
-        osc.connect(gain).connect(_audioCtx!.destination);
-        osc.start(now + (t as number));
-        osc.stop(now + (t as number) + 0.35);
-      });
+      // "ding" (E5) → 0.28s → "dong" (C5), durasi lebih panjang agar terdengar natural
+      bellNote(_audioCtx, 659.25, now, 0.9, 0.5);
+      bellNote(_audioCtx, 523.25, now + 0.28, 1.1, 0.5);
     } catch {
       /* audio tak tersedia */
     }
