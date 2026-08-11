@@ -488,7 +488,7 @@
         // header: kartu putih lega (tinggi ~90px), logo kiri + pill jam kanan; shrink-0 + box-sizing
         // mencegah header ikut menyusut/overflow saat viewport pendek (main yang mengecil)
         '.ext-head{background:#fff;border-radius:18px;box-shadow:0 10px 15px -3px rgba(0,0,0,.1);padding:20px 32px;display:flex;flex-direction:row;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap;z-index:1;min-height:92px;flex-shrink:0;box-sizing:border-box;max-width:100%;}',
-        '.ext-brand{display:flex;align-items:center;gap:8px;min-width:0;}',
+        '.ext-brand{display:flex;align-items:center;gap:10px;min-width:0;}',
         '.ext-logo{width:78px;height:78px;background:#e5e7eb;border-radius:9999px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:2px solid #6ee7b7;box-shadow:0 1px 2px rgba(0,0,0,.05);flex-shrink:0;}',
         '.ext-logo span{font-size:11px;color:#6b7280;text-align:center;font-weight:600;line-height:1.2;}',
         '.ext-logo-img{width:100%;height:100%;object-fit:cover;}',
