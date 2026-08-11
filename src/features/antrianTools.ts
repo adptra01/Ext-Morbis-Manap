@@ -468,8 +468,9 @@
             failCount = 0;
             hideOfflineBadge();
             const nomor = onlyDigits(r.NOMOR || '0');
+            // TTS pakai NOMOR LOKET pemanggil (r.LOKET), bukan nama klinik (r.NAMA)
             const loket =
-              String(r.NAMA || '')
+              String(r.LOKET || '')
                 .replace(/^LOKET\s+/i, '')
                 .toUpperCase()
                 .trim() || '-';
