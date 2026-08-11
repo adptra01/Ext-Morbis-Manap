@@ -426,7 +426,7 @@
         '    <div class="ext-logo"><img class="ext-logo-img" alt="logo RSUD" /></div>' +
         '    <div class="ext-titles"><h1>RSUD H. ABDUL MANAP KOTA JAMBI</h1><p>Melayani Dengan Setulus Hati</p></div>' +
         '  </div>' +
-        '  <div class="ext-clock"><div id="datetime">Memuat waktu...</div></div>' +
+        '  <div class="ext-clock"><div id="ext-date">Memuat...</div><div id="ext-time">--:--:--</div></div>' +
         '</header>' +
         '<main class="ext-main">' +
         '  <section class="ext-card">' +
@@ -452,8 +452,9 @@
         logoBox.innerHTML = '<span>LOGO<br/>RSUD</span>';
       }
 
-      // jam & tanggal live (id="datetime" sama seperti HTML target)
-      const datetimeEl = ui.querySelector('#datetime') as HTMLElement;
+      // jam & tanggal live — dipisah jadi 2 hierarki visual (tanggal kecil, jam dominan)
+      const dateEl = ui.querySelector('#ext-date') as HTMLElement;
+      const timeEl = ui.querySelector('#ext-time') as HTMLElement;
       const tick = () => {
         const now = new Date();
         const options: Intl.DateTimeFormatOptions = {
@@ -468,7 +469,8 @@
           minute: '2-digit',
           second: '2-digit',
         });
-        datetimeEl.textContent = `${dateString} - ${timeString} WIB`;
+        dateEl.textContent = dateString;
+        timeEl.textContent = `${timeString} WIB`;
       };
       tick();
       setInterval(tick, 1000);
@@ -485,8 +487,10 @@
         // mockup header h1: padding-top 18px, rata kiri, warna #1e2421; padding-left:0 menimpa `header h1` punya server (100px)
         '.ext-titles h1{margin:0;padding-top:18px;text-align:left;width:auto;padding-left:0;font-size:clamp(24px,2.4vw,32px);font-weight:800;color:#1e2421;line-height:1.15;}',
         '.ext-titles p{margin:5px 0 0;font-size:clamp(14px,1.3vw,16px);color:#059669;font-weight:500;font-style:italic;text-align:left;width:auto;}',
-        '.ext-clock{background:#f0fdf7;border-radius:9999px;padding:10px 22px;box-shadow:0 1px 2px rgba(0,0,0,.05);border:1px solid #a7e8d2;text-align:center;}',
-        '.ext-clock #datetime{font-size:clamp(14px,1.4vw,18px);font-weight:600;color:#145c48;letter-spacing:.02em;white-space:nowrap;}',
+        // panel tanggal+jam: rounded rectangle (bukan pill), tanggal kecil uppercase, jam dominan
+        '.ext-clock{background:#f0fdf7;border:1px solid rgba(16,185,129,.25);border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.06);padding:10px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px;width:fit-content;}',
+        '.ext-clock #ext-date{font-size:clamp(12px,1vw,14px);font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#166534;white-space:nowrap;line-height:1.3;}',
+        '.ext-clock #ext-time{font-size:clamp(24px,2.4vw,30px);font-weight:800;letter-spacing:.03em;color:#064e3b;white-space:nowrap;line-height:1;}',
         // main: wadah off-white lembut (#F1FBF7), padding konsisten 36px
         '.ext-main{flex:1;display:flex;align-items:stretch;background:#f1fbf7;border-radius:24px;box-shadow:0 12px 30px rgba(15,23,42,.16);padding:36px;border:1px solid rgba(255,255,255,.5);margin-bottom:24px;z-index:1;}',
         // card: 47% kiri (margin kanan lebih besar — empty space dominan), grup konten di tengah
@@ -507,7 +511,7 @@
         // tablet 768-1199px: card mengembang 55-65%, negative space dikurangi, padding diperkecil
         '@media(min-width:768px) and (max-width:1199px){.ext-head{padding:16px 24px;min-height:84px;}.ext-main{padding:28px;border-radius:20px;}.ext-card{width:62%;padding:28px;gap:12px;}.ext-number{font-size:clamp(140px,12vw,180px);}}',
         // mobile <768px: card full lebar (100%), kanan hilang, header/footer diringkas
-        '@media(max-width:767px){#ext-display-ui{padding:10px;gap:14px;}.ext-head{padding:14px 18px;flex-direction:column;align-items:center;text-align:center;min-height:0;margin-bottom:0;}.ext-brand{gap:12px;}.ext-logo{width:54px;height:54px;border-width:1px;}.ext-titles h1{font-size:clamp(20px,5.5vw,24px);line-height:1.2;}.ext-titles p{font-size:13px;}.ext-clock{padding:8px 14px;}.ext-clock #datetime{font-size:12px;}.ext-main{flex:1 0 auto;flex-direction:column;padding:14px;border-radius:18px;margin-bottom:0;}.ext-card{width:100%;max-width:none;height:clamp(360px,58vh,520px);padding:24px;gap:14px;}.ext-number{font-size:clamp(100px,20vw,150px);}.ext-void{display:none;}.ext-foot{height:42px;}.ext-marquee span{font-size:13px;padding:0 32px;}}',
+        '@media(max-width:767px){#ext-display-ui{padding:10px;gap:14px;}.ext-head{padding:14px 18px;flex-direction:column;align-items:center;text-align:center;min-height:0;margin-bottom:0;}.ext-brand{gap:12px;}.ext-logo{width:54px;height:54px;border-width:1px;}.ext-titles h1{font-size:clamp(20px,5.5vw,24px);line-height:1.2;}.ext-titles p{font-size:13px;}.ext-clock{padding:8px 14px;border-radius:12px;width:fit-content;}.ext-clock #ext-date{font-size:11px;}.ext-clock #ext-time{font-size:clamp(20px,9vw,24px);}.ext-main{flex:1 0 auto;flex-direction:column;padding:14px;border-radius:18px;margin-bottom:0;}.ext-card{width:100%;max-width:none;height:clamp(360px,58vh,520px);padding:24px;gap:14px;}.ext-number{font-size:clamp(100px,20vw,150px);}.ext-void{display:none;}.ext-foot{height:42px;}.ext-marquee span{font-size:13px;padding:0 32px;}}',
       ]);
       // TTS saat nomor panggilan berubah (suara TV)
       let lastCallId = '';
