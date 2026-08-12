@@ -25,62 +25,6 @@
     document.documentElement.setAttribute('data-ext-antrian-tools-health', state);
   }
 
-  // Loading overlay singkat saat user klik nomor antrian — menutupi transisi
-  // native→CSS (server simpan→ws→reload) supaya tidak terasa "kedip" halaman lama.
-  // ponytail: sessionStorage supaya bertahan jika halaman reload, hide otomatis saat
-  // UI custom siap / timeout 5s (guard native/fallback bila antrianTools tidak inject).
-  function showTicketLoading(): void {
-    try {
-      sessionStorage.setItem('ext-m-ticket-loading', '1');
-    } catch {
-      /* ignore */
-    }
-    if (document.getElementById('ext-m-loading')) return;
-    const l = document.createElement('div');
-    l.id = 'ext-m-loading';
-    l.style.cssText =
-      'position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;' +
-      'background:#D5E9DB;font-family:Inter,"Segoe UI",system-ui,sans-serif;transition:opacity .25s;';
-    l.innerHTML =
-      '<div style="display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center;">' +
-      '<img src="/assets/images/logo/Kota Jambi.png" alt="" style="width:72px;height:72px;object-fit:contain;">' +
-      '<div style="width:120px;height:8px;border-radius:999px;background:#d1e7dd;overflow:hidden;">' +
-      '<div style="width:40%;height:100%;border-radius:999px;background:#0f5132;animation:ticket-spin 1.1s ease-in-out infinite;"></div>' +
-      '</div>' +
-      '<p style="margin:0;color:#495057;font-size:15px;font-weight:600;">Menyiapkan antrian Anda…</p>' +
-      '</div>';
-    document.body.appendChild(l);
-    hideTicketLoadingAfter(5000); // guard: kalau UI tak muncul (native/fallback), tutup overlay
-  }
-
-  function hideTicketLoading(): void {
-    const el = document.getElementById('ext-m-loading');
-    if (!el) {
-      try {
-        sessionStorage.removeItem('ext-m-ticket-loading');
-      } catch {
-        /* ignore */
-      }
-      return;
-    }
-    el.style.opacity = '0';
-    const done = () => {
-      el.remove();
-      try {
-        sessionStorage.removeItem('ext-m-ticket-loading');
-      } catch {
-        /* ignore */
-      }
-    };
-    setTimeout(done, 250);
-  }
-
-  function hideTicketLoadingAfter(ms: number): void {
-    setTimeout(() => {
-      if (sessionStorage.getItem('ext-m-ticket-loading') === '1') hideTicketLoading();
-    }, ms);
-  }
-
   function extLog(event: string, ok: boolean, detail?: unknown): void {
     try {
       window.postMessage?.(
@@ -580,7 +524,6 @@
         '.ext-m-hint{margin-top:8px;display:flex;align-items:center;gap:8px;background:#fff;padding:12px 24px;border-radius:999px;box-shadow:0 1px 2px rgba(0,0,0,.04);border:1px solid #e9ecef;color:#495057;font-size:18px;animation:ext-m-pulse 2s ease-in-out infinite;}',
         '.ext-m-hint .ms{color:#0f5132;font-size:24px;}',
         '@keyframes ext-m-pulse{0%,100%{opacity:1;}50%{opacity:.55;}}',
-        '@keyframes ticket-spin{0%{transform:translateX(-100%);}100%{transform:translateX(350%);}}',
         // Footer
         '.ext-m-foot{background:#fff;border-top:1px solid #e9ecef;color:#495057;display:flex;flex-direction:column;gap:10px;justify-content:space-between;align-items:center;padding:20px 24px;flex-shrink:0;}',
         '.ext-m-foot a{color:#0f5132;text-decoration:none;font-weight:500;}',
@@ -599,8 +542,6 @@
       ]);
       extLog('mesin_ui', true, { polis: polis.length });
       setHealth('ui');
-      // loading selesai: UI custom sudah siap (kasus reload setelah klik antrian) — tutup overlay
-      if (sessionStorage.getItem('ext-m-ticket-loading') === '1') hideTicketLoading();
     };
     const attachPrintClick = () => {
       // ponytail: anti print ganda — klik ganda sebelum reload 1s (server reload setelah simpan)
@@ -632,7 +573,6 @@
             lastPrintKey = key;
             lastPrintAt = Date.now();
             if (isDup) return; // skip print ganda untuk nomor sama
-            showTicketLoading();
             cetakStrukAntrian(nomor, loket);
             extLog('mesin_ticket', true, { idx, nomor, loket });
           },
