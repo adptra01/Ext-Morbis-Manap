@@ -29,25 +29,27 @@ var __morbis_feature = (() => {
       document.getElementById('ext-mesin-loader-css')?.remove();
     }
     const started = Date.now();
-    let curtainUp = false;
+    let fallbackUp = false;
     const tick = setInterval(() => {
       const elapsed = Date.now() - started;
       const html = document.documentElement;
       const health = html.getAttribute('data-ext-antrian-tools-health');
-      if (document.getElementById('ext-mesin-ui')) {
+      if (document.getElementById('ext-mesin-ui') && health === 'ui') {
         release();
         clearInterval(tick);
         return;
       }
-      if (!curtainUp) {
+      if (!fallbackUp) {
         if (health) {
-          hideOld();
-          addOverlay();
-          curtainUp = true;
+          if (elapsed >= UI_MAX_MS && health !== 'ui') {
+            hideOld();
+            addOverlay();
+            fallbackUp = true;
+          }
         } else if (elapsed >= INJECT_MAX_MS) {
           clearInterval(tick);
         }
-      } else if (elapsed >= UI_MAX_MS || health === 'ui') {
+      } else if (elapsed >= UI_MAX_MS * 2 || health === 'ui') {
         release();
         clearInterval(tick);
       }

@@ -530,8 +530,12 @@
         '.ext-m-foot a:hover{text-decoration:underline;}',
         '.ext-m-copy{font-size:14px;text-align:center;}',
         '.ext-m-links{display:flex;gap:24px;font-size:14px;}',
-        // sembunyikan konten lama server (style.display server tidak menang atas !important)
-        '#isi{display:none!important;}',
+        // cross-fade: native (opacity 1→0) → custom (opacity 0→1) dalam 200ms
+        // ponytail: bukan display:none — native tetap di DOM, hanya fade out
+        '#isi{transition:opacity 200ms ease-out!important;}',
+        'html[data-ext-antrian-tools-health="ui"] #isi{opacity:0!important;pointer-events:none!important;}',
+        '#ext-mesin-ui{opacity:0;transition:opacity 200ms ease-in;}',
+        'html[data-ext-antrian-tools-health="ui"] #ext-mesin-ui{opacity:1;}',
         // responsive
         '@media(min-width:768px){.ext-m-head{padding:0 48px;}.ext-m-title{font-size:24px;}.ext-m-main{padding:48px 48px;}.ext-m-heading h1{font-size:48px;}.ext-m-heading p{font-size:20px;}.ext-m-card{padding:32px;}.ext-m-foot{flex-direction:row;padding:24px 48px;}}',
         '@media(max-width:767px){.ext-m-head{padding:0 16px;min-height:72px;gap:8px;}.ext-m-title{font-size:18px;}.ext-m-sub{font-size:10px;}.ext-m-logo{width:46px;height:46px;}.ext-m-brand{gap:10px;}.ext-m-badge{display:none;}.ext-m-fs{width:38px;height:38px;border-radius:10px;}.ext-m-ico{width:120px;height:120px;}.ext-m-ico .ms{font-size:60px;}.ext-m-ico-num{font-size:52px;}.ext-m-main{padding:36px 16px;}.ext-m-content{gap:36px;}.ext-m-hint{font-size:15px;padding:10px 16px;}}',
