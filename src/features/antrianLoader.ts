@@ -1,34 +1,49 @@
-/* AntrianTools – progressive UI handoff (inject saat document_start)
+/* AntrianTools – tirai loading awal + progressive handoff (inject saat document_start)
  * Gate: semua efek hanya aktif saat html[data-ext-antrian-tools] ada (di-set init.ts
  * document_end). Extension disabled / role tidak sesuai → halaman server tampil normal.
  *
- * Transisi: native → custom via CSS cross-fade (200ms) di antrianTools.ts.
- * Loader hanya muncul sebagai FALLBACK kalau inject gagal total (health null > 4s).
+ * Alur (loading awal + cross-fade):
+ *   1. document_start → pasang tirai "Memuat layanan…" SEGERA (tanpa nunggu gate)
+ *   2. init.js (document_end) set gate html[data-ext-antrian-tools]="1"
+ *   3. antrianTools inject + render UI custom (health → 'ui')
+ *   4. CSS cross-fade 200ms: tirai opacity 1→0, custom 0→1
+ *   5. tirai dihapus → custom UI tampil
+ *
+ * Guard:
+ *   - gate tak pernah ada (halaman bukan mesin / extension disabled) → buka tirai → native
+ *   - inject gagal total (health null > 4s setelah gate) → buka tirai → native
+ *   - UI gagal muncul (health ≠ 'ui' > 8s) → buka tirai → native
+ *   - tirai minimal tampil 1.5s (loading terasa, tak kedip)
  * Prinsip: extension boleh gagal, mesin antrian tidak boleh ikut gagal. */
 (function () {
-  const INJECT_MAX_MS = 4000; // tenggat antrianTools inject — kalau lewat, fallback
-  const UI_MAX_MS = 8000; // tenggat UI muncul setelah fallback tirai dipasang
+  const INJECT_MAX_MS = 4000;
+  const UI_MAX_MS = 8000;
+  const MIN_VISIBLE_MS = 1500;
 
-  function hideOld(): void {
+  function addOverlayCSS(): void {
     if (document.getElementById('ext-mesin-loader-css')) return;
     const s = document.createElement('style');
     s.id = 'ext-mesin-loader-css';
+    // tirai menutup SEMUA (z-index 999990) — tidak butuh gate utk menampilkan loading.
+    // Entry ini HANYA match /public/mesin-antrian* → aman selalu hide native #isi
+    // dari document_start (header lama tak sempat tampil).
     s.textContent =
-      'html[data-ext-antrian-tools] body{background:#D5E9DB!important;}' +
-      'html[data-ext-antrian-tools] #isi{display:none!important;}' +
+      '#isi,#body,#header,#content{display:none!important;}' +
+      'body{background:#D5E9DB!important;}' +
+      // cross-fade tirai: opacity 1→0 saat UI siap (health='ui')
+      '#ext-mesin-loader{transition:opacity .2s ease-out;}' +
+      'html[data-ext-antrian-tools-health="ui"] #ext-mesin-loader{opacity:0!important;pointer-events:none!important;}' +
       '@keyframes ext-m-load{0%{transform:translateX(-100%);}100%{transform:translateX(350%);}}';
     (document.head || document.documentElement).appendChild(s);
   }
 
   function addOverlay(): void {
-    if (!document.body) return;
-    if (document.documentElement.getAttribute('data-ext-antrian-tools') !== '1') return;
     if (document.getElementById('ext-mesin-loader')) return;
     const l = document.createElement('div');
     l.id = 'ext-mesin-loader';
     l.style.cssText =
       'position:fixed;inset:0;z-index:999990;display:flex;align-items:center;justify-content:center;' +
-      'background:#D5E9DB;font-family:Inter,"Segoe UI",system-ui,sans-serif;';
+      'background:#D5E9DB;';
     l.innerHTML =
       '<div style="display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center;">' +
       '<img src="/assets/images/logo/Kota Jambi.png" alt="" style="width:72px;height:72px;object-fit:contain;">' +
@@ -37,7 +52,7 @@
       '</div>' +
       '<p style="margin:0;color:#495057;font-size:15px;font-weight:600;">Memuat layanan…</p>' +
       '</div>';
-    document.body.appendChild(l);
+    (document.body || document.documentElement).appendChild(l);
   }
 
   function release(): void {
@@ -45,38 +60,43 @@
     document.getElementById('ext-mesin-loader-css')?.remove();
   }
 
-  const started = Date.now();
-  let fallbackUp = false;
-  const tick = setInterval(() => {
-    const elapsed = Date.now() - started;
-    const html = document.documentElement;
-    const health = html.getAttribute('data-ext-antrian-tools-health');
+  function monitor(): void {
+    addOverlayCSS();
+    addOverlay(); // tirai segera, tanpa nunggu gate — loading awal tampil
 
-    // UI custom sudah tampil → bersihkan sisa tirai fallback (kalau ada), selesai
-    if (document.getElementById('ext-mesin-ui') && health === 'ui') {
-      release();
+    const started = Date.now();
+    let done = false;
+    const finished = () => {
+      if (done) return;
+      done = true;
       clearInterval(tick);
-      return;
-    }
+    };
+    const tick = setInterval(() => {
+      const elapsed = Date.now() - started;
+      const html = document.documentElement;
+      const health = html.getAttribute('data-ext-antrian-tools-health');
+      const gate = html.getAttribute('data-ext-antrian-tools');
 
-    if (!fallbackUp) {
-      if (health) {
-        // antrianTools inject berhasil — tunggu cross-fade CSS selesai, jangan pasang tirai
-        // kalau health='ui' dalam 8s → cross-fade jalan, selesai
-        // kalau health='injected' tapi UI gagal muncul dalam 8s → pasang fallback
-        if (elapsed >= UI_MAX_MS && health !== 'ui') {
-          hideOld();
-          addOverlay();
-          fallbackUp = true;
-        }
-      } else if (elapsed >= INJECT_MAX_MS) {
-        // inject tidak pernah terjadi → native tampil normal; selesai
-        clearInterval(tick);
+      // halaman bukan mesin / extension disabled (gate tak pernah ada) → buka tirai
+      if (elapsed >= INJECT_MAX_MS && !gate && health === null) {
+        release();
+        finished();
+        return;
       }
-    } else if (elapsed >= UI_MAX_MS * 2 || health === 'ui') {
-      // fallback tirai sudah dipasang — buka kalau UI akhirnya muncul atau timeout ganda
-      release();
-      clearInterval(tick);
-    }
-  }, 500);
+      if (health === 'ui' && elapsed >= MIN_VISIBLE_MS) {
+        // UI siap & tirai minimal tampil → cross-fade buka; hapus setelah fade
+        setTimeout(release, 250);
+        finished();
+        return;
+      }
+      if (health && elapsed >= UI_MAX_MS && health !== 'ui') {
+        // inject tapi UI tak muncul → buka tirai (native tampil)
+        release();
+        finished();
+        return;
+      }
+    }, 250);
+  }
+
+  monitor();
 })();
