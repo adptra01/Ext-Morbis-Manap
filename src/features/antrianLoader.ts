@@ -34,8 +34,10 @@
     // tirai menutup SEMUA (z-index 999990). Entry HANYA match /public/mesin-antrian*
     // → aman selalu hide native dari document_start (header lama tak tampil).
     s.textContent =
-      '#isi,#body,#header,#content{display:none!important;}' +
-      'body{background:#D5E9DB!important;}' +
+      // selimuti SEMUA child native body (navbar biru bootstrap, card, dsb) dari
+      // document_start, kecuali tirai kita sendiri. Jangan tunggu overlay DOM
+      // (ada window ~250ms sebelum ensureOverlay — itu sebab navbar biru tampil).
+      'body > *:not(#ext-mesin-loader):not(#ext-mesin-loader-css):not(script):not(link):not(style):not(meta){display:none!important;}' +
       '#ext-mesin-loader{transition:opacity .2s ease-out;}' +
       '@keyframes ext-m-load{0%{transform:translateX(-100%);}100%{transform:translateX(350%);}}';
     (document.head || document.documentElement).appendChild(s);
