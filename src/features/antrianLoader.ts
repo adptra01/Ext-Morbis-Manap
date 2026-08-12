@@ -3,48 +3,53 @@
  * document_end). Extension disabled / role tidak sesuai → halaman server tampil normal.
  *
  * Alur (loading awal + cross-fade):
- *   1. document_start → pasang tirai "Memuat layanan…" SEGERA (tanpa nunggu gate)
+ *   1. document_start → tirai "Memuat layanan…" SEGERA (tanpa nunggu gate)
  *   2. init.js (document_end) set gate html[data-ext-antrian-tools]="1"
  *   3. antrianTools inject + render UI custom (health → 'ui')
- *   4. CSS cross-fade 200ms: tirai opacity 1→0, custom 0→1
- *   5. tirai dihapus → custom UI tampil
+ *   4. JS fade-out tirai (200ms) → custom UI tampil
+ *
+ * PENTING (bug masa lalu — loading 'gak nutup'):
+ *   Overlay HANYA di-fade oleh JS (fadeOut), TIDAK ada CSS auto-hide pada
+ *   health='ui'. Kalau CSS bisa auto-hide, inject cepat (health='ui' dalam
+ *   < 200ms) membuat animasi hilang instan sebelum MIN_VISIBLE → persis
+ *   masalah 'animasi gak menutup sama sekali' dulu. Jadi overlay dijamin
+ *   tampil penuh minimal 1.5s, kemudian JS mem-fade-nya.
  *
  * Guard:
- *   - gate tak pernah ada (halaman bukan mesin / extension disabled) → buka tirai → native
- *   - inject gagal total (health null > 4s setelah gate) → buka tirai → native
+ *   - gate tak pernah ada (bukan mesin / extension disabled) → buka tirai → native
+ *   - inject gagal total (health null > 4s) → buka tirai → native
  *   - UI gagal muncul (health ≠ 'ui' > 8s) → buka tirai → native
- *   - tirai minimal tampil 1.5s (loading terasa, tak kedip)
  * Prinsip: extension boleh gagal, mesin antrian tidak boleh ikut gagal. */
 (function () {
   const INJECT_MAX_MS = 4000;
   const UI_MAX_MS = 8000;
   const MIN_VISIBLE_MS = 1500;
 
+  let overlay: HTMLElement | null = null;
+
   function addOverlayCSS(): void {
     if (document.getElementById('ext-mesin-loader-css')) return;
     const s = document.createElement('style');
     s.id = 'ext-mesin-loader-css';
-    // tirai menutup SEMUA (z-index 999990) — tidak butuh gate utk menampilkan loading.
-    // Entry ini HANYA match /public/mesin-antrian* → aman selalu hide native #isi
-    // dari document_start (header lama tak sempat tampil).
+    // tirai menutup SEMUA (z-index 999990). Entry HANYA match /public/mesin-antrian*
+    // → aman selalu hide native dari document_start (header lama tak tampil).
     s.textContent =
       '#isi,#body,#header,#content{display:none!important;}' +
       'body{background:#D5E9DB!important;}' +
-      // cross-fade tirai: opacity 1→0 saat UI siap (health='ui')
       '#ext-mesin-loader{transition:opacity .2s ease-out;}' +
-      'html[data-ext-antrian-tools-health="ui"] #ext-mesin-loader{opacity:0!important;pointer-events:none!important;}' +
       '@keyframes ext-m-load{0%{transform:translateX(-100%);}100%{transform:translateX(350%);}}';
     (document.head || document.documentElement).appendChild(s);
   }
 
-  function addOverlay(): void {
-    if (document.getElementById('ext-mesin-loader')) return;
-    const l = document.createElement('div');
-    l.id = 'ext-mesin-loader';
-    l.style.cssText =
+  function ensureOverlay(): void {
+    if (overlay && document.getElementById('ext-mesin-loader')) return;
+    if (!document.body) return; // body belum ada — retry via interval
+    overlay = document.createElement('div');
+    overlay.id = 'ext-mesin-loader';
+    overlay.style.cssText =
       'position:fixed;inset:0;z-index:999990;display:flex;align-items:center;justify-content:center;' +
       'background:#D5E9DB;';
-    l.innerHTML =
+    overlay.innerHTML =
       '<div style="display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center;">' +
       '<img src="/assets/images/logo/Kota Jambi.png" alt="" style="width:72px;height:72px;object-fit:contain;">' +
       '<div style="width:120px;height:8px;border-radius:999px;background:#d1e7dd;overflow:hidden;">' +
@@ -52,17 +57,18 @@
       '</div>' +
       '<p style="margin:0;color:#495057;font-size:15px;font-weight:600;">Memuat layanan…</p>' +
       '</div>';
-    (document.body || document.documentElement).appendChild(l);
+    document.body.appendChild(overlay);
   }
 
-  function release(): void {
+  // fade out lalu hapus — satu-satunya cara overlay hilang (JS-controlled)
+  function fadeOutDone(): void {
     document.getElementById('ext-mesin-loader')?.remove();
     document.getElementById('ext-mesin-loader-css')?.remove();
+    overlay = null;
   }
 
   function monitor(): void {
     addOverlayCSS();
-    addOverlay(); // tirai segera, tanpa nunggu gate — loading awal tampil
 
     const started = Date.now();
     let done = false;
@@ -77,21 +83,24 @@
       const health = html.getAttribute('data-ext-antrian-tools-health');
       const gate = html.getAttribute('data-ext-antrian-tools');
 
+      ensureOverlay(); // body muncul belakangan → retry
+
       // halaman bukan mesin / extension disabled (gate tak pernah ada) → buka tirai
       if (elapsed >= INJECT_MAX_MS && !gate && health === null) {
-        release();
+        fadeOutDone();
         finished();
         return;
       }
       if (health === 'ui' && elapsed >= MIN_VISIBLE_MS) {
-        // UI siap & tirai minimal tampil → cross-fade buka; hapus setelah fade
-        setTimeout(release, 250);
+        // UI siap & tirai sudah tampil minimal 1.5s → fade lalu hapus
+        if (overlay && document.getElementById('ext-mesin-loader')) overlay.style.opacity = '0';
+        setTimeout(fadeOutDone, 220);
         finished();
         return;
       }
       if (health && elapsed >= UI_MAX_MS && health !== 'ui') {
         // inject tapi UI tak muncul → buka tirai (native tampil)
-        release();
+        fadeOutDone();
         finished();
         return;
       }
