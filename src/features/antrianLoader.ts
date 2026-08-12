@@ -38,6 +38,10 @@
       // document_start, kecuali tirai kita sendiri. Jangan tunggu overlay DOM
       // (ada window ~250ms sebelum ensureOverlay — itu sebab navbar biru tampil).
       'body > *:not(#ext-mesin-loader):not(#ext-mesin-loader-css):not(script):not(link):not(style):not(meta){display:none!important;}' +
+      // jaring pengaman blue-flash: latar body hijau loader sejak document_start,
+      // jadi apa pun yang sempat ter-render sebelum CSS ini tertukar warna hijau,
+      // bukan biru navbar. Tanpa display:none pada body → fallback (native) aman.
+      'html,body{background:#D5E9DB!important;}' +
       '#ext-mesin-loader{transition:opacity .2s ease-out;}' +
       '@keyframes ext-m-load{0%{transform:translateX(-100%);}100%{transform:translateX(350%);}}';
     (document.head || document.documentElement).appendChild(s);
