@@ -22,8 +22,15 @@
  * Prinsip non-negotiable:
  *   - Data VALID             → normalize → render PANGGILAN & SIAP DIAMBIL
  *   - [] / HTML / ORA / HTTP → jangan ubah DOM native; hanya backoff + log
- *   - STATUS=0               → VALID panggilan aktif (WHERE pap.status=0); bukan batal
- *   - STATUS=1               → siap diambil; STATUS lain → row diabaikan
+ *   - Klik "Selanjutnya" di halaman manajemen mengubah current-number pada
+ *     endpoint `?section=isi&nomor=<loket>` (VERIFIKASI PRODUKSI 2026-08-12:
+ *     MURSIDAH BT-4 diklik → current-number counter 1 = "4"; endpoint ini
+ *     PUBLIK dan dipakai display native sendiri via loadContent). STATUS &
+ *     STATUS_PANGGIL pada data_call TIDAK diandalkan sebagai sumber panggilan
+ *     aktif (basi saat display dibuka ulang). current-number = sumber kebenaran.
+ *   - data_call hanya dipakai untuk NAMA pasien (cocokkan COUNTER/NOMOR
+ *     dengan current-number) dan daftar SIAP DIAMBIL.
+ *   - WAKTU_PENERIMAAN ada & belum diserahkan → SIAP DIAMBIL
  *   - nomor baru             → bell lalu TTS (dedup signature ⇒ satu kali)
  *   - WebSocket/Swal/speechSynthesis native → BIARKAN normal; extension TIDAK
  *     override/stub/suppress apa pun dari ketiganya.
@@ -32,8 +39,14 @@
  * Gating: fitur aktif hanya bila role apotek (allowedRoles: ['apotek']) →
  * gate data-ext-antrian-farmasi di init.ts.
  */
-import { pickAnnounce } from './shared/queueRule';
 import { nextHealth, type HealthState } from './shared/wsHealth';
+import {
+  activeNumber,
+  isReset,
+  parseCurrentNumbers,
+  parsePatients,
+  type PatientByName,
+} from './shared/currentNumber';
 
 // Observability (debug) — snapshot baca-saja, bukan sumber kebenaran.
 // Hanya dibuat bila URL memakai ?debug=1; production normal tetap bersih
@@ -60,16 +73,19 @@ declare global {
   const LIST_URL = '/public/antrian-farmasi-v2/list-antrian-v2';
   // Adaptive backoff polling fallback (hanya saat native membeku): setiap gagal naik
   // satu anak tangga, reset ke awal setelah berhasil.
-  const POLL_LADDER_MS = [3000, 5000, 10000, 15000];
+  // ponytail: anak tangga pertama 600ms supaya klik beruntun Selanjutnya tertangkap
+  // (tes lapangan: klik 1x/detik melompati 1 nomor di poll 2s). Klik lebih cepat
+  // dari 600ms masih bisa terlewat — naikkan budget hanya bila itu terjadi.
+  const POLL_LADDER_MS = [600, 2000, 5000, 10000];
   const CALL_DELAY_MS = 1200; // jeda bell sebelum voice
   const GAP_MS = 400;
-
   // C1 — Native Activity Health Monitor: probe aktivitas DOM antrian (baca-only).
   // Bukan instrumentasi window.WebSocket — extension "mengamati konsekuensi transport
   // native", bukan merekayasa WebSocket-nya. Nama file wsHealth.ts dipertahankan
   // (internal), namun yang sebenarnya diamati adalah aktivitas display native.
-  const WATCH_MS = 3000; // periodik baca signal DOM antrian native
-  const STALE_MAX = 4; // 4× diam berturut-turut ≈ 12s → anggap native membeku, mulai polling
+  // ponytail: 1500ms × 2 = ~3s deteksi freeze (dulu 3000×4 = 12s) — keluhan "lambat".
+  const WATCH_MS = 1500; // periodik baca signal DOM antrian native
+  const STALE_MAX = 2; // 2× diam berturut-turut ≈ 3s → anggap native membeku, mulai polling
 
   /* ============================================================
    * WebSocket native MORBIS → BIARKAN berjalan normal. Extension
@@ -115,7 +131,7 @@ declare global {
   };
 
   /* ============================================================
-   * API Adapter — fetch data_call, validasi ketat.
+   * API Adapter — fetch data_call (nama pasien) + current-number.
    * ============================================================ */
   async function fetchCallData(): Promise<RawRow[]> {
     // GET (bukan POST): endpoint mengembalikan data hanya utk GET ?type=data_call.
@@ -134,34 +150,71 @@ declare global {
     return parsed as RawRow[];
   }
 
+  // Loket display (DEPO RAJAL = 4324; verifikasi produksi 2026-08-12, satusatunya
+  // opsi di <select id="no_loket"> halaman manajemen). Baca dari DOM bila ada
+  // (display asli tidak punya #no_loket → fallback ke konstanta terverifikasi).
+  function loket(): string {
+    const el = document.querySelector<HTMLSelectElement>('#no_loket');
+    if (el && el.value) return el.value;
+    return '4324';
+  }
+
+  // Sumber kebenaran panggilan aktif: endpoint ?section=isi (PUBLIK, tanpa
+  // session — dipakai display native loadContent tiap 30 detik). current-number
+  // berubah SAAT klik "Selanjutnya" di halaman manajemen; TIDAK bergantung WS.
+  // Respons yang sama juga memuat tabel antrian dengan NAMA pasien per nomor —
+  // diurai sekaligus agar nama TTS selalu sinkron (data_call bisa lag/basi).
+  async function fetchCurrentNumber(): Promise<{
+    current: Map<string, string>;
+    patients: PatientByName;
+  }> {
+    const res = await fetch(
+      '/antrian-farmasi/v2?section=isi&nomor=' + encodeURIComponent(loket()),
+      {
+        method: 'GET',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      },
+    );
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const html = await res.text();
+    return { current: parseCurrentNumbers(html), patients: parsePatients(html) };
+  }
+
   /* ============================================================
    * Normalize — pemetaan eksplisit struktur backend (tervalidasi data nyata).
    * Klasifikasi ground truth (kiosk, 2026-08-12):
-   *   STATUS=0                 → PANGGILAN (sedang dipanggil) — contoh ID 78890
+   *   STATUS=0                 → kandidat PANGGILAN awal (baseline pertama saja)
    *   WAKTU_PENERIMAAN ada     → SIAP DIAMBIL (sudah diterima, belum diserahkan)
    *                              — contoh ID 78887/78891 (STATUS=4)
    *   selain itu               → IGNORE (jangan salah klasifikasi)
    * Catatan: jangan pakai STATUS=='1' utk ready — data nyata memakai STATUS=4.
+   *
+   * Panggilan BARU (klik "Selanjutnya") dideteksi lewat delta STATUS_PANGGIL
+   * antar poll (lihat detectNewCalls) — STATUS TIDAK berubah saat klik, jadi
+   * STATUS=0 hanya dipakai sebagai baseline tampilan pertama, bukan sumber
+   * kebenaran panggilan (fix 2026-08-12: display macet di UT-1 TEST).
    * ============================================================ */
+  function toViewRow(r: RawRow): ViewRow {
+    return {
+      id: String(r.ID),
+      nomor: r.COUNTER != null ? String(r.COUNTER) : r.NOMOR != null ? String(r.NOMOR) : '',
+      kode: r.KODE || r.NAMA || 'BT',
+      namaPasien: r.NAMA_PASIEN ?? '',
+      unit: r.NAMA_UNIT ?? '',
+      jenis: r.JENIS === 'tunggal' ? 'tunggal' : 'racikan',
+      rm: r.ID_PASIEN != null ? String(r.ID_PASIEN) : '',
+    };
+  }
+
   function normalize(rows: RawRow[]): QueueView {
     const panggilan: ViewRow[] = [];
     const siapDiambil: ViewRow[] = [];
     for (const r of rows) {
       if (!r || r.ID == null) continue; // jangan render baris tanpa ID
-      const v: ViewRow = {
-        id: String(r.ID),
-        nomor: r.COUNTER != null ? String(r.COUNTER) : r.NOMOR != null ? String(r.NOMOR) : '',
-        kode: r.KODE || r.NAMA || 'BT',
-        namaPasien: r.NAMA_PASIEN ?? '',
-        unit: r.NAMA_UNIT ?? '',
-        jenis: r.JENIS === 'tunggal' ? 'tunggal' : 'racikan',
-        rm: r.ID_PASIEN != null ? String(r.ID_PASIEN) : '',
-      };
+      const v = toViewRow(r);
       const st = String(r.STATUS).trim();
-      const diterima =
-        r.WAKTU_PENERIMAAN != null && String(r.WAKTU_PENERIMAAN).trim() !== '';
-      const diserahkan =
-        r.WAKTU_PENYERAHAN != null && String(r.WAKTU_PENYERAHAN).trim() !== '';
+      const diterima = r.WAKTU_PENERIMAAN != null && String(r.WAKTU_PENERIMAAN).trim() !== '';
+      const diserahkan = r.WAKTU_PENYERAHAN != null && String(r.WAKTU_PENYERAHAN).trim() !== '';
       if (st === '0') panggilan.push(v);
       else if (diterima && !diserahkan) siapDiambil.push(v);
       // status lain tanpa tanda penerimaan: lewati
@@ -200,12 +253,15 @@ declare global {
   // (atau API gagal), DOM di-biarkan apa adanya — extension TIDAK menghapus/
   // menimpa tampilan native. Empty/error = jangan sentuh display.
   //
+  // call = panggilan aktif yang HARUS ditampilkan (hasil deteksi delta
+  // STATUS_PANGGIL). null → panel panggilan tidak disentuh.
+  //
   // Setelah menulis DOM, beri tahu mesin kesehatan via `onWeWrote()` supaya
   // write extension tidak dianggap sebagai "native recovery" (anti feedback-loop).
-  function renderDisplay(view: QueueView): void {
-    if (view.panggilan.length > 0) {
+  function renderDisplay(view: QueueView, call: ViewRow | null): void {
+    if (call) {
       const p = document.querySelector<HTMLElement>(PANGGILAN_SEL);
-      if (p) p.innerHTML = panelHtml('Panggilan Farmasi', view.panggilan);
+      if (p) p.innerHTML = panelHtml('Panggilan Farmasi', [call]);
     }
     if (view.siapDiambil.length > 0) {
       const s = document.querySelector<HTMLElement>(SIAP_SEL);
@@ -217,7 +273,14 @@ declare global {
   /* ============================================================
    * Queue State
    * ============================================================ */
-  let announcedId = ''; // signature `${ID}-${COUNTER}` terakhir yang di-announce (dedup)
+  let announcedSig = ''; // signature `${counter}:${nomor}` terakhir yang di-announce (dedup)
+  // current-number (counter → nomor) dari poll sebelumnya. Klik "Selanjutnya"
+  // di halaman manajemen MENGUBAH current-number pada endpoint ?section=isi —
+  // delta antar poll = panggilan baru (verifikasi produksi 2026-08-12). Lebih
+  // andal daripada delta STATUS_PANGGIL: tidak basi saat display dibuka ulang.
+  const prevCurrent = new Map<string, string>();
+  let currentCall: ViewRow | null = null; // panggilan aktif yang sedang ditampilkan
+  let baselineSet = false; // false = poll pertama (tampilkan tanpa announce)
 
   /* ============================================================
    * TTS (role-gated). Bell asli MORBIS (audio #unine) dipicu karena
@@ -226,12 +289,16 @@ declare global {
   const synth = window.speechSynthesis;
   const RealSpeak = synth.speak.bind(synth);
   let busy = false;
-  const queue: string[] = [];
+  // Antrean serial (FIFO): bell DAN voice dalam satu antrean supaya panggilan baru
+  // tidak menimpa panggilan yang sedang berbicara — bell berikutnya menunggu voice
+  // aktif selesai (klik "Selanjutnya" beruntun).
+  type QueueItem = { kind: 'voice'; text: string } | { kind: 'bell' };
+  const queue: QueueItem[] = [];
 
   function next(): void {
     if (busy || queue.length === 0) return;
     busy = true;
-    const text = queue.shift()!;
+    const item = queue.shift()!;
     let done = false;
     const finish = (): void => {
       if (done) return;
@@ -239,8 +306,15 @@ declare global {
       busy = false;
       setTimeout(() => next(), GAP_MS);
     };
+    if (item.kind === 'bell') {
+      ringBell();
+      // Jeda bell sebelum voice: item bell dianggap selesai setelah jeda, lalu
+      // item voice berikutnya mulai. Bell MORBIS (#unine) ~1.2s.
+      setTimeout(finish, CALL_DELAY_MS);
+      return;
+    }
     try {
-      const u = new SpeechSynthesisUtterance(text);
+      const u = new SpeechSynthesisUtterance(item.text);
       const v = synth.getVoices().find((x) => x.lang && x.lang.toLowerCase().startsWith('id'));
       if (v) u.voice = v;
       u.lang = 'id-ID';
@@ -253,10 +327,6 @@ declare global {
     } catch {
       finish();
     }
-  }
-  function speak(text: string): void {
-    queue.push(text);
-    next();
   }
 
   /* numberToWords lokal (bukan import shared → tanpa side-effect global). */
@@ -325,11 +395,14 @@ declare global {
       ', atas nama ' +
       (row.namaPasien || '') +
       ', silakan menuju farmasi.';
-    ringBell();
-    setTimeout(() => {
-      speak(kalimat);
-      speak(kalimat);
-    }, CALL_DELAY_MS);
+    // Antrean serial: bell → voice → voice. Panggilan baru yang datang saat yang
+    // lama masih berbicara masuk antrean — tidak menimpa (fix klik beruntun).
+    queue.push(
+      { kind: 'bell' },
+      { kind: 'voice', text: kalimat },
+      { kind: 'voice', text: kalimat },
+    );
+    next();
   }
 
   // C2 — Audio unlock via gesture pengguna pertama. TANPA memanggil
@@ -420,16 +493,81 @@ declare global {
   async function pollFallback(): Promise<void> {
     pollTimer = null;
     try {
-      const rows = await fetchCallData();
+      // Satu fetch ?section=isi memberi current-number (nomor aktif) + nama
+      // pasien (tabel antrian) — sinkron, tanpa race. data_call tetap dipakai
+      // untuk daftar SIAP DIAMBIL (normalize).
+      const [{ current: cur, patients }, rows] = await Promise.all([
+        fetchCurrentNumber(),
+        fetchCallData(),
+      ]);
       ladderIdx = 0; // sukses → reset backoff ke anak tangga awal
       updateDebugState({ lastPoll: Date.now(), lastDataCount: rows.length });
 
       // Hanya sentuh DOM bila ada data valid; []/gagal → pertahankan DOM native.
       const view = normalize(rows);
-      if (view.panggilan.length > 0 || view.siapDiambil.length > 0) {
-        console.info('[AFD] POLL success rows=' + rows.length);
-        renderDisplay(view);
-        maybeAnnounce(view);
+      const num = activeNumber(cur);
+      const sig =
+        num !== ''
+          ? [...cur.entries()]
+              .filter(([, v]) => v === num)
+              .map(([c]) => c + ':' + num)
+              .join('|')
+          : '';
+
+      if (num !== '') {
+        // Nama pasien dari TABEL ?section=isi (sinkron dengan current-number,
+        // tidak bisa lag). Fallback ke data_call bila tabel kosong.
+        const p = patients.get(num);
+        const mPat = matchPatient(rows, num);
+        const call: ViewRow = {
+          id: 'cur-' + num,
+          nomor: num,
+          kode: (p && p.kode) || mPat?.kode || '',
+          namaPasien: (p && p.nama) || mPat?.namaPasien || '',
+          unit: mPat?.unit || '',
+          jenis: mPat?.jenis || 'tunggal',
+          rm: mPat?.rm || '',
+        };
+        if (!baselineSet) {
+          // Poll pertama: tampilkan panggilan aktif saat ini TANPA announce
+          // (bukan panggilan baru — hanya kondisi awal layar / display dibuka ulang).
+          baselineSet = true;
+          currentCall = call;
+          prevCurrent.clear();
+          for (const [c, v] of cur) prevCurrent.set(c, v);
+          renderDisplay(view, currentCall);
+        } else if (sig !== announcedSig && isNewCurrent(cur)) {
+          if (isReset(cur, prevCurrent)) {
+            // Reset antrian (tombol "Reset Antrian" di halaman manajemen):
+            // current-number turun drastis — BUKAN panggilan baru. Update
+            // baseline & tampilkan, tanpa announce (fix 2026-08-12).
+            currentCall = call;
+            prevCurrent.clear();
+            for (const [c, v] of cur) prevCurrent.set(c, v);
+            renderDisplay(view, currentCall);
+          } else {
+            // current-number berubah antar poll = klik "Selanjutnya" → panggilan baru.
+            announcedSig = sig;
+            currentCall = call;
+            prevCurrent.clear();
+            for (const [c, v] of cur) prevCurrent.set(c, v);
+            renderDisplay(view, currentCall);
+            maybeAnnounce(view, currentCall);
+          }
+        } else {
+          // Tidak ada panggilan baru → pertahankan panggilan aktif, tapi
+          // refresh panel SIAP DIAMBIL. prevCurrent tetap disinkronkan.
+          prevCurrent.clear();
+          for (const [c, v] of cur) prevCurrent.set(c, v);
+          if (currentCall) renderDisplay(view, currentCall);
+          else {
+            currentCall = call;
+            renderDisplay(view, currentCall);
+          }
+        }
+      } else if (view.siapDiambil.length > 0) {
+        // Tidak ada panggilan aktif saat ini; tampilkan hanya SIAP DIAMBIL.
+        if (currentCall) renderDisplay(view, currentCall);
       }
     } catch (error) {
       // API error / HTML / ORA / [] → transport uncertainty, JANGAN ubah DOM.
@@ -443,29 +581,41 @@ declare global {
     }
   }
 
-  // TTS: dedup signature (dipanggil bila ada data baru). audioUnlocked header di announce().
-  // Observability: log ANNOUNCE hanya saat benar-benar bicara, dan duplicate ignored
-  // saat signature sama — tidak log data pasien, cukup signature.
-  function maybeAnnounce(view: QueueView): void {
-    if (!voiceEnabled || view.panggilan.length === 0) return;
-    const { row, signature } = pickAnnounce(
-      view.panggilan.map((r) => ({
-        ID: r.id,
-        NOMOR: r.nomor,
-        COUNTER: r.nomor,
-        NAMA_PASIEN: r.namaPasien,
-      })),
-      announcedId,
-    );
-    if (row && signature) {
-      announcedId = signature;
-      updateDebugState({ lastAnnouncement: signature });
-      console.info('[AFD] ANNOUNCE ' + signature);
-      const hit = view.panggilan.find((x) => x.id === row.ID);
-      if (hit) announce(hit);
-    } else if (signature === announcedId && signature !== '') {
-      console.info('[AFD] duplicate ignored ' + signature);
+  // Apakah current-number berubah dibanding poll sebelumnya? Perubahan = panggilan
+  // baru. Baseline pertama (prevCurrent kosong) → false (jangan announce).
+  function isNewCurrent(cur: Map<string, string>): boolean {
+    if (prevCurrent.size === 0) return false;
+    for (const [c, v] of cur) {
+      if (prevCurrent.get(c) !== v) return true;
     }
+    return false;
+  }
+
+  // Cocokkan nomor aktif ke record data_call: COUNTER == nomor (preferensi),
+  // fallback NOMOR == nomor. Status STATUS_PANGGIL tidak dipakai sebagai filter —
+  // data_call bisa basi; current-number adalah sumber kebenaran urutan panggil.
+  function matchPatient(rows: RawRow[], nomor: string): ViewRow | null {
+    const byCounter = rows.find(
+      (r) => r && r.COUNTER != null && String(r.COUNTER).trim() === nomor,
+    );
+    const hit =
+      byCounter ?? rows.find((r) => r && r.NOMOR != null && String(r.NOMOR).trim() === nomor);
+    return hit ? toViewRow(hit) : null;
+  }
+
+  // TTS: dedup signature (dipanggil bila ada panggilan baru). audioUnlocked header
+  // di announce(). Observability: log ANNOUNCE hanya saat benar-benar bicara, dan
+  // duplicate ignored saat signature sama — tidak log data pasien, cukup signature.
+  function maybeAnnounce(view: QueueView, call: ViewRow): void {
+    if (!voiceEnabled) return;
+    if (call.id === announcedSig) {
+      console.info('[AFD] duplicate ignored ' + announcedSig);
+      return;
+    }
+    announcedSig = call.id;
+    updateDebugState({ lastAnnouncement: announcedSig });
+    console.info('[AFD] ANNOUNCE ' + announcedSig);
+    announce(call);
   }
 
   // MODE 1/2 switch — pengamatan aktivitas DOM native (tiap WATCH_MS).
