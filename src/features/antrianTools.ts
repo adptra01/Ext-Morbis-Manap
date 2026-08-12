@@ -18,6 +18,13 @@
     setTimeout(() => clearInterval(tries), 5000);
   }
 
+  // health state via DOM attribute (bukan window): antrianLoader jalan di ISOLATED
+  // world, antrianTools di MAIN world — dua context JS berbeda, DOM adalah satu-satunya
+  // jembatan. Loader: null=belum inject, 'injected'=script jalan, 'ui'=UI siap.
+  function setHealth(state: 'injected' | 'ui'): void {
+    document.documentElement.setAttribute('data-ext-antrian-tools-health', state);
+  }
+
   function extLog(event: string, ok: boolean, detail?: unknown): void {
     try {
       window.postMessage?.(
@@ -254,13 +261,7 @@
   // Sintesis bell "ding-dong": nada E5 → C5 dengan harmonik + decay eksponensial
   // (timbre bel nyata, bukan bip sinus polos). WebAudio murni → jalan offline,
   // tanpa file audio eksternal.
-  function bellNote(
-    ctx: AudioContext,
-    freq: number,
-    at: number,
-    dur: number,
-    vol: number,
-  ): void {
+  function bellNote(ctx: AudioContext, freq: number, at: number, dur: number, vol: number): void {
     // harmonik bell: fundamental + 2x + 2.76x (inharmonik, karakter bel) + 5.4x
     [1, 2, 2.76, 5.4].forEach((h, i) => {
       const osc = ctx.createOscillator();
@@ -332,6 +333,7 @@
     // gate: hanya jalan jika fitur enabled + role diizinkan (attribute di-set init.ts
     // document_end; fitur ini MAIN world tidak punya chrome.storage)
     if (document.documentElement.getAttribute('data-ext-antrian-tools') !== '1') return;
+    setHealth('injected');
     const path = window.location.pathname;
     // redesign display HANYA di view-antrian v1 (bukan view-antrian-v2)
     const isViewAntrian = path.endsWith('/counter-antrian/view-antrian');
@@ -370,11 +372,17 @@
       const cards = Array.from(document.querySelectorAll('[onclick^="antrian("]'));
       if (!cards.length) return; // card server belum ada — dipanggil ulang oleh intervalPoll
       const esc = (s: unknown) =>
-        String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        String(s ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
       const polis = cards.map((card) => {
         const val = (prefix: string) =>
           card.querySelector(`[id^="${prefix}-"]`)?.getAttribute('value') || '';
-        const m = String((card as HTMLElement).getAttribute('onclick') || '').match(/antrian\((\d+)\)/);
+        const m = String((card as HTMLElement).getAttribute('onclick') || '').match(
+          /antrian\((\d+)\)/,
+        );
         return {
           idx: m ? m[1] : '',
           nomor: val('nomor'),
@@ -391,8 +399,9 @@
       // font: Inter + Material Symbols (sekali saja)
       if (!document.getElementById('ext-mesin-fonts')) {
         const frag = document.createDocumentFragment();
-        ['https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap',
-         'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap',
+        [
+          'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap',
+          'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap',
         ].forEach((href) => {
           const l = document.createElement('link');
           l.id = 'ext-mesin-fonts';
@@ -404,11 +413,11 @@
       }
       const ui = document.createElement('div');
       ui.id = 'ext-mesin-ui';
-ui.innerHTML =
+      ui.innerHTML =
         '<header class="ext-m-head">' +
         '  <div class="ext-m-brand">' +
         '    <img class="ext-m-logo" src="/assets/images/logo/Kota Jambi.png" alt="Logo RSUD H. Abdul Manap" ' +
-        '      onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">' +
+        "      onerror=\"this.style.display='none';this.nextElementSibling.style.display='flex';\">" +
         '    <span class="ms ext-m-logo-fallback" aria-hidden="true" style="display:none;">medical_services</span>' +
         '    <div class="ext-m-titles">' +
         '      <span class="ext-m-title">RSUD H. Abdul Manap Kota Jambi</span>' +
@@ -459,7 +468,9 @@ ui.innerHTML =
         '  </div>' +
         '</main>' +
         '<footer class="ext-m-foot">' +
-        '  <div class="ext-m-copy">© ' + new Date().getFullYear() + ' RSUD H. Abdul Manap Kota Jambi — Melayani dengan Hati · ' +
+        '  <div class="ext-m-copy">© ' +
+        new Date().getFullYear() +
+        ' RSUD H. Abdul Manap Kota Jambi — Melayani dengan Hati · ' +
         '    <a href="https://simanap.rsudkotajambi.id/">https://simanap.rsudkotajambi.id/</a></div>' +
         '  <div class="ext-m-links"><a href="#">Panduan Pengguna</a><a href="#">Syarat &amp; Ketentuan</a><a href="#">Hubungi Kami</a></div>' +
         '</footer>';
@@ -472,7 +483,7 @@ ui.innerHTML =
       );
       injectCSS('ext-mesin-ui-css', [
         '#ext-mesin-ui{position:fixed;inset:0;z-index:999998;display:flex;flex-direction:column;background:#D5E9DB;color:#212529;font-family:"Inter","Segoe UI",system-ui,sans-serif;overflow-y:auto;}',
-        '#ext-mesin-ui .ms{font-family:"Material Symbols Outlined",sans-serif;font-variation-settings:\'FILL\' 1,\'wght\' 400,\'GRAD\' 0,\'opsz\' 24;font-size:inherit;line-height:1;}',
+        "#ext-mesin-ui .ms{font-family:\"Material Symbols Outlined\",sans-serif;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;font-size:inherit;line-height:1;}",
         // TopAppBar
         '.ext-m-head{background:#fff;color:#0f5132;box-shadow:0 1px 3px rgba(0,0,0,.08);display:flex;justify-content:space-between;align-items:center;padding:0 24px;min-height:80px;flex-shrink:0;}',
         '.ext-m-brand{display:flex;align-items:center;gap:16px;cursor:pointer;transition:transform .1s;}',
@@ -521,6 +532,7 @@ ui.innerHTML =
         '@media(max-width:767px){.ext-m-head{padding:0 16px;min-height:72px;gap:8px;}.ext-m-title{font-size:18px;}.ext-m-sub{font-size:10px;}.ext-m-logo{width:46px;height:46px;}.ext-m-brand{gap:10px;}.ext-m-badge{display:none;}.ext-m-fs{width:38px;height:38px;border-radius:10px;}.ext-m-ico{width:120px;height:120px;}.ext-m-ico .ms{font-size:60px;}.ext-m-ico-num{font-size:52px;}.ext-m-main{padding:36px 16px;}.ext-m-content{gap:36px;}.ext-m-hint{font-size:15px;padding:10px 16px;}}',
       ]);
       extLog('mesin_ui', true, { polis: polis.length });
+      setHealth('ui');
     };
     const attachPrintClick = () => {
       // ponytail: anti print ganda — klik ganda sebelum reload 1s (server reload setelah simpan)
@@ -564,6 +576,7 @@ ui.innerHTML =
       showActiveBadge();
       addFullscreenButton();
       hookCallTTS(); // sudah punya retry intervalPoll internal
+      setHealth('ui');
     };
     function hookCallTTS(): void {
       intervalPoll(() => {
@@ -843,6 +856,7 @@ ui.innerHTML =
         extLog('display_test', true, { nomor: testNum });
       });
       renderStatus();
+      setHealth('ui');
     };
     /* ---- ROUTING ---- */
     if (path.includes('/mesin-antrian')) {

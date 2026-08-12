@@ -1,8 +1,16 @@
 /* AntrianTools – penutup gap tampilan server → UI extension (inject saat document_start)
  * Gate: semua efek hanya aktif saat html[data-ext-antrian-tools] ada (di-set init.ts
- * document_end). Extension disabled / role tidak sesuai → halaman server tampil normal. */
+ * document_end). Extension disabled / role tidak sesuai → halaman server tampil normal.
+ *
+ * Watchdog health-gated (ponytail: polling 500ms, bukan MutationObserver + setTimeout):
+ * - Tirai HANYA dipasang setelah antrianTools (MAIN world) membuktikan dirinya lewat
+ *   html[data-ext-antrian-tools-health] (DOM attribute = satu-satunya jembatan ISOLATED↔MAIN).
+ * - Kalau antrianTools tidak pernah inject → tirai tidak pernah dipasang → halaman server
+ *   tampil normal sejak awal: kiosk TIDAK BISA macet "Memuat layanan…" (tidak butuh restart).
+ * - Kalau inject tapi UI belum siap dalam 8 dtk → tirai dibuka sendiri → native terlihat. */
 (function () {
-  let obs: MutationObserver | null = null;
+  const INJECT_MAX_MS = 4000; // tenggat antrianTools inject (document_idle normalnya < 2 dtk)
+  const UI_MAX_MS = 8000; // tenggat UI extension muncul setelah tirai terpasang
 
   function hideOld(): void {
     if (document.getElementById('ext-mesin-loader-css')) return;
@@ -37,18 +45,39 @@
       '<p style="margin:0;color:#495057;font-size:15px;font-weight:600;">Memuat layanan…</p>' +
       '</div>';
     document.body.appendChild(l);
-    if (obs) obs.disconnect(); // UI extension (antrianTools) yang menghapus overlay
   }
 
-  hideOld();
-  if (document.body) {
-    addOverlay();
+  function release(): void {
+    document.getElementById('ext-mesin-loader')?.remove();
+    document.getElementById('ext-mesin-loader-css')?.remove();
   }
-  obs = new MutationObserver(addOverlay);
-  // childList → body muncul; attributes → data-ext-antrian-tools diset init.ts (document_end)
-  obs.observe(document.documentElement, {
-    childList: true,
-    attributes: true,
-    attributeFilter: ['data-ext-antrian-tools'],
-  });
+
+  const started = Date.now();
+  let curtainUp = false;
+  const tick = setInterval(() => {
+    const elapsed = Date.now() - started;
+    const html = document.documentElement;
+    const health = html.getAttribute('data-ext-antrian-tools-health');
+    if (document.getElementById('ext-mesin-ui')) {
+      // UI extension sudah tampil — bersihkan sisa tirai (antrianTools biasanya sudah hapus sendiri)
+      release();
+      clearInterval(tick);
+      return;
+    }
+    if (!curtainUp) {
+      if (health) {
+        // antrianTools berjalan (injected) → tutup native, tunggu UI-nya
+        hideOld();
+        addOverlay();
+        curtainUp = true;
+      } else if (elapsed >= INJECT_MAX_MS) {
+        // inject tidak pernah terjadi → native tampil normal sejak awal; selesai
+        clearInterval(tick);
+      }
+    } else if (elapsed >= UI_MAX_MS || health === 'ui') {
+      // UI siap (health 'ui' = defensive) atau timeout → buka tirai, selesai
+      release();
+      clearInterval(tick);
+    }
+  }, 500);
 })();
