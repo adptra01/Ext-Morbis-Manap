@@ -344,9 +344,14 @@
     // - server antrian(N) membaca #poli-N dkk via jQuery → AJAX simpan → ws → cetak → reload
     // - attachPrintClick() menangkap klik → cetak struk (pakai #nomortampil-#nomor)
     const initMesin = () => {
-      // badge + tombol fullscreen sekarang dirender di header redesign (renderMesinUI)
       intervalPoll(renderMesinUI);
       intervalPoll(attachPrintClick);
+      setTimeout(() => {
+        if (!document.getElementById('ext-mesin-ui')) {
+          document.getElementById('ext-mesin-loader')?.remove();
+          extLog('mesin_loader_fallback', true);
+        }
+      }, 8000);
     };
     // ponytail: map ikon kecil, polinama baru di luar daftar = person_add (default daftar)
     const MESIN_ICON_RULES: Array<[RegExp, string]> = [
