@@ -28,7 +28,7 @@ var __morbis_feature = (() => {
       document.getElementById('ext-mesin-loader')?.remove();
       document.getElementById('ext-mesin-loader-css')?.remove();
     }
-    let started = Date.now();
+    const started = Date.now();
     let curtainUp = false;
     const tick = setInterval(() => {
       const elapsed = Date.now() - started;

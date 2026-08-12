@@ -226,10 +226,39 @@ window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => 
   );
 });
 
+// Workaround: inject antrianTools.js secara programmatic ke MAIN world untuk halaman
+// mesin-antrian/view-antrian/counter. Chrome kadang gagal auto-inject MAIN world
+// content_script (document_idle) di beberapa environment — inject manual dari ISOLATED
+// world (init.ts) yang sudah pasti jalan lebih reliable.
+function injectAntrianToolsToMainWorld(): void {
+  const path = window.location.pathname;
+  const needsAntrianTools =
+    path.includes('/mesin-antrian') ||
+    path.includes('/counter-antrian/view-antrian') ||
+    path.includes('/counter-antrian/counter');
+
+  if (!needsAntrianTools) return;
+
+  const script = document.createElement('script');
+  script.src = chrome.runtime.getURL('features/antrianTools.js');
+  script.onload = () => {
+    console.log('[init] antrianTools.js injected to MAIN world');
+  };
+  script.onerror = (err) => {
+    console.error('[init] antrianTools.js injection failed:', err);
+    logUsage('init', 'antrian_tools_inject_failed', false, { error: String(err) });
+  };
+  (document.head || document.documentElement).appendChild(script);
+}
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initExtension);
+  document.addEventListener('DOMContentLoaded', () => {
+    initExtension();
+    injectAntrianToolsToMainWorld();
+  });
 } else {
   initExtension();
+  injectAntrianToolsToMainWorld();
 }
 
 window.OpenDetailExtension = {

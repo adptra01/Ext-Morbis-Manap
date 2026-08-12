@@ -261,6 +261,12 @@ var __morbis_feature = (() => {
       const initMesin = () => {
         intervalPoll(renderMesinUI);
         intervalPoll(attachPrintClick);
+        setTimeout(() => {
+          if (!document.getElementById('ext-mesin-ui')) {
+            document.getElementById('ext-mesin-loader')?.remove();
+            extLog('mesin_loader_fallback', true);
+          }
+        }, 8e3);
       };
       const MESIN_ICON_RULES = [
         [/(klinik|umum|pendaftaran|poli)/i, 'person_add'],
