@@ -1,0 +1,543 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_md",
+      "label": "ACCEPTANCE.md",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_antrian_farmasi_display_acceptance_test",
+      "label": "Antrian Farmasi Display \u2014 Acceptance Test",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_release",
+      "label": "Release",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L3"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_0_pre_flight",
+      "label": "0. Pre-flight",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L17"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_1_native_mode",
+      "label": "1. Native Mode",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L28"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_tujuan",
+      "label": "Tujuan",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L30"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_expected",
+      "label": "Expected",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L33"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_2_websocket_failure_fallback",
+      "label": "2. WebSocket Failure \u2192 Fallback",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L47"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_simulasi",
+      "label": "Simulasi",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L49"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_expected_56",
+      "label": "Expected",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L56"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_3_polling_success",
+      "label": "3. Polling Success",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L74"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_expected_76",
+      "label": "Expected",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L76"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_4_api_error",
+      "label": "4. API Error",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L92"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_simulasi_94",
+      "label": "Simulasi",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L94"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_expected_101",
+      "label": "Expected",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L101"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_5_empty_array",
+      "label": "5. Empty Array",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L111"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_response",
+      "label": "Response",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L113"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_expected_117",
+      "label": "Expected",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L117"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_6_status_validation",
+      "label": "6. STATUS Validation",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L126"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_status_0",
+      "label": "STATUS=0",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L128"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_status_1",
+      "label": "STATUS=1",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L133"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_status_other",
+      "label": "STATUS=other",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L138"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_7_audio_unlock",
+      "label": "7. Audio Unlock",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L146"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_sebelum_gesture",
+      "label": "Sebelum gesture",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L148"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_setelah_pointerdown_keydown",
+      "label": "Setelah pointerdown/keydown",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L154"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_8_tts_announcement",
+      "label": "8. TTS Announcement",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L163"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_9_announcement_dedup",
+      "label": "9. Announcement Dedup",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L178"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_10_new_announcement",
+      "label": "10. New Announcement",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L195"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_11_native_recovery",
+      "label": "11. Native Recovery",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L209"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_12_reload",
+      "label": "12. Reload",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L228"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_13_duplicate_startwithrole",
+      "label": "13. Duplicate startWithRole",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L242"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_14_long_run_stability",
+      "label": "14. Long-run Stability",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L255"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_pass_criteria",
+      "label": "PASS CRITERIA",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L273"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_release_gate",
+      "label": "RELEASE GATE",
+      "file_type": "document",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L291"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_antrian_farmasi_display_acceptance_test",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_antrian_farmasi_display_acceptance_test",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_release",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_antrian_farmasi_display_acceptance_test",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_0_pre_flight",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_antrian_farmasi_display_acceptance_test",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_1_native_mode",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_1_native_mode",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_tujuan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_1_native_mode",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_expected",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L33",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_antrian_farmasi_display_acceptance_test",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_2_websocket_failure_fallback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L47",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_2_websocket_failure_fallback",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_simulasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L49",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_2_websocket_failure_fallback",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_expected_56",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L56",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_antrian_farmasi_display_acceptance_test",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_3_polling_success",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L74",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_3_polling_success",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_expected_76",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L76",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_antrian_farmasi_display_acceptance_test",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_4_api_error",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L92",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_4_api_error",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_simulasi_94",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L94",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_4_api_error",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_expected_101",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L101",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_antrian_farmasi_display_acceptance_test",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_5_empty_array",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L111",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_5_empty_array",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_response",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L113",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_5_empty_array",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_expected_117",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L117",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_antrian_farmasi_display_acceptance_test",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_6_status_validation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L126",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_6_status_validation",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_status_0",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L128",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_6_status_validation",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_status_1",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L133",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_6_status_validation",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_status_other",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L138",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_antrian_farmasi_display_acceptance_test",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_7_audio_unlock",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L146",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_7_audio_unlock",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_sebelum_gesture",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L148",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_7_audio_unlock",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_setelah_pointerdown_keydown",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L154",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_antrian_farmasi_display_acceptance_test",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_8_tts_announcement",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L163",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_antrian_farmasi_display_acceptance_test",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_9_announcement_dedup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L178",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_antrian_farmasi_display_acceptance_test",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_10_new_announcement",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L195",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_antrian_farmasi_display_acceptance_test",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_11_native_recovery",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L209",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_antrian_farmasi_display_acceptance_test",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_12_reload",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L228",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_antrian_farmasi_display_acceptance_test",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_13_duplicate_startwithrole",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L242",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_antrian_farmasi_display_acceptance_test",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_14_long_run_stability",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L255",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_pass_criteria",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L273",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_acceptance_release_gate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/ACCEPTANCE.md",
+      "source_location": "L291",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

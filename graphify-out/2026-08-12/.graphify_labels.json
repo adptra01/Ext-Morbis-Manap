@@ -153,5 +153,11 @@
   "151": "labDataTables.ts",
   "152": "Role",
   "153": "autoprefixer",
-  "158": "antrianLoader.ts"
+  "154": "shortcutButtons.ts",
+  "155": "doctorFilterPersistence.ts",
+  "156": "scrollButtons.ts",
+  "157": "storage.ts",
+  "158": "antrianLoader.ts",
+  "159": "tryInject",
+  "160": "autoprefixer"
 }
