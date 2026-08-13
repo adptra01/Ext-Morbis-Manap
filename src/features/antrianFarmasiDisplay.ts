@@ -197,13 +197,16 @@ declare global {
    * kebenaran panggilan (fix 2026-08-12: display macet di UT-1 TEST).
    * ============================================================ */
   function toViewRow(r: RawRow): ViewRow {
+    // Konsisten dgn renumber: racikan hanya bila JENIS mengandung 'racik'; selain
+    // itu (tunggal / null) = tunggal. Jangan default null → racikan.
+    const j = /racik/i.test(String(r.JENIS ?? '')) ? 'racikan' : 'tunggal';
     return {
       id: String(r.ID),
       nomor: r.COUNTER != null ? String(r.COUNTER) : r.NOMOR != null ? String(r.NOMOR) : '',
       kode: r.KODE || r.NAMA || 'BT',
       namaPasien: r.NAMA_PASIEN ?? '',
       unit: r.NAMA_UNIT ?? '',
-      jenis: r.JENIS === 'tunggal' ? 'tunggal' : 'racikan',
+      jenis: j,
       rm: r.ID_PASIEN != null ? String(r.ID_PASIEN) : '',
     };
   }
@@ -230,33 +233,15 @@ declare global {
   const PANGGILAN_SEL = '#antrian-view';
   const SIAP_SEL = '#antrian-penyerahan';
 
-  function panelHtml(title: string, rows: ViewRow[]): string {
-    const r = rows[0]; // panel tunggal: tampilkan panggilan terbaru
-    // Nomor display: R-xx / T-xx (konsisten dgn tiket cetak). fallback ke nomor
-    // MORBIS bila renumber belum tersedia (poll pertama / native tanpa data_call).
-    const disp = renumberByNomor.get(r.nomor) || (r.kode ? r.kode + '-' + r.nomor : r.nomor);
-    return (
-      '<div class="antrian-title">' +
-      title +
-      '</div>' +
-      '<div class="antrian-nomor">' +
-      disp +
-      '</div>' +
-      '<div class="antrian-rm">' +
-      r.namaPasien +
-      '</div>' +
-      '<div class="antrian-rm">' +
-      (r.unit || 'RM : ' + r.rm) +
-      '</div>' +
-      '<img class="antrian-icon" src="/assets/antrian/assets/img/thumb.svg" alt="icon">'
-    );
-  }
-
-  // Seksi panggilan per jenis (untuk card "Panggilan Farmasi" dua-bagian).
+  // Seksi panggilan per jenis (card atas = Obat Tunggal, bawah = Obat Racikan).
   function seksiJenis(label: string, r: ViewRow | null): string {
     if (!r)
       return '<div class="antrian-title">' + label + '</div><div class="antrian-nomor">—</div>';
-    const disp = renumberByNomor.get(r.nomor) || (r.kode ? r.kode + '-' + r.nomor : r.nomor);
+    // primary: ID baris → R-xx/T-xx (tak bentrok); fallback nomor(counter).
+    const disp =
+      renumberById.get(r.id) ||
+      renumberByNomor.get(r.nomor) ||
+      (r.kode ? r.kode + '-' + r.nomor : r.nomor);
     return (
       '<div class="antrian-title">' +
       label +
@@ -267,15 +252,6 @@ declare global {
       '<div class="antrian-rm">' +
       r.namaPasien +
       '</div>'
-    );
-  }
-
-  // Card "Panggilan Farmasi": dua bagian — Obat Tunggal (atas) & Obat Racikan (bawah).
-  function panelPanggilanHtml(): string {
-    return (
-      seksiJenis('Obat Tunggal', lastByJenis.tunggal) +
-      '<hr style="border:0;border-top:1px dashed #ccc;margin:8px 0;">' +
-      seksiJenis('Obat Racikan', lastByJenis.racikan)
     );
   }
 
@@ -306,17 +282,31 @@ declare global {
   // write extension tidak dianggap sebagai "native recovery" (anti feedback-loop).
   function renderDisplay(view: QueueView, call: ViewRow | null): void {
     if (call) {
-      // update panggilan terakhir per jenis (card dua-bagian)
+      // update panggilan terakhir per jenis + seed dari data (card atas/bawah)
       lastByJenis[call.jenis] = call;
-      const p = document.querySelector<HTMLElement>(PANGGILAN_SEL);
-      if (p) p.innerHTML = panelPanggilanHtml();
+      seedLastByJenis(view);
+      const atas = document.querySelector<HTMLElement>(PANGGILAN_SEL);
+      if (atas) atas.innerHTML = seksiJenis('Obat Tunggal', lastByJenis.tunggal);
+      const bawah = document.querySelector<HTMLElement>(SIAP_SEL);
+      if (bawah) bawah.innerHTML = seksiJenis('Obat Racikan', lastByJenis.racikan);
       highlightCalledRow(call.namaPasien, call.nomor); // tandai baris dipanggil
     }
-    if (view.siapDiambil.length > 0) {
-      const s = document.querySelector<HTMLElement>(SIAP_SEL);
-      if (s) s.innerHTML = panelHtml('Siap Diambil', view.siapDiambil);
-    }
     onWeWrote(); // tandai DOM yang BARU SAJA extension tulis (bukan native)
+  }
+
+  // Isi slot jenis yang masih kosong dari data_call mentah (lastRows) — karena
+  // STATUS=0 tak selalu menandai baris aktif, gunakan SEMUA baris per jenis, ambil
+  // yang terakhir. Card samping selalu lengkap (tunggal + racikan) selama data ada.
+  function seedLastByJenis(view: QueueView): void {
+    // prioritas baris yang sudah "dipanggil" (STATUS=0) perlu disebarkan dulu
+    for (const row of view.panggilan) {
+      if (!lastByJenis[row.jenis]) lastByJenis[row.jenis] = row;
+    }
+    // lalu semua baris data_call per jenis (urutan lastRows terakhir menang)
+    for (const row of lastRows) {
+      const v = toViewRow(row);
+      lastByJenis[v.jenis] = v; // selalu timpa → menampilkan baris TERAKHIR per jenis
+    }
   }
 
   /* ============================================================
@@ -341,7 +331,11 @@ declare global {
 
   // Nomor rapi per baris (R-xx / T-xx) — diisi dari renumber data_call saat poll,
   // dipakai render card & highlight agar konsisten dengan tiket cetak.
-  const renumberByNomor = new Map<string, string>(); // key = nomor(counter) → R-xx/T-xx
+  const renumberByNomor = new Map<string, string>(); // key = nomor(counter) → R-xx/T-xx (fallback)
+  const renumberById = new Map<string, string>(); // key = ID baris data_call → R-xx/T-xx (primary)
+  // data_call mentah terakhir (diisi pollFallback) — dipakai seed card dua-bagian
+  // karena STATUS=0 tak selalu menandai baris aktif (status MORBIS tak reliable).
+  let lastRows: RawRow[] = [];
 
   /* ============================================================
    * TTS (role-gated). Bell asli MORBIS (audio #unine) dipicu karena
@@ -590,6 +584,7 @@ declare global {
       ]);
       ladderIdx = 0; // sukses → reset backoff ke anak tangga awal
       updateDebugState({ lastPoll: Date.now(), lastDataCount: rows.length });
+      lastRows = rows; // simpan utk seed card dua-bagian (status MORBIS tak reliable)
 
       // Hanya sentuh DOM bila ada data valid; []/gagal → pertahankan DOM native.
       const view = normalize(rows);
@@ -598,6 +593,7 @@ declare global {
       // Bangun map nomor(counter)→R-xx/T-xx dari renumber data_call, utk card &
       // highlight konsisten dengan tiket cetak (Penerbitan Antrian).
       renumberByNomor.clear();
+      renumberById.clear();
       const rr = renumberFarmasi(
         rows.map((r) => ({
           id: String(r.ID ?? ''),
@@ -606,7 +602,9 @@ declare global {
           waktu: (r.WAKTU as string | null) ?? null,
         })),
       );
-      // map nomor(counter) → kode: cocokkan id baris data_call ke nomor aktif.
+      // primary: ID baris → kode (tidak bentrok — meski banyak baris share COUNTER)
+      for (const [id, kode] of rr.byId) renumberById.set(id, kode);
+      // fallback: nomor(counter) → kode
       for (const row of rows) {
         const n =
           row.COUNTER != null ? String(row.COUNTER) : row.NOMOR != null ? String(row.NOMOR) : '';

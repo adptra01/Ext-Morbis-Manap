@@ -186,13 +186,14 @@ var __morbis_feature = (() => {
       return { current: parseCurrentNumbers(html), patients: parsePatients(html) };
     }
     function toViewRow(r) {
+      const j = /racik/i.test(String(r.JENIS ?? '')) ? 'racikan' : 'tunggal';
       return {
         id: String(r.ID),
         nomor: r.COUNTER != null ? String(r.COUNTER) : r.NOMOR != null ? String(r.NOMOR) : '',
         kode: r.KODE || r.NAMA || 'BT',
         namaPasien: r.NAMA_PASIEN ?? '',
         unit: r.NAMA_UNIT ?? '',
-        jenis: r.JENIS === 'tunggal' ? 'tunggal' : 'racikan',
+        jenis: j,
         rm: r.ID_PASIEN != null ? String(r.ID_PASIEN) : '',
       };
     }
@@ -212,27 +213,15 @@ var __morbis_feature = (() => {
     }
     const PANGGILAN_SEL = '#antrian-view';
     const SIAP_SEL = '#antrian-penyerahan';
-    function panelHtml(title, rows) {
-      const r = rows[0];
-      const disp = renumberByNomor.get(r.nomor) || (r.kode ? r.kode + '-' + r.nomor : r.nomor);
-      return (
-        '<div class="antrian-title">' +
-        title +
-        '</div><div class="antrian-nomor">' +
-        disp +
-        '</div><div class="antrian-rm">' +
-        r.namaPasien +
-        '</div><div class="antrian-rm">' +
-        (r.unit || 'RM : ' + r.rm) +
-        '</div><img class="antrian-icon" src="/assets/antrian/assets/img/thumb.svg" alt="icon">'
-      );
-    }
     function seksiJenis(label, r) {
       if (!r)
         return (
           '<div class="antrian-title">' + label + '</div><div class="antrian-nomor">\u2014</div>'
         );
-      const disp = renumberByNomor.get(r.nomor) || (r.kode ? r.kode + '-' + r.nomor : r.nomor);
+      const disp =
+        renumberById.get(r.id) ||
+        renumberByNomor.get(r.nomor) ||
+        (r.kode ? r.kode + '-' + r.nomor : r.nomor);
       return (
         '<div class="antrian-title">' +
         label +
@@ -241,13 +230,6 @@ var __morbis_feature = (() => {
         '</div><div class="antrian-rm">' +
         r.namaPasien +
         '</div>'
-      );
-    }
-    function panelPanggilanHtml() {
-      return (
-        seksiJenis('Obat Tunggal', lastByJenis.tunggal) +
-        '<hr style="border:0;border-top:1px dashed #ccc;margin:8px 0;">' +
-        seksiJenis('Obat Racikan', lastByJenis.racikan)
       );
     }
     function highlightCalledRow(nama, nomor) {
@@ -266,15 +248,23 @@ var __morbis_feature = (() => {
     function renderDisplay(view, call) {
       if (call) {
         lastByJenis[call.jenis] = call;
-        const p = document.querySelector(PANGGILAN_SEL);
-        if (p) p.innerHTML = panelPanggilanHtml();
+        seedLastByJenis(view);
+        const atas = document.querySelector(PANGGILAN_SEL);
+        if (atas) atas.innerHTML = seksiJenis('Obat Tunggal', lastByJenis.tunggal);
+        const bawah = document.querySelector(SIAP_SEL);
+        if (bawah) bawah.innerHTML = seksiJenis('Obat Racikan', lastByJenis.racikan);
         highlightCalledRow(call.namaPasien, call.nomor);
       }
-      if (view.siapDiambil.length > 0) {
-        const s = document.querySelector(SIAP_SEL);
-        if (s) s.innerHTML = panelHtml('Siap Diambil', view.siapDiambil);
-      }
       onWeWrote();
+    }
+    function seedLastByJenis(view) {
+      for (const row of view.panggilan) {
+        if (!lastByJenis[row.jenis]) lastByJenis[row.jenis] = row;
+      }
+      for (const row of lastRows) {
+        const v = toViewRow(row);
+        lastByJenis[v.jenis] = v;
+      }
     }
     let announcedSig = '';
     const prevCurrent = /* @__PURE__ */ new Map();
@@ -285,6 +275,8 @@ var __morbis_feature = (() => {
       racikan: null,
     };
     const renumberByNomor = /* @__PURE__ */ new Map();
+    const renumberById = /* @__PURE__ */ new Map();
+    let lastRows = [];
     const synth = window.speechSynthesis;
     const RealSpeak = synth.speak.bind(synth);
     let busy = false;
@@ -466,9 +458,11 @@ var __morbis_feature = (() => {
         ]);
         ladderIdx = 0;
         updateDebugState({ lastPoll: Date.now(), lastDataCount: rows.length });
+        lastRows = rows;
         const view = normalize(rows);
         const num = activeNumber(cur);
         renumberByNomor.clear();
+        renumberById.clear();
         const rr = renumberFarmasi(
           rows.map((r) => ({
             id: String(r.ID ?? ''),
@@ -477,6 +471,7 @@ var __morbis_feature = (() => {
             waktu: r.WAKTU ?? null,
           })),
         );
+        for (const [id, kode] of rr.byId) renumberById.set(id, kode);
         for (const row of rows) {
           const n =
             row.COUNTER != null ? String(row.COUNTER) : row.NOMOR != null ? String(row.NOMOR) : '';
