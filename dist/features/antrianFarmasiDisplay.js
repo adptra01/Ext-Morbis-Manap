@@ -128,6 +128,49 @@ var __morbis_feature = (() => {
     const POLL_LADDER_MS = [500, 1500, 3e3, 6e3];
     const GAP_MS = 400;
     const CARD_MS = 1e3;
+    let statusBadge = null;
+    function ensureStatusBadge() {
+      if (statusBadge) return;
+      statusBadge = document.createElement('div');
+      statusBadge.id = 'ext-afd-status';
+      statusBadge.style.cssText =
+        'position:fixed;top:12px;right:12px;z-index:99999;padding:5px 12px;border-radius:999px;font:700 12px/1.3 "Inter",system-ui,sans-serif;display:flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(0,0,0,.15);color:#fff;';
+      statusBadge.setAttribute('data-state', 'init');
+      const el = statusBadge;
+      const mount = () => {
+        if (el && !el.isConnected && document.body) document.body.appendChild(el);
+      };
+      if (document.body) mount();
+      else {
+        document.addEventListener('DOMContentLoaded', mount);
+        const t = window.setInterval(() => {
+          if (document.body) {
+            mount();
+            window.clearInterval(t);
+          }
+        }, 200);
+      }
+    }
+    function setStatus(state) {
+      ensureStatusBadge();
+      if (!statusBadge) return;
+      statusBadge.setAttribute('data-state', state);
+      const dot =
+        '<span style="width:9px;height:9px;border-radius:999px;background:currentColor;display:inline-block;flex-shrink:0;"></span>';
+      if (state === 'loading') {
+        statusBadge.style.background = '#d97706';
+        statusBadge.innerHTML = dot + 'MEMPERBARUI\u2026';
+      } else if (state === 'ok') {
+        statusBadge.style.background = '#0f5132';
+        statusBadge.innerHTML =
+          dot +
+          'SIAP \xB7 ' +
+          /* @__PURE__ */ new Date().toLocaleTimeString('id-ID', { hour12: false });
+      } else {
+        statusBadge.style.background = '#b91c1c';
+        statusBadge.innerHTML = dot + 'GAGAL';
+      }
+    }
     const WATCH_MS = 1500;
     const STALE_MAX = 2;
     async function fetchCallData() {
@@ -285,6 +328,7 @@ var __morbis_feature = (() => {
       }
     }
     async function refreshCardNumber() {
+      setStatus('loading');
       try {
         const [{ current: cur }, rows] = await Promise.all([fetchCurrentNumber(), fetchCallData()]);
         lastRows = rows;
@@ -308,7 +352,10 @@ var __morbis_feature = (() => {
           );
         highlightCurrents();
         onWeWrote();
-      } catch {}
+        setStatus('ok');
+      } catch {
+        setStatus('error');
+      }
     }
     function renderDisplay(view, call) {
       if (call) {
@@ -666,6 +713,8 @@ var __morbis_feature = (() => {
       if (started) return;
       started = true;
       updateDebugState({ started: true });
+      ensureStatusBadge();
+      setStatus('loading');
       voiceEnabled = true;
       health = { ...health, nativeSig: domSignal() };
       if (watchTimer === null) {

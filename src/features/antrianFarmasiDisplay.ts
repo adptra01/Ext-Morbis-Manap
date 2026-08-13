@@ -83,6 +83,54 @@ declare global {
   // tidak tergantung health/native/poll. Bikin display responsif setelah
   // 'Selanjutnya'/recall tanpa menunggu WS native.
   const CARD_MS = 1000;
+  // Badge status (pojok kanan-atas): memberi tahu petugas bahwa refresh berjalan
+  // ("MEMPERBARUI…") vs selesai ("SIAP") — menandakan delay itu normal, bukan freeze.
+  let statusBadge: HTMLDivElement | null = null;
+  function ensureStatusBadge(): void {
+    if (statusBadge) return;
+    // run_at document_start → document.body bisa belum ada. Simpan elemennya;
+    // append begitu body siap (via poll ringan), jangan lempar exception.
+    statusBadge = document.createElement('div');
+    statusBadge.id = 'ext-afd-status';
+    statusBadge.style.cssText =
+      'position:fixed;top:12px;right:12px;z-index:99999;padding:5px 12px;border-radius:999px;' +
+      'font:700 12px/1.3 "Inter",system-ui,sans-serif;display:flex;align-items:center;gap:6px;' +
+      'box-shadow:0 2px 8px rgba(0,0,0,.15);color:#fff;';
+    statusBadge.setAttribute('data-state', 'init');
+    const el = statusBadge;
+    const mount = () => {
+      if (el && !el.isConnected && document.body) document.body.appendChild(el);
+    };
+    if (document.body) mount();
+    else {
+      document.addEventListener('DOMContentLoaded', mount);
+      // jaring pengaman kalau body tak pernah ketemu / DOMContentLoaded sudah lewat
+      const t = window.setInterval(() => {
+        if (document.body) {
+          mount();
+          window.clearInterval(t);
+        }
+      }, 200);
+    }
+  }
+  function setStatus(state: 'loading' | 'ok' | 'error'): void {
+    ensureStatusBadge();
+    if (!statusBadge) return;
+    statusBadge.setAttribute('data-state', state);
+    const dot =
+      '<span style="width:9px;height:9px;border-radius:999px;background:currentColor;display:inline-block;flex-shrink:0;"></span>';
+    if (state === 'loading') {
+      statusBadge.style.background = '#d97706';
+      statusBadge.innerHTML = dot + 'MEMPERBARUI…';
+    } else if (state === 'ok') {
+      statusBadge.style.background = '#0f5132';
+      statusBadge.innerHTML =
+        dot + 'SIAP · ' + new Date().toLocaleTimeString('id-ID', { hour12: false });
+    } else {
+      statusBadge.style.background = '#b91c1c';
+      statusBadge.innerHTML = dot + 'GAGAL';
+    }
+  }
   // C1 — Native Activity Health Monitor: probe aktivitas DOM antrian (baca-only).
   // Bukan instrumentasi window.WebSocket — extension "mengamati konsekuensi transport
   // native", bukan merekayasa WebSocket-nya. Nama file wsHealth.ts dipertahankan
@@ -353,6 +401,7 @@ declare global {
   // (current number) + data_call (nama), update currentByJenis/lastRows, render.
   // Di-ranse interval mandiri (CARD_MS) — tak bertabrakan dgn health/poll.
   async function refreshCardNumber(): Promise<void> {
+    setStatus('loading');
     try {
       const [{ current: cur }, rows] = await Promise.all([fetchCurrentNumber(), fetchCallData()]);
       lastRows = rows;
@@ -376,7 +425,9 @@ declare global {
         );
       highlightCurrents();
       onWeWrote(); // tandai write extension agar tak dianggap native recovery
+      setStatus('ok');
     } catch {
+      setStatus('error');
       /* poll gagal — diam, kartu biarkan apa adanya */
     }
   }
@@ -884,6 +935,8 @@ declare global {
     if (started) return; // idempotent: jangan buat watcher/listener/polling ganda
     started = true;
     updateDebugState({ started: true });
+    ensureStatusBadge(); // pastikan badge status ada sedari awal (loading)
+    setStatus('loading');
 
     voiceEnabled = true; // suara hanya untuk role terotorisasi; TTS native tidak dioverride
     health = { ...health, nativeSig: domSignal() }; // baseline aktivitas native awal
