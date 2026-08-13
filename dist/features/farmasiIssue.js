@@ -117,22 +117,34 @@ var __morbis_feature = (() => {
   }
   function openPrint(rows) {
     const { byId, urutan } = renumberFarmasi(toRows(rows));
-    const name = new Map(rows.map((r) => [String(r.ID), String(r.NAMA_PASIEN ?? '')]));
-    const unit = new Map(rows.map((r) => [String(r.ID), String(r.NAMA_UNIT ?? '')]));
+    const name = new Map(rows.map((r2) => [String(r2.ID), String(r2.NAMA_PASIEN ?? '')]));
+    const unit = new Map(rows.map((r2) => [String(r2.ID), String(r2.NAMA_UNIT ?? '')]));
     const rCodes = urutan.filter((k) => k.startsWith('R-'));
     const tCodes = urutan.filter((k) => k.startsWith('T-'));
-    const pick = (label, codes) => {
-      if (codes.length === 0) return '';
-      const inp = window.prompt(
-        `${label} (${codes[0].slice(2)}\u2013${codes[codes.length - 1].slice(2)}) \u2014 kosongkan = semua`,
-      );
-      return inp ?? '';
+    const parseRange = (input) => {
+      const g = input.match(/(\d+)\s*[-–]\s*(\d+)/);
+      if (g) return { from: Math.min(+g[1], +g[2]), to: Math.max(+g[1], +g[2]) };
+      const single = input.match(/(\d+)/);
+      if (single) return { from: +single[1], to: +single[1] };
+      return { from: 0, to: Infinity };
     };
-    const rFrom = parseInt(pick('Rentang R-', rCodes), 10) || 0;
-    const rTo = parseInt(pick('sampai R-', rCodes), 10) || Infinity;
-    const tFrom = parseInt(pick('Rentang T-', tCodes), 10) || 0;
-    const tTo = parseInt(pick('sampai T-', tCodes), 10) || Infinity;
-    const sel = urutan.filter((k) => inRange(k, 'R-', rFrom, rTo) || inRange(k, 'T-', tFrom, tTo));
+    const rInp = rCodes.length
+      ? (window.prompt(
+          `Rentang R- (${rCodes[0].slice(2)}\u2013${rCodes[rCodes.length - 1].slice(2)}). Kosong = semua`,
+          '',
+        ) ?? '')
+      : '';
+    const tInp = tCodes.length
+      ? (window.prompt(
+          `Rentang T- (${tCodes[0].slice(2)}\u2013${tCodes[tCodes.length - 1].slice(2)}). Kosong = semua`,
+          '',
+        ) ?? '')
+      : '';
+    const r = parseRange(rInp);
+    const t = parseRange(tInp);
+    const sel = urutan.filter(
+      (k) => inRange(k, 'R-', r.from, r.to) || inRange(k, 'T-', t.from, t.to),
+    );
     const grid = sel
       .map((k) => {
         const id = [...byId].find(([, v]) => v === k)?.[0] ?? '';
