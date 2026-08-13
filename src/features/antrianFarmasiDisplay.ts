@@ -48,7 +48,6 @@ import {
   parsePatients,
   type PatientByName,
 } from './shared/currentNumber';
-import { renumberFarmasi } from './shared/farmasiRenumber';
 
 // Observability (debug) — snapshot baca-saja, bukan sumber kebenaran.
 // Hanya dibuat bila URL memakai ?debug=1; production normal tetap bersih
@@ -247,10 +246,9 @@ declare global {
     );
   }
 
-  // Nomor display (R-xx/T-xx) utk current MORBIS per jenis: cari baris data_call
-  // yg nomor(NOMOR/COUNTER)-nya sama dgn current & jenis cocok → kode renumber.
-  // Tak ketemu → fallback ke nomer MORBIS (current). Pakai lastRows & renumberById.
-  function morbisToDispKode(jenis: 'tunggal' | 'racikan', morbisNum: string): string {
+  // Nama pasien utk current MORBIS per jenis: cari baris data_call yg nomor
+  // (NOMOR/COUNTER)-nya sama dgn current & jenis cocok → nama pasiennya.
+  function currentPatientName(jenis: 'tunggal' | 'racikan', morbisNum: string): string {
     if (!morbisNum || morbisNum === '0') return '';
     const isR = jenis === 'racikan';
     const row = lastRows.find(
@@ -258,9 +256,7 @@ declare global {
         (isR ? /racik/i.test(String(r.JENIS ?? '')) : !/racik/i.test(String(r.JENIS ?? ''))) &&
         (String(r.NOMOR ?? '') === morbisNum || String(r.COUNTER ?? '') === morbisNum),
     );
-    if (row && row.ID != null && renumberById.has(String(row.ID)))
-      return renumberById.get(String(row.ID))!;
-    return morbisNum;
+    return row?.NAMA_PASIEN || '';
   }
 
   // Highlight baris tabel #list-content utk panggilan terakhir per jenis.
@@ -286,6 +282,69 @@ declare global {
     }
   }
 
+  // Panggil ulang pasien tertentu (replicating native panggilUlang): POST
+  // /antrian-farmasi/control {id, nomor, jenis, loket} lalu refresh konten.
+  // Dipicu klik pada baris pasien di #list-content. Tidak auto-fire — butuh konfirmasi.
+  async function recallPatient(row: RawRow): Promise<void> {
+    const noLoket = loket();
+    const id = row.ID != null ? String(row.ID) : '';
+    const nomor =
+      row.COUNTER != null ? String(row.COUNTER) : row.NOMOR != null ? String(row.NOMOR) : '';
+    const jenis = /racik/i.test(String(row.JENIS ?? '')) ? 'racikan' : 'tunggal';
+    if (!id) return;
+    if (!window.confirm('Panggil ulang ' + (row.NAMA_PASIEN || '') + ' (' + nomor + ')?')) return;
+    try {
+      const res = await fetch('/antrian-farmasi/control', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body:
+          'id=' +
+          encodeURIComponent(id) +
+          '&nomor=' +
+          encodeURIComponent(nomor) +
+          '&jenis=' +
+          encodeURIComponent(jenis) +
+          '&loket=' +
+          encodeURIComponent(noLoket),
+      });
+      if (!res.ok) {
+        console.error('[AFD] recall gagal HTTP', res.status);
+        return;
+      }
+      // refresh konten display agar nomor ter-panggil terbaru tampil
+      const loader = window as unknown as { contentloader?: (u: string, sel: string) => void };
+      if (typeof loader.contentloader === 'function') {
+        loader.contentloader('/antrian-farmasi/v2?section=isi&nomor=' + noLoket, '#isi');
+      }
+    } catch (e) {
+      console.error('[AFD] recall error', e);
+    }
+  }
+
+  // Wire klik baris utk panggil ulang + sorot (highlight). Hubungkan tiap baris
+  // #list-content ke baris data_call (lastRows) via nama utk dapat id/nomor/jenis.
+  function wireRowRecall(): void {
+    const lc = document.querySelector('#list-content');
+    if (!lc || (lc as unknown as { __afdRecall?: boolean }).__afdRecall) return;
+    (lc as unknown as { __afdRecall: boolean }).__afdRecall = true;
+    const rows = lc.querySelectorAll('dl');
+    for (const dl of rows) {
+      const dd3 = dl.querySelector('dd.col-3, dd.col-md-3');
+      const nameTxt = (dd3?.textContent || '').replace(/\s+/g, ' ').trim();
+      if (!nameTxt || (dl as unknown as { __afdRec?: boolean }).__afdRec) continue;
+      (dl as unknown as { __afdRec: boolean }).__afdRec = true;
+      dl.addEventListener('click', () => {
+        const row = lastRows.find(
+          (r) => ((r.NAMA_PASIEN || '').replace(/\s+/g, ' ').trim() || '').indexOf(nameTxt) !== -1,
+        );
+        if (row) void recallPatient(row);
+      });
+    }
+  }
+
   // P1: HANYA mengubah DOM bila panel punya data valid. Kalau panel kosong
   // (atau API gagal), DOM di-biarkan apa adanya — extension TIDAK menghapus/
   // menimpa tampilan native. Empty/error = jangan sentuh display.
@@ -304,17 +363,18 @@ declare global {
       if (atas)
         atas.innerHTML = cardSection(
           'Obat Tunggal',
-          morbisToDispKode('tunggal', currentByJenis.tunggal),
-          lastByJenis.tunggal?.namaPasien || '',
+          currentByJenis.tunggal,
+          currentPatientName('tunggal', currentByJenis.tunggal),
         );
       const bawah = document.querySelector<HTMLElement>(SIAP_SEL);
       if (bawah)
         bawah.innerHTML = cardSection(
           'Obat Racikan',
-          morbisToDispKode('racikan', currentByJenis.racikan),
-          lastByJenis.racikan?.namaPasien || '',
+          currentByJenis.racikan,
+          currentPatientName('racikan', currentByJenis.racikan),
         );
       highlightCurrents(); // tandai baris panggilan terakhir per jenis
+      wireRowRecall(); // aktifkan klik-kiri-pasien utk panggil ulang
     }
     onWeWrote(); // tandai DOM yang BARU SAJA extension tulis (bukan native)
   }
@@ -362,10 +422,6 @@ declare global {
     racikan: '',
   };
 
-  // Nomor rapi per baris (R-xx / T-xx) — diisi dari renumber data_call saat poll,
-  // dipakai render card & highlight agar konsisten dengan tiket cetak.
-  const renumberByNomor = new Map<string, string>(); // key = nomor(counter) → R-xx/T-xx (fallback)
-  const renumberById = new Map<string, string>(); // key = ID baris data_call → R-xx/T-xx (primary)
   // data_call mentah terakhir (diisi pollFallback) — dipakai seed card dua-bagian
   // karena STATUS=0 tak selalu menandai baris aktif (status MORBIS tak reliable).
   let lastRows: RawRow[] = [];
@@ -629,27 +685,6 @@ declare global {
       const g2 = cur.get('2')?.trim();
       currentByJenis.tunggal = g1 && g1 !== '0' ? g1 : '';
       currentByJenis.racikan = g2 && g2 !== '0' ? g2 : '';
-
-      // Bangun map nomor(counter)→R-xx/T-xx dari renumber data_call, utk card &
-      // highlight konsisten dengan tiket cetak (Penerbitan Antrian).
-      renumberByNomor.clear();
-      renumberById.clear();
-      const rr = renumberFarmasi(
-        rows.map((r) => ({
-          id: String(r.ID ?? ''),
-          jenis: (r.JENIS as string | null) ?? null,
-          status: (r.STATUS as string | null) ?? null,
-          waktu: (r.WAKTU as string | null) ?? null,
-        })),
-      );
-      // primary: ID baris → kode (tidak bentrok — meski banyak baris share COUNTER)
-      for (const [id, kode] of rr.byId) renumberById.set(id, kode);
-      // fallback: nomor(counter) → kode
-      for (const row of rows) {
-        const n =
-          row.COUNTER != null ? String(row.COUNTER) : row.NOMOR != null ? String(row.NOMOR) : '';
-        if (n && rr.byId.has(String(row.ID))) renumberByNomor.set(n, rr.byId.get(String(row.ID))!);
-      }
 
       const sig =
         num !== ''

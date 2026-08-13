@@ -122,32 +122,6 @@ var __morbis_feature = (() => {
     return false;
   }
 
-  // src/features/shared/farmasiRenumber.ts
-  var RACIKAN_RE = /racik/i;
-  function isRacikanJenis(jenis) {
-    return !!jenis && RACIKAN_RE.test(jenis);
-  }
-  function ts(w) {
-    if (!w) return 0;
-    const n = Date.parse(w.replace(' ', 'T'));
-    return Number.isFinite(n) ? n : 0;
-  }
-  function renumberFarmasi(rows) {
-    const sorted = [...rows].sort((a, b) => ts(a.waktu) - ts(b.waktu));
-    const byId = /* @__PURE__ */ new Map();
-    const urutan = [];
-    let r = 0;
-    let t = 0;
-    for (const row of sorted) {
-      if (!row.id) continue;
-      const isR = isRacikanJenis(row.jenis);
-      const kode = isR ? 'R-' + String(++r).padStart(2, '0') : 'T-' + String(++t).padStart(2, '0');
-      byId.set(String(row.id), kode);
-      urutan.push(kode);
-    }
-    return { byId, urutan };
-  }
-
   // src/features/antrianFarmasiDisplay.ts
   (function () {
     const LIST_URL = '/public/antrian-farmasi-v2/list-antrian-v2';
@@ -223,7 +197,7 @@ var __morbis_feature = (() => {
         (nama ? '<div class="antrian-rm">' + nama + '</div>' : '')
       );
     }
-    function morbisToDispKode(jenis, morbisNum) {
+    function currentPatientName(jenis, morbisNum) {
       if (!morbisNum || morbisNum === '0') return '';
       const isR = jenis === 'racikan';
       const row = lastRows.find(
@@ -231,9 +205,7 @@ var __morbis_feature = (() => {
           (isR ? /racik/i.test(String(r.JENIS ?? '')) : !/racik/i.test(String(r.JENIS ?? ''))) &&
           (String(r.NOMOR ?? '') === morbisNum || String(r.COUNTER ?? '') === morbisNum),
       );
-      if (row && row.ID != null && renumberById.has(String(row.ID)))
-        return renumberById.get(String(row.ID));
-      return morbisNum;
+      return row?.NAMA_PASIEN || '';
     }
     function highlightCurrents() {
       const lc = document.querySelector('#list-content');
@@ -255,6 +227,62 @@ var __morbis_feature = (() => {
         dl.style.background = matchNum || matchName ? '#fde68a' : '';
       }
     }
+    async function recallPatient(row) {
+      const noLoket = loket();
+      const id = row.ID != null ? String(row.ID) : '';
+      const nomor =
+        row.COUNTER != null ? String(row.COUNTER) : row.NOMOR != null ? String(row.NOMOR) : '';
+      const jenis = /racik/i.test(String(row.JENIS ?? '')) ? 'racikan' : 'tunggal';
+      if (!id) return;
+      if (!window.confirm('Panggil ulang ' + (row.NAMA_PASIEN || '') + ' (' + nomor + ')?')) return;
+      try {
+        const res = await fetch('/antrian-farmasi/control', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          body:
+            'id=' +
+            encodeURIComponent(id) +
+            '&nomor=' +
+            encodeURIComponent(nomor) +
+            '&jenis=' +
+            encodeURIComponent(jenis) +
+            '&loket=' +
+            encodeURIComponent(noLoket),
+        });
+        if (!res.ok) {
+          console.error('[AFD] recall gagal HTTP', res.status);
+          return;
+        }
+        const loader = window;
+        if (typeof loader.contentloader === 'function') {
+          loader.contentloader('/antrian-farmasi/v2?section=isi&nomor=' + noLoket, '#isi');
+        }
+      } catch (e) {
+        console.error('[AFD] recall error', e);
+      }
+    }
+    function wireRowRecall() {
+      const lc = document.querySelector('#list-content');
+      if (!lc || lc.__afdRecall) return;
+      lc.__afdRecall = true;
+      const rows = lc.querySelectorAll('dl');
+      for (const dl of rows) {
+        const dd3 = dl.querySelector('dd.col-3, dd.col-md-3');
+        const nameTxt = (dd3?.textContent || '').replace(/\s+/g, ' ').trim();
+        if (!nameTxt || dl.__afdRec) continue;
+        dl.__afdRec = true;
+        dl.addEventListener('click', () => {
+          const row = lastRows.find(
+            (r) =>
+              ((r.NAMA_PASIEN || '').replace(/\s+/g, ' ').trim() || '').indexOf(nameTxt) !== -1,
+          );
+          if (row) void recallPatient(row);
+        });
+      }
+    }
     function renderDisplay(view, call) {
       if (call) {
         lastByJenis[call.jenis] = call;
@@ -263,17 +291,18 @@ var __morbis_feature = (() => {
         if (atas)
           atas.innerHTML = cardSection(
             'Obat Tunggal',
-            morbisToDispKode('tunggal', currentByJenis.tunggal),
-            lastByJenis.tunggal?.namaPasien || '',
+            currentByJenis.tunggal,
+            currentPatientName('tunggal', currentByJenis.tunggal),
           );
         const bawah = document.querySelector(SIAP_SEL);
         if (bawah)
           bawah.innerHTML = cardSection(
             'Obat Racikan',
-            morbisToDispKode('racikan', currentByJenis.racikan),
-            lastByJenis.racikan?.namaPasien || '',
+            currentByJenis.racikan,
+            currentPatientName('racikan', currentByJenis.racikan),
           );
         highlightCurrents();
+        wireRowRecall();
       }
       onWeWrote();
     }
@@ -298,8 +327,6 @@ var __morbis_feature = (() => {
       tunggal: '',
       racikan: '',
     };
-    const renumberByNomor = /* @__PURE__ */ new Map();
-    const renumberById = /* @__PURE__ */ new Map();
     let lastRows = [];
     const synth = window.speechSynthesis;
     const RealSpeak = synth.speak.bind(synth);
@@ -489,22 +516,6 @@ var __morbis_feature = (() => {
         const g2 = cur.get('2')?.trim();
         currentByJenis.tunggal = g1 && g1 !== '0' ? g1 : '';
         currentByJenis.racikan = g2 && g2 !== '0' ? g2 : '';
-        renumberByNomor.clear();
-        renumberById.clear();
-        const rr = renumberFarmasi(
-          rows.map((r) => ({
-            id: String(r.ID ?? ''),
-            jenis: r.JENIS ?? null,
-            status: r.STATUS ?? null,
-            waktu: r.WAKTU ?? null,
-          })),
-        );
-        for (const [id, kode] of rr.byId) renumberById.set(id, kode);
-        for (const row of rows) {
-          const n =
-            row.COUNTER != null ? String(row.COUNTER) : row.NOMOR != null ? String(row.NOMOR) : '';
-          if (n && rr.byId.has(String(row.ID))) renumberByNomor.set(n, rr.byId.get(String(row.ID)));
-        }
         const sig =
           num !== ''
             ? [...cur.entries()]
