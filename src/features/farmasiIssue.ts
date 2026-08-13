@@ -262,7 +262,25 @@ function openPrintOne(rows: Array<Record<string, unknown>>, idx: number): void {
   win.document.close();
 }
 
+// Inject event delegation recall ke MAIN world (native panggilUlang di sana).
+// File terpisah (bukan inline) agar lolos CSP. Guard idempotent; capture-phase
+// + stopPropagation → mencegah double-fire dgn listener per-baris native.
+function ensureRecallDelegation(): void {
+  if (document.getElementById('ext-afd-recall-deleg')) return;
+  const s = document.createElement('script');
+  s.id = 'ext-afd-recall-deleg';
+  s.src = chrome.runtime.getURL('features/farmasiRecallDeleg.js');
+  s.onerror = () => console.error('[FarmasiIssue] recall deleg inject failed');
+  (document.head || document.documentElement).appendChild(s);
+}
+
 function init(): void {
+  // Recall (panggil ulang): native MORBIS bind klik `.status-called` HANYA sekali
+  // saat DOMContentLoaded. Setelah recall, contentloader mengganti #isi → baris
+  // baru TANPA listener → freeze. Fix: event delegation di document (MAIN world,
+  // karena panggilUlang native hidup di MAIN world) — bertahan dari reload #isi.
+  // Capture + stopPropagation → listener per-baris native tidak double-fire.
+  ensureRecallDelegation();
   const panel = buildPanel();
   const toggle = buildToggle();
   document.body.appendChild(panel);
