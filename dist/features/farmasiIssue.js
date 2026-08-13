@@ -46,10 +46,19 @@ var __morbis_feature = (() => {
     const p = document.createElement('div');
     p.id = 'ext-farmasi-issue';
     p.style.cssText =
-      'position:fixed;right:16px;bottom:16px;z-index:99999;background:#fff;border:1px solid #0f5132;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.18);padding:14px 16px;max-width:340px;font:13px/1.5 "Inter",system-ui,sans-serif;color:#212529;';
+      'position:fixed;right:16px;bottom:16px;z-index:99999;background:#fff;border:1px solid #0f5132;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.18);padding:14px 16px;max-width:340px;font:13px/1.5 "Inter",system-ui,sans-serif;color:#212529;display:none;';
     p.innerHTML =
-      '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;"><b style="color:#0f5132;font-size:14px;">Penerbitan Antrian</b><button id="ext-issue-close" style="border:none;background:none;font-size:16px;cursor:pointer;line-height:1;" title="Tutup">\xD7</button></div><div id="ext-issue-status" style="color:#6c757d;font-size:12px;margin-bottom:8px;">Memuat\u2026</div><div id="ext-issue-list" style="max-height:240px;overflow:auto;border:1px solid #e9ecef;border-radius:8px;margin-bottom:10px;"></div><div style="display:flex;gap:8px;"><button id="ext-issue-refresh" style="flex:1;padding:7px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">Segarkan</button><button id="ext-issue-print" style="flex:1;padding:7px;border:none;background:#0f5132;color:#fff;border-radius:8px;cursor:pointer;">Cetak Sheet A4</button></div>';
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;"><b style="color:#0f5132;font-size:14px;">Penerbitan Antrian</b><button id="ext-issue-collapse" style="border:none;background:none;font-size:16px;cursor:pointer;line-height:1;" title="Tutup">\u2013</button></div><div id="ext-issue-status" style="color:#6c757d;font-size:12px;margin-bottom:8px;">Memuat\u2026</div><div id="ext-issue-list" style="max-height:240px;overflow:auto;border:1px solid #e9ecef;border-radius:8px;margin-bottom:10px;"></div><div style="display:flex;gap:8px;"><button id="ext-issue-refresh" style="flex:1;padding:7px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">Segarkan</button><button id="ext-issue-print" style="flex:1;padding:7px;border:none;background:#0f5132;color:#fff;border-radius:8px;cursor:pointer;">Cetak Sheet A4</button></div>';
     return p;
+  }
+  function buildToggle() {
+    const b = document.createElement('button');
+    b.id = 'ext-issue-toggle';
+    b.textContent = 'Antrian';
+    b.title = 'Buka/Tutup panel Penerbitan Antrian';
+    b.style.cssText =
+      'position:fixed;right:16px;bottom:16px;z-index:100000;padding:10px 18px;border:none;border-radius:999px;background:#0f5132;color:#fff;font:700 13px/1 "Inter",system-ui,sans-serif;cursor:pointer;box-shadow:0 6px 18px rgba(15,81,50,.4);';
+    return b;
   }
   function renderRows(rows) {
     const { byId, urutan } = renumberFarmasi(
@@ -152,8 +161,15 @@ var __morbis_feature = (() => {
   }
   function init() {
     const panel = buildPanel();
+    const toggle = buildToggle();
     document.body.appendChild(panel);
-    panel.querySelector('#ext-issue-close')?.addEventListener('click', () => panel.remove());
+    document.body.appendChild(toggle);
+    const setOpen = (open) => {
+      panel.style.display = open ? 'block' : 'none';
+      toggle.style.display = open ? 'none' : 'block';
+    };
+    toggle.addEventListener('click', () => setOpen(true));
+    panel.querySelector('#ext-issue-collapse')?.addEventListener('click', () => setOpen(false));
     panel.querySelector('#ext-issue-refresh')?.addEventListener('click', async () => {
       const status = document.getElementById('ext-issue-status');
       if (status) status.textContent = 'Memuat\u2026';
