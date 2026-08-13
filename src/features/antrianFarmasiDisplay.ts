@@ -86,32 +86,47 @@ declare global {
   // Badge status (pojok kanan-atas): memberi tahu petugas bahwa refresh berjalan
   // ("MEMPERBARUI…") vs selesai ("SIAP") — menandakan delay itu normal, bukan freeze.
   let statusBadge: HTMLDivElement | null = null;
+  let controlsHost: HTMLDivElement | null = null;
+
+  // Kotak kontrol di bagian bawah section `.side`: berisi status badge + tombol
+  // Tes Suara + Full Screen, disusun rapi (kolom) dalam kotak rounded. Fallback:
+  // bila `.side` tidak ada, append ke body (tetap terlihat).
+  function ensureControlsHost(): void {
+    if (controlsHost) return;
+    // run_at document_start → body/.side bisa belum ada. Jangan throw; buat host
+    // hanya bila target tersedia (di-append ulang oleh interval mount bwh).
+    if (!document.body) return;
+    const side = document.querySelector('.side');
+    const host = document.createElement('div');
+    host.id = 'ext-afd-controls';
+    host.style.cssText =
+      'display:flex;flex-direction:column;gap:10px;margin:12px 4px 4px;padding:12px;' +
+      'background:#fff;border:1px solid #0f5132;border-radius:16px;' +
+      'box-shadow:0 2px 10px rgba(0,0,0,.08);';
+    (side ?? document.body).appendChild(host);
+    controlsHost = host;
+  }
+
   function ensureStatusBadge(): void {
     if (statusBadge) return;
-    // run_at document_start → document.body bisa belum ada. Simpan elemennya;
-    // append begitu body siap (via poll ringan), jangan lempar exception.
+    ensureControlsHost();
+    // run_at document_start → body/`.side` bisa belum ada; mount di-retry (interval).
     statusBadge = document.createElement('div');
     statusBadge.id = 'ext-afd-status';
     statusBadge.style.cssText =
-      'position:fixed;top:12px;right:12px;z-index:99999;padding:5px 12px;border-radius:999px;' +
+      'padding:5px 12px;border-radius:999px;align-self:flex-start;' +
       'font:700 12px/1.3 "Inter",system-ui,sans-serif;display:flex;align-items:center;gap:6px;' +
       'box-shadow:0 2px 8px rgba(0,0,0,.15);color:#fff;';
     statusBadge.setAttribute('data-state', 'init');
-    const el = statusBadge;
+    const sb = statusBadge;
     const mount = () => {
-      if (el && !el.isConnected && document.body) document.body.appendChild(el);
+      if (!document.body) return;
+      ensureControlsHost();
+      if (sb && !sb.isConnected) controlsHost?.appendChild(sb);
     };
-    if (document.body) mount();
-    else {
-      document.addEventListener('DOMContentLoaded', mount);
-      // jaring pengaman kalau body tak pernah ketemu / DOMContentLoaded sudah lewat
-      const t = window.setInterval(() => {
-        if (document.body) {
-          mount();
-          window.clearInterval(t);
-        }
-      }, 200);
-    }
+    document.addEventListener('DOMContentLoaded', mount);
+    window.setInterval(mount, 300);
+    mount();
   }
   function setStatus(state: 'loading' | 'ok' | 'error'): void {
     ensureStatusBadge();
@@ -132,32 +147,27 @@ declare global {
     }
   }
 
-  // Tombol "Tes Suara Panggilan" & "Full Screen" (pojok kanan-atas, di bawah badge).
+  // Tombol "Tes Suara Panggilan" & "Full Screen" — di dalam kotak kontrol (bawah .side).
   // Klik Tes Suara = user-activation (unlock audio) + jalankan bell & TTS sampel.
   let toolbar: HTMLDivElement | null = null;
   function ensureToolbar(): void {
     if (toolbar) return;
+    ensureControlsHost();
     toolbar = document.createElement('div');
     toolbar.id = 'ext-afd-toolbar';
-    toolbar.style.cssText =
-      'position:fixed;top:44px;right:12px;z-index:99999;display:flex;gap:8px;';
+    toolbar.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
     toolbar.innerHTML =
-      '<button id="ext-afd-testsound" style="padding:6px 12px;border:none;border-radius:999px;background:#0f5132;color:#fff;font:700 12px/1.3 Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);">🔊 Tes Suara</button>' +
-      '<button id="ext-afd-fs" style="padding:6px 12px;border:none;border-radius:999px;background:#155e75;color:#fff;font:700 12px/1.3 Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);">⛶ Full Screen</button>';
+      '<button id="ext-afd-testsound" style="flex:1;min-width:120px;padding:8px 12px;border:none;border-radius:12px;background:#0f5132;color:#fff;font:700 12px/1.3 Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);">🔊 Tes Suara</button>' +
+      '<button id="ext-afd-fs" style="flex:1;min-width:120px;padding:8px 12px;border:none;border-radius:12px;background:#155e75;color:#fff;font:700 12px/1.3 Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);">⛶ Full Screen</button>';
     const el = toolbar;
     const mount = () => {
-      if (el && !el.isConnected && document.body) document.body.appendChild(el);
+      if (!el || el.isConnected) return;
+      ensureControlsHost();
+      controlsHost?.appendChild(el);
     };
     if (document.body) mount();
-    else {
-      document.addEventListener('DOMContentLoaded', mount);
-      const t = window.setInterval(() => {
-        if (document.body) {
-          mount();
-          window.clearInterval(t);
-        }
-      }, 200);
-    }
+    else document.addEventListener('DOMContentLoaded', mount);
+    window.setInterval(mount, 300);
     toolbar.querySelector('#ext-afd-testsound')?.addEventListener('click', () => {
       unlockAudio(); // gesture ini membuka izin suara di browser yg ketat
       setStatus('loading');
