@@ -300,8 +300,7 @@ var __morbis_feature = (() => {
       const kalimat =
         'Nomor antrian ' +
         numberToWords(row.nomor) +
-        ', atas nama ' +
-        (row.namaPasien || '') +
+        (row.namaPasien ? ', atas nama ' + row.namaPasien : '') +
         ', silakan menuju farmasi.';
       queue.push(
         { kind: 'bell' },

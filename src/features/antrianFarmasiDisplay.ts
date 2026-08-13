@@ -413,11 +413,13 @@ declare global {
       console.warn('[FarmasiDisplay] audio belum unlocked — TTS/bell dilewati');
       return;
     }
+    // TTS: ucapkan nomor; segmen nama hanya bila ada (data_call bisa tak punya
+    // record utk nomor yg ekstensi anggap aktif — server penomoran tak berurutan).
+    // Log cadangan utk diagnosa: announce dengan nama kosong ≠ kegagalan, tp layak dicatat.
     const kalimat =
       'Nomor antrian ' +
       numberToWords(row.nomor) +
-      ', atas nama ' +
-      (row.namaPasien || '') +
+      (row.namaPasien ? ', atas nama ' + row.namaPasien : '') +
       ', silakan menuju farmasi.';
     // Antrean serial: bell → voice → voice. Panggilan baru yang datang saat yang
     // lama masih berbicara masuk antrean — tidak menimpa (fix klik beruntun).
