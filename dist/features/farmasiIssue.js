@@ -1,11 +1,7 @@
 'use strict';
 var __morbis_feature = (() => {
   // src/features/shared/farmasiRenumber.ts
-  var RACIKAN_COUNTERS = /* @__PURE__ */ new Set(['2']);
   var RACIKAN_RE = /racik/i;
-  function isRacikanByCounter(counter) {
-    return RACIKAN_COUNTERS.has(String(counter ?? ''));
-  }
   function isRacikanJenis(jenis) {
     return !!jenis && RACIKAN_RE.test(jenis);
   }
@@ -22,8 +18,7 @@ var __morbis_feature = (() => {
     let t = 0;
     for (const row of sorted) {
       if (!row.id) continue;
-      const isR =
-        isRacikanByCounter(row.counter) || (row.counter == null && isRacikanJenis(row.jenis));
+      const isR = isRacikanJenis(row.jenis);
       const kode = isR ? 'R-' + String(++r).padStart(2, '0') : 'T-' + String(++t).padStart(2, '0');
       byId.set(String(row.id), kode);
       urutan.push(kode);
