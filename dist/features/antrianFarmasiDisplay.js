@@ -125,8 +125,9 @@ var __morbis_feature = (() => {
   // src/features/antrianFarmasiDisplay.ts
   (function () {
     const LIST_URL = '/public/antrian-farmasi-v2/list-antrian-v2';
-    const POLL_LADDER_MS = [600, 2e3, 5e3, 1e4];
+    const POLL_LADDER_MS = [500, 1500, 3e3, 6e3];
     const GAP_MS = 400;
+    const CARD_MS = 1e3;
     const WATCH_MS = 1500;
     const STALE_MAX = 2;
     async function fetchCallData() {
@@ -282,6 +283,32 @@ var __morbis_feature = (() => {
           if (row) void recallPatient(row);
         });
       }
+    }
+    async function refreshCardNumber() {
+      try {
+        const [{ current: cur }, rows] = await Promise.all([fetchCurrentNumber(), fetchCallData()]);
+        lastRows = rows;
+        const g1 = cur.get('1')?.trim();
+        const g2 = cur.get('2')?.trim();
+        currentByJenis.tunggal = g1 && g1 !== '0' ? g1 : '';
+        currentByJenis.racikan = g2 && g2 !== '0' ? g2 : '';
+        const atas = document.querySelector(PANGGILAN_SEL);
+        if (atas)
+          atas.innerHTML = cardSection(
+            'Obat Tunggal',
+            currentByJenis.tunggal,
+            currentPatientName('tunggal', currentByJenis.tunggal),
+          );
+        const bawah = document.querySelector(SIAP_SEL);
+        if (bawah)
+          bawah.innerHTML = cardSection(
+            'Obat Racikan',
+            currentByJenis.racikan,
+            currentPatientName('racikan', currentByJenis.racikan),
+          );
+        highlightCurrents();
+        onWeWrote();
+      } catch {}
     }
     function renderDisplay(view, call) {
       if (call) {
@@ -461,6 +488,7 @@ var __morbis_feature = (() => {
     let started = false;
     let watchTimer = null;
     let pollTimer = null;
+    let cardTimer = null;
     const healthCfg = { staleMax: STALE_MAX };
     let health = { nativeActive: true, staleStreak: 0, nativeSig: '', ourSig: '' };
     const debugEnabled = new URLSearchParams(window.location.search).get('debug') === '1';
@@ -642,6 +670,10 @@ var __morbis_feature = (() => {
       health = { ...health, nativeSig: domSignal() };
       if (watchTimer === null) {
         watchTimer = setInterval(watch, WATCH_MS);
+      }
+      if (cardTimer === null) {
+        cardTimer = setInterval(() => void refreshCardNumber(), CARD_MS);
+        void refreshCardNumber();
       }
     }
     startWithRole();

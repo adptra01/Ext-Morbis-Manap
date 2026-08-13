@@ -77,8 +77,12 @@ declare global {
   // ponytail: anak tangga pertama 600ms supaya klik beruntun Selanjutnya tertangkap
   // (tes lapangan: klik 1x/detik melompati 1 nomor di poll 2s). Klik lebih cepat
   // dari 600ms masih bisa terlewat — naikkan budget hanya bila itu terjadi.
-  const POLL_LADDER_MS = [600, 2000, 5000, 10000];
+  const POLL_LADDER_MS = [500, 1500, 3000, 6000];
   const GAP_MS = 400;
+  // Segarkan card (angka panggilan last + nama) secara tetap — cepat (~1s),
+  // tidak tergantung health/native/poll. Bikin display responsif setelah
+  // 'Selanjutnya'/recall tanpa menunggu WS native.
+  const CARD_MS = 1000;
   // C1 — Native Activity Health Monitor: probe aktivitas DOM antrian (baca-only).
   // Bukan instrumentasi window.WebSocket — extension "mengamati konsekuensi transport
   // native", bukan merekayasa WebSocket-nya. Nama file wsHealth.ts dipertahankan
@@ -342,6 +346,38 @@ declare global {
         );
         if (row) void recallPatient(row);
       });
+    }
+  }
+
+  // Refresh angka card + highlight secara tetap & cepat. Fetch ?section=isi
+  // (current number) + data_call (nama), update currentByJenis/lastRows, render.
+  // Di-ranse interval mandiri (CARD_MS) — tak bertabrakan dgn health/poll.
+  async function refreshCardNumber(): Promise<void> {
+    try {
+      const [{ current: cur }, rows] = await Promise.all([fetchCurrentNumber(), fetchCallData()]);
+      lastRows = rows;
+      const g1 = cur.get('1')?.trim();
+      const g2 = cur.get('2')?.trim();
+      currentByJenis.tunggal = g1 && g1 !== '0' ? g1 : '';
+      currentByJenis.racikan = g2 && g2 !== '0' ? g2 : '';
+      const atas = document.querySelector<HTMLElement>(PANGGILAN_SEL);
+      if (atas)
+        atas.innerHTML = cardSection(
+          'Obat Tunggal',
+          currentByJenis.tunggal,
+          currentPatientName('tunggal', currentByJenis.tunggal),
+        );
+      const bawah = document.querySelector<HTMLElement>(SIAP_SEL);
+      if (bawah)
+        bawah.innerHTML = cardSection(
+          'Obat Racikan',
+          currentByJenis.racikan,
+          currentPatientName('racikan', currentByJenis.racikan),
+        );
+      highlightCurrents();
+      onWeWrote(); // tandai write extension agar tak dianggap native recovery
+    } catch {
+      /* poll gagal — diam, kartu biarkan apa adanya */
     }
   }
 
@@ -610,6 +646,7 @@ declare global {
   let started = false; // idempotency: cegah watcher/listener/polling ganda
   let watchTimer: ReturnType<typeof setInterval> | null = null;
   let pollTimer: number | null = null;
+  let cardTimer: ReturnType<typeof setInterval> | null = null;
   const healthCfg = { staleMax: STALE_MAX };
   // State mesin; nativeActive awal true → percaya WS hidup, jangan polling.
   let health: HealthState = { nativeActive: true, staleStreak: 0, nativeSig: '', ourSig: '' };
@@ -853,6 +890,11 @@ declare global {
     if (watchTimer === null) {
       // pengamatan aktivitas DOM native; polling fallback baru menyala bila native membeku
       watchTimer = setInterval(watch, WATCH_MS);
+    }
+    if (cardTimer === null) {
+      // segarkan angka card + highlight cepat (~1s) biar responsif setelah Selanjutnya
+      cardTimer = setInterval(() => void refreshCardNumber(), CARD_MS);
+      void refreshCardNumber(); // render pertama segera
     }
   }
 
