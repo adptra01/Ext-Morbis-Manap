@@ -336,6 +336,23 @@ var __morbis_feature = (() => {
         const g2 = cur.get('2')?.trim();
         currentByJenis.tunggal = g1 && g1 !== '0' ? g1 : '';
         currentByJenis.racikan = g2 && g2 !== '0' ? g2 : '';
+        for (const j of ['tunggal', 'racikan']) {
+          const cur2 = currentByJenis[j];
+          const prev = prevByJenis[j];
+          if (cur2 && cur2 !== '0' && cur2 !== prev) {
+            const nama = currentPatientName(j, cur2);
+            announce({
+              id: j + ':' + cur2,
+              nomor: cur2,
+              kode: '',
+              namaPasien: nama,
+              unit: '',
+              jenis: j,
+              rm: '',
+            });
+          }
+          prevByJenis[j] = cur2 || '';
+        }
         const atas = document.querySelector(PANGGILAN_SEL);
         if (atas)
           atas.innerHTML = cardSection(
@@ -401,6 +418,7 @@ var __morbis_feature = (() => {
       tunggal: '',
       racikan: '',
     };
+    let prevByJenis = { tunggal: '', racikan: '' };
     let lastRows = [];
     const synth = window.speechSynthesis;
     const RealSpeak = synth.speak.bind(synth);
@@ -503,6 +521,12 @@ var __morbis_feature = (() => {
         onDone();
       }
     }
+    function titleCase(s) {
+      return s
+        .split(/\s+/)
+        .map((w) => (w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : w))
+        .join(' ');
+    }
     function announce(row) {
       if (!audioUnlocked) {
         console.warn('[FarmasiDisplay] audio belum unlocked \u2014 TTS/bell dilewati');
@@ -511,7 +535,7 @@ var __morbis_feature = (() => {
       const kalimat =
         'Nomor antrian ' +
         numberToWords(row.nomor) +
-        (row.namaPasien ? ', atas nama ' + row.namaPasien : '') +
+        (row.namaPasien ? ', atas nama ' + titleCase(String(row.namaPasien)) : '') +
         ', silakan menuju farmasi.';
       queue.push(
         { kind: 'bell' },

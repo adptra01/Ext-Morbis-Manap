@@ -409,6 +409,27 @@ declare global {
       const g2 = cur.get('2')?.trim();
       currentByJenis.tunggal = g1 && g1 !== '0' ? g1 : '';
       currentByJenis.racikan = g2 && g2 !== '0' ? g2 : '';
+
+      // Deteksi panggilan BARU per jenis utk bell+TTS — jalan di NATIVE maupun
+      // FALLBACK (sebelumnya hanya di poll fallback, jadi NATIVE kiosk tak bicara).
+      for (const j of ['tunggal', 'racikan'] as const) {
+        const cur = currentByJenis[j];
+        const prev = prevByJenis[j];
+        if (cur && cur !== '0' && cur !== prev) {
+          const nama = currentPatientName(j, cur);
+          announce({
+            id: j + ':' + cur,
+            nomor: cur,
+            kode: '',
+            namaPasien: nama,
+            unit: '',
+            jenis: j,
+            rm: '',
+          });
+        }
+        prevByJenis[j] = cur || '';
+      }
+
       const atas = document.querySelector<HTMLElement>(PANGGILAN_SEL);
       if (atas)
         atas.innerHTML = cardSection(
@@ -508,6 +529,9 @@ declare global {
     tunggal: '',
     racikan: '',
   };
+  // Nomor per jenis pada refresh sebelumnya — deteksi panggilan BARU utk bell+TTS
+  // (jalan di NATIVE maupun FALLBACK, tidak hanya saat poll fallback).
+  const prevByJenis: Record<'tunggal' | 'racikan', string> = { tunggal: '', racikan: '' };
 
   // data_call mentah terakhir (diisi pollFallback) — dipakai seed card dua-bagian
   // karena STATUS=0 tak selalu menandai baris aktif (status MORBIS tak reliable).
@@ -638,6 +662,16 @@ declare global {
     }
   }
 
+  // Title-case utk pembacaan TTS: Google TTS mengeja huruf jika kata ALL-CAPS
+  // (dianggap akronim) → "ELPIANIS" jadi "E L P I A N I S". Buat jadi "Elpianis"
+  // utk dibaca natural. HANYA utk ujaran; tampilan card tetap pakai nilai asli.
+  function titleCase(s: string): string {
+    return s
+      .split(/\s+/)
+      .map((w) => (w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : w))
+      .join(' ');
+  }
+
   function announce(row: ViewRow): void {
     // C3 — TTS & bell hanya boleh setelah audio di-unlock via gesture.
     // Tanpa unlock: masalah suara dibiarkan lewat, tidak dipaksa.
@@ -645,13 +679,11 @@ declare global {
       console.warn('[FarmasiDisplay] audio belum unlocked — TTS/bell dilewati');
       return;
     }
-    // TTS: ucapkan nomor; segmen nama hanya bila ada (data_call bisa tak punya
-    // record utk nomor yg ekstensi anggap aktif — server penomoran tak berurutan).
-    // Log cadangan utk diagnosa: announce dengan nama kosong ≠ kegagalan, tp layak dicatat.
+    // TTS: ucapkan nomor; nama title-case agar TTS membacanya natural (bukan eja).
     const kalimat =
       'Nomor antrian ' +
       numberToWords(row.nomor) +
-      (row.namaPasien ? ', atas nama ' + row.namaPasien : '') +
+      (row.namaPasien ? ', atas nama ' + titleCase(String(row.namaPasien)) : '') +
       ', silakan menuju farmasi.';
     // Antrean serial: bell → voice → voice. Panggilan baru yang datang saat yang
     // lama masih berbicara masuk antrean — tidak menimpa (fix klik beruntun).
