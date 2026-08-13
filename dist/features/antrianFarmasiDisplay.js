@@ -304,6 +304,20 @@ var __morbis_feature = (() => {
       );
       return row?.NAMA_PASIEN || '';
     }
+    function readPanelNumber(sel) {
+      const el = document.querySelector(sel);
+      if (!el) return '';
+      const txt = (el.textContent || '').replace(/\s+/g, ' ').trim();
+      const m = txt.match(/(?:^|\D)(\d{1,4})(?:\D|$)/);
+      return m ? m[1] : '';
+    }
+    function currentPatientNameByNum(morbisNum) {
+      if (!morbisNum) return '';
+      const row = lastRows.find(
+        (r) => String(r.NOMOR ?? '') === morbisNum || String(r.COUNTER ?? '') === morbisNum,
+      );
+      return row?.NAMA_PASIEN || '';
+    }
     function highlightCurrents() {
       const lc = document.querySelector('#list-content');
       if (!lc) return;
@@ -380,19 +394,45 @@ var __morbis_feature = (() => {
         });
       }
     }
+    let lastNativeCall = null;
     async function refreshCardNumber() {
       setStatus('loading');
       try {
+        const panelNum = readPanelNumber(PANGGILAN_SEL);
         const [{ current: cur }, rows] = await Promise.all([fetchCurrentNumber(), fetchCallData()]);
         lastRows = rows;
         const g1 = cur.get('1')?.trim();
         const g2 = cur.get('2')?.trim();
         currentByJenis.tunggal = g1 && g1 !== '0' ? g1 : '';
         currentByJenis.racikan = g2 && g2 !== '0' ? g2 : '';
+        if (
+          panelNum &&
+          panelNum !== '0' &&
+          panelNum !== currentByJenis.tunggal &&
+          panelNum !== currentByJenis.racikan
+        ) {
+          if (panelNum !== lastNativeCall) {
+            lastNativeCall = panelNum;
+            const nama = currentPatientNameByNum(panelNum);
+            announce({
+              id: 'recall:' + panelNum,
+              nomor: panelNum,
+              kode: '',
+              namaPasien: nama,
+              unit: '',
+              jenis: 'tunggal',
+              rm: '',
+            });
+            updateDebugState({ lastAnnouncement: 'recall:' + panelNum });
+          }
+          setStatus('ok');
+          return;
+        }
         for (const j of ['tunggal', 'racikan']) {
           const cur2 = currentByJenis[j];
           const prev = prevByJenis[j];
           if (cur2 && cur2 !== '0' && cur2 !== prev) {
+            lastNativeCall = null;
             const nama = currentPatientName(j, cur2);
             announce({
               id: j + ':' + cur2,

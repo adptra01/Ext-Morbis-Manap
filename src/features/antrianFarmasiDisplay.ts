@@ -379,6 +379,26 @@ declare global {
     return row?.NAMA_PASIEN || '';
   }
 
+  // Nomor antrian yang tampil di panel native (recall): ekstrak digit terakhir
+  // dari teks panel (mis. "BT-30" / "30"). Bukan sumber kebenaran panggilan baru,
+  // hanya untuk deteksi recall yang tidak terlihat di current-number ?section=isi.
+  function readPanelNumber(sel: string): string {
+    const el = document.querySelector<HTMLElement>(sel);
+    if (!el) return '';
+    const txt = (el.textContent || '').replace(/\s+/g, ' ').trim();
+    const m = txt.match(/(?:^|\D)(\d{1,4})(?:\D|$)/);
+    return m ? m[1] : '';
+  }
+
+  // Nama pasien utk nomor recall: cari di lastRows (data_call) — jenis apa pun.
+  function currentPatientNameByNum(morbisNum: string): string {
+    if (!morbisNum) return '';
+    const row = lastRows.find(
+      (r) => String(r.NOMOR ?? '') === morbisNum || String(r.COUNTER ?? '') === morbisNum,
+    );
+    return row?.NAMA_PASIEN || '';
+  }
+
   // Highlight baris tabel #list-content utk panggilan terakhir per jenis.
   // Cocokkan NOMOR secara PERSIS (angka dari h4 BT-xx/UR-xx) dgn currentByJenis,
   // atau via nama pasien terakhir per jenis — tandai kuning.
@@ -468,9 +488,18 @@ declare global {
   // Refresh angka card + highlight secara tetap & cepat. Fetch ?section=isi
   // (current number) + data_call (nama), update currentByJenis/lastRows, render.
   // Di-ranse interval mandiri (CARD_MS) — tak bertabrakan dgn health/poll.
+  //
+  // Recall (panggil ulang): current-number ?section=isi TIDAK berubah (tetap nomor
+  // terakhir "Selanjutnya"), tapi panel native #antrian-view di-update WS native
+  // dengan nomor recall. Deteksi: baca nomor panel SEBELUM menimpa → beda dari
+  // current-number = panggilan native (recall) → announce + JANGAN timpa, supaya
+  // nomor recall tetap terlihat & bersuara.
+  let lastNativeCall: string | null = null; // nomor native (recall) terakhir di-announce
   async function refreshCardNumber(): Promise<void> {
     setStatus('loading');
     try {
+      // Baca nomor panel native SAAT INI (sebelum kita menulis) — sumber recall.
+      const panelNum = readPanelNumber(PANGGILAN_SEL);
       const [{ current: cur }, rows] = await Promise.all([fetchCurrentNumber(), fetchCallData()]);
       lastRows = rows;
       const g1 = cur.get('1')?.trim();
@@ -478,12 +507,40 @@ declare global {
       currentByJenis.tunggal = g1 && g1 !== '0' ? g1 : '';
       currentByJenis.racikan = g2 && g2 !== '0' ? g2 : '';
 
+      // Recall terdeteksi: panel native menampilkan nomor yang TIDAK sama dengan
+      // current-number → announce sekali (dedup via lastNativeCall) + biarkan
+      // panel native tampil (jangan timpa) sampai native mengubahnya.
+      if (
+        panelNum &&
+        panelNum !== '0' &&
+        panelNum !== currentByJenis.tunggal &&
+        panelNum !== currentByJenis.racikan
+      ) {
+        if (panelNum !== lastNativeCall) {
+          lastNativeCall = panelNum;
+          const nama = currentPatientNameByNum(panelNum);
+          announce({
+            id: 'recall:' + panelNum,
+            nomor: panelNum,
+            kode: '',
+            namaPasien: nama,
+            unit: '',
+            jenis: 'tunggal',
+            rm: '',
+          });
+          updateDebugState({ lastAnnouncement: 'recall:' + panelNum });
+        }
+        setStatus('ok');
+        return; // jangan timpa panel recall native
+      }
+
       // Deteksi panggilan BARU per jenis utk bell+TTS — jalan di NATIVE maupun
       // FALLBACK (sebelumnya hanya di poll fallback, jadi NATIVE kiosk tak bicara).
       for (const j of ['tunggal', 'racikan'] as const) {
         const cur = currentByJenis[j];
         const prev = prevByJenis[j];
         if (cur && cur !== '0' && cur !== prev) {
+          lastNativeCall = null; // panggilan normal → recall berikutnya harus announce lagi
           const nama = currentPatientName(j, cur);
           announce({
             id: j + ':' + cur,
