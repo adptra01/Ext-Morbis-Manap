@@ -4,6 +4,12 @@ var __morbis_feature = (() => {
   (function () {
     if (window.__extAfdRecallDeleg) return;
     window.__extAfdRecallDeleg = true;
+    function resolveId(row, nomor) {
+      const direct = row.getAttribute('data-id') || '';
+      if (direct) return direct;
+      const inp = document.getElementById('id-antrian' + nomor);
+      return inp ? inp.value : '';
+    }
     document.addEventListener(
       'click',
       (e) => {
@@ -12,17 +18,29 @@ var __morbis_feature = (() => {
         if (t.closest('button, input, a, select, .ext-issue-printone, #ext-issue-print')) return;
         const row = t.closest('tr.status-called, tr[data-id]');
         if (!row) return;
-        const id = row.getAttribute('data-id') || '';
         const jenis = row.getAttribute('data-jenis') || 'tunggal';
         const nomor = row.getAttribute('data-nomor') || '';
+        const id = resolveId(row, nomor);
         if (!id) return;
         const fn = window.panggilUlang;
         if (typeof fn !== 'function') return;
         const nomorTeks = (row.cells?.[0]?.textContent || '').trim();
         if (nomorTeks) {
-          const inp = document.getElementById('id-' + nomor);
-          if (inp) inp.value = nomorTeks;
+          let inp = document.getElementById('id-' + nomor);
+          if (!inp) {
+            inp = document.createElement('input');
+            inp.type = 'hidden';
+            inp.id = 'id-' + nomor;
+            document.body.appendChild(inp);
+          }
+          inp.value = nomorTeks;
         }
+        try {
+          localStorage.setItem(
+            'ext-afd-recall',
+            JSON.stringify({ jenis, nomor, nomorTeks, ts: Date.now() }),
+          );
+        } catch {}
         e.stopPropagation();
         e.preventDefault();
         fn.call(window, id, jenis, nomor);

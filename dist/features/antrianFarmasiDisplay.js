@@ -395,9 +395,33 @@ var __morbis_feature = (() => {
       }
     }
     let lastNativeCall = null;
+    let lastLocalRecallKey = '';
+    const writtenByUs = { tunggal: '', racikan: '' };
     async function refreshCardNumber() {
       setStatus('loading');
       try {
+        try {
+          const raw = localStorage.getItem('ext-afd-recall');
+          if (raw) {
+            const rec = JSON.parse(raw);
+            const key = rec.jenis + ':' + rec.nomor;
+            if (rec.nomor && key !== lastLocalRecallKey) {
+              lastLocalRecallKey = key;
+              const nama = currentPatientNameByNum(rec.nomor) || rec.nomorTeks || '';
+              announce({
+                id: 'recall:' + key,
+                nomor: rec.nomor,
+                kode: '',
+                namaPasien: nama,
+                unit: '',
+                jenis: rec.jenis,
+                rm: '',
+              });
+              updateDebugState({ lastAnnouncement: 'recall:local:' + key });
+              localStorage.removeItem('ext-afd-recall');
+            }
+          }
+        } catch {}
         const panelT = readPanelNumber(PANGGILAN_SEL);
         const panelR = readPanelNumber(SIAP_SEL);
         const [{ current: cur }, rows] = await Promise.all([fetchCurrentNumber(), fetchCallData()]);
@@ -406,8 +430,16 @@ var __morbis_feature = (() => {
         const g2 = cur.get('2')?.trim();
         currentByJenis.tunggal = g1 && g1 !== '0' ? g1 : '';
         currentByJenis.racikan = g2 && g2 !== '0' ? g2 : '';
-        const recallT = panelT && panelT !== '0' && panelT !== currentByJenis.tunggal;
-        const recallR = panelR && panelR !== '0' && panelR !== currentByJenis.racikan;
+        const recallT =
+          panelT &&
+          panelT !== '0' &&
+          panelT !== currentByJenis.tunggal &&
+          panelT !== writtenByUs.tunggal;
+        const recallR =
+          panelR &&
+          panelR !== '0' &&
+          panelR !== currentByJenis.racikan &&
+          panelR !== writtenByUs.racikan;
         if (recallT || recallR) {
           const jenis = recallT ? 'tunggal' : 'racikan';
           const panelNum = recallT ? panelT : panelR;
@@ -462,6 +494,8 @@ var __morbis_feature = (() => {
             currentPatientName('racikan', currentByJenis.racikan),
           );
         highlightCurrents();
+        writtenByUs.tunggal = currentByJenis.tunggal;
+        writtenByUs.racikan = currentByJenis.racikan;
         onWeWrote();
         setStatus('ok');
       } catch {
@@ -488,6 +522,8 @@ var __morbis_feature = (() => {
           );
         highlightCurrents();
         wireRowRecall();
+        writtenByUs.tunggal = currentByJenis.tunggal;
+        writtenByUs.racikan = currentByJenis.racikan;
       }
       onWeWrote();
     }
@@ -598,8 +634,7 @@ var __morbis_feature = (() => {
         };
         RealSpeak.call(synth, u);
         setTimeout(() => {
-          if (!started2 && !synth.speaking) speakMp3();
-          else if (!started2) setTimeout(() => speakMp3(), 1500);
+          if (!started2) speakMp3();
         }, 1200);
       } catch {
         speakMp3();

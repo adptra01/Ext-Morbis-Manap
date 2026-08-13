@@ -502,9 +502,45 @@ declare global {
   // jenisnya = panggilan native (recall) → announce + JANGAN timpa, supaya nomor
   // recall tetap terlihat & bersuara.
   let lastNativeCall: string | null = null; // key 'jenis:nomor' recall terakhir di-announce
+  let lastLocalRecallKey = ''; // dedup sinyal recall dari konsol (localStorage)
+  // Nilai panel terakhir yang extension tulis sendiri — signature pembeda recall
+  // native vs nilai extension (mode FALLBACK). Di-set SETELAH menulis panel.
+  const writtenByUs: Record<'tunggal' | 'racikan', string> = { tunggal: '', racikan: '' };
   async function refreshCardNumber(): Promise<void> {
     setStatus('loading');
     try {
+      // Recall via konsol → localStorage (same-origin, TANPA WebSocket — WS native
+      // sering mati/refused di lapangan sehingga display tak menerima pesan recall).
+      // Display announce sendiri; konsol tulis sinyal saat klik baris recall.
+      try {
+        const raw = localStorage.getItem('ext-afd-recall');
+        if (raw) {
+          const rec = JSON.parse(raw) as {
+            jenis: string;
+            nomor: string;
+            nomorTeks?: string;
+            ts: number;
+          };
+          const key = rec.jenis + ':' + rec.nomor;
+          if (rec.nomor && key !== lastLocalRecallKey) {
+            lastLocalRecallKey = key;
+            const nama = currentPatientNameByNum(rec.nomor) || rec.nomorTeks || '';
+            announce({
+              id: 'recall:' + key,
+              nomor: rec.nomor,
+              kode: '',
+              namaPasien: nama,
+              unit: '',
+              jenis: rec.jenis as 'tunggal' | 'racikan',
+              rm: '',
+            });
+            updateDebugState({ lastAnnouncement: 'recall:local:' + key });
+            localStorage.removeItem('ext-afd-recall'); // sekali pakai
+          }
+        }
+      } catch {
+        /* localStorage rusak/tidak tersedia — lanjut jalur panel */
+      }
       // Baca nomor panel native SAAT INI (sebelum kita menulis) — sumber recall.
       const panelT = readPanelNumber(PANGGILAN_SEL); // panel TUNGGAL native
       const panelR = readPanelNumber(SIAP_SEL); // panel RACIKAN native
@@ -518,8 +554,22 @@ declare global {
       // Recall terdeteksi: panel native menampilkan nomor yang TIDAK sama dengan
       // current-number jenisnya → announce sekali (dedup via lastNativeCall) +
       // biarkan panel native tampil (jangan timpa) sampai native mengubahnya.
-      const recallT = panelT && panelT !== '0' && panelT !== currentByJenis.tunggal;
-      const recallR = panelR && panelR !== '0' && panelR !== currentByJenis.racikan;
+      //
+      // Signature penulis: extension sendiri juga menulis panel (refresh tiap
+      // CARD_MS). Di mode FALLBACK (WS native mati), panel = nilai extension dari
+      // refresh sebelumnya — SELALU berbeda dari current saat transisi → false
+      // positive recall tanpa ini. Recall HANYA jika panel ≠ current DAN ≠ nilai
+      // terakhir yang extension tulis sendiri (writtenByUs).
+      const recallT =
+        panelT &&
+        panelT !== '0' &&
+        panelT !== currentByJenis.tunggal &&
+        panelT !== writtenByUs.tunggal;
+      const recallR =
+        panelR &&
+        panelR !== '0' &&
+        panelR !== currentByJenis.racikan &&
+        panelR !== writtenByUs.racikan;
       if (recallT || recallR) {
         const jenis = recallT ? 'tunggal' : 'racikan';
         const panelNum = recallT ? panelT : panelR;
@@ -578,6 +628,9 @@ declare global {
           currentPatientName('racikan', currentByJenis.racikan),
         );
       highlightCurrents();
+      // tandai nilai yang KITA tulis — signature recall detection (lihat di atas)
+      writtenByUs.tunggal = currentByJenis.tunggal;
+      writtenByUs.racikan = currentByJenis.racikan;
       onWeWrote(); // tandai write extension agar tak dianggap native recovery
       setStatus('ok');
     } catch {
@@ -616,6 +669,8 @@ declare global {
         );
       highlightCurrents(); // tandai baris panggilan terakhir per jenis
       wireRowRecall(); // aktifkan klik-kiri-pasien utk panggil ulang
+      writtenByUs.tunggal = currentByJenis.tunggal;
+      writtenByUs.racikan = currentByJenis.racikan;
     }
     onWeWrote(); // tandai DOM yang BARU SAJA extension tulis (bukan native)
   }
@@ -772,10 +827,13 @@ declare global {
         else fin();
       };
       RealSpeak.call(synth, u);
-      // speechSynthesis macet (kiosk tanpa gesture): onstart tak akan datang → MP3
+      // speechSynthesis macet/bisu (kiosk tanpa gesture: Chrome kadang set
+      // speaking=true walau TIDAK berbunyi — sound=Allow unlocks AudioContext,
+      // bukan speechSynthesis). onstart adalah sinyal suara BENAR-BENAR mulai;
+      // jika tak datang dalam 1.2s → MP3. (jangan cek synth.speaking: bisa true
+      // tanpa bunyi → gagal fallback.)
       setTimeout(() => {
-        if (!started && !synth.speaking) speakMp3();
-        else if (!started) setTimeout(() => speakMp3(), 1500); // speaking tp bisu? coba MP3
+        if (!started) speakMp3();
       }, 1200);
     } catch {
       speakMp3();
