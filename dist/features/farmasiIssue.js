@@ -199,7 +199,16 @@ var __morbis_feature = (() => {
     );
     win.document.close();
   }
+  function ensureRecallDelegation() {
+    if (document.getElementById('ext-afd-recall-deleg')) return;
+    const s = document.createElement('script');
+    s.id = 'ext-afd-recall-deleg';
+    s.src = chrome.runtime.getURL('features/farmasiRecallDeleg.js');
+    s.onerror = () => console.error('[FarmasiIssue] recall deleg inject failed');
+    (document.head || document.documentElement).appendChild(s);
+  }
   function init() {
+    ensureRecallDelegation();
     const panel = buildPanel();
     const toggle = buildToggle();
     document.body.appendChild(panel);
