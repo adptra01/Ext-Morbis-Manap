@@ -62,7 +62,6 @@ type AntrianFarmasiDebugState = {
   lastDataCount: number | null;
   lastAnnouncement: string | null;
   audioUnlocked: boolean;
-  ttsMode: 'speech' | 'mp3' | 'local' | 'silent' | null;
 };
 
 declare global {
@@ -350,13 +349,8 @@ declare global {
   /* ============================================================
    * Display — render DOM, bedakan 3 kondisi (no data / error / ada).
    * ============================================================ */
-  // Pemetaan panel MENGIKUTI NATIVE (verifikasi 2026-08-13):
-  //   #antrian-penyerahan = Resep TUNGGAL (native menulis di sini saat tunggal dipanggil)
-  //   #antrian-view       = Resep RACIKAN (native menulis di sini saat racikan dipanggil)
-  // Dulu extension membaliknya → recall tunggal ditulis native ke #antrian-penyerahan
-  // tapi extension baca/timpa #antrian-view → recall tunggal tak terdeteksi & hilang.
-  const PANGGILAN_SEL = '#antrian-penyerahan'; // panel native TUNGGAL
-  const SIAP_SEL = '#antrian-view'; // panel native RACIKAN
+  const PANGGILAN_SEL = '#antrian-view';
+  const SIAP_SEL = '#antrian-penyerahan';
 
   // Seksi card per jenis: ANGKA = current MORBIS (mengikuti panggilan terakhir,
   // '0'/kosong → '—'), NAMA = pasien terakhir per jenis (opsional).
@@ -381,26 +375,6 @@ declare global {
       (r) =>
         (isR ? /racik/i.test(String(r.JENIS ?? '')) : !/racik/i.test(String(r.JENIS ?? ''))) &&
         (String(r.NOMOR ?? '') === morbisNum || String(r.COUNTER ?? '') === morbisNum),
-    );
-    return row?.NAMA_PASIEN || '';
-  }
-
-  // Nomor antrian yang tampil di panel native (recall): ekstrak digit terakhir
-  // dari teks panel (mis. "BT-30" / "30"). Bukan sumber kebenaran panggilan baru,
-  // hanya untuk deteksi recall yang tidak terlihat di current-number ?section=isi.
-  function readPanelNumber(sel: string): string {
-    const el = document.querySelector<HTMLElement>(sel);
-    if (!el) return '';
-    const txt = (el.textContent || '').replace(/\s+/g, ' ').trim();
-    const m = txt.match(/(?:^|\D)(\d{1,4})(?:\D|$)/);
-    return m ? m[1] : '';
-  }
-
-  // Nama pasien utk nomor recall: cari di lastRows (data_call) — jenis apa pun.
-  function currentPatientNameByNum(morbisNum: string): string {
-    if (!morbisNum) return '';
-    const row = lastRows.find(
-      (r) => String(r.NOMOR ?? '') === morbisNum || String(r.COUNTER ?? '') === morbisNum,
     );
     return row?.NAMA_PASIEN || '';
   }
@@ -494,56 +468,9 @@ declare global {
   // Refresh angka card + highlight secara tetap & cepat. Fetch ?section=isi
   // (current number) + data_call (nama), update currentByJenis/lastRows, render.
   // Di-ranse interval mandiri (CARD_MS) — tak bertabrakan dgn health/poll.
-  //
-  // Recall (panggil ulang): current-number ?section=isi TIDAK berubah (tetap nomor
-  // terakhir "Selanjutnya"), tapi panel native di-update WS native dengan nomor
-  // recall — TUNGGAL → #antrian-penyerahan, RACIKAN → #antrian-view (mapping native).
-  // Deteksi: baca nomor KEDUA panel SEBELUM menimpa → beda dari current-number
-  // jenisnya = panggilan native (recall) → announce + JANGAN timpa, supaya nomor
-  // recall tetap terlihat & bersuara.
-  let lastNativeCall: string | null = null; // key 'jenis:nomor' recall terakhir di-announce
-  let lastLocalRecallKey = ''; // dedup sinyal recall dari konsol (localStorage)
-  // Nilai panel terakhir yang extension tulis sendiri — signature pembeda recall
-  // native vs nilai extension (mode FALLBACK). Di-set SETELAH menulis panel.
-  const writtenByUs: Record<'tunggal' | 'racikan', string> = { tunggal: '', racikan: '' };
   async function refreshCardNumber(): Promise<void> {
     setStatus('loading');
     try {
-      // Recall via konsol → localStorage (same-origin, TANPA WebSocket — WS native
-      // sering mati/refused di lapangan sehingga display tak menerima pesan recall).
-      // Display announce sendiri; konsol tulis sinyal saat klik baris recall.
-      try {
-        const raw = localStorage.getItem('ext-afd-recall');
-        if (raw) {
-          const rec = JSON.parse(raw) as {
-            jenis: string;
-            nomor: string;
-            nomorTeks?: string;
-            ts: number;
-          };
-          const key = rec.jenis + ':' + rec.nomor;
-          if (rec.nomor && key !== lastLocalRecallKey) {
-            lastLocalRecallKey = key;
-            const nama = currentPatientNameByNum(rec.nomor) || rec.nomorTeks || '';
-            announce({
-              id: 'recall:' + key,
-              nomor: rec.nomor,
-              kode: '',
-              namaPasien: nama,
-              unit: '',
-              jenis: rec.jenis as 'tunggal' | 'racikan',
-              rm: '',
-            });
-            updateDebugState({ lastAnnouncement: 'recall:local:' + key });
-            localStorage.removeItem('ext-afd-recall'); // sekali pakai
-          }
-        }
-      } catch {
-        /* localStorage rusak/tidak tersedia — lanjut jalur panel */
-      }
-      // Baca nomor panel native SAAT INI (sebelum kita menulis) — sumber recall.
-      const panelT = readPanelNumber(PANGGILAN_SEL); // panel TUNGGAL native
-      const panelR = readPanelNumber(SIAP_SEL); // panel RACIKAN native
       const [{ current: cur }, rows] = await Promise.all([fetchCurrentNumber(), fetchCallData()]);
       lastRows = rows;
       const g1 = cur.get('1')?.trim();
@@ -551,54 +478,12 @@ declare global {
       currentByJenis.tunggal = g1 && g1 !== '0' ? g1 : '';
       currentByJenis.racikan = g2 && g2 !== '0' ? g2 : '';
 
-      // Recall terdeteksi: panel native menampilkan nomor yang TIDAK sama dengan
-      // current-number jenisnya → announce sekali (dedup via lastNativeCall) +
-      // biarkan panel native tampil (jangan timpa) sampai native mengubahnya.
-      //
-      // Signature penulis: extension sendiri juga menulis panel (refresh tiap
-      // CARD_MS). Di mode FALLBACK (WS native mati), panel = nilai extension dari
-      // refresh sebelumnya — SELALU berbeda dari current saat transisi → false
-      // positive recall tanpa ini. Recall HANYA jika panel ≠ current DAN ≠ nilai
-      // terakhir yang extension tulis sendiri (writtenByUs).
-      const recallT =
-        panelT &&
-        panelT !== '0' &&
-        panelT !== currentByJenis.tunggal &&
-        panelT !== writtenByUs.tunggal;
-      const recallR =
-        panelR &&
-        panelR !== '0' &&
-        panelR !== currentByJenis.racikan &&
-        panelR !== writtenByUs.racikan;
-      if (recallT || recallR) {
-        const jenis = recallT ? 'tunggal' : 'racikan';
-        const panelNum = recallT ? panelT : panelR;
-        const key = jenis + ':' + panelNum;
-        if (key !== lastNativeCall) {
-          lastNativeCall = key;
-          const nama = currentPatientNameByNum(panelNum);
-          announce({
-            id: 'recall:' + key,
-            nomor: panelNum,
-            kode: '',
-            namaPasien: nama,
-            unit: '',
-            jenis,
-            rm: '',
-          });
-          updateDebugState({ lastAnnouncement: 'recall:' + key });
-        }
-        setStatus('ok');
-        return; // jangan timpa panel recall native
-      }
-
       // Deteksi panggilan BARU per jenis utk bell+TTS — jalan di NATIVE maupun
       // FALLBACK (sebelumnya hanya di poll fallback, jadi NATIVE kiosk tak bicara).
       for (const j of ['tunggal', 'racikan'] as const) {
         const cur = currentByJenis[j];
         const prev = prevByJenis[j];
         if (cur && cur !== '0' && cur !== prev) {
-          lastNativeCall = null; // panggilan normal → recall berikutnya harus announce lagi
           const nama = currentPatientName(j, cur);
           announce({
             id: j + ':' + cur,
@@ -628,9 +513,6 @@ declare global {
           currentPatientName('racikan', currentByJenis.racikan),
         );
       highlightCurrents();
-      // tandai nilai yang KITA tulis — signature recall detection (lihat di atas)
-      writtenByUs.tunggal = currentByJenis.tunggal;
-      writtenByUs.racikan = currentByJenis.racikan;
       onWeWrote(); // tandai write extension agar tak dianggap native recovery
       setStatus('ok');
     } catch {
@@ -669,8 +551,6 @@ declare global {
         );
       highlightCurrents(); // tandai baris panggilan terakhir per jenis
       wireRowRecall(); // aktifkan klik-kiri-pasien utk panggil ulang
-      writtenByUs.tunggal = currentByJenis.tunggal;
-      writtenByUs.racikan = currentByJenis.racikan;
     }
     onWeWrote(); // tandai DOM yang BARU SAJA extension tulis (bukan native)
   }
@@ -756,87 +636,19 @@ declare global {
       ringBell(finish);
       return;
     }
-    playVoice(item.text, finish);
-  }
-
-  // TTS berlapis (kiosk display: Chrome speechSynthesis diam tanpa user-gesture,
-  // voices bisa kosong — bell AudioContext ter-unlock oleh sound=Allow, TTS tidak).
-  // 1) speechSynthesis dgn voice id-ID online → onstart = suara jalan
-  // 2) voices kosong / tak mulai dlm 1.2s → MP3 Google TTS (Audio element, ikut
-  //    autoplay sound=Allow) — pola sama dgn antrianTools
-  // 3) MP3 gagal (internet mati) → voice lokal sistem (espeak) sbg jaring terakhir
-  function playVoice(text: string, onDone: () => void): void {
-    let done = false;
-    const fin = (): void => {
-      if (done) return;
-      done = true;
-      onDone();
-    };
-    const speakLocal = (): void => {
-      try {
-        updateDebugState({ ttsMode: 'local' });
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'id';
-        const lv =
-          synth
-            .getVoices()
-            .find((x) => (x.lang || '').toLowerCase().startsWith('id') && x.localService) ||
-          synth.getVoices().find((x) => x.localService);
-        if (lv) u.voice = lv;
-        u.onend = fin;
-        u.onerror = fin;
-        RealSpeak.call(synth, u);
-        setTimeout(fin, 20000);
-      } catch {
-        updateDebugState({ ttsMode: 'silent' });
-        fin();
-      }
-    };
-    const speakMp3 = (): void => {
-      try {
-        updateDebugState({ ttsMode: 'mp3' });
-        const a = new Audio(
-          'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=id&q=' +
-            encodeURIComponent(text),
-        );
-        a.onended = fin;
-        a.onerror = speakLocal;
-        void a.play().catch(speakLocal);
-        setTimeout(fin, 20000); // pengaman bila onended tak datang
-      } catch {
-        speakLocal();
-      }
-    };
     try {
-      const u = new SpeechSynthesisUtterance(text);
-      updateDebugState({ ttsMode: 'speech' });
-      const online = synth
-        .getVoices()
-        .find((x) => (x.lang || '').toLowerCase().startsWith('id') && !x.localService);
-      if (online) u.voice = online;
+      const u = new SpeechSynthesisUtterance(item.text);
+      const v = synth.getVoices().find((x) => x.lang && x.lang.toLowerCase().startsWith('id'));
+      if (v) u.voice = v;
       u.lang = 'id-ID';
       u.rate = 0.8;
       u.volume = 1;
-      let started = false;
-      u.onstart = () => {
-        started = true;
-      };
-      u.onend = fin;
-      u.onerror = () => {
-        if (!started) speakMp3();
-        else fin();
-      };
+      u.onend = finish;
+      u.onerror = finish;
       RealSpeak.call(synth, u);
-      // speechSynthesis macet/bisu (kiosk tanpa gesture: Chrome kadang set
-      // speaking=true walau TIDAK berbunyi — sound=Allow unlocks AudioContext,
-      // bukan speechSynthesis). onstart adalah sinyal suara BENAR-BENAR mulai;
-      // jika tak datang dalam 1.2s → MP3. (jangan cek synth.speaking: bisa true
-      // tanpa bunyi → gagal fallback.)
-      setTimeout(() => {
-        if (!started) speakMp3();
-      }, 1200);
+      setTimeout(finish, 20000);
     } catch {
-      speakMp3();
+      finish();
     }
   }
 
@@ -1052,7 +864,6 @@ declare global {
     lastDataCount: null,
     lastAnnouncement: null,
     audioUnlocked: false,
-    ttsMode: null,
   };
   function updateDebugState(patch: Partial<AntrianFarmasiDebugState>): void {
     if (!debugEnabled) return;

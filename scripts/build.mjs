@@ -68,7 +68,6 @@ async function compileFeatureFiles() {
     'cpptSearchFilter.ts',
     'resumeValidator.ts',
     'antrianTools.ts',
-    'farmasiRecallDeleg.ts',
     'antrianLoader.ts',
     'antrianFarmasiDisplay.ts',
     'antrianFarmasiTotal.ts',

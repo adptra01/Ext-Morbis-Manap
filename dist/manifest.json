@@ -239,7 +239,7 @@
   "host_permissions": ["http://*/*"],
   "web_accessible_resources": [
     {
-      "resources": ["ui/shadow.css", "features/antrianTools.js", "features/farmasiRecallDeleg.js"],
+      "resources": ["ui/shadow.css", "features/antrianTools.js"],
       "matches": ["http://*/*"]
     }
   ],

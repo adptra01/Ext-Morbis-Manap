@@ -14,10 +14,6 @@ import { renumberFarmasi, type ResetRow } from './shared/farmasiRenumber';
 
 const LIST_URL = '/public/antrian-farmasi-v2/list-antrian-v2';
 
-// State utk pencarian realtime: rows terakhir + term pencarian aktif.
-let lastRows: Array<Record<string, unknown>> = [];
-let searchTerm = ''; // lowercase, dicocokkan ke nama & nomor renumber
-
 async function fetchRows(): Promise<Array<Record<string, unknown>>> {
   const res = await fetch(LIST_URL + '?type=data_call', {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
@@ -41,8 +37,6 @@ function buildPanel(): HTMLDivElement {
     '<button id="ext-issue-collapse" style="border:none;background:none;font-size:16px;cursor:pointer;line-height:1;" title="Tutup">–</button>' +
     '</div>' +
     '<div id="ext-issue-status" style="color:#6c757d;font-size:12px;margin-bottom:8px;">Memuat…</div>' +
-    '<input id="ext-issue-search" type="search" placeholder="🔍 Cari nama / nomor…" ' +
-    'style="width:100%;box-sizing:border-box;padding:7px 10px;border:1px solid #ced4da;border-radius:8px;font:13px/1.4 Inter,system-ui,sans-serif;margin-bottom:8px;" />' +
     '<div id="ext-issue-list" style="max-height:240px;overflow:auto;border:1px solid #e9ecef;border-radius:8px;margin-bottom:10px;"></div>' +
     '<div style="display:flex;gap:8px;">' +
     '<button id="ext-issue-refresh" style="flex:1;padding:7px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">Segarkan</button>' +
@@ -65,7 +59,6 @@ function buildToggle(): HTMLButtonElement {
 }
 
 function renderRows(rows: Array<Record<string, unknown>>): void {
-  lastRows = rows; // simpan utk re-render saat search / cetak per-baris
   const { byId, urutan } = renumberFarmasi(
     rows.map((r) => ({
       id: String(r.ID ?? ''),
@@ -83,25 +76,14 @@ function renderRows(rows: Array<Record<string, unknown>>): void {
     list.innerHTML = '';
     return;
   }
+  status.textContent = `${urutan.length} antrian aktif · ${countOf(urutan, 'R-')} racikan, ${countOf(urutan, 'T-')} tunggal`;
   const name = new Map(rows.map((r) => [String(r.ID), String(r.NAMA_PASIEN ?? '')]));
-  // filter live: cocokkan searchTerm ke nama pasien (case-insensitive) atau kode
-  const q = searchTerm.trim().toLowerCase();
-  const shown = q
-    ? urutan.filter((kode) => {
-        const id = [...byId].find(([, v]) => v === kode)?.[0] ?? '';
-        const nm = (name.get(id) || '').toLowerCase();
-        return nm.includes(q) || kode.toLowerCase().includes(q);
-      })
-    : urutan;
-  status.textContent = q
-    ? `Hasil ${shown.length} dari ${urutan.length} · ${countOf(urutan, 'R-')}R/${countOf(urutan, 'T-')}T`
-    : `${urutan.length} antrian aktif · ${countOf(urutan, 'R-')} racikan, ${countOf(urutan, 'T-')} tunggal`;
   // simpan rows utk cetak per-baris (delegasi klik tombol 🖨)
   const panel = document.getElementById('ext-farmasi-issue');
   const printOneBtn = document.getElementById('ext-issue-printone');
   if (panel) panel.setAttribute('data-rows', JSON.stringify(rows));
   list.innerHTML =
-    shown
+    urutan
       .map((kode) => {
         const id = [...byId].find(([, v]) => v === kode)?.[0] ?? '';
         const idx = rows.findIndex((r) => String(r.ID) === id);
@@ -119,7 +101,7 @@ function renderRows(rows: Array<Record<string, unknown>>): void {
           '</div>'
         );
       })
-      .join('') || '<div style="padding:6px;color:#6c757d;">tidak cocok</div>';
+      .join('') || '<div style="padding:6px;color:#6c757d;">kosong</div>';
   // simpan urutan utk tombol cetak sheet (semua)
   document.getElementById('ext-issue-print')?.setAttribute('data-urutan', JSON.stringify(urutan));
   document.getElementById('ext-issue-print')?.setAttribute('data-rows', JSON.stringify(rows));
@@ -262,25 +244,7 @@ function openPrintOne(rows: Array<Record<string, unknown>>, idx: number): void {
   win.document.close();
 }
 
-// Inject event delegation recall ke MAIN world (native panggilUlang di sana).
-// File terpisah (bukan inline) agar lolos CSP. Guard idempotent; capture-phase
-// + stopPropagation → mencegah double-fire dgn listener per-baris native.
-function ensureRecallDelegation(): void {
-  if (document.getElementById('ext-afd-recall-deleg')) return;
-  const s = document.createElement('script');
-  s.id = 'ext-afd-recall-deleg';
-  s.src = chrome.runtime.getURL('features/farmasiRecallDeleg.js');
-  s.onerror = () => console.error('[FarmasiIssue] recall deleg inject failed');
-  (document.head || document.documentElement).appendChild(s);
-}
-
 function init(): void {
-  // Recall (panggil ulang): native MORBIS bind klik `.status-called` HANYA sekali
-  // saat DOMContentLoaded. Setelah recall, contentloader mengganti #isi → baris
-  // baru TANPA listener → freeze. Fix: event delegation di document (MAIN world,
-  // karena panggilUlang native hidup di MAIN world) — bertahan dari reload #isi.
-  // Capture + stopPropagation → listener per-baris native tidak double-fire.
-  ensureRecallDelegation();
   const panel = buildPanel();
   const toggle = buildToggle();
   document.body.appendChild(panel);
@@ -302,11 +266,6 @@ function init(): void {
     } catch (e) {
       if (status) status.textContent = 'Gagal: ' + String((e as Error).message);
     }
-  });
-  // Pencarian realtime: update searchTerm & re-render dari rows tersimpan.
-  panel.querySelector('#ext-issue-search')?.addEventListener('input', (e) => {
-    searchTerm = (e.target as HTMLInputElement).value;
-    if (lastRows.length) renderRows(lastRows);
   });
   panel.querySelector('#ext-issue-print')?.addEventListener('click', () => {
     const raw = (panel.querySelector('#ext-issue-print')?.getAttribute('data-rows') || '').trim();
@@ -339,10 +298,6 @@ function init(): void {
       const s = document.getElementById('ext-issue-status');
       if (s) s.textContent = 'Gagal: ' + String((e as Error).message);
     });
-
-  // Recall: TIDAK di-wire di sini. Native MORBIS sudah handle klik `tr[data-id]`
-  // → panggilUlang(id, jenis, nomor) dgn data-nomor pasien (terverifikasi: 1 call,
-  // data benar). Wiring tambahan extension = double POST /control → baris freeze.
 }
 
 init();

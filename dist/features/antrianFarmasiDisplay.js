@@ -282,8 +282,8 @@ var __morbis_feature = (() => {
       }
       return { panggilan, siapDiambil };
     }
-    const PANGGILAN_SEL = '#antrian-penyerahan';
-    const SIAP_SEL = '#antrian-view';
+    const PANGGILAN_SEL = '#antrian-view';
+    const SIAP_SEL = '#antrian-penyerahan';
     function cardSection(label, numText, nama) {
       return (
         '<div class="antrian-title">' +
@@ -301,20 +301,6 @@ var __morbis_feature = (() => {
         (r) =>
           (isR ? /racik/i.test(String(r.JENIS ?? '')) : !/racik/i.test(String(r.JENIS ?? ''))) &&
           (String(r.NOMOR ?? '') === morbisNum || String(r.COUNTER ?? '') === morbisNum),
-      );
-      return row?.NAMA_PASIEN || '';
-    }
-    function readPanelNumber(sel) {
-      const el = document.querySelector(sel);
-      if (!el) return '';
-      const txt = (el.textContent || '').replace(/\s+/g, ' ').trim();
-      const m = txt.match(/(?:^|\D)(\d{1,4})(?:\D|$)/);
-      return m ? m[1] : '';
-    }
-    function currentPatientNameByNum(morbisNum) {
-      if (!morbisNum) return '';
-      const row = lastRows.find(
-        (r) => String(r.NOMOR ?? '') === morbisNum || String(r.COUNTER ?? '') === morbisNum,
       );
       return row?.NAMA_PASIEN || '';
     }
@@ -394,78 +380,19 @@ var __morbis_feature = (() => {
         });
       }
     }
-    let lastNativeCall = null;
-    let lastLocalRecallKey = '';
-    const writtenByUs = { tunggal: '', racikan: '' };
     async function refreshCardNumber() {
       setStatus('loading');
       try {
-        try {
-          const raw = localStorage.getItem('ext-afd-recall');
-          if (raw) {
-            const rec = JSON.parse(raw);
-            const key = rec.jenis + ':' + rec.nomor;
-            if (rec.nomor && key !== lastLocalRecallKey) {
-              lastLocalRecallKey = key;
-              const nama = currentPatientNameByNum(rec.nomor) || rec.nomorTeks || '';
-              announce({
-                id: 'recall:' + key,
-                nomor: rec.nomor,
-                kode: '',
-                namaPasien: nama,
-                unit: '',
-                jenis: rec.jenis,
-                rm: '',
-              });
-              updateDebugState({ lastAnnouncement: 'recall:local:' + key });
-              localStorage.removeItem('ext-afd-recall');
-            }
-          }
-        } catch {}
-        const panelT = readPanelNumber(PANGGILAN_SEL);
-        const panelR = readPanelNumber(SIAP_SEL);
         const [{ current: cur }, rows] = await Promise.all([fetchCurrentNumber(), fetchCallData()]);
         lastRows = rows;
         const g1 = cur.get('1')?.trim();
         const g2 = cur.get('2')?.trim();
         currentByJenis.tunggal = g1 && g1 !== '0' ? g1 : '';
         currentByJenis.racikan = g2 && g2 !== '0' ? g2 : '';
-        const recallT =
-          panelT &&
-          panelT !== '0' &&
-          panelT !== currentByJenis.tunggal &&
-          panelT !== writtenByUs.tunggal;
-        const recallR =
-          panelR &&
-          panelR !== '0' &&
-          panelR !== currentByJenis.racikan &&
-          panelR !== writtenByUs.racikan;
-        if (recallT || recallR) {
-          const jenis = recallT ? 'tunggal' : 'racikan';
-          const panelNum = recallT ? panelT : panelR;
-          const key = jenis + ':' + panelNum;
-          if (key !== lastNativeCall) {
-            lastNativeCall = key;
-            const nama = currentPatientNameByNum(panelNum);
-            announce({
-              id: 'recall:' + key,
-              nomor: panelNum,
-              kode: '',
-              namaPasien: nama,
-              unit: '',
-              jenis,
-              rm: '',
-            });
-            updateDebugState({ lastAnnouncement: 'recall:' + key });
-          }
-          setStatus('ok');
-          return;
-        }
         for (const j of ['tunggal', 'racikan']) {
           const cur2 = currentByJenis[j];
           const prev = prevByJenis[j];
           if (cur2 && cur2 !== '0' && cur2 !== prev) {
-            lastNativeCall = null;
             const nama = currentPatientName(j, cur2);
             announce({
               id: j + ':' + cur2,
@@ -494,8 +421,6 @@ var __morbis_feature = (() => {
             currentPatientName('racikan', currentByJenis.racikan),
           );
         highlightCurrents();
-        writtenByUs.tunggal = currentByJenis.tunggal;
-        writtenByUs.racikan = currentByJenis.racikan;
         onWeWrote();
         setStatus('ok');
       } catch {
@@ -522,8 +447,6 @@ var __morbis_feature = (() => {
           );
         highlightCurrents();
         wireRowRecall();
-        writtenByUs.tunggal = currentByJenis.tunggal;
-        writtenByUs.racikan = currentByJenis.racikan;
       }
       onWeWrote();
     }
@@ -569,75 +492,19 @@ var __morbis_feature = (() => {
         ringBell(finish);
         return;
       }
-      playVoice(item.text, finish);
-    }
-    function playVoice(text, onDone) {
-      let done = false;
-      const fin = () => {
-        if (done) return;
-        done = true;
-        onDone();
-      };
-      const speakLocal = () => {
-        try {
-          updateDebugState({ ttsMode: 'local' });
-          const u = new SpeechSynthesisUtterance(text);
-          u.lang = 'id';
-          const lv =
-            synth
-              .getVoices()
-              .find((x) => (x.lang || '').toLowerCase().startsWith('id') && x.localService) ||
-            synth.getVoices().find((x) => x.localService);
-          if (lv) u.voice = lv;
-          u.onend = fin;
-          u.onerror = fin;
-          RealSpeak.call(synth, u);
-          setTimeout(fin, 2e4);
-        } catch {
-          updateDebugState({ ttsMode: 'silent' });
-          fin();
-        }
-      };
-      const speakMp3 = () => {
-        try {
-          updateDebugState({ ttsMode: 'mp3' });
-          const a = new Audio(
-            'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=id&q=' +
-              encodeURIComponent(text),
-          );
-          a.onended = fin;
-          a.onerror = speakLocal;
-          void a.play().catch(speakLocal);
-          setTimeout(fin, 2e4);
-        } catch {
-          speakLocal();
-        }
-      };
       try {
-        const u = new SpeechSynthesisUtterance(text);
-        updateDebugState({ ttsMode: 'speech' });
-        const online = synth
-          .getVoices()
-          .find((x) => (x.lang || '').toLowerCase().startsWith('id') && !x.localService);
-        if (online) u.voice = online;
+        const u = new SpeechSynthesisUtterance(item.text);
+        const v = synth.getVoices().find((x) => x.lang && x.lang.toLowerCase().startsWith('id'));
+        if (v) u.voice = v;
         u.lang = 'id-ID';
         u.rate = 0.8;
         u.volume = 1;
-        let started2 = false;
-        u.onstart = () => {
-          started2 = true;
-        };
-        u.onend = fin;
-        u.onerror = () => {
-          if (!started2) speakMp3();
-          else fin();
-        };
+        u.onend = finish;
+        u.onerror = finish;
         RealSpeak.call(synth, u);
-        setTimeout(() => {
-          if (!started2) speakMp3();
-        }, 1200);
+        setTimeout(finish, 2e4);
       } catch {
-        speakMp3();
+        finish();
       }
     }
     const N2W_SATUAN = [
@@ -802,7 +669,6 @@ var __morbis_feature = (() => {
       lastDataCount: null,
       lastAnnouncement: null,
       audioUnlocked: false,
-      ttsMode: null,
     };
     function updateDebugState(patch) {
       if (!debugEnabled) return;
