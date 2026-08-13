@@ -175,7 +175,7 @@
     },
     {
       "matches": ["http://*/antrian-farmasi/v2*"],
-      "js": ["features/antrianFarmasiTotal.js"],
+      "js": ["features/antrianFarmasiTotal.js", "features/farmasiIssue.js"],
       "run_at": "document_idle",
       "all_frames": false
     },

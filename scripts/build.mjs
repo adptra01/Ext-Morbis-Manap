@@ -71,6 +71,7 @@ async function compileFeatureFiles() {
     'antrianLoader.ts',
     'antrianFarmasiDisplay.ts',
     'antrianFarmasiTotal.ts',
+    'farmasiIssue.ts',
     'ttvEditor.ts',
     'cancelButton.ts',
     'resumeTab/mount.tsx',
