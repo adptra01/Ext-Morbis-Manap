@@ -308,7 +308,8 @@ var __morbis_feature = (() => {
       const el = document.querySelector(sel);
       if (!el) return '';
       const m = (el.querySelector?.('.antrian-nomor')?.textContent || '').trim();
-      return m && m !== '\u2014' ? m : '';
+      const digits = (m || '').replace(/\D/g, '');
+      return digits && m !== '\u2014' ? digits : '';
     }
     function highlightCurrents() {
       const lc = document.querySelector('#list-content');
@@ -386,8 +387,32 @@ var __morbis_feature = (() => {
         });
       }
     }
+    function processLocalRecall() {
+      try {
+        const raw = localStorage.getItem('ext-afd-recall');
+        if (!raw) return;
+        const sig = JSON.parse(raw);
+        const key = `${sig.jenis}:${sig.nomor}`;
+        const segar = Date.now() - (sig.ts || 0) < 8e3;
+        if (segar && key !== lastLocalRecallKey) {
+          lastLocalRecallKey = key;
+          localStorage.removeItem('ext-afd-recall');
+          updateDebugState({ lastAnnouncement: `recall:${key}` });
+          announce({
+            id: `local-recall-${key}`,
+            nomor: sig.nomor,
+            kode: '',
+            namaPasien: (sig.nomorTeks || '').split(/\s+/)[0] || '',
+            unit: '',
+            jenis: sig.jenis === 'racikan' ? 'racikan' : 'tunggal',
+            rm: '',
+          });
+        }
+      } catch {}
+    }
     async function refreshCardNumber() {
       setStatus('loading');
+      processLocalRecall();
       try {
         const [{ current: cur }, rows] = await Promise.all([fetchCurrentNumber(), fetchCallData()]);
         lastRows = rows;
@@ -447,7 +472,6 @@ var __morbis_feature = (() => {
             });
             updateDebugState({ lastAnnouncement: 'recall:' + key });
           }
-          writtenByUs[jenis] = panelNum;
           setStatus('ok');
           return;
         }
@@ -466,18 +490,27 @@ var __morbis_feature = (() => {
               jenis: j,
               rm: '',
             });
+            updateDebugState({ lastAnnouncement: j + ':' + cur2 });
           }
           prevByJenis[j] = cur2 || '';
         }
         if (!health.nativeActive) {
-          const atas = document.querySelector(PANGGILAN_SEL);
+          const atasRecallNow =
+            readPanelNumber(PANGGILAN_SEL) &&
+            readPanelNumber(PANGGILAN_SEL) !== currentByJenis.tunggal &&
+            readPanelNumber(PANGGILAN_SEL) !== writtenByUs.tunggal;
+          const bawahRecallNow =
+            readPanelNumber(SIAP_SEL) &&
+            readPanelNumber(SIAP_SEL) !== currentByJenis.racikan &&
+            readPanelNumber(SIAP_SEL) !== writtenByUs.racikan;
+          const atas = atasRecallNow ? null : document.querySelector(PANGGILAN_SEL);
           if (atas)
             atas.innerHTML = cardSection(
               'Obat Tunggal',
               currentByJenis.tunggal,
               currentPatientName('tunggal', currentByJenis.tunggal),
             );
-          const bawah = document.querySelector(SIAP_SEL);
+          const bawah = bawahRecallNow ? null : document.querySelector(SIAP_SEL);
           if (bawah)
             bawah.innerHTML = cardSection(
               'Obat Racikan',

@@ -385,11 +385,14 @@ declare global {
 
   // Baca nomor yang tampil di panel (selector PENGGILAN/SIAP). Format display
   // kami & native sama: <div class="antrian-nomor">NN</div>. '—'/kosong → ''.
+  // HANYA nomor angka yang diterima — teks/nama pasien (mis. "SITI AMINAH-")
+  // tidak pernah dianggap recall (anti false-positive recall native).
   function readPanelNumber(sel: string): string {
     const el = document.querySelector<HTMLElement>(sel);
     if (!el) return '';
     const m = (el.querySelector?.('.antrian-nomor')?.textContent || '').trim();
-    return m && m !== '—' ? m : '';
+    const digits = (m || '').replace(/\D/g, '');
+    return digits && m !== '—' ? digits : '';
   }
 
   // Highlight baris tabel #list-content utk panggilan terakhir per jenis.
@@ -600,7 +603,10 @@ declare global {
           });
           updateDebugState({ lastAnnouncement: 'recall:' + key });
         }
-        writtenByUs[jenis] = panelNum; // panel native dipertahankan — jangan timpa
+        // JANGAN set writtenByUs = panel recall — itu membunuh guard recall di
+        // iterasi berikutnya (panel 30 ≠ writtenByUs 30 = false → panel ditimpa).
+        // Dedup announce sudah via lastNativeCall; writtenByUs tetap nilai current
+        // agar panel recall dipertahankan sampai panggilan normal berikutnya.
         setStatus('ok');
         return;
       }
@@ -622,6 +628,7 @@ declare global {
             jenis: j,
             rm: '',
           });
+          updateDebugState({ lastAnnouncement: j + ':' + cur });
         }
         prevByJenis[j] = cur || '';
       }
@@ -629,15 +636,26 @@ declare global {
       // Tulis panel HANYA di FALLBACK (native membeku). Di NATIVE, native MORBIS
       // yang kelola panel real-time via WS — extension MENIMPA tiap 1s hanya
       // menghalangi native & membuat "panggilan terakhir" tampak tidak aktif.
+      // Guard recall (sama spt renderDisplay): jangan timpa panel yang sedang
+      // menampilkan RECALL native — refresh 1s ini kalau menimpa akan menghapus
+      // nomor recall yang baru saja di-announce.
       if (!health.nativeActive) {
-        const atas = document.querySelector<HTMLElement>(PANGGILAN_SEL);
+        const atasRecallNow =
+          readPanelNumber(PANGGILAN_SEL) &&
+          readPanelNumber(PANGGILAN_SEL) !== currentByJenis.tunggal &&
+          readPanelNumber(PANGGILAN_SEL) !== writtenByUs.tunggal;
+        const bawahRecallNow =
+          readPanelNumber(SIAP_SEL) &&
+          readPanelNumber(SIAP_SEL) !== currentByJenis.racikan &&
+          readPanelNumber(SIAP_SEL) !== writtenByUs.racikan;
+        const atas = atasRecallNow ? null : document.querySelector<HTMLElement>(PANGGILAN_SEL);
         if (atas)
           atas.innerHTML = cardSection(
             'Obat Tunggal',
             currentByJenis.tunggal,
             currentPatientName('tunggal', currentByJenis.tunggal),
           );
-        const bawah = document.querySelector<HTMLElement>(SIAP_SEL);
+        const bawah = bawahRecallNow ? null : document.querySelector<HTMLElement>(SIAP_SEL);
         if (bawah)
           bawah.innerHTML = cardSection(
             'Obat Racikan',
