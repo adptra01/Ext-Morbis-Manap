@@ -62,6 +62,7 @@ type AntrianFarmasiDebugState = {
   lastDataCount: number | null;
   lastAnnouncement: string | null;
   audioUnlocked: boolean;
+  ttsMode: 'speech' | 'mp3' | 'local' | 'silent' | null;
 };
 
 declare global {
@@ -556,26 +557,33 @@ declare global {
         prevByJenis[j] = cur || '';
       }
 
-      const atas = document.querySelector<HTMLElement>(PANGGILAN_SEL);
-      if (atas)
-        atas.innerHTML = cardSection(
-          'Obat Tunggal',
-          currentByJenis.tunggal,
-          currentPatientName('tunggal', currentByJenis.tunggal),
-        );
-      const bawah = document.querySelector<HTMLElement>(SIAP_SEL);
-      if (bawah)
-        bawah.innerHTML = cardSection(
-          'Obat Racikan',
-          currentByJenis.racikan,
-          currentPatientName('racikan', currentByJenis.racikan),
-        );
-      highlightCurrents();
-      // tandai nilai yang KITA tulis — signature recall detection (anti false-positif)
-      writtenByUs.tunggal = currentByJenis.tunggal;
-      writtenByUs.racikan = currentByJenis.racikan;
-      onWeWrote(); // tandai write extension agar tak dianggap native recovery
-      setStatus('ok');
+      // Tulis panel HANYA di FALLBACK (native membeku). Di NATIVE, native MORBIS
+      // yang kelola panel real-time via WS — extension MENIMPA tiap 1s hanya
+      // menghalangi native & membuat "panggilan terakhir" tampak tidak aktif.
+      if (!health.nativeActive) {
+        const atas = document.querySelector<HTMLElement>(PANGGILAN_SEL);
+        if (atas)
+          atas.innerHTML = cardSection(
+            'Obat Tunggal',
+            currentByJenis.tunggal,
+            currentPatientName('tunggal', currentByJenis.tunggal),
+          );
+        const bawah = document.querySelector<HTMLElement>(SIAP_SEL);
+        if (bawah)
+          bawah.innerHTML = cardSection(
+            'Obat Racikan',
+            currentByJenis.racikan,
+            currentPatientName('racikan', currentByJenis.racikan),
+          );
+        highlightCurrents();
+        // tandai nilai yang KITA tulis — signature recall detection (anti false-positif)
+        writtenByUs.tunggal = currentByJenis.tunggal;
+        writtenByUs.racikan = currentByJenis.racikan;
+        onWeWrote(); // tandai write extension di FALLBACK agar tak dianggap native recovery
+        setStatus('ok');
+      } else {
+        setStatus('ok');
+      }
     } catch {
       setStatus('error');
       /* poll gagal — diam, kartu biarkan apa adanya */
@@ -716,19 +724,85 @@ declare global {
       ringBell(finish);
       return;
     }
+    playVoice(item.text, finish);
+  }
+
+  // TTS berlapis (kiosk display: Chrome speechSynthesis bisa diam tanpa user-
+  // gesture; bell AudioContext ter-unlock oleh sound=Allow, TTS tidak selalu).
+  // 1) speechSynthesis dgn voice id-ID online → onstart = benar-benar bicara
+  // 2) voices kosong / tak mulai dlm 1.2s → MP3 Google TTS (Audio element, ikut
+  //    autoplay sound=Allow) — pola sama dgn antrianTools
+  // 3) MP3 gagal (internet mati / diblokir) → voice lokal sistem (espeak/device)
+  function playVoice(text: string, onDone: () => void): void {
+    let done = false;
+    const fin = (): void => {
+      if (done) return;
+      done = true;
+      onDone();
+    };
+    const speakLocal = (): void => {
+      try {
+        updateDebugState({ ttsMode: 'local' });
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'id';
+        const vs = synth.getVoices();
+        const lv =
+          vs.find((x) => (x.lang || '').toLowerCase().startsWith('id') && x.localService) ||
+          vs.find((x) => x.localService);
+        if (lv) u.voice = lv;
+        u.onend = fin;
+        u.onerror = fin;
+        RealSpeak.call(synth, u);
+        setTimeout(fin, 20000); // pengaman
+      } catch {
+        updateDebugState({ ttsMode: 'silent' });
+        fin();
+      }
+    };
+    const speakMp3 = (): void => {
+      try {
+        updateDebugState({ ttsMode: 'mp3' });
+        const a = new Audio(
+          'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=id&q=' +
+            encodeURIComponent(text),
+        );
+        a.onended = fin;
+        a.onerror = speakLocal;
+        void a.play().catch(speakLocal);
+        setTimeout(fin, 20000); // pengaman bila onended tak datang
+      } catch {
+        speakLocal();
+      }
+    };
     try {
-      const u = new SpeechSynthesisUtterance(item.text);
-      const v = synth.getVoices().find((x) => x.lang && x.lang.toLowerCase().startsWith('id'));
-      if (v) u.voice = v;
+      const u = new SpeechSynthesisUtterance(text);
+      updateDebugState({ ttsMode: 'speech' });
+      const vs = synth.getVoices();
+      const online = vs.find(
+        (x) => (x.lang || '').toLowerCase().startsWith('id') && !x.localService,
+      );
+      if (online) u.voice = online;
       u.lang = 'id-ID';
       u.rate = 0.8;
       u.volume = 1;
-      u.onend = finish;
-      u.onerror = finish;
+      let started = false;
+      u.onstart = () => {
+        started = true;
+      };
+      u.onend = fin;
+      u.onerror = () => {
+        if (!started) speakMp3();
+        else fin();
+      };
       RealSpeak.call(synth, u);
-      setTimeout(finish, 20000);
+      // speechSynthesis macet/bisu: onstart adalah sinyal suara BENAR-BENAR mulai.
+      // Chrome kadang set speaking=true walau TIDAK berbunyi (sound=Allow hanya
+      // unlock AudioContext, bukan speech) → jangan cek synth.speaking.
+      setTimeout(() => {
+        if (!started) speakMp3();
+      }, 1200);
     } catch {
-      finish();
+      speakMp3();
     }
   }
 
@@ -944,6 +1018,7 @@ declare global {
     lastDataCount: null,
     lastAnnouncement: null,
     audioUnlocked: false,
+    ttsMode: null,
   };
   function updateDebugState(patch: Partial<AntrianFarmasiDebugState>): void {
     if (!debugEnabled) return;

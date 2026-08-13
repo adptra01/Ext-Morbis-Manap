@@ -447,25 +447,29 @@ var __morbis_feature = (() => {
           }
           prevByJenis[j] = cur2 || '';
         }
-        const atas = document.querySelector(PANGGILAN_SEL);
-        if (atas)
-          atas.innerHTML = cardSection(
-            'Obat Tunggal',
-            currentByJenis.tunggal,
-            currentPatientName('tunggal', currentByJenis.tunggal),
-          );
-        const bawah = document.querySelector(SIAP_SEL);
-        if (bawah)
-          bawah.innerHTML = cardSection(
-            'Obat Racikan',
-            currentByJenis.racikan,
-            currentPatientName('racikan', currentByJenis.racikan),
-          );
-        highlightCurrents();
-        writtenByUs.tunggal = currentByJenis.tunggal;
-        writtenByUs.racikan = currentByJenis.racikan;
-        onWeWrote();
-        setStatus('ok');
+        if (!health.nativeActive) {
+          const atas = document.querySelector(PANGGILAN_SEL);
+          if (atas)
+            atas.innerHTML = cardSection(
+              'Obat Tunggal',
+              currentByJenis.tunggal,
+              currentPatientName('tunggal', currentByJenis.tunggal),
+            );
+          const bawah = document.querySelector(SIAP_SEL);
+          if (bawah)
+            bawah.innerHTML = cardSection(
+              'Obat Racikan',
+              currentByJenis.racikan,
+              currentPatientName('racikan', currentByJenis.racikan),
+            );
+          highlightCurrents();
+          writtenByUs.tunggal = currentByJenis.tunggal;
+          writtenByUs.racikan = currentByJenis.racikan;
+          onWeWrote();
+          setStatus('ok');
+        } else {
+          setStatus('ok');
+        }
       } catch {
         setStatus('error');
       }
@@ -547,19 +551,75 @@ var __morbis_feature = (() => {
         ringBell(finish);
         return;
       }
+      playVoice(item.text, finish);
+    }
+    function playVoice(text, onDone) {
+      let done = false;
+      const fin = () => {
+        if (done) return;
+        done = true;
+        onDone();
+      };
+      const speakLocal = () => {
+        try {
+          updateDebugState({ ttsMode: 'local' });
+          const u = new SpeechSynthesisUtterance(text);
+          u.lang = 'id';
+          const vs = synth.getVoices();
+          const lv =
+            vs.find((x) => (x.lang || '').toLowerCase().startsWith('id') && x.localService) ||
+            vs.find((x) => x.localService);
+          if (lv) u.voice = lv;
+          u.onend = fin;
+          u.onerror = fin;
+          RealSpeak.call(synth, u);
+          setTimeout(fin, 2e4);
+        } catch {
+          updateDebugState({ ttsMode: 'silent' });
+          fin();
+        }
+      };
+      const speakMp3 = () => {
+        try {
+          updateDebugState({ ttsMode: 'mp3' });
+          const a = new Audio(
+            'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=id&q=' +
+              encodeURIComponent(text),
+          );
+          a.onended = fin;
+          a.onerror = speakLocal;
+          void a.play().catch(speakLocal);
+          setTimeout(fin, 2e4);
+        } catch {
+          speakLocal();
+        }
+      };
       try {
-        const u = new SpeechSynthesisUtterance(item.text);
-        const v = synth.getVoices().find((x) => x.lang && x.lang.toLowerCase().startsWith('id'));
-        if (v) u.voice = v;
+        const u = new SpeechSynthesisUtterance(text);
+        updateDebugState({ ttsMode: 'speech' });
+        const vs = synth.getVoices();
+        const online = vs.find(
+          (x) => (x.lang || '').toLowerCase().startsWith('id') && !x.localService,
+        );
+        if (online) u.voice = online;
         u.lang = 'id-ID';
         u.rate = 0.8;
         u.volume = 1;
-        u.onend = finish;
-        u.onerror = finish;
+        let started2 = false;
+        u.onstart = () => {
+          started2 = true;
+        };
+        u.onend = fin;
+        u.onerror = () => {
+          if (!started2) speakMp3();
+          else fin();
+        };
         RealSpeak.call(synth, u);
-        setTimeout(finish, 2e4);
+        setTimeout(() => {
+          if (!started2) speakMp3();
+        }, 1200);
       } catch {
-        finish();
+        speakMp3();
       }
     }
     const N2W_SATUAN = [
@@ -724,6 +784,7 @@ var __morbis_feature = (() => {
       lastDataCount: null,
       lastAnnouncement: null,
       audioUnlocked: false,
+      ttsMode: null,
     };
     function updateDebugState(patch) {
       if (!debugEnabled) return;
