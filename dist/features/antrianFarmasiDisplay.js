@@ -122,6 +122,32 @@ var __morbis_feature = (() => {
     return false;
   }
 
+  // src/features/shared/farmasiRenumber.ts
+  var RACIKAN_RE = /racik/i;
+  function isRacikanJenis(jenis) {
+    return !!jenis && RACIKAN_RE.test(jenis);
+  }
+  function ts(w) {
+    if (!w) return 0;
+    const n = Date.parse(w.replace(' ', 'T'));
+    return Number.isFinite(n) ? n : 0;
+  }
+  function renumberFarmasi(rows) {
+    const sorted = [...rows].sort((a, b) => ts(a.waktu) - ts(b.waktu));
+    const byId = /* @__PURE__ */ new Map();
+    const urutan = [];
+    let r = 0;
+    let t = 0;
+    for (const row of sorted) {
+      if (!row.id) continue;
+      const isR = isRacikanJenis(row.jenis);
+      const kode = isR ? 'R-' + String(++r).padStart(2, '0') : 'T-' + String(++t).padStart(2, '0');
+      byId.set(String(row.id), kode);
+      urutan.push(kode);
+    }
+    return { byId, urutan };
+  }
+
   // src/features/antrianFarmasiDisplay.ts
   (function () {
     const LIST_URL = '/public/antrian-farmasi-v2/list-antrian-v2';
@@ -188,13 +214,12 @@ var __morbis_feature = (() => {
     const SIAP_SEL = '#antrian-penyerahan';
     function panelHtml(title, rows) {
       const r = rows[0];
+      const disp = renumberByNomor.get(r.nomor) || (r.kode ? r.kode + '-' + r.nomor : r.nomor);
       return (
         '<div class="antrian-title">' +
         title +
         '</div><div class="antrian-nomor">' +
-        r.kode +
-        '-' +
-        r.nomor +
+        disp +
         '</div><div class="antrian-rm">' +
         r.namaPasien +
         '</div><div class="antrian-rm">' +
@@ -202,10 +227,24 @@ var __morbis_feature = (() => {
         '</div><img class="antrian-icon" src="/assets/antrian/assets/img/thumb.svg" alt="icon">'
       );
     }
+    function highlightCalledRow(nama, nomor) {
+      const lc = document.querySelector('#list-content');
+      if (!lc) return;
+      const lines = lc.querySelectorAll('dl');
+      for (const dl of lines) {
+        const dd3 = dl.querySelector('dd.col-3, dd.col-md-3');
+        const d = (dd3?.textContent || '').replace(/\s+/g, ' ').trim();
+        const h4 = dl.querySelector('h4');
+        const idTxt = (h4?.textContent || '').trim();
+        const match = (nama && d.includes(nama)) || (nomor && idTxt.includes(nomor));
+        dl.style.background = match ? '#fde68a' : '';
+      }
+    }
     function renderDisplay(view, call) {
       if (call) {
         const p = document.querySelector(PANGGILAN_SEL);
         if (p) p.innerHTML = panelHtml('Panggilan Farmasi', [call]);
+        highlightCalledRow(call.namaPasien, call.nomor);
       }
       if (view.siapDiambil.length > 0) {
         const s = document.querySelector(SIAP_SEL);
@@ -217,6 +256,7 @@ var __morbis_feature = (() => {
     const prevCurrent = /* @__PURE__ */ new Map();
     let currentCall = null;
     let baselineSet = false;
+    const renumberByNomor = /* @__PURE__ */ new Map();
     const synth = window.speechSynthesis;
     const RealSpeak = synth.speak.bind(synth);
     let busy = false;
@@ -400,6 +440,20 @@ var __morbis_feature = (() => {
         updateDebugState({ lastPoll: Date.now(), lastDataCount: rows.length });
         const view = normalize(rows);
         const num = activeNumber(cur);
+        renumberByNomor.clear();
+        const rr = renumberFarmasi(
+          rows.map((r) => ({
+            id: String(r.ID ?? ''),
+            jenis: r.JENIS ?? null,
+            status: r.STATUS ?? null,
+            waktu: r.WAKTU ?? null,
+          })),
+        );
+        for (const row of rows) {
+          const n =
+            row.COUNTER != null ? String(row.COUNTER) : row.NOMOR != null ? String(row.NOMOR) : '';
+          if (n && rr.byId.has(String(row.ID))) renumberByNomor.set(n, rr.byId.get(String(row.ID)));
+        }
         const sig =
           num !== ''
             ? [...cur.entries()]

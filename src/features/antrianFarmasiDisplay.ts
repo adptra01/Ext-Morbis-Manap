@@ -48,6 +48,7 @@ import {
   parsePatients,
   type PatientByName,
 } from './shared/currentNumber';
+import { renumberFarmasi } from './shared/farmasiRenumber';
 
 // Observability (debug) — snapshot baca-saja, bukan sumber kebenaran.
 // Hanya dibuat bila URL memakai ?debug=1; production normal tetap bersih
@@ -112,6 +113,7 @@ declare global {
     STATUS_PANGGIL?: string | number;
     WAKTU_PENERIMAAN?: string | null;
     WAKTU_PENYERAHAN?: string | null;
+    WAKTU?: string | null;
   };
 
   // Output normalize: dua daftar terpisah untuk render.
@@ -230,14 +232,15 @@ declare global {
 
   function panelHtml(title: string, rows: ViewRow[]): string {
     const r = rows[0]; // panel tunggal: tampilkan panggilan terbaru
+    // Nomor display: R-xx / T-xx (konsisten dgn tiket cetak). fallback ke nomor
+    // MORBIS bila renumber belum tersedia (poll pertama / native tanpa data_call).
+    const disp = renumberByNomor.get(r.nomor) || (r.kode ? r.kode + '-' + r.nomor : r.nomor);
     return (
       '<div class="antrian-title">' +
       title +
       '</div>' +
       '<div class="antrian-nomor">' +
-      r.kode +
-      '-' +
-      r.nomor +
+      disp +
       '</div>' +
       '<div class="antrian-rm">' +
       r.namaPasien +
@@ -247,6 +250,22 @@ declare global {
       '</div>' +
       '<img class="antrian-icon" src="/assets/antrian/assets/img/thumb.svg" alt="icon">'
     );
+  }
+
+  // Highlight baris tabel #list-content yang namanya cocok dengan pasien dipanggil.
+  // Cocokkan nama (dd.col-3) atau nomor (h4 BT-{nomor}); nama diprioritaskan.
+  function highlightCalledRow(nama: string, nomor: string): void {
+    const lc = document.querySelector('#list-content');
+    if (!lc) return;
+    const lines = lc.querySelectorAll('dl');
+    for (const dl of lines) {
+      const dd3 = dl.querySelector('dd.col-3, dd.col-md-3');
+      const d = (dd3?.textContent || '').replace(/\s+/g, ' ').trim();
+      const h4 = dl.querySelector('h4');
+      const idTxt = (h4?.textContent || '').trim();
+      const match = (nama && d.includes(nama)) || (nomor && idTxt.includes(nomor));
+      (dl as HTMLElement).style.background = match ? '#fde68a' : '';
+    }
   }
 
   // P1: HANYA mengubah DOM bila panel punya data valid. Kalau panel kosong
@@ -262,6 +281,7 @@ declare global {
     if (call) {
       const p = document.querySelector<HTMLElement>(PANGGILAN_SEL);
       if (p) p.innerHTML = panelHtml('Panggilan Farmasi', [call]);
+      highlightCalledRow(call.namaPasien, call.nomor); // tandai baris dipanggil
     }
     if (view.siapDiambil.length > 0) {
       const s = document.querySelector<HTMLElement>(SIAP_SEL);
@@ -281,6 +301,10 @@ declare global {
   const prevCurrent = new Map<string, string>();
   let currentCall: ViewRow | null = null; // panggilan aktif yang sedang ditampilkan
   let baselineSet = false; // false = poll pertama (tampilkan tanpa announce)
+
+  // Nomor rapi per baris (R-xx / T-xx) — diisi dari renumber data_call saat poll,
+  // dipakai render card & highlight agar konsisten dengan tiket cetak.
+  const renumberByNomor = new Map<string, string>(); // key = nomor(counter) → R-xx/T-xx
 
   /* ============================================================
    * TTS (role-gated). Bell asli MORBIS (audio #unine) dipicu karena
@@ -533,6 +557,25 @@ declare global {
       // Hanya sentuh DOM bila ada data valid; []/gagal → pertahankan DOM native.
       const view = normalize(rows);
       const num = activeNumber(cur);
+
+      // Bangun map nomor(counter)→R-xx/T-xx dari renumber data_call, utk card &
+      // highlight konsisten dengan tiket cetak (Penerbitan Antrian).
+      renumberByNomor.clear();
+      const rr = renumberFarmasi(
+        rows.map((r) => ({
+          id: String(r.ID ?? ''),
+          jenis: (r.JENIS as string | null) ?? null,
+          status: (r.STATUS as string | null) ?? null,
+          waktu: (r.WAKTU as string | null) ?? null,
+        })),
+      );
+      // map nomor(counter) → kode: cocokkan id baris data_call ke nomor aktif.
+      for (const row of rows) {
+        const n =
+          row.COUNTER != null ? String(row.COUNTER) : row.NOMOR != null ? String(row.NOMOR) : '';
+        if (n && rr.byId.has(String(row.ID))) renumberByNomor.set(n, rr.byId.get(String(row.ID))!);
+      }
+
       const sig =
         num !== ''
           ? [...cur.entries()]
