@@ -382,6 +382,15 @@ declare global {
     return row?.NAMA_PASIEN || '';
   }
 
+  // Baca nomor yang tampil di panel (selector PENGGILAN/SIAP). Format display
+  // kami & native sama: <div class="antrian-nomor">NN</div>. '—'/kosong → ''.
+  function readPanelNumber(sel: string): string {
+    const el = document.querySelector<HTMLElement>(sel);
+    if (!el) return '';
+    const m = (el.querySelector?.('.antrian-nomor')?.textContent || '').trim();
+    return m && m !== '—' ? m : '';
+  }
+
   // Highlight baris tabel #list-content utk panggilan terakhir per jenis.
   // Cocokkan NOMOR secara PERSIS (angka dari h4 BT-xx/UR-xx) dgn currentByJenis,
   // atau via nama pasien terakhir per jenis — tandai kuning.
@@ -481,12 +490,58 @@ declare global {
       currentByJenis.tunggal = g1 && g1 !== '0' ? g1 : '';
       currentByJenis.racikan = g2 && g2 !== '0' ? g2 : '';
 
+      // Recall (panggil ulang): current-number ?section=isi TIDAK berubah (tetap
+      // nomor terakhir "Selanjutnya"), tapi native display menulis nomor recall ke
+      // panel via WS. Deteksi: BACA nomor panel SEBELUM kita menimpa. Panel ≠
+      // current-number jenisnya = panggilan native (recall) → announce + biarkan
+      // panel tampil (jangan timpa).
+      //
+      // Signature penulis: extension juga menulis panel (refresh tiap CARD_MS). Di
+      // mode FALLBACK (WS native mati), panel = nilai extension refresh sebelumnya —
+      // SELALU beda dari current saat transisi → false-positive recall tanpa ini.
+      // Recall HANYA jika panel ≠ current DAN ≠ nilai yang extension tulis sendiri.
+      const panelT = readPanelNumber(PANGGILAN_SEL); // penyerahan = TUNGGAL native
+      const panelR = readPanelNumber(SIAP_SEL); // view = RACIKAN native
+      const recallT =
+        panelT &&
+        panelT !== '0' &&
+        panelT !== currentByJenis.tunggal &&
+        panelT !== writtenByUs.tunggal;
+      const recallR =
+        panelR &&
+        panelR !== '0' &&
+        panelR !== currentByJenis.racikan &&
+        panelR !== writtenByUs.racikan;
+      if (recallT || recallR) {
+        const jenis = recallT ? 'tunggal' : 'racikan';
+        const panelNum = recallT ? panelT : panelR;
+        const key = jenis + ':' + panelNum;
+        if (key !== lastNativeCall) {
+          lastNativeCall = key;
+          const nama = currentPatientName(jenis, panelNum);
+          announce({
+            id: 'recall:' + key,
+            nomor: panelNum,
+            kode: '',
+            namaPasien: nama,
+            unit: '',
+            jenis,
+            rm: '',
+          });
+          updateDebugState({ lastAnnouncement: 'recall:' + key });
+        }
+        writtenByUs[jenis] = panelNum; // panel native dipertahankan — jangan timpa
+        setStatus('ok');
+        return;
+      }
+
       // Deteksi panggilan BARU per jenis utk bell+TTS — jalan di NATIVE maupun
       // FALLBACK (sebelumnya hanya di poll fallback, jadi NATIVE kiosk tak bicara).
       for (const j of ['tunggal', 'racikan'] as const) {
         const cur = currentByJenis[j];
         const prev = prevByJenis[j];
         if (cur && cur !== '0' && cur !== prev) {
+          lastNativeCall = null; // panggilan normal → recall berikutnya harus announce lagi
           const nama = currentPatientName(j, cur);
           announce({
             id: j + ':' + cur,
@@ -516,6 +571,9 @@ declare global {
           currentPatientName('racikan', currentByJenis.racikan),
         );
       highlightCurrents();
+      // tandai nilai yang KITA tulis — signature recall detection (anti false-positif)
+      writtenByUs.tunggal = currentByJenis.tunggal;
+      writtenByUs.racikan = currentByJenis.racikan;
       onWeWrote(); // tandai write extension agar tak dianggap native recovery
       setStatus('ok');
     } catch {
@@ -538,14 +596,26 @@ declare global {
       // update panggilan terakhir per jenis + seed dari data (card atas/bawah)
       lastByJenis[call.jenis] = call;
       seedLastByJenis(view);
-      const atas = document.querySelector<HTMLElement>(PANGGILAN_SEL);
+      // Ponytail: jangan timpa panel yang sedang menampilkan RECALL native (WS
+      // membeku di FALLBACK → pollFallback→renderDisplay menimpa panel recall
+      // dengan current, menghapus nomor recall). Deteksi: panel ≠ current & ≠
+      // nilai yg kita tulis = recall aktif → biarkan.
+      const atasRecall =
+        readPanelNumber(PANGGILAN_SEL) &&
+        readPanelNumber(PANGGILAN_SEL) !== currentByJenis.tunggal &&
+        readPanelNumber(PANGGILAN_SEL) !== writtenByUs.tunggal;
+      const bawahRecall =
+        readPanelNumber(SIAP_SEL) &&
+        readPanelNumber(SIAP_SEL) !== currentByJenis.racikan &&
+        readPanelNumber(SIAP_SEL) !== writtenByUs.racikan;
+      const atas = atasRecall ? null : document.querySelector<HTMLElement>(PANGGILAN_SEL);
       if (atas)
         atas.innerHTML = cardSection(
           'Obat Tunggal',
           currentByJenis.tunggal,
           currentPatientName('tunggal', currentByJenis.tunggal),
         );
-      const bawah = document.querySelector<HTMLElement>(SIAP_SEL);
+      const bawah = bawahRecall ? null : document.querySelector<HTMLElement>(SIAP_SEL);
       if (bawah)
         bawah.innerHTML = cardSection(
           'Obat Racikan',
@@ -554,6 +624,8 @@ declare global {
         );
       highlightCurrents(); // tandai baris panggilan terakhir per jenis
       wireRowRecall(); // aktifkan klik-kiri-pasien utk panggil ulang
+      writtenByUs.tunggal = currentByJenis.tunggal;
+      writtenByUs.racikan = currentByJenis.racikan;
     }
     onWeWrote(); // tandai DOM yang BARU SAJA extension tulis (bukan native)
   }
@@ -603,6 +675,11 @@ declare global {
   // Nomor per jenis pada refresh sebelumnya — deteksi panggilan BARU utk bell+TTS
   // (jalan di NATIVE maupun FALLBACK, tidak hanya saat poll fallback).
   const prevByJenis: Record<'tunggal' | 'racikan', string> = { tunggal: '', racikan: '' };
+  // Nilai panel terakhir yang extension tulis sendiri — signature pembeda recall
+  // native vs nilai extension (mode FALLBACK). Di-set SETELAH menulis panel.
+  const writtenByUs: Record<'tunggal' | 'racikan', string> = { tunggal: '', racikan: '' };
+  // Key 'jenis:nomor' recall native terakhir yang di-announce (dedup serial).
+  let lastNativeCall: string | null = null;
 
   // data_call mentah terakhir (diisi pollFallback) — dipakai seed card dua-bagian
   // karena STATUS=0 tak selalu menandai baris aktif (status MORBIS tak reliable).

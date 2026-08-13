@@ -304,6 +304,12 @@ var __morbis_feature = (() => {
       );
       return row?.NAMA_PASIEN || '';
     }
+    function readPanelNumber(sel) {
+      const el = document.querySelector(sel);
+      if (!el) return '';
+      const m = (el.querySelector?.('.antrian-nomor')?.textContent || '').trim();
+      return m && m !== '\u2014' ? m : '';
+    }
     function highlightCurrents() {
       const lc = document.querySelector('#list-content');
       if (!lc) return;
@@ -389,10 +395,45 @@ var __morbis_feature = (() => {
         const g2 = cur.get('2')?.trim();
         currentByJenis.tunggal = g1 && g1 !== '0' ? g1 : '';
         currentByJenis.racikan = g2 && g2 !== '0' ? g2 : '';
+        const panelT = readPanelNumber(PANGGILAN_SEL);
+        const panelR = readPanelNumber(SIAP_SEL);
+        const recallT =
+          panelT &&
+          panelT !== '0' &&
+          panelT !== currentByJenis.tunggal &&
+          panelT !== writtenByUs.tunggal;
+        const recallR =
+          panelR &&
+          panelR !== '0' &&
+          panelR !== currentByJenis.racikan &&
+          panelR !== writtenByUs.racikan;
+        if (recallT || recallR) {
+          const jenis = recallT ? 'tunggal' : 'racikan';
+          const panelNum = recallT ? panelT : panelR;
+          const key = jenis + ':' + panelNum;
+          if (key !== lastNativeCall) {
+            lastNativeCall = key;
+            const nama = currentPatientName(jenis, panelNum);
+            announce({
+              id: 'recall:' + key,
+              nomor: panelNum,
+              kode: '',
+              namaPasien: nama,
+              unit: '',
+              jenis,
+              rm: '',
+            });
+            updateDebugState({ lastAnnouncement: 'recall:' + key });
+          }
+          writtenByUs[jenis] = panelNum;
+          setStatus('ok');
+          return;
+        }
         for (const j of ['tunggal', 'racikan']) {
           const cur2 = currentByJenis[j];
           const prev = prevByJenis[j];
           if (cur2 && cur2 !== '0' && cur2 !== prev) {
+            lastNativeCall = null;
             const nama = currentPatientName(j, cur2);
             announce({
               id: j + ':' + cur2,
@@ -421,6 +462,8 @@ var __morbis_feature = (() => {
             currentPatientName('racikan', currentByJenis.racikan),
           );
         highlightCurrents();
+        writtenByUs.tunggal = currentByJenis.tunggal;
+        writtenByUs.racikan = currentByJenis.racikan;
         onWeWrote();
         setStatus('ok');
       } catch {
@@ -431,14 +474,22 @@ var __morbis_feature = (() => {
       if (call) {
         lastByJenis[call.jenis] = call;
         seedLastByJenis(view);
-        const atas = document.querySelector(PANGGILAN_SEL);
+        const atasRecall =
+          readPanelNumber(PANGGILAN_SEL) &&
+          readPanelNumber(PANGGILAN_SEL) !== currentByJenis.tunggal &&
+          readPanelNumber(PANGGILAN_SEL) !== writtenByUs.tunggal;
+        const bawahRecall =
+          readPanelNumber(SIAP_SEL) &&
+          readPanelNumber(SIAP_SEL) !== currentByJenis.racikan &&
+          readPanelNumber(SIAP_SEL) !== writtenByUs.racikan;
+        const atas = atasRecall ? null : document.querySelector(PANGGILAN_SEL);
         if (atas)
           atas.innerHTML = cardSection(
             'Obat Tunggal',
             currentByJenis.tunggal,
             currentPatientName('tunggal', currentByJenis.tunggal),
           );
-        const bawah = document.querySelector(SIAP_SEL);
+        const bawah = bawahRecall ? null : document.querySelector(SIAP_SEL);
         if (bawah)
           bawah.innerHTML = cardSection(
             'Obat Racikan',
@@ -447,6 +498,8 @@ var __morbis_feature = (() => {
           );
         highlightCurrents();
         wireRowRecall();
+        writtenByUs.tunggal = currentByJenis.tunggal;
+        writtenByUs.racikan = currentByJenis.racikan;
       }
       onWeWrote();
     }
@@ -472,6 +525,8 @@ var __morbis_feature = (() => {
       racikan: '',
     };
     const prevByJenis = { tunggal: '', racikan: '' };
+    const writtenByUs = { tunggal: '', racikan: '' };
+    let lastNativeCall = null;
     let lastRows = [];
     const synth = window.speechSynthesis;
     const RealSpeak = synth.speak.bind(synth);
