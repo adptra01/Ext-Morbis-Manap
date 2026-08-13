@@ -26,6 +26,15 @@
       if (!id) return;
       const fn = (window as unknown as Record<string, unknown>).panggilUlang;
       if (typeof fn !== 'function') return;
+      // Native menyusun pesan WS recall dari `$('#id-' + nomor).val()` — input
+      // tersembunyi itu sering KOSONG/basi utk baris riwayat → pesan tanpa nomor
+      // → display tak bisa memanggil ulang. Suapi dgn teks kolom pertama baris
+      // (mis. "BT-2") sebelum panggilUlang dipanggil.
+      const nomorTeks = ((row as HTMLTableRowElement).cells?.[0]?.textContent || '').trim();
+      if (nomorTeks) {
+        const inp = document.getElementById('id-' + nomor) as HTMLInputElement | null;
+        if (inp) inp.value = nomorTeks;
+      }
       e.stopPropagation();
       e.preventDefault();
       (fn as (id: string, jenis: string, nomor: string) => void).call(window, id, jenis, nomor);

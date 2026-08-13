@@ -282,8 +282,8 @@ var __morbis_feature = (() => {
       }
       return { panggilan, siapDiambil };
     }
-    const PANGGILAN_SEL = '#antrian-view';
-    const SIAP_SEL = '#antrian-penyerahan';
+    const PANGGILAN_SEL = '#antrian-penyerahan';
+    const SIAP_SEL = '#antrian-view';
     function cardSection(label, numText, nama) {
       return (
         '<div class="antrian-title">' +
@@ -398,32 +398,33 @@ var __morbis_feature = (() => {
     async function refreshCardNumber() {
       setStatus('loading');
       try {
-        const panelNum = readPanelNumber(PANGGILAN_SEL);
+        const panelT = readPanelNumber(PANGGILAN_SEL);
+        const panelR = readPanelNumber(SIAP_SEL);
         const [{ current: cur }, rows] = await Promise.all([fetchCurrentNumber(), fetchCallData()]);
         lastRows = rows;
         const g1 = cur.get('1')?.trim();
         const g2 = cur.get('2')?.trim();
         currentByJenis.tunggal = g1 && g1 !== '0' ? g1 : '';
         currentByJenis.racikan = g2 && g2 !== '0' ? g2 : '';
-        if (
-          panelNum &&
-          panelNum !== '0' &&
-          panelNum !== currentByJenis.tunggal &&
-          panelNum !== currentByJenis.racikan
-        ) {
-          if (panelNum !== lastNativeCall) {
-            lastNativeCall = panelNum;
+        const recallT = panelT && panelT !== '0' && panelT !== currentByJenis.tunggal;
+        const recallR = panelR && panelR !== '0' && panelR !== currentByJenis.racikan;
+        if (recallT || recallR) {
+          const jenis = recallT ? 'tunggal' : 'racikan';
+          const panelNum = recallT ? panelT : panelR;
+          const key = jenis + ':' + panelNum;
+          if (key !== lastNativeCall) {
+            lastNativeCall = key;
             const nama = currentPatientNameByNum(panelNum);
             announce({
-              id: 'recall:' + panelNum,
+              id: 'recall:' + key,
               nomor: panelNum,
               kode: '',
               namaPasien: nama,
               unit: '',
-              jenis: 'tunggal',
+              jenis,
               rm: '',
             });
-            updateDebugState({ lastAnnouncement: 'recall:' + panelNum });
+            updateDebugState({ lastAnnouncement: 'recall:' + key });
           }
           setStatus('ok');
           return;

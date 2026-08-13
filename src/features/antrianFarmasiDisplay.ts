@@ -349,8 +349,13 @@ declare global {
   /* ============================================================
    * Display — render DOM, bedakan 3 kondisi (no data / error / ada).
    * ============================================================ */
-  const PANGGILAN_SEL = '#antrian-view';
-  const SIAP_SEL = '#antrian-penyerahan';
+  // Pemetaan panel MENGIKUTI NATIVE (verifikasi 2026-08-13):
+  //   #antrian-penyerahan = Resep TUNGGAL (native menulis di sini saat tunggal dipanggil)
+  //   #antrian-view       = Resep RACIKAN (native menulis di sini saat racikan dipanggil)
+  // Dulu extension membaliknya → recall tunggal ditulis native ke #antrian-penyerahan
+  // tapi extension baca/timpa #antrian-view → recall tunggal tak terdeteksi & hilang.
+  const PANGGILAN_SEL = '#antrian-penyerahan'; // panel native TUNGGAL
+  const SIAP_SEL = '#antrian-view'; // panel native RACIKAN
 
   // Seksi card per jenis: ANGKA = current MORBIS (mengikuti panggilan terakhir,
   // '0'/kosong → '—'), NAMA = pasien terakhir per jenis (opsional).
@@ -490,16 +495,18 @@ declare global {
   // Di-ranse interval mandiri (CARD_MS) — tak bertabrakan dgn health/poll.
   //
   // Recall (panggil ulang): current-number ?section=isi TIDAK berubah (tetap nomor
-  // terakhir "Selanjutnya"), tapi panel native #antrian-view di-update WS native
-  // dengan nomor recall. Deteksi: baca nomor panel SEBELUM menimpa → beda dari
-  // current-number = panggilan native (recall) → announce + JANGAN timpa, supaya
-  // nomor recall tetap terlihat & bersuara.
-  let lastNativeCall: string | null = null; // nomor native (recall) terakhir di-announce
+  // terakhir "Selanjutnya"), tapi panel native di-update WS native dengan nomor
+  // recall — TUNGGAL → #antrian-penyerahan, RACIKAN → #antrian-view (mapping native).
+  // Deteksi: baca nomor KEDUA panel SEBELUM menimpa → beda dari current-number
+  // jenisnya = panggilan native (recall) → announce + JANGAN timpa, supaya nomor
+  // recall tetap terlihat & bersuara.
+  let lastNativeCall: string | null = null; // key 'jenis:nomor' recall terakhir di-announce
   async function refreshCardNumber(): Promise<void> {
     setStatus('loading');
     try {
       // Baca nomor panel native SAAT INI (sebelum kita menulis) — sumber recall.
-      const panelNum = readPanelNumber(PANGGILAN_SEL);
+      const panelT = readPanelNumber(PANGGILAN_SEL); // panel TUNGGAL native
+      const panelR = readPanelNumber(SIAP_SEL); // panel RACIKAN native
       const [{ current: cur }, rows] = await Promise.all([fetchCurrentNumber(), fetchCallData()]);
       lastRows = rows;
       const g1 = cur.get('1')?.trim();
@@ -508,27 +515,27 @@ declare global {
       currentByJenis.racikan = g2 && g2 !== '0' ? g2 : '';
 
       // Recall terdeteksi: panel native menampilkan nomor yang TIDAK sama dengan
-      // current-number → announce sekali (dedup via lastNativeCall) + biarkan
-      // panel native tampil (jangan timpa) sampai native mengubahnya.
-      if (
-        panelNum &&
-        panelNum !== '0' &&
-        panelNum !== currentByJenis.tunggal &&
-        panelNum !== currentByJenis.racikan
-      ) {
-        if (panelNum !== lastNativeCall) {
-          lastNativeCall = panelNum;
+      // current-number jenisnya → announce sekali (dedup via lastNativeCall) +
+      // biarkan panel native tampil (jangan timpa) sampai native mengubahnya.
+      const recallT = panelT && panelT !== '0' && panelT !== currentByJenis.tunggal;
+      const recallR = panelR && panelR !== '0' && panelR !== currentByJenis.racikan;
+      if (recallT || recallR) {
+        const jenis = recallT ? 'tunggal' : 'racikan';
+        const panelNum = recallT ? panelT : panelR;
+        const key = jenis + ':' + panelNum;
+        if (key !== lastNativeCall) {
+          lastNativeCall = key;
           const nama = currentPatientNameByNum(panelNum);
           announce({
-            id: 'recall:' + panelNum,
+            id: 'recall:' + key,
             nomor: panelNum,
             kode: '',
             namaPasien: nama,
             unit: '',
-            jenis: 'tunggal',
+            jenis,
             rm: '',
           });
-          updateDebugState({ lastAnnouncement: 'recall:' + panelNum });
+          updateDebugState({ lastAnnouncement: 'recall:' + key });
         }
         setStatus('ok');
         return; // jangan timpa panel recall native

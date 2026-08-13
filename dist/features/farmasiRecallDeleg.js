@@ -18,6 +18,11 @@ var __morbis_feature = (() => {
         if (!id) return;
         const fn = window.panggilUlang;
         if (typeof fn !== 'function') return;
+        const nomorTeks = (row.cells?.[0]?.textContent || '').trim();
+        if (nomorTeks) {
+          const inp = document.getElementById('id-' + nomor);
+          if (inp) inp.value = nomorTeks;
+        }
         e.stopPropagation();
         e.preventDefault();
         fn.call(window, id, jenis, nomor);
