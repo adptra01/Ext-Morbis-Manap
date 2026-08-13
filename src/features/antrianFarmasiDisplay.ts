@@ -680,6 +680,55 @@ declare global {
   document.addEventListener('pointerdown', unlockAudio);
   document.addEventListener('keydown', unlockAudio);
 
+  // Auto-unlock utk display kiosk: bila Chrome sound = Allow utk domain,
+  // resume AudioContext + speechSynthesis sukses TANPA user-gesture. Coba sekali
+  // saat load; sukses → aktifkan audio. Gesture listener tetap sbg fallback.
+  // (tanpa sound=Allow, resume tetap gagal output → tidak aktif, aman.)
+  (function tryAutoUnlock(): void {
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      unlockAudio(); // set audioUnlocked=true (sound=Allow memungkinkan output)
+    };
+    const run = () => {
+      try {
+        const Ctor = window.AudioContext;
+        if (Ctor) {
+          const a = new Ctor();
+          a.onstatechange = () => {
+            if (a.state === 'running') {
+              a.close().catch(() => {});
+              finish();
+            }
+          };
+          void a.resume().catch(() => {});
+        } else {
+          finish(); // tanpa AudioContext, percayai speechSynthesis (fallback)
+        }
+        // jaring pengaman: kalau resume tidak memberi sinyal, coba speech sekali
+        window.setTimeout(() => {
+          if (done) return;
+          try {
+            const u = new SpeechSynthesisUtterance(' ');
+            const s = window.speechSynthesis;
+            s.speak(u);
+            window.setTimeout(() => {
+              s.cancel();
+              if (audioUnlocked === false) finish();
+            }, 250);
+          } catch {
+            finish();
+          }
+        }, 400);
+      } catch {
+        finish();
+      }
+    };
+    if (document.readyState !== 'loading') run();
+    else document.addEventListener('DOMContentLoaded', run);
+  })();
+
   /* ============================================================
    * C1 — WS-health monitor (probe aktivitas DOM native, baca-only).
    *

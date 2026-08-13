@@ -531,6 +531,49 @@ var __morbis_feature = (() => {
     }
     document.addEventListener('pointerdown', unlockAudio);
     document.addEventListener('keydown', unlockAudio);
+    (function tryAutoUnlock() {
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        unlockAudio();
+      };
+      const run = () => {
+        try {
+          const Ctor = window.AudioContext;
+          if (Ctor) {
+            const a = new Ctor();
+            a.onstatechange = () => {
+              if (a.state === 'running') {
+                a.close().catch(() => {});
+                finish();
+              }
+            };
+            void a.resume().catch(() => {});
+          } else {
+            finish();
+          }
+          window.setTimeout(() => {
+            if (done) return;
+            try {
+              const u = new SpeechSynthesisUtterance(' ');
+              const s = window.speechSynthesis;
+              s.speak(u);
+              window.setTimeout(() => {
+                s.cancel();
+                if (audioUnlocked === false) finish();
+              }, 250);
+            } catch {
+              finish();
+            }
+          }, 400);
+        } catch {
+          finish();
+        }
+      };
+      if (document.readyState !== 'loading') run();
+      else document.addEventListener('DOMContentLoaded', run);
+    })();
     let voiceEnabled = false;
     let started = false;
     let watchTimer = null;
