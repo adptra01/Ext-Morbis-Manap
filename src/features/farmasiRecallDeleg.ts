@@ -36,6 +36,19 @@
       if (!id) return;
       const fn = (window as unknown as Record<string, unknown>).panggilUlang;
       if (typeof fn !== 'function') return;
+      // Jalur recall TANPA WebSocket (WS native sering mati/refused di lapangan):
+      // tulis sinyal ke localStorage (same-origin) → display membaca & announce
+      // lewat bell+TTS extension sendiri. WS hidup → display native sudah announce;
+      // extension hanya fallback saat WS mati.
+      try {
+        const nomorTeks = ((row as HTMLTableRowElement).cells?.[0]?.textContent || '').trim();
+        localStorage.setItem(
+          'ext-afd-recall',
+          JSON.stringify({ jenis, nomor, nomorTeks, ts: Date.now() }),
+        );
+      } catch {
+        /* ignore */
+      }
       e.stopPropagation();
       e.preventDefault();
       (fn as (id: string, jenis: string, nomor: string) => void).call(window, id, jenis, nomor);

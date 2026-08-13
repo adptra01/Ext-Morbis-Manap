@@ -395,6 +395,28 @@ var __morbis_feature = (() => {
         const g2 = cur.get('2')?.trim();
         currentByJenis.tunggal = g1 && g1 !== '0' ? g1 : '';
         currentByJenis.racikan = g2 && g2 !== '0' ? g2 : '';
+        try {
+          const raw = localStorage.getItem('ext-afd-recall');
+          if (raw) {
+            const sig = JSON.parse(raw);
+            const key = `${sig.jenis}:${sig.nomor}`;
+            const segar = Date.now() - (sig.ts || 0) < 8e3;
+            if (segar && key !== lastLocalRecallKey) {
+              lastLocalRecallKey = key;
+              localStorage.removeItem('ext-afd-recall');
+              updateDebugState({ lastAnnouncement: `recall:${key}` });
+              announce({
+                id: `local-recall-${key}`,
+                nomor: sig.nomor,
+                kode: '',
+                namaPasien: (sig.nomorTeks || '').split(/\s+/)[0] || '',
+                unit: '',
+                jenis: sig.jenis === 'racikan' ? 'racikan' : 'tunggal',
+                rm: '',
+              });
+            }
+          }
+        } catch {}
         const panelT = readPanelNumber(PANGGILAN_SEL);
         const panelR = readPanelNumber(SIAP_SEL);
         const recallT =
@@ -531,6 +553,7 @@ var __morbis_feature = (() => {
     const prevByJenis = { tunggal: '', racikan: '' };
     const writtenByUs = { tunggal: '', racikan: '' };
     let lastNativeCall = null;
+    let lastLocalRecallKey = '';
     let lastRows = [];
     const synth = window.speechSynthesis;
     const RealSpeak = synth.speak.bind(synth);

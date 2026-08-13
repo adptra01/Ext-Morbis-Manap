@@ -24,6 +24,13 @@ var __morbis_feature = (() => {
         if (!id) return;
         const fn = window.panggilUlang;
         if (typeof fn !== 'function') return;
+        try {
+          const nomorTeks = (row.cells?.[0]?.textContent || '').trim();
+          localStorage.setItem(
+            'ext-afd-recall',
+            JSON.stringify({ jenis, nomor, nomorTeks, ts: Date.now() }),
+          );
+        } catch {}
         e.stopPropagation();
         e.preventDefault();
         fn.call(window, id, jenis, nomor);

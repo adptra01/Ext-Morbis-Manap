@@ -478,11 +478,47 @@ declare global {
     }
   }
 
+  // Recall via localStorage (konsol→display, same-origin). Bebas WS & login:
+  // jalur ini jalan walau WS :8088 mati & current-number butuh session.
+  // Konsol menulis saat klik recall (farmasiRecallDeleg.ts); display announce.
+  // DIPANGGIL SEBELUM fetch — recall tak boleh buntu gara-gara fetch gagal.
+  function processLocalRecall(): void {
+    try {
+      const raw = localStorage.getItem('ext-afd-recall');
+      if (!raw) return;
+      const sig = JSON.parse(raw) as {
+        jenis: string;
+        nomor: string;
+        nomorTeks?: string;
+        ts: number;
+      };
+      const key = `${sig.jenis}:${sig.nomor}`;
+      const segar = Date.now() - (sig.ts || 0) < 8000; // sinyal kedaluwarsa 8 detik
+      if (segar && key !== lastLocalRecallKey) {
+        lastLocalRecallKey = key;
+        localStorage.removeItem('ext-afd-recall');
+        updateDebugState({ lastAnnouncement: `recall:${key}` });
+        announce({
+          id: `local-recall-${key}`,
+          nomor: sig.nomor,
+          kode: '',
+          namaPasien: (sig.nomorTeks || '').split(/\s+/)[0] || '',
+          unit: '',
+          jenis: (sig.jenis === 'racikan' ? 'racikan' : 'tunggal') as 'tunggal' | 'racikan',
+          rm: '',
+        });
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
   // Refresh angka card + highlight secara tetap & cepat. Fetch ?section=isi
   // (current number) + data_call (nama), update currentByJenis/lastRows, render.
   // Di-ranse interval mandiri (CARD_MS) — tak bertabrakan dgn health/poll.
   async function refreshCardNumber(): Promise<void> {
     setStatus('loading');
+    processLocalRecall(); // recall lokal diproses duluan, tak peduli fetch gagal/tidak
     try {
       const [{ current: cur }, rows] = await Promise.all([fetchCurrentNumber(), fetchCallData()]);
       lastRows = rows;
@@ -490,6 +526,39 @@ declare global {
       const g2 = cur.get('2')?.trim();
       currentByJenis.tunggal = g1 && g1 !== '0' ? g1 : '';
       currentByJenis.racikan = g2 && g2 !== '0' ? g2 : '';
+
+      // Recall via localStorage (konsol→display, same-origin). Bebas WS & login:
+      // jalur ini jalan walau WS :8088 mati & current-number butuh session.
+      // Konsol menulis saat klik recall (farmasiRecallDeleg.ts); display announce.
+      try {
+        const raw = localStorage.getItem('ext-afd-recall');
+        if (raw) {
+          const sig = JSON.parse(raw) as {
+            jenis: string;
+            nomor: string;
+            nomorTeks?: string;
+            ts: number;
+          };
+          const key = `${sig.jenis}:${sig.nomor}`;
+          const segar = Date.now() - (sig.ts || 0) < 8000; // sinyal kedaluwarsa 8 detik
+          if (segar && key !== lastLocalRecallKey) {
+            lastLocalRecallKey = key;
+            localStorage.removeItem('ext-afd-recall');
+            updateDebugState({ lastAnnouncement: `recall:${key}` });
+            announce({
+              id: `local-recall-${key}`,
+              nomor: sig.nomor,
+              kode: '',
+              namaPasien: (sig.nomorTeks || '').split(/\s+/)[0] || '',
+              unit: '',
+              jenis: (sig.jenis === 'racikan' ? 'racikan' : 'tunggal') as 'tunggal' | 'racikan',
+              rm: '',
+            });
+          }
+        }
+      } catch {
+        /* ignore */
+      }
 
       // Recall (panggil ulang): current-number ?section=isi TIDAK berubah (tetap
       // nomor terakhir "Selanjutnya"), tapi native display menulis nomor recall ke
@@ -688,6 +757,8 @@ declare global {
   const writtenByUs: Record<'tunggal' | 'racikan', string> = { tunggal: '', racikan: '' };
   // Key 'jenis:nomor' recall native terakhir yang di-announce (dedup serial).
   let lastNativeCall: string | null = null;
+  // Dedup sinyal recall dari konsol (localStorage) — key 'jenis:nomor'.
+  let lastLocalRecallKey = '';
 
   // data_call mentah terakhir (diisi pollFallback) — dipakai seed card dua-bagian
   // karena STATUS=0 tak selalu menandai baris aktif (status MORBIS tak reliable).
