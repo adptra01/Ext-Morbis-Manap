@@ -77,7 +77,6 @@ declare global {
   // (tes lapangan: klik 1x/detik melompati 1 nomor di poll 2s). Klik lebih cepat
   // dari 600ms masih bisa terlewat — naikkan budget hanya bila itu terjadi.
   const POLL_LADDER_MS = [600, 2000, 5000, 10000];
-  const CALL_DELAY_MS = 1200; // jeda bell sebelum voice
   const GAP_MS = 400;
   // C1 — Native Activity Health Monitor: probe aktivitas DOM antrian (baca-only).
   // Bukan instrumentasi window.WebSocket — extension "mengamati konsekuensi transport
@@ -307,10 +306,10 @@ declare global {
       setTimeout(() => next(), GAP_MS);
     };
     if (item.kind === 'bell') {
-      ringBell();
-      // Jeda bell sebelum voice: item bell dianggap selesai setelah jeda, lalu
-      // item voice berikutnya mulai. Bell MORBIS (#unine) ~1.2s.
-      setTimeout(finish, CALL_DELAY_MS);
+      // finish() (→ voice berikutnya) dipanggil SETELAH bell benar-benar selesai
+      // (durasi bell sintesis terukur via ringBell → onDone), bukan setelah
+      // jeda buta. Jadi TTS tidak tumpang-tindih dengan bell.
+      ringBell(finish);
       return;
     }
     try {
@@ -367,18 +366,43 @@ declare global {
     return String(num);
   }
 
-  function ringBell(): void {
+  // Bell sintesis Web Audio ("ding") — pengganti bell bawaan MORBIS (#unine).
+  // Keunggulan: bukan audio morbis, durasi terukur sehingga onDone dipanggil
+  // tepat saat bell selesai (TTS tidak tumpang-tindih), tanpa file eksternal.
+  let bellCtx: AudioContext | null = null;
+  function ringBell(onDone: () => void): void {
     try {
-      const audio = document.getElementById('unine') as HTMLAudioElement | null;
-      if (audio) {
-        audio.pause();
-        audio.currentTime = 0;
-        void audio.play().catch(() => {
-          /* bell diblokir tanpa gesture; voice tetap jalan */
-        });
+      const Ctor =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!Ctor) return onDone();
+      bellCtx = bellCtx || new Ctor();
+      void bellCtx.resume();
+      const now = bellCtx.currentTime;
+      // dua nada "ding-ding": E6 lalu A6, tiap nada ~0.28s
+      const notes: Array<[number, number]> = [
+        [1318.5, now],
+        [1760, now + 0.28],
+      ];
+      for (const [freq, t0] of notes) {
+        const osc = bellCtx.createOscillator();
+        const g = bellCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, t0);
+        // envelope: naik-cepat lalu decay (suara bell bersih)
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(0.45, t0 + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.3);
+        osc.connect(g);
+        g.connect(bellCtx.destination);
+        osc.start(t0);
+        osc.stop(t0 + 0.32);
       }
+      // total durasi bell ~0.6s — onDone TEPAT setelah bell selesai
+      const totalMs = 280 + 300 + 80; // nada terakhir berakhir 280+300, +80 buffer
+      setTimeout(onDone, totalMs);
     } catch {
-      /* ignore */
+      onDone(); // bell gagal → tetap lanjut (jangan blokir voice)
     }
   }
 

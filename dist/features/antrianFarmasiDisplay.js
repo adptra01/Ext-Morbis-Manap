@@ -100,7 +100,6 @@ var __morbis_feature = (() => {
   (function () {
     const LIST_URL = '/public/antrian-farmasi-v2/list-antrian-v2';
     const POLL_LADDER_MS = [600, 2e3, 5e3, 1e4];
-    const CALL_DELAY_MS = 1200;
     const GAP_MS = 400;
     const WATCH_MS = 1500;
     const STALE_MAX = 2;
@@ -208,8 +207,7 @@ var __morbis_feature = (() => {
         setTimeout(() => next(), GAP_MS);
       };
       if (item.kind === 'bell') {
-        ringBell();
-        setTimeout(finish, CALL_DELAY_MS);
+        ringBell(finish);
         return;
       }
       try {
@@ -263,15 +261,36 @@ var __morbis_feature = (() => {
       }
       return String(num);
     }
-    function ringBell() {
+    let bellCtx = null;
+    function ringBell(onDone) {
       try {
-        const audio = document.getElementById('unine');
-        if (audio) {
-          audio.pause();
-          audio.currentTime = 0;
-          void audio.play().catch(() => {});
+        const Ctor = window.AudioContext || window.webkitAudioContext;
+        if (!Ctor) return onDone();
+        bellCtx = bellCtx || new Ctor();
+        void bellCtx.resume();
+        const now = bellCtx.currentTime;
+        const notes = [
+          [1318.5, now],
+          [1760, now + 0.28],
+        ];
+        for (const [freq, t0] of notes) {
+          const osc = bellCtx.createOscillator();
+          const g = bellCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, t0);
+          g.gain.setValueAtTime(1e-4, t0);
+          g.gain.exponentialRampToValueAtTime(0.45, t0 + 0.02);
+          g.gain.exponentialRampToValueAtTime(1e-4, t0 + 0.3);
+          osc.connect(g);
+          g.connect(bellCtx.destination);
+          osc.start(t0);
+          osc.stop(t0 + 0.32);
         }
-      } catch {}
+        const totalMs = 280 + 300 + 80;
+        setTimeout(onDone, totalMs);
+      } catch {
+        onDone();
+      }
     }
     function announce(row) {
       if (!audioUnlocked) {
