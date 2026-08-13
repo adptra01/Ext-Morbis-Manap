@@ -252,6 +252,33 @@ declare global {
     );
   }
 
+  // Seksi panggilan per jenis (untuk card "Panggilan Farmasi" dua-bagian).
+  function seksiJenis(label: string, r: ViewRow | null): string {
+    if (!r)
+      return '<div class="antrian-title">' + label + '</div><div class="antrian-nomor">—</div>';
+    const disp = renumberByNomor.get(r.nomor) || (r.kode ? r.kode + '-' + r.nomor : r.nomor);
+    return (
+      '<div class="antrian-title">' +
+      label +
+      '</div>' +
+      '<div class="antrian-nomor">' +
+      disp +
+      '</div>' +
+      '<div class="antrian-rm">' +
+      r.namaPasien +
+      '</div>'
+    );
+  }
+
+  // Card "Panggilan Farmasi": dua bagian — Obat Tunggal (atas) & Obat Racikan (bawah).
+  function panelPanggilanHtml(): string {
+    return (
+      seksiJenis('Obat Tunggal', lastByJenis.tunggal) +
+      '<hr style="border:0;border-top:1px dashed #ccc;margin:8px 0;">' +
+      seksiJenis('Obat Racikan', lastByJenis.racikan)
+    );
+  }
+
   // Highlight baris tabel #list-content yang namanya cocok dengan pasien dipanggil.
   // Cocokkan nama (dd.col-3) atau nomor (h4 BT-{nomor}); nama diprioritaskan.
   function highlightCalledRow(nama: string, nomor: string): void {
@@ -279,8 +306,10 @@ declare global {
   // write extension tidak dianggap sebagai "native recovery" (anti feedback-loop).
   function renderDisplay(view: QueueView, call: ViewRow | null): void {
     if (call) {
+      // update panggilan terakhir per jenis (card dua-bagian)
+      lastByJenis[call.jenis] = call;
       const p = document.querySelector<HTMLElement>(PANGGILAN_SEL);
-      if (p) p.innerHTML = panelHtml('Panggilan Farmasi', [call]);
+      if (p) p.innerHTML = panelPanggilanHtml();
       highlightCalledRow(call.namaPasien, call.nomor); // tandai baris dipanggil
     }
     if (view.siapDiambil.length > 0) {
@@ -301,6 +330,14 @@ declare global {
   const prevCurrent = new Map<string, string>();
   let currentCall: ViewRow | null = null; // panggilan aktif yang sedang ditampilkan
   let baselineSet = false; // false = poll pertama (tampilkan tanpa announce)
+
+  // Panggilan TERAKHIR per jenis — dibuat agar card samping bisa menampilkan
+  // dua bagian: Obat Tunggal (atas) & Obat Racikan (bawah). Di-update setiap
+  // kali renderDisplay me-render call; bertahan walau panggilan berikutnya beda jenis.
+  const lastByJenis: Record<'tunggal' | 'racikan', ViewRow | null> = {
+    tunggal: null,
+    racikan: null,
+  };
 
   // Nomor rapi per baris (R-xx / T-xx) — diisi dari renumber data_call saat poll,
   // dipakai render card & highlight agar konsisten dengan tiket cetak.

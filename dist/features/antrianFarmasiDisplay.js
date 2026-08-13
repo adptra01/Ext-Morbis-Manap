@@ -227,6 +227,29 @@ var __morbis_feature = (() => {
         '</div><img class="antrian-icon" src="/assets/antrian/assets/img/thumb.svg" alt="icon">'
       );
     }
+    function seksiJenis(label, r) {
+      if (!r)
+        return (
+          '<div class="antrian-title">' + label + '</div><div class="antrian-nomor">\u2014</div>'
+        );
+      const disp = renumberByNomor.get(r.nomor) || (r.kode ? r.kode + '-' + r.nomor : r.nomor);
+      return (
+        '<div class="antrian-title">' +
+        label +
+        '</div><div class="antrian-nomor">' +
+        disp +
+        '</div><div class="antrian-rm">' +
+        r.namaPasien +
+        '</div>'
+      );
+    }
+    function panelPanggilanHtml() {
+      return (
+        seksiJenis('Obat Tunggal', lastByJenis.tunggal) +
+        '<hr style="border:0;border-top:1px dashed #ccc;margin:8px 0;">' +
+        seksiJenis('Obat Racikan', lastByJenis.racikan)
+      );
+    }
     function highlightCalledRow(nama, nomor) {
       const lc = document.querySelector('#list-content');
       if (!lc) return;
@@ -242,8 +265,9 @@ var __morbis_feature = (() => {
     }
     function renderDisplay(view, call) {
       if (call) {
+        lastByJenis[call.jenis] = call;
         const p = document.querySelector(PANGGILAN_SEL);
-        if (p) p.innerHTML = panelHtml('Panggilan Farmasi', [call]);
+        if (p) p.innerHTML = panelPanggilanHtml();
         highlightCalledRow(call.namaPasien, call.nomor);
       }
       if (view.siapDiambil.length > 0) {
@@ -256,6 +280,10 @@ var __morbis_feature = (() => {
     const prevCurrent = /* @__PURE__ */ new Map();
     let currentCall = null;
     let baselineSet = false;
+    const lastByJenis = {
+      tunggal: null,
+      racikan: null,
+    };
     const renumberByNomor = /* @__PURE__ */ new Map();
     const synth = window.speechSynthesis;
     const RealSpeak = synth.speak.bind(synth);
