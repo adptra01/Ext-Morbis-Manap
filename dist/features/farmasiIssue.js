@@ -75,23 +75,28 @@ var __morbis_feature = (() => {
     }
     status.textContent = `${urutan.length} antrian aktif \xB7 ${countOf(urutan, 'R-')} racikan, ${countOf(urutan, 'T-')} tunggal`;
     const name = new Map(rows.map((r) => [String(r.ID), String(r.NAMA_PASIEN ?? '')]));
+    const panel = document.getElementById('ext-farmasi-issue');
+    const printOneBtn = document.getElementById('ext-issue-printone');
+    if (panel) panel.setAttribute('data-rows', JSON.stringify(rows));
     list.innerHTML =
       urutan
         .map((kode) => {
           const id = [...byId].find(([, v]) => v === kode)?.[0] ?? '';
+          const idx = rows.findIndex((r) => String(r.ID) === id);
           return (
-            '<div style="display:flex;justify-content:space-between;padding:4px 8px;' +
-            (byId.get(id) === kode ? '' : '') +
-            '"><b style="color:#0f5132;min-width:52px;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;padding:4px 6px;"><b style="color:#0f5132;min-width:52px;">' +
             kode.replace('-', '-') +
-            '</b><span style="color:#495057;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:190px;">' +
+            '</b><span style="flex:1;color:#495057;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
             (name.get(id) || '') +
-            '</span></div>'
+            '</span><button class="ext-issue-printone" data-idx="' +
+            idx +
+            '" style="flex-shrink:0;padding:3px 8px;border:none;border-radius:8px;background:#0f5132;color:#fff;cursor:pointer;font-size:12px;" title="Cetak tiket pasien ini">\u{1F5A8}</button></div>'
           );
         })
         .join('') || '<div style="padding:6px;color:#6c757d;">kosong</div>';
     document.getElementById('ext-issue-print')?.setAttribute('data-urutan', JSON.stringify(urutan));
     document.getElementById('ext-issue-print')?.setAttribute('data-rows', JSON.stringify(rows));
+    void printOneBtn;
   }
   function countOf(arr, prefix) {
     return arr.filter((k) => k.startsWith(prefix)).length;
@@ -166,6 +171,34 @@ var __morbis_feature = (() => {
     );
     win.document.close();
   }
+  function openPrintOne(rows, idx) {
+    const row = rows[idx];
+    if (!row) return;
+    const { byId } = renumberFarmasi(toRows(rows));
+    const nomorKe = byId.get(String(row.ID ?? ''));
+    const jenis = /racik/i.test(String(row.JENIS ?? '')) ? 'Racikan' : 'Non Racikan';
+    const nama = String(row.NAMA_PASIEN ?? '');
+    const unit = String(row.NAMA_UNIT ?? '');
+    const body =
+      '<div style="width:92mm;height:48mm;border:1px solid #000;box-sizing:border-box;margin:0 auto;padding:14px 12px;text-align:center;display:flex;flex-direction:column;justify-content:center;gap:4px;font-family:Arial,Helvetica,sans-serif;"><div style="font-size:11px;font-weight:600;text-transform:uppercase;">RSUD H. Abdul Manap</div><div style="font-size:10px;">Antrian Farmasi</div><div style="font-size:34px;font-weight:700;letter-spacing:1px;margin:6px 0;">' +
+      (nomorKe || '') +
+      '</div><div style="font-size:13px;">' +
+      nama +
+      '</div><div style="font-size:10px;color:#333;">' +
+      (jenis + (unit ? ' \xB7 ' + unit : '')) +
+      '</div><div style="font-size:9px;color:#555;margin-top:6px;">Silakan menunggu panggilan</div></div>';
+    const win = window.open('', '_blank', 'width=500,height=700');
+    if (!win) {
+      alert('Popup diblokir \u2014 izinkan popup utk mencetak.');
+      return;
+    }
+    win.document.write(
+      '<style>@page{size:A5 landscape;margin:4mm;}body{margin:0;padding:8px;}</style>' +
+        body +
+        '<script>setTimeout(()=>{window.print();},300);<\/script>',
+    );
+    win.document.close();
+  }
   function init() {
     const panel = buildPanel();
     const toggle = buildToggle();
@@ -191,6 +224,18 @@ var __morbis_feature = (() => {
       if (!raw) return;
       try {
         openPrint(JSON.parse(raw));
+      } catch {}
+    });
+    document.getElementById('ext-issue-list')?.addEventListener('click', (e) => {
+      const t = e.target.closest('.ext-issue-printone');
+      if (!t) return;
+      const raw = (
+        document.getElementById('ext-farmasi-issue')?.getAttribute('data-rows') || ''
+      ).trim();
+      if (!raw) return;
+      const idx = Number(t.getAttribute('data-idx') ?? '-1');
+      try {
+        openPrintOne(JSON.parse(raw), idx);
       } catch {}
     });
     fetchRows()
