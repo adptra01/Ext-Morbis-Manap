@@ -33,6 +33,42 @@ const ROW_RE = /<tr[^>]*data-nomor="([^"]*)"[^>]*>([\s\S]*?)<\/tr>/g;
 export type PatientRow = { nama: string; kode: string };
 export type PatientByName = Map<string, PatientRow>;
 
+/**
+ * DOM parser untuk nama pasien di halaman view-call farmasi — sumber nama yang
+ * DIJAMIN fresh (dirender server + di-update real-time oleh WebSocket native),
+ * TANPA fetch terpisah. Mapping dari #list-content:
+ *   <dl><dd class="col-1"><h4>BT-2</h4></dd>
+ *       <dd class="col-3">ALISNITATI<p>RM : 6992</p></dd> ...</dl>
+ * Di-parse nomor "B{nomor}" dari <h4>, nama dari dd.col-3.
+ */
+export function parseListContentPatient(listContent: Element | null): PatientByName {
+  const m = new Map<string, PatientRow>();
+  if (!listContent) return m;
+  for (const dl of listContent.querySelectorAll('dl')) {
+    const h4 = dl.querySelector('h4');
+    if (!h4) continue;
+    const nomorMatch = (h4.textContent || '').match(/(\d+)$/);
+    if (!nomorMatch) continue;
+    const nomor = nomorMatch[1];
+    const dd3 = dl.querySelector('dd.col-3, dd.col-md-3');
+    // nama = teks direct dari dd (hilangkan <p>RM : ...>); fallback teks penuh
+    const nama = dd3
+      ? Array.from(dd3.childNodes)
+          .filter((n) => n.nodeType === Node.TEXT_NODE)
+          .map((n) => n.textContent || '')
+          .join('')
+          .replace(/\s+/g, ' ')
+          .trim()
+      : '';
+    const kode =
+      dd3 && /[A-Za-z]/.test((h4.textContent || '').split('-')[0] || '')
+        ? (h4.textContent || '').split('-')[0].toUpperCase()
+        : '';
+    if (nomor) m.set(nomor, { nama, kode });
+  }
+  return m;
+}
+
 export function parseCurrentNumbers(html: string): CurrentNumbers {
   const m = new Map<string, string>();
   for (const mm of html.matchAll(CURRENT_RE)) {

@@ -43,6 +43,7 @@ import { nextHealth, type HealthState } from './shared/wsHealth';
 import {
   activeNumber,
   isReset,
+  parseListContentPatient,
   parseCurrentNumbers,
   parsePatients,
   type PatientByName,
@@ -541,15 +542,18 @@ declare global {
           : '';
 
       if (num !== '') {
-        // Nama pasien dari TABEL ?section=isi (sinkron dengan current-number,
-        // tidak bisa lag). Fallback ke data_call bila tabel kosong.
-        const p = patients.get(num);
+        // Nama pasien: PRIORITAS dari DOM #list-content (halaman view-call,
+        // fresh real-time dari WebSocket native) → fallback tabel ?section=isi
+        // (parsePatients) → fallback data_call (matchPatient).
+        const domNames = parseListContentPatient(document.querySelector('#list-content'));
+        let pr = domNames.get(num);
+        if (!pr || !pr.nama) pr = patients.get(num);
         const mPat = matchPatient(rows, num);
         const call: ViewRow = {
           id: 'cur-' + num,
           nomor: num,
-          kode: (p && p.kode) || mPat?.kode || '',
-          namaPasien: (p && p.nama) || mPat?.namaPasien || '',
+          kode: (pr && pr.kode) || mPat?.kode || '',
+          namaPasien: (pr && pr.nama) || mPat?.namaPasien || '',
           unit: mPat?.unit || '',
           jenis: mPat?.jenis || 'tunggal',
           rm: mPat?.rm || '',

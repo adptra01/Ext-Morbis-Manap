@@ -44,6 +44,32 @@ var __morbis_feature = (() => {
   // src/features/shared/currentNumber.ts
   var CURRENT_RE = /current-number[^>]*data-counter="([^"]*)"[^>]*>([\s\S]*?)<\/span>/g;
   var ROW_RE = /<tr[^>]*data-nomor="([^"]*)"[^>]*>([\s\S]*?)<\/tr>/g;
+  function parseListContentPatient(listContent) {
+    const m = /* @__PURE__ */ new Map();
+    if (!listContent) return m;
+    for (const dl of listContent.querySelectorAll('dl')) {
+      const h4 = dl.querySelector('h4');
+      if (!h4) continue;
+      const nomorMatch = (h4.textContent || '').match(/(\d+)$/);
+      if (!nomorMatch) continue;
+      const nomor = nomorMatch[1];
+      const dd3 = dl.querySelector('dd.col-3, dd.col-md-3');
+      const nama = dd3
+        ? Array.from(dd3.childNodes)
+            .filter((n) => n.nodeType === Node.TEXT_NODE)
+            .map((n) => n.textContent || '')
+            .join('')
+            .replace(/\s+/g, ' ')
+            .trim()
+        : '';
+      const kode =
+        dd3 && /[A-Za-z]/.test((h4.textContent || '').split('-')[0] || '')
+          ? (h4.textContent || '').split('-')[0].toUpperCase()
+          : '';
+      if (nomor) m.set(nomor, { nama, kode });
+    }
+    return m;
+  }
   function parseCurrentNumbers(html) {
     const m = /* @__PURE__ */ new Map();
     for (const mm of html.matchAll(CURRENT_RE)) {
@@ -382,13 +408,15 @@ var __morbis_feature = (() => {
                 .join('|')
             : '';
         if (num !== '') {
-          const p = patients.get(num);
+          const domNames = parseListContentPatient(document.querySelector('#list-content'));
+          let pr = domNames.get(num);
+          if (!pr || !pr.nama) pr = patients.get(num);
           const mPat = matchPatient(rows, num);
           const call = {
             id: 'cur-' + num,
             nomor: num,
-            kode: (p && p.kode) || mPat?.kode || '',
-            namaPasien: (p && p.nama) || mPat?.namaPasien || '',
+            kode: (pr && pr.kode) || mPat?.kode || '',
+            namaPasien: (pr && pr.nama) || mPat?.namaPasien || '',
             unit: mPat?.unit || '',
             jenis: mPat?.jenis || 'tunggal',
             rm: mPat?.rm || '',
