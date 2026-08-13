@@ -171,6 +171,56 @@ var __morbis_feature = (() => {
         statusBadge.innerHTML = dot + 'GAGAL';
       }
     }
+    let toolbar = null;
+    function ensureToolbar() {
+      if (toolbar) return;
+      toolbar = document.createElement('div');
+      toolbar.id = 'ext-afd-toolbar';
+      toolbar.style.cssText =
+        'position:fixed;top:44px;right:12px;z-index:99999;display:flex;gap:8px;';
+      toolbar.innerHTML =
+        '<button id="ext-afd-testsound" style="padding:6px 12px;border:none;border-radius:999px;background:#0f5132;color:#fff;font:700 12px/1.3 Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);">\u{1F50A} Tes Suara</button><button id="ext-afd-fs" style="padding:6px 12px;border:none;border-radius:999px;background:#155e75;color:#fff;font:700 12px/1.3 Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);">\u26F6 Full Screen</button>';
+      const el = toolbar;
+      const mount = () => {
+        if (el && !el.isConnected && document.body) document.body.appendChild(el);
+      };
+      if (document.body) mount();
+      else {
+        document.addEventListener('DOMContentLoaded', mount);
+        const t = window.setInterval(() => {
+          if (document.body) {
+            mount();
+            window.clearInterval(t);
+          }
+        }, 200);
+      }
+      toolbar.querySelector('#ext-afd-testsound')?.addEventListener('click', () => {
+        unlockAudio();
+        setStatus('loading');
+        announce({
+          id: 'tes:suara',
+          nomor: '99',
+          kode: 'BT',
+          namaPasien: 'Tes Suara Panggilan',
+          unit: '',
+          jenis: 'tunggal',
+          rm: '',
+        });
+        window.setTimeout(() => setStatus('ok'), 5e3);
+      });
+      toolbar.querySelector('#ext-afd-fs')?.addEventListener('click', () => {
+        const doc = document;
+        const el2 = document.documentElement;
+        if (document.fullscreenElement || doc.webkitFullscreenElement) {
+          if (document.exitFullscreen) document.exitFullscreen();
+          else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        } else if (el2.requestFullscreen) {
+          void el2.requestFullscreen();
+        } else if (el2.webkitRequestFullscreen) {
+          el2.webkitRequestFullscreen();
+        }
+      });
+    }
     const WATCH_MS = 1500;
     const STALE_MAX = 2;
     async function fetchCallData() {
@@ -418,7 +468,7 @@ var __morbis_feature = (() => {
       tunggal: '',
       racikan: '',
     };
-    let prevByJenis = { tunggal: '', racikan: '' };
+    const prevByJenis = { tunggal: '', racikan: '' };
     let lastRows = [];
     const synth = window.speechSynthesis;
     const RealSpeak = synth.speak.bind(synth);
@@ -781,6 +831,7 @@ var __morbis_feature = (() => {
       started = true;
       updateDebugState({ started: true });
       ensureStatusBadge();
+      ensureToolbar();
       setStatus('loading');
       voiceEnabled = true;
       health = { ...health, nativeSig: domSignal() };

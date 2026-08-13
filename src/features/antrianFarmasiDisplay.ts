@@ -131,6 +131,64 @@ declare global {
       statusBadge.innerHTML = dot + 'GAGAL';
     }
   }
+
+  // Tombol "Tes Suara Panggilan" & "Full Screen" (pojok kanan-atas, di bawah badge).
+  // Klik Tes Suara = user-activation (unlock audio) + jalankan bell & TTS sampel.
+  let toolbar: HTMLDivElement | null = null;
+  function ensureToolbar(): void {
+    if (toolbar) return;
+    toolbar = document.createElement('div');
+    toolbar.id = 'ext-afd-toolbar';
+    toolbar.style.cssText =
+      'position:fixed;top:44px;right:12px;z-index:99999;display:flex;gap:8px;';
+    toolbar.innerHTML =
+      '<button id="ext-afd-testsound" style="padding:6px 12px;border:none;border-radius:999px;background:#0f5132;color:#fff;font:700 12px/1.3 Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);">🔊 Tes Suara</button>' +
+      '<button id="ext-afd-fs" style="padding:6px 12px;border:none;border-radius:999px;background:#155e75;color:#fff;font:700 12px/1.3 Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);">⛶ Full Screen</button>';
+    const el = toolbar;
+    const mount = () => {
+      if (el && !el.isConnected && document.body) document.body.appendChild(el);
+    };
+    if (document.body) mount();
+    else {
+      document.addEventListener('DOMContentLoaded', mount);
+      const t = window.setInterval(() => {
+        if (document.body) {
+          mount();
+          window.clearInterval(t);
+        }
+      }, 200);
+    }
+    toolbar.querySelector('#ext-afd-testsound')?.addEventListener('click', () => {
+      unlockAudio(); // gesture ini membuka izin suara di browser yg ketat
+      setStatus('loading');
+      announce({
+        id: 'tes:suara',
+        nomor: '99',
+        kode: 'BT',
+        namaPasien: 'Tes Suara Panggilan',
+        unit: '',
+        jenis: 'tunggal',
+        rm: '',
+      });
+      // reset badge ke SIAP setelah announce selesai bicara (~4-5 detik)
+      window.setTimeout(() => setStatus('ok'), 5000);
+    });
+    toolbar.querySelector('#ext-afd-fs')?.addEventListener('click', () => {
+      const doc = document as Document & { webkitFullscreenElement?: unknown };
+      const el = document.documentElement as HTMLElement & { webkitRequestFullscreen?: () => void };
+      if (document.fullscreenElement || doc.webkitFullscreenElement) {
+        if (document.exitFullscreen) document.exitFullscreen();
+        else if (
+          (document as Document & { webkitExitFullscreen?: () => void }).webkitExitFullscreen
+        )
+          (document as Document & { webkitExitFullscreen: () => void }).webkitExitFullscreen();
+      } else if (el.requestFullscreen) {
+        void el.requestFullscreen();
+      } else if (el.webkitRequestFullscreen) {
+        el.webkitRequestFullscreen();
+      }
+    });
+  }
   // C1 — Native Activity Health Monitor: probe aktivitas DOM antrian (baca-only).
   // Bukan instrumentasi window.WebSocket — extension "mengamati konsekuensi transport
   // native", bukan merekayasa WebSocket-nya. Nama file wsHealth.ts dipertahankan
@@ -1017,6 +1075,7 @@ declare global {
     started = true;
     updateDebugState({ started: true });
     ensureStatusBadge(); // pastikan badge status ada sedari awal (loading)
+    ensureToolbar(); // tombol Tes Suara & Full Screen
     setStatus('loading');
 
     voiceEnabled = true; // suara hanya untuk role terotorisasi; TTS native tidak dioverride
