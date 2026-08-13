@@ -213,23 +213,14 @@ var __morbis_feature = (() => {
     }
     const PANGGILAN_SEL = '#antrian-view';
     const SIAP_SEL = '#antrian-penyerahan';
-    function seksiJenis(label, r) {
-      if (!r)
-        return (
-          '<div class="antrian-title">' + label + '</div><div class="antrian-nomor">\u2014</div>'
-        );
-      const disp =
-        renumberById.get(r.id) ||
-        renumberByNomor.get(r.nomor) ||
-        (r.kode ? r.kode + '-' + r.nomor : r.nomor);
+    function cardSection(label, numText, nama) {
       return (
         '<div class="antrian-title">' +
         label +
         '</div><div class="antrian-nomor">' +
-        disp +
-        '</div><div class="antrian-rm">' +
-        r.namaPasien +
-        '</div>'
+        (numText && numText !== '0' ? numText : '\u2014') +
+        '</div>' +
+        (nama ? '<div class="antrian-rm">' + nama + '</div>' : '')
       );
     }
     function highlightCalledRow(nama, nomor) {
@@ -250,9 +241,19 @@ var __morbis_feature = (() => {
         lastByJenis[call.jenis] = call;
         seedLastByJenis(view);
         const atas = document.querySelector(PANGGILAN_SEL);
-        if (atas) atas.innerHTML = seksiJenis('Obat Tunggal', lastByJenis.tunggal);
+        if (atas)
+          atas.innerHTML = cardSection(
+            'Obat Tunggal',
+            currentByJenis.tunggal,
+            lastByJenis.tunggal?.namaPasien || '',
+          );
         const bawah = document.querySelector(SIAP_SEL);
-        if (bawah) bawah.innerHTML = seksiJenis('Obat Racikan', lastByJenis.racikan);
+        if (bawah)
+          bawah.innerHTML = cardSection(
+            'Obat Racikan',
+            currentByJenis.racikan,
+            lastByJenis.racikan?.namaPasien || '',
+          );
         highlightCalledRow(call.namaPasien, call.nomor);
       }
       onWeWrote();
@@ -273,6 +274,10 @@ var __morbis_feature = (() => {
     const lastByJenis = {
       tunggal: null,
       racikan: null,
+    };
+    const currentByJenis = {
+      tunggal: '',
+      racikan: '',
     };
     const renumberByNomor = /* @__PURE__ */ new Map();
     const renumberById = /* @__PURE__ */ new Map();
@@ -461,6 +466,10 @@ var __morbis_feature = (() => {
         lastRows = rows;
         const view = normalize(rows);
         const num = activeNumber(cur);
+        const g1 = cur.get('1')?.trim();
+        const g2 = cur.get('2')?.trim();
+        currentByJenis.tunggal = g1 && g1 !== '0' ? g1 : '';
+        currentByJenis.racikan = g2 && g2 !== '0' ? g2 : '';
         renumberByNomor.clear();
         renumberById.clear();
         const rr = renumberFarmasi(
