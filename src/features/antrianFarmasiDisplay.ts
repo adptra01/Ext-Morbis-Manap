@@ -62,6 +62,7 @@ type AntrianFarmasiDebugState = {
   lastDataCount: number | null;
   lastAnnouncement: string | null;
   audioUnlocked: boolean;
+  ttsMode: 'speech' | 'mp3' | 'local' | 'silent' | null;
 };
 
 declare global {
@@ -700,19 +701,84 @@ declare global {
       ringBell(finish);
       return;
     }
+    playVoice(item.text, finish);
+  }
+
+  // TTS berlapis (kiosk display: Chrome speechSynthesis diam tanpa user-gesture,
+  // voices bisa kosong — bell AudioContext ter-unlock oleh sound=Allow, TTS tidak).
+  // 1) speechSynthesis dgn voice id-ID online → onstart = suara jalan
+  // 2) voices kosong / tak mulai dlm 1.2s → MP3 Google TTS (Audio element, ikut
+  //    autoplay sound=Allow) — pola sama dgn antrianTools
+  // 3) MP3 gagal (internet mati) → voice lokal sistem (espeak) sbg jaring terakhir
+  function playVoice(text: string, onDone: () => void): void {
+    let done = false;
+    const fin = (): void => {
+      if (done) return;
+      done = true;
+      onDone();
+    };
+    const speakLocal = (): void => {
+      try {
+        updateDebugState({ ttsMode: 'local' });
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'id';
+        const lv =
+          synth
+            .getVoices()
+            .find((x) => (x.lang || '').toLowerCase().startsWith('id') && x.localService) ||
+          synth.getVoices().find((x) => x.localService);
+        if (lv) u.voice = lv;
+        u.onend = fin;
+        u.onerror = fin;
+        RealSpeak.call(synth, u);
+        setTimeout(fin, 20000);
+      } catch {
+        updateDebugState({ ttsMode: 'silent' });
+        fin();
+      }
+    };
+    const speakMp3 = (): void => {
+      try {
+        updateDebugState({ ttsMode: 'mp3' });
+        const a = new Audio(
+          'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=id&q=' +
+            encodeURIComponent(text),
+        );
+        a.onended = fin;
+        a.onerror = speakLocal;
+        void a.play().catch(speakLocal);
+        setTimeout(fin, 20000); // pengaman bila onended tak datang
+      } catch {
+        speakLocal();
+      }
+    };
     try {
-      const u = new SpeechSynthesisUtterance(item.text);
-      const v = synth.getVoices().find((x) => x.lang && x.lang.toLowerCase().startsWith('id'));
-      if (v) u.voice = v;
+      const u = new SpeechSynthesisUtterance(text);
+      updateDebugState({ ttsMode: 'speech' });
+      const online = synth
+        .getVoices()
+        .find((x) => (x.lang || '').toLowerCase().startsWith('id') && !x.localService);
+      if (online) u.voice = online;
       u.lang = 'id-ID';
       u.rate = 0.8;
       u.volume = 1;
-      u.onend = finish;
-      u.onerror = finish;
+      let started = false;
+      u.onstart = () => {
+        started = true;
+      };
+      u.onend = fin;
+      u.onerror = () => {
+        if (!started) speakMp3();
+        else fin();
+      };
       RealSpeak.call(synth, u);
-      setTimeout(finish, 20000);
+      // speechSynthesis macet (kiosk tanpa gesture): onstart tak akan datang → MP3
+      setTimeout(() => {
+        if (!started && !synth.speaking) speakMp3();
+        else if (!started) setTimeout(() => speakMp3(), 1500); // speaking tp bisu? coba MP3
+      }, 1200);
     } catch {
-      finish();
+      speakMp3();
     }
   }
 
@@ -928,6 +994,7 @@ declare global {
     lastDataCount: null,
     lastAnnouncement: null,
     audioUnlocked: false,
+    ttsMode: null,
   };
   function updateDebugState(patch: Partial<AntrianFarmasiDebugState>): void {
     if (!debugEnabled) return;
