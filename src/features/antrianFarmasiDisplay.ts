@@ -349,8 +349,11 @@ declare global {
   /* ============================================================
    * Display — render DOM, bedakan 3 kondisi (no data / error / ada).
    * ============================================================ */
-  const PANGGILAN_SEL = '#antrian-view';
-  const SIAP_SEL = '#antrian-penyerahan';
+  // Mapping panel display mengikuti NATIVE MORBIS (terverifikasi dari kode native
+  // view-call-websocet-v2): #antrian-penyerahan = Obat TUNGGAL, #antrian-view =
+  // Obat RACIKAN. Baseline lama terbalik → card/recall tunggal salah.
+  const PANGGILAN_SEL = '#antrian-penyerahan';
+  const SIAP_SEL = '#antrian-view';
 
   // Seksi card per jenis: ANGKA = current MORBIS (mengikuti panggilan terakhir,
   // '0'/kosong → '—'), NAMA = pasien terakhir per jenis (opsional).

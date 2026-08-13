@@ -282,8 +282,8 @@ var __morbis_feature = (() => {
       }
       return { panggilan, siapDiambil };
     }
-    const PANGGILAN_SEL = '#antrian-view';
-    const SIAP_SEL = '#antrian-penyerahan';
+    const PANGGILAN_SEL = '#antrian-penyerahan';
+    const SIAP_SEL = '#antrian-view';
     function cardSection(label, numText, nama) {
       return (
         '<div class="antrian-title">' +
