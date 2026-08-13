@@ -223,17 +223,36 @@ var __morbis_feature = (() => {
         (nama ? '<div class="antrian-rm">' + nama + '</div>' : '')
       );
     }
-    function highlightCalledRow(nama, nomor) {
+    function morbisToDispKode(jenis, morbisNum) {
+      if (!morbisNum || morbisNum === '0') return '';
+      const isR = jenis === 'racikan';
+      const row = lastRows.find(
+        (r) =>
+          (isR ? /racik/i.test(String(r.JENIS ?? '')) : !/racik/i.test(String(r.JENIS ?? ''))) &&
+          (String(r.NOMOR ?? '') === morbisNum || String(r.COUNTER ?? '') === morbisNum),
+      );
+      if (row && row.ID != null && renumberById.has(String(row.ID)))
+        return renumberById.get(String(row.ID));
+      return morbisNum;
+    }
+    function highlightCurrents() {
       const lc = document.querySelector('#list-content');
       if (!lc) return;
-      const lines = lc.querySelectorAll('dl');
-      for (const dl of lines) {
+      const targets = [currentByJenis.tunggal, currentByJenis.racikan].filter(
+        (n) => n && n !== '0',
+      );
+      const names = [
+        lastByJenis.tunggal?.namaPasien || '',
+        lastByJenis.racikan?.namaPasien || '',
+      ].filter(Boolean);
+      for (const dl of lc.querySelectorAll('dl')) {
+        const h4 = dl.querySelector('h4');
+        const num = ((h4?.textContent || '').match(/(\d+)$/) || [])[1] || '';
         const dd3 = dl.querySelector('dd.col-3, dd.col-md-3');
         const d = (dd3?.textContent || '').replace(/\s+/g, ' ').trim();
-        const h4 = dl.querySelector('h4');
-        const idTxt = (h4?.textContent || '').trim();
-        const match = (nama && d.includes(nama)) || (nomor && idTxt.includes(nomor));
-        dl.style.background = match ? '#fde68a' : '';
+        const matchNum = targets.some((n) => num && n === num);
+        const matchName = names.some((nm) => nm && d === nm);
+        dl.style.background = matchNum || matchName ? '#fde68a' : '';
       }
     }
     function renderDisplay(view, call) {
@@ -244,17 +263,17 @@ var __morbis_feature = (() => {
         if (atas)
           atas.innerHTML = cardSection(
             'Obat Tunggal',
-            currentByJenis.tunggal,
+            morbisToDispKode('tunggal', currentByJenis.tunggal),
             lastByJenis.tunggal?.namaPasien || '',
           );
         const bawah = document.querySelector(SIAP_SEL);
         if (bawah)
           bawah.innerHTML = cardSection(
             'Obat Racikan',
-            currentByJenis.racikan,
+            morbisToDispKode('racikan', currentByJenis.racikan),
             lastByJenis.racikan?.namaPasien || '',
           );
-        highlightCalledRow(call.namaPasien, call.nomor);
+        highlightCurrents();
       }
       onWeWrote();
     }

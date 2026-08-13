@@ -247,19 +247,42 @@ declare global {
     );
   }
 
-  // Highlight baris tabel #list-content yang namanya cocok dengan pasien dipanggil.
-  // Cocokkan nama (dd.col-3) atau nomor (h4 BT-{nomor}); nama diprioritaskan.
-  function highlightCalledRow(nama: string, nomor: string): void {
+  // Nomor display (R-xx/T-xx) utk current MORBIS per jenis: cari baris data_call
+  // yg nomor(NOMOR/COUNTER)-nya sama dgn current & jenis cocok → kode renumber.
+  // Tak ketemu → fallback ke nomer MORBIS (current). Pakai lastRows & renumberById.
+  function morbisToDispKode(jenis: 'tunggal' | 'racikan', morbisNum: string): string {
+    if (!morbisNum || morbisNum === '0') return '';
+    const isR = jenis === 'racikan';
+    const row = lastRows.find(
+      (r) =>
+        (isR ? /racik/i.test(String(r.JENIS ?? '')) : !/racik/i.test(String(r.JENIS ?? ''))) &&
+        (String(r.NOMOR ?? '') === morbisNum || String(r.COUNTER ?? '') === morbisNum),
+    );
+    if (row && row.ID != null && renumberById.has(String(row.ID)))
+      return renumberById.get(String(row.ID))!;
+    return morbisNum;
+  }
+
+  // Highlight baris tabel #list-content utk panggilan terakhir per jenis.
+  // Cocokkan NOMOR secara PERSIS (angka dari h4 BT-xx/UR-xx) dgn currentByJenis,
+  // atau via nama pasien terakhir per jenis — tandai kuning.
+  function highlightCurrents(): void {
     const lc = document.querySelector('#list-content');
     if (!lc) return;
-    const lines = lc.querySelectorAll('dl');
-    for (const dl of lines) {
+    const targets = [currentByJenis.tunggal, currentByJenis.racikan].filter((n) => n && n !== '0');
+    const names = [
+      lastByJenis.tunggal?.namaPasien || '',
+      lastByJenis.racikan?.namaPasien || '',
+    ].filter(Boolean);
+    for (const dl of lc.querySelectorAll('dl')) {
+      const h4 = dl.querySelector('h4');
+      const num = ((h4?.textContent || '').match(/(\d+)$/) || [])[1] || '';
       const dd3 = dl.querySelector('dd.col-3, dd.col-md-3');
       const d = (dd3?.textContent || '').replace(/\s+/g, ' ').trim();
-      const h4 = dl.querySelector('h4');
-      const idTxt = (h4?.textContent || '').trim();
-      const match = (nama && d.includes(nama)) || (nomor && idTxt.includes(nomor));
-      (dl as HTMLElement).style.background = match ? '#fde68a' : '';
+      // nomor harus PERSIS (bukan substring) — hindari 5 cocok 15/25/35
+      const matchNum = targets.some((n) => num && n === num);
+      const matchName = names.some((nm) => nm && d === nm);
+      (dl as HTMLElement).style.background = matchNum || matchName ? '#fde68a' : '';
     }
   }
 
@@ -281,17 +304,17 @@ declare global {
       if (atas)
         atas.innerHTML = cardSection(
           'Obat Tunggal',
-          currentByJenis.tunggal,
+          morbisToDispKode('tunggal', currentByJenis.tunggal),
           lastByJenis.tunggal?.namaPasien || '',
         );
       const bawah = document.querySelector<HTMLElement>(SIAP_SEL);
       if (bawah)
         bawah.innerHTML = cardSection(
           'Obat Racikan',
-          currentByJenis.racikan,
+          morbisToDispKode('racikan', currentByJenis.racikan),
           lastByJenis.racikan?.namaPasien || '',
         );
-      highlightCalledRow(call.namaPasien, call.nomor); // tandai baris dipanggil
+      highlightCurrents(); // tandai baris panggilan terakhir per jenis
     }
     onWeWrote(); // tandai DOM yang BARU SAJA extension tulis (bukan native)
   }
