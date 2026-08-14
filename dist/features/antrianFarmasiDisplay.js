@@ -68,6 +68,32 @@ var __morbis_feature = (() => {
     return st.tickets[id] ?? null;
   }
 
+  // src/features/shared/farmasiEvent.ts
+  function toRowState(r) {
+    const sp = String(r.STATUS_PANGGIL ?? '');
+    return {
+      id: String(r.ID ?? ''),
+      nomor: String(r.NOMOR ?? ''),
+      status: String(r.STATUS ?? ''),
+      statusPanggil: sp,
+      jenis: /racik/i.test(String(r.JENIS ?? '')) ? 'racikan' : 'tunggal',
+      nama: String(r.NAMA_PASIEN ?? ''),
+      diserahkan: r.WAKTU_PENYERAHAN != null && String(r.WAKTU_PENYERAHAN).trim() !== '',
+      called: sp === '1',
+    };
+  }
+  function resolveCalledId(rows, morbisNum, jenis) {
+    const cands = rows.filter(
+      (r) => r.nomor === morbisNum && r.jenis === jenis && r.status !== '0',
+    );
+    if (cands.length === 0) return null;
+    const called = cands.filter((r) => r.called);
+    const pick = (called.length > 0 ? called : cands)
+      .slice()
+      .sort((a, b) => Number(a.id) - Number(b.id) || a.id.localeCompare(b.id));
+    return pick[0].id;
+  }
+
   // src/features/shared/currentNumber.ts
   var CURRENT_RE = /current-number[^>]*data-counter="([^"]*)"[^>]*>([\s\S]*?)<\/span>/g;
   var ROW_RE = /<tr[^>]*data-nomor="([^"]*)"[^>]*>([\s\S]*?)<\/tr>/g;
@@ -299,14 +325,15 @@ var __morbis_feature = (() => {
     function kodeTampil(jenis, num) {
       if (!num || num === '0') return num;
       if (/^[TR]-\d+$/.test(num)) return num;
-      const isR = jenis === 'racikan';
-      const row = lastRows.find(
-        (r) =>
-          (isR ? /racik/i.test(String(r.JENIS ?? '')) : !/racik/i.test(String(r.JENIS ?? ''))) &&
-          (String(r.NOMOR ?? '') === num || String(r.COUNTER ?? '') === num),
-      );
-      if (row) return renumberCache.get(String(row.ID ?? '')) ?? nextToCallByJenis[jenis];
+      const id = resolveCalledId(morbisStates(), num, jenis);
+      if (id) {
+        const c = renumberCache.get(id);
+        if (c) return c;
+      }
       return nextToCallByJenis[jenis] || num;
+    }
+    function morbisStates() {
+      return lastRows.map((r) => toRowState(r)).filter((r) => r.id);
     }
     async function fetchCallData() {
       const res = await fetch(LIST_URL + '?type=data_call', {
@@ -382,12 +409,9 @@ var __morbis_feature = (() => {
     }
     function currentPatientName(jenis, morbisNum) {
       if (!morbisNum || morbisNum === '0') return '';
-      const isR = jenis === 'racikan';
-      const row = lastRows.find(
-        (r) =>
-          (isR ? /racik/i.test(String(r.JENIS ?? '')) : !/racik/i.test(String(r.JENIS ?? ''))) &&
-          (String(r.NOMOR ?? '') === morbisNum || String(r.COUNTER ?? '') === morbisNum),
-      );
+      const id = resolveCalledId(morbisStates(), morbisNum, jenis);
+      if (!id) return '';
+      const row = lastRows.find((r) => String(r.ID ?? '') === id);
       return row?.NAMA_PASIEN || '';
     }
     function readPanelNumber(sel) {
@@ -1055,6 +1079,7 @@ var __morbis_feature = (() => {
         return;
       }
       lastCalled = {
+        id: String(row.id || ''),
         jenis: row.jenis,
         nomor: String(row.nomor),
         namaPasien: String(row.namaPasien || ''),
@@ -1262,11 +1287,10 @@ var __morbis_feature = (() => {
       return false;
     }
     function matchPatient(rows, nomor) {
-      const byCounter = rows.find(
-        (r) => r && r.COUNTER != null && String(r.COUNTER).trim() === nomor,
-      );
-      const hit =
-        byCounter ?? rows.find((r) => r && r.NOMOR != null && String(r.NOMOR).trim() === nomor);
+      const states = rows.map((r) => toRowState(r)).filter((r) => r.id);
+      const id =
+        resolveCalledId(states, nomor, 'tunggal') ?? resolveCalledId(states, nomor, 'racikan');
+      const hit = id ? rows.find((r) => String(r.ID ?? '') === id) : null;
       return hit ? toViewRow(hit) : null;
     }
     function maybeAnnounce(view, call) {

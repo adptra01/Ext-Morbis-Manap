@@ -44,6 +44,7 @@ import { nextHealth, type HealthState } from './shared/wsHealth';
 // bridge (postMessage ke isolated world) — getQueueState/issuePending bridge.
 import { issuePending } from './shared/farmasiQueueBridge';
 import { getTicket } from './shared/farmasiQueue';
+import { resolveCalledId, toRowState, type MorbisRowState } from './shared/farmasiEvent';
 import {
   activeNumber,
   isReset,
@@ -320,21 +321,24 @@ declare global {
     }
   }
 
-  // Nomor TAMPILAN per jenis: NOMOR MORBIS → kode publik (T-42/R-42) agar cocok
-  // dengan kertas. Sudah berbentuk kode → biarkan. Baris tak ditemukan (selesai/
-  // hilang dari data_call / gap MORBIS) → fallback nomor publik antrian berikutnya
-  // per jenis (kelola sendiri) — BUKAN nomor MORBIS asli.
+  // Nomor TAMPILAN per jenis: current MORBIS → ID (resolveCalledId, isolasi
+  // duplikat NOMOR) → publicCode QueueManager (renumberCache). Sudah berbentuk
+  // kode → biarkan. Baris tak ditemukan / tak bisa resolve → fallback nomor
+  // publik antrian berikutnya per jenis (kelola sendiri) — BUKAN nomor MORBIS.
   function kodeTampil(jenis: 'tunggal' | 'racikan', num: string): string {
     if (!num || num === '0') return num;
     if (/^[TR]-\d+$/.test(num)) return num;
-    const isR = jenis === 'racikan';
-    const row = lastRows.find(
-      (r) =>
-        (isR ? /racik/i.test(String(r.JENIS ?? '')) : !/racik/i.test(String(r.JENIS ?? ''))) &&
-        (String(r.NOMOR ?? '') === num || String(r.COUNTER ?? '') === num),
-    );
-    if (row) return renumberCache.get(String(row.ID ?? '')) ?? nextToCallByJenis[jenis];
+    const id = resolveCalledId(morbisStates(), num, jenis);
+    if (id) {
+      const c = renumberCache.get(id);
+      if (c) return c;
+    }
     return nextToCallByJenis[jenis] || num;
+  }
+
+  // Baris MORBIS (lastRows) → state event bridge (untuk resolveCalledId).
+  function morbisStates(): MorbisRowState[] {
+    return lastRows.map((r) => toRowState(r)).filter((r) => r.id);
   }
 
   /* ============================================================
@@ -457,16 +461,14 @@ declare global {
     );
   }
 
-  // Nama pasien utk current MORBIS per jenis: cari baris data_call yg nomor
-  // (NOMOR/COUNTER)-nya sama dgn current & jenis cocok → nama pasiennya.
+  // Nama pasien utk current MORBIS per jenis: resolve current → ID (isolasi
+  // duplikat NOMOR), lalu ambil nama dari baris ID itu — BUKAN cari baris
+  // pertama yang NOMOR/COUNTER-nya cocok (bisa salah pasien pd duplikat).
   function currentPatientName(jenis: 'tunggal' | 'racikan', morbisNum: string): string {
     if (!morbisNum || morbisNum === '0') return '';
-    const isR = jenis === 'racikan';
-    const row = lastRows.find(
-      (r) =>
-        (isR ? /racik/i.test(String(r.JENIS ?? '')) : !/racik/i.test(String(r.JENIS ?? ''))) &&
-        (String(r.NOMOR ?? '') === morbisNum || String(r.COUNTER ?? '') === morbisNum),
-    );
+    const id = resolveCalledId(morbisStates(), morbisNum, jenis);
+    if (!id) return '';
+    const row = lastRows.find((r) => String(r.ID ?? '') === id);
     return row?.NAMA_PASIEN || '';
   }
 
@@ -895,7 +897,15 @@ declare global {
   // Recall memakai state ini — BUKAN "pasien terakhir yang ditemukan di DOM"
   // — supaya nama yang diumumkan saat panggil ulang = pasien yang dipanggil.
   // Di-reset saat Reset Antrian (state lama tidak valid lagi).
-  let lastCalled: { jenis: 'tunggal' | 'racikan'; nomor: string; namaPasien: string } | null = null;
+  // State pasien TERAKHIR yang benar-benar dipanggil (id = MORBIS ID) —
+  // sumber recall. Recall pakai state ini (bukan cari ulang di DOM/index)
+  // supaya publicCode yang di-umumkan = publicCode panggilan asli (frozen).
+  let lastCalled: {
+    id: string;
+    jenis: 'tunggal' | 'racikan';
+    nomor: string; // publicCode (T-02)
+    namaPasien: string;
+  } | null = null;
 
   // Bersihkan state panggilan saat Reset Antrian (current-number turun drastis).
   // Dedup signature lama tidak valid → panggilan berikutnya pasti di-announce.
@@ -1403,6 +1413,7 @@ declare global {
     // Recall memakai state ini (bukan "pasien terakhir di DOM") supaya nama
     // pasien yang di-umumkan saat panggil ulang = pasien yang dipanggil.
     lastCalled = {
+      id: String(row.id || ''),
       jenis: row.jenis,
       nomor: String(row.nomor),
       namaPasien: String(row.namaPasien || ''),
@@ -1690,15 +1701,15 @@ declare global {
     return false;
   }
 
-  // Cocokkan nomor aktif ke record data_call: COUNTER == nomor (preferensi),
-  // fallback NOMOR == nomor. Status STATUS_PANGGIL tidak dipakai sebagai filter —
-  // data_call bisa basi; current-number adalah sumber kebenaran urutan panggil.
+  // Cocokkan nomor aktif ke record data_call: resolve current → ID (isolasi
+  // duplikat NOMOR; prefer baris called, id terkecil utk duplikat). Status
+  // STATUS_PANGGIL dipakai sebagai preferensi — data_call bisa basi; current-
+  // number adalah sumber kebenaran urutan panggil.
   function matchPatient(rows: RawRow[], nomor: string): ViewRow | null {
-    const byCounter = rows.find(
-      (r) => r && r.COUNTER != null && String(r.COUNTER).trim() === nomor,
-    );
-    const hit =
-      byCounter ?? rows.find((r) => r && r.NOMOR != null && String(r.NOMOR).trim() === nomor);
+    const states = rows.map((r) => toRowState(r)).filter((r) => r.id);
+    const id =
+      resolveCalledId(states, nomor, 'tunggal') ?? resolveCalledId(states, nomor, 'racikan');
+    const hit = id ? rows.find((r) => String(r.ID ?? '') === id) : null;
     return hit ? toViewRow(hit) : null;
   }
 
