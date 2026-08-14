@@ -7,13 +7,13 @@ var __morbis_feature = (() => {
   }
 
   // src/features/shared/farmasiQueue.ts
-  var KEY = 'farmasiQueueV1';
+  var KEY = 'farmasiQueueV2';
   function sessionOf(waktu) {
     if (waktu && /^\d{4}-\d{2}-\d{2}/.test(waktu)) return waktu.slice(0, 10);
     return /* @__PURE__ */ new Date().toISOString().slice(0, 10);
   }
   function empty(session) {
-    return { session, next: 1, tickets: {} };
+    return { session, nextByJenis: { tunggal: 1, racikan: 1 }, tickets: {} };
   }
   async function getQueueState() {
     const today = sessionOf();
@@ -27,15 +27,36 @@ var __morbis_feature = (() => {
   function codeFor(num, isR) {
     return (isR ? 'R-' : 'T-') + String(num).padStart(2, '0');
   }
+  function statusFromMorbsi(status, statusPanggil) {
+    switch (String(status ?? '')) {
+      case '0':
+        return 'CANCELLED';
+      case '1':
+        return 'WAITING';
+      case '2':
+      case '3':
+        return 'PROCESSING';
+      case '4':
+        return String(statusPanggil ?? '') === '1' ? 'CALLED' : 'READY';
+      default:
+        return 'ISSUED';
+    }
+  }
   function assignPending(st, rows) {
     const pending = rows
       .filter((r) => r.id && !r.selesai && st.tickets[r.id] == null)
       .sort((a, b) => (a.waktu || '').localeCompare(b.waktu || ''));
     let count = 0;
     for (const r of pending) {
-      const type = isRacikanJenis(r.jenis) ? 'racikan' : 'tunggal';
-      const num = st.next++;
-      st.tickets[r.id] = { num, code: codeFor(num, type === 'racikan'), type };
+      const isR = isRacikanJenis(r.jenis);
+      const num = st.nextByJenis[isR ? 'racikan' : 'tunggal']++;
+      st.tickets[r.id] = {
+        num,
+        code: codeFor(num, isR),
+        type: isR ? 'racikan' : 'tunggal',
+        status: statusFromMorbsi(r.status, r.statusPanggil),
+        issuedAt: /* @__PURE__ */ new Date().toISOString(),
+      };
       count++;
     }
     return { st, count };
