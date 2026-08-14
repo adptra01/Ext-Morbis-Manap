@@ -16,6 +16,9 @@ import type { QueueState, QueueRow } from './farmasiQueue';
 
 const REQ_SOURCE = 'MORBIS-FARMASI';
 const RES_SOURCE = 'MORBIS-FARMASI-BRIDGE';
+// Bila extension di-reload, bridge (isolated) mati dan tidak akan membalas —
+// timeout supaya display tidak menggantung menunggu reply selamanya.
+const REPLY_TIMEOUT_MS = 4000;
 
 function post<T>(type: string, payload: Record<string, unknown>): Promise<T> {
   const id = 'q-' + Date.now() + '-' + Math.floor(Math.random() * 1e6);
@@ -33,10 +36,15 @@ function post<T>(type: string, payload: Record<string, unknown>): Promise<T> {
       };
       if (!d || d.source !== RES_SOURCE || d.type !== type || d.id !== id) return;
       window.removeEventListener('message', onMsg);
+      clearTimeout(timer);
       if (!d.ok) return reject(new Error(d.error || type + ' gagal'));
       resolve(d as Record<string, unknown> & T as T);
     };
     window.addEventListener('message', onMsg);
+    const timer = window.setTimeout(() => {
+      window.removeEventListener('message', onMsg);
+      reject(new Error('farmasiQueueBridge: no reply (extension reloaded?)'));
+    }, REPLY_TIMEOUT_MS);
     window.postMessage({ source: REQ_SOURCE, type, id, ...payload }, '*');
   });
 }

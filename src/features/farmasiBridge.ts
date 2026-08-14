@@ -32,6 +32,10 @@ import { getQueueState, issuePending, reset } from './shared/farmasiQueue';
 
     if (data.type === 'TTS_REQUEST') {
       if (typeof data.text !== 'string' || !data.text) return;
+      if (typeof chrome?.runtime?.sendMessage !== 'function') {
+        reply('TTS_RESULT', { ok: false, reason: 'message-error extension context invalidated' });
+        return;
+      }
       // Callback-style (bukan promise): di MV3 content script, promise
       // sendMessage bisa resolve undefined walau SW menjawab — callback +
       // chrome.runtime.lastError memberi alasan eksplisit.
@@ -54,7 +58,11 @@ import { getQueueState, issuePending, reset } from './shared/farmasiQueue';
     }
 
     if (data.type === 'QUEUE_GET_STATE') {
-      getQueueState().then((state) => reply('QUEUE_GET_STATE', { ok: true, state }));
+      getQueueState()
+        .then((state) => reply('QUEUE_GET_STATE', { ok: true, state }))
+        .catch((err: unknown) =>
+          reply('QUEUE_GET_STATE', { ok: false, error: String((err as Error).message ?? err) }),
+        );
       return;
     }
     if (data.type === 'QUEUE_ISSUE') {

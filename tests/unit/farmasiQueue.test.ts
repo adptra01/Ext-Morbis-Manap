@@ -26,6 +26,7 @@ import {
 // stub chrome.storage.local (QueueManager persist di sana)
 const store = new Map<string, unknown>();
 (globalThis as Record<string, unknown>).chrome = {
+  runtime: { id: 'test-ctx' }, // assertCtxAlive butuh runtime.id
   storage: {
     local: {
       get: vi.fn(async (keys: string) => ({ [keys]: store.get(keys) })),

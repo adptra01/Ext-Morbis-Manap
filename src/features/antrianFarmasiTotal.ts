@@ -40,6 +40,19 @@ import { resolveCalledId, toRowState } from './shared/farmasiEvent';
   async function fixCurrents(): Promise<void> {
     const rows = document.querySelectorAll<HTMLElement>(ROWS_SEL);
     if (rows.length === 0) return;
+    try {
+      await syncPublicNumbers(rows);
+    } catch (err) {
+      // konteks extension invalid (reload) / storage error — biarkan angka
+      // MORBIS native tampil, jangan spam error dari MutationObserver
+      const msg = String((err as Error).message ?? err);
+      if (!/context invalidated|no reply/i.test(msg)) {
+        console.warn('[AntrianFarmasiTotal] sync current gagal:', msg);
+      }
+    }
+  }
+
+  async function syncPublicNumbers(rows: NodeListOf<HTMLElement>): Promise<void> {
     // issue nomor publik utk semua baris tabel (idempoten; id lama tak diubah)
     // Atribut DOM (curl 2026-08-12): tr[data-id][data-nomor][data-jenis],
     // baris yang dipanggil ditandai class "status-called".

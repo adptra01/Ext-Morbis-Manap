@@ -345,11 +345,13 @@ declare global {
    * API Adapter — fetch data_call (nama pasien) + current-number.
    * ============================================================ */
   async function fetchCallData(): Promise<RawRow[]> {
-    // GET (bukan POST): endpoint mengembalikan data hanya utk GET ?type=data_call.
-    // Verifikasi kiosk: GET → 3 record; POST body type=data_call → HTTP 200 tapi [].
-    const res = await fetch(LIST_URL + '?type=data_call', {
-      method: 'GET',
+    // Kontrak endpoint (verifikasi 2026-08-14): POST form `type=data_call`
+    // — SAMA dgn panggilan native display. GET ?type=data_call kena PHP
+    // "Undefined index: id_unit" (PHP 8 strict) → HTML, bukan JSON.
+    const res = await fetch(LIST_URL, {
+      method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+      body: 'type=data_call',
       cache: 'no-store', // data_call juga harus segar (nama pasien recall)
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);

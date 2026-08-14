@@ -34,6 +34,34 @@ import { isRacikanJenis } from './farmasiRenumber';
 
 const KEY = 'farmasiQueueV2';
 
+// --- Guard konteks extension ----------------------------------------------
+// Saat extension di-reload (dev/update), content script LAMA masih hidup di tab
+// yang sudah terbuka tapi chrome.* sudah invalid — chrome.storage lalu melempar
+// "Extension context invalidated." Deteksi via chrome.runtime.id (undefined
+// setelah invalidated) dan lempar error bernama supaya caller bisa berhenti
+// polling alih-alih unhandled rejection berulang.
+function assertCtxAlive(): void {
+  const ok = typeof chrome !== 'undefined' && !!chrome.runtime?.id;
+  if (!ok) {
+    throw new Error('farmasiQueue: extension context invalidated (extension reloaded)');
+  }
+}
+
+async function storageGet(key: string): Promise<Record<string, unknown>> {
+  assertCtxAlive();
+  return chrome.storage.local.get(key);
+}
+
+async function storageSet(items: Record<string, unknown>): Promise<void> {
+  assertCtxAlive();
+  await chrome.storage.local.set(items);
+}
+
+async function storageRemove(key: string): Promise<void> {
+  assertCtxAlive();
+  await chrome.storage.local.remove(key);
+}
+
 // --- Locking: mutual exclusion antar-tab pada storage.local -------------
 // Storage.local get/set atomic per-call, tapi read-modify-write TIDAK atomic.
 // Lock token+timestamp+TTL: tab mati di tengah mutasi → lock kedaluwarsa
@@ -49,12 +77,12 @@ async function acquireLock(): Promise<string> {
   const token = `${Date.now()}:${Math.random().toString(36).slice(2)}`;
   const deadline = Date.now() + LOCK_DEADLINE_MS;
   for (;;) {
-    const res = await chrome.storage.local.get(LOCK_KEY);
+    const res = await storageGet(LOCK_KEY);
     const cur = res[LOCK_KEY] as Lock | undefined;
     if (!cur || Date.now() - cur.ts > LOCK_TTL_MS) {
       // CAS: klaim lock, lalu verifikasi milik kita (penulis terakhir menang)
-      await chrome.storage.local.set({ [LOCK_KEY]: { token, ts: Date.now() } });
-      const check = await chrome.storage.local.get(LOCK_KEY);
+      await storageSet({ [LOCK_KEY]: { token, ts: Date.now() } });
+      const check = await storageGet(LOCK_KEY);
       if ((check[LOCK_KEY] as Lock | undefined)?.token === token) return token;
     }
     if (Date.now() > deadline) throw new Error('farmasiQueue: lock timeout');
@@ -63,9 +91,9 @@ async function acquireLock(): Promise<string> {
 }
 
 async function releaseLock(token: string): Promise<void> {
-  const res = await chrome.storage.local.get(LOCK_KEY);
+  const res = await storageGet(LOCK_KEY);
   if ((res[LOCK_KEY] as Lock | undefined)?.token === token) {
-    await chrome.storage.local.remove(LOCK_KEY);
+    await storageRemove(LOCK_KEY);
   }
 }
 
@@ -128,13 +156,13 @@ export function empty(session: string): QueueState {
 /** Baca state; jika session berubah → session baru (counter=1, tickets bersih). */
 export async function getQueueState(): Promise<QueueState> {
   const today = sessionOf();
-  const res = await chrome.storage.local.get(KEY);
+  const res = await storageGet(KEY);
   const st = (res[KEY] as QueueState | undefined) ?? empty(today);
   return st.session === today ? st : empty(today);
 }
 
 async function save(st: QueueState): Promise<void> {
-  await chrome.storage.local.set({ [KEY]: st });
+  await storageSet({ [KEY]: st });
 }
 
 function codeFor(num: number, isR: boolean): string {

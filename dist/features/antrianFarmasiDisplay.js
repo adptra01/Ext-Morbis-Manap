@@ -44,6 +44,7 @@ var __morbis_feature = (() => {
   // src/features/shared/farmasiQueueBridge.ts
   var REQ_SOURCE = 'MORBIS-FARMASI';
   var RES_SOURCE = 'MORBIS-FARMASI-BRIDGE';
+  var REPLY_TIMEOUT_MS = 4e3;
   function post(type, payload) {
     const id = 'q-' + Date.now() + '-' + Math.floor(Math.random() * 1e6);
     return new Promise((resolve, reject) => {
@@ -52,10 +53,15 @@ var __morbis_feature = (() => {
         const d = event.data;
         if (!d || d.source !== RES_SOURCE || d.type !== type || d.id !== id) return;
         window.removeEventListener('message', onMsg);
+        clearTimeout(timer);
         if (!d.ok) return reject(new Error(d.error || type + ' gagal'));
         resolve(d);
       };
       window.addEventListener('message', onMsg);
+      const timer = window.setTimeout(() => {
+        window.removeEventListener('message', onMsg);
+        reject(new Error('farmasiQueueBridge: no reply (extension reloaded?)'));
+      }, REPLY_TIMEOUT_MS);
       window.postMessage({ source: REQ_SOURCE, type, id, ...payload }, '*');
     });
   }
@@ -336,9 +342,10 @@ var __morbis_feature = (() => {
       return lastRows.map((r) => toRowState(r)).filter((r) => r.id);
     }
     async function fetchCallData() {
-      const res = await fetch(LIST_URL + '?type=data_call', {
-        method: 'GET',
+      const res = await fetch(LIST_URL, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+        body: 'type=data_call',
         cache: 'no-store',
         // data_call juga harus segar (nama pasien recall)
       });

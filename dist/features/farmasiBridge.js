@@ -8,6 +8,24 @@ var __morbis_feature = (() => {
 
   // src/features/shared/farmasiQueue.ts
   var KEY = 'farmasiQueueV2';
+  function assertCtxAlive() {
+    const ok = typeof chrome !== 'undefined' && !!chrome.runtime?.id;
+    if (!ok) {
+      throw new Error('farmasiQueue: extension context invalidated (extension reloaded)');
+    }
+  }
+  async function storageGet(key) {
+    assertCtxAlive();
+    return chrome.storage.local.get(key);
+  }
+  async function storageSet(items) {
+    assertCtxAlive();
+    await chrome.storage.local.set(items);
+  }
+  async function storageRemove(key) {
+    assertCtxAlive();
+    await chrome.storage.local.remove(key);
+  }
   var LOCK_KEY = 'farmasiQueueV2:lock';
   var LOCK_TTL_MS = 1e4;
   var LOCK_DEADLINE_MS = 3e4;
@@ -16,11 +34,11 @@ var __morbis_feature = (() => {
     const token = `${Date.now()}:${Math.random().toString(36).slice(2)}`;
     const deadline = Date.now() + LOCK_DEADLINE_MS;
     for (;;) {
-      const res = await chrome.storage.local.get(LOCK_KEY);
+      const res = await storageGet(LOCK_KEY);
       const cur = res[LOCK_KEY];
       if (!cur || Date.now() - cur.ts > LOCK_TTL_MS) {
-        await chrome.storage.local.set({ [LOCK_KEY]: { token, ts: Date.now() } });
-        const check = await chrome.storage.local.get(LOCK_KEY);
+        await storageSet({ [LOCK_KEY]: { token, ts: Date.now() } });
+        const check = await storageGet(LOCK_KEY);
         if (check[LOCK_KEY]?.token === token) return token;
       }
       if (Date.now() > deadline) throw new Error('farmasiQueue: lock timeout');
@@ -28,9 +46,9 @@ var __morbis_feature = (() => {
     }
   }
   async function releaseLock(token) {
-    const res = await chrome.storage.local.get(LOCK_KEY);
+    const res = await storageGet(LOCK_KEY);
     if (res[LOCK_KEY]?.token === token) {
-      await chrome.storage.local.remove(LOCK_KEY);
+      await storageRemove(LOCK_KEY);
     }
   }
   async function withLock(fn) {
@@ -50,12 +68,12 @@ var __morbis_feature = (() => {
   }
   async function getQueueState() {
     const today = sessionOf();
-    const res = await chrome.storage.local.get(KEY);
+    const res = await storageGet(KEY);
     const st = res[KEY] ?? empty(today);
     return st.session === today ? st : empty(today);
   }
   async function save(st) {
-    await chrome.storage.local.set({ [KEY]: st });
+    await storageSet({ [KEY]: st });
   }
   function codeFor(num, isR) {
     return (isR ? 'R-' : 'T-') + String(num).padStart(2, '0');
@@ -124,6 +142,10 @@ var __morbis_feature = (() => {
       };
       if (data.type === 'TTS_REQUEST') {
         if (typeof data.text !== 'string' || !data.text) return;
+        if (typeof chrome?.runtime?.sendMessage !== 'function') {
+          reply('TTS_RESULT', { ok: false, reason: 'message-error extension context invalidated' });
+          return;
+        }
         chrome.runtime.sendMessage({ type: 'TTS_LOCAL', text: data.text }, (r) => {
           const err = chrome.runtime.lastError
             ? 'message-error ' + String(chrome.runtime.lastError.message).slice(0, 60)
@@ -142,7 +164,11 @@ var __morbis_feature = (() => {
         return;
       }
       if (data.type === 'QUEUE_GET_STATE') {
-        getQueueState().then((state) => reply('QUEUE_GET_STATE', { ok: true, state }));
+        getQueueState()
+          .then((state) => reply('QUEUE_GET_STATE', { ok: true, state }))
+          .catch((err) =>
+            reply('QUEUE_GET_STATE', { ok: false, error: String(err.message ?? err) }),
+          );
         return;
       }
       if (data.type === 'QUEUE_ISSUE') {
