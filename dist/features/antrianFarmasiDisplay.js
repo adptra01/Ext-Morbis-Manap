@@ -41,30 +41,31 @@ var __morbis_feature = (() => {
     };
   }
 
-  // src/features/shared/farmasiRenumber.ts
-  var RACIKAN_RE = /racik/i;
-  function isRacikanJenis(jenis) {
-    return !!jenis && RACIKAN_RE.test(jenis);
+  // src/features/shared/farmasiQueueBridge.ts
+  var REQ_SOURCE = 'MORBIS-FARMASI';
+  var RES_SOURCE = 'MORBIS-FARMASI-BRIDGE';
+  function post(type, payload) {
+    const id = 'q-' + Date.now() + '-' + Math.floor(Math.random() * 1e6);
+    return new Promise((resolve, reject) => {
+      const onMsg = (event) => {
+        if (event.source !== window) return;
+        const d = event.data;
+        if (!d || d.source !== RES_SOURCE || d.type !== type || d.id !== id) return;
+        window.removeEventListener('message', onMsg);
+        if (!d.ok) return reject(new Error(d.error || type + ' gagal'));
+        resolve(d);
+      };
+      window.addEventListener('message', onMsg);
+      window.postMessage({ source: REQ_SOURCE, type, id, ...payload }, '*');
+    });
   }
-  function ts(w) {
-    if (!w) return 0;
-    const n = Date.parse(w.replace(' ', 'T'));
-    return Number.isFinite(n) ? n : 0;
+  async function issuePending(rows) {
+    return post('QUEUE_ISSUE', { rows });
   }
-  function renumberFarmasi(rows) {
-    const sorted = [...rows].sort((a, b) => ts(a.waktu) - ts(b.waktu));
-    const byId = /* @__PURE__ */ new Map();
-    const urutan = [];
-    let r = 0;
-    let t = 0;
-    for (const row of sorted) {
-      if (!row.id) continue;
-      const isR = isRacikanJenis(row.jenis);
-      const kode = isR ? 'R-' + String(++r).padStart(2, '0') : 'T-' + String(++t).padStart(2, '0');
-      byId.set(String(row.id), kode);
-      urutan.push(kode);
-    }
-    return { byId, urutan };
+
+  // src/features/shared/farmasiQueue.ts
+  function getTicket(st, id) {
+    return st.tickets[id] ?? null;
   }
 
   // src/features/shared/currentNumber.ts
@@ -254,16 +255,46 @@ var __morbis_feature = (() => {
     const WATCH_MS = 1500;
     const STALE_MAX = 2;
     let renumberCache = /* @__PURE__ */ new Map();
-    function updateRenumber(rows) {
-      renumberCache = renumberFarmasi(
+    const nextToCallByJenis = { tunggal: '', racikan: '' };
+    async function updateRenumber(rows) {
+      const { state: st } = await issuePending(
         rows.map((r) => ({
           id: String(r.ID ?? ''),
           jenis: r.JENIS ?? null,
-          counter: r.COUNTER ?? null,
-          status: r.STATUS ?? null,
           waktu: r.WAKTU ?? null,
+          // display tahu kapan baris selesai (WAKTU_PENYERAHAN) — skip utk next-to-call
+          selesai:
+            (r.WAKTU_PENYERAHAN != null && String(r.WAKTU_PENYERAHAN).trim() !== '') || false,
         })),
-      ).byId;
+      );
+      const next2 = /* @__PURE__ */ new Map();
+      for (const r of rows) {
+        const id = String(r.ID ?? '');
+        const t = getTicket(st, id);
+        if (t) next2.set(id, t.code);
+      }
+      renumberCache = next2;
+      for (const j of ['tunggal', 'racikan']) {
+        nextToCallByJenis[j] = '';
+        const isR = j === 'racikan';
+        const min = rows
+          .filter(
+            (r) =>
+              r &&
+              String(r.ID ?? '') !== '' &&
+              (r.WAKTU_PENYERAHAN == null || String(r.WAKTU_PENYERAHAN).trim() === '') &&
+              (isR
+                ? /racik/i.test(String(r.JENIS ?? ''))
+                : !/racik/i.test(String(r.JENIS ?? ''))) &&
+              next2.get(String(r.ID ?? '')),
+          )
+          .map((r) => ({
+            id: String(r.ID ?? ''),
+            num: getTicket(st, String(r.ID ?? ''))?.num ?? Infinity,
+          }))
+          .sort((a, b) => a.num - b.num)[0];
+        if (min) nextToCallByJenis[j] = next2.get(min.id) ?? '';
+      }
     }
     function kodeTampil(jenis, num) {
       if (!num || num === '0') return num;
@@ -274,8 +305,8 @@ var __morbis_feature = (() => {
           (isR ? /racik/i.test(String(r.JENIS ?? '')) : !/racik/i.test(String(r.JENIS ?? ''))) &&
           (String(r.NOMOR ?? '') === num || String(r.COUNTER ?? '') === num),
       );
-      if (!row) return num;
-      return renumberCache.get(String(row.ID ?? '')) ?? num;
+      if (row) return renumberCache.get(String(row.ID ?? '')) ?? nextToCallByJenis[jenis];
+      return nextToCallByJenis[jenis] || num;
     }
     async function fetchCallData() {
       const res = await fetch(LIST_URL + '?type=data_call', {
@@ -475,7 +506,8 @@ var __morbis_feature = (() => {
       try {
         const [{ current: cur }, rows] = await Promise.all([fetchCurrentNumber(), fetchCallData()]);
         lastRows = rows;
-        updateRenumber(rows);
+        await updateRenumber(rows);
+        updateDebugState({ lastPoll: Date.now(), lastDataCount: rows.length });
         const g1 = cur.get('1')?.trim();
         const g2 = cur.get('2')?.trim();
         currentByJenis.tunggal = g1 && g1 !== '0' ? g1 : '';
@@ -551,39 +583,14 @@ var __morbis_feature = (() => {
           }
           prevByJenis[j] = cur2 || '';
         }
-        if (!health.nativeActive) {
-          const kodeT = kodeTampil('tunggal', currentByJenis.tunggal);
-          const kodeR = kodeTampil('racikan', currentByJenis.racikan);
-          const atasRecallNow =
-            !justReset &&
-            readPanelNumber(PANGGILAN_SEL) &&
-            readPanelNumber(PANGGILAN_SEL) !== currentByJenis.tunggal &&
-            readPanelNumber(PANGGILAN_SEL) !== writtenByUs.tunggal;
-          const bawahRecallNow =
-            !justReset &&
-            readPanelNumber(SIAP_SEL) &&
-            readPanelNumber(SIAP_SEL) !== currentByJenis.racikan &&
-            readPanelNumber(SIAP_SEL) !== writtenByUs.racikan;
-          const atas = atasRecallNow ? null : document.querySelector(PANGGILAN_SEL);
-          if (atas)
-            atas.innerHTML = cardSection(
-              'Obat Tunggal',
-              kodeT,
-              currentPatientName('tunggal', currentByJenis.tunggal),
-            );
-          const bawah = bawahRecallNow ? null : document.querySelector(SIAP_SEL);
-          if (bawah)
-            bawah.innerHTML = cardSection(
-              'Obat Racikan',
-              kodeR,
-              currentPatientName('racikan', currentByJenis.racikan),
-            );
+        {
+          renderCardPanel();
           highlightCurrents();
-          writtenByUs.tunggal = kodeT;
-          writtenByUs.racikan = kodeR;
+          writtenByUs.tunggal =
+            nextToCallByJenis.tunggal || kodeTampil('tunggal', currentByJenis.tunggal);
+          writtenByUs.racikan =
+            nextToCallByJenis.racikan || kodeTampil('racikan', currentByJenis.racikan);
           onWeWrote();
-          setStatus('ok');
-        } else {
           setStatus('ok');
         }
       } catch {
@@ -591,6 +598,7 @@ var __morbis_feature = (() => {
       }
     }
     function renderDisplay(view, call) {
+      renderCardPanel(view);
       if (call) {
         lastByJenis[call.jenis] = call;
         seedLastByJenis(view);
@@ -624,6 +632,24 @@ var __morbis_feature = (() => {
         writtenByUs.racikan = kodeR;
       }
       onWeWrote();
+    }
+    function renderCardPanel(_view) {
+      const atas = document.querySelector(PANGGILAN_SEL);
+      const bawah = document.querySelector(SIAP_SEL);
+      const t = nextToCallByJenis.tunggal;
+      const r = nextToCallByJenis.racikan;
+      if (atas)
+        atas.innerHTML = cardSection(
+          'Obat Tunggal',
+          t || currentByJenis.tunggal,
+          t ? currentPatientName('tunggal', t) : '',
+        );
+      if (bawah)
+        bawah.innerHTML = cardSection(
+          'Obat Racikan',
+          r || currentByJenis.racikan,
+          r ? currentPatientName('racikan', r) : '',
+        );
     }
     function seedLastByJenis(view) {
       for (const row of view.panggilan) {
@@ -914,7 +940,7 @@ var __morbis_feature = (() => {
         updateDebugState({ ttsMode: 'local', ttsEngine: 'local-service:8765' });
         return;
       }
-      let ttsFailDetail = 'local-service: ' + svc.reason;
+      const ttsFailDetail = 'local-service: ' + svc.reason;
       updateDebugState({ ttsLastError: ttsFailDetail });
       const idLocal = pickVoice('id-local');
       if (idLocal) {
@@ -1164,7 +1190,7 @@ var __morbis_feature = (() => {
         ladderIdx = 0;
         updateDebugState({ lastPoll: Date.now(), lastDataCount: rows.length });
         lastRows = rows;
-        updateRenumber(rows);
+        await updateRenumber(rows);
         const view = normalize(rows);
         const num = activeNumber(cur);
         const g1 = cur.get('1')?.trim();

@@ -43,3 +43,4 @@ pages/
 # agent-browser local browser profile (state/data)
 .agent-browser-profile/
 .agent-notes/
+tts_cache/*

@@ -8,9 +8,9 @@
  *   (1+ lembar A4, potong) utk diberikan ke pasien sesuai urut.
  *
  * Prinsip: tidak menulis balik ke DB MORBIS (zero-risk ke data resep).
- * Nomor rapi berlaku utk TAMPILAN/cetak/panggilan saja.
+ * Nomor publik berlaku utk TAMPILAN/cetak/panggilan saja.
  */
-import { renumberFarmasi, type ResetRow } from './shared/farmasiRenumber';
+import { getQueueState, issuePending, getTicket, type QueueTicket } from './shared/farmasiQueue';
 
 const LIST_URL = '/public/antrian-farmasi-v2/list-antrian-v2';
 
@@ -22,6 +22,29 @@ async function fetchRows(): Promise<Array<Record<string, unknown>>> {
   const j = (await res.json()) as Array<Record<string, unknown>>;
   if (!Array.isArray(j)) throw new Error('bukan array');
   return j;
+}
+
+/** Issue nomor publik utk semua baris lalu kembalikan peta id→tiket (code+jenis). */
+async function loadTickets(
+  rows: Array<Record<string, unknown>>,
+): Promise<Map<string, QueueTicket>> {
+  await issuePending(
+    rows.map((r) => ({
+      id: String(r.ID ?? ''),
+      jenis: (r.JENIS as string | null) ?? null,
+      waktu: (r.WAKTU as string | null) ?? null,
+      // konsol issue cuma tahu antrian aktif; baris tak-selesai dianggap belum selesai
+      selesai: false,
+    })),
+  );
+  const st = await getQueueState();
+  const m = new Map<string, QueueTicket>();
+  for (const r of rows) {
+    const tid = String(r.ID ?? '');
+    const t = getTicket(st, tid);
+    if (t) m.set(tid, t);
+  }
+  return m;
 }
 
 function buildPanel(): HTMLDivElement {
@@ -58,17 +81,11 @@ function buildToggle(): HTMLButtonElement {
   return b;
 }
 
-function renderRows(rows: Array<Record<string, unknown>>): void {
-  const { byId, urutan } = renumberFarmasi(
-    rows.map((r) => ({
-      id: String(r.ID ?? ''),
-      counter: (r.COUNTER as string | number | null) ?? null,
-      nomor: (r.NOMOR as string | number | null) ?? null,
-      jenis: (r.JENIS as string | null) ?? null,
-      status: (r.STATUS as string | null) ?? null,
-      waktu: (r.WAKTU as string | null) ?? null,
-    })),
-  );
+async function renderRows(rows: Array<Record<string, unknown>>): Promise<void> {
+  const tickets = await loadTickets(rows);
+  // urutan tampil = urutan tiket publik (num naik) — sama dgn urutan WAKTU antrian
+  const urutan = [...tickets.entries()].sort((a, b) => a[1].num - b[1].num).map(([, t]) => t.code);
+  const byId = tickets; // id → QueueTicket (punya .code)
   const list = document.getElementById('ext-issue-list');
   const status = document.getElementById('ext-issue-status');
   if (!list || !status) return;
@@ -79,14 +96,13 @@ function renderRows(rows: Array<Record<string, unknown>>): void {
   }
   status.textContent = `${urutan.length} antrian aktif · ${countOf(urutan, 'R-')} racikan, ${countOf(urutan, 'T-')} tunggal`;
   const name = new Map(rows.map((r) => [String(r.ID), String(r.NAMA_PASIEN ?? '')]));
-  // simpan rows utk cetak per-baris (delegasi klik tombol 🖨)
   const panel = document.getElementById('ext-farmasi-issue');
   const printOneBtn = document.getElementById('ext-issue-printone');
   if (panel) panel.setAttribute('data-rows', JSON.stringify(rows));
   list.innerHTML =
     urutan
       .map((kode) => {
-        const id = [...byId].find(([, v]) => v === kode)?.[0] ?? '';
+        const id = [...byId].find(([, v]) => v.code === kode)?.[0] ?? '';
         const idx = rows.findIndex((r) => String(r.ID) === id);
         return (
           '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;padding:4px 6px;">' +
@@ -103,7 +119,6 @@ function renderRows(rows: Array<Record<string, unknown>>): void {
         );
       })
       .join('') || '<div style="padding:6px;color:#6c757d;">kosong</div>';
-  // simpan urutan utk tombol cetak sheet (semua)
   document.getElementById('ext-issue-print')?.setAttribute('data-urutan', JSON.stringify(urutan));
   document.getElementById('ext-issue-print')?.setAttribute('data-rows', JSON.stringify(rows));
   void printOneBtn;
@@ -113,17 +128,6 @@ function countOf(arr: string[], prefix: string): number {
   return arr.filter((k) => k.startsWith(prefix)).length;
 }
 
-function toRows(rows: Array<Record<string, unknown>>): ResetRow[] {
-  return rows.map((r) => ({
-    id: String(r.ID ?? ''),
-    counter: (r.COUNTER as string | number | null) ?? null,
-    nomor: (r.NOMOR as string | number | null) ?? null,
-    jenis: (r.JENIS as string | null) ?? null,
-    status: (r.STATUS as string | null) ?? null,
-    waktu: (r.WAKTU as string | null) ?? null,
-  }));
-}
-
 /** Filter kode dalam rentang: prefix 'R-'|'T-', from/sampai (angka, inklusif). */
 function inRange(kode: string, prefix: string, from: number, to: number): boolean {
   if (!kode.startsWith(prefix)) return false;
@@ -131,133 +135,155 @@ function inRange(kode: string, prefix: string, from: number, to: number): boolea
   return Number.isFinite(n) && n >= from && n <= to;
 }
 
+/** Cetak sheet A4 (semua / rentang). Popup BUKA SINKRON saat klik (user-gesture)
+ *  supaya lolos popup-blocker; isi konten di-fill setelah ticked siap (async). */
 function openPrint(rows: Array<Record<string, unknown>>): void {
-  const { byId, urutan } = renumberFarmasi(toRows(rows));
-  const name = new Map(rows.map((r) => [String(r.ID), String(r.NAMA_PASIEN ?? '')]));
-  const unit = new Map(rows.map((r) => [String(r.ID), String(r.NAMA_UNIT ?? '')]));
-
-  // Tentukan rentang per jenis via SATU prompt format "dari-sampai" (mis. "1-20"),
-  // atau "1" (satu nomor), atau kosong = semua. Jauh lebih simpel bagi petugas.
-  const rCodes = urutan.filter((k) => k.startsWith('R-'));
-  const tCodes = urutan.filter((k) => k.startsWith('T-'));
-
-  const parseRange = (input: string): { from: number; to: number } => {
-    const g = input.match(/(\d+)\s*[-–]\s*(\d+)/); // "6-20" / "6–20"
-    if (g) return { from: Math.min(+g[1], +g[2]), to: Math.max(+g[1], +g[2]) };
-    const single = input.match(/(\d+)/); // "10" = hanya satu
-    if (single) return { from: +single[1], to: +single[1] };
-    return { from: 0, to: Infinity }; // kosong = semua
-  };
-
-  const rInp = rCodes.length
-    ? (window.prompt(
-        `Rentang R- (${rCodes[0].slice(2)}–${rCodes[rCodes.length - 1].slice(2)}). Kosong = semua`,
-        '',
-      ) ?? '')
-    : '';
-  const tInp = tCodes.length
-    ? (window.prompt(
-        `Rentang T- (${tCodes[0].slice(2)}–${tCodes[tCodes.length - 1].slice(2)}). Kosong = semua`,
-        '',
-      ) ?? '')
-    : '';
-  const r = parseRange(rInp);
-  const t = parseRange(tInp);
-
-  const sel = urutan.filter(
-    (k) => inRange(k, 'R-', r.from, r.to) || inRange(k, 'T-', t.from, t.to),
-  );
-  const grid = sel
-    .map((k) => {
-      const id = [...byId].find(([, v]) => v === k)?.[0] ?? '';
-      return (
-        '<div style="width:92mm;height:48mm;border:1px solid #000;box-sizing:border-box;padding:8px 10px;text-align:center;page-break-inside:avoid;' +
-        'display:flex;flex-direction:column;justify-content:center;">' +
-        '<div style="font-size:10px;font-weight:600;text-transform:uppercase;">RSUD H. Abdul Manap</div>' +
-        '<div style="font-size:9px;margin-bottom:4px;">Antrian Farmasi</div>' +
-        '<div style="font-size:30px;font-weight:700;letter-spacing:1px;">' +
-        k +
-        '</div>' +
-        '<div style="font-size:11px;margin-top:3px;">' +
-        (name.get(id) || '') +
-        '</div>' +
-        '<div style="font-size:9px;color:#333;">' +
-        (unit.get(id) || '') +
-        '</div>' +
-        '</div>'
-      );
-    })
-    .join('');
-
+  // buka popup saat masih dalam user gesture (sebelum await) — mencegah diblokir
   const win = window.open('', '_blank', 'width=900,height=1200');
   if (!win) {
     alert('Popup diblokir — izinkan popup utk mencetak.');
     return;
   }
-  // ponytail: CSP extension memblokir <script> inline di about:blank popup →
-  // panggil window.print() dari sini (parent) setelah popup selesai ditulis.
-  win.document.write(
-    '<style>@page{size:A4;margin:5mm;}body{font-family:Arial,Helvetica,sans-serif;}@media print{.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:3mm;}}</style>' +
-      '<div class="grid">' +
-      (grid || '<div style="padding:20px;color:#666;">Tidak ada nomor dalam rentang.</div>') +
-      '</div>',
-  );
-  win.document.close();
-  window.setTimeout(() => {
+  void (async () => {
     try {
-      win.focus();
-      win.print();
+      const tickets = await loadTickets(rows);
+      // urutan tampil = urutan tiket publik
+      const urutan = [...tickets.entries()]
+        .sort((a, b) => a[1].num - b[1].num)
+        .map(([, t]) => t.code);
+      const name = new Map(rows.map((r) => [String(r.ID), String(r.NAMA_PASIEN ?? '')]));
+      const unit = new Map(rows.map((r) => [String(r.ID), String(r.NAMA_UNIT ?? '')]));
+
+      // Tentukan rentang per jenis via SATU prompt format "dari-sampai" (mis. "1-20"),
+      // atau "1" (satu nomor), atau kosong = semua. Jauh lebih simpel bagi petugas.
+      const rCodes = urutan.filter((k) => k.startsWith('R-'));
+      const tCodes = urutan.filter((k) => k.startsWith('T-'));
+
+      const parseRange = (input: string): { from: number; to: number } => {
+        const g = input.match(/(\d+)\s*[-–]\s*(\d+)/); // "6-20" / "6–20"
+        if (g) return { from: Math.min(+g[1], +g[2]), to: Math.max(+g[1], +g[2]) };
+        const single = input.match(/(\d+)/); // "10" = hanya satu
+        if (single) return { from: +single[1], to: +single[1] };
+        return { from: 0, to: Infinity }; // kosong = semua
+      };
+
+      const rInp = rCodes.length
+        ? (window.prompt(
+            `Rentang R- (${rCodes[0].slice(2)}–${rCodes[rCodes.length - 1].slice(2)}). Kosong = semua`,
+            '',
+          ) ?? '')
+        : '';
+      const tInp = tCodes.length
+        ? (window.prompt(
+            `Rentang T- (${tCodes[0].slice(2)}–${tCodes[tCodes.length - 1].slice(2)}). Kosong = semua`,
+            '',
+          ) ?? '')
+        : '';
+      const r = parseRange(rInp);
+      const t = parseRange(tInp);
+
+      const sel = urutan.filter(
+        (k) => inRange(k, 'R-', r.from, r.to) || inRange(k, 'T-', t.from, t.to),
+      );
+      const grid = sel
+        .map((k) => {
+          const id = [...tickets].find(([, v]) => v.code === k)?.[0] ?? '';
+          return (
+            '<div style="width:92mm;height:48mm;border:1px solid #000;box-sizing:border-box;padding:8px 10px;text-align:center;page-break-inside:avoid;' +
+            'display:flex;flex-direction:column;justify-content:center;">' +
+            '<div style="font-size:10px;font-weight:600;text-transform:uppercase;">RSUD H. Abdul Manap</div>' +
+            '<div style="font-size:9px;margin-bottom:4px;">Antrian Farmasi</div>' +
+            '<div style="font-size:30px;font-weight:700;letter-spacing:1px;">' +
+            k +
+            '</div>' +
+            '<div style="font-size:11px;margin-top:3px;">' +
+            (name.get(id) || '') +
+            '</div>' +
+            '<div style="font-size:9px;color:#333;">' +
+            (unit.get(id) || '') +
+            '</div>' +
+            '</div>'
+          );
+        })
+        .join('');
+
+      // ponytail: CSP extension memblokir <script> inline di about:blank popup →
+      // panggil window.print() dari sini (parent) setelah popup selesai ditulis.
+      win.document.write(
+        '<style>@page{size:A4;margin:5mm;}body{font-family:Arial,Helvetica,sans-serif;}@media print{.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:3mm;}}</style>' +
+          '<div class="grid">' +
+          (grid || '<div style="padding:20px;color:#666;">Tidak ada nomor dalam rentang.</div>') +
+          '</div>',
+      );
+      win.document.close();
+      window.setTimeout(() => {
+        try {
+          win.focus();
+          win.print();
+        } catch {
+          /* popup ditutup sebelum print — abaikan */
+        }
+      }, 300);
     } catch {
-      /* popup ditutup sebelum print — abaikan */
+      win.close();
     }
-  }, 300);
+  })();
 }
 
 // Cetak 1 tiket utk SATU pasien (saat pasien datang minta no antrian).
+// Popup BUKA SINKRON saat klik (user-gesture) supaya lolos popup-blocker.
 function openPrintOne(rows: Array<Record<string, unknown>>, idx: number): void {
   const row = rows[idx];
   if (!row) return;
-  const { byId } = renumberFarmasi(toRows(rows));
-  const nomorKe = byId.get(String(row.ID ?? ''));
-  const jenis = /racik/i.test(String(row.JENIS ?? '')) ? 'Racikan' : 'Non Racikan';
-  const nama = String(row.NAMA_PASIEN ?? '');
-  const unit = String(row.NAMA_UNIT ?? '');
-  const body =
-    '<div style="width:92mm;height:48mm;border:1px solid #000;box-sizing:border-box;margin:0 auto;' +
-    'padding:14px 12px;text-align:center;display:flex;flex-direction:column;justify-content:center;gap:4px;' +
-    'font-family:Arial,Helvetica,sans-serif;">' +
-    '<div style="font-size:11px;font-weight:600;text-transform:uppercase;">RSUD H. Abdul Manap</div>' +
-    '<div style="font-size:10px;">Antrian Farmasi</div>' +
-    '<div style="font-size:34px;font-weight:700;letter-spacing:1px;margin:6px 0;">' +
-    (nomorKe || '') +
-    '</div>' +
-    '<div style="font-size:13px;">' +
-    nama +
-    '</div>' +
-    '<div style="font-size:10px;color:#333;">' +
-    (jenis + (unit ? ' · ' + unit : '')) +
-    '</div>' +
-    '<div style="font-size:9px;color:#555;margin-top:6px;">Silakan menunggu panggilan</div>' +
-    '</div>';
   const win = window.open('', '_blank', 'width=500,height=700');
   if (!win) {
     alert('Popup diblokir — izinkan popup utk mencetak.');
     return;
   }
-  // ponytail: CSP extension memblokir <script> inline di about:blank popup →
-  // panggil window.print() dari sini (parent) setelah popup selesai ditulis.
-  win.document.write(
-    '<style>@page{size:A5 landscape;margin:4mm;}body{margin:0;padding:8px;}</style>' + body,
-  );
-  win.document.close();
-  window.setTimeout(() => {
+  void (async () => {
     try {
-      win.focus();
-      win.print();
+      const tickets = await loadTickets(rows);
+      const tid = String(row.ID ?? '');
+      const t = tickets.get(tid);
+      const nomorKe = t?.code ?? '';
+      const jenis = /racik/i.test(String(row.JENIS ?? '')) ? 'Racikan' : 'Non Racikan';
+      const nama = String(row.NAMA_PASIEN ?? '');
+      const unit = String(row.NAMA_UNIT ?? '');
+      const body =
+        '<div style="width:92mm;height:48mm;border:1px solid #000;box-sizing:border-box;margin:0 auto;' +
+        'padding:14px 12px;text-align:center;display:flex;flex-direction:column;justify-content:center;gap:4px;' +
+        'font-family:Arial,Helvetica,sans-serif;">' +
+        '<div style="font-size:11px;font-weight:600;text-transform:uppercase;">RSUD H. Abdul Manap</div>' +
+        '<div style="font-size:10px;">Antrian Farmasi</div>' +
+        '<div style="font-size:34px;font-weight:700;letter-spacing:1px;margin:6px 0;">' +
+        (nomorKe || '') +
+        '</div>' +
+        '<div style="font-size:13px;">' +
+        nama +
+        '</div>' +
+        '<div style="font-size:10px;color:#333;">' +
+        (jenis + (unit ? ' · ' + unit : '')) +
+        '</div>' +
+        '<div style="font-size:9px;color:#555;margin-top:6px;">Silakan menunggu panggilan</div>' +
+        '</div>';
+      // ponytail: CSP extension memblokir <script> inline di about:blank popup →
+      // panggil window.print() dari sini (parent) setelah popup selesai ditulis.
+      win.document.write(
+        '<style>@page{size:A5 landscape;margin:4mm;}body{margin:0;padding:8px;}</style>' + body,
+      );
+      win.document.close();
+      window.setTimeout(() => {
+        try {
+          win.focus();
+          win.print();
+        } catch {
+          /* popup ditutup sebelum print — abaikan */
+        }
+      }, 300);
     } catch {
-      /* popup ditutup sebelum print — abaikan */
+      win.close();
     }
-  }, 300);
+  })();
 }
 
 function ensureRecallDelegation(): void {
@@ -293,7 +319,7 @@ function init(): void {
     const status = document.getElementById('ext-issue-status');
     if (status) status.textContent = 'Memuat…';
     try {
-      renderRows(await fetchRows());
+      await renderRows(await fetchRows());
     } catch (e) {
       if (status) status.textContent = 'Gagal: ' + String((e as Error).message);
     }
@@ -301,11 +327,7 @@ function init(): void {
   panel.querySelector('#ext-issue-print')?.addEventListener('click', () => {
     const raw = (panel.querySelector('#ext-issue-print')?.getAttribute('data-rows') || '').trim();
     if (!raw) return;
-    try {
-      openPrint(JSON.parse(raw) as Array<Record<string, unknown>>);
-    } catch {
-      /* ignore */
-    }
+    openPrint(JSON.parse(raw) as Array<Record<string, unknown>>);
   });
   // Cetak 1 tiket per pasien: klik tombol 🖨 di baris → print pasien tsb.
   document.getElementById('ext-issue-list')?.addEventListener('click', (e) => {
@@ -316,15 +338,11 @@ function init(): void {
     ).trim();
     if (!raw) return;
     const idx = Number(t.getAttribute('data-idx') ?? '-1');
-    try {
-      openPrintOne(JSON.parse(raw) as Array<Record<string, unknown>>, idx);
-    } catch {
-      /* ignore */
-    }
+    openPrintOne(JSON.parse(raw) as Array<Record<string, unknown>>, idx);
   });
   // muat awal (panel mulai tertutup — data di-prepare utk cetak cepat)
   fetchRows()
-    .then(renderRows)
+    .then((rows) => void renderRows(rows))
     .catch((e) => {
       const s = document.getElementById('ext-issue-status');
       if (s) s.textContent = 'Gagal: ' + String((e as Error).message);

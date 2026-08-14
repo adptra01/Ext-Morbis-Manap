@@ -40,7 +40,10 @@
  * gate data-ext-antrian-farmasi di init.ts.
  */
 import { nextHealth, type HealthState } from './shared/wsHealth';
-import { renumberFarmasi } from './shared/farmasiRenumber';
+// Display jalan di world MAIN tanpa chrome.runtime → akses QueueManager via
+// bridge (postMessage ke isolated world) — getQueueState/issuePending bridge.
+import { issuePending } from './shared/farmasiQueueBridge';
+import { getTicket } from './shared/farmasiQueue';
 import {
   activeNumber,
   isReset,
@@ -269,26 +272,58 @@ declare global {
     siapDiambil: ViewRow[];
   };
 
-  // Cache kode renumber (id → T-xx/R-xx) dari lastRows terbaru. Sumber nomor
-  // yang SAMA dengan kertas cetak (farmasiIssue) — display tidak boleh memakai
-  // NOMOR MORBIS asli (bisa berubah saat status berubah; kertas frozen).
+  // Cache kode publik (id → T-xx/R-xx, frozen dari QueueManager). Sumber nomor
+  // yang SAMA dengan kertas cetak (farmasiIssue) & panggilan (display/TTS).
   let renumberCache = new Map<string, string>();
-  function updateRenumber(rows: RawRow[]): void {
-    renumberCache = renumberFarmasi(
+  // Urutan nomor publik per jenis (num naik, id belum-selesai) — fallback card
+  // saat current MORBIS gap (angka tak match baris). Mengekor keputusan
+  // "kelola sendiri": display menampilkan nomor publik antrian berikutnya.
+  const nextToCallByJenis: Record<'tunggal' | 'racikan', string> = { tunggal: '', racikan: '' };
+  async function updateRenumber(rows: RawRow[]): Promise<void> {
+    const { state: st } = await issuePending(
       rows.map((r) => ({
         id: String(r.ID ?? ''),
         jenis: (r.JENIS as string | null) ?? null,
-        counter: (r.COUNTER as string | number | null) ?? null,
-        nomor: (r.NOMOR as string | number | null) ?? null,
-        status: (r.STATUS as string | null) ?? null,
         waktu: (r.WAKTU as string | null) ?? null,
+        // display tahu kapan baris selesai (WAKTU_PENYERAHAN) — skip utk next-to-call
+        selesai: (r.WAKTU_PENYERAHAN != null && String(r.WAKTU_PENYERAHAN).trim() !== '') || false,
       })),
-    ).byId;
+    );
+    const next = new Map<string, string>();
+    for (const r of rows) {
+      const id = String(r.ID ?? '');
+      const t = getTicket(st, id);
+      if (t) next.set(id, t.code);
+    }
+    renumberCache = next;
+    // seed nomor publik terkecil (berikutnya) per jenis dari baris belum-selesai
+    for (const j of ['tunggal', 'racikan'] as const) {
+      nextToCallByJenis[j] = '';
+      const isR = j === 'racikan';
+      const min = rows
+        .filter(
+          (r) =>
+            r &&
+            String(r.ID ?? '') !== '' &&
+            (r.WAKTU_PENYERAHAN == null || String(r.WAKTU_PENYERAHAN).trim() === '') &&
+            (isR ? /racik/i.test(String(r.JENIS ?? '')) : !/racik/i.test(String(r.JENIS ?? ''))) &&
+            next.get(String(r.ID ?? '')),
+        )
+        // ambil tiket dgn num terkecil
+        // (diakses via st pakai id — num tersimpan di st)
+        .map((r) => ({
+          id: String(r.ID ?? ''),
+          num: getTicket(st, String(r.ID ?? ''))?.num ?? Infinity,
+        }))
+        .sort((a, b) => a.num - b.num)[0];
+      if (min) nextToCallByJenis[j] = next.get(min.id) ?? '';
+    }
   }
 
-  // Nomor TAMPILAN per jenis: NOMOR MORBIS → kode renumber (T-42/R-42) agar
-  // cocok dengan kertas. Sudah berbentuk kode → biarkan. Baris tak ditemukan
-  // (selesai/hilang dari data_call) → fallback MORBIS asli.
+  // Nomor TAMPILAN per jenis: NOMOR MORBIS → kode publik (T-42/R-42) agar cocok
+  // dengan kertas. Sudah berbentuk kode → biarkan. Baris tak ditemukan (selesai/
+  // hilang dari data_call / gap MORBIS) → fallback nomor publik antrian berikutnya
+  // per jenis (kelola sendiri) — BUKAN nomor MORBIS asli.
   function kodeTampil(jenis: 'tunggal' | 'racikan', num: string): string {
     if (!num || num === '0') return num;
     if (/^[TR]-\d+$/.test(num)) return num;
@@ -298,8 +333,8 @@ declare global {
         (isR ? /racik/i.test(String(r.JENIS ?? '')) : !/racik/i.test(String(r.JENIS ?? ''))) &&
         (String(r.NOMOR ?? '') === num || String(r.COUNTER ?? '') === num),
     );
-    if (!row) return num;
-    return renumberCache.get(String(row.ID ?? '')) ?? num;
+    if (row) return renumberCache.get(String(row.ID ?? '')) ?? nextToCallByJenis[jenis];
+    return nextToCallByJenis[jenis] || num;
   }
 
   /* ============================================================
@@ -585,7 +620,8 @@ declare global {
     try {
       const [{ current: cur }, rows] = await Promise.all([fetchCurrentNumber(), fetchCallData()]);
       lastRows = rows;
-      updateRenumber(rows);
+      await updateRenumber(rows);
+      updateDebugState({ lastPoll: Date.now(), lastDataCount: rows.length }); // observability: jalur render tercapai
       const g1 = cur.get('1')?.trim();
       const g2 = cur.get('2')?.trim();
       currentByJenis.tunggal = g1 && g1 !== '0' ? g1 : '';
@@ -692,48 +728,24 @@ declare global {
         prevByJenis[j] = cur || '';
       }
 
-      // Tulis panel HANYA di FALLBACK (native membeku). Di NATIVE, native MORBIS
-      // yang kelola panel real-time via WS — extension MENIMPA tiap 1s hanya
-      // menghalangi native & membuat "panggilan terakhir" tampak tidak aktif.
+      // Tulis panel SELALU (NATIVE maupun FALLBACK): card menampilkan KODE PUBLIK
+      // (QueueManager), bukan nomor MORBIS. Keputusan desain "override native" —
+      // pasien melihat nomor yang sama persis dgn kertas (T-01..N). Mesin health
+      // di-beri tahu lewat onWeWrote() agar DOM tulis-extension tidak dianggap
+      // "native recovery"; akibatnya health melihat signal kita → polling fallback
+      // (yang extension kendalikan) menjadi penjaga utama — konsisten dgn override.
       // Guard recall (sama spt renderDisplay): jangan timpa panel yang sedang
       // menampilkan RECALL native — refresh 1s ini kalau menimpa akan menghapus
       // nomor recall yang baru saja di-announce.
-      if (!health.nativeActive) {
-        // Panel menampilkan kode renumber (kertas); guard recall bandingkan panel
-        // vs current MORBIS & vs writtenByUs (kode yang kita tulis).
-        const kodeT = kodeTampil('tunggal', currentByJenis.tunggal);
-        const kodeR = kodeTampil('racikan', currentByJenis.racikan);
-        const atasRecallNow =
-          !justReset &&
-          readPanelNumber(PANGGILAN_SEL) &&
-          readPanelNumber(PANGGILAN_SEL) !== currentByJenis.tunggal &&
-          readPanelNumber(PANGGILAN_SEL) !== writtenByUs.tunggal;
-        const bawahRecallNow =
-          !justReset &&
-          readPanelNumber(SIAP_SEL) &&
-          readPanelNumber(SIAP_SEL) !== currentByJenis.racikan &&
-          readPanelNumber(SIAP_SEL) !== writtenByUs.racikan;
-        const atas = atasRecallNow ? null : document.querySelector<HTMLElement>(PANGGILAN_SEL);
-        if (atas)
-          atas.innerHTML = cardSection(
-            'Obat Tunggal',
-            kodeT,
-            currentPatientName('tunggal', currentByJenis.tunggal),
-          );
-        const bawah = bawahRecallNow ? null : document.querySelector<HTMLElement>(SIAP_SEL);
-        if (bawah)
-          bawah.innerHTML = cardSection(
-            'Obat Racikan',
-            kodeR,
-            currentPatientName('racikan', currentByJenis.racikan),
-          );
+      {
+        renderCardPanel(); // card selalu kode publik (kelola sendiri)
         highlightCurrents();
         // tandai nilai yang KITA tulis — signature recall detection (anti false-positif)
-        writtenByUs.tunggal = kodeT;
-        writtenByUs.racikan = kodeR;
-        onWeWrote(); // tandai write extension di FALLBACK agar tak dianggap native recovery
-        setStatus('ok');
-      } else {
+        writtenByUs.tunggal =
+          nextToCallByJenis.tunggal || kodeTampil('tunggal', currentByJenis.tunggal);
+        writtenByUs.racikan =
+          nextToCallByJenis.racikan || kodeTampil('racikan', currentByJenis.racikan);
+        onWeWrote(); // tandai write extension agar tak dianggap native recovery
         setStatus('ok');
       }
     } catch {
@@ -752,6 +764,7 @@ declare global {
   // Setelah menulis DOM, beri tahu mesin kesehatan via `onWeWrote()` supaya
   // write extension tidak dianggap sebagai "native recovery" (anti feedback-loop).
   function renderDisplay(view: QueueView, call: ViewRow | null): void {
+    renderCardPanel(view);
     if (call) {
       // update panggilan terakhir per jenis + seed dari data (card atas/bawah)
       lastByJenis[call.jenis] = call;
@@ -790,6 +803,28 @@ declare global {
       writtenByUs.racikan = kodeR;
     }
     onWeWrote(); // tandai DOM yang BARU SAJA extension tulis (bukan native)
+  }
+
+  // Render card atas/bawah dari urutan publik per jenis (kelola sendiri) —
+  // dipanggil SELALU (override native), termasuk saat tidak ada panggilan aktif.
+  // Nomor publik antrian pertama per jenis = pasien berikutnya yang wajib tampil.
+  function renderCardPanel(_view?: QueueView): void {
+    const atas = document.querySelector<HTMLElement>(PANGGILAN_SEL);
+    const bawah = document.querySelector<HTMLElement>(SIAP_SEL);
+    const t = nextToCallByJenis.tunggal;
+    const r = nextToCallByJenis.racikan;
+    if (atas)
+      atas.innerHTML = cardSection(
+        'Obat Tunggal',
+        t || currentByJenis.tunggal,
+        t ? currentPatientName('tunggal', t) : '',
+      );
+    if (bawah)
+      bawah.innerHTML = cardSection(
+        'Obat Racikan',
+        r || currentByJenis.racikan,
+        r ? currentPatientName('racikan', r) : '',
+      );
   }
 
   // Isi slot jenis yang masih kosong dari data_call mentah (lastRows) — karena
@@ -1557,7 +1592,7 @@ declare global {
       ladderIdx = 0; // sukses → reset backoff ke anak tangga awal
       updateDebugState({ lastPoll: Date.now(), lastDataCount: rows.length });
       lastRows = rows; // simpan utk seed card dua-bagian (status MORBIS tak reliable)
-      updateRenumber(rows);
+      await updateRenumber(rows);
 
       // Hanya sentuh DOM bila ada data valid; []/gagal → pertahankan DOM native.
       const view = normalize(rows);
