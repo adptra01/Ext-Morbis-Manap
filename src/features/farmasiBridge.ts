@@ -10,59 +10,16 @@
 //   SW --fetch--> 127.0.0.1:8765/tts --MP3--> SW --sendResponse--> bridge
 //   bridge --postMessage--> MAIN --Blob/Audio--> play()
 //
-// Bridge ini HANYA meneruskan request TTS. Audio.play() tetap di MAIN world
-// (butuh user-activation & DOM), bukan di sini.
+// Jalur QueueManager utk display:
+//   MAIN --postMessage QUEUE_*--> ISOLATED (bridge) --delegasi--> QueueManager
+//   (farmasiQueue.ts). Bridge TIDAK menghitung nomor sendiri — QueueManager
+//   adalah SATU-SATUNYA sumber nomor publik (V1 key/counter dihapus).
+// Audio.play() tetap di MAIN world (butuh user-activation & DOM), bukan di sini.
+import { getQueueState, issuePending, reset } from './shared/farmasiQueue';
+
 (function () {
   const REQ_SOURCE = 'MORBIS-FARMASI';
   const RES_SOURCE = 'MORBIS-FARMASI-BRIDGE';
-
-  // Jalur QueueManager utk display (world MAIN tanpa chrome.runtime):
-  // queue di-storage via chrome.storage.local yang TERSEDIA di isolated ini.
-  // Handler dipanggil lewat postMessage QUEUE_GET_STATE / QUEUE_ISSUE /
-  // QUEUE_RESET; balasan lewat postMessage QUEUE_RESULT.
-  const QUEUE_KEY = 'farmasiQueueV1';
-  function queueSession(): string {
-    return new Date().toISOString().slice(0, 10);
-  }
-  function emptyQueue(): { session: string; next: number; tickets: Record<string, unknown> } {
-    return { session: queueSession(), next: 1, tickets: {} };
-  }
-  function isR(jenis?: unknown): boolean {
-    return !!jenis && /racik/i.test(String(jenis));
-  }
-  function readQueue(
-    cb: (st: { session: string; next: number; tickets: Record<string, unknown> }) => void,
-  ): void {
-    chrome.storage.local.get([QUEUE_KEY], (res) => {
-      const raw = res[QUEUE_KEY];
-      const st = raw && raw.session === queueSession() ? raw : emptyQueue();
-      cb(st);
-    });
-  }
-  function persist(st: unknown): void {
-    chrome.storage.local.set({ [QUEUE_KEY]: st });
-  }
-  // assign nomor utk id baru, urut WAKTU (frozen by id)
-  function assignIssues(
-    st: { session: string; next: number; tickets: Record<string, unknown> },
-    rows: Array<{ id: string; jenis?: unknown; waktu?: unknown; selesai?: unknown }>,
-  ): number {
-    const pend = rows
-      .filter((r) => r.id && !r.selesai && st.tickets[r.id] == null)
-      .sort((a, b) => String(a.waktu || '').localeCompare(String(b.waktu || '')));
-    let n = 0;
-    for (const r of pend) {
-      const isRR = isR(r.jenis);
-      st.tickets[r.id] = {
-        num: st.next,
-        code: (isRR ? 'R-' : 'T-') + String(st.next).padStart(2, '0'),
-        type: isRR ? 'racikan' : 'tunggal',
-      };
-      st.next += 1;
-      n += 1;
-    }
-    return n;
-  }
 
   window.addEventListener('message', (event) => {
     if (event.source !== window) return;
@@ -97,22 +54,27 @@
     }
 
     if (data.type === 'QUEUE_GET_STATE') {
-      readQueue((st) => reply('QUEUE_GET_STATE', { ok: true, state: st }));
+      getQueueState().then((state) => reply('QUEUE_GET_STATE', { ok: true, state }));
       return;
     }
     if (data.type === 'QUEUE_ISSUE') {
       const rows = Array.isArray(data.rows) ? data.rows : [];
-      readQueue((st) => {
-        const count = assignIssues(st, rows);
-        persist(st);
-        reply('QUEUE_ISSUE', { ok: true, state: st, count });
-      });
+      issuePending(rows)
+        .then(async (count) => {
+          const state = await getQueueState();
+          reply('QUEUE_ISSUE', { ok: true, state, count });
+        })
+        .catch((err: unknown) =>
+          reply('QUEUE_ISSUE', { ok: false, error: String((err as Error).message ?? err) }),
+        );
       return;
     }
     if (data.type === 'QUEUE_RESET') {
-      const st = emptyQueue();
-      persist(st);
-      reply('QUEUE_RESET', { ok: true, state: st });
+      reset()
+        .then((state) => reply('QUEUE_RESET', { ok: true, state }))
+        .catch((err: unknown) =>
+          reply('QUEUE_RESET', { ok: false, error: String((err as Error).message ?? err) }),
+        );
       return;
     }
   });

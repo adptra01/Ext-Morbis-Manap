@@ -8,6 +8,39 @@ var __morbis_feature = (() => {
 
   // src/features/shared/farmasiQueue.ts
   var KEY = 'farmasiQueueV2';
+  var LOCK_KEY = 'farmasiQueueV2:lock';
+  var LOCK_TTL_MS = 1e4;
+  var LOCK_DEADLINE_MS = 3e4;
+  var LOCK_RETRY_MS = 80;
+  async function acquireLock() {
+    const token = `${Date.now()}:${Math.random().toString(36).slice(2)}`;
+    const deadline = Date.now() + LOCK_DEADLINE_MS;
+    for (;;) {
+      const res = await chrome.storage.local.get(LOCK_KEY);
+      const cur = res[LOCK_KEY];
+      if (!cur || Date.now() - cur.ts > LOCK_TTL_MS) {
+        await chrome.storage.local.set({ [LOCK_KEY]: { token, ts: Date.now() } });
+        const check = await chrome.storage.local.get(LOCK_KEY);
+        if (check[LOCK_KEY]?.token === token) return token;
+      }
+      if (Date.now() > deadline) throw new Error('farmasiQueue: lock timeout');
+      await new Promise((r) => setTimeout(r, LOCK_RETRY_MS));
+    }
+  }
+  async function releaseLock(token) {
+    const res = await chrome.storage.local.get(LOCK_KEY);
+    if (res[LOCK_KEY]?.token === token) {
+      await chrome.storage.local.remove(LOCK_KEY);
+    }
+  }
+  async function withLock(fn) {
+    const token = await acquireLock();
+    try {
+      return await fn();
+    } finally {
+      await releaseLock(token);
+    }
+  }
   function sessionOf(waktu) {
     if (waktu && /^\d{4}-\d{2}-\d{2}/.test(waktu)) return waktu.slice(0, 10);
     return /* @__PURE__ */ new Date().toISOString().slice(0, 10);
@@ -62,10 +95,12 @@ var __morbis_feature = (() => {
     return { st, count };
   }
   async function issuePending(rows) {
-    const st = await getQueueState();
-    const { st: nextSt, count } = assignPending(st, rows);
-    if (count > 0) await save(nextSt);
-    return count;
+    return withLock(async () => {
+      const st = await getQueueState();
+      const { st: nextSt, count } = assignPending(st, rows);
+      if (count > 0) await save(nextSt);
+      return count;
+    });
   }
   function getTicket(st, id) {
     return st.tickets[id] ?? null;

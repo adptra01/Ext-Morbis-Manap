@@ -21,12 +21,62 @@
  *  - Urutan panggilan = status kesiapan (READY), bukan nomor: nomor adalah
  *    identitas, urutan pelayanan ditentukan kesiapan obat.
  *
- * API: getQueueState, issuePending, syncStatus, getTicket, getNextToCall,
- *      recall, reset.
+ * API publik (identity layer — satu-satunya cara caller membaca nomor):
+ *      getPublicNumber(id), getPublicCode(id), getRecord(id),
+ *      hasPublicNumber(id), assignPublicNumber(id, jenis, waktu)
+ * API state/persistence:
+ *      getQueueState, issuePending, syncStatus, getTicket, getNextToCall,
+ *      recall, reset
+ * Semua mutasi state melewati denganLock (atomic read→assign→persist) agar
+ * dua tab tidak pernah menerbitkan nomor publik duplikat / menimpa status.
  */
 import { isRacikanJenis } from './farmasiRenumber';
 
 const KEY = 'farmasiQueueV2';
+
+// --- Locking: mutual exclusion antar-tab pada storage.local -------------
+// Storage.local get/set atomic per-call, tapi read-modify-write TIDAK atomic.
+// Lock token+timestamp+TTL: tab mati di tengah mutasi → lock kedaluwarsa
+// (TTL) dan bisa diambil tab lain (recovery); tanpa TTL = deadlock selamanya.
+const LOCK_KEY = 'farmasiQueueV2:lock';
+const LOCK_TTL_MS = 10_000;
+const LOCK_DEADLINE_MS = 30_000;
+const LOCK_RETRY_MS = 80;
+
+type Lock = { token: string; ts: number };
+
+async function acquireLock(): Promise<string> {
+  const token = `${Date.now()}:${Math.random().toString(36).slice(2)}`;
+  const deadline = Date.now() + LOCK_DEADLINE_MS;
+  for (;;) {
+    const res = await chrome.storage.local.get(LOCK_KEY);
+    const cur = res[LOCK_KEY] as Lock | undefined;
+    if (!cur || Date.now() - cur.ts > LOCK_TTL_MS) {
+      // CAS: klaim lock, lalu verifikasi milik kita (penulis terakhir menang)
+      await chrome.storage.local.set({ [LOCK_KEY]: { token, ts: Date.now() } });
+      const check = await chrome.storage.local.get(LOCK_KEY);
+      if ((check[LOCK_KEY] as Lock | undefined)?.token === token) return token;
+    }
+    if (Date.now() > deadline) throw new Error('farmasiQueue: lock timeout');
+    await new Promise((r) => setTimeout(r, LOCK_RETRY_MS));
+  }
+}
+
+async function releaseLock(token: string): Promise<void> {
+  const res = await chrome.storage.local.get(LOCK_KEY);
+  if ((res[LOCK_KEY] as Lock | undefined)?.token === token) {
+    await chrome.storage.local.remove(LOCK_KEY);
+  }
+}
+
+async function withLock<T>(fn: () => Promise<T>): Promise<T> {
+  const token = await acquireLock();
+  try {
+    return await fn();
+  } finally {
+    await releaseLock(token);
+  }
+}
 
 /** Lifecycle tiket. MORBIS hanya menyediakan status kasar; mapping:
  *  STATUS 0→CANCELLED, 1→WAITING, 2/3→PROCESSING,
@@ -140,12 +190,35 @@ export function assignPending(st: QueueState, rows: QueueRow[]): { st: QueueStat
 /**
  * Issue nomor publik (persist) utk id baru, urut WAKTU. Return jumlah baru.
  * Nomor tidak tergantung STATUS_PANGGIL — hanya fakta id baru masuk antrian.
+ * Atomic: read→assign→persist di dalam lock (dua tab tidak duplicate-assign).
  */
 export async function issuePending(rows: QueueRow[]): Promise<number> {
-  const st = await getQueueState();
-  const { st: nextSt, count } = assignPending(st, rows);
-  if (count > 0) await save(nextSt);
-  return count;
+  return withLock(async () => {
+    const st = await getQueueState();
+    const { st: nextSt, count } = assignPending(st, rows);
+    if (count > 0) await save(nextSt);
+    return count;
+  });
+}
+
+/**
+ * Assign atomic utk SATU id baru (mis. cetak tiket segera). Idempoten:
+ * id yang sudah punya nomor → tiket lama dikembalikan, TIDAK dapat nomor baru.
+ */
+export async function assignPublicNumber(
+  id: string,
+  jenis?: string | null,
+  waktu?: string | null,
+): Promise<QueueTicket | null> {
+  if (!id) return null;
+  return withLock(async () => {
+    const st = await getQueueState();
+    const existing = st.tickets[id];
+    if (existing) return existing;
+    const { st: nextSt, count } = assignPending(st, [{ id, jenis, waktu }]);
+    if (count > 0) await save(nextSt);
+    return nextSt.tickets[id] ?? null;
+  });
 }
 
 /**
@@ -153,23 +226,60 @@ export async function issuePending(rows: QueueRow[]): Promise<number> {
  * Status hanya mempengaruhi lifecycle tampilan. Return jumlah perubahan.
  */
 export async function syncStatus(rows: QueueRow[]): Promise<number> {
-  const st = await getQueueState();
-  let changed = 0;
-  for (const r of rows) {
-    const t = st.tickets[r.id];
-    if (!t) continue;
-    const s = statusFromMorbsi(r.status, r.statusPanggil);
-    if (s !== t.status) {
-      t.status = s;
-      changed++;
+  return withLock(async () => {
+    const st = await getQueueState();
+    let changed = 0;
+    for (const r of rows) {
+      const t = st.tickets[r.id];
+      if (!t) continue;
+      const s = statusFromMorbsi(r.status, r.statusPanggil);
+      if (s !== t.status) {
+        t.status = s;
+        changed++;
+      }
     }
-  }
-  if (changed > 0) await save(st);
-  return changed;
+    if (changed > 0) await save(st);
+    return changed;
+  });
 }
 
 export function getTicket(st: QueueState, id: string): QueueTicket | null {
   return st.tickets[id] ?? null;
+}
+
+// --- Identity layer: SATU cara caller membaca nomor publik ---------------
+// Caller TIDAK boleh menghitung nomor sendiri (dari NOMOR/COUNTER/index/DOM).
+
+export type PublicNumber = {
+  id: string; // MORBIS ID (identitas utama)
+  number: number; // 2
+  code: string; // "T-02"
+  type: 'tunggal' | 'racikan';
+};
+
+/** Lookup lengkap: id MORBIS → nomor publik. null bila id belum punya nomor. */
+export async function getPublicNumber(id: string): Promise<PublicNumber | null> {
+  const st = await getQueueState();
+  const t = st.tickets[id];
+  return t ? { id, number: t.num, code: t.code, type: t.type } : null;
+}
+
+/** id MORBIS → "T-02" (null bila belum diterbitkan). */
+export async function getPublicCode(id: string): Promise<string | null> {
+  const st = await getQueueState();
+  return st.tickets[id]?.code ?? null;
+}
+
+/** Record lengkap tiket (termasuk status/issuedAt). null bila tak ada. */
+export async function getRecord(id: string): Promise<QueueTicket | null> {
+  const st = await getQueueState();
+  return getTicket(st, id);
+}
+
+/** true bila id sudah punya nomor publik (frozen). */
+export async function hasPublicNumber(id: string): Promise<boolean> {
+  const st = await getQueueState();
+  return st.tickets[id] != null;
 }
 
 /**
@@ -202,7 +312,9 @@ export function recall(st: QueueState, id: string): QueueTicket | null {
 
 /** Reset antrian hari ini → semua counter kembali 1, tiket dibersihkan. */
 export async function reset(): Promise<QueueState> {
-  const st = empty(sessionOf());
-  await save(st);
-  return st;
+  return withLock(async () => {
+    const st = empty(sessionOf());
+    await save(st);
+    return st;
+  });
 }

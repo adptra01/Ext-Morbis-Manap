@@ -7,12 +7,18 @@
  *  - status lifecycle tiket di-sync dari STATUS/STATUS_PANGGIL MORBIS tanpa
  *    mengubah nomor
  */
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   assignPending,
   empty,
   statusFromMorbsi,
   getNextToCall,
+  issuePending,
+  assignPublicNumber,
+  getPublicNumber,
+  getPublicCode,
+  getRecord,
+  hasPublicNumber,
   type QueueState,
   type QueueRow,
 } from '../../src/features/shared/farmasiQueue';
@@ -26,9 +32,17 @@ const store = new Map<string, unknown>();
       set: vi.fn(async (items: Record<string, unknown>) => {
         for (const [k, v] of Object.entries(items)) store.set(k, v);
       }),
+      remove: vi.fn(async (keys: string) => {
+        store.delete(keys);
+      }),
     },
   },
 };
+
+beforeEach(() => {
+  store.clear();
+  vi.clearAllMocks();
+});
 
 const row = (over: Partial<QueueRow> & { id: string }): QueueRow => ({
   jenis: 'tunggal',
@@ -111,5 +125,64 @@ describe('getNextToCall — kesiapan menentukan panggilan, bukan nomor', () => {
     const rows: QueueRow[] = [row({ id: 'A', status: '2' })];
     assignPending(st, rows);
     expect(getNextToCall(st, rows, 'tunggal')).toBeNull();
+  });
+});
+
+describe('Identity layer — API publik (Phase B)', () => {
+  it('assignPublicNumber menerbitkan nomor per jenis dan idempoten (no renumber)', async () => {
+    const t1 = await assignPublicNumber('X', 'tunggal', '2026-08-14 09:00:00');
+    expect(t1).toMatchObject({ num: 1, code: 'T-01', type: 'tunggal' });
+    const t2 = await assignPublicNumber('Y', 'racikan', '2026-08-14 09:01:00');
+    expect(t2?.code).toBe('R-01');
+    // id sama dipanggil lagi → tiket SAMA, bukan nomor baru
+    const again = await assignPublicNumber('X', 'tunggal', '2026-08-14 09:02:00');
+    expect(again?.code).toBe('T-01');
+  });
+
+  it('getPublicNumber/getPublicCode/getRecord/hasPublicNumber membaca state persist', async () => {
+    await assignPublicNumber('79178', 'tunggal', '2026-08-14 09:00:00');
+    expect(await getPublicNumber('79178')).toEqual({
+      id: '79178',
+      number: 1,
+      code: 'T-01',
+      type: 'tunggal',
+    });
+    expect(await getPublicCode('79178')).toBe('T-01');
+    expect((await getRecord('79178'))?.status).toBe('ISSUED');
+    expect(await hasPublicNumber('79178')).toBe(true);
+    expect(await hasPublicNumber('999')).toBe(false);
+    expect(await getPublicCode('999')).toBeNull();
+  });
+
+  it('frozen — refresh (baca ulang state) tidak mengubah nomor', async () => {
+    await assignPublicNumber('A', 'tunggal', '2026-08-14 09:00:00');
+    await assignPublicNumber('B', 'tunggal', '2026-08-14 09:01:00');
+    // simulasikan refresh: state dibaca ulang dari storage yang sama
+    expect(await getPublicCode('A')).toBe('T-01');
+    expect(await getPublicCode('B')).toBe('T-02');
+  });
+});
+
+describe('Concurrency — dua tab tidak duplicate-assign (Phase B)', () => {
+  it('issuePending bersamaan (id berbeda) → nomor publik unik & keduanya tersimpan', async () => {
+    const [n1, n2] = await Promise.all([
+      issuePending([row({ id: 'P', waktu: '2026-08-14 09:00:00' })]),
+      issuePending([row({ id: 'Q', waktu: '2026-08-14 09:01:00' })]),
+    ]);
+    expect(n1 + n2).toBe(2);
+    const a = await getPublicCode('P');
+    const b = await getPublicCode('Q');
+    expect(a).not.toBeNull();
+    expect(b).not.toBeNull();
+    expect(a).not.toBe(b); // T-01 vs T-02, bukan dua T-01
+  });
+
+  it('issuePending + assignPublicNumber bersamaan pada id berbeda → unik', async () => {
+    await Promise.all([
+      issuePending([row({ id: 'M', waktu: '2026-08-14 09:00:00' })]),
+      assignPublicNumber('N', 'tunggal', '2026-08-14 09:01:00'),
+    ]);
+    const codes = [await getPublicCode('M'), await getPublicCode('N')];
+    expect(new Set(codes).size).toBe(2);
   });
 });
