@@ -3,7 +3,7 @@
  * (82 antrian dari POST /public/antrian-farmasi-v2/list-antrian-v2, 2026-08-14).
  *
  * Menjawab: "cek kesamaan nomor" — apakah nomor publik yang dihasilkan
- * QueueManager unik & konsisten, padahal NOMOR MORBIS duplikat (BT-1 ×11).
+ * QueueManager unik & konsisten, padahal NOMOR MORBIS duplikat (BT-1 ×13).
  * Jalankan: npx vitest run tests/unit/_realDataCheck.test.ts
  */
 import { describe, it, expect } from 'vitest';
@@ -74,11 +74,12 @@ describe('QueueManager v2 vs data MORBIS riil', () => {
     for (let i = 0; i < racikanNums.length; i++) expect(racikanNums[i]).toBe(i + 1);
   });
 
-  it('11 pasien NOMOR MORBIS BT-1 → 11 nomor publik BERBEDA', () => {
-    const bt1Ids = raw.filter((r) => r.KODE === 'BT' && r.NOMOR === '1').map((r) => r.ID);
-    expect(bt1Ids.length).toBe(11);
+  it('13 pasien NOMOR MORBIS =1 → 13 nomor publik BERBEDA', () => {
+    // NOMOR MORBIS duplikat terbesar: 13 pasien (BT-1 ×11 + UT-1 TEST + BR-1)
+    const bt1Ids = raw.filter((r) => r.NOMOR === '1').map((r) => r.ID);
+    expect(bt1Ids.length).toBe(13);
     const codes = new Set(bt1Ids.map((id) => st.tickets[id].code));
-    expect(codes.size).toBe(11); // semua unik
+    expect(codes.size).toBe(13); // semua unik
   });
 
   it('pasangan duplikat MORBIS (BT-26/34/42/56/58/61) → nomor publik berbeda', () => {
@@ -92,14 +93,14 @@ describe('QueueManager v2 vs data MORBIS riil', () => {
   });
 
   it('tampilkan contoh pemetaan ID → nomor publik (termasuk BT-1)', () => {
-    const show = ['79156', '79160', '79162', '79168', '79169', '79177', '79192', '79195', '79201', '79202', '79221']
+    const show = ['79147', '79156', '79160', '79162', '79168', '79169', '79176', '79177', '79192', '79195', '79201', '79202', '79221']
       .map((id) => {
         const r = raw.find((x) => x.ID === id);
         const t = st.tickets[id];
         return `${r?.KODE}-${r?.NOMOR} ${r?.NAMA_PASIEN.padEnd(20)} → ${t?.code}`;
       })
       .join('\n');
-     
-    console.log('\nBT-1 MORBIS (11 pasien):\n' + show);
+    
+    console.log('\nBT-1 MORBIS (13 pasien):\n' + show);
   });
 });
