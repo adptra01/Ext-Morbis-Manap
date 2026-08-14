@@ -67,3 +67,44 @@ lastAnnouncement, ttsMode, lastDataCount}`.
   `#id_selanjutnya_2` (racikan); disabled saat antrian habis.
 - Dev headless tanpa codec MP3/voices → `ttsMode` berakhir `local`;
   produksi (browser normal) jatuh ke `mp3`.
+
+## Temuan 2026-08-14 — penomoran display vs kertas cetak
+
+**Masalah**: display memanggil `45` atas nama Samsudin, tapi kertas antrian
+pasien = `42` (sebenarnya `T-42`).
+
+**Akar masalah**: dua sistem nomor berbeda.
+
+- Kertas cetak (konsol → `farmasiIssue`): kode `renumberFarmasi` → `T-42`,
+  frozen dari WAKTU asc, tidak berubah walau status pasien berubah.
+- Display (sebelum fix): pakai `NOMOR` MORBIS asli dari `current-number`
+  (`?section=isi`) yang BISA berubah saat status berubah.
+
+**Fix (commit `cd55b39`)**: display memetakan `NOMOR MORBIS → kode renumber`
+dari data_call yang sama (`renumberFarmasi(rows).byId`), dipakai di:
+
+- panel card (tampil `T-42`, bukan 45)
+- announce normal, recall native, recall localStorage (`numberToWords`
+  strip prefix `T-`/`R-` → TTS sebut angkanya)
+- `readPanelNumber` menerima kode `T-42`/`R-42`/angka (tolak teks nama)
+- `writtenByUs` simpan kode yang ditulis → guard recall tetap anti
+  false-positive
+
+Verifikasi: e2e deterministik 14/14 PASS (panel & announce = `T-01` dari
+mock renumber, bukan MORBIS 12).
+
+## Temuan 2026-08-14 — display 1 antrian vs penerimaan 2 resep
+
+**Gejala**: halaman `/inventory/resep/penerimaan` menampilkan 2 resep, tapi
+halaman pemanggilan display hanya 1.
+
+**Hasil investigasi (session login)**: BUKAN bug extension. Display, konsol
+farmasi, `data_call`, dan `?section=isi` semuanya menampilkan 1 antrian yang
+sama (ID 79147 = R2608-0001, No Antrian `UT-001`). Resep kedua (R2608-0002)
+diterima depo tapi **belum di-antri** (No Antrian `-`) → tidak ada record di
+tabel antrian → tidak muncul di display.
+
+**Kesimpulan**: halaman penerimaan menampilkan semua resep yang masuk
+(termasuk belum di-antri); display menampilkan hanya yang sudah di-antri.
+Begitu petugas meng-antri resep kedua di konsol, otomatis muncul di display.
+Tidak ada yang perlu diperbaiki di extension untuk kasus ini.
