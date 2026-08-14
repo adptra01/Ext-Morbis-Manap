@@ -40,6 +40,7 @@
  * gate data-ext-antrian-farmasi di init.ts.
  */
 import { nextHealth, type HealthState } from './shared/wsHealth';
+import { renumberFarmasi } from './shared/farmasiRenumber';
 import {
   activeNumber,
   isReset,
@@ -252,6 +253,38 @@ declare global {
     siapDiambil: ViewRow[];
   };
 
+  // Cache kode renumber (id → T-xx/R-xx) dari lastRows terbaru. Sumber nomor
+  // yang SAMA dengan kertas cetak (farmasiIssue) — display tidak boleh memakai
+  // NOMOR MORBIS asli (bisa berubah saat status berubah; kertas frozen).
+  let renumberCache = new Map<string, string>();
+  function updateRenumber(rows: RawRow[]): void {
+    renumberCache = renumberFarmasi(
+      rows.map((r) => ({
+        id: String(r.ID ?? ''),
+        jenis: (r.JENIS as string | null) ?? null,
+        counter: (r.COUNTER as string | number | null) ?? null,
+        status: (r.STATUS as string | null) ?? null,
+        waktu: (r.WAKTU as string | null) ?? null,
+      })),
+    ).byId;
+  }
+
+  // Nomor TAMPILAN per jenis: NOMOR MORBIS → kode renumber (T-42/R-42) agar
+  // cocok dengan kertas. Sudah berbentuk kode → biarkan. Baris tak ditemukan
+  // (selesai/hilang dari data_call) → fallback MORBIS asli.
+  function kodeTampil(jenis: 'tunggal' | 'racikan', num: string): string {
+    if (!num || num === '0') return num;
+    if (/^[TR]-\d+$/.test(num)) return num;
+    const isR = jenis === 'racikan';
+    const row = lastRows.find(
+      (r) =>
+        (isR ? /racik/i.test(String(r.JENIS ?? '')) : !/racik/i.test(String(r.JENIS ?? ''))) &&
+        (String(r.NOMOR ?? '') === num || String(r.COUNTER ?? '') === num),
+    );
+    if (!row) return num;
+    return renumberCache.get(String(row.ID ?? '')) ?? num;
+  }
+
   /* ============================================================
    * API Adapter — fetch data_call (nama pasien) + current-number.
    * ============================================================ */
@@ -384,15 +417,15 @@ declare global {
   }
 
   // Baca nomor yang tampil di panel (selector PENGGILAN/SIAP). Format display
-  // kami & native sama: <div class="antrian-nomor">NN</div>. '—'/kosong → ''.
-  // HANYA nomor angka yang diterima — teks/nama pasien (mis. "SITI AMINAH-")
-  // tidak pernah dianggap recall (anti false-positive recall native).
+  // kami & native sama: <div class="antrian-nomor">NN</div> — bisa NOMOR MORBIS
+  // ("30") atau kode renumber ("T-42"). '—'/kosong → ''. HANYA angka atau kode
+  // T-/R- yang diterima — teks/nama pasien (mis. "SITI AMINAH-") tidak pernah
+  // dianggap recall (anti false-positive recall native).
   function readPanelNumber(sel: string): string {
     const el = document.querySelector<HTMLElement>(sel);
     if (!el) return '';
     const m = (el.querySelector?.('.antrian-nomor')?.textContent || '').trim();
-    const digits = (m || '').replace(/\D/g, '');
-    return digits && m !== '—' ? digits : '';
+    return /^(?:[TR]-)?\d+$/.test(m) ? m : '';
   }
 
   // Highlight baris tabel #list-content utk panggilan terakhir per jenis.
@@ -500,14 +533,16 @@ declare global {
       if (segar && key !== lastLocalRecallKey) {
         lastLocalRecallKey = key;
         localStorage.removeItem('ext-afd-recall');
-        updateDebugState({ lastAnnouncement: `recall:${key}` });
+        const jenis = (sig.jenis === 'racikan' ? 'racikan' : 'tunggal') as 'tunggal' | 'racikan';
+        const kode = kodeTampil(jenis, sig.nomor); // MORBIS konsol → kode renumber (kertas)
+        updateDebugState({ lastAnnouncement: `recall:${jenis}:${kode}` });
         announce({
           id: `local-recall-${key}`,
-          nomor: sig.nomor,
+          nomor: kode,
           kode: '',
           namaPasien: (sig.nomorTeks || '').split(/\s+/)[0] || '',
           unit: '',
-          jenis: (sig.jenis === 'racikan' ? 'racikan' : 'tunggal') as 'tunggal' | 'racikan',
+          jenis,
           rm: '',
         });
       }
@@ -525,6 +560,7 @@ declare global {
     try {
       const [{ current: cur }, rows] = await Promise.all([fetchCurrentNumber(), fetchCallData()]);
       lastRows = rows;
+      updateRenumber(rows);
       const g1 = cur.get('1')?.trim();
       const g2 = cur.get('2')?.trim();
       currentByJenis.tunggal = g1 && g1 !== '0' ? g1 : '';
@@ -547,14 +583,17 @@ declare global {
           if (segar && key !== lastLocalRecallKey) {
             lastLocalRecallKey = key;
             localStorage.removeItem('ext-afd-recall');
-            updateDebugState({ lastAnnouncement: `recall:${key}` });
+            const jenis = (sig.jenis === 'racikan' ? 'racikan' : 'tunggal') as
+              'tunggal' | 'racikan';
+            const kode = kodeTampil(jenis, sig.nomor); // MORBIS konsol → kode renumber (kertas)
+            updateDebugState({ lastAnnouncement: `recall:${jenis}:${kode}` });
             announce({
               id: `local-recall-${key}`,
-              nomor: sig.nomor,
+              nomor: kode,
               kode: '',
               namaPasien: (sig.nomorTeks || '').split(/\s+/)[0] || '',
               unit: '',
-              jenis: (sig.jenis === 'racikan' ? 'racikan' : 'tunggal') as 'tunggal' | 'racikan',
+              jenis,
               rm: '',
             });
           }
@@ -588,13 +627,14 @@ declare global {
       if (recallT || recallR) {
         const jenis = recallT ? 'tunggal' : 'racikan';
         const panelNum = recallT ? panelT : panelR;
-        const key = jenis + ':' + panelNum;
+        const kode = kodeTampil(jenis, panelNum); // MORBIS native → kode renumber (kertas)
+        const key = jenis + ':' + kode;
         if (key !== lastNativeCall) {
           lastNativeCall = key;
           const nama = currentPatientName(jenis, panelNum);
           announce({
             id: 'recall:' + key,
-            nomor: panelNum,
+            nomor: kode,
             kode: '',
             namaPasien: nama,
             unit: '',
@@ -618,17 +658,18 @@ declare global {
         const prev = prevByJenis[j];
         if (cur && cur !== '0' && cur !== prev) {
           lastNativeCall = null; // panggilan normal → recall berikutnya harus announce lagi
+          const kode = kodeTampil(j, cur); // kode renumber (kertas) — bukan MORBIS
           const nama = currentPatientName(j, cur);
           announce({
-            id: j + ':' + cur,
-            nomor: cur,
+            id: j + ':' + kode,
+            nomor: kode,
             kode: '',
             namaPasien: nama,
             unit: '',
             jenis: j,
             rm: '',
           });
-          updateDebugState({ lastAnnouncement: j + ':' + cur });
+          updateDebugState({ lastAnnouncement: j + ':' + kode });
         }
         prevByJenis[j] = cur || '';
       }
@@ -640,6 +681,10 @@ declare global {
       // menampilkan RECALL native — refresh 1s ini kalau menimpa akan menghapus
       // nomor recall yang baru saja di-announce.
       if (!health.nativeActive) {
+        // Panel menampilkan kode renumber (kertas); guard recall bandingkan panel
+        // vs current MORBIS & vs writtenByUs (kode yang kita tulis).
+        const kodeT = kodeTampil('tunggal', currentByJenis.tunggal);
+        const kodeR = kodeTampil('racikan', currentByJenis.racikan);
         const atasRecallNow =
           readPanelNumber(PANGGILAN_SEL) &&
           readPanelNumber(PANGGILAN_SEL) !== currentByJenis.tunggal &&
@@ -652,20 +697,20 @@ declare global {
         if (atas)
           atas.innerHTML = cardSection(
             'Obat Tunggal',
-            currentByJenis.tunggal,
+            kodeT,
             currentPatientName('tunggal', currentByJenis.tunggal),
           );
         const bawah = bawahRecallNow ? null : document.querySelector<HTMLElement>(SIAP_SEL);
         if (bawah)
           bawah.innerHTML = cardSection(
             'Obat Racikan',
-            currentByJenis.racikan,
+            kodeR,
             currentPatientName('racikan', currentByJenis.racikan),
           );
         highlightCurrents();
         // tandai nilai yang KITA tulis — signature recall detection (anti false-positif)
-        writtenByUs.tunggal = currentByJenis.tunggal;
-        writtenByUs.racikan = currentByJenis.racikan;
+        writtenByUs.tunggal = kodeT;
+        writtenByUs.racikan = kodeR;
         onWeWrote(); // tandai write extension di FALLBACK agar tak dianggap native recovery
         setStatus('ok');
       } else {
@@ -695,6 +740,8 @@ declare global {
       // membeku di FALLBACK → pollFallback→renderDisplay menimpa panel recall
       // dengan current, menghapus nomor recall). Deteksi: panel ≠ current & ≠
       // nilai yg kita tulis = recall aktif → biarkan.
+      const kodeT = kodeTampil('tunggal', currentByJenis.tunggal);
+      const kodeR = kodeTampil('racikan', currentByJenis.racikan);
       const atasRecall =
         readPanelNumber(PANGGILAN_SEL) &&
         readPanelNumber(PANGGILAN_SEL) !== currentByJenis.tunggal &&
@@ -707,20 +754,20 @@ declare global {
       if (atas)
         atas.innerHTML = cardSection(
           'Obat Tunggal',
-          currentByJenis.tunggal,
+          kodeT,
           currentPatientName('tunggal', currentByJenis.tunggal),
         );
       const bawah = bawahRecall ? null : document.querySelector<HTMLElement>(SIAP_SEL);
       if (bawah)
         bawah.innerHTML = cardSection(
           'Obat Racikan',
-          currentByJenis.racikan,
+          kodeR,
           currentPatientName('racikan', currentByJenis.racikan),
         );
       highlightCurrents(); // tandai baris panggilan terakhir per jenis
       wireRowRecall(); // aktifkan klik-kiri-pasien utk panggil ulang
-      writtenByUs.tunggal = currentByJenis.tunggal;
-      writtenByUs.racikan = currentByJenis.racikan;
+      writtenByUs.tunggal = kodeT;
+      writtenByUs.racikan = kodeR;
     }
     onWeWrote(); // tandai DOM yang BARU SAJA extension tulis (bukan native)
   }
@@ -911,8 +958,11 @@ declare global {
     'sebelas',
   ];
   function numberToWords(n: number | string): string {
-    const num = Math.abs(Math.trunc(Number(n)));
-    if (!Number.isFinite(num)) return String(n);
+    // Kode renumber "T-42"/"R-42" → ucapkan angkanya (kertas bertuliskan kode;
+    // TTS menyebut nomor agar pasien mencocokkan dengan tiketnya).
+    const clean = String(n).replace(/^[TR]-/, '');
+    const num = Math.abs(Math.trunc(Number(clean)));
+    if (!Number.isFinite(num)) return String(clean);
     const two = (x: number): string => {
       if (x < 12) return N2W_SATUAN[x];
       if (x < 20) return N2W_SATUAN[x - 10] + ' belas';
@@ -1155,6 +1205,7 @@ declare global {
       ladderIdx = 0; // sukses → reset backoff ke anak tangga awal
       updateDebugState({ lastPoll: Date.now(), lastDataCount: rows.length });
       lastRows = rows; // simpan utk seed card dua-bagian (status MORBIS tak reliable)
+      updateRenumber(rows);
 
       // Hanya sentuh DOM bila ada data valid; []/gagal → pertahankan DOM native.
       const view = normalize(rows);
@@ -1185,7 +1236,7 @@ declare global {
         const mPat = matchPatient(rows, num);
         const call: ViewRow = {
           id: 'cur-' + num,
-          nomor: num,
+          nomor: kodeTampil(mPat?.jenis || 'tunggal', num), // kode renumber (kertas)
           kode: (pr && pr.kode) || mPat?.kode || '',
           namaPasien: (pr && pr.nama) || mPat?.namaPasien || '',
           unit: mPat?.unit || '',

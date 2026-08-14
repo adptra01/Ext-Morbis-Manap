@@ -41,6 +41,32 @@ var __morbis_feature = (() => {
     };
   }
 
+  // src/features/shared/farmasiRenumber.ts
+  var RACIKAN_RE = /racik/i;
+  function isRacikanJenis(jenis) {
+    return !!jenis && RACIKAN_RE.test(jenis);
+  }
+  function ts(w) {
+    if (!w) return 0;
+    const n = Date.parse(w.replace(' ', 'T'));
+    return Number.isFinite(n) ? n : 0;
+  }
+  function renumberFarmasi(rows) {
+    const sorted = [...rows].sort((a, b) => ts(a.waktu) - ts(b.waktu));
+    const byId = /* @__PURE__ */ new Map();
+    const urutan = [];
+    let r = 0;
+    let t = 0;
+    for (const row of sorted) {
+      if (!row.id) continue;
+      const isR = isRacikanJenis(row.jenis);
+      const kode = isR ? 'R-' + String(++r).padStart(2, '0') : 'T-' + String(++t).padStart(2, '0');
+      byId.set(String(row.id), kode);
+      urutan.push(kode);
+    }
+    return { byId, urutan };
+  }
+
   // src/features/shared/currentNumber.ts
   var CURRENT_RE = /current-number[^>]*data-counter="([^"]*)"[^>]*>([\s\S]*?)<\/span>/g;
   var ROW_RE = /<tr[^>]*data-nomor="([^"]*)"[^>]*>([\s\S]*?)<\/tr>/g;
@@ -226,6 +252,30 @@ var __morbis_feature = (() => {
     }
     const WATCH_MS = 1500;
     const STALE_MAX = 2;
+    let renumberCache = /* @__PURE__ */ new Map();
+    function updateRenumber(rows) {
+      renumberCache = renumberFarmasi(
+        rows.map((r) => ({
+          id: String(r.ID ?? ''),
+          jenis: r.JENIS ?? null,
+          counter: r.COUNTER ?? null,
+          status: r.STATUS ?? null,
+          waktu: r.WAKTU ?? null,
+        })),
+      ).byId;
+    }
+    function kodeTampil(jenis, num) {
+      if (!num || num === '0') return num;
+      if (/^[TR]-\d+$/.test(num)) return num;
+      const isR = jenis === 'racikan';
+      const row = lastRows.find(
+        (r) =>
+          (isR ? /racik/i.test(String(r.JENIS ?? '')) : !/racik/i.test(String(r.JENIS ?? ''))) &&
+          (String(r.NOMOR ?? '') === num || String(r.COUNTER ?? '') === num),
+      );
+      if (!row) return num;
+      return renumberCache.get(String(row.ID ?? '')) ?? num;
+    }
     async function fetchCallData() {
       const res = await fetch(LIST_URL + '?type=data_call', {
         method: 'GET',
@@ -308,8 +358,7 @@ var __morbis_feature = (() => {
       const el = document.querySelector(sel);
       if (!el) return '';
       const m = (el.querySelector?.('.antrian-nomor')?.textContent || '').trim();
-      const digits = (m || '').replace(/\D/g, '');
-      return digits && m !== '\u2014' ? digits : '';
+      return /^(?:[TR]-)?\d+$/.test(m) ? m : '';
     }
     function highlightCurrents() {
       const lc = document.querySelector('#list-content');
@@ -397,14 +446,16 @@ var __morbis_feature = (() => {
         if (segar && key !== lastLocalRecallKey) {
           lastLocalRecallKey = key;
           localStorage.removeItem('ext-afd-recall');
-          updateDebugState({ lastAnnouncement: `recall:${key}` });
+          const jenis = sig.jenis === 'racikan' ? 'racikan' : 'tunggal';
+          const kode = kodeTampil(jenis, sig.nomor);
+          updateDebugState({ lastAnnouncement: `recall:${jenis}:${kode}` });
           announce({
             id: `local-recall-${key}`,
-            nomor: sig.nomor,
+            nomor: kode,
             kode: '',
             namaPasien: (sig.nomorTeks || '').split(/\s+/)[0] || '',
             unit: '',
-            jenis: sig.jenis === 'racikan' ? 'racikan' : 'tunggal',
+            jenis,
             rm: '',
           });
         }
@@ -416,6 +467,7 @@ var __morbis_feature = (() => {
       try {
         const [{ current: cur }, rows] = await Promise.all([fetchCurrentNumber(), fetchCallData()]);
         lastRows = rows;
+        updateRenumber(rows);
         const g1 = cur.get('1')?.trim();
         const g2 = cur.get('2')?.trim();
         currentByJenis.tunggal = g1 && g1 !== '0' ? g1 : '';
@@ -429,14 +481,16 @@ var __morbis_feature = (() => {
             if (segar && key !== lastLocalRecallKey) {
               lastLocalRecallKey = key;
               localStorage.removeItem('ext-afd-recall');
-              updateDebugState({ lastAnnouncement: `recall:${key}` });
+              const jenis = sig.jenis === 'racikan' ? 'racikan' : 'tunggal';
+              const kode = kodeTampil(jenis, sig.nomor);
+              updateDebugState({ lastAnnouncement: `recall:${jenis}:${kode}` });
               announce({
                 id: `local-recall-${key}`,
-                nomor: sig.nomor,
+                nomor: kode,
                 kode: '',
                 namaPasien: (sig.nomorTeks || '').split(/\s+/)[0] || '',
                 unit: '',
-                jenis: sig.jenis === 'racikan' ? 'racikan' : 'tunggal',
+                jenis,
                 rm: '',
               });
             }
@@ -457,13 +511,14 @@ var __morbis_feature = (() => {
         if (recallT || recallR) {
           const jenis = recallT ? 'tunggal' : 'racikan';
           const panelNum = recallT ? panelT : panelR;
-          const key = jenis + ':' + panelNum;
+          const kode = kodeTampil(jenis, panelNum);
+          const key = jenis + ':' + kode;
           if (key !== lastNativeCall) {
             lastNativeCall = key;
             const nama = currentPatientName(jenis, panelNum);
             announce({
               id: 'recall:' + key,
-              nomor: panelNum,
+              nomor: kode,
               kode: '',
               namaPasien: nama,
               unit: '',
@@ -480,21 +535,24 @@ var __morbis_feature = (() => {
           const prev = prevByJenis[j];
           if (cur2 && cur2 !== '0' && cur2 !== prev) {
             lastNativeCall = null;
+            const kode = kodeTampil(j, cur2);
             const nama = currentPatientName(j, cur2);
             announce({
-              id: j + ':' + cur2,
-              nomor: cur2,
+              id: j + ':' + kode,
+              nomor: kode,
               kode: '',
               namaPasien: nama,
               unit: '',
               jenis: j,
               rm: '',
             });
-            updateDebugState({ lastAnnouncement: j + ':' + cur2 });
+            updateDebugState({ lastAnnouncement: j + ':' + kode });
           }
           prevByJenis[j] = cur2 || '';
         }
         if (!health.nativeActive) {
+          const kodeT = kodeTampil('tunggal', currentByJenis.tunggal);
+          const kodeR = kodeTampil('racikan', currentByJenis.racikan);
           const atasRecallNow =
             readPanelNumber(PANGGILAN_SEL) &&
             readPanelNumber(PANGGILAN_SEL) !== currentByJenis.tunggal &&
@@ -507,19 +565,19 @@ var __morbis_feature = (() => {
           if (atas)
             atas.innerHTML = cardSection(
               'Obat Tunggal',
-              currentByJenis.tunggal,
+              kodeT,
               currentPatientName('tunggal', currentByJenis.tunggal),
             );
           const bawah = bawahRecallNow ? null : document.querySelector(SIAP_SEL);
           if (bawah)
             bawah.innerHTML = cardSection(
               'Obat Racikan',
-              currentByJenis.racikan,
+              kodeR,
               currentPatientName('racikan', currentByJenis.racikan),
             );
           highlightCurrents();
-          writtenByUs.tunggal = currentByJenis.tunggal;
-          writtenByUs.racikan = currentByJenis.racikan;
+          writtenByUs.tunggal = kodeT;
+          writtenByUs.racikan = kodeR;
           onWeWrote();
           setStatus('ok');
         } else {
@@ -533,6 +591,8 @@ var __morbis_feature = (() => {
       if (call) {
         lastByJenis[call.jenis] = call;
         seedLastByJenis(view);
+        const kodeT = kodeTampil('tunggal', currentByJenis.tunggal);
+        const kodeR = kodeTampil('racikan', currentByJenis.racikan);
         const atasRecall =
           readPanelNumber(PANGGILAN_SEL) &&
           readPanelNumber(PANGGILAN_SEL) !== currentByJenis.tunggal &&
@@ -545,20 +605,20 @@ var __morbis_feature = (() => {
         if (atas)
           atas.innerHTML = cardSection(
             'Obat Tunggal',
-            currentByJenis.tunggal,
+            kodeT,
             currentPatientName('tunggal', currentByJenis.tunggal),
           );
         const bawah = bawahRecall ? null : document.querySelector(SIAP_SEL);
         if (bawah)
           bawah.innerHTML = cardSection(
             'Obat Racikan',
-            currentByJenis.racikan,
+            kodeR,
             currentPatientName('racikan', currentByJenis.racikan),
           );
         highlightCurrents();
         wireRowRecall();
-        writtenByUs.tunggal = currentByJenis.tunggal;
-        writtenByUs.racikan = currentByJenis.racikan;
+        writtenByUs.tunggal = kodeT;
+        writtenByUs.racikan = kodeR;
       }
       onWeWrote();
     }
@@ -693,8 +753,9 @@ var __morbis_feature = (() => {
       'sebelas',
     ];
     function numberToWords(n) {
-      const num = Math.abs(Math.trunc(Number(n)));
-      if (!Number.isFinite(num)) return String(n);
+      const clean = String(n).replace(/^[TR]-/, '');
+      const num = Math.abs(Math.trunc(Number(clean)));
+      if (!Number.isFinite(num)) return String(clean);
       const two = (x) => {
         if (x < 12) return N2W_SATUAN[x];
         if (x < 20) return N2W_SATUAN[x - 10] + ' belas';
@@ -877,6 +938,7 @@ var __morbis_feature = (() => {
         ladderIdx = 0;
         updateDebugState({ lastPoll: Date.now(), lastDataCount: rows.length });
         lastRows = rows;
+        updateRenumber(rows);
         const view = normalize(rows);
         const num = activeNumber(cur);
         const g1 = cur.get('1')?.trim();
@@ -897,7 +959,8 @@ var __morbis_feature = (() => {
           const mPat = matchPatient(rows, num);
           const call = {
             id: 'cur-' + num,
-            nomor: num,
+            nomor: kodeTampil(mPat?.jenis || 'tunggal', num),
+            // kode renumber (kertas)
             kode: (pr && pr.kode) || mPat?.kode || '',
             namaPasien: (pr && pr.nama) || mPat?.namaPasien || '',
             unit: mPat?.unit || '',
