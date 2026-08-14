@@ -481,6 +481,38 @@ chrome.runtime.onMessage.addListener(
         return true;
       }
 
+      case 'TTS_LOCAL': {
+        // Network fetch Layer-0 dipindah ke sini: service worker punya izin host
+        // http://*/* sehingga fetch ke 127.0.0.1:8765 TIDAK kena PNA/CORS halaman
+        // (halaman display http://103.x ke localhost diblokir Chrome PNA).
+        // HANYA network fetch — audio.play() tetap di content script.
+        (async () => {
+          try {
+            const { text } = validated as unknown as { text: string };
+            const res = await fetch('http://127.0.0.1:8765/tts?text=' + encodeURIComponent(text), {
+              mode: 'cors',
+            });
+            if (!res.ok) {
+              sendResponse({ ok: false, reason: 'worker-http ' + res.status });
+              return;
+            }
+            const buf = await res.arrayBuffer();
+            if (!buf || buf.byteLength === 0) {
+              sendResponse({ ok: false, reason: 'worker-empty' });
+              return;
+            }
+            sendResponse({
+              ok: true,
+              mime: res.headers.get('content-type') || 'audio/mpeg',
+              data: Array.from(new Uint8Array(buf)),
+            });
+          } catch (e) {
+            sendResponse({ ok: false, reason: 'worker-fetch ' + String(e).slice(0, 60) });
+          }
+        })();
+        return true;
+      }
+
       case 'TAB_ACTION': {
         (async () => {
           const targetTabId = (validated as unknown as Record<string, unknown>).tabId as

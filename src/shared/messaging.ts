@@ -23,6 +23,10 @@ export const MessageTypes = {
   BATCH_UPLOAD_ACTION: 'BATCH_UPLOAD_ACTION',
   BATCH_DELETE_ACTION: 'BATCH_DELETE_ACTION',
   PROXY_FETCH: 'PROXY_FETCH',
+  // TTS: content script → background service worker → local TTS service.
+  // SW fetch bebas PNA/CORS halaman (host_permissions http://*/*) sehingga
+  // halaman HTTP publik MORBIS bisa ambil MP3 dari 127.0.0.1:8765.
+  TTS_LOCAL: 'TTS_LOCAL',
 } as const;
 
 export type MessageType = (typeof MessageTypes)[keyof typeof MessageTypes];
@@ -57,6 +61,9 @@ type RequestMap = {
   // Proxy fetch (side panel → background: fetch HTML from hospital server)
   PROXY_FETCH: { type: 'PROXY_FETCH'; url: string; method: string; data: Record<string, string> };
 
+  // TTS local: content script → background → 127.0.0.1:8765/tts → MP3 bytes
+  TTS_LOCAL: { type: 'TTS_LOCAL'; text: string };
+
   // Batch actions
   BATCH_UPLOAD_ACTION: { type: 'BATCH_UPLOAD_ACTION'; payload: unknown };
   BATCH_DELETE_ACTION: { type: 'BATCH_DELETE_ACTION'; payload: unknown };
@@ -84,6 +91,7 @@ type ResponseMap = {
   BATCH_UPLOAD_ACTION: { success: true };
   BATCH_DELETE_ACTION: { success: true };
   PROXY_FETCH: { success: boolean; html?: string; error?: string };
+  TTS_LOCAL: { ok: boolean; mime?: string; data?: string; reason?: string };
 };
 
 export function sendMessage<T extends MessageType>(

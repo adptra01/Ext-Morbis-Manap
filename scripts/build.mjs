@@ -70,6 +70,7 @@ async function compileFeatureFiles() {
     'antrianTools.ts',
     'antrianLoader.ts',
     'antrianFarmasiDisplay.ts',
+    'farmasiBridge.ts',
     'antrianFarmasiTotal.ts',
     'farmasiIssue.ts',
     'farmasiRecallDeleg.ts',

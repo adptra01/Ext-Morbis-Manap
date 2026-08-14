@@ -63,7 +63,19 @@ type AntrianFarmasiDebugState = {
   lastDataCount: number | null;
   lastAnnouncement: string | null;
   audioUnlocked: boolean;
-  ttsMode: 'speech' | 'mp3' | 'local' | 'silent' | null;
+  // TTS observability: engine yang benar-benar dipakai, error terakhir, jumlah
+  // percobaan, dan pasien/nomor yang TERAKHIR dipanggil (state recall).
+  ttsMode: 'speech' | 'mp3' | 'local' | 'error' | null;
+  ttsEngine: string | null;
+  ttsLastError: string | null;
+  ttsAttempts: number;
+  lastCalledPatient: string | null;
+  lastCalledNumber: string | null;
+  lastTtsStart: number | null;
+  lastTtsEnd: number | null;
+  lastRealtimeEvent: string | null;
+  // Trace fase TTS layer-0: start→recv→blob:N→audio-new→canplay→play→end:reason
+  ttsTrace: string[] | null;
 };
 
 declare global {
@@ -173,17 +185,21 @@ declare global {
     toolbar.querySelector('#ext-afd-testsound')?.addEventListener('click', () => {
       unlockAudio(); // gesture ini membuka izin suara di browser yg ketat
       setStatus('loading');
-      announce({
-        id: 'tes:suara',
-        nomor: '99',
-        kode: 'BT',
-        namaPasien: 'Tes Suara Panggilan',
-        unit: '',
-        jenis: 'tunggal',
-        rm: '',
+      updateDebugState({
+        ttsMode: null,
+        ttsEngine: null,
+        ttsLastError: null,
+        ttsAttempts: 0,
+        lastTtsStart: null,
+        lastTtsEnd: null,
       });
-      // reset badge ke SIAP setelah announce selesai bicara (~4-5 detik)
-      window.setTimeout(() => setStatus('ok'), 5000);
+      // Tes Suara = bell + TTS kalimat pendek Bahasa Indonesia (bukan "99").
+      // Bell dan TTS diuji TERPISAH: bell sukses ≠ TTS sukses (debug mencatat
+      // engine yang benar-benar dipakai / alasan semua engine gagal).
+      queue.push({ kind: 'bell' }, { kind: 'voice', text: 'Tes suara antrian farmasi.' });
+      next();
+      // reset badge ke SIAP setelah announce selesai bicara (~5-6 detik)
+      window.setTimeout(() => setStatus('ok'), 6000);
     });
     toolbar.querySelector('#ext-afd-fs')?.addEventListener('click', () => {
       const doc = document as Document & { webkitFullscreenElement?: unknown };
@@ -294,6 +310,7 @@ declare global {
     const res = await fetch(LIST_URL + '?type=data_call', {
       method: 'GET',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+      cache: 'no-store', // data_call juga harus segar (nama pasien recall)
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text();
@@ -328,6 +345,7 @@ declare global {
       {
         method: 'GET',
         headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        cache: 'no-store', // jangan pernah pakai cache browser: current-number harus segar
       },
     );
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -535,12 +553,18 @@ declare global {
         localStorage.removeItem('ext-afd-recall');
         const jenis = (sig.jenis === 'racikan' ? 'racikan' : 'tunggal') as 'tunggal' | 'racikan';
         const kode = kodeTampil(jenis, sig.nomor); // MORBIS konsol → kode renumber (kertas)
+        // Nama pasien: dari record data_call (nomor konsol = NOMOR MORBIS), fallback
+        // ke pasien terakhir yang benar-benar dipanggil (lastCalled) — BUKAN
+        // nomorTeks (cell pertama tabel konsol = kode/nomor, bukan nama).
+        const nama =
+          currentPatientName(jenis, sig.nomor) ||
+          (lastCalled && lastCalled.jenis === jenis ? lastCalled.namaPasien : '');
         updateDebugState({ lastAnnouncement: `recall:${jenis}:${kode}` });
         announce({
           id: `local-recall-${key}`,
           nomor: kode,
           kode: '',
-          namaPasien: (sig.nomorTeks || '').split(/\s+/)[0] || '',
+          namaPasien: nama,
           unit: '',
           jenis,
           rm: '',
@@ -566,41 +590,17 @@ declare global {
       currentByJenis.tunggal = g1 && g1 !== '0' ? g1 : '';
       currentByJenis.racikan = g2 && g2 !== '0' ? g2 : '';
 
-      // Recall via localStorage (konsol→display, same-origin). Bebas WS & login:
-      // jalur ini jalan walau WS :8088 mati & current-number butuh session.
-      // Konsol menulis saat klik recall (farmasiRecallDeleg.ts); display announce.
-      try {
-        const raw = localStorage.getItem('ext-afd-recall');
-        if (raw) {
-          const sig = JSON.parse(raw) as {
-            jenis: string;
-            nomor: string;
-            nomorTeks?: string;
-            ts: number;
-          };
-          const key = `${sig.jenis}:${sig.nomor}`;
-          const segar = Date.now() - (sig.ts || 0) < 8000; // sinyal kedaluwarsa 8 detik
-          if (segar && key !== lastLocalRecallKey) {
-            lastLocalRecallKey = key;
-            localStorage.removeItem('ext-afd-recall');
-            const jenis = (sig.jenis === 'racikan' ? 'racikan' : 'tunggal') as
-              'tunggal' | 'racikan';
-            const kode = kodeTampil(jenis, sig.nomor); // MORBIS konsol → kode renumber (kertas)
-            updateDebugState({ lastAnnouncement: `recall:${jenis}:${kode}` });
-            announce({
-              id: `local-recall-${key}`,
-              nomor: kode,
-              kode: '',
-              namaPasien: (sig.nomorTeks || '').split(/\s+/)[0] || '',
-              unit: '',
-              jenis,
-              rm: '',
-            });
-          }
-        }
-      } catch {
-        /* ignore */
+      // Reset Antrian (current-number turun drastis) → bersihkan state panggilan
+      // (dedup signature + lastCalled) supaya "Selanjutnya" berikutnya announce
+      // lagi & recall tidak memakai pasien lama. Tidak menyentuh konfigurasi TTS.
+      let justReset = false;
+      if (isReset(cur, prevCurrent)) {
+        clearCallState();
+        justReset = true;
       }
+      // Sinkron baseline antar-iterasi (isReset di refresh berikutnya).
+      prevCurrent.clear();
+      for (const [c, v] of cur) prevCurrent.set(c, v);
 
       // Recall (panggil ulang): current-number ?section=isi TIDAK berubah (tetap
       // nomor terakhir "Selanjutnya"), tapi native display menulis nomor recall ke
@@ -614,12 +614,19 @@ declare global {
       // Recall HANYA jika panel ≠ current DAN ≠ nilai yang extension tulis sendiri.
       const panelT = readPanelNumber(PANGGILAN_SEL); // penyerahan = TUNGGAL native
       const panelR = readPanelNumber(SIAP_SEL); // view = RACIKAN native
+      // Setelah reset, current MORBIS kosong ('') — panel masih menampilkan nomor
+      // recall lama → tanpa guard ini, recall branch announce ulang pasien lama.
+      // Recall hanya valid bila ADA panggilan aktif (current non-kosong).
       const recallT =
+        !justReset &&
+        currentByJenis.tunggal !== '' &&
         panelT &&
         panelT !== '0' &&
         panelT !== currentByJenis.tunggal &&
         panelT !== writtenByUs.tunggal;
       const recallR =
+        !justReset &&
+        currentByJenis.racikan !== '' &&
         panelR &&
         panelR !== '0' &&
         panelR !== currentByJenis.racikan &&
@@ -631,7 +638,11 @@ declare global {
         const key = jenis + ':' + kode;
         if (key !== lastNativeCall) {
           lastNativeCall = key;
-          const nama = currentPatientName(jenis, panelNum);
+          // Nama pasien: dari record data_call (panel native = NOMOR MORBIS),
+          // fallback ke pasien terakhir yang benar-benar dipanggil (lastCalled).
+          const nama =
+            currentPatientName(jenis, panelNum) ||
+            (lastCalled && lastCalled.jenis === jenis ? lastCalled.namaPasien : '');
           announce({
             id: 'recall:' + key,
             nomor: kode,
@@ -657,19 +668,25 @@ declare global {
         const cur = currentByJenis[j];
         const prev = prevByJenis[j];
         if (cur && cur !== '0' && cur !== prev) {
-          lastNativeCall = null; // panggilan normal → recall berikutnya harus announce lagi
           const kode = kodeTampil(j, cur); // kode renumber (kertas) — bukan MORBIS
-          const nama = currentPatientName(j, cur);
-          announce({
-            id: j + ':' + kode,
-            nomor: kode,
-            kode: '',
-            namaPasien: nama,
-            unit: '',
-            jenis: j,
-            rm: '',
-          });
-          updateDebugState({ lastAnnouncement: j + ':' + kode });
+          const key = j + ':' + kode;
+          if (key !== lastNormalKey) {
+            // Panggilan normal baru (atau recall sebelumnya). Dedup BERSAMA
+            // dengan pollFallback: satu klik Selanjutnya = satu announce.
+            lastNormalKey = key;
+            lastNativeCall = null; // panggilan normal → recall berikutnya harus announce lagi
+            const nama = currentPatientName(j, cur);
+            announce({
+              id: key,
+              nomor: kode,
+              kode: '',
+              namaPasien: nama,
+              unit: '',
+              jenis: j,
+              rm: '',
+            });
+            updateDebugState({ lastAnnouncement: key });
+          }
         }
         prevByJenis[j] = cur || '';
       }
@@ -686,10 +703,12 @@ declare global {
         const kodeT = kodeTampil('tunggal', currentByJenis.tunggal);
         const kodeR = kodeTampil('racikan', currentByJenis.racikan);
         const atasRecallNow =
+          !justReset &&
           readPanelNumber(PANGGILAN_SEL) &&
           readPanelNumber(PANGGILAN_SEL) !== currentByJenis.tunggal &&
           readPanelNumber(PANGGILAN_SEL) !== writtenByUs.tunggal;
         const bawahRecallNow =
+          !justReset &&
           readPanelNumber(SIAP_SEL) &&
           readPanelNumber(SIAP_SEL) !== currentByJenis.racikan &&
           readPanelNumber(SIAP_SEL) !== writtenByUs.racikan;
@@ -829,9 +848,61 @@ declare global {
   // karena STATUS=0 tak selalu menandai baris aktif (status MORBIS tak reliable).
   let lastRows: RawRow[] = [];
 
+  // Key panggilan NORMAL terakhir yang di-announce ('jenis:kode') — dipakai
+  // BERSAMA oleh refreshCardNumber & pollFallback supaya SATU klik Selanjutnya
+  // tidak memicu announce ganda (kedua jalur fetch current-number yang sama).
+  // Recall (lastNativeCall/lastLocalRecallKey) tetap jalur terpisah → selalu
+  // bisa memaksa announce ulang.
+  let lastNormalKey = '';
+
+  // Pasien TERAKHIR yang benar-benar dipanggil (state eksplisit recall).
+  // Recall memakai state ini — BUKAN "pasien terakhir yang ditemukan di DOM"
+  // — supaya nama yang diumumkan saat panggil ulang = pasien yang dipanggil.
+  // Di-reset saat Reset Antrian (state lama tidak valid lagi).
+  let lastCalled: { jenis: 'tunggal' | 'racikan'; nomor: string; namaPasien: string } | null = null;
+
+  // Bersihkan state panggilan saat Reset Antrian (current-number turun drastis).
+  // Dedup signature lama tidak valid → panggilan berikutnya pasti di-announce.
+  // TTS/voice config TIDAK disentuh.
+  function clearCallState(): void {
+    lastCalled = null;
+    lastNativeCall = null;
+    lastLocalRecallKey = '';
+    announcedSig = '';
+    lastNormalKey = '';
+    prevByJenis.tunggal = '';
+    prevByJenis.racikan = '';
+    prevCurrent.clear();
+    updateDebugState({
+      lastCalledPatient: null,
+      lastCalledNumber: null,
+      lastRealtimeEvent: 'reset',
+    });
+  }
+
   /* ============================================================
-   * TTS (role-gated). Bell asli MORBIS (audio #unine) dipicu karena
-   * suara bell menandai pergantian sebelum voice.
+   * TTS MULTI-LAYER (role-gated).
+   *
+   * Bell (Web Audio) dan TTS adalah dua jalur independen: bell sukses
+   * TIDAK berarti TTS sukses. Pipeline TTS mencoba layer demi layer dan
+   * SETIAP layer benar-benar di-tunggu (await onend/play/error/timeout),
+   * tidak "fire-and-forget".
+   *
+   * Prioritas = LOKAL dulu (internet BUKAN dependency utama), Google
+   * MP3 jadi cadangan terakhir:
+   *
+   *   Layer 0 — local service 127.0.0.1:8765 (tts_service.py; MP3 via Audio,
+   *             engine di luar browser — bebas CORS & voices kosong)
+   *   Layer 1 — speechSynthesis voice BAHASA INDONESIA lokal (localService)
+   *   Layer 2 — speechSynthesis voice id-ID apa pun (termasuk Google online)
+   *   Layer 3 — speechSynthesis voice lokal apa pun yang tersedia
+   *   Layer 4 — Google Translate TTS MP3 (fetch→blob→Audio→play→ended)
+   *   Layer 5 — ERROR eksplisit: ttsMode='error' + ttsLastError
+   *
+   * Tidak ada mode 'silent' diam-diam: kegagalan semua layer tercatat
+   * di debug state (ttsMode/ttsEngine/ttsLastError/ttsAttempts) + log
+   * diagnostik [TTS] di tiap langkah (voices, voice terpilih, onstart,
+   * onend/onerror, durasi) supaya kegagalan tidak ditebak-tebak.
    * ============================================================ */
   const synth = window.speechSynthesis;
   const RealSpeak = synth.speak.bind(synth);
@@ -860,86 +931,338 @@ declare global {
       ringBell(finish);
       return;
     }
-    playVoice(item.text, finish);
+    void playVoice(item.text).then(finish, finish);
   }
 
-  // TTS berlapis (kiosk display: Chrome speechSynthesis bisa diam tanpa user-
-  // gesture; bell AudioContext ter-unlock oleh sound=Allow, TTS tidak selalu).
-  // 1) speechSynthesis dgn voice id-ID online → onstart = benar-benar bicara
-  // 2) voices kosong / tak mulai dlm 1.2s → MP3 Google TTS (Audio element, ikut
-  //    autoplay sound=Allow) — pola sama dgn antrianTools
-  // 3) MP3 gagal (internet mati / diblokir) → voice lokal sistem (espeak/device)
-  function playVoice(text: string, onDone: () => void): void {
-    let done = false;
-    const fin = (): void => {
-      if (done) return;
-      done = true;
-      onDone();
-    };
-    const speakLocal = (): void => {
-      try {
-        updateDebugState({ ttsMode: 'local' });
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'id';
+  // --- Voice registry: tunggu voiceschanged (Chrome memuat voices async) ---
+  let voicesCache: SpeechSynthesisVoice[] = [];
+  function ensureVoices(): Promise<SpeechSynthesisVoice[]> {
+    if (voicesCache.length > 0) return Promise.resolve(voicesCache);
+    return new Promise((resolve) => {
+      const got = (): boolean => {
         const vs = synth.getVoices();
-        const lv =
-          vs.find((x) => (x.lang || '').toLowerCase().startsWith('id') && x.localService) ||
-          vs.find((x) => x.localService);
-        if (lv) u.voice = lv;
-        u.onend = fin;
-        u.onerror = fin;
-        RealSpeak.call(synth, u);
-        setTimeout(fin, 20000); // pengaman
-      } catch {
-        updateDebugState({ ttsMode: 'silent' });
-        fin();
-      }
-    };
-    const speakMp3 = (): void => {
-      try {
-        updateDebugState({ ttsMode: 'mp3' });
-        const a = new Audio(
-          'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=id&q=' +
-            encodeURIComponent(text),
-        );
-        a.onended = fin;
-        a.onerror = speakLocal;
-        void a.play().catch(speakLocal);
-        setTimeout(fin, 20000); // pengaman bila onended tak datang
-      } catch {
-        speakLocal();
-      }
-    };
-    try {
-      const u = new SpeechSynthesisUtterance(text);
-      updateDebugState({ ttsMode: 'speech' });
-      const vs = synth.getVoices();
-      const online = vs.find(
-        (x) => (x.lang || '').toLowerCase().startsWith('id') && !x.localService,
+        if (vs.length > 0) {
+          voicesCache = vs;
+          resolve(vs);
+          return true;
+        }
+        return false;
+      };
+      if (got()) return;
+      let tries = 0;
+      const timer = window.setInterval(() => {
+        tries += 1;
+        if (got() || tries >= 50) {
+          // 50×100ms = 5s; kalau tetap kosong, beri kesempatan layer MP3/lokal.
+          window.clearInterval(timer);
+          if (!voicesCache.length) {
+            voicesCache = synth.getVoices();
+            resolve(voicesCache);
+          }
+        }
+      }, 100);
+      // beberapa browser butuh voiceschanged (bukan polling)
+      synth.addEventListener('voiceschanged', () => {
+        if (!voicesCache.length) got();
+      });
+    });
+  }
+
+  function pickVoice(
+    prefer: 'id-local' | 'id-any' | 'any-local' | 'any',
+  ): SpeechSynthesisVoice | null {
+    const vs = voicesCache;
+    const low = (s: string): string => (s || '').toLowerCase();
+    if (prefer === 'id-local')
+      return (
+        vs.find((v) => low(v.lang).startsWith('id') && v.localService) ??
+        vs.find((v) => /indonesia/i.test(v.name)) ??
+        null
       );
-      if (online) u.voice = online;
-      u.lang = 'id-ID';
-      u.rate = 0.8;
-      u.volume = 1;
-      let started = false;
-      u.onstart = () => {
-        started = true;
+    if (prefer === 'id-any') return vs.find((v) => low(v.lang).startsWith('id')) ?? null;
+    if (prefer === 'any-local') return vs.find((v) => v.localService) ?? null;
+    return vs[0] ?? null;
+  }
+
+  // Layer 1-3 — speechSynthesis. RESOLVE true saat benar-benar selesai bicara
+  // (onend); false saat onerror / tidak mulai / timeout. TIDAK memanggil
+  // cancel() di sini — queue speechSynthesis dikontrol dari playVoice (satu
+  // tempat), cancel() per-utterance bisa membatalkan utterance yang baru
+  // di-speak (bug engine tertentu).
+  function speakSynth(
+    text: string,
+    voice: SpeechSynthesisVoice | null,
+    timeoutMs = 20000,
+  ): Promise<boolean> {
+    return new Promise((resolve) => {
+      try {
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = (voice && voice.lang) || 'id-ID';
+        if (voice) u.voice = voice;
+        u.rate = 0.8;
+        u.volume = 1;
+        let started = false;
+        let done = false;
+        const t0 = Date.now();
+        const fin = (ok: boolean): void => {
+          if (done) return;
+          done = true;
+          window.clearTimeout(timer);
+          updateDebugState({ lastTtsEnd: Date.now() });
+          console.info(
+            '[AFD] [TTS] speakSynth ' +
+              (ok ? 'SUCCESS' : 'FAIL') +
+              ' voice=' +
+              (voice
+                ? voice.name + '/' + voice.lang + (voice.localService ? '/local' : '/net')
+                : 'null') +
+              ' durasi=' +
+              (Date.now() - t0) +
+              'ms',
+          );
+          resolve(ok);
+        };
+        u.onstart = () => {
+          started = true;
+          updateDebugState({ lastTtsStart: Date.now() });
+          console.info('[AFD] [TTS] onstart voice=' + (voice ? voice.name : 'null'));
+        };
+        u.onend = () => fin(true);
+        // onerror setelah mulai bicara → anggap selesai (Chrome kadang fire
+        // error saat utterance interupsi, padahal sudah berbunyi).
+        u.onerror = (e) => {
+          console.info('[AFD] [TTS] onerror started=' + started + ' err=' + (e.error || ''));
+          fin(started);
+        };
+        RealSpeak.call(synth, u);
+        const timer = window.setTimeout(() => {
+          console.info('[AFD] [TTS] timeout ' + timeoutMs + 'ms started=' + started);
+          fin(started);
+        }, timeoutMs);
+      } catch (e) {
+        console.info('[AFD] [TTS] speakSynth throw', e);
+        resolve(false);
+      }
+    });
+  }
+
+  // Layer 4 — Google TTS MP3. fetch→blob→objectURL→Audio→canplay→play→ended.
+  // Semua langkah di-await; setiap kegagalan (HTTP/empty/CORS/autoplay reject)
+  // resolve false → lanjut ke layer berikutnya. Sub-fallback: kalau fetch
+  // diblokir CORS, mainkan Audio langsung dari URL (audio element tidak kena
+  // CORS untuk playback).
+  function speakGoogleMp3(text: string, timeoutMs = 15000): Promise<boolean> {
+    const url =
+      'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=id&q=' +
+      encodeURIComponent(text);
+    return new Promise((resolve) => {
+      let settled = false;
+      let objUrl: string | null = null;
+      let audio: HTMLAudioElement | null = null;
+      const fin = (ok: boolean): void => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timer);
+        if (audio) {
+          audio.onended = null;
+          audio.onerror = null;
+          audio.oncanplay = null;
+        }
+        if (objUrl) URL.revokeObjectURL(objUrl);
+        updateDebugState({ lastTtsEnd: Date.now() });
+        console.info('[AFD] [TTS] google-mp3 ' + (ok ? 'SUCCESS' : 'FAIL'));
+        resolve(ok);
       };
-      u.onend = fin;
-      u.onerror = () => {
-        if (!started) speakMp3();
-        else fin();
+      const timer = window.setTimeout(() => fin(false), timeoutMs);
+      const playAudio = (src: string): void => {
+        audio = new Audio(src);
+        audio.onended = () => fin(true);
+        audio.onerror = () => fin(false);
+        audio.oncanplay = () => {
+          // autoplay bisa ditolak (NotAllowedError) → resolve false (layer berikut)
+          void audio!.play().catch(() => fin(false));
+        };
+        audio.load();
       };
-      RealSpeak.call(synth, u);
-      // speechSynthesis macet/bisu: onstart adalah sinyal suara BENAR-BENAR mulai.
-      // Chrome kadang set speaking=true walau TIDAK berbunyi (sound=Allow hanya
-      // unlock AudioContext, bukan speech) → jangan cek synth.speaking.
-      setTimeout(() => {
-        if (!started) speakMp3();
-      }, 1200);
+      fetch(url, { mode: 'cors' })
+        .then((r) => {
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return r.blob();
+        })
+        .then((blob) => {
+          if (!blob || blob.size === 0) throw new Error('empty blob');
+          objUrl = URL.createObjectURL(blob);
+          playAudio(objUrl);
+        })
+        .catch(() => playAudio(url)); // CORS/network fetch gagal → Audio langsung
+    });
+  }
+
+  // Layer 0 — TTS LOCAL SERVICE (127.0.0.1:8765). Engine sintesis ada di luar
+  // browser (Python service stdlib, tts_service.py) sehingga tidak bergantung
+  // speechSynthesis browser (voices=[] di kiosk display) dan tidak kena CORS
+  // (service fetch Google server-side). Browser hanya memutar MP3 via Audio —
+  // jalur yang sudah terbukti jalan (data-URL MP3: canplay→play→ended).
+  // NETWORK FETCH dipindah ke background service worker (PNA: halaman HTTP
+  // publik 103.x TIDAK boleh fetch ke localhost; SW punya host_permissions
+  // http://*/* sehingga bebas PNA). Content script tetap handle Audio/play.
+  // Telemetry (user request): REQUEST→ENGINE→LOAD→PLAY→ENERGY→END→ERROR —
+  // fase kegagalan dicatat via resolve(false, reason).
+  function speakLocalService(
+    text: string,
+    timeoutMs = 10000,
+  ): Promise<{ ok: boolean; reason: string }> {
+    return new Promise((resolve) => {
+      let settled = false;
+      let objUrl: string | null = null;
+      let audio: HTMLAudioElement | null = null;
+      const fin = (ok: boolean, reason: string): void => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timer);
+        if (audio) {
+          audio.onended = null;
+          audio.onerror = null;
+          audio.oncanplay = null;
+          audio.onplay = null;
+        }
+        if (objUrl) URL.revokeObjectURL(objUrl);
+        updateDebugState({ lastTtsEnd: Date.now(), ttsTrace: [...ttsTrace, 'end:' + reason] });
+        console.info('[AFD] [TTS] local-service ' + (ok ? 'SUCCESS' : 'FAIL ' + reason));
+        resolve({ ok, reason });
+      };
+      const ttsTrace: string[] = ['start'];
+      const timer = window.setTimeout(() => fin(false, 'timeout'), timeoutMs);
+      const playAudio = (src: string): void => {
+        ttsTrace.push('audio-new');
+        audio = new Audio(src);
+        audio.onplay = () => {
+          // push ke ttsTrace LOKAL dulu (sama spt canplay), baru snapshot —
+          // kalau tidak, fin() menimpa state dengan snapshot yg tanpa 'play'.
+          ttsTrace.push('play');
+          updateDebugState({ lastTtsStart: Date.now(), ttsTrace: [...ttsTrace] });
+        };
+        audio.onended = () => fin(true, 'ended');
+        audio.onerror = () =>
+          fin(false, 'audio-error ' + (audio && audio.error ? audio.error.code : '?'));
+        audio.oncanplay = () => {
+          ttsTrace.push('canplay');
+          audio!.play().catch((e) => fin(false, 'play-rejected ' + String(e).slice(0, 60)));
+        };
+        audio.load();
+      };
+      try {
+        // World MAIN TIDAK punya chrome.runtime (Chrome docs). Jalur layer-0:
+        // MAIN --postMessage--> ISOLATED bridge (farmasiBridge.ts, punya
+        // chrome.runtime) --sendMessage--> SW --fetch--> 127.0.0.1:8765.
+        // Bridge balas via postMessage TTS_RESULT. Audio/play tetap di sini.
+        const reqId = 'tts-' + Date.now() + '-' + Math.floor(Math.random() * 1e6);
+        const onResult = (event: MessageEvent): void => {
+          if (event.source !== window) return;
+          const d = event.data as {
+            source?: string;
+            type?: string;
+            id?: string;
+            ok?: boolean;
+            reason?: string;
+            mime?: string;
+            data?: number[];
+          };
+          if (
+            !d ||
+            d.source !== 'MORBIS-FARMASI-BRIDGE' ||
+            d.type !== 'TTS_RESULT' ||
+            d.id !== reqId
+          )
+            return;
+          window.removeEventListener('message', onResult);
+          if (!d.ok) {
+            fin(false, d.reason || 'message-error no-response');
+            return;
+          }
+          if (!d.data || d.data.length === 0) {
+            fin(false, 'blob-error empty-data');
+            return;
+          }
+          ttsTrace.push('blob:' + d.data.length);
+          const bytes = new Uint8Array(d.data);
+          const blob = new Blob([bytes], { type: d.mime || 'audio/mpeg' });
+          objUrl = URL.createObjectURL(blob);
+          playAudio(objUrl);
+        };
+        window.addEventListener('message', onResult);
+        window.postMessage({ source: 'MORBIS-FARMASI', type: 'TTS_REQUEST', id: reqId, text }, '*');
+      } catch (e) {
+        // world MAIN tanpa postMessage/window — tidak mungkin, tapi jaga-jaga
+        fin(false, 'message-error postmessage ' + String(e).slice(0, 40));
+      }
+    });
+  }
+
+  // Pipeline multi-layer (LOKAL dulu, Google MP3 cadangan). DIPANGGIL dari
+  // antrean (next) → resolve saat selesai.
+  async function playVoice(text: string): Promise<void> {
+    updateDebugState({ ttsAttempts: 0, ttsLastError: null, ttsEngine: null });
+    // Satu-satunya tempat cancel(): bersihkan utterance sisa (dari luar/recall
+    // sebelumnya) SEKALI sebelum pipeline — bukan per-utterance.
+    try {
+      synth.cancel();
     } catch {
-      speakMp3();
+      /* ignore */
     }
+    await ensureVoices();
+    console.info('[AFD] [TTS] voices=' + voicesCache.map((v) => v.name).join(', '));
+
+    // Layer 0: local service — jalur paling reliable (MP3 via Audio, terbukti)
+    const svc = await speakLocalService(text);
+    if (svc.ok) {
+      updateDebugState({ ttsMode: 'local', ttsEngine: 'local-service:8765' });
+      return;
+    }
+    const ttsFailDetail = 'local-service: ' + svc.reason;
+    updateDebugState({ ttsLastError: ttsFailDetail });
+
+    // Layer 1: voice Bahasa Indonesia LOKAL (localService)
+    const idLocal = pickVoice('id-local');
+    if (idLocal) {
+      updateDebugState({ ttsMode: 'speech', ttsEngine: 'speech:' + idLocal.name });
+      const ok = await speakSynth(text, idLocal);
+      if (ok) return;
+    }
+
+    // Layer 2: voice id-ID apa pun (termasuk Google online via speechSynthesis)
+    const idAny = pickVoice('id-any');
+    if (idAny && idAny !== idLocal) {
+      updateDebugState({ ttsMode: 'speech', ttsEngine: 'speech:' + idAny.name, ttsAttempts: 1 });
+      const ok = await speakSynth(text, idAny);
+      if (ok) return;
+    }
+
+    // Layer 3: voice lokal apa pun yang tersedia
+    const anyLocal = pickVoice('any-local');
+    if (anyLocal && anyLocal !== idLocal && anyLocal !== idAny) {
+      updateDebugState({ ttsMode: 'local', ttsEngine: 'local:' + anyLocal.name, ttsAttempts: 2 });
+      const ok = await speakSynth(text, anyLocal);
+      if (ok) return;
+    }
+
+    // Layer 4: Google TTS MP3 (cadangan terakhir sebelum error)
+    updateDebugState({ ttsMode: 'mp3', ttsEngine: 'google-translate', ttsAttempts: 3 });
+    const okMp3 = await speakGoogleMp3(text);
+    if (okMp3) return;
+
+    // Layer 5: semua gagal → ERROR eksplisit, bukan silent
+    updateDebugState({
+      ttsMode: 'error',
+      ttsEngine: null,
+      ttsLastError:
+        'all engines failed — layer0=' +
+        ttsFailDetail +
+        ' (speech id-local/id-any/any-local, google-mp3)',
+      ttsAttempts: 4,
+    });
+    updateDebugState({ lastTtsEnd: Date.now() });
+    console.error('[AFD] [TTS] semua engine gagal utk:', text.slice(0, 40));
   }
 
   /* numberToWords lokal (bukan import shared → tanpa side-effect global). */
@@ -1040,19 +1363,29 @@ declare global {
       console.warn('[FarmasiDisplay] audio belum unlocked — TTS/bell dilewati');
       return;
     }
+    // State pasien TERAKHIR yang benar-benar dipanggil — sumber recall.
+    // Recall memakai state ini (bukan "pasien terakhir di DOM") supaya nama
+    // pasien yang di-umumkan saat panggil ulang = pasien yang dipanggil.
+    lastCalled = {
+      jenis: row.jenis,
+      nomor: String(row.nomor),
+      namaPasien: String(row.namaPasien || ''),
+    };
+    updateDebugState({
+      lastCalledPatient: lastCalled.namaPasien,
+      lastCalledNumber: lastCalled.nomor,
+      lastRealtimeEvent: 'announce:' + row.id,
+    });
     // TTS: ucapkan nomor; nama title-case agar TTS membacanya natural (bukan eja).
     const kalimat =
       'Nomor antrian ' +
       numberToWords(row.nomor) +
       (row.namaPasien ? ', atas nama ' + titleCase(String(row.namaPasien)) : '') +
       ', silakan menuju farmasi.';
-    // Antrean serial: bell → voice → voice. Panggilan baru yang datang saat yang
-    // lama masih berbicara masuk antrean — tidak menimpa (fix klik beruntun).
-    queue.push(
-      { kind: 'bell' },
-      { kind: 'voice', text: kalimat },
-      { kind: 'voice', text: kalimat },
-    );
+    // Antrean serial: bell → voice (SATU KALI). Pengulangan suara TIDAK
+    // diduplikasi di queue — kalau diperlukan, buat mekanisme eksplisit
+    // (recall/ulang panggil) supaya debugging tidak ambigu.
+    queue.push({ kind: 'bell' }, { kind: 'voice', text: kalimat });
     next();
   }
 
@@ -1074,9 +1407,13 @@ declare global {
   document.addEventListener('keydown', unlockAudio);
 
   // Auto-unlock utk display kiosk: bila Chrome sound = Allow utk domain,
-  // resume AudioContext + speechSynthesis sukses TANPA user-gesture. Coba sekali
-  // saat load; sukses → aktifkan audio. Gesture listener tetap sbg fallback.
+  // resume AudioContext sukses TANPA user-gesture. Coba sekali saat load;
+  // sukses → aktifkan audio. Gesture listener tetap sbg fallback.
   // (tanpa sound=Allow, resume tetap gagal output → tidak aktif, aman.)
+  // CATATAN: tidak lagi memakai `speechSynthesis.speak(' ')` + `cancel()` cepat
+  // sebagai probe unlock — kombinasi itu bisa membuat state speech engine
+  // tidak stabil (utterance dibatalkan 250ms setelah di-speak). Unlock TTS
+  // dibuktikan langsung oleh playVoice (onstart/onend), bukan asumsi.
   (function tryAutoUnlock(): void {
     let done = false;
     const finish = () => {
@@ -1096,24 +1433,21 @@ declare global {
             }
           };
           void a.resume().catch(() => {});
+          // jaring pengaman: tanpa sinyal state, unlock via AudioContext timeout
+          window.setTimeout(() => {
+            if (done) return;
+            try {
+              if (a.state === 'running') {
+                a.close().catch(() => {});
+                finish();
+              }
+            } catch {
+              /* ignore */
+            }
+          }, 800);
         } else {
           finish(); // tanpa AudioContext, percayai speechSynthesis (fallback)
         }
-        // jaring pengaman: kalau resume tidak memberi sinyal, coba speech sekali
-        window.setTimeout(() => {
-          if (done) return;
-          try {
-            const u = new SpeechSynthesisUtterance(' ');
-            const s = window.speechSynthesis;
-            s.speak(u);
-            window.setTimeout(() => {
-              s.cancel();
-              if (audioUnlocked === false) finish();
-            }, 250);
-          } catch {
-            finish();
-          }
-        }, 400);
       } catch {
         finish();
       }
@@ -1158,11 +1492,28 @@ declare global {
     lastAnnouncement: null,
     audioUnlocked: false,
     ttsMode: null,
+    ttsEngine: null,
+    ttsLastError: null,
+    ttsAttempts: 0,
+    lastCalledPatient: null,
+    lastCalledNumber: null,
+    lastTtsStart: null,
+    lastTtsEnd: null,
+    lastRealtimeEvent: null,
+    ttsTrace: null,
   };
   function updateDebugState(patch: Partial<AntrianFarmasiDebugState>): void {
     if (!debugEnabled) return;
     Object.assign(debugState, patch);
     window.__ANTRIAN_FARMASI_DEBUG__ = { ...debugState };
+    // DOM mirror — content script bisa berjalan di isolated world (window main
+    // world tak terlihat), tapi DOM selalu dishare: e2e/tester baca dari sini.
+    document.documentElement.setAttribute('data-afd-debug', JSON.stringify(debugState));
+    // probe world: apakah chrome.runtime tersedia di konteks ini
+    document.documentElement.setAttribute(
+      'data-afd-world',
+      typeof chrome !== 'undefined' && !!chrome.runtime ? 'isolated-has-cr' : 'no-cr',
+    );
   }
 
   // Signal aktivitas DOM (read-only; tidak mengubah apa pun).
@@ -1248,32 +1599,29 @@ declare global {
           // (bukan panggilan baru — hanya kondisi awal layar / display dibuka ulang).
           baselineSet = true;
           currentCall = call;
-          prevCurrent.clear();
-          for (const [c, v] of cur) prevCurrent.set(c, v);
           renderDisplay(view, currentCall);
         } else if (sig !== announcedSig && isNewCurrent(cur)) {
           if (isReset(cur, prevCurrent)) {
             // Reset antrian (tombol "Reset Antrian" di halaman manajemen):
             // current-number turun drastis — BUKAN panggilan baru. Update
             // baseline & tampilkan, tanpa announce (fix 2026-08-12).
+            clearCallState(); // bersihkan dedup + lastCalled (state lama invalid)
             currentCall = call;
-            prevCurrent.clear();
-            for (const [c, v] of cur) prevCurrent.set(c, v);
             renderDisplay(view, currentCall);
           } else {
             // current-number berubah antar poll = klik "Selanjutnya" → panggilan baru.
             announcedSig = sig;
             currentCall = call;
-            prevCurrent.clear();
-            for (const [c, v] of cur) prevCurrent.set(c, v);
             renderDisplay(view, currentCall);
             maybeAnnounce(view, currentCall);
           }
         } else {
           // Tidak ada panggilan baru → pertahankan panggilan aktif, tapi
-          // refresh panel SIAP DIAMBIL. prevCurrent tetap disinkronkan.
-          prevCurrent.clear();
-          for (const [c, v] of cur) prevCurrent.set(c, v);
+          // refresh panel SIAP DIAMBIL. prevCurrent TIDAK ditulis di sini:
+          // refreshCardNumber (interval 1s) adalah SATU-SATUNYA penulis
+          // prevCurrent. Dulu pollFallback ikut menulis → race: poll yang lebih
+          // sering (500ms) menulis cur turun lebih dulu di cabang ini, sehingga
+          // isReset() refresh berikutnya melihat prev==cur → reset tak terdeteksi.
           if (currentCall) renderDisplay(view, currentCall);
           else {
             currentCall = call;
@@ -1323,13 +1671,17 @@ declare global {
   // duplicate ignored saat signature sama — tidak log data pasien, cukup signature.
   function maybeAnnounce(view: QueueView, call: ViewRow): void {
     if (!voiceEnabled) return;
-    if (call.id === announcedSig) {
-      console.info('[AFD] duplicate ignored ' + announcedSig);
+    // Dedup BERSAMA dengan refreshCardNumber (lastNormalKey): SATU klik
+    // Selanjutnya = satu announce, dari jalur mana pun yang lebih dulu.
+    const key = call.jenis + ':' + call.nomor;
+    if (key === lastNormalKey) {
+      console.info('[AFD] duplicate ignored ' + key);
       return;
     }
+    lastNormalKey = key;
     announcedSig = call.id;
-    updateDebugState({ lastAnnouncement: announcedSig });
-    console.info('[AFD] ANNOUNCE ' + announcedSig);
+    updateDebugState({ lastAnnouncement: key });
+    console.info('[AFD] ANNOUNCE ' + key);
     announce(call);
   }
 
@@ -1375,10 +1727,29 @@ declare global {
    * antrian farmasi). startWithRole idempotent; dipanggil langsung
    * begitu skrip load, tanpa menunggu init.ts.
    * ============================================================ */
+  // Swal MORBIS (mis. notifikasi "Selamat Datang"/peringatan) menutupi tombol
+  // Tes Suara dan menghalangi klik pada halaman display. Halaman display TIDAK
+  // memakai Swal untuk fungsi penting (recall pakai window.confirm), jadi aman
+  // disembunyikan total — hanya tampilan, tidak mengubah logika MORBIS.
+  function hideNativeSwal(): void {
+    const s = document.createElement('style');
+    s.id = 'ext-afd-hide-swal';
+    s.textContent =
+      '.swal2-container, .swal2-backdrop { display: none !important; visibility: hidden !important; }';
+    // document_start → <head> mungkin belum ada; fallback ke documentElement
+    (document.head || document.documentElement).appendChild(s);
+    const mo = new MutationObserver(() => {
+      document.querySelectorAll('.swal2-container').forEach((el) => {
+        (el as HTMLElement).style.display = 'none';
+      });
+    });
+    mo.observe(document.documentElement, { childList: true, subtree: true });
+  }
   function startWithRole(): void {
     if (started) return; // idempotent: jangan buat watcher/listener/polling ganda
     started = true;
     updateDebugState({ started: true });
+    hideNativeSwal(); // Swal MORBIS menutup tombol Tes Suara & mengganggu klik
     ensureStatusBadge(); // pastikan badge status ada sedari awal (loading)
     ensureToolbar(); // tombol Tes Suara & Full Screen
     setStatus('loading');
