@@ -65,9 +65,7 @@ test.describe('Build Output Validity', () => {
       'features/doctorFilterPersistence.js',
       'features/scrollButtons.js',
       'features/openDetail.js',
-      'features/shortcutButtons.js',
-      'features/simplifyBilling.js',
-      'features/printOptimization.js',
+      'features/toolbar.js', // consolidate shortcut/batchDelete/batchUpload (504cea9)
       'features/consultationEnhancer.js',
       'features/penerimaan_resep/main.js',
       'features/batchDeleteFiles.js',
