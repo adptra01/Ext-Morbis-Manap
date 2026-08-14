@@ -279,6 +279,7 @@ declare global {
         id: String(r.ID ?? ''),
         jenis: (r.JENIS as string | null) ?? null,
         counter: (r.COUNTER as string | number | null) ?? null,
+        nomor: (r.NOMOR as string | number | null) ?? null,
         status: (r.STATUS as string | null) ?? null,
         waktu: (r.WAKTU as string | null) ?? null,
       })),

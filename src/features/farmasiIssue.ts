@@ -63,6 +63,7 @@ function renderRows(rows: Array<Record<string, unknown>>): void {
     rows.map((r) => ({
       id: String(r.ID ?? ''),
       counter: (r.COUNTER as string | number | null) ?? null,
+      nomor: (r.NOMOR as string | number | null) ?? null,
       jenis: (r.JENIS as string | null) ?? null,
       status: (r.STATUS as string | null) ?? null,
       waktu: (r.WAKTU as string | null) ?? null,
@@ -116,6 +117,7 @@ function toRows(rows: Array<Record<string, unknown>>): ResetRow[] {
   return rows.map((r) => ({
     id: String(r.ID ?? ''),
     counter: (r.COUNTER as string | number | null) ?? null,
+    nomor: (r.NOMOR as string | number | null) ?? null,
     jenis: (r.JENIS as string | null) ?? null,
     status: (r.STATUS as string | null) ?? null,
     waktu: (r.WAKTU as string | null) ?? null,
@@ -192,15 +194,23 @@ function openPrint(rows: Array<Record<string, unknown>>): void {
     alert('Popup diblokir — izinkan popup utk mencetak.');
     return;
   }
+  // ponytail: CSP extension memblokir <script> inline di about:blank popup →
+  // panggil window.print() dari sini (parent) setelah popup selesai ditulis.
   win.document.write(
     '<style>@page{size:A4;margin:5mm;}body{font-family:Arial,Helvetica,sans-serif;}@media print{.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:3mm;}}</style>' +
       '<div class="grid">' +
       (grid || '<div style="padding:20px;color:#666;">Tidak ada nomor dalam rentang.</div>') +
-      '</div><scr' +
-      'ipt>setTimeout(()=>{window.print();},300);</scr' +
-      'ipt>',
+      '</div>',
   );
   win.document.close();
+  window.setTimeout(() => {
+    try {
+      win.focus();
+      win.print();
+    } catch {
+      /* popup ditutup sebelum print — abaikan */
+    }
+  }, 300);
 }
 
 // Cetak 1 tiket utk SATU pasien (saat pasien datang minta no antrian).
@@ -234,14 +244,20 @@ function openPrintOne(rows: Array<Record<string, unknown>>, idx: number): void {
     alert('Popup diblokir — izinkan popup utk mencetak.');
     return;
   }
+  // ponytail: CSP extension memblokir <script> inline di about:blank popup →
+  // panggil window.print() dari sini (parent) setelah popup selesai ditulis.
   win.document.write(
-    '<style>@page{size:A5 landscape;margin:4mm;}body{margin:0;padding:8px;}</style>' +
-      body +
-      '<scr' +
-      'ipt>setTimeout(()=>{window.print();},300);</scr' +
-      'ipt>',
+    '<style>@page{size:A5 landscape;margin:4mm;}body{margin:0;padding:8px;}</style>' + body,
   );
   win.document.close();
+  window.setTimeout(() => {
+    try {
+      win.focus();
+      win.print();
+    } catch {
+      /* popup ditutup sebelum print — abaikan */
+    }
+  }, 300);
 }
 
 function ensureRecallDelegation(): void {
