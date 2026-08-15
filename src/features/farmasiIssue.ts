@@ -68,6 +68,12 @@ function buildPanel(): HTMLDivElement {
     '<button id="ext-issue-collapse" style="border:none;background:none;font-size:16px;cursor:pointer;line-height:1;" title="Tutup">–</button>' +
     '</div>' +
     '<div id="ext-issue-status" style="color:#6c757d;font-size:12px;margin-bottom:8px;">Memuat…</div>' +
+    // Tab: Aktif (belum selesai) vs Tertunda (sudah dipanggil, belum selesai —
+    // kemungkinan terlewat/belum ada di tempat saat dipanggil).
+    '<div style="display:flex;gap:6px;margin-bottom:8px;">' +
+    '<button id="ext-issue-tab-active" class="ext-issue-tab" style="flex:1;padding:6px;border:1px solid #0f5132;background:#0f5132;color:#fff;border-radius:8px;cursor:pointer;font:inherit;">Aktif</button>' +
+    '<button id="ext-issue-tab-pending" class="ext-issue-tab" style="flex:1;padding:6px;border:1px solid #ced4da;background:#fff;color:#495057;border-radius:8px;cursor:pointer;font:inherit;">Tertunda</button>' +
+    '</div>' +
     '<input id="ext-issue-search" type="search" placeholder="Cari nama / no antrian…" ' +
     'style="width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid #ced4da;border-radius:8px;font:13px/1.4 inherit;margin-bottom:8px;" />' +
     '<div id="ext-issue-list" style="max-height:240px;overflow:auto;border:1px solid #e9ecef;border-radius:8px;margin-bottom:10px;"></div>' +
@@ -91,20 +97,49 @@ function buildToggle(): HTMLButtonElement {
   return b;
 }
 
+/** Tab panel saat ini: 'active' (belum selesai) | 'pending' (sudah dipanggil, belum selesai). */
+let currentTab: 'active' | 'pending' = 'active';
+
+/** Dispatch klik sintetis ke baris tabel operator → recallDeleg (MAIN world)
+ *  menangkap & memanggil panggilUlang native + sinyal localStorage utk display.
+ *  Baris tak ada (id hilang/render ulang) → sinyal langsung ke localStorage
+ *  (display tetap announce; native tak bisa tanpa baris — acceptable fallback). */
+function callRow(id: string, jenis: string, nomor: string, nomorTeks: string): void {
+  try {
+    localStorage.setItem(
+      'ext-afd-recall',
+      JSON.stringify({ jenis, nomor, nomorTeks, ts: Date.now() }),
+    );
+  } catch {
+    /* ignore */
+  }
+  const row = document.querySelector<HTMLTableRowElement>(`tr[data-id="${id}"]`);
+  if (row) {
+    row.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+  }
+}
+
 async function renderRows(rows: Array<Record<string, unknown>>): Promise<void> {
   const tickets = await loadTickets(rows);
   // urutan tampil = urutan tiket publik (num naik) — sama dgn urutan WAKTU antrian
-  const urutan = [...tickets.entries()].sort((a, b) => a[1].num - b[1].num).map(([, t]) => t.code);
-  const byId = tickets; // id → QueueTicket (punya .code)
+  const byNum = [...tickets.entries()].sort((a, b) => a[1].num - b[1].num);
   const list = document.getElementById('ext-issue-list');
   const status = document.getElementById('ext-issue-status');
   if (!list || !status) return;
-  if (urutan.length === 0) {
+  // Aktif = belum selesai (ISSUED/WAITING/PROCESSING/READY). Tertunda =
+  // sudah dipanggil (CALLED/RECALLED/MISSED) tapi belum selesai — pasien
+  // kemungkinan terlewat / belum ada di tempat saat dipanggil.
+  const isPending = (st: string): boolean =>
+    st === 'CALLED' || st === 'RECALLED' || st === 'MISSED';
+  const aktif = byNum.filter(([, t]) => !isPending(t.status));
+  const tertunda = byNum.filter(([, t]) => isPending(t.status));
+  const urutan = currentTab === 'pending' ? tertunda : aktif;
+  if (byNum.length === 0) {
     status.textContent = 'Tidak ada antrian aktif.';
     list.innerHTML = '';
     return;
   }
-  status.textContent = `${urutan.length} antrian aktif · ${countOf(urutan, 'R-')} racikan, ${countOf(urutan, 'T-')} tunggal`;
+  status.textContent = `${byNum.length} antrian · ${aktif.length} aktif, ${tertunda.length} tertunda`;
   const name = new Map(rows.map((r) => [String(r.ID), String(r.NAMA_PASIEN ?? '')]));
   const panel = document.getElementById('ext-farmasi-issue');
   const printOneBtn = document.getElementById('ext-issue-printone');
@@ -115,38 +150,37 @@ async function renderRows(rows: Array<Record<string, unknown>>): Promise<void> {
   const q = (document.getElementById('ext-issue-search') as HTMLInputElement | null)?.value
     .trim()
     .toLowerCase();
-  const visible = urutan.filter((kode) => {
+  const visible = urutan.filter(([id, t]) => {
     if (!q) return true;
-    const id = [...byId].find(([, v]) => v.code === kode)?.[0] ?? '';
-    return kode.toLowerCase().includes(q) || (name.get(id) || '').toLowerCase().includes(q);
+    return t.code.toLowerCase().includes(q) || (name.get(id) || '').toLowerCase().includes(q);
   });
   list.innerHTML =
     visible
-      .map((kode) => {
-        const id = [...byId].find(([, v]) => v.code === kode)?.[0] ?? '';
+      .map(([id, t]) => {
         const idx = rows.findIndex((r) => String(r.ID) === id);
         return (
           '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;padding:4px 6px;">' +
           '<b style="color:#0f5132;min-width:52px;">' +
-          kode.replace('-', '-') +
+          t.code +
           '</b>' +
           '<span style="flex:1;color:#495057;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
           (name.get(id) || '') +
           '</span>' +
+          '<button class="ext-issue-call" data-idx="' +
+          idx +
+          '" style="flex-shrink:0;padding:3px 8px;border:none;border-radius:8px;background:#0f5132;color:#fff;cursor:pointer;font-size:12px;" title="Panggil pasien ini">📢</button>' +
           '<button class="ext-issue-printone" data-idx="' +
           idx +
-          '" style="flex-shrink:0;padding:3px 8px;border:none;border-radius:8px;background:#0f5132;color:#fff;cursor:pointer;font-size:12px;" title="Cetak tiket pasien ini">🖨</button>' +
+          '" style="flex-shrink:0;padding:3px 8px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;font-size:12px;" title="Cetak tiket pasien ini">🖨</button>' +
           '</div>'
         );
       })
       .join('') || '<div style="padding:6px;color:#6c757d;">tidak ada yang cocok</div>';
-  document.getElementById('ext-issue-print')?.setAttribute('data-urutan', JSON.stringify(urutan));
+  document
+    .getElementById('ext-issue-print')
+    ?.setAttribute('data-urutan', JSON.stringify(urutan.map(([, t]) => t.code)));
   document.getElementById('ext-issue-print')?.setAttribute('data-rows', JSON.stringify(rows));
   void printOneBtn;
-}
-
-function countOf(arr: string[], prefix: string): number {
-  return arr.filter((k) => k.startsWith(prefix)).length;
 }
 
 /** Filter kode dalam rentang: prefix 'R-'|'T-', from/sampai (angka, inklusif). */
@@ -336,6 +370,22 @@ function init(): void {
   toggle.addEventListener('click', () => setOpen(true));
   panel.querySelector('#ext-issue-collapse')?.addEventListener('click', () => setOpen(false));
 
+  // Tab Aktif/Tertunda: ganti tab → re-render dari data terakhir.
+  const setTab = (tab: 'active' | 'pending'): void => {
+    currentTab = tab;
+    panel.querySelectorAll<HTMLElement>('.ext-issue-tab').forEach((btn) => {
+      const active = btn.id === 'ext-issue-tab-' + tab;
+      btn.style.background = active ? '#0f5132' : '#fff';
+      btn.style.color = active ? '#fff' : '#495057';
+      btn.style.borderColor = active ? '#0f5132' : '#ced4da';
+    });
+    const raw = (panel.getAttribute('data-rows') || '').trim();
+    if (!raw) return;
+    void renderRows(JSON.parse(raw) as Array<Record<string, unknown>>);
+  };
+  panel.querySelector('#ext-issue-tab-active')?.addEventListener('click', () => setTab('active'));
+  panel.querySelector('#ext-issue-tab-pending')?.addEventListener('click', () => setTab('pending'));
+
   // Realtime search: filter list dari data terakhir (data-rows) tanpa fetch ulang.
   panel.querySelector('#ext-issue-search')?.addEventListener('input', () => {
     const raw = (panel.getAttribute('data-rows') || '').trim();
@@ -357,16 +407,27 @@ function init(): void {
     if (!raw) return;
     openPrint(JSON.parse(raw) as Array<Record<string, unknown>>);
   });
-  // Cetak 1 tiket per pasien: klik tombol 🖨 di baris → print pasien tsb.
+  // Klik tombol di baris panel: 🖨 (cetak) atau 📢 (panggil). Panggil = dispatch
+  // klik sintetis ke baris tabel operator → farmasiRecallDeleg (MAIN world)
+  // menangkap → panggilUlang native + sinyal localStorage utk display/TTS.
   document.getElementById('ext-issue-list')?.addEventListener('click', (e) => {
-    const t = (e.target as HTMLElement).closest('.ext-issue-printone') as HTMLElement | null;
-    if (!t) return;
+    const btn = (e.target as HTMLElement).closest(
+      '.ext-issue-printone, .ext-issue-call',
+    ) as HTMLElement | null;
+    if (!btn) return;
     const raw = (
       document.getElementById('ext-farmasi-issue')?.getAttribute('data-rows') || ''
     ).trim();
     if (!raw) return;
-    const idx = Number(t.getAttribute('data-idx') ?? '-1');
-    openPrintOne(JSON.parse(raw) as Array<Record<string, unknown>>, idx);
+    const rows = JSON.parse(raw) as Array<Record<string, unknown>>;
+    const idx = Number(btn.getAttribute('data-idx') ?? '-1');
+    const row = rows[idx];
+    if (!row) return;
+    if (btn.classList.contains('ext-issue-call')) {
+      callRow(String(row.ID ?? ''), String(row.JENIS ?? ''), String(row.NOMOR ?? ''), '');
+      return;
+    }
+    openPrintOne(rows, idx);
   });
   // muat awal (panel mulai tertutup — data di-prepare utk cetak cepat)
   fetchRows()

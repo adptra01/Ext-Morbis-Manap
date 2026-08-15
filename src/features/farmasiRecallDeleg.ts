@@ -11,6 +11,14 @@
   if ((window as unknown as { __extAfdRecallDeleg?: boolean }).__extAfdRecallDeleg) return;
   (window as unknown as { __extAfdRecallDeleg: boolean }).__extAfdRecallDeleg = true;
 
+  // Cooldown per-ID: klik beruntun pada BARIS YANG SAMA dalam COOLDOWN_MS
+  // diabaikan (anti spam request recall). Baris BERBEDA tetap boleh langsung
+  // — petugas sah melompat antar pasien (R-09 dulu, R-05 menyusul) sesuai
+  // kesiapan obat, jangan dihalangi oleh debounce global.
+  const COOLDOWN_MS = 1500;
+  let lastRecallId = '';
+  let lastRecallTs = 0;
+
   // Resolusi id baris: data-id, fallback ke input tersembunyi `#id-antrian{N}`
   // (nilai = id antrian sebenarnya; data-id bisa hilang setelah reload #isi).
   // Tanpa id → klik diabaikan (bukan freeze diam).
@@ -34,6 +42,16 @@
       const nomor = row.getAttribute('data-nomor') || '';
       const id = resolveId(row, nomor);
       if (!id) return;
+      // anti spam: baris sama diklik beruntun < 1.5s → abaikan (tetap
+      // stopPropagation supaya native tidak ikut recall ganda).
+      const now = Date.now();
+      if (id === lastRecallId && now - lastRecallTs < COOLDOWN_MS) {
+        e.stopPropagation();
+        e.preventDefault();
+        return;
+      }
+      lastRecallId = id;
+      lastRecallTs = now;
       const fn = (window as unknown as Record<string, unknown>).panggilUlang;
       if (typeof fn !== 'function') return;
       // Jalur recall TANPA WebSocket (WS native sering mati/refused di lapangan):

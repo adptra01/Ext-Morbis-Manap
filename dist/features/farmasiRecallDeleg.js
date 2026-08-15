@@ -4,6 +4,9 @@ var __morbis_feature = (() => {
   (function () {
     if (window.__extAfdRecallDeleg) return;
     window.__extAfdRecallDeleg = true;
+    const COOLDOWN_MS = 1500;
+    let lastRecallId = '';
+    let lastRecallTs = 0;
     function resolveId(row, nomor) {
       const direct = row.getAttribute('data-id') || '';
       if (direct) return direct;
@@ -22,6 +25,14 @@ var __morbis_feature = (() => {
         const nomor = row.getAttribute('data-nomor') || '';
         const id = resolveId(row, nomor);
         if (!id) return;
+        const now = Date.now();
+        if (id === lastRecallId && now - lastRecallTs < COOLDOWN_MS) {
+          e.stopPropagation();
+          e.preventDefault();
+          return;
+        }
+        lastRecallId = id;
+        lastRecallTs = now;
         const fn = window.panggilUlang;
         if (typeof fn !== 'function') return;
         try {
