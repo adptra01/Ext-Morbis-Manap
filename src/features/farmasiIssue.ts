@@ -15,8 +15,16 @@ import { getQueueState, issuePending, getTicket, type QueueTicket } from './shar
 const LIST_URL = '/public/antrian-farmasi-v2/list-antrian-v2';
 
 async function fetchRows(): Promise<Array<Record<string, unknown>>> {
-  const res = await fetch(LIST_URL + '?type=data_call', {
+  // Kontrak endpoint (verifikasi live 2026-08-15): GET ?type=data_call →
+  // PHP "Undefined index: id_unit" (HTML, bukan JSON) & POST data_call → [].
+  // `check_antrian` (POST) = sumber tabel antrian native — data LENGKAP
+  // (ID, ID_PASIEN, NOMOR, KODE, JENIS, NAMA_PASIEN, WAKTU, NAMA_UNIT).
+  // Butuh session MORBIS — konsol farmasi selalu dalam session login.
+  const res = await fetch(LIST_URL, {
+    method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+    body: 'type=check_antrian',
+    cache: 'no-store',
   });
   if (!res.ok) throw new Error('HTTP ' + res.status);
   const j = (await res.json()) as Array<Record<string, unknown>>;
@@ -60,6 +68,8 @@ function buildPanel(): HTMLDivElement {
     '<button id="ext-issue-collapse" style="border:none;background:none;font-size:16px;cursor:pointer;line-height:1;" title="Tutup">–</button>' +
     '</div>' +
     '<div id="ext-issue-status" style="color:#6c757d;font-size:12px;margin-bottom:8px;">Memuat…</div>' +
+    '<input id="ext-issue-search" type="search" placeholder="Cari nama / no antrian…" ' +
+    'style="width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid #ced4da;border-radius:8px;font:13px/1.4 inherit;margin-bottom:8px;" />' +
     '<div id="ext-issue-list" style="max-height:240px;overflow:auto;border:1px solid #e9ecef;border-radius:8px;margin-bottom:10px;"></div>' +
     '<div style="display:flex;gap:8px;">' +
     '<button id="ext-issue-refresh" style="flex:1;padding:7px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">Segarkan</button>' +
@@ -99,8 +109,19 @@ async function renderRows(rows: Array<Record<string, unknown>>): Promise<void> {
   const panel = document.getElementById('ext-farmasi-issue');
   const printOneBtn = document.getElementById('ext-issue-printone');
   if (panel) panel.setAttribute('data-rows', JSON.stringify(rows));
+  // Realtime filter: input search → substring nama (case-insensitive) ATAU kode
+  // publik (T-01/R-05). Kosong → semua. Render ulang dari data mentah tiap
+  // ketik — murah (≤ ratusan baris) & sederhana (tanpa state terpisah).
+  const q = (document.getElementById('ext-issue-search') as HTMLInputElement | null)?.value
+    .trim()
+    .toLowerCase();
+  const visible = urutan.filter((kode) => {
+    if (!q) return true;
+    const id = [...byId].find(([, v]) => v.code === kode)?.[0] ?? '';
+    return kode.toLowerCase().includes(q) || (name.get(id) || '').toLowerCase().includes(q);
+  });
   list.innerHTML =
-    urutan
+    visible
       .map((kode) => {
         const id = [...byId].find(([, v]) => v.code === kode)?.[0] ?? '';
         const idx = rows.findIndex((r) => String(r.ID) === id);
@@ -118,7 +139,7 @@ async function renderRows(rows: Array<Record<string, unknown>>): Promise<void> {
           '</div>'
         );
       })
-      .join('') || '<div style="padding:6px;color:#6c757d;">kosong</div>';
+      .join('') || '<div style="padding:6px;color:#6c757d;">tidak ada yang cocok</div>';
   document.getElementById('ext-issue-print')?.setAttribute('data-urutan', JSON.stringify(urutan));
   document.getElementById('ext-issue-print')?.setAttribute('data-rows', JSON.stringify(rows));
   void printOneBtn;
@@ -314,6 +335,13 @@ function init(): void {
 
   toggle.addEventListener('click', () => setOpen(true));
   panel.querySelector('#ext-issue-collapse')?.addEventListener('click', () => setOpen(false));
+
+  // Realtime search: filter list dari data terakhir (data-rows) tanpa fetch ulang.
+  panel.querySelector('#ext-issue-search')?.addEventListener('input', () => {
+    const raw = (panel.getAttribute('data-rows') || '').trim();
+    if (!raw) return;
+    void renderRows(JSON.parse(raw) as Array<Record<string, unknown>>);
+  });
 
   panel.querySelector('#ext-issue-refresh')?.addEventListener('click', async () => {
     const status = document.getElementById('ext-issue-status');

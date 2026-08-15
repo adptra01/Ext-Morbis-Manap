@@ -1,20 +1,25 @@
 /* AntrianFarmasiDisplay – Queue Controller v2 (Presentation Layer) untuk layar
  * panggilan farmasi MORBIS legacy.
  *
- * Konstanta terverifikasi (curl live):
+ * Konstanta terverifikasi (curl + Playwright live):
  *   - HTML asli server-render: #antrian-view / #antrian-penyerahan / #list-content
  *     SEMUA ada di body sejak awal (bukan dimuat JS). Selektor ini aman.
- *   - Endpoint `list-antrian-v2?type=data_call` mengembalikan JSON VALID tanpa
- *     session (2 baris, kolom: NOMOR, NAMA_PASIEN, NAMA_UNIT, NAMA, JENIS, ...).
- *   - Endpoint `check_antrian` memerlukan session → ORA-00936 kala session hilang.
- *   => Extension memakai data_call sebagai sumber kebenaran display, JANGAN
+ *   - Endpoint `list-antrian-v2` POST `type=data_call` SELALU [] (mati/deprecated,
+ *     verifikasi live 2026-08-15 walau session aktif) → BUKAN sumber data.
+ *   - Endpoint `list-antrian-v2` POST `type=check_antrian` (butuh session MORBIS —
+ *     display browser rsud selalu login, sama dgn native) mengembalikan data
+ *     LENGKAP: ID, ID_PASIEN, NOMOR, COUNTER, KODE, JENIS, NAMA_PASIEN, WAKTU,
+ *     WAKTU_PENERIMAAN, WAKTU_PENYERAHAN, STATUS_PANGGIL — sumber kebenaran.
+ *   - Endpoint `?section=isi&nomor=<loket>` = current-number (publik, tanpa
+ *     session) — sumber "nomor yang sedang dipanggil".
+ *   => Extension memakai check_antrian sebagai sumber data display, JANGAN
  *      mengarang nomor / memakai data saat API error.
  *
  * Arsitektur (resilient layer — MORBIS = source of truth, WebSocket = jalur utama):
  *
  *   Native WS sehat (display native bergerak)      → extension TIDAK polling, tidak
  *                                                    sentuh DOM (MODE 1 / NATIVE).
- *   Native membeku (WS mati/gagal)                 → polling data_call fallback (MODE 2),
+ *   Native membeku (WS mati/gagal)                 → polling check_antrian fallback (MODE 2),
  *                                                    valid data → render; invalid → retry.
  *   API error / [] / HTML / ORA / 404 / 500        → PERTAHANKAN DOM (transport
  *                                                    uncertainty ≠ queue kosong).
@@ -26,10 +31,10 @@
  *     endpoint `?section=isi&nomor=<loket>` (VERIFIKASI PRODUKSI 2026-08-12:
  *     MURSIDAH BT-4 diklik → current-number counter 1 = "4"; endpoint ini
  *     PUBLIK dan dipakai display native sendiri via loadContent). STATUS &
- *     STATUS_PANGGIL pada data_call TIDAK diandalkan sebagai sumber panggilan
+ *     STATUS_PANGGIL pada check_antrian TIDAK diandalkan sebagai sumber panggilan
  *     aktif (basi saat display dibuka ulang). current-number = sumber kebenaran.
- *   - data_call hanya dipakai untuk NAMA pasien (cocokkan COUNTER/NOMOR
- *     dengan current-number) dan daftar SIAP DIAMBIL.
+ *   - check_antrian dipakai untuk NAMA pasien + ID (resolve publicCode),
+ *     cocokkan COUNTER/NOMOR dengan current-number dan daftar SIAP DIAMBIL.
  *   - WAKTU_PENERIMAAN ada & belum diserahkan → SIAP DIAMBIL
  *   - nomor baru             → bell lalu TTS (dedup signature ⇒ satu kali)
  *   - WebSocket/Swal/speechSynthesis native → BIARKAN normal; extension TIDAK
@@ -345,14 +350,17 @@ declare global {
    * API Adapter — fetch data_call (nama pasien) + current-number.
    * ============================================================ */
   async function fetchCallData(): Promise<RawRow[]> {
-    // Kontrak endpoint (verifikasi 2026-08-14): POST form `type=data_call`
-    // — SAMA dgn panggilan native display. GET ?type=data_call kena PHP
-    // "Undefined index: id_unit" (PHP 8 strict) → HTML, bukan JSON.
+    // Kontrak endpoint (verifikasi live 2026-08-15): `type=data_call` SELALU
+    // mengembalikan [] (endpoint mati/deprecated) walau session aktif — extension
+    // selama ini buta data → tabel display '—' & TTS mismatch. `check_antrian`
+    // (sumber tabel native listtable) mengembalikan data LENGKAP: ID, ID_PASIEN,
+    // NOMOR, COUNTER, KODE, JENIS, NAMA_PASIEN, WAKTU, WAKTU_PENYERAHAN, dll.
+    // Butuh session MORBIS — display browser rsud selalu login (sama dgn native).
     const res = await fetch(LIST_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-      body: 'type=data_call',
-      cache: 'no-store', // data_call juga harus segar (nama pasien recall)
+      body: 'type=check_antrian',
+      cache: 'no-store', // harus segar (nama pasien recall)
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text();

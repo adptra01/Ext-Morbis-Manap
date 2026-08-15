@@ -212,13 +212,61 @@ var __morbis_feature = (() => {
         if (t && curEl.textContent?.trim() !== t.code) curEl.textContent = t.code;
       }
     }
+    async function patchTableCodes() {
+      const rows = document.querySelectorAll(ROWS_SEL);
+      if (rows.length === 0) return;
+      try {
+        const res = await fetch('/public/antrian-farmasi-v2/list-antrian-v2', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+          body: 'type=check_antrian',
+          cache: 'no-store',
+        });
+        if (!res.ok) return;
+        const text = await res.text();
+        const data = JSON.parse(text);
+        if (!Array.isArray(data)) return;
+        const byKey = /* @__PURE__ */ new Map();
+        for (const r of data) {
+          if (r.ID == null) continue;
+          const key = String(r.KODE ?? '') + '-' + String(r.NOMOR ?? '');
+          if (key && !byKey.has(key)) byKey.set(key, String(r.ID));
+        }
+        await syncPublicNumbers(rows);
+        const st = await getQueueState();
+        for (const tr of rows) {
+          const td = tr.querySelector('td');
+          if (!td) continue;
+          const morbisNum = (td.textContent || '').trim();
+          if (!/^[A-Z]{1,3}-\d+$/.test(morbisNum)) continue;
+          if (!tr.hasAttribute('data-nomor-morbis')) {
+            tr.setAttribute('data-nomor-morbis', morbisNum);
+          }
+          if (tr.hasAttribute('data-public-code')) continue;
+          const id = tr.getAttribute('data-id') ?? byKey.get(morbisNum) ?? '';
+          if (!id) continue;
+          const t = getTicket(st, id);
+          if (!t || !t.code) continue;
+          if ((td.textContent || '').trim() === t.code) continue;
+          td.textContent = t.code;
+          tr.setAttribute('data-public-code', t.code);
+        }
+      } catch (err) {
+        const msg = String(err.message ?? err);
+        if (!/context invalidated|no reply/i.test(msg)) {
+          console.warn('[AntrianFarmasiTotal] patch tabel gagal:', msg);
+        }
+      }
+    }
     fixTotals();
     void fixCurrents();
+    void patchTableCodes();
     const root = document.querySelector('#isi');
     if (root) {
       new MutationObserver(() => {
         fixTotals();
         void fixCurrents();
+        void patchTableCodes();
       }).observe(root, { childList: true, subtree: true });
     }
   })();

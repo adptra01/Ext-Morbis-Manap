@@ -346,9 +346,9 @@ var __morbis_feature = (() => {
       const res = await fetch(LIST_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-        body: 'type=data_call',
+        body: 'type=check_antrian',
         cache: 'no-store',
-        // data_call juga harus segar (nama pasien recall)
+        // harus segar (nama pasien recall)
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const text = await res.text();

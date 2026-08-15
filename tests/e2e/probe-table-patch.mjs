@@ -16,10 +16,10 @@ const ctx = await chromium.launchPersistentContext(userDataDir, {
 });
 const page = ctx.pages()[0] || (await ctx.newPage());
 
-// intercept fetch data_call → beri baris sintetis (id, ID_PASIEN, JENIS, NAMA)
+// intercept fetch check_antrian → beri baris sintetis (id, ID_PASIEN, JENIS, NAMA)
 await page.route('**/list-antrian-v2', async (route) => {
   const body = route.request().postData() || '';
-  if (body.includes('data_call')) {
+  if (body.includes('check_antrian')) {
     await route.fulfill({
       contentType: 'application/json',
       body: JSON.stringify([

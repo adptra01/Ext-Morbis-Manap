@@ -90,13 +90,76 @@ import { resolveCalledId, toRowState } from './shared/farmasiEvent';
     }
   }
 
+  // Kolom "No" tabel antrian (kolom 1) → nomor publik (T-01/R-01).
+  // Native menampilkan NOMOR MORBIS ("BT-3") di kolom pertama — bukan nomor
+  // publik. Hanya baris status-called yg punya data-id; baris lain TIDAK
+  // (verifikasi DOM live 2026-08-15) → resolve via KODE-NOMOR (kolom 1) ke
+  // data check_antrian (ID + KODE + NOMOR + JENIS) → QueueManager → tiket.
+  // Nomor MORBIS asli disimpan ke data-nomor-morbis utk konsumen internal;
+  // tanpa match → biarkan native (jangan menebak).
+  async function patchTableCodes(): Promise<void> {
+    const rows = document.querySelectorAll<HTMLElement>(ROWS_SEL);
+    if (rows.length === 0) return;
+    try {
+      // map KODE-NOMOR → ID dari endpoint check_antrian (sama dgn sumber tabel
+      // native; data_call mati & selalu []). Butuh sesi MORBIS — konsol login.
+      const res = await fetch('/public/antrian-farmasi-v2/list-antrian-v2', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+        body: 'type=check_antrian',
+        cache: 'no-store',
+      });
+      if (!res.ok) return;
+      const text = await res.text();
+      const data = JSON.parse(text) as Array<{
+        ID?: string | number;
+        KODE?: string;
+        NOMOR?: string | number;
+      }>;
+      if (!Array.isArray(data)) return;
+      const byKey = new Map<string, string>();
+      for (const r of data) {
+        if (r.ID == null) continue;
+        const key = String(r.KODE ?? '') + '-' + String(r.NOMOR ?? '');
+        if (key && !byKey.has(key)) byKey.set(key, String(r.ID));
+      }
+      await syncPublicNumbers(rows); // issue tiket utk baris ber-data-id (called)
+      const st = await getQueueState();
+      for (const tr of rows) {
+        const td = tr.querySelector('td');
+        if (!td) continue;
+        const morbisNum = (td.textContent || '').trim(); // "BT-3"
+        if (!/^[A-Z]{1,3}-\d+$/.test(morbisNum)) continue;
+        if (!tr.hasAttribute('data-nomor-morbis')) {
+          tr.setAttribute('data-nomor-morbis', morbisNum);
+        }
+        if (tr.hasAttribute('data-public-code')) continue; // sudah di-patch
+        // id: prioritas data-id (baris called), fallback KODE-NOMOR ke check_antrian
+        const id = tr.getAttribute('data-id') ?? byKey.get(morbisNum) ?? '';
+        if (!id) continue;
+        const t = getTicket(st, id);
+        if (!t || !t.code) continue;
+        if ((td.textContent || '').trim() === t.code) continue;
+        td.textContent = t.code;
+        tr.setAttribute('data-public-code', t.code);
+      }
+    } catch (err) {
+      const msg = String((err as Error).message ?? err);
+      if (!/context invalidated|no reply/i.test(msg)) {
+        console.warn('[AntrianFarmasiTotal] patch tabel gagal:', msg);
+      }
+    }
+  }
+
   fixTotals();
   void fixCurrents(); // poll di bawah menangani render lambat; ini percepat awal
+  void patchTableCodes();
   const root = document.querySelector('#isi');
   if (root) {
     new MutationObserver(() => {
       fixTotals();
       void fixCurrents();
+      void patchTableCodes();
     }).observe(root, { childList: true, subtree: true });
   }
 })();

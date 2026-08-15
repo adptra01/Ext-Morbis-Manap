@@ -127,8 +127,11 @@ var __morbis_feature = (() => {
   // src/features/farmasiIssue.ts
   var LIST_URL = '/public/antrian-farmasi-v2/list-antrian-v2';
   async function fetchRows() {
-    const res = await fetch(LIST_URL + '?type=data_call', {
+    const res = await fetch(LIST_URL, {
+      method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+      body: 'type=check_antrian',
+      cache: 'no-store',
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const j = await res.json();
@@ -160,7 +163,7 @@ var __morbis_feature = (() => {
     p.style.cssText =
       'position:fixed;right:16px;bottom:16px;z-index:99999;background:#fff;border:1px solid #0f5132;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.18);padding:14px 16px;max-width:340px;font:13px/1.5 "Inter",system-ui,sans-serif;color:#212529;display:none;';
     p.innerHTML =
-      '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;"><b style="color:#0f5132;font-size:14px;">Penerbitan Antrian</b><button id="ext-issue-collapse" style="border:none;background:none;font-size:16px;cursor:pointer;line-height:1;" title="Tutup">\u2013</button></div><div id="ext-issue-status" style="color:#6c757d;font-size:12px;margin-bottom:8px;">Memuat\u2026</div><div id="ext-issue-list" style="max-height:240px;overflow:auto;border:1px solid #e9ecef;border-radius:8px;margin-bottom:10px;"></div><div style="display:flex;gap:8px;"><button id="ext-issue-refresh" style="flex:1;padding:7px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">Segarkan</button><button id="ext-issue-print" style="flex:1;padding:7px;border:none;background:#0f5132;color:#fff;border-radius:8px;cursor:pointer;">Cetak Sheet A4</button></div>';
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;"><b style="color:#0f5132;font-size:14px;">Penerbitan Antrian</b><button id="ext-issue-collapse" style="border:none;background:none;font-size:16px;cursor:pointer;line-height:1;" title="Tutup">\u2013</button></div><div id="ext-issue-status" style="color:#6c757d;font-size:12px;margin-bottom:8px;">Memuat\u2026</div><input id="ext-issue-search" type="search" placeholder="Cari nama / no antrian\u2026" style="width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid #ced4da;border-radius:8px;font:13px/1.4 inherit;margin-bottom:8px;" /><div id="ext-issue-list" style="max-height:240px;overflow:auto;border:1px solid #e9ecef;border-radius:8px;margin-bottom:10px;"></div><div style="display:flex;gap:8px;"><button id="ext-issue-refresh" style="flex:1;padding:7px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">Segarkan</button><button id="ext-issue-print" style="flex:1;padding:7px;border:none;background:#0f5132;color:#fff;border-radius:8px;cursor:pointer;">Cetak Sheet A4</button></div>';
     return p;
   }
   function buildToggle() {
@@ -191,8 +194,14 @@ var __morbis_feature = (() => {
     const panel = document.getElementById('ext-farmasi-issue');
     const printOneBtn = document.getElementById('ext-issue-printone');
     if (panel) panel.setAttribute('data-rows', JSON.stringify(rows));
+    const q = document.getElementById('ext-issue-search')?.value.trim().toLowerCase();
+    const visible = urutan.filter((kode) => {
+      if (!q) return true;
+      const id = [...byId].find(([, v]) => v.code === kode)?.[0] ?? '';
+      return kode.toLowerCase().includes(q) || (name.get(id) || '').toLowerCase().includes(q);
+    });
     list.innerHTML =
-      urutan
+      visible
         .map((kode) => {
           const id = [...byId].find(([, v]) => v.code === kode)?.[0] ?? '';
           const idx = rows.findIndex((r) => String(r.ID) === id);
@@ -206,7 +215,7 @@ var __morbis_feature = (() => {
             '" style="flex-shrink:0;padding:3px 8px;border:none;border-radius:8px;background:#0f5132;color:#fff;cursor:pointer;font-size:12px;" title="Cetak tiket pasien ini">\u{1F5A8}</button></div>'
           );
         })
-        .join('') || '<div style="padding:6px;color:#6c757d;">kosong</div>';
+        .join('') || '<div style="padding:6px;color:#6c757d;">tidak ada yang cocok</div>';
     document.getElementById('ext-issue-print')?.setAttribute('data-urutan', JSON.stringify(urutan));
     document.getElementById('ext-issue-print')?.setAttribute('data-rows', JSON.stringify(rows));
     void printOneBtn;
@@ -350,6 +359,11 @@ var __morbis_feature = (() => {
     };
     toggle.addEventListener('click', () => setOpen(true));
     panel.querySelector('#ext-issue-collapse')?.addEventListener('click', () => setOpen(false));
+    panel.querySelector('#ext-issue-search')?.addEventListener('input', () => {
+      const raw = (panel.getAttribute('data-rows') || '').trim();
+      if (!raw) return;
+      void renderRows(JSON.parse(raw));
+    });
     panel.querySelector('#ext-issue-refresh')?.addEventListener('click', async () => {
       const status = document.getElementById('ext-issue-status');
       if (status) status.textContent = 'Memuat\u2026';
