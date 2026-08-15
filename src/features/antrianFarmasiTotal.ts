@@ -106,8 +106,9 @@ import { resolveCalledId, toRowState } from './shared/farmasiEvent';
     const rows = document.querySelectorAll<HTMLElement>(ROWS_SEL);
     if (rows.length === 0) return;
     try {
-      // map KODE-NOMOR+NAMA → ID dari endpoint check_antrian (sama dgn sumber
-      // tabel native; data_call mati & selalu []). Butuh sesi MORBIS — konsol login.
+      // map KODE-NOMOR+NAMA → {id, jenis} dari endpoint check_antrian (sama dgn
+      // sumber tabel native; data_call mati & selalu []). Butuh sesi MORBIS —
+      // konsol login.
       const res = await fetch('/public/antrian-farmasi-v2/list-antrian-v2', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
@@ -121,18 +122,45 @@ import { resolveCalledId, toRowState } from './shared/farmasiEvent';
         KODE?: string;
         NOMOR?: string | number;
         NAMA_PASIEN?: string;
+        JENIS?: string;
       }>;
       if (!Array.isArray(data)) return;
-      const byKey = new Map<string, string>();
+      const byKey = new Map<string, { id: string; jenis?: string }>();
       for (const r of data) {
         if (r.ID == null) continue;
         const nama = String(r.NAMA_PASIEN ?? '')
           .replace(/\s+/g, ' ')
           .trim();
         const key = String(r.KODE ?? '') + '-' + String(r.NOMOR ?? '') + '|' + nama;
-        if (key && !byKey.has(key)) byKey.set(key, String(r.ID));
+        if (key && !byKey.has(key))
+          byKey.set(key, { id: String(r.ID), jenis: String(r.JENIS ?? '') });
       }
-      await syncPublicNumbers(rows); // issue tiket utk baris ber-data-id (called)
+      // Issue tiket utk SEMUA baris yang bisa di-resolve (data-id status-called
+      // ATAU KODE-NOMOR+NAMA ke check_antrian). Fix 2026-08-15: sebelumnya hanya
+      // baris status-called yang di-issue → baris lain tanpa tiket → tanpa
+      // data-public-code → sortTableByPublicCode tak bisa mengurutkannya →
+      // tabel native MORBIS (urutan NOMOR acak) tampil mentah: BT-5, BT-9, BT-6
+      // bersebelahan = ilusi T-05/T-67/T-06. Issue semua = semua dapat nomor
+      // publik deterministik by ID = urutan masuk antrian. Idempoten: id yang
+      // sudah punya tiket tak diubah (FROZEN).
+      const pending: Array<{ id: string; jenis?: string; waktu: null }> = [];
+      for (const tr of rows) {
+        const td = tr.querySelector('td');
+        if (!td) continue;
+        const morbisNum = (td.textContent || '').trim(); // "BT-3"
+        if (!/^[A-Z]{1,3}-\d+$/.test(morbisNum)) continue;
+        const namaCell =
+          (tr.querySelectorAll('td')[3]?.textContent || '').replace(/\s+/g, ' ').trim() || '';
+        const byKeyHit = byKey.get(morbisNum + (namaCell ? '|' + namaCell : ''));
+        const id = tr.getAttribute('data-id') ?? byKeyHit?.id ?? '';
+        if (!id) continue;
+        pending.push({
+          id,
+          jenis: tr.getAttribute('data-jenis') ?? byKeyHit?.jenis ?? '',
+          waktu: null,
+        });
+      }
+      await issuePending(pending);
       const st = await getQueueState();
       for (const tr of rows) {
         const td = tr.querySelector('td');
@@ -149,7 +177,7 @@ import { resolveCalledId, toRowState } from './shared/farmasiEvent';
           (tr.querySelectorAll('td')[3]?.textContent || '').replace(/\s+/g, ' ').trim() || '';
         const id =
           tr.getAttribute('data-id') ??
-          byKey.get(morbisNum + (namaCell ? '|' + namaCell : '')) ??
+          byKey.get(morbisNum + (namaCell ? '|' + namaCell : ''))?.id ??
           '';
         if (!id) continue;
         const t = getTicket(st, id);
@@ -174,25 +202,28 @@ import { resolveCalledId, toRowState } from './shared/farmasiEvent';
   // Native me-render ulang #isi tiap 30s → observer memanggil ulang (guard
   // data-public-code mencegah re-sort tak berujung).
   function sortTableByPublicCode(): void {
-    const tbody = document.querySelector<HTMLElement>('.queue-table tbody');
-    if (!tbody) return;
-    const trs = Array.from(tbody.querySelectorAll<HTMLElement>('tr'));
-    if (trs.length < 2) return;
-    // tabel dengan rowspan (baris gabungan pasien) jangan di-sort ulang —
-    // memindahkan tr akan merusak layout native.
-    if (tbody.querySelector('td[rowspan], td[colspan]')) return;
-    const codeNum = (tr: HTMLElement): number => {
-      const code = tr.getAttribute('data-public-code') || '';
-      const m = code.match(/^([TR])-(\d+)$/);
-      if (!m) return Number.MAX_SAFE_INTEGER;
-      // T sebelum R? Tidak — kedua jalur independen. Sort by angka saja,
-      // prefix hanya pembeda display. (T-01..N & R-01..N terpisah, tak bentrok.)
-      return Number(m[2]);
-    };
-    const sorted = trs.slice().sort((a, b) => codeNum(a) - codeNum(b));
-    const isSorted = sorted.every((tr, i) => tr === trs[i]);
-    if (isSorted) return;
-    for (const tr of sorted) tbody.appendChild(tr);
+    // Ada 2+ tabel (counter TUNGGAL & RACIKAN) — sort SEMUA tbody.
+    const tbodies = document.querySelectorAll<HTMLElement>('.queue-table tbody');
+    if (tbodies.length === 0) return;
+    for (const tbody of tbodies) {
+      const trs = Array.from(tbody.querySelectorAll<HTMLElement>('tr'));
+      if (trs.length < 2) continue;
+      // tabel dengan rowspan (baris gabungan pasien) jangan di-sort ulang —
+      // memindahkan tr akan merusak layout native.
+      if (tbody.querySelector('td[rowspan], td[colspan]')) continue;
+      const codeNum = (tr: HTMLElement): number => {
+        const code = tr.getAttribute('data-public-code') || '';
+        const m = code.match(/^([TR])-(\d+)$/);
+        if (!m) return Number.MAX_SAFE_INTEGER;
+        // T sebelum R? Tidak — kedua jalur independen. Sort by angka saja,
+        // prefix hanya pembeda display. (T-01..N & R-01..N terpisah, tak bentrok.)
+        return Number(m[2]);
+      };
+      const sorted = trs.slice().sort((a, b) => codeNum(a) - codeNum(b));
+      const isSorted = sorted.every((tr, i) => tr === trs[i]);
+      if (isSorted) continue;
+      for (const tr of sorted) tbody.appendChild(tr);
+    }
   }
 
   fixTotals();

@@ -47,7 +47,7 @@
 import { nextHealth, type HealthState } from './shared/wsHealth';
 // Display jalan di world MAIN tanpa chrome.runtime → akses QueueManager via
 // bridge (postMessage ke isolated world) — getQueueState/issuePending bridge.
-import { issuePending } from './shared/farmasiQueueBridge';
+import { issuePending, reset } from './shared/farmasiQueueBridge';
 import { getTicket } from './shared/farmasiQueue';
 import { resolveCalledId, toRowState, type MorbisRowState } from './shared/farmasiEvent';
 import {
@@ -107,11 +107,13 @@ declare global {
   // (tes lapangan: klik 1x/detik melompati 1 nomor di poll 2s). Klik lebih cepat
   // dari 600ms masih bisa terlewat — naikkan budget hanya bila itu terjadi.
   const POLL_LADDER_MS = [500, 1500, 3000, 6000];
-  const GAP_MS = 400;
-  // Segarkan card (angka panggilan last + nama) secara tetap — cepat (~1s),
+  const GAP_MS = 250;
+  // Segarkan card (angka panggilan last + nama) secara tetap — cepat (~600ms),
   // tidak tergantung health/native/poll. Bikin display responsif setelah
-  // 'Selanjutnya'/recall tanpa menunggu WS native.
-  const CARD_MS = 1000;
+  // 'Selanjutnya'/recall tanpa menunggu WS native. 600ms = kompromi antara
+  // delay deteksi klik "Selanjutnya" (≤600ms + fetch) vs beban server MORBIS
+  // (2 endpoint per tick); 1000ms terasa lambat di lapangan.
+  const CARD_MS = 600;
   // Badge status (pojok kanan-atas): memberi tahu petugas bahwa refresh berjalan
   // ("MEMPERBARUI…") vs selesai ("SIAP") — menandakan delay itu normal, bukan freeze.
   let statusBadge: HTMLDivElement | null = null;
@@ -715,6 +717,10 @@ declare global {
       if (isReset(cur, prevCurrent)) {
         clearCallState();
         justReset = true;
+        // Reset MORBIS ≠ reset QueueManager: tiket lama (renumberCache) masih
+        // hidup → klik "Selanjutnya" berikutnya resolve ke pasien lama (T-13
+        // AULIYA diucapkan setelah reset). Kosongkan state queue + cache.
+        void resetQueueAfterAntrian();
       }
       // Sinkron baseline antar-iterasi (isReset di refresh berikutnya).
       prevCurrent.clear();
@@ -1020,6 +1026,28 @@ declare global {
     });
   }
 
+  // Reset antrian MORBIS (tombol "Reset Antrian" di halaman operator) ≠ reset
+  // QueueManager: MORBIS hanya mengembalikan current-number ke kecil/0, tapi
+  // tiket lama (T-13 AULIYA dll) tetap hidup di chrome.storage → "Selanjutnya"
+  // berikutnya resolve ke pasien lama. Sinkronkan: kosongkan QueueManager +
+  // renumberCache supaya antrian baru mulai dari T-01 lagi.
+  let lastQueueResetAt = 0;
+  function resetQueueAfterAntrian(): void {
+    const now = Date.now();
+    if (now - lastQueueResetAt < 3000) return; // dedup: isReset terdeteksi di refresh + poll
+    lastQueueResetAt = now;
+    void reset()
+      .then(() => {
+        renumberCache.clear();
+        nextToCallByJenis.tunggal = '';
+        nextToCallByJenis.racikan = '';
+        updateDebugState({ lastRealtimeEvent: 'reset:queue' });
+      })
+      .catch((err: unknown) => {
+        console.warn('[FarmasiDisplay] reset QueueManager gagal:', err);
+      });
+  }
+
   /* ============================================================
    * TTS MULTI-LAYER (role-gated).
    *
@@ -1050,7 +1078,7 @@ declare global {
   // Antrean serial (FIFO): bell DAN voice dalam satu antrean supaya panggilan baru
   // tidak menimpa panggilan yang sedang berbicara — bell berikutnya menunggu voice
   // aktif selesai (klik "Selanjutnya" beruntun).
-  type QueueItem = { kind: 'voice'; text: string } | { kind: 'bell' };
+  type QueueItem = { kind: 'voice'; text: string; repeat?: boolean } | { kind: 'bell' };
   const queue: QueueItem[] = [];
 
   function next(): void {
@@ -1421,11 +1449,6 @@ declare global {
     'sebelas',
   ];
   function numberToWords(n: number | string): string {
-    // Kode renumber "T-42"/"R-42" → ucapkan angkanya (kertas bertuliskan kode;
-    // TTS menyebut nomor agar pasien mencocokkan dengan tiketnya).
-    const clean = String(n).replace(/^[TR]-/, '');
-    const num = Math.abs(Math.trunc(Number(clean)));
-    if (!Number.isFinite(num)) return String(clean);
     const two = (x: number): string => {
       if (x < 12) return N2W_SATUAN[x];
       if (x < 20) return N2W_SATUAN[x - 10] + ' belas';
@@ -1435,6 +1458,25 @@ declare global {
           : N2W_SATUAN[Math.trunc(x / 10)] + ' puluh ' + N2W_SATUAN[x % 10];
       return '';
     };
+    // "03" → "nol tiga" (tiket bertuliskan R-03; TTS baca "nol tiga" agar
+    // pasien tidak mengira R-3).
+    const nolPrefix = (digits: string): string =>
+      digits
+        .split('')
+        .map((d) => N2W_SATUAN[Number(d)])
+        .join(' ');
+    // Kode renumber "T-42"/"R-03" → ucapkan LENGKAP (prefix T/R + angka) supaya
+    // pasien mencocokkan persis dengan tiket kertas (permintaan user: "R-03
+    // bukan hanya 03"). Huruf diucapkan apa adanya ("R"/"T"), angka → kata.
+    const raw = String(n);
+    const m = raw.match(/^([TR])-(\d+)$/);
+    if (m) {
+      const kata = m[2].length > 1 && m[2][0] === '0' ? nolPrefix(m[2]) : two(Number(m[2]));
+      return m[1] + ' ' + kata;
+    }
+    const clean = raw.replace(/^[TR]-/, '');
+    const num = Math.abs(Math.trunc(Number(clean)));
+    if (!Number.isFinite(num)) return String(clean);
     if (num === 0) return 'nol';
     if (num < 100) return two(num);
     if (num < 1000) {
@@ -1527,10 +1569,18 @@ declare global {
     // permintaan user: pasien di ruang tunggu sering tak dengar sekali ucapan).
     // next() menunggu playVoice selesai per item, jadi pengulangan berjalan
     // serial dengan jeda GAP_MS — tidak tumpang-tindih, tidak membatalkan diri.
+    // Delay "Selanjutnya" beruntun: pengulangan (voice ke-2) panggilan LAMA yang
+    // belum mulai DIBUANG saat panggilan baru masuk — operator tidak menunggu
+    // pengulangan selesai utk memanggil pasien berikutnya. Voice ke-1 (sedang/
+    // belum mulai) tetap utuh: pasien lama tetap dipanggil minimal sekali.
+    for (let i = queue.length - 1; i >= 0; i--) {
+      const qi = queue[i];
+      if (qi.kind === 'voice' && qi.repeat) queue.splice(i, 1);
+    }
     queue.push(
       { kind: 'bell' },
       { kind: 'voice', text: kalimat },
-      { kind: 'voice', text: kalimat },
+      { kind: 'voice', text: kalimat, repeat: true },
     );
     next();
   }
@@ -1752,6 +1802,7 @@ declare global {
             // current-number turun drastis — BUKAN panggilan baru. Update
             // baseline & tampilkan, tanpa announce (fix 2026-08-12).
             clearCallState(); // bersihkan dedup + lastCalled (state lama invalid)
+            resetQueueAfterAntrian(); // sinkronkan QueueManager (tiket lama invalid)
             currentCall = call;
             renderDisplay(view, currentCall);
           } else {

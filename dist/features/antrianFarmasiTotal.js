@@ -233,9 +233,27 @@ var __morbis_feature = (() => {
             .replace(/\s+/g, ' ')
             .trim();
           const key = String(r.KODE ?? '') + '-' + String(r.NOMOR ?? '') + '|' + nama;
-          if (key && !byKey.has(key)) byKey.set(key, String(r.ID));
+          if (key && !byKey.has(key))
+            byKey.set(key, { id: String(r.ID), jenis: String(r.JENIS ?? '') });
         }
-        await syncPublicNumbers(rows);
+        const pending = [];
+        for (const tr of rows) {
+          const td = tr.querySelector('td');
+          if (!td) continue;
+          const morbisNum = (td.textContent || '').trim();
+          if (!/^[A-Z]{1,3}-\d+$/.test(morbisNum)) continue;
+          const namaCell =
+            (tr.querySelectorAll('td')[3]?.textContent || '').replace(/\s+/g, ' ').trim() || '';
+          const byKeyHit = byKey.get(morbisNum + (namaCell ? '|' + namaCell : ''));
+          const id = tr.getAttribute('data-id') ?? byKeyHit?.id ?? '';
+          if (!id) continue;
+          pending.push({
+            id,
+            jenis: tr.getAttribute('data-jenis') ?? byKeyHit?.jenis ?? '',
+            waktu: null,
+          });
+        }
+        await issuePending(pending);
         const st = await getQueueState();
         for (const tr of rows) {
           const td = tr.querySelector('td');
@@ -250,7 +268,7 @@ var __morbis_feature = (() => {
             (tr.querySelectorAll('td')[3]?.textContent || '').replace(/\s+/g, ' ').trim() || '';
           const id =
             tr.getAttribute('data-id') ??
-            byKey.get(morbisNum + (namaCell ? '|' + namaCell : '')) ??
+            byKey.get(morbisNum + (namaCell ? '|' + namaCell : ''))?.id ??
             '';
           if (!id) continue;
           const t = getTicket(st, id);
@@ -267,21 +285,23 @@ var __morbis_feature = (() => {
       }
     }
     function sortTableByPublicCode() {
-      const tbody = document.querySelector('.queue-table tbody');
-      if (!tbody) return;
-      const trs = Array.from(tbody.querySelectorAll('tr'));
-      if (trs.length < 2) return;
-      if (tbody.querySelector('td[rowspan], td[colspan]')) return;
-      const codeNum = (tr) => {
-        const code = tr.getAttribute('data-public-code') || '';
-        const m = code.match(/^([TR])-(\d+)$/);
-        if (!m) return Number.MAX_SAFE_INTEGER;
-        return Number(m[2]);
-      };
-      const sorted = trs.slice().sort((a, b) => codeNum(a) - codeNum(b));
-      const isSorted = sorted.every((tr, i) => tr === trs[i]);
-      if (isSorted) return;
-      for (const tr of sorted) tbody.appendChild(tr);
+      const tbodies = document.querySelectorAll('.queue-table tbody');
+      if (tbodies.length === 0) return;
+      for (const tbody of tbodies) {
+        const trs = Array.from(tbody.querySelectorAll('tr'));
+        if (trs.length < 2) continue;
+        if (tbody.querySelector('td[rowspan], td[colspan]')) continue;
+        const codeNum = (tr) => {
+          const code = tr.getAttribute('data-public-code') || '';
+          const m = code.match(/^([TR])-(\d+)$/);
+          if (!m) return Number.MAX_SAFE_INTEGER;
+          return Number(m[2]);
+        };
+        const sorted = trs.slice().sort((a, b) => codeNum(a) - codeNum(b));
+        const isSorted = sorted.every((tr, i) => tr === trs[i]);
+        if (isSorted) continue;
+        for (const tr of sorted) tbody.appendChild(tr);
+      }
     }
     fixTotals();
     void fixCurrents();

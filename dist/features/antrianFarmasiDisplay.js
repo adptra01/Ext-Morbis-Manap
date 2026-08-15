@@ -68,6 +68,9 @@ var __morbis_feature = (() => {
   async function issuePending(rows) {
     return post('QUEUE_ISSUE', { rows });
   }
+  async function reset() {
+    return post('QUEUE_RESET', {});
+  }
 
   // src/features/shared/farmasiQueue.ts
   function getTicket(st, id) {
@@ -186,8 +189,8 @@ var __morbis_feature = (() => {
   (function () {
     const LIST_URL = '/public/antrian-farmasi-v2/list-antrian-v2';
     const POLL_LADDER_MS = [500, 1500, 3e3, 6e3];
-    const GAP_MS = 400;
-    const CARD_MS = 1e3;
+    const GAP_MS = 250;
+    const CARD_MS = 600;
     let statusBadge = null;
     let controlsHost = null;
     function ensureControlsHost() {
@@ -592,6 +595,7 @@ var __morbis_feature = (() => {
         if (isReset(cur, prevCurrent)) {
           clearCallState();
           justReset = true;
+          void resetQueueAfterAntrian();
         }
         prevCurrent.clear();
         for (const [c, v] of cur) prevCurrent.set(c, v);
@@ -776,6 +780,22 @@ var __morbis_feature = (() => {
         lastCalledNumber: null,
         lastRealtimeEvent: 'reset',
       });
+    }
+    let lastQueueResetAt = 0;
+    function resetQueueAfterAntrian() {
+      const now = Date.now();
+      if (now - lastQueueResetAt < 3e3) return;
+      lastQueueResetAt = now;
+      void reset()
+        .then(() => {
+          renumberCache.clear();
+          nextToCallByJenis.tunggal = '';
+          nextToCallByJenis.racikan = '';
+          updateDebugState({ lastRealtimeEvent: 'reset:queue' });
+        })
+        .catch((err) => {
+          console.warn('[FarmasiDisplay] reset QueueManager gagal:', err);
+        });
     }
     const synth = window.speechSynthesis;
     const RealSpeak = synth.speak.bind(synth);
@@ -1073,9 +1093,6 @@ var __morbis_feature = (() => {
       'sebelas',
     ];
     function numberToWords(n) {
-      const clean = String(n).replace(/^[TR]-/, '');
-      const num = Math.abs(Math.trunc(Number(clean)));
-      if (!Number.isFinite(num)) return String(clean);
       const two = (x) => {
         if (x < 12) return N2W_SATUAN[x];
         if (x < 20) return N2W_SATUAN[x - 10] + ' belas';
@@ -1085,6 +1102,20 @@ var __morbis_feature = (() => {
             : N2W_SATUAN[Math.trunc(x / 10)] + ' puluh ' + N2W_SATUAN[x % 10];
         return '';
       };
+      const nolPrefix = (digits) =>
+        digits
+          .split('')
+          .map((d) => N2W_SATUAN[Number(d)])
+          .join(' ');
+      const raw = String(n);
+      const m = raw.match(/^([TR])-(\d+)$/);
+      if (m) {
+        const kata = m[2].length > 1 && m[2][0] === '0' ? nolPrefix(m[2]) : two(Number(m[2]));
+        return m[1] + ' ' + kata;
+      }
+      const clean = raw.replace(/^[TR]-/, '');
+      const num = Math.abs(Math.trunc(Number(clean)));
+      if (!Number.isFinite(num)) return String(clean);
       if (num === 0) return 'nol';
       if (num < 100) return two(num);
       if (num < 1e3) {
@@ -1153,10 +1184,14 @@ var __morbis_feature = (() => {
         numberToWords(row.nomor) +
         (row.namaPasien ? ', atas nama ' + titleCase(String(row.namaPasien)) : '') +
         ', silakan menuju farmasi.';
+      for (let i = queue.length - 1; i >= 0; i--) {
+        const qi = queue[i];
+        if (qi.kind === 'voice' && qi.repeat) queue.splice(i, 1);
+      }
       queue.push(
         { kind: 'bell' },
         { kind: 'voice', text: kalimat },
-        { kind: 'voice', text: kalimat },
+        { kind: 'voice', text: kalimat, repeat: true },
       );
       next();
     }
@@ -1314,6 +1349,7 @@ var __morbis_feature = (() => {
           } else if (sig !== announcedSig && isNewCurrent(cur)) {
             if (isReset(cur, prevCurrent)) {
               clearCallState();
+              resetQueueAfterAntrian();
               currentCall = call;
               renderDisplay(view, currentCall);
             } else {
