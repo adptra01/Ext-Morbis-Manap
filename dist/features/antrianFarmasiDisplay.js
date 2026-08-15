@@ -595,6 +595,10 @@ var __morbis_feature = (() => {
         }
         prevCurrent.clear();
         for (const [c, v] of cur) prevCurrent.set(c, v);
+        updateDebugState({
+          currentByJenis: { ...currentByJenis },
+          lastNormalKey,
+        });
         const panelT = readPanelNumber(PANGGILAN_SEL);
         const panelR = readPanelNumber(SIAP_SEL);
         const recallT =
@@ -663,9 +667,10 @@ var __morbis_feature = (() => {
           renderCardPanel();
           highlightCurrents();
           writtenByUs.tunggal =
-            nextToCallByJenis.tunggal || kodeTampil('tunggal', currentByJenis.tunggal);
+            kodeTampil('tunggal', currentByJenis.tunggal) || nextToCallByJenis.tunggal;
           writtenByUs.racikan =
-            nextToCallByJenis.racikan || kodeTampil('racikan', currentByJenis.racikan);
+            kodeTampil('racikan', currentByJenis.racikan) || nextToCallByJenis.racikan;
+          updateDebugState({ writtenByUs: { ...writtenByUs } });
           onWeWrote();
           setStatus('ok');
         }
@@ -712,19 +717,21 @@ var __morbis_feature = (() => {
     function renderCardPanel(_view) {
       const atas = document.querySelector(PANGGILAN_SEL);
       const bawah = document.querySelector(SIAP_SEL);
-      const t = nextToCallByJenis.tunggal;
-      const r = nextToCallByJenis.racikan;
+      const curT = currentByJenis.tunggal;
+      const curR = currentByJenis.racikan;
+      const t = kodeTampil('tunggal', curT) || nextToCallByJenis.tunggal;
+      const r = kodeTampil('racikan', curR) || nextToCallByJenis.racikan;
       if (atas)
         atas.innerHTML = cardSection(
           'Obat Tunggal',
-          t || currentByJenis.tunggal,
-          t ? currentPatientName('tunggal', t) : '',
+          t,
+          curT ? currentPatientName('tunggal', curT) : '',
         );
       if (bawah)
         bawah.innerHTML = cardSection(
           'Obat Racikan',
-          r || currentByJenis.racikan,
-          r ? currentPatientName('racikan', r) : '',
+          r,
+          curR ? currentPatientName('racikan', curR) : '',
         );
     }
     function seedLastByJenis(view) {

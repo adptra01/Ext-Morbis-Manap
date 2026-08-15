@@ -85,6 +85,12 @@ type AntrianFarmasiDebugState = {
   lastRealtimeEvent: string | null;
   // Trace fase TTS layer-0: start→recv→blob:N→audio-new→canplay→play→end:reason
   ttsTrace: string[] | null;
+  // State internal refresh — observability card/announce (debug hanya):
+  // current MORBIS per jenis (dari current-number) & nilai panel terakhir
+  // yang extension tulis. Dipakai utk diagnosis "card tidak bergeser".
+  currentByJenis?: Record<'tunggal' | 'racikan', string> | null;
+  writtenByUs?: Record<'tunggal' | 'racikan', string> | null;
+  lastNormalKey?: string | null;
 };
 
 declare global {
@@ -714,6 +720,13 @@ declare global {
       prevCurrent.clear();
       for (const [c, v] of cur) prevCurrent.set(c, v);
 
+      // observability (debug): nilai current MORBIS yang baru saja dibaca —
+      // membantu diagnosis "card tidak bergeser" (apakah current-number ter-update)
+      updateDebugState({
+        currentByJenis: { ...currentByJenis },
+        lastNormalKey,
+      });
+
       // Recall (panggil ulang): current-number ?section=isi TIDAK berubah (tetap
       // nomor terakhir "Selanjutnya"), tapi native display menulis nomor recall ke
       // panel via WS. Deteksi: BACA nomor panel SEBELUM kita menimpa. Panel ≠
@@ -817,9 +830,10 @@ declare global {
         highlightCurrents();
         // tandai nilai yang KITA tulis — signature recall detection (anti false-positif)
         writtenByUs.tunggal =
-          nextToCallByJenis.tunggal || kodeTampil('tunggal', currentByJenis.tunggal);
+          kodeTampil('tunggal', currentByJenis.tunggal) || nextToCallByJenis.tunggal;
         writtenByUs.racikan =
-          nextToCallByJenis.racikan || kodeTampil('racikan', currentByJenis.racikan);
+          kodeTampil('racikan', currentByJenis.racikan) || nextToCallByJenis.racikan;
+        updateDebugState({ writtenByUs: { ...writtenByUs } });
         onWeWrote(); // tandai write extension agar tak dianggap native recovery
         setStatus('ok');
       }
@@ -880,25 +894,32 @@ declare global {
     onWeWrote(); // tandai DOM yang BARU SAJA extension tulis (bukan native)
   }
 
-  // Render card atas/bawah dari urutan publik per jenis (kelola sendiri) —
+  // Render card atas/bawah — ikut PANGGILAN AKTIF per jenis (kelola sendiri),
   // dipanggil SELALU (override native), termasuk saat tidak ada panggilan aktif.
-  // Nomor publik antrian pertama per jenis = pasien berikutnya yang wajib tampil.
+  // Prioritas: current MORBIS → publicCode (kodeTampil, fallback internal ke
+  // next-to-call saat current tak bisa di-resolve); nextToCallByJenis hanya
+  // dipakai saat belum ada panggilan sama sekali (current kosong). Fix
+  // 2026-08-15: sebelumnya nextToCallByJenis didahulukan — card tidak bergeser
+  // saat "Selanjutnya" diklik (next-to-call baru maju saat obat DISERAHKAN).
   function renderCardPanel(_view?: QueueView): void {
     const atas = document.querySelector<HTMLElement>(PANGGILAN_SEL);
     const bawah = document.querySelector<HTMLElement>(SIAP_SEL);
-    const t = nextToCallByJenis.tunggal;
-    const r = nextToCallByJenis.racikan;
+    const curT = currentByJenis.tunggal;
+    const curR = currentByJenis.racikan;
+    // kodeTampil('', ...) → '' → fallback nextToCallByJenis (belum ada panggilan)
+    const t = kodeTampil('tunggal', curT) || nextToCallByJenis.tunggal;
+    const r = kodeTampil('racikan', curR) || nextToCallByJenis.racikan;
     if (atas)
       atas.innerHTML = cardSection(
         'Obat Tunggal',
-        t || currentByJenis.tunggal,
-        t ? currentPatientName('tunggal', t) : '',
+        t,
+        curT ? currentPatientName('tunggal', curT) : '',
       );
     if (bawah)
       bawah.innerHTML = cardSection(
         'Obat Racikan',
-        r || currentByJenis.racikan,
-        r ? currentPatientName('racikan', r) : '',
+        r,
+        curR ? currentPatientName('racikan', curR) : '',
       );
   }
 
