@@ -19,6 +19,7 @@ Form resume rawat inap memiliki beberapa celah:
 Script berjalan di **MAIN world** pada halaman `tambah-resume-ri`. Fitur diaktifkan melalui attribute `data-ext-resume-validator` yang diset oleh `init.ts`.
 
 **Teknologi yang digunakan:**
+
 - SweetAlert (`swal`) untuk dialog konfirmasi dan error
 - jQuery untuk event handling fallback
 - localStorage untuk draft autosave
@@ -28,7 +29,7 @@ Script berjalan di **MAIN world** pada halaman `tambah-resume-ri`. Fitur diaktif
 ### Arsitektur Pertahanan Submit (4 Lapis)
 
 | Lapis | Mekanisme                             | Menangkal                              |
-| -------| ---------------------------------------| ----------------------------------------|
+| ----- | ------------------------------------- | -------------------------------------- |
 | 1     | `#save.onclick` → `attachSaveHandler` | Klik tombol simpan                     |
 | 2     | `form.onsubmit` → `runValidation()`   | Submit via event browser               |
 | 3     | jQuery `$(form).on('submit')`         | Submit via jQuery                      |
@@ -75,27 +76,31 @@ Klik Simpan
 ## Aturan Validasi
 
 ### Field Wajib
+
 `norm`, `pasien`, `alasan_rawat`, `anamnesa`, `diagnosa_primary`, `terapi_pengobatan`, `kode_diagnosa_utama`, `jenis_kasus`, `keadaan_keluar`, `cara_keluar`, `tgl_keluar2`
 
 ### Format ICD
-| Tipe | Pola | Contoh |
-|------|------|--------|
+
+| Tipe   | Pola                             | Contoh                  |
+| ------ | -------------------------------- | ----------------------- |
 | ICD-10 | `[A-Z][0-9][0-9](\.[0-9]{1,2})?` | `A00`, `A00.9`, `B20.1` |
-| ICD-9 | `[0-9]{2}(\.[0-9]{1,2})?` | `45`, `45.16`, `99.21` |
+| ICD-9  | `[0-9]{2}(\.[0-9]{1,2})?`        | `45`, `45.16`, `99.21`  |
 
 ### Vital Sign
-| Field | Rentang | Satuan |
-|-------|---------|--------|
-| `suhu_pulang` / `suhu` | 30 – 45 | °C |
-| `nadi_pulang` / `nadi` | 20 – 250 | x/menit |
-| `rr_pulang` / `nafas` | 4 – 80 | x/menit |
-| `spo2_pulang` / `spo2` | 50 – 100 | % |
-| `td_pulang` / `tensi` | format `xxx/xxx` | mmHg |
-| `gcs_e` | 1 – 4 | Eye |
-| `gcs_m` | 1 – 6 | Motor |
-| `gcs_v` | 1 – 5 | Verbal |
+
+| Field                  | Rentang          | Satuan  |
+| ---------------------- | ---------------- | ------- |
+| `suhu_pulang` / `suhu` | 30 – 45          | °C      |
+| `nadi_pulang` / `nadi` | 20 – 250         | x/menit |
+| `rr_pulang` / `nafas`  | 4 – 80           | x/menit |
+| `spo2_pulang` / `spo2` | 50 – 100         | %       |
+| `td_pulang` / `tensi`  | format `xxx/xxx` | mmHg    |
+| `gcs_e`                | 1 – 4            | Eye     |
+| `gcs_m`                | 1 – 6            | Motor   |
+| `gcs_v`                | 1 – 5            | Verbal  |
 
 ### Kondisional
+
 - **Rujukan Masuk (A)**: jika radio "Ya" → wajib pilih asal rujukan
 - **Rujukan Dikembalikan (B)**: jika radio "Ya" → wajib pilih asal rujukan
 - **Rujukan Keluar (C)**: jika radio "Ya" → wajib pilih rujukan keluar
@@ -104,9 +109,11 @@ Klik Simpan
 - **Tanggal**: `tgl_keluar2` tidak boleh sebelum `tgl_masuk`
 
 ### Autocomplete Guard
+
 Jika field nama diagnosa/tindakan terisi tapi hidden `id_*` kosong → user harus memilih dari hasil pencarian autocomplete, tidak bisa ketik manual.
 
 ### Field yang Dikecualikan
+
 `jadwal_kontrol` dan `pemeriksaan_lanjut` tidak divalidasi.
 
 ## Optimasi Input
@@ -125,13 +132,13 @@ Jika field nama diagnosa/tindakan terisi tapi hidden `id_*` kosong → user haru
 
 ## File Terkait
 
-| File | Peran |
-|------|-------|
-| `src/features/resumeValidator.ts` | Script utama (MAIN world) |
-| `src/init.ts` | Set `data-ext-resume-validator` attribute |
-| `src/background.ts` | Konfigurasi fitur (enabled, allowedRoles) |
-| `scripts/build.mjs` | Entry build |
-| `manifest.json` | Content script entry untuk `tambah-resume-ri` |
+| File                              | Peran                                         |
+| --------------------------------- | --------------------------------------------- |
+| `src/features/resumeValidator.ts` | Script utama (MAIN world)                     |
+| `src/init.ts`                     | Set `data-ext-resume-validator` attribute     |
+| `src/background.ts`               | Konfigurasi fitur (enabled, allowedRoles)     |
+| `scripts/build.mjs`               | Entry build                                   |
+| `manifest.json`                   | Content script entry untuk `tambah-resume-ri` |
 
 ## Konfigurasi
 

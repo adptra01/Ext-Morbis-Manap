@@ -18,6 +18,7 @@ Dokumen penagihan M-KLAIM berisi tabel detail yang ekstensif yang membuat dokume
 Fitur ini mengurai tabel penagihan untuk mengidentifikasi bagian dan subtotal, kemudian menyembunyikan baris detail sambil menampilkan baris ringkasan dengan total yang dihitung. Fitur ini menyediakan tombol toggle untuk beralih antara tampilan detail dan ringkasan.
 
 **Teknologi Utama:**
+
 - Parsing DOM dan manipulasi tabel
 - Parsing dan pemformatan mata uang (Rupiah Indonesia)
 - Injeksi baris dinamis dan manajemen kelas CSS
@@ -38,24 +39,28 @@ Fitur ini mengurai tabel penagihan untuk mengidentifikasi bagian dan subtotal, k
 ### Fungsi Utama
 
 **`parseTindakanSections(tbody)`**
+
 - Menganalisis tabel prosedur untuk header bagian dan subtotal
 - Mengidentifikasi pola colspan untuk header unit (mis., "A. UNIT BEDAH")
 - Mengekstrak baris subtotal dengan nilai tarif/tunai/jaminan
 - Mengembalikan array objek bagian dengan nama dan total
 
 **`parseResepSections(tbody)`**
+
 - Memproses tabel obat dengan struktur berbeda
 - Mencocokkan header resep berbasis tanggal (format DD-MM-YYYY)
 - Mengekstrak subtotal resep dengan format kolom tiga
 - Mengembalikan objek resep dengan label dan total
 
 **`createSummaryRow(no, label, subtotal, isObat)`**
+
 - Menghasilkan baris tabel ringkasan untuk tampilan
 - Menangani layout kolom berbeda (7 vs 8 kolom)
 - Memformat nilai mata uang dengan pemformatan angka lokal Indonesia
 - Menerapkan styling konsisten dengan atribut data
 
 **`applyRingkasMode(tbodies)`**
+
 - Menyembunyikan semua baris detail menggunakan kelas `ext-billing-hidden`
 - Memasukkan baris ringkasan dengan total bagian
 - Memperbarui judul halaman untuk menyertakan "(REKAPITULASI)"
@@ -64,16 +69,16 @@ Fitur ini mengurai tabel penagihan untuk mengidentifikasi bagian dan subtotal, k
 ### Metode Deteksi
 
 1. **Identifikasi Tabel**:
-    - Tabel prosedur: Konten teks menyertakan "RINCIAN BIAYA"
-    - Tabel obat: Konten teks menyertakan "Nama Obat"
+   - Tabel prosedur: Konten teks menyertakan "RINCIAN BIAYA"
+   - Tabel obat: Konten teks menyertakan "Nama Obat"
 
 2. **Deteksi Bagian**:
-    - Bagian prosedur: `td[colspan="7"]`, `td[colspan="8"]` dengan nama unit
-    - Bagian resep: `td[colspan="6"]` dengan header berbasis tanggal
+   - Bagian prosedur: `td[colspan="7"]`, `td[colspan="8"]` dengan nama unit
+   - Bagian resep: `td[colspan="6"]` dengan header berbasis tanggal
 
 3. **Deteksi Subtotal**:
-    - Subtotal prosedur: `td[colspan="5"]` dengan teks subtotal
-    - Subtotal resep: `td[colspan="4"]` dengan teks "sub total"
+   - Subtotal prosedur: `td[colspan="5"]` dengan teks subtotal
+   - Subtotal resep: `td[colspan="4"]` dengan teks "sub total"
 
 ### Teknik Modifikasi
 
@@ -90,7 +95,7 @@ const SIMPLIFY_BILLING_CONFIG = {
   detailUrlPattern: '/v2/m-klaim/detail-v2-refaktor',
   targetSectionId: 'pembayaran-gabung',
   toggleButtonId: 'ext-billing-toggle-btn',
-  storageKey: 'billing_simplify_mode'
+  storageKey: 'billing_simplify_mode',
 };
 ```
 
@@ -102,12 +107,14 @@ const SIMPLIFY_BILLING_CONFIG = {
 ## Edge Cases dan Keterbatasan
 
 ### Edge Cases yang Ditangani
+
 - **Jenis Tabel Campuran**: Menangani tabel prosedur dan obat
 - **Konten Dinamis**: MutationObserver menunggu konten dimuat
 - **Optimisasi Cetak**: Query media CSS menyembunyikan elemen UI saat mencetak
 - **Persistensi Tampilan**: Mengingat pilihan pengguna di seluruh refresh halaman
 
 ### Keterbatasan
+
 - **Asumsi Struktur Tabel**: Bergantung pada pola colspan spesifik dan konten teks
 - **Parsing Mata Uang**: Mungkin tidak menangani semua variasi pemformatan mata uang
 - **Kendala Layout**: Format ringkasan mungkin tidak pas dengan semua variasi tabel penagihan
@@ -116,6 +123,7 @@ const SIMPLIFY_BILLING_CONFIG = {
 ## Contoh Perubahan DOM
 
 ### Bagian Tabel Detail Asli
+
 ```html
 <table>
   <tbody>
@@ -147,6 +155,7 @@ const SIMPLIFY_BILLING_CONFIG = {
 ```
 
 ### Tampilan Ringkasan yang Disederhanakan
+
 ```html
 <table>
   <tbody>
@@ -154,7 +163,7 @@ const SIMPLIFY_BILLING_CONFIG = {
       <td colspan="8"><b>RINCIAN BIAYA TINDAKAN (REKAPITULASI)</b></td>
     </tr>
     <tr data-ext-summary="true">
-      <td colspan="8"><br><b>A. TOTAL TINDAKAN PER UNIT</b></td>
+      <td colspan="8"><br /><b>A. TOTAL TINDAKAN PER UNIT</b></td>
     </tr>
     <tr data-ext-summary="true">
       <td align="center" width="5%">1.</td>
@@ -170,15 +179,20 @@ const SIMPLIFY_BILLING_CONFIG = {
 ```
 
 ### Tombol Toggle
+
 ```html
 <div class="panel-heading" style="display: flex; align-items: center;">
-  <button id="ext-billing-toggle-btn" style="margin: 8px 0 4px 10px; background: #6366f1; color: white;">
+  <button
+    id="ext-billing-toggle-btn"
+    style="margin: 8px 0 4px 10px; background: #6366f1; color: white;"
+  >
     📋 Ringkaskan Rincian Biaya
   </button>
 </div>
 ```
 
 ### CSS Spesifik Cetak
+
 ```css
 @media print {
   .ext-billing-hidden {

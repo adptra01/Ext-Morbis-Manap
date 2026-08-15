@@ -39,12 +39,12 @@ init.ts
 
 ```typescript
 interface FeatureMatch {
-  pathname?: string;           // Halaman tepat
-  prefix?: string;             // Halaman + semua turunan
-  regex?: RegExp;              // Pattern kompleks
-  oneOf?: FeatureMatch[];      // Salah satu dari beberapa kondisi
-  exclude?: FeatureMatch[];    // Kecualikan halaman tertentu
-  requiredSelectors?: string[];// CSS selector harus ada di DOM
+  pathname?: string; // Halaman tepat
+  prefix?: string; // Halaman + semua turunan
+  regex?: RegExp; // Pattern kompleks
+  oneOf?: FeatureMatch[]; // Salah satu dari beberapa kondisi
+  exclude?: FeatureMatch[]; // Kecualikan halaman tertentu
+  requiredSelectors?: string[]; // CSS selector harus ada di DOM
 }
 ```
 
@@ -67,14 +67,15 @@ Urutan penting: `oneOf` dievaluasi SEBELUM `exclude`, sehingga exclude bisa memf
 
 ```typescript
 interface FeatureContext {
-  pathname: string;     // window.location.pathname (ternormalisasi)
-  url: URL;             // window.location.href
-  document: Document;   // window.document
-  window: Window;       // global window
+  pathname: string; // window.location.pathname (ternormalisasi)
+  url: URL; // window.location.href
+  document: Document; // window.document
+  window: Window; // global window
 }
 ```
 
 Pathname sudah dinormalisasi oleh `normalizePath()` sebelum dimasukkan ke context:
+
 - `""` → `"/"`
 - `"/"` → `"/"`
 - `"/admisi/"` → `"/admisi"`
@@ -83,6 +84,7 @@ Pathname sudah dinormalisasi oleh `normalizePath()` sebelum dimasukkan ke contex
 ## Controller Features — Pengecualian
 
 Feature yang menggunakan `document.documentElement.setAttribute(...)` (controller) tetap dikelola langsung di `init.ts` (lines 48-90). Ini adalah pengecualian karena:
+
 - Mereka hanya inject CSS selector ke `<html>`, bukan render UI
 - CSS visibility dikelola oleh stylesheet, bukan oleh logika JavaScript
 - Tidak ada risiko "bocor" karena selector hanya mempengaruhi tampilan
@@ -115,9 +117,9 @@ g.featureModules.badFeature = {
 
 ## Files
 
-| File | Role |
-|------|------|
-| `src/init.ts` | Gatekeeper — lifecycle, context, evaluator loop |
-| `src/features/shared/featureMatch.ts` | `normalizePath()`, `evaluate()`, `matchPage()` |
-| `src/features/shared/types.ts` | Interfaces: `FeatureMatch`, `FeatureContext`, `FeatureModule` |
-| `scripts/audit-features.mjs` | Static audit + regression matrix |
+| File                                  | Role                                                          |
+| ------------------------------------- | ------------------------------------------------------------- |
+| `src/init.ts`                         | Gatekeeper — lifecycle, context, evaluator loop               |
+| `src/features/shared/featureMatch.ts` | `normalizePath()`, `evaluate()`, `matchPage()`                |
+| `src/features/shared/types.ts`        | Interfaces: `FeatureMatch`, `FeatureContext`, `FeatureModule` |
+| `scripts/audit-features.mjs`          | Static audit + regression matrix                              |

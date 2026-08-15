@@ -18,9 +18,9 @@ g.featureModules.featureKey = { ... };
 
 ```typescript
 interface FeatureModule {
-  id: string;            // unique identifier
-  match: FeatureMatch;   // target halaman
-  run: () => void;       // eksekusi feature
+  id: string; // unique identifier
+  match: FeatureMatch; // target halaman
+  run: () => void; // eksekusi feature
 }
 ```
 
@@ -46,14 +46,14 @@ run() { ... }
 
 ### Rule 4 — Gunakan Field `match` yang Tepat
 
-| Kondisi | Field |
-|---------|-------|
-| Halaman tepat | `pathname` |
-| Halaman + turunan | `prefix` |
-| Pattern kompleks | `regex` |
-| Beberapa halaman | `oneOf` |
-| Kecualikan halaman tertentu | `exclude` |
-| Elemen DOM harus ada | `requiredSelectors` |
+| Kondisi                     | Field               |
+| --------------------------- | ------------------- |
+| Halaman tepat               | `pathname`          |
+| Halaman + turunan           | `prefix`            |
+| Pattern kompleks            | `regex`             |
+| Beberapa halaman            | `oneOf`             |
+| Kecualikan halaman tertentu | `exclude`           |
+| Elemen DOM harus ada        | `requiredSelectors` |
 
 ### Rule 5 — Feature hanya baca DOM setelah lolos `matchPage()`
 

@@ -22,6 +22,7 @@ Fitur ini menyuntikkan CSS `@media print` komprehensif dan menggunakan listener
 `beforeprint`/`afterprint` untuk menyaring section secara cerdas.
 
 **Teknologi Utama:**
+
 - Injeksi CSS `@media print` komprehensif (reset container, override inline styles)
 - Listener event cetak (`beforeprint`, `afterprint`) untuk filter section
 - Deteksi konten berbasis checkbox + emptiness heuristic
@@ -46,7 +47,10 @@ Saat `beforeprint`, setiap child div dari `#section-to-print` disembunyikan jika
 
 ```css
 @media print {
-  body, .main, .panel-body, #section-to-print {
+  body,
+  .main,
+  .panel-body,
+  #section-to-print {
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
@@ -67,18 +71,27 @@ Saat `beforeprint`, setiap child div dari `#section-to-print` disembunyikan jika
     margin-bottom: 20px !important;
   }
 
-  .panel-heading, .no-print, .navbar, .ribbon, .watermark, .hilang-saat-print {
+  .panel-heading,
+  .no-print,
+  .navbar,
+  .ribbon,
+  .watermark,
+  .hilang-saat-print {
     display: none !important;
   }
 
-  a[href]::after { content: none !important; }
+  a[href]::after {
+    content: none !important;
+  }
 
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  @page { margin: 0.75cm; }
+  @page {
+    margin: 0.75cm;
+  }
 }
 ```
 
@@ -86,7 +99,7 @@ Saat `beforeprint`, setiap child div dari `#section-to-print` disembunyikan jika
 
 ```javascript
 const PRINT_OPT_CONFIG = {
-  selectors: '#section-to-print > div'
+  selectors: '#section-to-print > div',
 };
 ```
 

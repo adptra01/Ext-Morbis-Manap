@@ -18,6 +18,7 @@ Staf rumah sakit sering mengalami frustrasi saat mengklik tombol detail yang mem
 Fitur ini bekerja dengan mencegat event klik pada tombol detail dan mengganti perilaku default mereka. Fitur ini menggunakan beberapa metode deteksi untuk mengidentifikasi elemen detail dan mengganti handler onclick mereka dengan logika kustom yang menavigasi ke tab yang sama.
 
 **Teknologi Utama:**
+
 - Manipulasi DOM dan penanganan event
 - MutationObserver untuk konten dinamis
 - Ekstraksi parameter URL dan generasi
@@ -36,23 +37,27 @@ Fitur ini bekerja dengan mencegat event klik pada tombol detail dan mengganti pe
 ### Fungsi Utama
 
 **`extractIdFromOnclick(onclickAttr)`**
+
 - Mengurai atribut onclick untuk mengekstrak ID kunjungan pasien
 - Mendukung pola onclick ganda: `detail(162301)` dan `detail('162301')`
 - Mengembalikan ID yang diekstrak atau null jika tidak ditemukan
 
 **`extractIdFromElement(element)`**
+
 - Mengekstrak ID dari berbagai sumber: atribut data, onclick, dan elemen induk
 - Memeriksa `dataset.idVisit`, `dataset.idvisit`, `dataset.id`
 - Melintasi hingga 5 elemen induk untuk pola onclick
 - Mengembalikan ID valid pertama yang ditemukan
 
 **`generateUrl(id)`**
+
 - Membuat URL halaman detail dengan parameter yang diperlukan
 - Termasuk fungsionalitas tanggal otomatis menggunakan tanggal halaman saat ini atau hari ini
 - Mempertahankan parameter URL yang ada (norm, nama, reg, billing, status, dll.)
 - Menangani pemformatan tanggal untuk lokal Indonesia
 
 **`overrideDetailButton(btn)`**
+
 - Menyimpan handler onclick asli untuk pemulihan
 - Menghapus onclick asli untuk mencegah perilaku tab baru
 - Menambahkan event listener klik kustom yang menavigasi ke tab yang sama
@@ -61,16 +66,16 @@ Fitur ini bekerja dengan mencegat event klik pada tombol detail dan mengganti pe
 ### Metode Deteksi
 
 1. **Selector CSS**: Beberapa selector menargetkan berbagai jenis tombol
-    - `button[onclick^="detail("]` - Tombol detail standar
-    - `a[onclick^="detail("]` - Tautan gaya tombol detail
-    - `[data-action="detail"]` - Tombol atribut data
-    - `[data-id-visit]` - Atribut data ID kunjungan
-    - `.btn-detail` - Tombol kelas CSS
-    - `[data-toggle="detail"]` - Toggle gaya Bootstrap
+   - `button[onclick^="detail("]` - Tombol detail standar
+   - `a[onclick^="detail("]` - Tautan gaya tombol detail
+   - `[data-action="detail"]` - Tombol atribut data
+   - `[data-id-visit]` - Atribut data ID kunjungan
+   - `.btn-detail` - Tombol kelas CSS
+   - `[data-toggle="detail"]` - Toggle gaya Bootstrap
 
 2. **Deteksi Konten Teks**: Metode fallback mencari elemen dalam sel tabel untuk teks "detail"
-    - Memindai `button, a, span, div` dalam sel tabel
-    - Mencocokkan teks "detail", "view", atau "lihat" case-insensitive
+   - Memindai `button, a, span, div` dalam sel tabel
+   - Mencocokkan teks "detail", "view", atau "lihat" case-insensitive
 
 ### Teknik Modifikasi
 
@@ -85,7 +90,7 @@ Fitur ini bekerja dengan mencegat event klik pada tombol detail dan mengganti pe
 ```javascript
 const OPEN_DETAIL_CONFIG = {
   urlPatterns: [
-    '/v2/m-klaim/detail-v2-refaktor?id_visit={id}&tanggalAwal={tanggalAwal}&tanggalAkhir={tanggalAkhir}&norm=&nama=&reg=&billing=all&status=all&id_poli_cari=&poli_cari='
+    '/v2/m-klaim/detail-v2-refaktor?id_visit={id}&tanggalAwal={tanggalAwal}&tanggalAkhir={tanggalAkhir}&norm=&nama=&reg=&billing=all&status=all&id_poli_cari=&poli_cari=',
   ],
   autoDate: true,
   dateFormat: 'id',
@@ -95,9 +100,9 @@ const OPEN_DETAIL_CONFIG = {
     '[data-action="detail"]',
     '[data-id-visit]',
     '.btn-detail',
-    '[data-toggle="detail"]'
+    '[data-toggle="detail"]',
   ],
-  debug: false
+  debug: false,
 };
 ```
 
@@ -110,12 +115,14 @@ const OPEN_DETAIL_CONFIG = {
 ## Edge Cases dan Keterbatasan
 
 ### Edge Cases yang Ditangani
+
 - **Konten Dinamis**: MutationObserver menerapkan ulang override saat tombol baru ditambahkan
 - **Sumber ID Ganda**: Memeriksa atribut data, onclick, dan elemen induk
 - **Shortcut Keyboard**: Ctrl/Cmd+klik masih membuka di tab baru
 - **Update AJAX**: Penerapan ulang setiap 2 detik
 
 ### Keterbatasan
+
 - **Ketergantungan Pola URL**: Memerlukan struktur URL yang cocok spesifik
 - **Asumsi Parameter Tanggal**: Mengasumsikan field tanggal ada di halaman saat ini
 - **Maintenance Selector**: Mungkin memerlukan update jika struktur HTML halaman berubah
@@ -124,20 +131,21 @@ const OPEN_DETAIL_CONFIG = {
 ## Contoh Perubahan DOM
 
 ### Tombol Asli (Sebelum)
+
 ```html
-<button onclick="detail(162301)" class="btn btn-primary">
-    Detail
-</button>
+<button onclick="detail(162301)" class="btn btn-primary">Detail</button>
 ```
 
 ### Tombol yang Dimodifikasi (Sesudah)
+
 ```html
 <button data-detail-modified="true" data-original-onclick="detail(162301)" class="btn btn-primary">
-    Detail
+  Detail
 </button>
 ```
 
 ### Perubahan Event Handler
+
 - **Asli**: Membuka `window.open(url, '_blank')` (tab baru)
 - **Dimodifikasi**: Menggunakan `window.location.href = url` (tab yang sama)
 - **Override Keyboard**: Ctrl+klik menggunakan `window.open(url, '_blank')`
