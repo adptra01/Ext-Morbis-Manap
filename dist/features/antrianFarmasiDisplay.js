@@ -109,21 +109,22 @@ var __morbis_feature = (() => {
     for (const dl of listContent.querySelectorAll('dl')) {
       const h4 = dl.querySelector('h4');
       if (!h4) continue;
-      const nomorMatch = (h4.textContent || '').match(/(\d+)$/);
+      const h4Text = dl.getAttribute('data-nomor-morbis') || h4.textContent || '';
+      const nomorMatch = h4Text.match(/(\d+)$/);
       if (!nomorMatch) continue;
       const nomor = nomorMatch[1];
       const dd3 = dl.querySelector('dd.col-3, dd.col-md-3');
       const nama = dd3
         ? Array.from(dd3.childNodes)
-            .filter((n) => n.nodeType === Node.TEXT_NODE)
+            .filter((n) => n.nodeType === 3)
             .map((n) => n.textContent || '')
             .join('')
             .replace(/\s+/g, ' ')
             .trim()
         : '';
       const kode =
-        dd3 && /[A-Za-z]/.test((h4.textContent || '').split('-')[0] || '')
-          ? (h4.textContent || '').split('-')[0].toUpperCase()
+        dd3 && /[A-Za-z]/.test(h4Text.split('-')[0] || '')
+          ? h4Text.split('-')[0].toUpperCase()
           : '';
       if (nomor) m.set(nomor, { nama, kode });
     }
@@ -439,12 +440,55 @@ var __morbis_feature = (() => {
       ].filter(Boolean);
       for (const dl of lc.querySelectorAll('dl')) {
         const h4 = dl.querySelector('h4');
-        const num = ((h4?.textContent || '').match(/(\d+)$/) || [])[1] || '';
+        const num =
+          ((dl.getAttribute('data-nomor-morbis') || h4?.textContent || '').match(/(\d+)$/) ||
+            [])[1] || '';
         const dd3 = dl.querySelector('dd.col-3, dd.col-md-3');
         const d = (dd3?.textContent || '').replace(/\s+/g, ' ').trim();
         const matchNum = targets.some((n) => num && n === num);
         const matchName = names.some((nm) => nm && d === nm);
         dl.style.background = matchNum || matchName ? '#fde68a' : '';
+      }
+    }
+    function patchListContentAntrian() {
+      const lc = document.querySelector('#list-content');
+      if (!lc) return;
+      let unresolved = 0;
+      for (const dl of lc.querySelectorAll('dl')) {
+        const h4 = dl.querySelector('h4');
+        if (!h4) continue;
+        if (!dl.hasAttribute('data-nomor-morbis')) {
+          dl.setAttribute('data-nomor-morbis', (h4.textContent || '').trim());
+        }
+        if (dl.hasAttribute('data-public-code')) continue;
+        const rm =
+          ((dl.querySelector('dd.col-3 p, dd.col-md-3 p')?.textContent || '').match(
+            /RM\s*:\s*(\d+)/i,
+          ) || [])[1] || '';
+        const isR = dl.classList.contains('racikan');
+        const row = lastRows.find(
+          (r) =>
+            String(r.ID_PASIEN ?? '') === rm &&
+            (isR ? /racik/i.test(String(r.JENIS ?? '')) : !/racik/i.test(String(r.JENIS ?? ''))),
+        );
+        const id = row ? String(row.ID ?? '') : '';
+        const code = id ? renumberCache.get(id) || '' : '';
+        if (code) {
+          h4.textContent = code;
+          dl.setAttribute('data-public-code', code);
+          dl.setAttribute('data-morbis-id', id);
+        } else if (rm) {
+          h4.textContent = '\u2014';
+          dl.setAttribute('data-public-code', '\u2014');
+          unresolved++;
+        }
+      }
+      if (unresolved > 0) {
+        console.warn(
+          '[AFD] tabel antrian: ' +
+            unresolved +
+            ' baris tak bisa di-resolve ke publicCode (tampil \u2014)',
+        );
       }
     }
     async function recallPatient(row) {
@@ -538,6 +582,7 @@ var __morbis_feature = (() => {
         const [{ current: cur }, rows] = await Promise.all([fetchCurrentNumber(), fetchCallData()]);
         lastRows = rows;
         await updateRenumber(rows);
+        patchListContentAntrian();
         updateDebugState({ lastPoll: Date.now(), lastDataCount: rows.length });
         const g1 = cur.get('1')?.trim();
         const g2 = cur.get('2')?.trim();
@@ -1363,6 +1408,14 @@ var __morbis_feature = (() => {
       ensureStatusBadge();
       ensureToolbar();
       setStatus('loading');
+      const lc = document.querySelector('#list-content');
+      if (lc && !lc.hasAttribute('data-ext-afd-patch')) {
+        lc.setAttribute('data-ext-afd-patch', '1');
+        new MutationObserver(() => {
+          patchListContentAntrian();
+        }).observe(lc, { childList: true, subtree: true });
+      }
+      patchListContentAntrian();
       voiceEnabled = true;
       health = { ...health, nativeSig: domSignal() };
       if (watchTimer === null) {

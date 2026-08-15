@@ -47,23 +47,27 @@ export function parseListContentPatient(listContent: Element | null): PatientByN
   for (const dl of listContent.querySelectorAll('dl')) {
     const h4 = dl.querySelector('h4');
     if (!h4) continue;
-    const nomorMatch = (h4.textContent || '').match(/(\d+)$/);
+    // Kolom "Antrian" sudah di-patch ke publicCode (T-xx/R-xx) oleh display
+    // (patchListContentAntrian) — nomor MORBIS asli tersimpan di data-nomor-morbis.
+    // Baca dari attribute dulu agar lookup nama tetap keyed by NOMOR MORBIS.
+    const h4Text = dl.getAttribute('data-nomor-morbis') || h4.textContent || '';
+    const nomorMatch = h4Text.match(/(\d+)$/);
     if (!nomorMatch) continue;
     const nomor = nomorMatch[1];
     const dd3 = dl.querySelector('dd.col-3, dd.col-md-3');
     // nama = teks direct dari dd (hilangkan <p>RM : ...>); fallback teks penuh
     const nama = dd3
       ? Array.from(dd3.childNodes)
-          .filter((n) => n.nodeType === Node.TEXT_NODE)
+          // ponytail: Node.TEXT_NODE (=3) — konstanta agar parser testable di
+          // environment node tanpa global Node mock (mock merusak instanceof vitest)
+          .filter((n) => n.nodeType === 3)
           .map((n) => n.textContent || '')
           .join('')
           .replace(/\s+/g, ' ')
           .trim()
       : '';
     const kode =
-      dd3 && /[A-Za-z]/.test((h4.textContent || '').split('-')[0] || '')
-        ? (h4.textContent || '').split('-')[0].toUpperCase()
-        : '';
+      dd3 && /[A-Za-z]/.test(h4Text.split('-')[0] || '') ? h4Text.split('-')[0].toUpperCase() : '';
     if (nomor) m.set(nomor, { nama, kode });
   }
   return m;

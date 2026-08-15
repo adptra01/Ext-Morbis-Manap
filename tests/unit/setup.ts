@@ -1,4 +1,5 @@
 // Mock chrome API for unit tests
+
 const mockStorage: Record<string, unknown> = {};
 
 globalThis.chrome = {

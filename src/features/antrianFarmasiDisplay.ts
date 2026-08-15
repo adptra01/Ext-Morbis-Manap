@@ -499,13 +499,75 @@ declare global {
     ].filter(Boolean);
     for (const dl of lc.querySelectorAll('dl')) {
       const h4 = dl.querySelector('h4');
-      const num = ((h4?.textContent || '').match(/(\d+)$/) || [])[1] || '';
+      // Nomor MORBIS asli — baca dari data-nomor-morbis (kolom Antrian sudah
+      // di-patch ke publicCode T-xx/R-xx oleh patchListContentAntrian), fallback
+      // ke teks h4 saat kolom belum di-patch.
+      const num =
+        ((dl.getAttribute('data-nomor-morbis') || h4?.textContent || '').match(/(\d+)$/) ||
+          [])[1] || '';
       const dd3 = dl.querySelector('dd.col-3, dd.col-md-3');
       const d = (dd3?.textContent || '').replace(/\s+/g, ' ').trim();
       // nomor harus PERSIS (bukan substring) — hindari 5 cocok 15/25/35
       const matchNum = targets.some((n) => num && n === num);
       const matchName = names.some((nm) => nm && d === nm);
       (dl as HTMLElement).style.background = matchNum || matchName ? '#fde68a' : '';
+    }
+  }
+
+  // Kolom "Antrian" tabel native #list-content → publicCode QueueManager.
+  //
+  // Tabel di-render OLEH JS NATIVE MORBIS (listtable): <h4>${KODE}-${COUNTER}</h4>
+  // (mis. "BT-2"). Nomor MORBIS itu INTERNAL — bukan nomor publik. Kontrak:
+  // MORBIS ID → QueueManager → getPublicCode() → T-xx/R-xx, BUKAN transformasi
+  // string BT→T (dilarang). Baris native TIDAK membawa data-id → resolve via
+  // RM (ID_PASIEN pada <p>RM : …>) + jenis (class racikan) → lastRows (data_call)
+  // → MORBIS ID → renumberCache (publicCode frozen).
+  //
+  // Baris yang tidak bisa di-resolve ke publicCode → tampil '—' (BUKAN nomor
+  // MORBIS) + warn — prinsip "jangan tampilkan nomor internal sbg nomor publik".
+  // Nomor MORBIS asli disalin ke data-nomor-morbis utk konsumen internal
+  // (highlightCurrents / parseListContentPatient), jadi TTS nama tetap akurat.
+  function patchListContentAntrian(): void {
+    const lc = document.querySelector('#list-content');
+    if (!lc) return;
+    let unresolved = 0;
+    for (const dl of lc.querySelectorAll('dl')) {
+      const h4 = dl.querySelector('h4');
+      if (!h4) continue;
+      if (!dl.hasAttribute('data-nomor-morbis')) {
+        dl.setAttribute('data-nomor-morbis', (h4.textContent || '').trim());
+      }
+      if (dl.hasAttribute('data-public-code')) continue; // sudah di-patch
+      const rm =
+        ((dl.querySelector('dd.col-3 p, dd.col-md-3 p')?.textContent || '').match(
+          /RM\s*:\s*(\d+)/i,
+        ) || [])[1] || '';
+      const isR = dl.classList.contains('racikan');
+      const row = lastRows.find(
+        (r) =>
+          String(r.ID_PASIEN ?? '') === rm &&
+          (isR ? /racik/i.test(String(r.JENIS ?? '')) : !/racik/i.test(String(r.JENIS ?? ''))),
+      );
+      const id = row ? String(row.ID ?? '') : '';
+      const code = id ? renumberCache.get(id) || '' : '';
+      if (code) {
+        h4.textContent = code;
+        dl.setAttribute('data-public-code', code);
+        dl.setAttribute('data-morbis-id', id);
+      } else if (rm) {
+        // RM dikenal tapi publicCode belum tersedia → jangan tampilkan nomor MORBIS.
+        h4.textContent = '—';
+        dl.setAttribute('data-public-code', '—');
+        unresolved++;
+      }
+      // tanpa RM → baris tidak dikenal; biarkan (jangan sentuh).
+    }
+    if (unresolved > 0) {
+      console.warn(
+        '[AFD] tabel antrian: ' +
+          unresolved +
+          ' baris tak bisa di-resolve ke publicCode (tampil —)',
+      );
     }
   }
 
@@ -625,6 +687,7 @@ declare global {
       const [{ current: cur }, rows] = await Promise.all([fetchCurrentNumber(), fetchCallData()]);
       lastRows = rows;
       await updateRenumber(rows);
+      patchListContentAntrian(); // kolom "Antrian" tabel native → publicCode
       updateDebugState({ lastPoll: Date.now(), lastDataCount: rows.length }); // observability: jalur render tercapai
       const g1 = cur.get('1')?.trim();
       const g2 = cur.get('2')?.trim();
@@ -1802,6 +1865,19 @@ declare global {
     ensureStatusBadge(); // pastikan badge status ada sedari awal (loading)
     ensureToolbar(); // tombol Tes Suara & Full Screen
     setStatus('loading');
+
+    // Tabel #list-content di-render ulang oleh JS NATIVE MORBIS (listtable:
+    // interval + WebSocket) → patch ulang kolom "Antrian" ke publicCode setiap
+    // native menulis. Observer childList cukup: patch kita hanya setAttribute +
+    // textContent h4 (tidak menambah/menghapus node dl) → tidak memicu loop.
+    const lc = document.querySelector('#list-content');
+    if (lc && !lc.hasAttribute('data-ext-afd-patch')) {
+      lc.setAttribute('data-ext-afd-patch', '1');
+      new MutationObserver(() => {
+        patchListContentAntrian();
+      }).observe(lc, { childList: true, subtree: true });
+    }
+    patchListContentAntrian(); // patch awal (tabel mungkin sudah terisi native)
 
     voiceEnabled = true; // suara hanya untuk role terotorisasi; TTS native tidak dioverride
     health = { ...health, nativeSig: domSignal() }; // baseline aktivitas native awal
