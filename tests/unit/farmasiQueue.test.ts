@@ -79,15 +79,19 @@ describe('assignPending — nomor per jenis, frozen by ID', () => {
     expect(st.tickets['2'].code).toBe('T-02');
   });
 
-  it('urutan pemberian nomor = WAKTU masuk (tertua dulu), bukan urutan array', () => {
+  it('urutan pemberian nomor = ID MORBIS (deterministik), bukan WAKTU/array', () => {
+    // ID = primary key incremental MORBIS, sinkron dgn WAKTU — tapi sort by ID
+    // idempotent (refresh aman, network-lag aman): id kecil selalu dapat nomor
+    // kecil walau muncul belakangan di polling. WAKTU sengaja DIACAK utk
+    // membuktikan sorting tidak bergantung padanya.
     const st: QueueState = empty('2026-08-14');
     assignPending(st, [
-      row({ id: 'A', waktu: '2026-08-14 10:00:00' }),
+      row({ id: 'C', waktu: '2026-08-14 10:00:00' }),
+      row({ id: 'A', waktu: '2026-08-14 11:00:00' }),
       row({ id: 'B', waktu: '2026-08-14 09:00:00' }),
-      row({ id: 'C', waktu: '2026-08-14 11:00:00' }),
     ]);
-    expect(st.tickets['B'].code).toBe('T-01');
-    expect(st.tickets['A'].code).toBe('T-02');
+    expect(st.tickets['A'].code).toBe('T-01');
+    expect(st.tickets['B'].code).toBe('T-02');
     expect(st.tickets['C'].code).toBe('T-03');
   });
 });

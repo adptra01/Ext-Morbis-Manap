@@ -1523,10 +1523,15 @@ declare global {
       numberToWords(row.nomor) +
       (row.namaPasien ? ', atas nama ' + titleCase(String(row.namaPasien)) : '') +
       ', silakan menuju farmasi.';
-    // Antrean serial: bell → voice (SATU KALI). Pengulangan suara TIDAK
-    // diduplikasi di queue — kalau diperlukan, buat mekanisme eksplisit
-    // (recall/ulang panggil) supaya debugging tidak ambigu.
-    queue.push({ kind: 'bell' }, { kind: 'voice', text: kalimat });
+    // Antrean serial: bell → voice → voice (panggilan diucapkan DUA KALI —
+    // permintaan user: pasien di ruang tunggu sering tak dengar sekali ucapan).
+    // next() menunggu playVoice selesai per item, jadi pengulangan berjalan
+    // serial dengan jeda GAP_MS — tidak tumpang-tindih, tidak membatalkan diri.
+    queue.push(
+      { kind: 'bell' },
+      { kind: 'voice', text: kalimat },
+      { kind: 'voice', text: kalimat },
+    );
     next();
   }
 

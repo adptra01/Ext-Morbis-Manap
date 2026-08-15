@@ -190,15 +190,22 @@ export function statusFromMorbsi(
 }
 
 /**
- * Pure: assign nomor publik utk id TANPA tiket, urut WAKTU (tertua dulu).
+ * Pure: assign nomor publik utk id TANPA tiket, urut ID MORBIS (naik).
  * Nomor per jenis (T dan R counter independen). FROZEN — id ter-assign
  * tidak diubah. Status tiket awal di-sync dari baris MORBIS.
+ *
+ * Mengapa ID, bukan WAKTU: ID = primary key incremental MORBIS (terbukti
+ * 100% sinkron dgn WAKTU di data nyata) — tapi ID deterministik & idempotent.
+ * Sort by WAKTU rapuh: baris yang muncul di polling BELAKANGAN (network lag,
+ * page reload) mendapat counter besar walau WAKTU-nya kecil → T-67 muncul
+ * tiba-tiba / urutan tampak acak. ID selalu sama antar poll → T-01 tetap
+ * T-01 setelah refresh, tidak peduli kapan baris terlihat.
  * Return {state baru, jumlah baru}.
  */
 export function assignPending(st: QueueState, rows: QueueRow[]): { st: QueueState; count: number } {
   const pending = rows
     .filter((r) => r.id && !r.selesai && st.tickets[r.id] == null)
-    .sort((a, b) => (a.waktu || '').localeCompare(b.waktu || ''));
+    .sort((a, b) => Number(a.id) - Number(b.id) || a.id.localeCompare(b.id));
   let count = 0;
   for (const r of pending) {
     const isR = isRacikanJenis(r.jenis);
@@ -312,7 +319,8 @@ export async function hasPublicNumber(id: string): Promise<boolean> {
 
 /**
  * Nomor publik berikutnya yang siap dipanggil per jenis: antrian READY
- * (belum selesai, bukan CANCELLED/COMPLETED/CALLED) urut WAKTU masuk.
+ * (belum selesai, bukan CANCELLED/COMPLETED/CALLED) urut ID MORBIS (naik,
+ * = urutan masuk antrian — deterministik & idempotent, lihat assignPending).
  * null → tak ada. (Nomor ≠ urutan panggilan; kesiapan yang menentukan.)
  */
 export function getNextToCall(
@@ -328,7 +336,7 @@ export function getNextToCall(
       if (jenis && t.type !== jenis) return false;
       return t.status === 'READY' || t.status === 'ISSUED' || t.status === 'WAITING';
     })
-    .sort((a, b) => (a.waktu || '').localeCompare(b.waktu || ''));
+    .sort((a, b) => Number(a.id) - Number(b.id) || a.id.localeCompare(b.id));
   return candidates.length ? st.tickets[candidates[0].id] : null;
 }
 

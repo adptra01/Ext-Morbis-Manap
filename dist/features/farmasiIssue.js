@@ -96,7 +96,7 @@ var __morbis_feature = (() => {
   function assignPending(st, rows) {
     const pending = rows
       .filter((r) => r.id && !r.selesai && st.tickets[r.id] == null)
-      .sort((a, b) => (a.waktu || '').localeCompare(b.waktu || ''));
+      .sort((a, b) => Number(a.id) - Number(b.id) || a.id.localeCompare(b.id));
     let count = 0;
     for (const r of pending) {
       const isR = isRacikanJenis(r.jenis);

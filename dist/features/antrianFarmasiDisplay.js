@@ -1153,7 +1153,11 @@ var __morbis_feature = (() => {
         numberToWords(row.nomor) +
         (row.namaPasien ? ', atas nama ' + titleCase(String(row.namaPasien)) : '') +
         ', silakan menuju farmasi.';
-      queue.push({ kind: 'bell' }, { kind: 'voice', text: kalimat });
+      queue.push(
+        { kind: 'bell' },
+        { kind: 'voice', text: kalimat },
+        { kind: 'voice', text: kalimat },
+      );
       next();
     }
     let audioUnlocked = false;

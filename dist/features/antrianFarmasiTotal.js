@@ -96,7 +96,7 @@ var __morbis_feature = (() => {
   function assignPending(st, rows) {
     const pending = rows
       .filter((r) => r.id && !r.selesai && st.tickets[r.id] == null)
-      .sort((a, b) => (a.waktu || '').localeCompare(b.waktu || ''));
+      .sort((a, b) => Number(a.id) - Number(b.id) || a.id.localeCompare(b.id));
     let count = 0;
     for (const r of pending) {
       const isR = isRacikanJenis(r.jenis);
@@ -229,7 +229,10 @@ var __morbis_feature = (() => {
         const byKey = /* @__PURE__ */ new Map();
         for (const r of data) {
           if (r.ID == null) continue;
-          const key = String(r.KODE ?? '') + '-' + String(r.NOMOR ?? '');
+          const nama = String(r.NAMA_PASIEN ?? '')
+            .replace(/\s+/g, ' ')
+            .trim();
+          const key = String(r.KODE ?? '') + '-' + String(r.NOMOR ?? '') + '|' + nama;
           if (key && !byKey.has(key)) byKey.set(key, String(r.ID));
         }
         await syncPublicNumbers(rows);
@@ -243,7 +246,12 @@ var __morbis_feature = (() => {
             tr.setAttribute('data-nomor-morbis', morbisNum);
           }
           if (tr.hasAttribute('data-public-code')) continue;
-          const id = tr.getAttribute('data-id') ?? byKey.get(morbisNum) ?? '';
+          const namaCell =
+            (tr.querySelectorAll('td')[3]?.textContent || '').replace(/\s+/g, ' ').trim() || '';
+          const id =
+            tr.getAttribute('data-id') ??
+            byKey.get(morbisNum + (namaCell ? '|' + namaCell : '')) ??
+            '';
           if (!id) continue;
           const t = getTicket(st, id);
           if (!t || !t.code) continue;
@@ -258,15 +266,32 @@ var __morbis_feature = (() => {
         }
       }
     }
+    function sortTableByPublicCode() {
+      const tbody = document.querySelector('.queue-table tbody');
+      if (!tbody) return;
+      const trs = Array.from(tbody.querySelectorAll('tr'));
+      if (trs.length < 2) return;
+      if (tbody.querySelector('td[rowspan], td[colspan]')) return;
+      const codeNum = (tr) => {
+        const code = tr.getAttribute('data-public-code') || '';
+        const m = code.match(/^([TR])-(\d+)$/);
+        if (!m) return Number.MAX_SAFE_INTEGER;
+        return Number(m[2]);
+      };
+      const sorted = trs.slice().sort((a, b) => codeNum(a) - codeNum(b));
+      const isSorted = sorted.every((tr, i) => tr === trs[i]);
+      if (isSorted) return;
+      for (const tr of sorted) tbody.appendChild(tr);
+    }
     fixTotals();
     void fixCurrents();
-    void patchTableCodes();
+    void patchTableCodes().then(() => sortTableByPublicCode());
     const root = document.querySelector('#isi');
     if (root) {
       new MutationObserver(() => {
         fixTotals();
         void fixCurrents();
-        void patchTableCodes();
+        void patchTableCodes().then(() => sortTableByPublicCode());
       }).observe(root, { childList: true, subtree: true });
     }
   })();

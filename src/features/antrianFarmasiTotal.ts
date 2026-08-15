@@ -93,16 +93,21 @@ import { resolveCalledId, toRowState } from './shared/farmasiEvent';
   // Kolom "No" tabel antrian (kolom 1) → nomor publik (T-01/R-01).
   // Native menampilkan NOMOR MORBIS ("BT-3") di kolom pertama — bukan nomor
   // publik. Hanya baris status-called yg punya data-id; baris lain TIDAK
-  // (verifikasi DOM live 2026-08-15) → resolve via KODE-NOMOR (kolom 1) ke
-  // data check_antrian (ID + KODE + NOMOR + JENIS) → QueueManager → tiket.
+  // (verifikasi DOM live 2026-08-15) → resolve via KODE-NOMOR ke data
+  // check_antrian (ID + KODE + NOMOR + JENIS) → QueueManager → tiket.
   // Nomor MORBIS asli disimpan ke data-nomor-morbis utk konsumen internal;
   // tanpa match → biarkan native (jangan menebak).
+  //
+  // Kunci resolve = KODE-NOMOR + NAMA_PASIEN (fix 2026-08-15): NOMOR MORBIS
+  // TIDAK unik (dibuktikan: NOMOR=9 dipakai AHMAD & MIKAYLA, NOMOR=1 12×) —
+  // byKey KODE-NOMOR saja membuat dua baris beda resolve ke ID sama → nomor
+  // publik DOBEL (T-10 dua baris). Nama pasien (kolom 4 tabel) membedakan.
   async function patchTableCodes(): Promise<void> {
     const rows = document.querySelectorAll<HTMLElement>(ROWS_SEL);
     if (rows.length === 0) return;
     try {
-      // map KODE-NOMOR → ID dari endpoint check_antrian (sama dgn sumber tabel
-      // native; data_call mati & selalu []). Butuh sesi MORBIS — konsol login.
+      // map KODE-NOMOR+NAMA → ID dari endpoint check_antrian (sama dgn sumber
+      // tabel native; data_call mati & selalu []). Butuh sesi MORBIS — konsol login.
       const res = await fetch('/public/antrian-farmasi-v2/list-antrian-v2', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
@@ -115,12 +120,16 @@ import { resolveCalledId, toRowState } from './shared/farmasiEvent';
         ID?: string | number;
         KODE?: string;
         NOMOR?: string | number;
+        NAMA_PASIEN?: string;
       }>;
       if (!Array.isArray(data)) return;
       const byKey = new Map<string, string>();
       for (const r of data) {
         if (r.ID == null) continue;
-        const key = String(r.KODE ?? '') + '-' + String(r.NOMOR ?? '');
+        const nama = String(r.NAMA_PASIEN ?? '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        const key = String(r.KODE ?? '') + '-' + String(r.NOMOR ?? '') + '|' + nama;
         if (key && !byKey.has(key)) byKey.set(key, String(r.ID));
       }
       await syncPublicNumbers(rows); // issue tiket utk baris ber-data-id (called)
@@ -134,8 +143,14 @@ import { resolveCalledId, toRowState } from './shared/farmasiEvent';
           tr.setAttribute('data-nomor-morbis', morbisNum);
         }
         if (tr.hasAttribute('data-public-code')) continue; // sudah di-patch
-        // id: prioritas data-id (baris called), fallback KODE-NOMOR ke check_antrian
-        const id = tr.getAttribute('data-id') ?? byKey.get(morbisNum) ?? '';
+        // id: prioritas data-id (baris called), fallback KODE-NOMOR+NAMA ke
+        // check_antrian. Nama pasien = kolom 4 tabel (kolom 1 = No MORBIS).
+        const namaCell =
+          (tr.querySelectorAll('td')[3]?.textContent || '').replace(/\s+/g, ' ').trim() || '';
+        const id =
+          tr.getAttribute('data-id') ??
+          byKey.get(morbisNum + (namaCell ? '|' + namaCell : '')) ??
+          '';
         if (!id) continue;
         const t = getTicket(st, id);
         if (!t || !t.code) continue;
@@ -151,15 +166,44 @@ import { resolveCalledId, toRowState } from './shared/farmasiEvent';
     }
   }
 
+  // Urutkan ulang baris tabel operator by KODE PUBLIK (T-xx/R-xx) setelah
+  // patchTableCodes selesai: operator harus melihat daftar pasien persis
+  // seperti urutan public code (kertas), bukan urutan NOMOR MORBIS native
+  // yang acak/duplikat. Baris tanpa public code → tetap di bawah (urutan
+  // asli); rowspan/expand baris native diabaikan (baris datar saja).
+  // Native me-render ulang #isi tiap 30s → observer memanggil ulang (guard
+  // data-public-code mencegah re-sort tak berujung).
+  function sortTableByPublicCode(): void {
+    const tbody = document.querySelector<HTMLElement>('.queue-table tbody');
+    if (!tbody) return;
+    const trs = Array.from(tbody.querySelectorAll<HTMLElement>('tr'));
+    if (trs.length < 2) return;
+    // tabel dengan rowspan (baris gabungan pasien) jangan di-sort ulang —
+    // memindahkan tr akan merusak layout native.
+    if (tbody.querySelector('td[rowspan], td[colspan]')) return;
+    const codeNum = (tr: HTMLElement): number => {
+      const code = tr.getAttribute('data-public-code') || '';
+      const m = code.match(/^([TR])-(\d+)$/);
+      if (!m) return Number.MAX_SAFE_INTEGER;
+      // T sebelum R? Tidak — kedua jalur independen. Sort by angka saja,
+      // prefix hanya pembeda display. (T-01..N & R-01..N terpisah, tak bentrok.)
+      return Number(m[2]);
+    };
+    const sorted = trs.slice().sort((a, b) => codeNum(a) - codeNum(b));
+    const isSorted = sorted.every((tr, i) => tr === trs[i]);
+    if (isSorted) return;
+    for (const tr of sorted) tbody.appendChild(tr);
+  }
+
   fixTotals();
   void fixCurrents(); // poll di bawah menangani render lambat; ini percepat awal
-  void patchTableCodes();
+  void patchTableCodes().then(() => sortTableByPublicCode());
   const root = document.querySelector('#isi');
   if (root) {
     new MutationObserver(() => {
       fixTotals();
       void fixCurrents();
-      void patchTableCodes();
+      void patchTableCodes().then(() => sortTableByPublicCode());
     }).observe(root, { childList: true, subtree: true });
   }
 })();
