@@ -20,7 +20,7 @@
     "semantic_hash": "1c81c707c2c78ac69e6f893b2c201d70"
   },
   "deploy/updates.json": {
-    "mtime": 1786472057.0644522,
+    "mtime": 1787031403.0980167,
     "ast_hash": "0197d898cd5835916ba6c31ab62f4aa3",
     "semantic_hash": ""
   },
@@ -60,8 +60,8 @@
     "semantic_hash": "7d0cbe8cf25240a82865d175a94ebffc"
   },
   "manifest.json": {
-    "mtime": 1786457662.0870247,
-    "ast_hash": "2ac36a2b7648e6a236372b09bbd7c2c0",
+    "mtime": 1787039804.2427564,
+    "ast_hash": "e81ff1911306db79c6eb92dccc2a7177",
     "semantic_hash": ""
   },
   "mcp-servers/morbis-devtools/server.py": {
@@ -70,9 +70,9 @@
     "semantic_hash": "0b4be4b15db23a9b65ef2851bf914c37"
   },
   "package.json": {
-    "mtime": 1786334597.6796079,
-    "ast_hash": "520630e7969f1b45400dbafb9a91031b",
-    "semantic_hash": "520630e7969f1b45400dbafb9a91031b"
+    "mtime": 1787039767.2972932,
+    "ast_hash": "ecb9d5c8dbaecf39152fb6da6a2a60bc",
+    "semantic_hash": ""
   },
   "popup.js": {
     "mtime": 1786334597.6821811,
@@ -100,8 +100,8 @@
     "semantic_hash": "e45b4be960a63be199fb42618445aa07"
   },
   "scripts/build.mjs": {
-    "mtime": 1786457740.549503,
-    "ast_hash": "e33f2347fafbf142ae69f493fe0ccf5c",
+    "mtime": 1787039767.2985456,
+    "ast_hash": "1362fe5fbc3ddf63d190273ed4ea45b7",
     "semantic_hash": ""
   },
   "scripts/deploy.mjs": {
@@ -130,8 +130,8 @@
     "semantic_hash": "9c37603255e4b6451a2787d949978f88"
   },
   "src/background.ts": {
-    "mtime": 1786466406.1281497,
-    "ast_hash": "708fd3329fc2a170c75d7b47a8688715",
+    "mtime": 1786690594.6923566,
+    "ast_hash": "dbd3f7f36a3d0b128d16497e2592b4b4",
     "semantic_hash": ""
   },
   "src/core.ts": {
@@ -140,8 +140,8 @@
     "semantic_hash": ""
   },
   "src/features/antrianTools.ts": {
-    "mtime": 1786455493.3960478,
-    "ast_hash": "6021bece4758fe76b1760bc41afa8861",
+    "mtime": 1786555525.9557528,
+    "ast_hash": "05ebdec905e3f6cf4a5509ac36e41e12",
     "semantic_hash": ""
   },
   "src/features/batchDeleteFiles.ts": {
@@ -440,8 +440,8 @@
     "semantic_hash": "586fbed293040c21739d426d41014e44"
   },
   "src/init.ts": {
-    "mtime": 1786459881.8404253,
-    "ast_hash": "f4670284f9a8be8fe70861930d8ae576",
+    "mtime": 1786525889.7675555,
+    "ast_hash": "c31f862b414ba1be75b25768abfddc4a",
     "semantic_hash": ""
   },
   "src/popup/App.tsx": {
@@ -480,9 +480,9 @@
     "semantic_hash": "d7e615bc1fe1ae86a47a5769d46013c6"
   },
   "src/shared/messaging.ts": {
-    "mtime": 1786334597.8969662,
-    "ast_hash": "f32c1c6fc792c5a02c48e7b93f38727c",
-    "semantic_hash": "f32c1c6fc792c5a02c48e7b93f38727c"
+    "mtime": 1786683981.8209348,
+    "ast_hash": "50951d5b62efbe124c5d0c750c4e6f98",
+    "semantic_hash": ""
   },
   "src/shared/storage.ts": {
     "mtime": 1786334597.8980088,
@@ -575,7 +575,7 @@
     "semantic_hash": ""
   },
   "pack/package.json": {
-    "mtime": 1786472055.818198,
+    "mtime": 1787031402.04018,
     "ast_hash": "917c582fa9b998b1c27b69d363a9ea98",
     "semantic_hash": ""
   },
@@ -610,7 +610,7 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1786334597.1544485,
+    "mtime": 1786642644.10823,
     "ast_hash": "8f9df63ab11cde7bee5e933600a540d9",
     "semantic_hash": ""
   },
@@ -620,7 +620,7 @@
     "semantic_hash": ""
   },
   "VERIFY-PHASE1-3B.md": {
-    "mtime": 1786334597.1583862,
+    "mtime": 1786717740.8907053,
     "ast_hash": "11169a6d7d659782057356687c5de9ab",
     "semantic_hash": ""
   },
@@ -632,116 +632,6 @@
   "deploy/PANDUAN_PENGUNAAN.md": {
     "mtime": 1786334597.163111,
     "ast_hash": "89a10f42cda12613519786f82eb5abed",
-    "semantic_hash": ""
-  },
-  "docs/AUDIT_DELIVERY_SUMMARY.md": {
-    "mtime": 1786334597.2626505,
-    "ast_hash": "52b28510716c4aa3295291a993568a62",
-    "semantic_hash": ""
-  },
-  "docs/AUDIT_MANIFEST.txt": {
-    "mtime": 1786334597.264797,
-    "ast_hash": "faf2576aa20e906776ec23b5d1d073c8",
-    "semantic_hash": ""
-  },
-  "docs/AUDIT_MIGRATION_VS_DEV.md": {
-    "mtime": 1786334597.2673614,
-    "ast_hash": "c94851bd73af7df4af7c4b8a9bf6a45e",
-    "semantic_hash": ""
-  },
-  "docs/AUDIT_QUICK_REFERENCE.txt": {
-    "mtime": 1786334597.2707853,
-    "ast_hash": "b9719e608e8851739c5b2655057d614c",
-    "semantic_hash": ""
-  },
-  "docs/AUDIT_README.md": {
-    "mtime": 1786334597.272756,
-    "ast_hash": "7ecfe35a52b3b4843a22f459abbfc22b",
-    "semantic_hash": ""
-  },
-  "docs/MCP_ARCHITECTURE.md": {
-    "mtime": 1786334597.2775116,
-    "ast_hash": "426a4ee089eed26abcee5c12ae7ba804",
-    "semantic_hash": ""
-  },
-  "docs/README.md": {
-    "mtime": 1786334597.2800457,
-    "ast_hash": "3dbe6079a81f90aa9209449a86e2254d",
-    "semantic_hash": ""
-  },
-  "docs/UI_MODERNIZATION_ANALYSIS.md": {
-    "mtime": 1786334597.28325,
-    "ast_hash": "5c94a0e725238af3e3a62e2e0e5e0d92",
-    "semantic_hash": ""
-  },
-  "docs/bugs/duplikasi-icd-diagnosis.md": {
-    "mtime": 1786334597.2939215,
-    "ast_hash": "d8aebef1566faf8840c95efaa2daddf4",
-    "semantic_hash": ""
-  },
-  "docs/code-review-checklist.md": {
-    "mtime": 1786334597.2963831,
-    "ast_hash": "57bc574614789a813566d4d24ce9a6dd",
-    "semantic_hash": ""
-  },
-  "docs/extension-architecture.md": {
-    "mtime": 1786334597.2979033,
-    "ast_hash": "121916ef900692b0fa9070fd3f2645ee",
-    "semantic_hash": ""
-  },
-  "docs/feature-rules.md": {
-    "mtime": 1786334597.2998996,
-    "ast_hash": "c731474775a8cb41912ed5becd57abfc",
-    "semantic_hash": ""
-  },
-  "docs/features/batch-refactor.md": {
-    "mtime": 1786334597.307397,
-    "ast_hash": "2419c5d39904703f1bff22926c0190de",
-    "semantic_hash": ""
-  },
-  "docs/features/batchUploadUrl.md": {
-    "mtime": 1786334597.3120167,
-    "ast_hash": "6d2c1c8d46ce413376e3463617bf1eb5",
-    "semantic_hash": ""
-  },
-  "docs/features/filter-persistence.md": {
-    "mtime": 1786334597.3244097,
-    "ast_hash": "191c90dfcf49240dfb8fc3de84ac9c4a",
-    "semantic_hash": ""
-  },
-  "docs/features/open-detail-mode.md": {
-    "mtime": 1786334597.3299892,
-    "ast_hash": "867541e3f8ad632bbb77b6f5f813eaca",
-    "semantic_hash": ""
-  },
-  "docs/features/print-optimization.md": {
-    "mtime": 1786334597.3328266,
-    "ast_hash": "f82d9545e5c8532dc2de8e4249b5ad44",
-    "semantic_hash": ""
-  },
-  "docs/features/resume-validator.md": {
-    "mtime": 1786334597.3430655,
-    "ast_hash": "9ff5e3497bb4d75ea1b266bb677ecbd0",
-    "semantic_hash": ""
-  },
-  "docs/features/scroll-buttons.md": {
-    "mtime": 1786334597.350948,
-    "ast_hash": "18b84b73a8809f6421bd56057f61d6a6",
-    "semantic_hash": ""
-  },
-  "docs/features/shortcut-buttons.md": {
-    "mtime": 1786334597.3581283,
-    "ast_hash": "515e633bd28837a937342cb204d07598",
-    "semantic_hash": ""
-  },
-  "docs/features/simplify-billing.md": {
-    "mtime": 1786334597.3640888,
-    "ast_hash": "56483cc070d00173c10086135755c637",
-    "semantic_hash": ""
-  },
-  "docs/laporan-simulasi.md": {
-    "mtime": 1786334597.3704486,
-    "ast_hash": "e72a6d7b0b96a7c08265448aa3b45ab8",
     "semantic_hash": ""
   },
   "icons/README.md": {
@@ -819,19 +709,14 @@
     "ast_hash": "1e6d59f980ca546a28acf37e8774169c",
     "semantic_hash": ""
   },
-  "docs/features/antrian-tools-redesign.md": {
-    "mtime": 1786380955.3692923,
-    "ast_hash": "a96049258d63195acdc0138aa7f354b1",
-    "semantic_hash": ""
-  },
   "src/features/antrianLoader.ts": {
-    "mtime": 1786455493.3966322,
-    "ast_hash": "b44e73c7d073d4f8400f47ea3acda122",
+    "mtime": 1786556693.480824,
+    "ast_hash": "44a3f6216a226bc259d28f0f707d9f9c",
     "semantic_hash": ""
   },
   "src/features/antrianFarmasiDisplay.ts": {
-    "mtime": 1786505169.3303843,
-    "ast_hash": "f2b972836fe08be764175a3b856db4d3",
+    "mtime": 1787040628.1183095,
+    "ast_hash": "159755c7bfd3f8e142883d9f477436dd",
     "semantic_hash": ""
   },
   "src/features/shared/queueRule.ts": {
@@ -845,13 +730,208 @@
     "semantic_hash": ""
   },
   "src/features/shared/currentNumber.ts": {
-    "mtime": 1786505046.8130336,
-    "ast_hash": "bf38de97ad359ba539011b28efebccad",
+    "mtime": 1787039767.3072078,
+    "ast_hash": "ecff0a19c0fff3bf9274d2206b6ea88f",
     "semantic_hash": ""
   },
   "deploy/ACCEPTANCE.md": {
     "mtime": 1786475302.5268981,
     "ast_hash": "5eeedfcc6747d3ae356286924d6c1795",
+    "semantic_hash": ""
+  },
+  "scripts/probe-latency.mjs": {
+    "mtime": 1787043182.0775173,
+    "ast_hash": "c360c6c9731db409716d63f49203771e",
+    "semantic_hash": ""
+  },
+  "src/features/antrianFarmasiTotal.ts": {
+    "mtime": 1786783640.1546712,
+    "ast_hash": "55a0d5f9bef5dc367c9cb42d7bb1ed93",
+    "semantic_hash": ""
+  },
+  "src/features/farmasiAntrolShift.ts": {
+    "mtime": 1787039767.3024182,
+    "ast_hash": "213e865ef06908e69dc4cbdea352c0c9",
+    "semantic_hash": ""
+  },
+  "src/features/farmasiBridge.ts": {
+    "mtime": 1787039804.6854372,
+    "ast_hash": "79cfcf7d2d6d0d1f03dd99d177dca26d",
+    "semantic_hash": ""
+  },
+  "src/features/farmasiIssue.ts": {
+    "mtime": 1787039767.304889,
+    "ast_hash": "54745efe8ed135861f08e33f2bd9ef35",
+    "semantic_hash": ""
+  },
+  "src/features/farmasiRecallDeleg.ts": {
+    "mtime": 1786785241.4413939,
+    "ast_hash": "53119e989de005afff4af9a5a405a1ea",
+    "semantic_hash": ""
+  },
+  "src/features/penerimaanAntrolCetak.ts": {
+    "mtime": 1787039767.3058321,
+    "ast_hash": "b92bdd8cb4e4de503bbfca3111dd392e",
+    "semantic_hash": ""
+  },
+  "src/features/shared/farmasiEvent.ts": {
+    "mtime": 1786717908.2050593,
+    "ast_hash": "f5a88f0b1865c4152094ffeb35379a95",
+    "semantic_hash": ""
+  },
+  "src/features/shared/farmasiQueue.ts": {
+    "mtime": 1787039804.8071303,
+    "ast_hash": "aa64a6665d047e32bd658e1c6b2f9ab3",
+    "semantic_hash": ""
+  },
+  "src/features/shared/farmasiQueueBridge.ts": {
+    "mtime": 1787039767.3098295,
+    "ast_hash": "8785dd644378be225c4002da432caec6",
+    "semantic_hash": ""
+  },
+  "src/features/shared/farmasiRenumber.ts": {
+    "mtime": 1786693614.5521235,
+    "ast_hash": "032f324b6edadd4d04178f603ca37a21",
+    "semantic_hash": ""
+  },
+  "src/features/shared/printKartu.ts": {
+    "mtime": 1787039767.3107307,
+    "ast_hash": "68d502dce2067cf95cbc35e31bfc6ed8",
+    "semantic_hash": ""
+  },
+  "tts_service.py": {
+    "mtime": 1786683368.9801607,
+    "ast_hash": "cec6de862418d4f730046d99be607844",
+    "semantic_hash": ""
+  },
+  ".ai/docs/AUDIT_DELIVERY_SUMMARY.md": {
+    "mtime": 1786334597.2626505,
+    "ast_hash": "52b28510716c4aa3295291a993568a62",
+    "semantic_hash": ""
+  },
+  ".ai/docs/AUDIT_MANIFEST.txt": {
+    "mtime": 1786334597.264797,
+    "ast_hash": "faf2576aa20e906776ec23b5d1d073c8",
+    "semantic_hash": ""
+  },
+  ".ai/docs/AUDIT_MIGRATION_VS_DEV.md": {
+    "mtime": 1786334597.2673614,
+    "ast_hash": "c94851bd73af7df4af7c4b8a9bf6a45e",
+    "semantic_hash": ""
+  },
+  ".ai/docs/AUDIT_QUICK_REFERENCE.txt": {
+    "mtime": 1786334597.2707853,
+    "ast_hash": "b9719e608e8851739c5b2655057d614c",
+    "semantic_hash": ""
+  },
+  ".ai/docs/AUDIT_README.md": {
+    "mtime": 1786334597.272756,
+    "ast_hash": "7ecfe35a52b3b4843a22f459abbfc22b",
+    "semantic_hash": ""
+  },
+  ".ai/docs/MCP_ARCHITECTURE.md": {
+    "mtime": 1786760922.7028646,
+    "ast_hash": "80a4cc16104da5780daa3af6e496f133",
+    "semantic_hash": ""
+  },
+  ".ai/docs/README.md": {
+    "mtime": 1786760922.801801,
+    "ast_hash": "92b874541c77ed6d7382d334bdbb37b1",
+    "semantic_hash": ""
+  },
+  ".ai/docs/UI_MODERNIZATION_ANALYSIS.md": {
+    "mtime": 1786334597.28325,
+    "ast_hash": "5c94a0e725238af3e3a62e2e0e5e0d92",
+    "semantic_hash": ""
+  },
+  ".ai/docs/VERIFY-PHASE1-3B.md": {
+    "mtime": 1786589452.9382594,
+    "ast_hash": "11169a6d7d659782057356687c5de9ab",
+    "semantic_hash": ""
+  },
+  ".ai/docs/bugs/duplikasi-icd-diagnosis.md": {
+    "mtime": 1786760923.0830765,
+    "ast_hash": "8dd7d63d0cbf6d8fab9e3fd0608cbe9f",
+    "semantic_hash": ""
+  },
+  ".ai/docs/code-review-checklist.md": {
+    "mtime": 1786334597.2963831,
+    "ast_hash": "57bc574614789a813566d4d24ce9a6dd",
+    "semantic_hash": ""
+  },
+  ".ai/docs/extension-architecture.md": {
+    "mtime": 1786760923.1252632,
+    "ast_hash": "6ac7008b6987dfa78e26ee2f44b7e78c",
+    "semantic_hash": ""
+  },
+  ".ai/docs/feature-rules.md": {
+    "mtime": 1786760923.1493351,
+    "ast_hash": "1bb8023636557d62dbe7be5f85bbf890",
+    "semantic_hash": ""
+  },
+  ".ai/docs/features/antrian-tools-redesign.md": {
+    "mtime": 1786380955.3692923,
+    "ast_hash": "a96049258d63195acdc0138aa7f354b1",
+    "semantic_hash": ""
+  },
+  ".ai/docs/features/batch-refactor.md": {
+    "mtime": 1786334597.307397,
+    "ast_hash": "2419c5d39904703f1bff22926c0190de",
+    "semantic_hash": ""
+  },
+  ".ai/docs/features/batchUploadUrl.md": {
+    "mtime": 1786334597.3120167,
+    "ast_hash": "6d2c1c8d46ce413376e3463617bf1eb5",
+    "semantic_hash": ""
+  },
+  ".ai/docs/features/farmasi-display-recall.md": {
+    "mtime": 1786666352.8104117,
+    "ast_hash": "d4b46ef482077cfd16b412807c9eb2a1",
+    "semantic_hash": ""
+  },
+  ".ai/docs/features/filter-persistence.md": {
+    "mtime": 1786760923.405429,
+    "ast_hash": "71d18f021d35d921211a8ea03aaf4fb5",
+    "semantic_hash": ""
+  },
+  ".ai/docs/features/open-detail-mode.md": {
+    "mtime": 1786760923.4416249,
+    "ast_hash": "606707c57decd9455bc0b5af6d9b0ce4",
+    "semantic_hash": ""
+  },
+  ".ai/docs/features/print-optimization.md": {
+    "mtime": 1786760923.481642,
+    "ast_hash": "40a76238aa206de3e34c02b4ae2076e6",
+    "semantic_hash": ""
+  },
+  ".ai/docs/features/resume-validator.md": {
+    "mtime": 1786760923.5566456,
+    "ast_hash": "f4ba080069e0cd500865f3863201f5f4",
+    "semantic_hash": ""
+  },
+  ".ai/docs/features/scroll-buttons.md": {
+    "mtime": 1786760923.6122873,
+    "ast_hash": "bc873cfdc29aa000b6868f3a49da2572",
+    "semantic_hash": ""
+  },
+  ".ai/docs/features/shortcut-buttons.md": {
+    "mtime": 1786760923.6477833,
+    "ast_hash": "466da523a1253aaf3aa283491f674aaf",
+    "semantic_hash": ""
+  },
+  ".ai/docs/features/simplify-billing.md": {
+    "mtime": 1786760923.6835897,
+    "ast_hash": "806db00acae4b648ec3ca405b3d106e7",
+    "semantic_hash": ""
+  },
+  ".ai/docs/laporan-simulasi.md": {
+    "mtime": 1786334597.3704486,
+    "ast_hash": "e72a6d7b0b96a7c08265448aa3b45ab8",
+    "semantic_hash": ""
+  },
+  "docs/SOP-farmasi.md": {
+    "mtime": 1787040324.2854195,
+    "ast_hash": "cc5ab54dbd0899746744059c12a9b02f",
     "semantic_hash": ""
   }
 }
