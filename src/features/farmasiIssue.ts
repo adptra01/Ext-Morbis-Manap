@@ -10,7 +10,7 @@
  * Prinsip: tidak menulis balik ke DB MORBIS (zero-risk ke data resep).
  * Nomor publik berlaku utk TAMPILAN/cetak/panggilan saja.
  */
-import { getQueueState, issuePending, getTicket, type QueueTicket } from './shared/farmasiQueue';
+import { getQueueState, getTicket, type QueueTicket } from './shared/farmasiQueue';
 
 const LIST_URL = '/public/antrian-farmasi-v2/list-antrian-v2';
 
@@ -32,19 +32,13 @@ async function fetchRows(): Promise<Array<Record<string, unknown>>> {
   return j;
 }
 
-/** Issue nomor publik utk semua baris lalu kembalikan peta id→tiket (code+jenis). */
+/** Baca nomor publik utk semua baris — BACA SAJA (desain 2026-08-18: nomor
+ *  diterbitkan eksklusif dari tombol "Antrian & Cetak" halaman penerimaan;
+ *  panel pemanggilan tidak pernah menerbitkan). Baris tanpa tiket = NOT_ISSUED
+ *  (belum dicetak) → tidak masuk daftar panggilan. */
 async function loadTickets(
   rows: Array<Record<string, unknown>>,
 ): Promise<Map<string, QueueTicket>> {
-  await issuePending(
-    rows.map((r) => ({
-      id: String(r.ID ?? ''),
-      jenis: (r.JENIS as string | null) ?? null,
-      waktu: (r.WAKTU as string | null) ?? null,
-      // konsol issue cuma tahu antrian aktif; baris tak-selesai dianggap belum selesai
-      selesai: false,
-    })),
-  );
   const st = await getQueueState();
   const m = new Map<string, QueueTicket>();
   for (const r of rows) {

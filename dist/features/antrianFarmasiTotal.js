@@ -107,6 +107,7 @@ var __morbis_feature = (() => {
         type: isR ? 'racikan' : 'tunggal',
         status: statusFromMorbsi(r.status, r.statusPanggil),
         issuedAt: /* @__PURE__ */ new Date().toISOString(),
+        issuedBy: r.issuedBy ?? void 0,
       };
       count++;
     }

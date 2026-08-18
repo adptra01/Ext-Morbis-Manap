@@ -107,6 +107,7 @@ var __morbis_feature = (() => {
         type: isR ? 'racikan' : 'tunggal',
         status: statusFromMorbsi(r.status, r.statusPanggil),
         issuedAt: /* @__PURE__ */ new Date().toISOString(),
+        issuedBy: r.issuedBy ?? void 0,
       };
       count++;
     }
@@ -118,6 +119,45 @@ var __morbis_feature = (() => {
       const { st: nextSt, count } = assignPending(st, rows);
       if (count > 0) await save(nextSt);
       return count;
+    });
+  }
+  async function assignPublicNumber(id, jenis, waktu, issuedBy) {
+    if (!id) return null;
+    return withLock(async () => {
+      const st = await getQueueState();
+      const existing = st.tickets[id];
+      if (existing) return existing;
+      const { st: nextSt, count } = assignPending(st, [{ id, jenis, waktu, issuedBy }]);
+      if (count > 0) await save(nextSt);
+      return nextSt.tickets[id] ?? null;
+    });
+  }
+  async function getPublicCode(id) {
+    const st = await getQueueState();
+    return st.tickets[id]?.code ?? null;
+  }
+  async function markCalled(id) {
+    if (!id) return null;
+    return withLock(async () => {
+      const st = await getQueueState();
+      const t = st.tickets[id];
+      if (!t) return null;
+      t.status = 'CALLED';
+      t.calledAt = /* @__PURE__ */ new Date().toISOString();
+      await save(st);
+      return t;
+    });
+  }
+  async function markCompleted(id) {
+    if (!id) return null;
+    return withLock(async () => {
+      const st = await getQueueState();
+      const t = st.tickets[id];
+      if (!t) return null;
+      t.status = 'COMPLETED';
+      t.completedAt = /* @__PURE__ */ new Date().toISOString();
+      await save(st);
+      return t;
     });
   }
   async function reset() {
@@ -136,9 +176,9 @@ var __morbis_feature = (() => {
       if (event.source !== window) return;
       const data = event.data;
       if (!data || data.source !== REQ_SOURCE) return;
-      const id = data.id;
+      const id = data.reqId ?? data.id;
       const reply = (type, payload) => {
-        window.postMessage({ source: RES_SOURCE, type, id, ...payload }, '*');
+        window.postMessage({ source: RES_SOURCE, type, reqId: id, ...payload }, '*');
       };
       if (data.type === 'TTS_REQUEST') {
         if (typeof data.text !== 'string' || !data.text) return;
@@ -179,6 +219,42 @@ var __morbis_feature = (() => {
             reply('QUEUE_ISSUE', { ok: true, state, count });
           })
           .catch((err) => reply('QUEUE_ISSUE', { ok: false, error: String(err.message ?? err) }));
+        return;
+      }
+      if (data.type === 'QUEUE_ASSIGN_ONE') {
+        const id2 = String(data.id ?? '');
+        assignPublicNumber(id2, data.jenis, data.waktu, data.issuedBy)
+          .then((t) =>
+            reply('QUEUE_ASSIGN_ONE', { ok: true, code: t?.code ?? null, issued: t != null }),
+          )
+          .catch((err) =>
+            reply('QUEUE_ASSIGN_ONE', { ok: false, error: String(err.message ?? err) }),
+          );
+        return;
+      }
+      if (data.type === 'QUEUE_GET_CODE') {
+        const id2 = String(data.id ?? '');
+        getPublicCode(id2)
+          .then((code) => reply('QUEUE_GET_CODE', { ok: true, code }))
+          .catch((err) =>
+            reply('QUEUE_GET_CODE', { ok: false, error: String(err.message ?? err) }),
+          );
+        return;
+      }
+      if (data.type === 'QUEUE_MARK_CALLED') {
+        markCalled(String(data.id ?? ''))
+          .then((t) => reply('QUEUE_MARK_CALLED', { ok: !!t }))
+          .catch((err) =>
+            reply('QUEUE_MARK_CALLED', { ok: false, error: String(err.message ?? err) }),
+          );
+        return;
+      }
+      if (data.type === 'QUEUE_MARK_COMPLETED') {
+        markCompleted(String(data.id ?? ''))
+          .then((t) => reply('QUEUE_MARK_COMPLETED', { ok: !!t }))
+          .catch((err) =>
+            reply('QUEUE_MARK_COMPLETED', { ok: false, error: String(err.message ?? err) }),
+          );
         return;
       }
       if (data.type === 'QUEUE_RESET') {

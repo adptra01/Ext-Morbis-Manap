@@ -19,6 +19,8 @@ import {
   getPublicCode,
   getRecord,
   hasPublicNumber,
+  markCalled,
+  markCompleted,
   type QueueState,
   type QueueRow,
 } from '../../src/features/shared/farmasiQueue';
@@ -165,6 +167,30 @@ describe('Identity layer — API publik (Phase B)', () => {
     // simulasikan refresh: state dibaca ulang dari storage yang sama
     expect(await getPublicCode('A')).toBe('T-01');
     expect(await getPublicCode('B')).toBe('T-02');
+  });
+});
+
+describe('Lifecycle metadata — mark API (2026-08-18)', () => {
+  it('markCalled → CALLED + calledAt; markCompleted → COMPLETED + completedAt (nomor frozen)', async () => {
+    await assignPublicNumber('MC1', 'tunggal', '2026-08-14 09:00:00');
+    const called = await markCalled('MC1');
+    expect(called?.status).toBe('CALLED');
+    expect(called?.calledAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    expect(called?.code).toBe('T-01'); // nomor tidak berubah
+    const completed = await markCompleted('MC1');
+    expect(completed?.status).toBe('COMPLETED');
+    expect(completed?.completedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    expect(completed?.code).toBe('T-01');
+    // mark pada id tanpa tiket → null (bukan error)
+    expect(await markCalled('NOPE')).toBeNull();
+    expect(await markCompleted('NOPE')).toBeNull();
+  });
+
+  it('assignPublicNumber menyimpan issuedBy (penerbit) saat diberikan', async () => {
+    const t = await assignPublicNumber('BY1', 'racikan', '2026-08-14 09:00:00', 'petugas01');
+    expect(t?.issuedBy).toBe('petugas01');
+    const t2 = await assignPublicNumber('BY2', 'tunggal', '2026-08-14 09:00:00');
+    expect(t2?.issuedBy).toBeUndefined();
   });
 });
 

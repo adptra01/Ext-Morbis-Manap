@@ -126,6 +126,9 @@ export type QueueTicket = {
   type: 'tunggal' | 'racikan';
   status: TicketStatus;
   issuedAt: string; // ISO — kapan nomor diterbitkan
+  issuedBy?: string; // user/role yang menerbitkan (tombol Cetak No. Antrian)
+  calledAt?: string; // ISO — kapan terakhir dipanggil
+  completedAt?: string; // ISO — kapan selesai/diserahkan
 };
 
 export type QueueState = {
@@ -141,6 +144,7 @@ export type QueueRow = {
   status?: string | null; // STATUS MORBIS ("0".."4")
   statusPanggil?: string | null; // STATUS_PANGGIL ("0"/"1")
   selesai?: boolean; // true → tidak dapat nomor / tidak jadi "next to call"
+  issuedBy?: string; // user/role yang menerbitkan (tombol Cetak No. Antrian)
 };
 
 /** Normalize session: ambil tanggal dari timestamp MORBIS, fallback lokal. */
@@ -216,6 +220,7 @@ export function assignPending(st: QueueState, rows: QueueRow[]): { st: QueueStat
       type: isR ? 'racikan' : 'tunggal',
       status: statusFromMorbsi(r.status, r.statusPanggil),
       issuedAt: new Date().toISOString(),
+      issuedBy: r.issuedBy ?? undefined,
     };
     count++;
   }
@@ -244,13 +249,14 @@ export async function assignPublicNumber(
   id: string,
   jenis?: string | null,
   waktu?: string | null,
+  issuedBy?: string,
 ): Promise<QueueTicket | null> {
   if (!id) return null;
   return withLock(async () => {
     const st = await getQueueState();
     const existing = st.tickets[id];
-    if (existing) return existing;
-    const { st: nextSt, count } = assignPending(st, [{ id, jenis, waktu }]);
+    if (existing) return existing; // FROZEN — cetak ulang → tiket SAMA
+    const { st: nextSt, count } = assignPending(st, [{ id, jenis, waktu, issuedBy }]);
     if (count > 0) await save(nextSt);
     return nextSt.tickets[id] ?? null;
   });
@@ -342,8 +348,39 @@ export function getNextToCall(
 
 export function recall(st: QueueState, id: string): QueueTicket | null {
   const t = st.tickets[id];
-  if (t) t.status = 'RECALLED';
+  if (t) {
+    t.status = 'RECALLED';
+    t.calledAt = new Date().toISOString();
+  }
   return t;
+}
+
+/** Tandai dipanggil (CALLED + calledAt). Idempoten; nomor FROZEN. */
+export async function markCalled(id: string): Promise<QueueTicket | null> {
+  if (!id) return null;
+  return withLock(async () => {
+    const st = await getQueueState();
+    const t = st.tickets[id];
+    if (!t) return null;
+    t.status = 'CALLED';
+    t.calledAt = new Date().toISOString();
+    await save(st);
+    return t;
+  });
+}
+
+/** Tandai selesai/diserahkan (COMPLETED + completedAt). Idempoten. */
+export async function markCompleted(id: string): Promise<QueueTicket | null> {
+  if (!id) return null;
+  return withLock(async () => {
+    const st = await getQueueState();
+    const t = st.tickets[id];
+    if (!t) return null;
+    t.status = 'COMPLETED';
+    t.completedAt = new Date().toISOString();
+    await save(st);
+    return t;
+  });
 }
 
 /** Reset antrian hari ini → semua counter kembali 1, tiket dibersihkan. */

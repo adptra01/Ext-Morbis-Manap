@@ -15,7 +15,15 @@
 //   (farmasiQueue.ts). Bridge TIDAK menghitung nomor sendiri — QueueManager
 //   adalah SATU-SATUNYA sumber nomor publik (V1 key/counter dihapus).
 // Audio.play() tetap di MAIN world (butuh user-activation & DOM), bukan di sini.
-import { getQueueState, issuePending, reset } from './shared/farmasiQueue';
+import {
+  assignPublicNumber,
+  getPublicCode,
+  getQueueState,
+  issuePending,
+  markCalled,
+  markCompleted,
+  reset,
+} from './shared/farmasiQueue';
 
 (function () {
   const REQ_SOURCE = 'MORBIS-FARMASI';
@@ -25,9 +33,9 @@ import { getQueueState, issuePending, reset } from './shared/farmasiQueue';
     if (event.source !== window) return;
     const data = event.data;
     if (!data || data.source !== REQ_SOURCE) return;
-    const id = data.id;
+    const id = data.reqId ?? data.id; // reqId (request id) — id lama sebagai fallback
     const reply = (type: string, payload: Record<string, unknown>): void => {
-      window.postMessage({ source: RES_SOURCE, type, id, ...payload }, '*');
+      window.postMessage({ source: RES_SOURCE, type, reqId: id, ...payload }, '*');
     };
 
     if (data.type === 'TTS_REQUEST') {
@@ -74,6 +82,50 @@ import { getQueueState, issuePending, reset } from './shared/farmasiQueue';
         })
         .catch((err: unknown) =>
           reply('QUEUE_ISSUE', { ok: false, error: String((err as Error).message ?? err) }),
+        );
+      return;
+    }
+    if (data.type === 'QUEUE_ASSIGN_ONE') {
+      const id = String(data.id ?? '');
+      assignPublicNumber(
+        id,
+        data.jenis as string | null,
+        data.waktu as string | null,
+        data.issuedBy as string | undefined,
+      )
+        .then((t) =>
+          reply('QUEUE_ASSIGN_ONE', { ok: true, code: t?.code ?? null, issued: t != null }),
+        )
+        .catch((err: unknown) =>
+          reply('QUEUE_ASSIGN_ONE', { ok: false, error: String((err as Error).message ?? err) }),
+        );
+      return;
+    }
+    if (data.type === 'QUEUE_GET_CODE') {
+      const id = String(data.id ?? '');
+      getPublicCode(id)
+        .then((code) => reply('QUEUE_GET_CODE', { ok: true, code }))
+        .catch((err: unknown) =>
+          reply('QUEUE_GET_CODE', { ok: false, error: String((err as Error).message ?? err) }),
+        );
+      return;
+    }
+    if (data.type === 'QUEUE_MARK_CALLED') {
+      markCalled(String(data.id ?? ''))
+        .then((t) => reply('QUEUE_MARK_CALLED', { ok: !!t }))
+        .catch((err: unknown) =>
+          reply('QUEUE_MARK_CALLED', { ok: false, error: String((err as Error).message ?? err) }),
+        );
+      return;
+    }
+    if (data.type === 'QUEUE_MARK_COMPLETED') {
+      markCompleted(String(data.id ?? ''))
+        .then((t) => reply('QUEUE_MARK_COMPLETED', { ok: !!t }))
+        .catch((err: unknown) =>
+          reply('QUEUE_MARK_COMPLETED', {
+            ok: false,
+            error: String((err as Error).message ?? err),
+          }),
         );
       return;
     }

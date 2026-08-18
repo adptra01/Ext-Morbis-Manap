@@ -1,11 +1,5 @@
 'use strict';
 var __morbis_feature = (() => {
-  // src/features/shared/farmasiRenumber.ts
-  var RACIKAN_RE = /racik/i;
-  function isRacikanJenis(jenis) {
-    return !!jenis && RACIKAN_RE.test(jenis);
-  }
-
   // src/features/shared/farmasiQueue.ts
   var KEY = 'farmasiQueueV2';
   function assertCtxAlive() {
@@ -17,47 +11,6 @@ var __morbis_feature = (() => {
   async function storageGet(key) {
     assertCtxAlive();
     return chrome.storage.local.get(key);
-  }
-  async function storageSet(items) {
-    assertCtxAlive();
-    await chrome.storage.local.set(items);
-  }
-  async function storageRemove(key) {
-    assertCtxAlive();
-    await chrome.storage.local.remove(key);
-  }
-  var LOCK_KEY = 'farmasiQueueV2:lock';
-  var LOCK_TTL_MS = 1e4;
-  var LOCK_DEADLINE_MS = 3e4;
-  var LOCK_RETRY_MS = 80;
-  async function acquireLock() {
-    const token = `${Date.now()}:${Math.random().toString(36).slice(2)}`;
-    const deadline = Date.now() + LOCK_DEADLINE_MS;
-    for (;;) {
-      const res = await storageGet(LOCK_KEY);
-      const cur = res[LOCK_KEY];
-      if (!cur || Date.now() - cur.ts > LOCK_TTL_MS) {
-        await storageSet({ [LOCK_KEY]: { token, ts: Date.now() } });
-        const check = await storageGet(LOCK_KEY);
-        if (check[LOCK_KEY]?.token === token) return token;
-      }
-      if (Date.now() > deadline) throw new Error('farmasiQueue: lock timeout');
-      await new Promise((r) => setTimeout(r, LOCK_RETRY_MS));
-    }
-  }
-  async function releaseLock(token) {
-    const res = await storageGet(LOCK_KEY);
-    if (res[LOCK_KEY]?.token === token) {
-      await storageRemove(LOCK_KEY);
-    }
-  }
-  async function withLock(fn) {
-    const token = await acquireLock();
-    try {
-      return await fn();
-    } finally {
-      await releaseLock(token);
-    }
   }
   function sessionOf(waktu) {
     if (waktu && /^\d{4}-\d{2}-\d{2}/.test(waktu)) return waktu.slice(0, 10);
@@ -71,54 +24,6 @@ var __morbis_feature = (() => {
     const res = await storageGet(KEY);
     const st = res[KEY] ?? empty(today);
     return st.session === today ? st : empty(today);
-  }
-  async function save(st) {
-    await storageSet({ [KEY]: st });
-  }
-  function codeFor(num, isR) {
-    return (isR ? 'R-' : 'T-') + String(num).padStart(2, '0');
-  }
-  function statusFromMorbsi(status, statusPanggil) {
-    switch (String(status ?? '')) {
-      case '0':
-        return 'CANCELLED';
-      case '1':
-        return 'WAITING';
-      case '2':
-      case '3':
-        return 'PROCESSING';
-      case '4':
-        return String(statusPanggil ?? '') === '1' ? 'CALLED' : 'READY';
-      default:
-        return 'ISSUED';
-    }
-  }
-  function assignPending(st, rows) {
-    const pending = rows
-      .filter((r) => r.id && !r.selesai && st.tickets[r.id] == null)
-      .sort((a, b) => Number(a.id) - Number(b.id) || a.id.localeCompare(b.id));
-    let count = 0;
-    for (const r of pending) {
-      const isR = isRacikanJenis(r.jenis);
-      const num = st.nextByJenis[isR ? 'racikan' : 'tunggal']++;
-      st.tickets[r.id] = {
-        num,
-        code: codeFor(num, isR),
-        type: isR ? 'racikan' : 'tunggal',
-        status: statusFromMorbsi(r.status, r.statusPanggil),
-        issuedAt: /* @__PURE__ */ new Date().toISOString(),
-      };
-      count++;
-    }
-    return { st, count };
-  }
-  async function issuePending(rows) {
-    return withLock(async () => {
-      const st = await getQueueState();
-      const { st: nextSt, count } = assignPending(st, rows);
-      if (count > 0) await save(nextSt);
-      return count;
-    });
   }
   function getTicket(st, id) {
     return st.tickets[id] ?? null;
@@ -139,15 +44,6 @@ var __morbis_feature = (() => {
     return j;
   }
   async function loadTickets(rows) {
-    await issuePending(
-      rows.map((r) => ({
-        id: String(r.ID ?? ''),
-        jenis: r.JENIS ?? null,
-        waktu: r.WAKTU ?? null,
-        // konsol issue cuma tahu antrian aktif; baris tak-selesai dianggap belum selesai
-        selesai: false,
-      })),
-    );
     const st = await getQueueState();
     const m = /* @__PURE__ */ new Map();
     for (const r of rows) {

@@ -46,12 +46,12 @@ var __morbis_feature = (() => {
   var RES_SOURCE = 'MORBIS-FARMASI-BRIDGE';
   var REPLY_TIMEOUT_MS = 4e3;
   function post(type, payload) {
-    const id = 'q-' + Date.now() + '-' + Math.floor(Math.random() * 1e6);
+    const reqId = 'q-' + Date.now() + '-' + Math.floor(Math.random() * 1e6);
     return new Promise((resolve, reject) => {
       const onMsg = (event) => {
         if (event.source !== window) return;
         const d = event.data;
-        if (!d || d.source !== RES_SOURCE || d.type !== type || d.id !== id) return;
+        if (!d || d.source !== RES_SOURCE || d.type !== type || d.reqId !== reqId) return;
         window.removeEventListener('message', onMsg);
         clearTimeout(timer);
         if (!d.ok) return reject(new Error(d.error || type + ' gagal'));
@@ -62,11 +62,14 @@ var __morbis_feature = (() => {
         window.removeEventListener('message', onMsg);
         reject(new Error('farmasiQueueBridge: no reply (extension reloaded?)'));
       }, REPLY_TIMEOUT_MS);
-      window.postMessage({ source: REQ_SOURCE, type, id, ...payload }, '*');
+      window.postMessage({ source: REQ_SOURCE, type, reqId, ...payload }, '*');
     });
   }
-  async function issuePending(rows) {
-    return post('QUEUE_ISSUE', { rows });
+  async function getQueueState() {
+    return post('QUEUE_GET_STATE', {});
+  }
+  async function markCalled(id) {
+    await post('QUEUE_MARK_CALLED', { id });
   }
   async function reset() {
     return post('QUEUE_RESET', {});
@@ -180,7 +183,7 @@ var __morbis_feature = (() => {
       if (p === void 0) continue;
       const pn = Number(p);
       const vn = Number(v);
-      if (Number.isFinite(pn) && Number.isFinite(vn) && vn < pn) return true;
+      if (Number.isFinite(pn) && Number.isFinite(vn) && vn < pn && vn <= 1) return true;
     }
     return false;
   }
@@ -188,6 +191,14 @@ var __morbis_feature = (() => {
   // src/features/antrianFarmasiDisplay.ts
   (function () {
     const LIST_URL = '/public/antrian-farmasi-v2/list-antrian-v2';
+    const __extPlay = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function () {
+      if (this.id === 'unine') {
+        this.muted = true;
+        return Promise.resolve();
+      }
+      return __extPlay.apply(this, arguments);
+    };
     const POLL_LADDER_MS = [500, 1500, 3e3, 6e3];
     const GAP_MS = 250;
     const CARD_MS = 600;
@@ -291,18 +302,10 @@ var __morbis_feature = (() => {
     const WATCH_MS = 1500;
     const STALE_MAX = 2;
     let renumberCache = /* @__PURE__ */ new Map();
+    const morbisNumCache = /* @__PURE__ */ new Map();
     const nextToCallByJenis = { tunggal: '', racikan: '' };
     async function updateRenumber(rows) {
-      const { state: st } = await issuePending(
-        rows.map((r) => ({
-          id: String(r.ID ?? ''),
-          jenis: r.JENIS ?? null,
-          waktu: r.WAKTU ?? null,
-          // display tahu kapan baris selesai (WAKTU_PENYERAHAN) — skip utk next-to-call
-          selesai:
-            (r.WAKTU_PENYERAHAN != null && String(r.WAKTU_PENYERAHAN).trim() !== '') || false,
-        })),
-      );
+      const st = await getQueueState();
       const next2 = /* @__PURE__ */ new Map();
       for (const r of rows) {
         const id = String(r.ID ?? '');
@@ -310,26 +313,17 @@ var __morbis_feature = (() => {
         if (t) next2.set(id, t.code);
       }
       renumberCache = next2;
-      for (const j of ['tunggal', 'racikan']) {
-        nextToCallByJenis[j] = '';
-        const isR = j === 'racikan';
-        const min = rows
-          .filter(
-            (r) =>
-              r &&
-              String(r.ID ?? '') !== '' &&
-              (r.WAKTU_PENYERAHAN == null || String(r.WAKTU_PENYERAHAN).trim() === '') &&
-              (isR
-                ? /racik/i.test(String(r.JENIS ?? ''))
-                : !/racik/i.test(String(r.JENIS ?? ''))) &&
-              next2.get(String(r.ID ?? '')),
-          )
-          .map((r) => ({
-            id: String(r.ID ?? ''),
-            num: getTicket(st, String(r.ID ?? ''))?.num ?? Infinity,
-          }))
-          .sort((a, b) => a.num - b.num)[0];
-        if (min) nextToCallByJenis[j] = next2.get(min.id) ?? '';
+      for (const r of rows) {
+        const id = String(r.ID ?? '');
+        const t = getTicket(st, id);
+        if (!t) continue;
+        const nomor = String(r.NOMOR ?? '').trim();
+        if (!nomor) continue;
+        const jenis = /racik/i.test(String(r.JENIS ?? '')) ? 'racikan' : 'tunggal';
+        morbisNumCache.set(`${jenis}:${nomor}`, {
+          code: t.code,
+          nama: String(r.NAMA_PASIEN ?? ''),
+        });
       }
     }
     function kodeTampil(jenis, num) {
@@ -340,6 +334,8 @@ var __morbis_feature = (() => {
         const c = renumberCache.get(id);
         if (c) return c;
       }
+      const cached = morbisNumCache.get(`${jenis}:${num}`);
+      if (cached?.code) return cached.code;
       return nextToCallByJenis[jenis] || num;
     }
     function morbisStates() {
@@ -423,7 +419,8 @@ var __morbis_feature = (() => {
       const id = resolveCalledId(morbisStates(), morbisNum, jenis);
       if (!id) return '';
       const row = lastRows.find((r) => String(r.ID ?? '') === id);
-      return row?.NAMA_PASIEN || '';
+      if (row?.NAMA_PASIEN) return String(row.NAMA_PASIEN);
+      return morbisNumCache.get(`${jenis}:${morbisNum}`)?.nama || '';
     }
     function readPanelNumber(sel) {
       const el = document.querySelector(sel);
@@ -789,6 +786,7 @@ var __morbis_feature = (() => {
       void reset()
         .then(() => {
           renumberCache.clear();
+          morbisNumCache.clear();
           nextToCallByJenis.tunggal = '';
           nextToCallByJenis.racikan = '';
           updateDebugState({ lastRealtimeEvent: 'reset:queue' });
@@ -1174,6 +1172,10 @@ var __morbis_feature = (() => {
         nomor: String(row.nomor),
         namaPasien: String(row.namaPasien || ''),
       };
+      const calledId = String(row.id || '');
+      if (calledId && !calledId.startsWith('cur-')) {
+        markCalled(calledId).catch(() => {});
+      }
       updateDebugState({
         lastCalledPatient: lastCalled.namaPasien,
         lastCalledNumber: lastCalled.nomor,
@@ -1186,7 +1188,7 @@ var __morbis_feature = (() => {
         ', silakan menuju farmasi.';
       for (let i = queue.length - 1; i >= 0; i--) {
         const qi = queue[i];
-        if (qi.kind === 'voice' && qi.repeat) queue.splice(i, 1);
+        if (qi.kind === 'voice') queue.splice(i, 1);
       }
       queue.push(
         { kind: 'bell' },
@@ -1452,6 +1454,19 @@ var __morbis_feature = (() => {
       started = true;
       updateDebugState({ started: true });
       hideNativeSwal();
+      const qp = new URLSearchParams(window.location.search);
+      if (qp.get('extReset') === '1') {
+        qp.delete('extReset');
+        const qs = qp.toString();
+        window.history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : ''));
+        void reset().then((s) => {
+          console.log(
+            '[MORBIS Ext] queue di-reset (tiket aktif: ' +
+              Object.keys(s.tickets ?? {}).length +
+              ')',
+          );
+        });
+      }
       ensureStatusBadge();
       ensureToolbar();
       setStatus('loading');

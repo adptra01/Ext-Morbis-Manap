@@ -122,7 +122,13 @@ export function activeNumber(cur: CurrentNumbers): string {
 
 /** Reset antrian? Tombol "Reset Antrian" di halaman manajemen mengembalikan
  *  current-number ke kecil/0 antar poll — bukan panggilan baru, jadi jangan
- *  di-announce. Panggilan normal selalu NAIK antarpoll; penurunan = reset. */
+ *  di-announce. Panggilan normal selalu NAIK antarpoll; penurunan = reset.
+ *  TAPI recall (klik baris "panggil ulang") JUGA menurunkan current-number
+ *  (nomor lama dipanggil lagi) — tanpa guard, recall salah dideteksi reset →
+ *  QueueManager di-reset → card kembali ke T-01 (fix 2026-08-18).
+ *  Pembedanya: reset MORBIS mengembalikan ke AWAL antrian (0/1), recall turun
+ *  ke nomor tengah yang masih aktif. Jadi reset hanya jika vn <= 1.
+ *  ponytail: recall ke nomor 1 dianggap reset (jarang, terima). */
 export function isReset(cur: CurrentNumbers, prev: CurrentNumbers): boolean {
   if (prev.size === 0) return false;
   for (const [c, v] of cur) {
@@ -130,7 +136,7 @@ export function isReset(cur: CurrentNumbers, prev: CurrentNumbers): boolean {
     if (p === undefined) continue;
     const pn = Number(p);
     const vn = Number(v);
-    if (Number.isFinite(pn) && Number.isFinite(vn) && vn < pn) return true;
+    if (Number.isFinite(pn) && Number.isFinite(vn) && vn < pn && vn <= 1) return true;
   }
   return false;
 }

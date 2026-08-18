@@ -47,7 +47,7 @@
 import { nextHealth, type HealthState } from './shared/wsHealth';
 // Display jalan di world MAIN tanpa chrome.runtime → akses QueueManager via
 // bridge (postMessage ke isolated world) — getQueueState/issuePending bridge.
-import { issuePending, reset } from './shared/farmasiQueueBridge';
+import { getQueueState, markCalled, reset } from './shared/farmasiQueueBridge';
 import { getTicket } from './shared/farmasiQueue';
 import { resolveCalledId, toRowState, type MorbisRowState } from './shared/farmasiEvent';
 import {
@@ -101,6 +101,22 @@ declare global {
 
 (function () {
   const LIST_URL = '/public/antrian-farmasi-v2/list-antrian-v2';
+  // Blokir bell native MORBIS: elemen <audio id="unine"> (Airport_Bell.mp3)
+  // dibunyikan native saat WS resolve/loadContent — termasuk saat display
+  // dibuka ulang (antrian terakhir "di-announce" ulang oleh MORBIS). Extension
+  // punya bell + TTS sendiri → bell native = suara dobel + suara antrian basi.
+  // Patch play() di document_start (MAIN world) → berlaku utk SEMUA elemen
+  // ber-id unine, kapan pun native membuatnya. Elemen audio extension TIDAK
+  // ber-id unine → tidak terdampak. (P0: extension tidak men-stub WebSocket;
+  // hanya meredam play() elemen bell — suara native lain tetap normal.)
+  const __extPlay = HTMLMediaElement.prototype.play;
+  HTMLMediaElement.prototype.play = function (this: HTMLMediaElement) {
+    if (this.id === 'unine') {
+      this.muted = true;
+      return Promise.resolve(); // bell native: tidak berbunyi
+    }
+    return __extPlay.call(this);
+  };
   // Adaptive backoff polling fallback (hanya saat native membeku): setiap gagal naik
   // satu anak tangga, reset ke awal setelah berhasil.
   // ponytail: anak tangga pertama 600ms supaya klik beruntun Selanjutnya tertangkap
@@ -289,20 +305,21 @@ declare global {
   // Cache kode publik (id → T-xx/R-xx, frozen dari QueueManager). Sumber nomor
   // yang SAMA dengan kertas cetak (farmasiIssue) & panggilan (display/TTS).
   let renumberCache = new Map<string, string>();
+  // Cache NOMOR MORBIS → {code, nama} (key `jenis:nomor`): untuk current-number
+  // yang menunjuk baris sudah diserahkan/hilang dari check_antrian — tanpa
+  // cache ini card jatuh ke nextToCallByJenis yang TIDAK ikut bergeser saat
+  // "Selanjutnya" diklik (fix 2026-08-18, bukti live: current=8/3 tak ada di
+  // rows 1,2,4,7,9,10...). Diisi tiap poll, dibersihkan saat reset antrian.
+  const morbisNumCache = new Map<string, { code: string; nama: string }>();
   // Urutan nomor publik per jenis (num naik, id belum-selesai) — fallback card
   // saat current MORBIS gap (angka tak match baris). Mengekor keputusan
   // "kelola sendiri": display menampilkan nomor publik antrian berikutnya.
   const nextToCallByJenis: Record<'tunggal' | 'racikan', string> = { tunggal: '', racikan: '' };
   async function updateRenumber(rows: RawRow[]): Promise<void> {
-    const { state: st } = await issuePending(
-      rows.map((r) => ({
-        id: String(r.ID ?? ''),
-        jenis: (r.JENIS as string | null) ?? null,
-        waktu: (r.WAKTU as string | null) ?? null,
-        // display tahu kapan baris selesai (WAKTU_PENYERAHAN) — skip utk next-to-call
-        selesai: (r.WAKTU_PENYERAHAN != null && String(r.WAKTU_PENYERAHAN).trim() !== '') || false,
-      })),
-    );
+    // BACA SAJA (desain 2026-08-18: penerbitan nomor EKSKLUSIF via tombol
+    // "Antrian & Cetak" di halaman penerimaan; display/pemanggilan tidak
+    // pernah menerbitkan). Baris tanpa tiket = NOT_ISSUED → tidak tampil.
+    const st = await getQueueState();
     const next = new Map<string, string>();
     for (const r of rows) {
       const id = String(r.ID ?? '');
@@ -310,27 +327,20 @@ declare global {
       if (t) next.set(id, t.code);
     }
     renumberCache = next;
-    // seed nomor publik terkecil (berikutnya) per jenis dari baris belum-selesai
-    for (const j of ['tunggal', 'racikan'] as const) {
-      nextToCallByJenis[j] = '';
-      const isR = j === 'racikan';
-      const min = rows
-        .filter(
-          (r) =>
-            r &&
-            String(r.ID ?? '') !== '' &&
-            (r.WAKTU_PENYERAHAN == null || String(r.WAKTU_PENYERAHAN).trim() === '') &&
-            (isR ? /racik/i.test(String(r.JENIS ?? '')) : !/racik/i.test(String(r.JENIS ?? ''))) &&
-            next.get(String(r.ID ?? '')),
-        )
-        // ambil tiket dgn num terkecil
-        // (diakses via st pakai id — num tersimpan di st)
-        .map((r) => ({
-          id: String(r.ID ?? ''),
-          num: getTicket(st, String(r.ID ?? ''))?.num ?? Infinity,
-        }))
-        .sort((a, b) => a.num - b.num)[0];
-      if (min) nextToCallByJenis[j] = next.get(min.id) ?? '';
+    // seed cache nomor MORBIS → publicCode (utk current-number yang menunjuk
+    // baris yang sudah diserahkan/hilang dari check_antrian). Key jenis:nomor
+    // (nomor MORBIS bisa duplikat antar jenis: BT-1 vs BR-1).
+    for (const r of rows) {
+      const id = String(r.ID ?? '');
+      const t = getTicket(st, id);
+      if (!t) continue;
+      const nomor = String(r.NOMOR ?? '').trim();
+      if (!nomor) continue;
+      const jenis = /racik/i.test(String(r.JENIS ?? '')) ? 'racikan' : 'tunggal';
+      morbisNumCache.set(`${jenis}:${nomor}`, {
+        code: t.code,
+        nama: String(r.NAMA_PASIEN ?? ''),
+      });
     }
   }
 
@@ -346,6 +356,9 @@ declare global {
       const c = renumberCache.get(id);
       if (c) return c;
     }
+    // Baris sudah hilang dari check_antrian (diserahkan) → cache MORBIS→kode.
+    const cached = morbisNumCache.get(`${jenis}:${num}`);
+    if (cached?.code) return cached.code;
     return nextToCallByJenis[jenis] || num;
   }
 
@@ -487,7 +500,9 @@ declare global {
     const id = resolveCalledId(morbisStates(), morbisNum, jenis);
     if (!id) return '';
     const row = lastRows.find((r) => String(r.ID ?? '') === id);
-    return row?.NAMA_PASIEN || '';
+    if (row?.NAMA_PASIEN) return String(row.NAMA_PASIEN);
+    // Baris sudah diserahkan & hilang → fallback nama dari morbisNumCache.
+    return morbisNumCache.get(`${jenis}:${morbisNum}`)?.nama || '';
   }
 
   // Baca nomor yang tampil di panel (selector PENGGILAN/SIAP). Format display
@@ -1039,6 +1054,7 @@ declare global {
     void reset()
       .then(() => {
         renumberCache.clear();
+        morbisNumCache.clear(); // nomor MORBIS lama tidak valid setelah reset
         nextToCallByJenis.tunggal = '';
         nextToCallByJenis.racikan = '';
         updateDebugState({ lastRealtimeEvent: 'reset:queue' });
@@ -1554,6 +1570,14 @@ declare global {
       nomor: String(row.nomor),
       namaPasien: String(row.namaPasien || ''),
     };
+    // Catat CALLED di QueueManager (metadata; nomor tetap frozen). id 'cur-*'
+    // (panggilan dari current-number tanpa baris) tidak punya tiket → skip.
+    const calledId = String(row.id || '');
+    if (calledId && !calledId.startsWith('cur-')) {
+      markCalled(calledId).catch(() => {
+        /* best-effort metadata; nomor tidak terpengaruh */
+      });
+    }
     updateDebugState({
       lastCalledPatient: lastCalled.namaPasien,
       lastCalledNumber: lastCalled.nomor,
@@ -1569,13 +1593,15 @@ declare global {
     // permintaan user: pasien di ruang tunggu sering tak dengar sekali ucapan).
     // next() menunggu playVoice selesai per item, jadi pengulangan berjalan
     // serial dengan jeda GAP_MS — tidak tumpang-tindih, tidak membatalkan diri.
-    // Delay "Selanjutnya" beruntun: pengulangan (voice ke-2) panggilan LAMA yang
-    // belum mulai DIBUANG saat panggilan baru masuk — operator tidak menunggu
-    // pengulangan selesai utk memanggil pasien berikutnya. Voice ke-1 (sedang/
-    // belum mulai) tetap utuh: pasien lama tetap dipanggil minimal sekali.
+    // "Selanjutnya" beruntun: SEMUA voice lama yang masih mengantre (belum
+    // mulai di-play) DIBUANG — panggilan baru tidak menunggu pengulangan
+    // (voice ke-2) maupun voice ke-1 lama yang belum sempat diputar. Voice
+    // yang SEDANG di-play tetap selesai (tidak di-cancel paksa — paksa cancel
+    // di beberapa engine speechSynthesis tidak stabil); panggilan baru hanya
+    // menunggu voice aktif itu saja.
     for (let i = queue.length - 1; i >= 0; i--) {
       const qi = queue[i];
-      if (qi.kind === 'voice' && qi.repeat) queue.splice(i, 1);
+      if (qi.kind === 'voice') queue.splice(i, 1);
     }
     queue.push(
       { kind: 'bell' },
@@ -1947,6 +1973,20 @@ declare global {
     started = true;
     updateDebugState({ started: true });
     hideNativeSwal(); // Swal MORBIS menutup tombol Tes Suara & mengganggu klik
+    // Reset sekali-pakai: display dibuka dengan ?extReset=1 → kosongkan queue
+    // (tiket uji coba lama). Param dihapus segera agar reload berikutnya tidak
+    // reset lagi. Panggil reset() via bridge (MAIN world tidak punya chrome.runtime).
+    const qp = new URLSearchParams(window.location.search);
+    if (qp.get('extReset') === '1') {
+      qp.delete('extReset');
+      const qs = qp.toString();
+      window.history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : ''));
+      void reset().then((s) => {
+        console.log(
+          '[MORBIS Ext] queue di-reset (tiket aktif: ' + Object.keys(s.tickets ?? {}).length + ')',
+        );
+      });
+    }
     ensureStatusBadge(); // pastikan badge status ada sedari awal (loading)
     ensureToolbar(); // tombol Tes Suara & Full Screen
     setStatus('loading');

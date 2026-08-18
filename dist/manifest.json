@@ -239,6 +239,32 @@
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
+    },
+    {
+      "matches": ["http://*/inventory/resep/penerimaan/detail*"],
+      "js": ["features/farmasiBridge.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    },
+    {
+      "matches": ["http://*/inventory/resep/penerimaan/detail*"],
+      "js": ["features/farmasiAntrolShift.js"],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
+      "matches": ["http://*/inventory/resep/penerimaan"],
+      "js": ["features/farmasiBridge.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    },
+    {
+      "matches": ["http://*/inventory/resep/penerimaan"],
+      "js": ["features/penerimaanAntrolCetak.js"],
+      "run_at": "document_idle",
+      "world": "MAIN",
+      "all_frames": false
     }
   ],
   "permissions": ["activeTab", "alarms", "offscreen", "scripting", "sidePanel", "storage"],
