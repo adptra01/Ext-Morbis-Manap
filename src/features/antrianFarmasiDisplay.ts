@@ -1253,15 +1253,17 @@ declare global {
     });
   }
 
-  // Layer 4 — Google TTS MP3. fetch→blob→objectURL→Audio→canplay→play→ended.
-  // Semua langkah di-await; setiap kegagalan (HTTP/empty/CORS/autoplay reject)
-  // resolve false → lanjut ke layer berikutnya. Sub-fallback: kalau fetch
+  // Layer 4 — TTS MP3 via Cloudflare Worker proxy. fetch→blob→objectURL→Audio.
+  // Worker fetch server-side ke translate.google.com (Referer server-side) →
+  // audio/mpeg + ACAO:*. Worker ini juga dipakai SW Layer-0b, jadi jalur ini
+  // tetap hidup walau rantai bridge→SW mati. Sub-fallback: kalau fetch
   // diblokir CORS, mainkan Audio langsung dari URL (audio element tidak kena
   // CORS untuk playback).
   function speakGoogleMp3(text: string, timeoutMs = 15000): Promise<boolean> {
     const url =
-      'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=id&q=' +
-      encodeURIComponent(text);
+      'https://morbis-antrian-relay.testingbae66.workers.dev/?text=' +
+      encodeURIComponent(text) +
+      '&lang=id';
     return new Promise((resolve) => {
       let settled = false;
       let objUrl: string | null = null;

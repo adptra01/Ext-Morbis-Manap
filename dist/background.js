@@ -474,8 +474,11 @@ var __morbis_bg = (() => {
         (async () => {
           try {
             const { text } = validated;
-            const fetchTts = async (url) => {
-              const res = await fetch(url, { mode: 'cors' });
+            const fetchTts = async (url, timeoutMs = 5e3) => {
+              const res = await fetch(url, {
+                mode: 'cors',
+                signal: AbortSignal.timeout(timeoutMs),
+              });
               if (!res.ok) throw new Error('http ' + res.status);
               const buf = await res.arrayBuffer();
               if (!buf || buf.byteLength === 0) throw new Error('empty');
@@ -487,6 +490,7 @@ var __morbis_bg = (() => {
             try {
               const r = await fetchTts(
                 'http://127.0.0.1:8765/tts?text=' + encodeURIComponent(text),
+                3e3,
               );
               sendResponse({ ok: true, mime: r.mime, data: r.data });
             } catch {

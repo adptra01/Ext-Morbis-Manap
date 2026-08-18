@@ -78,7 +78,7 @@
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/deploy/updates.json": {
     "size": 228,
-    "mtime_ns": 1787045934470180700,
+    "mtime_ns": 1787065718394370700,
     "word_count": 17,
     "hashes": {
       "deploy/updates.json": "dedda93fe9cb6c2d0846b4fed905b184025bdb419893f9bfd10c343a125d0223"
@@ -343,11 +343,11 @@
     "word_count": 227
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/manifest.json": {
-    "size": 8418,
-    "mtime_ns": 1787039804242756300,
-    "word_count": 475,
+    "size": 8477,
+    "mtime_ns": 1787063094496719300,
+    "word_count": 476,
     "hashes": {
-      "manifest.json": "48684be3a7d891df25c5035c85c6b35cfeeef957dd8c429d3145e06e830a32a1"
+      "manifest.json": "cf40f6a288e547143bbc6e85c764620e313ba5557c39543464b383b023530c01"
     }
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/mcp-servers/morbis-devtools/README.md": {
@@ -431,9 +431,9 @@
     "word_count": 245
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/scripts/pack.mjs": {
-    "size": 3110,
-    "mtime_ns": 1786334597706689800,
-    "word_count": 298
+    "size": 3690,
+    "mtime_ns": 1787060615669391900,
+    "word_count": 380
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/sidepanel.html": {
     "size": 790,
@@ -449,9 +449,9 @@
     }
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/background.ts": {
-    "size": 20332,
-    "mtime_ns": 1786690594692356700,
-    "word_count": 2064
+    "size": 21711,
+    "mtime_ns": 1787070198996363200,
+    "word_count": 2219
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/core.ts": {
     "size": 4455,
@@ -970,9 +970,9 @@
     "word_count": 612
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/antrianFarmasiDisplay.ts": {
-    "size": 93238,
-    "mtime_ns": 1787045509408212600,
-    "word_count": 11019
+    "size": 93315,
+    "mtime_ns": 1787070244364364900,
+    "word_count": 11037
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/shared/queueRule.ts": {
     "size": 1926,
@@ -1245,9 +1245,9 @@
     "word_count": 1909
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/shared/farmasiQueueBridge.ts": {
-    "size": 3795,
-    "mtime_ns": 1787039767309829500,
-    "word_count": 479
+    "size": 4143,
+    "mtime_ns": 1787059309978831500,
+    "word_count": 526
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/shared/farmasiRenumber.ts": {
     "size": 3182,

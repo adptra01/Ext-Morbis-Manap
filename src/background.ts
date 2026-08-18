@@ -495,8 +495,16 @@ chrome.runtime.onMessage.addListener(
             const { text } = validated as unknown as { text: string };
             const fetchTts = async (
               url: string,
+              timeoutMs = 5000,
             ): Promise<{ mime: string; data: Array<number> }> => {
-              const res = await fetch(url, { mode: 'cors' });
+              // ponytail: AbortSignal.timeout — koneksi ke 127.0.0.1 yang "hang"
+              // (port kebuka tapi tak menjawab) bikin sendResponse tak pernah
+              // dipanggil → display timeout 10s. Timeout 5s memastikan fallback
+              // worker jalan. Tingkatkan hanya jika worker perlu waktu lebih.
+              const res = await fetch(url, {
+                mode: 'cors',
+                signal: AbortSignal.timeout(timeoutMs),
+              });
               if (!res.ok) throw new Error('http ' + res.status);
               const buf = await res.arrayBuffer();
               if (!buf || buf.byteLength === 0) throw new Error('empty');
@@ -509,6 +517,7 @@ chrome.runtime.onMessage.addListener(
               // Layer 0: service Python lokal (kalau ada).
               const r = await fetchTts(
                 'http://127.0.0.1:8765/tts?text=' + encodeURIComponent(text),
+                3000,
               );
               sendResponse({ ok: true, mime: r.mime, data: r.data });
             } catch {

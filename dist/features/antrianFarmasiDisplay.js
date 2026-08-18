@@ -921,8 +921,9 @@ var __morbis_feature = (() => {
     }
     function speakGoogleMp3(text, timeoutMs = 15e3) {
       const url =
-        'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=id&q=' +
-        encodeURIComponent(text);
+        'https://morbis-antrian-relay.testingbae66.workers.dev/?text=' +
+        encodeURIComponent(text) +
+        '&lang=id';
       return new Promise((resolve) => {
         let settled = false;
         let objUrl = null;

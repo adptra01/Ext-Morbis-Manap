@@ -20,7 +20,7 @@
     "semantic_hash": "1c81c707c2c78ac69e6f893b2c201d70"
   },
   "deploy/updates.json": {
-    "mtime": 1787045934.4701807,
+    "mtime": 1787065718.3943708,
     "ast_hash": "0197d898cd5835916ba6c31ab62f4aa3",
     "semantic_hash": ""
   },
@@ -60,8 +60,8 @@
     "semantic_hash": "7d0cbe8cf25240a82865d175a94ebffc"
   },
   "manifest.json": {
-    "mtime": 1787039804.2427564,
-    "ast_hash": "e81ff1911306db79c6eb92dccc2a7177",
+    "mtime": 1787063094.4967194,
+    "ast_hash": "40820344aa80f9c6adc72a3e0a41c888",
     "semantic_hash": ""
   },
   "mcp-servers/morbis-devtools/server.py": {
@@ -125,13 +125,13 @@
     "semantic_hash": "6c80f38f98496820e1e7ad86a8c79a28"
   },
   "scripts/pack.mjs": {
-    "mtime": 1786334597.7066898,
-    "ast_hash": "9c37603255e4b6451a2787d949978f88",
-    "semantic_hash": "9c37603255e4b6451a2787d949978f88"
+    "mtime": 1787060615.6693919,
+    "ast_hash": "1c4b2bdf38a39b20cc4907ea5c4036e4",
+    "semantic_hash": ""
   },
   "src/background.ts": {
-    "mtime": 1786690594.6923566,
-    "ast_hash": "dbd3f7f36a3d0b128d16497e2592b4b4",
+    "mtime": 1787070198.9963632,
+    "ast_hash": "ae1b7608fb54296d6e3136d26cf069fc",
     "semantic_hash": ""
   },
   "src/core.ts": {
@@ -574,11 +574,6 @@
     "ast_hash": "567b0db43b011fb48d35e1cb411f230e",
     "semantic_hash": ""
   },
-  "pack/package.json": {
-    "mtime": 1787045933.2618003,
-    "ast_hash": "917c582fa9b998b1c27b69d363a9ea98",
-    "semantic_hash": ""
-  },
   "popup/main.tsx": {
     "mtime": 1786334597.6863792,
     "ast_hash": "ac6e00076becb72a95feb626faa04f37",
@@ -715,8 +710,8 @@
     "semantic_hash": ""
   },
   "src/features/antrianFarmasiDisplay.ts": {
-    "mtime": 1787045509.4082127,
-    "ast_hash": "f13a24ecc3e555d9d4484b5b3752647e",
+    "mtime": 1787070244.3643649,
+    "ast_hash": "b516b4ed432e8f311e85c3a23ed9575d",
     "semantic_hash": ""
   },
   "src/features/shared/queueRule.ts": {
@@ -785,8 +780,8 @@
     "semantic_hash": ""
   },
   "src/features/shared/farmasiQueueBridge.ts": {
-    "mtime": 1787039767.3098295,
-    "ast_hash": "8785dd644378be225c4002da432caec6",
+    "mtime": 1787059309.9788315,
+    "ast_hash": "6cbab1d399ca4d0f5caa6aed0b874b21",
     "semantic_hash": ""
   },
   "src/features/shared/farmasiRenumber.ts": {
