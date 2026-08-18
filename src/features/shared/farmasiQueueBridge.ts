@@ -52,7 +52,10 @@ function post<T>(type: string, payload: Record<string, unknown>): Promise<T> {
 
 /** Ambil state queue dari bridge (storage di sisi isolated). */
 export async function getQueueState(): Promise<QueueState> {
-  return post<QueueState>('QUEUE_GET_STATE', {});
+  // post() resolve SELURUH reply ({source,reqId,type,ok,state}) — ekstrak
+  // .state, jangan kembalikan reply utuh (st.tickets = undefined → error
+  // "Cannot read properties of undefined (reading '<id>')" di getTicket).
+  return post<{ state: QueueState }>('QUEUE_GET_STATE', {}).then((r) => r.state);
 }
 
 /** Issue nomor publik utk id baru; return state terbaru + jumlah baru. */
@@ -95,5 +98,6 @@ export async function markCompleted(id: string): Promise<void> {
 
 /** Reset antrian session → state kosong. */
 export async function reset(): Promise<QueueState> {
-  return post<QueueState>('QUEUE_RESET', {});
+  // sama dgn getQueueState: ekstrak .state dari reply.
+  return post<{ state: QueueState }>('QUEUE_RESET', {}).then((r) => r.state);
 }

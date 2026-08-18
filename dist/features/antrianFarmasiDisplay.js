@@ -66,13 +66,13 @@ var __morbis_feature = (() => {
     });
   }
   async function getQueueState() {
-    return post('QUEUE_GET_STATE', {});
+    return post('QUEUE_GET_STATE', {}).then((r) => r.state);
   }
   async function markCalled(id) {
     await post('QUEUE_MARK_CALLED', { id });
   }
   async function reset() {
-    return post('QUEUE_RESET', {});
+    return post('QUEUE_RESET', {}).then((r) => r.state);
   }
 
   // src/features/shared/farmasiQueue.ts
