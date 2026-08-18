@@ -5,6 +5,77 @@ import { createLogger } from './shared/logger';
 
 const log = createLogger('Background');
 
+// --- TTS cache (per-teks, TTL 12 jam, auto-hapus). Tujuan: panggilan ulang
+// (recall / "Selanjutnya" untuk nomor yang sama) tidak perlu fetch ulang ke
+// local service / worker — balas langsung dari cache → latensi klik→suara
+// turun drastis. Entri expired dihapus saat get (auto-hapus) + sweep berkala
+// di alarm state-sync. MV3 SW bisa mati kapan saja → persist di storage.local.
+const TTS_CACHE_TTL_MS = 12 * 60 * 60 * 1000; // 12 jam
+const TTS_CACHE_PREFIX = 'ttsCache:';
+const TTS_CACHE_MAX_ENTRIES = 60; // ~25KB/audio → ~1.5MB, jauh di bawah quota 10MB
+
+interface TtsCacheEntry {
+  mime: string;
+  data: number[];
+  ts: number;
+}
+
+function ttsCacheKey(text: string): string {
+  return TTS_CACHE_PREFIX + text;
+}
+
+async function ttsCacheGet(text: string): Promise<TtsCacheEntry | null> {
+  try {
+    const key = ttsCacheKey(text);
+    const raw = await chrome.storage.local.get(key);
+    const entry = raw[key] as TtsCacheEntry | undefined;
+    if (!entry) return null;
+    if (Date.now() - entry.ts > TTS_CACHE_TTL_MS) {
+      await chrome.storage.local.remove(key); // expired → auto-hapus
+      return null;
+    }
+    return entry;
+  } catch {
+    return null; // cache best-effort; gagal baca = miss
+  }
+}
+
+async function ttsCacheSet(text: string, mime: string, data: number[]): Promise<void> {
+  try {
+    const entry: TtsCacheEntry = { mime, data, ts: Date.now() };
+    await chrome.storage.local.set({ [ttsCacheKey(text)]: entry });
+    // Batas jumlah entri: hapus yang paling tua bila melebihi quota.
+    const all = await chrome.storage.local.get(null);
+    const keys = Object.keys(all).filter((k) => k.startsWith(TTS_CACHE_PREFIX));
+    if (keys.length > TTS_CACHE_MAX_ENTRIES) {
+      const oldest = keys
+        .map((k) => ({ k, ts: (all[k] as TtsCacheEntry).ts }))
+        .sort((a, b) => a.ts - b.ts)
+        .slice(0, keys.length - TTS_CACHE_MAX_ENTRIES);
+      await chrome.storage.local.remove(oldest.map((o) => o.k));
+    }
+  } catch {
+    /* best-effort */
+  }
+}
+
+/** Hapus semua entri cache yang sudah lewat TTL (dipanggil tiap alarm). */
+async function ttsCacheSweep(): Promise<void> {
+  try {
+    const all = await chrome.storage.local.get(null);
+    const now = Date.now();
+    const expired = Object.entries(all)
+      .filter(
+        ([k, v]) =>
+          k.startsWith(TTS_CACHE_PREFIX) && now - (v as TtsCacheEntry).ts > TTS_CACHE_TTL_MS,
+      )
+      .map(([k]) => k);
+    if (expired.length > 0) await chrome.storage.local.remove(expired);
+  } catch {
+    /* best-effort */
+  }
+}
+
 /** Tracks the most recent page context reported by content scripts, keyed by tabId */
 const tabContexts = new Map<number, { feature: string; data: Record<string, unknown> }>();
 
@@ -493,6 +564,12 @@ chrome.runtime.onMessage.addListener(
         (async () => {
           try {
             const { text } = validated as unknown as { text: string };
+            // Cache hit → balas langsung tanpa fetch (recall/ulang cepat).
+            const cached = await ttsCacheGet(text);
+            if (cached) {
+              sendResponse({ ok: true, mime: cached.mime, data: cached.data });
+              return;
+            }
             const fetchTts = async (
               url: string,
               timeoutMs = 5000,
@@ -513,22 +590,23 @@ chrome.runtime.onMessage.addListener(
                 data: Array.from(new Uint8Array(buf)),
               };
             };
+            let r: { mime: string; data: Array<number> };
             try {
               // Layer 0: service Python lokal (kalau ada).
-              const r = await fetchTts(
+              r = await fetchTts(
                 'http://127.0.0.1:8765/tts?text=' + encodeURIComponent(text),
                 3000,
               );
-              sendResponse({ ok: true, mime: r.mime, data: r.data });
             } catch {
               // Layer 0b: Cloudflare Worker proxy (tanpa Python di PC farmasi).
               const url =
                 'https://morbis-antrian-relay.testingbae66.workers.dev/?text=' +
                 encodeURIComponent(text) +
                 '&lang=id';
-              const r = await fetchTts(url);
-              sendResponse({ ok: true, mime: r.mime, data: r.data });
+              r = await fetchTts(url);
             }
+            void ttsCacheSet(text, r.mime, r.data); // best-effort, jangan tunggu
+            sendResponse({ ok: true, mime: r.mime, data: r.data });
           } catch (e) {
             sendResponse({ ok: false, reason: 'worker-fetch ' + String(e).slice(0, 60) });
           }
@@ -583,6 +661,8 @@ chrome.alarms.onAlarm.addListener(function (alarm) {
   }
   if (alarm.name === 'morbis-state-sync') {
     syncStateToSession().catch(function () {});
+    // TTS cache auto-hapus: entri >12 jam dibuang tiap 5 menit.
+    ttsCacheSweep().catch(function () {});
   }
 });
 

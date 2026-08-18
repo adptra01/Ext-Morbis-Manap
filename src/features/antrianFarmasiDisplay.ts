@@ -123,7 +123,9 @@ declare global {
   // (tes lapangan: klik 1x/detik melompati 1 nomor di poll 2s). Klik lebih cepat
   // dari 600ms masih bisa terlewat — naikkan budget hanya bila itu terjadi.
   const POLL_LADDER_MS = [500, 1500, 3000, 6000];
-  const GAP_MS = 100;
+  // Jeda antar item antrean (bell→voice→voice). 0 = lanjut sesegera mungkin
+  // (event loop ~4ms). Panggilan tetap serial via busy flag — tidak menimpa.
+  const GAP_MS = 0;
   // Segarkan card (angka panggilan last + nama) secara tetap — cepat (~600ms),
   // tidak tergantung health/native/poll. Bikin display responsif setelah
   // 'Selanjutnya'/recall tanpa menunggu WS native. 350ms = kompromi baru:
@@ -1542,12 +1544,12 @@ declare global {
       bellCtx = bellCtx || new Ctor();
       void bellCtx.resume();
       const now = bellCtx.currentTime;
-      // dua nada "ding-ding": E6 lalu A6, tiap nada ~0.2s (dipendekkan dari
-      // 0.28s — latensi klik Selanjutnya→TTS diukur ~1.6-2.1s, bell adalah
-      // penyumbang terbesar ~660ms; 0.2s masih terdengar jelas "ding-ding").
+      // dua nada "ding-ding": E6 lalu A6, tiap nada ~0.14s (total ~0.3s).
+      // Dipendekkan dari 0.46s — bell adalah penyumbang latensi klik→TTS
+      // terbesar; 0.14s masih terdengar jelas "ding-ding".
       const notes: Array<[number, number]> = [
         [1318.5, now],
-        [1760, now + 0.2],
+        [1760, now + 0.14],
       ];
       for (const [freq, t0] of notes) {
         const osc = bellCtx.createOscillator();
@@ -1557,14 +1559,14 @@ declare global {
         // envelope: naik-cepat lalu decay (suara bell bersih)
         g.gain.setValueAtTime(0.0001, t0);
         g.gain.exponentialRampToValueAtTime(0.45, t0 + 0.02);
-        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.22);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.16);
         osc.connect(g);
         g.connect(bellCtx.destination);
         osc.start(t0);
-        osc.stop(t0 + 0.24);
+        osc.stop(t0 + 0.18);
       }
-      // total durasi bell ~0.46s — onDone TEPAT setelah bell selesai
-      const totalMs = 200 + 220 + 60; // nada terakhir berakhir 200+220, +60 buffer
+      // total durasi bell ~0.3s — onDone TEPAT setelah bell selesai
+      const totalMs = 140 + 180 + 30; // nada terakhir berakhir 140+180, +30 buffer
       setTimeout(onDone, totalMs);
     } catch {
       onDone(); // bell gagal → tetap lanjut (jangan blokir voice)
@@ -2032,6 +2034,11 @@ declare global {
     patchListContentAntrian(); // patch awal (tabel mungkin sudah terisi native)
 
     voiceEnabled = true; // suara hanya untuk role terotorisasi; TTS native tidak dioverride
+    // Preload voices di awal agar playVoice pertama tidak menunggu voiceschanged
+    // (Chrome memuat daftar voice async — tanpa ini klik pertama terasa lambat).
+    ensureVoices().catch(() => {
+      /* best-effort; playVoice tetap jalan via layer lain */
+    });
     health = { ...health, nativeSig: domSignal() }; // baseline aktivitas native awal
     if (watchTimer === null) {
       // pengamatan aktivitas DOM native; polling fallback baru menyala bila native membeku

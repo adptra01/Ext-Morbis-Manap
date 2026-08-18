@@ -42,6 +42,52 @@ var __morbis_bg = (() => {
 
   // src/background.ts
   var log = createLogger('Background');
+  var TTS_CACHE_TTL_MS = 12 * 60 * 60 * 1e3;
+  var TTS_CACHE_PREFIX = 'ttsCache:';
+  var TTS_CACHE_MAX_ENTRIES = 60;
+  function ttsCacheKey(text) {
+    return TTS_CACHE_PREFIX + text;
+  }
+  async function ttsCacheGet(text) {
+    try {
+      const key = ttsCacheKey(text);
+      const raw = await chrome.storage.local.get(key);
+      const entry = raw[key];
+      if (!entry) return null;
+      if (Date.now() - entry.ts > TTS_CACHE_TTL_MS) {
+        await chrome.storage.local.remove(key);
+        return null;
+      }
+      return entry;
+    } catch {
+      return null;
+    }
+  }
+  async function ttsCacheSet(text, mime, data) {
+    try {
+      const entry = { mime, data, ts: Date.now() };
+      await chrome.storage.local.set({ [ttsCacheKey(text)]: entry });
+      const all = await chrome.storage.local.get(null);
+      const keys = Object.keys(all).filter((k) => k.startsWith(TTS_CACHE_PREFIX));
+      if (keys.length > TTS_CACHE_MAX_ENTRIES) {
+        const oldest = keys
+          .map((k) => ({ k, ts: all[k].ts }))
+          .sort((a, b) => a.ts - b.ts)
+          .slice(0, keys.length - TTS_CACHE_MAX_ENTRIES);
+        await chrome.storage.local.remove(oldest.map((o) => o.k));
+      }
+    } catch {}
+  }
+  async function ttsCacheSweep() {
+    try {
+      const all = await chrome.storage.local.get(null);
+      const now = Date.now();
+      const expired = Object.entries(all)
+        .filter(([k, v]) => k.startsWith(TTS_CACHE_PREFIX) && now - v.ts > TTS_CACHE_TTL_MS)
+        .map(([k]) => k);
+      if (expired.length > 0) await chrome.storage.local.remove(expired);
+    } catch {}
+  }
   var tabContexts = /* @__PURE__ */ new Map();
   var STORAGE_KEY = 'extensionConfig';
   var URLS_STORAGE_KEY = 'extensionCustomUrls';
@@ -474,6 +520,11 @@ var __morbis_bg = (() => {
         (async () => {
           try {
             const { text } = validated;
+            const cached = await ttsCacheGet(text);
+            if (cached) {
+              sendResponse({ ok: true, mime: cached.mime, data: cached.data });
+              return;
+            }
             const fetchTts = async (url, timeoutMs = 5e3) => {
               const res = await fetch(url, {
                 mode: 'cors',
@@ -487,20 +538,18 @@ var __morbis_bg = (() => {
                 data: Array.from(new Uint8Array(buf)),
               };
             };
+            let r;
             try {
-              const r = await fetchTts(
-                'http://127.0.0.1:8765/tts?text=' + encodeURIComponent(text),
-                3e3,
-              );
-              sendResponse({ ok: true, mime: r.mime, data: r.data });
+              r = await fetchTts('http://127.0.0.1:8765/tts?text=' + encodeURIComponent(text), 3e3);
             } catch {
               const url =
                 'https://morbis-antrian-relay.testingbae66.workers.dev/?text=' +
                 encodeURIComponent(text) +
                 '&lang=id';
-              const r = await fetchTts(url);
-              sendResponse({ ok: true, mime: r.mime, data: r.data });
+              r = await fetchTts(url);
             }
+            void ttsCacheSet(text, r.mime, r.data);
+            sendResponse({ ok: true, mime: r.mime, data: r.data });
           } catch (e) {
             sendResponse({ ok: false, reason: 'worker-fetch ' + String(e).slice(0, 60) });
           }
@@ -545,6 +594,7 @@ var __morbis_bg = (() => {
     }
     if (alarm.name === 'morbis-state-sync') {
       syncStateToSession().catch(function () {});
+      ttsCacheSweep().catch(function () {});
     }
   });
   async function syncStateToSession() {

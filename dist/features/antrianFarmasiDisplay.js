@@ -200,7 +200,7 @@ var __morbis_feature = (() => {
       return __extPlay.call(this);
     };
     const POLL_LADDER_MS = [500, 1500, 3e3, 6e3];
-    const GAP_MS = 100;
+    const GAP_MS = 0;
     const CARD_MS = 350;
     let statusBadge = null;
     let controlsHost = null;
@@ -1145,7 +1145,7 @@ var __morbis_feature = (() => {
         const now = bellCtx.currentTime;
         const notes = [
           [1318.5, now],
-          [1760, now + 0.2],
+          [1760, now + 0.14],
         ];
         for (const [freq, t0] of notes) {
           const osc = bellCtx.createOscillator();
@@ -1154,13 +1154,13 @@ var __morbis_feature = (() => {
           osc.frequency.setValueAtTime(freq, t0);
           g.gain.setValueAtTime(1e-4, t0);
           g.gain.exponentialRampToValueAtTime(0.45, t0 + 0.02);
-          g.gain.exponentialRampToValueAtTime(1e-4, t0 + 0.22);
+          g.gain.exponentialRampToValueAtTime(1e-4, t0 + 0.16);
           osc.connect(g);
           g.connect(bellCtx.destination);
           osc.start(t0);
-          osc.stop(t0 + 0.24);
+          osc.stop(t0 + 0.18);
         }
-        const totalMs = 200 + 220 + 60;
+        const totalMs = 140 + 180 + 30;
         setTimeout(onDone, totalMs);
       } catch {
         onDone();
@@ -1490,6 +1490,7 @@ var __morbis_feature = (() => {
       }
       patchListContentAntrian();
       voiceEnabled = true;
+      ensureVoices().catch(() => {});
       health = { ...health, nativeSig: domSignal() };
       if (watchTimer === null) {
         watchTimer = setInterval(watch, WATCH_MS);

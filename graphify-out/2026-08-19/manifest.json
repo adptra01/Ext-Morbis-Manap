@@ -130,8 +130,8 @@
     "semantic_hash": ""
   },
   "src/background.ts": {
-    "mtime": 1787072702.6150963,
-    "ast_hash": "4dee691d1f252c9207d8b8ee7bf5a428",
+    "mtime": 1787070198.9963632,
+    "ast_hash": "ae1b7608fb54296d6e3136d26cf069fc",
     "semantic_hash": ""
   },
   "src/core.ts": {
@@ -710,8 +710,8 @@
     "semantic_hash": ""
   },
   "src/features/antrianFarmasiDisplay.ts": {
-    "mtime": 1787072624.5315418,
-    "ast_hash": "c46dd0c6f02851eff5a0f28992746263",
+    "mtime": 1787070244.3643649,
+    "ast_hash": "b516b4ed432e8f311e85c3a23ed9575d",
     "semantic_hash": ""
   },
   "src/features/shared/queueRule.ts": {

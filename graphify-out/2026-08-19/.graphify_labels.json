@@ -160,12 +160,5 @@
   "158": "antrianLoader.ts",
   "159": "9. Key Constraints & Insights",
   "160": "probe-latency.mjs",
-  "161": "scrollButtons.ts",
-  "162": "farmasiRecallDeleg.ts",
-  "163": "resumeTab/types.ts",
-  "164": "ErrorBoundary",
-  "165": "ConsultationInfoPanel.tsx",
-  "166": "tryInject",
-  "167": "VitalSignsSection.tsx",
-  "168": "autoprefixer"
+  "162": "farmasiRecallDeleg.ts"
 }
