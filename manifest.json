@@ -268,7 +268,7 @@
     }
   ],
   "permissions": ["activeTab", "alarms", "offscreen", "scripting", "sidePanel", "storage"],
-  "host_permissions": ["http://*/*"],
+  "host_permissions": ["http://*/*", "https://morbis-antrian-relay.testingbae66.workers.dev/*"],
   "web_accessible_resources": [
     {
       "resources": ["ui/shadow.css", "features/antrianTools.js", "features/farmasiRecallDeleg.js"],

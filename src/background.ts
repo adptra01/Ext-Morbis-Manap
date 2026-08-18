@@ -486,26 +486,40 @@ chrome.runtime.onMessage.addListener(
         // http://*/* sehingga fetch ke 127.0.0.1:8765 TIDAK kena PNA/CORS halaman
         // (halaman display http://103.x ke localhost diblokir Chrome PNA).
         // HANYA network fetch — audio.play() tetap di content script.
+        // Fallback (tanpa Python di komputer farmasi): Google TTS via Cloudflare
+        // Worker proxy. Worker fetch server-side dgn Referer translate.google.com
+        // (browser TIDAK bisa set Referer = forbidden header) → 200 audio/mpeg.
+        // Proxy balas ACAO:* + host_permissions di bawah → fetch SW bebas CORS.
         (async () => {
           try {
             const { text } = validated as unknown as { text: string };
-            const res = await fetch('http://127.0.0.1:8765/tts?text=' + encodeURIComponent(text), {
-              mode: 'cors',
-            });
-            if (!res.ok) {
-              sendResponse({ ok: false, reason: 'worker-http ' + res.status });
-              return;
+            const fetchTts = async (
+              url: string,
+            ): Promise<{ mime: string; data: Array<number> }> => {
+              const res = await fetch(url, { mode: 'cors' });
+              if (!res.ok) throw new Error('http ' + res.status);
+              const buf = await res.arrayBuffer();
+              if (!buf || buf.byteLength === 0) throw new Error('empty');
+              return {
+                mime: res.headers.get('content-type') || 'audio/mpeg',
+                data: Array.from(new Uint8Array(buf)),
+              };
+            };
+            try {
+              // Layer 0: service Python lokal (kalau ada).
+              const r = await fetchTts(
+                'http://127.0.0.1:8765/tts?text=' + encodeURIComponent(text),
+              );
+              sendResponse({ ok: true, mime: r.mime, data: r.data });
+            } catch {
+              // Layer 0b: Cloudflare Worker proxy (tanpa Python di PC farmasi).
+              const url =
+                'https://morbis-antrian-relay.testingbae66.workers.dev/?text=' +
+                encodeURIComponent(text) +
+                '&lang=id';
+              const r = await fetchTts(url);
+              sendResponse({ ok: true, mime: r.mime, data: r.data });
             }
-            const buf = await res.arrayBuffer();
-            if (!buf || buf.byteLength === 0) {
-              sendResponse({ ok: false, reason: 'worker-empty' });
-              return;
-            }
-            sendResponse({
-              ok: true,
-              mime: res.headers.get('content-type') || 'audio/mpeg',
-              data: Array.from(new Uint8Array(buf)),
-            });
           } catch (e) {
             sendResponse({ ok: false, reason: 'worker-fetch ' + String(e).slice(0, 60) });
           }
