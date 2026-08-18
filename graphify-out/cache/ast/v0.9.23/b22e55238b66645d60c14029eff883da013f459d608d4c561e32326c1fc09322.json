@@ -1,0 +1,367 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_md",
+      "label": "resume-validator.md",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_resume_validator",
+      "label": "Resume Validator",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_gambaran_fitur_dan_tujuan",
+      "label": "Gambaran Fitur dan Tujuan",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L3"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_masalah_yang_diselesaikan",
+      "label": "Masalah yang Diselesaikan",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_detail_implementasi_teknis",
+      "label": "Detail Implementasi Teknis",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L17"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_arsitektur_pertahanan_submit_4_lapis",
+      "label": "Arsitektur Pertahanan Submit (4 Lapis)",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L29"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_flow_save_terpadu_attachsavehandler",
+      "label": "Flow Save Terpadu (`attachSaveHandler`)",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L38"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_panduan_penggunaan",
+      "label": "Panduan Penggunaan",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L51"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_mode_tambah_data_baru",
+      "label": "Mode Tambah (Data Baru)",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L53"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_mode_edit_data_sudah_ada",
+      "label": "Mode Edit (Data Sudah Ada)",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L62"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_autosave_draft",
+      "label": "Autosave Draft",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L70"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_aturan_validasi",
+      "label": "Aturan Validasi",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L76"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_field_wajib",
+      "label": "Field Wajib",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L78"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_format_icd",
+      "label": "Format ICD",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L82"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_vital_sign",
+      "label": "Vital Sign",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L89"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_kondisional",
+      "label": "Kondisional",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L102"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_autocomplete_guard",
+      "label": "Autocomplete Guard",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L111"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_field_yang_dikecualikan",
+      "label": "Field yang Dikecualikan",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L115"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_optimasi_input",
+      "label": "Optimasi Input",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L119"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_fitur_icd",
+      "label": "Fitur ICD",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L127"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_file_terkait",
+      "label": "File Terkait",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L133"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_konfigurasi",
+      "label": "Konfigurasi",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L143"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_keterbatasan",
+      "label": "Keterbatasan",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L156"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_resume_validator",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_resume_validator",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_gambaran_fitur_dan_tujuan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_resume_validator",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_masalah_yang_diselesaikan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_resume_validator",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_detail_implementasi_teknis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_detail_implementasi_teknis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_arsitektur_pertahanan_submit_4_lapis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_detail_implementasi_teknis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_flow_save_terpadu_attachsavehandler",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_resume_validator",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_panduan_penggunaan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L51",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_panduan_penggunaan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_mode_tambah_data_baru",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L53",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_panduan_penggunaan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_mode_edit_data_sudah_ada",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L62",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_panduan_penggunaan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_autosave_draft",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L70",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_resume_validator",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_aturan_validasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L76",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_aturan_validasi",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_field_wajib",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L78",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_aturan_validasi",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_format_icd",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L82",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_aturan_validasi",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_vital_sign",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L89",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_aturan_validasi",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_kondisional",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L102",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_aturan_validasi",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_autocomplete_guard",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L111",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_aturan_validasi",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_field_yang_dikecualikan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L115",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_resume_validator",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_optimasi_input",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L119",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_resume_validator",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_fitur_icd",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L127",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_resume_validator",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_file_terkait",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L133",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_resume_validator",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_konfigurasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L143",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_resume_validator",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_resume_validator_keterbatasan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/resume-validator.md",
+      "source_location": "L156",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -177,7 +177,7 @@ declare global {
     window.setInterval(mount, 300);
     mount();
   }
-  function setStatus(state: 'loading' | 'ok' | 'error'): void {
+  function setStatus(state: 'loading' | 'slow' | 'ok' | 'error'): void {
     ensureStatusBadge();
     if (!statusBadge) return;
     statusBadge.setAttribute('data-state', state);
@@ -186,6 +186,13 @@ declare global {
     if (state === 'loading') {
       statusBadge.style.background = '#d97706';
       statusBadge.innerHTML = dot + 'MEMPERBARUI…';
+    } else if (state === 'slow') {
+      // Indikator jaringan lambat: fetch >1s (server MORBIS lemot, bukan
+      // ekstensi macet). Operator tetap dapat feedback visual bahwa ekstensi
+      // bekerja — mengurangi salah-salah menyalahkan ekstensi saat klik
+      // "Selanjutnya" terasa lama.
+      statusBadge.style.background = '#b45309';
+      statusBadge.innerHTML = dot + 'MEMPERBARUI (JARINGAN LAMBAT)…';
     } else if (state === 'ok') {
       statusBadge.style.background = '#0f5132';
       statusBadge.innerHTML =
@@ -712,8 +719,11 @@ declare global {
 
   // Refresh angka card + highlight secara tetap & cepat. Fetch ?section=isi
   // (current number) + data_call (nama), update currentByJenis/lastRows, render.
-  // Di-ranse interval mandiri (CARD_MS) — tak bertabrakan dgn health/poll.
+  // Di-ranse via recursive setTimeout (bukan setInterval): tick berikutnya
+  // dijadwalkan SETELAH fetch selesai (di finally), jadi bila server lambat
+  // (>CARD_MS per fetch) request tidak menumpuk/overlap — server-friendly.
   async function refreshCardNumber(): Promise<void> {
+    const tickT0 = Date.now(); // untuk indikator jaringan lambat (fetch >1s)
     setStatus('loading');
     processLocalRecall(); // recall lokal diproses duluan, tak peduli fetch gagal/tidak
     try {
@@ -863,6 +873,17 @@ declare global {
     } catch {
       setStatus('error');
       /* poll gagal — diam, kartu biarkan apa adanya */
+    } finally {
+      // Jaringan lambat: seluruh tick (fetch + proses) >1s → badge 'slow'.
+      // Error tetap 'error' (tidak ditimpa). Tick berikutnya (setStatus
+      // 'loading' di atas) mengganti kembali ke state normal.
+      if (Date.now() - tickT0 > 1000) {
+        const cur = statusBadge?.getAttribute('data-state');
+        if (cur !== 'error') setStatus('slow');
+      }
+      // Recursive timeout: tunggu fetch selesai + jeda CARD_MS, baru tick
+      // berikutnya. Kalau server lambat, tick bergeser (tidak menumpuk).
+      cardTimer = window.setTimeout(() => void refreshCardNumber(), CARD_MS);
     }
   }
 
@@ -1699,7 +1720,7 @@ declare global {
   let started = false; // idempotency: cegah watcher/listener/polling ganda
   let watchTimer: ReturnType<typeof setInterval> | null = null;
   let pollTimer: number | null = null;
-  let cardTimer: ReturnType<typeof setInterval> | null = null;
+  let cardTimer: ReturnType<typeof setTimeout> | null = null;
   const healthCfg = { staleMax: STALE_MAX };
   // State mesin; nativeActive awal true → percaya WS hidup, jangan polling.
   let health: HealthState = { nativeActive: true, staleStreak: 0, nativeSig: '', ourSig: '' };
@@ -2015,9 +2036,9 @@ declare global {
       watchTimer = setInterval(watch, WATCH_MS);
     }
     if (cardTimer === null) {
-      // segarkan angka card + highlight cepat (~1s) biar responsif setelah Selanjutnya
-      cardTimer = setInterval(() => void refreshCardNumber(), CARD_MS);
-      void refreshCardNumber(); // render pertama segera
+      // recursive setTimeout (lihat finally di refreshCardNumber): panggil
+      // sekali → tick berikutnya dijadwalkan sendiri setelah fetch selesai.
+      void refreshCardNumber();
     }
   }
 

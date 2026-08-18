@@ -1,0 +1,79 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_verify_phase1_3b_md",
+      "label": "VERIFY-PHASE1-3B.md",
+      "file_type": "document",
+      "source_file": ".ai/docs/VERIFY-PHASE1-3B.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_verify_phase1_3b_verifikasi_end_to_end_phase_1_3b_antrian_global",
+      "label": "Verifikasi End-to-End Phase 1\u20133B (Antrian Global)",
+      "file_type": "document",
+      "source_file": ".ai/docs/VERIFY-PHASE1-3B.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_verify_phase1_3b_daftar_pencatat",
+      "label": "Daftar pencatat",
+      "file_type": "document",
+      "source_file": ".ai/docs/VERIFY-PHASE1-3B.md",
+      "source_location": "L13"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_verify_phase1_3b_kriteria_lulus",
+      "label": "Kriteria lulus",
+      "file_type": "document",
+      "source_file": ".ai/docs/VERIFY-PHASE1-3B.md",
+      "source_location": "L31"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_verify_phase1_3b_catatan_penting",
+      "label": "Catatan penting",
+      "file_type": "document",
+      "source_file": ".ai/docs/VERIFY-PHASE1-3B.md",
+      "source_location": "L50"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_verify_phase1_3b_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_verify_phase1_3b_verifikasi_end_to_end_phase_1_3b_antrian_global",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/VERIFY-PHASE1-3B.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_verify_phase1_3b_verifikasi_end_to_end_phase_1_3b_antrian_global",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_verify_phase1_3b_daftar_pencatat",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/VERIFY-PHASE1-3B.md",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_verify_phase1_3b_verifikasi_end_to_end_phase_1_3b_antrian_global",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_verify_phase1_3b_kriteria_lulus",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/VERIFY-PHASE1-3B.md",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_verify_phase1_3b_verifikasi_end_to_end_phase_1_3b_antrian_global",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_verify_phase1_3b_catatan_penting",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/VERIFY-PHASE1-3B.md",
+      "source_location": "L50",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -1,0 +1,351 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_md",
+      "label": "feature-rules.md",
+      "file_type": "document",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_feature_rules",
+      "label": "Feature Rules",
+      "file_type": "document",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_a_developer_rules",
+      "label": "A. Developer Rules",
+      "file_type": "document",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_1_wajib_registrasi_via_g_featuremodules",
+      "label": "Rule 1 \u2014 Wajib registrasi via `g.featureModules`",
+      "file_type": "document",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L9"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_2_wajib_punya_id_match_run",
+      "label": "Rule 2 \u2014 Wajib punya `id`, `match`, `run`",
+      "file_type": "document",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L17"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_3_dilarang_url_gating_di_dalam_run",
+      "label": "Rule 3 \u2014 Dilarang URL gating di dalam `run()`",
+      "file_type": "document",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L29"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_4_gunakan_field_match_yang_tepat",
+      "label": "Rule 4 \u2014 Gunakan Field `match` yang Tepat",
+      "file_type": "document",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L47"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_5_feature_hanya_baca_dom_setelah_lolos_matchpage",
+      "label": "Rule 5 \u2014 Feature hanya baca DOM setelah lolos `matchPage()`",
+      "file_type": "document",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L58"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_6_utility_tidak_boleh_bergantung_pada_location_pathname",
+      "label": "Rule 6 \u2014 Utility tidak boleh bergantung pada `location.pathname`",
+      "file_type": "document",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L62"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_7_feature_baru_harus_lolos",
+      "label": "Rule 7 \u2014 Feature baru harus lolos",
+      "file_type": "document",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L66"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_8_gunakan_enabledwhen_ctx_untuk_kondisi_di_luar_url",
+      "label": "Rule 8 \u2014 Gunakan `enabledWhen(ctx)` untuk kondisi di luar URL",
+      "file_type": "document",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L74"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_9_perbarui_regression_matrix",
+      "label": "Rule 9 \u2014 Perbarui regression matrix",
+      "file_type": "document",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L87"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_10_naming_convention",
+      "label": "Rule 10 \u2014 Naming convention",
+      "file_type": "document",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L91"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_b_ai_agent_rules",
+      "label": "B. AI Agent Rules",
+      "file_type": "document",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L99"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_a1_cari_registrasi_yang_sudah_ada",
+      "label": "Rule A1 \u2014 Cari registrasi yang sudah ada",
+      "file_type": "document",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L101"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_a2_jangan_buat_url_gate_di_dalam_run",
+      "label": "Rule A2 \u2014 Jangan buat URL gate di dalam `run()`",
+      "file_type": "document",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L105"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_a3_jangan_akses_location_window_location_langsung",
+      "label": "Rule A3 \u2014 Jangan akses `location`/`window.location` langsung",
+      "file_type": "document",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L109"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_a4_jangan_ubah_matchpage_tanpa_update_audit",
+      "label": "Rule A4 \u2014 Jangan ubah `matchPage()` tanpa update audit",
+      "file_type": "document",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L113"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_a5_jalankan_audit_sebelum_selesai",
+      "label": "Rule A5 \u2014 Jalankan audit sebelum selesai",
+      "file_type": "document",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L117"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_a6_featurematch_fields_punya_urutan_evaluasi",
+      "label": "Rule A6 \u2014 FeatureMatch fields punya urutan evaluasi",
+      "file_type": "document",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L125"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_a7_oneof_boleh_nested",
+      "label": "Rule A7 \u2014 `oneOf` boleh nested",
+      "file_type": "document",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L129"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_a8_exclude_hanya_untuk_filtering_bukan_positive_match",
+      "label": "Rule A8 \u2014 `exclude` hanya untuk filtering, bukan positive match",
+      "file_type": "document",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L133"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_feature_rules",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_feature_rules",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_a_developer_rules",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_a_developer_rules",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_1_wajib_registrasi_via_g_featuremodules",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_a_developer_rules",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_2_wajib_punya_id_match_run",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_a_developer_rules",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_3_dilarang_url_gating_di_dalam_run",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_a_developer_rules",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_4_gunakan_field_match_yang_tepat",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L47",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_a_developer_rules",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_5_feature_hanya_baca_dom_setelah_lolos_matchpage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L58",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_a_developer_rules",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_6_utility_tidak_boleh_bergantung_pada_location_pathname",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L62",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_a_developer_rules",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_7_feature_baru_harus_lolos",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L66",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_a_developer_rules",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_8_gunakan_enabledwhen_ctx_untuk_kondisi_di_luar_url",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L74",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_a_developer_rules",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_9_perbarui_regression_matrix",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L87",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_a_developer_rules",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_10_naming_convention",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L91",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_feature_rules",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_b_ai_agent_rules",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L99",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_b_ai_agent_rules",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_a1_cari_registrasi_yang_sudah_ada",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L101",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_b_ai_agent_rules",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_a2_jangan_buat_url_gate_di_dalam_run",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L105",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_b_ai_agent_rules",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_a3_jangan_akses_location_window_location_langsung",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L109",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_b_ai_agent_rules",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_a4_jangan_ubah_matchpage_tanpa_update_audit",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L113",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_b_ai_agent_rules",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_a5_jalankan_audit_sebelum_selesai",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L117",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_b_ai_agent_rules",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_a6_featurematch_fields_punya_urutan_evaluasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L125",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_b_ai_agent_rules",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_a7_oneof_boleh_nested",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L129",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_b_ai_agent_rules",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_feature_rules_rule_a8_exclude_hanya_untuk_filtering_bukan_positive_match",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/feature-rules.md",
+      "source_location": "L133",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

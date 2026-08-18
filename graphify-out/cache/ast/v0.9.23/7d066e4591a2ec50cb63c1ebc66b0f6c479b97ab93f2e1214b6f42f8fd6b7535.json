@@ -1,0 +1,207 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_md",
+      "label": "extension-architecture.md",
+      "file_type": "document",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_extension_architecture",
+      "label": "Extension Architecture",
+      "file_type": "document",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_url_gating_architecture",
+      "label": "URL Gating Architecture",
+      "file_type": "document",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L3"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_lifecycle_feature",
+      "label": "Lifecycle Feature",
+      "file_type": "document",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_alur",
+      "label": "Alur",
+      "file_type": "document",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L19"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_kenapa_url_gating_dipusatkan",
+      "label": "Kenapa URL gating dipusatkan?",
+      "file_type": "document",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L31"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_featurematch_contract",
+      "label": "FeatureMatch Contract",
+      "file_type": "document",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L38"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_pipeline_evaluator",
+      "label": "Pipeline Evaluator",
+      "file_type": "document",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L51"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_featurecontext",
+      "label": "FeatureContext",
+      "file_type": "document",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L66"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_controller_features_pengecualian",
+      "label": "Controller Features \u2014 Pengecualian",
+      "file_type": "document",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L84"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_contoh_feature_yang_benar",
+      "label": "Contoh Feature Yang Benar",
+      "file_type": "document",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L92"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_contoh_feature_yang_salah",
+      "label": "Contoh Feature Yang SALAH",
+      "file_type": "document",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L103"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_files",
+      "label": "Files",
+      "file_type": "document",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L118"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_extension_architecture",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_extension_architecture",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_url_gating_architecture",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_url_gating_architecture",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_lifecycle_feature",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_url_gating_architecture",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_alur",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_url_gating_architecture",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_kenapa_url_gating_dipusatkan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_extension_architecture",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_featurematch_contract",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_featurematch_contract",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_pipeline_evaluator",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L51",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_extension_architecture",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_featurecontext",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L66",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_extension_architecture",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_controller_features_pengecualian",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L84",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_extension_architecture",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_contoh_feature_yang_benar",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L92",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_extension_architecture",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_contoh_feature_yang_salah",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L103",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_extension_architecture",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_extension_architecture_files",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/extension-architecture.md",
+      "source_location": "L118",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

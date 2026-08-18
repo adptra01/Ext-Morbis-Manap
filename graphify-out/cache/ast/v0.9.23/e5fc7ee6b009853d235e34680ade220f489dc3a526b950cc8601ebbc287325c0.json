@@ -1,0 +1,111 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_sop_farmasi_md",
+      "label": "SOP-farmasi.md",
+      "file_type": "document",
+      "source_file": "docs/SOP-farmasi.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_sop_farmasi_sop_farmasi_alur_kerja_petugas_ekstensi_morbis",
+      "label": "SOP Farmasi \u2014 Alur Kerja Petugas (Ekstensi MORBIS)",
+      "file_type": "document",
+      "source_file": "docs/SOP-farmasi.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_sop_farmasi_tahap_1_menerima_pasien_menerbitkan_nomor",
+      "label": "TAHAP 1 \u2014 Menerima Pasien & Menerbitkan Nomor",
+      "file_type": "document",
+      "source_file": "docs/SOP-farmasi.md",
+      "source_location": "L14"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_sop_farmasi_tahap_2_memanggil_pasien_saat_obat_siap",
+      "label": "TAHAP 2 \u2014 Memanggil Pasien (Saat Obat Siap)",
+      "file_type": "document",
+      "source_file": "docs/SOP-farmasi.md",
+      "source_location": "L36"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_sop_farmasi_tahap_3_tampilan_tv_suara_berjalan_otomatis",
+      "label": "TAHAP 3 \u2014 Tampilan TV & Suara (Berjalan Otomatis)",
+      "file_type": "document",
+      "source_file": "docs/SOP-farmasi.md",
+      "source_location": "L57"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_sop_farmasi_ringkasan_garansi_sistem",
+      "label": "Ringkasan Garansi Sistem",
+      "file_type": "document",
+      "source_file": "docs/SOP-farmasi.md",
+      "source_location": "L73"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_sop_farmasi_referensi_teknis",
+      "label": "Referensi Teknis",
+      "file_type": "document",
+      "source_file": "docs/SOP-farmasi.md",
+      "source_location": "L85"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_sop_farmasi_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_sop_farmasi_sop_farmasi_alur_kerja_petugas_ekstensi_morbis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/SOP-farmasi.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_sop_farmasi_sop_farmasi_alur_kerja_petugas_ekstensi_morbis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_sop_farmasi_tahap_1_menerima_pasien_menerbitkan_nomor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/SOP-farmasi.md",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_sop_farmasi_sop_farmasi_alur_kerja_petugas_ekstensi_morbis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_sop_farmasi_tahap_2_memanggil_pasien_saat_obat_siap",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/SOP-farmasi.md",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_sop_farmasi_sop_farmasi_alur_kerja_petugas_ekstensi_morbis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_sop_farmasi_tahap_3_tampilan_tv_suara_berjalan_otomatis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/SOP-farmasi.md",
+      "source_location": "L57",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_sop_farmasi_sop_farmasi_alur_kerja_petugas_ekstensi_morbis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_sop_farmasi_ringkasan_garansi_sistem",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/SOP-farmasi.md",
+      "source_location": "L73",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_sop_farmasi_sop_farmasi_alur_kerja_petugas_ekstensi_morbis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_sop_farmasi_referensi_teknis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/SOP-farmasi.md",
+      "source_location": "L85",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

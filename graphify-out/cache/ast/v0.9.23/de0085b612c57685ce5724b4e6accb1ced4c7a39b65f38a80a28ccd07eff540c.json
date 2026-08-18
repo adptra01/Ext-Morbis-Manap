@@ -1,0 +1,143 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_md",
+      "label": "farmasi-display-recall.md",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/farmasi-display-recall.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_farmasi_display_panggilan_suara_recall_panel_terakhir",
+      "label": "Farmasi Display: Panggilan Suara + Recall + Panel Terakhir",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/farmasi-display-recall.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_yang_dikerjakan",
+      "label": "Yang dikerjakan",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/farmasi-display-recall.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_arsitektur_2_pc_lapangan",
+      "label": "Arsitektur 2 PC (lapangan)",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/farmasi-display-recall.md",
+      "source_location": "L31"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_endpoint_yang_dipakai_session_login",
+      "label": "Endpoint yang dipakai (session login)",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/farmasi-display-recall.md",
+      "source_location": "L41"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_verifikasi",
+      "label": "Verifikasi",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/farmasi-display-recall.md",
+      "source_location": "L50"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_catatan_lapangan",
+      "label": "Catatan lapangan",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/farmasi-display-recall.md",
+      "source_location": "L62"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_temuan_2026_08_14_penomoran_display_vs_kertas_cetak",
+      "label": "Temuan 2026-08-14 \u2014 penomoran display vs kertas cetak",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/farmasi-display-recall.md",
+      "source_location": "L71"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_temuan_2026_08_14_display_1_antrian_vs_penerimaan_2_resep",
+      "label": "Temuan 2026-08-14 \u2014 display 1 antrian vs penerimaan 2 resep",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/farmasi-display-recall.md",
+      "source_location": "L96"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_farmasi_display_panggilan_suara_recall_panel_terakhir",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/farmasi-display-recall.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_farmasi_display_panggilan_suara_recall_panel_terakhir",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_yang_dikerjakan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/farmasi-display-recall.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_farmasi_display_panggilan_suara_recall_panel_terakhir",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_arsitektur_2_pc_lapangan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/farmasi-display-recall.md",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_farmasi_display_panggilan_suara_recall_panel_terakhir",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_endpoint_yang_dipakai_session_login",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/farmasi-display-recall.md",
+      "source_location": "L41",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_farmasi_display_panggilan_suara_recall_panel_terakhir",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_verifikasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/farmasi-display-recall.md",
+      "source_location": "L50",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_farmasi_display_panggilan_suara_recall_panel_terakhir",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_catatan_lapangan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/farmasi-display-recall.md",
+      "source_location": "L62",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_farmasi_display_panggilan_suara_recall_panel_terakhir",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_temuan_2026_08_14_penomoran_display_vs_kertas_cetak",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/farmasi-display-recall.md",
+      "source_location": "L71",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_farmasi_display_panggilan_suara_recall_panel_terakhir",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_farmasi_display_recall_temuan_2026_08_14_display_1_antrian_vs_penerimaan_2_resep",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/farmasi-display-recall.md",
+      "source_location": "L96",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

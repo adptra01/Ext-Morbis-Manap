@@ -1,0 +1,527 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_md",
+      "label": "batchUploadUrl.md",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_upload_dokumen_ulang",
+      "label": "Upload Dokumen Ulang",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_gambaran_fitur",
+      "label": "Gambaran Fitur",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L3"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_masalah_yang_diatasi",
+      "label": "Masalah yang Diatasi",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_cara_kerja_teknis",
+      "label": "Cara Kerja Teknis",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L15"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_1_deteksi_dan_parsing_url",
+      "label": "1. Deteksi dan Parsing URL",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L17"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_2_mekanisme_download_file",
+      "label": "2. Mekanisme Download File",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L26"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_3_proses_upload_berantai",
+      "label": "3. Proses Upload Berantai",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L33"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_4_error_handling_dan_recovery",
+      "label": "4. Error Handling dan Recovery",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L44"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_langkah_penggunaan",
+      "label": "Langkah Penggunaan",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L51"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_1_akses_fitur",
+      "label": "1. Akses Fitur",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L53"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_2_input_url_dokumen",
+      "label": "2. Input URL Dokumen",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L59"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_3_analisis_dan_preview",
+      "label": "3. Analisis dan Preview",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L70"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_4_mulai_upload_batch",
+      "label": "4. Mulai Upload Batch",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L80"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_5_monitoring_dan_hasil_akhir",
+      "label": "5. Monitoring dan Hasil Akhir",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L90"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_konfigurasi_dan_opsi",
+      "label": "Konfigurasi dan Opsi",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L97"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_aktivasi_fitur",
+      "label": "Aktivasi Fitur",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L99"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_batasan_teknis",
+      "label": "Batasan Teknis",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L105"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_error_dan_troubleshooting",
+      "label": "Error dan Troubleshooting",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L112"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_error_umum_dan_solusi",
+      "label": "Error Umum dan Solusi",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L114"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_log_dan_debug",
+      "label": "Log dan Debug",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L124"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_modifikasi_dom",
+      "label": "Modifikasi DOM",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L130"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_elemen_yang_ditambahkan",
+      "label": "Elemen yang Ditambahkan",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L132"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_css_yang_diinjeksi",
+      "label": "CSS yang Diinjeksi",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L141"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_keamanan_dan_privasi",
+      "label": "Keamanan dan Privasi",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L148"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_data_handling",
+      "label": "Data Handling",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L150"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_permissions",
+      "label": "Permissions",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L157"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_pengembangan_dan_testing",
+      "label": "Pengembangan dan Testing",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L163"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_file_yang_terlibat",
+      "label": "File yang Terlibat",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L165"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_testing_checklist",
+      "label": "Testing Checklist",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L172"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_future_enhancements",
+      "label": "Future Enhancements",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L181"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_potensi_pengembangan",
+      "label": "Potensi Pengembangan",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L183"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_kompatibilitas_browser",
+      "label": "Kompatibilitas Browser",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L191"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_upload_dokumen_ulang",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_upload_dokumen_ulang",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_gambaran_fitur",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_upload_dokumen_ulang",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_masalah_yang_diatasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_upload_dokumen_ulang",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_cara_kerja_teknis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_cara_kerja_teknis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_1_deteksi_dan_parsing_url",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_cara_kerja_teknis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_2_mekanisme_download_file",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_cara_kerja_teknis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_3_proses_upload_berantai",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L33",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_cara_kerja_teknis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_4_error_handling_dan_recovery",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L44",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_upload_dokumen_ulang",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_langkah_penggunaan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L51",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_langkah_penggunaan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_1_akses_fitur",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L53",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_langkah_penggunaan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_2_input_url_dokumen",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L59",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_langkah_penggunaan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_3_analisis_dan_preview",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L70",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_langkah_penggunaan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_4_mulai_upload_batch",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L80",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_langkah_penggunaan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_5_monitoring_dan_hasil_akhir",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L90",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_upload_dokumen_ulang",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_konfigurasi_dan_opsi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L97",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_konfigurasi_dan_opsi",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_aktivasi_fitur",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L99",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_konfigurasi_dan_opsi",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_batasan_teknis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L105",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_upload_dokumen_ulang",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_error_dan_troubleshooting",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L112",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_error_dan_troubleshooting",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_error_umum_dan_solusi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L114",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_error_dan_troubleshooting",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_log_dan_debug",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L124",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_upload_dokumen_ulang",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_modifikasi_dom",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L130",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_modifikasi_dom",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_elemen_yang_ditambahkan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L132",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_modifikasi_dom",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_css_yang_diinjeksi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L141",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_upload_dokumen_ulang",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_keamanan_dan_privasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L148",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_keamanan_dan_privasi",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_data_handling",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L150",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_keamanan_dan_privasi",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_permissions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L157",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_upload_dokumen_ulang",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_pengembangan_dan_testing",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L163",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_pengembangan_dan_testing",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_file_yang_terlibat",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L165",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_pengembangan_dan_testing",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_testing_checklist",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L172",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_upload_dokumen_ulang",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_future_enhancements",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L181",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_future_enhancements",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_potensi_pengembangan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L183",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_future_enhancements",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batchuploadurl_kompatibilitas_browser",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batchUploadUrl.md",
+      "source_location": "L191",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -78,7 +78,7 @@
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/deploy/updates.json": {
     "size": 228,
-    "mtime_ns": 1786472057064452100,
+    "mtime_ns": 1787031403098016800,
     "word_count": 17,
     "hashes": {
       "deploy/updates.json": "dedda93fe9cb6c2d0846b4fed905b184025bdb419893f9bfd10c343a125d0223"
@@ -343,11 +343,11 @@
     "word_count": 227
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/manifest.json": {
-    "size": 7190,
-    "mtime_ns": 1786457662087024600,
-    "word_count": 408,
+    "size": 8418,
+    "mtime_ns": 1787039804242756300,
+    "word_count": 475,
     "hashes": {
-      "manifest.json": "96cdd5b1fdcc7ac8224cd858740f4e5ad5a36919fa55c9179d1a1cf8c9ad9d75"
+      "manifest.json": "48684be3a7d891df25c5035c85c6b35cfeeef957dd8c429d3145e06e830a32a1"
     }
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/mcp-servers/morbis-devtools/README.md": {
@@ -372,10 +372,10 @@
     }
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/package.json": {
-    "size": 2272,
-    "mtime_ns": 1786334597679607900,
+    "size": 2271,
+    "mtime_ns": 1787039767297293300,
     "word_count": 187,
-    "hashes": { "package.json": "05ff5346610252b08101dd6b616232c57c0c4459db084af19b727460c14b5b27" }
+    "hashes": { "package.json": "7dd729cba57f968dfe7f722a2b98f60a2879918b3ec93400e25d8254104eb5c2" }
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/popup.js": {
     "size": 12518,
@@ -406,9 +406,9 @@
     "word_count": 162
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/scripts/build.mjs": {
-    "size": 7699,
-    "mtime_ns": 1786457740549503200,
-    "word_count": 718
+    "size": 7866,
+    "mtime_ns": 1787039767298545700,
+    "word_count": 724
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/scripts/deploy.mjs": {
     "size": 1029,
@@ -449,9 +449,9 @@
     }
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/background.ts": {
-    "size": 19035,
-    "mtime_ns": 1786466406128149700,
-    "word_count": 1926
+    "size": 20332,
+    "mtime_ns": 1786690594692356700,
+    "word_count": 2064
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/core.ts": {
     "size": 4455,
@@ -459,9 +459,9 @@
     "word_count": 474
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/antrianTools.ts": {
-    "size": 47719,
-    "mtime_ns": 1786455493396047900,
-    "word_count": 3864
+    "size": 48762,
+    "mtime_ns": 1786555525955752900,
+    "word_count": 3940
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/batchDeleteFiles.ts": {
     "size": 29540,
@@ -759,9 +759,9 @@
     "word_count": 655
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/init.ts": {
-    "size": 8976,
-    "mtime_ns": 1786459881840425200,
-    "word_count": 706
+    "size": 10148,
+    "mtime_ns": 1786525889767555500,
+    "word_count": 811
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/popup/App.tsx": {
     "size": 8381,
@@ -799,9 +799,9 @@
     "word_count": 39
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/shared/messaging.ts": {
-    "size": 4114,
-    "mtime_ns": 1786334597896966200,
-    "word_count": 470
+    "size": 4573,
+    "mtime_ns": 1786683981820934700,
+    "word_count": 533
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/shared/storage.ts": {
     "size": 932,
@@ -893,13 +893,13 @@
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/AGENTS.md": {
     "size": 1130,
-    "mtime_ns": 1786334597154448400,
+    "mtime_ns": 1786642644108230100,
     "word_count": 165,
     "hashes": { "agents.md": "b9cd8436064e2299d7759df1d4eb94f1fc9dde50ac59ad477b8fd50ac48955ad" }
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/VERIFY-PHASE1-3B.md": {
     "size": 2921,
-    "mtime_ns": 1786334597158386300,
+    "mtime_ns": 1786717740890705400,
     "word_count": 430,
     "hashes": {
       "verify-phase1-3b.md": "02f8943d87d1e52a2e76b43d29a866d1af1abfcc5230096d41736d9e862f8f46"
@@ -915,7 +915,7 @@
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/pack/package.json": {
     "size": 458,
-    "mtime_ns": 1786472055818198000,
+    "mtime_ns": 1787031402040180000,
     "word_count": 42,
     "hashes": {
       "pack/package.json": "9964f80642813d3f8db98a41bc50f0cb2b85bf6b05c7c1d10d315ced0fb13573"
@@ -960,9 +960,9 @@
     }
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/antrianLoader.ts": {
-    "size": 2746,
-    "mtime_ns": 1786455493396632100,
-    "word_count": 220
+    "size": 5386,
+    "mtime_ns": 1786556693480824100,
+    "word_count": 582
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/antrianFarmasi.ts": {
     "size": 5142,
@@ -970,9 +970,9 @@
     "word_count": 612
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/antrianFarmasiDisplay.ts": {
-    "size": 26936,
-    "mtime_ns": 1786505169330384300,
-    "word_count": 3231
+    "size": 91997,
+    "mtime_ns": 1787040628118309500,
+    "word_count": 10865
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/shared/queueRule.ts": {
     "size": 1926,
@@ -993,8 +993,278 @@
     }
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/shared/currentNumber.ts": {
-    "size": 1460,
-    "mtime_ns": 1786505046813033600,
-    "word_count": 192
+    "size": 5931,
+    "mtime_ns": 1787039767307207800,
+    "word_count": 764
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/AUDIT_DELIVERY_SUMMARY.md": {
+    "size": 11338,
+    "mtime_ns": 1786334597262650600,
+    "word_count": 1451,
+    "hashes": {
+      ".ai/docs/audit_delivery_summary.md": "8f6f3f9d5f501fd7e394de239060bb953f13148470662b45adeaead01be21f7a"
+    }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/AUDIT_MANIFEST.txt": {
+    "size": 18438,
+    "mtime_ns": 1786334597264796900,
+    "word_count": 1796
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/AUDIT_MIGRATION_VS_DEV.md": {
+    "size": 27635,
+    "mtime_ns": 1786334597267361500,
+    "word_count": 3478,
+    "hashes": {
+      ".ai/docs/audit_migration_vs_dev.md": "7bb2d9592eeaf439d0776ad796f6b3a20295d37b5219e165af6c90f35e08ff36"
+    }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/AUDIT_QUICK_REFERENCE.txt": {
+    "size": 22148,
+    "mtime_ns": 1786334597270785300,
+    "word_count": 1127
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/AUDIT_README.md": {
+    "size": 10595,
+    "mtime_ns": 1786334597272756200,
+    "word_count": 1458,
+    "hashes": {
+      ".ai/docs/audit_readme.md": "e03f96d99df89721fe203bcc5f6365da6d2cd2cb66437e7efc8818da60015634"
+    }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/MCP_ARCHITECTURE.md": {
+    "size": 53783,
+    "mtime_ns": 1786760922702864700,
+    "word_count": 5989,
+    "hashes": {
+      ".ai/docs/mcp_architecture.md": "05ea63d6e254187b1adfb5c62c83b45aeeddfb7b904041dfe53ea5c6a113c1bf"
+    }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/README.md": {
+    "size": 14887,
+    "mtime_ns": 1786760922801801000,
+    "word_count": 1881,
+    "hashes": {
+      ".ai/docs/readme.md": "43c68570b39229c42400a5f58217a6ae91cd4f6f340f6a20cd468ea9e68d352b"
+    }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/UI_MODERNIZATION_ANALYSIS.md": {
+    "size": 50643,
+    "mtime_ns": 1786334597283250100,
+    "word_count": 5819,
+    "hashes": {
+      ".ai/docs/ui_modernization_analysis.md": "865f6df08b9c02b0ec22cf8b456e98cb807efc444f6b6697af3fbefe882157ca"
+    }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/VERIFY-PHASE1-3B.md": {
+    "size": 2921,
+    "mtime_ns": 1786589452938259300,
+    "word_count": 430,
+    "hashes": {
+      ".ai/docs/verify-phase1-3b.md": "a07ec6c6badba2c970b4bb5e6e82b424e48fb02afa7074eced64a7197db56a30"
+    }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/bugs/duplikasi-icd-diagnosis.md": {
+    "size": 5880,
+    "mtime_ns": 1786760923083076400,
+    "word_count": 685,
+    "hashes": {
+      ".ai/docs/bugs/duplikasi-icd-diagnosis.md": "7eca25061b6df08f5a86d4f60e3eb0718354dd4adc7330b79a92c71118ec615c"
+    }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/code-review-checklist.md": {
+    "size": 1526,
+    "mtime_ns": 1786334597296383100,
+    "word_count": 258,
+    "hashes": {
+      ".ai/docs/code-review-checklist.md": "5213c9874b3238168010876186cbe02485fbada0595ab1bbae5efa91cbb5d508"
+    }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/extension-architecture.md": {
+    "size": 4254,
+    "mtime_ns": 1786760923125263100,
+    "word_count": 501,
+    "hashes": {
+      ".ai/docs/extension-architecture.md": "7d066e4591a2ec50cb63c1ebc66b0f6c479b97ab93f2e1214b6f42f8fd6b7535"
+    }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/feature-rules.md": {
+    "size": 3812,
+    "mtime_ns": 1786760923149335100,
+    "word_count": 509,
+    "hashes": {
+      ".ai/docs/feature-rules.md": "33a33beb0cac54c95491ec734725b9a7983ccb69eaaecb8ba330447a71959a94"
+    }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/features/antrian-tools-redesign.md": {
+    "size": 19354,
+    "mtime_ns": 1786380955369292200,
+    "word_count": 2300,
+    "hashes": {
+      ".ai/docs/features/antrian-tools-redesign.md": "596924c850d9aa4a49c89b42fc7b670901222e3e4a60d27ae25ff03bbb9b6965"
+    }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/features/batch-refactor.md": {
+    "size": 1276,
+    "mtime_ns": 1786334597307396800,
+    "word_count": 139,
+    "hashes": {
+      ".ai/docs/features/batch-refactor.md": "4f197753ff99b68024f5bda8f26366c6f5ae6362230b5c98dd3261fc61b1f03f"
+    }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/features/batchUploadUrl.md": {
+    "size": 7517,
+    "mtime_ns": 1786334597312016800,
+    "word_count": 1045,
+    "hashes": {
+      ".ai/docs/features/batchuploadurl.md": "df9e8a507a8112b4fdcad4a26f9bef9ecafb009d97e532e06de6ff0420579fb8"
+    }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/features/farmasi-display-recall.md": {
+    "size": 5207,
+    "mtime_ns": 1786666352810411800,
+    "word_count": 650,
+    "hashes": {
+      ".ai/docs/features/farmasi-display-recall.md": "de0085b612c57685ce5724b4e6accb1ced4c7a39b65f38a80a28ccd07eff540c"
+    }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/features/filter-persistence.md": {
+    "size": 6570,
+    "mtime_ns": 1786760923405429000,
+    "word_count": 791,
+    "hashes": {
+      ".ai/docs/features/filter-persistence.md": "6680d83623d3378b516a301a9d75225c4f334a876427b1b03490169744304855"
+    }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/features/open-detail-mode.md": {
+    "size": 5994,
+    "mtime_ns": 1786760923441624800,
+    "word_count": 732,
+    "hashes": {
+      ".ai/docs/features/open-detail-mode.md": "1ec9e3f84986e1089d7ad91c8af1ea4346820ca4ddf7f0cad3dc84adb1e9aa7a"
+    }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/features/print-optimization.md": {
+    "size": 3552,
+    "mtime_ns": 1786760923481642000,
+    "word_count": 434,
+    "hashes": {
+      ".ai/docs/features/print-optimization.md": "a0f6f262a75edabe28626ab61ddd33df817ae813f496b6b1da8e3e3de321e90a"
+    }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/features/resume-validator.md": {
+    "size": 7133,
+    "mtime_ns": 1786760923556645700,
+    "word_count": 933,
+    "hashes": {
+      ".ai/docs/features/resume-validator.md": "b22e55238b66645d60c14029eff883da013f459d608d4c561e32326c1fc09322"
+    }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/features/scroll-buttons.md": {
+    "size": 7193,
+    "mtime_ns": 1786760923612287200,
+    "word_count": 861,
+    "hashes": {
+      ".ai/docs/features/scroll-buttons.md": "33d8d570071297623655221eb9c515db09a3e87c4ac725105d01485c963b592c"
+    }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/features/shortcut-buttons.md": {
+    "size": 7049,
+    "mtime_ns": 1786760923647783300,
+    "word_count": 844,
+    "hashes": {
+      ".ai/docs/features/shortcut-buttons.md": "0010470b5199d25fdfcefff38dffd02b5cc97761f629eb656929301a05c594f5"
+    }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/features/simplify-billing.md": {
+    "size": 6964,
+    "mtime_ns": 1786760923683589600,
+    "word_count": 817,
+    "hashes": {
+      ".ai/docs/features/simplify-billing.md": "6d922081a9638b81907e5c67ba075fb8d8d72cc25be9b025f1e8a7c2d5099c40"
+    }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/.ai/docs/laporan-simulasi.md": {
+    "size": 14593,
+    "mtime_ns": 1786334597370448600,
+    "word_count": 1745,
+    "hashes": {
+      ".ai/docs/laporan-simulasi.md": "cbd7fe1ac59516b29affb8c6d0d597b8c46eccc5c1f2c014430a651b81130d65"
+    }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/docs/SOP-farmasi.md": {
+    "size": 4797,
+    "mtime_ns": 1787040324285419400,
+    "word_count": 612,
+    "hashes": {
+      "docs/sop-farmasi.md": "e5fc7ee6b009853d235e34680ade220f489dc3a526b950cc8601ebbc287325c0"
+    }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/scripts/probe-latency.mjs": {
+    "size": 2331,
+    "mtime_ns": 1787043182077517300,
+    "word_count": 251
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/antrianFarmasiTotal.ts": {
+    "size": 11167,
+    "mtime_ns": 1786783640154671100,
+    "word_count": 1320
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/farmasiAntrolShift.ts": {
+    "size": 7800,
+    "mtime_ns": 1787039767302418200,
+    "word_count": 858
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/farmasiBridge.ts": {
+    "size": 5297,
+    "mtime_ns": 1787039804685437200,
+    "word_count": 600
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/farmasiIssue.ts": {
+    "size": 20436,
+    "mtime_ns": 1787039767304889000,
+    "word_count": 2025
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/farmasiRecallDeleg.ts": {
+    "size": 3539,
+    "mtime_ns": 1786785241441393900,
+    "word_count": 437
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/penerimaanAntrolCetak.ts": {
+    "size": 8761,
+    "mtime_ns": 1787039767305832200,
+    "word_count": 1042
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/shared/farmasiEvent.ts": {
+    "size": 6502,
+    "mtime_ns": 1786717908205059300,
+    "word_count": 897
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/shared/farmasiQueue.ts": {
+    "size": 14216,
+    "mtime_ns": 1787039804807130400,
+    "word_count": 1909
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/shared/farmasiQueueBridge.ts": {
+    "size": 3795,
+    "mtime_ns": 1787039767309829500,
+    "word_count": 479
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/shared/farmasiRenumber.ts": {
+    "size": 3182,
+    "mtime_ns": 1786693614552123500,
+    "word_count": 486
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/shared/printKartu.ts": {
+    "size": 2053,
+    "mtime_ns": 1787039767310730800,
+    "word_count": 189
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/tts_service.py": {
+    "size": 5759,
+    "mtime_ns": 1786683368980160800,
+    "word_count": 511,
+    "hashes": {
+      "tts_service.py": "da7a53c4c7a59773fb2e219cd0295c8d99e6c8eb4caa016015222a7174c63fc2"
+    }
   }
 }

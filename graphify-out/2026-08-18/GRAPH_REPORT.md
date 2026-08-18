@@ -1,19 +1,19 @@
-# Graph Report - Ext-Morbis-Manap (2026-08-18)
+# Graph Report - Ext-Morbis-Manap (2026-08-12)
 
 ## Corpus Check
 
-- 172 files · ~133,806 words
+- 156 files · ~111,947 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
 
-- 1992 nodes · 2910 edges · 163 communities (131 shown, 32 thin omitted)
+- 1821 nodes · 2525 edges · 157 communities (125 shown, 32 thin omitted)
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 76 edges (avg confidence: 0.52)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
 
-- Built from commit: `d4662c16`
+- Built from commit: `5c03f0d0`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -164,13 +164,7 @@
 - Role
 - autoprefixer
 - shortcutButtons.ts
-- 14. Files Impact Report
-- 7. Risk Matrix
 - storage.ts
-- antrianLoader.ts
-- 9. Key Constraints & Insights
-- probe-latency.mjs
-- 13. Build Verification
 
 ## God Nodes (most connected - your core abstractions)
 
@@ -179,22 +173,22 @@
 3. `MORBIS Extension Rewrite Audit: Migration vs Dev Branch` - 20 edges
 4. `UI Modernization Analysis — MORBIS Extension` - 20 edges
 5. `scripts` - 19 edges
-6. `refreshCardNumber()` - 19 edges
-7. `getQueueState()` - 19 edges
-8. `include` - 18 edges
-9. `pollFallback()` - 17 edges
-10. `init()` - 17 edges
+6. `include` - 18 edges
+7. `init()` - 17 edges
+8. `CustomUrl` - 17 edges
+9. `Antrian Farmasi Display — Acceptance Test` - 17 edges
+10. `renderToolbar()` - 16 edges
 
 ## Surprising Connections (you probably didn't know these)
 
+- `ConsEnhancerApp()` --references--> `react` [EXTRACTED]
+  src/features/consultationEnhancer/ConsEnhancerApp.tsx → package.json
 - `initExtension()` --references--> `ExtensionCore` [EXTRACTED]
   init.js → src/core.ts
 - `DiagnosaSection()` --references--> `id` [EXTRACTED]
   src/features/resumeTab/DiagnosaSection.tsx → manifest.json
 - `TindakanSection()` --references--> `id` [EXTRACTED]
   src/features/resumeTab/TindakanSection.tsx → manifest.json
-- `ConsEnhancerApp()` --references--> `react` [EXTRACTED]
-  src/features/consultationEnhancer/ConsEnhancerApp.tsx → package.json
 - `init()` --indirect_call--> `loket()` [INFERRED]
   src/features/antrianTools.ts → src/features/antrianFarmasiDisplay.ts
 
@@ -202,12 +196,12 @@
 
 - None detected.
 
-## Communities (163 total, 32 thin omitted)
+## Communities (157 total, 32 thin omitted)
 
 ### Community 0 - "cpptSearchFilter.ts"
 
-Cohesion: 0.05
-Nodes (56): applyFilters(), CpptFilterState, CpptPageType, findCpptTables(), g, getColumnIndex(), getCpptPageType(), getDataRows() (+48 more)
+Cohesion: 0.06
+Nodes (56): injectStyles(), injectStyle(), easeInOutCubic(), g, renderScrollButtons(), runScrollButtonsFeature(), SCROLL_CONFIG, scrollButtonsExist() (+48 more)
 
 ### Community 1 - "batchUploadUrl.ts"
 
@@ -236,13 +230,13 @@ Nodes (36): action, default_popup, default_title, author, background, service_wo
 
 ### Community 5 - "scripts"
 
-Cohesion: 0.06
-Nodes (34): allowScripts, esbuild@0.28.1, dependencies, react-dom, description, engines, node, lint-staged (+26 more)
+Cohesion: 0.05
+Nodes (36): allowScripts, esbuild@0.28.1, dependencies, react, react-dom, description, engines, node (+28 more)
 
 ### Community 6 - "filterPersistence.ts"
 
-Cohesion: 0.07
-Nodes (54): fixCurrents(), patchTableCodes(), syncPublicNumbers(), buildPanel(), buildToggle(), callRow(), ensureRecallDelegation(), fetchRows() (+46 more)
+Cohesion: 0.33
+Nodes (8): FeatureMatch, MorbisConfig, MorbisGlobals, UsageLogEntry, clearUsageLog(), getUsageLog(), fmtTime(), UsageLogPanel()
 
 ### Community 7 - "resumeValidator.ts"
 
@@ -252,7 +246,7 @@ Nodes (35): addRequiredAttributes(), attachSaveHandler(), autoExpandTextareas(),
 ### Community 8 - "legacy.ts"
 
 Cohesion: 0.09
-Nodes (27): react, react, check, Props, ConsEnhancerApp(), ConsInfoTabs(), Props, TABS (+19 more)
+Nodes (25): check, Props, ConsEnhancerApp(), ConsInfoTabs(), Props, TABS, g, addSearchFilter() (+17 more)
 
 ### Community 9 - "MorbisSession"
 
@@ -261,13 +255,13 @@ Nodes (17): Client, analyze_feature(), diff_dom(), get_feature_source(), MorbisS
 
 ### Community 10 - "sidepanel/App.tsx"
 
-Cohesion: 0.10
-Nodes (25): App(), DEFAULT_URLS, FALLBACK_FEATURES, ConsultationDetailPanel(), Props, ConsultationInfoPanel(), Props, TAB_EP (+17 more)
+Cohesion: 0.11
+Nodes (18): App(), DEFAULT_URLS, FALLBACK_FEATURES, BatchItem, BatchUploadPanel(), BatchUploadPanelProps, ConsultationDetailPanel(), Props (+10 more)
 
 ### Community 11 - "button.tsx"
 
-Cohesion: 0.14
-Nodes (17): BatchDeletePanel(), BatchDeletePanelProps, DeleteItem, BatchItem, BatchUploadPanel(), BatchUploadPanelProps, DomainPanel(), DomainPanelProps (+9 more)
+Cohesion: 0.12
+Nodes (19): BatchDeletePanel(), BatchDeletePanelProps, DeleteItem, DomainPanel(), DomainPanelProps, isValidUrl(), Footer(), FooterProps (+11 more)
 
 ### Community 12 - "toolbar.ts"
 
@@ -276,8 +270,8 @@ Nodes (44): 1. manifest.json (Update URLs), 2. update.xml (Chromium Browsers), 3
 
 ### Community 13 - "antrianTools.ts"
 
-Cohesion: 0.21
-Nodes (20): addFullscreenButton(), bellNote(), buildSpokenText(), buildStrukHtml(), cetakStrukAntrian(), chime(), enterFullscreen(), extLog() (+12 more)
+Cohesion: 0.23
+Nodes (19): addFullscreenButton(), bellNote(), buildSpokenText(), buildStrukHtml(), cetakStrukAntrian(), chime(), enterFullscreen(), extLog() (+11 more)
 
 ### Community 14 - "resumeTab/App.tsx"
 
@@ -306,8 +300,8 @@ Nodes (16): build(), buildTailwindCSS(), buildWithReact(), commonOptions, compil
 
 ### Community 19 - "popup/StatusCard.tsx"
 
-Cohesion: 0.15
-Nodes (18): Hit, Props, Hit, JENIS_OPTIONS, KATEGORI_OPTIONS, Props, DiagnosaRow, TindakanRow (+10 more)
+Cohesion: 0.13
+Nodes (21): Hit, Props, Hit, JENIS_OPTIONS, KATEGORI_OPTIONS, Props, DiagnosaRow, TindakanRow (+13 more)
 
 ### Community 20 - "components.json"
 
@@ -321,13 +315,13 @@ Nodes (18): src/background.ts, src/core.ts, src/features/billingFilterPersistenc
 
 ### Community 22 - "background.ts"
 
-Cohesion: 0.16
-Nodes (15): broadcastConfigChange(), DEFAULT_CONFIG, DEFAULT_CUSTOM_URLS, loadConfig(), loadUrls(), log, migrateConfig(), persistOnChange() (+7 more)
+Cohesion: 0.09
+Nodes (27): initExtension(), broadcastConfigChange(), DEFAULT_CONFIG, DEFAULT_CUSTOM_URLS, loadConfig(), loadUrls(), log, migrateConfig() (+19 more)
 
 ### Community 23 - "src/types.ts"
 
-Cohesion: 0.13
-Nodes (22): evaluate(), EvaluateResult, Evaluator, EVALUATORS, matchPage(), normalizePath(), FeatureContext, FeatureMatch (+14 more)
+Cohesion: 0.14
+Nodes (24): evaluate(), EvaluateResult, Evaluator, EVALUATORS, matchPage(), normalizePath(), FeatureContext, FeatureModule (+16 more)
 
 ### Community 24 - "popup.js"
 
@@ -336,8 +330,8 @@ Nodes (15): addNewUrl(), bgMessage(), bgWrite(), customUrls, DOM, init(), isVali
 
 ### Community 25 - "popup/App.tsx"
 
-Cohesion: 0.11
-Nodes (16): root, App(), loadAll(), reloadActiveTab(), Footer(), FooterProps, StatusCard(), MessageHandler (+8 more)
+Cohesion: 0.14
+Nodes (12): root, App(), loadAll(), reloadActiveTab(), FeaturesPanel(), Footer(), FooterProps, StatusCard() (+4 more)
 
 ### Community 26 - "core.ts"
 
@@ -346,8 +340,8 @@ Nodes (33): 0. Pre-flight, 10. New Announcement, 11. Native Recovery, 12. Reload
 
 ### Community 27 - "filterPersistence.ts"
 
-Cohesion: 0.05
-Nodes (37): A.0 Arsitektur Ekstensi (konteks), A.1.1 Struktur DOM asli (server), A.1.2 Alur ambil tiket (fungsi server `antrian(a)`), A.1.3 Perilaku ekstensi saat ini (antrianTools.ts), A.1 Halaman 1 — Mesin Antrian (`/public/mesin-antrian`), A.2.1 Kondisi akses, A.2.2 Perilaku ekstensi saat ini, A.2 Halaman 2 — Counter (`/counter-antrian/counter`) (+29 more)
+Cohesion: 0.29
+Nodes (12): extractIdFromElement(), extractIdFromOnclick(), formatDateOpenDetail(), g, generateUrl(), isModifiedEvent(), OPEN_DETAIL_CONFIG, overrideButtonsByText() (+4 more)
 
 ### Community 28 - "audit-features.mjs"
 
@@ -406,8 +400,8 @@ Nodes (9): autoprefixer, devDependencies, autoprefixer, @playwright/test, postcs
 
 ### Community 39 - "shared/utils.ts"
 
-Cohesion: 0.07
-Nodes (73): announce(), AntrianFarmasiDebugState, cardSection(), clearCallState(), currentPatientName(), domSignal(), ensureControlsHost(), ensureStatusBadge() (+65 more)
+Cohesion: 0.10
+Nodes (36): announce(), AntrianFarmasiDebugState, domSignal(), fetchCallData(), fetchCurrentNumber(), isNewCurrent(), loket(), matchPatient() (+28 more)
 
 ### Community 40 - "background.js"
 
@@ -431,8 +425,8 @@ Nodes (31): AUDIT_DELIVERY_SUMMARY.md, AUDIT_MIGRATION_VS_DEV.md, AUDIT_QUICK_RE
 
 ### Community 44 - "TindakanSection.tsx"
 
-Cohesion: 0.13
-Nodes (24): addAntrianCetakButton(), blockAutoAntrol(), isAntrolCall(), onAntrianCetakClick(), registerAntrian(), resolveAntrianRow(), extractShift(), fetchCheckAntrian() (+16 more)
+Cohesion: 0.07
+Nodes (26): 1. Data Pasien & Registrasi (System Generated), 2. Diagnosis, 3. Tindakan, 4. TTV / Pemeriksaan Fisik, 5. Kondisi Keluar, 6. Resume Klinis, 7. CPPT (Catatan Perkembangan), 8. Asesmen Awal RI (+18 more)
 
 ### Community 45 - "audit.mjs"
 
@@ -446,13 +440,13 @@ Nodes (4): DOM, DOM.Iterable, ES2020, lib
 
 ### Community 49 - "Header.tsx"
 
-Cohesion: 0.07
-Nodes (26): 1. Data Pasien & Registrasi (System Generated), 2. Diagnosis, 3. Tindakan, 4. TTV / Pemeriksaan Fisik, 5. Kondisi Keluar, 6. Resume Klinis, 7. CPPT (Catatan Perkembangan), 8. Asesmen Awal RI (+18 more)
+Cohesion: 0.05
+Nodes (37): A.0 Arsitektur Ekstensi (konteks), A.1.1 Struktur DOM asli (server), A.1.2 Alur ambil tiket (fungsi server `antrian(a)`), A.1.3 Perilaku ekstensi saat ini (antrianTools.ts), A.1 Halaman 1 — Mesin Antrian (`/public/mesin-antrian`), A.2.1 Kondisi akses, A.2.2 Perilaku ekstensi saat ini, A.2 Halaman 2 — Counter (`/counter-antrian/counter`) (+29 more)
 
 ### Community 51 - "clsx"
 
-Cohesion: 0.22
-Nodes (23): anyFeatureEnabled(), BTN_STYLES, buildUrl(), createBtn(), createLink(), dokumenPasienUrl(), editResumeUrl(), extractIdRawatJalan() (+15 more)
+Cohesion: 0.14
+Nodes (23): applyFilters(), CpptFilterState, CpptPageType, findCpptTables(), g, getColumnIndex(), getCpptPageType(), getDataRows() (+15 more)
 
 ### Community 55 - "globals"
 
@@ -501,18 +495,18 @@ Nodes (17): Analisis Kode, Contoh Perubahan DOM, Detail Implementasi Teknis, Edg
 
 ### Community 91 - "MORBIS Extension Rewrite Audit: Migration vs Dev Branch"
 
-Cohesion: 0.19
-Nodes (12): initExtension(), ExtensionCore, getCurrentRole(), isFeatureAllowed(), loadConfig(), log(), ROLES, saveConfig() (+4 more)
+Cohesion: 0.14
+Nodes (13): 13. Build Verification, 15. Migration Path Recommendation, 16. Testing Checklist, 1. Feature Parity Analysis, 8. Content Script Features (Unchanged), 9. Manifest.json Comparison, Conclusion, Content Script Registration (+5 more)
 
 ### Community 92 - "Duplikasi Data ICD Diagnosis & Tindakan saat Input/Edit"
 
-Cohesion: 0.14
-Nodes (13): 14. Dependency Analysis, 15. Migration Path Recommendation, 16. Testing Checklist, 1. Feature Parity Analysis, 8. Content Script Features (Unchanged), 9. Manifest.json Comparison, Conclusion, Content Script Registration (+5 more)
+Cohesion: 0.15
+Nodes (12): Deskripsi, Dua Mekanisme Autocomplete Berbeda, Duplikasi Data ICD Diagnosis & Tindakan saat Input/Edit, File Terkait, Harapan User, Hasil Test Langsung (25 Mei 2026), Root Cause #1: `.attr('value')` pada hidden `idicd[]`, Root Cause #2: Global `counter` di `ambildiagnosis` (URL A) (+4 more)
 
 ### Community 93 - "Extension Architecture"
 
 Cohesion: 0.15
-Nodes (12): Deskripsi, Dua Mekanisme Autocomplete Berbeda, Duplikasi Data ICD Diagnosis & Tindakan saat Input/Edit, File Terkait, Harapan User, Hasil Test Langsung (25 Mei 2026), Root Cause #1: `.attr('value')` pada hidden `idicd[]`, Root Cause #2: Global `counter` di `ambildiagnosis` (URL A) (+4 more)
+Nodes (12): Alur, Contoh Feature Yang Benar, Contoh Feature Yang SALAH, Controller Features — Pengecualian, Extension Architecture, FeatureContext, FeatureMatch Contract, Files (+4 more)
 
 ### Community 94 - "<img src="icons/bluemorbis48.png" width="36" style="vertical-align: middle;"> MORBIS Ext Unofficial"
 
@@ -521,8 +515,8 @@ Nodes (12): Branching Strategy, Browser Didukung, Cara Pasang (3 Langkah), Cek I
 
 ### Community 95 - "3. Extension Build Requirements"
 
-Cohesion: 0.15
-Nodes (12): Alur, Contoh Feature Yang Benar, Contoh Feature Yang SALAH, Controller Features — Pengecualian, Extension Architecture, FeatureContext, FeatureMatch Contract, Files (+4 more)
+Cohesion: 0.18
+Nodes (11): 3.10 Deployment Pipeline, 3.1 Tech Stack (Already Implemented — Phase 1), 3.2 TypeScript Architecture (Current State), 3.3 Folder Structure (Target — Full Migration), 3.4 Dependency Management, 3.5 IPC/Transport Strategy, 3.6 Configuration System, 3.7 Logging Strategy (+3 more)
 
 ### Community 96 - "scripts"
 
@@ -531,18 +525,18 @@ Nodes (10): description, name, private, scripts, build, format, pack, repack (+2
 
 ### Community 97 - "Optimasi Cetak (Print Optimization)"
 
-Cohesion: 0.18
-Nodes (11): 3.10 Deployment Pipeline, 3.1 Tech Stack (Already Implemented — Phase 1), 3.2 TypeScript Architecture (Current State), 3.3 Folder Structure (Target — Full Migration), 3.4 Dependency Management, 3.5 IPC/Transport Strategy, 3.6 Configuration System, 3.7 Logging Strategy (+3 more)
+Cohesion: 0.20
+Nodes (9): CSS @media print yang Diinjeksi, Detail Implementasi Teknis, Edge Cases, Gambaran Fitur dan Tujuan, Logika Filter Section, Masalah yang Diselesaikan, Opsi Konfigurasi, Optimasi Cetak (Print Optimization) (+1 more)
 
 ### Community 98 - "4. Optimization & Reliability"
 
 Cohesion: 0.20
-Nodes (9): CSS @media print yang Diinjeksi, Detail Implementasi Teknis, Edge Cases, Gambaran Fitur dan Tujuan, Logika Filter Section, Masalah yang Diselesaikan, Opsi Konfigurasi, Optimasi Cetak (Print Optimization) (+1 more)
+Nodes (10): 4.1 Reducing Latency, 4.2 Minimizing Token Usage, 4.3 Caching Context, 4.4 Preventing Hallucination, 4.5 Improving Context Retention, 4.6 Improving Tool Reliability, 4.7 Concurrency Handling, 4.8 Retry Mechanism (+2 more)
 
 ### Community 99 - "1. Recommended MCP Skills"
 
-Cohesion: 0.20
-Nodes (10): 4.1 Reducing Latency, 4.2 Minimizing Token Usage, 4.3 Caching Context, 4.4 Preventing Hallucination, 4.5 Improving Context Retention, 4.6 Improving Tool Reliability, 4.7 Concurrency Handling, 4.8 Retry Mechanism (+2 more)
+Cohesion: 0.22
+Nodes (9): 1.1 `morbis-his-scraper` (Enhanced), 1.2 `playwright-e2e-runner`, 1.3 `context-memory`, 1.4 `dom-diff-analyzer`, 1.5 `feature-pattern-matcher`, 1.6 `session-orchestrator`, 1.7 `structured-output-validator`, 1.8 `context-summarizer` (+1 more)
 
 ### Community 100 - "Ponytail"
 
@@ -551,43 +545,43 @@ Nodes (8): Boundaries, Intensity, Output, Persistence, Ponytail, Rules, The ladd
 
 ### Community 101 - "Code Review Checklist"
 
-Cohesion: 0.22
-Nodes (8): Arsitektur 2 PC (lapangan), Catatan lapangan, Endpoint yang dipakai (session login), Farmasi Display: Panggilan Suara + Recall + Panel Terakhir, Temuan 2026-08-14 — display 1 antrian vs penerimaan 2 resep, Temuan 2026-08-14 — penomoran display vs kertas cetak, Verifikasi, Yang dikerjakan
-
-### Community 102 - "2. Architecture Design"
-
-Cohesion: 0.22
-Nodes (9): 1.1 `morbis-his-scraper` (Enhanced), 1.2 `playwright-e2e-runner`, 1.3 `context-memory`, 1.4 `dom-diff-analyzer`, 1.5 `feature-pattern-matcher`, 1.6 `session-orchestrator`, 1.7 `structured-output-validator`, 1.8 `context-summarizer` (+1 more)
-
-### Community 103 - "6. Implementation Roadmap"
-
-Cohesion: 0.31
-Nodes (4): BaseHTTPRequestHandler, Handler, Sintesis teks -> path MP3 (cache-aware). Engine swap di sini., synth()
-
-### Community 104 - "UI Modernization Analysis — MORBIS Extension"
-
 Cohesion: 0.25
 Nodes (7): Build & Test, Code Review Checklist, Dokumentasi, enabledWhen, Feature Registration, Regression, URL Gating
 
-### Community 105 - "Morbis Ext Unofficial — MCP Architecture & Extension Build Strategy"
+### Community 102 - "2. Architecture Design"
 
 Cohesion: 0.25
 Nodes (8): 2.1 Overall Architecture, 2.2 Communication Flow, 2.3 Orchestration Pattern: Sequential DAG with Parallel Leaves, 2.4 Context Lifecycle, 2.5 Memory Lifecycle, 2.6 Fallback Strategy, 2.7 Error Handling Strategy, 2. Architecture Design
 
-### Community 106 - "Open Detail in New Tab - Dokumentasi Ekstensi Browser"
+### Community 103 - "6. Implementation Roadmap"
 
 Cohesion: 0.25
 Nodes (8): 6.1 MVP Architecture (Week 1-2) — DONE, 6.2 Full TypeScript Migration & Build System — DONE, 6.3 MCP Server & Testing — DONE, 6.4 CI/CD Pipeline — DONE, 6.5 Implementation Checklist, 6.6 Risk Analysis, 6.7 Technical Debt Consideration, 6. Implementation Roadmap
 
-### Community 107 - "Fitur"
+### Community 104 - "UI Modernization Analysis — MORBIS Extension"
 
 Cohesion: 0.25
 Nodes (7): 10. Library Comparison, Appendix A: React Version, Appendix B: Current Bundle Sizes, Appendix C: CSS Variable Coverage, Executive Summary, UI Modernization Analysis — MORBIS Extension, Winner: **shadcn/ui**
 
-### Community 108 - "15. Final Recommendation"
+### Community 105 - "Morbis Ext Unofficial — MCP Architecture & Extension Build Strategy"
 
 Cohesion: 0.29
 Nodes (6): Appendix: Quick Reference, Build Commands, Extension Testing, MCP Server Commands, Morbis Ext Unofficial — MCP Architecture & Extension Build Strategy, Table of Contents
+
+### Community 106 - "Open Detail in New Tab - Dokumentasi Ekstensi Browser"
+
+Cohesion: 0.29
+Nodes (6): Gambaran Umum, Lisensi, Open Detail in New Tab - Dokumentasi Ekstensi Browser, Sistem Target, Tujuan Utama, Ucapan Terima Kasih
+
+### Community 107 - "Fitur"
+
+Cohesion: 0.29
+Nodes (7): 1. Mode Open Detail, 2. Tombol Shortcut, 3. Persistensi Filter State, 4. Sederhanakan Penagihan (Ringkas Rincian Biaya), 5. Tombol Scroll (Atas/Bawah), 6. Optimisasi Cetak, Fitur
+
+### Community 108 - "15. Final Recommendation"
+
+Cohesion: 0.29
+Nodes (7): 15. Final Recommendation, Alignment with Constraints, Execution Phases Summary, Final Verdict, Recommended Action: ✅ **Proceed with shadcn/ui migration**, Why NOW is the right time, Why WAIT if...
 
 ### Community 109 - "agent-browser.json"
 
@@ -596,18 +590,18 @@ Nodes (5): headed, hideScrollbars, profile, $schema, sessionName
 
 ### Community 110 - "5. Tradeoff Analysis"
 
-Cohesion: 0.29
-Nodes (6): Gambaran Umum, Lisensi, Open Detail in New Tab - Dokumentasi Ekstensi Browser, Sistem Target, Tujuan Utama, Ucapan Terima Kasih
+Cohesion: 0.33
+Nodes (6): 5.1 TypeScript Migration, 5.2 esbuild vs Webpack, 5.3 MCP Server Architecture, 5.4 SQLite vs JSON for Memory, 5.5 Event-driven vs Request-driven, 5. Tradeoff Analysis
 
 ### Community 111 - "11. Migration Strategy"
 
-Cohesion: 0.29
-Nodes (7): 1. Mode Open Detail, 2. Tombol Shortcut, 3. Persistensi Filter State, 4. Sederhanakan Penagihan (Ringkas Rincian Biaya), 5. Tombol Scroll (Atas/Bawah), 6. Optimisasi Cetak, Fitur
+Cohesion: 0.33
+Nodes (6): 11. Migration Strategy, Out of Scope (Phase 4+), Phase 0: Setup (30 min), Phase 1: Replace Pure Presentational (LOW RISK — 2 hours), Phase 2: Consolidate Duplicates (MEDIUM RISK — 4 hours), Phase 3: Design Polish (LOW RISK — 2 hours)
 
 ### Community 112 - "4. Styling System Deep Dive"
 
-Cohesion: 0.29
-Nodes (7): 15. Final Recommendation, Alignment with Constraints, Execution Phases Summary, Final Verdict, Recommended Action: ✅ **Proceed with shadcn/ui migration**, Why NOW is the right time, Why WAIT if...
+Cohesion: 0.33
+Nodes (6): 4.1 CSS Architecture, 4.2 Tailwind Configuration, 4.3 CSS Variables (in `src/ui/globals.css`), 4.4 Styling Pattern Analysis, 4.5 Design Systems Comparison, 4. Styling System Deep Dive
 
 ### Community 113 - "cancelButton.ts"
 
@@ -616,28 +610,28 @@ Nodes (5): getIdFromOnclick(), injectLab(), injectRadio(), isEnabled(), run()
 
 ### Community 114 - "Batch Features Refactor"
 
-Cohesion: 0.29
-Nodes (6): Referensi Teknis, Ringkasan Garansi Sistem, SOP Farmasi — Alur Kerja Petugas (Ekstensi MORBIS), TAHAP 1 — Menerima Pasien & Menerbitkan Nomor, TAHAP 2 — Memanggil Pasien (Saat Obat Siap), TAHAP 3 — Tampilan TV & Suara (Berjalan Otomatis)
+Cohesion: 0.40
+Nodes (4): Batch Features Refactor, Before/After, Changes Summary, Testing
 
 ### Community 115 - "Arsitektur Teknis"
 
-Cohesion: 0.33
-Nodes (6): 5.1 TypeScript Migration, 5.2 esbuild vs Webpack, 5.3 MCP Server Architecture, 5.4 SQLite vs JSON for Memory, 5.5 Event-driven vs Request-driven, 5. Tradeoff Analysis
+Cohesion: 0.40
+Nodes (5): Arsitektur Content Script, Arsitektur Teknis, Konfigurasi Manifest, Sistem Konfigurasi, Struktur Ekstensi
 
 ### Community 116 - "Pengembangan & Kustomisasi"
 
-Cohesion: 0.33
-Nodes (6): 11. Migration Strategy, Out of Scope (Phase 4+), Phase 0: Setup (30 min), Phase 1: Replace Pure Presentational (LOW RISK — 2 hours), Phase 2: Consolidate Duplicates (MEDIUM RISK — 4 hours), Phase 3: Design Polish (LOW RISK — 2 hours)
+Cohesion: 0.40
+Nodes (5): Build & Deployment, Kustomisasi Pola URL, Kustomisasi Selector, Menambahkan Fitur Baru, Pengembangan & Kustomisasi
 
 ### Community 117 - "2. Component Inventory"
 
-Cohesion: 0.33
-Nodes (6): 4.1 CSS Architecture, 4.2 Tailwind Configuration, 4.3 CSS Variables (in `src/ui/globals.css`), 4.4 Styling Pattern Analysis, 4.5 Design Systems Comparison, 4. Styling System Deep Dive
+Cohesion: 0.40
+Nodes (5): 2.1 Popup Components (`src/popup/`), 2.2 Sidepanel Components (`src/features/sidepanel/`), 2.3 Shared Components (`src/ui/components/`), 2.4 ResumeTab Components (`src/features/resumeTab/`), 2. Component Inventory
 
 ### Community 118 - "5. State Management Architecture"
 
 Cohesion: 0.40
-Nodes (4): Batch Features Refactor, Before/After, Changes Summary, Testing
+Nodes (5): 5.1 Data Flow, 5.2 Initialization Sequence, 5.3 State Update Pattern, 5.4 Message Types (from `src/shared/messaging.ts`), 5. State Management Architecture
 
 ### Community 119 - "Morbis DevTools MCP Server"
 
@@ -646,8 +640,8 @@ Nodes (4): Morbis DevTools MCP Server, Setup, Tools, Usage
 
 ### Community 120 - "ConsultationInfoPanel.tsx"
 
-Cohesion: 0.06
-Nodes (52): attachFilterListeners(), BILLING_FILTER_CONFIG, BillingFilterConfig, clearFilter(), g, isBillingVerifikasiPage(), restoreFilter(), runBillingFilterPersistence() (+44 more)
+Cohesion: 0.09
+Nodes (33): attachFilterListeners(), BILLING_FILTER_CONFIG, BillingFilterConfig, clearFilter(), g, isBillingVerifikasiPage(), restoreFilter(), runBillingFilterPersistence() (+25 more)
 
 ### Community 121 - "Verifikasi End-to-End Phase 1–3B (Antrian Global)"
 
@@ -656,162 +650,132 @@ Nodes (4): Catatan penting, Daftar pencatat, Kriteria lulus, Verifikasi End-to-E
 
 ### Community 122 - "10. Key Findings by Category"
 
-Cohesion: 0.40
-Nodes (5): Arsitektur Content Script, Arsitektur Teknis, Konfigurasi Manifest, Sistem Konfigurasi, Struktur Ekstensi
-
-### Community 123 - "11. Risk Assessment"
-
-Cohesion: 0.40
-Nodes (5): Build & Deployment, Kustomisasi Pola URL, Kustomisasi Selector, Menambahkan Fitur Baru, Pengembangan & Kustomisasi
-
-### Community 124 - "12. Recommendations (Priority Order)"
-
-Cohesion: 0.40
-Nodes (5): 2.1 Popup Components (`src/popup/`), 2.2 Sidepanel Components (`src/features/sidepanel/`), 2.3 Shared Components (`src/ui/components/`), 2.4 ResumeTab Components (`src/features/resumeTab/`), 2. Component Inventory
-
-### Community 125 - "2. Architecture Comparison"
-
-Cohesion: 0.40
-Nodes (5): 5.1 Data Flow, 5.2 Initialization Sequence, 5.3 State Update Pattern, 5.4 Message Types (from `src/shared/messaging.ts`), 5. State Management Architecture
-
-### Community 126 - "3. Storage System Comparison"
-
-Cohesion: 0.40
-Nodes (4): Catatan penting, Daftar pencatat, Kriteria lulus, Verifikasi End-to-End Phase 1–3B (Antrian Global)
-
-### Community 127 - "4. Messaging System Comparison"
-
 Cohesion: 0.50
 Nodes (4): 10. Key Findings by Category, ⚠️ What Changed (Potentially Risky), ❌ What Could Be Broken, ✅ What Improved
 
-### Community 128 - "5. React Architecture (Migration Only)"
+### Community 123 - "11. Risk Assessment"
 
 Cohesion: 0.50
 Nodes (4): 11. Risk Assessment, 🔴 CRITICAL, 🟠 HIGH, 🟡 MEDIUM
 
-### Community 129 - "6. Build System Comparison"
+### Community 124 - "12. Recommendations (Priority Order)"
 
 Cohesion: 0.50
 Nodes (4): 12. Recommendations (Priority Order), Phase 1: MUST FIX (Before Production), Phase 2: SHOULD FIX (Before Widespread Rollout), Phase 3: NICE TO HAVE (Post-Launch)
 
-### Community 130 - "Instalasi & Setup"
+### Community 125 - "2. Architecture Comparison"
 
 Cohesion: 0.50
 Nodes (4): 2. Architecture Comparison, Dev Branch (Current), Key Architectural Changes, Migration Branch (Rewrite)
 
-### Community 131 - "Dukungan & Maintenance"
+### Community 126 - "3. Storage System Comparison"
 
 Cohesion: 0.50
 Nodes (4): 3. Storage System Comparison, Dev Branch Storage Keys, Migration Branch Storage Keys - CRITICAL DIFFERENCE, Storage Abstraction (Migration)
 
-### Community 132 - "Changelog"
+### Community 127 - "4. Messaging System Comparison"
 
 Cohesion: 0.50
 Nodes (4): 4. Messaging System Comparison, Dev Branch (Untyped), Message Handler Comparison, Migration Branch (Typed)
 
-### Community 133 - "Kompatibilitas"
+### Community 128 - "5. React Architecture (Migration Only)"
 
 Cohesion: 0.50
 Nodes (4): 5. React Architecture (Migration Only), Component Reuse, Popup Component Tree, Sidepanel Component Tree
 
-### Community 134 - "Keamanan & Privasi"
+### Community 129 - "6. Build System Comparison"
 
 Cohesion: 0.50
 Nodes (4): 6. Build System Comparison, Bundle Size Impact, Dev Branch Build, Migration Branch Build
 
-### Community 135 - "Panduan Penggunaan"
+### Community 130 - "Instalasi & Setup"
 
 Cohesion: 0.50
 Nodes (4): 1. Instalasi Ekstensi, 2. Konfigurasi Awal, 3. Manajemen URL, Instalasi & Setup
 
-### Community 136 - "12. Component Mapping"
+### Community 131 - "Dukungan & Maintenance"
 
 Cohesion: 0.50
 Nodes (4): Berkontribusi, Dukungan & Maintenance, Pelaporan Issue, Permintaan Fitur
 
-### Community 137 - "13. Safe Implementation Plan"
+### Community 132 - "Changelog"
 
 Cohesion: 0.50
 Nodes (4): Changelog, Versi 1.0.0, Versi 1.1.0, Versi 1.2.0
 
-### Community 138 - "1. Architecture Overview"
+### Community 133 - "Kompatibilitas"
 
 Cohesion: 0.50
 Nodes (4): Dukungan Browser, Kompatibilitas, Kompatibilitas Versi SIMRS, Persyaratan Sistem
 
-### Community 139 - "3. Component Duplication Analysis"
+### Community 134 - "Keamanan & Privasi"
 
 Cohesion: 0.50
 Nodes (4): Fitur Keamanan, Izin yang Digunakan, Keamanan & Privasi, Penanganan Data
 
-### Community 140 - "6. Browser API Integration"
+### Community 135 - "Panduan Penggunaan"
 
 Cohesion: 0.50
 Nodes (4): Fitur Lanjutan, Operasi Dasar, Panduan Penggunaan, Pemecahan Masalah
 
-### Community 141 - "7. TypeScript & Type Safety"
+### Community 136 - "12. Component Mapping"
 
 Cohesion: 0.50
 Nodes (4): 12.1 Proposed Migration Table, 12.2 Unchanged Components, 12.3 Component Transformation Risk Map, 12. Component Mapping
 
-### Community 142 - "Opsi Konfigurasi"
+### Community 137 - "13. Safe Implementation Plan"
 
 Cohesion: 0.50
 Nodes (4): 13.1 Execution Order, 13.2 Rollback Strategy, 13.3 Testing Protocol, 13. Safe Implementation Plan
 
-### Community 143 - "14. Files Impact Report"
+### Community 138 - "1. Architecture Overview"
 
 Cohesion: 0.50
 Nodes (4): 1.1 Project Structure, 1.2 Entry Points, 1.3 Build System Architecture, 1. Architecture Overview
 
-### Community 144 - "7. Risk Matrix"
+### Community 139 - "3. Component Duplication Analysis"
 
 Cohesion: 0.50
 Nodes (4): 3.1 Popup vs Sidepanel Overlap, 3.2 Why Duplicated?, 3.3 Impact of Duplication, 3. Component Duplication Analysis
 
-### Community 145 - "8. Accessibility Review"
+### Community 140 - "6. Browser API Integration"
 
 Cohesion: 0.50
 Nodes (4): 6.1 Chrome API Surface in UI Components, 6.2 Components SAFE to modernize (NO chrome API), 6.3 Components HIGH RISK (DO NOT TOUCH first), 6. Browser API Integration
 
-### Community 146 - "9. Key Constraints & Insights"
+### Community 141 - "7. TypeScript & Type Safety"
 
 Cohesion: 0.67
 Nodes (3): 7. TypeScript & Type Safety, Dev Branch Type Issues, Migration Branch Improvements
 
-### Community 149 - "14. Dependency Analysis"
+### Community 142 - "Opsi Konfigurasi"
 
 Cohesion: 0.67
 Nodes (3): Opsi Konfigurasi, Pengaturan Spesifik Fitur, Pengaturan Tingkat Ekstensi
 
-### Community 155 - "14. Files Impact Report"
+### Community 143 - "14. Files Impact Report"
 
 Cohesion: 0.67
 Nodes (3): 14.1 Files That WILL Be Modified, 14.2 Files That Will NOT Be Modified, 14. Files Impact Report
 
-### Community 156 - "7. Risk Matrix"
+### Community 144 - "7. Risk Matrix"
 
 Cohesion: 0.67
 Nodes (3): 7.1 By Component, 7.2 By Functionality, 7. Risk Matrix
 
-### Community 157 - "storage.ts"
+### Community 145 - "8. Accessibility Review"
 
 Cohesion: 0.67
 Nodes (3): 8.1 Current State, 8.2 Critical Accessibility Issues, 8. Accessibility Review
 
-### Community 158 - "antrianLoader.ts"
-
-Cohesion: 0.70
-Nodes (4): addOverlayCSS(), ensureOverlay(), fadeOutDone(), monitor()
-
-### Community 159 - "9. Key Constraints & Insights"
+### Community 146 - "9. Key Constraints & Insights"
 
 Cohesion: 0.67
 Nodes (3): 9.1 Constraints, 9.2 Insights, 9. Key Constraints & Insights
 
 ## Knowledge Gaps
 
-- **927 isolated node(s):** `$schema`, `sessionName`, `profile`, `headed`, `hideScrollbars` (+922 more)
+- **900 isolated node(s):** `$schema`, `sessionName`, `profile`, `headed`, `hideScrollbars` (+895 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **32 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -820,16 +784,16 @@ Nodes (3): 9.1 Constraints, 9.2 Insights, 9. Key Constraints & Insights
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `id` connect `resumeTab/App.tsx` to `manifest.json`?**
-  _High betweenness centrality (0.006) - this node is a cross-community bridge._
+  _High betweenness centrality (0.008) - this node is a cross-community bridge._
 - **Why does `gecko` connect `manifest.json` to `resumeTab/App.tsx`?**
-  _High betweenness centrality (0.006) - this node is a cross-community bridge._
+  _High betweenness centrality (0.008) - this node is a cross-community bridge._
+- **Why does `getMorbisGlobals()` connect `ConsultationInfoPanel.tsx` to `cpptSearchFilter.ts`, `batchUploadUrl.ts`, `filterPersistence.ts`, `penerimaan_resep/main.ts`, `clsx`, `filterPersistence.ts`?**
+  _High betweenness centrality (0.008) - this node is a cross-community bridge._
 - **What connects `$schema`, `sessionName`, `profile` to the rest of the system?**
-  _927 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _900 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `cpptSearchFilter.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.053821800090456805 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06340326340326341 - nodes in this community are weakly interconnected._
 - **Should `batchUploadUrl.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.08248587570621468 - nodes in this community are weakly interconnected._
 - **Should `resumeRanapTab/App.tsx` be split into smaller, more focused modules?**
   _Cohesion score 0.05782312925170068 - nodes in this community are weakly interconnected._
-- **Should `ponytail-activate.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.07342995169082125 - nodes in this community are weakly interconnected._

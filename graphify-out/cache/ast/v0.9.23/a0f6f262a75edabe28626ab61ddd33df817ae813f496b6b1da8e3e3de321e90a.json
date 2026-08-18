@@ -1,0 +1,159 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_md",
+      "label": "print-optimization.md",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/print-optimization.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_optimasi_cetak_print_optimization",
+      "label": "Optimasi Cetak (Print Optimization)",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/print-optimization.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_gambaran_fitur_dan_tujuan",
+      "label": "Gambaran Fitur dan Tujuan",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/print-optimization.md",
+      "source_location": "L3"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_masalah_yang_diselesaikan",
+      "label": "Masalah yang Diselesaikan",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/print-optimization.md",
+      "source_location": "L9"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_detail_implementasi_teknis",
+      "label": "Detail Implementasi Teknis",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/print-optimization.md",
+      "source_location": "L19"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_panduan_penggunaan",
+      "label": "Panduan Penggunaan",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/print-optimization.md",
+      "source_location": "L31"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_logika_filter_section",
+      "label": "Logika Filter Section",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/print-optimization.md",
+      "source_location": "L39"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_css_media_print_yang_diinjeksi",
+      "label": "CSS @media print yang Diinjeksi",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/print-optimization.md",
+      "source_location": "L46"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_opsi_konfigurasi",
+      "label": "Opsi Konfigurasi",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/print-optimization.md",
+      "source_location": "L98"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_edge_cases",
+      "label": "Edge Cases",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/print-optimization.md",
+      "source_location": "L106"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_optimasi_cetak_print_optimization",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/print-optimization.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_optimasi_cetak_print_optimization",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_gambaran_fitur_dan_tujuan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/print-optimization.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_optimasi_cetak_print_optimization",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_masalah_yang_diselesaikan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/print-optimization.md",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_optimasi_cetak_print_optimization",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_detail_implementasi_teknis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/print-optimization.md",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_optimasi_cetak_print_optimization",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_panduan_penggunaan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/print-optimization.md",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_optimasi_cetak_print_optimization",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_logika_filter_section",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/print-optimization.md",
+      "source_location": "L39",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_optimasi_cetak_print_optimization",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_css_media_print_yang_diinjeksi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/print-optimization.md",
+      "source_location": "L46",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_optimasi_cetak_print_optimization",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_opsi_konfigurasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/print-optimization.md",
+      "source_location": "L98",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_optimasi_cetak_print_optimization",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_print_optimization_edge_cases",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/print-optimization.md",
+      "source_location": "L106",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -1,0 +1,319 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_md",
+      "label": "shortcut-buttons.md",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_tombol_shortcut",
+      "label": "Tombol Shortcut",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_gambaran_fitur_dan_tujuan",
+      "label": "Gambaran Fitur dan Tujuan",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L3"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_masalah_yang_diselesaikan_untuk_pengguna",
+      "label": "Masalah yang Diselesaikan untuk Pengguna",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_detail_implementasi_teknis",
+      "label": "Detail Implementasi Teknis",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L16"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_panduan_penggunaan_langkah_demi_langkah",
+      "label": "Panduan Penggunaan Langkah demi Langkah",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L28"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_di_halaman_detail",
+      "label": "Di Halaman Detail",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L30"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_di_halaman_eksekusi",
+      "label": "Di Halaman Eksekusi",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L39"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_analisis_kode",
+      "label": "Analisis Kode",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L46"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_fungsi_utama",
+      "label": "Fungsi Utama",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L48"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_metode_deteksi",
+      "label": "Metode Deteksi",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L75"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_teknik_modifikasi",
+      "label": "Teknik Modifikasi",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L89"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_opsi_konfigurasi",
+      "label": "Opsi Konfigurasi",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L97"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_edge_cases_dan_keterbatasan",
+      "label": "Edge Cases dan Keterbatasan",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L121"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_edge_cases_yang_ditangani",
+      "label": "Edge Cases yang Ditangani",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L123"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_keterbatasan",
+      "label": "Keterbatasan",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L130"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_contoh_perubahan_dom",
+      "label": "Contoh Perubahan DOM",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L137"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_kontainer_tombol_shortcut_halaman_detail",
+      "label": "Kontainer Tombol Shortcut (Halaman Detail)",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L139"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_tombol_back_to_detail_halaman_eksekusi",
+      "label": "Tombol Back to Detail (Halaman Eksekusi)",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L162"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_gaya_cetak",
+      "label": "Gaya Cetak",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L178"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_tombol_shortcut",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_tombol_shortcut",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_gambaran_fitur_dan_tujuan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_tombol_shortcut",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_masalah_yang_diselesaikan_untuk_pengguna",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_tombol_shortcut",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_detail_implementasi_teknis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_tombol_shortcut",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_panduan_penggunaan_langkah_demi_langkah",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_panduan_penggunaan_langkah_demi_langkah",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_di_halaman_detail",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_panduan_penggunaan_langkah_demi_langkah",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_di_halaman_eksekusi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L39",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_tombol_shortcut",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_analisis_kode",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L46",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_analisis_kode",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_fungsi_utama",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L48",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_analisis_kode",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_metode_deteksi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L75",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_analisis_kode",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_teknik_modifikasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L89",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_tombol_shortcut",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_opsi_konfigurasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L97",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_tombol_shortcut",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_edge_cases_dan_keterbatasan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L121",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_edge_cases_dan_keterbatasan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_edge_cases_yang_ditangani",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L123",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_edge_cases_dan_keterbatasan",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_keterbatasan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L130",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_tombol_shortcut",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_contoh_perubahan_dom",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L137",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_contoh_perubahan_dom",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_kontainer_tombol_shortcut_halaman_detail",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L139",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_contoh_perubahan_dom",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_tombol_back_to_detail_halaman_eksekusi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L162",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_contoh_perubahan_dom",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_shortcut_buttons_gaya_cetak",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/shortcut-buttons.md",
+      "source_location": "L178",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

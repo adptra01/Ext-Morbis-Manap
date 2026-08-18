@@ -1,0 +1,815 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_md",
+      "label": "AUDIT_MIGRATION_VS_DEV.md",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_morbis_extension_rewrite_audit_migration_vs_dev_branch",
+      "label": "MORBIS Extension Rewrite Audit: Migration vs Dev Branch",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_executive_summary",
+      "label": "Executive Summary",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L9"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_1_feature_parity_analysis",
+      "label": "1. Feature Parity Analysis",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L23"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_feature_count_19_total_features",
+      "label": "Feature Count: 19 Total Features",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L25"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_2_architecture_comparison",
+      "label": "2. Architecture Comparison",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L59"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_dev_branch_current",
+      "label": "Dev Branch (Current)",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L61"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_migration_branch_rewrite",
+      "label": "Migration Branch (Rewrite)",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L81"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_key_architectural_changes",
+      "label": "Key Architectural Changes",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L119"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_3_storage_system_comparison",
+      "label": "3. Storage System Comparison",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L133"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_dev_branch_storage_keys",
+      "label": "Dev Branch Storage Keys",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L135"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_migration_branch_storage_keys_critical_difference",
+      "label": "Migration Branch Storage Keys - CRITICAL DIFFERENCE",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L147"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_storage_abstraction_migration",
+      "label": "Storage Abstraction (Migration)",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L175"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_4_messaging_system_comparison",
+      "label": "4. Messaging System Comparison",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L190"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_dev_branch_untyped",
+      "label": "Dev Branch (Untyped)",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L192"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_migration_branch_typed",
+      "label": "Migration Branch (Typed)",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L210"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_message_handler_comparison",
+      "label": "Message Handler Comparison",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L249"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_5_react_architecture_migration_only",
+      "label": "5. React Architecture (Migration Only)",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L282"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_popup_component_tree",
+      "label": "Popup Component Tree",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L284"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_sidepanel_component_tree",
+      "label": "Sidepanel Component Tree",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L299"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_component_reuse",
+      "label": "Component Reuse",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L316"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_6_build_system_comparison",
+      "label": "6. Build System Comparison",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L329"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_dev_branch_build",
+      "label": "Dev Branch Build",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L331"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_migration_branch_build",
+      "label": "Migration Branch Build",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L352"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_bundle_size_impact",
+      "label": "Bundle Size Impact",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L374"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_7_typescript_type_safety",
+      "label": "7. TypeScript & Type Safety",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L383"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_dev_branch_type_issues",
+      "label": "Dev Branch Type Issues",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L385"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_migration_branch_improvements",
+      "label": "Migration Branch Improvements",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L407"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_8_content_script_features_unchanged",
+      "label": "8. Content Script Features (Unchanged)",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L441"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_9_manifest_json_comparison",
+      "label": "9. Manifest.json Comparison",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L470"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_content_script_registration",
+      "label": "Content Script Registration",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L472"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_10_key_findings_by_category",
+      "label": "10. Key Findings by Category",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L489"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_what_improved",
+      "label": "\u2705 What Improved",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L491"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_what_changed_potentially_risky",
+      "label": "\u26a0\ufe0f What Changed (Potentially Risky)",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L522"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_what_could_be_broken",
+      "label": "\u274c What Could Be Broken",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L554"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_11_risk_assessment",
+      "label": "11. Risk Assessment",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L587"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_critical",
+      "label": "\ud83d\udd34 CRITICAL",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L589"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_high",
+      "label": "\ud83d\udfe0 HIGH",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L603"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_medium",
+      "label": "\ud83d\udfe1 MEDIUM",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L623"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_12_recommendations_priority_order",
+      "label": "12. Recommendations (Priority Order)",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L639"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_phase_1_must_fix_before_production",
+      "label": "Phase 1: MUST FIX (Before Production)",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L641"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_phase_2_should_fix_before_widespread_rollout",
+      "label": "Phase 2: SHOULD FIX (Before Widespread Rollout)",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L681"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_phase_3_nice_to_have_post_launch",
+      "label": "Phase 3: NICE TO HAVE (Post-Launch)",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L702"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_13_build_verification",
+      "label": "13. Build Verification",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L724"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_migration_branch_build_status",
+      "label": "Migration Branch Build Status",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L726"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_14_dependency_analysis",
+      "label": "14. Dependency Analysis",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L740"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_new_dependencies_migration",
+      "label": "New Dependencies (Migration)",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L742"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_15_migration_path_recommendation",
+      "label": "15. Migration Path Recommendation",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L767"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_16_testing_checklist",
+      "label": "16. Testing Checklist",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L790"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_summary_table",
+      "label": "Summary Table",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L811"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_conclusion",
+      "label": "Conclusion",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L830"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_morbis_extension_rewrite_audit_migration_vs_dev_branch",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_morbis_extension_rewrite_audit_migration_vs_dev_branch",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_executive_summary",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_morbis_extension_rewrite_audit_migration_vs_dev_branch",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_1_feature_parity_analysis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_1_feature_parity_analysis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_feature_count_19_total_features",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_morbis_extension_rewrite_audit_migration_vs_dev_branch",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_2_architecture_comparison",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L59",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_2_architecture_comparison",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_dev_branch_current",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L61",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_2_architecture_comparison",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_migration_branch_rewrite",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L81",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_2_architecture_comparison",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_key_architectural_changes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L119",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_morbis_extension_rewrite_audit_migration_vs_dev_branch",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_3_storage_system_comparison",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L133",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_3_storage_system_comparison",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_dev_branch_storage_keys",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L135",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_3_storage_system_comparison",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_migration_branch_storage_keys_critical_difference",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L147",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_3_storage_system_comparison",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_storage_abstraction_migration",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L175",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_morbis_extension_rewrite_audit_migration_vs_dev_branch",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_4_messaging_system_comparison",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L190",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_4_messaging_system_comparison",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_dev_branch_untyped",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L192",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_4_messaging_system_comparison",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_migration_branch_typed",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L210",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_4_messaging_system_comparison",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_message_handler_comparison",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L249",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_morbis_extension_rewrite_audit_migration_vs_dev_branch",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_5_react_architecture_migration_only",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L282",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_5_react_architecture_migration_only",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_popup_component_tree",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L284",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_5_react_architecture_migration_only",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_sidepanel_component_tree",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L299",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_5_react_architecture_migration_only",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_component_reuse",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L316",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_morbis_extension_rewrite_audit_migration_vs_dev_branch",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_6_build_system_comparison",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L329",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_6_build_system_comparison",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_dev_branch_build",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L331",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_6_build_system_comparison",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_migration_branch_build",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L352",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_6_build_system_comparison",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_bundle_size_impact",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L374",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_morbis_extension_rewrite_audit_migration_vs_dev_branch",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_7_typescript_type_safety",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L383",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_7_typescript_type_safety",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_dev_branch_type_issues",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L385",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_7_typescript_type_safety",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_migration_branch_improvements",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L407",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_morbis_extension_rewrite_audit_migration_vs_dev_branch",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_8_content_script_features_unchanged",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L441",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_morbis_extension_rewrite_audit_migration_vs_dev_branch",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_9_manifest_json_comparison",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L470",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_9_manifest_json_comparison",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_content_script_registration",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L472",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_morbis_extension_rewrite_audit_migration_vs_dev_branch",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_10_key_findings_by_category",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L489",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_10_key_findings_by_category",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_what_improved",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L491",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_10_key_findings_by_category",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_what_changed_potentially_risky",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L522",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_10_key_findings_by_category",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_what_could_be_broken",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L554",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_morbis_extension_rewrite_audit_migration_vs_dev_branch",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_11_risk_assessment",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L587",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_11_risk_assessment",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_critical",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L589",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_11_risk_assessment",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_high",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L603",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_11_risk_assessment",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_medium",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L623",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_morbis_extension_rewrite_audit_migration_vs_dev_branch",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_12_recommendations_priority_order",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L639",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_12_recommendations_priority_order",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_phase_1_must_fix_before_production",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L641",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_12_recommendations_priority_order",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_phase_2_should_fix_before_widespread_rollout",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L681",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_12_recommendations_priority_order",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_phase_3_nice_to_have_post_launch",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L702",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_morbis_extension_rewrite_audit_migration_vs_dev_branch",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_13_build_verification",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L724",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_13_build_verification",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_migration_branch_build_status",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L726",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_morbis_extension_rewrite_audit_migration_vs_dev_branch",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_14_dependency_analysis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L740",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_14_dependency_analysis",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_new_dependencies_migration",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L742",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_morbis_extension_rewrite_audit_migration_vs_dev_branch",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_15_migration_path_recommendation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L767",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_morbis_extension_rewrite_audit_migration_vs_dev_branch",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_16_testing_checklist",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L790",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_morbis_extension_rewrite_audit_migration_vs_dev_branch",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_summary_table",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L811",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_morbis_extension_rewrite_audit_migration_vs_dev_branch",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_migration_vs_dev_conclusion",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_MIGRATION_VS_DEV.md",
+      "source_location": "L830",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

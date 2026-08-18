@@ -1,0 +1,669 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tts_service_py",
+      "label": "tts_service.py",
+      "file_type": "code",
+      "source_file": "tts_service.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tts_service_synth",
+      "label": "synth()",
+      "file_type": "code",
+      "source_file": "tts_service.py",
+      "source_location": "L41",
+      "_callable": true
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler",
+      "label": "Handler",
+      "file_type": "code",
+      "source_file": "tts_service.py",
+      "source_location": "L61",
+      "_callable": true
+    },
+    {
+      "id": "basehttprequesthandler",
+      "label": "BaseHTTPRequestHandler",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "origin_file": "/mnt/DiskD/Projects/Ext-Morbis-Manap/tts_service.py"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_cors",
+      "label": "._cors()",
+      "file_type": "code",
+      "source_file": "tts_service.py",
+      "source_location": "L62",
+      "_callable": true
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_options",
+      "label": ".do_OPTIONS()",
+      "file_type": "code",
+      "source_file": "tts_service.py",
+      "source_location": "L71",
+      "_callable": true
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "label": ".do_GET()",
+      "file_type": "code",
+      "source_file": "tts_service.py",
+      "source_location": "L76",
+      "_callable": true
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_log_message",
+      "label": ".log_message()",
+      "file_type": "code",
+      "source_file": "tts_service.py",
+      "source_location": "L120",
+      "_callable": true
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_tts_service_rationale_42",
+      "label": "Sintesis teks -> path MP3 (cache-aware). Engine swap di sini.",
+      "file_type": "rationale",
+      "source_file": "tts_service.py",
+      "source_location": "L42"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tts_service_py",
+      "target": "hashlib",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tts_service.py",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tts_service_py",
+      "target": "json",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tts_service.py",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tts_service_py",
+      "target": "os",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tts_service.py",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tts_service_py",
+      "target": "urllib_parse",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tts_service.py",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tts_service_py",
+      "target": "urllib_request",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tts_service.py",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tts_service_py",
+      "target": "http_server",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tts_service.py",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tts_service_py",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tts_service_synth",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tts_service.py",
+      "source_location": "L41",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tts_service_py",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tts_service.py",
+      "source_location": "L61",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler",
+      "target": "basehttprequesthandler",
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "tts_service.py",
+      "source_location": "L61",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_cors",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tts_service.py",
+      "source_location": "L62",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_options",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tts_service.py",
+      "source_location": "L71",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tts_service.py",
+      "source_location": "L76",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_log_message",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tts_service.py",
+      "source_location": "L120",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_options",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_cors",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tts_service.py",
+      "source_location": "L73",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_cors",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tts_service.py",
+      "source_location": "L82",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tts_service_synth",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tts_service.py",
+      "source_location": "L96",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_tts_service_rationale_42",
+      "target": "mnt_diskd_projects_ext_morbis_manap_tts_service_synth",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "tts_service.py",
+      "source_location": "L42",
+      "weight": 1.0
+    }
+  ],
+  "raw_calls": [
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_synth",
+      "callee": "hexdigest",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L43",
+      "receiver": null
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_synth",
+      "callee": "sha1",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L43",
+      "receiver": "hashlib"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_synth",
+      "callee": "encode",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L43",
+      "receiver": "text"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_synth",
+      "callee": "join",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L44",
+      "receiver": null
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_synth",
+      "callee": "CACHE_DIR",
+      "is_member_call": false,
+      "indirect": true,
+      "context": "argument",
+      "source_file": "tts_service.py",
+      "source_location": "L44"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_synth",
+      "callee": "exists",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L45",
+      "receiver": null
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_synth",
+      "callee": "getsize",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L45",
+      "receiver": null
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_synth",
+      "callee": "quote",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L51",
+      "receiver": null
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_synth",
+      "callee": "UA",
+      "is_member_call": false,
+      "indirect": true,
+      "context": "collection",
+      "source_file": "tts_service.py",
+      "source_location": "L52"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_synth",
+      "callee": "urlopen",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L53",
+      "receiver": null
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_synth",
+      "callee": "read",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L54",
+      "receiver": "resp"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_synth",
+      "callee": "RuntimeError",
+      "is_member_call": false,
+      "source_file": "tts_service.py",
+      "source_location": "L56",
+      "receiver": null
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_synth",
+      "callee": "write",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L57",
+      "receiver": "f"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_cors",
+      "callee": "send_header",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L63",
+      "receiver": "self"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_cors",
+      "callee": "send_header",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L64",
+      "receiver": "self"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_cors",
+      "callee": "send_header",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L65",
+      "receiver": "self"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_cors",
+      "callee": "send_header",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L69",
+      "receiver": "self"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_options",
+      "callee": "send_response",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L72",
+      "receiver": "self"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_options",
+      "callee": "end_headers",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L74",
+      "receiver": "self"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "urlparse",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L77",
+      "receiver": null
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "listdir",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L79",
+      "receiver": "os"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "CACHE_DIR",
+      "is_member_call": false,
+      "indirect": true,
+      "context": "argument",
+      "source_file": "tts_service.py",
+      "source_location": "L79"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "isdir",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L79",
+      "receiver": null
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "CACHE_DIR",
+      "is_member_call": false,
+      "indirect": true,
+      "context": "argument",
+      "source_file": "tts_service.py",
+      "source_location": "L79"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "encode",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L80",
+      "receiver": null
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "dumps",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L80",
+      "receiver": "json"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "send_response",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L81",
+      "receiver": "self"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "send_header",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L83",
+      "receiver": "self"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "send_header",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L84",
+      "receiver": "self"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "end_headers",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L85",
+      "receiver": "self"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "write",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L86",
+      "receiver": null
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "get",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L89",
+      "receiver": null
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "parse_qs",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L89",
+      "receiver": null
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "send_response",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L91",
+      "receiver": "self"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "end_headers",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L93",
+      "receiver": "self"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "read",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L98",
+      "receiver": "f"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "encode",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L100",
+      "receiver": null
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "dumps",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L100",
+      "receiver": "json"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "e",
+      "is_member_call": false,
+      "indirect": true,
+      "context": "argument",
+      "source_file": "tts_service.py",
+      "source_location": "L100"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "send_response",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L101",
+      "receiver": "self"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "send_header",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L103",
+      "receiver": "self"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "send_header",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L104",
+      "receiver": "self"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "end_headers",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L105",
+      "receiver": "self"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "write",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L106",
+      "receiver": null
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "send_response",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L108",
+      "receiver": "self"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "send_header",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L110",
+      "receiver": "self"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "send_header",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L111",
+      "receiver": "self"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "send_header",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L112",
+      "receiver": "self"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "end_headers",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L113",
+      "receiver": "self"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "write",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L114",
+      "receiver": null
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "send_response",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L116",
+      "receiver": "self"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_do_get",
+      "callee": "end_headers",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L118",
+      "receiver": "self"
+    },
+    {
+      "caller_nid": "mnt_diskd_projects_ext_morbis_manap_tts_service_handler_log_message",
+      "callee": "write",
+      "is_member_call": true,
+      "source_file": "tts_service.py",
+      "source_location": "L123",
+      "receiver": "f"
+    }
+  ]
+}

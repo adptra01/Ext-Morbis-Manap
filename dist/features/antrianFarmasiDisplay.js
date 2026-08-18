@@ -242,6 +242,9 @@ var __morbis_feature = (() => {
       if (state === 'loading') {
         statusBadge.style.background = '#d97706';
         statusBadge.innerHTML = dot + 'MEMPERBARUI\u2026';
+      } else if (state === 'slow') {
+        statusBadge.style.background = '#b45309';
+        statusBadge.innerHTML = dot + 'MEMPERBARUI (JARINGAN LAMBAT)\u2026';
       } else if (state === 'ok') {
         statusBadge.style.background = '#0f5132';
         statusBadge.innerHTML =
@@ -576,6 +579,7 @@ var __morbis_feature = (() => {
       } catch {}
     }
     async function refreshCardNumber() {
+      const tickT0 = Date.now();
       setStatus('loading');
       processLocalRecall();
       try {
@@ -677,6 +681,12 @@ var __morbis_feature = (() => {
         }
       } catch {
         setStatus('error');
+      } finally {
+        if (Date.now() - tickT0 > 1e3) {
+          const cur = statusBadge?.getAttribute('data-state');
+          if (cur !== 'error') setStatus('slow');
+        }
+        cardTimer = window.setTimeout(() => void refreshCardNumber(), CARD_MS);
       }
     }
     function renderDisplay(view, call) {
@@ -1484,7 +1494,6 @@ var __morbis_feature = (() => {
         watchTimer = setInterval(watch, WATCH_MS);
       }
       if (cardTimer === null) {
-        cardTimer = setInterval(() => void refreshCardNumber(), CARD_MS);
         void refreshCardNumber();
       }
     }

@@ -1,0 +1,511 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_md",
+      "label": "AUDIT_README.md",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_morbis_extension_audit_complete_analysis_package",
+      "label": "MORBIS Extension Audit - Complete Analysis Package",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_what_s_included",
+      "label": "\ud83d\udce6 What's Included",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L9"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_documents_provided",
+      "label": "Documents Provided",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L13"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_quick_start_5_minutes",
+      "label": "\ud83c\udfaf Quick Start (5 minutes)",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L24"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_document_index",
+      "label": "\ud83d\udccb Document Index",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L37"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_audit_migration_vs_dev_md",
+      "label": "AUDIT_MIGRATION_VS_DEV.md",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L39"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_audit_quick_reference_txt",
+      "label": "AUDIT_QUICK_REFERENCE.txt",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L64"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_audit_delivery_summary_md",
+      "label": "AUDIT_DELIVERY_SUMMARY.md",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L83"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_critical_issues_must_fix_before_production",
+      "label": "\ud83d\udd34 Critical Issues (Must Fix Before Production)",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L103"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_issue_1_storage_key_mismatch",
+      "label": "Issue #1: Storage Key Mismatch",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L105"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_issue_2_hardcoded_feature_list",
+      "label": "Issue #2: Hardcoded Feature List",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L120"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_implementation_timeline",
+      "label": "\u23f1\ufe0f Implementation Timeline",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L137"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_phase_1_must_do",
+      "label": "Phase 1: MUST DO",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L139"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_phase_2_should_do_optional_before_wide_rollout",
+      "label": "Phase 2: SHOULD DO (optional before wide rollout)",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L148"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_phase_3_nice_to_have_post_launch",
+      "label": "Phase 3: NICE TO HAVE (post-launch)",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L157"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_overall_assessment",
+      "label": "\u2705 Overall Assessment",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L167"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_by_the_numbers",
+      "label": "\ud83d\udcca By The Numbers",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L182"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_how_to_read_this_audit",
+      "label": "\ud83d\udd0d How to Read This Audit",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L198"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_i_just_want_to_know_if_it_works",
+      "label": "I just want to know if it works",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L200"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_i_need_to_implement_fixes",
+      "label": "I need to implement fixes",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L204"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_i_need_to_explain_this_to_stakeholders",
+      "label": "I need to explain this to stakeholders",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L208"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_i_m_reviewing_the_architectural_decisions",
+      "label": "I'm reviewing the architectural decisions",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L212"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_i_need_to_verify_nothing_is_broken",
+      "label": "I need to verify nothing is broken",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L216"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_i_want_to_understand_everything",
+      "label": "I want to understand everything",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L220"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_next_steps",
+      "label": "\ud83d\ude80 Next Steps",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L226"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_questions_answers",
+      "label": "\ud83d\udcde Questions & Answers",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L246"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_document_metadata",
+      "label": "\ud83d\udcdd Document Metadata",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L271"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_learning_resources_in_this_audit",
+      "label": "\ud83c\udf93 Learning Resources in This Audit",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L286"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_file_locations",
+      "label": "\ud83d\udccc File Locations",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L298"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_feedback_updates",
+      "label": "\ud83e\udd1d Feedback & Updates",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L312"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_summary",
+      "label": "\u2728 Summary",
+      "file_type": "document",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L327"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_morbis_extension_audit_complete_analysis_package",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_morbis_extension_audit_complete_analysis_package",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_what_s_included",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_what_s_included",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_documents_provided",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_morbis_extension_audit_complete_analysis_package",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_quick_start_5_minutes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_morbis_extension_audit_complete_analysis_package",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_document_index",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L37",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_document_index",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_audit_migration_vs_dev_md",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L39",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_document_index",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_audit_quick_reference_txt",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L64",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_document_index",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_audit_delivery_summary_md",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L83",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_morbis_extension_audit_complete_analysis_package",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_critical_issues_must_fix_before_production",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L103",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_critical_issues_must_fix_before_production",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_issue_1_storage_key_mismatch",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L105",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_critical_issues_must_fix_before_production",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_issue_2_hardcoded_feature_list",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L120",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_morbis_extension_audit_complete_analysis_package",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_implementation_timeline",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L137",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_implementation_timeline",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_phase_1_must_do",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L139",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_implementation_timeline",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_phase_2_should_do_optional_before_wide_rollout",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L148",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_implementation_timeline",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_phase_3_nice_to_have_post_launch",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L157",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_morbis_extension_audit_complete_analysis_package",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_overall_assessment",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L167",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_morbis_extension_audit_complete_analysis_package",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_by_the_numbers",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L182",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_morbis_extension_audit_complete_analysis_package",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_how_to_read_this_audit",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L198",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_how_to_read_this_audit",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_i_just_want_to_know_if_it_works",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L200",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_how_to_read_this_audit",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_i_need_to_implement_fixes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L204",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_how_to_read_this_audit",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_i_need_to_explain_this_to_stakeholders",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L208",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_how_to_read_this_audit",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_i_m_reviewing_the_architectural_decisions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L212",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_how_to_read_this_audit",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_i_need_to_verify_nothing_is_broken",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L216",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_how_to_read_this_audit",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_i_want_to_understand_everything",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L220",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_morbis_extension_audit_complete_analysis_package",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_next_steps",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L226",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_morbis_extension_audit_complete_analysis_package",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_questions_answers",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L246",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_morbis_extension_audit_complete_analysis_package",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_document_metadata",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L271",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_morbis_extension_audit_complete_analysis_package",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_learning_resources_in_this_audit",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L286",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_morbis_extension_audit_complete_analysis_package",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_file_locations",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L298",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_morbis_extension_audit_complete_analysis_package",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_feedback_updates",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L312",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_morbis_extension_audit_complete_analysis_package",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_audit_readme_summary",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/AUDIT_README.md",
+      "source_location": "L327",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

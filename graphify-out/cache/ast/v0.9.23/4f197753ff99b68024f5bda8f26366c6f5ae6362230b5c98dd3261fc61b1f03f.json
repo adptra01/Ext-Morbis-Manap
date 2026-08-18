@@ -1,0 +1,79 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batch_refactor_md",
+      "label": "batch-refactor.md",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batch-refactor.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batch_refactor_batch_features_refactor",
+      "label": "Batch Features Refactor",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batch-refactor.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batch_refactor_changes_summary",
+      "label": "Changes Summary",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batch-refactor.md",
+      "source_location": "L3"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batch_refactor_before_after",
+      "label": "Before/After",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batch-refactor.md",
+      "source_location": "L11"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batch_refactor_testing",
+      "label": "Testing",
+      "file_type": "document",
+      "source_file": ".ai/docs/features/batch-refactor.md",
+      "source_location": "L20"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batch_refactor_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batch_refactor_batch_features_refactor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batch-refactor.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batch_refactor_batch_features_refactor",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batch_refactor_changes_summary",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batch-refactor.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batch_refactor_batch_features_refactor",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batch_refactor_before_after",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batch-refactor.md",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batch_refactor_batch_features_refactor",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_features_batch_refactor_testing",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/features/batch-refactor.md",
+      "source_location": "L20",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}
