@@ -253,7 +253,10 @@ var __morbis_feature = (() => {
         markCompleted(String(data.id ?? ''))
           .then((t) => reply('QUEUE_MARK_COMPLETED', { ok: !!t }))
           .catch((err) =>
-            reply('QUEUE_MARK_COMPLETED', { ok: false, error: String(err.message ?? err) }),
+            reply('QUEUE_MARK_COMPLETED', {
+              ok: false,
+              error: String(err.message ?? err),
+            }),
           );
         return;
       }

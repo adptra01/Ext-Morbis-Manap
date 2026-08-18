@@ -197,11 +197,11 @@ var __morbis_feature = (() => {
         this.muted = true;
         return Promise.resolve();
       }
-      return __extPlay.apply(this, arguments);
+      return __extPlay.call(this);
     };
     const POLL_LADDER_MS = [500, 1500, 3e3, 6e3];
-    const GAP_MS = 250;
-    const CARD_MS = 600;
+    const GAP_MS = 100;
+    const CARD_MS = 350;
     let statusBadge = null;
     let controlsHost = null;
     function ensureControlsHost() {
@@ -1134,7 +1134,7 @@ var __morbis_feature = (() => {
         const now = bellCtx.currentTime;
         const notes = [
           [1318.5, now],
-          [1760, now + 0.28],
+          [1760, now + 0.2],
         ];
         for (const [freq, t0] of notes) {
           const osc = bellCtx.createOscillator();
@@ -1143,13 +1143,13 @@ var __morbis_feature = (() => {
           osc.frequency.setValueAtTime(freq, t0);
           g.gain.setValueAtTime(1e-4, t0);
           g.gain.exponentialRampToValueAtTime(0.45, t0 + 0.02);
-          g.gain.exponentialRampToValueAtTime(1e-4, t0 + 0.3);
+          g.gain.exponentialRampToValueAtTime(1e-4, t0 + 0.22);
           osc.connect(g);
           g.connect(bellCtx.destination);
           osc.start(t0);
-          osc.stop(t0 + 0.32);
+          osc.stop(t0 + 0.24);
         }
-        const totalMs = 280 + 300 + 80;
+        const totalMs = 200 + 220 + 60;
         setTimeout(onDone, totalMs);
       } catch {
         onDone();

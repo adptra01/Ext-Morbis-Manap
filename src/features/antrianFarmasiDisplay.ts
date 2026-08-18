@@ -123,13 +123,15 @@ declare global {
   // (tes lapangan: klik 1x/detik melompati 1 nomor di poll 2s). Klik lebih cepat
   // dari 600ms masih bisa terlewat — naikkan budget hanya bila itu terjadi.
   const POLL_LADDER_MS = [500, 1500, 3000, 6000];
-  const GAP_MS = 250;
+  const GAP_MS = 100;
   // Segarkan card (angka panggilan last + nama) secara tetap — cepat (~600ms),
   // tidak tergantung health/native/poll. Bikin display responsif setelah
-  // 'Selanjutnya'/recall tanpa menunggu WS native. 600ms = kompromi antara
-  // delay deteksi klik "Selanjutnya" (≤600ms + fetch) vs beban server MORBIS
-  // (2 endpoint per tick); 1000ms terasa lambat di lapangan.
-  const CARD_MS = 600;
+  // 'Selanjutnya'/recall tanpa menunggu WS native. 350ms = kompromi baru:
+  // latensi terukur fetch 2 endpoint ~130-260ms (paralel), jadi interval 350ms
+  // tidak menumpuk (tick selesai sebelum tick berikutnya); deteksi klik
+  // "Selanjutnya" turun dari ≤600ms → ≤350ms (+fetch). Naikkan ke 600 bila
+  // server MORBIS terbebani (beban 2 endpoint/tick naik ~1.7x dari 600ms).
+  const CARD_MS = 350;
   // Badge status (pojok kanan-atas): memberi tahu petugas bahwa refresh berjalan
   // ("MEMPERBARUI…") vs selesai ("SIAP") — menandakan delay itu normal, bukan freeze.
   let statusBadge: HTMLDivElement | null = null;
@@ -1517,10 +1519,12 @@ declare global {
       bellCtx = bellCtx || new Ctor();
       void bellCtx.resume();
       const now = bellCtx.currentTime;
-      // dua nada "ding-ding": E6 lalu A6, tiap nada ~0.28s
+      // dua nada "ding-ding": E6 lalu A6, tiap nada ~0.2s (dipendekkan dari
+      // 0.28s — latensi klik Selanjutnya→TTS diukur ~1.6-2.1s, bell adalah
+      // penyumbang terbesar ~660ms; 0.2s masih terdengar jelas "ding-ding").
       const notes: Array<[number, number]> = [
         [1318.5, now],
-        [1760, now + 0.28],
+        [1760, now + 0.2],
       ];
       for (const [freq, t0] of notes) {
         const osc = bellCtx.createOscillator();
@@ -1530,14 +1534,14 @@ declare global {
         // envelope: naik-cepat lalu decay (suara bell bersih)
         g.gain.setValueAtTime(0.0001, t0);
         g.gain.exponentialRampToValueAtTime(0.45, t0 + 0.02);
-        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.3);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.22);
         osc.connect(g);
         g.connect(bellCtx.destination);
         osc.start(t0);
-        osc.stop(t0 + 0.32);
+        osc.stop(t0 + 0.24);
       }
-      // total durasi bell ~0.6s — onDone TEPAT setelah bell selesai
-      const totalMs = 280 + 300 + 80; // nada terakhir berakhir 280+300, +80 buffer
+      // total durasi bell ~0.46s — onDone TEPAT setelah bell selesai
+      const totalMs = 200 + 220 + 60; // nada terakhir berakhir 200+220, +60 buffer
       setTimeout(onDone, totalMs);
     } catch {
       onDone(); // bell gagal → tetap lanjut (jangan blokir voice)
