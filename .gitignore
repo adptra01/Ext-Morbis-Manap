@@ -5,6 +5,7 @@ node_modules/
 # dist/
 *.crx
 *.xpi
+*.zip
 *.pem
 
 # Logs

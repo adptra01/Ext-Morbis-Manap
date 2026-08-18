@@ -26,19 +26,24 @@ async function packChrome() {
   const manifest = getManifest();
   const version = manifest.version;
   const crxPath = join(deployDir, `morbis-v${version}.crx`);
+  const zipPath = join(deployDir, `morbis-v${version}.zip`);
 
-  try {
-    // Use chrome-extension-cli if available, otherwise use manual packing
-    execSync(`npx chrome-extension-cli pack ${distDir} --output ${crxPath}`, {
-      stdio: 'inherit',
-      cwd: rootDir,
-    });
-    console.log(`[pack] Chrome extension packed → ${crxPath}`);
-  } catch {
-    console.log('[pack] chrome-extension-cli not available, creating zip instead');
-    const zipPath = join(deployDir, `morbis-v${version}.zip`);
+  // CRX auto-update WAJIB signed dgn .pem (disimpan offline developer).
+  // npx chrome-extension-cli adalah scaffold tool (bukan packer) & exit 0
+  // tanpa menghasilkan file — tidak dipakai. CRX di-pack MANUAL via
+  // chrome://extensions → "Pack extension" (dist/ + .pem), hasilnya ditaruh
+  // di deploy/ sebagai morbis-v<version>.crx.
+  if (existsSync(crxPath)) {
+    console.log(`[pack] CRX v${version} ditemukan (pack manual) → dipakai`);
+  } else {
+    // Fallback: ZIP utk load-unpacked / distribusi manual.
     execSync(`cd ${distDir} && zip -r ${zipPath} .`, { stdio: 'inherit' });
     console.log(`[pack] Extension zipped → ${zipPath}`);
+    console.log('[pack] PERHATIAN: morbis-v' + version + '.crx TIDAK ada!');
+    console.log('[pack] Auto-update kiosk Chromium butuh CRX signed dgn .pem.');
+    console.log('[pack] Pack manual: chrome://extensions → Developer mode → Pack extension');
+    console.log('[pack]   root = dist/ , key = .pem yg disimpan offline (jangan buat baru!)');
+    console.log('[pack]   lalu salin .crx ke deploy/morbis-v' + version + '.crx');
   }
 
   // Update auto-update manifest
