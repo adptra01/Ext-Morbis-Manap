@@ -102,17 +102,21 @@ var __morbis_feature = (() => {
     DONE: { label: 'SELESAI', icon: '\u26AA', bg: '#e9ecef', fg: '#495057' },
     SKIPPED: { label: 'LEWAT', icon: '\u26AB', bg: '#f8f9fa', fg: '#6c757d' },
   };
-  var STATUS_ORDER = {
-    WAITING: 0,
-    CALLED: 1,
-    DEFERRED: 2,
-    SKIPPED: 3,
-    DONE: 4,
+  var CAT_META = {
+    tunggal: { label: 'Non Racikan', accent: '#0284c7', soft: '#e0f2fe' },
+    racikan: { label: 'Racikan', accent: '#d97706', soft: '#fef3c7' },
   };
   var lastState = '';
   var POLL_MS = 2e3;
   var lastRows = [];
   var lastTanggal = '';
+  function catOf(num) {
+    return String(num || '')
+      .toUpperCase()
+      .startsWith('R')
+      ? 'racikan'
+      : 'tunggal';
+  }
   function printTicket(r) {
     printKartuAntrian({
       nomorResep: r.resep_id || '',
@@ -176,22 +180,7 @@ var __morbis_feature = (() => {
       header.style.display = 'none';
     }
   }
-  function buildPanel() {
-    const p = document.createElement('div');
-    p.id = 'ext-farmasi-operator';
-    p.style.cssText =
-      'padding:16px;max-width:1100px;margin:0 auto;font:14px/1.5 system-ui,sans-serif;color:#212529;background:#f8f9fa;min-height:90vh;box-sizing:border-box;';
-    p.innerHTML =
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;"><b style="font-size:18px;color:#0f5132;">Antrian Farmasi \u2014 Operasional</b><div style="display:flex;gap:8px;align-items:center;"><span id="ext-op-status" style="color:#6c757d;font-size:12px;">memuat\u2026</span><button id="ext-op-print-sheet" style="padding:6px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">\u{1F5A8} Cetak Sheet A4</button><button id="ext-op-refresh" style="padding:6px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">Segarkan</button></div></div><div id="ext-op-current" style="margin-bottom:14px;"></div><div id="ext-op-queues"></div>';
-    return p;
-  }
-  function callBtn(ev, label, num, eventId) {
-    const styles = {
-      CALL: 'background:#084298;color:#fff;',
-      RECALL: 'background:#286090;color:#fff;',
-      DEFER: 'background:#fff3cd;color:#664d03;border:1px solid #ffc107;',
-      DONE: 'background:#e9ecef;color:#212529;border:1px solid #ced4da;',
-    };
+  function iconBtn(ev, icon, title, num, eventId, opts) {
     return (
       '<button class="ext-op-act" data-ev="' +
       ev +
@@ -199,77 +188,151 @@ var __morbis_feature = (() => {
       num +
       '" data-eid="' +
       eventId +
-      '" style="padding:8px 14px;border:none;border-radius:8px;cursor:pointer;font-weight:600;' +
-      (styles[ev] || styles.DONE) +
-      '">' +
-      label +
+      '" title="' +
+      title +
+      '" aria-label="' +
+      title +
+      '" style="width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #ced4da;background:#fff;color:' +
+      (opts?.danger ? '#b02a37' : '#212529') +
+      ';border-radius:8px;cursor:pointer;font-size:15px;line-height:1;">' +
+      icon +
       '</button>'
     );
   }
-  function statusBadge(status) {
-    const m = STATUS_META[status] || STATUS_META.DONE;
+  function activeCard(r, cat) {
+    const m = CAT_META[cat];
     return (
-      '<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.03em;background:' +
-      m.bg +
-      ';color:' +
-      m.fg +
-      ';border:1px solid transparent;">' +
-      m.icon +
-      ' ' +
-      m.label +
-      '</span>'
-    );
-  }
-  function rowActions(r, prefix) {
-    const n = r.queue_number;
-    switch (r.status) {
-      case 'WAITING':
-        return callBtn('CALL', '\u{1F4E2} Panggil', n, prefix + '-call-' + n);
-      case 'CALLED':
-        return (
-          callBtn('RECALL', 'Panggil Ulang', n, prefix + '-recall-' + n) +
-          callBtn('DEFER', 'Tunda', n, prefix + '-defer-' + n) +
-          callBtn('DONE', 'Selesai', n, prefix + '-done-' + n)
-        );
-      case 'DEFERRED':
-      case 'SKIPPED':
-        return callBtn('RECALL', 'Panggil Ulang', n, prefix + '-recall-' + n);
-      default:
-        return '';
-    }
-  }
-  function rowCard(r, prefix) {
-    const jenis = r.jenis
-      ? `<span style="color:#6c757d;font-size:12px;"> \xB7 ${r.jenis}</span>`
-      : '';
-    const shift = r.shift
-      ? `<span style="color:#6c757d;font-size:12px;"> \xB7 Shift ${r.shift}</span>`
-      : '';
-    const calledAt = r.called_at
-      ? `<span style="color:#adb5bd;font-size:11px;margin-left:6px;">${r.called_at.slice(11, 16)}</span>`
-      : '';
-    const dim = r.status === 'DONE' || r.status === 'SKIPPED' ? 'opacity:.62;' : '';
-    return (
-      '<div class="ext-op-row" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#fff;border:1px solid #e9ecef;border-radius:10px;margin-bottom:8px;gap:10px;' +
-      dim +
-      '"><div style="display:flex;align-items:center;gap:10px;">' +
-      statusBadge(r.status) +
-      '<div><b style="font-size:16px;">' +
+      '<div style="background:#fff;border:3px solid ' +
+      m.accent +
+      ';border-radius:16px;padding:14px 16px;margin-bottom:10px;box-shadow:0 4px 14px -6px rgba(16,24,40,.14);"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:' +
+      m.accent +
+      ';margin-bottom:2px;">Sedang Dipanggil</div><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;"><b style="font-size:52px;line-height:1.05;letter-spacing:-.02em;color:' +
+      m.accent +
+      ';font-variant-numeric:tabular-nums;">' +
       r.queue_number +
-      calledAt +
-      '</b><div style="color:#495057;">' +
+      '</b><div style="text-align:right;min-width:0;"><div style="font-weight:700;font-size:17px;color:#212529;line-height:1.2;">' +
       (r.nama_pasien || '-') +
-      jenis +
-      shift +
-      '</div><div style="color:#adb5bd;font-size:11px;">resep ' +
-      (r.resep_id || '-') +
-      (r.norm ? ' \xB7 RM ' + r.norm : '') +
-      '</div></div></div><div style="flex-shrink:0;display:flex;gap:6px;"><button class="ext-op-print1" data-num="' +
-      r.queue_number +
-      '" style="padding:8px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;font-weight:600;" title="Cetak tiket pasien ini">\u{1F5A8}</button>' +
-      rowActions(r, prefix) +
+      '</div><div style="font-size:12px;color:#6c757d;">' +
+      (r.counter?.name ? 'Loket ' + r.counter.name : '') +
+      (r.called_at ? ' \xB7 ' + (r.called_at.slice(11, 16) || '') : '') +
+      '</div></div></div><div style="display:flex;gap:6px;margin-top:10px;justify-content:flex-end;">' +
+      iconBtn(
+        'RECALL',
+        '\u{1F501}',
+        'Panggil ulang',
+        r.queue_number,
+        'op-recall-' + r.queue_number,
+      ) +
+      iconBtn('DEFER', '\u23F8', 'Tunda', r.queue_number, 'op-defer-' + r.queue_number) +
+      iconBtn('DONE', '\u2714', 'Selesai', r.queue_number, 'op-done-' + r.queue_number) +
       '</div></div>'
     );
+  }
+  function miniRow(r, prefix) {
+    const actions =
+      r.status === 'WAITING'
+        ? iconBtn(
+            'CALL',
+            '\u{1F50A}',
+            'Panggil',
+            r.queue_number,
+            prefix + '-call-' + r.queue_number,
+          ) +
+          iconBtn(
+            'PRINT',
+            '\u{1F5A8}',
+            'Cetak tiket',
+            r.queue_number,
+            prefix + '-print-' + r.queue_number,
+            {
+              danger: false,
+            },
+          )
+        : r.status === 'CALLED'
+          ? iconBtn(
+              'RECALL',
+              '\u{1F501}',
+              'Panggil ulang',
+              r.queue_number,
+              prefix + '-recall-' + r.queue_number,
+            ) +
+            iconBtn(
+              'DEFER',
+              '\u23F8',
+              'Tunda',
+              r.queue_number,
+              prefix + '-defer-' + r.queue_number,
+            ) +
+            iconBtn('DONE', '\u2714', 'Selesai', r.queue_number, prefix + '-done-' + r.queue_number)
+          : iconBtn(
+              'RECALL',
+              '\u{1F501}',
+              'Panggil ulang',
+              r.queue_number,
+              prefix + '-recall-' + r.queue_number,
+            );
+    const badge =
+      r.status === 'WAITING'
+        ? ''
+        : '<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;background:' +
+          (STATUS_META[r.status]?.bg || '#e9ecef') +
+          ';color:' +
+          (STATUS_META[r.status]?.fg || '#495057') +
+          ';margin-right:6px;">' +
+          (STATUS_META[r.status]?.label || r.status) +
+          '</span>';
+    return (
+      '<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#fff;border:1px solid #e9ecef;border-radius:10px;margin-bottom:6px;">' +
+      badge +
+      '<b style="font-size:15px;color:#212529;min-width:52px;">' +
+      r.queue_number +
+      '</b><span style="flex:1;font-size:13px;color:#495057;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
+      (r.nama_pasien || '-') +
+      '</span><span style="display:flex;gap:4px;flex-shrink:0;">' +
+      actions +
+      '</span></div>'
+    );
+  }
+  function column(cat, active, next) {
+    const m = CAT_META[cat];
+    const nextList = next.slice(0, 5);
+    const nextBtn = nextList.length
+      ? '<button class="ext-op-act" data-ev="CALL" data-num="' +
+        nextList[0].queue_number +
+        '" data-eid="op-next-' +
+        cat +
+        '" style="width:100%;margin-top:8px;padding:12px;border:none;border-radius:10px;background:' +
+        m.accent +
+        ';color:#fff;font-size:15px;font-weight:800;cursor:pointer;">\u25B6 Selanjutnya \u2014 ' +
+        nextList[0].queue_number +
+        '</button>'
+      : '';
+    return (
+      '<div style="background:#f1f3f5;border:1px solid #dee2e6;border-radius:16px;padding:12px;display:flex;flex-direction:column;min-width:0;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;"><span style="width:10px;height:10px;border-radius:50%;background:' +
+      m.accent +
+      ';"></span><b style="font-size:15px;color:#212529;">' +
+      m.label +
+      '</b></div>' +
+      (active.length ? active.map((r) => activeCard(r, cat)).join('') : '') +
+      (active.length
+        ? ''
+        : '<div style="padding:14px;background:#fff;border:1px dashed #ced4da;border-radius:12px;color:#6c757d;text-align:center;font-size:13px;margin-bottom:10px;">Belum ada panggilan aktif</div>') +
+      '<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin:4px 2px 6px;">Berikutnya</div>' +
+      (nextList.length
+        ? nextList.map((r) => miniRow(r, 'op-' + cat)).join('')
+        : '<div style="padding:10px;color:#adb5bd;text-align:center;font-size:12px;">Tidak ada antrean berikutnya</div>') +
+      nextBtn +
+      '</div>'
+    );
+  }
+  function buildPanel() {
+    const p = document.createElement('div');
+    p.id = 'ext-farmasi-operator';
+    p.style.cssText =
+      'padding:14px;max-width:1500px;margin:0 auto;font:14px/1.5 system-ui,sans-serif;color:#212529;background:#f8f9fa;min-height:90vh;box-sizing:border-box;';
+    p.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;"><b style="font-size:18px;color:#0f5132;">Antrian Farmasi \u2014 Operasional</b><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><span id="ext-op-status" style="color:#6c757d;font-size:12px;">memuat\u2026</span><button id="ext-op-print-sheet" style="padding:7px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">\u{1F5A8} Cetak Sheet A4</button><button id="ext-op-refresh" style="padding:7px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">Segarkan</button></div></div><div id="ext-op-grid" style="display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:12px;align-items:start;"><div id="ext-col-tunggal"></div><div id="ext-col-racikan"></div><div id="ext-col-panel" style="background:#fff;border:1px solid #dee2e6;border-radius:16px;padding:12px;min-width:0;"></div></div>';
+    return p;
   }
   async function render() {
     const st = document.getElementById('ext-op-status');
@@ -296,47 +359,39 @@ var __morbis_feature = (() => {
       const key = JSON.stringify({ c: d.current, q: d.queues });
       if (key !== lastState) {
         lastState = key;
-        const cur = document.getElementById('ext-op-current');
-        const list = document.getElementById('ext-op-queues');
-        if (cur && list) {
-          cur.innerHTML = d.current.length
-            ? d.current
-                .map(
-                  (r) =>
-                    '<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#0f5132;color:#fff;border-radius:12px;margin-bottom:10px;gap:10px;"><div><div style="font-size:12px;opacity:.8;">Sedang dipanggil \xB7 ' +
-                    (r.counter?.name || 'LOKET') +
-                    '</div><b style="font-size:26px;">' +
-                    r.queue_number +
-                    '</b></div><div style="text-align:right;color:#fff;">' +
-                    (r.nama_pasien || '-') +
-                    '<div style="opacity:.8;font-size:12px;">' +
-                    (r.jenis || '') +
-                    '</div></div><div style="flex-shrink:0;display:flex;gap:8px;">' +
-                    callBtn(
-                      'RECALL',
-                      'Panggil Ulang',
-                      r.queue_number,
-                      'op-recall-' + r.queue_number,
-                    ) +
-                    callBtn('DEFER', 'Tunda', r.queue_number, 'op-defer-' + r.queue_number) +
-                    callBtn('DONE', 'Selesai', r.queue_number, 'op-done-' + r.queue_number) +
-                    '</div></div>',
-                )
-                .join('')
-            : '<div style="padding:12px 16px;background:#fff;border:1px dashed #ced4da;border-radius:10px;color:#6c757d;text-align:center;">Belum ada panggilan aktif</div>';
-          const queues = [...(d.queues || [])].sort((a, b) => {
-            const oa = STATUS_ORDER[a.status] ?? 9;
-            const ob = STATUS_ORDER[b.status] ?? 9;
-            if (oa !== ob) return oa - ob;
-            return a.queue_number.localeCompare(b.queue_number, void 0, { numeric: true });
+        const colT = document.getElementById('ext-col-tunggal');
+        const colR = document.getElementById('ext-col-racikan');
+        const colP = document.getElementById('ext-col-panel');
+        if (colT && colR && colP) {
+          const queues = d.queues || [];
+          const sortNum = (a, b) =>
+            a.queue_number.localeCompare(b.queue_number, void 0, { numeric: true });
+          const byCat = (cat) => ({
+            active: (d.current || []).filter((r) => catOf(r.queue_number) === cat),
+            next: queues
+              .filter((r) => catOf(r.queue_number) === cat && r.status === 'WAITING')
+              .sort(sortNum),
           });
-          list.innerHTML =
-            '<div style="font-size:13px;color:#6c757d;margin-bottom:8px;">Antrean Hari Ini \u2014 ' +
-            queues.length +
-            ' antrian</div>' +
-            (queues.length
-              ? queues.map((r) => rowCard(r, 'op-enq')).join('')
-              : '<div style="padding:12px;background:#fff;border:1px dashed #ced4da;border-radius:10px;color:#6c757d;text-align:center;">Tidak ada antrian hari ini</div>');
+          const t = byCat('tunggal');
+          const r2 = byCat('racikan');
+          colT.innerHTML = column('tunggal', t.active, t.next);
+          colR.innerHTML = column('racikan', r2.active, r2.next);
+          const special = queues
+            .filter((r) => r.status === 'DEFERRED' || r.status === 'SKIPPED')
+            .sort(sortNum);
+          colP.innerHTML =
+            '<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:8px;">Penerbitan & Kasus Khusus</div><div style="display:flex;gap:8px;margin-bottom:12px;"><button id="ext-op-print-sheet2" style="flex:1;padding:9px;border:1px solid #0f5132;background:#0f5132;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;">\u{1F5A8} Sheet A4</button><button id="ext-op-refresh2" style="flex:1;padding:9px;border:1px solid #ced4da;background:#fff;color:#212529;border-radius:8px;cursor:pointer;font-weight:700;">Segarkan</button></div><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:6px;">Ditunda / Lewat</div>' +
+            (special.length
+              ? special.map((r) => miniRow(r, 'op-sp')).join('')
+              : '<div style="padding:10px;color:#adb5bd;text-align:center;font-size:12px;">Tidak ada</div>') +
+            '<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin:14px 0 6px;">Selesai Hari Ini</div><div style="max-height:180px;overflow:auto;">' +
+            (queues
+              .filter((r) => r.status === 'DONE')
+              .sort(sortNum)
+              .map((r) => miniRow(r, 'op-done'))
+              .join('') ||
+              '<div style="padding:10px;color:#adb5bd;text-align:center;font-size:12px;">Belum ada</div>') +
+            '</div>';
         }
       }
       if (st) st.textContent = 'terhubung ke app (' + d.tanggal + ')';
@@ -346,6 +401,11 @@ var __morbis_feature = (() => {
     }
   }
   async function act(ev, num, eid) {
+    if (ev === 'PRINT') {
+      const row = lastRows.find((r) => r.queue_number === num);
+      if (row) printTicket(row);
+      return;
+    }
     const apiEvent = ev === 'DEFER' ? 'TUNDA' : ev;
     const ok = await pushQueueEvent({
       event_id: eid + '-' + Date.now().toString(36),
@@ -372,16 +432,15 @@ var __morbis_feature = (() => {
           );
           return;
         }
-        const p1 = e.target.closest('.ext-op-print1');
-        if (p1) {
-          const num = p1.getAttribute('data-num') || '';
-          const row = lastRows.find((r) => r.queue_number === num);
-          if (row) printTicket(row);
-          return;
-        }
       });
       document.getElementById('ext-op-print-sheet')?.addEventListener('click', printSheetA4);
       document.getElementById('ext-op-refresh')?.addEventListener('click', () => void render());
+      panel.addEventListener('click', (e) => {
+        const s2 = e.target.closest('#ext-op-print-sheet2');
+        if (s2) printSheetA4();
+        const r2 = e.target.closest('#ext-op-refresh2');
+        if (r2) void render();
+      });
       void render();
       void probeFarmasiAppBase().then(() => void render());
       window.setInterval(() => void render(), POLL_MS);
