@@ -18,6 +18,7 @@
  * Jalan di world ISOLATED (fetch ke app + MORBIS? tidak perlu sesi MORBIS).
  */
 import { pushQueueEvent, farmasiAppBase, probeFarmasiAppBase } from './shared/farmasiQueueSync';
+import { printKartuAntrian } from './shared/printKartu';
 
 interface DisplayRow {
   id: number;
@@ -48,6 +49,74 @@ interface DisplayData {
 
 let lastState = '';
 const POLL_MS = 2000; // ringan; delay panggilan di display mengikuti kecepatan ini
+/** Snapshot baris terakhir utk cetak tiket / sheet A4 (data dari app). */
+let lastRows: DisplayRow[] = [];
+let lastTanggal = '';
+
+/** Cetak tiket antrian pasien (kartu 1 lembar) — data dari app. */
+function printTicket(r: DisplayRow): void {
+  printKartuAntrian({
+    nomorResep: r.resep_id || '',
+    nama: r.nama_pasien || '-',
+    jenis: r.jenis || '',
+    unit: '',
+    tanggal: lastTanggal,
+    code: r.queue_number,
+  });
+}
+
+/** Cetak Sheet A4: grid semua nomor antrian hari ini (sudah dipanggil +
+ *  sedang dipanggil + menunggu), 2 kolom, utk dipegang petugas. */
+function printSheetA4(): void {
+  if (!lastRows.length) {
+    alert('Belum ada data antrian utk dicetak.');
+    return;
+  }
+  const win = window.open('', '_blank', 'width=900,height=1200');
+  if (!win) {
+    alert('Popup diblokir — izinkan popup untuk mencetak.');
+    return;
+  }
+  const rows = [...lastRows].sort((a, b) =>
+    a.queue_number.localeCompare(b.queue_number, undefined, { numeric: true }),
+  );
+  const items = rows
+    .map(
+      (r) =>
+        '<div style="display:flex;align-items:center;gap:10px;padding:6px 8px;border-bottom:1px solid #ddd;">' +
+        '<b style="min-width:70px;font-size:16px;color:#0f5132;">' +
+        r.queue_number +
+        '</b>' +
+        '<span style="flex:1;font-size:14px;">' +
+        (r.nama_pasien || '-') +
+        '</span>' +
+        '<span style="font-size:11px;color:#777;">' +
+        (r.jenis || '') +
+        '</span></div>',
+    )
+    .join('');
+  win.document.write(
+    '<html><head><title>Antrian Farmasi — Sheet A4</title></head>' +
+      '<body style="font-family:Arial,Helvetica,sans-serif;padding:10mm;">' +
+      '<div style="text-align:center;font-size:18px;font-weight:bold;text-transform:uppercase;margin-bottom:2px;">RSUD H. Abdul Manap</div>' +
+      '<div style="text-align:center;font-size:14px;margin-bottom:6px;">Daftar Antrian Farmasi — ' +
+      lastTanggal +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:2mm;border:1px solid #999;padding:4mm;">' +
+      items +
+      '</div>' +
+      '</body></html>',
+  );
+  win.document.close();
+  window.setTimeout(() => {
+    try {
+      win.focus();
+      win.print();
+    } catch {
+      /* popup ditutup sebelum print — abaikan */
+    }
+  }, 300);
+}
 
 function log(...args: unknown[]): void {
   console.log('[MORBIS Ext] operator:', ...args);
@@ -76,6 +145,7 @@ function buildPanel(): HTMLDivElement {
     '<b style="font-size:18px;color:#0f5132;">Antrian Farmasi — Operasional</b>' +
     '<div style="display:flex;gap:8px;align-items:center;">' +
     '<span id="ext-op-status" style="color:#6c757d;font-size:12px;">memuat…</span>' +
+    '<button id="ext-op-print-sheet" style="padding:6px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">🖨 Cetak Sheet A4</button>' +
     '<button id="ext-op-refresh" style="padding:6px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">Segarkan</button>' +
     '</div></div>' +
     '<div id="ext-op-current" style="margin-bottom:14px;"></div>' +
@@ -122,7 +192,10 @@ function rowCard(r: DisplayRow, prefix: string): string {
     (r.resep_id || '-') +
     (r.norm ? ' · RM ' + r.norm : '') +
     '</div></div>' +
-    '<div style="flex-shrink:0;">' +
+    '<div style="flex-shrink:0;display:flex;gap:6px;">' +
+    '<button class="ext-op-print1" data-num="' +
+    r.queue_number +
+    '" style="padding:8px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;font-weight:600;" title="Cetak tiket pasien ini">🖨</button>' +
     callBtn('CALL', '📢 Panggil', r.queue_number, prefix + '-call-' + r.queue_number) +
     '</div></div>'
   );
@@ -137,6 +210,19 @@ async function render(): Promise<void> {
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const d = (await res.json()) as DisplayData;
+    lastRows = [...(d.current || []), ...(d.waiting || []), ...(d.called || [])].map((r) => ({
+      id: (r as unknown as { id?: number }).id ?? 0,
+      queue_number: r.queue_number,
+      resep_id: (r as unknown as { resep_id?: string | null }).resep_id ?? null,
+      nama_pasien: (r as unknown as { nama_pasien?: string | null }).nama_pasien ?? null,
+      norm: (r as unknown as { norm?: string | null }).norm ?? null,
+      shift: (r as unknown as { shift?: string | null }).shift ?? null,
+      jenis: (r as unknown as { jenis?: string | null }).jenis ?? null,
+      status: r.status,
+      called_at: (r as unknown as { called_at?: string | null }).called_at ?? null,
+      counter: (r as unknown as { counter?: { name: string } | null }).counter ?? null,
+    }));
+    lastTanggal = d.tanggal;
     const key = JSON.stringify({ c: d.current, w: d.waiting });
     if (key !== lastState) {
       lastState = key;
@@ -248,13 +334,23 @@ function init(): void {
     (document.getElementById('isi')?.parentElement || document.body).appendChild(panel);
     panel.addEventListener('click', (e) => {
       const btn = (e.target as HTMLElement).closest<HTMLElement>('.ext-op-act');
-      if (!btn) return;
-      void act(
-        btn.getAttribute('data-ev') || '',
-        btn.getAttribute('data-num') || '',
-        btn.getAttribute('data-eid') || '',
-      );
+      if (btn) {
+        void act(
+          btn.getAttribute('data-ev') || '',
+          btn.getAttribute('data-num') || '',
+          btn.getAttribute('data-eid') || '',
+        );
+        return;
+      }
+      const p1 = (e.target as HTMLElement).closest<HTMLElement>('.ext-op-print1');
+      if (p1) {
+        const num = p1.getAttribute('data-num') || '';
+        const row = lastRows.find((r) => r.queue_number === num);
+        if (row) printTicket(row);
+        return;
+      }
     });
+    document.getElementById('ext-op-print-sheet')?.addEventListener('click', printSheetA4);
     document.getElementById('ext-op-refresh')?.addEventListener('click', () => void render());
     void render();
     void probeFarmasiAppBase().then(() => void render()); // fallback IP bila DNS gagal

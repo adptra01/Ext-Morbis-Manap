@@ -68,9 +68,87 @@ var __morbis_feature = (() => {
     }
   }
 
+  // src/features/shared/printKartu.ts
+  function printKartuAntrian(data) {
+    const win = window.open('', '_blank', 'width=400,height=560');
+    if (!win) {
+      alert('Popup diblokir \u2014 izinkan popup untuk mencetak.');
+      return false;
+    }
+    const jenisLine =
+      data.jenis || data.unit
+        ? `<div style="font-size:16px;margin-top:2px;">${[data.jenis, data.unit].filter(Boolean).join(' \xB7 ')}</div>`
+        : '';
+    win.document.write(
+      `<html><head><title>Antrian Farmasi</title></head><body style="width:320px;padding-top:10px;font-family:Arial,Helvetica,sans-serif;text-align:center;"><div style="font-size:16px;font-weight:bold;text-transform:uppercase;">RSUD H. Abdul Manap</div><div style="font-size:14px;margin-top:2px;">Antrian Farmasi</div><div style="margin-top:14px;"><div style="font-size:110px;font-weight:900;letter-spacing:-2px;line-height:1;">${data.code}</div></div><div style="font-size:20px;font-weight:bold;margin-top:10px;">${data.nama}</div>` +
+        jenisLine +
+        `<div style="font-size:11px;margin-top:10px;color:#333;">${data.tanggal}</div><div style="font-size:13px;margin-top:14px;color:#555;">Silakan menunggu panggilan</div></body></html>`,
+    );
+    win.document.close();
+    window.setTimeout(() => {
+      try {
+        win.focus();
+        win.print();
+      } catch {}
+    }, 300);
+    return true;
+  }
+
   // src/features/antrianFarmasiOperator.ts
   var lastState = '';
   var POLL_MS = 2e3;
+  var lastRows = [];
+  var lastTanggal = '';
+  function printTicket(r) {
+    printKartuAntrian({
+      nomorResep: r.resep_id || '',
+      nama: r.nama_pasien || '-',
+      jenis: r.jenis || '',
+      unit: '',
+      tanggal: lastTanggal,
+      code: r.queue_number,
+    });
+  }
+  function printSheetA4() {
+    if (!lastRows.length) {
+      alert('Belum ada data antrian utk dicetak.');
+      return;
+    }
+    const win = window.open('', '_blank', 'width=900,height=1200');
+    if (!win) {
+      alert('Popup diblokir \u2014 izinkan popup untuk mencetak.');
+      return;
+    }
+    const rows = [...lastRows].sort((a, b) =>
+      a.queue_number.localeCompare(b.queue_number, void 0, { numeric: true }),
+    );
+    const items = rows
+      .map(
+        (r) =>
+          '<div style="display:flex;align-items:center;gap:10px;padding:6px 8px;border-bottom:1px solid #ddd;"><b style="min-width:70px;font-size:16px;color:#0f5132;">' +
+          r.queue_number +
+          '</b><span style="flex:1;font-size:14px;">' +
+          (r.nama_pasien || '-') +
+          '</span><span style="font-size:11px;color:#777;">' +
+          (r.jenis || '') +
+          '</span></div>',
+      )
+      .join('');
+    win.document.write(
+      '<html><head><title>Antrian Farmasi \u2014 Sheet A4</title></head><body style="font-family:Arial,Helvetica,sans-serif;padding:10mm;"><div style="text-align:center;font-size:18px;font-weight:bold;text-transform:uppercase;margin-bottom:2px;">RSUD H. Abdul Manap</div><div style="text-align:center;font-size:14px;margin-bottom:6px;">Daftar Antrian Farmasi \u2014 ' +
+        lastTanggal +
+        '</div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:2mm;border:1px solid #999;padding:4mm;">' +
+        items +
+        '</div></body></html>',
+    );
+    win.document.close();
+    window.setTimeout(() => {
+      try {
+        win.focus();
+        win.print();
+      } catch {}
+    }, 300);
+  }
   function log(...args) {
     console.log('[MORBIS Ext] operator:', ...args);
   }
@@ -90,7 +168,7 @@ var __morbis_feature = (() => {
     p.style.cssText =
       'padding:16px;max-width:1100px;margin:0 auto;font:14px/1.5 system-ui,sans-serif;color:#212529;background:#f8f9fa;min-height:90vh;box-sizing:border-box;';
     p.innerHTML =
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;"><b style="font-size:18px;color:#0f5132;">Antrian Farmasi \u2014 Operasional</b><div style="display:flex;gap:8px;align-items:center;"><span id="ext-op-status" style="color:#6c757d;font-size:12px;">memuat\u2026</span><button id="ext-op-refresh" style="padding:6px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">Segarkan</button></div></div><div id="ext-op-current" style="margin-bottom:14px;"></div><div id="ext-op-waiting" style="margin-bottom:14px;"></div><div id="ext-op-history"></div>';
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;"><b style="font-size:18px;color:#0f5132;">Antrian Farmasi \u2014 Operasional</b><div style="display:flex;gap:8px;align-items:center;"><span id="ext-op-status" style="color:#6c757d;font-size:12px;">memuat\u2026</span><button id="ext-op-print-sheet" style="padding:6px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">\u{1F5A8} Cetak Sheet A4</button><button id="ext-op-refresh" style="padding:6px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">Segarkan</button></div></div><div id="ext-op-current" style="margin-bottom:14px;"></div><div id="ext-op-waiting" style="margin-bottom:14px;"></div><div id="ext-op-history"></div>';
     return p;
   }
   function callBtn(ev, label, num, eventId) {
@@ -127,7 +205,9 @@ var __morbis_feature = (() => {
       '</div><div style="color:#adb5bd;font-size:11px;">resep ' +
       (r.resep_id || '-') +
       (r.norm ? ' \xB7 RM ' + r.norm : '') +
-      '</div></div><div style="flex-shrink:0;">' +
+      '</div></div><div style="flex-shrink:0;display:flex;gap:6px;"><button class="ext-op-print1" data-num="' +
+      r.queue_number +
+      '" style="padding:8px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;font-weight:600;" title="Cetak tiket pasien ini">\u{1F5A8}</button>' +
       callBtn('CALL', '\u{1F4E2} Panggil', r.queue_number, prefix + '-call-' + r.queue_number) +
       '</div></div>'
     );
@@ -141,6 +221,19 @@ var __morbis_feature = (() => {
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const d = await res.json();
+      lastRows = [...(d.current || []), ...(d.waiting || []), ...(d.called || [])].map((r) => ({
+        id: r.id ?? 0,
+        queue_number: r.queue_number,
+        resep_id: r.resep_id ?? null,
+        nama_pasien: r.nama_pasien ?? null,
+        norm: r.norm ?? null,
+        shift: r.shift ?? null,
+        jenis: r.jenis ?? null,
+        status: r.status,
+        called_at: r.called_at ?? null,
+        counter: r.counter ?? null,
+      }));
+      lastTanggal = d.tanggal;
       const key = JSON.stringify({ c: d.current, w: d.waiting });
       if (key !== lastState) {
         lastState = key;
@@ -238,13 +331,23 @@ var __morbis_feature = (() => {
       (document.getElementById('isi')?.parentElement || document.body).appendChild(panel);
       panel.addEventListener('click', (e) => {
         const btn = e.target.closest('.ext-op-act');
-        if (!btn) return;
-        void act(
-          btn.getAttribute('data-ev') || '',
-          btn.getAttribute('data-num') || '',
-          btn.getAttribute('data-eid') || '',
-        );
+        if (btn) {
+          void act(
+            btn.getAttribute('data-ev') || '',
+            btn.getAttribute('data-num') || '',
+            btn.getAttribute('data-eid') || '',
+          );
+          return;
+        }
+        const p1 = e.target.closest('.ext-op-print1');
+        if (p1) {
+          const num = p1.getAttribute('data-num') || '';
+          const row = lastRows.find((r) => r.queue_number === num);
+          if (row) printTicket(row);
+          return;
+        }
       });
+      document.getElementById('ext-op-print-sheet')?.addEventListener('click', printSheetA4);
       document.getElementById('ext-op-refresh')?.addEventListener('click', () => void render());
       void render();
       void probeFarmasiAppBase().then(() => void render());
