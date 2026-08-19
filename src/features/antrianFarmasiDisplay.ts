@@ -1614,10 +1614,10 @@ declare global {
     });
     // TTS: ucapkan nomor; nama title-case agar TTS membacanya natural (bukan eja).
     const kalimat =
-      'Nomor antrian ' +
+      'Antrian farmasi ' +
       numberToWords(row.nomor) +
       (row.namaPasien ? ', atas nama ' + titleCase(String(row.namaPasien)) : '') +
-      ', silakan menuju farmasi.';
+      ', silahkan menuju farmasi.';
     // Antrean serial: bell → voice → voice (panggilan diucapkan DUA KALI —
     // permintaan user: pasien di ruang tunggu sering tak dengar sekali ucapan).
     // next() menunggu playVoice selesai per item, jadi pengulangan berjalan
