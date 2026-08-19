@@ -98,6 +98,27 @@ function extractNativeNumber(cell: HTMLElement | null): string {
 // Model A (2026-08-19): nomor native UT-xxx = nomor publik, sel tabel TIDAK
 // disanitasi (tampil apa adanya) — sanitizeAntrianCells/watchSanitize dihapus.
 
+/** Ambil nama pasien dari baris tabel (kolom Nama Pasien) — fallback ketika
+ *  data-resep-new tidak mengembalikan NAMA_PAS (kadang hilang). */
+function extractNamaPasienFromRow(tr: HTMLTableRowElement | null): string {
+  if (!tr) return '';
+  const tds = tr.querySelectorAll('td');
+  // Header penerimaan: No | No Resep | No Antrian | Nama Pasien | ...
+  // sel[3] = nama pasien (lihat thead); aman dgn cari sel berisi teks panjang.
+  let best = '';
+  for (const td of Array.from(tds).slice(3, 5)) {
+    const t = (td.textContent || '').trim();
+    if (t.length > best.length && !/^[0-9\s.:-]+$/.test(t)) best = t;
+  }
+  return best;
+}
+
+/** Nama pasien lengkap (huruf besar) dari API atau baris tabel. */
+function resolveNamaPasien(data: Record<string, unknown>, tr: HTMLTableRowElement | null): string {
+  const fromApi = String(data.NAMA_PAS ?? data.NAMA_PASIEN ?? '').trim();
+  return (fromApi || extractNamaPasienFromRow(tr)).toUpperCase();
+}
+
 /** Handler baru utk tombol no_antrian(idResep). */
 async function handleNoAntrian(idResep: string): Promise<void> {
   try {
@@ -148,7 +169,7 @@ async function handleNoAntrian(idResep: string): Promise<void> {
       event_id: queueEventId('enq', antrianId, nomor),
       event: 'ENQUEUE',
       resep_id: idResep,
-      nama_pasien: String(data.NAMA_PAS ?? '').toUpperCase(),
+      nama_pasien: resolveNamaPasien(data, tr),
       norm: String(data.ID_PASIEN ?? ''),
       shift,
       jenis: (row?.JENIS as string | null) ?? '',
@@ -165,18 +186,20 @@ async function handleNoAntrian(idResep: string): Promise<void> {
     const publicNumber = sync.queue_number || nomor;
     log('nomor publik', publicNumber);
 
-    // Tampilkan nomor app di kolom (ganti native) — pastikan tombol tetap ada.
+    // Tampilkan nomor app di kolom + ganti tombol jadi "Cetak Kembali".
     if (antrianCell && !antrianCell.hasAttribute('data-ext-code')) {
       const btnInCell = antrianCell.querySelector('button');
       const btnHtml = btnInCell ? btnInCell.outerHTML : '';
       antrianCell.innerHTML =
         `${publicNumber}<br>Shift : ${shift || '-'}` + (btnHtml ? '<br>' + btnHtml : '');
       antrianCell.setAttribute('data-ext-code', publicNumber);
+      antrianCell.setAttribute('data-ext-resep', idResep);
+      markCetakUlang(antrianCell, publicNumber, idResep);
     }
 
     printKartuAntrian({
       nomorResep: idResep,
-      nama: String(data.NAMA_PAS ?? '').toUpperCase(),
+      nama: resolveNamaPasien(data, tr),
       jenis: (row?.JENIS as string | null) ?? '',
       unit: String(row?.NAMA_UNIT ?? data.UNIT_TUJUAN_DEPO ?? ''),
       tanggal: String(data.WAKTU_PENGAJUAN ?? '').slice(0, 10),
@@ -186,6 +209,39 @@ async function handleNoAntrian(idResep: string): Promise<void> {
     log('gagal', e);
     alert('[MORBIS Ext] Gagal mengantrikan resep: ' + String((e as Error).message ?? e));
   }
+}
+
+/** Ganti tombol "No. Antrian" di sel menjadi "Cetak Kembali" (cetak kartu ulang,
+ *  tidak ENQUEUE lagi — nomor sudah terbit). */
+function markCetakUlang(cell: HTMLElement, code: string, idResep: string): void {
+  const btn = cell.querySelector('button');
+  if (!btn) return;
+  const klon = btn.cloneNode(true) as HTMLButtonElement;
+  klon.textContent = '🖨 Cetak Kembali';
+  klon.title = code + ' — cetak ulang kartu tanpa mengantrikan lagi';
+  klon.style.cssText =
+    'margin-top:4px;padding:3px 8px;font-size:11px;border:1px solid #0d6efd;' +
+    'background:#e7f1ff;color:#0d6efd;border-radius:6px;cursor:pointer;';
+  klon.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    void (async () => {
+      try {
+        const d = await fetchDataResep(idResep);
+        printKartuAntrian({
+          nomorResep: idResep,
+          nama: resolveNamaPasien(d, cell.closest('tr')),
+          jenis: '',
+          unit: String(d.UNIT_TUJUAN_DEPO ?? ''),
+          tanggal: String(d.WAKTU_PENGAJUAN ?? '').slice(0, 10),
+          code,
+        });
+      } catch (err) {
+        alert('[MORBIS Ext] Gagal cetak ulang: ' + String((err as Error).message ?? err));
+      }
+    })();
+  });
+  btn.replaceWith(klon);
 }
 
 /** Bungkus fungsi global no_antrian MORBIS — hanya sekali. */
@@ -215,3 +271,28 @@ if (document.readyState === 'loading') {
 // MORBIS bisa render ulang tabel setelah AJAX; pastikan wrap tetap aktif.
 window.setTimeout(wrapNoAntrian, 1000);
 window.setTimeout(wrapNoAntrian, 3000);
+
+/** Pass pembersihan: baris yang kolom No Antrian-nya sudah berisi nomor
+ *  (data-ext-code dari sesi ini ATAU native UT-xxx hasil antri sebelumnya)
+ *  → tombol "No. Antrian" diganti "Cetak Kembali" (jangan ENQUEUE 2x).
+ *  Berjalan berkala karena tabel MORBIS di-render ulang via AJAX. */
+function sweepCetakUlang(): void {
+  try {
+    document.querySelectorAll<HTMLTableRowElement>('tr[id]').forEach((tr) => {
+      const cell = tr.children[2] as HTMLElement | undefined;
+      if (!cell) return;
+      const btn = cell.querySelector('button');
+      if (!btn || btn.textContent?.includes('Cetak')) return; // sudah diproses
+      const code = cell.getAttribute('data-ext-code') || extractNativeNumber(cell);
+      const idResep = tr.getAttribute('id') || '';
+      if (!code || !idResep) return;
+      cell.setAttribute('data-ext-code', code);
+      cell.setAttribute('data-ext-resep', idResep);
+      markCetakUlang(cell, code, idResep);
+    });
+  } catch {
+    /* tabel belum siap — coba lagi nanti */
+  }
+}
+sweepCetakUlang();
+window.setInterval(sweepCetakUlang, 4000);

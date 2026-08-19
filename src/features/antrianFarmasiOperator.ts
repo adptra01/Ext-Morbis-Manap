@@ -17,7 +17,7 @@
  *
  * Jalan di world ISOLATED (fetch ke app + MORBIS? tidak perlu sesi MORBIS).
  */
-import { pushQueueEvent, farmasiAppBase } from './shared/farmasiQueueSync';
+import { pushQueueEvent, farmasiAppBase, probeFarmasiAppBase } from './shared/farmasiQueueSync';
 
 interface DisplayRow {
   id: number;
@@ -36,10 +36,11 @@ interface DisplayData {
   tanggal: string;
   current: DisplayRow[];
   waiting: DisplayRow[];
+  history: Array<{ queue_number: string; event: string; created_at: string | null }>;
 }
 
 let lastState = '';
-const POLL_MS = 5000;
+const POLL_MS = 2000; // ringan; delay panggilan di display mengikuti kecepatan ini
 
 function log(...args: unknown[]): void {
   console.log('[MORBIS Ext] operator:', ...args);
@@ -71,7 +72,8 @@ function buildPanel(): HTMLDivElement {
     '<button id="ext-op-refresh" style="padding:6px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">Segarkan</button>' +
     '</div></div>' +
     '<div id="ext-op-current" style="margin-bottom:14px;"></div>' +
-    '<div id="ext-op-waiting"></div>';
+    '<div id="ext-op-waiting" style="margin-bottom:14px;"></div>' +
+    '<div id="ext-op-history"></div>';
   return p;
 }
 
@@ -173,6 +175,33 @@ async function render(): Promise<void> {
       }
     }
     if (st) st.textContent = 'terhubung ke app (' + d.tanggal + ')';
+    // Riwayat panggilan hari ini — panggilan yang sudah dipanggil TETAP TAMPIL
+    // (tidak hilang dari layar operator walaupun status berubah).
+    const hist = document.getElementById('ext-op-history');
+    if (hist) {
+      const rows = (d.history || [])
+        .filter((h) => h.event === 'CALL' || h.event === 'RECALL')
+        .slice(0, 10);
+      hist.innerHTML =
+        '<div style="font-size:13px;color:#6c757d;margin-bottom:8px;">Sudah dipanggil hari ini</div>' +
+        (rows.length
+          ? rows
+              .map(
+                (h) =>
+                  '<div style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;' +
+                  'background:#fff;border:1px solid #e9ecef;border-radius:999px;margin:0 6px 6px 0;font-size:12.5px;">' +
+                  (h.event === 'RECALL'
+                    ? '<span style="color:#b45309;">🔁</span>'
+                    : '<span style="color:#0f5132;">📢</span>') +
+                  '<b>' +
+                  h.queue_number +
+                  '</b>' +
+                  (h.created_at ? '<span style="color:#adb5bd;font-size:11px;">' + (h.created_at.slice(11, 16) || '') + '</span>' : '') +
+                  '</div>',
+              )
+              .join('')
+          : '<div style="padding:12px;background:#fff;border:1px dashed #ced4da;border-radius:10px;color:#6c757d;text-align:center;">Belum ada panggilan hari ini</div>');
+    }
   } catch (e) {
     if (st) st.textContent = 'gagal hubungi app — cek CORS/BASE';
     log('display gagal:', (e as Error).message);
@@ -209,6 +238,7 @@ function init(): void {
     });
     document.getElementById('ext-op-refresh')?.addEventListener('click', () => void render());
     void render();
+    void probeFarmasiAppBase().then(() => void render()); // fallback IP bila DNS gagal
     window.setInterval(() => void render(), POLL_MS);
     log('panel operator aktif');
   };

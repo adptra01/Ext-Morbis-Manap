@@ -22,8 +22,40 @@
  * ponytail: interception berbasis URL string MORBIS — jika MORBIS mengubah endpoint
  * antrol/cetak atau struktur tombol, fitur ini perlu update.
  */
-import { pushQueueEvent, queueEventId } from './shared/farmasiQueueSync';
+import { pushQueueEvent, queueEventId, farmasiAppBase } from './shared/farmasiQueueSync';
 import { printKartuAntrian } from './shared/printKartu';
+
+/** Nama pasien: input hidden #nama_pasien, fallback header halaman (h2/panel
+ *  nama), lalu sel mana pun yang tampak seperti nama. */
+function resolveNamaPasien(): string {
+  const fromInput = document.querySelector<HTMLInputElement>('#nama_pasien')?.value?.trim();
+  if (fromInput) return fromInput.toUpperCase();
+  const headers = Array.from(document.querySelectorAll('h1, h2, h3, .page-title, .card-title'));
+  for (const h of headers) {
+    const t = (h.textContent || '').trim();
+    if (t && !/^(detail|edit|resep|.*antrian.*)$/i.test(t) && t.length < 60) {
+      return t.toUpperCase();
+    }
+  }
+  return '';
+}
+
+/** Cek ke App Antrian: resep sudah di-antri hari ini? (utk ganti tombol jadi
+ *  "Cetak Kembali"). Return nomor publik atau null. */
+async function lookupAntrian(resepId: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      farmasiAppBase() + '/api/queue/lookup?resep_id=' + encodeURIComponent(resepId),
+      { cache: 'no-store', credentials: 'omit' },
+    );
+    if (!res.ok) return null;
+    const j = (await res.json()) as { ok?: boolean; found?: boolean; queue?: { queue_number?: string } };
+    if (!j.ok || !j.found || !j.queue?.queue_number) return null;
+    return j.queue.queue_number;
+  } catch {
+    return null; // app tidak terjangkau — biarkan tombol normal
+  }
+}
 
 (() => {
   const ANTRL_URL = '/v2/antrol/search';
@@ -144,12 +176,12 @@ import { printKartuAntrian } from './shared/printKartu';
 
     // ENQUEUE ke App Antrian — TANPA queue_number (app assign T-XX/R-XX per
     // jenis). Idempoten via event_id. Nomor publik = response app.
-    const nama = document.querySelector<HTMLInputElement>('#nama_pasien')?.value ?? '';
+    const nama = resolveNamaPasien();
     const sync = await pushQueueEvent({
       event_id: queueEventId('enq', antrianId, idVisit),
       event: 'ENQUEUE',
       resep_id: nomorResep,
-      nama_pasien: String(nama).toUpperCase(),
+      nama_pasien: nama,
       norm: idPasien || undefined,
       shift: '',
       jenis: String(row?.JENIS ?? ''),
@@ -172,12 +204,47 @@ import { printKartuAntrian } from './shared/printKartu';
 
     printKartuAntrian({
       nomorResep,
-      nama: String(nama).toUpperCase(),
+      nama,
       jenis: String(row?.JENIS ?? ''),
       unit: String(row?.NAMA_UNIT ?? ''),
       tanggal: waktu ? waktu.slice(0, 10) : '',
       code,
     });
+    // Setelah berhasil: ganti tombol jadi "Cetak Kembali" (jangan ENQUEUE 2x).
+    convertToCetakUlang(code);
+  }
+
+  /** Tombol "Antrian & Cetak" → "🖨 Cetak Kembali" (cetak kartu saja, TANPA
+   *  antrol/ENQUEUE ulang — nomor sudah terbit di app). */
+  function convertToCetakUlang(code: string): void {
+    const btn = document.querySelector<HTMLButtonElement>('#ext-antrian-cetak');
+    if (!btn) return;
+    const klon = btn.cloneNode(true) as HTMLButtonElement;
+    klon.id = 'ext-antrian-cetak';
+    klon.textContent = '🖨 Cetak Kembali — ' + code;
+    klon.title = 'Nomor sudah terbit (' + code + '). Cetak ulang kartu tanpa mengantrikan lagi.';
+    klon.classList.remove('btn-success');
+    klon.classList.add('btn-outline-primary');
+    klon.style.cssText = 'margin-left:6px;';
+    klon.addEventListener('click', () => {
+      const idVisit = document.querySelector<HTMLInputElement>('#id_visit')?.value ?? '';
+      const nomorResep = document.querySelector<HTMLInputElement>('#nomor_resep')?.value ?? '';
+      if (!idVisit || !nomorResep) return;
+      klon.textContent = 'Mencetak…';
+      try {
+        printKartuAntrian({
+          nomorResep,
+          nama: resolveNamaPasien(),
+          jenis: '',
+          unit: '',
+          tanggal: '',
+          code,
+        });
+      } finally {
+        klon.textContent = '🖨 Cetak Kembali — ' + code;
+      }
+    });
+    btn.replaceWith(klon);
   }
 
   function addAntrianCetakButton(): void {
@@ -206,6 +273,13 @@ import { printKartuAntrian } from './shared/printKartu';
         });
       });
       saveBtn.insertAdjacentElement('afterend', btn);
+      // Sudah di-antri (nomor ada di app)? Ganti tombol jadi "Cetak Kembali".
+      const nomorResep = document.querySelector<HTMLInputElement>('#nomor_resep')?.value ?? '';
+      if (nomorResep) {
+        void lookupAntrian(nomorResep).then((code) => {
+          if (code) convertToCetakUlang(code);
+        });
+      }
     };
 
     if (document.readyState === 'loading') {

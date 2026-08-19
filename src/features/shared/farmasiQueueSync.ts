@@ -29,14 +29,69 @@ export interface QueueEventPayload {
 }
 
 /** BASE app — localStorage override utk tes; fallback konstanta PROD. */
+let cachedBase: string | null = null;
+let basePromise: Promise<string> | null = null;
+
+const BASE_CANDIDATES = [
+  'http://dev.rsudkotajambi.id/rs',
+  'http://103.147.236.138/rs',
+];
+
+/** Probe base mana yang hidup (GET /api/queue/lookup?resep_id= kosong → 422
+ *  artinya app reachable). Hasil di-cache per sesi. */
 export function farmasiAppBase(): string {
   try {
     const ov = localStorage.getItem('ext-farmasi-app-base');
-    if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
+    if (ov && /^https?:\/\//.test(ov)) {
+      const b = ov.replace(/\/+$/, '');
+      if (cachedBase !== b) {
+        cachedBase = b;
+        basePromise = null;
+      }
+      return b;
+    }
   } catch {
     /* ignore */
   }
+  if (cachedBase) return cachedBase;
+  // Pakai const PROD dulu (tak menunggu probe) — probe menyesuaikan saat
+  // fetch berikutnya; halaman pertama mungkin tetap gagal jika DNS internal
+  // tidak resolve. Cukup untuk kasus utama.
   return FARMASI_APP_BASE;
+}
+
+/** Probe semua kandidat base, kembalikan yang live (singkat). */
+export function probeFarmasiAppBase(): Promise<string> {
+  if (basePromise) return basePromise;
+  basePromise = (async (): Promise<string> => {
+    try {
+      const ov = localStorage.getItem('ext-farmasi-app-base');
+      if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
+    } catch {
+      /* ignore */
+    }
+    for (const base of BASE_CANDIDATES) {
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 2500);
+        const res = await fetch(base + '/api/queue/lookup?resep_id=probe', {
+          cache: 'no-store',
+          credentials: 'omit',
+          signal: ctrl.signal,
+        });
+        clearTimeout(t);
+        // 422/200 = app hidup; 404/CORS error = bukan app ini.
+        if (res.status === 200 || res.status === 422) {
+          cachedBase = base;
+          return base;
+        }
+      } catch {
+        /* coba kandidat berikutnya */
+      }
+    }
+    return FARMASI_APP_BASE;
+  })();
+  return basePromise;
 }
 
 /** POST event ke app antrian. Idempoten (event_id unik) — aman dipanggil ganda.
@@ -48,7 +103,10 @@ export async function pushQueueEvent(
   try {
     const body: Record<string, unknown> = { ...p };
     if (p.event === 'ENQUEUE') delete body.queue_number;
-    const res = await fetch(farmasiAppBase() + '/api/queue/events', {
+    // Probe base sekali (ringan) supaya fallback IP dipakai bila DNS domain
+    // internal RS tidak resolve.
+    const base = await probeFarmasiAppBase();
+    const res = await fetch(base + '/api/queue/events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
