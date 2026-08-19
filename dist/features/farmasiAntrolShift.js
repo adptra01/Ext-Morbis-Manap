@@ -5,21 +5,6 @@ var __morbis_feature = (() => {
   var cachedBase = null;
   var basePromise = null;
   var BASE_CANDIDATES = ['http://dev.rsudkotajambi.id/rs', 'http://103.147.236.138/rs'];
-  function farmasiAppBase() {
-    try {
-      const ov = localStorage.getItem('ext-farmasi-app-base');
-      if (ov && /^https?:\/\//.test(ov)) {
-        const b = ov.replace(/\/+$/, '');
-        if (cachedBase !== b) {
-          cachedBase = b;
-          basePromise = null;
-        }
-        return b;
-      }
-    } catch {}
-    if (cachedBase) return cachedBase;
-    return FARMASI_APP_BASE;
-  }
   function probeFarmasiAppBase() {
     if (basePromise) return basePromise;
     basePromise = (async () => {
@@ -132,7 +117,7 @@ var __morbis_feature = (() => {
   async function lookupAntrian(resepId) {
     try {
       const res = await fetch(
-        farmasiAppBase() + '/api/queue/lookup?resep_id=' + encodeURIComponent(resepId),
+        (await probeFarmasiAppBase()) + '/api/queue/lookup?resep_id=' + encodeURIComponent(resepId),
         { cache: 'no-store', credentials: 'omit' },
       );
       if (!res.ok) return null;
@@ -308,18 +293,23 @@ var __morbis_feature = (() => {
       }
       renderActionBar('ready');
     }
+    function getField(id, fallbackName) {
+      const el =
+        document.querySelector('#' + id) ||
+        (fallbackName ? document.querySelector('input[name="' + fallbackName + '"]') : null);
+      return (el?.value ?? '').trim();
+    }
     function renderActionBar(state, code) {
       const bar = document.querySelector('#ext-antrian-bar');
       if (!bar) return;
-      const nomorResep = document.querySelector('#nomor_resep')?.value ?? '';
+      const nomorResep = getField('nomor_resep', 'id_resep');
       if (state === 'issued' && code) {
         bar.innerHTML =
           '<span style="margin-left:6px;font-weight:700;color:#198754;">\u2713 Sudah antri \u2014 ' +
           code +
           '</span><button id="ext-antrian-cetak" class="btn btn-outline-primary" style="margin-left:6px;" title="Cetak ulang kartu tanpa mengantrikan lagi">\u{1F5A8} Cetak Kembali</button><button id="ext-antrian-batal" class="btn btn-outline-danger" style="margin-left:6px;" title="Batalkan antrian (resep batal/tidak jadi)">Batal antrian</button>';
         bar.querySelector('#ext-antrian-cetak')?.addEventListener('click', () => {
-          const idVisit2 = document.querySelector('#id_visit')?.value ?? '';
-          if (!idVisit2) return;
+          if (!nomorResep) return;
           try {
             printKartuAntrian({
               nomorResep,
@@ -339,10 +329,10 @@ var __morbis_feature = (() => {
         return;
       }
       bar.innerHTML =
-        '<button id="ext-antrian-racik" class="btn btn-success" style="margin-left:6px;" title="Antrikan sebagai obat RACIKAN (nomor R-XX)">Antrikan obat racik</button><button id="ext-antrian-tunggal" class="btn btn-primary" style="margin-left:6px;" title="Antrikan sebagai obat TUNGGAL (nomor T-XX)">Antrikan obat tunggal</button>';
-      const idVisit = document.querySelector('#id_visit')?.value ?? '';
+        '<button id="ext-antrian-racik" class="btn" style="margin-left:6px;background:#d97706;color:#fff;border-color:#d97706;" title="Antrikan sebagai obat RACIKAN (nomor R-XX)">Antrikan obat racik</button><button id="ext-antrian-tunggal" class="btn" style="margin-left:6px;background:#2193cf;color:#fff;border-color:#2193cf;" title="Antrikan sebagai obat TUNGGAL (nomor T-XX)">Antrikan obat tunggal</button>';
       const klik = (jenis) => {
-        const nomorResep2 = document.querySelector('#nomor_resep')?.value ?? '';
+        const idVisit = getField('id_visit');
+        const nomorResep2 = getField('nomor_resep', 'id_resep');
         if (!idVisit || !nomorResep2) {
           alert('[MORBIS Ext] data resep belum dimuat. Coba lagi.');
           return;
@@ -372,15 +362,23 @@ var __morbis_feature = (() => {
         bar.id = 'ext-antrian-bar';
         bar.style.cssText = 'display:inline-flex;align-items:center;flex-wrap:wrap;';
         saveBtn.insertAdjacentElement('afterend', bar);
-        const nomorResep = document.querySelector('#nomor_resep')?.value ?? '';
-        void lookupAntrian(nomorResep).then((info) => {
-          if (isResepBatal(info?.status)) {
-            bar.innerHTML =
-              '<span style="margin-left:6px;color:#b02a37;font-weight:700;">Resep dibatalkan \u2014 antrian tidak tersedia</span>';
+        const check = (attempt) => {
+          const nomorResep = getField('nomor_resep', 'id_resep');
+          if (!nomorResep) {
+            if (attempt < 8) window.setTimeout(() => check(attempt + 1), 750);
+            else renderActionBar('ready');
             return;
           }
-          renderActionBar(info ? 'issued' : 'ready', info?.queue_number);
-        });
+          void lookupAntrian(nomorResep).then((info) => {
+            if (isResepBatal(info?.status)) {
+              bar.innerHTML =
+                '<span style="margin-left:6px;color:#b02a37;font-weight:700;">Resep dibatalkan \u2014 antrian tidak tersedia</span>';
+              return;
+            }
+            renderActionBar(info ? 'issued' : 'ready', info?.queue_number);
+          });
+        };
+        check(0);
       };
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', tryInject, { once: true });

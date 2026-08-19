@@ -22,7 +22,7 @@
  * ponytail: interception berbasis URL string MORBIS — jika MORBIS mengubah endpoint
  * antrol/cetak atau struktur tombol, fitur ini perlu update.
  */
-import { pushQueueEvent, queueEventId, farmasiAppBase } from './shared/farmasiQueueSync';
+import { pushQueueEvent, queueEventId, probeFarmasiAppBase } from './shared/farmasiQueueSync';
 import { printKartuAntrian } from './shared/printKartu';
 
 /** Nama pasien: input hidden #nama_pasien → sel berlabel "Nama Pasien" →
@@ -69,7 +69,7 @@ async function lookupAntrian(
 ): Promise<{ queue_number: string; status: string } | null> {
   try {
     const res = await fetch(
-      farmasiAppBase() + '/api/queue/lookup?resep_id=' + encodeURIComponent(resepId),
+      (await probeFarmasiAppBase()) + '/api/queue/lookup?resep_id=' + encodeURIComponent(resepId),
       { cache: 'no-store', credentials: 'omit' },
     );
     if (!res.ok) return null;
@@ -300,12 +300,23 @@ function isResepBatal(antrianStatus?: string): boolean {
     renderActionBar('ready');
   }
 
+  /** Baca ID kunjungan utk antrol — field hidden MORBIS bisa terisi belakangan
+   *  (AJAX), jadi SELALU dibaca saat dibutuhkan (klik), bukan saat render. */
+  function getField(id: string, fallbackName?: string): string {
+    const el =
+      document.querySelector<HTMLInputElement>('#' + id) ||
+      (fallbackName
+        ? document.querySelector<HTMLInputElement>('input[name="' + fallbackName + '"]')
+        : null);
+    return (el?.value ?? '').trim();
+  }
+
   /** Render bar tombol aksi sesuai state: ready (belum antri) | issued (sudah
    *  antri) | hidden (resep batal — tanpa tombol antrian). */
   function renderActionBar(state: 'ready' | 'issued', code?: string): void {
     const bar = document.querySelector<HTMLElement>('#ext-antrian-bar');
     if (!bar) return;
-    const nomorResep = document.querySelector<HTMLInputElement>('#nomor_resep')?.value ?? '';
+    const nomorResep = getField('nomor_resep', 'id_resep');
     if (state === 'issued' && code) {
       bar.innerHTML =
         '<span style="margin-left:6px;font-weight:700;color:#198754;">✓ Sudah antri — ' +
@@ -314,8 +325,7 @@ function isResepBatal(antrianStatus?: string): boolean {
         '<button id="ext-antrian-cetak" class="btn btn-outline-primary" style="margin-left:6px;" title="Cetak ulang kartu tanpa mengantrikan lagi">🖨 Cetak Kembali</button>' +
         '<button id="ext-antrian-batal" class="btn btn-outline-danger" style="margin-left:6px;" title="Batalkan antrian (resep batal/tidak jadi)">Batal antrian</button>';
       bar.querySelector('#ext-antrian-cetak')?.addEventListener('click', () => {
-        const idVisit = document.querySelector<HTMLInputElement>('#id_visit')?.value ?? '';
-        if (!idVisit) return;
+        if (!nomorResep) return;
         try {
           printKartuAntrian({
             nomorResep,
@@ -336,12 +346,16 @@ function isResepBatal(antrianStatus?: string): boolean {
       });
       return;
     }
+    // Kontras: racik = oranye (#d97706), tunggal = biru (#2193cf) — teks putih.
     bar.innerHTML =
-      '<button id="ext-antrian-racik" class="btn btn-success" style="margin-left:6px;" title="Antrikan sebagai obat RACIKAN (nomor R-XX)">Antrikan obat racik</button>' +
-      '<button id="ext-antrian-tunggal" class="btn btn-primary" style="margin-left:6px;" title="Antrikan sebagai obat TUNGGAL (nomor T-XX)">Antrikan obat tunggal</button>';
-    const idVisit = document.querySelector<HTMLInputElement>('#id_visit')?.value ?? '';
+      '<button id="ext-antrian-racik" class="btn" style="margin-left:6px;background:#d97706;color:#fff;border-color:#d97706;" title="Antrikan sebagai obat RACIKAN (nomor R-XX)">Antrikan obat racik</button>' +
+      '<button id="ext-antrian-tunggal" class="btn" style="margin-left:6px;background:#2193cf;color:#fff;border-color:#2193cf;" title="Antrikan sebagai obat TUNGGAL (nomor T-XX)">Antrikan obat tunggal</button>';
     const klik = (jenis: 'racik' | 'tunggal'): void => {
-      const nomorResep2 = document.querySelector<HTMLInputElement>('#nomor_resep')?.value ?? '';
+      // Baca field SAAT KLIK — #id_visit & #nomor_resep diisi MORBIS via AJAX
+      // setelah halaman render (sebelumnya: dibaca saat render → kosong → error
+      // "[MORBIS Ext] data resep belum dimuat").
+      const idVisit = getField('id_visit');
+      const nomorResep2 = getField('nomor_resep', 'id_resep');
       if (!idVisit || !nomorResep2) {
         alert('[MORBIS Ext] data resep belum dimuat. Coba lagi.');
         return;
@@ -373,16 +387,26 @@ function isResepBatal(antrianStatus?: string): boolean {
       bar.id = 'ext-antrian-bar';
       bar.style.cssText = 'display:inline-flex;align-items:center;flex-wrap:wrap;';
       saveBtn.insertAdjacentElement('afterend', bar);
-      const nomorResep = document.querySelector<HTMLInputElement>('#nomor_resep')?.value ?? '';
-      // Sudah di-antri? → tampilkan nomor + Cetak Kembali + Batal antrian.
-      void lookupAntrian(nomorResep).then((info) => {
-        if (isResepBatal(info?.status)) {
-          bar.innerHTML =
-            '<span style="margin-left:6px;color:#b02a37;font-weight:700;">Resep dibatalkan — antrian tidak tersedia</span>';
+
+      // Lookup berulang: #nomor_resep bisa terisi belakangan (AJAX MORBIS).
+      // Kalau resep sudah antri → tombol Cetak Kembali + Batal antrian.
+      const check = (attempt: number): void => {
+        const nomorResep = getField('nomor_resep', 'id_resep');
+        if (!nomorResep) {
+          if (attempt < 8) window.setTimeout(() => check(attempt + 1), 750);
+          else renderActionBar('ready');
           return;
         }
-        renderActionBar(info ? 'issued' : 'ready', info?.queue_number);
-      });
+        void lookupAntrian(nomorResep).then((info) => {
+          if (isResepBatal(info?.status)) {
+            bar.innerHTML =
+              '<span style="margin-left:6px;color:#b02a37;font-weight:700;">Resep dibatalkan — antrian tidak tersedia</span>';
+            return;
+          }
+          renderActionBar(info ? 'issued' : 'ready', info?.queue_number);
+        });
+      };
+      check(0);
     };
 
     if (document.readyState === 'loading') {

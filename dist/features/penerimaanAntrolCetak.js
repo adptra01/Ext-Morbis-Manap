@@ -268,19 +268,23 @@ var __morbis_feature = (() => {
   }
   function hideNoAntrianColumn() {
     try {
-      const ths = document.querySelectorAll('thead th');
-      if (!ths.length) return;
-      let idx = -1;
-      Array.from(ths).forEach((th, i) => {
-        if (/no\s*antrian|nomor\s*antrian/i.test((th.textContent || '').trim())) idx = i;
+      document.querySelectorAll('table').forEach((table) => {
+        const ths = Array.from(table.querySelectorAll('th'));
+        let idx = -1;
+        ths.forEach((th, i) => {
+          if (/no\.?\s*antrian|nomor\s*antrian/i.test((th.textContent || '').trim())) {
+            idx = i;
+          }
+        });
+        if (idx < 0) return;
+        ths.forEach((th, i) => {
+          if (i === idx) th.style.display = 'none';
+        });
+        table.querySelectorAll('tr').forEach((tr) => {
+          const td = tr.children[idx];
+          if (td) td.style.display = 'none';
+        });
       });
-      if (idx < 0) return;
-      const sheet = document.createElement('style');
-      sheet.textContent = `table thead th:nth-child(${idx + 1}), table tbody td:nth-child(${idx + 1}) { display: none; }`;
-      sheet.id = 'ext-hide-no-antrian';
-      if (!document.getElementById('ext-hide-no-antrian')) {
-        document.head.appendChild(sheet);
-      }
     } catch {}
   }
   if (document.readyState === 'loading') {
@@ -300,6 +304,7 @@ var __morbis_feature = (() => {
   window.setTimeout(wrapNoAntrian, 3e3);
   window.setTimeout(hideNoAntrianColumn, 1e3);
   window.setTimeout(hideNoAntrianColumn, 3e3);
+  window.setInterval(hideNoAntrianColumn, 3e3);
   function sweepCetakUlang() {
     try {
       document.querySelectorAll('tr[id]').forEach((tr) => {

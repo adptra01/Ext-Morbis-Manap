@@ -257,25 +257,31 @@ function wrapNoAntrian(): void {
   void orig; // tombol native lama tidak dipakai lagi — perilaku diganti penuh
 }
 
-/** Sembunyikan kolom "No Antrian" (indeks 2: No, No Resep, No Antrian, ...) —
- *  antrian kini diterbitkan dari halaman DETAIL (tombol racik/tunggal), bukan
- *  dari list. Tabel MORBIS di-render ulang via AJAX → jalankan berkala. */
+/** Sembunyikan kolom "No Antrian" — antrian kini diterbitkan dari halaman
+ *  DETAIL (tombol racik/tunggal), bukan dari list. Header MORBIS bisa `<thead>`
+ *  atau `<tr><th>` langsung; cari th berteks "No Antrian" di SEMUA tabel, lalu
+ *  sembunyikan th + semua td pada index yang sama (style langsung, bukan CSS
+ *  sheet — tahan struktur apapun). Tabel di-render ulang via AJAX → jalankan
+ *  berkala. */
 function hideNoAntrianColumn(): void {
   try {
-    const ths = document.querySelectorAll('thead th');
-    if (!ths.length) return;
-    // Cari index kolom berjudul "No Antrian" (fleksibel terhadap posisi).
-    let idx = -1;
-    Array.from(ths).forEach((th, i) => {
-      if (/no\s*antrian|nomor\s*antrian/i.test((th.textContent || '').trim())) idx = i;
+    document.querySelectorAll('table').forEach((table) => {
+      const ths = Array.from(table.querySelectorAll('th'));
+      let idx = -1;
+      ths.forEach((th, i) => {
+        if (/no\.?\s*antrian|nomor\s*antrian/i.test((th.textContent || '').trim())) {
+          idx = i;
+        }
+      });
+      if (idx < 0) return;
+      ths.forEach((th, i) => {
+        if (i === idx) (th as HTMLElement).style.display = 'none';
+      });
+      table.querySelectorAll('tr').forEach((tr) => {
+        const td = tr.children[idx] as HTMLElement | undefined;
+        if (td) td.style.display = 'none';
+      });
     });
-    if (idx < 0) return;
-    const sheet = document.createElement('style');
-    sheet.textContent = `table thead th:nth-child(${idx + 1}), table tbody td:nth-child(${idx + 1}) { display: none; }`;
-    sheet.id = 'ext-hide-no-antrian';
-    if (!document.getElementById('ext-hide-no-antrian')) {
-      document.head.appendChild(sheet);
-    }
   } catch {
     /* tabel belum siap */
   }
@@ -299,6 +305,7 @@ window.setTimeout(wrapNoAntrian, 1000);
 window.setTimeout(wrapNoAntrian, 3000);
 window.setTimeout(hideNoAntrianColumn, 1000);
 window.setTimeout(hideNoAntrianColumn, 3000);
+window.setInterval(hideNoAntrianColumn, 3000);
 
 /** Pass pembersihan: baris yang kolom No Antrian-nya sudah berisi nomor
  *  (data-ext-code dari sesi ini ATAU native UT-xxx hasil antri sebelumnya)
