@@ -87,7 +87,7 @@ const STATUS_META: Record<string, { label: string; dot: string; bg: string; fg: 
 /** Aksen warna per kategori: tunggal = biru, racikan = oranye (konsisten TV). */
 const CAT_META: Record<string, { label: string; accent: string; soft: string }> = {
   tunggal: { label: 'Non Racikan', accent: '#2193cf', soft: '#e7f1ff' },
-  racikan: { label: 'Racikan', accent: '#2445d6', soft: '#e0e7ff' },
+  racikan: { label: 'Racikan', accent: '#d97706', soft: '#fef3c7' },
 };
 
 let lastState = '';

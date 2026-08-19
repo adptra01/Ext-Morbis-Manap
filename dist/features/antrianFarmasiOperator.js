@@ -130,7 +130,7 @@ var __morbis_feature = (() => {
   };
   var CAT_META = {
     tunggal: { label: 'Non Racikan', accent: '#2193cf', soft: '#e7f1ff' },
-    racikan: { label: 'Racikan', accent: '#2445d6', soft: '#e0e7ff' },
+    racikan: { label: 'Racikan', accent: '#d97706', soft: '#fef3c7' },
   };
   var lastState = '';
   var POLL_MS = 2e3;
