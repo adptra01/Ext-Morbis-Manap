@@ -173,16 +173,79 @@ function log(...args: unknown[]): void {
   console.log('[MORBIS Ext] operator:', ...args);
 }
 
-/** Sembunyikan UI native MORBIS di #isi (tabel + kontrol) — diganti panel app. */
+/** Sembunyikan UI native MORBIS di #isi (tabel + kontrol) + HEADER (white bar)
+ *  — diganti panel app. Header MORBIS (div.header) memakan vertical space
+ *  sia-sia; tombol Reset/Display-nya dipindah ke panel (lihat moveNativeButtons). */
 function hideNative(): void {
   const isi = document.getElementById('isi');
-  if (!isi) return;
-  isi.style.display = 'none';
+  if (isi) isi.style.display = 'none';
+  document.querySelectorAll('div.header, header, .header, .navbar, .topbar').forEach((el) => {
+    if (!el.hasAttribute('data-ext-op-hidden')) {
+      el.setAttribute('data-ext-op-hidden', '1');
+      (el as HTMLElement).style.display = 'none';
+    }
+  });
   const header = document.querySelector<HTMLElement>('h1, h2, .page-header, .card-header');
   if (header && !header.hasAttribute('data-ext-op-hidden')) {
     header.setAttribute('data-ext-op-hidden', '1');
     header.style.display = 'none';
   }
+}
+
+/** Pindahkan tombol native MORBIS "Reset Antrian" & "Display" ke bar tombol
+ *  panel (sudut kanan, setelah Cetak Sheet A4 & Segarkan). Reset = outline
+ *  merah + jarak lebar dari Display (hindari miss-click — aksi destruktif);
+ *  Display = hijau solid (navigasi aman) + buka tab BARU (jangan kehilangan
+ *  dashboard operator). */
+function moveNativeButtons(): void {
+  const bar = document.querySelector<HTMLElement>('#ext-op-actions');
+  if (!bar || bar.querySelector('#ext-op-reset')) return;
+
+  const wrap = document.createElement('span');
+  wrap.style.cssText = 'display:flex;gap:8px;align-items:center;flex-wrap:wrap;';
+
+  const reset = document.querySelector<HTMLElement>(
+    'button[onclick*="reset_antrian"], input[onclick*="reset_antrian"]',
+  );
+  const display = document.querySelector<HTMLElement>(
+    'button[onclick*="view-call-websocet"], input[onclick*="view-call-websocet"]',
+  );
+
+  if (reset) {
+    const clone = reset.cloneNode(true) as HTMLElement;
+    clone.id = 'ext-op-reset';
+    // Outline merah (peringatan) + jarak lebar di kiri — jauh dari Display.
+    clone.setAttribute(
+      'data-tip',
+      'Kembalikan nomor antrian ke awal hari — aksi destruktif (hapus status recall)',
+    );
+    clone.setAttribute('title', 'Reset Antrian — aksi destruktif, gunakan hati-hati');
+    clone.setAttribute(
+      'style',
+      'margin-left:28px;padding:7px 14px;border:1.5px solid #dc3545;background:#fff;color:#dc3545;' +
+        'border-radius:8px;cursor:pointer;font-weight:700;',
+    );
+    wrap.appendChild(clone);
+  }
+
+  if (display) {
+    const clone = display.cloneNode(true) as HTMLElement;
+    clone.id = 'ext-op-display';
+    // Hijau solid (aksi navigasi aman) + buka tab BARU via window.open.
+    clone.setAttribute('data-tip', 'Buka layar TV (tab baru)');
+    clone.setAttribute('title', 'Buka layar TV antrian');
+    clone.setAttribute(
+      'style',
+      'padding:7px 14px;border:1px solid #00a65a;background:#00a65a;color:#fff;' +
+        'border-radius:8px;cursor:pointer;font-weight:700;',
+    );
+    clone.addEventListener('click', () => {
+      window.open('/public/antrian-farmasi-v2/view-call-websocet-v2', '_blank');
+    });
+    wrap.appendChild(clone);
+  }
+
+  if (wrap.children.length) bar.appendChild(wrap);
 }
 
 /** Tombol aksi — IKON kecil dengan tooltip (data-ev/data-num/data-eid). */
@@ -369,7 +432,7 @@ function buildPanel(): HTMLDivElement {
     '</style>' +
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">' +
     '<b style="font-size:18px;color:#2193cf;">Antrian Farmasi — Operasional</b>' +
-    '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">' +
+    '<div id="ext-op-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">' +
     '<span id="ext-op-status" style="color:#6c757d;font-size:12px;">memuat…</span>' +
     '<button id="ext-op-print-sheet" data-tip="Cetak daftar semua nomor antrian hari ini (format A4)" style="padding:7px 14px;border:1px solid #2193cf;background:#2193cf;color:#fff;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
     svg('printer', 14, '#fff') +
@@ -487,6 +550,7 @@ function init(): void {
     if (document.getElementById('ext-farmasi-operator')) return;
     const panel = buildPanel();
     (document.getElementById('isi')?.parentElement || document.body).appendChild(panel);
+    moveNativeButtons();
     panel.addEventListener('click', (e) => {
       const btn = (e.target as HTMLElement).closest<HTMLElement>('.ext-op-act');
       if (btn) {

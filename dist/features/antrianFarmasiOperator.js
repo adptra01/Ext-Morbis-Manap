@@ -202,13 +202,59 @@ var __morbis_feature = (() => {
   }
   function hideNative() {
     const isi = document.getElementById('isi');
-    if (!isi) return;
-    isi.style.display = 'none';
+    if (isi) isi.style.display = 'none';
+    document.querySelectorAll('div.header, header, .header, .navbar, .topbar').forEach((el) => {
+      if (!el.hasAttribute('data-ext-op-hidden')) {
+        el.setAttribute('data-ext-op-hidden', '1');
+        el.style.display = 'none';
+      }
+    });
     const header = document.querySelector('h1, h2, .page-header, .card-header');
     if (header && !header.hasAttribute('data-ext-op-hidden')) {
       header.setAttribute('data-ext-op-hidden', '1');
       header.style.display = 'none';
     }
+  }
+  function moveNativeButtons() {
+    const bar = document.querySelector('#ext-op-actions');
+    if (!bar || bar.querySelector('#ext-op-reset')) return;
+    const wrap = document.createElement('span');
+    wrap.style.cssText = 'display:flex;gap:8px;align-items:center;flex-wrap:wrap;';
+    const reset = document.querySelector(
+      'button[onclick*="reset_antrian"], input[onclick*="reset_antrian"]',
+    );
+    const display = document.querySelector(
+      'button[onclick*="view-call-websocet"], input[onclick*="view-call-websocet"]',
+    );
+    if (reset) {
+      const clone = reset.cloneNode(true);
+      clone.id = 'ext-op-reset';
+      clone.setAttribute(
+        'data-tip',
+        'Kembalikan nomor antrian ke awal hari \u2014 aksi destruktif (hapus status recall)',
+      );
+      clone.setAttribute('title', 'Reset Antrian \u2014 aksi destruktif, gunakan hati-hati');
+      clone.setAttribute(
+        'style',
+        'margin-left:28px;padding:7px 14px;border:1.5px solid #dc3545;background:#fff;color:#dc3545;border-radius:8px;cursor:pointer;font-weight:700;',
+      );
+      wrap.appendChild(clone);
+    }
+    if (display) {
+      const clone = display.cloneNode(true);
+      clone.id = 'ext-op-display';
+      clone.setAttribute('data-tip', 'Buka layar TV (tab baru)');
+      clone.setAttribute('title', 'Buka layar TV antrian');
+      clone.setAttribute(
+        'style',
+        'padding:7px 14px;border:1px solid #00a65a;background:#00a65a;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;',
+      );
+      clone.addEventListener('click', () => {
+        window.open('/public/antrian-farmasi-v2/view-call-websocet-v2', '_blank');
+      });
+      wrap.appendChild(clone);
+    }
+    if (wrap.children.length) bar.appendChild(wrap);
   }
   function iconBtn(ev, icon, title, num, eventId, opts) {
     return (
@@ -360,7 +406,7 @@ var __morbis_feature = (() => {
     p.style.cssText =
       'padding:14px;max-width:1500px;margin:0 auto;font:14px/1.5 system-ui,sans-serif;color:#212529;background:#f8f9fa;min-height:90vh;box-sizing:border-box;';
     p.innerHTML =
-      '<style>#ext-farmasi-operator svg{display:inline-block !important;visibility:visible !important;width:16px;height:16px;flex:none;vertical-align:middle}#ext-farmasi-operator button{font-family:inherit}#ext-farmasi-operator button svg{pointer-events:none}#ext-farmasi-operator [data-tip]{position:relative}#ext-farmasi-operator [data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#212529;color:#fff;font-size:11px;font-weight:600;line-height:1.4;white-space:nowrap;padding:4px 8px;border-radius:6px;z-index:99;box-shadow:0 2px 8px rgba(0,0,0,.25)}#ext-farmasi-operator [data-tip]:hover::before{content:"";position:absolute;bottom:calc(100% + 2px);left:50%;transform:translateX(-50%);border:4px solid transparent;border-top-color:#212529;z-index:99}</style><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;"><b style="font-size:18px;color:#2193cf;">Antrian Farmasi \u2014 Operasional</b><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><span id="ext-op-status" style="color:#6c757d;font-size:12px;">memuat\u2026</span><button id="ext-op-print-sheet" data-tip="Cetak daftar semua nomor antrian hari ini (format A4)" style="padding:7px 14px;border:1px solid #2193cf;background:#2193cf;color:#fff;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
+      '<style>#ext-farmasi-operator svg{display:inline-block !important;visibility:visible !important;width:16px;height:16px;flex:none;vertical-align:middle}#ext-farmasi-operator button{font-family:inherit}#ext-farmasi-operator button svg{pointer-events:none}#ext-farmasi-operator [data-tip]{position:relative}#ext-farmasi-operator [data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#212529;color:#fff;font-size:11px;font-weight:600;line-height:1.4;white-space:nowrap;padding:4px 8px;border-radius:6px;z-index:99;box-shadow:0 2px 8px rgba(0,0,0,.25)}#ext-farmasi-operator [data-tip]:hover::before{content:"";position:absolute;bottom:calc(100% + 2px);left:50%;transform:translateX(-50%);border:4px solid transparent;border-top-color:#212529;z-index:99}</style><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;"><b style="font-size:18px;color:#2193cf;">Antrian Farmasi \u2014 Operasional</b><div id="ext-op-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><span id="ext-op-status" style="color:#6c757d;font-size:12px;">memuat\u2026</span><button id="ext-op-print-sheet" data-tip="Cetak daftar semua nomor antrian hari ini (format A4)" style="padding:7px 14px;border:1px solid #2193cf;background:#2193cf;color:#fff;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
       svg('printer', 14, '#fff') +
       'Cetak Sheet A4</button><button id="ext-op-refresh" data-tip="Segarkan data antrean dari app" style="padding:7px 14px;border:1px solid #6c757d;background:#6c757d;color:#fff;border-radius:8px;cursor:pointer;">Segarkan</button></div></div><div id="ext-op-grid" style="display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:12px;align-items:start;"><div id="ext-col-tunggal"></div><div id="ext-col-racikan"></div><div id="ext-col-panel" style="background:#fff;border:1px solid #dee2e6;border-radius:16px;padding:12px;min-width:0;"></div></div>';
     return p;
@@ -455,6 +501,7 @@ var __morbis_feature = (() => {
       if (document.getElementById('ext-farmasi-operator')) return;
       const panel = buildPanel();
       (document.getElementById('isi')?.parentElement || document.body).appendChild(panel);
+      moveNativeButtons();
       panel.addEventListener('click', (e) => {
         const btn = e.target.closest('.ext-op-act');
         if (btn) {
