@@ -288,6 +288,11 @@ var __morbis_feature = (() => {
         resep_id: nomorResep,
       });
       if (!sync.ok) {
+        const info = await lookupAntrian(nomorResep);
+        if (!info) {
+          renderActionBar('ready');
+          return;
+        }
         alert('[MORBIS Ext] Gagal membatalkan antrian. Coba lagi.');
         return;
       }

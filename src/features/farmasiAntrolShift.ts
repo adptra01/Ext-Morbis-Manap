@@ -297,6 +297,14 @@ function isResepBatal(antrianStatus?: string): boolean {
       resep_id: nomorResep,
     });
     if (!sync.ok) {
+      // BATAL gagal — bisa karena record SUDAH dihapus (dari operator panel
+      // HAPUS atau BATAL sebelumnya). Kalau lookup bilang tidak ada → anggap
+      // sudah batal, jangan error.
+      const info = await lookupAntrian(nomorResep);
+      if (!info) {
+        renderActionBar('ready');
+        return;
+      }
       alert('[MORBIS Ext] Gagal membatalkan antrian. Coba lagi.');
       return;
     }
