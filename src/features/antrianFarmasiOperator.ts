@@ -217,7 +217,7 @@ function moveNativeButtons(): void {
     // Outline merah (peringatan) + jarak lebar di kiri — jauh dari Display.
     clone.setAttribute(
       'data-tip',
-      'Reset antrian DB app — semua antrian hari ini dihapus, nomor kembali ke awal',
+      'Reset antrian DB app — semua antrian hari ini kembali ke status awal, nomor dipanggil ulang dari T-01/R-01',
     );
     clone.setAttribute('title', 'Reset Antrian (DB app) — aksi destruktif');
     clone.setAttribute(
@@ -591,12 +591,13 @@ async function act(ev: string, num: string, eid: string): Promise<void> {
   }
 }
 
-/** Reset antrian di DB app (bukan MORBIS): semua antrian hari ini dihapus,
- *  nomor berikutnya mulai dari 01 lagi. Konfirmasi + cooldown anti salah klik. */
+/** Reset STATUS antrian di DB app (bukan MORBIS): semua antrian hari ini
+ *  kembali ke WAITING — display menampilkan ulang dari nomor pertama, bisa
+ *  dipanggil ulang dari awal. Record tidak dihapus. */
 async function resetQueueDb(): Promise<void> {
   if (
     !confirm(
-      'Reset antrian? SEMUA antrian hari ini di DB app akan dihapus dan nomor kembali ke awal. (Tidak menyentuh sistem MORBIS)',
+      'Reset antrian? Semua antrian hari ini akan kembali ke status awal dan bisa dipanggil ulang dari T-01/R-01. Record tidak dihapus. (Tidak menyentuh sistem MORBIS)',
     )
   ) {
     return;
@@ -611,8 +612,8 @@ async function resetQueueDb(): Promise<void> {
       credentials: 'omit',
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const j = (await res.json()) as { ok?: boolean; deleted?: number };
-    log('reset DB:', j.ok ? 'OK' : 'gagal', 'deleted', j.deleted);
+    const j = (await res.json()) as { ok?: boolean; reset?: number };
+    log('reset DB:', j.ok ? 'OK' : 'gagal', 'reset', j.reset);
     await render();
   } catch (e) {
     alert('[MORBIS Ext] Gagal reset antrian: ' + String((e as Error).message ?? e));

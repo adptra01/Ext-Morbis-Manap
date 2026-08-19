@@ -231,7 +231,7 @@ var __morbis_feature = (() => {
       clone.id = 'ext-op-reset';
       clone.setAttribute(
         'data-tip',
-        'Reset antrian DB app \u2014 semua antrian hari ini dihapus, nomor kembali ke awal',
+        'Reset antrian DB app \u2014 semua antrian hari ini kembali ke status awal, nomor dipanggil ulang dari T-01/R-01',
       );
       clone.setAttribute('title', 'Reset Antrian (DB app) \u2014 aksi destruktif');
       clone.setAttribute(
@@ -530,7 +530,7 @@ var __morbis_feature = (() => {
   async function resetQueueDb() {
     if (
       !confirm(
-        'Reset antrian? SEMUA antrian hari ini di DB app akan dihapus dan nomor kembali ke awal. (Tidak menyentuh sistem MORBIS)',
+        'Reset antrian? Semua antrian hari ini akan kembali ke status awal dan bisa dipanggil ulang dari T-01/R-01. Record tidak dihapus. (Tidak menyentuh sistem MORBIS)',
       )
     ) {
       return;
@@ -546,7 +546,7 @@ var __morbis_feature = (() => {
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const j = await res.json();
-      log('reset DB:', j.ok ? 'OK' : 'gagal', 'deleted', j.deleted);
+      log('reset DB:', j.ok ? 'OK' : 'gagal', 'reset', j.reset);
       await render();
     } catch (e) {
       alert('[MORBIS Ext] Gagal reset antrian: ' + String(e.message ?? e));
