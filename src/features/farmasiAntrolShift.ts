@@ -101,6 +101,24 @@ async function lookupAntrian(
   }
 }
 
+/** Coba SEMUA kandidat id resep (id_resep, nomor_resep, id URL) — ENQUEUE dari
+ *  halaman LIST dan DETAIL bisa pakai id berbeda utk resep yang sama, jadi
+ *  lookup satu id saja bisa miss. Return info antrian pertama yang ketemu. */
+async function lookupAntrianAny(): Promise<{ queue_number: string; status: string } | null> {
+  const candidates = [
+    document.querySelector<HTMLInputElement>('#id_resep')?.value?.trim() || '',
+    document.querySelector<HTMLInputElement>('input[name="nomor_resep"]')?.value?.trim() ||
+      document.querySelector<HTMLInputElement>('input[name="id_resep"]')?.value?.trim() ||
+      '',
+    new URLSearchParams(location.search).get('id') ?? '',
+  ].filter((v) => v && v.length >= 3);
+  for (const c of candidates) {
+    const info = await lookupAntrian(c);
+    if (info) return info;
+  }
+  return null;
+}
+
 /** Deteksi resep dibatalkan di MORBIS: (1) badge/teks status di DOM detail,
  *  (2) antrian app berstatus DIBATALKAN. Kalau batal → tombol antrian
  *  disembunyikan (user: "batal yaudah gak perlu ada button antrian"). */
@@ -300,7 +318,7 @@ function isResepBatal(antrianStatus?: string): boolean {
       // BATAL gagal — bisa karena record SUDAH dihapus (dari operator panel
       // HAPUS atau BATAL sebelumnya). Kalau lookup bilang tidak ada → anggap
       // sudah batal, jangan error.
-      const info = await lookupAntrian(nomorResep);
+      const info = await lookupAntrianAny();
       if (!info) {
         renderActionBar('ready');
         return;
@@ -437,7 +455,7 @@ function isResepBatal(antrianStatus?: string): boolean {
           else renderActionBar('ready');
           return;
         }
-        void lookupAntrian(nomorResep).then((info) => {
+        void lookupAntrianAny().then((info) => {
           if (isResepBatal(info?.status)) {
             bar.innerHTML =
               '<span style="color:#b02a37;font-weight:700;">Resep dibatalkan — antrian tidak tersedia</span>';

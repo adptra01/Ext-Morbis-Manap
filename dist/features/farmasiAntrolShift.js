@@ -139,6 +139,20 @@ var __morbis_feature = (() => {
       return null;
     }
   }
+  async function lookupAntrianAny() {
+    const candidates = [
+      document.querySelector('#id_resep')?.value?.trim() || '',
+      document.querySelector('input[name="nomor_resep"]')?.value?.trim() ||
+        document.querySelector('input[name="id_resep"]')?.value?.trim() ||
+        '',
+      new URLSearchParams(location.search).get('id') ?? '',
+    ].filter((v) => v && v.length >= 3);
+    for (const c of candidates) {
+      const info = await lookupAntrian(c);
+      if (info) return info;
+    }
+    return null;
+  }
   function isResepBatal(antrianStatus) {
     if (antrianStatus === 'DIBATALKAN') return true;
     try {
@@ -288,7 +302,7 @@ var __morbis_feature = (() => {
         resep_id: nomorResep,
       });
       if (!sync.ok) {
-        const info = await lookupAntrian(nomorResep);
+        const info = await lookupAntrianAny();
         if (!info) {
           renderActionBar('ready');
           return;
@@ -387,7 +401,7 @@ var __morbis_feature = (() => {
             else renderActionBar('ready');
             return;
           }
-          void lookupAntrian(nomorResep).then((info) => {
+          void lookupAntrianAny().then((info) => {
             if (isResepBatal(info?.status)) {
               bar.innerHTML =
                 '<span style="color:#b02a37;font-weight:700;">Resep dibatalkan \u2014 antrian tidak tersedia</span>';
