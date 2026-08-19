@@ -11,7 +11,7 @@
  */
 export const FARMASI_APP_BASE = 'http://dev.rsudkotajambi.id/rs';
 
-export type QueueEventType = 'ENQUEUE' | 'CALL' | 'RECALL' | 'SKIP' | 'DONE';
+export type QueueEventType = 'ENQUEUE' | 'CALL' | 'RECALL' | 'SKIP' | 'DONE' | 'TUNDA';
 
 export interface QueueEventPayload {
   event_id: string;
@@ -32,10 +32,7 @@ export interface QueueEventPayload {
 let cachedBase: string | null = null;
 let basePromise: Promise<string> | null = null;
 
-const BASE_CANDIDATES = [
-  'http://dev.rsudkotajambi.id/rs',
-  'http://103.147.236.138/rs',
-];
+const BASE_CANDIDATES = ['http://dev.rsudkotajambi.id/rs', 'http://103.147.236.138/rs'];
 
 /** Probe base mana yang hidup (GET /api/queue/lookup?resep_id= kosong → 422
  *  artinya app reachable). Hasil di-cache per sesi. */

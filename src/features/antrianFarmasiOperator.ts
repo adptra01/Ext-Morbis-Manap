@@ -37,7 +37,8 @@ interface DisplayData {
   tanggal: string;
   current: DisplayRow[];
   waiting: DisplayRow[];
-  /** Sudah dipanggil hari ini (CALLED/DONE/SKIPPED) — dari tabel Queue. */
+  /** Satu daftar antrean hari ini (semua status) — sumber utama queue board. */
+  queues: DisplayRow[];
   called: Array<{
     queue_number: string;
     nama_pasien: string | null;
@@ -46,6 +47,24 @@ interface DisplayData {
   }>;
   history: Array<{ queue_number: string; event: string; created_at: string | null }>;
 }
+
+/** Badge status visual + label (bukan hanya warna — aksesibilitas TV). */
+const STATUS_META: Record<string, { label: string; icon: string; bg: string; fg: string }> = {
+  WAITING: { label: 'BELUM DIPANGGIL', icon: '🔵', bg: '#e7f1ff', fg: '#084298' },
+  CALLED: { label: 'DIPANGGIL', icon: '🟢', bg: '#d1e7dd', fg: '#0f5132' },
+  DEFERRED: { label: 'DITUNDA', icon: '🟠', bg: '#fff3cd', fg: '#664d03' },
+  DONE: { label: 'SELESAI', icon: '⚪', bg: '#e9ecef', fg: '#495057' },
+  SKIPPED: { label: 'LEWAT', icon: '⚫', bg: '#f8f9fa', fg: '#6c757d' },
+};
+
+/** Urutan daftar utama: belum dipanggil dulu, lalu dipanggil/ditunda, selesai di akhir. */
+const STATUS_ORDER: Record<string, number> = {
+  WAITING: 0,
+  CALLED: 1,
+  DEFERRED: 2,
+  SKIPPED: 3,
+  DONE: 4,
+};
 
 let lastState = '';
 const POLL_MS = 2000; // ringan; delay panggilan di display mengikuti kecepatan ini
@@ -149,12 +168,17 @@ function buildPanel(): HTMLDivElement {
     '<button id="ext-op-refresh" style="padding:6px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">Segarkan</button>' +
     '</div></div>' +
     '<div id="ext-op-current" style="margin-bottom:14px;"></div>' +
-    '<div id="ext-op-waiting" style="margin-bottom:14px;"></div>' +
-    '<div id="ext-op-history"></div>';
+    '<div id="ext-op-queues"></div>';
   return p;
 }
 
 function callBtn(ev: string, label: string, num: string, eventId: string): string {
+  const styles: Record<string, string> = {
+    CALL: 'background:#084298;color:#fff;',
+    RECALL: 'background:#0f5132;color:#fff;',
+    DEFER: 'background:#fff3cd;color:#664d03;border:1px solid #ffc107;',
+    DONE: 'background:#e9ecef;color:#212529;border:1px solid #ced4da;',
+  };
   return (
     '<button class="ext-op-act" data-ev="' +
     ev +
@@ -162,14 +186,49 @@ function callBtn(ev: string, label: string, num: string, eventId: string): strin
     num +
     '" data-eid="' +
     eventId +
-    '" style="padding:8px 16px;border:none;border-radius:8px;cursor:pointer;font-weight:600;' +
-    (ev === 'CALL'
-      ? 'background:#0f5132;color:#fff;'
-      : 'background:#e9ecef;color:#212529;border:1px solid #ced4da;') +
+    '" style="padding:8px 14px;border:none;border-radius:8px;cursor:pointer;font-weight:600;' +
+    (styles[ev] || styles.DONE) +
     '">' +
     label +
     '</button>'
   );
+}
+
+/** Badge status dengan ikon + label (bukan hanya warna). */
+function statusBadge(status: string): string {
+  const m = STATUS_META[status] || STATUS_META.DONE;
+  return (
+    '<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;' +
+    'font-size:11px;font-weight:700;letter-spacing:.03em;background:' +
+    m.bg +
+    ';color:' +
+    m.fg +
+    ';border:1px solid transparent;">' +
+    m.icon +
+    ' ' +
+    m.label +
+    '</span>'
+  );
+}
+
+/** Action per status — satu baris kartu di daftar utama. */
+function rowActions(r: DisplayRow, prefix: string): string {
+  const n = r.queue_number;
+  switch (r.status) {
+    case 'WAITING':
+      return callBtn('CALL', '📢 Panggil', n, prefix + '-call-' + n);
+    case 'CALLED':
+      return (
+        callBtn('RECALL', '🔁 Panggil Ulang', n, prefix + '-recall-' + n) +
+        callBtn('DEFER', '⏸ Tunda', n, prefix + '-defer-' + n) +
+        callBtn('DONE', '✔ Selesai', n, prefix + '-done-' + n)
+      );
+    case 'DEFERRED':
+    case 'SKIPPED':
+      return callBtn('RECALL', '🔁 Panggil Ulang', n, prefix + '-recall-' + n);
+    default:
+      return ''; // DONE — tidak ada aksi
+  }
 }
 
 function rowCard(r: DisplayRow, prefix: string): string {
@@ -177,11 +236,20 @@ function rowCard(r: DisplayRow, prefix: string): string {
   const shift = r.shift
     ? `<span style="color:#6c757d;font-size:12px;"> · Shift ${r.shift}</span>`
     : '';
+  const calledAt = r.called_at
+    ? `<span style="color:#adb5bd;font-size:11px;margin-left:6px;">${r.called_at.slice(11, 16)}</span>`
+    : '';
+  const dim = r.status === 'DONE' || r.status === 'SKIPPED' ? 'opacity:.62;' : '';
   return (
     '<div class="ext-op-row" style="display:flex;justify-content:space-between;align-items:center;' +
-    'padding:10px 14px;background:#fff;border:1px solid #e9ecef;border-radius:10px;margin-bottom:8px;gap:10px;">' +
+    'padding:10px 14px;background:#fff;border:1px solid #e9ecef;border-radius:10px;margin-bottom:8px;gap:10px;' +
+    dim +
+    '">' +
+    '<div style="display:flex;align-items:center;gap:10px;">' +
+    statusBadge(r.status) +
     '<div><b style="font-size:16px;">' +
     r.queue_number +
+    calledAt +
     '</b>' +
     '<div style="color:#495057;">' +
     (r.nama_pasien || '-') +
@@ -191,12 +259,12 @@ function rowCard(r: DisplayRow, prefix: string): string {
     '<div style="color:#adb5bd;font-size:11px;">resep ' +
     (r.resep_id || '-') +
     (r.norm ? ' · RM ' + r.norm : '') +
-    '</div></div>' +
+    '</div></div></div>' +
     '<div style="flex-shrink:0;display:flex;gap:6px;">' +
     '<button class="ext-op-print1" data-num="' +
     r.queue_number +
     '" style="padding:8px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;font-weight:600;" title="Cetak tiket pasien ini">🖨</button>' +
-    callBtn('CALL', '📢 Panggil', r.queue_number, prefix + '-call-' + r.queue_number) +
+    rowActions(r, prefix) +
     '</div></div>'
   );
 }
@@ -223,12 +291,12 @@ async function render(): Promise<void> {
       counter: (r as unknown as { counter?: { name: string } | null }).counter ?? null,
     }));
     lastTanggal = d.tanggal;
-    const key = JSON.stringify({ c: d.current, w: d.waiting });
+    const key = JSON.stringify({ c: d.current, q: d.queues });
     if (key !== lastState) {
       lastState = key;
       const cur = document.getElementById('ext-op-current');
-      const wait = document.getElementById('ext-op-waiting');
-      if (cur && wait) {
+      const list = document.getElementById('ext-op-queues');
+      if (cur && list) {
         cur.innerHTML = d.current.length
           ? d.current
               .map(
@@ -253,72 +321,42 @@ async function render(): Promise<void> {
                     r.queue_number,
                     'op-recall-' + r.queue_number,
                   ) +
+                  callBtn('DEFER', '⏸ Tunda', r.queue_number, 'op-defer-' + r.queue_number) +
                   callBtn('DONE', '✔ Selesai', r.queue_number, 'op-done-' + r.queue_number) +
                   '</div></div>',
               )
               .join('')
           : '<div style="padding:12px 16px;background:#fff;border:1px dashed #ced4da;border-radius:10px;color:#6c757d;text-align:center;">Belum ada panggilan aktif</div>';
-        wait.innerHTML =
-          '<div style="font-size:13px;color:#6c757d;margin-bottom:8px;">Menunggu — ' +
-          d.waiting.length +
-          ' pasien</div>' +
-          (d.waiting.length
-            ? d.waiting.map((r) => rowCard(r, 'op-enq')).join('')
-            : '<div style="padding:12px;background:#fff;border:1px dashed #ced4da;border-radius:10px;color:#6c757d;text-align:center;">Tidak ada antrian menunggu</div>');
+        // Satu daftar antrean hari ini — semua status, diurutkan menunggu→aktif→ditunda→selesai.
+        const queues = [...(d.queues || [])].sort((a, b) => {
+          const oa = STATUS_ORDER[a.status] ?? 9;
+          const ob = STATUS_ORDER[b.status] ?? 9;
+          if (oa !== ob) return oa - ob;
+          return a.queue_number.localeCompare(b.queue_number, undefined, { numeric: true });
+        });
+        list.innerHTML =
+          '<div style="font-size:13px;color:#6c757d;margin-bottom:8px;">Antrean Hari Ini — ' +
+          queues.length +
+          ' antrian</div>' +
+          (queues.length
+            ? queues.map((r) => rowCard(r, 'op-enq')).join('')
+            : '<div style="padding:12px;background:#fff;border:1px dashed #ced4da;border-radius:10px;color:#6c757d;text-align:center;">Tidak ada antrian hari ini</div>');
       }
     }
     if (st) st.textContent = 'terhubung ke app (' + d.tanggal + ')';
-    // Riwayat panggilan hari ini — panggilan yang sudah dipanggil TETAP TAMPIL
-    // (tidak hilang dari layar operator walaupun status berubah).
-    const hist = document.getElementById('ext-op-history');
-    if (hist) {
-      const rows = (d.called || []).slice(0, 15);
-      const statusLabel: Record<string, string> = {
-        CALLED: '📢',
-        DONE: '✔',
-        SKIPPED: '⏭',
-      };
-      hist.innerHTML =
-        '<div style="font-size:13px;color:#6c757d;margin-bottom:8px;">Sudah dipanggil hari ini — ' +
-        rows.length +
-        '</div>' +
-        (rows.length
-          ? rows
-              .map(
-                (r) =>
-                  '<div style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;' +
-                  'background:#fff;border:1px solid #e9ecef;border-radius:999px;margin:0 6px 6px 0;font-size:12.5px;">' +
-                  '<span>' +
-                  (statusLabel[r.status] || '•') +
-                  '</span>' +
-                  '<b>' +
-                  r.queue_number +
-                  '</b>' +
-                  (r.nama_pasien
-                    ? '<span style="color:#6c757d;">' + r.nama_pasien + '</span>'
-                    : '') +
-                  (r.called_at
-                    ? '<span style="color:#adb5bd;font-size:11px;">' +
-                      (r.called_at.slice(11, 16) || '') +
-                      '</span>'
-                    : '') +
-                  '</div>',
-              )
-              .join('')
-          : '<div style="padding:12px;background:#fff;border:1px dashed #ced4da;border-radius:10px;color:#6c757d;text-align:center;">Belum ada panggilan hari ini</div>');
-    }
   } catch (e) {
     if (st) st.textContent = 'gagal hubungi app — cek CORS/BASE';
     log('display gagal:', (e as Error).message);
   }
 }
 
-/** POST event ke app; idempoten — aman klik ganda. */
+/** POST event ke app; idempoten — aman klik ganda. DEFER (UI) → TUNDA (API). */
 async function act(ev: string, num: string, eid: string): Promise<void> {
+  const apiEvent = ev === 'DEFER' ? 'TUNDA' : ev;
   const ok = await pushQueueEvent({
     event_id: eid + '-' + Date.now().toString(36),
     queue_number: num,
-    event: ev as 'CALL' | 'RECALL' | 'DONE',
+    event: apiEvent as 'CALL' | 'RECALL' | 'DONE' | 'TUNDA',
   });
   log(ev, num, ok ? 'OK' : 'gagal');
   if (ok) await render(); // langsung tampil tanpa tunggu polling

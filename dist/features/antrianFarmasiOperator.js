@@ -95,6 +95,20 @@ var __morbis_feature = (() => {
   }
 
   // src/features/antrianFarmasiOperator.ts
+  var STATUS_META = {
+    WAITING: { label: 'BELUM DIPANGGIL', icon: '\u{1F535}', bg: '#e7f1ff', fg: '#084298' },
+    CALLED: { label: 'DIPANGGIL', icon: '\u{1F7E2}', bg: '#d1e7dd', fg: '#0f5132' },
+    DEFERRED: { label: 'DITUNDA', icon: '\u{1F7E0}', bg: '#fff3cd', fg: '#664d03' },
+    DONE: { label: 'SELESAI', icon: '\u26AA', bg: '#e9ecef', fg: '#495057' },
+    SKIPPED: { label: 'LEWAT', icon: '\u26AB', bg: '#f8f9fa', fg: '#6c757d' },
+  };
+  var STATUS_ORDER = {
+    WAITING: 0,
+    CALLED: 1,
+    DEFERRED: 2,
+    SKIPPED: 3,
+    DONE: 4,
+  };
   var lastState = '';
   var POLL_MS = 2e3;
   var lastRows = [];
@@ -168,10 +182,16 @@ var __morbis_feature = (() => {
     p.style.cssText =
       'padding:16px;max-width:1100px;margin:0 auto;font:14px/1.5 system-ui,sans-serif;color:#212529;background:#f8f9fa;min-height:90vh;box-sizing:border-box;';
     p.innerHTML =
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;"><b style="font-size:18px;color:#0f5132;">Antrian Farmasi \u2014 Operasional</b><div style="display:flex;gap:8px;align-items:center;"><span id="ext-op-status" style="color:#6c757d;font-size:12px;">memuat\u2026</span><button id="ext-op-print-sheet" style="padding:6px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">\u{1F5A8} Cetak Sheet A4</button><button id="ext-op-refresh" style="padding:6px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">Segarkan</button></div></div><div id="ext-op-current" style="margin-bottom:14px;"></div><div id="ext-op-waiting" style="margin-bottom:14px;"></div><div id="ext-op-history"></div>';
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;"><b style="font-size:18px;color:#0f5132;">Antrian Farmasi \u2014 Operasional</b><div style="display:flex;gap:8px;align-items:center;"><span id="ext-op-status" style="color:#6c757d;font-size:12px;">memuat\u2026</span><button id="ext-op-print-sheet" style="padding:6px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">\u{1F5A8} Cetak Sheet A4</button><button id="ext-op-refresh" style="padding:6px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">Segarkan</button></div></div><div id="ext-op-current" style="margin-bottom:14px;"></div><div id="ext-op-queues"></div>';
     return p;
   }
   function callBtn(ev, label, num, eventId) {
+    const styles = {
+      CALL: 'background:#084298;color:#fff;',
+      RECALL: 'background:#0f5132;color:#fff;',
+      DEFER: 'background:#fff3cd;color:#664d03;border:1px solid #ffc107;',
+      DONE: 'background:#e9ecef;color:#212529;border:1px solid #ced4da;',
+    };
     return (
       '<button class="ext-op-act" data-ev="' +
       ev +
@@ -179,14 +199,44 @@ var __morbis_feature = (() => {
       num +
       '" data-eid="' +
       eventId +
-      '" style="padding:8px 16px;border:none;border-radius:8px;cursor:pointer;font-weight:600;' +
-      (ev === 'CALL'
-        ? 'background:#0f5132;color:#fff;'
-        : 'background:#e9ecef;color:#212529;border:1px solid #ced4da;') +
+      '" style="padding:8px 14px;border:none;border-radius:8px;cursor:pointer;font-weight:600;' +
+      (styles[ev] || styles.DONE) +
       '">' +
       label +
       '</button>'
     );
+  }
+  function statusBadge(status) {
+    const m = STATUS_META[status] || STATUS_META.DONE;
+    return (
+      '<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.03em;background:' +
+      m.bg +
+      ';color:' +
+      m.fg +
+      ';border:1px solid transparent;">' +
+      m.icon +
+      ' ' +
+      m.label +
+      '</span>'
+    );
+  }
+  function rowActions(r, prefix) {
+    const n = r.queue_number;
+    switch (r.status) {
+      case 'WAITING':
+        return callBtn('CALL', '\u{1F4E2} Panggil', n, prefix + '-call-' + n);
+      case 'CALLED':
+        return (
+          callBtn('RECALL', '\u{1F501} Panggil Ulang', n, prefix + '-recall-' + n) +
+          callBtn('DEFER', '\u23F8 Tunda', n, prefix + '-defer-' + n) +
+          callBtn('DONE', '\u2714 Selesai', n, prefix + '-done-' + n)
+        );
+      case 'DEFERRED':
+      case 'SKIPPED':
+        return callBtn('RECALL', '\u{1F501} Panggil Ulang', n, prefix + '-recall-' + n);
+      default:
+        return '';
+    }
   }
   function rowCard(r, prefix) {
     const jenis = r.jenis
@@ -195,9 +245,18 @@ var __morbis_feature = (() => {
     const shift = r.shift
       ? `<span style="color:#6c757d;font-size:12px;"> \xB7 Shift ${r.shift}</span>`
       : '';
+    const calledAt = r.called_at
+      ? `<span style="color:#adb5bd;font-size:11px;margin-left:6px;">${r.called_at.slice(11, 16)}</span>`
+      : '';
+    const dim = r.status === 'DONE' || r.status === 'SKIPPED' ? 'opacity:.62;' : '';
     return (
-      '<div class="ext-op-row" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#fff;border:1px solid #e9ecef;border-radius:10px;margin-bottom:8px;gap:10px;"><div><b style="font-size:16px;">' +
+      '<div class="ext-op-row" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#fff;border:1px solid #e9ecef;border-radius:10px;margin-bottom:8px;gap:10px;' +
+      dim +
+      '"><div style="display:flex;align-items:center;gap:10px;">' +
+      statusBadge(r.status) +
+      '<div><b style="font-size:16px;">' +
       r.queue_number +
+      calledAt +
       '</b><div style="color:#495057;">' +
       (r.nama_pasien || '-') +
       jenis +
@@ -205,10 +264,10 @@ var __morbis_feature = (() => {
       '</div><div style="color:#adb5bd;font-size:11px;">resep ' +
       (r.resep_id || '-') +
       (r.norm ? ' \xB7 RM ' + r.norm : '') +
-      '</div></div><div style="flex-shrink:0;display:flex;gap:6px;"><button class="ext-op-print1" data-num="' +
+      '</div></div></div><div style="flex-shrink:0;display:flex;gap:6px;"><button class="ext-op-print1" data-num="' +
       r.queue_number +
       '" style="padding:8px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;font-weight:600;" title="Cetak tiket pasien ini">\u{1F5A8}</button>' +
-      callBtn('CALL', '\u{1F4E2} Panggil', r.queue_number, prefix + '-call-' + r.queue_number) +
+      rowActions(r, prefix) +
       '</div></div>'
     );
   }
@@ -234,12 +293,12 @@ var __morbis_feature = (() => {
         counter: r.counter ?? null,
       }));
       lastTanggal = d.tanggal;
-      const key = JSON.stringify({ c: d.current, w: d.waiting });
+      const key = JSON.stringify({ c: d.current, q: d.queues });
       if (key !== lastState) {
         lastState = key;
         const cur = document.getElementById('ext-op-current');
-        const wait = document.getElementById('ext-op-waiting');
-        if (cur && wait) {
+        const list = document.getElementById('ext-op-queues');
+        if (cur && list) {
           cur.innerHTML = d.current.length
             ? d.current
                 .map(
@@ -259,65 +318,39 @@ var __morbis_feature = (() => {
                       r.queue_number,
                       'op-recall-' + r.queue_number,
                     ) +
+                    callBtn('DEFER', '\u23F8 Tunda', r.queue_number, 'op-defer-' + r.queue_number) +
                     callBtn('DONE', '\u2714 Selesai', r.queue_number, 'op-done-' + r.queue_number) +
                     '</div></div>',
                 )
                 .join('')
             : '<div style="padding:12px 16px;background:#fff;border:1px dashed #ced4da;border-radius:10px;color:#6c757d;text-align:center;">Belum ada panggilan aktif</div>';
-          wait.innerHTML =
-            '<div style="font-size:13px;color:#6c757d;margin-bottom:8px;">Menunggu \u2014 ' +
-            d.waiting.length +
-            ' pasien</div>' +
-            (d.waiting.length
-              ? d.waiting.map((r) => rowCard(r, 'op-enq')).join('')
-              : '<div style="padding:12px;background:#fff;border:1px dashed #ced4da;border-radius:10px;color:#6c757d;text-align:center;">Tidak ada antrian menunggu</div>');
+          const queues = [...(d.queues || [])].sort((a, b) => {
+            const oa = STATUS_ORDER[a.status] ?? 9;
+            const ob = STATUS_ORDER[b.status] ?? 9;
+            if (oa !== ob) return oa - ob;
+            return a.queue_number.localeCompare(b.queue_number, void 0, { numeric: true });
+          });
+          list.innerHTML =
+            '<div style="font-size:13px;color:#6c757d;margin-bottom:8px;">Antrean Hari Ini \u2014 ' +
+            queues.length +
+            ' antrian</div>' +
+            (queues.length
+              ? queues.map((r) => rowCard(r, 'op-enq')).join('')
+              : '<div style="padding:12px;background:#fff;border:1px dashed #ced4da;border-radius:10px;color:#6c757d;text-align:center;">Tidak ada antrian hari ini</div>');
         }
       }
       if (st) st.textContent = 'terhubung ke app (' + d.tanggal + ')';
-      const hist = document.getElementById('ext-op-history');
-      if (hist) {
-        const rows = (d.called || []).slice(0, 15);
-        const statusLabel = {
-          CALLED: '\u{1F4E2}',
-          DONE: '\u2714',
-          SKIPPED: '\u23ED',
-        };
-        hist.innerHTML =
-          '<div style="font-size:13px;color:#6c757d;margin-bottom:8px;">Sudah dipanggil hari ini \u2014 ' +
-          rows.length +
-          '</div>' +
-          (rows.length
-            ? rows
-                .map(
-                  (r) =>
-                    '<div style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:#fff;border:1px solid #e9ecef;border-radius:999px;margin:0 6px 6px 0;font-size:12.5px;"><span>' +
-                    (statusLabel[r.status] || '\u2022') +
-                    '</span><b>' +
-                    r.queue_number +
-                    '</b>' +
-                    (r.nama_pasien
-                      ? '<span style="color:#6c757d;">' + r.nama_pasien + '</span>'
-                      : '') +
-                    (r.called_at
-                      ? '<span style="color:#adb5bd;font-size:11px;">' +
-                        (r.called_at.slice(11, 16) || '') +
-                        '</span>'
-                      : '') +
-                    '</div>',
-                )
-                .join('')
-            : '<div style="padding:12px;background:#fff;border:1px dashed #ced4da;border-radius:10px;color:#6c757d;text-align:center;">Belum ada panggilan hari ini</div>');
-      }
     } catch (e) {
       if (st) st.textContent = 'gagal hubungi app \u2014 cek CORS/BASE';
       log('display gagal:', e.message);
     }
   }
   async function act(ev, num, eid) {
+    const apiEvent = ev === 'DEFER' ? 'TUNDA' : ev;
     const ok = await pushQueueEvent({
       event_id: eid + '-' + Date.now().toString(36),
       queue_number: num,
-      event: ev,
+      event: apiEvent,
     });
     log(ev, num, ok ? 'OK' : 'gagal');
     if (ok) await render();
