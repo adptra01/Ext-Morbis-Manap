@@ -331,12 +331,16 @@ function isResepBatal(antrianStatus?: string): boolean {
     const nomorResep = getField('nomor_resep', 'id_resep');
     if (state === 'issued' && code) {
       bar.innerHTML =
-        '<span style="font-size:18px;font-weight:800;color:#198754;display:block;margin:2px 0 8px;line-height:1.3;">' +
+        '<div style="display: flex; flex-direction: column; align-items: flex-start; width: 100%; gap: 6px;">' +
+        '<span style="font-size:18px;font-weight:800;color:#198754;line-height:1.3;">' +
         '✓ Sudah antri — ' +
         code +
-        '</span><br>' +
-        '<button id="ext-antrian-cetak" class="btn" style="margin:2px 6px 2px 0;background:#6c757d;color:#fff;border-color:#6c757d;" title="Cetak ulang kartu tanpa mengantrikan lagi">Cetak Kembali</button>' +
-        '<button id="ext-antrian-batal" class="btn" style="margin:2px 0;background:#dc3545;color:#fff;border-color:#dc3545;" title="Hapus antrian dari DB — resep bisa di-antrikan ulang">Batal antrian</button>';
+        '</span>' +
+        '<div style="display: flex; gap: 6px;">' +
+        '<button id="ext-antrian-cetak" class="btn" style="margin:0;background:#6c757d;color:#fff;border-color:#6c757d;" title="Cetak ulang kartu tanpa mengantrikan lagi">Cetak Kembali</button>' +
+        '<button id="ext-antrian-batal" class="btn" style="margin:0;background:#dc3545;color:#fff;border-color:#dc3545;" title="Hapus antrian dari DB — resep bisa di-antrikan ulang">Batal antrian</button>' +
+        '</div>' +
+        '</div>';
       bar.querySelector('#ext-antrian-cetak')?.addEventListener('click', () => {
         if (!nomorResep) return;
         try {
@@ -376,11 +380,12 @@ function isResepBatal(antrianStatus?: string): boolean {
         '<span style="color:#6c757d;font-size:13px;">Jenis obat belum terisi — simpan dulu resepnya.</span>';
     }
     const klik = (jenis: 'racik' | 'tunggal'): void => {
-      // Baca field SAAT KLIK — #id_visit & #nomor_resep diisi MORBIS via AJAX
+      // Baca field SAAT KLIK — #id_visit & #id_resep diisi MORBIS via AJAX
       // setelah halaman render (sebelumnya: dibaca saat render → kosong → error
-      // "[MORBIS Ext] data resep belum dimuat").
+      // "[MORBIS Ext] data resep belum dimuat"). Prioritas #id_resep: nilainya
+      // id resep sebenarnya (207140), bukan nomor resep MORBIS ("R2608-0237").
       const idVisit = getField('id_visit');
-      const nomorResep2 = getField('nomor_resep', 'id_resep');
+      const nomorResep2 = getField('id_resep', 'nomor_resep');
       if (!idVisit || !nomorResep2) {
         alert('[MORBIS Ext] data resep belum dimuat. Coba lagi.');
         return;
@@ -424,16 +429,20 @@ function isResepBatal(antrianStatus?: string): boolean {
     };
 
     const tryInject = (): void => {
-      if (document.querySelector('#ext-antrian-bar')) return;
-      const bar = findHost();
+      // Bar mungkin sudah ada dari inject sebelumnya (MORBIS render ulang) —
+      // pakai yang ada, kalau belum ada buat baru.
+      const existing = document.querySelector<HTMLElement>('#ext-antrian-bar');
+      const bar = existing || findHost();
       if (!bar) return;
 
-      // Lookup berulang: #nomor_resep bisa terisi belakangan (AJAX MORBIS).
-      // Kalau resep sudah antri → tombol Cetak Kembali + Batal antrian.
+      // Lookup berulang: #nomor_resep / #id_resep bisa terisi belakangan
+      // (AJAX MORBIS) dan nilai awal (nomor resep "R2608-0237") BEDA dari id
+      // resep (207140). Kalau lookup pertama gagal karena field masih kosong/
+      // salah, re-lookup berkala sampai ketemu → bar beralih ke "Sudah antri".
       const check = (attempt: number): void => {
-        const nomorResep = getField('nomor_resep', 'id_resep');
+        const nomorResep = getField('id_resep', 'nomor_resep');
         if (!nomorResep) {
-          if (attempt < 8) window.setTimeout(() => check(attempt + 1), 750);
+          if (attempt < 10) window.setTimeout(() => check(attempt + 1), 800);
           else renderActionBar('ready');
           return;
         }
@@ -443,7 +452,14 @@ function isResepBatal(antrianStatus?: string): boolean {
               '<span style="color:#b02a37;font-weight:700;">Resep dibatalkan — antrian tidak tersedia</span>';
             return;
           }
-          renderActionBar(info ? 'issued' : 'ready', info?.queue_number);
+          if (info) {
+            renderActionBar('issued', info.queue_number);
+          } else if (attempt < 10) {
+            // Belum ketemu — field mungkin baru terisi/berubah, coba lagi.
+            window.setTimeout(() => check(attempt + 1), 800);
+          } else {
+            renderActionBar('ready');
+          }
         });
       };
       check(0);

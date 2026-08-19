@@ -310,9 +310,9 @@ var __morbis_feature = (() => {
       const nomorResep = getField('nomor_resep', 'id_resep');
       if (state === 'issued' && code) {
         bar.innerHTML =
-          '<span style="font-size:18px;font-weight:800;color:#198754;display:block;margin:2px 0 8px;line-height:1.3;">\u2713 Sudah antri \u2014 ' +
+          '<div style="display: flex; flex-direction: column; align-items: flex-start; width: 100%; gap: 6px;"><span style="font-size:18px;font-weight:800;color:#198754;line-height:1.3;">\u2713 Sudah antri \u2014 ' +
           code +
-          '</span><br><button id="ext-antrian-cetak" class="btn" style="margin:2px 6px 2px 0;background:#6c757d;color:#fff;border-color:#6c757d;" title="Cetak ulang kartu tanpa mengantrikan lagi">Cetak Kembali</button><button id="ext-antrian-batal" class="btn" style="margin:2px 0;background:#dc3545;color:#fff;border-color:#dc3545;" title="Hapus antrian dari DB \u2014 resep bisa di-antrikan ulang">Batal antrian</button>';
+          '</span><div style="display: flex; gap: 6px;"><button id="ext-antrian-cetak" class="btn" style="margin:0;background:#6c757d;color:#fff;border-color:#6c757d;" title="Cetak ulang kartu tanpa mengantrikan lagi">Cetak Kembali</button><button id="ext-antrian-batal" class="btn" style="margin:0;background:#dc3545;color:#fff;border-color:#dc3545;" title="Hapus antrian dari DB \u2014 resep bisa di-antrikan ulang">Batal antrian</button></div></div>';
         bar.querySelector('#ext-antrian-cetak')?.addEventListener('click', () => {
           if (!nomorResep) return;
           try {
@@ -349,7 +349,7 @@ var __morbis_feature = (() => {
       }
       const klik = (jenis2) => {
         const idVisit = getField('id_visit');
-        const nomorResep2 = getField('nomor_resep', 'id_resep');
+        const nomorResep2 = getField('id_resep', 'nomor_resep');
         if (!idVisit || !nomorResep2) {
           alert('[MORBIS Ext] data resep belum dimuat. Coba lagi.');
           return;
@@ -389,13 +389,13 @@ var __morbis_feature = (() => {
         return bar;
       };
       const tryInject = () => {
-        if (document.querySelector('#ext-antrian-bar')) return;
-        const bar = findHost();
+        const existing = document.querySelector('#ext-antrian-bar');
+        const bar = existing || findHost();
         if (!bar) return;
         const check = (attempt) => {
-          const nomorResep = getField('nomor_resep', 'id_resep');
+          const nomorResep = getField('id_resep', 'nomor_resep');
           if (!nomorResep) {
-            if (attempt < 8) window.setTimeout(() => check(attempt + 1), 750);
+            if (attempt < 10) window.setTimeout(() => check(attempt + 1), 800);
             else renderActionBar('ready');
             return;
           }
@@ -405,7 +405,13 @@ var __morbis_feature = (() => {
                 '<span style="color:#b02a37;font-weight:700;">Resep dibatalkan \u2014 antrian tidak tersedia</span>';
               return;
             }
-            renderActionBar(info ? 'issued' : 'ready', info?.queue_number);
+            if (info) {
+              renderActionBar('issued', info.queue_number);
+            } else if (attempt < 10) {
+              window.setTimeout(() => check(attempt + 1), 800);
+            } else {
+              renderActionBar('ready');
+            }
           });
         };
         check(0);
