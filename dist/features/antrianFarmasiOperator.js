@@ -111,6 +111,8 @@ var __morbis_feature = (() => {
     refresh:
       '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/>',
     play: '<polygon points="6 3 20 12 6 21 6 3"/>',
+    trash:
+      '<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/>',
   };
   function svg(name, size = 16, color = '#212529') {
     return (
@@ -342,7 +344,17 @@ var __morbis_feature = (() => {
               'Panggil ulang',
               r.queue_number,
               prefix + '-recall-' + r.queue_number,
-            );
+            ) +
+            (r.status === 'DEFERRED'
+              ? iconBtn(
+                  'BATAL',
+                  'trash',
+                  'Hapus (record dihapus dari antrian)',
+                  r.queue_number,
+                  prefix + '-batal-' + r.queue_number,
+                  { danger: true },
+                )
+              : '');
     const badge =
       r.status === 'WAITING'
         ? ''
@@ -489,6 +501,15 @@ var __morbis_feature = (() => {
       const row = lastRows.find((r) => r.queue_number === num);
       if (row) printTicket(row);
       return;
+    }
+    if (ev === 'BATAL') {
+      if (
+        !confirm(
+          'Hapus antrian ' + num + ' dari DB? Record dihapus \u2014 resep bisa di-antrikan ulang.',
+        )
+      ) {
+        return;
+      }
     }
     const now = Date.now();
     const key = ev + '|' + num;
