@@ -231,13 +231,16 @@ var __morbis_feature = (() => {
       clone.id = 'ext-op-reset';
       clone.setAttribute(
         'data-tip',
-        'Kembalikan nomor antrian ke awal hari \u2014 aksi destruktif (hapus status recall)',
+        'Reset antrian DB app \u2014 semua antrian hari ini dihapus, nomor kembali ke awal',
       );
-      clone.setAttribute('title', 'Reset Antrian \u2014 aksi destruktif, gunakan hati-hati');
+      clone.setAttribute('title', 'Reset Antrian (DB app) \u2014 aksi destruktif');
       clone.setAttribute(
         'style',
         'margin-left:28px;padding:7px 14px;border:1.5px solid #dc3545;background:#fff;color:#dc3545;border-radius:8px;cursor:pointer;font-weight:700;',
       );
+      clone.addEventListener('click', () => {
+        void resetQueueDb();
+      });
       wrap.appendChild(clone);
     }
     if (display) {
@@ -522,6 +525,31 @@ var __morbis_feature = (() => {
         if (ev === 'CALL') b2.textContent = prevLabel;
       }
       window.setTimeout(() => actCooldown.delete(key), ACT_COOLDOWN_MS);
+    }
+  }
+  async function resetQueueDb() {
+    if (
+      !confirm(
+        'Reset antrian? SEMUA antrian hari ini di DB app akan dihapus dan nomor kembali ke awal. (Tidak menyentuh sistem MORBIS)',
+      )
+    ) {
+      return;
+    }
+    try {
+      const base = await probeFarmasiAppBase();
+      const res = await fetch(base + '/api/queue/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+        cache: 'no-store',
+        credentials: 'omit',
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const j = await res.json();
+      log('reset DB:', j.ok ? 'OK' : 'gagal', 'deleted', j.deleted);
+      await render();
+    } catch (e) {
+      alert('[MORBIS Ext] Gagal reset antrian: ' + String(e.message ?? e));
     }
   }
   function init() {

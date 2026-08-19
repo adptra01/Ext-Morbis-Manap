@@ -306,6 +306,23 @@ function isResepBatal(antrianStatus?: string): boolean {
     return (el?.value ?? '').trim();
   }
 
+  /** Deteksi jenis resep dari DOM MORBIS: `input[name*="jenis_resep"]` per baris
+   *  obat bernilai "Tunggal" / "Racik". Kalau semua tunggal → HANYA tombol
+   *  tunggal (T-XX) — mencegah salah klik yang menerbitkan R-XX untuk resep
+   *  tunggal (keluhan user: "kenapa bisa R-03"). Campuran → tampil keduanya. */
+  function detectJenisResep(): 'tunggal' | 'racik' | 'campuran' | 'unknown' {
+    const values = Array.from(
+      document.querySelectorAll<HTMLInputElement>('input[name*="jenis_resep"]'),
+    ).map((el) => (el.value || '').toLowerCase());
+    if (!values.length) return 'unknown';
+    const hasRacik = values.some((v) => v.includes('racik'));
+    const hasTunggal = values.some((v) => v.includes('tunggal') || v.includes('non'));
+    if (hasRacik && hasTunggal) return 'campuran';
+    if (hasRacik) return 'racik';
+    if (hasTunggal) return 'tunggal';
+    return 'unknown';
+  }
+
   /** Render bar tombol aksi sesuai state: ready (belum antri) | issued (sudah
    *  antri) | hidden (resep batal — tanpa tombol antrian). */
   function renderActionBar(state: 'ready' | 'issued', code?: string): void {
@@ -343,9 +360,21 @@ function isResepBatal(antrianStatus?: string): boolean {
       return;
     }
     // Kontras: racik = oranye (#d97706), tunggal = biru (#2193cf) — teks putih.
+    // Tampilkan tombol sesuai jenis resep (cegah R-XX terbit utk resep tunggal).
+    const jenis = detectJenisResep();
+    const showRacik = jenis === 'racik' || jenis === 'campuran' || jenis === 'unknown';
+    const showTunggal = jenis === 'tunggal' || jenis === 'campuran' || jenis === 'unknown';
     bar.innerHTML =
-      '<button id="ext-antrian-racik" class="btn" style="margin:2px 6px 2px 0;background:#d97706;color:#fff;border-color:#d97706;" title="Antrikan sebagai obat RACIKAN (nomor R-XX)">Antrikan obat racik</button>' +
-      '<button id="ext-antrian-tunggal" class="btn" style="margin:2px 0;background:#2193cf;color:#fff;border-color:#2193cf;" title="Antrikan sebagai obat TUNGGAL (nomor T-XX)">Antrikan obat tunggal</button>';
+      (showRacik
+        ? '<button id="ext-antrian-racik" class="btn" style="margin:2px 6px 2px 0;background:#d97706;color:#fff;border-color:#d97706;" title="Antrikan sebagai obat RACIKAN (nomor R-XX)">Antrikan obat racik</button>'
+        : '') +
+      (showTunggal
+        ? '<button id="ext-antrian-tunggal" class="btn" style="margin:2px 0;background:#2193cf;color:#fff;border-color:#2193cf;" title="Antrikan sebagai obat TUNGGAL (nomor T-XX)">Antrikan obat tunggal</button>'
+        : '');
+    if (!showRacik && !showTunggal) {
+      bar.innerHTML =
+        '<span style="color:#6c757d;font-size:13px;">Jenis obat belum terisi — simpan dulu resepnya.</span>';
+    }
     const klik = (jenis: 'racik' | 'tunggal'): void => {
       // Baca field SAAT KLIK — #id_visit & #nomor_resep diisi MORBIS via AJAX
       // setelah halaman render (sebelumnya: dibaca saat render → kosong → error

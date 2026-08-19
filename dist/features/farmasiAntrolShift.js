@@ -292,6 +292,18 @@ var __morbis_feature = (() => {
         (fallbackName ? document.querySelector('input[name="' + fallbackName + '"]') : null);
       return (el?.value ?? '').trim();
     }
+    function detectJenisResep() {
+      const values = Array.from(document.querySelectorAll('input[name*="jenis_resep"]')).map((el) =>
+        (el.value || '').toLowerCase(),
+      );
+      if (!values.length) return 'unknown';
+      const hasRacik = values.some((v) => v.includes('racik'));
+      const hasTunggal = values.some((v) => v.includes('tunggal') || v.includes('non'));
+      if (hasRacik && hasTunggal) return 'campuran';
+      if (hasRacik) return 'racik';
+      if (hasTunggal) return 'tunggal';
+      return 'unknown';
+    }
     function renderActionBar(state, code) {
       const bar = document.querySelector('#ext-antrian-bar');
       if (!bar) return;
@@ -321,9 +333,21 @@ var __morbis_feature = (() => {
         });
         return;
       }
+      const jenis = detectJenisResep();
+      const showRacik = jenis === 'racik' || jenis === 'campuran' || jenis === 'unknown';
+      const showTunggal = jenis === 'tunggal' || jenis === 'campuran' || jenis === 'unknown';
       bar.innerHTML =
-        '<button id="ext-antrian-racik" class="btn" style="margin:2px 6px 2px 0;background:#d97706;color:#fff;border-color:#d97706;" title="Antrikan sebagai obat RACIKAN (nomor R-XX)">Antrikan obat racik</button><button id="ext-antrian-tunggal" class="btn" style="margin:2px 0;background:#2193cf;color:#fff;border-color:#2193cf;" title="Antrikan sebagai obat TUNGGAL (nomor T-XX)">Antrikan obat tunggal</button>';
-      const klik = (jenis) => {
+        (showRacik
+          ? '<button id="ext-antrian-racik" class="btn" style="margin:2px 6px 2px 0;background:#d97706;color:#fff;border-color:#d97706;" title="Antrikan sebagai obat RACIKAN (nomor R-XX)">Antrikan obat racik</button>'
+          : '') +
+        (showTunggal
+          ? '<button id="ext-antrian-tunggal" class="btn" style="margin:2px 0;background:#2193cf;color:#fff;border-color:#2193cf;" title="Antrikan sebagai obat TUNGGAL (nomor T-XX)">Antrikan obat tunggal</button>'
+          : '');
+      if (!showRacik && !showTunggal) {
+        bar.innerHTML =
+          '<span style="color:#6c757d;font-size:13px;">Jenis obat belum terisi \u2014 simpan dulu resepnya.</span>';
+      }
+      const klik = (jenis2) => {
         const idVisit = getField('id_visit');
         const nomorResep2 = getField('nomor_resep', 'id_resep');
         if (!idVisit || !nomorResep2) {
@@ -331,16 +355,16 @@ var __morbis_feature = (() => {
           return;
         }
         const btn = document.querySelector(
-          jenis === 'racik' ? '#ext-antrian-racik' : '#ext-antrian-tunggal',
+          jenis2 === 'racik' ? '#ext-antrian-racik' : '#ext-antrian-tunggal',
         );
         if (btn) {
           btn.disabled = true;
           btn.textContent = 'Memproses\u2026';
         }
-        void onAntrianCetakClick(idVisit, nomorResep2, jenis).finally(() => {
+        void onAntrianCetakClick(idVisit, nomorResep2, jenis2).finally(() => {
           if (btn) {
             btn.disabled = false;
-            btn.textContent = jenis === 'racik' ? 'Antrikan obat racik' : 'Antrikan obat tunggal';
+            btn.textContent = jenis2 === 'racik' ? 'Antrikan obat racik' : 'Antrikan obat tunggal';
           }
         });
       };
