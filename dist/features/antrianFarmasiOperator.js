@@ -108,13 +108,15 @@ var __morbis_feature = (() => {
       '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/>',
     play: '<polygon points="6 3 20 12 6 21 6 3"/>',
   };
-  function svg(name, size = 16) {
+  function svg(name, size = 16, color = '#212529') {
     return (
       '<svg width="' +
       size +
       '" height="' +
       size +
-      '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '" viewBox="0 0 24 24" fill="none" stroke="' +
+      color +
+      '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:inline-block;visibility:visible;vertical-align:middle;flex:none;">' +
       (ICONS[name] || '') +
       '</svg>'
     );
@@ -219,7 +221,7 @@ var __morbis_feature = (() => {
       '" style="width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #ced4da;background:#fff;color:' +
       (opts?.danger ? '#b02a37' : '#212529') +
       ';border-radius:8px;cursor:pointer;">' +
-      svg(icon, 16) +
+      svg(icon, 16, opts?.danger ? '#b02a37' : '#212529') +
       '</button>'
     );
   }
@@ -321,7 +323,7 @@ var __morbis_feature = (() => {
         '" style="width:100%;margin-top:8px;padding:12px;border:none;border-radius:10px;background:' +
         m.accent +
         ';color:#fff;font-size:15px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;">' +
-        svg('play', 16) +
+        svg('play', 16, '#fff') +
         'Selanjutnya \u2014 ' +
         nextList[0].queue_number +
         '</button>'
@@ -350,7 +352,7 @@ var __morbis_feature = (() => {
     p.style.cssText =
       'padding:14px;max-width:1500px;margin:0 auto;font:14px/1.5 system-ui,sans-serif;color:#212529;background:#f8f9fa;min-height:90vh;box-sizing:border-box;';
     p.innerHTML =
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;"><b style="font-size:18px;color:#0f5132;">Antrian Farmasi \u2014 Operasional</b><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><span id="ext-op-status" style="color:#6c757d;font-size:12px;">memuat\u2026</span><button id="ext-op-print-sheet" style="padding:7px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
+      '<style>#ext-farmasi-operator svg{display:inline-block !important;visibility:visible !important;width:16px;height:16px;flex:none;vertical-align:middle}#ext-farmasi-operator button{font-family:inherit}#ext-farmasi-operator button svg{pointer-events:none}</style><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;"><b style="font-size:18px;color:#0f5132;">Antrian Farmasi \u2014 Operasional</b><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><span id="ext-op-status" style="color:#6c757d;font-size:12px;">memuat\u2026</span><button id="ext-op-print-sheet" style="padding:7px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
       svg('printer', 14) +
       'Cetak Sheet A4</button><button id="ext-op-refresh" style="padding:7px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">Segarkan</button></div></div><div id="ext-op-grid" style="display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:12px;align-items:start;"><div id="ext-col-tunggal"></div><div id="ext-col-racikan"></div><div id="ext-col-panel" style="background:#fff;border:1px solid #dee2e6;border-radius:16px;padding:12px;min-width:0;"></div></div>';
     return p;
