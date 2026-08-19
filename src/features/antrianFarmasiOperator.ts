@@ -36,6 +36,13 @@ interface DisplayData {
   tanggal: string;
   current: DisplayRow[];
   waiting: DisplayRow[];
+  /** Sudah dipanggil hari ini (CALLED/DONE/SKIPPED) — dari tabel Queue. */
+  called: Array<{
+    queue_number: string;
+    nama_pasien: string | null;
+    status: string;
+    called_at: string | null;
+  }>;
   history: Array<{ queue_number: string; event: string; created_at: string | null }>;
 }
 
@@ -179,24 +186,36 @@ async function render(): Promise<void> {
     // (tidak hilang dari layar operator walaupun status berubah).
     const hist = document.getElementById('ext-op-history');
     if (hist) {
-      const rows = (d.history || [])
-        .filter((h) => h.event === 'CALL' || h.event === 'RECALL')
-        .slice(0, 10);
+      const rows = (d.called || []).slice(0, 15);
+      const statusLabel: Record<string, string> = {
+        CALLED: '📢',
+        DONE: '✔',
+        SKIPPED: '⏭',
+      };
       hist.innerHTML =
-        '<div style="font-size:13px;color:#6c757d;margin-bottom:8px;">Sudah dipanggil hari ini</div>' +
+        '<div style="font-size:13px;color:#6c757d;margin-bottom:8px;">Sudah dipanggil hari ini — ' +
+        rows.length +
+        '</div>' +
         (rows.length
           ? rows
               .map(
-                (h) =>
+                (r) =>
                   '<div style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;' +
                   'background:#fff;border:1px solid #e9ecef;border-radius:999px;margin:0 6px 6px 0;font-size:12.5px;">' +
-                  (h.event === 'RECALL'
-                    ? '<span style="color:#b45309;">🔁</span>'
-                    : '<span style="color:#0f5132;">📢</span>') +
+                  '<span>' +
+                  (statusLabel[r.status] || '•') +
+                  '</span>' +
                   '<b>' +
-                  h.queue_number +
+                  r.queue_number +
                   '</b>' +
-                  (h.created_at ? '<span style="color:#adb5bd;font-size:11px;">' + (h.created_at.slice(11, 16) || '') + '</span>' : '') +
+                  (r.nama_pasien
+                    ? '<span style="color:#6c757d;">' + r.nama_pasien + '</span>'
+                    : '') +
+                  (r.called_at
+                    ? '<span style="color:#adb5bd;font-size:11px;">' +
+                      (r.called_at.slice(11, 16) || '') +
+                      '</span>'
+                    : '') +
                   '</div>',
               )
               .join('')
