@@ -94,6 +94,8 @@ var __morbis_feature = (() => {
   function resolveNamaPasien() {
     const fromInput = document.querySelector('#nama_pasien')?.value?.trim();
     if (fromInput) return fromInput.toUpperCase();
+    const fromNama = document.querySelector('#nama')?.value?.trim();
+    if (fromNama) return fromNama.toUpperCase();
     const labeled = Array.from(document.querySelectorAll('th, td, label, strong, b, span'));
     for (const el of labeled) {
       const label = (el.textContent || '').trim();
@@ -109,6 +111,11 @@ var __morbis_feature = (() => {
       /(resep|penjualan|antrian|farmasi|penerimaan|pendaftaran|detail|edit|input|rekap|daftar|shift|cetak|pembayaran|penyerahan|racik|racikan|obat|kasir|pilih|aturan|pakai|dosis|jumlah|satuan|harga|total|biaya|unit|depo|kekuatan|tipe|standar|kronis|klaim|inacbgs|batch|aksi|tambah|selesai|hapus|kembali|simpan)/i;
     const headers = Array.from(document.querySelectorAll('h1, h2, h3, .page-title, .card-title'));
     for (const h of headers) {
+      if (
+        h.closest('.modal, .modal-header, .modal-body, .dropdown, .dropdown-menu, [role="dialog"]')
+      ) {
+        continue;
+      }
       const t = (h.textContent || '').trim();
       if (!t || t.length < 4 || t.length > 60) continue;
       if (PAGE_KEYWORDS.test(t)) continue;

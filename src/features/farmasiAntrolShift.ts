@@ -38,6 +38,9 @@ if ((window as unknown as { __extAntrolShift?: boolean }).__extAntrolShift) {
 function resolveNamaPasien(): string {
   const fromInput = document.querySelector<HTMLInputElement>('#nama_pasien')?.value?.trim();
   if (fromInput) return fromInput.toUpperCase();
+  // MORBIS detail resep punya input readonly #nama berisi nama pasien.
+  const fromNama = document.querySelector<HTMLInputElement>('#nama')?.value?.trim();
+  if (fromNama) return fromNama.toUpperCase();
 
   // Label "Nama Pasien" (th/td/strong) → nilai pada sel/elemen berikutnya.
   const labeled = Array.from(document.querySelectorAll('th, td, label, strong, b, span'));
@@ -54,11 +57,17 @@ function resolveNamaPasien(): string {
 
   // Fallback terakhir: header yang JELAS nama pasien (2+ kata, huruf besar/
   // campuran, TANPA kata-kata kunci halaman). Judul halaman "PENJUALAN E-RESEP"
-  // ditolak di sini.
+  // ditolak di sini. Skip header di dalam modal/dropdown — itu judul UI, bukan
+  // nama pasien (mis. "PILIH ATURAN PAKAI" di pop-up).
   const PAGE_KEYWORDS =
     /(resep|penjualan|antrian|farmasi|penerimaan|pendaftaran|detail|edit|input|rekap|daftar|shift|cetak|pembayaran|penyerahan|racik|racikan|obat|kasir|pilih|aturan|pakai|dosis|jumlah|satuan|harga|total|biaya|unit|depo|kekuatan|tipe|standar|kronis|klaim|inacbgs|batch|aksi|tambah|selesai|hapus|kembali|simpan)/i;
   const headers = Array.from(document.querySelectorAll('h1, h2, h3, .page-title, .card-title'));
   for (const h of headers) {
+    if (
+      h.closest('.modal, .modal-header, .modal-body, .dropdown, .dropdown-menu, [role="dialog"]')
+    ) {
+      continue;
+    }
     const t = (h.textContent || '').trim();
     if (!t || t.length < 4 || t.length > 60) continue;
     if (PAGE_KEYWORDS.test(t)) continue;
