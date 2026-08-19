@@ -261,7 +261,10 @@ var __morbis_feature = (() => {
       const nama = resolveNamaPasien();
       const jenisLabel = jenis === 'racik' ? 'racikan' : 'tunggal';
       const sync = await pushQueueEvent({
-        event_id: queueEventId('enq', antrianId, idVisit + '-' + jenisLabel),
+        event_id:
+          queueEventId('enq', antrianId, idVisit + '-' + jenisLabel) +
+          '-' +
+          Date.now().toString(36),
         event: 'ENQUEUE',
         resep_id: nomorResep,
         nama_pasien: nama,

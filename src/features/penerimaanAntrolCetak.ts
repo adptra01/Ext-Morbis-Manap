@@ -168,11 +168,14 @@ async function handleNoAntrian(idResep: string): Promise<void> {
     log('nomor publik', nomor);
 
     // ENQUEUE ke App Antrian — TANPA queue_number (app assign T-XX/R-XX per
-    // jenis). Idempoten via event_id (klik ganda aman). Nomor publik = response.
+    // jenis). event_id UNIK per klik (timestamp): kalau deterministik per hari,
+    // ENQUEUE ulang setelah BATAL ketemu event lama → duplicate → nomor lama
+    // yg Queue-nya sudah tidak ada. Klik ganda aman via backend reuse
+    // (resolveEnqueue: resep sama WAITING/CALLED → nomor sama).
     const shift =
       (row?.SHIFT as string | null) || (antrianCell ? extractShift(antrianCell) : '') || '';
     const sync = await pushQueueEvent({
-      event_id: queueEventId('enq', antrianId, nomor),
+      event_id: queueEventId('enq', antrianId, nomor) + '-' + Date.now().toString(36),
       event: 'ENQUEUE',
       resep_id: idResep,
       nama_pasien: resolveNamaPasien(data, tr),

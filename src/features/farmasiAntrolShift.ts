@@ -265,11 +265,16 @@ function isResepBatal(antrianStatus?: string): boolean {
     const antrianId = row ? String(row.ID ?? '') : idVisit;
 
     // ENQUEUE ke App Antrian — TANPA queue_number (app assign R-XX utk racik,
-    // T-XX utk tunggal, berdasar field jenis). Idempoten via event_id.
+    // T-XX utk tunggal, berdasar field jenis). event_id UNIK per klik
+    // (timestamp): kalau deterministik per hari, ENQUEUE ulang setelah BATAL
+    // (record dihapus) ketemu event lama → duplicate → nomor lama yg Queue-nya
+    // sudah tidak ada. Double-click aman: backend reuse Queue WAITING/CALLED
+    // utk resep yang sama (resolveEnqueue), bukan via idempotency event.
     const nama = resolveNamaPasien();
     const jenisLabel = jenis === 'racik' ? 'racikan' : 'tunggal';
     const sync = await pushQueueEvent({
-      event_id: queueEventId('enq', antrianId, idVisit + '-' + jenisLabel),
+      event_id:
+        queueEventId('enq', antrianId, idVisit + '-' + jenisLabel) + '-' + Date.now().toString(36),
       event: 'ENQUEUE',
       resep_id: nomorResep,
       nama_pasien: nama,

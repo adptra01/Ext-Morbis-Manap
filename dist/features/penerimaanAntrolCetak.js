@@ -190,7 +190,7 @@ var __morbis_feature = (() => {
       log('nomor publik', nomor);
       const shift = row?.SHIFT || (antrianCell ? extractShift(antrianCell) : '') || '';
       const sync = await pushQueueEvent({
-        event_id: queueEventId('enq', antrianId, nomor),
+        event_id: queueEventId('enq', antrianId, nomor) + '-' + Date.now().toString(36),
         event: 'ENQUEUE',
         resep_id: idResep,
         nama_pasien: resolveNamaPasien(data, tr),
