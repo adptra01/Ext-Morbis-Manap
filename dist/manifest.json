@@ -168,9 +168,8 @@
     },
     {
       "matches": ["http://*/public/antrian-farmasi-v2/view-call-websocet-v2*"],
-      "js": ["features/antrianFarmasiDisplay.js"],
+      "js": ["features/antrianFarmasiDisplayApp.js"],
       "run_at": "document_start",
-      "world": "MAIN",
       "all_frames": false
     },
     {
@@ -181,7 +180,11 @@
     },
     {
       "matches": ["http://*/antrian-farmasi/v2*"],
-      "js": ["features/antrianFarmasiTotal.js", "features/farmasiIssue.js"],
+      "js": [
+        "features/antrianFarmasiOperator.js",
+        "features/antrianFarmasiTotal.js",
+        "features/farmasiIssue.js"
+      ],
       "run_at": "document_idle",
       "all_frames": false
     },

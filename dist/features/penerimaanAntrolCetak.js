@@ -1,38 +1,5 @@
 'use strict';
 var __morbis_feature = (() => {
-  // src/features/shared/farmasiQueueBridge.ts
-  var REQ_SOURCE = 'MORBIS-FARMASI';
-  var RES_SOURCE = 'MORBIS-FARMASI-BRIDGE';
-  var REPLY_TIMEOUT_MS = 4e3;
-  function post(type, payload) {
-    const reqId = 'q-' + Date.now() + '-' + Math.floor(Math.random() * 1e6);
-    return new Promise((resolve, reject) => {
-      const onMsg = (event) => {
-        if (event.source !== window) return;
-        const d = event.data;
-        if (!d || d.source !== RES_SOURCE || d.type !== type || d.reqId !== reqId) return;
-        window.removeEventListener('message', onMsg);
-        clearTimeout(timer);
-        if (!d.ok) return reject(new Error(d.error || type + ' gagal'));
-        resolve(d);
-      };
-      window.addEventListener('message', onMsg);
-      const timer = window.setTimeout(() => {
-        window.removeEventListener('message', onMsg);
-        reject(new Error('farmasiQueueBridge: no reply (extension reloaded?)'));
-      }, REPLY_TIMEOUT_MS);
-      window.postMessage({ source: REQ_SOURCE, type, reqId, ...payload }, '*');
-    });
-  }
-  async function assignPublicNumber(id, jenis, waktu, issuedBy) {
-    return post('QUEUE_ASSIGN_ONE', {
-      id,
-      jenis,
-      waktu,
-      issuedBy,
-    }).then((r) => ({ code: r.code, issued: r.issued }));
-  }
-
   // src/features/shared/printKartu.ts
   function printKartuAntrian(data) {
     const win = window.open('', '_blank', 'width=400,height=560');
@@ -57,6 +24,36 @@ var __morbis_feature = (() => {
       } catch {}
     }, 300);
     return true;
+  }
+
+  // src/features/shared/farmasiQueueSync.ts
+  var FARMASI_APP_BASE = 'http://dev.rsudkotajambi.id/rs';
+  function farmasiAppBase() {
+    try {
+      const ov = localStorage.getItem('ext-farmasi-app-base');
+      if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
+    } catch {}
+    return FARMASI_APP_BASE;
+  }
+  async function pushQueueEvent(p) {
+    try {
+      const res = await fetch(farmasiAppBase() + '/api/queue/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(p),
+        cache: 'no-store',
+        credentials: 'omit',
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const j = await res.json();
+      return !!j.ok;
+    } catch (e) {
+      console.warn('[MORBIS Ext] queue sync gagal:', e.message);
+      return false;
+    }
+  }
+  function queueEventId(prefix, source, nomor) {
+    return `${prefix}-${source}-${nomor}-${/* @__PURE__ */ new Date().toISOString().slice(0, 10)}`;
   }
 
   // src/features/penerimaanAntrolCetak.ts
@@ -109,26 +106,10 @@ var __morbis_feature = (() => {
     const m = (cell.textContent || '').match(/Shift\s*:\s*([A-Za-z0-9]+)/i);
     return m ? m[1] : '';
   }
-  function sanitizeAntrianCells() {
-    document.querySelectorAll('tr[id]').forEach((tr) => {
-      const cells = Array.from(tr.querySelectorAll('td'));
-      const cell = cells[2];
-      if (!cell || cell.hasAttribute('data-ext-code')) return;
-      const btn = cell.querySelector('button');
-      if (!btn || btn.hasAttribute('data-ext-shift')) return;
-      const shift = extractShift(cell);
-      if (shift) btn.setAttribute('data-ext-shift', shift);
-      if (cell.hasAttribute('data-ext-sanitized')) return;
-      cell.innerHTML = '';
-      cell.appendChild(btn);
-      cell.setAttribute('data-ext-sanitized', '1');
-    });
-  }
-  function watchSanitize() {
-    sanitizeAntrianCells();
-    const observer = new MutationObserver(() => sanitizeAntrianCells());
-    observer.observe(document.body, { childList: true, subtree: true });
-    window.setTimeout(() => observer.disconnect(), 6e4);
+  function extractNativeNumber(cell) {
+    if (!cell) return '';
+    const m = (cell.textContent || '').match(/\b[A-Z]{2,3}-\d+\b/);
+    return m ? m[0] : '';
   }
   async function handleNoAntrian(idResep) {
     try {
@@ -149,27 +130,41 @@ var __morbis_feature = (() => {
         if (!row) await new Promise((r) => setTimeout(r, 400));
       }
       const antrianId = row ? String(row.ID ?? '') : idVisit;
-      const issued = await assignPublicNumber(antrianId, row?.JENIS ?? null, row?.WAKTU ?? null);
-      const code = issued.code;
-      if (!code) {
-        log('nomor publik belum terbit utk', antrianId);
-        alert('Nomor antrian belum terbit. Coba lagi.');
-        return;
-      }
-      log('nomor publik', code, '| baru:', issued.issued);
       const tr = document.querySelector(`tr[id="${idResep}"]`);
       const cells = tr ? Array.from(tr.querySelectorAll('td')) : [];
       const antrianCell = cells[2];
-      const btnInCell = antrianCell?.querySelector('button');
-      const shift =
-        btnInCell?.getAttribute('data-ext-shift') ||
-        (antrianCell ? extractShift(antrianCell) : '') ||
-        '';
+      const nomor = extractNativeNumber(antrianCell) || String(row?.NOMOR ?? '');
+      if (!nomor) {
+        log('nomor native belum ada utk', antrianId);
+        alert('Nomor antrian belum terbit. Coba lagi.');
+        return;
+      }
+      log('nomor publik', nomor);
+      const shift = row?.SHIFT || (antrianCell ? extractShift(antrianCell) : '') || '';
+      const okSync = await pushQueueEvent({
+        event_id: queueEventId('enq', antrianId, nomor),
+        queue_number: nomor,
+        event: 'ENQUEUE',
+        resep_id: idResep,
+        nama_pasien: String(data.NAMA_PAS ?? '').toUpperCase(),
+        norm: String(data.ID_PASIEN ?? ''),
+        shift,
+        jenis: row?.JENIS ?? '',
+        counter: '',
+        payload: {
+          idVisit,
+          unit: String(row?.NAMA_UNIT ?? data.UNIT_TUJUAN_DEPO ?? ''),
+          waktu: String(row?.WAKTU ?? data.WAKTU_PENGAJUAN ?? ''),
+        },
+      });
+      if (!okSync)
+        log('ENQUEUE app gagal (app tidak terjangkau?) \u2014 antrian tetap jalan di MORBIS');
       if (antrianCell && !antrianCell.hasAttribute('data-ext-code')) {
+        const btnInCell = antrianCell.querySelector('button');
         const btnHtml = btnInCell ? btnInCell.outerHTML : '';
         antrianCell.innerHTML =
-          `${code}<br>Shift : ${shift || '-'}` + (btnHtml ? '<br>' + btnHtml : '');
-        antrianCell.setAttribute('data-ext-code', code);
+          `${nomor}<br>Shift : ${shift || '-'}` + (btnHtml ? '<br>' + btnHtml : '');
+        antrianCell.setAttribute('data-ext-code', nomor);
       }
       printKartuAntrian({
         nomorResep: idResep,
@@ -177,7 +172,7 @@ var __morbis_feature = (() => {
         jenis: row?.JENIS ?? '',
         unit: String(row?.NAMA_UNIT ?? data.UNIT_TUJUAN_DEPO ?? ''),
         tanggal: String(data.WAKTU_PENGAJUAN ?? '').slice(0, 10),
-        code,
+        code: nomor,
       });
     } catch (e) {
       log('gagal', e);
@@ -200,13 +195,11 @@ var __morbis_feature = (() => {
       'DOMContentLoaded',
       () => {
         wrapNoAntrian();
-        watchSanitize();
       },
       { once: true },
     );
   } else {
     wrapNoAntrian();
-    watchSanitize();
   }
   window.setTimeout(wrapNoAntrian, 1e3);
   window.setTimeout(wrapNoAntrian, 3e3);

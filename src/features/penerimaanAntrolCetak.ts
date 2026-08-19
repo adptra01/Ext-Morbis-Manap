@@ -1,21 +1,27 @@
 /**
  * penerimaanAntrolCetak — tombol "No. Antrian" di halaman /inventory/resep/penerimaan
- * diubah: klik → (1) antrikan resep (POST antrol update_v2 taskid=6), (2) terbitkan
- * nomor publik QueueManager (T-xx/R-xx), (3) cetak kartu antrian dengan nomor publik
- * + Shift (bukan nomor MORBIS UT-xxx), (4) perbarui kolom "No Antrian" tabel.
+ * diubah: klik → (1) antrikan resep (POST antrol update_v2 taskid=6), (2) kirim
+ * ENQUEUE ke App Antrian (Reports SIMRS — source of truth nomor/status), (3) cetak
+ * kartu antrian dengan NOMOR NATIVE MORBIS (UT-xxx, Model A — keputusan 2026-08-19),
+ * (4) perbarui kolom "No Antrian" tabel.
  *
  * Alur lapangan: pasien datang → petugas klik "No. Antrian" → resep masuk antrian
  * + kartu kertas langsung tercetak → petugas siapkan resep → Simpan → panggil.
  *
- * Jalan di world MAIN (butuh chrome.runtime? TIDAK — queue via postMessage bridge
- * farmasiQueueBridge → farmasiBridge ISOLATED). FarmasiBridge wajib terdaftar di
- * halaman ini (manifest) sebagai pasangan bridge.
+ * Model A (keputusan 2026-08-19): nomor publik = nomor native MORBIS (UT-xxx) yang
+ * dibuat otomatis oleh ANTRIAN_PENJUALAN saat resep diterima. Extension tidak lagi
+ * menerbitkan T-xx/R-xx (QueueManager dimatikan sbg sumber nomor publik di
+ * penerimaan; display/tabel operator memakai App Antrian). Klik tombol = momen
+ * ENQUEUE — nomor sudah ada di DB MORBIS, klik hanya memasukkan ke antrian app.
+ *
+ * Jalan di world MAIN (butuh chrome.runtime? TIDAK — fetch langsung ke app; CORS
+ * diizinkan app utk origin MORBIS).
  *
  * ponytail: resolve ID antrian via check_antrian (ID_PASIEN + WAKTU_PENGAJUAN);
  * jika MORBIS mengubah format endpoint antrol/check_antrian, fitur ini perlu update.
  */
-import { assignPublicNumber } from './shared/farmasiQueueBridge';
 import { printKartuAntrian } from './shared/printKartu';
+import { pushQueueEvent, queueEventId } from './shared/farmasiQueueSync';
 
 const ANTRL_URL = '/v2/antrol/search';
 const ANTRL_SUB = 'sub=update_v2';
@@ -82,34 +88,16 @@ function extractShift(cell: HTMLElement | null): string {
   return m ? m[1] : '';
 }
 
-/** Sembunyikan penomoran bawaan MORBIS (UT-001 + Shift) di kolom "No Antrian":
- *  sisakan tombol saja; shift disimpan di tombol (data-ext-shift) agar tetap
- *  tersedia utk kartu cetak nanti. Baris yg sudah diberi nomor publik
- *  (data-ext-code) tidak disentuh. */
-function sanitizeAntrianCells(): void {
-  document.querySelectorAll('tr[id]').forEach((tr) => {
-    const cells = Array.from(tr.querySelectorAll('td'));
-    const cell = cells[2]; // kolom No Antrian (thead: No, No Resep, No Antrian, ...)
-    if (!cell || cell.hasAttribute('data-ext-code')) return;
-    const btn = cell.querySelector('button');
-    if (!btn || btn.hasAttribute('data-ext-shift')) return;
-    const shift = extractShift(cell);
-    if (shift) btn.setAttribute('data-ext-shift', shift);
-    if (cell.hasAttribute('data-ext-sanitized')) return;
-    // Kosongkan sel lalu pasang ulang tombol (onclick native tetap hidup).
-    cell.innerHTML = '';
-    cell.appendChild(btn);
-    cell.setAttribute('data-ext-sanitized', '1');
-  });
+/** Ambil nomor native MORBIS (UT-xxx) dari sel kolom "No Antrian" baris.
+ *  Model A: nomor ini = nomor publik — TIDAK disembunyikan lagi. */
+function extractNativeNumber(cell: HTMLElement | null): string {
+  if (!cell) return '';
+  const m = (cell.textContent || '').match(/\b[A-Z]{2,3}-\d+\b/);
+  return m ? m[0] : '';
 }
 
-/** Pasang sanitize + pantau re-render tabel MORBIS (AJAX). */
-function watchSanitize(): void {
-  sanitizeAntrianCells();
-  const observer = new MutationObserver(() => sanitizeAntrianCells());
-  observer.observe(document.body, { childList: true, subtree: true });
-  window.setTimeout(() => observer.disconnect(), 60000); // ponytail: hentikan setelah 1 menit
-}
+// Model A (2026-08-19): nomor native UT-xxx = nomor publik, sel tabel TIDAK
+// disanitasi (tampil apa adanya) — sanitizeAntrianCells/watchSanitize dihapus.
 
 /** Handler baru utk tombol no_antrian(idResep). */
 async function handleNoAntrian(idResep: string): Promise<void> {
@@ -122,8 +110,8 @@ async function handleNoAntrian(idResep: string): Promise<void> {
     const okAntrol = await registerAntrian(idVisit);
     log('antrol', okAntrol ? 'OK' : 'gagal');
 
-    // Resolve ID antrian (check_antrian) utk nomor publik — retry kecil karena
-    // antrol ditulis server. ID antrian bisa = ID_VISIT; fallback by pasien.
+    // Resolve ID antrian (check_antrian) — retry kecil karena antrol ditulis
+    // server. ID antrian bisa = ID_VISIT; fallback by pasien.
     let row: Record<string, unknown> | undefined;
     for (let i = 0; i < 5 && !row; i++) {
       try {
@@ -138,35 +126,49 @@ async function handleNoAntrian(idResep: string): Promise<void> {
     }
     const antrianId = row ? String(row.ID ?? '') : idVisit;
 
-    // Terbitkan nomor utk SATU id (idempoten — cetak ulang → tiket sama).
-    const issued = await assignPublicNumber(
-      antrianId,
-      (row?.JENIS as string | null) ?? null,
-      (row?.WAKTU as string | null) ?? null,
-    );
-    const code = issued.code;
-    if (!code) {
-      log('nomor publik belum terbit utk', antrianId);
-      alert('Nomor antrian belum terbit. Coba lagi.');
-      return;
-    }
-    log('nomor publik', code, '| baru:', issued.issued);
-
-    // Perbarui kolom "No Antrian" baris: ganti nomor MORBIS → nomor publik.
+    // Nomor publik = nomor native MORBIS (UT-xxx/BT-xxx) — Model A. SUMBER
+    // UTAMA = sel tabel penerimaan (kolom No Antrian): check_antrian hanya
+    // berisi subset sesi/unit & NOMOR-nya angka polos (bukan KODE-NOMOR),
+    // jadi tidak bisa diandalkan utk nomor native. row hanya utk JENIS/SHIFT.
     const tr = document.querySelector<HTMLTableRowElement>(`tr[id="${idResep}"]`);
     const cells = tr ? Array.from(tr.querySelectorAll('td')) : [];
     const antrianCell = cells[2]; // kolom No Antrian (thead: No, No Resep, No Antrian, ...)
-    // Shift dibaca dari data-ext-shift tombol (sanitize menyimpannya), fallback ke teks sel.
-    const btnInCell = antrianCell?.querySelector('button');
+    const nomor = extractNativeNumber(antrianCell) || String(row?.NOMOR ?? '');
+    if (!nomor) {
+      log('nomor native belum ada utk', antrianId);
+      alert('Nomor antrian belum terbit. Coba lagi.');
+      return;
+    }
+    log('nomor publik', nomor);
+
+    // ENQUEUE ke App Antrian — idempoten via event_id (klik ganda aman).
     const shift =
-      btnInCell?.getAttribute('data-ext-shift') ||
-      (antrianCell ? extractShift(antrianCell) : '') ||
-      '';
+      (row?.SHIFT as string | null) || (antrianCell ? extractShift(antrianCell) : '') || '';
+    const okSync = await pushQueueEvent({
+      event_id: queueEventId('enq', antrianId, nomor),
+      queue_number: nomor,
+      event: 'ENQUEUE',
+      resep_id: idResep,
+      nama_pasien: String(data.NAMA_PAS ?? '').toUpperCase(),
+      norm: String(data.ID_PASIEN ?? ''),
+      shift,
+      jenis: (row?.JENIS as string | null) ?? '',
+      counter: '',
+      payload: {
+        idVisit,
+        unit: String(row?.NAMA_UNIT ?? data.UNIT_TUJUAN_DEPO ?? ''),
+        waktu: String(row?.WAKTU ?? data.WAKTU_PENGAJUAN ?? ''),
+      },
+    });
+    if (!okSync) log('ENQUEUE app gagal (app tidak terjangkau?) — antrian tetap jalan di MORBIS');
+
+    // Tampilkan nomor native di kolom (sudah ada; pastikan tombol tetap ada).
     if (antrianCell && !antrianCell.hasAttribute('data-ext-code')) {
+      const btnInCell = antrianCell.querySelector('button');
       const btnHtml = btnInCell ? btnInCell.outerHTML : '';
       antrianCell.innerHTML =
-        `${code}<br>Shift : ${shift || '-'}` + (btnHtml ? '<br>' + btnHtml : '');
-      antrianCell.setAttribute('data-ext-code', code);
+        `${nomor}<br>Shift : ${shift || '-'}` + (btnHtml ? '<br>' + btnHtml : '');
+      antrianCell.setAttribute('data-ext-code', nomor);
     }
 
     printKartuAntrian({
@@ -175,7 +177,7 @@ async function handleNoAntrian(idResep: string): Promise<void> {
       jenis: (row?.JENIS as string | null) ?? '',
       unit: String(row?.NAMA_UNIT ?? data.UNIT_TUJUAN_DEPO ?? ''),
       tanggal: String(data.WAKTU_PENGAJUAN ?? '').slice(0, 10),
-      code,
+      code: nomor,
     });
   } catch (e) {
     log('gagal', e);
@@ -201,13 +203,11 @@ if (document.readyState === 'loading') {
     'DOMContentLoaded',
     () => {
       wrapNoAntrian();
-      watchSanitize();
     },
     { once: true },
   );
 } else {
   wrapNoAntrian();
-  watchSanitize();
 }
 // MORBIS bisa render ulang tabel setelah AJAX; pastikan wrap tetap aktif.
 window.setTimeout(wrapNoAntrian, 1000);
