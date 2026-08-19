@@ -77,8 +77,8 @@ function svg(name: string, size = 16, color = '#212529'): string {
 
 /** Badge status visual + label (bukan hanya warna — aksesibilitas). */
 const STATUS_META: Record<string, { label: string; dot: string; bg: string; fg: string }> = {
-  WAITING: { label: 'BELUM DIPANGGIL', dot: '#084298', bg: '#e7f1ff', fg: '#084298' },
-  CALLED: { label: 'DIPANGGIL', dot: '#0f5132', bg: '#d1e7dd', fg: '#0f5132' },
+  WAITING: { label: 'BELUM DIPANGGIL', dot: '#2193cf', bg: '#e7f1ff', fg: '#2193cf' },
+  CALLED: { label: 'DIPANGGIL', dot: '#2445d6', bg: '#e0e7ff', fg: '#2445d6' },
   DEFERRED: { label: 'DITUNDA', dot: '#997404', bg: '#fff3cd', fg: '#664d03' },
   DONE: { label: 'SELESAI', dot: '#495057', bg: '#e9ecef', fg: '#495057' },
   SKIPPED: { label: 'LEWAT', dot: '#6c757d', bg: '#f8f9fa', fg: '#6c757d' },
@@ -86,8 +86,8 @@ const STATUS_META: Record<string, { label: string; dot: string; bg: string; fg: 
 
 /** Aksen warna per kategori: tunggal = biru, racikan = oranye (konsisten TV). */
 const CAT_META: Record<string, { label: string; accent: string; soft: string }> = {
-  tunggal: { label: 'Non Racikan', accent: '#0284c7', soft: '#e0f2fe' },
-  racikan: { label: 'Racikan', accent: '#d97706', soft: '#fef3c7' },
+  tunggal: { label: 'Non Racikan', accent: '#2193cf', soft: '#e7f1ff' },
+  racikan: { label: 'Racikan', accent: '#2445d6', soft: '#e0e7ff' },
 };
 
 let lastState = '';
@@ -135,7 +135,7 @@ function printSheetA4(): void {
     .map(
       (r) =>
         '<div style="display:flex;align-items:center;gap:10px;padding:6px 8px;border-bottom:1px solid #ddd;">' +
-        '<b style="min-width:70px;font-size:16px;color:#0f5132;">' +
+        '<b style="min-width:70px;font-size:16px;color:#2193cf;">' +
         r.queue_number +
         '</b>' +
         '<span style="flex:1;font-size:14px;">' +
@@ -360,13 +360,13 @@ function buildPanel(): HTMLDivElement {
     '#ext-farmasi-operator button{font-family:inherit}' +
     '#ext-farmasi-operator button svg{pointer-events:none}</style>' +
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">' +
-    '<b style="font-size:18px;color:#0f5132;">Antrian Farmasi — Operasional</b>' +
+    '<b style="font-size:18px;color:#2193cf;">Antrian Farmasi — Operasional</b>' +
     '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">' +
     '<span id="ext-op-status" style="color:#6c757d;font-size:12px;">memuat…</span>' +
-    '<button id="ext-op-print-sheet" style="padding:7px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
+    '<button id="ext-op-print-sheet" style="padding:7px 14px;border:1px solid #2193cf;background:#fff;color:#2193cf;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
     svg('printer', 14) +
     'Cetak Sheet A4</button>' +
-    '<button id="ext-op-refresh" style="padding:7px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">Segarkan</button>' +
+    '<button id="ext-op-refresh" style="padding:7px 14px;border:1px solid #2193cf;background:#fff;color:#2193cf;border-radius:8px;cursor:pointer;">Segarkan</button>' +
     '</div></div>' +
     '<div id="ext-op-grid" style="display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:12px;align-items:start;">' +
     '<div id="ext-col-tunggal"></div>' +
@@ -426,7 +426,7 @@ async function render(): Promise<void> {
         colP.innerHTML =
           '<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:8px;">Penerbitan & Kasus Khusus</div>' +
           '<div style="display:flex;gap:8px;margin-bottom:12px;">' +
-          '<button id="ext-op-print-sheet2" style="flex:1;padding:9px;border:1px solid #0f5132;background:#0f5132;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;">' +
+          '<button id="ext-op-print-sheet2" style="flex:1;padding:9px;border:1px solid #2193cf;background:#2193cf;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;">' +
           svg('printer', 14) +
           'Sheet A4</button>' +
           '<button id="ext-op-refresh2" style="flex:1;padding:9px;border:1px solid #ced4da;background:#fff;color:#212529;border-radius:8px;cursor:pointer;font-weight:700;">Segarkan</button>' +

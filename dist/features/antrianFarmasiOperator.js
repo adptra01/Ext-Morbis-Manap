@@ -122,15 +122,15 @@ var __morbis_feature = (() => {
     );
   }
   var STATUS_META = {
-    WAITING: { label: 'BELUM DIPANGGIL', dot: '#084298', bg: '#e7f1ff', fg: '#084298' },
-    CALLED: { label: 'DIPANGGIL', dot: '#0f5132', bg: '#d1e7dd', fg: '#0f5132' },
+    WAITING: { label: 'BELUM DIPANGGIL', dot: '#2193cf', bg: '#e7f1ff', fg: '#2193cf' },
+    CALLED: { label: 'DIPANGGIL', dot: '#2445d6', bg: '#e0e7ff', fg: '#2445d6' },
     DEFERRED: { label: 'DITUNDA', dot: '#997404', bg: '#fff3cd', fg: '#664d03' },
     DONE: { label: 'SELESAI', dot: '#495057', bg: '#e9ecef', fg: '#495057' },
     SKIPPED: { label: 'LEWAT', dot: '#6c757d', bg: '#f8f9fa', fg: '#6c757d' },
   };
   var CAT_META = {
-    tunggal: { label: 'Non Racikan', accent: '#0284c7', soft: '#e0f2fe' },
-    racikan: { label: 'Racikan', accent: '#d97706', soft: '#fef3c7' },
+    tunggal: { label: 'Non Racikan', accent: '#2193cf', soft: '#e7f1ff' },
+    racikan: { label: 'Racikan', accent: '#2445d6', soft: '#e0e7ff' },
   };
   var lastState = '';
   var POLL_MS = 2e3;
@@ -169,7 +169,7 @@ var __morbis_feature = (() => {
     const items = rows
       .map(
         (r) =>
-          '<div style="display:flex;align-items:center;gap:10px;padding:6px 8px;border-bottom:1px solid #ddd;"><b style="min-width:70px;font-size:16px;color:#0f5132;">' +
+          '<div style="display:flex;align-items:center;gap:10px;padding:6px 8px;border-bottom:1px solid #ddd;"><b style="min-width:70px;font-size:16px;color:#2193cf;">' +
           r.queue_number +
           '</b><span style="flex:1;font-size:14px;">' +
           (r.nama_pasien || '-') +
@@ -352,9 +352,9 @@ var __morbis_feature = (() => {
     p.style.cssText =
       'padding:14px;max-width:1500px;margin:0 auto;font:14px/1.5 system-ui,sans-serif;color:#212529;background:#f8f9fa;min-height:90vh;box-sizing:border-box;';
     p.innerHTML =
-      '<style>#ext-farmasi-operator svg{display:inline-block !important;visibility:visible !important;width:16px;height:16px;flex:none;vertical-align:middle}#ext-farmasi-operator button{font-family:inherit}#ext-farmasi-operator button svg{pointer-events:none}</style><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;"><b style="font-size:18px;color:#0f5132;">Antrian Farmasi \u2014 Operasional</b><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><span id="ext-op-status" style="color:#6c757d;font-size:12px;">memuat\u2026</span><button id="ext-op-print-sheet" style="padding:7px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
+      '<style>#ext-farmasi-operator svg{display:inline-block !important;visibility:visible !important;width:16px;height:16px;flex:none;vertical-align:middle}#ext-farmasi-operator button{font-family:inherit}#ext-farmasi-operator button svg{pointer-events:none}</style><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;"><b style="font-size:18px;color:#2193cf;">Antrian Farmasi \u2014 Operasional</b><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><span id="ext-op-status" style="color:#6c757d;font-size:12px;">memuat\u2026</span><button id="ext-op-print-sheet" style="padding:7px 14px;border:1px solid #2193cf;background:#fff;color:#2193cf;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
       svg('printer', 14) +
-      'Cetak Sheet A4</button><button id="ext-op-refresh" style="padding:7px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">Segarkan</button></div></div><div id="ext-op-grid" style="display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:12px;align-items:start;"><div id="ext-col-tunggal"></div><div id="ext-col-racikan"></div><div id="ext-col-panel" style="background:#fff;border:1px solid #dee2e6;border-radius:16px;padding:12px;min-width:0;"></div></div>';
+      'Cetak Sheet A4</button><button id="ext-op-refresh" style="padding:7px 14px;border:1px solid #2193cf;background:#fff;color:#2193cf;border-radius:8px;cursor:pointer;">Segarkan</button></div></div><div id="ext-op-grid" style="display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:12px;align-items:start;"><div id="ext-col-tunggal"></div><div id="ext-col-racikan"></div><div id="ext-col-panel" style="background:#fff;border:1px solid #dee2e6;border-radius:16px;padding:12px;min-width:0;"></div></div>';
     return p;
   }
   async function render() {
@@ -403,7 +403,7 @@ var __morbis_feature = (() => {
             .filter((r) => r.status === 'DEFERRED' || r.status === 'SKIPPED')
             .sort(sortNum);
           colP.innerHTML =
-            '<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:8px;">Penerbitan & Kasus Khusus</div><div style="display:flex;gap:8px;margin-bottom:12px;"><button id="ext-op-print-sheet2" style="flex:1;padding:9px;border:1px solid #0f5132;background:#0f5132;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;">' +
+            '<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:8px;">Penerbitan & Kasus Khusus</div><div style="display:flex;gap:8px;margin-bottom:12px;"><button id="ext-op-print-sheet2" style="flex:1;padding:9px;border:1px solid #2193cf;background:#2193cf;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;">' +
             svg('printer', 14) +
             'Sheet A4</button><button id="ext-op-refresh2" style="flex:1;padding:9px;border:1px solid #ced4da;background:#fff;color:#212529;border-radius:8px;cursor:pointer;font-weight:700;">Segarkan</button></div><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:6px;">Ditunda / Lewat</div>' +
             (special.length
