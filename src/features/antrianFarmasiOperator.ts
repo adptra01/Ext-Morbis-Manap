@@ -371,10 +371,10 @@ function buildPanel(): HTMLDivElement {
     '<b style="font-size:18px;color:#2193cf;">Antrian Farmasi — Operasional</b>' +
     '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">' +
     '<span id="ext-op-status" style="color:#6c757d;font-size:12px;">memuat…</span>' +
-    '<button id="ext-op-print-sheet" data-tip="Cetak daftar semua nomor antrian hari ini (format A4)" style="padding:7px 14px;border:1px solid #2193cf;background:#fff;color:#2193cf;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
-    svg('printer', 14) +
+    '<button id="ext-op-print-sheet" data-tip="Cetak daftar semua nomor antrian hari ini (format A4)" style="padding:7px 14px;border:1px solid #2193cf;background:#2193cf;color:#fff;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
+    svg('printer', 14, '#fff') +
     'Cetak Sheet A4</button>' +
-    '<button id="ext-op-refresh" data-tip="Segarkan data antrean dari app" style="padding:7px 14px;border:1px solid #2193cf;background:#fff;color:#2193cf;border-radius:8px;cursor:pointer;">Segarkan</button>' +
+    '<button id="ext-op-refresh" data-tip="Segarkan data antrean dari app" style="padding:7px 14px;border:1px solid #6c757d;background:#6c757d;color:#fff;border-radius:8px;cursor:pointer;">Segarkan</button>' +
     '</div></div>' +
     '<div id="ext-op-grid" style="display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:12px;align-items:start;">' +
     '<div id="ext-col-tunggal"></div>' +
@@ -435,9 +435,9 @@ async function render(): Promise<void> {
           '<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:8px;">Penerbitan & Kasus Khusus</div>' +
           '<div style="display:flex;gap:8px;margin-bottom:12px;">' +
           '<button id="ext-op-print-sheet2" data-tip="Cetak daftar semua nomor antrian hari ini (format A4)" title="Cetak Sheet A4" style="flex:1;padding:9px;border:1px solid #2193cf;background:#2193cf;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;">' +
-          svg('printer', 14) +
+          svg('printer', 14, '#fff') +
           'Sheet A4</button>' +
-          '<button id="ext-op-refresh2" data-tip="Segarkan data antrean dari app" title="Segarkan" style="flex:1;padding:9px;border:1px solid #ced4da;background:#fff;color:#212529;border-radius:8px;cursor:pointer;font-weight:700;">Segarkan</button>' +
+          '<button id="ext-op-refresh2" data-tip="Segarkan data antrean dari app" title="Segarkan" style="flex:1;padding:9px;border:1px solid #6c757d;background:#6c757d;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;">Segarkan</button>' +
           '</div>' +
           '<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:6px;">Ditunda / Lewat</div>' +
           (special.length
