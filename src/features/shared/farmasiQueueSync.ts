@@ -15,7 +15,8 @@ export type QueueEventType = 'ENQUEUE' | 'CALL' | 'RECALL' | 'SKIP' | 'DONE';
 
 export interface QueueEventPayload {
   event_id: string;
-  queue_number: string;
+  /** Opsional — utk ENQUEUE TIDAK dikirim (app assign T-XX/R-XX per jenis). */
+  queue_number?: string;
   event: QueueEventType;
   counter?: string;
   operator_id?: number;
@@ -38,22 +39,28 @@ export function farmasiAppBase(): string {
   return FARMASI_APP_BASE;
 }
 
-/** POST event ke app antrian. Idempoten (event_id unik) — aman dipanggil ganda. */
-export async function pushQueueEvent(p: QueueEventPayload): Promise<boolean> {
+/** POST event ke app antrian. Idempoten (event_id unik) — aman dipanggil ganda.
+ *  ENQUEUE: JANGAN kirim queue_number — app yang assign (T-XX/R-XX per jenis);
+ *  nomor hasil ada di return.queue_number (dipakai cetak kartu). */
+export async function pushQueueEvent(
+  p: QueueEventPayload,
+): Promise<{ ok: boolean; queue_number?: string }> {
   try {
+    const body: Record<string, unknown> = { ...p };
+    if (p.event === 'ENQUEUE') delete body.queue_number;
     const res = await fetch(farmasiAppBase() + '/api/queue/events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(p),
+      body: JSON.stringify(body),
       cache: 'no-store',
       credentials: 'omit',
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const j = (await res.json()) as { ok?: boolean };
-    return !!j.ok;
+    const j = (await res.json()) as { ok?: boolean; queue?: { queue_number?: string } };
+    return { ok: !!j.ok, queue_number: j.queue?.queue_number };
   } catch (e) {
     console.warn('[MORBIS Ext] queue sync gagal:', (e as Error).message);
-    return false;
+    return { ok: false };
   }
 }
 

@@ -1,36 +1,35 @@
 'use strict';
 var __morbis_feature = (() => {
-  // src/features/shared/farmasiQueueBridge.ts
-  var REQ_SOURCE = 'MORBIS-FARMASI';
-  var RES_SOURCE = 'MORBIS-FARMASI-BRIDGE';
-  var REPLY_TIMEOUT_MS = 4e3;
-  function post(type, payload) {
-    const reqId = 'q-' + Date.now() + '-' + Math.floor(Math.random() * 1e6);
-    return new Promise((resolve, reject) => {
-      const onMsg = (event) => {
-        if (event.source !== window) return;
-        const d = event.data;
-        if (!d || d.source !== RES_SOURCE || d.type !== type || d.reqId !== reqId) return;
-        window.removeEventListener('message', onMsg);
-        clearTimeout(timer);
-        if (!d.ok) return reject(new Error(d.error || type + ' gagal'));
-        resolve(d);
-      };
-      window.addEventListener('message', onMsg);
-      const timer = window.setTimeout(() => {
-        window.removeEventListener('message', onMsg);
-        reject(new Error('farmasiQueueBridge: no reply (extension reloaded?)'));
-      }, REPLY_TIMEOUT_MS);
-      window.postMessage({ source: REQ_SOURCE, type, reqId, ...payload }, '*');
-    });
+  // src/features/shared/farmasiQueueSync.ts
+  var FARMASI_APP_BASE = 'http://dev.rsudkotajambi.id/rs';
+  function farmasiAppBase() {
+    try {
+      const ov = localStorage.getItem('ext-farmasi-app-base');
+      if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
+    } catch {}
+    return FARMASI_APP_BASE;
   }
-  async function assignPublicNumber(id, jenis, waktu, issuedBy) {
-    return post('QUEUE_ASSIGN_ONE', {
-      id,
-      jenis,
-      waktu,
-      issuedBy,
-    }).then((r) => ({ code: r.code, issued: r.issued }));
+  async function pushQueueEvent(p) {
+    try {
+      const body = { ...p };
+      if (p.event === 'ENQUEUE') delete body.queue_number;
+      const res = await fetch(farmasiAppBase() + '/api/queue/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        cache: 'no-store',
+        credentials: 'omit',
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const j = await res.json();
+      return { ok: !!j.ok, queue_number: j.queue?.queue_number };
+    } catch (e) {
+      console.warn('[MORBIS Ext] queue sync gagal:', e.message);
+      return { ok: false };
+    }
+  }
+  function queueEventId(prefix, source, nomor) {
+    return `${prefix}-${source}-${nomor}-${/* @__PURE__ */ new Date().toISOString().slice(0, 10)}`;
   }
 
   // src/features/shared/printKartu.ts
@@ -150,13 +149,31 @@ var __morbis_feature = (() => {
         if (!row) await new Promise((r) => setTimeout(r, 400));
       }
       const antrianId = row ? String(row.ID ?? '') : idVisit;
-      const issued = await assignPublicNumber(antrianId, row?.JENIS ?? null, waktu || null);
-      if (!issued.code) {
+      const nama = document.querySelector('#nama_pasien')?.value ?? '';
+      const sync = await pushQueueEvent({
+        event_id: queueEventId('enq', antrianId, idVisit),
+        event: 'ENQUEUE',
+        resep_id: nomorResep,
+        nama_pasien: String(nama).toUpperCase(),
+        norm: idPasien || void 0,
+        shift: '',
+        jenis: String(row?.JENIS ?? ''),
+        counter: '',
+        payload: {
+          idVisit,
+          unit: String(row?.NAMA_UNIT ?? ''),
+          waktu: waktu || '',
+        },
+      });
+      if (!sync.ok) {
+        alert('[MORBIS Ext] Gagal terhubung ke App Antrian. Coba lagi.');
+        return;
+      }
+      const code = sync.queue_number || '';
+      if (!code) {
         alert('[MORBIS Ext] Nomor antrian belum terbit. Coba lagi.');
         return;
       }
-      const code = issued.code;
-      const nama = document.querySelector('#nama_pasien')?.value ?? '';
       printKartuAntrian({
         nomorResep,
         nama: String(nama).toUpperCase(),

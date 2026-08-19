@@ -11,19 +11,21 @@ var __morbis_feature = (() => {
   }
   async function pushQueueEvent(p) {
     try {
+      const body = { ...p };
+      if (p.event === 'ENQUEUE') delete body.queue_number;
       const res = await fetch(farmasiAppBase() + '/api/queue/events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(p),
+        body: JSON.stringify(body),
         cache: 'no-store',
         credentials: 'omit',
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const j = await res.json();
-      return !!j.ok;
+      return { ok: !!j.ok, queue_number: j.queue?.queue_number };
     } catch (e) {
       console.warn('[MORBIS Ext] queue sync gagal:', e.message);
-      return false;
+      return { ok: false };
     }
   }
 
@@ -118,7 +120,13 @@ var __morbis_feature = (() => {
                     (r.nama_pasien || '-') +
                     '<div style="opacity:.8;font-size:12px;">' +
                     (r.jenis || '') +
-                    '</div></div><div style="flex-shrink:0;">' +
+                    '</div></div><div style="flex-shrink:0;display:flex;gap:8px;">' +
+                    callBtn(
+                      'RECALL',
+                      '\u{1F501} Panggil Ulang',
+                      r.queue_number,
+                      'op-recall-' + r.queue_number,
+                    ) +
                     callBtn('DONE', '\u2714 Selesai', r.queue_number, 'op-done-' + r.queue_number) +
                     '</div></div>',
                 )

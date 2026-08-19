@@ -7,7 +7,9 @@
  *   2. Daftar menunggu (WAITING) + nomor sedang dipanggil (CALLED) dari
  *      GET /api/queue/display — polling ringan 5 detik.
  *   3. Tombol "Panggil" per baris → POST CALL (idempoten via event_id).
- *   4. Tombol "Selesai" utk nomor aktif → POST DONE.
+ *   4. Tombol "Panggil Ulang" (RECALL) utk nomor aktif — nomor yang sudah
+ *      dipanggil TIDAK langsung hilang; tetap tampil sampai DONE/lewat.
+ *   5. Tombol "Selesai" utk nomor aktif → POST DONE.
  *
  * MORBIS tetap menulis penjualan/medis; antrian diextract via klik "Antrikan &
  * Cetak" (penerimaanAntrolCetak → ENQUEUE). Resep yang belum di-ENQUEUE tidak
@@ -149,7 +151,13 @@ async function render(): Promise<void> {
                   '<div style="opacity:.8;font-size:12px;">' +
                   (r.jenis || '') +
                   '</div></div>' +
-                  '<div style="flex-shrink:0;">' +
+                  '<div style="flex-shrink:0;display:flex;gap:8px;">' +
+                  callBtn(
+                    'RECALL',
+                    '🔁 Panggil Ulang',
+                    r.queue_number,
+                    'op-recall-' + r.queue_number,
+                  ) +
                   callBtn('DONE', '✔ Selesai', r.queue_number, 'op-done-' + r.queue_number) +
                   '</div></div>',
               )
@@ -176,7 +184,7 @@ async function act(ev: string, num: string, eid: string): Promise<void> {
   const ok = await pushQueueEvent({
     event_id: eid + '-' + Date.now().toString(36),
     queue_number: num,
-    event: ev as 'CALL' | 'DONE',
+    event: ev as 'CALL' | 'RECALL' | 'DONE',
   });
   log(ev, num, ok ? 'OK' : 'gagal');
   if (ok) await render(); // langsung tampil tanpa tunggu polling

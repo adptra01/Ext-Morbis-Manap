@@ -3,9 +3,13 @@
  *
  * Alur antrian farmasi berbasis keputusan petugas, bukan otomatis:
  *   pasien datang → petugas buka Detail → klik tombol "Antrian & Cetak"
- *   → resep masuk antrian (POST antrol) + nomor publik QueueManager (T-xx/R-xx)
- *   → kartu kertas tercetak (format penomoran kita, bukan UT-xxx MORBIS)
+ *   → resep masuk antrian (POST antrol) + ENQUEUE ke App Antrian (Reports
+ *   SIMRS — source of truth nomor T-XX/R-XX, app assign per jenis)
+ *   → kartu kertas tercetak (nomor dari app, bukan UT-xxx MORBIS / QueueManager)
  *   → petugas siapkan resep → klik Simpan → panggil dari konsol.
+ *
+ * Model B (keputusan 2026-08-19): nomor publik DIASSIGN APP saat ENQUEUE.
+ * Extension TIDAK mengirim queue_number; nomor hasil diambil dari response.
  *
  * Yang dikerjakan (semua client-side, tidak menyentuh file MORBIS):
  * 1. Blokir POST otomatis `/v2/antrol/search?sub=update_v2` (taskid=6) yang
@@ -13,12 +17,12 @@
  *    agar "buka Detail" tidak lagi otomatis mengantrikan resep.
  * 2. Suntik tombol "Antrian & Cetak" di dekat tombol Simpan halaman Detail:
  *    POST antrol {id: ID_VISIT, taskid: 6}, resolve ID antrian dari
- *    check_antrian, issue nomor publik via bridge, lalu cetak kartu sendiri.
+ *    check_antrian, ENQUEUE ke app, lalu cetak kartu sendiri.
  *
  * ponytail: interception berbasis URL string MORBIS — jika MORBIS mengubah endpoint
  * antrol/cetak atau struktur tombol, fitur ini perlu update.
  */
-import { assignPublicNumber } from './shared/farmasiQueueBridge';
+import { pushQueueEvent, queueEventId } from './shared/farmasiQueueSync';
 import { printKartuAntrian } from './shared/printKartu';
 
 (() => {
@@ -138,19 +142,34 @@ import { printKartuAntrian } from './shared/printKartu';
     }
     const antrianId = row ? String(row.ID ?? '') : idVisit;
 
-    // Terbitkan nomor utk SATU id (idempoten — cetak ulang → tiket sama).
-    const issued = await assignPublicNumber(
-      antrianId,
-      (row?.JENIS as string | null) ?? null,
-      waktu || null,
-    );
-    if (!issued.code) {
+    // ENQUEUE ke App Antrian — TANPA queue_number (app assign T-XX/R-XX per
+    // jenis). Idempoten via event_id. Nomor publik = response app.
+    const nama = document.querySelector<HTMLInputElement>('#nama_pasien')?.value ?? '';
+    const sync = await pushQueueEvent({
+      event_id: queueEventId('enq', antrianId, idVisit),
+      event: 'ENQUEUE',
+      resep_id: nomorResep,
+      nama_pasien: String(nama).toUpperCase(),
+      norm: idPasien || undefined,
+      shift: '',
+      jenis: String(row?.JENIS ?? ''),
+      counter: '',
+      payload: {
+        idVisit,
+        unit: String(row?.NAMA_UNIT ?? ''),
+        waktu: waktu || '',
+      },
+    });
+    if (!sync.ok) {
+      alert('[MORBIS Ext] Gagal terhubung ke App Antrian. Coba lagi.');
+      return;
+    }
+    const code = sync.queue_number || '';
+    if (!code) {
       alert('[MORBIS Ext] Nomor antrian belum terbit. Coba lagi.');
       return;
     }
-    const code = issued.code;
 
-    const nama = document.querySelector<HTMLInputElement>('#nama_pasien')?.value ?? '';
     printKartuAntrian({
       nomorResep,
       nama: String(nama).toUpperCase(),

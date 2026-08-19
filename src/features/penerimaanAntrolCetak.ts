@@ -2,20 +2,19 @@
  * penerimaanAntrolCetak — tombol "No. Antrian" di halaman /inventory/resep/penerimaan
  * diubah: klik → (1) antrikan resep (POST antrol update_v2 taskid=6), (2) kirim
  * ENQUEUE ke App Antrian (Reports SIMRS — source of truth nomor/status), (3) cetak
- * kartu antrian dengan NOMOR NATIVE MORBIS (UT-xxx, Model A — keputusan 2026-08-19),
- * (4) perbarui kolom "No Antrian" tabel.
+ * kartu antrian dengan NOMOR DARI APP (T-XX/R-XX — app assign per jenis), (4)
+ * perbarui kolom "No Antrian" tabel dengan nomor app.
+ *
+ * Model B (keputusan 2026-08-19): nomor publik = T-XX (non-racikan) / R-XX
+ * (racikan), DIASSIGN OLEH APP saat ENQUEUE. Extension TIDAK mengirim
+ * queue_number (app yang menentukan dari field jenis); nomor hasil diambil dari
+ * response pushQueueEvent dan dipakai utk cetak kartu + kolom tabel.
  *
  * Alur lapangan: pasien datang → petugas klik "No. Antrian" → resep masuk antrian
- * + kartu kertas langsung tercetak → petugas siapkan resep → Simpan → panggil.
+ * + kartu kertas langsung tercetak (dengan nomor app) → petugas siapkan resep →
+ * Simpan → panggil (nomor yang sama ada di app, bukan native).
  *
- * Model A (keputusan 2026-08-19): nomor publik = nomor native MORBIS (UT-xxx) yang
- * dibuat otomatis oleh ANTRIAN_PENJUALAN saat resep diterima. Extension tidak lagi
- * menerbitkan T-xx/R-xx (QueueManager dimatikan sbg sumber nomor publik di
- * penerimaan; display/tabel operator memakai App Antrian). Klik tombol = momen
- * ENQUEUE — nomor sudah ada di DB MORBIS, klik hanya memasukkan ke antrian app.
- *
- * Jalan di world MAIN (butuh chrome.runtime? TIDAK — fetch langsung ke app; CORS
- * diizinkan app utk origin MORBIS).
+ * Jalan di world MAIN (fetch ke MORBIS butuh sesi + fetch ke app via CORS).
  *
  * ponytail: resolve ID antrian via check_antrian (ID_PASIEN + WAKTU_PENGAJUAN);
  * jika MORBIS mengubah format endpoint antrol/check_antrian, fitur ini perlu update.
@@ -141,12 +140,12 @@ async function handleNoAntrian(idResep: string): Promise<void> {
     }
     log('nomor publik', nomor);
 
-    // ENQUEUE ke App Antrian — idempoten via event_id (klik ganda aman).
+    // ENQUEUE ke App Antrian — TANPA queue_number (app assign T-XX/R-XX per
+    // jenis). Idempoten via event_id (klik ganda aman). Nomor publik = response.
     const shift =
       (row?.SHIFT as string | null) || (antrianCell ? extractShift(antrianCell) : '') || '';
-    const okSync = await pushQueueEvent({
+    const sync = await pushQueueEvent({
       event_id: queueEventId('enq', antrianId, nomor),
-      queue_number: nomor,
       event: 'ENQUEUE',
       resep_id: idResep,
       nama_pasien: String(data.NAMA_PAS ?? '').toUpperCase(),
@@ -160,15 +159,19 @@ async function handleNoAntrian(idResep: string): Promise<void> {
         waktu: String(row?.WAKTU ?? data.WAKTU_PENGAJUAN ?? ''),
       },
     });
-    if (!okSync) log('ENQUEUE app gagal (app tidak terjangkau?) — antrian tetap jalan di MORBIS');
+    if (!sync.ok) log('ENQUEUE app gagal (app tidak terjangkau?) — antrian tetap jalan di MORBIS');
 
-    // Tampilkan nomor native di kolom (sudah ada; pastikan tombol tetap ada).
+    // Nomor publik = nomor hasil ASSIGN APP (T-XX/R-XX). Sumber resmi.
+    const publicNumber = sync.queue_number || nomor;
+    log('nomor publik', publicNumber);
+
+    // Tampilkan nomor app di kolom (ganti native) — pastikan tombol tetap ada.
     if (antrianCell && !antrianCell.hasAttribute('data-ext-code')) {
       const btnInCell = antrianCell.querySelector('button');
       const btnHtml = btnInCell ? btnInCell.outerHTML : '';
       antrianCell.innerHTML =
-        `${nomor}<br>Shift : ${shift || '-'}` + (btnHtml ? '<br>' + btnHtml : '');
-      antrianCell.setAttribute('data-ext-code', nomor);
+        `${publicNumber}<br>Shift : ${shift || '-'}` + (btnHtml ? '<br>' + btnHtml : '');
+      antrianCell.setAttribute('data-ext-code', publicNumber);
     }
 
     printKartuAntrian({
@@ -177,7 +180,7 @@ async function handleNoAntrian(idResep: string): Promise<void> {
       jenis: (row?.JENIS as string | null) ?? '',
       unit: String(row?.NAMA_UNIT ?? data.UNIT_TUJUAN_DEPO ?? ''),
       tanggal: String(data.WAKTU_PENGAJUAN ?? '').slice(0, 10),
-      code: nomor,
+      code: publicNumber,
     });
   } catch (e) {
     log('gagal', e);

@@ -37,19 +37,21 @@ var __morbis_feature = (() => {
   }
   async function pushQueueEvent(p) {
     try {
+      const body = { ...p };
+      if (p.event === 'ENQUEUE') delete body.queue_number;
       const res = await fetch(farmasiAppBase() + '/api/queue/events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(p),
+        body: JSON.stringify(body),
         cache: 'no-store',
         credentials: 'omit',
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const j = await res.json();
-      return !!j.ok;
+      return { ok: !!j.ok, queue_number: j.queue?.queue_number };
     } catch (e) {
       console.warn('[MORBIS Ext] queue sync gagal:', e.message);
-      return false;
+      return { ok: false };
     }
   }
   function queueEventId(prefix, source, nomor) {
@@ -141,9 +143,8 @@ var __morbis_feature = (() => {
       }
       log('nomor publik', nomor);
       const shift = row?.SHIFT || (antrianCell ? extractShift(antrianCell) : '') || '';
-      const okSync = await pushQueueEvent({
+      const sync = await pushQueueEvent({
         event_id: queueEventId('enq', antrianId, nomor),
-        queue_number: nomor,
         event: 'ENQUEUE',
         resep_id: idResep,
         nama_pasien: String(data.NAMA_PAS ?? '').toUpperCase(),
@@ -157,14 +158,16 @@ var __morbis_feature = (() => {
           waktu: String(row?.WAKTU ?? data.WAKTU_PENGAJUAN ?? ''),
         },
       });
-      if (!okSync)
+      if (!sync.ok)
         log('ENQUEUE app gagal (app tidak terjangkau?) \u2014 antrian tetap jalan di MORBIS');
+      const publicNumber = sync.queue_number || nomor;
+      log('nomor publik', publicNumber);
       if (antrianCell && !antrianCell.hasAttribute('data-ext-code')) {
         const btnInCell = antrianCell.querySelector('button');
         const btnHtml = btnInCell ? btnInCell.outerHTML : '';
         antrianCell.innerHTML =
-          `${nomor}<br>Shift : ${shift || '-'}` + (btnHtml ? '<br>' + btnHtml : '');
-        antrianCell.setAttribute('data-ext-code', nomor);
+          `${publicNumber}<br>Shift : ${shift || '-'}` + (btnHtml ? '<br>' + btnHtml : '');
+        antrianCell.setAttribute('data-ext-code', publicNumber);
       }
       printKartuAntrian({
         nomorResep: idResep,
@@ -172,7 +175,7 @@ var __morbis_feature = (() => {
         jenis: row?.JENIS ?? '',
         unit: String(row?.NAMA_UNIT ?? data.UNIT_TUJUAN_DEPO ?? ''),
         tanggal: String(data.WAKTU_PENGAJUAN ?? '').slice(0, 10),
-        code: nomor,
+        code: publicNumber,
       });
     } catch (e) {
       log('gagal', e);
