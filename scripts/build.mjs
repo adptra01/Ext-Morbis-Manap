@@ -69,13 +69,10 @@ async function compileFeatureFiles() {
     'resumeValidator.ts',
     'antrianTools.ts',
     'antrianLoader.ts',
-    'antrianFarmasiDisplay.ts',
+
     'antrianFarmasiDisplayApp.ts',
     'antrianFarmasiOperator.ts',
-    'farmasiBridge.ts',
-    'antrianFarmasiTotal.ts',
-    'farmasiIssue.ts',
-    'farmasiRecallDeleg.ts',
+
     'farmasiAntrolShift.ts',
     'penerimaanAntrolCetak.ts',
     'ttvEditor.ts',
