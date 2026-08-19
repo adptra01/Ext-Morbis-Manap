@@ -62,6 +62,10 @@ var __morbis_feature = (() => {
     try {
       const body = { ...p };
       if (p.event === 'ENQUEUE') delete body.queue_number;
+      if (p.event === 'BATAL' && !p.queue_number) {
+        console.warn('[MORBIS Ext] BATAL tanpa queue_number \u2014 dilewati');
+        return { ok: false };
+      }
       const base = await probeFarmasiAppBase();
       const res = await fetch(base + '/api/queue/events', {
         method: 'POST',
@@ -262,19 +266,40 @@ var __morbis_feature = (() => {
     g.no_antrian = wrapped;
     void orig;
   }
+  function hideNoAntrianColumn() {
+    try {
+      const ths = document.querySelectorAll('thead th');
+      if (!ths.length) return;
+      let idx = -1;
+      Array.from(ths).forEach((th, i) => {
+        if (/no\s*antrian|nomor\s*antrian/i.test((th.textContent || '').trim())) idx = i;
+      });
+      if (idx < 0) return;
+      const sheet = document.createElement('style');
+      sheet.textContent = `table thead th:nth-child(${idx + 1}), table tbody td:nth-child(${idx + 1}) { display: none; }`;
+      sheet.id = 'ext-hide-no-antrian';
+      if (!document.getElementById('ext-hide-no-antrian')) {
+        document.head.appendChild(sheet);
+      }
+    } catch {}
+  }
   if (document.readyState === 'loading') {
     document.addEventListener(
       'DOMContentLoaded',
       () => {
         wrapNoAntrian();
+        hideNoAntrianColumn();
       },
       { once: true },
     );
   } else {
     wrapNoAntrian();
+    hideNoAntrianColumn();
   }
   window.setTimeout(wrapNoAntrian, 1e3);
   window.setTimeout(wrapNoAntrian, 3e3);
+  window.setTimeout(hideNoAntrianColumn, 1e3);
+  window.setTimeout(hideNoAntrianColumn, 3e3);
   function sweepCetakUlang() {
     try {
       document.querySelectorAll('tr[id]').forEach((tr) => {

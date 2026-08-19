@@ -51,6 +51,10 @@ var __morbis_feature = (() => {
     try {
       const body = { ...p };
       if (p.event === 'ENQUEUE') delete body.queue_number;
+      if (p.event === 'BATAL' && !p.queue_number) {
+        console.warn('[MORBIS Ext] BATAL tanpa queue_number \u2014 dilewati');
+        return { ok: false };
+      }
       const base = await probeFarmasiAppBase();
       const res = await fetch(base + '/api/queue/events', {
         method: 'POST',
@@ -134,10 +138,25 @@ var __morbis_feature = (() => {
       if (!res.ok) return null;
       const j = await res.json();
       if (!j.ok || !j.found || !j.queue?.queue_number) return null;
-      return j.queue.queue_number;
+      return { queue_number: j.queue.queue_number, status: j.queue.status ?? '' };
     } catch {
       return null;
     }
+  }
+  function isResepBatal(antrianStatus) {
+    if (antrianStatus === 'DIBATALKAN') return true;
+    try {
+      const area = document.querySelector('#isi, .card, .panel, .form-horizontal, form, table');
+      const root = area || document.body;
+      const nodes = root.querySelectorAll('span, b, strong, td, .label, .badge, h3, h4');
+      for (const el of nodes) {
+        const t = (el.textContent || '').trim();
+        if (!/^(batal|dibatalkan|resep batal|sudah dibatalkan)$/i.test(t)) continue;
+        if (el.closest('button, input, a')) continue;
+        return true;
+      }
+    } catch {}
+    return false;
   }
   (() => {
     const ANTRL_URL = '/v2/antrol/search';
@@ -215,7 +234,7 @@ var __morbis_feature = (() => {
         return null;
       }
     }
-    async function onAntrianCetakClick(idVisit, nomorResep) {
+    async function onAntrianCetakClick(idVisit, nomorResep, jenis) {
       const ok = await registerAntrian(idVisit);
       if (!ok) {
         alert('[MORBIS Ext] Gagal mengantrikan resep. Coba lagi.');
@@ -230,14 +249,15 @@ var __morbis_feature = (() => {
       }
       const antrianId = row ? String(row.ID ?? '') : idVisit;
       const nama = resolveNamaPasien();
+      const jenisLabel = jenis === 'racik' ? 'racikan' : 'tunggal';
       const sync = await pushQueueEvent({
-        event_id: queueEventId('enq', antrianId, idVisit),
+        event_id: queueEventId('enq', antrianId, idVisit + '-' + jenisLabel),
         event: 'ENQUEUE',
         resep_id: nomorResep,
         nama_pasien: nama,
         norm: idPasien || void 0,
         shift: '',
-        jenis: String(row?.JENIS ?? ''),
+        jenis: jenisLabel,
         counter: '',
         payload: {
           idVisit,
@@ -257,74 +277,110 @@ var __morbis_feature = (() => {
       printKartuAntrian({
         nomorResep,
         nama,
-        jenis: String(row?.JENIS ?? ''),
+        jenis: jenisLabel,
         unit: String(row?.NAMA_UNIT ?? ''),
         tanggal: waktu ? waktu.slice(0, 10) : '',
         code,
       });
-      convertToCetakUlang(code);
+      renderActionBar('issued', code);
     }
-    function convertToCetakUlang(code) {
-      const btn = document.querySelector('#ext-antrian-cetak');
-      if (!btn) return;
-      const klon = btn.cloneNode(true);
-      klon.id = 'ext-antrian-cetak';
-      klon.textContent = '\u{1F5A8} Cetak Kembali \u2014 ' + code;
-      klon.title = 'Nomor sudah terbit (' + code + '). Cetak ulang kartu tanpa mengantrikan lagi.';
-      klon.classList.remove('btn-success');
-      klon.classList.add('btn-outline-primary');
-      klon.style.cssText = 'margin-left:6px;';
-      klon.addEventListener('click', () => {
-        const idVisit = document.querySelector('#id_visit')?.value ?? '';
-        const nomorResep = document.querySelector('#nomor_resep')?.value ?? '';
-        if (!idVisit || !nomorResep) return;
-        klon.textContent = 'Mencetak\u2026';
-        try {
-          printKartuAntrian({
-            nomorResep,
-            nama: resolveNamaPasien(),
-            jenis: '',
-            unit: '',
-            tanggal: '',
-            code,
-          });
-        } finally {
-          klon.textContent = '\u{1F5A8} Cetak Kembali \u2014 ' + code;
-        }
+    async function onBatalAntrian(code, nomorResep) {
+      const sync = await pushQueueEvent({
+        event_id: queueEventId('bat', nomorResep, code),
+        event: 'BATAL',
+        queue_number: code,
+        resep_id: nomorResep,
       });
-      btn.replaceWith(klon);
+      if (!sync.ok) {
+        alert('[MORBIS Ext] Gagal membatalkan antrian. Coba lagi.');
+        return;
+      }
+      const idVisit = document.querySelector('#id_visit')?.value ?? '';
+      if (idVisit) {
+        try {
+          await fetch(`${ANTRL_URL}?${ANTRL_SUB}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `id=${encodeURIComponent(idVisit)}&taskid=7`,
+            credentials: 'include',
+          });
+        } catch {}
+      }
+      renderActionBar('ready');
     }
-    function addAntrianCetakButton() {
-      const tryInject = () => {
-        const saveBtn = document.querySelector('#save');
-        if (!saveBtn || document.querySelector('#ext-antrian-cetak')) return;
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.id = 'ext-antrian-cetak';
-        btn.textContent = 'Antrian & Cetak';
-        btn.className = 'btn btn-success';
-        btn.style.cssText = 'margin-left:6px;';
-        btn.addEventListener('click', () => {
-          const idVisit = document.querySelector('#id_visit')?.value ?? '';
-          const nomorResep2 = document.querySelector('#nomor_resep')?.value ?? '';
-          if (!idVisit || !nomorResep2) {
-            alert('[MORBIS Ext] data resep belum dimuat. Coba lagi.');
+    function renderActionBar(state, code) {
+      const bar = document.querySelector('#ext-antrian-bar');
+      if (!bar) return;
+      const nomorResep = document.querySelector('#nomor_resep')?.value ?? '';
+      if (state === 'issued' && code) {
+        bar.innerHTML =
+          '<span style="margin-left:6px;font-weight:700;color:#198754;">\u2713 Sudah antri \u2014 ' +
+          code +
+          '</span><button id="ext-antrian-cetak" class="btn btn-outline-primary" style="margin-left:6px;" title="Cetak ulang kartu tanpa mengantrikan lagi">\u{1F5A8} Cetak Kembali</button><button id="ext-antrian-batal" class="btn btn-outline-danger" style="margin-left:6px;" title="Batalkan antrian (resep batal/tidak jadi)">Batal antrian</button>';
+        bar.querySelector('#ext-antrian-cetak')?.addEventListener('click', () => {
+          const idVisit2 = document.querySelector('#id_visit')?.value ?? '';
+          if (!idVisit2) return;
+          try {
+            printKartuAntrian({
+              nomorResep,
+              nama: resolveNamaPasien(),
+              jenis: '',
+              unit: '',
+              tanggal: '',
+              code: code || '',
+            });
+          } catch {}
+        });
+        bar.querySelector('#ext-antrian-batal')?.addEventListener('click', () => {
+          if (!confirm('Batalkan antrian ' + code + '? Resep akan keluar dari daftar panggilan.'))
             return;
-          }
+          void onBatalAntrian(code || '', nomorResep);
+        });
+        return;
+      }
+      bar.innerHTML =
+        '<button id="ext-antrian-racik" class="btn btn-success" style="margin-left:6px;" title="Antrikan sebagai obat RACIKAN (nomor R-XX)">Antrikan obat racik</button><button id="ext-antrian-tunggal" class="btn btn-primary" style="margin-left:6px;" title="Antrikan sebagai obat TUNGGAL (nomor T-XX)">Antrikan obat tunggal</button>';
+      const idVisit = document.querySelector('#id_visit')?.value ?? '';
+      const klik = (jenis) => {
+        const nomorResep2 = document.querySelector('#nomor_resep')?.value ?? '';
+        if (!idVisit || !nomorResep2) {
+          alert('[MORBIS Ext] data resep belum dimuat. Coba lagi.');
+          return;
+        }
+        const btn = document.querySelector(
+          jenis === 'racik' ? '#ext-antrian-racik' : '#ext-antrian-tunggal',
+        );
+        if (btn) {
           btn.disabled = true;
           btn.textContent = 'Memproses\u2026';
-          void onAntrianCetakClick(idVisit, nomorResep2).finally(() => {
-            btn.disabled = false;
-            btn.textContent = 'Antrian & Cetak';
-          });
-        });
-        saveBtn.insertAdjacentElement('afterend', btn);
-        const nomorResep = document.querySelector('#nomor_resep')?.value ?? '';
-        if (nomorResep) {
-          void lookupAntrian(nomorResep).then((code) => {
-            if (code) convertToCetakUlang(code);
-          });
         }
+        void onAntrianCetakClick(idVisit, nomorResep2, jenis).finally(() => {
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = jenis === 'racik' ? 'Antrikan obat racik' : 'Antrikan obat tunggal';
+          }
+        });
+      };
+      bar.querySelector('#ext-antrian-racik')?.addEventListener('click', () => klik('racik'));
+      bar.querySelector('#ext-antrian-tunggal')?.addEventListener('click', () => klik('tunggal'));
+    }
+    function addAntrianBar() {
+      const tryInject = () => {
+        const saveBtn = document.querySelector('#save');
+        if (!saveBtn || document.querySelector('#ext-antrian-bar')) return;
+        const bar = document.createElement('span');
+        bar.id = 'ext-antrian-bar';
+        bar.style.cssText = 'display:inline-flex;align-items:center;flex-wrap:wrap;';
+        saveBtn.insertAdjacentElement('afterend', bar);
+        const nomorResep = document.querySelector('#nomor_resep')?.value ?? '';
+        void lookupAntrian(nomorResep).then((info) => {
+          if (isResepBatal(info?.status)) {
+            bar.innerHTML =
+              '<span style="margin-left:6px;color:#b02a37;font-weight:700;">Resep dibatalkan \u2014 antrian tidak tersedia</span>';
+            return;
+          }
+          renderActionBar(info ? 'issued' : 'ready', info?.queue_number);
+        });
       };
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', tryInject, { once: true });
@@ -335,7 +391,7 @@ var __morbis_feature = (() => {
       window.setTimeout(tryInject, 5e3);
     }
     blockAutoAntrol();
-    addAntrianCetakButton();
+    addAntrianBar();
   })();
 })();
 //# sourceMappingURL=farmasiAntrolShift.js.map

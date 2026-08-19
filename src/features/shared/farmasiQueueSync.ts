@@ -11,7 +11,7 @@
  */
 export const FARMASI_APP_BASE = 'http://dev.rsudkotajambi.id/rs';
 
-export type QueueEventType = 'ENQUEUE' | 'CALL' | 'RECALL' | 'SKIP' | 'DONE' | 'TUNDA';
+export type QueueEventType = 'ENQUEUE' | 'CALL' | 'RECALL' | 'SKIP' | 'DONE' | 'TUNDA' | 'BATAL';
 
 export interface QueueEventPayload {
   event_id: string;
@@ -100,6 +100,11 @@ export async function pushQueueEvent(
   try {
     const body: Record<string, unknown> = { ...p };
     if (p.event === 'ENQUEUE') delete body.queue_number;
+    // BATAL perlu nomor antrian utk resolve (resolveExisting by queue_number).
+    if (p.event === 'BATAL' && !p.queue_number) {
+      console.warn('[MORBIS Ext] BATAL tanpa queue_number — dilewati');
+      return { ok: false };
+    }
     // Probe base sekali (ringan) supaya fallback IP dipakai bila DNS domain
     // internal RS tidak resolve.
     const base = await probeFarmasiAppBase();

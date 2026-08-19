@@ -51,6 +51,10 @@ var __morbis_feature = (() => {
     try {
       const body = { ...p };
       if (p.event === 'ENQUEUE') delete body.queue_number;
+      if (p.event === 'BATAL' && !p.queue_number) {
+        console.warn('[MORBIS Ext] BATAL tanpa queue_number \u2014 dilewati');
+        return { ok: false };
+      }
       const base = await probeFarmasiAppBase();
       const res = await fetch(base + '/api/queue/events', {
         method: 'POST',

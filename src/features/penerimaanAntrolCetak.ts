@@ -257,20 +257,48 @@ function wrapNoAntrian(): void {
   void orig; // tombol native lama tidak dipakai lagi — perilaku diganti penuh
 }
 
+/** Sembunyikan kolom "No Antrian" (indeks 2: No, No Resep, No Antrian, ...) —
+ *  antrian kini diterbitkan dari halaman DETAIL (tombol racik/tunggal), bukan
+ *  dari list. Tabel MORBIS di-render ulang via AJAX → jalankan berkala. */
+function hideNoAntrianColumn(): void {
+  try {
+    const ths = document.querySelectorAll('thead th');
+    if (!ths.length) return;
+    // Cari index kolom berjudul "No Antrian" (fleksibel terhadap posisi).
+    let idx = -1;
+    Array.from(ths).forEach((th, i) => {
+      if (/no\s*antrian|nomor\s*antrian/i.test((th.textContent || '').trim())) idx = i;
+    });
+    if (idx < 0) return;
+    const sheet = document.createElement('style');
+    sheet.textContent = `table thead th:nth-child(${idx + 1}), table tbody td:nth-child(${idx + 1}) { display: none; }`;
+    sheet.id = 'ext-hide-no-antrian';
+    if (!document.getElementById('ext-hide-no-antrian')) {
+      document.head.appendChild(sheet);
+    }
+  } catch {
+    /* tabel belum siap */
+  }
+}
+
 if (document.readyState === 'loading') {
   document.addEventListener(
     'DOMContentLoaded',
     () => {
       wrapNoAntrian();
+      hideNoAntrianColumn();
     },
     { once: true },
   );
 } else {
   wrapNoAntrian();
+  hideNoAntrianColumn();
 }
 // MORBIS bisa render ulang tabel setelah AJAX; pastikan wrap tetap aktif.
 window.setTimeout(wrapNoAntrian, 1000);
 window.setTimeout(wrapNoAntrian, 3000);
+window.setTimeout(hideNoAntrianColumn, 1000);
+window.setTimeout(hideNoAntrianColumn, 3000);
 
 /** Pass pembersihan: baris yang kolom No Antrian-nya sudah berisi nomor
  *  (data-ext-code dari sesi ini ATAU native UT-xxx hasil antri sebelumnya)

@@ -63,8 +63,10 @@ function resolveNamaPasien(): string {
 }
 
 /** Cek ke App Antrian: resep sudah di-antri hari ini? (utk ganti tombol jadi
- *  "Cetak Kembali"). Return nomor publik atau null. */
-async function lookupAntrian(resepId: string): Promise<string | null> {
+ *  "Cetak Kembali"). Return info antrian atau null. */
+async function lookupAntrian(
+  resepId: string,
+): Promise<{ queue_number: string; status: string } | null> {
   try {
     const res = await fetch(
       farmasiAppBase() + '/api/queue/lookup?resep_id=' + encodeURIComponent(resepId),
@@ -74,13 +76,37 @@ async function lookupAntrian(resepId: string): Promise<string | null> {
     const j = (await res.json()) as {
       ok?: boolean;
       found?: boolean;
-      queue?: { queue_number?: string };
+      queue?: { queue_number?: string; status?: string };
     };
     if (!j.ok || !j.found || !j.queue?.queue_number) return null;
-    return j.queue.queue_number;
+    return { queue_number: j.queue.queue_number, status: j.queue.status ?? '' };
   } catch {
     return null; // app tidak terjangkau — biarkan tombol normal
   }
+}
+
+/** Deteksi resep dibatalkan di MORBIS: (1) badge/teks status di DOM detail,
+ *  (2) antrian app berstatus DIBATALKAN. Kalau batal → tombol antrian
+ *  disembunyikan (user: "batal yaudah gak perlu ada button antrian"). */
+function isResepBatal(antrianStatus?: string): boolean {
+  if (antrianStatus === 'DIBATALKAN') return true;
+  try {
+    // Cari indikator status "Batal"/"Dibatalkan" di halaman detail — badge/
+    // label status, bukan tombol aksi. Batasi area form utk hindari tombol.
+    const area = document.querySelector('#isi, .card, .panel, .form-horizontal, form, table');
+    const root = area || document.body;
+    const nodes = root.querySelectorAll('span, b, strong, td, .label, .badge, h3, h4');
+    for (const el of nodes) {
+      const t = (el.textContent || '').trim();
+      if (!/^(batal|dibatalkan|resep batal|sudah dibatalkan)$/i.test(t)) continue;
+      // Bukan tombol (button/input/a) — hanya label status pasif.
+      if (el.closest('button, input, a')) continue;
+      return true;
+    }
+  } catch {
+    /* DOM belum siap */
+  }
+  return false;
 }
 
 (() => {
@@ -181,8 +207,12 @@ async function lookupAntrian(resepId: string): Promise<string | null> {
     }
   }
 
-  /** Klik tombol: antrol → resolve → nomor publik → cetak kartu kita. */
-  async function onAntrianCetakClick(idVisit: string, nomorResep: string): Promise<void> {
+  /** Klik tombol antrikan: antrol → resolve → ENQUEUE dgn jenis (racik/tunggal) → cetak. */
+  async function onAntrianCetakClick(
+    idVisit: string,
+    nomorResep: string,
+    jenis: 'racik' | 'tunggal',
+  ): Promise<void> {
     const ok = await registerAntrian(idVisit);
     if (!ok) {
       alert('[MORBIS Ext] Gagal mengantrikan resep. Coba lagi.');
@@ -200,17 +230,18 @@ async function lookupAntrian(resepId: string): Promise<string | null> {
     }
     const antrianId = row ? String(row.ID ?? '') : idVisit;
 
-    // ENQUEUE ke App Antrian — TANPA queue_number (app assign T-XX/R-XX per
-    // jenis). Idempoten via event_id. Nomor publik = response app.
+    // ENQUEUE ke App Antrian — TANPA queue_number (app assign R-XX utk racik,
+    // T-XX utk tunggal, berdasar field jenis). Idempoten via event_id.
     const nama = resolveNamaPasien();
+    const jenisLabel = jenis === 'racik' ? 'racikan' : 'tunggal';
     const sync = await pushQueueEvent({
-      event_id: queueEventId('enq', antrianId, idVisit),
+      event_id: queueEventId('enq', antrianId, idVisit + '-' + jenisLabel),
       event: 'ENQUEUE',
       resep_id: nomorResep,
       nama_pasien: nama,
       norm: idPasien || undefined,
       shift: '',
-      jenis: String(row?.JENIS ?? ''),
+      jenis: jenisLabel,
       counter: '',
       payload: {
         idVisit,
@@ -231,81 +262,127 @@ async function lookupAntrian(resepId: string): Promise<string | null> {
     printKartuAntrian({
       nomorResep,
       nama,
-      jenis: String(row?.JENIS ?? ''),
+      jenis: jenisLabel,
       unit: String(row?.NAMA_UNIT ?? ''),
       tanggal: waktu ? waktu.slice(0, 10) : '',
       code,
     });
-    // Setelah berhasil: ganti tombol jadi "Cetak Kembali" (jangan ENQUEUE 2x).
-    convertToCetakUlang(code);
+    // Setelah berhasil: ganti tombol jadi "Cetak Kembali" + "Batal antrian".
+    renderActionBar('issued', code);
   }
 
-  /** Tombol "Antrian & Cetak" → "🖨 Cetak Kembali" (cetak kartu saja, TANPA
-   *  antrol/ENQUEUE ulang — nomor sudah terbit di app). */
-  function convertToCetakUlang(code: string): void {
-    const btn = document.querySelector<HTMLButtonElement>('#ext-antrian-cetak');
-    if (!btn) return;
-    const klon = btn.cloneNode(true) as HTMLButtonElement;
-    klon.id = 'ext-antrian-cetak';
-    klon.textContent = '🖨 Cetak Kembali — ' + code;
-    klon.title = 'Nomor sudah terbit (' + code + '). Cetak ulang kartu tanpa mengantrikan lagi.';
-    klon.classList.remove('btn-success');
-    klon.classList.add('btn-outline-primary');
-    klon.style.cssText = 'margin-left:6px;';
-    klon.addEventListener('click', () => {
-      const idVisit = document.querySelector<HTMLInputElement>('#id_visit')?.value ?? '';
-      const nomorResep = document.querySelector<HTMLInputElement>('#nomor_resep')?.value ?? '';
-      if (!idVisit || !nomorResep) return;
-      klon.textContent = 'Mencetak…';
-      try {
-        printKartuAntrian({
-          nomorResep,
-          nama: resolveNamaPasien(),
-          jenis: '',
-          unit: '',
-          tanggal: '',
-          code,
-        });
-      } finally {
-        klon.textContent = '🖨 Cetak Kembali — ' + code;
-      }
+  /** Kirim BATAL ke app: antrian resep dihapus dari display (resep batal). */
+  async function onBatalAntrian(code: string, nomorResep: string): Promise<void> {
+    const sync = await pushQueueEvent({
+      event_id: queueEventId('bat', nomorResep, code),
+      event: 'BATAL',
+      queue_number: code,
+      resep_id: nomorResep,
     });
-    btn.replaceWith(klon);
+    if (!sync.ok) {
+      alert('[MORBIS Ext] Gagal membatalkan antrian. Coba lagi.');
+      return;
+    }
+    // Batalkan juga di MORBIS (antrol) kalau ada — best-effort.
+    const idVisit = document.querySelector<HTMLInputElement>('#id_visit')?.value ?? '';
+    if (idVisit) {
+      try {
+        await fetch(`${ANTRL_URL}?${ANTRL_SUB}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `id=${encodeURIComponent(idVisit)}&taskid=7`,
+          credentials: 'include',
+        });
+      } catch {
+        /* best-effort */
+      }
+    }
+    renderActionBar('ready');
   }
 
-  function addAntrianCetakButton(): void {
+  /** Render bar tombol aksi sesuai state: ready (belum antri) | issued (sudah
+   *  antri) | hidden (resep batal — tanpa tombol antrian). */
+  function renderActionBar(state: 'ready' | 'issued', code?: string): void {
+    const bar = document.querySelector<HTMLElement>('#ext-antrian-bar');
+    if (!bar) return;
+    const nomorResep = document.querySelector<HTMLInputElement>('#nomor_resep')?.value ?? '';
+    if (state === 'issued' && code) {
+      bar.innerHTML =
+        '<span style="margin-left:6px;font-weight:700;color:#198754;">✓ Sudah antri — ' +
+        code +
+        '</span>' +
+        '<button id="ext-antrian-cetak" class="btn btn-outline-primary" style="margin-left:6px;" title="Cetak ulang kartu tanpa mengantrikan lagi">🖨 Cetak Kembali</button>' +
+        '<button id="ext-antrian-batal" class="btn btn-outline-danger" style="margin-left:6px;" title="Batalkan antrian (resep batal/tidak jadi)">Batal antrian</button>';
+      bar.querySelector('#ext-antrian-cetak')?.addEventListener('click', () => {
+        const idVisit = document.querySelector<HTMLInputElement>('#id_visit')?.value ?? '';
+        if (!idVisit) return;
+        try {
+          printKartuAntrian({
+            nomorResep,
+            nama: resolveNamaPasien(),
+            jenis: '',
+            unit: '',
+            tanggal: '',
+            code: code || '',
+          });
+        } catch {
+          /* abaikan */
+        }
+      });
+      bar.querySelector('#ext-antrian-batal')?.addEventListener('click', () => {
+        if (!confirm('Batalkan antrian ' + code + '? Resep akan keluar dari daftar panggilan.'))
+          return;
+        void onBatalAntrian(code || '', nomorResep);
+      });
+      return;
+    }
+    bar.innerHTML =
+      '<button id="ext-antrian-racik" class="btn btn-success" style="margin-left:6px;" title="Antrikan sebagai obat RACIKAN (nomor R-XX)">Antrikan obat racik</button>' +
+      '<button id="ext-antrian-tunggal" class="btn btn-primary" style="margin-left:6px;" title="Antrikan sebagai obat TUNGGAL (nomor T-XX)">Antrikan obat tunggal</button>';
+    const idVisit = document.querySelector<HTMLInputElement>('#id_visit')?.value ?? '';
+    const klik = (jenis: 'racik' | 'tunggal'): void => {
+      const nomorResep2 = document.querySelector<HTMLInputElement>('#nomor_resep')?.value ?? '';
+      if (!idVisit || !nomorResep2) {
+        alert('[MORBIS Ext] data resep belum dimuat. Coba lagi.');
+        return;
+      }
+      const btn = document.querySelector(
+        jenis === 'racik' ? '#ext-antrian-racik' : '#ext-antrian-tunggal',
+      ) as HTMLButtonElement | null;
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Memproses…';
+      }
+      void onAntrianCetakClick(idVisit, nomorResep2, jenis).finally(() => {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = jenis === 'racik' ? 'Antrikan obat racik' : 'Antrikan obat tunggal';
+        }
+      });
+    };
+    bar.querySelector('#ext-antrian-racik')?.addEventListener('click', () => klik('racik'));
+    bar.querySelector('#ext-antrian-tunggal')?.addEventListener('click', () => klik('tunggal'));
+  }
+
+  function addAntrianBar(): void {
     // Tunggu tombol Simpan (#save) dirender MORBIS.
     const tryInject = (): void => {
       const saveBtn = document.querySelector<HTMLButtonElement>('#save');
-      if (!saveBtn || document.querySelector('#ext-antrian-cetak')) return;
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.id = 'ext-antrian-cetak';
-      btn.textContent = 'Antrian & Cetak';
-      btn.className = 'btn btn-success';
-      btn.style.cssText = 'margin-left:6px;';
-      btn.addEventListener('click', () => {
-        const idVisit = document.querySelector<HTMLInputElement>('#id_visit')?.value ?? '';
-        const nomorResep = document.querySelector<HTMLInputElement>('#nomor_resep')?.value ?? '';
-        if (!idVisit || !nomorResep) {
-          alert('[MORBIS Ext] data resep belum dimuat. Coba lagi.');
+      if (!saveBtn || document.querySelector('#ext-antrian-bar')) return;
+      const bar = document.createElement('span');
+      bar.id = 'ext-antrian-bar';
+      bar.style.cssText = 'display:inline-flex;align-items:center;flex-wrap:wrap;';
+      saveBtn.insertAdjacentElement('afterend', bar);
+      const nomorResep = document.querySelector<HTMLInputElement>('#nomor_resep')?.value ?? '';
+      // Sudah di-antri? → tampilkan nomor + Cetak Kembali + Batal antrian.
+      void lookupAntrian(nomorResep).then((info) => {
+        if (isResepBatal(info?.status)) {
+          bar.innerHTML =
+            '<span style="margin-left:6px;color:#b02a37;font-weight:700;">Resep dibatalkan — antrian tidak tersedia</span>';
           return;
         }
-        btn.disabled = true;
-        btn.textContent = 'Memproses…';
-        void onAntrianCetakClick(idVisit, nomorResep).finally(() => {
-          btn.disabled = false;
-          btn.textContent = 'Antrian & Cetak';
-        });
+        renderActionBar(info ? 'issued' : 'ready', info?.queue_number);
       });
-      saveBtn.insertAdjacentElement('afterend', btn);
-      // Sudah di-antri (nomor ada di app)? Ganti tombol jadi "Cetak Kembali".
-      const nomorResep = document.querySelector<HTMLInputElement>('#nomor_resep')?.value ?? '';
-      if (nomorResep) {
-        void lookupAntrian(nomorResep).then((code) => {
-          if (code) convertToCetakUlang(code);
-        });
-      }
     };
 
     if (document.readyState === 'loading') {
@@ -319,5 +396,5 @@ async function lookupAntrian(resepId: string): Promise<string | null> {
   }
 
   blockAutoAntrol();
-  addAntrianCetakButton();
+  addAntrianBar();
 })();
