@@ -56,7 +56,7 @@ function resolveNamaPasien(): string {
   // campuran, TANPA kata-kata kunci halaman). Judul halaman "PENJUALAN E-RESEP"
   // ditolak di sini.
   const PAGE_KEYWORDS =
-    /(resep|penjualan|antrian|farmasi|penerimaan|pendaftaran|detail|edit|input|rekap|daftar|shift|cetak|pembayaran|penyerahan|racik|racikan|obat|kasir)/i;
+    /(resep|penjualan|antrian|farmasi|penerimaan|pendaftaran|detail|edit|input|rekap|daftar|shift|cetak|pembayaran|penyerahan|racik|racikan|obat|kasir|pilih|aturan|pakai|dosis|jumlah|satuan|harga|total|biaya|unit|depo|kekuatan|tipe|standar|kronis|klaim|inacbgs|batch|aksi|tambah|selesai|hapus|kembali|simpan)/i;
   const headers = Array.from(document.querySelectorAll('h1, h2, h3, .page-title, .card-title'));
   for (const h of headers) {
     const t = (h.textContent || '').trim();
