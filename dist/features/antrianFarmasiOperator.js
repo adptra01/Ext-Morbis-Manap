@@ -95,12 +95,36 @@ var __morbis_feature = (() => {
   }
 
   // src/features/antrianFarmasiOperator.ts
+  var ICONS = {
+    speaker:
+      '<path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>',
+    recall: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
+    pause:
+      '<rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/>',
+    check: '<path d="M20 6 9 17l-5-5"/>',
+    printer:
+      '<path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/>',
+    refresh:
+      '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/>',
+    play: '<polygon points="6 3 20 12 6 21 6 3"/>',
+  };
+  function svg(name, size = 16) {
+    return (
+      '<svg width="' +
+      size +
+      '" height="' +
+      size +
+      '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      (ICONS[name] || '') +
+      '</svg>'
+    );
+  }
   var STATUS_META = {
-    WAITING: { label: 'BELUM DIPANGGIL', icon: '\u{1F535}', bg: '#e7f1ff', fg: '#084298' },
-    CALLED: { label: 'DIPANGGIL', icon: '\u{1F7E2}', bg: '#d1e7dd', fg: '#0f5132' },
-    DEFERRED: { label: 'DITUNDA', icon: '\u{1F7E0}', bg: '#fff3cd', fg: '#664d03' },
-    DONE: { label: 'SELESAI', icon: '\u26AA', bg: '#e9ecef', fg: '#495057' },
-    SKIPPED: { label: 'LEWAT', icon: '\u26AB', bg: '#f8f9fa', fg: '#6c757d' },
+    WAITING: { label: 'BELUM DIPANGGIL', dot: '#084298', bg: '#e7f1ff', fg: '#084298' },
+    CALLED: { label: 'DIPANGGIL', dot: '#0f5132', bg: '#d1e7dd', fg: '#0f5132' },
+    DEFERRED: { label: 'DITUNDA', dot: '#997404', bg: '#fff3cd', fg: '#664d03' },
+    DONE: { label: 'SELESAI', dot: '#495057', bg: '#e9ecef', fg: '#495057' },
+    SKIPPED: { label: 'LEWAT', dot: '#6c757d', bg: '#f8f9fa', fg: '#6c757d' },
   };
   var CAT_META = {
     tunggal: { label: 'Non Racikan', accent: '#0284c7', soft: '#e0f2fe' },
@@ -194,8 +218,8 @@ var __morbis_feature = (() => {
       title +
       '" style="width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #ced4da;background:#fff;color:' +
       (opts?.danger ? '#b02a37' : '#212529') +
-      ';border-radius:8px;cursor:pointer;font-size:15px;line-height:1;">' +
-      icon +
+      ';border-radius:8px;cursor:pointer;">' +
+      svg(icon, 16) +
       '</button>'
     );
   }
@@ -216,15 +240,9 @@ var __morbis_feature = (() => {
       (r.counter?.name ? 'Loket ' + r.counter.name : '') +
       (r.called_at ? ' \xB7 ' + (r.called_at.slice(11, 16) || '') : '') +
       '</div></div></div><div style="display:flex;gap:6px;margin-top:10px;justify-content:flex-end;">' +
-      iconBtn(
-        'RECALL',
-        '\u{1F501}',
-        'Panggil ulang',
-        r.queue_number,
-        'op-recall-' + r.queue_number,
-      ) +
-      iconBtn('DEFER', '\u23F8', 'Tunda', r.queue_number, 'op-defer-' + r.queue_number) +
-      iconBtn('DONE', '\u2714', 'Selesai', r.queue_number, 'op-done-' + r.queue_number) +
+      iconBtn('RECALL', 'recall', 'Panggil ulang', r.queue_number, 'op-recall-' + r.queue_number) +
+      iconBtn('DEFER', 'pause', 'Tunda', r.queue_number, 'op-defer-' + r.queue_number) +
+      iconBtn('DONE', 'check', 'Selesai', r.queue_number, 'op-done-' + r.queue_number) +
       '</div></div>'
     );
   }
@@ -233,40 +251,37 @@ var __morbis_feature = (() => {
       r.status === 'WAITING'
         ? iconBtn(
             'CALL',
-            '\u{1F50A}',
+            'speaker',
             'Panggil',
             r.queue_number,
             prefix + '-call-' + r.queue_number,
           ) +
           iconBtn(
             'PRINT',
-            '\u{1F5A8}',
+            'printer',
             'Cetak tiket',
             r.queue_number,
             prefix + '-print-' + r.queue_number,
-            {
-              danger: false,
-            },
           )
         : r.status === 'CALLED'
           ? iconBtn(
               'RECALL',
-              '\u{1F501}',
+              'recall',
               'Panggil ulang',
               r.queue_number,
               prefix + '-recall-' + r.queue_number,
             ) +
             iconBtn(
               'DEFER',
-              '\u23F8',
+              'pause',
               'Tunda',
               r.queue_number,
               prefix + '-defer-' + r.queue_number,
             ) +
-            iconBtn('DONE', '\u2714', 'Selesai', r.queue_number, prefix + '-done-' + r.queue_number)
+            iconBtn('DONE', 'check', 'Selesai', r.queue_number, prefix + '-done-' + r.queue_number)
           : iconBtn(
               'RECALL',
-              '\u{1F501}',
+              'recall',
               'Panggil ulang',
               r.queue_number,
               prefix + '-recall-' + r.queue_number,
@@ -274,11 +289,13 @@ var __morbis_feature = (() => {
     const badge =
       r.status === 'WAITING'
         ? ''
-        : '<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;background:' +
+        : '<span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;background:' +
           (STATUS_META[r.status]?.bg || '#e9ecef') +
           ';color:' +
           (STATUS_META[r.status]?.fg || '#495057') +
-          ';margin-right:6px;">' +
+          ';margin-right:6px;"><span style="width:7px;height:7px;border-radius:50%;background:' +
+          (STATUS_META[r.status]?.dot || '#495057') +
+          ';display:inline-block;"></span>' +
           (STATUS_META[r.status]?.label || r.status) +
           '</span>';
     return (
@@ -303,7 +320,9 @@ var __morbis_feature = (() => {
         cat +
         '" style="width:100%;margin-top:8px;padding:12px;border:none;border-radius:10px;background:' +
         m.accent +
-        ';color:#fff;font-size:15px;font-weight:800;cursor:pointer;">\u25B6 Selanjutnya \u2014 ' +
+        ';color:#fff;font-size:15px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;">' +
+        svg('play', 16) +
+        'Selanjutnya \u2014 ' +
         nextList[0].queue_number +
         '</button>'
       : '';
@@ -331,7 +350,9 @@ var __morbis_feature = (() => {
     p.style.cssText =
       'padding:14px;max-width:1500px;margin:0 auto;font:14px/1.5 system-ui,sans-serif;color:#212529;background:#f8f9fa;min-height:90vh;box-sizing:border-box;';
     p.innerHTML =
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;"><b style="font-size:18px;color:#0f5132;">Antrian Farmasi \u2014 Operasional</b><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><span id="ext-op-status" style="color:#6c757d;font-size:12px;">memuat\u2026</span><button id="ext-op-print-sheet" style="padding:7px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">\u{1F5A8} Cetak Sheet A4</button><button id="ext-op-refresh" style="padding:7px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">Segarkan</button></div></div><div id="ext-op-grid" style="display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:12px;align-items:start;"><div id="ext-col-tunggal"></div><div id="ext-col-racikan"></div><div id="ext-col-panel" style="background:#fff;border:1px solid #dee2e6;border-radius:16px;padding:12px;min-width:0;"></div></div>';
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;"><b style="font-size:18px;color:#0f5132;">Antrian Farmasi \u2014 Operasional</b><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><span id="ext-op-status" style="color:#6c757d;font-size:12px;">memuat\u2026</span><button id="ext-op-print-sheet" style="padding:7px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
+      svg('printer', 14) +
+      'Cetak Sheet A4</button><button id="ext-op-refresh" style="padding:7px 14px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">Segarkan</button></div></div><div id="ext-op-grid" style="display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:12px;align-items:start;"><div id="ext-col-tunggal"></div><div id="ext-col-racikan"></div><div id="ext-col-panel" style="background:#fff;border:1px solid #dee2e6;border-radius:16px;padding:12px;min-width:0;"></div></div>';
     return p;
   }
   async function render() {
@@ -380,7 +401,9 @@ var __morbis_feature = (() => {
             .filter((r) => r.status === 'DEFERRED' || r.status === 'SKIPPED')
             .sort(sortNum);
           colP.innerHTML =
-            '<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:8px;">Penerbitan & Kasus Khusus</div><div style="display:flex;gap:8px;margin-bottom:12px;"><button id="ext-op-print-sheet2" style="flex:1;padding:9px;border:1px solid #0f5132;background:#0f5132;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;">\u{1F5A8} Sheet A4</button><button id="ext-op-refresh2" style="flex:1;padding:9px;border:1px solid #ced4da;background:#fff;color:#212529;border-radius:8px;cursor:pointer;font-weight:700;">Segarkan</button></div><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:6px;">Ditunda / Lewat</div>' +
+            '<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:8px;">Penerbitan & Kasus Khusus</div><div style="display:flex;gap:8px;margin-bottom:12px;"><button id="ext-op-print-sheet2" style="flex:1;padding:9px;border:1px solid #0f5132;background:#0f5132;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;">' +
+            svg('printer', 14) +
+            'Sheet A4</button><button id="ext-op-refresh2" style="flex:1;padding:9px;border:1px solid #ced4da;background:#fff;color:#212529;border-radius:8px;cursor:pointer;font-weight:700;">Segarkan</button></div><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:6px;">Ditunda / Lewat</div>' +
             (special.length
               ? special.map((r) => miniRow(r, 'op-sp')).join('')
               : '<div style="padding:10px;color:#adb5bd;text-align:center;font-size:12px;">Tidak ada</div>') +
