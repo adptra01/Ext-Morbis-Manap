@@ -175,7 +175,7 @@ function buildPanel(): HTMLDivElement {
 function callBtn(ev: string, label: string, num: string, eventId: string): string {
   const styles: Record<string, string> = {
     CALL: 'background:#084298;color:#fff;',
-    RECALL: 'background:#0f5132;color:#fff;',
+    RECALL: 'background:#286090;color:#fff;',
     DEFER: 'background:#fff3cd;color:#664d03;border:1px solid #ffc107;',
     DONE: 'background:#e9ecef;color:#212529;border:1px solid #ced4da;',
   };
@@ -219,13 +219,13 @@ function rowActions(r: DisplayRow, prefix: string): string {
       return callBtn('CALL', '📢 Panggil', n, prefix + '-call-' + n);
     case 'CALLED':
       return (
-        callBtn('RECALL', '🔁 Panggil Ulang', n, prefix + '-recall-' + n) +
-        callBtn('DEFER', '⏸ Tunda', n, prefix + '-defer-' + n) +
-        callBtn('DONE', '✔ Selesai', n, prefix + '-done-' + n)
+        callBtn('RECALL', 'Panggil Ulang', n, prefix + '-recall-' + n) +
+        callBtn('DEFER', 'Tunda', n, prefix + '-defer-' + n) +
+        callBtn('DONE', 'Selesai', n, prefix + '-done-' + n)
       );
     case 'DEFERRED':
     case 'SKIPPED':
-      return callBtn('RECALL', '🔁 Panggil Ulang', n, prefix + '-recall-' + n);
+      return callBtn('RECALL', 'Panggil Ulang', n, prefix + '-recall-' + n);
     default:
       return ''; // DONE — tidak ada aksi
   }
@@ -317,12 +317,12 @@ async function render(): Promise<void> {
                   '<div style="flex-shrink:0;display:flex;gap:8px;">' +
                   callBtn(
                     'RECALL',
-                    '🔁 Panggil Ulang',
+                    'Panggil Ulang',
                     r.queue_number,
                     'op-recall-' + r.queue_number,
                   ) +
-                  callBtn('DEFER', '⏸ Tunda', r.queue_number, 'op-defer-' + r.queue_number) +
-                  callBtn('DONE', '✔ Selesai', r.queue_number, 'op-done-' + r.queue_number) +
+                  callBtn('DEFER', 'Tunda', r.queue_number, 'op-defer-' + r.queue_number) +
+                  callBtn('DONE', 'Selesai', r.queue_number, 'op-done-' + r.queue_number) +
                   '</div></div>',
               )
               .join('')

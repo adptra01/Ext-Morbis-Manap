@@ -25,17 +25,39 @@
 import { pushQueueEvent, queueEventId, farmasiAppBase } from './shared/farmasiQueueSync';
 import { printKartuAntrian } from './shared/printKartu';
 
-/** Nama pasien: input hidden #nama_pasien, fallback header halaman (h2/panel
- *  nama), lalu sel mana pun yang tampak seperti nama. */
+/** Nama pasien: input hidden #nama_pasien → sel berlabel "Nama Pasien" →
+ *  fallback header halaman (SANGAT ketat — jangan sampai menangkap judul
+ *  halaman seperti "PENJUALAN E-RESEP" sebagai nama). */
 function resolveNamaPasien(): string {
   const fromInput = document.querySelector<HTMLInputElement>('#nama_pasien')?.value?.trim();
   if (fromInput) return fromInput.toUpperCase();
+
+  // Label "Nama Pasien" (th/td/strong) → nilai pada sel/elemen berikutnya.
+  const labeled = Array.from(document.querySelectorAll('th, td, label, strong, b, span'));
+  for (const el of labeled) {
+    const label = (el.textContent || '').trim();
+    if (!/^nama\s*pasien$/i.test(label)) continue;
+    const next =
+      el.nextElementSibling ||
+      el.parentElement?.querySelector('input, select') ||
+      el.parentElement?.nextElementSibling;
+    const val = (next?.textContent || (next as HTMLInputElement | null)?.value || '').trim();
+    if (val) return val.toUpperCase();
+  }
+
+  // Fallback terakhir: header yang JELAS nama pasien (2+ kata, huruf besar/
+  // campuran, TANPA kata-kata kunci halaman). Judul halaman "PENJUALAN E-RESEP"
+  // ditolak di sini.
+  const PAGE_KEYWORDS =
+    /(resep|penjualan|antrian|farmasi|penerimaan|pendaftaran|detail|edit|input|rekap|daftar|shift|cetak|pembayaran|penyerahan|racik|racikan|obat|kasir)/i;
   const headers = Array.from(document.querySelectorAll('h1, h2, h3, .page-title, .card-title'));
   for (const h of headers) {
     const t = (h.textContent || '').trim();
-    if (t && !/^(detail|edit|resep|.*antrian.*)$/i.test(t) && t.length < 60) {
-      return t.toUpperCase();
-    }
+    if (!t || t.length < 4 || t.length > 60) continue;
+    if (PAGE_KEYWORDS.test(t)) continue;
+    const words = t.split(/\s+/).filter(Boolean);
+    if (words.length < 2) continue;
+    return t.toUpperCase();
   }
   return '';
 }
@@ -49,7 +71,11 @@ async function lookupAntrian(resepId: string): Promise<string | null> {
       { cache: 'no-store', credentials: 'omit' },
     );
     if (!res.ok) return null;
-    const j = (await res.json()) as { ok?: boolean; found?: boolean; queue?: { queue_number?: string } };
+    const j = (await res.json()) as {
+      ok?: boolean;
+      found?: boolean;
+      queue?: { queue_number?: string };
+    };
     if (!j.ok || !j.found || !j.queue?.queue_number) return null;
     return j.queue.queue_number;
   } catch {
