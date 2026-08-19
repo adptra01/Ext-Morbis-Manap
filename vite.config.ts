@@ -13,6 +13,10 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: false,
+    // ponytail: oxc-minify rolldown segfault di Node 26 (SIGSEGV) → matikan
+    // minify. Popup/sidepanel kecil, tidak esensial utk extension internal.
+    minify: false,
+    sourcemap: false,
     // ponytail: matikan inject <link rel=modulepreload> — Chrome ekstensi tolak
     // preload lintas-world ("cross-world extension resource mismatch").
     modulePreload: false,

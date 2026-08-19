@@ -334,7 +334,7 @@ function isResepBatal(antrianStatus?: string): boolean {
         '<span style="font-size:18px;font-weight:800;color:#198754;display:block;margin:2px 0 8px;line-height:1.3;">' +
         '✓ Sudah antri — ' +
         code +
-        '</span>' +
+        '</span><br>' +
         '<button id="ext-antrian-cetak" class="btn" style="margin:2px 6px 2px 0;background:#6c757d;color:#fff;border-color:#6c757d;" title="Cetak ulang kartu tanpa mengantrikan lagi">Cetak Kembali</button>' +
         '<button id="ext-antrian-batal" class="btn" style="margin:2px 0;background:#dc3545;color:#fff;border-color:#dc3545;" title="Hapus antrian dari DB — resep bisa di-antrikan ulang">Batal antrian</button>';
       bar.querySelector('#ext-antrian-cetak')?.addEventListener('click', () => {
