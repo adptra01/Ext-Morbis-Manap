@@ -319,11 +319,11 @@ function isResepBatal(antrianStatus?: string): boolean {
     const nomorResep = getField('nomor_resep', 'id_resep');
     if (state === 'issued' && code) {
       bar.innerHTML =
-        '<span style="margin-left:6px;font-weight:700;color:#198754;">✓ Sudah antri — ' +
+        '<span style="margin:4px 0;font-weight:700;color:#198754;display:block;">✓ Sudah antri — ' +
         code +
         '</span>' +
-        '<button id="ext-antrian-cetak" class="btn btn-outline-primary" style="margin-left:6px;" title="Cetak ulang kartu tanpa mengantrikan lagi">🖨 Cetak Kembali</button>' +
-        '<button id="ext-antrian-batal" class="btn btn-outline-danger" style="margin-left:6px;" title="Batalkan antrian (resep batal/tidak jadi)">Batal antrian</button>';
+        '<button id="ext-antrian-cetak" class="btn" style="margin:2px 6px 2px 0;background:#6c757d;color:#fff;border-color:#6c757d;" title="Cetak ulang kartu tanpa mengantrikan lagi">Cetak Kembali</button>' +
+        '<button id="ext-antrian-batal" class="btn" style="margin:2px 0;background:#dc3545;color:#fff;border-color:#dc3545;" title="Batalkan antrian (resep batal/tidak jadi)">Batal antrian</button>';
       bar.querySelector('#ext-antrian-cetak')?.addEventListener('click', () => {
         if (!nomorResep) return;
         try {
@@ -348,8 +348,8 @@ function isResepBatal(antrianStatus?: string): boolean {
     }
     // Kontras: racik = oranye (#d97706), tunggal = biru (#2193cf) — teks putih.
     bar.innerHTML =
-      '<button id="ext-antrian-racik" class="btn" style="margin-left:6px;background:#d97706;color:#fff;border-color:#d97706;" title="Antrikan sebagai obat RACIKAN (nomor R-XX)">Antrikan obat racik</button>' +
-      '<button id="ext-antrian-tunggal" class="btn" style="margin-left:6px;background:#2193cf;color:#fff;border-color:#2193cf;" title="Antrikan sebagai obat TUNGGAL (nomor T-XX)">Antrikan obat tunggal</button>';
+      '<button id="ext-antrian-racik" class="btn" style="margin:2px 6px 2px 0;background:#d97706;color:#fff;border-color:#d97706;" title="Antrikan sebagai obat RACIKAN (nomor R-XX)">Antrikan obat racik</button>' +
+      '<button id="ext-antrian-tunggal" class="btn" style="margin:2px 0;background:#2193cf;color:#fff;border-color:#2193cf;" title="Antrikan sebagai obat TUNGGAL (nomor T-XX)">Antrikan obat tunggal</button>';
     const klik = (jenis: 'racik' | 'tunggal'): void => {
       // Baca field SAAT KLIK — #id_visit & #nomor_resep diisi MORBIS via AJAX
       // setelah halaman render (sebelumnya: dibaca saat render → kosong → error
@@ -379,14 +379,29 @@ function isResepBatal(antrianStatus?: string): boolean {
   }
 
   function addAntrianBar(): void {
-    // Tunggu tombol Simpan (#save) dirender MORBIS.
-    const tryInject = (): void => {
-      const saveBtn = document.querySelector<HTMLButtonElement>('#save');
-      if (!saveBtn || document.querySelector('#ext-antrian-bar')) return;
-      const bar = document.createElement('span');
+    // Target inject: td valign="top" berisi fieldset id="perhatian" (kolom
+    // kanan detail resep). Buat fieldset BARU di dalam td itu utk tombol.
+    const findHost = (): HTMLElement | null => {
+      const td = Array.from(
+        document.querySelectorAll<HTMLTableCellElement>('td[valign="top"]'),
+      ).find((c) => c.querySelector('fieldset#perhatian, fieldset[id="perhatian"]'));
+      if (!td) return null;
+      const fieldset = document.createElement('fieldset');
+      fieldset.id = 'ext-antrian-fieldset';
+      fieldset.style.cssText = 'margin-top:6px;';
+      fieldset.innerHTML = '<legend>Antrian Farmasi</legend>';
+      const bar = document.createElement('div');
       bar.id = 'ext-antrian-bar';
-      bar.style.cssText = 'display:inline-flex;align-items:center;flex-wrap:wrap;';
-      saveBtn.insertAdjacentElement('afterend', bar);
+      bar.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;';
+      fieldset.appendChild(bar);
+      td.appendChild(fieldset);
+      return bar;
+    };
+
+    const tryInject = (): void => {
+      if (document.querySelector('#ext-antrian-bar')) return;
+      const bar = findHost();
+      if (!bar) return;
 
       // Lookup berulang: #nomor_resep bisa terisi belakangan (AJAX MORBIS).
       // Kalau resep sudah antri → tombol Cetak Kembali + Batal antrian.
@@ -400,7 +415,7 @@ function isResepBatal(antrianStatus?: string): boolean {
         void lookupAntrian(nomorResep).then((info) => {
           if (isResepBatal(info?.status)) {
             bar.innerHTML =
-              '<span style="margin-left:6px;color:#b02a37;font-weight:700;">Resep dibatalkan — antrian tidak tersedia</span>';
+              '<span style="color:#b02a37;font-weight:700;">Resep dibatalkan — antrian tidak tersedia</span>';
             return;
           }
           renderActionBar(info ? 'issued' : 'ready', info?.queue_number);
