@@ -165,7 +165,5 @@
   "163": "resumeTab/types.ts",
   "164": "ErrorBoundary",
   "165": "ConsultationInfoPanel.tsx",
-  "166": "tryInject",
-  "167": "VitalSignsSection.tsx",
-  "168": "autoprefixer"
+  "166": "tryInject"
 }

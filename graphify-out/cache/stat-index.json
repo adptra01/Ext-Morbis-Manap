@@ -343,11 +343,11 @@
     "word_count": 227
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/manifest.json": {
-    "size": 8477,
-    "mtime_ns": 1787063094496719300,
-    "word_count": 476,
+    "size": 8527,
+    "mtime_ns": 1787116981056960800,
+    "word_count": 477,
     "hashes": {
-      "manifest.json": "cf40f6a288e547143bbc6e85c764620e313ba5557c39543464b383b023530c01"
+      "manifest.json": "ca1191d2fad7ee56019cbd578f814f4a048f7ae5da6c18e7778d8e7ac51eacd3"
     }
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/mcp-servers/morbis-devtools/README.md": {
@@ -406,9 +406,9 @@
     "word_count": 162
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/scripts/build.mjs": {
-    "size": 7866,
-    "mtime_ns": 1787039767298545700,
-    "word_count": 724
+    "size": 7934,
+    "mtime_ns": 1787116944179508600,
+    "word_count": 726
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/scripts/deploy.mjs": {
     "size": 1029,
@@ -1230,9 +1230,9 @@
     "word_count": 437
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/penerimaanAntrolCetak.ts": {
-    "size": 8761,
-    "mtime_ns": 1787039767305832200,
-    "word_count": 1042
+    "size": 8886,
+    "mtime_ns": 1787116981241456600,
+    "word_count": 1101
   },
   "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/shared/farmasiEvent.ts": {
     "size": 6502,
@@ -1266,5 +1266,20 @@
     "hashes": {
       "tts_service.py": "da7a53c4c7a59773fb2e219cd0295c8d99e6c8eb4caa016015222a7174c63fc2"
     }
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/antrianFarmasiDisplayApp.ts": {
+    "size": 1660,
+    "mtime_ns": 1787116981147719100,
+    "word_count": 162
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/antrianFarmasiOperator.ts": {
+    "size": 8459,
+    "mtime_ns": 1787116981203885300,
+    "word_count": 826
+  },
+  "/mnt/DiskD/Projects/Ext-Morbis-Manap/src/features/shared/farmasiQueueSync.ts": {
+    "size": 2247,
+    "mtime_ns": 1787116080276122900,
+    "word_count": 264
   }
 }
