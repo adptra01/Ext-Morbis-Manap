@@ -170,6 +170,7 @@
       "matches": ["http://*/public/antrian-farmasi-v2/view-call-websocet-v2*"],
       "js": ["features/antrianFarmasiDisplayApp.js"],
       "run_at": "document_start",
+      "world": "MAIN",
       "all_frames": false
     },
     {

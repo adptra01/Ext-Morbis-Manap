@@ -7,13 +7,43 @@
  * localhost + QueueManager) diganti display app. Halaman ini jadi shell tipis
  * berisi iframe layar penuh ke `${farmasiAppBase()}/antrian-farmasi`.
  *
- * Jalan di world ISOLATED (fetch/iframe aman; tidak butuh sesi MORBIS —
- * display app publik).
+ * Jalan di world MAIN (manifest) supaya patch pemblokir audio native MORBIS
+ * kena kode halaman — bell MORBIS yang berbunyi saat load pertama kali
+ * (sebelum take-over iframe) dibungkam.
  */
 import { farmasiAppBase } from './shared/farmasiQueueSync';
 
 (function () {
   const TARGET = farmasiAppBase() + '/antrian-farmasi';
+
+  /** Blokir bell/audio native MORBIS sejak document_start: patch play() jadi
+   *  no-op + mute semua elemen media yang ada / baru muncul. Audio di iframe
+   *  display app TIDAK terpengaruh (dokumen terpisah, tidak di-inject). */
+  function blockNativeAudio(): void {
+    try {
+      const origPlay = HTMLMediaElement.prototype.play;
+      HTMLMediaElement.prototype.play = function () {
+        // no-op: bell native MORBIS tidak boleh berbunyi (display app yang
+        // mengumumkan panggilan via TTS-nya sendiri).
+        return Promise.resolve();
+      };
+      const muteAll = (): void => {
+        document.querySelectorAll('audio, video').forEach((el) => {
+          const m = el as HTMLMediaElement;
+          m.muted = true;
+          m.pause();
+          void origPlay; // ref tersimpan utk potensi restore — tidak dipakai
+        });
+      };
+      muteAll();
+      new MutationObserver(muteAll).observe(document.documentElement, {
+        childList: true,
+        subtree: true,
+      });
+    } catch {
+      /* abaikan — block gagal tidak menghalangi take-over */
+    }
+  }
 
   function takeOver(): void {
     if (document.getElementById('ext-farmasi-display-app')) return;
@@ -24,7 +54,7 @@ import { farmasiAppBase } from './shared/farmasiQueueSync';
       '<iframe src="' +
       TARGET +
       '" style="width:100%;height:100%;border:0;" title="Display Antrian Farmasi" allow="autoplay"></iframe>' +
-      '<div style="position:fixed;bottom:8px;right:12px;font:11px/1.4 system-ui,sans-serif;color:#adb5bd;' +
+      '<div style="position:fixed;bottom:8px;right:12px;font:11px/1.4 system-ui,sans-serif;color:#adb5cd;' +
       'z-index:1;background:rgba(255,255,255,.7);padding:2px 8px;border-radius:6px;">' +
       'display: ' +
       TARGET +
@@ -32,6 +62,8 @@ import { farmasiAppBase } from './shared/farmasiQueueSync';
     (document.body || document.documentElement).appendChild(app);
     document.body.style.overflow = 'hidden';
   }
+
+  blockNativeAudio(); // document_start — sebelum MORBIS sempat mainkan bell
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', takeOver, { once: true });
