@@ -25,6 +25,13 @@
 import { pushQueueEvent, queueEventId, probeFarmasiAppBase } from './shared/farmasiQueueSync';
 import { printKartuAntrian } from './shared/printKartu';
 
+// Guard anti double-inject: browser/SPA MORBIS bisa menyuntikkan content script
+// lebih dari sekali (mis. navigasi parsial) → satu klik bisa memicu 2 event.
+if ((window as unknown as { __extAntrolShift?: boolean }).__extAntrolShift) {
+  throw new Error('skip double inject farmasiAntrolShift');
+}
+(window as unknown as { __extAntrolShift?: boolean }).__extAntrolShift = true;
+
 /** Nama pasien: input hidden #nama_pasien → sel berlabel "Nama Pasien" →
  *  fallback header halaman (SANGAT ketat — jangan sampai menangkap judul
  *  halaman seperti "PENJUALAN E-RESEP" sebagai nama). */

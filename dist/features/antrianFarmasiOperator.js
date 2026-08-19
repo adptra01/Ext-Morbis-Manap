@@ -479,20 +479,50 @@ var __morbis_feature = (() => {
       log('display gagal:', e.message);
     }
   }
+  var ACT_COOLDOWN_MS = 1500;
+  var actCooldown = /* @__PURE__ */ new Map();
   async function act(ev, num, eid) {
     if (ev === 'PRINT') {
       const row = lastRows.find((r) => r.queue_number === num);
       if (row) printTicket(row);
       return;
     }
-    const apiEvent = ev === 'DEFER' ? 'TUNDA' : ev;
-    const ok = await pushQueueEvent({
-      event_id: eid + '-' + Date.now().toString(36),
-      queue_number: num,
-      event: apiEvent,
-    });
-    log(ev, num, ok ? 'OK' : 'gagal');
-    if (ok) await render();
+    const now = Date.now();
+    const key = ev + '|' + num;
+    const last = actCooldown.get(key) || 0;
+    if (now - last < ACT_COOLDOWN_MS) {
+      log('skip (cooldown) ' + key);
+      return;
+    }
+    actCooldown.set(key, now);
+    const btn = document.querySelector(`.ext-op-act[data-ev="${ev}"][data-num="${num}"]`);
+    const prevLabel = btn?.textContent ?? '';
+    const prevDisabled = btn?.disabled ?? false;
+    if (btn) {
+      btn.disabled = true;
+      btn.style.opacity = '0.55';
+      btn.style.cursor = 'wait';
+      if (ev === 'CALL') btn.textContent = 'Memproses\u2026';
+    }
+    try {
+      const apiEvent = ev === 'DEFER' ? 'TUNDA' : ev;
+      const ok = await pushQueueEvent({
+        event_id: eid + '-' + Date.now().toString(36),
+        queue_number: num,
+        event: apiEvent,
+      });
+      log(ev, num, ok ? 'OK' : 'gagal');
+      if (ok) await render();
+    } finally {
+      const b2 = document.querySelector(`.ext-op-act[data-ev="${ev}"][data-num="${num}"]`);
+      if (b2) {
+        b2.disabled = prevDisabled;
+        b2.style.opacity = '';
+        b2.style.cursor = '';
+        if (ev === 'CALL') b2.textContent = prevLabel;
+      }
+      window.setTimeout(() => actCooldown.delete(key), ACT_COOLDOWN_MS);
+    }
   }
   function init() {
     const start = () => {

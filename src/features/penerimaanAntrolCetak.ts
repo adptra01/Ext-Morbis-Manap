@@ -26,6 +26,12 @@ const ANTRL_URL = '/v2/antrol/search';
 const ANTRL_SUB = 'sub=update_v2';
 const LIST_URL = '/public/antrian-farmasi-v2/list-antrian-v2';
 
+// Guard anti double-inject (SPA/navigasi parsial MORBIS bisa inject 2x).
+if ((window as unknown as { __extPenerimaanAntrol?: boolean }).__extPenerimaanAntrol) {
+  throw new Error('skip double inject penerimaanAntrolCetak');
+}
+(window as unknown as { __extPenerimaanAntrol?: boolean }).__extPenerimaanAntrol = true;
+
 function log(...args: unknown[]): void {
   console.log('[MORBIS Ext] penerimaanAntrolCetak:', ...args);
 }

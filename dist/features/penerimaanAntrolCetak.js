@@ -90,6 +90,10 @@ var __morbis_feature = (() => {
   var ANTRL_URL = '/v2/antrol/search';
   var ANTRL_SUB = 'sub=update_v2';
   var LIST_URL = '/public/antrian-farmasi-v2/list-antrian-v2';
+  if (window.__extPenerimaanAntrol) {
+    throw new Error('skip double inject penerimaanAntrolCetak');
+  }
+  window.__extPenerimaanAntrol = true;
   function log(...args) {
     console.log('[MORBIS Ext] penerimaanAntrolCetak:', ...args);
   }

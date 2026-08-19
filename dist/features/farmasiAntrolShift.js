@@ -87,6 +87,10 @@ var __morbis_feature = (() => {
   }
 
   // src/features/farmasiAntrolShift.ts
+  if (window.__extAntrolShift) {
+    throw new Error('skip double inject farmasiAntrolShift');
+  }
+  window.__extAntrolShift = true;
   function resolveNamaPasien() {
     const fromInput = document.querySelector('#nama_pasien')?.value?.trim();
     if (fromInput) return fromInput.toUpperCase();

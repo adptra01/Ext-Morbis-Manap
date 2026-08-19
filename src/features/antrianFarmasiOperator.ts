@@ -524,6 +524,12 @@ async function render(): Promise<void> {
   }
 }
 
+/** Cooldown anti spam-click per tombol (ms) — tombol aksi (CALL/RECALL/dst)
+ *  di-disable + teks "Memproses…" selama 1.5s, mencegah antrean melompat
+ *  beberapa nomor saat jaringan lag / klik ganda. */
+const ACT_COOLDOWN_MS = 1500;
+const actCooldown = new Map<string, number>();
+
 /** POST event ke app; idempoten — aman klik ganda. DEFER (UI) → TUNDA (API).
  *  PRINT = aksi lokal (cetak tiket), bukan event API. */
 async function act(ev: string, num: string, eid: string): Promise<void> {
@@ -532,14 +538,54 @@ async function act(ev: string, num: string, eid: string): Promise<void> {
     if (row) printTicket(row);
     return;
   }
-  const apiEvent = ev === 'DEFER' ? 'TUNDA' : ev;
-  const ok = await pushQueueEvent({
-    event_id: eid + '-' + Date.now().toString(36),
-    queue_number: num,
-    event: apiEvent as 'CALL' | 'RECALL' | 'DONE' | 'TUNDA',
-  });
-  log(ev, num, ok ? 'OK' : 'gagal');
-  if (ok) await render(); // langsung tampil tanpa tunggu polling
+  // Proteksi spam-click: satu aksi per nomor dalam jendela cooldown.
+  const now = Date.now();
+  const key = ev + '|' + num;
+  const last = actCooldown.get(key) || 0;
+  if (now - last < ACT_COOLDOWN_MS) {
+    log('skip (cooldown) ' + key);
+    return;
+  }
+  actCooldown.set(key, now);
+
+  // Disable visual tombol yang diklik + label "Memproses…" sementara.
+  const btn = document.querySelector<HTMLButtonElement>(
+    `.ext-op-act[data-ev="${ev}"][data-num="${num}"]`,
+  );
+  const prevLabel = btn?.textContent ?? '';
+  const prevDisabled = btn?.disabled ?? false;
+  if (btn) {
+    btn.disabled = true;
+    btn.style.opacity = '0.55';
+    btn.style.cursor = 'wait';
+    if (ev === 'CALL') btn.textContent = 'Memproses…';
+  }
+
+  try {
+    const apiEvent = ev === 'DEFER' ? 'TUNDA' : ev;
+    const ok = await pushQueueEvent({
+      event_id: eid + '-' + Date.now().toString(36),
+      queue_number: num,
+      event: apiEvent as 'CALL' | 'RECALL' | 'DONE' | 'TUNDA',
+    });
+    log(ev, num, ok ? 'OK' : 'gagal');
+    if (ok) await render(); // langsung tampil tanpa tunggu polling
+  } finally {
+    // Kembalikan tombol setelah cooldown selesai (render() mengganti DOM,
+    // jadi tombol lama mungkin sudah hilang — kembalikan hanya jika masih ada).
+    const b2 = document.querySelector<HTMLButtonElement>(
+      `.ext-op-act[data-ev="${ev}"][data-num="${num}"]`,
+    );
+    if (b2) {
+      b2.disabled = prevDisabled;
+      b2.style.opacity = '';
+      b2.style.cursor = '';
+      if (ev === 'CALL') b2.textContent = prevLabel;
+    }
+    // Biarkan cooldown map tetap — tombol baru (setelah render) punya
+    // event_id baru; cooldown per (ev,num) mencegah ganda dalam 1.5s.
+    window.setTimeout(() => actCooldown.delete(key), ACT_COOLDOWN_MS);
+  }
 }
 
 function init(): void {
