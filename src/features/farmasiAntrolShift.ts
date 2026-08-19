@@ -271,7 +271,8 @@ function isResepBatal(antrianStatus?: string): boolean {
     renderActionBar('issued', code);
   }
 
-  /** Kirim BATAL ke app: antrian resep dihapus dari display (resep batal). */
+  /** Kirim BATAL ke app: antrian DIHAPUS dari DB app (bukan sentuh MORBIS).
+   *  Setelah itu resep bisa di-antrikan ulang (tombol racik/tunggal muncul lagi). */
   async function onBatalAntrian(code: string, nomorResep: string): Promise<void> {
     const sync = await pushQueueEvent({
       event_id: queueEventId('bat', nomorResep, code),
@@ -283,20 +284,7 @@ function isResepBatal(antrianStatus?: string): boolean {
       alert('[MORBIS Ext] Gagal membatalkan antrian. Coba lagi.');
       return;
     }
-    // Batalkan juga di MORBIS (antrol) kalau ada — best-effort.
-    const idVisit = document.querySelector<HTMLInputElement>('#id_visit')?.value ?? '';
-    if (idVisit) {
-      try {
-        await fetch(`${ANTRL_URL}?${ANTRL_SUB}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: `id=${encodeURIComponent(idVisit)}&taskid=7`,
-          credentials: 'include',
-        });
-      } catch {
-        /* best-effort */
-      }
-    }
+    // Antrian terhapus dari DB → tampilkan lagi tombol antrikan (racik/tunggal).
     renderActionBar('ready');
   }
 
@@ -319,11 +307,12 @@ function isResepBatal(antrianStatus?: string): boolean {
     const nomorResep = getField('nomor_resep', 'id_resep');
     if (state === 'issued' && code) {
       bar.innerHTML =
-        '<span style="margin:4px 0;font-weight:700;color:#198754;display:block;">✓ Sudah antri — ' +
+        '<span style="font-size:18px;font-weight:800;color:#198754;display:block;margin:2px 0 8px;line-height:1.3;">' +
+        '✓ Sudah antri — ' +
         code +
         '</span>' +
         '<button id="ext-antrian-cetak" class="btn" style="margin:2px 6px 2px 0;background:#6c757d;color:#fff;border-color:#6c757d;" title="Cetak ulang kartu tanpa mengantrikan lagi">Cetak Kembali</button>' +
-        '<button id="ext-antrian-batal" class="btn" style="margin:2px 0;background:#dc3545;color:#fff;border-color:#dc3545;" title="Batalkan antrian (resep batal/tidak jadi)">Batal antrian</button>';
+        '<button id="ext-antrian-batal" class="btn" style="margin:2px 0;background:#dc3545;color:#fff;border-color:#dc3545;" title="Hapus antrian dari DB — resep bisa di-antrikan ulang">Batal antrian</button>';
       bar.querySelector('#ext-antrian-cetak')?.addEventListener('click', () => {
         if (!nomorResep) return;
         try {

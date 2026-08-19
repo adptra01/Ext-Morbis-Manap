@@ -280,17 +280,6 @@ var __morbis_feature = (() => {
         alert('[MORBIS Ext] Gagal membatalkan antrian. Coba lagi.');
         return;
       }
-      const idVisit = document.querySelector('#id_visit')?.value ?? '';
-      if (idVisit) {
-        try {
-          await fetch(`${ANTRL_URL}?${ANTRL_SUB}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `id=${encodeURIComponent(idVisit)}&taskid=7`,
-            credentials: 'include',
-          });
-        } catch {}
-      }
       renderActionBar('ready');
     }
     function getField(id, fallbackName) {
@@ -305,9 +294,9 @@ var __morbis_feature = (() => {
       const nomorResep = getField('nomor_resep', 'id_resep');
       if (state === 'issued' && code) {
         bar.innerHTML =
-          '<span style="margin:4px 0;font-weight:700;color:#198754;display:block;">\u2713 Sudah antri \u2014 ' +
+          '<span style="font-size:18px;font-weight:800;color:#198754;display:block;margin:2px 0 8px;line-height:1.3;">\u2713 Sudah antri \u2014 ' +
           code +
-          '</span><button id="ext-antrian-cetak" class="btn" style="margin:2px 6px 2px 0;background:#6c757d;color:#fff;border-color:#6c757d;" title="Cetak ulang kartu tanpa mengantrikan lagi">Cetak Kembali</button><button id="ext-antrian-batal" class="btn" style="margin:2px 0;background:#dc3545;color:#fff;border-color:#dc3545;" title="Batalkan antrian (resep batal/tidak jadi)">Batal antrian</button>';
+          '</span><button id="ext-antrian-cetak" class="btn" style="margin:2px 6px 2px 0;background:#6c757d;color:#fff;border-color:#6c757d;" title="Cetak ulang kartu tanpa mengantrikan lagi">Cetak Kembali</button><button id="ext-antrian-batal" class="btn" style="margin:2px 0;background:#dc3545;color:#fff;border-color:#dc3545;" title="Hapus antrian dari DB \u2014 resep bisa di-antrikan ulang">Batal antrian</button>';
         bar.querySelector('#ext-antrian-cetak')?.addEventListener('click', () => {
           if (!nomorResep) return;
           try {
