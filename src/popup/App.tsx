@@ -20,7 +20,7 @@ async function loadAll(): Promise<{ config: ExtensionConfig | null; urls: Custom
     extensionCustomUrls?: CustomUrl[];
   };
   return {
-    config: c.extensionConfig ?? { extensionEnabled: true, currentRole: 'casemix', features: {} },
+    config: c.extensionConfig ?? { extensionEnabled: true, currentRole: 'admin', features: {} },
     urls: c.extensionCustomUrls ?? [],
   };
 }

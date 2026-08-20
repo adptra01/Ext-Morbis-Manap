@@ -30,14 +30,14 @@ async function loadConfig(): Promise<ExtensionConfig> {
     };
     currentConfig = result.extensionConfig ?? null;
     if (!currentConfig) {
-      currentConfig = { extensionEnabled: true, currentRole: 'casemix', features: {} };
+      currentConfig = { extensionEnabled: true, currentRole: 'admin', features: {} };
     }
     isExtensionEnabled = currentConfig.extensionEnabled;
     log('Config loaded, role:', currentConfig.currentRole);
     return currentConfig;
   } catch (error) {
     console.error('[MORBIS Ext] Error loading config:', error);
-    currentConfig = { extensionEnabled: true, currentRole: 'casemix', features: {} };
+    currentConfig = { extensionEnabled: true, currentRole: 'admin', features: {} };
     isExtensionEnabled = true;
     return currentConfig;
   }
@@ -81,7 +81,7 @@ async function saveConfig(config: ExtensionConfig): Promise<void> {
 }
 
 function getCurrentRole(): Role {
-  return currentConfig?.currentRole ?? 'casemix';
+  return currentConfig?.currentRole ?? 'admin';
 }
 
 async function setCurrentRole(role: Role): Promise<Role> {

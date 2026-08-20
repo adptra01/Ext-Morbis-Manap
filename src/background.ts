@@ -99,7 +99,7 @@ const DEFAULT_CUSTOM_URLS: CustomUrl[] = [
 
 const DEFAULT_CONFIG: ExtensionConfig = {
   extensionEnabled: true,
-  currentRole: 'casemix',
+  currentRole: 'admin',
   features: {
     openDetailInNewTab: {
       enabled: true,
@@ -290,7 +290,14 @@ function migrateConfig(config: ExtensionConfig | null): ExtensionConfig {
   }
 
   if (!config.currentRole) {
-    config.currentRole = 'casemix';
+    config.currentRole = 'admin';
+  }
+
+  // Sanitasi: role tersimpan yang tidak dikenal (config lama / korup) bisa
+  // membuat dropdown role di popup macet (Radix Select tidak menemukan item
+  // untuk value tersebut) → paksa ke admin (role paling luas).
+  if (!ALL_KNOWN_ROLES.includes(config.currentRole as (typeof ALL_KNOWN_ROLES)[number])) {
+    config.currentRole = 'admin';
   }
 
   config.features = newFeatures as ExtensionConfig['features'];

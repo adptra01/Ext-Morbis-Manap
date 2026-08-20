@@ -111,7 +111,7 @@ const DEFAULT_URLS: CustomUrl[] = [
 
 export function App() {
   const [enabled, setEnabled] = useState(true);
-  const [role, setRole] = useState<Role>('casemix');
+  const [role, setRole] = useState<Role>('admin');
   const [activeTab, setActiveTab] = useState<'features' | 'domain' | 'tools'>('features');
   const [toolsSubTab, setToolsSubTab] = useState<'upload' | 'delete'>('upload');
   const [features, setFeatures] = useState<Record<string, boolean>>({});
@@ -282,7 +282,7 @@ export function App() {
       .then(() => {
         setFeatures({});
         setUrls(DEFAULT_URLS);
-        setRole('casemix');
+        setRole('admin');
         setEnabled(true);
         showToast('Reset ke default');
         handleReload();

@@ -516,7 +516,7 @@ async function loadAll() {
   return {
     config: c.extensionConfig ?? {
       extensionEnabled: true,
-      currentRole: 'casemix',
+      currentRole: 'admin',
       features: {},
     },
     urls: c.extensionCustomUrls ?? [],

@@ -56,7 +56,7 @@ async function isAllowed(): Promise<boolean> {
     const result = await chrome.storage.sync.get('extensionConfig');
     const cfg = result.extensionConfig;
     if (!cfg || cfg.extensionEnabled !== true) return false;
-    const role = cfg.currentRole ?? 'casemix';
+    const role = cfg.currentRole ?? 'admin';
     // default admin; kalau nanti ada key pindahOperasi di config, pakai allowedRoles-nya
     const allowed = cfg.features?.pindahOperasi?.allowedRoles ?? ['admin'];
     return allowed.includes(role);

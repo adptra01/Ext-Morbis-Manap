@@ -1813,7 +1813,7 @@ var DEFAULT_URLS = [
 ];
 function App() {
   const [enabled, setEnabled] = (0, import_react.useState)(true);
-  const [role, setRole] = (0, import_react.useState)('casemix');
+  const [role, setRole] = (0, import_react.useState)('admin');
   const [activeTab, setActiveTab] = (0, import_react.useState)('features');
   const [toolsSubTab, setToolsSubTab] = (0, import_react.useState)('upload');
   const [features, setFeatures] = (0, import_react.useState)({});
@@ -1999,7 +1999,7 @@ function App() {
       .then(() => {
         setFeatures({});
         setUrls(DEFAULT_URLS);
-        setRole('casemix');
+        setRole('admin');
         setEnabled(true);
         showToast('Reset ke default');
         handleReload();
