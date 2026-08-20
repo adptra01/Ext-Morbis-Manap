@@ -32,7 +32,21 @@ export interface QueueEventPayload {
 let cachedBase: string | null = null;
 let basePromise: Promise<string> | null = null;
 
-const BASE_CANDIDATES = ['http://dev.rsudkotajambi.id/rs', 'http://103.147.236.138/rs'];
+/** Host MORBIS yang sama (reverse proxy) juga serve /rs — pakai dulu supaya
+ *  LAN (192.168.8.x) tidak bergantung pada DNS/route publik. */
+function originRsBase(): string {
+  try {
+    return window.location.origin + '/rs';
+  } catch {
+    return FARMASI_APP_BASE;
+  }
+}
+
+const BASE_CANDIDATES = [
+  originRsBase(),
+  'http://dev.rsudkotajambi.id/rs',
+  'http://103.147.236.138/rs',
+];
 
 /** Probe base mana yang hidup (GET /api/queue/lookup?resep_id= kosong → 422
  *  artinya app reachable). Hasil di-cache per sesi. */
@@ -51,10 +65,9 @@ export function farmasiAppBase(): string {
     /* ignore */
   }
   if (cachedBase) return cachedBase;
-  // Pakai const PROD dulu (tak menunggu probe) — probe menyesuaikan saat
-  // fetch berikutnya; halaman pertama mungkin tetap gagal jika DNS internal
-  // tidak resolve. Cukup untuk kasus utama.
-  return FARMASI_APP_BASE;
+  // Pakai origin host ini dulu (MORBIS serve /rs juga) — tak menunggu probe;
+  // LAN internal langsung benar tanpa DNS publik.
+  return originRsBase();
 }
 
 /** Probe semua kandidat base, kembalikan yang live (singkat). */

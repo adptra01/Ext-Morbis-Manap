@@ -4,7 +4,18 @@ var __morbis_feature = (() => {
   var FARMASI_APP_BASE = 'http://dev.rsudkotajambi.id/rs';
   var cachedBase = null;
   var basePromise = null;
-  var BASE_CANDIDATES = ['http://dev.rsudkotajambi.id/rs', 'http://103.147.236.138/rs'];
+  function originRsBase() {
+    try {
+      return window.location.origin + '/rs';
+    } catch {
+      return FARMASI_APP_BASE;
+    }
+  }
+  var BASE_CANDIDATES = [
+    originRsBase(),
+    'http://dev.rsudkotajambi.id/rs',
+    'http://103.147.236.138/rs',
+  ];
   function farmasiAppBase() {
     try {
       const ov = localStorage.getItem('ext-farmasi-app-base');
@@ -18,7 +29,7 @@ var __morbis_feature = (() => {
       }
     } catch {}
     if (cachedBase) return cachedBase;
-    return FARMASI_APP_BASE;
+    return originRsBase();
   }
   function probeFarmasiAppBase() {
     if (basePromise) return basePromise;
