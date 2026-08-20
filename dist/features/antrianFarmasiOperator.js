@@ -165,7 +165,7 @@ var __morbis_feature = (() => {
       alert('Belum ada data antrian utk dicetak.');
       return;
     }
-    const win = window.open('', '_blank', 'width=900,height=1200');
+    const win = window.open('', '_blank', 'width=400,height=560');
     if (!win) {
       alert('Popup diblokir \u2014 izinkan popup untuk mencetak.');
       return;
@@ -173,24 +173,26 @@ var __morbis_feature = (() => {
     const rows = [...lastRows].sort((a, b) =>
       a.queue_number.localeCompare(b.queue_number, void 0, { numeric: true }),
     );
-    const items = rows
-      .map(
-        (r) =>
-          '<div style="display:flex;align-items:center;gap:10px;padding:6px 8px;border-bottom:1px solid #ddd;"><b style="min-width:70px;font-size:16px;color:#2193cf;">' +
-          r.queue_number +
-          '</b><span style="flex:1;font-size:14px;">' +
-          (r.nama_pasien || '-') +
-          '</span><span style="font-size:11px;color:#777;">' +
-          (r.jenis || '') +
-          '</span></div>',
-      )
+    const cards = rows
+      .map((r) => {
+        const jenisLabel =
+          r.jenis === 'racikan' ? 'Racikan' : r.jenis === 'tunggal' ? 'Non Racikan' : '';
+        const jenisLine = jenisLabel
+          ? `<div style="font-size:16px;margin-top:2px;">${jenisLabel}</div>`
+          : '';
+        return (
+          '<div style="width:320px;padding-top:10px;padding-bottom:4px;font-family:Arial,Helvetica,sans-serif;text-align:center;page-break-after:always;"><div style="font-size:16px;font-weight:bold;text-transform:uppercase;">RSUD H. Abdul Manap</div><div style="font-size:14px;margin-top:2px;">Antrian Farmasi</div><div style="font-size:13px;margin-top:4px;color:#555;">' +
+          lastTanggal +
+          `</div><div style="margin-top:14px;"><div style="font-size:110px;font-weight:900;letter-spacing:-2px;line-height:1;">${r.queue_number}</div></div><div style="font-size:20px;font-weight:bold;margin-top:10px;">${r.nama_pasien || '-'}</div>` +
+          jenisLine +
+          '<div style="font-size:13px;margin-top:14px;color:#555;">Silakan menunggu panggilan</div></div>'
+        );
+      })
       .join('');
     win.document.write(
-      '<html><head><title>Antrian Farmasi \u2014 Sheet A4</title></head><body style="font-family:Arial,Helvetica,sans-serif;padding:10mm;"><div style="text-align:center;font-size:18px;font-weight:bold;text-transform:uppercase;margin-bottom:2px;">RSUD H. Abdul Manap</div><div style="text-align:center;font-size:14px;margin-bottom:6px;">Daftar Antrian Farmasi \u2014 ' +
-        lastTanggal +
-        '</div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:2mm;border:1px solid #999;padding:4mm;">' +
-        items +
-        '</div></body></html>',
+      '<html><head><title>Antrian Farmasi \u2014 Kartu</title><style>@media print{@page{margin:0}}</style></head><body style="margin:0;font-family:Arial,Helvetica,sans-serif;">' +
+        cards +
+        '</body></html>',
     );
     win.document.close();
     window.setTimeout(() => {
