@@ -99,6 +99,7 @@ var __morbis_feature = (() => {
   }
 
   // src/features/antrianFarmasiOperator.ts
+  var lastCounters = {};
   var ICONS = {
     speaker:
       '<path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>',
@@ -237,13 +238,35 @@ var __morbis_feature = (() => {
     log('set counter:', prefix, lastSeq, '\u2192', j.next);
   }
   function openSetCounterDialog() {
+    const lastT = lastCounters['T'] ?? 0;
+    const lastR = lastCounters['R'] ?? 0;
     const body =
-      '<div style="margin-bottom:10px;font-size:13px;color:#495057;">Penomoran terlewat / kendala? Set nomor terakhir yang sudah terbit \u2014 antrian berikutnya lanjut dari nomor itu.</div><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><label style="font-weight:700;">Jenis:</label><label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="ext-op-cnt-prefix" value="T" checked> T \u2014 Non Racikan</label><label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="ext-op-cnt-prefix" value="R"> R \u2014 Racikan</label></div><div style="display:flex;align-items:center;gap:10px;"><label style="font-weight:700;">Nomor terakhir:</label><input id="ext-op-cnt-seq" type="number" min="0" max="9999" value="0" style="width:110px;padding:7px 10px;border:1px solid #ced4da;border-radius:8px;font-size:15px;"></div>';
+      '<div style="margin-bottom:10px;font-size:13px;color:#495057;">Penomoran terlewat / kendala? Set nomor terakhir yang sudah terbit per jenis \u2014 antrian berikutnya lanjut dari nomor itu. Isi keduanya lalu Simpan.</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"><div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:10px;padding:10px;"><div style="font-weight:800;color:#2193cf;margin-bottom:6px;">T \u2014 Non Racikan</div><input id="ext-op-cnt-seq-t" type="number" min="0" max="9999" value="' +
+      lastT +
+      '" style="width:100%;padding:7px 10px;border:1px solid #ced4da;border-radius:8px;font-size:15px;box-sizing:border-box;"><div style="margin-top:6px;font-size:11px;color:#6c757d;">Terakhir: ' +
+      lastT +
+      '</div></div><div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:10px;padding:10px;"><div style="font-weight:800;color:#d97706;margin-bottom:6px;">R \u2014 Racikan</div><input id="ext-op-cnt-seq-r" type="number" min="0" max="9999" value="' +
+      lastR +
+      '" style="width:100%;padding:7px 10px;border:1px solid #ced4da;border-radius:8px;font-size:15px;box-sizing:border-box;"><div style="margin-top:6px;font-size:11px;color:#6c757d;">Terakhir: ' +
+      lastR +
+      '</div></div></div>';
     openDialog('Set Nomor Lanjutan', body, (root) => {
-      const prefix = root.querySelector('input[name="ext-op-cnt-prefix"]:checked').value;
-      const seq = Math.max(0, parseInt(root.querySelector('#ext-op-cnt-seq').value, 10) || 0);
-      void postSetCounter(prefix, seq).then(
+      const tVal = Math.max(0, parseInt(root.querySelector('#ext-op-cnt-seq-t').value, 10) || 0);
+      const rVal = Math.max(0, parseInt(root.querySelector('#ext-op-cnt-seq-r').value, 10) || 0);
+      void Promise.all([postSetCounter('T', tVal), postSetCounter('R', rVal)]).then(
         () => {
+          lastCounters['T'] = tVal;
+          lastCounters['R'] = rVal;
+          const st = document.getElementById('ext-op-status');
+          if (st)
+            st.textContent =
+              'nomor lanjut di-set: T \u2192 ' + (tVal + 1) + ', R \u2192 ' + (rVal + 1);
+          alert(
+            'Nomor lanjutan tersimpan.\n\nT (Non Racikan) \u2192 lanjut T-' +
+              String(tVal + 1).padStart(2, '0') +
+              '\nR (Racikan) \u2192 lanjut R-' +
+              String(rVal + 1).padStart(2, '0'),
+          );
           void render();
         },
         (e) => alert('[MORBIS Ext] Gagal set nomor: ' + String(e?.message ?? e)),
@@ -251,32 +274,25 @@ var __morbis_feature = (() => {
     });
   }
   function printBlankSheet(prefix, count) {
-    const win = window.open('', '_blank', 'width=900,height=1200');
+    const win = window.open('', '_blank', 'width=400,height=560');
     if (!win) {
       alert('Popup diblokir \u2014 izinkan popup untuk mencetak.');
       return;
     }
-    const accent = prefix === 'R' ? '#d97706' : '#2193cf';
-    const items = [];
+    const cards = [];
     for (let i = 1; i <= count; i++) {
-      items.push(
-        '<div style="display:flex;align-items:center;gap:10px;padding:6px 8px;border-bottom:1px solid #ddd;"><b style="min-width:70px;font-size:16px;color:' +
-          accent +
-          ';">' +
-          prefix +
-          '-' +
-          String(i).padStart(2, '0') +
-          '</b><span style="flex:1;font-size:14px;">&nbsp;</span></div>',
+      cards.push(
+        '<div style="width:320px;padding-top:10px;padding-bottom:4px;font-family:Arial,Helvetica,sans-serif;text-align:center;page-break-after:always;"><div style="font-size:16px;font-weight:bold;text-transform:uppercase;">RSUD H. Abdul Manap</div><div style="font-size:14px;margin-top:2px;">Antrian Farmasi</div><div style="font-size:13px;margin-top:4px;color:#555;">' +
+          (prefix === 'R' ? 'Racikan (R)' : 'Non Racikan (T)') +
+          ' \u2014 ' +
+          lastTanggal +
+          `</div><div style="margin-top:14px;"><div style="font-size:110px;font-weight:900;letter-spacing:-2px;line-height:1;">${prefix}-${String(i).padStart(2, '0')}</div></div><div style="font-size:13px;margin-top:14px;color:#555;">Silakan menunggu panggilan</div></div>`,
       );
     }
     win.document.write(
-      '<html><head><title>Antrian Farmasi \u2014 Sheet A4</title></head><body style="font-family:Arial,Helvetica,sans-serif;padding:10mm;"><div style="text-align:center;font-size:18px;font-weight:bold;text-transform:uppercase;margin-bottom:2px;">RSUD H. Abdul Manap</div><div style="text-align:center;font-size:14px;margin-bottom:6px;">Sheet Antrian Farmasi ' +
-        (prefix === 'R' ? 'Racikan (R)' : 'Non Racikan (T)') +
-        ' \u2014 ' +
-        lastTanggal +
-        '</div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:2mm;border:1px solid #999;padding:4mm;">' +
-        items.join('') +
-        '</div></body></html>',
+      '<html><head><title>Antrian Farmasi \u2014 Sheet A4</title><style>@media print{@page{margin:0}}</style></head><body style="margin:0;font-family:Arial,Helvetica,sans-serif;">' +
+        cards.join('') +
+        '</body></html>',
     );
     win.document.close();
     window.setTimeout(() => {
@@ -288,7 +304,7 @@ var __morbis_feature = (() => {
   }
   function openPrintSheetDialog() {
     const body =
-      '<div style="margin-bottom:12px;font-size:13px;color:#495057;">Pilih sumber data sheet A4:</div><label style="display:flex;align-items:center;gap:6px;margin-bottom:8px;cursor:pointer;"><input type="radio" name="ext-op-sheet-src" value="real" checked> Daftar antrian hari ini (dari app)</label><label style="display:flex;align-items:center;gap:6px;margin-bottom:10px;cursor:pointer;"><input type="radio" name="ext-op-sheet-src" value="blank"> Cetak kosong (tanpa record \u2014 tiket manual)</label><div id="ext-op-sheet-blank" style="display:none;border-top:1px solid #eee;padding-top:10px;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><label style="font-weight:700;">Jenis:</label><label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="ext-op-sheet-prefix" value="T" checked> T</label><label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="ext-op-sheet-prefix" value="R"> R</label></div><div style="display:flex;align-items:center;gap:10px;"><label style="font-weight:700;">Jumlah (1\u2013200):</label><input id="ext-op-sheet-count" type="number" min="1" max="200" value="20" style="width:90px;padding:7px 10px;border:1px solid #ced4da;border-radius:8px;font-size:15px;"></div><div style="margin-top:8px;font-size:12px;color:#6c757d;">Mis. 89 \u2192 mencetak T-01 s/d T-89 tanpa record.</div></div>';
+      '<div style="margin-bottom:12px;font-size:13px;color:#495057;">Pilih sumber sheet yang dicetak (format kartu termal):</div><label style="display:flex;align-items:center;gap:6px;margin-bottom:8px;cursor:pointer;"><input type="radio" name="ext-op-sheet-src" value="real" checked> Kartu antrian hari ini (dari app)</label><label style="display:flex;align-items:center;gap:6px;margin-bottom:10px;cursor:pointer;"><input type="radio" name="ext-op-sheet-src" value="blank"> Cetak kosong (tanpa record \u2014 tiket manual)</label><div id="ext-op-sheet-blank" style="display:none;border-top:1px solid #eee;padding-top:10px;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><label style="font-weight:700;">Jenis:</label><label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="ext-op-sheet-prefix" value="T" checked> T</label><label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="ext-op-sheet-prefix" value="R"> R</label></div><div style="display:flex;align-items:center;gap:10px;"><label style="font-weight:700;">Jumlah (1\u2013200):</label><input id="ext-op-sheet-count" type="number" min="1" max="200" value="20" style="width:90px;padding:7px 10px;border:1px solid #ced4da;border-radius:8px;font-size:15px;"></div><div style="margin-top:8px;font-size:12px;color:#6c757d;">Mis. 89 \u2192 mencetak kartu T-01 s/d T-89 tanpa record, format termal.</div></div>';
     openDialog('Cetak Sheet A4', body, (root) => {
       const src = root.querySelector('input[name="ext-op-sheet-src"]:checked').value;
       if (src === 'real') {
@@ -562,6 +578,7 @@ var __morbis_feature = (() => {
         counter: r.counter ?? null,
       }));
       lastTanggal = d.tanggal;
+      lastCounters = d.counters || {};
       const key = JSON.stringify({ c: d.current, q: d.queues });
       if (key !== lastState) {
         lastState = key;
