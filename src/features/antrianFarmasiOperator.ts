@@ -171,6 +171,195 @@ function printSheetA4(): void {
   }, 300);
 }
 
+/** Dialog modal kecil (overlay) utk input operator — tanpa lib, cukup flex.
+ *  onOk dipanggil saat tombol Simpan; body diisi HTML form sederhana. */
+function openDialog(
+  title: string,
+  bodyHtml: string,
+  onOk: (root: HTMLElement) => void,
+  okLabel = 'Simpan',
+): void {
+  const overlay = document.createElement('div');
+  overlay.style.cssText =
+    'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2147483000;' +
+    'display:flex;align-items:center;justify-content:center;';
+  overlay.innerHTML =
+    '<div style="background:#fff;border-radius:14px;padding:18px;width:400px;max-width:94vw;' +
+    'box-shadow:0 10px 40px rgba(0,0,0,.25);font:14px/1.5 system-ui,sans-serif;color:#212529;">' +
+    '<div style="font-size:15px;font-weight:800;margin-bottom:12px;">' +
+    title +
+    '</div><div class="ext-op-dlg-body"></div>' +
+    '<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">' +
+    '<button class="ext-op-dlg-cancel" style="padding:8px 14px;border:1px solid #ced4da;background:#fff;' +
+    'border-radius:8px;cursor:pointer;">Batal</button>' +
+    '<button class="ext-op-dlg-ok" style="padding:8px 14px;border:none;background:#2193cf;color:#fff;' +
+    'border-radius:8px;cursor:pointer;font-weight:700;">' +
+    okLabel +
+    '</button></div></div>';
+  document.body.appendChild(overlay);
+  const card = overlay.firstElementChild as HTMLElement;
+  const root = card.querySelector('.ext-op-dlg-body') as HTMLElement;
+  root.innerHTML = bodyHtml;
+  const close = (): void => overlay.remove();
+  card.querySelector('.ext-op-dlg-cancel')?.addEventListener('click', close);
+  card.querySelector('.ext-op-dlg-ok')?.addEventListener('click', () => {
+    try {
+      onOk(root);
+    } finally {
+      close();
+    }
+  });
+}
+
+/** POST titik lanjut penomoran ke app (POST /api/queue/counter). */
+async function postSetCounter(prefix: string, lastSeq: number): Promise<void> {
+  const base = await probeFarmasiAppBase();
+  const res = await fetch(base + '/api/queue/counter', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prefix, last_seq: lastSeq }),
+    cache: 'no-store',
+    credentials: 'omit',
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const j = (await res.json()) as { ok?: boolean; next?: string };
+  log('set counter:', prefix, lastSeq, '→', j.next);
+}
+
+/** Dialog "Set Nomor": lanjutkan penomoran setelah kendala (mati lampu dll). */
+function openSetCounterDialog(): void {
+  const body =
+    '<div style="margin-bottom:10px;font-size:13px;color:#495057;">Penomoran terlewat / kendala? ' +
+    'Set nomor terakhir yang sudah terbit — antrian berikutnya lanjut dari nomor itu.</div>' +
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">' +
+    '<label style="font-weight:700;">Jenis:</label>' +
+    '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="ext-op-cnt-prefix" value="T" checked> T — Non Racikan</label>' +
+    '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="ext-op-cnt-prefix" value="R"> R — Racikan</label>' +
+    '</div>' +
+    '<div style="display:flex;align-items:center;gap:10px;">' +
+    '<label style="font-weight:700;">Nomor terakhir:</label>' +
+    '<input id="ext-op-cnt-seq" type="number" min="0" max="9999" value="0" style="width:110px;padding:7px 10px;' +
+    'border:1px solid #ced4da;border-radius:8px;font-size:15px;">' +
+    '</div>';
+  openDialog('Set Nomor Lanjutan', body, (root) => {
+    const prefix = (
+      root.querySelector('input[name="ext-op-cnt-prefix"]:checked') as HTMLInputElement
+    ).value;
+    const seq = Math.max(
+      0,
+      parseInt((root.querySelector('#ext-op-cnt-seq') as HTMLInputElement).value, 10) || 0,
+    );
+    void postSetCounter(prefix, seq).then(
+      () => {
+        void render();
+      },
+      (e: Error) => alert('[MORBIS Ext] Gagal set nomor: ' + String(e?.message ?? e)),
+    );
+  });
+}
+
+/** Cetak sheet kosong T-01..T-N / R-01..R-N (tanpa record) — utk petugas
+ *  mencetak banyak tiket manual sekaligus sesuai kebutuhan. */
+function printBlankSheet(prefix: string, count: number): void {
+  const win = window.open('', '_blank', 'width=900,height=1200');
+  if (!win) {
+    alert('Popup diblokir — izinkan popup untuk mencetak.');
+    return;
+  }
+  const accent = prefix === 'R' ? '#d97706' : '#2193cf';
+  const items: string[] = [];
+  for (let i = 1; i <= count; i++) {
+    items.push(
+      '<div style="display:flex;align-items:center;gap:10px;padding:6px 8px;border-bottom:1px solid #ddd;">' +
+        '<b style="min-width:70px;font-size:16px;color:' +
+        accent +
+        ';">' +
+        prefix +
+        '-' +
+        String(i).padStart(2, '0') +
+        '</b>' +
+        '<span style="flex:1;font-size:14px;">&nbsp;</span></div>',
+    );
+  }
+  win.document.write(
+    '<html><head><title>Antrian Farmasi — Sheet A4</title></head>' +
+      '<body style="font-family:Arial,Helvetica,sans-serif;padding:10mm;">' +
+      '<div style="text-align:center;font-size:18px;font-weight:bold;text-transform:uppercase;margin-bottom:2px;">RSUD H. Abdul Manap</div>' +
+      '<div style="text-align:center;font-size:14px;margin-bottom:6px;">Sheet Antrian Farmasi ' +
+      (prefix === 'R' ? 'Racikan (R)' : 'Non Racikan (T)') +
+      ' — ' +
+      lastTanggal +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:2mm;border:1px solid #999;padding:4mm;">' +
+      items.join('') +
+      '</div>' +
+      '</body></html>',
+  );
+  win.document.close();
+  window.setTimeout(() => {
+    try {
+      win.focus();
+      win.print();
+    } catch {
+      /* popup ditutup sebelum print — abaikan */
+    }
+  }, 300);
+}
+
+/** Dialog "Cetak Sheet": pilih data antrian hari ini ATAU cetak kosong
+ *  (jenis T/R + jumlah) tanpa record. */
+function openPrintSheetDialog(): void {
+  const body =
+    '<div style="margin-bottom:12px;font-size:13px;color:#495057;">Pilih sumber data sheet A4:</div>' +
+    '<label style="display:flex;align-items:center;gap:6px;margin-bottom:8px;cursor:pointer;">' +
+    '<input type="radio" name="ext-op-sheet-src" value="real" checked> Daftar antrian hari ini (dari app)</label>' +
+    '<label style="display:flex;align-items:center;gap:6px;margin-bottom:10px;cursor:pointer;">' +
+    '<input type="radio" name="ext-op-sheet-src" value="blank"> Cetak kosong (tanpa record — tiket manual)</label>' +
+    '<div id="ext-op-sheet-blank" style="display:none;border-top:1px solid #eee;padding-top:10px;">' +
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">' +
+    '<label style="font-weight:700;">Jenis:</label>' +
+    '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="ext-op-sheet-prefix" value="T" checked> T</label>' +
+    '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="ext-op-sheet-prefix" value="R"> R</label>' +
+    '</div>' +
+    '<div style="display:flex;align-items:center;gap:10px;">' +
+    '<label style="font-weight:700;">Jumlah (1–200):</label>' +
+    '<input id="ext-op-sheet-count" type="number" min="1" max="200" value="20" style="width:90px;padding:7px 10px;' +
+    'border:1px solid #ced4da;border-radius:8px;font-size:15px;">' +
+    '</div>' +
+    '<div style="margin-top:8px;font-size:12px;color:#6c757d;">Mis. 89 → mencetak T-01 s/d T-89 tanpa record.</div>' +
+    '</div>';
+  openDialog('Cetak Sheet A4', body, (root) => {
+    const src = (root.querySelector('input[name="ext-op-sheet-src"]:checked') as HTMLInputElement)
+      .value;
+    if (src === 'real') {
+      printSheetA4();
+      return;
+    }
+    const prefix = (
+      root.querySelector('input[name="ext-op-sheet-prefix"]:checked') as HTMLInputElement
+    ).value;
+    const count = Math.min(
+      200,
+      Math.max(
+        1,
+        parseInt((root.querySelector('#ext-op-sheet-count') as HTMLInputElement).value, 10) || 1,
+      ),
+    );
+    printBlankSheet(prefix, count);
+  });
+  // Toggle bagian input kosong sesuai pilihan radio.
+  document.querySelectorAll('input[name="ext-op-sheet-src"]').forEach((r) =>
+    r.addEventListener('change', () => {
+      const blank = document.getElementById('ext-op-sheet-blank');
+      if (!blank) return;
+      const src = (
+        document.querySelector('input[name="ext-op-sheet-src"]:checked') as HTMLInputElement
+      )?.value;
+      blank.style.display = src === 'blank' ? '' : 'none';
+    }),
+  );
+}
+
 function log(...args: unknown[]): void {
   console.log('[MORBIS Ext] operator:', ...args);
 }
@@ -449,9 +638,12 @@ function buildPanel(): HTMLDivElement {
     '<b style="font-size:18px;color:#2193cf;">Antrian Farmasi — Operasional</b>' +
     '<div id="ext-op-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">' +
     '<span id="ext-op-status" style="color:#6c757d;font-size:12px;">memuat…</span>' +
-    '<button id="ext-op-print-sheet" data-tip="Cetak daftar semua nomor antrian hari ini (format A4)" style="padding:7px 14px;border:1px solid #2193cf;background:#2193cf;color:#fff;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
+    '<button id="ext-op-print-sheet" data-tip="Cetak Sheet A4 — daftar hari ini atau kosong (T/R + jumlah)" style="padding:7px 14px;border:1px solid #2193cf;background:#2193cf;color:#fff;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
     svg('printer', 14, '#fff') +
     'Cetak Sheet A4</button>' +
+    '<button id="ext-op-set-counter" data-tip="Set nomor lanjutan setelah kendala (mati lampu dll) — antrian berikutnya lanjut dari nomor itu" style="padding:7px 14px;border:1px solid #0d6efd;background:#fff;color:#0d6efd;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
+    svg('refresh', 14, '#0d6efd') +
+    'Set Nomor</button>' +
     '<button id="ext-op-refresh" data-tip="Segarkan data antrean dari app" style="padding:7px 14px;border:1px solid #6c757d;background:#6c757d;color:#fff;border-radius:8px;cursor:pointer;">Segarkan</button>' +
     '</div></div>' +
     '<div id="ext-op-grid" style="display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:12px;align-items:start;">' +
@@ -660,12 +852,13 @@ function init(): void {
         return;
       }
     });
-    document.getElementById('ext-op-print-sheet')?.addEventListener('click', printSheetA4);
+    document.getElementById('ext-op-print-sheet')?.addEventListener('click', openPrintSheetDialog);
+    document.getElementById('ext-op-set-counter')?.addEventListener('click', openSetCounterDialog);
     document.getElementById('ext-op-refresh')?.addEventListener('click', () => void render());
     // Tombol duplikat di panel kanan (di-render ulang tiap fetch → pakai delegasi).
     panel.addEventListener('click', (e) => {
       const s2 = (e.target as HTMLElement).closest<HTMLElement>('#ext-op-print-sheet2');
-      if (s2) printSheetA4();
+      if (s2) openPrintSheetDialog();
       const r2 = (e.target as HTMLElement).closest<HTMLElement>('#ext-op-refresh2');
       if (r2) void render();
     });

@@ -199,6 +199,118 @@ var __morbis_feature = (() => {
       } catch {}
     }, 300);
   }
+  function openDialog(title, bodyHtml, onOk, okLabel = 'Simpan') {
+    const overlay = document.createElement('div');
+    overlay.style.cssText =
+      'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2147483000;display:flex;align-items:center;justify-content:center;';
+    overlay.innerHTML =
+      '<div style="background:#fff;border-radius:14px;padding:18px;width:400px;max-width:94vw;box-shadow:0 10px 40px rgba(0,0,0,.25);font:14px/1.5 system-ui,sans-serif;color:#212529;"><div style="font-size:15px;font-weight:800;margin-bottom:12px;">' +
+      title +
+      '</div><div class="ext-op-dlg-body"></div><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;"><button class="ext-op-dlg-cancel" style="padding:8px 14px;border:1px solid #ced4da;background:#fff;border-radius:8px;cursor:pointer;">Batal</button><button class="ext-op-dlg-ok" style="padding:8px 14px;border:none;background:#2193cf;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;">' +
+      okLabel +
+      '</button></div></div>';
+    document.body.appendChild(overlay);
+    const card = overlay.firstElementChild;
+    const root = card.querySelector('.ext-op-dlg-body');
+    root.innerHTML = bodyHtml;
+    const close = () => overlay.remove();
+    card.querySelector('.ext-op-dlg-cancel')?.addEventListener('click', close);
+    card.querySelector('.ext-op-dlg-ok')?.addEventListener('click', () => {
+      try {
+        onOk(root);
+      } finally {
+        close();
+      }
+    });
+  }
+  async function postSetCounter(prefix, lastSeq) {
+    const base = await probeFarmasiAppBase();
+    const res = await fetch(base + '/api/queue/counter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prefix, last_seq: lastSeq }),
+      cache: 'no-store',
+      credentials: 'omit',
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const j = await res.json();
+    log('set counter:', prefix, lastSeq, '\u2192', j.next);
+  }
+  function openSetCounterDialog() {
+    const body =
+      '<div style="margin-bottom:10px;font-size:13px;color:#495057;">Penomoran terlewat / kendala? Set nomor terakhir yang sudah terbit \u2014 antrian berikutnya lanjut dari nomor itu.</div><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><label style="font-weight:700;">Jenis:</label><label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="ext-op-cnt-prefix" value="T" checked> T \u2014 Non Racikan</label><label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="ext-op-cnt-prefix" value="R"> R \u2014 Racikan</label></div><div style="display:flex;align-items:center;gap:10px;"><label style="font-weight:700;">Nomor terakhir:</label><input id="ext-op-cnt-seq" type="number" min="0" max="9999" value="0" style="width:110px;padding:7px 10px;border:1px solid #ced4da;border-radius:8px;font-size:15px;"></div>';
+    openDialog('Set Nomor Lanjutan', body, (root) => {
+      const prefix = root.querySelector('input[name="ext-op-cnt-prefix"]:checked').value;
+      const seq = Math.max(0, parseInt(root.querySelector('#ext-op-cnt-seq').value, 10) || 0);
+      void postSetCounter(prefix, seq).then(
+        () => {
+          void render();
+        },
+        (e) => alert('[MORBIS Ext] Gagal set nomor: ' + String(e?.message ?? e)),
+      );
+    });
+  }
+  function printBlankSheet(prefix, count) {
+    const win = window.open('', '_blank', 'width=900,height=1200');
+    if (!win) {
+      alert('Popup diblokir \u2014 izinkan popup untuk mencetak.');
+      return;
+    }
+    const accent = prefix === 'R' ? '#d97706' : '#2193cf';
+    const items = [];
+    for (let i = 1; i <= count; i++) {
+      items.push(
+        '<div style="display:flex;align-items:center;gap:10px;padding:6px 8px;border-bottom:1px solid #ddd;"><b style="min-width:70px;font-size:16px;color:' +
+          accent +
+          ';">' +
+          prefix +
+          '-' +
+          String(i).padStart(2, '0') +
+          '</b><span style="flex:1;font-size:14px;">&nbsp;</span></div>',
+      );
+    }
+    win.document.write(
+      '<html><head><title>Antrian Farmasi \u2014 Sheet A4</title></head><body style="font-family:Arial,Helvetica,sans-serif;padding:10mm;"><div style="text-align:center;font-size:18px;font-weight:bold;text-transform:uppercase;margin-bottom:2px;">RSUD H. Abdul Manap</div><div style="text-align:center;font-size:14px;margin-bottom:6px;">Sheet Antrian Farmasi ' +
+        (prefix === 'R' ? 'Racikan (R)' : 'Non Racikan (T)') +
+        ' \u2014 ' +
+        lastTanggal +
+        '</div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:2mm;border:1px solid #999;padding:4mm;">' +
+        items.join('') +
+        '</div></body></html>',
+    );
+    win.document.close();
+    window.setTimeout(() => {
+      try {
+        win.focus();
+        win.print();
+      } catch {}
+    }, 300);
+  }
+  function openPrintSheetDialog() {
+    const body =
+      '<div style="margin-bottom:12px;font-size:13px;color:#495057;">Pilih sumber data sheet A4:</div><label style="display:flex;align-items:center;gap:6px;margin-bottom:8px;cursor:pointer;"><input type="radio" name="ext-op-sheet-src" value="real" checked> Daftar antrian hari ini (dari app)</label><label style="display:flex;align-items:center;gap:6px;margin-bottom:10px;cursor:pointer;"><input type="radio" name="ext-op-sheet-src" value="blank"> Cetak kosong (tanpa record \u2014 tiket manual)</label><div id="ext-op-sheet-blank" style="display:none;border-top:1px solid #eee;padding-top:10px;"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><label style="font-weight:700;">Jenis:</label><label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="ext-op-sheet-prefix" value="T" checked> T</label><label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="ext-op-sheet-prefix" value="R"> R</label></div><div style="display:flex;align-items:center;gap:10px;"><label style="font-weight:700;">Jumlah (1\u2013200):</label><input id="ext-op-sheet-count" type="number" min="1" max="200" value="20" style="width:90px;padding:7px 10px;border:1px solid #ced4da;border-radius:8px;font-size:15px;"></div><div style="margin-top:8px;font-size:12px;color:#6c757d;">Mis. 89 \u2192 mencetak T-01 s/d T-89 tanpa record.</div></div>';
+    openDialog('Cetak Sheet A4', body, (root) => {
+      const src = root.querySelector('input[name="ext-op-sheet-src"]:checked').value;
+      if (src === 'real') {
+        printSheetA4();
+        return;
+      }
+      const prefix = root.querySelector('input[name="ext-op-sheet-prefix"]:checked').value;
+      const count = Math.min(
+        200,
+        Math.max(1, parseInt(root.querySelector('#ext-op-sheet-count').value, 10) || 1),
+      );
+      printBlankSheet(prefix, count);
+    });
+    document.querySelectorAll('input[name="ext-op-sheet-src"]').forEach((r) =>
+      r.addEventListener('change', () => {
+        const blank = document.getElementById('ext-op-sheet-blank');
+        if (!blank) return;
+        const src = document.querySelector('input[name="ext-op-sheet-src"]:checked')?.value;
+        blank.style.display = src === 'blank' ? '' : 'none';
+      }),
+    );
+  }
   function log(...args) {
     console.log('[MORBIS Ext] operator:', ...args);
   }
@@ -421,9 +533,11 @@ var __morbis_feature = (() => {
     p.style.cssText =
       'padding:14px;max-width:1500px;margin:0 auto;font:14px/1.5 system-ui,sans-serif;color:#212529;background:#f8f9fa;min-height:90vh;box-sizing:border-box;';
     p.innerHTML =
-      '<style>#ext-farmasi-operator svg{display:inline-block !important;visibility:visible !important;width:16px;height:16px;flex:none;vertical-align:middle}#ext-farmasi-operator button{font-family:inherit}#ext-farmasi-operator button svg{pointer-events:none}#ext-farmasi-operator [data-tip]{position:relative}#ext-farmasi-operator [data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#212529;color:#fff;font-size:11px;font-weight:600;line-height:1.4;white-space:nowrap;padding:4px 8px;border-radius:6px;z-index:99;box-shadow:0 2px 8px rgba(0,0,0,.25)}#ext-farmasi-operator [data-tip]:hover::before{content:"";position:absolute;bottom:calc(100% + 2px);left:50%;transform:translateX(-50%);border:4px solid transparent;border-top-color:#212529;z-index:99}</style><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;"><b style="font-size:18px;color:#2193cf;">Antrian Farmasi \u2014 Operasional</b><div id="ext-op-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><span id="ext-op-status" style="color:#6c757d;font-size:12px;">memuat\u2026</span><button id="ext-op-print-sheet" data-tip="Cetak daftar semua nomor antrian hari ini (format A4)" style="padding:7px 14px;border:1px solid #2193cf;background:#2193cf;color:#fff;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
+      '<style>#ext-farmasi-operator svg{display:inline-block !important;visibility:visible !important;width:16px;height:16px;flex:none;vertical-align:middle}#ext-farmasi-operator button{font-family:inherit}#ext-farmasi-operator button svg{pointer-events:none}#ext-farmasi-operator [data-tip]{position:relative}#ext-farmasi-operator [data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#212529;color:#fff;font-size:11px;font-weight:600;line-height:1.4;white-space:nowrap;padding:4px 8px;border-radius:6px;z-index:99;box-shadow:0 2px 8px rgba(0,0,0,.25)}#ext-farmasi-operator [data-tip]:hover::before{content:"";position:absolute;bottom:calc(100% + 2px);left:50%;transform:translateX(-50%);border:4px solid transparent;border-top-color:#212529;z-index:99}</style><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;"><b style="font-size:18px;color:#2193cf;">Antrian Farmasi \u2014 Operasional</b><div id="ext-op-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><span id="ext-op-status" style="color:#6c757d;font-size:12px;">memuat\u2026</span><button id="ext-op-print-sheet" data-tip="Cetak Sheet A4 \u2014 daftar hari ini atau kosong (T/R + jumlah)" style="padding:7px 14px;border:1px solid #2193cf;background:#2193cf;color:#fff;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
       svg('printer', 14, '#fff') +
-      'Cetak Sheet A4</button><button id="ext-op-refresh" data-tip="Segarkan data antrean dari app" style="padding:7px 14px;border:1px solid #6c757d;background:#6c757d;color:#fff;border-radius:8px;cursor:pointer;">Segarkan</button></div></div><div id="ext-op-grid" style="display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:12px;align-items:start;"><div id="ext-col-tunggal"></div><div id="ext-col-racikan"></div><div id="ext-col-panel" style="background:#fff;border:1px solid #dee2e6;border-radius:16px;padding:12px;min-width:0;"></div></div>';
+      'Cetak Sheet A4</button><button id="ext-op-set-counter" data-tip="Set nomor lanjutan setelah kendala (mati lampu dll) \u2014 antrian berikutnya lanjut dari nomor itu" style="padding:7px 14px;border:1px solid #0d6efd;background:#fff;color:#0d6efd;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
+      svg('refresh', 14, '#0d6efd') +
+      'Set Nomor</button><button id="ext-op-refresh" data-tip="Segarkan data antrean dari app" style="padding:7px 14px;border:1px solid #6c757d;background:#6c757d;color:#fff;border-radius:8px;cursor:pointer;">Segarkan</button></div></div><div id="ext-op-grid" style="display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:12px;align-items:start;"><div id="ext-col-tunggal"></div><div id="ext-col-racikan"></div><div id="ext-col-panel" style="background:#fff;border:1px solid #dee2e6;border-radius:16px;padding:12px;min-width:0;"></div></div>';
     return p;
   }
   async function render() {
@@ -592,11 +706,16 @@ var __morbis_feature = (() => {
           return;
         }
       });
-      document.getElementById('ext-op-print-sheet')?.addEventListener('click', printSheetA4);
+      document
+        .getElementById('ext-op-print-sheet')
+        ?.addEventListener('click', openPrintSheetDialog);
+      document
+        .getElementById('ext-op-set-counter')
+        ?.addEventListener('click', openSetCounterDialog);
       document.getElementById('ext-op-refresh')?.addEventListener('click', () => void render());
       panel.addEventListener('click', (e) => {
         const s2 = e.target.closest('#ext-op-print-sheet2');
-        if (s2) printSheetA4();
+        if (s2) openPrintSheetDialog();
         const r2 = e.target.closest('#ext-op-refresh2');
         if (r2) void render();
       });
