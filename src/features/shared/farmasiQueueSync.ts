@@ -66,10 +66,11 @@ export function farmasiAppBase(): string {
     /* ignore */
   }
   if (cachedBase) return cachedBase;
-  // Pakai origin host ini dulu (MORBIS serve /rs juga) — tak menunggu probe;
-  // LAN internal langsung benar tanpa DNS publik. Probe (async) akan
-  // menyesuaikan ke kandidat dari daftar popup bila origin ini salah.
-  return window.location.origin + '/rs';
+  // Konstanta PROD — dev.rsudkotajambi.id resolve ke server Reports yang sama
+  // (103.147.236.138) dari LAN maupun publik. JANGAN pakai origin + '/rs':
+  // host MORBIS (192.168.8.4, 103.147.236.140) adalah SPA yang return 200
+  // HTML utk path apa pun — bukan app Reports.
+  return FARMASI_APP_BASE;
 }
 
 /** Probe semua kandidat base (daftar URL popup + fallback), kembalikan yang
@@ -95,8 +96,10 @@ export function probeFarmasiAppBase(): Promise<string> {
           signal: ctrl.signal,
         });
         clearTimeout(t);
-        // 422/200 = app hidup; 404/CORS error = bukan app ini.
-        if (res.status === 200 || res.status === 422) {
+        // App hidup = status 200/422 DAN body JSON. Host MORBIS (SPA) juga
+        // return 200 untuk path apa pun, tapi HTML — harus ditolak.
+        const ct = res.headers.get('content-type') || '';
+        if ((res.status === 200 || res.status === 422) && ct.includes('application/json')) {
           cachedBase = base;
           return base;
         }

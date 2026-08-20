@@ -59,7 +59,8 @@ var __morbis_feature = (() => {
             signal: ctrl.signal,
           });
           clearTimeout(t);
-          if (res.status === 200 || res.status === 422) {
+          const ct = res.headers.get('content-type') || '';
+          if ((res.status === 200 || res.status === 422) && ct.includes('application/json')) {
             cachedBase = base;
             return base;
           }

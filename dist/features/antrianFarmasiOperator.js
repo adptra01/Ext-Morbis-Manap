@@ -27,7 +27,7 @@ var __morbis_feature = (() => {
       }
     } catch {}
     if (cachedBase) return cachedBase;
-    return window.location.origin + '/rs';
+    return FARMASI_APP_BASE;
   }
   function probeFarmasiAppBase() {
     if (basePromise) return basePromise;
@@ -48,7 +48,8 @@ var __morbis_feature = (() => {
             signal: ctrl.signal,
           });
           clearTimeout(t);
-          if (res.status === 200 || res.status === 422) {
+          const ct = res.headers.get('content-type') || '';
+          if ((res.status === 200 || res.status === 422) && ct.includes('application/json')) {
             cachedBase = base;
             return base;
           }

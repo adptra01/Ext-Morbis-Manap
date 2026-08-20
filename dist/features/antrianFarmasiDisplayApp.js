@@ -1,6 +1,7 @@
 'use strict';
 var __morbis_feature = (() => {
   // src/features/shared/farmasiQueueSync.ts
+  var FARMASI_APP_BASE = 'http://dev.rsudkotajambi.id/rs';
   var cachedBase = null;
   var basePromise = null;
   function farmasiAppBase() {
@@ -16,7 +17,7 @@ var __morbis_feature = (() => {
       }
     } catch {}
     if (cachedBase) return cachedBase;
-    return window.location.origin + '/rs';
+    return FARMASI_APP_BASE;
   }
 
   // src/features/antrianFarmasiDisplayApp.ts
