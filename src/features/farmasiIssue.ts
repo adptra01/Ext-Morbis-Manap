@@ -1,10 +1,10 @@
-/* FarmasiIssue — Penerbitan Antrian Petugas + cetak sheet A4.
+/* FarmasiIssue — Penerbitan Antrian Petugas + Cetak Banyak Antrian.
  *
  * Jalan di halaman konsole MORBIS /antrian-farmasi/v2 (yg punya #isi).
  * - Baca antrian live list-antrian-v2.
  * - Renumber bersih (R-xx / T-xx) deterministic dari data MORBIS.
  * - Tampilkan urutan (nomor + nama pasien) di panel kecil.
- * - Tombol "Cetak Sheet A4": buka print view berisi grid semua nomor
+ * - Tombol "Cetak Banyak Antrian": buka print view berisi grid semua nomor
  *   (1+ lembar A4, potong) utk diberikan ke pasien sesuai urut.
  *
  * Prinsip: tidak menulis balik ke DB MORBIS (zero-risk ke data resep).
@@ -73,7 +73,7 @@ function buildPanel(): HTMLDivElement {
     '<div id="ext-issue-list" style="max-height:240px;overflow:auto;border:1px solid #e9ecef;border-radius:8px;margin-bottom:10px;"></div>' +
     '<div style="display:flex;gap:8px;">' +
     '<button id="ext-issue-refresh" style="flex:1;padding:7px;border:1px solid #0f5132;background:#fff;color:#0f5132;border-radius:8px;cursor:pointer;">Segarkan</button>' +
-    '<button id="ext-issue-print" style="flex:1;padding:7px;border:none;background:#0f5132;color:#fff;border-radius:8px;cursor:pointer;">Cetak Sheet A4</button>' +
+    '<button id="ext-issue-print" style="flex:1;padding:7px;border:none;background:#0f5132;color:#fff;border-radius:8px;cursor:pointer;">Cetak Banyak Antrian</button>' +
     '</div>';
   return p;
 }
@@ -184,7 +184,7 @@ function inRange(kode: string, prefix: string, from: number, to: number): boolea
   return Number.isFinite(n) && n >= from && n <= to;
 }
 
-/** Cetak sheet A4 (semua / rentang). Popup BUKA SINKRON saat klik (user-gesture)
+/** Cetak Banyak Antrian (semua / rentang). Popup BUKA SINKRON saat klik (user-gesture)
  *  supaya lolos popup-blocker; isi konten di-fill setelah ticked siap (async). */
 function openPrint(rows: Array<Record<string, unknown>>): void {
   // buka popup saat masih dalam user gesture (sebelum await) — mencegah diblokir

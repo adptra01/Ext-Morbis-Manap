@@ -288,18 +288,17 @@ function openSetCounterDialog(): void {
   });
 }
 
-/** Cetak sheet kosong T-01..T-N / R-01..R-N (tanpa record) — utk petugas
- *  mencetak banyak tiket manual sekaligus sesuai kebutuhan.
+/** Cetak banyak kartu kosong T/R dari nomor `from` s/d `to` (tanpa record).
  *  Format = kartu termal persis seperti halaman detail resep (printKartuAntrian):
  *  satu kartu per nomor, page-break per kartu → printer termal memotong sendiri. */
-function printBlankSheet(prefix: string, count: number): void {
+function printBlankSheet(prefix: string, from: number, to: number): void {
   const win = window.open('', '_blank', 'width=400,height=560');
   if (!win) {
     alert('Popup diblokir — izinkan popup untuk mencetak.');
     return;
   }
   const cards: string[] = [];
-  for (let i = 1; i <= count; i++) {
+  for (let i = from; i <= to; i++) {
     cards.push(
       '<div style="width:320px;padding-top:10px;padding-bottom:4px;font-family:Arial,Helvetica,sans-serif;text-align:center;page-break-after:always;">' +
         '<div style="font-size:16px;font-weight:bold;text-transform:uppercase;">RSUD H. Abdul Manap</div>' +
@@ -334,8 +333,8 @@ function printBlankSheet(prefix: string, count: number): void {
   }, 300);
 }
 
-/** Dialog "Cetak Sheet": pilih data antrian hari ini ATAU cetak kosong
- *  (jenis T/R + jumlah) tanpa record. */
+/** Dialog "Cetak Banyak Antrian": pilih data antrian hari ini ATAU cetak
+ *  kosong (jenis T/R + rentang awal–akhir) tanpa record. */
 function openPrintSheetDialog(): void {
   const body =
     '<div style="margin-bottom:12px;font-size:13px;color:#495057;">Pilih sumber sheet yang dicetak (format kartu termal):</div>' +
@@ -349,14 +348,19 @@ function openPrintSheetDialog(): void {
     '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="ext-op-sheet-prefix" value="T" checked> T</label>' +
     '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="ext-op-sheet-prefix" value="R"> R</label>' +
     '</div>' +
-    '<div style="display:flex;align-items:center;gap:10px;">' +
-    '<label style="font-weight:700;">Jumlah (1–200):</label>' +
-    '<input id="ext-op-sheet-count" type="number" min="1" max="200" value="20" style="width:90px;padding:7px 10px;' +
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">' +
+    '<label style="font-weight:700;">Dari nomor:</label>' +
+    '<input id="ext-op-sheet-from" type="number" min="1" max="9999" value="1" style="width:90px;padding:7px 10px;' +
     'border:1px solid #ced4da;border-radius:8px;font-size:15px;">' +
     '</div>' +
-    '<div style="margin-top:8px;font-size:12px;color:#6c757d;">Mis. 89 → mencetak kartu T-01 s/d T-89 tanpa record, format termal.</div>' +
+    '<div style="display:flex;align-items:center;gap:10px;">' +
+    '<label style="font-weight:700;">Sampai nomor:</label>' +
+    '<input id="ext-op-sheet-to" type="number" min="1" max="9999" value="20" style="width:90px;padding:7px 10px;' +
+    'border:1px solid #ced4da;border-radius:8px;font-size:15px;">' +
+    '</div>' +
+    '<div style="margin-top:8px;font-size:12px;color:#6c757d;">Mis. dari 5 sampai 89 → mencetak kartu T-05 s/d T-89 tanpa record, format termal.</div>' +
     '</div>';
-  openDialog('Cetak Sheet A4', body, (root) => {
+  openDialog('Cetak Banyak Antrian', body, (root) => {
     const src = (root.querySelector('input[name="ext-op-sheet-src"]:checked') as HTMLInputElement)
       .value;
     if (src === 'real') {
@@ -366,14 +370,22 @@ function openPrintSheetDialog(): void {
     const prefix = (
       root.querySelector('input[name="ext-op-sheet-prefix"]:checked') as HTMLInputElement
     ).value;
-    const count = Math.min(
-      200,
-      Math.max(
-        1,
-        parseInt((root.querySelector('#ext-op-sheet-count') as HTMLInputElement).value, 10) || 1,
+    const from = Math.max(
+      1,
+      parseInt((root.querySelector('#ext-op-sheet-from') as HTMLInputElement).value, 10) || 1,
+    );
+    const to = Math.max(
+      from,
+      Math.min(
+        9999,
+        parseInt((root.querySelector('#ext-op-sheet-to') as HTMLInputElement).value, 10) || from,
       ),
     );
-    printBlankSheet(prefix, count);
+    if (to - from + 1 > 300) {
+      alert('Terlalu banyak (' + (to - from + 1) + ' kartu). Maksimal 300 kartu per cetak.');
+      return;
+    }
+    printBlankSheet(prefix, from, to);
   });
   // Toggle bagian input kosong sesuai pilihan radio.
   document.querySelectorAll('input[name="ext-op-sheet-src"]').forEach((r) =>
