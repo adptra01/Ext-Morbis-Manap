@@ -32,21 +32,22 @@ export interface QueueEventPayload {
 let cachedBase: string | null = null;
 let basePromise: Promise<string> | null = null;
 
-/** Host MORBIS yang sama (reverse proxy) juga serve /rs — pakai dulu supaya
- *  LAN (192.168.8.x) tidak bergantung pada DNS/route publik. */
-function originRsBase(): string {
+/** Kandidat dari daftar URL yang didaftarkan user di popup (extensionCustomUrls,
+ *  chrome.storage.sync) — tiap URL MORBIS serve /rs juga. Ini sumber utama;
+ *  konstanta PROD hanya fallback terakhir. */
+async function storedBaseCandidates(): Promise<string[]> {
   try {
-    return window.location.origin + '/rs';
+    const result = (await chrome.storage.sync.get('extensionCustomUrls')) as {
+      extensionCustomUrls?: { url?: string; enabled?: boolean }[];
+    };
+    const urls = (result.extensionCustomUrls ?? []).filter((u) => u.url && u.enabled !== false);
+    return urls.map((u) => (u.url as string).replace(/\/+$/, '') + '/rs');
   } catch {
-    return FARMASI_APP_BASE;
+    return [];
   }
 }
 
-const BASE_CANDIDATES = [
-  originRsBase(),
-  'http://dev.rsudkotajambi.id/rs',
-  'http://103.147.236.138/rs',
-];
+const FALLBACK_CANDIDATES = ['http://dev.rsudkotajambi.id/rs', 'http://103.147.236.138/rs'];
 
 /** Probe base mana yang hidup (GET /api/queue/lookup?resep_id= kosong → 422
  *  artinya app reachable). Hasil di-cache per sesi. */
@@ -66,11 +67,13 @@ export function farmasiAppBase(): string {
   }
   if (cachedBase) return cachedBase;
   // Pakai origin host ini dulu (MORBIS serve /rs juga) — tak menunggu probe;
-  // LAN internal langsung benar tanpa DNS publik.
-  return originRsBase();
+  // LAN internal langsung benar tanpa DNS publik. Probe (async) akan
+  // menyesuaikan ke kandidat dari daftar popup bila origin ini salah.
+  return window.location.origin + '/rs';
 }
 
-/** Probe semua kandidat base, kembalikan yang live (singkat). */
+/** Probe semua kandidat base (daftar URL popup + fallback), kembalikan yang
+ *  live (singkat). */
 export function probeFarmasiAppBase(): Promise<string> {
   if (basePromise) return basePromise;
   basePromise = (async (): Promise<string> => {
@@ -80,7 +83,9 @@ export function probeFarmasiAppBase(): Promise<string> {
     } catch {
       /* ignore */
     }
-    for (const base of BASE_CANDIDATES) {
+    const stored = await storedBaseCandidates();
+    const candidates = [...new Set([...stored, ...FALLBACK_CANDIDATES])];
+    for (const base of candidates) {
       try {
         const ctrl = new AbortController();
         const t = setTimeout(() => ctrl.abort(), 2500);

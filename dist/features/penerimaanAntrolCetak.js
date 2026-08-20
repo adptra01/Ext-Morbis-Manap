@@ -30,18 +30,16 @@ var __morbis_feature = (() => {
   var FARMASI_APP_BASE = 'http://dev.rsudkotajambi.id/rs';
   var cachedBase = null;
   var basePromise = null;
-  function originRsBase() {
+  async function storedBaseCandidates() {
     try {
-      return window.location.origin + '/rs';
+      const result = await chrome.storage.sync.get('extensionCustomUrls');
+      const urls = (result.extensionCustomUrls ?? []).filter((u) => u.url && u.enabled !== false);
+      return urls.map((u) => u.url.replace(/\/+$/, '') + '/rs');
     } catch {
-      return FARMASI_APP_BASE;
+      return [];
     }
   }
-  var BASE_CANDIDATES = [
-    originRsBase(),
-    'http://dev.rsudkotajambi.id/rs',
-    'http://103.147.236.138/rs',
-  ];
+  var FALLBACK_CANDIDATES = ['http://dev.rsudkotajambi.id/rs', 'http://103.147.236.138/rs'];
   function probeFarmasiAppBase() {
     if (basePromise) return basePromise;
     basePromise = (async () => {
@@ -49,7 +47,9 @@ var __morbis_feature = (() => {
         const ov = localStorage.getItem('ext-farmasi-app-base');
         if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
       } catch {}
-      for (const base of BASE_CANDIDATES) {
+      const stored = await storedBaseCandidates();
+      const candidates = [.../* @__PURE__ */ new Set([...stored, ...FALLBACK_CANDIDATES])];
+      for (const base of candidates) {
         try {
           const ctrl = new AbortController();
           const t = setTimeout(() => ctrl.abort(), 2500);
