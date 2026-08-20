@@ -168,6 +168,12 @@
     },
     {
       "matches": ["http://*/public/antrian-farmasi-v2/view-call-websocet-v2*"],
+      "js": ["core.js", "init.js"],
+      "run_at": "document_end",
+      "all_frames": false
+    },
+    {
+      "matches": ["http://*/public/antrian-farmasi-v2/view-call-websocet-v2*"],
       "js": ["features/antrianFarmasiDisplayApp.js"],
       "run_at": "document_start",
       "world": "MAIN",
@@ -230,9 +236,21 @@
     },
     {
       "matches": ["http://*/inventory/resep/penerimaan/detail*"],
+      "js": ["core.js", "init.js"],
+      "run_at": "document_end",
+      "all_frames": false
+    },
+    {
+      "matches": ["http://*/inventory/resep/penerimaan/detail*"],
       "js": ["features/farmasiAntrolShift.js"],
       "run_at": "document_start",
       "world": "MAIN",
+      "all_frames": false
+    },
+    {
+      "matches": ["http://*/inventory/resep/penerimaan"],
+      "js": ["core.js", "init.js"],
+      "run_at": "document_end",
       "all_frames": false
     },
     {

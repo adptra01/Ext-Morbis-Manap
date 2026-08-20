@@ -22,7 +22,12 @@
  * ponytail: interception berbasis URL string MORBIS — jika MORBIS mengubah endpoint
  * antrol/cetak atau struktur tombol, fitur ini perlu update.
  */
-import { pushQueueEvent, queueEventId, probeFarmasiAppBase } from './shared/farmasiQueueSync';
+import {
+  pushQueueEvent,
+  queueEventId,
+  probeFarmasiAppBase,
+  whenAntrianFarmasiActive,
+} from './shared/farmasiQueueSync';
 import { printKartuAntrian } from './shared/printKartu';
 
 // Guard anti double-inject: browser/SPA MORBIS bisa menyuntikkan content script
@@ -489,6 +494,9 @@ function isResepBatal(antrianStatus?: string): boolean {
     window.setTimeout(tryInject, 5000);
   }
 
-  blockAutoAntrol();
-  addAntrianBar();
+  // Gate: hanya jalan bila fitur antrianFarmasi aktif di config + role.
+  whenAntrianFarmasiActive(() => {
+    blockAutoAntrol();
+    addAntrianBar();
+  });
 })();

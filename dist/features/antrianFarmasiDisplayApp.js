@@ -19,6 +19,18 @@ var __morbis_feature = (() => {
     if (cachedBase) return cachedBase;
     return FARMASI_APP_BASE;
   }
+  function whenAntrianFarmasiActive(cb, timeoutMs = 5e3) {
+    const el = document.documentElement;
+    const t0 = Date.now();
+    const iv = window.setInterval(() => {
+      if (el.getAttribute('data-ext-antrian-farmasi') === '1') {
+        window.clearInterval(iv);
+        cb();
+      } else if (Date.now() - t0 > timeoutMs) {
+        window.clearInterval(iv);
+      }
+    }, 200);
+  }
 
   // src/features/antrianFarmasiDisplayApp.ts
   (function () {
@@ -59,11 +71,14 @@ var __morbis_feature = (() => {
       document.body.style.overflow = 'hidden';
     }
     blockNativeAudio();
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', takeOver, { once: true });
-    } else {
-      takeOver();
-    }
+    const start = () => {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', takeOver, { once: true });
+      } else {
+        takeOver();
+      }
+    };
+    whenAntrianFarmasiActive(start);
   })();
 })();
 //# sourceMappingURL=antrianFarmasiDisplayApp.js.map

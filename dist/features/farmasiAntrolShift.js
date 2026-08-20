@@ -71,6 +71,18 @@ var __morbis_feature = (() => {
   function queueEventId(prefix, source, nomor) {
     return `${prefix}-${source}-${nomor}-${/* @__PURE__ */ new Date().toISOString().slice(0, 10)}`;
   }
+  function whenAntrianFarmasiActive(cb, timeoutMs = 5e3) {
+    const el = document.documentElement;
+    const t0 = Date.now();
+    const iv = window.setInterval(() => {
+      if (el.getAttribute('data-ext-antrian-farmasi') === '1') {
+        window.clearInterval(iv);
+        cb();
+      } else if (Date.now() - t0 > timeoutMs) {
+        window.clearInterval(iv);
+      }
+    }, 200);
+  }
 
   // src/features/shared/printKartu.ts
   function printKartuAntrian(data) {
@@ -441,8 +453,10 @@ var __morbis_feature = (() => {
       window.setTimeout(tryInject, 2e3);
       window.setTimeout(tryInject, 5e3);
     }
-    blockAutoAntrol();
-    addAntrianBar();
+    whenAntrianFarmasiActive(() => {
+      blockAutoAntrol();
+      addAntrianBar();
+    });
   })();
 })();
 //# sourceMappingURL=farmasiAntrolShift.js.map

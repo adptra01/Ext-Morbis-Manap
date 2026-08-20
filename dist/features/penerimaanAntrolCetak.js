@@ -97,6 +97,18 @@ var __morbis_feature = (() => {
   function queueEventId(prefix, source, nomor) {
     return `${prefix}-${source}-${nomor}-${/* @__PURE__ */ new Date().toISOString().slice(0, 10)}`;
   }
+  function whenAntrianFarmasiActive(cb, timeoutMs = 5e3) {
+    const el = document.documentElement;
+    const t0 = Date.now();
+    const iv = window.setInterval(() => {
+      if (el.getAttribute('data-ext-antrian-farmasi') === '1') {
+        window.clearInterval(iv);
+        cb();
+      } else if (Date.now() - t0 > timeoutMs) {
+        window.clearInterval(iv);
+      }
+    }, 200);
+  }
 
   // src/features/penerimaanAntrolCetak.ts
   var ANTRL_URL = '/v2/antrol/search';
@@ -337,7 +349,9 @@ var __morbis_feature = (() => {
       });
     } catch {}
   }
-  sweepCetakUlang();
-  window.setInterval(sweepCetakUlang, 4e3);
+  whenAntrianFarmasiActive(() => {
+    sweepCetakUlang();
+    window.setInterval(sweepCetakUlang, 4e3);
+  });
 })();
 //# sourceMappingURL=penerimaanAntrolCetak.js.map

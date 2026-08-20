@@ -20,7 +20,7 @@
  * jika MORBIS mengubah format endpoint antrol/check_antrian, fitur ini perlu update.
  */
 import { printKartuAntrian } from './shared/printKartu';
-import { pushQueueEvent, queueEventId } from './shared/farmasiQueueSync';
+import { pushQueueEvent, queueEventId, whenAntrianFarmasiActive } from './shared/farmasiQueueSync';
 
 const ANTRL_URL = '/v2/antrol/search';
 const ANTRL_SUB = 'sub=update_v2';
@@ -338,5 +338,7 @@ function sweepCetakUlang(): void {
     /* tabel belum siap — coba lagi nanti */
   }
 }
-sweepCetakUlang();
-window.setInterval(sweepCetakUlang, 4000);
+whenAntrianFarmasiActive(() => {
+  sweepCetakUlang();
+  window.setInterval(sweepCetakUlang, 4000);
+});

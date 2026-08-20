@@ -14,7 +14,12 @@
  * MORBIS tetap menulis penjualan/medis; antrian diextract via klik "Antrikan &
  * Cetak" (penerimaanAntrolCetak → ENQUEUE). Jalan di world ISOLATED.
  */
-import { pushQueueEvent, farmasiAppBase, probeFarmasiAppBase } from './shared/farmasiQueueSync';
+import {
+  pushQueueEvent,
+  farmasiAppBase,
+  probeFarmasiAppBase,
+  whenAntrianFarmasiActive,
+} from './shared/farmasiQueueSync';
 import { printKartuAntrian } from './shared/printKartu';
 
 interface DisplayRow {
@@ -922,4 +927,6 @@ function init(): void {
   }).observe(document.body, { childList: true, subtree: true });
 }
 
-init();
+// Gate: hanya jalan bila fitur antrianFarmasi aktif di config (toggle popup)
+// + role diizinkan — init.ts set attribute data-ext-antrian-farmasi.
+whenAntrianFarmasiActive(init);

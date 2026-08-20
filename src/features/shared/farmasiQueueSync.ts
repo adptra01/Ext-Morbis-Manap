@@ -149,3 +149,21 @@ export async function pushQueueEvent(
 export function queueEventId(prefix: string, source: string, nomor: string): string {
   return `${prefix}-${source}-${nomor}-${new Date().toISOString().slice(0, 10)}`;
 }
+
+/** Gate fitur antrian farmasi: jalankan cb HANYA jika fitur aktif (attribute
+ *  data-ext-antrian-farmasi di-set init.ts bila feature enabled + role
+ *  diizinkan). Polling singkat karena content script bisa jalan sebelum
+ *  init.ts selesai loadConfig (document_start / satu entry dengan init.js).
+ *  ponytail: polling 200ms max 5s — kalau init.ts lambat, fitur di-skip. */
+export function whenAntrianFarmasiActive(cb: () => void, timeoutMs = 5000): void {
+  const el = document.documentElement;
+  const t0 = Date.now();
+  const iv = window.setInterval(() => {
+    if (el.getAttribute('data-ext-antrian-farmasi') === '1') {
+      window.clearInterval(iv);
+      cb();
+    } else if (Date.now() - t0 > timeoutMs) {
+      window.clearInterval(iv); // fitur nonaktif / init gagal → jangan jalan
+    }
+  }, 200);
+}

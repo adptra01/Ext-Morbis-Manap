@@ -11,7 +11,7 @@
  * kena kode halaman — bell MORBIS yang berbunyi saat load pertama kali
  * (sebelum take-over iframe) dibungkam.
  */
-import { farmasiAppBase } from './shared/farmasiQueueSync';
+import { farmasiAppBase, whenAntrianFarmasiActive } from './shared/farmasiQueueSync';
 
 (function () {
   const TARGET = farmasiAppBase() + '/antrian-farmasi';
@@ -65,9 +65,13 @@ import { farmasiAppBase } from './shared/farmasiQueueSync';
 
   blockNativeAudio(); // document_start — sebelum MORBIS sempat mainkan bell
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', takeOver, { once: true });
-  } else {
-    takeOver();
-  }
+  // Gate: hanya take-over bila fitur aktif di config + role diizinkan.
+  const start = (): void => {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', takeOver, { once: true });
+    } else {
+      takeOver();
+    }
+  };
+  whenAntrianFarmasiActive(start);
 })();
