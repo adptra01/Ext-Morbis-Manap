@@ -1,180 +1,149 @@
-"use strict";
+'use strict';
 var __morbis_feature = (() => {
-  // src/features/shared/types.ts
-  function getMorbisGlobals() {
+  function l() {
     return window;
   }
-
-  // src/features/billingFilterPersistence.ts
-  var g = getMorbisGlobals();
-  var BILLING_FILTER_CONFIG = {
-    targetUrlPattern: "billing/pembayaran-new/billing-verifikasi",
-    storageKey: "billing_verifikasi_filter",
-    fields: [
-      "awal",
-      "akhir",
-      "noreg",
-      "no_Rm",
-      "pasien",
-      "sep",
-      "status",
-      "jenisPasien",
-      "statusPeriksa",
-      "dokter",
-      "idDokter",
-      "unit",
-      "idUnit",
-      "kategori"
-    ],
-    radioGroups: ["statuspasien"],
-    cariButtonSelectors: [
-      "#cari",
-      'input[value="Cari"]',
-      'button.btn-info[onclick*="cari"]',
-      'input.tombol[value="Cari"]'
-    ],
-    batalButtonSelectors: ['input[value="Cancel"]', 'input.tombol[value="Cancel"]']
-  };
-  function isBillingVerifikasiPage() {
-    const url = window.location.href;
-    return url.includes(BILLING_FILTER_CONFIG.targetUrlPattern);
-  }
-  function saveFilter() {
-    const filterState = {};
-    BILLING_FILTER_CONFIG.fields.forEach(function(fieldId) {
-      const el = document.getElementById(fieldId);
-      if (el) {
-        filterState[fieldId] = el.value;
-      }
-    });
-    BILLING_FILTER_CONFIG.radioGroups.forEach(function(groupName) {
-      const checkedRadio = document.querySelector(
-        `input[name="${groupName}"]:checked`
-      );
-      if (checkedRadio) {
-        filterState[groupName] = checkedRadio.value;
-      }
-    });
-    g.CookieFilterStorage.set(BILLING_FILTER_CONFIG.storageKey, filterState);
-    console.log("Billing filter state saved:", filterState);
-  }
-  function restoreFilter() {
-    const filterState = g.CookieFilterStorage.get(BILLING_FILTER_CONFIG.storageKey);
-    if (filterState) {
-      try {
-        BILLING_FILTER_CONFIG.fields.forEach(function(fieldId) {
-          const el = document.getElementById(fieldId);
-          if (el && filterState[fieldId] !== void 0) {
-            el.value = filterState[fieldId];
-            el.dispatchEvent(new Event("input", { bubbles: true }));
-            el.dispatchEvent(new Event("change", { bubbles: true }));
-            el.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true }));
-            if (fieldId === "awal" || fieldId === "akhir") {
-              setTimeout(() => {
-                el.dispatchEvent(new Event("blur", { bubbles: true }));
-              }, 100);
-            }
-          }
-        });
-        BILLING_FILTER_CONFIG.radioGroups.forEach(function(groupName) {
-          if (filterState[groupName] !== void 0) {
-            const radio = document.querySelector(
-              `input[name="${groupName}"][value="${filterState[groupName]}"]`
-            );
-            if (radio) {
-              radio.checked = true;
-              radio.dispatchEvent(new Event("change", { bubbles: true }));
-            }
-          }
-        });
-        console.log("Billing filter state restored:", filterState);
-      } catch (err) {
-        console.error("[Billing Filter Persistence] Failed to restore filter state:", err);
-      }
-    }
-  }
-  function clearFilter() {
-    g.CookieFilterStorage.remove(BILLING_FILTER_CONFIG.storageKey);
-    BILLING_FILTER_CONFIG.fields.forEach(function(fieldId) {
-      const el = document.getElementById(fieldId);
-      if (el) {
-        el.value = "";
-      }
-    });
-    BILLING_FILTER_CONFIG.radioGroups.forEach(function(groupName) {
-      const firstRadio = document.querySelector(`input[name="${groupName}"]`);
-      if (firstRadio) {
-        firstRadio.checked = true;
-      }
-    });
-    console.log("Billing filter state cleared.");
-  }
-  function attachFilterListeners() {
-    for (const selector of BILLING_FILTER_CONFIG.cariButtonSelectors) {
-      const btns = document.querySelectorAll(selector);
-      for (const btn of Array.from(btns)) {
-        const el = btn;
-        if (btn && !el.dataset.filterBound) {
-          el.dataset.filterBound = "true";
-          btn.addEventListener("click", saveFilter);
-          console.log("Attached save listener to Cari button");
-        }
-      }
-    }
-    for (const selector of BILLING_FILTER_CONFIG.batalButtonSelectors) {
-      const btns = document.querySelectorAll(selector);
-      for (const btn of Array.from(btns)) {
-        const el = btn;
-        if (btn && !el.dataset.filterBound) {
-          el.dataset.filterBound = "true";
-          btn.addEventListener("click", clearFilter);
-          console.log("Attached clear listener to Batal button");
-        }
-      }
-    }
-  }
-  function runBillingFilterPersistence() {
-    if (!g.currentConfig?.features?.billingFilterPersistence?.enabled || !g.ExtensionCore.isFeatureAllowed("billingFilterPersistence")) {
-      return;
-    }
-    if (!isBillingVerifikasiPage()) {
-      return;
-    }
-    console.log("Running Billing Filter Persistence State feature");
-    g.CookieFilterStorage.migrateFromLocalStorage(
-      BILLING_FILTER_CONFIG.storageKey,
-      BILLING_FILTER_CONFIG.storageKey
-    );
-    g.setupFilterLogoutWatcher();
-    g.initClearAllFilterButton();
-    restoreFilter();
-    attachFilterListeners();
-    const observer = new MutationObserver((mutations) => {
-      let shouldUpdate = false;
-      for (const mutation of mutations) {
-        if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
-          shouldUpdate = true;
-          break;
-        }
-      }
-      if (shouldUpdate) {
-        attachFilterListeners();
-      }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-  }
-  if (typeof g.featureModules !== "undefined") {
-    g.featureModules.billingFilterPersistence = {
-      id: "billingFilterPersistence",
-      name: "Billing Filter Persistence State",
-      description: "Simpan otomatis filter verifikasi billing agar tidak perlu diketik ulang",
-      match: { pathname: "/billing/pembayaran-new/billing-verifikasi" },
-      run: runBillingFilterPersistence
+  var i = l(),
+    n = {
+      targetUrlPattern: 'billing/pembayaran-new/billing-verifikasi',
+      storageKey: 'billing_verifikasi_filter',
+      fields: [
+        'awal',
+        'akhir',
+        'noreg',
+        'no_Rm',
+        'pasien',
+        'sep',
+        'status',
+        'jenisPasien',
+        'statusPeriksa',
+        'dokter',
+        'idDokter',
+        'unit',
+        'idUnit',
+        'kategori',
+      ],
+      radioGroups: ['statuspasien'],
+      cariButtonSelectors: [
+        '#cari',
+        'input[value="Cari"]',
+        'button.btn-info[onclick*="cari"]',
+        'input.tombol[value="Cari"]',
+      ],
+      batalButtonSelectors: ['input[value="Cancel"]', 'input.tombol[value="Cancel"]'],
     };
-  } else {
-    console.warn(
-      "[Billing Filter Persistence] featureModules not defined, module registration skipped"
-    );
+  function a() {
+    return window.location.href.includes(n.targetUrlPattern);
   }
+  function u() {
+    let r = {};
+    (n.fields.forEach(function (e) {
+      let t = document.getElementById(e);
+      t && (r[e] = t.value);
+    }),
+      n.radioGroups.forEach(function (e) {
+        let t = document.querySelector(`input[name="${e}"]:checked`);
+        t && (r[e] = t.value);
+      }),
+      i.CookieFilterStorage.set(n.storageKey, r),
+      console.log('Billing filter state saved:', r));
+  }
+  function c() {
+    let r = i.CookieFilterStorage.get(n.storageKey);
+    if (r)
+      try {
+        (n.fields.forEach(function (e) {
+          let t = document.getElementById(e);
+          t &&
+            r[e] !== void 0 &&
+            ((t.value = r[e]),
+            t.dispatchEvent(new Event('input', { bubbles: !0 })),
+            t.dispatchEvent(new Event('change', { bubbles: !0 })),
+            t.dispatchEvent(new KeyboardEvent('keyup', { bubbles: !0 })),
+            (e === 'awal' || e === 'akhir') &&
+              setTimeout(() => {
+                t.dispatchEvent(new Event('blur', { bubbles: !0 }));
+              }, 100));
+        }),
+          n.radioGroups.forEach(function (e) {
+            if (r[e] !== void 0) {
+              let t = document.querySelector(`input[name="${e}"][value="${r[e]}"]`);
+              t && ((t.checked = !0), t.dispatchEvent(new Event('change', { bubbles: !0 })));
+            }
+          }),
+          console.log('Billing filter state restored:', r));
+      } catch (e) {
+        console.error('[Billing Filter Persistence] Failed to restore filter state:', e);
+      }
+  }
+  function g() {
+    (i.CookieFilterStorage.remove(n.storageKey),
+      n.fields.forEach(function (r) {
+        let e = document.getElementById(r);
+        e && (e.value = '');
+      }),
+      n.radioGroups.forEach(function (r) {
+        let e = document.querySelector(`input[name="${r}"]`);
+        e && (e.checked = !0);
+      }),
+      console.log('Billing filter state cleared.'));
+  }
+  function s() {
+    for (let r of n.cariButtonSelectors) {
+      let e = document.querySelectorAll(r);
+      for (let t of Array.from(e)) {
+        let o = t;
+        t &&
+          !o.dataset.filterBound &&
+          ((o.dataset.filterBound = 'true'),
+          t.addEventListener('click', u),
+          console.log('Attached save listener to Cari button'));
+      }
+    }
+    for (let r of n.batalButtonSelectors) {
+      let e = document.querySelectorAll(r);
+      for (let t of Array.from(e)) {
+        let o = t;
+        t &&
+          !o.dataset.filterBound &&
+          ((o.dataset.filterBound = 'true'),
+          t.addEventListener('click', g),
+          console.log('Attached clear listener to Batal button'));
+      }
+    }
+  }
+  function d() {
+    if (
+      !i.currentConfig?.features?.billingFilterPersistence?.enabled ||
+      !i.ExtensionCore.isFeatureAllowed('billingFilterPersistence') ||
+      !a()
+    )
+      return;
+    (console.log('Running Billing Filter Persistence State feature'),
+      i.CookieFilterStorage.migrateFromLocalStorage(n.storageKey, n.storageKey),
+      i.setupFilterLogoutWatcher(),
+      i.initClearAllFilterButton(),
+      c(),
+      s(),
+      new MutationObserver((e) => {
+        let t = !1;
+        for (let o of e)
+          if (o.type === 'childList' && o.addedNodes.length > 0) {
+            t = !0;
+            break;
+          }
+        t && s();
+      }).observe(document.body, { childList: !0, subtree: !0 }));
+  }
+  typeof i.featureModules < 'u'
+    ? (i.featureModules.billingFilterPersistence = {
+        id: 'billingFilterPersistence',
+        name: 'Billing Filter Persistence State',
+        description: 'Simpan otomatis filter verifikasi billing agar tidak perlu diketik ulang',
+        match: { pathname: '/billing/pembayaran-new/billing-verifikasi' },
+        run: d,
+      })
+    : console.warn(
+        '[Billing Filter Persistence] featureModules not defined, module registration skipped',
+      );
 })();
-//# sourceMappingURL=billingFilterPersistence.js.map

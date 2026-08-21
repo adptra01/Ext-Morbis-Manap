@@ -1,163 +1,143 @@
-"use strict";
+'use strict';
 var __morbis_feature = (() => {
-  // src/features/labDataTables.ts
-  (function() {
-    if (!window.location.pathname.includes("laboratorium/input-hasil/view-lab")) return;
-    (function pollFlag() {
-      const flag = document.documentElement.getAttribute("data-ext-lab-datatables");
-      if (flag !== "1") {
-        console.log("[LabDT] disabled");
+  (function () {
+    if (!window.location.pathname.includes('laboratorium/input-hasil/view-lab')) return;
+    (function () {
+      if (document.documentElement.getAttribute('data-ext-lab-datatables') !== '1') {
+        console.log('[LabDT] disabled');
         return;
       }
-      console.log("[LabDT] start");
-      run();
+      (console.log('[LabDT] start'), y());
     })();
-    function run() {
-      const JQUERY_URL = "https://code.jquery.com/jquery-3.7.1.min.js";
-      const DT_CSS_URL = "https://cdn.datatables.net/1.13.11/css/jquery.dataTables.min.css";
-      const DT_JS_URL = "https://cdn.datatables.net/1.13.11/js/jquery.dataTables.min.js";
-      let dataTableApi = null;
-      let depsPromise = null;
-      function injectCSS(url) {
-        if (document.querySelector('link[href="' + url + '"]')) return;
-        const l = document.createElement("link");
-        l.rel = "stylesheet";
-        l.href = url;
-        document.head.appendChild(l);
+    function y() {
+      let h = 'https://code.jquery.com/jquery-3.7.1.min.js',
+        b = 'https://cdn.datatables.net/1.13.11/css/jquery.dataTables.min.css',
+        T = 'https://cdn.datatables.net/1.13.11/js/jquery.dataTables.min.js',
+        d = null,
+        u = null;
+      function D(t) {
+        if (document.querySelector('link[href="' + t + '"]')) return;
+        let e = document.createElement('link');
+        ((e.rel = 'stylesheet'), (e.href = t), document.head.appendChild(e));
       }
-      function injectScript(url) {
-        return new Promise(function(resolve, reject) {
-          if (document.querySelector('script[src="' + url + '"]')) return resolve();
-          const s = document.createElement("script");
-          s.src = url;
-          s.onload = resolve;
-          s.onerror = function() {
-            reject(new Error("Failed to load " + url));
-          };
-          document.head.appendChild(s);
+      function m(t) {
+        return new Promise(function (e, r) {
+          if (document.querySelector('script[src="' + t + '"]')) return e();
+          let o = document.createElement('script');
+          ((o.src = t),
+            (o.onload = e),
+            (o.onerror = function () {
+              r(new Error('Failed to load ' + t));
+            }),
+            document.head.appendChild(o));
         });
       }
-      function loadDeps() {
-        if (depsPromise) return depsPromise;
-        depsPromise = (async function() {
-          console.log("[LabDT] loading deps...");
-          injectCSS(DT_CSS_URL);
-          const _page$ = window.$;
-          const _pageJQ = window.jQuery;
-          await injectScript(JQUERY_URL);
-          window.__extJQ = window.jQuery;
-          window.$ = _page$;
-          window.jQuery = _pageJQ;
-          await injectScript(DT_JS_URL);
-          console.log("[LabDT] deps loaded");
-        })();
-        return depsPromise;
+      function g() {
+        return (
+          u ||
+          ((u = (async function () {
+            (console.log('[LabDT] loading deps...'), D(b));
+            let t = window.$,
+              e = window.jQuery;
+            (await m(h),
+              (window.__extJQ = window.jQuery),
+              (window.$ = t),
+              (window.jQuery = e),
+              await m(T),
+              console.log('[LabDT] deps loaded'));
+          })()),
+          u)
+        );
       }
-      function getDataRows(tbl) {
-        const all = tbl.querySelectorAll("tr");
-        const rows = [];
-        for (let i = 0; i < all.length; i++) {
-          const td = all[i].querySelector("td");
-          if (!td) continue;
-          if (td.hasAttribute("colspan")) continue;
-          rows.push(all[i]);
+      function _(t) {
+        let e = t.querySelectorAll('tr'),
+          r = [];
+        for (let o = 0; o < e.length; o++) {
+          let c = e[o].querySelector('td');
+          c && (c.hasAttribute('colspan') || r.push(e[o]));
         }
-        return rows;
+        return r;
       }
-      function initDataTable() {
-        const $ = window.__extJQ;
-        if (!$ || !$.fn || !$.fn.DataTable) {
-          console.log("[LabDT] waiting for DataTable lib");
-          setTimeout(initDataTable, 200);
+      function i() {
+        let t = window.__extJQ;
+        if (!t || !t.fn || !t.fn.DataTable) {
+          (console.log('[LabDT] waiting for DataTable lib'), setTimeout(i, 200));
           return;
         }
-        const tbl = document.querySelector("table.tabel");
-        if (!tbl) {
-          setTimeout(initDataTable, 500);
+        let e = document.querySelector('table.tabel');
+        if (!e) {
+          setTimeout(i, 500);
           return;
         }
-        if (tbl.dataset.extDt) return;
-        if (dataTableApi) {
-          dataTableApi.destroy();
-          dataTableApi = null;
-        }
-        const rows = getDataRows(tbl);
-        if (rows.length === 0) {
-          console.log("[LabDT] no data rows yet, retrying");
-          setTimeout(initDataTable, 500);
+        if (e.dataset.extDt) return;
+        d && (d.destroy(), (d = null));
+        let r = _(e);
+        if (r.length === 0) {
+          (console.log('[LabDT] no data rows yet, retrying'), setTimeout(i, 500));
           return;
         }
-        const headers = [];
-        const firstRow = tbl.querySelector("tr");
-        if (firstRow) {
-          const ths = firstRow.querySelectorAll("th");
-          for (let i = 0; i < ths.length; i++) headers.push(ths[i].textContent.trim());
+        let o = [],
+          c = e.querySelector('tr');
+        if (c) {
+          let n = c.querySelectorAll('th');
+          for (let a = 0; a < n.length; a++) o.push(n[a].textContent.trim());
         }
-        const data = [];
-        for (let r = 0; r < rows.length; r++) {
-          const tds = rows[r].querySelectorAll("td");
-          const row = [];
-          for (let c = 0; c < tds.length; c++) row.push(tds[c].innerHTML);
-          if (row.length === headers.length) data.push(row);
+        let s = [];
+        for (let n = 0; n < r.length; n++) {
+          let a = r[n].querySelectorAll('td'),
+            l = [];
+          for (let f = 0; f < a.length; f++) l.push(a[f].innerHTML);
+          l.length === o.length && s.push(l);
         }
-        if (data.length === 0) {
-          console.log("[LabDT] column mismatch or empty rows, retrying");
-          setTimeout(initDataTable, 500);
+        if (s.length === 0) {
+          (console.log('[LabDT] column mismatch or empty rows, retrying'), setTimeout(i, 500));
           return;
         }
-        $(tbl).find("tr").remove();
-        const thead = $("<thead><tr></tr></thead>");
-        for (let h = 0; h < headers.length; h++)
-          thead.find("tr").append($("<th>" + headers[h] + "</th>"));
-        $(tbl).prepend(thead);
-        const tbody = $("<tbody></tbody>");
-        for (let d = 0; d < data.length; d++) {
-          const tr = $("<tr></tr>");
-          for (let c = 0; c < data[d].length; c++) tr.append($("<td>" + data[d][c] + "</td>"));
-          tbody.append(tr);
+        t(e).find('tr').remove();
+        let p = t('<thead><tr></tr></thead>');
+        for (let n = 0; n < o.length; n++) p.find('tr').append(t('<th>' + o[n] + '</th>'));
+        t(e).prepend(p);
+        let w = t('<tbody></tbody>');
+        for (let n = 0; n < s.length; n++) {
+          let a = t('<tr></tr>');
+          for (let l = 0; l < s[n].length; l++) a.append(t('<td>' + s[n][l] + '</td>'));
+          w.append(a);
         }
-        $(tbl).append(tbody);
-        tbl.dataset.extDt = "1";
-        console.log("[LabDT] init with " + data.length + " rows");
-        dataTableApi = $(tbl).DataTable({
-          pageLength: 25,
-          lengthMenu: [
-            [10, 25, 50, 100, -1],
-            [10, 25, 50, 100, "Semua"]
-          ],
-          language: {
-            search: "Cari:",
-            lengthMenu: "Tampilkan _MENU_ data",
-            info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
-            infoEmpty: "Tidak ada data",
-            infoFiltered: "(difilter dari _MAX_ total data)",
-            paginate: { first: "Awal", last: "Akhir", next: "\u2192", previous: "\u2190" },
-            zeroRecords: "Data tidak ditemukan"
-          },
-          columnDefs: [
-            { targets: 0, width: "30px", orderable: false },
-            { targets: "_all", className: "dt-left" }
-          ],
-          order: [],
-          destroy: true
-        });
-        console.log("[LabDT] DataTable ready");
+        (t(e).append(w),
+          (e.dataset.extDt = '1'),
+          console.log('[LabDT] init with ' + s.length + ' rows'),
+          (d = t(e).DataTable({
+            pageLength: 25,
+            lengthMenu: [
+              [10, 25, 50, 100, -1],
+              [10, 25, 50, 100, 'Semua'],
+            ],
+            language: {
+              search: 'Cari:',
+              lengthMenu: 'Tampilkan _MENU_ data',
+              info: 'Menampilkan _START_ - _END_ dari _TOTAL_ data',
+              infoEmpty: 'Tidak ada data',
+              infoFiltered: '(difilter dari _MAX_ total data)',
+              paginate: { first: 'Awal', last: 'Akhir', next: '\u2192', previous: '\u2190' },
+              zeroRecords: 'Data tidak ditemukan',
+            },
+            columnDefs: [
+              { targets: 0, width: '30px', orderable: !1 },
+              { targets: '_all', className: 'dt-left' },
+            ],
+            order: [],
+            destroy: !0,
+          })),
+          console.log('[LabDT] DataTable ready'));
       }
-      const contentEl = document.getElementById("content");
-      const obs = new MutationObserver(function() {
-        setTimeout(function() {
-          const tbl = document.querySelector("table.tabel");
-          if (tbl && !tbl.dataset.extDt) {
-            console.log("[LabDT] mutation, re-init");
-            loadDeps().then(initDataTable);
-          }
+      let S = document.getElementById('content');
+      (new MutationObserver(function () {
+        setTimeout(function () {
+          let t = document.querySelector('table.tabel');
+          t && !t.dataset.extDt && (console.log('[LabDT] mutation, re-init'), g().then(i));
         }, 500);
-      });
-      obs.observe(contentEl || document.body, { childList: true, subtree: true });
-      if (document.querySelector("table.tabel")) {
-        loadDeps().then(initDataTable);
-      }
+      }).observe(S || document.body, { childList: !0, subtree: !0 }),
+        document.querySelector('table.tabel') && g().then(i));
     }
   })();
 })();
-//# sourceMappingURL=labDataTables.js.map

@@ -1,69 +1,59 @@
-"use strict";
+'use strict';
 var __morbis_feature = (() => {
-  // src/features/antrianLoader.ts
-  (function() {
-    const INJECT_MAX_MS = 4e3;
-    const UI_MAX_MS = 8e3;
-    const MIN_VISIBLE_MS = 1500;
-    let overlay = null;
-    function addOverlayCSS() {
-      if (document.getElementById("ext-mesin-loader-css")) return;
-      const s = document.createElement("style");
-      s.id = "ext-mesin-loader-css";
-      s.textContent = // selimuti SEMUA child native body (navbar biru bootstrap, card, dsb) dari
-      // document_start, kecuali tirai kita sendiri. Jangan tunggu overlay DOM
-      // (ada window ~250ms sebelum ensureOverlay — itu sebab navbar biru tampil).
-      "body > *:not(#ext-mesin-loader):not(#ext-mesin-loader-css):not(script):not(link):not(style):not(meta){display:none!important;}html,body{background:#D5E9DB!important;}#ext-mesin-loader{transition:opacity .2s ease-out;}@keyframes ext-m-load{0%{transform:translateX(-100%);}100%{transform:translateX(350%);}}";
-      (document.head || document.documentElement).appendChild(s);
+  (function () {
+    let e = null;
+    function l() {
+      if (document.getElementById('ext-mesin-loader-css')) return;
+      let t = document.createElement('style');
+      ((t.id = 'ext-mesin-loader-css'),
+        (t.textContent =
+          'body > *:not(#ext-mesin-loader):not(#ext-mesin-loader-css):not(script):not(link):not(style):not(meta){display:none!important;}html,body{background:#D5E9DB!important;}#ext-mesin-loader{transition:opacity .2s ease-out;}@keyframes ext-m-load{0%{transform:translateX(-100%);}100%{transform:translateX(350%);}}'),
+        (document.head || document.documentElement).appendChild(t));
     }
-    function ensureOverlay() {
-      if (overlay && document.getElementById("ext-mesin-loader")) return;
-      if (!document.body) return;
-      overlay = document.createElement("div");
-      overlay.id = "ext-mesin-loader";
-      overlay.style.cssText = "position:fixed;inset:0;z-index:999990;display:flex;align-items:center;justify-content:center;background:#D5E9DB;";
-      overlay.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center;"><img src="/assets/images/logo/Kota Jambi.png" alt="" style="width:72px;height:72px;object-fit:contain;"><div style="width:120px;height:8px;border-radius:999px;background:#d1e7dd;overflow:hidden;"><div style="width:40%;height:100%;border-radius:999px;background:#0f5132;animation:ext-m-load 1.2s ease-in-out infinite;"></div></div><p style="margin:0;color:#495057;font-size:15px;font-weight:600;">Memuat layanan\u2026</p></div>';
-      document.body.appendChild(overlay);
+    function r() {
+      (e && document.getElementById('ext-mesin-loader')) ||
+        (document.body &&
+          ((e = document.createElement('div')),
+          (e.id = 'ext-mesin-loader'),
+          (e.style.cssText =
+            'position:fixed;inset:0;z-index:999990;display:flex;align-items:center;justify-content:center;background:#D5E9DB;'),
+          (e.innerHTML =
+            '<div style="display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center;"><img src="/assets/images/logo/Kota Jambi.png" alt="" style="width:72px;height:72px;object-fit:contain;"><div style="width:120px;height:8px;border-radius:999px;background:#d1e7dd;overflow:hidden;"><div style="width:40%;height:100%;border-radius:999px;background:#0f5132;animation:ext-m-load 1.2s ease-in-out infinite;"></div></div><p style="margin:0;color:#495057;font-size:15px;font-weight:600;">Memuat layanan\u2026</p></div>'),
+          document.body.appendChild(e)));
     }
-    function fadeOutDone() {
-      document.getElementById("ext-mesin-loader")?.remove();
-      document.getElementById("ext-mesin-loader-css")?.remove();
-      overlay = null;
+    function o() {
+      (document.getElementById('ext-mesin-loader')?.remove(),
+        document.getElementById('ext-mesin-loader-css')?.remove(),
+        (e = null));
     }
-    function monitor() {
-      addOverlayCSS();
-      const started = Date.now();
-      let done = false;
-      const finished = () => {
-        if (done) return;
-        done = true;
-        clearInterval(tick);
-      };
-      const tick = setInterval(() => {
-        const elapsed = Date.now() - started;
-        const html = document.documentElement;
-        const health = html.getAttribute("data-ext-antrian-tools-health");
-        const gate = html.getAttribute("data-ext-antrian-tools");
-        ensureOverlay();
-        if (elapsed >= INJECT_MAX_MS && !gate && health === null) {
-          fadeOutDone();
-          finished();
-          return;
-        }
-        if (health === "ui" && elapsed >= MIN_VISIBLE_MS) {
-          if (overlay && document.getElementById("ext-mesin-loader")) overlay.style.opacity = "0";
-          setTimeout(fadeOutDone, 220);
-          finished();
-          return;
-        }
-        if (health && elapsed >= UI_MAX_MS && health !== "ui") {
-          fadeOutDone();
-          finished();
-          return;
-        }
-      }, 250);
+    function c() {
+      l();
+      let t = Date.now(),
+        a = !1,
+        i = () => {
+          a || ((a = !0), clearInterval(m));
+        },
+        m = setInterval(() => {
+          let d = Date.now() - t,
+            s = document.documentElement,
+            n = s.getAttribute('data-ext-antrian-tools-health'),
+            u = s.getAttribute('data-ext-antrian-tools');
+          if ((r(), d >= 4e3 && !u && n === null)) {
+            (o(), i());
+            return;
+          }
+          if (n === 'ui' && d >= 1500) {
+            (e && document.getElementById('ext-mesin-loader') && (e.style.opacity = '0'),
+              setTimeout(o, 220),
+              i());
+            return;
+          }
+          if (n && d >= 8e3 && n !== 'ui') {
+            (o(), i());
+            return;
+          }
+        }, 250);
     }
-    monitor();
+    c();
   })();
 })();
-//# sourceMappingURL=antrianLoader.js.map

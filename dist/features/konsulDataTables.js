@@ -1,117 +1,108 @@
 'use strict';
 var __morbis_feature = (() => {
-  // src/features/konsulDataTables.ts
   (function () {
     if (!window.location.pathname.includes('admisi/pengajuan_konsultasi/konsultasi')) return;
-    (function pollFlag() {
-      const flag = document.documentElement.getAttribute('data-ext-konsul-datatables');
-      if (flag !== '1') {
+    (function () {
+      if (document.documentElement.getAttribute('data-ext-konsul-datatables') !== '1') {
         console.log('[KonsulDT] disabled');
         return;
       }
-      console.log('[KonsulDT] start');
-      run();
+      (console.log('[KonsulDT] start'), D());
     })();
-    function run() {
-      const JQUERY_URL = 'https://code.jquery.com/jquery-3.7.1.min.js';
-      const DT_CSS_URL = 'https://cdn.datatables.net/1.13.11/css/jquery.dataTables.min.css';
-      const DT_JS_URL = 'https://cdn.datatables.net/1.13.11/js/jquery.dataTables.min.js';
-      let depsPromise = null;
-      const dtInstances = /* @__PURE__ */ new Map();
-      function injectCSS(url) {
-        if (document.querySelector(`link[href="${url}"]`)) return;
-        const l = document.createElement('link');
-        l.rel = 'stylesheet';
-        l.href = url;
-        document.head.appendChild(l);
+    function D() {
+      let f = 'https://code.jquery.com/jquery-3.7.1.min.js',
+        m = 'https://cdn.datatables.net/1.13.11/css/jquery.dataTables.min.css',
+        _ = 'https://cdn.datatables.net/1.13.11/js/jquery.dataTables.min.js',
+        d = null,
+        h = new Map();
+      function E(t) {
+        if (document.querySelector(`link[href="${t}"]`)) return;
+        let e = document.createElement('link');
+        ((e.rel = 'stylesheet'), (e.href = t), document.head.appendChild(e));
       }
-      function injectScript(url) {
-        return new Promise((resolve, reject) => {
-          if (document.querySelector(`script[src="${url}"]`)) return resolve();
-          const s = document.createElement('script');
-          s.src = url;
-          s.onload = () => resolve();
-          s.onerror = () => reject(new Error('Failed to load ' + url));
-          document.head.appendChild(s);
+      function p(t) {
+        return new Promise((e, s) => {
+          if (document.querySelector(`script[src="${t}"]`)) return e();
+          let n = document.createElement('script');
+          ((n.src = t),
+            (n.onload = () => e()),
+            (n.onerror = () => s(new Error('Failed to load ' + t))),
+            document.head.appendChild(n));
         });
       }
-      function loadDeps() {
-        if (depsPromise) return depsPromise;
-        depsPromise = (async () => {
-          console.log('[KonsulDT] loading deps...');
-          injectCSS(DT_CSS_URL);
-          const _page$ = window.$;
-          const _pageJQ = window.jQuery;
-          await injectScript(JQUERY_URL);
-          window.__extJQ = window.jQuery;
-          window.$ = _page$;
-          window.jQuery = _pageJQ;
-          await injectScript(DT_JS_URL);
-          console.log('[KonsulDT] deps loaded');
-        })();
-        return depsPromise;
+      function S() {
+        return (
+          d ||
+          ((d = (async () => {
+            (console.log('[KonsulDT] loading deps...'), E(m));
+            let t = window.$,
+              e = window.jQuery;
+            (await p(f),
+              (window.__extJQ = window.jQuery),
+              (window.$ = t),
+              (window.jQuery = e),
+              await p(_),
+              console.log('[KonsulDT] deps loaded'));
+          })()),
+          d)
+        );
       }
-      function getDataRows(tbl) {
-        const all = tbl.querySelectorAll('tr');
-        const rows = [];
-        for (let i = 0; i < all.length; i++) {
-          const td = all[i].querySelector('td');
-          if (!td) continue;
-          if (td.hasAttribute('colspan')) continue;
-          rows.push(all[i]);
+      function k(t) {
+        let e = t.querySelectorAll('tr'),
+          s = [];
+        for (let n = 0; n < e.length; n++) {
+          let i = e[n].querySelector('td');
+          i && (i.hasAttribute('colspan') || s.push(e[n]));
         }
-        return rows;
+        return s;
       }
-      function initDataTable(tbl) {
-        if (tbl.dataset.extDt) return;
-        if (dtInstances.has(tbl)) return;
-        const $ = window.__extJQ;
-        if (!$ || !$.fn || !$.fn.DataTable) {
-          console.log('[KonsulDT] waiting for DataTable lib');
-          setTimeout(() => initDataTable(tbl), 200);
+      function g(t) {
+        if (t.dataset.extDt || h.has(t)) return;
+        let e = window.__extJQ;
+        if (!e || !e.fn || !e.fn.DataTable) {
+          (console.log('[KonsulDT] waiting for DataTable lib'), setTimeout(() => g(t), 200));
           return;
         }
-        const rows = getDataRows(tbl);
-        if (rows.length === 0) {
+        let s = k(t);
+        if (s.length === 0) {
           console.log('[KonsulDT] no data rows yet, skipping');
           return;
         }
-        const headers = [];
-        const firstRow = tbl.querySelector('tr');
-        if (firstRow) {
-          const ths = firstRow.querySelectorAll('th');
-          for (let i = 0; i < ths.length; i++) headers.push(ths[i].textContent.trim());
+        let n = [],
+          i = t.querySelector('tr');
+        if (i) {
+          let o = i.querySelectorAll('th');
+          for (let a = 0; a < o.length; a++) n.push(o[a].textContent.trim());
         }
-        if (headers.length === 0) {
+        if (n.length === 0) {
           console.log('[KonsulDT] no headers, skipping');
           return;
         }
-        const data = [];
-        for (let r = 0; r < rows.length; r++) {
-          const tds = rows[r].querySelectorAll('td');
-          const row = [];
-          for (let c = 0; c < tds.length; c++) row.push(tds[c].innerHTML);
-          if (row.length === headers.length) data.push(row);
+        let r = [];
+        for (let o = 0; o < s.length; o++) {
+          let a = s[o].querySelectorAll('td'),
+            l = [];
+          for (let u = 0; u < a.length; u++) l.push(a[u].innerHTML);
+          l.length === n.length && r.push(l);
         }
-        if (data.length === 0) {
+        if (r.length === 0) {
           console.log('[KonsulDT] column mismatch or empty rows, skipping');
           return;
         }
-        $(tbl).find('tr').remove();
-        const thead = $('<thead><tr></tr></thead>');
-        for (let h = 0; h < headers.length; h++)
-          thead.find('tr').append($('<th>' + headers[h] + '</th>'));
-        $(tbl).prepend(thead);
-        const tbody = $('<tbody></tbody>');
-        for (let d = 0; d < data.length; d++) {
-          const tr = $('<tr></tr>');
-          for (let c = 0; c < data[d].length; c++) tr.append($('<td>' + data[d][c] + '</td>'));
-          tbody.append(tr);
+        e(t).find('tr').remove();
+        let y = e('<thead><tr></tr></thead>');
+        for (let o = 0; o < n.length; o++) y.find('tr').append(e('<th>' + n[o] + '</th>'));
+        e(t).prepend(y);
+        let b = e('<tbody></tbody>');
+        for (let o = 0; o < r.length; o++) {
+          let a = e('<tr></tr>');
+          for (let l = 0; l < r[o].length; l++) a.append(e('<td>' + r[o][l] + '</td>'));
+          b.append(a);
         }
-        $(tbl).append(tbody);
-        tbl.dataset.extDt = '1';
-        console.log('[KonsulDT] init with ' + data.length + ' rows');
-        const api = $(tbl).DataTable({
+        (e(t).append(b),
+          (t.dataset.extDt = '1'),
+          console.log('[KonsulDT] init with ' + r.length + ' rows'));
+        let R = e(t).DataTable({
           pageLength: 15,
           lengthMenu: [
             [10, 15, 25, 50, -1],
@@ -127,41 +118,30 @@ var __morbis_feature = (() => {
             zeroRecords: 'Data tidak ditemukan',
           },
           columnDefs: [
-            { targets: 0, width: '30px', orderable: false },
+            { targets: 0, width: '30px', orderable: !1 },
             { targets: '_all', className: 'dt-left' },
           ],
           order: [],
-          destroy: true,
+          destroy: !0,
         });
-        dtInstances.set(tbl, api);
-        console.log('[KonsulDT] DataTable ready');
+        (h.set(t, R), console.log('[KonsulDT] DataTable ready'));
       }
-      function scanTables() {
-        const tables = document.querySelectorAll(
-          '.morbis-data-table, #tabellist table, #tabeldone table',
-        );
-        tables.forEach((tbl) => {
-          if (!tbl.dataset.extDt) {
-            loadDeps().then(() => initDataTable(tbl));
-          }
-        });
+      function T() {
+        document
+          .querySelectorAll('.morbis-data-table, #tabellist table, #tabeldone table')
+          .forEach((e) => {
+            e.dataset.extDt || S().then(() => g(e));
+          });
       }
-      let retries = 0;
-      const maxRetries = 40;
-      (function scanWithRetry() {
-        scanTables();
-        if (retries < maxRetries) {
-          retries++;
-          setTimeout(scanWithRetry, 500);
-        }
+      let w = 0,
+        M = 40;
+      (function t() {
+        (T(), w < M && (w++, setTimeout(t, 500)));
       })();
-      let timer = null;
-      const obs = new MutationObserver(() => {
-        if (timer) clearTimeout(timer);
-        timer = setTimeout(scanTables, 600);
-      });
-      obs.observe(document.body, { childList: true, subtree: true });
+      let c = null;
+      new MutationObserver(() => {
+        (c && clearTimeout(c), (c = setTimeout(T, 600)));
+      }).observe(document.body, { childList: !0, subtree: !0 });
     }
   })();
 })();
-//# sourceMappingURL=konsulDataTables.js.map

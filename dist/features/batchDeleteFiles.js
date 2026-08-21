@@ -1,17 +1,14 @@
 'use strict';
 var __morbis_feature = (() => {
-  // src/features/shared/types.ts
-  function getMorbisGlobals() {
+  function $() {
     return window;
   }
-
-  // src/features/shared/batchUtils.ts
-  var BATCH_UTILS_STYLE_ID = 'ext-batch-shared-style';
-  function injectSharedCSS() {
-    if (document.getElementById(BATCH_UTILS_STYLE_ID)) return;
-    const style = document.createElement('style');
-    style.id = BATCH_UTILS_STYLE_ID;
-    style.textContent = `
+  var D = 'ext-batch-shared-style';
+  function S() {
+    if (document.getElementById(D)) return;
+    let e = document.createElement('style');
+    ((e.id = D),
+      (e.textContent = `
     .ext-modal-content {
       background: #ffffff; border-radius: 16px; padding: 28px 32px;
       max-width: 860px; width: 95%; max-height: 85vh; overflow-y: auto;
@@ -154,107 +151,106 @@ var __morbis_feature = (() => {
     .ext-preview-item.success { color: #059669; }
     .ext-preview-item.error { color: #dc2626; }
     .ext-preview-item.pending { color: #64748b; }
-  `;
-    document.head.appendChild(style);
+  `),
+      document.head.appendChild(e));
   }
-  var Icons = {
-    search: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>`,
-    trash: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`,
-    xClose: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`,
-    warning: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 00-3.48 0l-8 14A2 2 0 004 21h16a2 2 0 001.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
-    eye: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
-    refresh: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>`,
-    upload: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`,
-    file: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
-    check: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
-    arrowRight: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`,
+  var f = {
+    search:
+      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
+    trash:
+      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>',
+    xClose:
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',
+    warning:
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 00-3.48 0l-8 14A2 2 0 004 21h16a2 2 0 001.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    eye: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+    refresh:
+      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>',
+    upload:
+      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+    file: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+    check:
+      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+    arrowRight:
+      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>',
   };
-  function iconWrap(iconSvg, size) {
-    const s = size || 18;
-    return `<span style="display:inline-flex;align-items:center;justify-content:center;width:${s}px;height:${s}px;flex-shrink:0;">${iconSvg}</span>`;
+  function P(e, o) {
+    let i = o || 18;
+    return `<span style="display:inline-flex;align-items:center;justify-content:center;width:${i}px;height:${i}px;flex-shrink:0;">${e}</span>`;
   }
-  async function showInlinePreviewSafe(url, filename) {
+  async function M(e, o) {
     try {
-      const response = await fetch(url, { method: 'GET', mode: 'cors', credentials: 'omit' });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      showInlinePreview(blobUrl, filename, url, () => URL.revokeObjectURL(blobUrl));
+      let i = await fetch(e, { method: 'GET', mode: 'cors', credentials: 'omit' });
+      if (!i.ok) throw new Error(`HTTP ${i.status}`);
+      let t = await i.blob(),
+        r = URL.createObjectURL(t);
+      H(r, o, e, () => URL.revokeObjectURL(r));
     } catch {
-      showInlinePreview(url, filename, url);
+      H(e, o, e);
     }
   }
-  function showInlinePreview(previewUrl, filename, originalUrl, onCleanup) {
-    const existing = document.getElementById('ext-inline-preview-modal');
-    if (existing) existing.remove();
-    const ext = filename.toLowerCase().split('.').pop() || '';
-    const isPdf = ext === 'pdf';
-    const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
-    const modal = document.createElement('div');
-    modal.id = 'ext-inline-preview-modal';
-    modal.style.cssText =
-      'position:fixed !important;top:0 !important;left:0 !important;width:100vw !important;height:100vh !important;background:rgba(15,23,42,0.88) !important;z-index:10001 !important;display:flex !important;align-items:center !important;justify-content:center !important;flex-direction:column !important;padding:20px !important;box-sizing:border-box !important;backdrop-filter:blur(8px) !important;-webkit-backdrop-filter:blur(8px) !important;';
-    let contentHtml =
+  function H(e, o, i, t) {
+    let r = document.getElementById('ext-inline-preview-modal');
+    r && r.remove();
+    let c = o.toLowerCase().split('.').pop() || '',
+      d = c === 'pdf',
+      u = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(c),
+      n = document.createElement('div');
+    ((n.id = 'ext-inline-preview-modal'),
+      (n.style.cssText =
+        'position:fixed !important;top:0 !important;left:0 !important;width:100vw !important;height:100vh !important;background:rgba(15,23,42,0.88) !important;z-index:10001 !important;display:flex !important;align-items:center !important;justify-content:center !important;flex-direction:column !important;padding:20px !important;box-sizing:border-box !important;backdrop-filter:blur(8px) !important;-webkit-backdrop-filter:blur(8px) !important;'));
+    let a =
       '<div class="ext-inline-preview-loading" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:#fff;"><div class="ext-inline-preview-spinner"></div><div style="font-size:14px;">Loading preview...</div></div>';
-    if (isPdf)
-      contentHtml = `<iframe id="ext-inline-preview-iframe" src="${previewUrl}" style="width:100%;height:100%;border:none;display:block;border-radius:12px;"></iframe>`;
-    else if (isImage)
-      contentHtml = `<img id="ext-inline-preview-img" src="${previewUrl}" alt="Image Preview" style="width:100%;height:100%;border:none;display:block;object-fit:contain;border-radius:12px;">`;
-    else
-      contentHtml = `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:15px;color:#64748b;background:#f8fafc;flex-direction:column;gap:16px;border-radius:12px;">${Icons.file}<div>Preview not available for this format</div></div>`;
-    const safeFilename = filename.replace(/"/g, '&quot;').replace(/</g, '&lt;');
-    modal.innerHTML = `
+    d
+      ? (a = `<iframe id="ext-inline-preview-iframe" src="${e}" style="width:100%;height:100%;border:none;display:block;border-radius:12px;"></iframe>`)
+      : u
+        ? (a = `<img id="ext-inline-preview-img" src="${e}" alt="Image Preview" style="width:100%;height:100%;border:none;display:block;object-fit:contain;border-radius:12px;">`)
+        : (a = `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:15px;color:#64748b;background:#f8fafc;flex-direction:column;gap:16px;border-radius:12px;">${f.file}<div>Preview not available for this format</div></div>`);
+    let p = o.replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    if (
+      ((n.innerHTML = `
     <div style="position:absolute;top:20px;right:20px;display:flex;gap:10px;align-items:center;background:rgba(15,23,42,0.8);padding:10px 16px;border-radius:12px;backdrop-filter:blur(12px);z-index:10002;border:1px solid rgba(255,255,255,0.1);">
-      <span style="color:#e2e8f0;font-size:13px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">${safeFilename}</span>
-      <button id="ext-preview-newtab" style="padding:7px 14px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:background 0.15s ease;display:inline-flex;align-items:center;gap:6px;">${Icons.arrowRight} Open Tab</button>
-      <button id="ext-preview-close" style="padding:7px 12px;background:rgba(255,255,255,0.1);color:#e2e8f0;border:1px solid rgba(255,255,255,0.15);border-radius:8px;cursor:pointer;font-size:16px;font-weight:500;transition:all 0.15s ease;line-height:1;">${Icons.xClose}</button>
+      <span style="color:#e2e8f0;font-size:13px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">${p}</span>
+      <button id="ext-preview-newtab" style="padding:7px 14px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:background 0.15s ease;display:inline-flex;align-items:center;gap:6px;">${f.arrowRight} Open Tab</button>
+      <button id="ext-preview-close" style="padding:7px 12px;background:rgba(255,255,255,0.1);color:#e2e8f0;border:1px solid rgba(255,255,255,0.15);border-radius:8px;cursor:pointer;font-size:16px;font-weight:500;transition:all 0.15s ease;line-height:1;">${f.xClose}</button>
     </div>
-    <div style="width:clamp(400px,90vw,1200px);height:clamp(300px,90vh,800px);background:white;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,0.4);overflow:hidden;position:relative;">${contentHtml}</div>
-  `;
-    document.body.appendChild(modal);
-    document.getElementById('ext-preview-close')?.addEventListener('click', () => {
-      if (onCleanup) onCleanup();
-      modal.remove();
-    });
-    document.getElementById('ext-preview-newtab')?.addEventListener('click', () => {
-      window.open(originalUrl || previewUrl, '_blank');
-      if (onCleanup) onCleanup();
-      modal.remove();
-    });
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        if (onCleanup) onCleanup();
-        modal.remove();
-      }
-    });
-    document.addEventListener('keydown', function handler(ev) {
-      if (ev.key === 'Escape') {
-        if (onCleanup) onCleanup();
-        modal.remove();
-        document.removeEventListener('keydown', handler);
-      }
-    });
-    if (isPdf || isImage) {
-      const loadCheck = setInterval(() => {
-        const loaded = isPdf
-          ? document.getElementById('ext-inline-preview-iframe')?.getAttribute('src')
-          : document.getElementById('ext-inline-preview-img')?.complete;
-        if (loaded) {
-          const container = modal.querySelector('.ext-inline-preview-loading');
-          if (container) container.remove();
-          clearInterval(loadCheck);
+    <div style="width:clamp(400px,90vw,1200px);height:clamp(300px,90vh,800px);background:white;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,0.4);overflow:hidden;position:relative;">${a}</div>
+  `),
+      document.body.appendChild(n),
+      document.getElementById('ext-preview-close')?.addEventListener('click', () => {
+        (t && t(), n.remove());
+      }),
+      document.getElementById('ext-preview-newtab')?.addEventListener('click', () => {
+        (window.open(i || e, '_blank'), t && t(), n.remove());
+      }),
+      n.addEventListener('click', (g) => {
+        g.target === n && (t && t(), n.remove());
+      }),
+      document.addEventListener('keydown', function g(m) {
+        m.key === 'Escape' && (t && t(), n.remove(), document.removeEventListener('keydown', g));
+      }),
+      d || u)
+    ) {
+      let g = setInterval(() => {
+        if (
+          d
+            ? document.getElementById('ext-inline-preview-iframe')?.getAttribute('src')
+            : document.getElementById('ext-inline-preview-img')?.complete
+        ) {
+          let b = n.querySelector('.ext-inline-preview-loading');
+          (b && b.remove(), clearInterval(g));
         }
       }, 500);
     }
   }
-  function confirmLegacy(opts) {
-    return new Promise((resolve) => {
-      injectSharedCSS();
-      const variantClass = opts.variant === 'danger' ? 'ext-btn-danger' : 'ext-btn-primary';
-      const overlay = document.createElement('div');
-      overlay.style.cssText =
-        'position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.55);backdrop-filter:blur(2px);';
-      overlay.innerHTML = `
+  function y(e) {
+    return new Promise((o) => {
+      S();
+      let i = e.variant === 'danger' ? 'ext-btn-danger' : 'ext-btn-primary',
+        t = document.createElement('div');
+      ((t.style.cssText =
+        'position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.55);backdrop-filter:blur(2px);'),
+        (t.innerHTML = `
       <div class="ext-modal-content" style="max-width:480px;">
         <div class="ext-modal-header">
           <h3></h3>
@@ -262,58 +258,58 @@ var __morbis_feature = (() => {
         </div>
         <div class="ext-confirm-body" style="font-size:14px;color:#334155;line-height:1.6;"></div>
         <div class="ext-modal-buttons">
-          ${opts.hideCancel ? '' : `<button class="ext-btn ext-btn-secondary" data-ext-cancel>${opts.cancelLabel ?? 'Batal'}</button>`}
-          <button class="ext-btn ${variantClass}" data-ext-ok>${opts.okLabel ?? 'Lanjut'}</button>
+          ${e.hideCancel ? '' : `<button class="ext-btn ext-btn-secondary" data-ext-cancel>${e.cancelLabel ?? 'Batal'}</button>`}
+          <button class="ext-btn ${i}" data-ext-ok>${e.okLabel ?? 'Lanjut'}</button>
         </div>
-      </div>`;
-      overlay.querySelector('h3').textContent = opts.title;
-      const body = overlay.querySelector('.ext-confirm-body');
-      if (opts.message) {
-        opts.message.split('\n').forEach((line, i) => {
-          if (i > 0) body.appendChild(document.createElement('br'));
-          body.appendChild(document.createTextNode(line));
-        });
-      }
-      const done = (result) => {
-        overlay.remove();
-        document.removeEventListener('keydown', onKey);
-        resolve(result);
-      };
-      const onKey = (e) => {
-        if (e.key === 'Escape') done(false);
-      };
-      overlay.querySelector('.ext-modal-close').addEventListener('click', () => done(false));
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) done(false);
-      });
-      overlay.querySelector('[data-ext-ok]').addEventListener('click', () => done(true));
-      const cancelBtn = overlay.querySelector('[data-ext-cancel]');
-      if (cancelBtn) cancelBtn.addEventListener('click', () => done(false));
-      document.addEventListener('keydown', onKey);
-      document.body.appendChild(overlay);
+      </div>`),
+        (t.querySelector('h3').textContent = e.title));
+      let r = t.querySelector('.ext-confirm-body');
+      e.message &&
+        e.message
+          .split(
+            `
+`,
+          )
+          .forEach((n, a) => {
+            (a > 0 && r.appendChild(document.createElement('br')),
+              r.appendChild(document.createTextNode(n)));
+          });
+      let c = (n) => {
+          (t.remove(), document.removeEventListener('keydown', d), o(n));
+        },
+        d = (n) => {
+          n.key === 'Escape' && c(!1);
+        };
+      (t.querySelector('.ext-modal-close').addEventListener('click', () => c(!1)),
+        t.addEventListener('click', (n) => {
+          n.target === t && c(!1);
+        }),
+        t.querySelector('[data-ext-ok]').addEventListener('click', () => c(!0)));
+      let u = t.querySelector('[data-ext-cancel]');
+      (u && u.addEventListener('click', () => c(!1)),
+        document.addEventListener('keydown', d),
+        document.body.appendChild(t));
     });
   }
-
-  // src/features/batchDeleteFiles.ts
-  var g = getMorbisGlobals();
-  var BATCH_DELETE_CONFIG = {
-    deleteEndpoint: '/admisi/pelaksanaan_pelayanan/dokumen-pasien/control?sub=hapus',
-    fetchListUrl: '/admisi/pelaksanaan_pelayanan/dokumen-pasien',
-    maxConcurrent: 1,
-    maxBatchSize: 10,
-    delayBetweenDelete: 500,
-    modalId: 'ext-batch-delete-modal',
-    previewId: 'ext-delete-preview-list',
-    progressId: 'ext-delete-progress-bar',
-    statusId: 'ext-delete-status-text',
-  };
-  var deleteQueue = [];
-  var isDeletingProcess = false;
-  function injectBatchDeleteCSS() {
+  var B = $(),
+    l = {
+      deleteEndpoint: '/admisi/pelaksanaan_pelayanan/dokumen-pasien/control?sub=hapus',
+      fetchListUrl: '/admisi/pelaksanaan_pelayanan/dokumen-pasien',
+      maxConcurrent: 1,
+      maxBatchSize: 10,
+      delayBetweenDelete: 500,
+      modalId: 'ext-batch-delete-modal',
+      previewId: 'ext-delete-preview-list',
+      progressId: 'ext-delete-progress-bar',
+      statusId: 'ext-delete-status-text',
+    },
+    s = [],
+    x = !1;
+  function z() {
     if (document.getElementById('ext-batch-delete-style')) return;
-    const style = document.createElement('style');
-    style.id = 'ext-batch-delete-style';
-    style.textContent = `
+    let e = document.createElement('style');
+    ((e.id = 'ext-batch-delete-style'),
+      (e.textContent = `
     .ext-batch-delete-modal {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(15,23,42,0.45); display: none; z-index: 10000;
@@ -334,468 +330,384 @@ var __morbis_feature = (() => {
       transform: translateY(-1px);
     }
     #ext-batch-delete-btn:active { transform: translateY(0); }
-  `;
-    document.head.appendChild(style);
-    injectSharedCSS();
+  `),
+      document.head.appendChild(e),
+      S());
   }
-  function togglePageButtonState(isDisabled) {
-    const allButtons = document.querySelectorAll(
-      'button:not(#ext-batch-delete-btn):not([disabled])',
-    );
-    allButtons.forEach((btn) => {
-      if (isDisabled) {
-        btn.disabled = true;
-        btn.dataset.extWasEnabled = 'true';
-      } else {
-        if (btn.dataset.extWasEnabled === 'true') {
-          btn.disabled = false;
-          delete btn.dataset.extWasEnabled;
-        }
-      }
-    });
-    const formElements = document.querySelectorAll('form input, form button, form a');
-    formElements.forEach((el) => {
-      if (isDisabled) {
-        el.disabled = true;
-        el.dataset.extWasEnabled = 'true';
-      } else {
-        if (el.dataset.extWasEnabled === 'true') {
-          el.disabled = false;
-          delete el.dataset.extWasEnabled;
-        }
-      }
-    });
+  function U(e) {
+    (document.querySelectorAll('button:not(#ext-batch-delete-btn):not([disabled])').forEach((t) => {
+      e
+        ? ((t.disabled = !0), (t.dataset.extWasEnabled = 'true'))
+        : t.dataset.extWasEnabled === 'true' && ((t.disabled = !1), delete t.dataset.extWasEnabled);
+    }),
+      document.querySelectorAll('form input, form button, form a').forEach((t) => {
+        e
+          ? ((t.disabled = !0), (t.dataset.extWasEnabled = 'true'))
+          : t.dataset.extWasEnabled === 'true' &&
+            ((t.disabled = !1), delete t.dataset.extWasEnabled);
+      }));
   }
-  function toggleDeleteUIProcessingState(isDeleting) {
-    const elementsToToggle = [
+  function A(e) {
+    ([
       'ext-delete-close-btn',
       'ext-delete-cancel-btn',
       'ext-fetch-files-btn',
       'ext-start-delete-btn',
-    ];
-    elementsToToggle.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.disabled = isDeleting;
-        el.style.opacity = isDeleting ? '0.5' : '1';
-        el.style.cursor = isDeleting ? 'not-allowed' : 'pointer';
-      }
-    });
-    document
-      .querySelectorAll(
-        '#' +
-          BATCH_DELETE_CONFIG.previewId +
-          ' input, #' +
-          BATCH_DELETE_CONFIG.previewId +
-          ' button',
-      )
-      .forEach((el) => (el.disabled = isDeleting));
-    togglePageButtonState(isDeleting);
+    ].forEach((i) => {
+      let t = document.getElementById(i);
+      t &&
+        ((t.disabled = e),
+        (t.style.opacity = e ? '0.5' : '1'),
+        (t.style.cursor = e ? 'not-allowed' : 'pointer'));
+    }),
+      document
+        .querySelectorAll('#' + l.previewId + ' input, #' + l.previewId + ' button')
+        .forEach((i) => (i.disabled = e)),
+      U(e));
   }
-  function replaceButtonsWithReload() {
-    const buttonsContainer = document.querySelector('.ext-modal-buttons');
-    if (buttonsContainer) {
-      buttonsContainer.innerHTML =
+  function F() {
+    let e = document.querySelector('.ext-modal-buttons');
+    e &&
+      ((e.innerHTML =
         '<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">' +
-        Icons.refresh +
-        ' Reload Halaman</span></button>';
+        f.refresh +
+        ' Reload Halaman</span></button>'),
       document.getElementById('ext-reload-btn')?.addEventListener('click', () => {
         window.location.reload();
-      });
-    }
+      }));
   }
-  async function deleteDokumen(dokumenId) {
+  async function C(e) {
     try {
-      const formData = new FormData();
-      formData.append('id', dokumenId);
-      const res = await fetch(BATCH_DELETE_CONFIG.deleteEndpoint, {
-        method: 'POST',
-        body: formData,
-        credentials: 'same-origin',
-      });
-      return res.ok;
-    } catch (err) {
-      console.error('[Delete Dokumen] Error:', err);
-      return false;
+      let o = new FormData();
+      return (
+        o.append('id', e),
+        (await fetch(l.deleteEndpoint, { method: 'POST', body: o, credentials: 'same-origin' })).ok
+      );
+    } catch (o) {
+      return (console.error('[Delete Dokumen] Error:', o), !1);
     }
   }
-  function showBatchDeleteModal() {
-    let modal = document.getElementById(BATCH_DELETE_CONFIG.modalId);
-    if (!modal) {
-      modal = document.createElement('div');
-      modal.id = BATCH_DELETE_CONFIG.modalId;
-      modal.className = 'ext-batch-delete-modal';
-      modal.innerHTML = `
+  function j() {
+    let e = document.getElementById(l.modalId);
+    (e ||
+      ((e = document.createElement('div')),
+      (e.id = l.modalId),
+      (e.className = 'ext-batch-delete-modal'),
+      (e.innerHTML = `
       <div class="ext-modal-content">
         <div class="ext-modal-header">
           <h3 style="margin: 0; font-size: 18px; color: #0f172a; font-weight: 700; letter-spacing: -0.3px;">Hapus Dokumen</h3>
-          <button class="ext-modal-close" id="ext-delete-close-btn">${Icons.xClose}</button>
+          <button class="ext-modal-close" id="ext-delete-close-btn">${f.xClose}</button>
         </div>
         <div class="ext-warning-box">
-          <strong style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase;">${iconWrap(Icons.warning, 18)} PERHATIAN!</strong>
+          <strong style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase;">${P(f.warning, 18)} PERHATIAN!</strong>
           <span style="font-size: 12px; opacity: 0.85; line-height: 1.5;">File yang dihapus <strong style="color: #7c2d12;">tidak dapat dikembalikan</strong>. Tindakan ini bersifat permanen.</span>
         </div>
         <div style="margin-bottom: 20px; display: flex; gap: 10px;">
           <button id="ext-fetch-files-btn" class="ext-btn ext-btn-purple">
-            <span style="display: inline-flex; align-items: center; gap: 7px;">${Icons.search} Cari Dokumen Pasien</span>
+            <span style="display: inline-flex; align-items: center; gap: 7px;">${f.search} Cari Dokumen Pasien</span>
           </button>
         </div>
         <div id="ext-delete-search-wrap" style="display: none; margin-bottom: 12px;">
           <input type="text" id="ext-delete-search-input" class="ext-search-input" placeholder="Cari dokumen...">
         </div>
-        <div id="${BATCH_DELETE_CONFIG.previewId}" style="display: none; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden;"></div>
-        <div id="${BATCH_DELETE_CONFIG.progressId}" style="display: none; height: 4px; background: #374151; margin: 12px 0; border-radius: 2px; overflow: hidden;">
+        <div id="${l.previewId}" style="display: none; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden;"></div>
+        <div id="${l.progressId}" style="display: none; height: 4px; background: #374151; margin: 12px 0; border-radius: 2px; overflow: hidden;">
           <div class="progress-fill"></div>
         </div>
-        <div id="${BATCH_DELETE_CONFIG.statusId}" style="margin: 8px 0; font-size: 11px; color: #9ca3af; font-weight: 500; letter-spacing: 0.3px;"></div>
+        <div id="${l.statusId}" style="margin: 8px 0; font-size: 11px; color: #9ca3af; font-weight: 500; letter-spacing: 0.3px;"></div>
         <div class="ext-modal-buttons">
           <button id="ext-delete-cancel-btn" class="ext-btn ext-btn-secondary">Batal</button>
-          <button id="ext-start-delete-btn" class="ext-btn ext-btn-danger disabled"><span style="display:inline-flex;align-items:center;gap:6px;">${Icons.trash}</span> Hapus Terpilih</button>
+          <button id="ext-start-delete-btn" class="ext-btn ext-btn-danger disabled"><span style="display:inline-flex;align-items:center;gap:6px;">${f.trash}</span> Hapus Terpilih</button>
         </div>
       </div>
-    `;
-      document.body.appendChild(modal);
+    `),
+      document.body.appendChild(e),
       setTimeout(() => {
-        document
-          .getElementById('ext-delete-close-btn')
-          ?.addEventListener('click', closeBatchDeleteModal);
-        document
-          .getElementById('ext-delete-cancel-btn')
-          ?.addEventListener('click', closeBatchDeleteModal);
-        document
-          .getElementById('ext-fetch-files-btn')
-          ?.addEventListener('click', crawlDokumenPasienDelete);
-        document
-          .getElementById('ext-start-delete-btn')
-          ?.addEventListener('click', startBatchDelete);
-        document
-          .getElementById('ext-delete-search-input')
-          ?.addEventListener('input', updateDeletePreview);
-        modal?.addEventListener('click', function (e) {
-          if (e.target === modal) closeBatchDeleteModal();
-        });
-      }, 50);
-    }
-    modal.classList.add('show');
+        (document.getElementById('ext-delete-close-btn')?.addEventListener('click', T),
+          document.getElementById('ext-delete-cancel-btn')?.addEventListener('click', T),
+          document.getElementById('ext-fetch-files-btn')?.addEventListener('click', O),
+          document.getElementById('ext-start-delete-btn')?.addEventListener('click', R),
+          document.getElementById('ext-delete-search-input')?.addEventListener('input', w),
+          e?.addEventListener('click', function (o) {
+            o.target === e && T();
+          }));
+      }, 50)),
+      e.classList.add('show'));
   }
-  function closeBatchDeleteModal() {
-    const modal = document.getElementById(BATCH_DELETE_CONFIG.modalId);
-    if (modal) modal.classList.remove('show');
-    deleteQueue = [];
-    isDeletingProcess = false;
-    const previewEl = document.getElementById(BATCH_DELETE_CONFIG.previewId);
-    const progressEl = document.getElementById(BATCH_DELETE_CONFIG.progressId);
-    const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
-    if (previewEl) {
-      previewEl.style.display = 'none';
-      previewEl.innerHTML = '';
-    }
-    if (progressEl) progressEl.style.display = 'none';
-    if (statusEl) statusEl.textContent = '';
-    const buttonsContainer = document.querySelector('.ext-modal-buttons');
-    if (buttonsContainer) {
-      buttonsContainer.innerHTML =
+  function T() {
+    let e = document.getElementById(l.modalId);
+    (e && e.classList.remove('show'), (s = []), (x = !1));
+    let o = document.getElementById(l.previewId),
+      i = document.getElementById(l.progressId),
+      t = document.getElementById(l.statusId);
+    (o && ((o.style.display = 'none'), (o.innerHTML = '')),
+      i && (i.style.display = 'none'),
+      t && (t.textContent = ''));
+    let r = document.querySelector('.ext-modal-buttons');
+    (r &&
+      ((r.innerHTML =
         '<button id="ext-delete-cancel-btn" class="ext-btn ext-btn-secondary">Batal</button><button id="ext-start-delete-btn" class="ext-btn ext-btn-danger disabled"><span style="display:inline-flex;align-items:center;gap:6px;">' +
-        Icons.trash +
-        '</span> Hapus Terpilih</button>';
-      document
-        .getElementById('ext-delete-cancel-btn')
-        ?.addEventListener('click', closeBatchDeleteModal);
-      document.getElementById('ext-start-delete-btn')?.addEventListener('click', startBatchDelete);
-    }
-    toggleDeleteUIProcessingState(false);
+        f.trash +
+        '</span> Hapus Terpilih</button>'),
+      document.getElementById('ext-delete-cancel-btn')?.addEventListener('click', T),
+      document.getElementById('ext-start-delete-btn')?.addEventListener('click', R)),
+      A(!1));
   }
-  async function crawlDokumenPasienDelete() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const idVisit = urlParams.get('id_visit');
-    console.log('[BatchDelete] Current URL:', window.location.href);
-    console.log('[BatchDelete] id_visit found:', idVisit);
-    if (!idVisit) {
-      console.error('[BatchDelete] id_visit not found in URL!');
-      void confirmLegacy({
-        title: 'Parameter id_visit tidak ditemukan',
-        message: 'Pastikan buka dari halaman detail pasien.',
-        variant: 'warning',
-        okLabel: 'OK',
-        hideCancel: true,
-      });
+  async function O() {
+    let o = new URLSearchParams(window.location.search).get('id_visit');
+    if (
+      (console.log('[BatchDelete] Current URL:', window.location.href),
+      console.log('[BatchDelete] id_visit found:', o),
+      !o)
+    ) {
+      (console.error('[BatchDelete] id_visit not found in URL!'),
+        y({
+          title: 'Parameter id_visit tidak ditemukan',
+          message: 'Pastikan buka dari halaman detail pasien.',
+          variant: 'warning',
+          okLabel: 'OK',
+          hideCancel: !0,
+        }));
       return;
     }
-    const fetchBtn = document.getElementById('ext-fetch-files-btn');
-    if (fetchBtn) {
-      fetchBtn.disabled = true;
-      fetchBtn.textContent = 'Mencari...';
-    }
+    let i = document.getElementById('ext-fetch-files-btn');
+    i && ((i.disabled = !0), (i.textContent = 'Mencari...'));
     try {
-      const targetUrl = `${window.location.origin}${BATCH_DELETE_CONFIG.fetchListUrl}?id_visit=${idVisit}&page=85&id_kunjungan=`;
-      const response = await fetch(targetUrl);
-      if (!response.ok) throw new Error('Gagal memuat halaman dokumen pasien');
-      const html = await response.text();
-      const doc = new DOMParser().parseFromString(html, 'text/html');
-      const rows = doc.querySelectorAll('table.data-list.tabel tr');
-      console.log('[BatchDelete] Total rows found:', rows.length);
-      deleteQueue = [];
-      for (let i = 1; i < rows.length; i++) {
-        const tr = rows[i];
-        const deleteBtn = tr.querySelector('button[onclick*="hapus"]');
-        let id_dokumen = null;
-        console.log(`[BatchDelete] Row ${i}: deleteBtn found:`, !!deleteBtn);
-        if (deleteBtn) {
-          const onclickStr = deleteBtn.getAttribute('onclick');
-          const match = onclickStr?.match(/hapus\(([^)]+)\)/);
-          if (match) {
-            id_dokumen = match[1].replace(/['"]/g, '').trim();
-          }
+      let t = `${window.location.origin}${l.fetchListUrl}?id_visit=${o}&page=85&id_kunjungan=`,
+        r = await fetch(t);
+      if (!r.ok) throw new Error('Gagal memuat halaman dokumen pasien');
+      let c = await r.text(),
+        u = new DOMParser()
+          .parseFromString(c, 'text/html')
+          .querySelectorAll('table.data-list.tabel tr');
+      (console.log('[BatchDelete] Total rows found:', u.length), (s = []));
+      for (let a = 1; a < u.length; a++) {
+        let p = u[a],
+          g = p.querySelector('button[onclick*="hapus"]'),
+          m = null;
+        if ((console.log(`[BatchDelete] Row ${a}: deleteBtn found:`, !!g), g)) {
+          let _ = g.getAttribute('onclick')?.match(/hapus\(([^)]+)\)/);
+          _ && (m = _[1].replace(/['"]/g, '').trim());
         }
-        if (!id_dokumen) continue;
-        const linkEl = tr.querySelector('td:nth-child(2) a');
-        const filename = tr.cells[1]?.textContent?.trim() || 'unknown';
-        const keterangan = tr.cells[2]?.textContent?.trim() || '-';
-        const tglFile = tr.cells[3]?.textContent?.trim() || '-';
-        const tglUpload = tr.cells[4]?.textContent?.trim() || '-';
-        const href = linkEl?.getAttribute('href') || '';
-        const url = href.startsWith('http') ? href : `${window.location.origin}${href}`;
-        deleteQueue.push({
-          id_dokumen,
-          filename,
-          keterangan,
-          tglFile,
-          tglUpload,
-          url,
-          selected: false,
+        if (!m) continue;
+        let b = p.querySelector('td:nth-child(2) a'),
+          v = p.cells[1]?.textContent?.trim() || 'unknown',
+          k = p.cells[2]?.textContent?.trim() || '-',
+          h = p.cells[3]?.textContent?.trim() || '-',
+          I = p.cells[4]?.textContent?.trim() || '-',
+          E = b?.getAttribute('href') || '',
+          L = E.startsWith('http') ? E : `${window.location.origin}${E}`;
+        s.push({
+          id_dokumen: m,
+          filename: v,
+          keterangan: k,
+          tglFile: h,
+          tglUpload: I,
+          url: L,
+          selected: !1,
           status: 'pending',
         });
       }
-      if (deleteQueue.length === 0) {
+      if (s.length === 0) {
         console.error('[BatchDelete] No documents found in queue!');
-        const statusEl2 = document.getElementById(BATCH_DELETE_CONFIG.statusId);
-        if (statusEl2) statusEl2.textContent = 'Tidak ada dokumen ditemukan.';
+        let a = document.getElementById(l.statusId);
+        a && (a.textContent = 'Tidak ada dokumen ditemukan.');
         return;
       }
-      console.log('[BatchDelete] Queue populated with', deleteQueue.length, 'documents');
-      updateDeletePreview();
-      const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
-      if (statusEl) statusEl.textContent = `${deleteQueue.length} dokumen siap dihapus!`;
-    } catch (err) {
-      console.error('[Batch Delete] Crawl error:', err);
-      const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
-      if (statusEl) statusEl.textContent = 'Error: ' + err.message;
+      (console.log('[BatchDelete] Queue populated with', s.length, 'documents'), w());
+      let n = document.getElementById(l.statusId);
+      n && (n.textContent = `${s.length} dokumen siap dihapus!`);
+    } catch (t) {
+      console.error('[Batch Delete] Crawl error:', t);
+      let r = document.getElementById(l.statusId);
+      r && (r.textContent = 'Error: ' + t.message);
     } finally {
-      if (fetchBtn) {
-        fetchBtn.disabled = false;
-        fetchBtn.textContent = 'Cari Dokumen Pasien';
-      }
+      i && ((i.disabled = !1), (i.textContent = 'Cari Dokumen Pasien'));
     }
   }
-  async function deleteSingleFromQueue(index) {
-    if (isDeletingProcess) return;
-    const item = deleteQueue[index];
-    if (!item) return;
-    const yes = await confirmLegacy({
-      title: 'Hapus dokumen ini?',
-      message: `${item.filename}
-ID: ${item.id_dokumen}
+  async function q(e) {
+    if (x) return;
+    let o = s[e];
+    if (
+      !o ||
+      !(await y({
+        title: 'Hapus dokumen ini?',
+        message: `${o.filename}
+ID: ${o.id_dokumen}
 
 Tindakan ini tidak bisa di-undo.`,
-      variant: 'danger',
-      okLabel: 'Ya, Hapus',
-    });
-    if (!yes) return;
-    const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
-    item.status = 'deleting';
-    updateDeletePreview();
-    if (statusEl) statusEl.textContent = `Menghapus 1 dokumen: ${item.filename}...`;
-    const ok = await deleteDokumen(item.id_dokumen);
-    if (ok) {
-      deleteQueue.splice(index, 1);
-      if (statusEl) statusEl.textContent = `Sukses menghapus: ${item.filename}`;
-    } else {
-      item.status = 'error';
-      if (statusEl) statusEl.textContent = `Gagal menghapus: ${item.filename}`;
-    }
-    updateDeletePreview();
+        variant: 'danger',
+        okLabel: 'Ya, Hapus',
+      }))
+    )
+      return;
+    let t = document.getElementById(l.statusId);
+    ((o.status = 'deleting'),
+      w(),
+      t && (t.textContent = `Menghapus 1 dokumen: ${o.filename}...`),
+      (await C(o.id_dokumen))
+        ? (s.splice(e, 1), t && (t.textContent = `Sukses menghapus: ${o.filename}`))
+        : ((o.status = 'error'), t && (t.textContent = `Gagal menghapus: ${o.filename}`)),
+      w());
   }
-  function updateDeletePreview() {
-    const previewEl = document.getElementById(BATCH_DELETE_CONFIG.previewId);
-    const startBtn = document.getElementById('ext-start-delete-btn');
-    const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
-    const searchWrap = document.getElementById('ext-delete-search-wrap');
-    const searchInput = document.getElementById('ext-delete-search-input');
-    const query = (searchInput?.value || '').toLowerCase();
-    if (!deleteQueue || deleteQueue.length === 0) {
-      if (previewEl) {
-        previewEl.style.display = 'none';
-        previewEl.innerHTML = '';
-      }
-      if (searchWrap) searchWrap.style.display = 'none';
-      if (searchInput) searchInput.value = '';
-      if (startBtn) startBtn.disabled = true;
-      if (statusEl) {
-        statusEl.textContent = '';
-        statusEl.style.color = '#4b5563';
-      }
+  function w() {
+    let e = document.getElementById(l.previewId),
+      o = document.getElementById('ext-start-delete-btn'),
+      i = document.getElementById(l.statusId),
+      t = document.getElementById('ext-delete-search-wrap'),
+      r = document.getElementById('ext-delete-search-input'),
+      c = (r?.value || '').toLowerCase();
+    if (!s || s.length === 0) {
+      (e && ((e.style.display = 'none'), (e.innerHTML = '')),
+        t && (t.style.display = 'none'),
+        r && (r.value = ''),
+        o && (o.disabled = !0),
+        i && ((i.textContent = ''), (i.style.color = '#4b5563')));
       return;
     }
-    if (searchWrap) searchWrap.style.display = 'block';
-    const filtered = deleteQueue
-      .map((item, idx) => ({ item, idx }))
+    t && (t.style.display = 'block');
+    let d = s
+      .map((n, a) => ({ item: n, idx: a }))
       .filter(
-        ({ item }) =>
-          !query ||
-          item.filename.toLowerCase().includes(query) ||
-          item.keterangan.toLowerCase().includes(query) ||
-          item.id_dokumen.toLowerCase().includes(query),
+        ({ item: n }) =>
+          !c ||
+          n.filename.toLowerCase().includes(c) ||
+          n.keterangan.toLowerCase().includes(c) ||
+          n.id_dokumen.toLowerCase().includes(c),
       );
-    if (previewEl) {
-      previewEl.style.display = 'block';
-      previewEl.style.borderRadius = '6px';
+    if (
+      (e && ((e.style.display = 'block'), (e.style.borderRadius = '6px')),
+      (e.innerHTML =
+        '<div style="padding:10px 16px;background:#f8fafc;border-bottom:1px solid #f1f5f9;font-size:11px;font-weight:700;color:#1e293b;text-transform:uppercase;letter-spacing:0.5px;">Dokumen Pasien <span style="color:#64748b;font-weight:400;">(' +
+        s.length +
+        ' dokumen, <span style="color:#dc2626;">' +
+        s.filter((n) => n.selected).length +
+        '</span> dipilih)</span></div>'),
+      d.length === 0)
+    ) {
+      let n = document.createElement('div');
+      ((n.style.cssText = 'padding:32px;text-align:center;font-size:13px;color:#94a3b8;'),
+        (n.textContent = 'Tidak ada dokumen yang cocok dengan pencarian.'),
+        e?.appendChild(n));
     }
-    previewEl.innerHTML =
-      '<div style="padding:10px 16px;background:#f8fafc;border-bottom:1px solid #f1f5f9;font-size:11px;font-weight:700;color:#1e293b;text-transform:uppercase;letter-spacing:0.5px;">Dokumen Pasien <span style="color:#64748b;font-weight:400;">(' +
-      deleteQueue.length +
-      ' dokumen, <span style="color:#dc2626;">' +
-      deleteQueue.filter((i) => i.selected).length +
-      '</span> dipilih)</span></div>';
-    if (filtered.length === 0) {
-      const empty = document.createElement('div');
-      empty.style.cssText = 'padding:32px;text-align:center;font-size:13px;color:#94a3b8;';
-      empty.textContent = 'Tidak ada dokumen yang cocok dengan pencarian.';
-      previewEl?.appendChild(empty);
-    }
-    filtered.forEach(({ item, idx }) => {
-      const itemEl = document.createElement('div');
-      itemEl.className = 'ext-delete-preview-item';
-      if (item.selected) itemEl.classList.add('selected');
-      const isDisabled = isDeletingProcess;
-      itemEl.innerHTML = `
+    d.forEach(({ item: n, idx: a }) => {
+      let p = document.createElement('div');
+      ((p.className = 'ext-delete-preview-item'), n.selected && p.classList.add('selected'));
+      let g = x;
+      p.innerHTML = `
       <label class="ext-checkbox-label" style="flex:1;min-width:0;">
-        <input type="checkbox" data-index="${idx}" class="ext-checkbox" ${item.selected ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>
+        <input type="checkbox" data-index="${a}" class="ext-checkbox" ${n.selected ? 'checked' : ''} ${g ? 'disabled' : ''}>
         <div style="flex: 1; min-width: 0;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-            <strong style="font-size: 13px; color: #000000; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${idx + 1}. ${item.filename}</strong>
-            ${item.status !== 'pending' ? `<span class="ext-status-badge" data-status="${item.status === 'success' ? 'success' : item.status === 'error' ? 'error' : 'deleting'}">${item.status === 'success' ? 'Selesai' : item.status === 'error' ? 'Gagal' : 'Memproses'}</span>` : ''}
+            <strong style="font-size: 13px; color: #000000; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${a + 1}. ${n.filename}</strong>
+            ${n.status !== 'pending' ? `<span class="ext-status-badge" data-status="${n.status === 'success' ? 'success' : n.status === 'error' ? 'error' : 'deleting'}">${n.status === 'success' ? 'Selesai' : n.status === 'error' ? 'Gagal' : 'Memproses'}</span>` : ''}
           </div>
           <div style="font-size: 11px; color: #4b5563; margin-top: 6px; display: flex; gap: 8px; flex-wrap: wrap;">
-            <span>ID: <strong style="color: #111827;">${item.id_dokumen}</strong></span>
+            <span>ID: <strong style="color: #111827;">${n.id_dokumen}</strong></span>
             <span style="color: #d1d5db;">|</span>
-            <span>${item.tglFile}</span>
+            <span>${n.tglFile}</span>
             <span style="color: #d1d5db;">|</span>
-            <span>${item.tglUpload}</span>
+            <span>${n.tglUpload}</span>
           </div>
-          <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">${item.keterangan}</div>
+          <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">${n.keterangan}</div>
         </div>
       </label>
-      <button data-index="${idx}" class="ext-delete-preview-btn" ${isDisabled ? 'disabled' : ''}>${Icons.eye} Preview</button>
-      <button data-index="${idx}" class="ext-delete-single-btn" title="Hapus Dokumen Ini" ${isDisabled ? 'disabled' : ''}>${Icons.trash}</button>
+      <button data-index="${a}" class="ext-delete-preview-btn" ${g ? 'disabled' : ''}>${f.eye} Preview</button>
+      <button data-index="${a}" class="ext-delete-single-btn" title="Hapus Dokumen Ini" ${g ? 'disabled' : ''}>${f.trash}</button>
     `;
-      const checkbox = itemEl.querySelector('input[type="checkbox"]');
-      if (!isDeletingProcess && checkbox) {
-        checkbox.addEventListener('change', (e) => {
-          deleteQueue[idx].selected = e.target.checked;
-          updateDeletePreview();
+      let m = p.querySelector('input[type="checkbox"]');
+      !x &&
+        m &&
+        m.addEventListener('change', (h) => {
+          ((s[a].selected = h.target.checked), w());
         });
-      }
-      const actionButtons = itemEl.querySelectorAll('button');
-      const previewBtn = actionButtons[0];
-      const deleteBtn = actionButtons[1];
-      if (!isDeletingProcess) {
-        previewBtn.addEventListener('click', () => {
-          showInlinePreviewSafe(deleteQueue[idx].url, deleteQueue[idx].filename);
-        });
-        deleteBtn.addEventListener('click', () => {
-          deleteSingleFromQueue(idx);
-        });
-      }
-      previewEl?.appendChild(itemEl);
+      let b = p.querySelectorAll('button'),
+        v = b[0],
+        k = b[1];
+      (x ||
+        (v.addEventListener('click', () => {
+          M(s[a].url, s[a].filename);
+        }),
+        k.addEventListener('click', () => {
+          q(a);
+        })),
+        e?.appendChild(p));
     });
-    const selectedCount = deleteQueue.filter((i) => i.selected).length;
-    if (startBtn) {
-      startBtn.disabled = selectedCount === 0 || isDeletingProcess;
-      startBtn.textContent = `Hapus ${selectedCount} Dokumen`;
-      if (selectedCount > 0 && !isDeletingProcess) {
-        startBtn.classList.remove('disabled');
-      } else {
-        startBtn.classList.add('disabled');
-      }
-    }
+    let u = s.filter((n) => n.selected).length;
+    o &&
+      ((o.disabled = u === 0 || x),
+      (o.textContent = `Hapus ${u} Dokumen`),
+      u > 0 && !x ? o.classList.remove('disabled') : o.classList.add('disabled'));
   }
-  async function startBatchDelete() {
-    if (isDeletingProcess) return;
-    const selected = deleteQueue.filter((i) => i.selected);
-    if (selected.length === 0) {
-      void confirmLegacy({
+  async function R() {
+    if (x) return;
+    let e = s.filter((n) => n.selected);
+    if (e.length === 0) {
+      y({
         title: 'Tidak ada dokumen dipilih',
         message: 'Centang dokumen yang ingin dihapus terlebih dahulu.',
         variant: 'warning',
         okLabel: 'OK',
-        hideCancel: true,
+        hideCancel: !0,
       });
       return;
     }
-    const yes = await confirmLegacy({
-      title: `Hapus ${selected.length} dokumen?`,
-      message: 'TIDAK BISA DIUNDO!',
-      variant: 'danger',
-      okLabel: 'Ya, Hapus',
-    });
-    if (!yes) return;
-    isDeletingProcess = true;
-    toggleDeleteUIProcessingState(true);
-    let success = 0,
-      fail = 0;
-    const progressEl = document.getElementById(BATCH_DELETE_CONFIG.progressId);
-    const progressFill = progressEl?.querySelector('.progress-fill');
-    const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
-    if (progressEl) progressEl.style.display = 'block';
-    if (progressFill) progressFill.style.width = '0%';
-    if (statusEl) statusEl.style.color = '#fcd34d';
-    for (let i = 0; i < selected.length; i++) {
-      const item = selected[i];
-      item.status = 'deleting';
-      const ok = await deleteDokumen(item.id_dokumen);
-      if (ok) {
-        item.status = 'success';
-        success++;
-      } else {
-        item.status = 'error';
-        fail++;
+    if (
+      !(await y({
+        title: `Hapus ${e.length} dokumen?`,
+        message: 'TIDAK BISA DIUNDO!',
+        variant: 'danger',
+        okLabel: 'Ya, Hapus',
+      }))
+    )
+      return;
+    ((x = !0), A(!0));
+    let i = 0,
+      t = 0,
+      r = document.getElementById(l.progressId),
+      c = r?.querySelector('.progress-fill'),
+      d = document.getElementById(l.statusId);
+    (r && (r.style.display = 'block'),
+      c && (c.style.width = '0%'),
+      d && (d.style.color = '#fcd34d'));
+    for (let n = 0; n < e.length; n++) {
+      let a = e[n];
+      if (
+        ((a.status = 'deleting'),
+        (await C(a.id_dokumen)) ? ((a.status = 'success'), i++) : ((a.status = 'error'), t++),
+        w(),
+        c && d)
+      ) {
+        let g = ((n + 1) / e.length) * 100;
+        ((c.style.width = g + '%'),
+          (d.textContent = `Diproses ${n + 1}/${e.length} - Sukses: ${i}, Gagal: ${t}`));
       }
-      updateDeletePreview();
-      if (progressFill && statusEl) {
-        const pct = ((i + 1) / selected.length) * 100;
-        progressFill.style.width = pct + '%';
-        statusEl.textContent = `Diproses ${i + 1}/${selected.length} - Sukses: ${success}, Gagal: ${fail}`;
-      }
-      await new Promise((r) => setTimeout(r, BATCH_DELETE_CONFIG.delayBetweenDelete));
+      await new Promise((g) => setTimeout(g, l.delayBetweenDelete));
     }
-    const finalStatus = `Selesai! Sukses: ${success}, Gagal: ${fail}`;
-    if (statusEl) {
-      statusEl.textContent = finalStatus;
-      statusEl.style.color = fail > 0 ? '#000000' : '#6ee7b7';
-    }
-    if (fail > 0) {
-      console.log(
-        'Failed deletes:',
-        deleteQueue.filter((item) => item.status === 'error'),
-      );
-    }
-    void confirmLegacy({
-      title: 'Proses selesai',
-      message: finalStatus,
-      variant: fail > 0 ? 'warning' : 'success',
-      okLabel: 'OK',
-      hideCancel: true,
-    });
-    replaceButtonsWithReload();
-    isDeletingProcess = false;
+    let u = `Selesai! Sukses: ${i}, Gagal: ${t}`;
+    (d && ((d.textContent = u), (d.style.color = t > 0 ? '#000000' : '#6ee7b7')),
+      t > 0 &&
+        console.log(
+          'Failed deletes:',
+          s.filter((n) => n.status === 'error'),
+        ),
+      y({
+        title: 'Proses selesai',
+        message: u,
+        variant: t > 0 ? 'warning' : 'success',
+        okLabel: 'OK',
+        hideCancel: !0,
+      }),
+      F(),
+      (x = !1));
   }
-  function hasIdVisitParam() {
+  function G() {
     return !!new URLSearchParams(window.location.search).get('id_visit');
   }
-  async function crawlDokumenPasienDeleteToSidepanel() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const idVisit = urlParams.get('id_visit');
-    if (!idVisit) {
+  async function N() {
+    let o = new URLSearchParams(window.location.search).get('id_visit');
+    if (!o) {
       chrome.runtime
         .sendMessage({
           type: 'TAB_ACTION_RESULT',
@@ -806,40 +718,38 @@ Tindakan ini tidak bisa di-undo.`,
       return;
     }
     try {
-      const targetUrl = `${window.location.origin}${BATCH_DELETE_CONFIG.fetchListUrl}?id_visit=${idVisit}&page=85&id_kunjungan=`;
-      const response = await fetch(targetUrl);
-      if (!response.ok) throw new Error('Gagal memuat halaman dokumen pasien');
-      const html = await response.text();
-      const doc = new DOMParser().parseFromString(html, 'text/html');
-      const rows = doc.querySelectorAll('table.data-list.tabel tr');
-      deleteQueue = [];
-      for (let i = 1; i < rows.length; i++) {
-        const tr = rows[i];
-        const deleteBtn = tr.querySelector('button[onclick*="hapus"]');
-        let id_dokumen = null;
-        if (deleteBtn) {
-          const onclickStr = deleteBtn.getAttribute('onclick');
-          const match = onclickStr?.match(/hapus\(([^)]+)\)/);
-          if (match) {
-            id_dokumen = match[1].replace(/['"]/g, '').trim();
-          }
+      let i = `${window.location.origin}${l.fetchListUrl}?id_visit=${o}&page=85&id_kunjungan=`,
+        t = await fetch(i);
+      if (!t.ok) throw new Error('Gagal memuat halaman dokumen pasien');
+      let r = await t.text(),
+        d = new DOMParser()
+          .parseFromString(r, 'text/html')
+          .querySelectorAll('table.data-list.tabel tr');
+      s = [];
+      for (let u = 1; u < d.length; u++) {
+        let n = d[u],
+          a = n.querySelector('button[onclick*="hapus"]'),
+          p = null;
+        if (a) {
+          let L = a.getAttribute('onclick')?.match(/hapus\(([^)]+)\)/);
+          L && (p = L[1].replace(/['"]/g, '').trim());
         }
-        if (!id_dokumen) continue;
-        const linkEl = tr.querySelector('td:nth-child(2) a');
-        const filename = tr.cells[1]?.textContent?.trim() || 'unknown';
-        const keterangan = tr.cells[2]?.textContent?.trim() || '-';
-        const tglFile = tr.cells[3]?.textContent?.trim() || '-';
-        const tglUpload = tr.cells[4]?.textContent?.trim() || '-';
-        const href = linkEl?.getAttribute('href') || '';
-        const url = href.startsWith('http') ? href : `${window.location.origin}${href}`;
-        deleteQueue.push({
-          id_dokumen,
-          filename,
-          keterangan,
-          tglFile,
-          tglUpload,
-          url,
-          selected: false,
+        if (!p) continue;
+        let g = n.querySelector('td:nth-child(2) a'),
+          m = n.cells[1]?.textContent?.trim() || 'unknown',
+          b = n.cells[2]?.textContent?.trim() || '-',
+          v = n.cells[3]?.textContent?.trim() || '-',
+          k = n.cells[4]?.textContent?.trim() || '-',
+          h = g?.getAttribute('href') || '',
+          I = h.startsWith('http') ? h : `${window.location.origin}${h}`;
+        s.push({
+          id_dokumen: p,
+          filename: m,
+          keterangan: b,
+          tglFile: v,
+          tglUpload: k,
+          url: I,
+          selected: !1,
           status: 'pending',
         });
       }
@@ -847,130 +757,116 @@ Tindakan ini tidak bisa di-undo.`,
         .sendMessage({
           type: 'TAB_ACTION_RESULT',
           action: 'BATCH_DELETE_CRAWL_RESULT',
-          data: { items: deleteQueue },
+          data: { items: s },
         })
         .catch(console.error);
-    } catch (err) {
+    } catch (i) {
       chrome.runtime
         .sendMessage({
           type: 'TAB_ACTION_RESULT',
           action: 'BATCH_DELETE_ERROR',
-          data: { error: err.message },
+          data: { error: i.message },
         })
         .catch(console.error);
     }
   }
-  async function deleteSingleFromQueueToSidepanel(index, id_dokumen) {
-    const item = deleteQueue[index];
-    if (!item) return;
-    const ok = await deleteDokumen(id_dokumen);
+  async function W(e, o) {
+    if (!s[e]) return;
+    let t = await C(o);
     chrome.runtime
       .sendMessage({
         type: 'TAB_ACTION_RESULT',
         action: 'BATCH_DELETE_SINGLE_RESULT',
         data: {
-          index,
-          success: ok,
-          error: ok ? void 0 : 'Gagal memproses penghapusan di server.',
+          index: e,
+          success: t,
+          error: t ? void 0 : 'Gagal memproses penghapusan di server.',
         },
       })
       .catch(console.error);
   }
-  async function startBatchDeleteToSidepanel() {
-    const selected = deleteQueue.filter((i) => i.selected);
-    if (selected.length === 0) return;
-    let success = 0,
-      fail = 0;
-    for (let i = 0; i < selected.length; i++) {
-      const item = selected[i];
-      item.status = 'deleting';
-      chrome.runtime
-        .sendMessage({
-          type: 'TAB_ACTION_RESULT',
-          action: 'BATCH_DELETE_PROGRESS',
-          data: {
-            percent: (i / selected.length) * 100,
-            status: `Menghapus: ${item.filename} (${i + 1}/${selected.length})...`,
-            items: deleteQueue,
-            finished: false,
-          },
-        })
-        .catch(console.error);
-      const ok = await deleteDokumen(item.id_dokumen);
-      if (ok) {
-        item.status = 'success';
-        success++;
-      } else {
-        item.status = 'error';
-        fail++;
+  async function K() {
+    let e = s.filter((t) => t.selected);
+    if (e.length === 0) return;
+    let o = 0,
+      i = 0;
+    for (let t = 0; t < e.length; t++) {
+      let r = e[t];
+      ((r.status = 'deleting'),
+        chrome.runtime
+          .sendMessage({
+            type: 'TAB_ACTION_RESULT',
+            action: 'BATCH_DELETE_PROGRESS',
+            data: {
+              percent: (t / e.length) * 100,
+              status: `Menghapus: ${r.filename} (${t + 1}/${e.length})...`,
+              items: s,
+              finished: !1,
+            },
+          })
+          .catch(console.error),
+        (await C(r.id_dokumen)) ? ((r.status = 'success'), o++) : ((r.status = 'error'), i++),
+        chrome.runtime
+          .sendMessage({
+            type: 'TAB_ACTION_RESULT',
+            action: 'BATCH_DELETE_PROGRESS',
+            data: {
+              percent: ((t + 1) / e.length) * 100,
+              status: `Diproses ${t + 1}/${e.length} - Sukses: ${o}, Gagal: ${i}`,
+              items: s,
+              finished: t === e.length - 1,
+            },
+          })
+          .catch(console.error),
+        await new Promise((d) => setTimeout(d, l.delayBetweenDelete)));
+    }
+  }
+  function V() {
+    if (
+      G() &&
+      B.currentConfig?.features?.batchDelete?.enabled &&
+      B.ExtensionCore.isFeatureAllowed('batchDelete')
+    )
+      try {
+        (console.log('[BatchDelete] Init starting...'),
+          z(),
+          chrome.runtime
+            .sendMessage({
+              type: 'PAGE_CONTEXT',
+              feature: 'mKlaimDetail',
+              data: { idVisit: new URLSearchParams(window.location.search).get('id_visit') },
+            })
+            .catch(console.error),
+          chrome.runtime.onMessage.addListener((e, o, i) => {
+            if (e.type === 'TAB_ACTION') {
+              let { action: t, payload: r } = e;
+              (t === 'BATCH_DELETE_CRAWL'
+                ? N()
+                : t === 'BATCH_DELETE_UPDATE_ITEMS'
+                  ? (s = r.items)
+                  : t === 'BATCH_DELETE_PREVIEW'
+                    ? M(r.url, r.filename).catch(() => {
+                        window.open(r.url, '_blank');
+                      })
+                    : t === 'BATCH_DELETE_SINGLE'
+                      ? W(r.index, r.id_dokumen)
+                      : t === 'BATCH_DELETE_START' && K(),
+                i({ success: !0 }));
+            } else e.type === 'BATCH_DELETE_ACTION' && i({ success: !0 });
+            return !0;
+          }),
+          console.log('[BatchDelete] Init complete'));
+      } catch (e) {
+        console.error('[BatchDelete] Init error:', e);
       }
-      chrome.runtime
-        .sendMessage({
-          type: 'TAB_ACTION_RESULT',
-          action: 'BATCH_DELETE_PROGRESS',
-          data: {
-            percent: ((i + 1) / selected.length) * 100,
-            status: `Diproses ${i + 1}/${selected.length} - Sukses: ${success}, Gagal: ${fail}`,
-            items: deleteQueue,
-            finished: i === selected.length - 1,
-          },
-        })
-        .catch(console.error);
-      await new Promise((r) => setTimeout(r, BATCH_DELETE_CONFIG.delayBetweenDelete));
-    }
   }
-  function initBatchDeleteFeature() {
-    if (!hasIdVisitParam()) return;
-    if (!g.currentConfig?.features?.batchDelete?.enabled) return;
-    if (!g.ExtensionCore.isFeatureAllowed('batchDelete')) return;
-    try {
-      console.log('[BatchDelete] Init starting...');
-      injectBatchDeleteCSS();
-      chrome.runtime
-        .sendMessage({
-          type: 'PAGE_CONTEXT',
-          feature: 'mKlaimDetail',
-          data: {
-            idVisit: new URLSearchParams(window.location.search).get('id_visit'),
-          },
-        })
-        .catch(console.error);
-      chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-        if (message.type === 'TAB_ACTION') {
-          const { action, payload } = message;
-          if (action === 'BATCH_DELETE_CRAWL') {
-            crawlDokumenPasienDeleteToSidepanel();
-          } else if (action === 'BATCH_DELETE_UPDATE_ITEMS') {
-            deleteQueue = payload.items;
-          } else if (action === 'BATCH_DELETE_PREVIEW') {
-            showInlinePreviewSafe(payload.url, payload.filename).catch(() => {
-              window.open(payload.url, '_blank');
-            });
-          } else if (action === 'BATCH_DELETE_SINGLE') {
-            deleteSingleFromQueueToSidepanel(payload.index, payload.id_dokumen);
-          } else if (action === 'BATCH_DELETE_START') {
-            startBatchDeleteToSidepanel();
-          }
-          sendResponse({ success: true });
-        } else if (message.type === 'BATCH_DELETE_ACTION') {
-          sendResponse({ success: true });
-        }
-        return true;
-      });
-      console.log('[BatchDelete] Init complete');
-    } catch (err) {
-      console.error('[BatchDelete] Init error:', err);
-    }
-  }
-  window.batchDeleteShowModal = showBatchDeleteModal;
-  if (typeof g.featureModules !== 'undefined') {
-    g.featureModules.batchDelete = {
+  window.batchDeleteShowModal = j;
+  typeof B.featureModules < 'u' &&
+    (B.featureModules.batchDelete = {
       id: 'batchDelete',
       name: 'Batch Delete Dokumen',
       description: 'Hapus multiple dokumen sekaligus',
       match: { regex: /^\/v2\/m-klaim\/detail-v2-refaktor\/?$/ },
-      run: initBatchDeleteFeature,
-    };
-  }
+      run: V,
+    });
 })();
-//# sourceMappingURL=batchDeleteFiles.js.map
