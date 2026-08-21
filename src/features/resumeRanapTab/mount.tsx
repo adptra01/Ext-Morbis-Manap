@@ -229,9 +229,121 @@ function mountReactApp(data: RanapFormData) {
     s.textContent =
       (typeof SHADOW_CSS !== 'undefined' ? SHADOW_CSS : '') +
       `
-      .ri-modal{background:#fff;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,.25);width:94%;max-width:900px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;animation:ri-up .25s ease}
-      .ri-modal textarea,.ri-modal input,.ri-modal select{pointer-events:auto!important}
-      .ri-modal button{cursor:pointer}
+      /* ── Reset host-page overrides inside the modal ── */
+      /* ponytail: specificity 0-2-0 beats most host styles without !important */
+      .ri-modal .ri-modal {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 25px 60px rgba(0,0,0,.25);
+        width: 94%;
+        max-width: 900px;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        animation: ri-up .25s ease;
+        font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+        font-size: 16px;
+        line-height: 1.6;
+        color: #1a1d23;
+      }
+      .ri-modal .ri-modal *,
+      .ri-modal .ri-modal *::before,
+      .ri-modal .ri-modal *::after {
+        box-sizing: border-box;
+      }
+      /* Neutralize host page button/input/select/textarea defaults */
+      .ri-modal .ri-modal button,
+      .ri-modal .ri-modal input,
+      .ri-modal .ri-modal select,
+      .ri-modal .ri-modal textarea {
+        all: unset;
+        box-sizing: border-box;
+        font-family: inherit;
+        font-size: inherit;
+        color: inherit;
+        cursor: default;
+      }
+      .ri-modal .ri-modal button {
+        cursor: pointer;
+        min-height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        white-space: nowrap;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 12px;
+        line-height: 18px;
+        padding: 4px 10px;
+        transition: background-color 0.15s, color 0.15s;
+      }
+      .ri-modal .ri-modal button:disabled {
+        pointer-events: none;
+        opacity: 0.5;
+      }
+      .ri-modal .ri-modal input,
+      .ri-modal .ri-modal select,
+      .ri-modal .ri-modal textarea {
+        height: auto;
+        min-height: 32px;
+        width: 100%;
+        border: 1px solid hsl(214.3 31.8% 91.4%);
+        border-radius: 6px;
+        background: white;
+        padding: 4px 10px;
+        outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      .ri-modal .ri-modal input:focus,
+      .ri-modal .ri-modal select:focus,
+      .ri-modal .ri-modal textarea:focus {
+        border-color: hsl(221.2 83.2% 53.3%);
+        box-shadow: 0 0 0 2px hsl(221.2 83.2% 53.3% / 0.15);
+      }
+      .ri-modal .ri-modal textarea {
+        resize: vertical;
+        min-height: 80px;
+        padding: 8px 10px;
+      }
+      .ri-modal .ri-modal select {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        padding-right: 28px;
+      }
+      .ri-modal .ri-modal h1,
+      .ri-modal .ri-modal h2,
+      .ri-modal .ri-modal h3 {
+        font-family: 'Lexend', system-ui, sans-serif;
+      }
+      /* ── Radix Select portal (renders outside .ri-modal) ── */
+      [data-radix-select-viewport] {
+        padding: 4px;
+      }
+      [data-radix-select-viewport] [role="option"] {
+        all: unset;
+        display: flex;
+        align-items: center;
+        padding: 6px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        line-height: 18px;
+        font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+        color: #1a1d23;
+      }
+      [data-radix-select-viewport] [role="option"]:focus,
+      [data-radix-select-viewport] [role="option"][data-highlighted] {
+        background: hsl(210 40% 96.1%);
+        color: hsl(222.2 47.4% 11.2%);
+      }
+      [data-radix-popper-content-wrapper] {
+        z-index: 2147483646 !important;
+      }
       @keyframes ri-up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
     `;
     document.head.appendChild(s);
