@@ -21,29 +21,17 @@
     const origin = window.location.origin;
     const url = `${origin}/admisi/pelaksanaan_pelayanan/laboratorium-data?id_visit=${id_visit}&status_periksa=belum`;
 
-    const link = document.createElement('a');
-    link.dataset.extLabHistory = 'true';
-    link.href = url;
-    link.target = '_blank';
-    link.textContent = 'Lihat Riwayat Permintaan Lab';
-    Object.assign(link.style, {
-      display: 'inline-flex',
-      alignItems: 'center',
-      padding: '6px 14px',
-      margin: '8px 0',
-      background: '#0d9488',
-      color: '#fff',
-      border: 'none',
-      borderRadius: '6px',
-      textDecoration: 'none',
-      fontSize: '13px',
-      fontWeight: '600',
-      cursor: 'pointer',
-    });
+    const btn = document.createElement('ext-btn');
+    btn.dataset.extLabHistory = 'true';
+    btn.setAttribute('variant', 'primary');
+    btn.setAttribute('size', 'sm');
+    btn.textContent = 'Lihat Riwayat Permintaan Lab';
+    btn.style.margin = '8px 0';
+    btn.addEventListener('click', () => window.open(url, '_blank'));
 
     const legend = fieldset.querySelector('legend');
-    if (legend) legend.after(link);
-    else fieldset.prepend(link);
+    if (legend) legend.after(btn);
+    else fieldset.prepend(btn);
 
     currentIdVisit = id_visit;
     console.log('[inputHasilPa] Button injected', { id_visit, url });

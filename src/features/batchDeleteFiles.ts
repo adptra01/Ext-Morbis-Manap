@@ -1,5 +1,11 @@
 import { getMorbisGlobals } from './shared/types.js';
-import { injectSharedCSS, showInlinePreviewSafe, Icons, iconWrap } from './shared/batchUtils.js';
+import {
+  injectSharedCSS,
+  showInlinePreviewSafe,
+  Icons,
+  iconWrap,
+  confirmLegacy,
+} from './shared/batchUtils.js';
 
 const g = getMorbisGlobals();
 
@@ -257,9 +263,13 @@ async function crawlDokumenPasienDelete(): Promise<void> {
 
   if (!idVisit) {
     console.error('[BatchDelete] id_visit not found in URL!');
-    alert(
-      'Parameter id_visit tidak ditemukan di URL saat ini.\n\nPastikan buka dari halaman detail pasien.',
-    );
+    void confirmLegacy({
+      title: 'Parameter id_visit tidak ditemukan',
+      message: 'Pastikan buka dari halaman detail pasien.',
+      variant: 'warning',
+      okLabel: 'OK',
+      hideCancel: true,
+    });
     return;
   }
 
@@ -347,9 +357,12 @@ async function deleteSingleFromQueue(index: number): Promise<void> {
   const item = deleteQueue[index];
   if (!item) return;
 
-  const yes = confirm(
-    `Hapus dokumen ini?\n\n${item.filename}\nID: ${item.id_dokumen}\n\nTindakan ini tidak bisa di-undo.`,
-  );
+  const yes = await confirmLegacy({
+    title: 'Hapus dokumen ini?',
+    message: `${item.filename}\nID: ${item.id_dokumen}\n\nTindakan ini tidak bisa di-undo.`,
+    variant: 'danger',
+    okLabel: 'Ya, Hapus',
+  });
   if (!yes) return;
 
   const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
@@ -434,7 +447,7 @@ function updateDeletePreview(): void {
         <div style="flex: 1; min-width: 0;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
             <strong style="font-size: 13px; color: #000000; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${idx + 1}. ${item.filename}</strong>
-            ${item.status !== 'pending' ? `<span class="ext-status-badge" data-status="${item.status}">${item.status === 'success' ? 'Selesai' : item.status === 'error' ? 'Gagal' : item.status === 'deleting' ? '...' : item.status}</span>` : ''}
+            ${item.status !== 'pending' ? `<span class="ext-status-badge" data-status="${item.status === 'success' ? 'success' : item.status === 'error' ? 'error' : 'deleting'}">${item.status === 'success' ? 'Selesai' : item.status === 'error' ? 'Gagal' : 'Memproses'}</span>` : ''}
           </div>
           <div style="font-size: 11px; color: #4b5563; margin-top: 6px; display: flex; gap: 8px; flex-wrap: wrap;">
             <span>ID: <strong style="color: #111827;">${item.id_dokumen}</strong></span>
@@ -492,11 +505,23 @@ async function startBatchDelete(): Promise<void> {
 
   const selected = deleteQueue.filter((i) => i.selected);
   if (selected.length === 0) {
-    alert('Pilih dokumen untuk dihapus');
+    void confirmLegacy({
+      title: 'Tidak ada dokumen dipilih',
+      message: 'Centang dokumen yang ingin dihapus terlebih dahulu.',
+      variant: 'warning',
+      okLabel: 'OK',
+      hideCancel: true,
+    });
     return;
   }
 
-  if (!confirm(`Hapus ${selected.length} dokumen? TIDAK BISA DIUNDO!`)) return;
+  const yes = await confirmLegacy({
+    title: `Hapus ${selected.length} dokumen?`,
+    message: 'TIDAK BISA DIUNDO!',
+    variant: 'danger',
+    okLabel: 'Ya, Hapus',
+  });
+  if (!yes) return;
 
   isDeletingProcess = true;
   toggleDeleteUIProcessingState(true);
@@ -546,7 +571,13 @@ async function startBatchDelete(): Promise<void> {
     );
   }
 
-  alert(finalStatus);
+  void confirmLegacy({
+    title: 'Proses selesai',
+    message: finalStatus,
+    variant: fail > 0 ? 'warning' : 'success',
+    okLabel: 'OK',
+    hideCancel: true,
+  });
   replaceButtonsWithReload();
   isDeletingProcess = false;
 }

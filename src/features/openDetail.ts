@@ -1,6 +1,18 @@
+/** openDetail.ts — Fixed: interval & MutationObserver lifecycle management
+ *
+ * CHANGES:
+ * - setInterval(overrideDetailButtons, 2000) → disimpan ID nya, clear on feature toggle/disable
+ * - MutationObserver → disimpan reference, disconnect on restore
+ */
+
 import { getMorbisGlobals } from './shared/types.js';
 
 const g = getMorbisGlobals();
+
+// ponytail: module-level timer IDs + observer ref — ini kunci agar bisa cleanup pas fitur disable/navigate
+let _scanIntervalId: number | null = null;
+let _textScanTimeoutId: number | null = null;
+let _observer: MutationObserver | null = null;
 
 const OPEN_DETAIL_CONFIG = {
   urlPatterns: [
@@ -233,21 +245,45 @@ function overrideButtonsByText(): void {
   });
 }
 
+/** Cleanup semua resources (timer + observer + listeners). */
+function _cleanupOpenDetail(): void {
+  // Clear interval
+  if (_scanIntervalId !== null) {
+    clearInterval(_scanIntervalId);
+    _scanIntervalId = null;
+  }
+  // Clear one-shot timeout
+  if (_textScanTimeoutId !== null) {
+    clearTimeout(_textScanTimeoutId);
+    _textScanTimeoutId = null;
+  }
+  // Disconnect observer
+  if (_observer) {
+    _observer.disconnect();
+    _observer = null;
+  }
+}
+
 function runOpenDetailInNewTabFeature(): void {
   const isEnabled = g.currentConfig?.features?.openDetailInNewTab?.enabled;
+
+  // Always cleanup first — mencegah double-init jika config reload
+  _cleanupOpenDetail();
 
   try {
     if (isEnabled) {
       console.log('[OpenDetail] Feature ENABLED');
       overrideDetailButtons();
-      setTimeout(() => overrideButtonsByText(), 500);
-      setInterval(() => overrideDetailButtons(), 2000);
+      _textScanTimeoutId = window.setTimeout(() => overrideButtonsByText(), 500);
+      // FIX: simpan interval ID agar bisa di-clear saat disable
+      _scanIntervalId = window.setInterval(() => overrideDetailButtons(), 2000);
     } else {
       console.log('[OpenDetail] Feature DISABLED');
       restoreDetailButtons();
     }
 
-    const observer = new MutationObserver(() => {
+    // FIX: simpan observer ref agar bisa disconnect
+    _observer = new MutationObserver(() => {
       try {
         if (isEnabled) {
           overrideDetailButtons();
@@ -257,7 +293,7 @@ function runOpenDetailInNewTabFeature(): void {
       }
     });
 
-    observer.observe(document.body, { childList: true, subtree: true });
+    _observer.observe(document.body, { childList: true, subtree: true });
   } catch (e) {
     console.error('[OpenDetail] Error running feature:', e);
   }

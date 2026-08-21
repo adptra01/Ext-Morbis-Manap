@@ -28,6 +28,8 @@ var __morbis_bg = (() => {
     // SW fetch bebas PNA/CORS halaman (host_permissions http://*/*) sehingga
     // halaman HTTP publik MORBIS bisa ambil MP3 dari 127.0.0.1:8765.
     TTS_LOCAL: 'TTS_LOCAL',
+    // Remote error logging: content script → background → Slack webhook (prod only)
+    LOG_TO_TELEGRAM: 'LOG_TO_TELEGRAM',
   };
 
   // src/shared/logger.ts
@@ -40,8 +42,48 @@ var __morbis_bg = (() => {
     };
   }
 
+  // src/shared/telegramLogger.ts
+  function sanitizeMessage(input) {
+    if (!input) return '';
+    return input
+      .replace(/\b\d{2}-\d{2}-\d{2}\b/g, '[NO_RM_REDACTED]')
+      .replace(/\b\d{6,16}\b/g, '[NUMERIC_DATA_REDACTED]');
+  }
+
   // src/background.ts
   var log = createLogger('Background');
+  var telegramSent = /* @__PURE__ */ new Map();
+  var TELEGRAM_RATE_LIMIT = 5;
+  var TELEGRAM_RATE_WINDOW_MS = 6e4;
+  async function sendTelegramLog(level, feature, message) {
+    const token = '';
+    const chatId = '';
+    if (!token || !chatId) return;
+    const clean = sanitizeMessage(message);
+    if (!clean) return;
+    const now = Date.now();
+    const key = feature + ':' + clean;
+    const count = telegramSent.get(key) ?? 0;
+    if (count >= TELEGRAM_RATE_LIMIT) return;
+    telegramSent.set(key, count + 1);
+    if (telegramSent.size > 100) {
+      for (const [k, t] of telegramSent) {
+        if (now - t > TELEGRAM_RATE_WINDOW_MS) telegramSent.delete(k);
+      }
+    }
+    const label = level === 'error' ? 'ERROR' : 'WARN';
+    const text = `<b>[MORBIS Ext] ${label} \u2014 ${feature}</b>
+<code>${clean.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code>`;
+    try {
+      await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
+      });
+    } catch (e) {
+      log.log('Telegram log send failed:', String(e).slice(0, 80));
+    }
+  }
   var TTS_CACHE_TTL_MS = 12 * 60 * 60 * 1e3;
   var TTS_CACHE_PREFIX = 'ttsCache:';
   var TTS_CACHE_MAX_ENTRIES = 60;
@@ -234,6 +276,18 @@ var __morbis_bg = (() => {
         allowedRoles: ['labor', 'kasir', 'admin'],
         name: 'DataTables Input Hasil Lab',
         description: 'Search, pagination, page length, dan tampilan rapi untuk tabel hasil lab',
+      },
+      radiologiDataTables: {
+        enabled: false,
+        allowedRoles: ['admin', 'dokter'],
+        name: 'DataTables Radiologi',
+        description: 'Search, pagination, page length, dan tampilan rapi untuk tabel radiologi',
+      },
+      konsulDataTables: {
+        enabled: false,
+        allowedRoles: ['casemix'],
+        name: 'DataTables Konsultasi',
+        description: 'Search, pagination, page length untuk tabel jawaban konsultasi',
       },
       laporanKasirTime: {
         enabled: true,
@@ -578,6 +632,12 @@ var __morbis_bg = (() => {
       }
       case 'TAB_ACTION_RESULT': {
         chrome.runtime.sendMessage(validated).catch(() => {});
+        sendResponse({ success: true });
+        return true;
+      }
+      case 'LOG_TO_TELEGRAM': {
+        const p = validated;
+        void sendTelegramLog(p.level ?? 'error', p.feature ?? 'unknown', p.message ?? '');
         sendResponse({ success: true });
         return true;
       }

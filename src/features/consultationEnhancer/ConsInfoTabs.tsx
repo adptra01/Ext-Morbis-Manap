@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { fetchTabContent } from './legacy';
 import ServerTabRenderer from './ServerTabRenderer';
+import type { ExtModal } from '../../ui/web';
 
 interface Props {
   data: Record<string, string>;
@@ -19,6 +20,7 @@ export default function ConsInfoTabs({ data, onClose }: Props) {
   const [contents, setContents] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const loaded = useRef<Set<string>>(new Set());
+  const modalRef = useRef<ExtModal>(null);
 
   const loadTab = async (tabId: string) => {
     if (loaded.current.has(tabId)) return;
@@ -38,48 +40,58 @@ export default function ConsInfoTabs({ data, onClose }: Props) {
   };
 
   useEffect(() => {
+    modalRef.current?.open();
+    const el = modalRef.current;
+    const onCancel = () => onClose();
+    el?.addEventListener('ext-cancel', onCancel);
+    return () => el?.removeEventListener('ext-cancel', onCancel);
+  }, []);
+
+  useEffect(() => {
     loadTab(TABS[0].id);
   }, []);
 
   return createPortal(
-    <div
-      className="cons-overlay"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div className="cons-modal cons-modal-wide">
-        <div className="cons-header">
-          <h2>
-            {data.nama ?? ''} ({data.noRm ?? ''})
-          </h2>
-          <button className="cons-close" onClick={onClose}>
-            &times;
+    <ext-modal ref={modalRef} variant="info">
+      <h3 slot="title">
+        {data.nama ?? ''} ({data.noRm ?? ''})
+      </h3>
+      <ext-tabs>
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            slot="tab"
+            data-tab={tab.id}
+            data-active={activeTab === tab.id ? '' : undefined}
+            onClick={() => {
+              setActiveTab(tab.id);
+              loadTab(tab.id);
+            }}
+          >
+            {tab.label}
           </button>
-        </div>
-        <div className="cons-tabs">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              className={`cons-tab-btn${activeTab === tab.id ? ' cons-tab-active' : ''}`}
-              onClick={() => {
-                setActiveTab(tab.id);
-                loadTab(tab.id);
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-        <div className="cons-tab-content">
-          {loading[activeTab] ? (
-            <div className="cons-loading">Memuat...</div>
-          ) : contents[activeTab] ? (
-            <ServerTabRenderer html={contents[activeTab]} />
-          ) : null}
-        </div>
+        ))}
+        {TABS.map((tab) => (
+          <div
+            key={tab.id}
+            slot="panel"
+            data-panel={tab.id}
+            data-active={activeTab === tab.id ? '' : undefined}
+          >
+            {loading[tab.id] ? (
+              <div className="cons-loading">Memuat...</div>
+            ) : contents[tab.id] ? (
+              <ServerTabRenderer html={contents[tab.id]} />
+            ) : null}
+          </div>
+        ))}
+      </ext-tabs>
+      <div slot="footer" style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+        <ext-btn variant="secondary" onClick={onClose}>
+          Tutup
+        </ext-btn>
       </div>
-    </div>,
+    </ext-modal>,
     document.body,
   );
 }

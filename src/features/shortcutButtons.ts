@@ -3,12 +3,26 @@ import { colors, injectCSS } from '../shared/ui/index.js';
 
 const g = getMorbisGlobals();
 
+const BACK_DETAIL_BTN = { text: 'Kembali ke Detail Klaim', bg: '#6366f1', hover: '#4f46e5' };
+
 injectCSS(
   'ext-shortcut-styles',
-  `@media print{[data-shortcut-buttons],[data-back-to-detail-klaim],.no-print,.hilang-saat-print{display:none!important;height:0!important;width:0!important;margin:0!important;padding:0!important;overflow:hidden!important;visibility:hidden!important;position:absolute!important;top:-9999px!important;left:-9999px!important;opacity:0!important}[data-shortcut-buttons] a,[data-shortcut-buttons] button,[data-back-to-detail-klaim] a,[data-back-to-detail-klaim] button{display:none!important}}`,
+  `@media print{[data-shortcut-buttons],[data-back-to-detail-klaim],.no-print,.hilang-saat-print{display:none!important;height:0!important;width:0!important;margin:0!important;padding:0!important;overflow:hidden!important;visibility:hidden!important;position:absolute!important;top:-9999px!important;left:-9999px!important;opacity:0!important}[data-shortcut-buttons] a,[data-shortcut-buttons] button,[data-back-to-detail-klaim] a,[data-back-to-detail-klaim] button{display:none!important}}
+  [data-back-to-detail-klaim] {
+    display:inline-flex; align-items:center; padding:10px 14px; margin:12px;
+    background:${colors.secondary}; border:1px solid ${colors.border}; border-radius:8px;
+    position:fixed; top:100px; right:20px; z-index:9999;
+  }
+  [data-back-to-detail-klaim] a {
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:8px 16px; background:${BACK_DETAIL_BTN.bg}; color:#fff; border:none;
+    border-radius:6px; text-decoration:none; font-size:13px; font-weight:600;
+    cursor:pointer; transition:all 0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.2);
+  }
+  [data-back-to-detail-klaim] a:hover { background:${BACK_DETAIL_BTN.hover}; transform:translateY(-2px); box-shadow:0 4px 8px rgba(0,0,0,0.3); }
+  [data-back-to-detail-klaim] a:active { transform:translateY(0); }
+`,
 );
-
-const BACK_DETAIL_BTN = { text: 'Kembali ke Detail Klaim', bg: '#6366f1', hover: '#4f46e5' };
 
 function extractParam(name: string): string | null {
   return new URLSearchParams(window.location.search).get(name);
@@ -48,49 +62,10 @@ function renderBackToDetailButton(): void {
 
   const container = document.createElement('div');
   container.dataset.backToDetailKlaim = 'true';
-  Object.assign(container.style, {
-    display: 'inline-flex',
-    alignItems: 'center',
-    padding: '10px 14px',
-    margin: '12px',
-    background: colors.secondary,
-    border: `1px solid ${colors.border}`,
-    borderRadius: '8px',
-    position: 'fixed',
-    top: '100px',
-    right: '20px',
-    zIndex: '9999',
-  });
 
   const btn = document.createElement('a');
   btn.href = detailUrl;
   btn.textContent = BACK_DETAIL_BTN.text;
-  Object.assign(btn.style, {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '8px 16px',
-    background: BACK_DETAIL_BTN.bg,
-    color: '#fff',
-    border: 'none',
-    borderRadius: '6px',
-    textDecoration: 'none',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-  });
-  btn.addEventListener('mouseenter', () => {
-    btn.style.background = BACK_DETAIL_BTN.hover;
-    btn.style.transform = 'translateY(-2px)';
-    btn.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
-  });
-  btn.addEventListener('mouseleave', () => {
-    btn.style.background = BACK_DETAIL_BTN.bg;
-    btn.style.transform = 'translateY(0)';
-    btn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
-  });
   btn.addEventListener('click', (e) => {
     e.preventDefault();
     window.close();

@@ -307,3 +307,77 @@ export function registerGlobalBatchUtils(): void {
     showErrorToast,
   };
 }
+
+// ponytail: DOM-based confirm dialog for ISOLATED world content scripts where
+// customElements (ext-modal) is null. Same API shape as confirmExt from ui/web.
+
+interface ConfirmLegacyOptions {
+  title: string;
+  message?: string;
+  variant?: string;
+  okLabel?: string;
+  cancelLabel?: string;
+  hideCancel?: boolean;
+}
+
+export function confirmLegacy(opts: ConfirmLegacyOptions): Promise<boolean> {
+  return new Promise((resolve) => {
+    injectSharedCSS();
+
+    const variantClass = opts.variant === 'danger' ? 'ext-btn-danger' : 'ext-btn-primary';
+
+    const overlay = document.createElement('div');
+    overlay.style.cssText =
+      'position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.55);backdrop-filter:blur(2px);';
+
+    overlay.innerHTML = `
+      <div class="ext-modal-content" style="max-width:480px;">
+        <div class="ext-modal-header">
+          <h3></h3>
+          <button class="ext-modal-close">&times;</button>
+        </div>
+        <div class="ext-confirm-body" style="font-size:14px;color:#334155;line-height:1.6;"></div>
+        <div class="ext-modal-buttons">
+          ${
+            opts.hideCancel
+              ? ''
+              : `<button class="ext-btn ext-btn-secondary" data-ext-cancel>${
+                  opts.cancelLabel ?? 'Batal'
+                }</button>`
+          }
+          <button class="ext-btn ${variantClass}" data-ext-ok>${opts.okLabel ?? 'Lanjut'}</button>
+        </div>
+      </div>`;
+
+    overlay.querySelector('h3')!.textContent = opts.title;
+
+    const body = overlay.querySelector('.ext-confirm-body')!;
+    if (opts.message) {
+      opts.message.split('\n').forEach((line, i) => {
+        if (i > 0) body.appendChild(document.createElement('br'));
+        body.appendChild(document.createTextNode(line));
+      });
+    }
+
+    const done = (result: boolean) => {
+      overlay.remove();
+      document.removeEventListener('keydown', onKey);
+      resolve(result);
+    };
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') done(false);
+    };
+
+    overlay.querySelector('.ext-modal-close')!.addEventListener('click', () => done(false));
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) done(false);
+    });
+    overlay.querySelector('[data-ext-ok]')!.addEventListener('click', () => done(true));
+    const cancelBtn = overlay.querySelector('[data-ext-cancel]');
+    if (cancelBtn) cancelBtn.addEventListener('click', () => done(false));
+    document.addEventListener('keydown', onKey);
+
+    document.body.appendChild(overlay);
+  });
+}

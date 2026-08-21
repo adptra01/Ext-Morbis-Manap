@@ -1,6 +1,7 @@
 /* ── RI resume: fetch form data, render React, submit ke endpoint ── */
 
 import { createRoot, type Root } from 'react-dom/client';
+import { confirmExt } from '../../ui/web';
 import { App } from './App';
 import { ErrorBoundary } from './ErrorBoundary';
 import type { RanapFormData, IcdItem } from './types';
@@ -225,9 +226,12 @@ function mountReactApp(data: RanapFormData) {
   if (!document.getElementById('ext-ri-css')) {
     const s = document.createElement('style');
     s.id = 'ext-ri-css';
-    s.textContent = `
+    s.textContent =
+      (typeof SHADOW_CSS !== 'undefined' ? SHADOW_CSS : '') +
+      `
       .ri-modal{background:#fff;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,.25);width:94%;max-width:900px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;animation:ri-up .25s ease}
-      .ri-modal textarea,.ri-modal input,.ri-modal select{resize:vertical!important;pointer-events:auto!important}
+      .ri-modal textarea,.ri-modal input,.ri-modal select{pointer-events:auto!important}
+      .ri-modal button{cursor:pointer}
       @keyframes ri-up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
     `;
     document.head.appendChild(s);
@@ -306,14 +310,26 @@ async function init() {
     try {
       if (!cachedData) cachedData = await fetchFormData();
       if (!cachedData) {
-        alert('Gagal memuat data');
+        void confirmExt({
+          title: 'Gagal',
+          message: 'Gagal memuat data',
+          variant: 'danger',
+          okLabel: 'OK',
+          hideCancel: true,
+        });
         overlayBtn!.disabled = false;
         return;
       }
       mountReactApp(cachedData);
     } catch (e) {
       console.error('[RI] error:', e);
-      alert('Gagal: ' + (e instanceof Error ? e.message : String(e)));
+      void confirmExt({
+        title: 'Gagal',
+        message: e instanceof Error ? e.message : String(e),
+        variant: 'danger',
+        okLabel: 'OK',
+        hideCancel: true,
+      });
       overlayBtn!.disabled = false;
     }
   };

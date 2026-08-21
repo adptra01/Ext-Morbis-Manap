@@ -1,3 +1,5 @@
+import { confirmLegacy } from './batchUtils.js';
+
 const COOKIE_PREFIX = '_morbis_filter_';
 let __cf_logoutWatcherInit = false;
 let __cf_clearBtn: HTMLElement | null = null;
@@ -205,8 +207,12 @@ export function initClearAllFilterButton(): void {
   closeX.style.cssText =
     'cursor:pointer;font-weight:bold;font-size:20px;line-height:1;' +
     'opacity:0.8;transition:opacity 0.15s;';
-  closeX.addEventListener('mouseenter', function () { closeX.style.opacity = '1'; });
-  closeX.addEventListener('mouseleave', function () { closeX.style.opacity = '0.8'; });
+  closeX.addEventListener('mouseenter', function () {
+    closeX.style.opacity = '1';
+  });
+  closeX.addEventListener('mouseleave', function () {
+    closeX.style.opacity = '0.8';
+  });
   closeX.addEventListener('click', function (e) {
     e.stopPropagation();
     btn.style.display = 'none';
@@ -215,10 +221,18 @@ export function initClearAllFilterButton(): void {
   btn.appendChild(closeX);
 
   btn.addEventListener('click', function () {
-    if (confirm('Hapus semua data filter yang tersimpan?')) {
-      CookieFilterStorage.clearAll();
-      window.location.reload();
-    }
+    void confirmLegacy({
+      title: 'Hapus Data Filter',
+      message: 'Hapus semua data filter yang tersimpan?',
+      variant: 'danger',
+      okLabel: 'Hapus',
+      cancelLabel: 'Batal',
+    }).then(function (ok) {
+      if (ok) {
+        CookieFilterStorage.clearAll();
+        window.location.reload();
+      }
+    });
   });
 
   btn.addEventListener('mouseenter', function () {

@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { Button } from '../../ui/components/button';
 
 interface HeaderProps {
   title: string;
@@ -7,12 +7,7 @@ interface HeaderProps {
 
 export function Header({ title, onClose }: HeaderProps) {
   return (
-    <div
-      className="flex items-center justify-between px-6 py-4 shrink-0"
-      style={{
-        background: 'linear-gradient(135deg, #2b5f8a 0%, #1f4a6e 100%)',
-      }}
-    >
+    <div className="flex items-center justify-between px-6 py-4 shrink-0 bg-gradient-to-br from-primary to-primary/80">
       <div className="flex items-center gap-3">
         <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-white/15">
           <svg
@@ -32,17 +27,30 @@ export function Header({ title, onClose }: HeaderProps) {
             <polyline points="10 9 9 9 8 9" />
           </svg>
         </div>
-        <h2 className="text-[20px] font-bold text-white tracking-tight font-['Lexend',system-ui,sans-serif]">
-          {title}
-        </h2>
+        <h2 className="text-[20px] font-bold text-white tracking-tight">{title}</h2>
       </div>
-      <button
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
         onClick={onClose}
-        className="w-11 h-11 rounded-xl flex items-center justify-center text-white/70 hover:text-white hover:bg-white/15 transition-all"
+        className="text-white/70 hover:text-white hover:bg-white/15"
         aria-label="Tutup"
       >
-        <X className="h-6 w-6" />
-      </button>
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </Button>
     </div>
   );
 }

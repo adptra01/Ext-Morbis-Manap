@@ -27,6 +27,10 @@ const ANTRL_SUB = 'sub=update_v2';
 const LIST_URL = '/public/antrian-farmasi-v2/list-antrian-v2';
 
 // Guard anti double-inject (SPA/navigasi parsial MORBIS bisa inject 2x).
+// FIX: simpan interval refs untuk cleanup pas unload/page navigate
+let _hideNoAntrianInterval: number | null = null;
+let _sweepInterval: number | null = null;
+
 if ((window as unknown as { __extPenerimaanAntrol?: boolean }).__extPenerimaanAntrol) {
   throw new Error('skip double inject penerimaanAntrolCetak');
 }
@@ -314,7 +318,8 @@ window.setTimeout(wrapNoAntrian, 1000);
 window.setTimeout(wrapNoAntrian, 3000);
 window.setTimeout(hideNoAntrianColumn, 1000);
 window.setTimeout(hideNoAntrianColumn, 3000);
-window.setInterval(hideNoAntrianColumn, 3000);
+// FIX: simpan interval ID agar bisa di-clear pas unload
+_hideNoAntrianInterval = window.setInterval(hideNoAntrianColumn, 3000);
 
 /** Pass pembersihan: baris yang kolom No Antrian-nya sudah berisi nomor
  *  (data-ext-code dari sesi ini ATAU native UT-xxx hasil antri sebelumnya)
@@ -340,5 +345,12 @@ function sweepCetakUlang(): void {
 }
 whenAntrianFarmasiActive(() => {
   sweepCetakUlang();
-  window.setInterval(sweepCetakUlang, 4000);
+  // FIX: simpan interval ID agar bisa di-clear pas unload
+  _sweepInterval = window.setInterval(sweepCetakUlang, 4000);
+});
+
+// FIX: cleanup semua interval saat page unload/navigate
+window.addEventListener('beforeunload', () => {
+  if (_hideNoAntrianInterval !== null) clearInterval(_hideNoAntrianInterval);
+  if (_sweepInterval !== null) clearInterval(_sweepInterval);
 });

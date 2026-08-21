@@ -1,3 +1,5 @@
+import { confirmLegacy } from './batchUtils.js';
+
 /**
  * printKartuAntrian — buka popup kartu antrian format kita (bukan kartu MORBIS
  * UT-xxx). Dipakai oleh penerimaanAntrolCetak (list) & farmasiAntrolShift (detail).
@@ -22,7 +24,13 @@ export interface KartuAntrian {
 export function printKartuAntrian(data: KartuAntrian): boolean {
   const win = window.open('', '_blank', 'width=400,height=560');
   if (!win) {
-    alert('Popup diblokir — izinkan popup untuk mencetak.');
+    void confirmLegacy({
+      title: 'Popup Diblokir',
+      message: 'Izinkan popup untuk mencetak.',
+      variant: 'warning',
+      okLabel: 'OK',
+      hideCancel: true,
+    });
     return false;
   }
   const jenisLine =

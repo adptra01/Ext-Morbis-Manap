@@ -1,10 +1,5 @@
-import {
-  colors,
-  injectCSS,
-  createControlBar,
-  createBadge,
-  createButton,
-} from '../shared/ui/index.js';
+import { colors, injectCSS } from '../shared/ui/index.js';
+import '../ui/web';
 
 (function () {
   const MAX_WAIT = 100;
@@ -58,6 +53,25 @@ import {
       background: ${colors.muted} !important;
       border: 2px solid #9ca3af !important;
       opacity: 0.7;
+    }
+    .ext-ttv-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+      background: var(--ext-surface-2, ${colors.muted});
+      border: 1px solid var(--ext-border, ${colors.border});
+      border-radius: var(--ext-radius-md, 6px);
+      font-family: var(--ext-font-family, inherit);
+    }
+    .ext-ttv-status {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ext-success, ${colors.success});
+    }
+    .ext-ttv-status.ext-ttv-status-locked {
+      color: var(--ext-text-secondary, ${colors.mutedForeground});
     }
   `,
   );
@@ -163,22 +177,27 @@ import {
     }
   }
 
-  /* ── Shadcn-styled toggle panel ── */
+  /* ── Toggle panel — shared UI (ext-badge, ext-btn) ── */
   function addTogglePanel(inputs: HTMLInputElement[]): void {
     const form = document.getElementById('formDataRujukan');
     if (!form) return;
 
     const statusEl = document.createElement('span');
-    statusEl.style.cssText = `color:${colors.success};font-weight:600;font-size:12px;`;
+    statusEl.className = 'ext-ttv-status';
     statusEl.textContent = 'Editable';
 
-    const lockBtn = createButton('Kunci TTV', 'outline', { size: 'sm' });
+    const lockBtn = document.createElement('ext-btn');
+    lockBtn.setAttribute('variant', 'secondary');
+    lockBtn.setAttribute('size', 'sm');
+    lockBtn.textContent = 'Kunci TTV';
 
-    const bar = createControlBar('ext-ttv-toggle-bar');
-    bar.appendChild(createBadge('TTV Editor', 'default'));
-    bar.appendChild(statusEl);
-    bar.appendChild(lockBtn);
-    bar.style.marginBottom = '12px';
+    const badge = document.createElement('ext-badge');
+    badge.setAttribute('variant', 'info');
+    badge.textContent = 'TTV Editor';
+
+    const bar = document.createElement('div');
+    bar.className = 'ext-ttv-bar';
+    bar.append(badge, statusEl, lockBtn);
 
     form.insertBefore(bar, form.firstChild);
 
@@ -195,7 +214,7 @@ import {
         }
       });
       statusEl.textContent = locked ? 'Locked' : 'Editable';
-      statusEl.style.color = locked ? colors.mutedForeground : colors.success;
+      statusEl.classList.toggle('ext-ttv-status-locked', locked);
       lockBtn.textContent = locked ? 'Buka TTV' : 'Kunci TTV';
     });
   }

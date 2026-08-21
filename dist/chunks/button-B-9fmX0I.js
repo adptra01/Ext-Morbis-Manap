@@ -15493,6 +15493,7 @@ var MessageTypes = {
   BATCH_DELETE_ACTION: 'BATCH_DELETE_ACTION',
   PROXY_FETCH: 'PROXY_FETCH',
   TTS_LOCAL: 'TTS_LOCAL',
+  LOG_TO_TELEGRAM: 'LOG_TO_TELEGRAM',
 };
 function sendMessage(message) {
   return new Promise((resolve, reject) => {

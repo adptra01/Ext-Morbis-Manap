@@ -2,8 +2,58 @@ import { MessageTypes } from './shared/messaging';
 import type { ExtensionConfig, CustomUrl } from './shared/types';
 import type { MessagePayload } from './types.js';
 import { createLogger } from './shared/logger';
+import { sanitizeMessage } from './shared/telegramLogger';
 
 const log = createLogger('Background');
+
+// --- Telegram remote error logging (production only) ---
+// Token & chat ID di-inject via esbuild define saat build --production
+// (dari GitHub Secrets / env CI, bukan repo). Dev build → string kosong → no-op.
+declare const process: { env: Record<string, string | undefined> };
+
+/** Kirim pesan sanitized ke Telegram bot. Rate limit identik: 5/menit. */
+const telegramSent = new Map<string, number>();
+const TELEGRAM_RATE_LIMIT = 5;
+const TELEGRAM_RATE_WINDOW_MS = 60_000;
+
+async function sendTelegramLog(
+  level: 'error' | 'warn',
+  feature: string,
+  message: string,
+): Promise<void> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  if (!token || !chatId) return; // dev build → no-op
+  const clean = sanitizeMessage(message);
+  if (!clean) return;
+
+  // rate limit per (feature:message) — cegah infinite-loop spam ke API Telegram
+  const now = Date.now();
+  const key = feature + ':' + clean;
+  const count = telegramSent.get(key) ?? 0;
+  if (count >= TELEGRAM_RATE_LIMIT) return;
+  telegramSent.set(key, count + 1);
+  if (telegramSent.size > 100) {
+    for (const [k, t] of telegramSent) {
+      if (now - t > TELEGRAM_RATE_WINDOW_MS) telegramSent.delete(k);
+    }
+  }
+
+  const label = level === 'error' ? 'ERROR' : 'WARN';
+  const text =
+    `<b>[MORBIS Ext] ${label} — ${feature}</b>\n` +
+    `<code>${clean.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code>`;
+
+  try {
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
+    });
+  } catch (e) {
+    log.log('Telegram log send failed:', String(e).slice(0, 80)); // jangan spam console.error
+  }
+}
 
 // --- TTS cache (per-teks, TTL 12 jam, auto-hapus). Tujuan: panggilan ulang
 // (recall / "Selanjutnya" untuk nomor yang sama) tidak perlu fetch ulang ke
@@ -227,6 +277,18 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       allowedRoles: ['labor', 'kasir', 'admin'],
       name: 'DataTables Input Hasil Lab',
       description: 'Search, pagination, page length, dan tampilan rapi untuk tabel hasil lab',
+    },
+    radiologiDataTables: {
+      enabled: false,
+      allowedRoles: ['admin', 'dokter'],
+      name: 'DataTables Radiologi',
+      description: 'Search, pagination, page length, dan tampilan rapi untuk tabel radiologi',
+    },
+    konsulDataTables: {
+      enabled: false,
+      allowedRoles: ['casemix'],
+      name: 'DataTables Konsultasi',
+      description: 'Search, pagination, page length untuk tabel jawaban konsultasi',
     },
     laporanKasirTime: {
       enabled: true,
@@ -643,6 +705,17 @@ chrome.runtime.onMessage.addListener(
       case 'TAB_ACTION_RESULT': {
         // Forward result to all extension pages (side panel listens for this)
         chrome.runtime.sendMessage(validated).catch(() => {});
+        sendResponse({ success: true });
+        return true;
+      }
+
+      case 'LOG_TO_TELEGRAM': {
+        const p = validated as unknown as {
+          level: 'error' | 'warn';
+          feature: string;
+          message: string;
+        };
+        void sendTelegramLog(p.level ?? 'error', p.feature ?? 'unknown', p.message ?? '');
         sendResponse({ success: true });
         return true;
       }

@@ -126,6 +126,20 @@ async function initExtension(): Promise<void> {
     document.documentElement.removeAttribute('data-ext-lab-datatables');
   }
 
+  const rdtCfg = cfg?.features?.radiologiDataTables;
+  if (rdtCfg?.enabled && window.ExtensionCore.isFeatureAllowed('radiologiDataTables')) {
+    document.documentElement.setAttribute('data-ext-radio-datatables', '1');
+  } else {
+    document.documentElement.removeAttribute('data-ext-radio-datatables');
+  }
+
+  const kdtCfg = cfg?.features?.konsulDataTables;
+  if (kdtCfg?.enabled && window.ExtensionCore.isFeatureAllowed('konsulDataTables')) {
+    document.documentElement.setAttribute('data-ext-konsul-datatables', '1');
+  } else {
+    document.documentElement.removeAttribute('data-ext-konsul-datatables');
+  }
+
   const lkCfg = cfg?.features?.laporanKasirTime;
   if (lkCfg?.enabled && window.ExtensionCore.isFeatureAllowed('laporanKasirTime')) {
     document.documentElement.setAttribute('data-ext-laporan-kasir-time', '1');

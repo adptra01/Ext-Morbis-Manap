@@ -53,6 +53,9 @@ interface DisplayData {
 /** Titik lanjut penomoran terakhir yang di-set petugas (per prefix T/R). */
 let lastCounters: Record<string, number> = {};
 
+// FIX: simpan interval ID untuk cleanup pas unload
+let _opRenderIntervalId: number | null = null;
+
 /** Ikon SVG inline (lucide-style, stroke currentColor) — bukan emoji. */
 const ICONS: Record<string, string> = {
   speaker:
@@ -916,7 +919,8 @@ function init(): void {
     });
     void render();
     void probeFarmasiAppBase().then(() => void render()); // fallback IP bila DNS gagal
-    window.setInterval(() => void render(), POLL_MS);
+    // FIX: simpan interval ID agar bisa di-clear pas unload/navigate
+    _opRenderIntervalId = window.setInterval(() => void render(), POLL_MS);
     log('panel operator aktif');
   };
   start();
@@ -925,6 +929,11 @@ function init(): void {
     hideNative();
     if (!document.getElementById('ext-farmasi-operator')) start();
   }).observe(document.body, { childList: true, subtree: true });
+
+  // FIX: cleanup interval saat unload
+  window.addEventListener('beforeunload', () => {
+    if (_opRenderIntervalId !== null) clearInterval(_opRenderIntervalId);
+  });
 }
 
 // Gate: hanya jalan bila fitur antrianFarmasi aktif di config (toggle popup)

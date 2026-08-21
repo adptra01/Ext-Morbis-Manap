@@ -17,14 +17,19 @@ export function ValidationPanel({ errors, warnings = [] }: ValidationPanelProps)
   return (
     <>
       {warnings.length > 0 && (
-        <div className="px-6 py-4 border-t-2 border-[#e2ddd7] bg-[#fefce8]" role="alert">
+        <div
+          className="px-6 py-4 border-t-2 border-border bg-yellow-50 dark:bg-yellow-950/30"
+          role="alert"
+        >
           <div className="flex items-start gap-3">
-            <AlertTriangle className="size-5 text-[#b45309] shrink-0 mt-0.5" />
+            <AlertTriangle className="size-5 text-yellow-600 dark:text-yellow-500 shrink-0 mt-0.5" />
             <div>
-              <p className="text-[15px] font-bold text-[#92400e] mb-1">Perhatian</p>
+              <p className="text-[15px] font-bold text-yellow-800 dark:text-yellow-300 mb-1">
+                Perhatian
+              </p>
               <ul className="space-y-1">
                 {warnings.map((w, i) => (
-                  <li key={i} className="text-[14px] text-[#a16207]">
+                  <li key={i} className="text-[14px] text-yellow-700 dark:text-yellow-400">
                     {w.section}: {w.message}
                   </li>
                 ))}
@@ -34,16 +39,16 @@ export function ValidationPanel({ errors, warnings = [] }: ValidationPanelProps)
         </div>
       )}
       {errors.length > 0 && (
-        <div className="px-6 py-4 border-t-2 border-[#e2ddd7] bg-[#fef2f2]" role="alert">
+        <div className="px-6 py-4 border-t-2 border-border bg-destructive/5" role="alert">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="size-5 text-[#b91c1c] shrink-0 mt-0.5" />
+            <AlertTriangle className="size-5 text-destructive shrink-0 mt-0.5" />
             <div>
-              <p className="text-[15px] font-bold text-[#991b1b] mb-1">
+              <p className="text-[15px] font-bold text-destructive mb-1">
                 Terdapat {errors.length} kesalahan
               </p>
               <ul className="space-y-1">
                 {errors.map((err, i) => (
-                  <li key={i} className="text-[14px] text-[#b91c1c]/80">
+                  <li key={i} className="text-[14px] text-destructive/80">
                     {err.section}: {err.message}
                   </li>
                 ))}

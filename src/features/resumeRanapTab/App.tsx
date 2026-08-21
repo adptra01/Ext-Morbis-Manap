@@ -1,221 +1,19 @@
 import { useState, useCallback, useRef, useEffect, type FormEvent } from 'react';
 import type { RanapFormData, IcdItem, SelectOption } from './types';
+import { Input } from '../../ui/components/input';
+import { Textarea } from '../../ui/components/Textarea';
+import { Label } from '../../ui/components/Label';
+import { Card } from '../../ui/components/Card';
+import { Grid, Full } from '../../ui/components/Grid';
+import { SelectNative } from '../../ui/components/SelectNative';
+import { Button } from '../../ui/components/button';
+import { Badge } from '../../ui/components/Badge';
 
 interface Props {
   data: RanapFormData;
   onSave: (d: RanapFormData) => Promise<void>;
   onClose: () => void;
 }
-
-const theme = {
-  primary: '#0d9488',
-  primaryDark: '#0f766e',
-  primaryLight: '#f0fdf4',
-  primaryBorder: '#99f6e4',
-  text: '#1e293b',
-  textMuted: '#64748b',
-  border: '#e2e8f0',
-  bg: '#f8fafc',
-  cardBg: '#ffffff',
-  radius: 8,
-  font: "'Inter','Segoe UI',system-ui,-apple-system,sans-serif",
-  shadow: '0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04)',
-};
-
-const inputBase: React.CSSProperties = {
-  width: '100%',
-  padding: '7px 10px',
-  border: `1px solid ${theme.border}`,
-  borderRadius: theme.radius,
-  fontSize: 13,
-  fontFamily: theme.font,
-  color: theme.text,
-  background: theme.cardBg,
-  boxSizing: 'border-box',
-  outline: 'none',
-  transition: 'border-color .15s, box-shadow .15s',
-};
-
-function inputFocus(
-  e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
-) {
-  e.target.style.borderColor = theme.primary;
-  e.target.style.boxShadow = `0 0 0 3px ${theme.primaryBorder}`;
-}
-function inputBlur(
-  e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
-) {
-  e.target.style.borderColor = theme.border;
-  e.target.style.boxShadow = 'none';
-}
-
-function L({ c, req }: { c: string; req?: boolean }) {
-  return (
-    <label
-      style={{
-        display: 'block',
-        fontSize: 11,
-        fontWeight: 600,
-        color: theme.textMuted,
-        textTransform: 'uppercase',
-        letterSpacing: '0.04em',
-        marginBottom: 3,
-      }}
-    >
-      {c}
-      {req && <span style={{ color: '#dc2626', marginLeft: 2 }}>*</span>}
-    </label>
-  );
-}
-
-function In({
-  v,
-  onChange,
-  type,
-  ...rest
-}: {
-  v: string;
-  onChange: (v: string) => void;
-  type?: string;
-  [k: string]: unknown;
-}) {
-  return (
-    <input
-      value={v}
-      onChange={(e) => onChange(e.target.value)}
-      onFocus={inputFocus}
-      onBlur={inputBlur}
-      type={type || 'text'}
-      style={inputBase}
-      {...rest}
-    />
-  );
-}
-
-function Ta({
-  v,
-  onChange,
-  rows = 3,
-}: {
-  v: string;
-  onChange: (v: string) => void;
-  rows?: number;
-}) {
-  const ref = useRef<HTMLTextAreaElement>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (el) {
-      el.style.height = 'auto';
-      el.style.height = Math.max(el.scrollHeight, rows * 20) + 'px';
-    }
-  }, [v, rows]);
-  return (
-    <textarea
-      ref={ref}
-      value={v}
-      onChange={(e) => {
-        onChange(e.target.value);
-        e.target.style.height = 'auto';
-        e.target.style.height = e.target.scrollHeight + 'px';
-      }}
-      onFocus={inputFocus}
-      onBlur={inputBlur}
-      rows={rows}
-      style={{
-        ...inputBase,
-        fontFamily: theme.font,
-        resize: 'vertical',
-        minHeight: 50,
-        lineHeight: 1.5,
-      }}
-    />
-  );
-}
-
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div
-      style={{
-        background: theme.cardBg,
-        border: `1px solid ${theme.border}`,
-        borderRadius: theme.radius,
-        marginBottom: 12,
-        overflow: 'hidden',
-      }}
-    >
-      <div
-        style={{
-          padding: '8px 14px',
-          background: theme.primaryLight,
-          borderBottom: `1px solid ${theme.primaryBorder}`,
-          fontSize: 13,
-          fontWeight: 700,
-          color: theme.primaryDark,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-        }}
-      >
-        <span style={{ fontSize: 16 }}>●</span>
-        {title}
-      </div>
-      <div style={{ padding: '12px 14px' }}>{children}</div>
-    </div>
-  );
-}
-
-function Sel({
-  v,
-  onChange,
-  opts,
-}: {
-  v: string;
-  onChange: (v: string) => void;
-  opts: SelectOption[];
-}) {
-  const match = opts.find((o) => o.value === v);
-  return (
-    <select
-      value={match ? v : ''}
-      onChange={(e) => onChange(e.target.value)}
-      onFocus={inputFocus}
-      onBlur={inputBlur}
-      style={inputBase}
-    >
-      {opts.map((o) => (
-        <option key={o.value} value={o.value}>
-          {o.label}
-        </option>
-      ))}
-      {!match && v ? (
-        <option value={v} disabled>
-          {v}
-        </option>
-      ) : null}
-    </select>
-  );
-}
-
-const Grid2 = ({ children }: { children: React.ReactNode }) => (
-  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>{children}</div>
-);
-const Grid3 = ({ children }: { children: React.ReactNode }) => (
-  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>{children}</div>
-);
-const GridAuto = ({ children, min = '100px' }: { children: React.ReactNode; min?: string }) => (
-  <div
-    style={{
-      display: 'grid',
-      gridTemplateColumns: `repeat(auto-fill, minmax(${min}, 1fr))`,
-      gap: 10,
-    }}
-  >
-    {children}
-  </div>
-);
-const Full = ({ children }: { children: React.ReactNode }) => (
-  <div style={{ gridColumn: '1 / -1' }}>{children}</div>
-);
 
 const JENIS_KASUS: SelectOption[] = [
   { value: '', label: 'Pilih jenis kasus' },
@@ -294,27 +92,6 @@ const PEMERIKSAAN_LANJUT: SelectOption[] = [
   { value: '9', label: 'RS Lain' },
   { value: '49', label: 'Tidak Ada' },
 ];
-
-const smallBtn: React.CSSProperties = {
-  padding: '4px 10px',
-  fontSize: 11,
-  fontWeight: 600,
-  borderRadius: 6,
-  border: `1px solid ${theme.border}`,
-  background: theme.cardBg,
-  color: theme.text,
-  cursor: 'pointer',
-  transition: 'background .15s',
-};
-
-const dangerBtn: React.CSSProperties = {
-  ...smallBtn,
-  border: '1px solid #fecaca',
-  color: '#dc2626',
-  background: '#fef2f2',
-  padding: '2px 8px',
-  fontSize: 11,
-};
 
 interface Hitt {
   ID: string;
@@ -414,72 +191,40 @@ function IcdAutocomplete({
   };
 
   return (
-    <div ref={containerRef} style={{ position: 'relative' }}>
-      <div style={{ display: 'flex', gap: 4 }}>
-        <div style={{ flex: '0 0 35%' }}>
-          <input
+    <div ref={containerRef} className="relative">
+      <div className="flex gap-1">
+        <div className="w-[35%]">
+          <Input
             value={kodeInput}
             onChange={(e) => handleKodeChange(e.target.value)}
             onKeyDown={handleKey}
-            onFocus={inputFocus}
-            onBlur={inputBlur}
             placeholder="Kode"
-            style={{ ...inputBase, fontSize: 12, fontFamily: 'ui-monospace, monospace' }}
+            className="text-xs font-mono"
           />
         </div>
-        <div style={{ flex: 1 }}>
-          <input
+        <div className="flex-1">
+          <Input
             value={namaInput}
             onChange={(e) => setNamaInput(e.target.value)}
             onKeyDown={handleKey}
-            onFocus={inputFocus}
-            onBlur={inputBlur}
             placeholder="Nama diagnosis"
-            style={{ ...inputBase, fontSize: 12 }}
+            className="text-xs"
           />
         </div>
       </div>
       {show && suggestions.length > 0 && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '100%',
-            left: 0,
-            right: 0,
-            zIndex: 100,
-            background: theme.cardBg,
-            border: `1px solid ${theme.border}`,
-            borderRadius: theme.radius,
-            maxHeight: 180,
-            overflow: 'auto',
-            boxShadow: '0 8px 24px rgba(0,0,0,.12)',
-            marginTop: 2,
-          }}
-        >
+        <div className="absolute top-full left-0 right-0 z-50 bg-card border border-border rounded-lg max-h-[180px] overflow-auto shadow-md mt-0.5">
           {suggestions.map((hit, i) => (
             <div
               key={hit.ID}
               onClick={() => pick(hit)}
               onMouseEnter={() => setActiveIdx(i)}
-              style={{
-                padding: '5px 10px',
-                fontSize: 12,
-                cursor: 'pointer',
-                background: i === activeIdx ? theme.primaryLight : theme.cardBg,
-                borderBottom: `1px solid ${theme.border}`,
-                transition: 'background .1s',
-              }}
+              className={`px-2.5 py-1.5 text-xs cursor-pointer border-b border-border transition-colors ${
+                i === activeIdx ? 'bg-primary/5' : 'bg-card'
+              }`}
             >
-              <span
-                style={{
-                  fontWeight: 700,
-                  color: theme.primaryDark,
-                  fontFamily: 'ui-monospace, monospace',
-                }}
-              >
-                {hit.KODE}
-              </span>
-              <span style={{ color: theme.textMuted, marginLeft: 6 }}>{hit.NAMA}</span>
+              <span className="font-bold text-primary font-mono">{hit.KODE}</span>
+              <span className="text-muted-foreground ml-1.5">{hit.NAMA}</span>
             </div>
           ))}
         </div>
@@ -506,28 +251,20 @@ function IcdList({
   emptyText: string;
 }) {
   return (
-    <div style={{ marginBottom: items.length ? 10 : 0 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-        <span
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: theme.textMuted,
-            textTransform: 'uppercase',
-            letterSpacing: '0.04em',
-          }}
-        >
+    <div className={items.length ? 'mb-2.5' : ''}>
+      <div className="flex items-center gap-2 mb-1.5">
+        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
           {label}
         </span>
-        <button type="button" onClick={onAdd} style={smallBtn}>
+        <Button variant="outline" size="sm" type="button" onClick={onAdd}>
           + Tambah
-        </button>
+        </Button>
       </div>
       {items.length > 0 ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div className="flex flex-col gap-1.5">
           {items.map((item, i) => (
-            <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
-              <div style={{ flex: 1 }}>
+            <div key={i} className="flex gap-1.5 items-start">
+              <div className="flex-1">
                 <IcdAutocomplete
                   kode={item.kode}
                   nama={item.nama}
@@ -535,18 +272,20 @@ function IcdList({
                   onPick={(kode, nama, id) => onChange(i, { ...item, kode, nama, id })}
                 />
               </div>
-              <button
+              <Button
+                variant="destructive"
+                size="sm"
                 type="button"
                 onClick={() => onRemove(i)}
-                style={{ ...dangerBtn, marginTop: 1 }}
+                className="mt-px"
               >
                 Hapus
-              </button>
+              </Button>
             </div>
           ))}
         </div>
       ) : (
-        <span style={{ fontSize: 12, color: theme.textMuted }}>{emptyText}</span>
+        <span className="text-xs text-muted-foreground">{emptyText}</span>
       )}
     </div>
   );
@@ -606,23 +345,12 @@ export function App({ data, onSave, onClose }: Props) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="ri-modal"
+      className="ri-modal font-['Inter',system-ui,sans-serif]"
       onClick={(e) => e.stopPropagation()}
-      style={{ fontFamily: theme.font }}
     >
       {/* HEADER */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '12px 20px',
-          background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.primaryDark} 100%)`,
-          color: '#fff',
-          flexShrink: 0,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-br from-primary to-primary/80 text-white shrink-0">
+        <div className="flex items-center gap-2.5">
           <svg
             width="20"
             height="20"
@@ -635,164 +363,180 @@ export function App({ data, onSave, onClose }: Props) {
           >
             <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
           </svg>
-          <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.01em' }}>
-            Resume Rawat Inap
-          </span>
+          <span className="text-[15px] font-bold tracking-tight">Resume Rawat Inap</span>
         </div>
         <button
           type="button"
           onClick={onClose}
-          style={{
-            background: 'rgba(255,255,255,.15)',
-            border: 'none',
-            color: '#fff',
-            width: 30,
-            height: 30,
-            borderRadius: 6,
-            fontSize: 16,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'background .15s',
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,.25)')}
-          onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,.15)')}
+          className="bg-white/15 hover:bg-white/25 border-none text-white w-[30px] h-[30px] rounded-md text-base flex items-center justify-center cursor-pointer transition-colors"
         >
           ✕
         </button>
       </div>
 
       {/* CONTENT */}
-      <div style={{ overflow: 'auto', padding: '14px 18px', flex: 1, background: theme.bg }}>
+      <div className="overflow-auto p-3.5 flex-1 bg-background">
         {/* Patient banner */}
-        <div
-          style={{
-            display: 'flex',
-            gap: 16,
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            marginBottom: 14,
-            padding: '10px 14px',
-            background: theme.cardBg,
-            border: `1px solid ${theme.border}`,
-            borderRadius: theme.radius,
-            fontSize: 12,
-            boxShadow: theme.shadow,
-          }}
-        >
+        <div className="flex gap-4 flex-wrap items-center mb-3.5 p-2.5 px-3.5 bg-card border border-border rounded-lg text-xs shadow-sm">
           {[
             { label: 'RM', value: d.norm },
             { label: 'Pasien', value: d.pasien },
             { label: 'Reg', value: d.noreg },
             { label: 'Unit', value: d.unit },
           ].map((item) => (
-            <span key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <span
-                style={{
-                  fontWeight: 700,
-                  color: theme.primaryDark,
-                  fontSize: 11,
-                  textTransform: 'uppercase',
-                }}
-              >
-                {item.label}
-              </span>
-              <span style={{ color: theme.text }}>{item.value}</span>
+            <span key={item.label} className="flex items-center gap-1">
+              <span className="font-bold text-primary text-[11px] uppercase">{item.label}</span>
+              <span className="text-foreground">{item.value}</span>
             </span>
           ))}
         </div>
 
         {/* Ringkasan */}
         <Card title="Ringkasan">
-          <Grid2>
+          <Grid cols={2}>
             <div>
-              <L c="Dokter Rawat Bersama" />
-              <Ta v={d.dokter_bersama} onChange={(v) => p({ dokter_bersama: v })} rows={2} />
+              <Label>Dokter Rawat Bersama</Label>
+              <Textarea
+                value={d.dokter_bersama}
+                onChange={(v) => p({ dokter_bersama: v.target.value })}
+                rows={2}
+              />
             </div>
             <div>
-              <L c="Alasan / Indikasi Rawat" />
-              <Ta v={d.alasan_rawat} onChange={(v) => p({ alasan_rawat: v })} rows={2} />
+              <Label>Alasan / Indikasi Rawat</Label>
+              <Textarea
+                value={d.alasan_rawat}
+                onChange={(v) => p({ alasan_rawat: v.target.value })}
+                rows={2}
+              />
             </div>
             <Full>
-              <L c="Anamnesa" />
-              <Ta v={d.anamnesa} onChange={(v) => p({ anamnesa: v })} rows={4} />
+              <Label>Anamnesa</Label>
+              <Textarea
+                value={d.anamnesa}
+                onChange={(v) => p({ anamnesa: v.target.value })}
+                rows={4}
+              />
             </Full>
             <Full>
-              <L c="Riwayat Penyakit" />
-              <Ta v={d.riwayat_penyakit} onChange={(v) => p({ riwayat_penyakit: v })} rows={3} />
+              <Label>Riwayat Penyakit</Label>
+              <Textarea
+                value={d.riwayat_penyakit}
+                onChange={(v) => p({ riwayat_penyakit: v.target.value })}
+                rows={3}
+              />
             </Full>
-          </Grid2>
+          </Grid>
         </Card>
 
         {/* Vital Sign */}
         <Card title="Vital Sign">
-          <GridAuto min="90px">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(90px,1fr))] gap-2.5">
             {(['tensi', 'nadi', 'suhu', 'spo2', 'nafas'] as const).map((k) => (
               <div key={k}>
-                <L c={k.toUpperCase()} />
-                <In v={d[k]} onChange={(v) => p({ [k]: v })} />
+                <Label>{k.toUpperCase()}</Label>
+                <Input value={d[k]} onChange={(e) => p({ [k]: e.target.value })} />
               </div>
             ))}
             {(['gcs_e', 'gcs_m', 'gcs_v'] as const).map((k) => (
               <div key={k}>
-                <L c={k.replace('_', ' ').toUpperCase()} />
-                <In v={d[k]} onChange={(v) => p({ [k]: v })} />
+                <Label>{k.replace('_', ' ').toUpperCase()}</Label>
+                <Input value={d[k]} onChange={(e) => p({ [k]: e.target.value })} />
               </div>
             ))}
-          </GridAuto>
+          </div>
         </Card>
 
         {/* Pemeriksaan & Diagnosa */}
         <Card title="Pemeriksaan & Diagnosa">
-          <Grid2>
+          <Grid cols={2}>
             <Full>
-              <L c="Pemeriksaan Fisik" />
-              <Ta v={d.fisik_text} onChange={(v) => p({ fisik_text: v })} rows={5} />
+              <Label>Pemeriksaan Fisik</Label>
+              <Textarea
+                value={d.fisik_text}
+                onChange={(v) => p({ fisik_text: v.target.value })}
+                rows={5}
+              />
             </Full>
             <Full>
-              <L c="Hasil Pemeriksaan Diagnostik (Lab, Rontgen, dll)" />
-              <Ta v={d.laborat} onChange={(v) => p({ laborat: v })} rows={4} />
+              <Label>Hasil Pemeriksaan Diagnostik (Lab, Rontgen, dll)</Label>
+              <Textarea
+                value={d.laborat}
+                onChange={(v) => p({ laborat: v.target.value })}
+                rows={4}
+              />
             </Full>
             <div>
-              <L c="Diagnosa Utama" req />
-              <Ta v={d.diagnosa_primary} onChange={(v) => p({ diagnosa_primary: v })} rows={2} />
+              <Label required>Diagnosa Utama</Label>
+              <Textarea
+                value={d.diagnosa_primary}
+                onChange={(v) => p({ diagnosa_primary: v.target.value })}
+                rows={2}
+              />
             </div>
             <div>
-              <L c="Diagnosa Sekunder" />
-              <Ta v={d.diagnosa_skunder} onChange={(v) => p({ diagnosa_skunder: v })} rows={2} />
+              <Label>Diagnosa Sekunder</Label>
+              <Textarea
+                value={d.diagnosa_skunder}
+                onChange={(v) => p({ diagnosa_skunder: v.target.value })}
+                rows={2}
+              />
             </div>
             <div>
-              <L c="Diagnosa Tindakan" />
-              <Ta v={d.diagnosa_tindakan} onChange={(v) => p({ diagnosa_tindakan: v })} rows={2} />
+              <Label>Diagnosa Tindakan</Label>
+              <Textarea
+                value={d.diagnosa_tindakan}
+                onChange={(v) => p({ diagnosa_tindakan: v.target.value })}
+                rows={2}
+              />
             </div>
             <div>
-              <L c="Prosedur / Operasi" />
-              <Ta v={d.tindakan} onChange={(v) => p({ tindakan: v })} rows={2} />
+              <Label>Prosedur / Operasi</Label>
+              <Textarea
+                value={d.tindakan}
+                onChange={(v) => p({ tindakan: v.target.value })}
+                rows={2}
+              />
             </div>
             <Full>
-              <L c="Pengobatan" />
-              <Ta v={d.terapi_pengobatan} onChange={(v) => p({ terapi_pengobatan: v })} rows={4} />
+              <Label>Pengobatan</Label>
+              <Textarea
+                value={d.terapi_pengobatan}
+                onChange={(v) => p({ terapi_pengobatan: v.target.value })}
+                rows={4}
+              />
             </Full>
             <Full>
-              <L c="Obat Pulang" />
-              <Ta v={d.obat_plg} onChange={(v) => p({ obat_plg: v })} rows={3} />
+              <Label>Obat Pulang</Label>
+              <Textarea
+                value={d.obat_plg}
+                onChange={(v) => p({ obat_plg: v.target.value })}
+                rows={3}
+              />
             </Full>
             <Full>
-              <L c="Tindakan" />
-              <Ta v={d.tindakan_dua} onChange={(v) => p({ tindakan_dua: v })} rows={4} />
+              <Label>Tindakan</Label>
+              <Textarea
+                value={d.tindakan_dua}
+                onChange={(v) => p({ tindakan_dua: v.target.value })}
+                rows={4}
+              />
             </Full>
             <div>
-              <L c="Jenis Kasus" />
-              <Sel v={d.jenis_kasus} onChange={(v) => p({ jenis_kasus: v })} opts={JENIS_KASUS} />
+              <Label>Jenis Kasus</Label>
+              <SelectNative
+                value={d.jenis_kasus}
+                onChange={(e) => p({ jenis_kasus: e.target.value })}
+                options={JENIS_KASUS}
+              />
             </div>
-          </Grid2>
+          </Grid>
         </Card>
 
         {/* ICD */}
         <Card title="ICD">
-          <div style={{ marginBottom: 12 }}>
-            <L c="Diagnosa Utama" req />
+          <div className="mb-3">
+            <Label required>Diagnosa Utama</Label>
             <IcdAutocomplete
               kode={d.kode_diagnosa_utama}
               nama={d.diagnosa_utama_nama}
@@ -836,7 +580,7 @@ export function App({ data, onSave, onClose }: Props) {
 
         {/* Kondisi Pulang */}
         <Card title="Kondisi Pulang">
-          <GridAuto min="100px">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-2.5">
             {(
               [
                 'ku',
@@ -849,130 +593,96 @@ export function App({ data, onSave, onClose }: Props) {
               ] as const
             ).map((k) => (
               <div key={k}>
-                <L c={k.replace('_', ' ').toUpperCase()} />
-                <In v={d[k]} onChange={(v) => p({ [k]: v })} />
+                <Label>{k.replace('_', ' ').toUpperCase()}</Label>
+                <Input value={d[k]} onChange={(e) => p({ [k]: e.target.value })} />
               </div>
             ))}
             <Full>
-              <L c="Catatan Kondisi Pulang" />
-              <Ta v={d.catatan_keluar} onChange={(v) => p({ catatan_keluar: v })} rows={2} />
+              <Label>Catatan Kondisi Pulang</Label>
+              <Textarea
+                value={d.catatan_keluar}
+                onChange={(v) => p({ catatan_keluar: v.target.value })}
+                rows={2}
+              />
             </Full>
-          </GridAuto>
+          </div>
         </Card>
 
         {/* Keluar */}
         <Card title="Keluar">
-          <Grid2>
+          <Grid cols={2}>
             <div>
-              <L c="Keadaan Keluar" />
-              <Sel
-                v={d.keadaan_keluar}
-                onChange={(v) => p({ keadaan_keluar: v })}
-                opts={KEADAAN_KELUAR}
+              <Label>Keadaan Keluar</Label>
+              <SelectNative
+                value={d.keadaan_keluar}
+                onChange={(e) => p({ keadaan_keluar: e.target.value })}
+                options={KEADAAN_KELUAR}
               />
             </div>
             <div>
-              <L c="Cara Pulang" />
-              <Sel v={d.cara_keluar} onChange={(v) => p({ cara_keluar: v })} opts={CARA_KELUAR} />
-            </div>
-            <div>
-              <L c="Tanggal Keluar" />
-              <In v={d.tgl_keluar} onChange={(v) => p({ tgl_keluar: v })} />
-            </div>
-            <div>
-              <L c="Pemeriksaan Lanjutan" />
-              <Sel
-                v={d.pemeriksaan_lanjut}
-                onChange={(v) => p({ pemeriksaan_lanjut: v })}
-                opts={PEMERIKSAAN_LANJUT}
+              <Label>Cara Pulang</Label>
+              <SelectNative
+                value={d.cara_keluar}
+                onChange={(e) => p({ cara_keluar: e.target.value })}
+                options={CARA_KELUAR}
               />
             </div>
             <div>
-              <L c="Jadwal Kontrol" />
-              <In v={d.jadwal_kontrol} onChange={(v) => p({ jadwal_kontrol: v })} />
+              <Label>Tanggal Keluar</Label>
+              <Input value={d.tgl_keluar} onChange={(e) => p({ tgl_keluar: e.target.value })} />
             </div>
             <div>
-              <L c="Kelas" />
-              <In v={d.kelas} onChange={(v) => p({ kelas: v })} />
+              <Label>Pemeriksaan Lanjutan</Label>
+              <SelectNative
+                value={d.pemeriksaan_lanjut}
+                onChange={(e) => p({ pemeriksaan_lanjut: e.target.value })}
+                options={PEMERIKSAAN_LANJUT}
+              />
+            </div>
+            <div>
+              <Label>Jadwal Kontrol</Label>
+              <Input
+                value={d.jadwal_kontrol}
+                onChange={(e) => p({ jadwal_kontrol: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Kelas</Label>
+              <Input value={d.kelas} onChange={(e) => p({ kelas: e.target.value })} />
             </div>
             <Full>
-              <L c="Instruksi Pulang" />
-              <Ta v={d.instruksi_pulang} onChange={(v) => p({ instruksi_pulang: v })} rows={3} />
+              <Label>Instruksi Pulang</Label>
+              <Textarea
+                value={d.instruksi_pulang}
+                onChange={(v) => p({ instruksi_pulang: v.target.value })}
+                rows={3}
+              />
             </Full>
             <Full>
-              <L c="Penyebab Kematian" />
-              <Ta v={d.penyebab_kematian} onChange={(v) => p({ penyebab_kematian: v })} rows={2} />
+              <Label>Penyebab Kematian</Label>
+              <Textarea
+                value={d.penyebab_kematian}
+                onChange={(v) => p({ penyebab_kematian: v.target.value })}
+                rows={2}
+              />
             </Full>
-          </Grid2>
+          </Grid>
         </Card>
       </div>
 
       {/* FOOTER */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-          gap: 8,
-          padding: '10px 18px',
-          borderTop: `1px solid ${theme.border}`,
-          alignItems: 'center',
-          flexShrink: 0,
-          background: theme.cardBg,
-        }}
-      >
+      <div className="flex justify-end gap-2 py-2.5 px-4 border-t border-border items-center shrink-0 bg-card">
         {error && (
-          <div
-            style={{
-              color: '#dc2626',
-              fontSize: 12,
-              marginRight: 'auto',
-              background: '#fef2f2',
-              padding: '4px 10px',
-              borderRadius: 6,
-              border: '1px solid #fecaca',
-            }}
-          >
+          <Badge variant="danger" icon className="mr-auto">
             {error}
-          </div>
+          </Badge>
         )}
-        <button
-          type="button"
-          onClick={onClose}
-          style={{
-            padding: '7px 18px',
-            borderRadius: theme.radius,
-            border: `1px solid ${theme.border}`,
-            background: theme.cardBg,
-            fontSize: 12,
-            fontWeight: 600,
-            color: theme.text,
-            cursor: 'pointer',
-            transition: 'background .15s',
-          }}
-          disabled={saving}
-          onMouseEnter={(e) => (e.currentTarget.style.background = theme.bg)}
-          onMouseLeave={(e) => (e.currentTarget.style.background = theme.cardBg)}
-        >
+        <Button type="button" variant="outline" onClick={onClose} disabled={saving}>
           Batal
-        </button>
-        <button
-          type="submit"
-          style={{
-            padding: '7px 22px',
-            borderRadius: theme.radius,
-            border: 'none',
-            background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.primaryDark} 100%)`,
-            color: '#fff',
-            fontSize: 12,
-            fontWeight: 700,
-            cursor: 'pointer',
-            transition: 'opacity .15s',
-            opacity: saving ? 0.6 : 1,
-          }}
-          disabled={saving}
-        >
+        </Button>
+        <Button type="submit" variant="default" disabled={saving}>
           {saving ? 'Menyimpan...' : 'Simpan'}
-        </button>
+        </Button>
       </div>
     </form>
   );

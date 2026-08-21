@@ -1,5 +1,10 @@
 import { getMorbisGlobals } from './shared/types.js';
-import { injectSharedCSS, showInlinePreviewSafe, Icons } from './shared/batchUtils.js';
+import {
+  injectSharedCSS,
+  showInlinePreviewSafe,
+  Icons,
+  confirmLegacy,
+} from './shared/batchUtils.js';
 
 const g = getMorbisGlobals();
 
@@ -314,7 +319,7 @@ function updatePreview(items: BatchItem[]): void {
         <div style="flex: 1; min-width: 0;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
             <strong style="font-size: 13px; color: #000000; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${i + 1}. ${item.filename}</strong>
-            ${item.status !== 'pending' ? `<span class="ext-status-badge" data-status="${item.status}">${item.status === 'success' ? 'Sukses' : item.status === 'error' ? 'Gagal' : item.status}</span>` : ''}
+            ${item.status !== 'pending' ? `<span class="ext-status-badge" data-status="${item.status === 'success' ? 'success' : item.status === 'error' ? 'error' : 'deleting'}">${item.status === 'success' ? 'Sukses' : item.status === 'error' ? 'Gagal' : 'Memproses'}</span>` : ''}
           </div>
           ${modeText}
           <input type="text" class="ext-keterangan-input" data-index="${i}" value="${item.keterangan || ''}" placeholder="Keterangan dokumen..." ${isProcessing ? 'disabled' : ''}>
@@ -431,20 +436,36 @@ function analyzeUrls(): void {
   const inputText = textarea?.value.trim() || '';
 
   if (!inputText) {
-    alert('Silakan paste URL terlebih dahulu');
+    void confirmLegacy({
+      title: 'Tidak ada URL',
+      message: 'Silakan paste URL terlebih dahulu.',
+      variant: 'warning',
+      okLabel: 'OK',
+      hideCancel: true,
+    });
     return;
   }
 
   const urls = extractUrls(inputText);
   if (urls.length === 0) {
-    alert(
-      'Tidak ada URL valid yang ditemukan. Pastikan URL mengandung ekstensi file yang didukung.',
-    );
+    void confirmLegacy({
+      title: 'Tidak ada URL valid',
+      message: 'Pastikan URL mengandung ekstensi file yang didukung.',
+      variant: 'warning',
+      okLabel: 'OK',
+      hideCancel: true,
+    });
     return;
   }
 
   if (urls.length > BATCH_UPLOAD_URL_CONFIG.maxBatchSize) {
-    alert(`Maksimal ${BATCH_UPLOAD_URL_CONFIG.maxBatchSize} URL per batch`);
+    void confirmLegacy({
+      title: 'Terlalu banyak URL',
+      message: `Maksimal ${BATCH_UPLOAD_URL_CONFIG.maxBatchSize} URL per batch.`,
+      variant: 'warning',
+      okLabel: 'OK',
+      hideCancel: true,
+    });
     return;
   }
 
@@ -457,7 +478,13 @@ async function crawlDokumenPasien(): Promise<void> {
   const urlParams = new URLSearchParams(window.location.search);
   const idVisit = urlParams.get('id_visit');
   if (!idVisit) {
-    alert('Parameter id_visit tidak ditemukan di URL saat ini.');
+    void confirmLegacy({
+      title: 'Parameter id_visit tidak ditemukan',
+      message: 'Pastikan buka dari halaman detail pasien.',
+      variant: 'warning',
+      okLabel: 'OK',
+      hideCancel: true,
+    });
     return;
   }
 
@@ -599,7 +626,13 @@ async function runBatchQueue(): Promise<void> {
   const idVisitStr = urlParams.get('id_visit') || '';
 
   if (!idVisitStr) {
-    alert('ID Visit tidak ditemukan di URL');
+    void confirmLegacy({
+      title: 'ID Visit tidak ditemukan',
+      message: 'Pastikan buka dari halaman detail pasien.',
+      variant: 'warning',
+      okLabel: 'OK',
+      hideCancel: true,
+    });
     toggleUIProcessingState(false);
     isProcessing = false;
     if (startBtn) startBtn.textContent = 'Mulai Upload';
@@ -612,7 +645,13 @@ async function runBatchQueue(): Promise<void> {
   const total = itemsToUpload.length;
 
   if (total === 0) {
-    alert('Tidak ada dokumen yang dipilih untuk diupload.');
+    void confirmLegacy({
+      title: 'Tidak ada dokumen dipilih',
+      message: 'Tidak ada dokumen yang dipilih untuk diupload.',
+      variant: 'warning',
+      okLabel: 'OK',
+      hideCancel: true,
+    });
     toggleUIProcessingState(false);
     isProcessing = false;
     updateStatus('');
@@ -670,7 +709,13 @@ async function runBatchQueue(): Promise<void> {
 
 async function testSingleUpload(): Promise<void> {
   if (batchQueue.length === 0) {
-    alert('Tidak ada URL untuk ditest');
+    void confirmLegacy({
+      title: 'Tidak ada URL',
+      message: 'Tidak ada URL untuk ditest.',
+      variant: 'warning',
+      okLabel: 'OK',
+      hideCancel: true,
+    });
     return;
   }
   if (isProcessing) return;
@@ -706,12 +751,24 @@ async function testSingleUpload(): Promise<void> {
 
 function startBatchUpload(): void {
   if (batchQueue.length === 0) {
-    alert('Tidak ada URL untuk diproses');
+    void confirmLegacy({
+      title: 'Tidak ada URL',
+      message: 'Tidak ada URL untuk diproses.',
+      variant: 'warning',
+      okLabel: 'OK',
+      hideCancel: true,
+    });
     return;
   }
-  if (confirm(`Upload ${batchQueue.length} dokumen? Proses ini tidak dapat dibatalkan.`)) {
-    runBatchQueue();
-  }
+  void (async () => {
+    const yes = await confirmLegacy({
+      title: `Upload ${batchQueue.length} dokumen?`,
+      message: 'Proses ini tidak dapat dibatalkan.',
+      variant: 'warning',
+      okLabel: 'Ya, Upload',
+    });
+    if (yes) runBatchQueue();
+  })();
 }
 
 function hasIdVisitParam(): boolean {

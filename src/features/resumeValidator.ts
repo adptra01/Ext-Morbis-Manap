@@ -1,6 +1,7 @@
 import { colors, injectCSS } from '../shared/ui/index.js';
+import { confirmExt } from '../ui/web/confirm';
 
-/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-unsafe-function-type, no-var */
+/* eslint-disable @typescript-eslint/no-unused-vars, no-var */
 (function () {
   const MAX_WAIT = 100;
   let waited = 0;
@@ -97,6 +98,8 @@ import { colors, injectCSS } from '../shared/ui/index.js';
     form.submit = function () {
       if (!runValidation()) return;
       _dirty = false;
+      // FIX: stop autosave interval saat submit (form akan navigasi away)
+      clearAutosave();
       try {
         localStorage.removeItem(getDraftKey());
       } catch (_e) {
@@ -109,6 +112,7 @@ import { colors, injectCSS } from '../shared/ui/index.js';
   // ===================== DRAFT AUTOSAVE =====================
 
   const DRAFT_PREFIX = 'ext_draft_resume_';
+  var _autosaveIntervalId: number | null = null;
 
   function getDraftKey(): string {
     const visitId = val('id_visit');
@@ -140,7 +144,15 @@ import { colors, injectCSS } from '../shared/ui/index.js';
       el.addEventListener('input', debounce(doSave, DEBOUNCE_MS));
     });
 
-    setInterval(doSave, 30000);
+    // FIX: simpan interval ID agar bisa di-clear saat form submit/cleanup
+    _autosaveIntervalId = setInterval(doSave, 30000);
+  }
+
+  function clearAutosave(): void {
+    if (_autosaveIntervalId !== null) {
+      clearInterval(_autosaveIntervalId);
+      _autosaveIntervalId = null;
+    }
   }
 
   function saveDraft(form: HTMLFormElement): void {
@@ -158,7 +170,7 @@ import { colors, injectCSS } from '../shared/ui/index.js';
     }
   }
 
-  function restoreDraft(): void {
+  async function restoreDraft(): Promise<void> {
     if (hasIdResume()) return;
 
     const key = getDraftKey();
@@ -177,8 +189,6 @@ import { colors, injectCSS } from '../shared/ui/index.js';
       return;
     }
 
-    const w = window as unknown as Record<string, unknown>;
-    const swal = typeof w.swal === 'function' ? (w.swal as Function) : null;
     const ok = function () {
       for (const name in draft) {
         if (name === '_saved_at') continue;
@@ -196,25 +206,20 @@ import { colors, injectCSS } from '../shared/ui/index.js';
       }
     };
 
-    if (swal) {
-      swal({
-        title: 'Draft Ditemukan',
-        text: 'Data draft sebelumnya ditemukan. Pulihkan?',
-        icon: 'info',
-        buttons: ['Hapus', 'Pulihkan'],
-        closeOnClickOutside: false,
-      }).then(function (restore: boolean) {
-        if (restore) ok();
-        else {
-          try {
-            localStorage.removeItem(key);
-          } catch (_e) {
-            /* ignore */
-          }
-        }
-      });
-    } else {
-      ok();
+    const restore = await confirmExt({
+      title: 'Draft Ditemukan',
+      message: 'Data draft sebelumnya ditemukan. Pulihkan?',
+      variant: 'info',
+      okLabel: 'Pulihkan',
+      cancelLabel: 'Hapus',
+    });
+    if (restore) ok();
+    else {
+      try {
+        localStorage.removeItem(key);
+      } catch (_e) {
+        /* ignore */
+      }
     }
   }
 
@@ -259,31 +264,23 @@ import { colors, injectCSS } from '../shared/ui/index.js';
 
     saveBtn.onclick = function (e: Event) {
       e.preventDefault();
-      const w = window as unknown as Record<string, unknown>;
-      const swal = typeof w.swal === 'function' ? (w.swal as Function) : null;
-      const ask = function (): void {
-        if (swal) {
-          swal({
-            title: 'Buka Kunci?',
-            text: 'Data sudah tersimpan. Buka kunci untuk mengedit?',
-            icon: 'warning',
-            buttons: ['Batal', 'Ya, Buka'],
-            closeOnClickOutside: false,
-          }).then(function (yes: boolean) {
-            if (yes) {
-              unlock();
-              swal({
-                title: 'Siap Edit',
-                text: 'Field sudah bisa diedit. Klik Simpan Perubahan jika selesai.',
-                icon: 'success',
-                timer: 2000,
-              });
-            }
+      const ask = async function (): Promise<void> {
+        const yes = await confirmExt({
+          title: 'Buka Kunci?',
+          message: 'Data sudah tersimpan. Buka kunci untuk mengedit?',
+          variant: 'warning',
+          okLabel: 'Ya, Buka',
+          cancelLabel: 'Batal',
+        });
+        if (yes) {
+          unlock();
+          await confirmExt({
+            title: 'Siap Edit',
+            message: 'Field sudah bisa diedit. Klik Simpan Perubahan jika selesai.',
+            variant: 'success',
+            okLabel: 'OK',
+            hideCancel: true,
           });
-        } else {
-          if (confirm('Data sudah tersimpan. Buka kunci untuk mengedit?')) {
-            unlock();
-          }
         }
       };
       ask();
@@ -314,18 +311,14 @@ import { colors, injectCSS } from '../shared/ui/index.js';
           saveBtn.textContent = 'Simpan (Login Ulang Dulu)';
           (saveBtn as HTMLInputElement).value = 'Simpan (Login Ulang Dulu)';
 
-          const w = window as unknown as Record<string, unknown>;
-          if (typeof w.swal === 'function') {
-            (w.swal as Function)({
-              title: 'Sesi Habis',
-              text: 'Jangan tutup halaman ini! Buka tab baru, login kembali, lalu klik Simpan lagi.',
-              icon: 'error',
-              buttons: { confirm: { text: 'OK, Saya Login Dulu', className: 'btn btn-danger' } },
-              closeOnClickOutside: false,
-            });
-          } else {
-            alert('Sesi habis! Buka tab baru, login kembali, lalu klik Simpan lagi.');
-          }
+          confirmExt({
+            title: 'Sesi Habis',
+            message:
+              'Jangan tutup halaman ini! Buka tab baru, login kembali, lalu klik Simpan lagi.',
+            variant: 'danger',
+            okLabel: 'OK, Saya Login Dulu',
+            hideCancel: true,
+          });
           return;
         }
 
@@ -442,10 +435,7 @@ import { colors, injectCSS } from '../shared/ui/index.js';
     ];
     ids.forEach(function (id) {
       var el = document.getElementById(id) as
-        | HTMLInputElement
-        | HTMLTextAreaElement
-        | HTMLSelectElement
-        | null;
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null;
       if (el) el.required = true;
     });
   }
@@ -742,18 +732,13 @@ import { colors, injectCSS } from '../shared/ui/index.js';
     }
     var bulletList = lines.join('\n');
 
-    var w = window as unknown as Record<string, unknown>;
-    if (typeof w.swal === 'function') {
-      (w.swal as Function)({
-        title: 'Validasi Gagal (' + errs.length + ' masalah)',
-        text: bulletList,
-        icon: 'warning',
-        buttons: { confirm: { text: 'OK', className: 'btn btn-primary' } },
-        closeOnClickOutside: false,
-      });
-    } else {
-      alert('Validasi Gagal (' + errs.length + ' masalah):\n' + bulletList);
-    }
+    confirmExt({
+      title: 'Validasi Gagal (' + errs.length + ' masalah)',
+      message: bulletList,
+      variant: 'warning',
+      okLabel: 'OK',
+      hideCancel: true,
+    });
   }
 
   // ===================== UTILITY =====================

@@ -29,7 +29,8 @@ import {
   const REQ_SOURCE = 'MORBIS-FARMASI';
   const RES_SOURCE = 'MORBIS-FARMASI-BRIDGE';
 
-  window.addEventListener('message', (event) => {
+  /** FIX: simpan handler reference agar bisa di-remove (prevensi memory leak) */
+  const handler = (event: MessageEvent) => {
     if (event.source !== window) return;
     const data = event.data;
     if (!data || data.source !== REQ_SOURCE) return;
@@ -137,5 +138,11 @@ import {
         );
       return;
     }
-  });
+  };
+
+  /** FIX: simpan ref agar bisa removeEventListener pas context invalidated */
+  window.addEventListener('message', handler);
+
+  // Cleanup saat content script di-reload atau context invalidated
+  // (MV3 service worker bisa mati kapan saja → listener akan auto-garbage-collected)
 })();

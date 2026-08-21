@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "MORBIS Ext Unofficial",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "browser_specific_settings": {
     "gecko": {
       "id": "morbis-ext@rsud-manap.com",
@@ -111,6 +111,13 @@
       "matches": ["http://*/admisi/pengajuan_konsultasi/konsultasi*"],
       "js": ["features/consultationEnhancer.js"],
       "run_at": "document_end",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
+      "matches": ["http://*/admisi/pengajuan_konsultasi/konsultasi*"],
+      "js": ["features/konsulDataTables.js"],
+      "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
     },
@@ -230,6 +237,13 @@
     {
       "matches": ["http://*/admisi/radiologi/pemeriksaan*"],
       "js": ["features/cancelButton.js"],
+      "run_at": "document_idle",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
+      "matches": ["http://*/admisi/radiologi/pemeriksaan*"],
+      "js": ["features/radiologiDataTables.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false

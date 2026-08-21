@@ -176,7 +176,8 @@ declare global {
       if (sb && !sb.isConnected) controlsHost?.appendChild(sb);
     };
     document.addEventListener('DOMContentLoaded', mount);
-    window.setInterval(mount, 300);
+    // FIX: simpan interval ID agar bisa di-clear pas unload
+    _mountIntervalId1 = window.setInterval(mount, 300);
     mount();
   }
   function setStatus(state: 'loading' | 'slow' | 'ok' | 'error'): void {
@@ -225,7 +226,8 @@ declare global {
     };
     if (document.body) mount();
     else document.addEventListener('DOMContentLoaded', mount);
-    window.setInterval(mount, 300);
+    // FIX: simpan interval ID agar bisa di-clear pas unload
+    _mountIntervalId2 = window.setInterval(mount, 300);
     toolbar.querySelector('#ext-afd-testsound')?.addEventListener('click', () => {
       unlockAudio(); // gesture ini membuka izin suara di browser yg ketat
       setStatus('loading');
@@ -1723,6 +1725,8 @@ declare global {
   let voiceEnabled = false;
   let started = false; // idempotency: cegah watcher/listener/polling ganda
   let watchTimer: ReturnType<typeof setInterval> | null = null;
+  let _mountIntervalId1: number | null = null;
+  let _mountIntervalId2: number | null = null;
   let pollTimer: number | null = null;
   let cardTimer: ReturnType<typeof setTimeout> | null = null;
   const healthCfg = { staleMax: STALE_MAX };
@@ -2063,4 +2067,11 @@ declare global {
    * wsHealth/polling/TTS TIDAK disentuh; hanya gate yang diubah.
    * ============================================================ */
   startWithRole(); // idempotent (guard started) — tidak ada dobel watcher/listener
+
+  // FIX: cleanup interval refs saat unload (MVP auto-clear via beforeunload di cleanup module jika nanti di-import)
+  const _cleanupAfd = () => {
+    if (_mountIntervalId1 !== null) clearInterval(_mountIntervalId1);
+    if (_mountIntervalId2 !== null) clearInterval(_mountIntervalId2);
+  };
+  window.addEventListener('beforeunload', _cleanupAfd);
 })();

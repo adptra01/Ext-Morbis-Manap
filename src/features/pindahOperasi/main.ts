@@ -1,7 +1,15 @@
+import { confirmLegacy } from '../shared/batchUtils.js';
+
 function pindahOperasi(): void {
   const form = document.querySelector<HTMLFormElement>('#form-data');
   if (!form) {
-    alert('Form #form-data tidak ditemukan');
+    void confirmLegacy({
+      title: 'Error',
+      message: 'Form #form-data tidak ditemukan',
+      variant: 'warning',
+      okLabel: 'OK',
+      hideCancel: true,
+    });
     return;
   }
 
@@ -36,13 +44,34 @@ function pindahOperasi(): void {
     .then((r) => r.json())
     .then((data) => {
       if (data.status === '200' || data.status === 200) {
-        alert('BERHASIL! Operasi dipindahkan ke Visit ' + targetVisit);
+        void confirmLegacy({
+          title: 'Berhasil',
+          message: 'Operasi dipindahkan ke Visit ' + targetVisit,
+          variant: 'success',
+          okLabel: 'OK',
+          hideCancel: true,
+        });
         location.reload();
       } else {
-        alert('GAGAL: ' + (data.message || 'Respon tidak dikenal'));
+        void confirmLegacy({
+          title: 'Gagal',
+          message: data.message || 'Respon tidak dikenal',
+          variant: 'danger',
+          okLabel: 'OK',
+          hideCancel: true,
+        });
       }
     })
-    .catch((e) => alert('Gagal: ' + e.message))
+    .catch(
+      (e) =>
+        void confirmLegacy({
+          title: 'Error',
+          message: e.message,
+          variant: 'danger',
+          okLabel: 'OK',
+          hideCancel: true,
+        }),
+    )
     .finally(() => {
       if (btn) {
         btn.disabled = false;

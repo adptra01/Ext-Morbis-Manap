@@ -3,7 +3,33 @@ import { colors, injectCSS } from '../shared/ui/index.js';
 
 const g = getMorbisGlobals();
 
-injectCSS('ext-toolbar-styles', `@media print{[data-toolbar]{display:none!important}}`);
+injectCSS(
+  'ext-toolbar-styles',
+  `@media print{[data-toolbar]{display:none!important}}
+  [data-toolbar] { display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:12px 16px; margin:12px 0; background:${colors.secondary}; border-radius:8px; border:1px solid ${colors.border}; }
+  [data-toolbar] .ext-toolbar-label { color:${colors.mutedForeground}; font-weight:600; font-size:13px; }
+  .ext-toolbar-link {
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:10px 20px; color:#fff !important; border:none; border-radius:6px;
+    text-decoration:none; font-size:14px; font-weight:600; cursor:pointer;
+    transition:all 0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.2);
+  }
+  .ext-toolbar-link:hover { transform:translateY(-2px); box-shadow:0 4px 8px rgba(0,0,0,0.3); }
+  .ext-toolbar-link:active { transform:translateY(0); }
+  .ext-toolbar-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:10px 20px; color:#fff !important; border:none; border-radius:6px;
+    font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s;
+    box-shadow:0 2px 4px rgba(0,0,0,0.2);
+  }
+  .ext-toolbar-btn:hover { transform:translateY(-2px); box-shadow:0 4px 8px rgba(0,0,0,0.3); }
+  .ext-toolbar-btn:active { transform:translateY(0); }
+  .ext-toolbar-batch { background:#ef4444; }
+  .ext-toolbar-batch:hover { background:#dc2626; }
+  .ext-toolbar-upload { background:#2563eb; }
+  .ext-toolbar-upload:hover { background:#1d4ed8; }
+`,
+);
 
 const TOOLBAR_URLS = {
   rajal: '/admisi/pelaksanaan_pelayanan/halaman-utama',
@@ -128,31 +154,13 @@ function createLink(
   const a = document.createElement('a');
   a.href = url;
   a.textContent = def.text;
-  Object.assign(a.style, {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '10px 20px',
-    background: def.bg,
-    color: '#fff',
-    border: 'none',
-    borderRadius: '6px',
-    textDecoration: 'none',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-  });
+  a.className = 'ext-toolbar-link';
+  a.style.background = def.bg;
   a.addEventListener('mouseenter', () => {
     a.style.background = def.hover;
-    a.style.transform = 'translateY(-2px)';
-    a.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
   });
   a.addEventListener('mouseleave', () => {
     a.style.background = def.bg;
-    a.style.transform = 'translateY(0)';
-    a.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
   });
   a.addEventListener('click', (e) => {
     e.preventDefault();
@@ -171,34 +179,18 @@ function createBtn(
   bg: string,
   hover: string,
   onClick: () => void,
+  className: string,
 ): HTMLButtonElement {
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.textContent = text;
-  Object.assign(btn.style, {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '10px 20px',
-    background: bg,
-    color: '#fff',
-    border: 'none',
-    borderRadius: '6px',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-  });
+  btn.className = `ext-toolbar-btn ${className}`;
+  btn.style.background = bg;
   btn.addEventListener('mouseenter', () => {
     btn.style.background = hover;
-    btn.style.transform = 'translateY(-2px)';
-    btn.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
   });
   btn.addEventListener('mouseleave', () => {
     btn.style.background = bg;
-    btn.style.transform = 'translateY(0)';
-    btn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
   });
   btn.addEventListener('click', onClick);
   return btn;
@@ -224,30 +216,15 @@ function renderToolbar(): void {
 
   const bar = document.createElement('div');
   bar.dataset.toolbar = 'true';
-  Object.assign(bar.style, {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    flexWrap: 'wrap',
-    padding: '12px 16px',
-    margin: '12px 0',
-    background: colors.secondary,
-    borderRadius: '8px',
-    border: `1px solid ${colors.border}`,
-  });
+
+  const label = document.createElement('span');
+  label.textContent = 'Tools:';
+  label.className = 'ext-toolbar-label';
+  bar.appendChild(label);
 
   const shortcutOk =
     g.currentConfig?.features?.shortcutButtons?.enabled &&
     g.ExtensionCore.isFeatureAllowed('shortcutButtons');
-
-  const label = document.createElement('span');
-  label.textContent = 'Tools:';
-  Object.assign(label.style, {
-    color: colors.mutedForeground,
-    fontWeight: '600',
-    fontSize: '13px',
-  });
-  bar.appendChild(label);
 
   if (shortcutOk) {
     if (g.currentConfig?.extensionEnabled)
@@ -281,7 +258,13 @@ function renderToolbar(): void {
     g.ExtensionCore.isFeatureAllowed('batchDelete')
   ) {
     bar.appendChild(
-      createBtn('Hapus Dokumen', '#ef4444', '#dc2626', () => (g as any).batchDeleteShowModal?.()),
+      createBtn(
+        'Hapus Dokumen',
+        '#ef4444',
+        '#dc2626',
+        () => (g as any).batchDeleteShowModal?.(),
+        'ext-toolbar-batch',
+      ),
     );
   }
   if (
@@ -289,8 +272,12 @@ function renderToolbar(): void {
     g.ExtensionCore.isFeatureAllowed('batchUpload')
   ) {
     bar.appendChild(
-      createBtn('Upload Dokumen Ulang', '#2563eb', '#1d4ed8', () =>
-        (g as any).batchUploadShowModal?.(),
+      createBtn(
+        'Upload Dokumen Ulang',
+        '#2563eb',
+        '#1d4ed8',
+        () => (g as any).batchUploadShowModal?.(),
+        'ext-toolbar-upload',
       ),
     );
   }

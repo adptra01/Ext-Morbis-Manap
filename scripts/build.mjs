@@ -13,7 +13,7 @@ const distDir = resolve(rootDir, 'dist');
 const featuresDestDir = join(distDir, 'features');
 
 const isWatch = process.argv.includes('--watch');
-const isProduction = process.argv.includes('--production');
+const isProduction = process.argv.includes('--production') || process.env.NODE_ENV === 'production';
 
 async function ensureDir(dir) {
   if (!existsSync(dir)) {
@@ -77,6 +77,8 @@ async function compileFeatureFiles() {
     'penerimaanAntrolCetak.ts',
     'ttvEditor.ts',
     'cancelButton.ts',
+    'radiologiDataTables.ts',
+    'konsulDataTables.ts',
     'resumeTab/mount.tsx',
     'resumeRanapTab/mount.tsx',
     'pindahOperasi/main.ts',
@@ -181,6 +183,15 @@ const commonOptions = {
   format: 'iife',
   platform: 'browser',
   logLevel: 'info',
+  // Telegram logging: token/chat hanya terisi saat build production (dari
+  // GitHub Secrets via env CI — bukan dari repo/.env). Dev build → string
+  // kosong → `if (!token || !chatId) return` → tidak mengirim apa pun.
+  // Selalu di-define agar `process.env.*` tidak bocor ke runtime (SW browser
+  // tidak punya `process` global → ReferenceError tanpa define ini).
+  define: {
+    'process.env.TELEGRAM_BOT_TOKEN': JSON.stringify(process.env.TELEGRAM_BOT_TOKEN ?? ''),
+    'process.env.TELEGRAM_CHAT_ID': JSON.stringify(process.env.TELEGRAM_CHAT_ID ?? ''),
+  },
 };
 
 async function buildWithReact(options) {

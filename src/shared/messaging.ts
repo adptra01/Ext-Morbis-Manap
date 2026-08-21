@@ -27,6 +27,8 @@ export const MessageTypes = {
   // SW fetch bebas PNA/CORS halaman (host_permissions http://*/*) sehingga
   // halaman HTTP publik MORBIS bisa ambil MP3 dari 127.0.0.1:8765.
   TTS_LOCAL: 'TTS_LOCAL',
+  // Remote error logging: content script → background → Slack webhook (prod only)
+  LOG_TO_TELEGRAM: 'LOG_TO_TELEGRAM',
 } as const;
 
 export type MessageType = (typeof MessageTypes)[keyof typeof MessageTypes];
@@ -64,6 +66,14 @@ type RequestMap = {
   // TTS local: content script → background → 127.0.0.1:8765/tts → MP3 bytes
   TTS_LOCAL: { type: 'TTS_LOCAL'; text: string };
 
+  // Remote error logging (sanitized): content script → background → Slack
+  LOG_TO_TELEGRAM: {
+    type: 'LOG_TO_TELEGRAM';
+    level: 'error' | 'warn';
+    feature: string;
+    message: string;
+  };
+
   // Batch actions
   BATCH_UPLOAD_ACTION: { type: 'BATCH_UPLOAD_ACTION'; payload: unknown };
   BATCH_DELETE_ACTION: { type: 'BATCH_DELETE_ACTION'; payload: unknown };
@@ -92,6 +102,7 @@ type ResponseMap = {
   BATCH_DELETE_ACTION: { success: true };
   PROXY_FETCH: { success: boolean; html?: string; error?: string };
   TTS_LOCAL: { ok: boolean; mime?: string; data?: string; reason?: string };
+  LOG_TO_TELEGRAM: { success: boolean };
 };
 
 export function sendMessage<T extends MessageType>(

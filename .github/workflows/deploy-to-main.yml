@@ -21,7 +21,16 @@ jobs:
           cache: npm
 
       - run: npm ci
-      - run: npm run build
+
+      # Kredensial Telegram (bot token + chat ID) TIDAK pernah di-commit —
+      # di-inject dari GitHub Secrets saat CI build. Tanpa keduanya, build
+      # tetap sukses dengan token kosong → logging remote non-aktif.
+      - name: Build extension (production)
+        env:
+          NODE_ENV: production
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: npm run build
 
       - name: Deploy dist → main (orphan-style)
         run: |
