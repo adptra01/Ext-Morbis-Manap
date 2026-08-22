@@ -16537,18 +16537,6 @@ html {
 .data-\\[state\\=open\\]\\:zoom-in-95[data-state="open"]{
   --tw-enter-scale: .95;
 }
-.data-\\[side\\=bottom\\]\\:slide-in-from-top-2[data-side="bottom"]{
-  --tw-enter-translate-y: -0.5rem;
-}
-.data-\\[side\\=left\\]\\:slide-in-from-right-2[data-side="left"]{
-  --tw-enter-translate-x: 0.5rem;
-}
-.data-\\[side\\=right\\]\\:slide-in-from-left-2[data-side="right"]{
-  --tw-enter-translate-x: -0.5rem;
-}
-.data-\\[side\\=top\\]\\:slide-in-from-bottom-2[data-side="top"]{
-  --tw-enter-translate-y: 0.5rem;
-}
 .dark\\:border-amber-800:is(.dark *){
   --tw-border-opacity: 1;
   border-color: rgb(146 64 14 / var(--tw-border-opacity, 1));
