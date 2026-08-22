@@ -612,7 +612,7 @@ var __morbis_feature = (() => {
     }
     function $(e) {
       let r = document.getElementById('formDataRujukan');
-      if (!r) return;
+      if (!r || r.querySelector('.ext-ttv-bar')) return;
       let s = document.createElement('span');
       ((s.className = 'ext-ttv-status'), (s.textContent = 'Editable'));
       let i = document.createElement('ext-btn');

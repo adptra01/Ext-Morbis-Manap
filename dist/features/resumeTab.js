@@ -21432,7 +21432,7 @@ html {
       }),
       document.body.appendChild(o),
       document.addEventListener('keydown', (n) => {
-        n.key === 'Escape' && l.style.display === 'block' && cm(l);
+        n.key === 'Escape' && l.style.display !== 'none' && cm(l);
       }));
   }
   function xA() {
