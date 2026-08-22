@@ -181,6 +181,8 @@ import '../ui/web';
   function addTogglePanel(inputs: HTMLInputElement[]): void {
     const form = document.getElementById('formDataRujukan');
     if (!form) return;
+    // ponytail: guard anti double-inject — PJAX/re-render bisa re-trigger poll
+    if (form.querySelector('.ext-ttv-bar')) return;
 
     const statusEl = document.createElement('span');
     statusEl.className = 'ext-ttv-status';

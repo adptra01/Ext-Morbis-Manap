@@ -1124,7 +1124,7 @@ function setupFloatingButton() {
   document.body.appendChild(btn);
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && container.style.display === 'block') {
+    if (e.key === 'Escape' && container.style.display !== 'none') {
       closeOverlay(container);
     }
   });
