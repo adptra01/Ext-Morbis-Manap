@@ -5,19 +5,31 @@
  *
  * ponytail: CDN loader shared with lab + radiologi via shared/dataTablesLoader.
  */
-import { getExt$, cleanCellHTML } from './shared/dataTablesLoader';
+import { loadDataTablesDeps, getExt$, cleanCellHTML } from './shared/dataTablesLoader';
 
 const LOG = 'KonsulDT';
 
 (function () {
   if (!window.location.pathname.includes('admisi/pengajuan_konsultasi/konsultasi')) return;
 
-  const flag = document.documentElement.getAttribute('data-ext-konsul-datatables');
-  if (flag !== '1') {
-    console.log('[' + LOG + '] disabled');
-    return;
-  }
-  console.log('[' + LOG + '] start');
+  // ponytail: poll flag like resumeTab — init.ts may not have set it yet (race condition)
+  let polls = 0;
+  const maxPolls = 20;
+  let enabled = false;
+  (function pollFlag() {
+    const flag = document.documentElement.getAttribute('data-ext-konsul-datatables');
+    if (flag !== '1') {
+      if (polls++ < maxPolls) {
+        setTimeout(pollFlag, 300);
+        return;
+      }
+      console.log('[' + LOG + '] disabled');
+      return;
+    }
+    console.log('[' + LOG + '] start');
+    enabled = true;
+    loadDataTablesDeps(LOG).then(() => scanTables());
+  })();
 
   const dtInstances = new Map<Element, any>();
 
@@ -102,6 +114,7 @@ const LOG = 'KonsulDT';
   }
 
   function scanTables() {
+    if (!enabled) return;
     const tables = document.querySelectorAll(
       '.morbis-data-table, #tabellist table, #tabeldone table',
     );

@@ -41,12 +41,12 @@ export function loadDataTablesDeps(logPrefix: string): Promise<void> {
     // Save page's own jQuery/$ before overwriting
     const _page$ = (window as any).$;
     const _pageJQ = (window as any).jQuery;
-    await injectScript(JQUERY_URL);
-    // Store extension's jQuery, restore page's
+    await injectScript(JQUERY_URL); // jQuery3.7.1 now on window.jQuery
+    await injectScript(DT_JS_URL); // DT 1.13.11 attaches to 3.7.1
+    // ponytail: DT MUST load while 3.7.1 is active — DT 1.13.x needs jQuery >=1.7
     (window as any).__extJQ = (window as any).jQuery;
     (window as any).$ = _page$;
-    (window as any).jQuery = _pageJQ;
-    await injectScript(DT_JS_URL);
+    (window as any).jQuery = _pageJQ; // restore page's jQuery (1.5 etc.)
     console.log(`[${logPrefix}] deps loaded`);
   })();
   return depsPromise;

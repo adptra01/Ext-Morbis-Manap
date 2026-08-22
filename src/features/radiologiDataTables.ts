@@ -34,18 +34,26 @@ const COLUMNS = [
 (function () {
   if (!window.location.pathname.includes('admisi/radiologi/pemeriksaan')) return;
 
-  const flag = document.documentElement.getAttribute('data-ext-radio-datatables');
-  if (flag !== '1') {
-    console.log('[' + LOG + '] disabled');
-    return;
-  }
-  console.log('[' + LOG + '] start');
-
   const init = { selector: 'table.tabel', columns: COLUMNS, pageLength: 25, logPrefix: LOG };
 
-  loadDataTablesDeps(LOG).then(() => scanTables(init));
+  // ponytail: poll flag like resumeTab — init.ts may not have set it yet (race condition)
+  let polls = 0;
+  const maxPolls = 20;
+  (function pollFlag() {
+    const flag = document.documentElement.getAttribute('data-ext-radio-datatables');
+    if (flag !== '1') {
+      if (polls++ < maxPolls) {
+        setTimeout(pollFlag, 300);
+        return;
+      }
+      console.log('[' + LOG + '] disabled');
+      return;
+    }
+    console.log('[' + LOG + '] start');
+    loadDataTablesDeps(LOG).then(() => scanTables(init));
+  })();
 
-  // MutationObserver for PJAX tab switches
+  // MutationObserver for AJAX-loaded tables + PJAX tab switches
   let timer: ReturnType<typeof setTimeout> | null = null;
   const obs = new MutationObserver(() => {
     if (timer) clearTimeout(timer);
