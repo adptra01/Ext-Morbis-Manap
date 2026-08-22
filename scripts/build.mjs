@@ -63,6 +63,7 @@ async function compileFeatureFiles() {
     'openDetail.ts',
     'toolbar.ts',
     'inputHasilPa.ts',
+    'shared/dataTablesLoader.ts',
     'labDataTables.ts',
     'laporanKasirTime.ts',
     'cpptSearchFilter.ts',
