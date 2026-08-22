@@ -1,10 +1,10 @@
 'use strict';
 var __morbis_feature = (() => {
-  var E = 'ext-batch-shared-style';
-  function U() {
-    if (document.getElementById(E)) return;
+  var A = 'ext-batch-shared-style';
+  function j() {
+    if (document.getElementById(A)) return;
     let e = document.createElement('style');
-    ((e.id = E),
+    ((e.id = A),
       (e.textContent = `
     .ext-modal-content {
       background: #ffffff; border-radius: 16px; padding: 28px 32px;
@@ -151,9 +151,9 @@ var __morbis_feature = (() => {
   `),
       document.head.appendChild(e));
   }
-  function A(e) {
+  function E(e) {
     return new Promise((t) => {
-      U();
+      j();
       let n = e.variant === 'danger' ? 'ext-btn-danger' : 'ext-btn-primary',
         r = document.createElement('div');
       ((r.style.cssText =
@@ -178,23 +178,23 @@ var __morbis_feature = (() => {
             `
 `,
           )
-          .forEach((i, c) => {
+          .forEach((s, c) => {
             (c > 0 && o.appendChild(document.createElement('br')),
-              o.appendChild(document.createTextNode(i)));
+              o.appendChild(document.createTextNode(s)));
           });
-      let s = (i) => {
-          (r.remove(), document.removeEventListener('keydown', a), t(i));
+      let i = (s) => {
+          (r.remove(), document.removeEventListener('keydown', a), t(s));
         },
-        a = (i) => {
-          i.key === 'Escape' && s(!1);
+        a = (s) => {
+          s.key === 'Escape' && i(!1);
         };
-      (r.querySelector('.ext-modal-close').addEventListener('click', () => s(!1)),
-        r.addEventListener('click', (i) => {
-          i.target === r && s(!1);
+      (r.querySelector('.ext-modal-close').addEventListener('click', () => i(!1)),
+        r.addEventListener('click', (s) => {
+          s.target === r && i(!1);
         }),
-        r.querySelector('[data-ext-ok]').addEventListener('click', () => s(!0)));
+        r.querySelector('[data-ext-ok]').addEventListener('click', () => i(!0)));
       let m = r.querySelector('[data-ext-cancel]');
-      (m && m.addEventListener('click', () => s(!1)),
+      (m && m.addEventListener('click', () => i(!1)),
         document.addEventListener('keydown', a),
         document.body.appendChild(r));
     });
@@ -203,7 +203,7 @@ var __morbis_feature = (() => {
     let t = window.open('', '_blank', 'width=400,height=560');
     if (!t)
       return (
-        A({
+        E({
           title: 'Popup Diblokir',
           message: 'Izinkan popup untuk mencetak.',
           variant: 'warning',
@@ -231,10 +231,10 @@ var __morbis_feature = (() => {
       !0
     );
   }
-  var j = 'http://dev.rsudkotajambi.id/rs',
-    M = null,
+  var M = 'http://dev.rsudkotajambi.id/rs',
+    B = null,
     x = null;
-  async function B() {
+  async function R() {
     try {
       return ((await chrome.storage.sync.get('extensionCustomUrls')).extensionCustomUrls ?? [])
         .filter((n) => n.url && n.enabled !== !1)
@@ -243,8 +243,8 @@ var __morbis_feature = (() => {
       return [];
     }
   }
-  var R = ['http://dev.rsudkotajambi.id/rs', 'http://103.147.236.138/rs'];
-  function q() {
+  var q = ['http://dev.rsudkotajambi.id/rs', 'http://103.147.236.138/rs'];
+  function z() {
     return (
       x ||
       ((x = (async () => {
@@ -252,51 +252,56 @@ var __morbis_feature = (() => {
           let n = localStorage.getItem('ext-farmasi-app-base');
           if (n && /^https?:\/\//.test(n)) return n.replace(/\/+$/, '');
         } catch {}
-        let e = await B(),
-          t = [...new Set([...e, ...R])];
+        let e = await R(),
+          t = [...new Set([...e, ...q])];
         for (let n of t)
           try {
             let r = new AbortController(),
               o = setTimeout(() => r.abort(), 2500),
-              s = await fetch(n + '/api/queue/lookup?resep_id=probe', {
+              i = await fetch(n + '/api/queue/lookup?resep_id=probe', {
                 cache: 'no-store',
                 credentials: 'omit',
                 signal: r.signal,
               });
             clearTimeout(o);
-            let a = s.headers.get('content-type') || '';
-            if ((s.status === 200 || s.status === 422) && a.includes('application/json'))
-              return ((M = n), n);
+            let a = i.headers.get('content-type') || '';
+            if ((i.status === 200 || i.status === 422) && a.includes('application/json'))
+              return ((B = n), n);
           } catch {}
-        return j;
+        return M;
       })()),
       x)
     );
   }
-  async function T(e) {
+  var T = '';
+  async function S(e) {
     try {
       let t = { ...e };
       if ((e.event === 'ENQUEUE' && delete t.queue_number, e.event === 'BATAL' && !e.queue_number))
         return (console.warn('[MORBIS Ext] BATAL tanpa queue_number \u2014 dilewati'), { ok: !1 });
-      let n = await q(),
-        r = await fetch(n + '/api/queue/events', {
+      let n = await z(),
+        r = new AbortController(),
+        o = setTimeout(() => r.abort(), 8e3),
+        i = await fetch(n + '/api/queue/events', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(t),
           cache: 'no-store',
           credentials: 'omit',
+          signal: r.signal,
         });
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      let o = await r.json();
-      return { ok: !!o.ok, queue_number: o.queue?.queue_number };
+      if ((clearTimeout(o), !i.ok)) throw new Error('HTTP ' + i.status);
+      let a = await i.json();
+      return { ok: !!a.ok, queue_number: a.queue?.queue_number };
     } catch (t) {
-      return (console.warn('[MORBIS Ext] queue sync gagal:', t.message), { ok: !1 });
+      let n = t.message;
+      return (n !== T && (console.warn('[MORBIS Ext] queue sync gagal:', n), (T = n)), { ok: !1 });
     }
   }
-  function S(e, t, n) {
+  function _(e, t, n) {
     return `${e}-${t}-${n}-${new Date().toISOString().slice(0, 10)}`;
   }
-  function _(e, t = 5e3) {
+  function I(e, t = 5e3) {
     let n = document.documentElement,
       r = Date.now(),
       o = window.setInterval(() => {
@@ -305,9 +310,9 @@ var __morbis_feature = (() => {
           : Date.now() - r > t && window.clearInterval(o);
       }, 200);
   }
-  var z = '/v2/antrol/search',
-    $ = 'sub=update_v2',
-    H = '/public/antrian-farmasi-v2/list-antrian-v2',
+  var $ = '/v2/antrol/search',
+    H = 'sub=update_v2',
+    O = '/public/antrian-farmasi-v2/list-antrian-v2',
     h = null,
     w = null;
   if (window.__extPenerimaanAntrol) throw new Error('skip double inject penerimaanAntrolCetak');
@@ -315,7 +320,7 @@ var __morbis_feature = (() => {
   function d(...e) {
     console.log('[MORBIS Ext] penerimaanAntrolCetak:', ...e);
   }
-  async function L(e) {
+  async function C(e) {
     let t = await fetch(
       `/inventory/resep/akses/penerimaan?type=ajax&opsi=data-resep-new&q=1&id=${encodeURIComponent(e)}`,
       { credentials: 'include', cache: 'no-store' },
@@ -323,9 +328,9 @@ var __morbis_feature = (() => {
     if (!t.ok) throw new Error('data-resep-new HTTP ' + t.status);
     return await t.json();
   }
-  async function O(e) {
+  async function D(e) {
     return (
-      await fetch(`${z}?${$}`, {
+      await fetch(`${$}?${H}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: `id=${encodeURIComponent(e)}&taskid=6`,
@@ -333,8 +338,8 @@ var __morbis_feature = (() => {
       })
     ).ok;
   }
-  async function D() {
-    let e = await fetch(H, {
+  async function K() {
+    let e = await fetch(O, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
       body: 'type=check_antrian',
@@ -346,7 +351,7 @@ var __morbis_feature = (() => {
     if (!Array.isArray(t)) throw new Error('bukan array');
     return t;
   }
-  function K(e, t, n) {
+  function F(e, t, n) {
     let r = String(n ?? '');
     return e.find((o) =>
       String(o.ID_PASIEN ?? '') !== String(t)
@@ -356,17 +361,17 @@ var __morbis_feature = (() => {
           : !0,
     );
   }
-  function F(e) {
+  function J(e) {
     if (!e) return '';
     let t = (e.textContent || '').match(/Shift\s*:\s*([A-Za-z0-9]+)/i);
     return t ? t[1] : '';
   }
-  function C(e) {
+  function P(e) {
     if (!e) return '';
     let t = (e.textContent || '').match(/\b[A-Z]{2,3}-\d+\b/);
     return t ? t[0] : '';
   }
-  function J(e) {
+  function Q(e) {
     if (!e) return '';
     let t = e.querySelectorAll('td'),
       n = '';
@@ -377,38 +382,38 @@ var __morbis_feature = (() => {
     return n;
   }
   function v(e, t) {
-    return (String(e.NAMA_PAS ?? e.NAMA_PASIEN ?? '').trim() || J(t)).toUpperCase();
+    return (String(e.NAMA_PAS ?? e.NAMA_PASIEN ?? '').trim() || Q(t)).toUpperCase();
   }
-  async function Q(e) {
+  async function W(e) {
     try {
-      let t = await L(e),
+      let t = await C(e),
         n = String(t.ID_VISIT ?? '');
       if (!n) throw new Error('ID_VISIT kosong');
       d('antrikan idVisit=' + n, 'resep', e);
-      let r = await O(n);
+      let r = await D(n);
       d('antrol', r ? 'OK' : 'gagal');
       let o;
       for (let u = 0; u < 5 && !o; u++) {
         try {
-          let l = await D();
+          let l = await K();
           o =
-            K(l, String(t.ID_PASIEN ?? ''), String(t.WAKTU_PENGAJUAN ?? '')) ??
-            l.find((N) => String(N.ID ?? '') === n);
+            F(l, String(t.ID_PASIEN ?? ''), String(t.WAKTU_PENGAJUAN ?? '')) ??
+            l.find((U) => String(U.ID ?? '') === n);
         } catch {}
         o || (await new Promise((l) => setTimeout(l, 400)));
       }
-      let s = o ? String(o.ID ?? '') : n,
+      let i = o ? String(o.ID ?? '') : n,
         a = document.querySelector(`tr[id="${e}"]`),
-        i = (a ? Array.from(a.querySelectorAll('td')) : [])[2],
-        c = C(i) || String(o?.NOMOR ?? '');
+        s = (a ? Array.from(a.querySelectorAll('td')) : [])[2],
+        c = P(s) || String(o?.NOMOR ?? '');
       if (!c) {
-        (d('nomor native belum ada utk', s), alert('Nomor antrian belum terbit. Coba lagi.'));
+        (d('nomor native belum ada utk', i), alert('Nomor antrian belum terbit. Coba lagi.'));
         return;
       }
       d('nomor publik', c);
-      let y = o?.SHIFT || (i ? F(i) : '') || '',
-        k = await T({
-          event_id: S('enq', s, c) + '-' + Date.now().toString(36),
+      let y = o?.SHIFT || (s ? J(s) : '') || '',
+        k = await S({
+          event_id: _('enq', i, c) + '-' + Date.now().toString(36),
           event: 'ENQUEUE',
           resep_id: e,
           nama_pasien: v(t, a),
@@ -424,13 +429,13 @@ var __morbis_feature = (() => {
         });
       k.ok || d('ENQUEUE app gagal (app tidak terjangkau?) \u2014 antrian tetap jalan di MORBIS');
       let p = k.queue_number || c;
-      if ((d('nomor publik', p), i && !i.hasAttribute('data-ext-code'))) {
-        let u = i.querySelector('button'),
+      if ((d('nomor publik', p), s && !s.hasAttribute('data-ext-code'))) {
+        let u = s.querySelector('button'),
           l = u ? u.outerHTML : '';
-        ((i.innerHTML = `${p}<br>Shift : ${y || '-'}` + (l ? '<br>' + l : '')),
-          i.setAttribute('data-ext-code', p),
-          i.setAttribute('data-ext-resep', e),
-          P(i, p, e));
+        ((s.innerHTML = `${p}<br>Shift : ${y || '-'}` + (l ? '<br>' + l : '')),
+          s.setAttribute('data-ext-code', p),
+          s.setAttribute('data-ext-resep', e),
+          N(s, p, e));
       }
       b({
         nomorResep: e,
@@ -444,7 +449,7 @@ var __morbis_feature = (() => {
       (d('gagal', t), alert('[MORBIS Ext] Gagal mengantrikan resep: ' + String(t.message ?? t)));
     }
   }
-  function P(e, t, n) {
+  function N(e, t, n) {
     let r = e.querySelector('button');
     if (!r) return;
     let o = r.cloneNode(!0);
@@ -452,12 +457,12 @@ var __morbis_feature = (() => {
       (o.title = t + ' \u2014 cetak ulang kartu tanpa mengantrikan lagi'),
       (o.style.cssText =
         'margin-top:4px;padding:3px 8px;font-size:11px;border:1px solid #0d6efd;background:#e7f1ff;color:#0d6efd;border-radius:6px;cursor:pointer;'),
-      o.addEventListener('click', (s) => {
-        (s.preventDefault(),
-          s.stopPropagation(),
+      o.addEventListener('click', (i) => {
+        (i.preventDefault(),
+          i.stopPropagation(),
           (async () => {
             try {
-              let a = await L(n);
+              let a = await C(n);
               b({
                 nomorResep: n,
                 nama: v(a, e.closest('tr')),
@@ -478,7 +483,7 @@ var __morbis_feature = (() => {
     if (!e.no_antrian || e.no_antrian.__ext) return;
     let t = e.no_antrian,
       n = (r) => {
-        Q(String(r));
+        W(String(r));
       };
     ((n.__ext = !0), (e.no_antrian = n));
   }
@@ -515,23 +520,23 @@ var __morbis_feature = (() => {
   window.setTimeout(f, 1e3);
   window.setTimeout(f, 3e3);
   h = window.setInterval(f, 3e3);
-  function I() {
+  function L() {
     try {
       document.querySelectorAll('tr[id]').forEach((e) => {
         let t = e.children[2];
         if (!t) return;
         let n = t.querySelector('button');
         if (!n || n.textContent?.includes('Cetak')) return;
-        let r = t.getAttribute('data-ext-code') || C(t),
+        let r = t.getAttribute('data-ext-code') || P(t),
           o = e.getAttribute('id') || '';
         !r ||
           !o ||
-          (t.setAttribute('data-ext-code', r), t.setAttribute('data-ext-resep', o), P(t, r, o));
+          (t.setAttribute('data-ext-code', r), t.setAttribute('data-ext-resep', o), N(t, r, o));
       });
     } catch {}
   }
-  _(() => {
-    (I(), (w = window.setInterval(I, 4e3)));
+  I(() => {
+    (L(), (w = window.setInterval(L, 4e3)));
   });
   window.addEventListener('beforeunload', () => {
     (h !== null && clearInterval(h), w !== null && clearInterval(w));
