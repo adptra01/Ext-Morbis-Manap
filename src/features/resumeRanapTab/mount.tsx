@@ -383,15 +383,31 @@ function mountReactApp(data: RanapFormData) {
   }, 0);
 }
 
-async function isFeatureEnabled(): Promise<boolean> {
-  // MAIN world tidak punya chrome.storage (dulu catch → return true = SELALU aktif).
-  // Gate via attribute yang di-set init.ts (isolated) berdasarkan config + role.
+function isFeatureEnabledSync(): boolean {
   return document.documentElement.getAttribute('data-ext-resume-ranap') === '1';
+}
+
+// ponytail: poll attribute — init.ts (ISOLATED) mungkin belum set data-ext-resume-ranap
+// saat MAIN world script load karena config async. Poll max 5s lalu give up.
+function waitForFeature(timeoutMs = 5000): Promise<boolean> {
+  if (isFeatureEnabledSync()) return Promise.resolve(true);
+  return new Promise((resolve) => {
+    const t0 = Date.now();
+    const iv = setInterval(() => {
+      if (isFeatureEnabledSync()) {
+        clearInterval(iv);
+        resolve(true);
+      } else if (Date.now() - t0 > timeoutMs) {
+        clearInterval(iv);
+        resolve(false);
+      }
+    }, 200);
+  });
 }
 
 async function init() {
   if (!location.href.startsWith(location.origin + '/v2/m-klaim/detail-v2-refaktor')) return;
-  if (!(await isFeatureEnabled())) return;
+  if (!(await waitForFeature())) return;
   const loginPaths = ['/login', '/auth', '/signin', '/masuk', '/keluar', '/logout'];
   if (
     loginPaths.some((p) => location.pathname.toLowerCase().includes(p)) ||

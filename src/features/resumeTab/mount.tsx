@@ -1144,9 +1144,27 @@ function isLoginPage(): boolean {
   );
 }
 
-(() => {
-  if (!isFeatureEnabled()) return;
+// ponytail: poll attribute — init.ts (ISOLATED) mungkin belum set data-ext-resume-modal
+// saat MAIN world script load karena config async. Poll max 5s lalu give up.
+function waitForFeature(timeoutMs = 5000): Promise<boolean> {
+  if (isFeatureEnabled()) return Promise.resolve(true);
+  return new Promise((resolve) => {
+    const t0 = Date.now();
+    const iv = setInterval(() => {
+      if (isFeatureEnabled()) {
+        clearInterval(iv);
+        resolve(true);
+      } else if (Date.now() - t0 > timeoutMs) {
+        clearInterval(iv);
+        resolve(false);
+      }
+    }, 200);
+  });
+}
+
+(async () => {
   if (isLoginPage()) return;
+  if (!(await waitForFeature())) return;
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', setupFloatingButton);
   } else {
