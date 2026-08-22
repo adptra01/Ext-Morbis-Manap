@@ -112,6 +112,9 @@ export function probeFarmasiAppBase(): Promise<string> {
   return basePromise;
 }
 
+// ponytail: dedup repeated warn — "Failed to fetch" floods console when farmasi app is down.
+let lastWarnMsg = '';
+
 /** POST event ke app antrian. Idempoten (event_id unik) — aman dipanggil ganda.
  *  ENQUEUE: JANGAN kirim queue_number — app yang assign (T-XX/R-XX per jenis);
  *  nomor hasil ada di return.queue_number (dipakai cetak kartu). */
@@ -129,18 +132,28 @@ export async function pushQueueEvent(
     // Probe base sekali (ringan) supaya fallback IP dipakai bila DNS domain
     // internal RS tidak resolve.
     const base = await probeFarmasiAppBase();
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 8000);
     const res = await fetch(base + '/api/queue/events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
       cache: 'no-store',
       credentials: 'omit',
+      signal: ctrl.signal,
     });
+    clearTimeout(t);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const j = (await res.json()) as { ok?: boolean; queue?: { queue_number?: string } };
     return { ok: !!j.ok, queue_number: j.queue?.queue_number };
   } catch (e) {
-    console.warn('[MORBIS Ext] queue sync gagal:', (e as Error).message);
+    const msg = (e as Error).message;
+    // ponytail: "Failed to fetch" = farmasi app server tidak terjangkau —
+    // bukan bug extension, tapi server down/DNS/CORS. Warn sekali saja.
+    if (msg !== lastWarnMsg) {
+      console.warn('[MORBIS Ext] queue sync gagal:', msg);
+      lastWarnMsg = msg;
+    }
     return { ok: false };
   }
 }
