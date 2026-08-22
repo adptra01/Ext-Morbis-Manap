@@ -213,10 +213,32 @@ export function initDataTable(tbl: HTMLTableElement, init: DataTableInit): boole
 
 /**
  * Scan for tables matching selector and init DataTables.
+ * ponytail: tries init.selector first, falls back to #content table then any unwrapped table.
  * Returns number of tables initialized.
  */
 export function scanTables(init: DataTableInit): number {
-  const tables = document.querySelectorAll(init.selector);
+  // ponytail: debug — log what's in #content so we can see the actual table structure
+  const contentEl = document.getElementById('content');
+  if (contentEl) {
+    const allTbls = contentEl.querySelectorAll('table');
+    if (allTbls.length > 0 && !(allTbls[0] as HTMLElement).dataset.extDt) {
+      console.log(
+        `[${init.logPrefix}] #content has ${allTbls.length} table(s), class="${(allTbls[0] as HTMLElement).className}", rows=${allTbls[0].querySelectorAll('tr').length}`,
+      );
+    }
+  }
+
+  let tables = document.querySelectorAll(init.selector);
+  // ponytail: fallback — try #content table if primary selector finds nothing
+  if (tables.length === 0 && contentEl) {
+    tables = contentEl.querySelectorAll('table');
+    if (tables.length > 0) {
+      console.log(
+        `[${init.logPrefix}] fallback: using #content table (primary selector "${init.selector}" matched 0)`,
+      );
+    }
+  }
+
   let count = 0;
   tables.forEach((tbl) => {
     if (initDataTable(tbl as HTMLTableElement, init)) count++;
