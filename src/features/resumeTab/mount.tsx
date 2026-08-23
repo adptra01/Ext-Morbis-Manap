@@ -775,8 +775,8 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
       .resume-modal .resume-modal *::after {
         box-sizing: border-box;
       }
-      /* Neutralize host page button/input/select/textarea defaults */
-      .resume-modal .resume-modal button,
+      /* Neutralize host page input/select/textarea defaults.
+         No reset on buttons — our Button component owns its own styling via Tailwind. */
       .resume-modal .resume-modal input,
       .resume-modal .resume-modal select,
       .resume-modal .resume-modal textarea {
@@ -786,25 +786,6 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
         font-size: inherit;
         color: inherit;
         cursor: default;
-      }
-      .resume-modal .resume-modal button {
-        cursor: pointer;
-        min-height: 32px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        white-space: nowrap;
-        border-radius: 6px;
-        font-weight: 500;
-        font-size: 12px;
-        line-height: 18px;
-        padding: 4px 10px;
-        transition: background-color 0.15s, color 0.15s;
-      }
-      .resume-modal .resume-modal button:disabled {
-        pointer-events: none;
-        opacity: 0.5;
       }
       .resume-modal .resume-modal input,
       .resume-modal .resume-modal select,
