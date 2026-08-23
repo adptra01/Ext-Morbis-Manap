@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "agentix-ceo": {
+      "source": "agentix-cloud/skills",
+      "sourceType": "github",
+      "skillPath": "skills/agentix-ceo/SKILL.md",
+      "computedHash": "d24f0e231ef8c1d20250b4ecf5692156654740875ea5e32d183fd407b4c92722"
+    }
+  }
+}

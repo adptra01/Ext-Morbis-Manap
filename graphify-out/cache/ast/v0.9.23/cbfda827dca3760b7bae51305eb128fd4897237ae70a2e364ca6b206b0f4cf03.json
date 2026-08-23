@@ -1,0 +1,399 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_md",
+      "label": "UI-COMPONENT-ROLLOUT.md",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_ui_component_rollout_penerapan_shared_ui_layer",
+      "label": "UI Component Rollout \u2014 Penerapan Shared UI Layer",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_1_latar_belakang",
+      "label": "1. Latar Belakang",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L9"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_2_arsitektur_shared_ui_layer",
+      "label": "2. Arsitektur Shared UI Layer",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L24"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_2_1_komponen_yang_tersedia",
+      "label": "2.1 Komponen yang tersedia",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L36"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_2_2_design_tokens_src_ui_web_tokens_ts",
+      "label": "2.2 Design Tokens (src/ui/web/tokens.ts)",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L45"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_2_3_cara_pakai",
+      "label": "2.3 Cara pakai",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L62"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_3_daftar_penerapan_prioritas_tinggi_rendah",
+      "label": "3. Daftar Penerapan \u2014 Prioritas Tinggi \u2192 Rendah",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L93"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_p1_tinggi_dipakai_harian_oleh_petugas_dampak_usability_terbesar",
+      "label": "P1 \u2014 TINGGI (dipakai harian oleh petugas, dampak usability terbesar)",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L97"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_p2_sedang_sering_dipakai_tidak_setiap_saat",
+      "label": "P2 \u2014 SEDANG (sering dipakai, tidak setiap saat)",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L107"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_p3_rendah_utilitas_backend_minim_permukaan_ui",
+      "label": "P3 \u2014 RENDAH (utilitas/backend, minim permukaan UI)",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L116"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_p4_paling_rendah_farmasi_sesuai_permintaan_stakeholder",
+      "label": "P4 \u2014 PALING RENDAH: FARMASI (sesuai permintaan stakeholder)",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L124"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_4_rencana_implementasi_per_fitur",
+      "label": "4. Rencana Implementasi per Fitur",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L133"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_4_1_consultationenhancer_p1_1_selesai",
+      "label": "4.1 consultationEnhancer (P1-1) \u2014 SELESAI",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L135"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_4_2_cancelbutton_p1_2_selesai",
+      "label": "4.2 cancelButton (P1-2) \u2014 SELESAI",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L150"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_4_3_resumevalidator_p1_3_selesai",
+      "label": "4.3 resumeValidator (P1-3) \u2014 SELESAI",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L157"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_4_4_ttveditor_p1_4_selesai",
+      "label": "4.4 ttvEditor (P1-4) \u2014 SELESAI",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L168"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_4_5_batchdeletefiles_batchuploadurl_p1_5_selesai",
+      "label": "4.5 batchDeleteFiles / batchUploadUrl (P1-5) \u2014 SELESAI",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L178"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_4_6_4_12_p2_p3",
+      "label": "4.6\u20134.12 (P2 & P3)",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L191"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_5_keputusan_arsitektur_aturan_wajib",
+      "label": "5. Keputusan Arsitektur (Aturan Wajib)",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L197"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_5_6_komponen_wajib_mandatory",
+      "label": "5.6 Komponen WAJIB (Mandatory)",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L224"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_5_7_komponen_terlarang_forbidden",
+      "label": "5.7 Komponen TERLARANG (Forbidden)",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L235"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_6_remote_error_logging_telegram_bot_production_only",
+      "label": "6. Remote Error Logging \u2014 Telegram Bot (Production Only)",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L249"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_7_cara_verifikasi_penerapan",
+      "label": "7. Cara Verifikasi & Penerapan",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L311"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_7_changelog",
+      "label": "7. Changelog",
+      "file_type": "document",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L321"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_ui_component_rollout_penerapan_shared_ui_layer",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_ui_component_rollout_penerapan_shared_ui_layer",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_1_latar_belakang",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_ui_component_rollout_penerapan_shared_ui_layer",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_2_arsitektur_shared_ui_layer",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_2_arsitektur_shared_ui_layer",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_2_1_komponen_yang_tersedia",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_2_arsitektur_shared_ui_layer",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_2_2_design_tokens_src_ui_web_tokens_ts",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L45",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_2_arsitektur_shared_ui_layer",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_2_3_cara_pakai",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L62",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_ui_component_rollout_penerapan_shared_ui_layer",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_3_daftar_penerapan_prioritas_tinggi_rendah",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L93",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_3_daftar_penerapan_prioritas_tinggi_rendah",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_p1_tinggi_dipakai_harian_oleh_petugas_dampak_usability_terbesar",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L97",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_3_daftar_penerapan_prioritas_tinggi_rendah",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_p2_sedang_sering_dipakai_tidak_setiap_saat",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L107",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_3_daftar_penerapan_prioritas_tinggi_rendah",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_p3_rendah_utilitas_backend_minim_permukaan_ui",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L116",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_3_daftar_penerapan_prioritas_tinggi_rendah",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_p4_paling_rendah_farmasi_sesuai_permintaan_stakeholder",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L124",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_ui_component_rollout_penerapan_shared_ui_layer",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_4_rencana_implementasi_per_fitur",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L133",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_4_rencana_implementasi_per_fitur",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_4_1_consultationenhancer_p1_1_selesai",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L135",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_4_rencana_implementasi_per_fitur",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_4_2_cancelbutton_p1_2_selesai",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L150",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_4_rencana_implementasi_per_fitur",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_4_3_resumevalidator_p1_3_selesai",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L157",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_4_rencana_implementasi_per_fitur",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_4_4_ttveditor_p1_4_selesai",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L168",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_4_rencana_implementasi_per_fitur",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_4_5_batchdeletefiles_batchuploadurl_p1_5_selesai",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L178",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_4_rencana_implementasi_per_fitur",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_4_6_4_12_p2_p3",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L191",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_ui_component_rollout_penerapan_shared_ui_layer",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_5_keputusan_arsitektur_aturan_wajib",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L197",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_5_keputusan_arsitektur_aturan_wajib",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_5_6_komponen_wajib_mandatory",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L224",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_5_keputusan_arsitektur_aturan_wajib",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_5_7_komponen_terlarang_forbidden",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L235",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_ui_component_rollout_penerapan_shared_ui_layer",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_6_remote_error_logging_telegram_bot_production_only",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L249",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_ui_component_rollout_penerapan_shared_ui_layer",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_7_cara_verifikasi_penerapan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L311",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_ui_component_rollout_penerapan_shared_ui_layer",
+      "target": "mnt_diskd_projects_ext_morbis_manap_docs_ui_component_rollout_7_changelog",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/UI-COMPONENT-ROLLOUT.md",
+      "source_location": "L321",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -1,0 +1,335 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_md",
+      "label": "deploy-architecture-plan.md",
+      "file_type": "document",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_arsitektur_deploy_farmasi_display_stabil_anti_crash",
+      "label": "Arsitektur Deploy Farmasi Display \u2014 Stabil & Anti-Crash",
+      "file_type": "document",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_executive_summary",
+      "label": "Executive Summary",
+      "file_type": "document",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L9"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_ringkasan_perbaikan_v1_2_2_completed",
+      "label": "Ringkasan Perbaikan v1.2.2 (COMPLETED \u2705)",
+      "file_type": "document",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L13"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_root_cause_sisa_infrastructure_butuh_action_it_server_admin",
+      "label": "Root Cause Sisa (Infrastructure \u2014 Butuh Action IT/Server Admin)",
+      "file_type": "document",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L25"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_architecture_overview",
+      "label": "Architecture Overview",
+      "file_type": "document",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L36"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_deep_dive_masalah_solusi_per_komponen",
+      "label": "Deep Dive: Masalah & Solusi per Komponen",
+      "file_type": "document",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L87"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_1_ws_relay_docker_container_fixed",
+      "label": "1. WS Relay Docker Container \u2705 FIXED",
+      "file_type": "document",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L89"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_2_reports_simrs_bare_metal_server_p0_critical",
+      "label": "2. Reports SIMRS \u2014 Bare Metal Server (P0 \u2014 CRITICAL)",
+      "file_type": "document",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L100"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_option_a_kontainerisasi_laporan_simrs_ideal_tapi_butuh_downtime_planning",
+      "label": "Option A: Kontainerisasi Laporan SIMRS (Ideal tapi butuh downtime planning)",
+      "file_type": "document",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L106"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_option_b_add_systemd_services_monit_quick_win_minimal_disruption",
+      "label": "Option B: Add Systemd Services + Monit (Quick Win \u2014 Minimal Disruption)",
+      "file_type": "document",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L137"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_option_c_apache_nginx_load_balancer_multiple_php_workers_jika_traffic_tinggi",
+      "label": "Option C: Apache/nginx Load Balancer + Multiple PHP Workers (Jika Traffic Tinggi)",
+      "file_type": "document",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L170"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_3_extension_resilience_hardening_done",
+      "label": "3. Extension Resilience Hardening (DONE \u2705)",
+      "file_type": "document",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L202"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_deployment_checklist",
+      "label": "Deployment Checklist",
+      "file_type": "document",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L218"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_phase_1_extension_build_deploy_done_code_pending_build",
+      "label": "Phase 1: Extension Build & Deploy (DONE \u2705 Code, Pending Build)",
+      "file_type": "document",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L220"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_phase_2_ws_relay_activation_completed",
+      "label": "Phase 2: WS Relay Activation (\u2705 COMPLETED)",
+      "file_type": "document",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L230"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_phase_3_reports_simrs_monitoring_priority_p0",
+      "label": "Phase 3: Reports SIMRS Monitoring (Priority P0)",
+      "file_type": "document",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L237"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_phase_4_kiosk_browser_lockdown_priority_p1",
+      "label": "Phase 4: Kiosk Browser Lockdown (Priority P1)",
+      "file_type": "document",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L251"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_troubleshooting_guide",
+      "label": "Troubleshooting Guide",
+      "file_type": "document",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L268"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_symptoms_diagnosa_fix",
+      "label": "Symptoms \u2192 Diagnosa \u2192 Fix",
+      "file_type": "document",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L270"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_appendix_file_changes_v1_2_2",
+      "label": "Appendix: File Changes v1.2.2",
+      "file_type": "document",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L284"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_arsitektur_deploy_farmasi_display_stabil_anti_crash",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_arsitektur_deploy_farmasi_display_stabil_anti_crash",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_executive_summary",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_executive_summary",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_ringkasan_perbaikan_v1_2_2_completed",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_executive_summary",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_root_cause_sisa_infrastructure_butuh_action_it_server_admin",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_arsitektur_deploy_farmasi_display_stabil_anti_crash",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_architecture_overview",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_arsitektur_deploy_farmasi_display_stabil_anti_crash",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_deep_dive_masalah_solusi_per_komponen",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L87",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_deep_dive_masalah_solusi_per_komponen",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_1_ws_relay_docker_container_fixed",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L89",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_deep_dive_masalah_solusi_per_komponen",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_2_reports_simrs_bare_metal_server_p0_critical",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L100",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_2_reports_simrs_bare_metal_server_p0_critical",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_option_a_kontainerisasi_laporan_simrs_ideal_tapi_butuh_downtime_planning",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L106",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_2_reports_simrs_bare_metal_server_p0_critical",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_option_b_add_systemd_services_monit_quick_win_minimal_disruption",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L137",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_2_reports_simrs_bare_metal_server_p0_critical",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_option_c_apache_nginx_load_balancer_multiple_php_workers_jika_traffic_tinggi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L170",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_deep_dive_masalah_solusi_per_komponen",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_3_extension_resilience_hardening_done",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L202",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_arsitektur_deploy_farmasi_display_stabil_anti_crash",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_deployment_checklist",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L218",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_deployment_checklist",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_phase_1_extension_build_deploy_done_code_pending_build",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L220",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_deployment_checklist",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_phase_2_ws_relay_activation_completed",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L230",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_deployment_checklist",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_phase_3_reports_simrs_monitoring_priority_p0",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L237",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_deployment_checklist",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_phase_4_kiosk_browser_lockdown_priority_p1",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L251",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_arsitektur_deploy_farmasi_display_stabil_anti_crash",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_troubleshooting_guide",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L268",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_troubleshooting_guide",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_symptoms_diagnosa_fix",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L270",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_arsitektur_deploy_farmasi_display_stabil_anti_crash",
+      "target": "mnt_diskd_projects_ext_morbis_manap_ai_docs_deploy_architecture_plan_appendix_file_changes_v1_2_2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".ai/docs/deploy-architecture-plan.md",
+      "source_location": "L284",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -15164,9 +15164,6 @@ html {
 .relative{
   position: relative;
 }
-.sticky{
-  position: sticky;
-}
 .bottom-4{
   bottom: 1rem;
 }
@@ -16190,9 +16187,6 @@ html {
 .text-yellow-800{
   --tw-text-opacity: 1;
   color: rgb(133 77 14 / var(--tw-text-opacity, 1));
-}
-.underline{
-  text-decoration-line: underline;
 }
 .underline-offset-4{
   text-underline-offset: 4px;
