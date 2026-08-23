@@ -3,11 +3,11 @@ var __morbis_feature = (() => {
   function $() {
     return window;
   }
-  var D = 'ext-batch-shared-style';
+  var H = 'ext-batch-shared-style';
   function S() {
-    if (document.getElementById(D)) return;
+    if (document.getElementById(H)) return;
     let e = document.createElement('style');
-    ((e.id = D),
+    ((e.id = H),
       (e.textContent = `
     .ext-modal-content {
       background: #ffffff; border-radius: 16px; padding: 28px 32px;
@@ -175,23 +175,23 @@ var __morbis_feature = (() => {
       '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>',
   };
   function P(e, o) {
-    let i = o || 18;
-    return `<span style="display:inline-flex;align-items:center;justify-content:center;width:${i}px;height:${i}px;flex-shrink:0;">${e}</span>`;
+    let r = o || 18;
+    return `<span style="display:inline-flex;align-items:center;justify-content:center;width:${r}px;height:${r}px;flex-shrink:0;">${e}</span>`;
   }
   async function M(e, o) {
     try {
-      let i = await fetch(e, { method: 'GET', mode: 'cors', credentials: 'omit' });
-      if (!i.ok) throw new Error(`HTTP ${i.status}`);
-      let t = await i.blob(),
-        r = URL.createObjectURL(t);
-      H(r, o, e, () => URL.revokeObjectURL(r));
+      let r = await fetch(e, { method: 'GET', mode: 'cors', credentials: 'omit' });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      let t = await r.blob(),
+        i = URL.createObjectURL(t);
+      R(i, o, e, () => URL.revokeObjectURL(i));
     } catch {
-      H(e, o, e);
+      R(e, o, e);
     }
   }
-  function H(e, o, i, t) {
-    let r = document.getElementById('ext-inline-preview-modal');
-    r && r.remove();
+  function R(e, o, r, t) {
+    let i = document.getElementById('ext-inline-preview-modal');
+    i && i.remove();
     let c = o.toLowerCase().split('.').pop() || '',
       d = c === 'pdf',
       u = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(c),
@@ -221,7 +221,7 @@ var __morbis_feature = (() => {
         (t && t(), n.remove());
       }),
       document.getElementById('ext-preview-newtab')?.addEventListener('click', () => {
-        (window.open(i || e, '_blank'), t && t(), n.remove());
+        (window.open(r || e, '_blank'), t && t(), n.remove());
       }),
       n.addEventListener('click', (g) => {
         g.target === n && (t && t(), n.remove());
@@ -237,8 +237,8 @@ var __morbis_feature = (() => {
             ? document.getElementById('ext-inline-preview-iframe')?.getAttribute('src')
             : document.getElementById('ext-inline-preview-img')?.complete
         ) {
-          let b = n.querySelector('.ext-inline-preview-loading');
-          (b && b.remove(), clearInterval(g));
+          let x = n.querySelector('.ext-inline-preview-loading');
+          (x && x.remove(), clearInterval(g));
         }
       }, 500);
     }
@@ -246,7 +246,7 @@ var __morbis_feature = (() => {
   function y(e) {
     return new Promise((o) => {
       S();
-      let i = e.variant === 'danger' ? 'ext-btn-danger' : 'ext-btn-primary',
+      let r = e.variant === 'danger' ? 'ext-btn-danger' : 'ext-btn-primary',
         t = document.createElement('div');
       ((t.style.cssText =
         'position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.55);backdrop-filter:blur(2px);'),
@@ -259,11 +259,11 @@ var __morbis_feature = (() => {
         <div class="ext-confirm-body" style="font-size:14px;color:#334155;line-height:1.6;"></div>
         <div class="ext-modal-buttons">
           ${e.hideCancel ? '' : `<button class="ext-btn ext-btn-secondary" data-ext-cancel>${e.cancelLabel ?? 'Batal'}</button>`}
-          <button class="ext-btn ${i}" data-ext-ok>${e.okLabel ?? 'Lanjut'}</button>
+          <button class="ext-btn ${r}" data-ext-ok>${e.okLabel ?? 'Lanjut'}</button>
         </div>
       </div>`),
         (t.querySelector('h3').textContent = e.title));
-      let r = t.querySelector('.ext-confirm-body');
+      let i = t.querySelector('.ext-confirm-body');
       e.message &&
         e.message
           .split(
@@ -271,8 +271,8 @@ var __morbis_feature = (() => {
 `,
           )
           .forEach((n, a) => {
-            (a > 0 && r.appendChild(document.createElement('br')),
-              r.appendChild(document.createTextNode(n)));
+            (a > 0 && i.appendChild(document.createElement('br')),
+              i.appendChild(document.createTextNode(n)));
           });
       let c = (n) => {
           (t.remove(), document.removeEventListener('keydown', d), o(n));
@@ -304,7 +304,7 @@ var __morbis_feature = (() => {
       statusId: 'ext-delete-status-text',
     },
     s = [],
-    x = !1;
+    b = !1;
   function z() {
     if (document.getElementById('ext-batch-delete-style')) return;
     let e = document.createElement('style');
@@ -347,14 +347,14 @@ var __morbis_feature = (() => {
             ((t.disabled = !1), delete t.dataset.extWasEnabled);
       }));
   }
-  function A(e) {
+  function _(e) {
     ([
       'ext-delete-close-btn',
       'ext-delete-cancel-btn',
       'ext-fetch-files-btn',
       'ext-start-delete-btn',
-    ].forEach((i) => {
-      let t = document.getElementById(i);
+    ].forEach((r) => {
+      let t = document.getElementById(r);
       t &&
         ((t.disabled = e),
         (t.style.opacity = e ? '0.5' : '1'),
@@ -362,7 +362,7 @@ var __morbis_feature = (() => {
     }),
       document
         .querySelectorAll('#' + l.previewId + ' input, #' + l.previewId + ' button')
-        .forEach((i) => (i.disabled = e)),
+        .forEach((r) => (r.disabled = e)),
       U(e));
   }
   function F() {
@@ -424,35 +424,35 @@ var __morbis_feature = (() => {
     `),
       document.body.appendChild(e),
       setTimeout(() => {
-        (document.getElementById('ext-delete-close-btn')?.addEventListener('click', T),
-          document.getElementById('ext-delete-cancel-btn')?.addEventListener('click', T),
+        (document.getElementById('ext-delete-close-btn')?.addEventListener('click', L),
+          document.getElementById('ext-delete-cancel-btn')?.addEventListener('click', L),
           document.getElementById('ext-fetch-files-btn')?.addEventListener('click', O),
-          document.getElementById('ext-start-delete-btn')?.addEventListener('click', R),
+          document.getElementById('ext-start-delete-btn')?.addEventListener('click', A),
           document.getElementById('ext-delete-search-input')?.addEventListener('input', w),
           e?.addEventListener('click', function (o) {
-            o.target === e && T();
+            o.target === e && L();
           }));
       }, 50)),
       e.classList.add('show'));
   }
-  function T() {
+  function L() {
     let e = document.getElementById(l.modalId);
-    (e && e.classList.remove('show'), (s = []), (x = !1));
+    (e && e.classList.remove('show'), (s = []), (b = !1));
     let o = document.getElementById(l.previewId),
-      i = document.getElementById(l.progressId),
+      r = document.getElementById(l.progressId),
       t = document.getElementById(l.statusId);
     (o && ((o.style.display = 'none'), (o.innerHTML = '')),
-      i && (i.style.display = 'none'),
+      r && (r.style.display = 'none'),
       t && (t.textContent = ''));
-    let r = document.querySelector('.ext-modal-buttons');
-    (r &&
-      ((r.innerHTML =
+    let i = document.querySelector('.ext-modal-buttons');
+    (i &&
+      ((i.innerHTML =
         '<button id="ext-delete-cancel-btn" class="ext-btn ext-btn-secondary">Batal</button><button id="ext-start-delete-btn" class="ext-btn ext-btn-danger disabled"><span style="display:inline-flex;align-items:center;gap:6px;">' +
         f.trash +
         '</span> Hapus Terpilih</button>'),
-      document.getElementById('ext-delete-cancel-btn')?.addEventListener('click', T),
-      document.getElementById('ext-start-delete-btn')?.addEventListener('click', R)),
-      A(!1));
+      document.getElementById('ext-delete-cancel-btn')?.addEventListener('click', L),
+      document.getElementById('ext-start-delete-btn')?.addEventListener('click', A)),
+      _(!1));
   }
   async function O() {
     let o = new URLSearchParams(window.location.search).get('id_visit');
@@ -471,13 +471,13 @@ var __morbis_feature = (() => {
         }));
       return;
     }
-    let i = document.getElementById('ext-fetch-files-btn');
-    i && ((i.disabled = !0), (i.textContent = 'Mencari...'));
+    let r = document.getElementById('ext-fetch-files-btn');
+    r && ((r.disabled = !0), (r.textContent = 'Mencari...'));
     try {
       let t = `${window.location.origin}${l.fetchListUrl}?id_visit=${o}&page=85&id_kunjungan=`,
-        r = await fetch(t);
-      if (!r.ok) throw new Error('Gagal memuat halaman dokumen pasien');
-      let c = await r.text(),
+        i = await fetch(t);
+      if (!i.ok) throw new Error('Gagal memuat halaman dokumen pasien');
+      let c = await i.text(),
         u = new DOMParser()
           .parseFromString(c, 'text/html')
           .querySelectorAll('table.data-list.tabel tr');
@@ -487,24 +487,24 @@ var __morbis_feature = (() => {
           g = p.querySelector('button[onclick*="hapus"]'),
           m = null;
         if ((console.log(`[BatchDelete] Row ${a}: deleteBtn found:`, !!g), g)) {
-          let _ = g.getAttribute('onclick')?.match(/hapus\(([^)]+)\)/);
-          _ && (m = _[1].replace(/['"]/g, '').trim());
+          let D = g.getAttribute('onclick')?.match(/hapus\(([^)]+)\)/);
+          D && (m = D[1].replace(/['"]/g, '').trim());
         }
         if (!m) continue;
-        let b = p.querySelector('td:nth-child(2) a'),
+        let x = p.querySelector('td:nth-child(2) a'),
           v = p.cells[1]?.textContent?.trim() || 'unknown',
           k = p.cells[2]?.textContent?.trim() || '-',
           h = p.cells[3]?.textContent?.trim() || '-',
           I = p.cells[4]?.textContent?.trim() || '-',
-          E = b?.getAttribute('href') || '',
-          L = E.startsWith('http') ? E : `${window.location.origin}${E}`;
+          E = x?.getAttribute('href') || '',
+          T = E.startsWith('http') ? E : `${window.location.origin}${E}`;
         s.push({
           id_dokumen: m,
           filename: v,
           keterangan: k,
           tglFile: h,
           tglUpload: I,
-          url: L,
+          url: T,
           selected: !1,
           status: 'pending',
         });
@@ -520,50 +520,54 @@ var __morbis_feature = (() => {
       n && (n.textContent = `${s.length} dokumen siap dihapus!`);
     } catch (t) {
       console.error('[Batch Delete] Crawl error:', t);
-      let r = document.getElementById(l.statusId);
-      r && (r.textContent = 'Error: ' + t.message);
+      let i = document.getElementById(l.statusId);
+      i && (i.textContent = 'Error: ' + t.message);
     } finally {
-      i && ((i.disabled = !1), (i.textContent = 'Cari Dokumen Pasien'));
+      r && ((r.disabled = !1), (r.textContent = 'Cari Dokumen Pasien'));
     }
   }
   async function q(e) {
-    if (x) return;
-    let o = s[e];
-    if (
-      !o ||
-      !(await y({
-        title: 'Hapus dokumen ini?',
-        message: `${o.filename}
+    try {
+      if (b) return;
+      let o = s[e];
+      if (
+        !o ||
+        !(await y({
+          title: 'Hapus dokumen ini?',
+          message: `${o.filename}
 ID: ${o.id_dokumen}
 
 Tindakan ini tidak bisa di-undo.`,
-        variant: 'danger',
-        okLabel: 'Ya, Hapus',
-      }))
-    )
-      return;
-    let t = document.getElementById(l.statusId);
-    ((o.status = 'deleting'),
-      w(),
-      t && (t.textContent = `Menghapus 1 dokumen: ${o.filename}...`),
-      (await C(o.id_dokumen))
-        ? (s.splice(e, 1), t && (t.textContent = `Sukses menghapus: ${o.filename}`))
-        : ((o.status = 'error'), t && (t.textContent = `Gagal menghapus: ${o.filename}`)),
-      w());
+          variant: 'danger',
+          okLabel: 'Ya, Hapus',
+        }))
+      )
+        return;
+      let t = document.getElementById(l.statusId);
+      ((o.status = 'deleting'),
+        w(),
+        t && (t.textContent = `Menghapus 1 dokumen: ${o.filename}...`),
+        (await C(o.id_dokumen))
+          ? (s.splice(e, 1), t && (t.textContent = `Sukses menghapus: ${o.filename}`))
+          : ((o.status = 'error'), t && (t.textContent = `Gagal menghapus: ${o.filename}`)),
+        w());
+    } catch (o) {
+      console.error('[BatchDelete] deleteSingleFromQueue error:', o);
+    }
   }
   function w() {
     let e = document.getElementById(l.previewId),
       o = document.getElementById('ext-start-delete-btn'),
-      i = document.getElementById(l.statusId),
+      r = document.getElementById(l.statusId),
       t = document.getElementById('ext-delete-search-wrap'),
-      r = document.getElementById('ext-delete-search-input'),
-      c = (r?.value || '').toLowerCase();
+      i = document.getElementById('ext-delete-search-input'),
+      c = (i?.value || '').toLowerCase();
     if (!s || s.length === 0) {
       (e && ((e.style.display = 'none'), (e.innerHTML = '')),
         t && (t.style.display = 'none'),
-        r && (r.value = ''),
+        i && (i.value = ''),
         o && (o.disabled = !0),
-        i && ((i.textContent = ''), (i.style.color = '#4b5563')));
+        r && ((r.textContent = ''), (r.style.color = '#4b5563')));
       return;
     }
     t && (t.style.display = 'block');
@@ -576,9 +580,10 @@ Tindakan ini tidak bisa di-undo.`,
           n.keterangan.toLowerCase().includes(c) ||
           n.id_dokumen.toLowerCase().includes(c),
       );
+    if (e) ((e.style.display = 'block'), (e.style.borderRadius = '6px'));
+    else return;
     if (
-      (e && ((e.style.display = 'block'), (e.style.borderRadius = '6px')),
-      (e.innerHTML =
+      ((e.innerHTML =
         '<div style="padding:10px 16px;background:#f8fafc;border-bottom:1px solid #f1f5f9;font-size:11px;font-weight:700;color:#1e293b;text-transform:uppercase;letter-spacing:0.5px;">Dokumen Pasien <span style="color:#64748b;font-weight:400;">(' +
         s.length +
         ' dokumen, <span style="color:#dc2626;">' +
@@ -594,7 +599,7 @@ Tindakan ini tidak bisa di-undo.`,
     d.forEach(({ item: n, idx: a }) => {
       let p = document.createElement('div');
       ((p.className = 'ext-delete-preview-item'), n.selected && p.classList.add('selected'));
-      let g = x;
+      let g = b;
       p.innerHTML = `
       <label class="ext-checkbox-label" style="flex:1;min-width:0;">
         <input type="checkbox" data-index="${a}" class="ext-checkbox" ${n.selected ? 'checked' : ''} ${g ? 'disabled' : ''}>
@@ -617,90 +622,94 @@ Tindakan ini tidak bisa di-undo.`,
       <button data-index="${a}" class="ext-delete-single-btn" title="Hapus Dokumen Ini" ${g ? 'disabled' : ''}>${f.trash}</button>
     `;
       let m = p.querySelector('input[type="checkbox"]');
-      !x &&
+      !b &&
         m &&
         m.addEventListener('change', (h) => {
           ((s[a].selected = h.target.checked), w());
         });
-      let b = p.querySelectorAll('button'),
-        v = b[0],
-        k = b[1];
-      (x ||
-        (v.addEventListener('click', () => {
+      let x = p.querySelectorAll('button'),
+        v = x.length > 0 ? x[0] : null,
+        k = x.length > 1 ? x[1] : null;
+      (b ||
+        (v?.addEventListener('click', () => {
           M(s[a].url, s[a].filename);
         }),
-        k.addEventListener('click', () => {
+        k?.addEventListener('click', () => {
           q(a);
         })),
         e?.appendChild(p));
     });
     let u = s.filter((n) => n.selected).length;
     o &&
-      ((o.disabled = u === 0 || x),
+      ((o.disabled = u === 0 || b),
       (o.textContent = `Hapus ${u} Dokumen`),
-      u > 0 && !x ? o.classList.remove('disabled') : o.classList.add('disabled'));
+      u > 0 && !b ? o.classList.remove('disabled') : o.classList.add('disabled'));
   }
-  async function R() {
-    if (x) return;
-    let e = s.filter((n) => n.selected);
-    if (e.length === 0) {
-      y({
-        title: 'Tidak ada dokumen dipilih',
-        message: 'Centang dokumen yang ingin dihapus terlebih dahulu.',
-        variant: 'warning',
-        okLabel: 'OK',
-        hideCancel: !0,
-      });
-      return;
-    }
-    if (
-      !(await y({
-        title: `Hapus ${e.length} dokumen?`,
-        message: 'TIDAK BISA DIUNDO!',
-        variant: 'danger',
-        okLabel: 'Ya, Hapus',
-      }))
-    )
-      return;
-    ((x = !0), A(!0));
-    let i = 0,
-      t = 0,
-      r = document.getElementById(l.progressId),
-      c = r?.querySelector('.progress-fill'),
-      d = document.getElementById(l.statusId);
-    (r && (r.style.display = 'block'),
-      c && (c.style.width = '0%'),
-      d && (d.style.color = '#fcd34d'));
-    for (let n = 0; n < e.length; n++) {
-      let a = e[n];
-      if (
-        ((a.status = 'deleting'),
-        (await C(a.id_dokumen)) ? ((a.status = 'success'), i++) : ((a.status = 'error'), t++),
-        w(),
-        c && d)
-      ) {
-        let g = ((n + 1) / e.length) * 100;
-        ((c.style.width = g + '%'),
-          (d.textContent = `Diproses ${n + 1}/${e.length} - Sukses: ${i}, Gagal: ${t}`));
+  async function A() {
+    try {
+      if (b) return;
+      let e = s.filter((n) => n.selected);
+      if (e.length === 0) {
+        y({
+          title: 'Tidak ada dokumen dipilih',
+          message: 'Centang dokumen yang ingin dihapus terlebih dahulu.',
+          variant: 'warning',
+          okLabel: 'OK',
+          hideCancel: !0,
+        });
+        return;
       }
-      await new Promise((g) => setTimeout(g, l.delayBetweenDelete));
+      if (
+        !(await y({
+          title: `Hapus ${e.length} dokumen?`,
+          message: 'TIDAK BISA DIUNDO!',
+          variant: 'danger',
+          okLabel: 'Ya, Hapus',
+        }))
+      )
+        return;
+      ((b = !0), _(!0));
+      let r = 0,
+        t = 0,
+        i = document.getElementById(l.progressId),
+        c = i?.querySelector('.progress-fill'),
+        d = document.getElementById(l.statusId);
+      (i && (i.style.display = 'block'),
+        c && (c.style.width = '0%'),
+        d && (d.style.color = '#fcd34d'));
+      for (let n = 0; n < e.length; n++) {
+        let a = e[n];
+        if (
+          ((a.status = 'deleting'),
+          (await C(a.id_dokumen)) ? ((a.status = 'success'), r++) : ((a.status = 'error'), t++),
+          w(),
+          c && d)
+        ) {
+          let g = ((n + 1) / e.length) * 100;
+          ((c.style.width = g + '%'),
+            (d.textContent = `Diproses ${n + 1}/${e.length} - Sukses: ${r}, Gagal: ${t}`));
+        }
+        await new Promise((g) => setTimeout(g, l.delayBetweenDelete));
+      }
+      let u = `Selesai! Sukses: ${r}, Gagal: ${t}`;
+      (d && ((d.textContent = u), (d.style.color = t > 0 ? '#000000' : '#6ee7b7')),
+        t > 0 &&
+          console.log(
+            'Failed deletes:',
+            s.filter((n) => n.status === 'error'),
+          ),
+        y({
+          title: 'Proses selesai',
+          message: u,
+          variant: t > 0 ? 'warning' : 'success',
+          okLabel: 'OK',
+          hideCancel: !0,
+        }),
+        F(),
+        (b = !1));
+    } catch (e) {
+      (console.error('[BatchDelete] startBatchDelete error:', e), (b = !1), _(!1));
     }
-    let u = `Selesai! Sukses: ${i}, Gagal: ${t}`;
-    (d && ((d.textContent = u), (d.style.color = t > 0 ? '#000000' : '#6ee7b7')),
-      t > 0 &&
-        console.log(
-          'Failed deletes:',
-          s.filter((n) => n.status === 'error'),
-        ),
-      y({
-        title: 'Proses selesai',
-        message: u,
-        variant: t > 0 ? 'warning' : 'success',
-        okLabel: 'OK',
-        hideCancel: !0,
-      }),
-      F(),
-      (x = !1));
   }
   function G() {
     return !!new URLSearchParams(window.location.search).get('id_visit');
@@ -718,12 +727,12 @@ Tindakan ini tidak bisa di-undo.`,
       return;
     }
     try {
-      let i = `${window.location.origin}${l.fetchListUrl}?id_visit=${o}&page=85&id_kunjungan=`,
-        t = await fetch(i);
+      let r = `${window.location.origin}${l.fetchListUrl}?id_visit=${o}&page=85&id_kunjungan=`,
+        t = await fetch(r);
       if (!t.ok) throw new Error('Gagal memuat halaman dokumen pasien');
-      let r = await t.text(),
+      let i = await t.text(),
         d = new DOMParser()
-          .parseFromString(r, 'text/html')
+          .parseFromString(i, 'text/html')
           .querySelectorAll('table.data-list.tabel tr');
       s = [];
       for (let u = 1; u < d.length; u++) {
@@ -731,13 +740,13 @@ Tindakan ini tidak bisa di-undo.`,
           a = n.querySelector('button[onclick*="hapus"]'),
           p = null;
         if (a) {
-          let L = a.getAttribute('onclick')?.match(/hapus\(([^)]+)\)/);
-          L && (p = L[1].replace(/['"]/g, '').trim());
+          let T = a.getAttribute('onclick')?.match(/hapus\(([^)]+)\)/);
+          T && (p = T[1].replace(/['"]/g, '').trim());
         }
         if (!p) continue;
         let g = n.querySelector('td:nth-child(2) a'),
           m = n.cells[1]?.textContent?.trim() || 'unknown',
-          b = n.cells[2]?.textContent?.trim() || '-',
+          x = n.cells[2]?.textContent?.trim() || '-',
           v = n.cells[3]?.textContent?.trim() || '-',
           k = n.cells[4]?.textContent?.trim() || '-',
           h = g?.getAttribute('href') || '',
@@ -745,7 +754,7 @@ Tindakan ini tidak bisa di-undo.`,
         s.push({
           id_dokumen: p,
           filename: m,
-          keterangan: b,
+          keterangan: x,
           tglFile: v,
           tglUpload: k,
           url: I,
@@ -760,12 +769,12 @@ Tindakan ini tidak bisa di-undo.`,
           data: { items: s },
         })
         .catch(console.error);
-    } catch (i) {
+    } catch (r) {
       chrome.runtime
         .sendMessage({
           type: 'TAB_ACTION_RESULT',
           action: 'BATCH_DELETE_ERROR',
-          data: { error: i.message },
+          data: { error: r.message },
         })
         .catch(console.error);
     }
@@ -786,49 +795,64 @@ Tindakan ini tidak bisa di-undo.`,
       .catch(console.error);
   }
   async function K() {
-    let e = s.filter((t) => t.selected);
-    if (e.length === 0) return;
-    let o = 0,
-      i = 0;
-    for (let t = 0; t < e.length; t++) {
-      let r = e[t];
-      ((r.status = 'deleting'),
+    try {
+      let e = s.filter((t) => t.selected);
+      if (e.length === 0) return;
+      let o = 0,
+        r = 0;
+      for (let t = 0; t < e.length; t++) {
+        let i = e[t];
+        ((i.status = 'deleting'),
+          chrome.runtime
+            .sendMessage({
+              type: 'TAB_ACTION_RESULT',
+              action: 'BATCH_DELETE_PROGRESS',
+              data: {
+                percent: (t / e.length) * 100,
+                status: `Menghapus: ${i.filename} (${t + 1}/${e.length})...`,
+                items: s,
+                finished: !1,
+              },
+            })
+            .catch(console.error),
+          (await C(i.id_dokumen)) ? ((i.status = 'success'), o++) : ((i.status = 'error'), r++),
+          V(t + 1, e.length, o, r, s),
+          await new Promise((d) => setTimeout(d, l.delayBetweenDelete)));
+      }
+    } catch (e) {
+      (console.error('[BatchDelete] startBatchDeleteToSidepanel error:', e),
         chrome.runtime
           .sendMessage({
             type: 'TAB_ACTION_RESULT',
-            action: 'BATCH_DELETE_PROGRESS',
-            data: {
-              percent: (t / e.length) * 100,
-              status: `Menghapus: ${r.filename} (${t + 1}/${e.length})...`,
-              items: s,
-              finished: !1,
-            },
+            action: 'BATCH_DELETE_ERROR',
+            data: { error: e.message },
           })
-          .catch(console.error),
-        (await C(r.id_dokumen)) ? ((r.status = 'success'), o++) : ((r.status = 'error'), i++),
-        chrome.runtime
-          .sendMessage({
-            type: 'TAB_ACTION_RESULT',
-            action: 'BATCH_DELETE_PROGRESS',
-            data: {
-              percent: ((t + 1) / e.length) * 100,
-              status: `Diproses ${t + 1}/${e.length} - Sukses: ${o}, Gagal: ${i}`,
-              items: s,
-              finished: t === e.length - 1,
-            },
-          })
-          .catch(console.error),
-        await new Promise((d) => setTimeout(d, l.delayBetweenDelete)));
+          .catch(console.error));
     }
   }
-  function V() {
+  function V(e, o, r, t, i) {
+    chrome.runtime
+      .sendMessage({
+        type: 'TAB_ACTION_RESULT',
+        action: 'BATCH_DELETE_PROGRESS',
+        data: {
+          percent: (e / o) * 100,
+          status: `Diproses ${e}/${o} - Sukses: ${r}, Gagal: ${t}`,
+          items: i,
+          finished: e >= o,
+        },
+      })
+      .catch(console.error);
+  }
+  function Q() {
     if (
       G() &&
       B.currentConfig?.features?.batchDelete?.enabled &&
       B.ExtensionCore.isFeatureAllowed('batchDelete')
     )
       try {
-        (console.log('[BatchDelete] Init starting...'),
+        if (
+          (console.log('[BatchDelete] Init starting...'),
           z(),
           chrome.runtime
             .sendMessage({
@@ -837,22 +861,26 @@ Tindakan ini tidak bisa di-undo.`,
               data: { idVisit: new URLSearchParams(window.location.search).get('id_visit') },
             })
             .catch(console.error),
-          chrome.runtime.onMessage.addListener((e, o, i) => {
+          window.__extBatchDeleteRegistered)
+        )
+          return;
+        ((window.__extBatchDeleteRegistered = !0),
+          chrome.runtime.onMessage.addListener((e, o, r) => {
             if (e.type === 'TAB_ACTION') {
-              let { action: t, payload: r } = e;
+              let { action: t, payload: i } = e;
               (t === 'BATCH_DELETE_CRAWL'
                 ? N()
                 : t === 'BATCH_DELETE_UPDATE_ITEMS'
-                  ? (s = r.items)
+                  ? (s = i.items)
                   : t === 'BATCH_DELETE_PREVIEW'
-                    ? M(r.url, r.filename).catch(() => {
-                        window.open(r.url, '_blank');
+                    ? M(i.url, i.filename).catch(() => {
+                        window.open(i.url, '_blank');
                       })
                     : t === 'BATCH_DELETE_SINGLE'
-                      ? W(r.index, r.id_dokumen)
+                      ? W(i.index, i.id_dokumen)
                       : t === 'BATCH_DELETE_START' && K(),
-                i({ success: !0 }));
-            } else e.type === 'BATCH_DELETE_ACTION' && i({ success: !0 });
+                r({ success: !0 }));
+            } else e.type === 'BATCH_DELETE_ACTION' && r({ success: !0 });
             return !0;
           }),
           console.log('[BatchDelete] Init complete'));
@@ -867,6 +895,6 @@ Tindakan ini tidak bisa di-undo.`,
       name: 'Batch Delete Dokumen',
       description: 'Hapus multiple dokumen sekaligus',
       match: { regex: /^\/v2\/m-klaim\/detail-v2-refaktor\/?$/ },
-      run: V,
+      run: Q,
     });
 })();

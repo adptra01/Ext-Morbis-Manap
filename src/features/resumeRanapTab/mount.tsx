@@ -465,4 +465,4 @@ async function init() {
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => init());
-else init();
+else init().catch((e) => console.error('[RI] init error:', e));

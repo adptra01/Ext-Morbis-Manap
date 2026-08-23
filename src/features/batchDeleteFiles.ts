@@ -353,33 +353,37 @@ async function crawlDokumenPasienDelete(): Promise<void> {
 }
 
 async function deleteSingleFromQueue(index: number): Promise<void> {
-  if (isDeletingProcess) return;
-  const item = deleteQueue[index];
-  if (!item) return;
+  try {
+    if (isDeletingProcess) return;
+    const item = deleteQueue[index];
+    if (!item) return;
 
-  const yes = await confirmLegacy({
-    title: 'Hapus dokumen ini?',
-    message: `${item.filename}\nID: ${item.id_dokumen}\n\nTindakan ini tidak bisa di-undo.`,
-    variant: 'danger',
-    okLabel: 'Ya, Hapus',
-  });
-  if (!yes) return;
+    const yes = await confirmLegacy({
+      title: 'Hapus dokumen ini?',
+      message: `${item.filename}\nID: ${item.id_dokumen}\n\nTindakan ini tidak bisa di-undo.`,
+      variant: 'danger',
+      okLabel: 'Ya, Hapus',
+    });
+    if (!yes) return;
 
-  const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
-  item.status = 'deleting';
-  updateDeletePreview();
-  if (statusEl) statusEl.textContent = `Menghapus 1 dokumen: ${item.filename}...`;
+    const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
+    item.status = 'deleting';
+    updateDeletePreview();
+    if (statusEl) statusEl.textContent = `Menghapus 1 dokumen: ${item.filename}...`;
 
-  const ok = await deleteDokumen(item.id_dokumen);
-  if (ok) {
-    deleteQueue.splice(index, 1);
-    if (statusEl) statusEl.textContent = `Sukses menghapus: ${item.filename}`;
-  } else {
-    item.status = 'error';
-    if (statusEl) statusEl.textContent = `Gagal menghapus: ${item.filename}`;
+    const ok = await deleteDokumen(item.id_dokumen);
+    if (ok) {
+      deleteQueue.splice(index, 1);
+      if (statusEl) statusEl.textContent = `Sukses menghapus: ${item.filename}`;
+    } else {
+      item.status = 'error';
+      if (statusEl) statusEl.textContent = `Gagal menghapus: ${item.filename}`;
+    }
+
+    updateDeletePreview();
+  } catch (err) {
+    console.error('[BatchDelete] deleteSingleFromQueue error:', err);
   }
-
-  updateDeletePreview();
 }
 
 function updateDeletePreview(): void {
@@ -419,8 +423,10 @@ function updateDeletePreview(): void {
   if (previewEl) {
     previewEl.style.display = 'block';
     previewEl.style.borderRadius = '6px';
+  } else {
+    return;
   }
-  previewEl!.innerHTML =
+  previewEl.innerHTML =
     '<div style="padding:10px 16px;background:#f8fafc;border-bottom:1px solid #f1f5f9;font-size:11px;font-weight:700;color:#1e293b;text-transform:uppercase;letter-spacing:0.5px;">Dokumen Pasien <span style="color:#64748b;font-weight:400;">(' +
     deleteQueue.length +
     ' dokumen, <span style="color:#dc2626;">' +
@@ -472,15 +478,15 @@ function updateDeletePreview(): void {
     }
 
     const actionButtons = itemEl.querySelectorAll('button');
-    const previewBtn = actionButtons[0] as HTMLButtonElement;
-    const deleteBtn = actionButtons[1] as HTMLButtonElement;
+    const previewBtn = actionButtons.length > 0 ? (actionButtons[0] as HTMLButtonElement) : null;
+    const deleteBtn = actionButtons.length > 1 ? (actionButtons[1] as HTMLButtonElement) : null;
 
     if (!isDeletingProcess) {
-      previewBtn.addEventListener('click', () => {
+      previewBtn?.addEventListener('click', () => {
         showInlinePreviewSafe(deleteQueue[idx].url, deleteQueue[idx].filename);
       });
 
-      deleteBtn.addEventListener('click', () => {
+      deleteBtn?.addEventListener('click', () => {
         deleteSingleFromQueue(idx);
       });
     }
@@ -501,85 +507,93 @@ function updateDeletePreview(): void {
 }
 
 async function startBatchDelete(): Promise<void> {
-  if (isDeletingProcess) return;
+  try {
+    if (isDeletingProcess) return;
 
-  const selected = deleteQueue.filter((i) => i.selected);
-  if (selected.length === 0) {
+    const selected = deleteQueue.filter((i) => i.selected);
+    if (selected.length === 0) {
+      void confirmLegacy({
+        title: 'Tidak ada dokumen dipilih',
+        message: 'Centang dokumen yang ingin dihapus terlebih dahulu.',
+        variant: 'warning',
+        okLabel: 'OK',
+        hideCancel: true,
+      });
+      return;
+    }
+
+    const yes = await confirmLegacy({
+      title: `Hapus ${selected.length} dokumen?`,
+      message: 'TIDAK BISA DIUNDO!',
+      variant: 'danger',
+      okLabel: 'Ya, Hapus',
+    });
+    if (!yes) return;
+
+    isDeletingProcess = true;
+    toggleDeleteUIProcessingState(true);
+
+    let success = 0,
+      fail = 0;
+    const progressEl = document.getElementById(
+      BATCH_DELETE_CONFIG.progressId,
+    ) as HTMLElement | null;
+    const progressFill = progressEl?.querySelector('.progress-fill') as HTMLElement | null;
+    const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
+
+    if (progressEl) progressEl.style.display = 'block';
+    if (progressFill) progressFill.style.width = '0%';
+    if (statusEl) statusEl.style.color = '#fcd34d';
+
+    for (let i = 0; i < selected.length; i++) {
+      const item = selected[i];
+      item.status = 'deleting';
+
+      const ok = await deleteDokumen(item.id_dokumen);
+      if (ok) {
+        item.status = 'success';
+        success++;
+      } else {
+        item.status = 'error';
+        fail++;
+      }
+
+      updateDeletePreview();
+      if (progressFill && statusEl) {
+        const pct = ((i + 1) / selected.length) * 100;
+        progressFill.style.width = pct + '%';
+        statusEl.textContent = `Diproses ${i + 1}/${selected.length} - Sukses: ${success}, Gagal: ${fail}`;
+      }
+      await new Promise((r) => setTimeout(r, BATCH_DELETE_CONFIG.delayBetweenDelete));
+    }
+
+    const finalStatus = `Selesai! Sukses: ${success}, Gagal: ${fail}`;
+    if (statusEl) {
+      statusEl.textContent = finalStatus;
+      statusEl.style.color = fail > 0 ? '#000000' : '#6ee7b7';
+    }
+
+    if (fail > 0) {
+      console.log(
+        'Failed deletes:',
+        deleteQueue.filter((item) => item.status === 'error'),
+      );
+    }
+
     void confirmLegacy({
-      title: 'Tidak ada dokumen dipilih',
-      message: 'Centang dokumen yang ingin dihapus terlebih dahulu.',
-      variant: 'warning',
+      title: 'Proses selesai',
+      message: finalStatus,
+      variant: fail > 0 ? 'warning' : 'success',
       okLabel: 'OK',
       hideCancel: true,
     });
-    return;
+    replaceButtonsWithReload();
+    isDeletingProcess = false;
+  } catch (err) {
+    console.error('[BatchDelete] startBatchDelete error:', err);
+    isDeletingProcess = false;
+    toggleDeleteUIProcessingState(false);
   }
-
-  const yes = await confirmLegacy({
-    title: `Hapus ${selected.length} dokumen?`,
-    message: 'TIDAK BISA DIUNDO!',
-    variant: 'danger',
-    okLabel: 'Ya, Hapus',
-  });
-  if (!yes) return;
-
-  isDeletingProcess = true;
-  toggleDeleteUIProcessingState(true);
-
-  let success = 0,
-    fail = 0;
-  const progressEl = document.getElementById(BATCH_DELETE_CONFIG.progressId) as HTMLElement | null;
-  const progressFill = progressEl?.querySelector('.progress-fill') as HTMLElement | null;
-  const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
-
-  if (progressEl) progressEl.style.display = 'block';
-  if (progressFill) progressFill.style.width = '0%';
-  if (statusEl) statusEl.style.color = '#fcd34d';
-
-  for (let i = 0; i < selected.length; i++) {
-    const item = selected[i];
-    item.status = 'deleting';
-
-    const ok = await deleteDokumen(item.id_dokumen);
-    if (ok) {
-      item.status = 'success';
-      success++;
-    } else {
-      item.status = 'error';
-      fail++;
-    }
-
-    updateDeletePreview();
-    if (progressFill && statusEl) {
-      const pct = ((i + 1) / selected.length) * 100;
-      progressFill.style.width = pct + '%';
-      statusEl.textContent = `Diproses ${i + 1}/${selected.length} - Sukses: ${success}, Gagal: ${fail}`;
-    }
-    await new Promise((r) => setTimeout(r, BATCH_DELETE_CONFIG.delayBetweenDelete));
-  }
-
-  const finalStatus = `Selesai! Sukses: ${success}, Gagal: ${fail}`;
-  if (statusEl) {
-    statusEl.textContent = finalStatus;
-    statusEl.style.color = fail > 0 ? '#000000' : '#6ee7b7';
-  }
-
-  if (fail > 0) {
-    console.log(
-      'Failed deletes:',
-      deleteQueue.filter((item) => item.status === 'error'),
-    );
-  }
-
-  void confirmLegacy({
-    title: 'Proses selesai',
-    message: finalStatus,
-    variant: fail > 0 ? 'warning' : 'success',
-    okLabel: 'OK',
-    hideCancel: true,
-  });
-  replaceButtonsWithReload();
-  isDeletingProcess = false;
 }
 
 function hasIdVisitParam(): boolean {
@@ -686,53 +700,73 @@ async function deleteSingleFromQueueToSidepanel(index: number, id_dokumen: strin
 }
 
 async function startBatchDeleteToSidepanel(): Promise<void> {
-  const selected = deleteQueue.filter((i) => i.selected);
-  if (selected.length === 0) return;
+  try {
+    const selected = deleteQueue.filter((i) => i.selected);
+    if (selected.length === 0) return;
 
-  let success = 0,
-    fail = 0;
+    let success = 0,
+      fail = 0;
 
-  for (let i = 0; i < selected.length; i++) {
-    const item = selected[i];
-    item.status = 'deleting';
+    for (let i = 0; i < selected.length; i++) {
+      const item = selected[i];
+      item.status = 'deleting';
 
-    chrome.runtime
-      .sendMessage({
-        type: 'TAB_ACTION_RESULT',
-        action: 'BATCH_DELETE_PROGRESS',
-        data: {
-          percent: (i / selected.length) * 100,
-          status: `Menghapus: ${item.filename} (${i + 1}/${selected.length})...`,
-          items: deleteQueue,
-          finished: false,
-        },
-      })
-      .catch(console.error);
+      chrome.runtime
+        .sendMessage({
+          type: 'TAB_ACTION_RESULT',
+          action: 'BATCH_DELETE_PROGRESS',
+          data: {
+            percent: (i / selected.length) * 100,
+            status: `Menghapus: ${item.filename} (${i + 1}/${selected.length})...`,
+            items: deleteQueue,
+            finished: false,
+          },
+        })
+        .catch(console.error);
 
-    const ok = await deleteDokumen(item.id_dokumen);
-    if (ok) {
-      item.status = 'success';
-      success++;
-    } else {
-      item.status = 'error';
-      fail++;
+      const ok = await deleteDokumen(item.id_dokumen);
+      if (ok) {
+        item.status = 'success';
+        success++;
+      } else {
+        item.status = 'error';
+        fail++;
+      }
+
+      sendBatchDeleteProgress(i + 1, selected.length, success, fail, deleteQueue);
+      await new Promise((r) => setTimeout(r, BATCH_DELETE_CONFIG.delayBetweenDelete));
     }
-
+  } catch (err) {
+    console.error('[BatchDelete] startBatchDeleteToSidepanel error:', err);
     chrome.runtime
       .sendMessage({
         type: 'TAB_ACTION_RESULT',
-        action: 'BATCH_DELETE_PROGRESS',
-        data: {
-          percent: ((i + 1) / selected.length) * 100,
-          status: `Diproses ${i + 1}/${selected.length} - Sukses: ${success}, Gagal: ${fail}`,
-          items: deleteQueue,
-          finished: i === selected.length - 1,
-        },
+        action: 'BATCH_DELETE_ERROR',
+        data: { error: (err as Error).message },
       })
       .catch(console.error);
-
-    await new Promise((r) => setTimeout(r, BATCH_DELETE_CONFIG.delayBetweenDelete));
   }
+}
+
+function sendBatchDeleteProgress(
+  current: number,
+  total: number,
+  success: number,
+  fail: number,
+  items: DeleteItem[],
+): void {
+  chrome.runtime
+    .sendMessage({
+      type: 'TAB_ACTION_RESULT',
+      action: 'BATCH_DELETE_PROGRESS',
+      data: {
+        percent: (current / total) * 100,
+        status: `Diproses ${current}/${total} - Sukses: ${success}, Gagal: ${fail}`,
+        items,
+        finished: current >= total,
+      },
+    })
+    .catch(console.error);
 }
 
 function initBatchDeleteFeature(): void {
@@ -780,7 +814,9 @@ function initBatchDeleteFeature(): void {
       })
       .catch(console.error);
 
-    // Add message listener
+    // Add message listener (guard: only once)
+    if ((window as any).__extBatchDeleteRegistered) return;
+    (window as any).__extBatchDeleteRegistered = true;
     chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       if (message.type === 'TAB_ACTION') {
         const { action, payload } = message;

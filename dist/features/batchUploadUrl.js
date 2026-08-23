@@ -1,13 +1,13 @@
 'use strict';
 var __morbis_feature = (() => {
-  function $() {
+  function A() {
     return window;
   }
-  var A = 'ext-batch-shared-style';
-  function S() {
-    if (document.getElementById(A)) return;
+  var $ = 'ext-batch-shared-style';
+  function M() {
+    if (document.getElementById($)) return;
     let e = document.createElement('style');
-    ((e.id = A),
+    ((e.id = $),
       (e.textContent = `
     .ext-modal-content {
       background: #ffffff; border-radius: 16px; padding: 28px 32px;
@@ -174,7 +174,7 @@ var __morbis_feature = (() => {
     arrowRight:
       '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>',
   };
-  async function M(e, a) {
+  async function S(e, a) {
     try {
       let n = await fetch(e, { method: 'GET', mode: 'cors', credentials: 'omit' });
       if (!n.ok) throw new Error(`HTTP ${n.status}`);
@@ -188,9 +188,9 @@ var __morbis_feature = (() => {
   function O(e, a, n, t) {
     let i = document.getElementById('ext-inline-preview-modal');
     i && i.remove();
-    let l = a.toLowerCase().split('.').pop() || '',
-      s = l === 'pdf',
-      u = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(l),
+    let d = a.toLowerCase().split('.').pop() || '',
+      s = d === 'pdf',
+      u = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(d),
       r = document.createElement('div');
     ((r.id = 'ext-inline-preview-modal'),
       (r.style.cssText =
@@ -202,11 +202,11 @@ var __morbis_feature = (() => {
       : u
         ? (o = `<img id="ext-inline-preview-img" src="${e}" alt="Image Preview" style="width:100%;height:100%;border:none;display:block;object-fit:contain;border-radius:12px;">`)
         : (o = `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:15px;color:#64748b;background:#f8fafc;flex-direction:column;gap:16px;border-radius:12px;">${b.file}<div>Preview not available for this format</div></div>`);
-    let d = a.replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    let l = a.replace(/"/g, '&quot;').replace(/</g, '&lt;');
     if (
       ((r.innerHTML = `
     <div style="position:absolute;top:20px;right:20px;display:flex;gap:10px;align-items:center;background:rgba(15,23,42,0.8);padding:10px 16px;border-radius:12px;backdrop-filter:blur(12px);z-index:10002;border:1px solid rgba(255,255,255,0.1);">
-      <span style="color:#e2e8f0;font-size:13px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">${d}</span>
+      <span style="color:#e2e8f0;font-size:13px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">${l}</span>
       <button id="ext-preview-newtab" style="padding:7px 14px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:background 0.15s ease;display:inline-flex;align-items:center;gap:6px;">${b.arrowRight} Open Tab</button>
       <button id="ext-preview-close" style="padding:7px 12px;background:rgba(255,255,255,0.1);color:#e2e8f0;border:1px solid rgba(255,255,255,0.15);border-radius:8px;cursor:pointer;font-size:16px;font-weight:500;transition:all 0.15s ease;line-height:1;">${b.xClose}</button>
     </div>
@@ -241,7 +241,7 @@ var __morbis_feature = (() => {
   }
   function y(e) {
     return new Promise((a) => {
-      S();
+      M();
       let n = e.variant === 'danger' ? 'ext-btn-danger' : 'ext-btn-primary',
         t = document.createElement('div');
       ((t.style.cssText =
@@ -270,24 +270,24 @@ var __morbis_feature = (() => {
             (o > 0 && i.appendChild(document.createElement('br')),
               i.appendChild(document.createTextNode(r)));
           });
-      let l = (r) => {
+      let d = (r) => {
           (t.remove(), document.removeEventListener('keydown', s), a(r));
         },
         s = (r) => {
-          r.key === 'Escape' && l(!1);
+          r.key === 'Escape' && d(!1);
         };
-      (t.querySelector('.ext-modal-close').addEventListener('click', () => l(!1)),
+      (t.querySelector('.ext-modal-close').addEventListener('click', () => d(!1)),
         t.addEventListener('click', (r) => {
-          r.target === t && l(!1);
+          r.target === t && d(!1);
         }),
-        t.querySelector('[data-ext-ok]').addEventListener('click', () => l(!0)));
+        t.querySelector('[data-ext-ok]').addEventListener('click', () => d(!0)));
       let u = t.querySelector('[data-ext-cancel]');
-      (u && u.addEventListener('click', () => l(!1)),
+      (u && u.addEventListener('click', () => d(!1)),
         document.addEventListener('keydown', s),
         document.body.appendChild(t));
     });
   }
-  var I = $(),
+  var I = A(),
     g = {
       targetUrl: '/v2/m-klaim/detail-v2-refaktor',
       uploadEndpoint: '/v2/m-klaim/uploda-dokumen/control?sub=simpan',
@@ -300,14 +300,14 @@ var __morbis_feature = (() => {
       progressId: 'ext-progress-bar',
       statusId: 'ext-status-text',
     };
-  function q(e) {
+  function N(e) {
     let a = e.getFullYear(),
       n = String(e.getMonth() + 1).padStart(2, '0'),
       t = String(e.getDate()).padStart(2, '0');
     return `${a}-${n}-${t}`;
   }
-  function N() {
-    return q(new Date());
+  function G() {
+    return N(new Date());
   }
   function P() {
     let e = document.getElementById('tgl');
@@ -318,11 +318,11 @@ var __morbis_feature = (() => {
         return `${i}-${t}-${n}`;
       }
     }
-    return (console.warn('[Batch Upload] Input #tgl tidak ditemukan, pakai tanggal hari ini'), N());
+    return (console.warn('[Batch Upload] Input #tgl tidak ditemukan, pakai tanggal hari ini'), G());
   }
   var c = [],
     f = !1;
-  function H(e) {
+  function D(e) {
     return !e || typeof e != 'string'
       ? []
       : e
@@ -348,13 +348,13 @@ var __morbis_feature = (() => {
       let a = new URL(e),
         t = decodeURIComponent(a.pathname).split('/').pop() || 'unknown',
         i = t.replace(/\.[^/.]+$/, ''),
-        l = i.split(/[-_\s]+/),
+        d = i.split(/[-_\s]+/),
         s = '',
         u = P(),
-        r = l.findIndex((p) => /^\d{3,12}$/.test(p) && !/^\d{10}$/.test(p));
-      r !== -1 && ((s = l[r]), l.splice(r, 1));
-      let d =
-        l
+        r = d.findIndex((p) => /^\d{3,12}$/.test(p) && !/^\d{10}$/.test(p));
+      r !== -1 && ((s = d[r]), d.splice(r, 1));
+      let l =
+        d
           .filter((p) => !/^\d{10}$/.test(p))
           .join(' ')
           .trim() || i.replace(/[-_]+/g, ' ');
@@ -363,7 +363,7 @@ var __morbis_feature = (() => {
         norm: s,
         tanggal: u,
         jenis_dokumen: 'Lain-lain',
-        keterangan: d,
+        keterangan: l,
         url: e,
         status: 'pending',
       };
@@ -378,7 +378,7 @@ var __morbis_feature = (() => {
       };
     }
   }
-  function G() {
+  function K() {
     let e = document.getElementById(g.modalId);
     (e ||
       ((e = document.createElement('div')),
@@ -426,37 +426,37 @@ var __morbis_feature = (() => {
         (document
           .getElementById('ext-modal-close-btn')
           ?.addEventListener('click', () => e?.classList.remove('show')),
-          document.getElementById('ext-analyze-btn')?.addEventListener('click', K),
-          document.getElementById('ext-cancel-btn')?.addEventListener('click', R),
-          document.getElementById('ext-test-single-btn')?.addEventListener('click', z),
-          document.getElementById('ext-start-upload-btn')?.addEventListener('click', F),
+          document.getElementById('ext-analyze-btn')?.addEventListener('click', V),
+          document.getElementById('ext-cancel-btn')?.addEventListener('click', _),
+          document.getElementById('ext-test-single-btn')?.addEventListener('click', F),
+          document.getElementById('ext-start-upload-btn')?.addEventListener('click', j),
           document.querySelectorAll('input[name="ext-upload-mode"]').forEach((n) => {
             n.addEventListener('change', (t) => {
               let i = t.target,
-                l = document.getElementById('ext-manual-section'),
+                d = document.getElementById('ext-manual-section'),
                 s = document.getElementById('ext-auto-section');
               (i.value === 'manual'
-                ? (l && (l.style.display = 'block'), s && (s.style.display = 'none'))
-                : (l && (l.style.display = 'none'), s && (s.style.display = 'block')),
+                ? (d && (d.style.display = 'block'), s && (s.style.display = 'none'))
+                : (d && (d.style.display = 'none'), s && (s.style.display = 'block')),
                 (c = []),
-                w([]),
+                v([]),
                 x(''));
             });
           }),
-          document.getElementById('ext-crawl-btn')?.addEventListener('click', V),
-          document.getElementById('ext-upload-search-input')?.addEventListener('input', () => w(c)),
+          document.getElementById('ext-crawl-btn')?.addEventListener('click', W),
+          document.getElementById('ext-upload-search-input')?.addEventListener('input', () => v(c)),
           e?.addEventListener('click', function (n) {
-            n.target === e && R();
+            n.target === e && _();
           }));
       }, 0),
       document.body.appendChild(e)),
       e.classList.add('show'),
       document.getElementById(g.textareaId)?.focus());
   }
-  function R() {
+  function _() {
     let e = document.getElementById(g.modalId);
     if (e) {
-      (e.classList.remove('show'), (c = []), (f = !1), w([]), D(0), x(''));
+      (e.classList.remove('show'), (c = []), (f = !1), v([]), z(0), x(''));
       let a = document.getElementById('ext-upload-search-input');
       a && (a.value = '');
       let n = document.getElementById('ext-upload-search-wrap');
@@ -467,17 +467,17 @@ var __morbis_feature = (() => {
           '<button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Batal</button><button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 URL</button><button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>' +
           b.upload +
           ' Mulai Upload</button>'),
-        document.getElementById('ext-cancel-btn')?.addEventListener('click', R),
-        document.getElementById('ext-test-single-btn')?.addEventListener('click', z),
-        document.getElementById('ext-start-upload-btn')?.addEventListener('click', F));
+        document.getElementById('ext-cancel-btn')?.addEventListener('click', _),
+        document.getElementById('ext-test-single-btn')?.addEventListener('click', F),
+        document.getElementById('ext-start-upload-btn')?.addEventListener('click', j));
     }
   }
-  function w(e) {
+  function v(e) {
     let a = document.getElementById(g.previewId),
       n = document.getElementById('ext-start-upload-btn'),
       t = document.getElementById('ext-upload-search-wrap'),
       i = document.getElementById('ext-upload-search-input'),
-      l = document.getElementById('ext-auto-section')?.style.display !== 'none',
+      d = document.getElementById('ext-auto-section')?.style.display !== 'none',
       s = (i?.value || '').toLowerCase();
     if (!e || e.length === 0) {
       (a && (a.style.display = 'none'),
@@ -486,9 +486,9 @@ var __morbis_feature = (() => {
         i && (i.value = ''));
       return;
     }
-    t && l && (t.style.display = 'block');
+    t && d && (t.style.display = 'block');
     let u = e
-      .map((o, d) => ({ item: o, i: d }))
+      .map((o, l) => ({ item: o, i: l }))
       .filter(
         ({ item: o }) =>
           !s ||
@@ -509,7 +509,7 @@ var __morbis_feature = (() => {
         (o.textContent = 'Tidak ada dokumen yang cocok dengan pencarian.'),
         a?.appendChild(o));
     }
-    (u.forEach(({ item: o, i: d }) => {
+    (u.forEach(({ item: o, i: l }) => {
       let p = '';
       o.tglFileTabel
         ? (p = `<div style="font-size:11px;color:#4b5563;margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
@@ -527,52 +527,52 @@ var __morbis_feature = (() => {
         o.selected && m.classList.add('selected'),
         (m.innerHTML = `
       <label class="ext-checkbox-label" style="flex:1;min-width:0;">
-        <input type="checkbox" class="ext-checkbox" data-index="${d}" ${o.selected !== !1 ? 'checked' : ''} ${f ? 'disabled' : ''}>
+        <input type="checkbox" class="ext-checkbox" data-index="${l}" ${o.selected !== !1 ? 'checked' : ''} ${f ? 'disabled' : ''}>
         <div style="flex: 1; min-width: 0;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-            <strong style="font-size: 13px; color: #000000; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${d + 1}. ${o.filename}</strong>
+            <strong style="font-size: 13px; color: #000000; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${l + 1}. ${o.filename}</strong>
             ${o.status !== 'pending' ? `<span class="ext-status-badge" data-status="${o.status === 'success' ? 'success' : o.status === 'error' ? 'error' : 'deleting'}">${o.status === 'success' ? 'Sukses' : o.status === 'error' ? 'Gagal' : 'Memproses'}</span>` : ''}
           </div>
           ${p}
-          <input type="text" class="ext-keterangan-input" data-index="${d}" value="${o.keterangan || ''}" placeholder="Keterangan dokumen..." ${f ? 'disabled' : ''}>
+          <input type="text" class="ext-keterangan-input" data-index="${l}" value="${o.keterangan || ''}" placeholder="Keterangan dokumen..." ${f ? 'disabled' : ''}>
           ${o.error ? `<div style="font-size: 11px; color: #dc2626; margin-top: 4px;"><strong>Error:</strong> ${o.error}</div>` : ''}
         </div>
       </label>
-      <button data-index="${d}" class="ext-delete-preview-btn" ${f ? 'disabled' : ''}>${b.eye} Preview</button>
-      <button data-index="${d}" class="ext-delete-single-btn" title="Buang dari Antrian" ${f ? 'disabled' : ''}>${b.xClose}</button>
+      <button data-index="${l}" class="ext-delete-preview-btn" ${f ? 'disabled' : ''}>${b.eye} Preview</button>
+      <button data-index="${l}" class="ext-delete-single-btn" title="Buang dari Antrian" ${f ? 'disabled' : ''}>${b.xClose}</button>
     `));
       let h = m.querySelector('.ext-checkbox'),
-        v = m.querySelector('.ext-delete-preview-btn'),
+        w = m.querySelector('.ext-delete-preview-btn'),
         E = m.querySelector('.ext-delete-single-btn'),
         k = (T) => {
           if (f) return;
           ((o.selected = T),
             h && (h.checked = T),
             T ? m.classList.add('selected') : m.classList.remove('selected'));
-          let _ = e.filter((j) => j.selected !== !1).length;
-          ((r.innerHTML = `<strong class="preview-header-text">Preview (${_} Dokumen Dipilih):</strong>`),
-            n && (n.disabled = _ === 0));
+          let R = e.filter((q) => q.selected !== !1).length;
+          ((r.innerHTML = `<strong class="preview-header-text">Preview (${R} Dokumen Dipilih):</strong>`),
+            n && (n.disabled = R === 0));
         };
       (h?.addEventListener('change', (T) => k(T.target.checked)),
         E?.addEventListener('click', () => k(!1)));
       let C = m.querySelector('.ext-keterangan-input');
       (C?.addEventListener('input', function () {
-        c[d].keterangan = C.value;
+        c[l].keterangan = C.value;
       }),
-        v &&
-          (v.addEventListener('click', async () => {
+        w &&
+          (w.addEventListener('click', async () => {
             try {
-              await M(c[d].url, c[d].filename);
+              await S(c[l].url, c[l].filename);
             } catch {
-              window.open(c[d].url, '_blank');
+              window.open(c[l].url, '_blank');
             }
           }),
-          f && (v.disabled = !0)),
+          f && (w.disabled = !0)),
         a?.appendChild(m));
     }),
       n && (n.disabled = e.filter((o) => o.selected !== !1).length === 0));
   }
-  function D(e) {
+  function z(e) {
     let a = document.getElementById(g.progressId);
     if (!a) return;
     let n = a.querySelector('.progress-fill');
@@ -606,7 +606,7 @@ var __morbis_feature = (() => {
             (t.style.cursor = e ? 'not-allowed' : n === g.textareaId ? 'text' : 'pointer')));
       }));
   }
-  function K() {
+  function V() {
     let a = document.getElementById(g.textareaId)?.value.trim() || '';
     if (!a) {
       y({
@@ -618,7 +618,7 @@ var __morbis_feature = (() => {
       });
       return;
     }
-    let n = H(a);
+    let n = D(a);
     if (n.length === 0) {
       y({
         title: 'Tidak ada URL valid',
@@ -639,9 +639,9 @@ var __morbis_feature = (() => {
       });
       return;
     }
-    ((c = n.map((t) => U(t))), w(c), x(`${n.length} URL siap diproses`));
+    ((c = n.map((t) => U(t))), v(c), x(`${n.length} URL siap diproses`));
   }
-  async function V() {
+  async function W() {
     let a = new URLSearchParams(window.location.search).get('id_visit');
     if (!a) {
       y({
@@ -660,23 +660,23 @@ var __morbis_feature = (() => {
       let t = `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${a}&page=85&id_kunjungan=`,
         i = await fetch(t);
       if (!i.ok) throw new Error('Gagal memuat halaman dokumen pasien');
-      let l = await i.text(),
+      let d = await i.text(),
         u = new DOMParser()
-          .parseFromString(l, 'text/html')
+          .parseFromString(d, 'text/html')
           .querySelectorAll('table.data-list.tabel tr'),
         r = [];
       for (let o = 1; o < u.length; o++) {
-        let d = u[o],
-          p = d.querySelector('td:nth-child(2) a');
+        let l = u[o],
+          p = l.querySelector('td:nth-child(2) a');
         if (!p) continue;
         let m = p.getAttribute('href');
         if (!m?.includes('/assets/dokumen-pasien/')) continue;
         let h = m.startsWith('http') ? m : `${window.location.origin}${m}`,
-          v = d.cells[1]?.textContent?.trim() || '',
-          E = d.cells[2]?.textContent?.trim() || '',
-          k = d.cells[3]?.textContent?.trim() || '',
-          C = d.cells[4]?.textContent?.trim() || '';
-        r.push({ url: h, filenameTabel: v, tglFile: k, tglUpload: C, keteranganTabel: E });
+          w = l.cells[1]?.textContent?.trim() || '',
+          E = l.cells[2]?.textContent?.trim() || '',
+          k = l.cells[3]?.textContent?.trim() || '',
+          C = l.cells[4]?.textContent?.trim() || '';
+        r.push({ url: h, filenameTabel: w, tglFile: k, tglUpload: C, keteranganTabel: E });
       }
       if (r.length === 0) {
         (x('Tidak ada dokumen ditemukan di rekam medis.'),
@@ -684,17 +684,17 @@ var __morbis_feature = (() => {
         return;
       }
       ((c = r.map((o) => {
-        let d = U(o.url);
+        let l = U(o.url);
         return (
-          (d.tglFileTabel = o.tglFile),
-          (d.tglUploadTabel = o.tglUpload),
-          (d.filename = o.filenameTabel || d.filename),
-          (d.keterangan = o.keteranganTabel || d.filename || '-'),
-          (d.selected = !1),
-          d
+          (l.tglFileTabel = o.tglFile),
+          (l.tglUploadTabel = o.tglUpload),
+          (l.filename = o.filenameTabel || l.filename),
+          (l.keterangan = o.keteranganTabel || l.filename || '-'),
+          (l.selected = !1),
+          l
         );
       })),
-        w(c),
+        v(c),
         x(`${c.length} dokumen berhasil ditemukan!`));
     } catch (t) {
       x('Error: ' + t.message);
@@ -702,7 +702,7 @@ var __morbis_feature = (() => {
       n && ((n.disabled = !1), (n.textContent = 'Cari Dokumen Pasien Otomatis'));
     }
   }
-  async function W(e, a) {
+  async function Y(e, a) {
     (x(`Mengunduh: ${a}...`), console.log('[Batch Upload] Fetching URL:', e));
     let n = await fetch(e, { method: 'GET', mode: 'cors', credentials: 'omit' });
     if (!n.ok) throw new Error(`HTTP ${n.status}: ${n.statusText}`);
@@ -711,7 +711,7 @@ var __morbis_feature = (() => {
   }
   async function B(e, a) {
     try {
-      let n = await W(e.url, e.filename),
+      let n = await Y(e.url, e.filename),
         t = new FormData();
       (t.append('id_visit', a),
         t.append('norm', e.norm),
@@ -734,7 +734,7 @@ var __morbis_feature = (() => {
       return { success: !1, error: n.message };
     }
   }
-  async function Y() {
+  async function Q() {
     if (f) return;
     ((f = !0), L(!0));
     let e = document.getElementById('ext-start-upload-btn');
@@ -755,8 +755,8 @@ var __morbis_feature = (() => {
     }
     let t = 0,
       i = 0,
-      l = c.filter((r) => r.selected !== !1),
-      s = l.length;
+      d = c.filter((r) => r.selected !== !1),
+      s = d.length;
     if (s === 0) {
       (y({
         title: 'Tidak ada dokumen dipilih',
@@ -772,7 +772,7 @@ var __morbis_feature = (() => {
       return;
     }
     for (let r = 0; r < s; r++) {
-      let o = l[r];
+      let o = d[r];
       try {
         let p = await B(o, n);
         p.success
@@ -781,8 +781,8 @@ var __morbis_feature = (() => {
       } catch (p) {
         ((o.status = 'error'), (o.error = p.message), i++);
       }
-      let d = ((r + 1) / s) * 100;
-      (D(d), w(c), x(`Diproses: ${r + 1}/${s} - Sukses: ${t}, Gagal: ${i}`));
+      let l = ((r + 1) / s) * 100;
+      (z(l), v(c), x(`Diproses: ${r + 1}/${s} - Sukses: ${t}, Gagal: ${i}`));
     }
     (x(`Selesai! Sukses: ${t}, Gagal: ${i}`),
       i > 0 &&
@@ -801,7 +801,7 @@ var __morbis_feature = (() => {
         ?.addEventListener('click', () => window.location.reload())),
       (f = !1));
   }
-  async function z() {
+  async function F() {
     if (c.length === 0) {
       y({
         title: 'Tidak ada URL',
@@ -825,9 +825,9 @@ var __morbis_feature = (() => {
     } catch (t) {
       ((e.status = 'error'), (e.error = t.message), x('Test error! Detail di console.'));
     }
-    (w(c), L(!1), (f = !1));
+    (v(c), L(!1), (f = !1));
   }
-  function F() {
+  function j() {
     if (c.length === 0) {
       y({
         title: 'Tidak ada URL',
@@ -844,12 +844,12 @@ var __morbis_feature = (() => {
         message: 'Proses ini tidak dapat dibatalkan.',
         variant: 'warning',
         okLabel: 'Ya, Upload',
-      })) && Y())();
+      })) && Q())();
   }
-  function Q() {
+  function Z() {
     return !!new URLSearchParams(window.location.search).get('id_visit');
   }
-  async function Z() {
+  async function X() {
     let a = new URLSearchParams(window.location.search).get('id_visit');
     if (!a) {
       chrome.runtime
@@ -872,16 +872,16 @@ var __morbis_feature = (() => {
         u = [];
       for (let r = 1; r < s.length; r++) {
         let o = s[r],
-          d = o.querySelector('td:nth-child(2) a');
-        if (!d) continue;
-        let p = d.getAttribute('href');
+          l = o.querySelector('td:nth-child(2) a');
+        if (!l) continue;
+        let p = l.getAttribute('href');
         if (!p?.includes('/assets/dokumen-pasien/')) continue;
         let m = p.startsWith('http') ? p : `${window.location.origin}${p}`,
           h = o.cells[1]?.textContent?.trim() || '',
-          v = o.cells[2]?.textContent?.trim() || '',
+          w = o.cells[2]?.textContent?.trim() || '',
           E = o.cells[3]?.textContent?.trim() || '',
           k = o.cells[4]?.textContent?.trim() || '';
-        u.push({ url: m, filenameTabel: h, tglFile: E, tglUpload: k, keteranganTabel: v });
+        u.push({ url: m, filenameTabel: h, tglFile: E, tglUpload: k, keteranganTabel: w });
       }
       if (u.length === 0) {
         chrome.runtime
@@ -921,70 +921,71 @@ var __morbis_feature = (() => {
         .catch(console.error);
     }
   }
-  async function X() {
-    let a = new URLSearchParams(window.location.search).get('id_visit') || '';
-    if (!a) {
-      chrome.runtime
-        .sendMessage({
-          type: 'TAB_ACTION_RESULT',
-          action: 'BATCH_UPLOAD_ERROR',
-          data: { error: 'ID Visit tidak ditemukan di URL' },
-        })
-        .catch(console.error);
-      return;
-    }
-    let n = 0,
-      t = 0,
-      i = c.filter((s) => s.selected !== !1),
-      l = i.length;
-    if (l === 0) {
-      chrome.runtime
-        .sendMessage({
-          type: 'TAB_ACTION_RESULT',
-          action: 'BATCH_UPLOAD_ERROR',
-          data: { error: 'Tidak ada dokumen yang dipilih.' },
-        })
-        .catch(console.error);
-      return;
-    }
-    for (let s = 0; s < l; s++) {
-      let u = i[s];
-      ((u.status = 'uploading'),
+  async function J() {
+    try {
+      let a = new URLSearchParams(window.location.search).get('id_visit') || '';
+      if (!a) {
         chrome.runtime
           .sendMessage({
             type: 'TAB_ACTION_RESULT',
-            action: 'BATCH_UPLOAD_PROGRESS',
-            data: {
-              percent: (s / l) * 100,
-              status: `Mengupload: ${u.filename} (${s + 1}/${l})...`,
-              items: c,
-              finished: !1,
-            },
+            action: 'BATCH_UPLOAD_ERROR',
+            data: { error: 'ID Visit tidak ditemukan di URL' },
           })
-          .catch(console.error));
-      try {
-        let r = await B(u, a);
-        r.success
-          ? ((u.status = 'success'), n++)
-          : ((u.status = 'error'), (u.error = r.error), t++);
-      } catch (r) {
-        ((u.status = 'error'), (u.error = r.message), t++);
+          .catch(console.error);
+        return;
       }
+      let n = 0,
+        t = 0,
+        i = c.filter((s) => s.selected !== !1),
+        d = i.length;
+      if (d === 0) {
+        chrome.runtime
+          .sendMessage({
+            type: 'TAB_ACTION_RESULT',
+            action: 'BATCH_UPLOAD_ERROR',
+            data: { error: 'Tidak ada dokumen yang dipilih.' },
+          })
+          .catch(console.error);
+        return;
+      }
+      for (let s = 0; s < d; s++) {
+        let u = i[s];
+        ((u.status = 'uploading'), H(s, d, n, t, c));
+        try {
+          let r = await B(u, a);
+          r.success
+            ? ((u.status = 'success'), n++)
+            : ((u.status = 'error'), (u.error = r.error), t++);
+        } catch (r) {
+          ((u.status = 'error'), (u.error = r.message), t++);
+        }
+        H(s + 1, d, n, t, c);
+      }
+    } catch (e) {
       chrome.runtime
         .sendMessage({
           type: 'TAB_ACTION_RESULT',
-          action: 'BATCH_UPLOAD_PROGRESS',
-          data: {
-            percent: ((s + 1) / l) * 100,
-            status: `Diproses: ${s + 1}/${l} - Sukses: ${n}, Gagal: ${t}`,
-            items: c,
-            finished: s === l - 1,
-          },
+          action: 'BATCH_UPLOAD_ERROR',
+          data: { error: e.message },
         })
         .catch(console.error);
     }
   }
-  async function J() {
+  function H(e, a, n, t, i) {
+    chrome.runtime
+      .sendMessage({
+        type: 'TAB_ACTION_RESULT',
+        action: 'BATCH_UPLOAD_PROGRESS',
+        data: {
+          percent: (e / a) * 100,
+          status: `Diproses: ${e}/${a} - Sukses: ${n}, Gagal: ${t}`,
+          items: i,
+          finished: e >= a,
+        },
+      })
+      .catch(console.error);
+  }
+  async function ee() {
     if (c.length === 0) return;
     let e = c[0],
       n = new URLSearchParams(window.location.search).get('id_visit') || '';
@@ -1020,7 +1021,7 @@ var __morbis_feature = (() => {
       })
       .catch(console.error);
   }
-  function ee() {
+  function te() {
     if (document.getElementById('ext-batch-url-style')) return;
     let e = document.createElement('style');
     ((e.id = 'ext-batch-url-style'),
@@ -1061,13 +1062,13 @@ var __morbis_feature = (() => {
     @keyframes ext-spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
   `),
       document.head.appendChild(e),
-      S());
+      M());
   }
-  function te() {
+  function ne() {
     !I.currentConfig?.features?.batchUpload?.enabled ||
       !I.ExtensionCore.isFeatureAllowed('batchUpload') ||
-      (Q() &&
-        (ee(),
+      (Z() &&
+        (te(),
         chrome.runtime
           .sendMessage({
             type: 'PAGE_CONTEXT',
@@ -1078,42 +1079,44 @@ var __morbis_feature = (() => {
             },
           })
           .catch(console.error),
-        chrome.runtime.onMessage.addListener((e, a, n) => {
-          if (e.type === 'TAB_ACTION') {
-            let { action: t, payload: i } = e;
-            (t === 'BATCH_UPLOAD_ANALYZE'
-              ? ((c = H(i.inputText).map((s) => U(s))),
-                chrome.runtime
-                  .sendMessage({
-                    type: 'TAB_ACTION_RESULT',
-                    action: 'BATCH_UPLOAD_ANALYZE_RESULT',
-                    data: { items: c },
-                  })
-                  .catch(console.error))
-              : t === 'BATCH_UPLOAD_CRAWL'
-                ? Z()
-                : t === 'BATCH_UPLOAD_UPDATE_ITEMS'
-                  ? (c = i.items)
-                  : t === 'BATCH_UPLOAD_PREVIEW'
-                    ? M(i.url, i.filename).catch(() => {
-                        window.open(i.url, '_blank');
-                      })
-                    : t === 'BATCH_UPLOAD_START'
-                      ? X()
-                      : t === 'BATCH_UPLOAD_TEST_SINGLE' && J(),
-              n({ success: !0 }));
-          } else e.type === 'BATCH_UPLOAD_ACTION' && n({ success: !0 });
-          return !0;
-        })));
+        !window.__extBatchUploadRegistered &&
+          ((window.__extBatchUploadRegistered = !0),
+          chrome.runtime.onMessage.addListener((e, a, n) => {
+            if (e.type === 'TAB_ACTION') {
+              let { action: t, payload: i } = e;
+              (t === 'BATCH_UPLOAD_ANALYZE'
+                ? ((c = D(i.inputText).map((s) => U(s))),
+                  chrome.runtime
+                    .sendMessage({
+                      type: 'TAB_ACTION_RESULT',
+                      action: 'BATCH_UPLOAD_ANALYZE_RESULT',
+                      data: { items: c },
+                    })
+                    .catch(console.error))
+                : t === 'BATCH_UPLOAD_CRAWL'
+                  ? X()
+                  : t === 'BATCH_UPLOAD_UPDATE_ITEMS'
+                    ? (c = i.items)
+                    : t === 'BATCH_UPLOAD_PREVIEW'
+                      ? S(i.url, i.filename).catch(() => {
+                          window.open(i.url, '_blank');
+                        })
+                      : t === 'BATCH_UPLOAD_START'
+                        ? J()
+                        : t === 'BATCH_UPLOAD_TEST_SINGLE' && ee(),
+                n({ success: !0 }));
+            } else e.type === 'BATCH_UPLOAD_ACTION' && n({ success: !0 });
+            return !0;
+          }))));
   }
-  window.batchUploadShowModal = G;
+  window.batchUploadShowModal = K;
   typeof I.featureModules < 'u'
     ? (I.featureModules.batchUpload = {
         id: 'batchUpload',
         name: 'Upload Dokumen Ulang',
         description: 'Upload Dokumen Ulang via paste URL dengan metadata extraction otomatis',
         match: { regex: /^\/v2\/m-klaim\/detail-v2-refaktor\/?$/ },
-        run: te,
+        run: ne,
       })
     : console.warn('[Batch Upload] featureModules not defined, module registration skipped');
 })();

@@ -16862,7 +16862,7 @@ html {
   }
   document.readyState === 'loading'
     ? document.addEventListener('DOMContentLoaded', () => jh())
-    : jh();
+    : jh().catch((e) => console.error('[RI] init error:', e));
 })();
 /*! Bundled license information:
 

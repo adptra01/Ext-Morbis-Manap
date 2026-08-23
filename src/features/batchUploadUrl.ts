@@ -865,82 +865,91 @@ async function crawlDokumenPasienToSidepanel(): Promise<void> {
 }
 
 async function runBatchQueueToSidepanel(): Promise<void> {
-  const urlParams = new URLSearchParams(window.location.search);
-  const idVisitStr = urlParams.get('id_visit') || '';
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const idVisitStr = urlParams.get('id_visit') || '';
 
-  if (!idVisitStr) {
-    chrome.runtime
-      .sendMessage({
-        type: 'TAB_ACTION_RESULT',
-        action: 'BATCH_UPLOAD_ERROR',
-        data: { error: 'ID Visit tidak ditemukan di URL' },
-      })
-      .catch(console.error);
-    return;
-  }
-
-  let successCount = 0;
-  let errorCount = 0;
-  const itemsToUpload = batchQueue.filter((item) => item.selected !== false);
-  const total = itemsToUpload.length;
-
-  if (total === 0) {
-    chrome.runtime
-      .sendMessage({
-        type: 'TAB_ACTION_RESULT',
-        action: 'BATCH_UPLOAD_ERROR',
-        data: { error: 'Tidak ada dokumen yang dipilih.' },
-      })
-      .catch(console.error);
-    return;
-  }
-
-  for (let i = 0; i < total; i++) {
-    const metadata = itemsToUpload[i];
-    metadata.status = 'uploading';
-
-    chrome.runtime
-      .sendMessage({
-        type: 'TAB_ACTION_RESULT',
-        action: 'BATCH_UPLOAD_PROGRESS',
-        data: {
-          percent: (i / total) * 100,
-          status: `Mengupload: ${metadata.filename} (${i + 1}/${total})...`,
-          items: batchQueue,
-          finished: false,
-        },
-      })
-      .catch(console.error);
-
-    try {
-      const result = await processAndUploadSingleUrl(metadata, idVisitStr);
-      if (result.success) {
-        metadata.status = 'success';
-        successCount++;
-      } else {
-        metadata.status = 'error';
-        metadata.error = result.error;
-        errorCount++;
-      }
-    } catch (error) {
-      metadata.status = 'error';
-      metadata.error = (error as Error).message;
-      errorCount++;
+    if (!idVisitStr) {
+      chrome.runtime
+        .sendMessage({
+          type: 'TAB_ACTION_RESULT',
+          action: 'BATCH_UPLOAD_ERROR',
+          data: { error: 'ID Visit tidak ditemukan di URL' },
+        })
+        .catch(console.error);
+      return;
     }
 
+    let successCount = 0;
+    let errorCount = 0;
+    const itemsToUpload = batchQueue.filter((item) => item.selected !== false);
+    const total = itemsToUpload.length;
+
+    if (total === 0) {
+      chrome.runtime
+        .sendMessage({
+          type: 'TAB_ACTION_RESULT',
+          action: 'BATCH_UPLOAD_ERROR',
+          data: { error: 'Tidak ada dokumen yang dipilih.' },
+        })
+        .catch(console.error);
+      return;
+    }
+
+    for (let i = 0; i < total; i++) {
+      const metadata = itemsToUpload[i];
+      metadata.status = 'uploading';
+
+      sendProgress(i, total, successCount, errorCount, batchQueue);
+
+      try {
+        const result = await processAndUploadSingleUrl(metadata, idVisitStr);
+        if (result.success) {
+          metadata.status = 'success';
+          successCount++;
+        } else {
+          metadata.status = 'error';
+          metadata.error = result.error;
+          errorCount++;
+        }
+      } catch (error) {
+        metadata.status = 'error';
+        metadata.error = (error as Error).message;
+        errorCount++;
+      }
+
+      sendProgress(i + 1, total, successCount, errorCount, batchQueue);
+    }
+  } catch (err) {
     chrome.runtime
       .sendMessage({
         type: 'TAB_ACTION_RESULT',
-        action: 'BATCH_UPLOAD_PROGRESS',
-        data: {
-          percent: ((i + 1) / total) * 100,
-          status: `Diproses: ${i + 1}/${total} - Sukses: ${successCount}, Gagal: ${errorCount}`,
-          items: batchQueue,
-          finished: i === total - 1,
-        },
+        action: 'BATCH_UPLOAD_ERROR',
+        data: { error: (err as Error).message },
       })
       .catch(console.error);
   }
+}
+
+function sendProgress(
+  current: number,
+  total: number,
+  success: number,
+  fail: number,
+  items: BatchItem[],
+): void {
+  chrome.runtime
+    .sendMessage({
+      type: 'TAB_ACTION_RESULT',
+      action: 'BATCH_UPLOAD_PROGRESS',
+      data: {
+        percent: (current / total) * 100,
+        status: `Diproses: ${current}/${total} - Sukses: ${success}, Gagal: ${fail}`,
+        items,
+        finished: current >= total,
+      },
+    })
+    .catch(console.error);
 }
 
 async function testSingleUploadToSidepanel(): Promise<void> {
@@ -1056,7 +1065,9 @@ function initBatchUploadUrlFeature(): void {
     })
     .catch(console.error);
 
-  // Set up tab action receiver
+  // Set up tab action receiver (guard: only once)
+  if ((window as any).__extBatchUploadRegistered) return;
+  (window as any).__extBatchUploadRegistered = true;
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message.type === 'TAB_ACTION') {
       const { action, payload } = message;

@@ -21,11 +21,11 @@ function injectModalStyle() {
     '.cons-value{flex:1;font-size:14px;color:var(--ext-text, #111827);line-height:1.5;white-space:pre-wrap;word-break:break-word;font-family:var(--ext-font-family, inherit) !important;}',
     '.cons-loading{text-align:center;padding:40px;color:var(--ext-text-secondary, #9ca3af);font-size:14px;}',
     '.cons-error{padding:20px;color:var(--ext-danger, #ef4444);text-align:center;}',
-    '.cons-empty{padding:40px 20px;text-align:center;color:var(--ext-text-secondary, #9ca3af);font-size:13px;}',
+    '.cons-emty{padding:40px 20px;text-align:center;color:var(--ext-text-secondary, #9ca3af);font-size:13px;}',
     '.cons-raw-html{font-size:13px;color:var(--ext-text, #374151);font-family:var(--ext-font-family, inherit) !important;}',
     '.cons-raw-html table,.cons-raw-html table.tabel,.cons-raw-html table.table-input{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:13px;border:1px solid var(--ext-border, #e5e7eb);border-radius:8px;overflow:hidden;}',
     '.cons-raw-html td,.cons-raw-html th{border:1px solid var(--ext-border, #e5e7eb);padding:10px 12px;vertical-align:top;word-break:break-word;}',
-    '.cons-raw-html thead th{background:var(--ext-surface-2, #f1f5f9);font-weight:600;color:var(--ext-text, #1e293b);white-space:nowrap;}',
+    '.cons-raw-html thead th{background:var(--ext-surface-2, #f1f5f9);font-weight:600;color:var(--ext-text, #1e293b);whitespace:nowrap;}',
     '.cons-raw-html tbody tr:nth-child(even){background:var(--ext-surface-2, #f8fafc);}',
     '.cons-raw-html tbody tr:hover{background:var(--ext-primary-soft, #f1f5f9);}',
     '.cons-raw-html .pagination{margin-top:16px;text-align:center;}',
@@ -33,12 +33,16 @@ function injectModalStyle() {
     '.cons-raw-html .pagination a:hover{background:var(--ext-primary-soft, #f0fdf4);border-color:var(--ext-primary-soft, #86efac);}',
     '.cons-raw-html .pagination a.active{background:var(--ext-primary, #16a34a);color:#fff;border-color:var(--ext-primary, #16a34a);}',
     '.cons-body::-webkit-scrollbar{width:6px;}',
-    '.cons-body::-webkit-scrollbar-track{background:transparent;}',
+    '.cons-ody::-webkit-scrollbar-track{background:transparent;}',
     '.cons-body::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px;}',
     '.cons-body::-webkit-scrollbar-thumb:hover{background:#94a3b8;}',
   ].join('');
   document.head.appendChild(s);
 }
+
+let pnjObs: MutationObserver | null = null;
+let consulObserver: MutationObserver | null = null;
+let consulUnmount: (() => void) | null = null;
 
 // intercept penunjang buttons — runs independent of config
 function interceptPnj() {
@@ -74,9 +78,11 @@ function interceptPnj() {
     });
   });
 }
-interceptPnj();
-const pnjObs = new MutationObserver(() => interceptPnj());
-pnjObs.observe(document.body, { childList: true, subtree: true });
+if (document.body) {
+  interceptPnj();
+  pnjObs = new MutationObserver(() => interceptPnj());
+  pnjObs.observe(document.body, { childList: true, subtree: true });
+}
 
 let waited = 0;
 const MAX_WAIT = 100;
@@ -85,24 +91,40 @@ const check = setInterval(() => {
   const enabled = document.documentElement.getAttribute('data-ext-consul-enhancer');
   if (enabled !== null) {
     clearInterval(check);
-    if (enabled !== '1') return;
+    // Cleanup previous mount/observers before re-initting
+    if (consulUnmount) {
+      consulUnmount();
+      consulUnmount = null;
+    }
+    if (consulObserver) {
+      consulObserver.disconnect();
+      consulObserver = null;
+    }
+
+    if (enabled !== '1') {
+      if (pnjObs) {
+        pnjObs.disconnect();
+        pnjObs = null;
+      }
+      return;
+    }
 
     injectModalStyle();
     injectStyle();
     injectPageScripts();
     enhanceTables();
     buildCustomTables();
-    mountConsultationEnhancer();
+    consulUnmount = mountConsultationEnhancer();
 
     let timer: ReturnType<typeof setTimeout> | null = null;
-    const observer = new MutationObserver(() => {
+    consulObserver = new MutationObserver(() => {
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => {
         enhanceTables();
         buildCustomTables();
       }, 400);
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    consulObserver.observe(document.body, { childList: true, subtree: true });
   } else if (waited >= MAX_WAIT) {
     clearInterval(check);
     console.warn('[consultationEnhancer] config attr not found, skipping');
@@ -110,8 +132,8 @@ const check = setInterval(() => {
 }, 50);
 
 const g = globalThis as unknown as Record<string, unknown>;
-if (typeof g.featureModules !== 'undefined') {
-  g.featureModules.consultationEnhancer = {
+if (typeof g.featureModules !== 'undefined' && g.featureModules !== null) {
+  (g.featureModules as Record<string, unknown>).consultationEnhancer = {
     id: 'consultationEnhancer',
     name: 'Consultation Enhancer',
     match: { prefix: '/admisi/pengajuan_konsultasi/konsultasi' },

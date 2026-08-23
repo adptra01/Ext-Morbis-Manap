@@ -9,6 +9,10 @@ import ConsEnhancerApp from './ConsEnhancerApp';
  * ext-badge, dst.) — font & token dari src/ui/web/tokens.ts.
  */
 export function mountConsultationEnhancer() {
+  // Guard: remove existing root before re-mount
+  const existing = document.getElementById('consRoot');
+  if (existing) existing.remove();
+
   // Token global untuk konten server-rendered (tabel MORBIS di dalam modal)
   // yang dirender di light DOM dan tidak bisa dijangkau CSS shadow.
   injectGlobalTokens();
