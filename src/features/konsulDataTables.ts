@@ -22,11 +22,11 @@ function injectCSS(): void {
 .ext-action-menu[aria-expanded="true"] .ext-action-dropdown{display:block}
 .ext-action-dropdown a{display:flex;align-items:center;gap:8px;padding:9px 12px;color:#1f2937;text-decoration:none;font-size:13px;border-bottom:1px solid #f3f4f6}
 .ext-action-dropdown a:last-child{border-bottom:none}
-.ext-action-dropdown a:hover{background:ROW#047857;color:#047857}
+.ext-action-dropdown a:hover{background:#ecfdf5;color:#047857}
 #content table.dataTable{font-size:14px!important}
 #content table.dataTable thead th{background:#f8fafc!important;color:#111827!important;font-weight:600;font-size:13.5px;padding:11px 9px!important;border-bottom:2px solid #e5e7eb!important;white-space:nowrap}
 #content table.dataTable tbody td{padding:9px 9px!important;vertical-align:middle;border-bottom:1px solid #f1f5f9!important;color:#1f2937;line-height:1.5}
-#content table.dataTable tbody tr:hover td{background:ROW#047857!important}
+#content table.dataTable tbody tr:hover td{background:#ecfdf5!important}
 #content .dataTables_scrollHead{position:sticky;top:0;z-index:10}
 .ext-badge{display:inline-flex;padding:3px 9px;border-radius:9999px;font-size:12px;font-weight:500;white-space:nowrap}
 .ext-badge--belum{background:#fef3c7;color:#92400e}
@@ -41,7 +41,7 @@ function injectCSS(): void {
 #content .dataTables_filter input{min-width:220px!important}
 #content .dataTables_info{font-size:13px!important;color:#4b5563!important}
 .ext-row-clickable{cursor:pointer}
-.ext-row-clickable:hover{background:ROW#047857!important}
+.ext-row-clickable:hover{background:#ecfdf5!important}
 .ext-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
 .ext-modal{background:#fff;border-radius:12px;max-width:700px;width:100%;max-height:85vh;overflow:auto;box-shadow:0 20px 40px rgba(0,0,0,.2)}
 .ext-modal-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e5e7eb}

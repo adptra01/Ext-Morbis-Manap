@@ -18,7 +18,7 @@ import {
   v as sendMessage,
   x as __toESM,
   y as require_client,
-} from './chunks/button-BGA2PDYS.js';
+} from './chunks/button-CD8pF1Qg.js';
 //#region src/popup/StatusCard.tsx
 var import_react = /* @__PURE__ */ __toESM(require_react(), 1);
 var import_client = require_client();

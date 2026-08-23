@@ -4,26 +4,26 @@ var __morbis_feature = (() => {
     y = 'https://cdn.datatables.net/1.13.11/css/jquery.dataTables.min.css',
     w = 'https://cdn.datatables.net/1.13.11/js/jquery.dataTables.min.js',
     c = null;
-  function T(n) {
-    if (document.querySelector(`link[href="${n}"]`)) return;
+  function T(a) {
+    if (document.querySelector(`link[href="${a}"]`)) return;
     let e = document.createElement('link');
-    ((e.rel = 'stylesheet'), (e.href = n), document.head.appendChild(e));
+    ((e.rel = 'stylesheet'), (e.href = a), document.head.appendChild(e));
   }
-  function x(n) {
+  function x(a) {
     return new Promise((e, t) => {
-      if (document.querySelector(`script[src="${n}"]`)) return e();
-      let a = document.createElement('script');
-      ((a.src = n),
-        (a.onload = () => e()),
-        (a.onerror = () => t(new Error('Failed to load ' + n))),
-        document.head.appendChild(a));
+      if (document.querySelector(`script[src="${a}"]`)) return e();
+      let n = document.createElement('script');
+      ((n.src = a),
+        (n.onload = () => e()),
+        (n.onerror = () => t(new Error('Failed to load ' + a))),
+        document.head.appendChild(n));
     });
   }
-  function g(n) {
+  function g(a) {
     return (
       c ||
       ((c = (async () => {
-        (console.log(`[${n}] loading deps...`), T(y));
+        (console.log(`[${a}] loading deps...`), T(y));
         let e = window.$,
           t = window.jQuery;
         (await x(h),
@@ -31,7 +31,7 @@ var __morbis_feature = (() => {
           (window.__extJQ = window.jQuery),
           (window.$ = e),
           (window.jQuery = t),
-          console.log(`[${n}] deps loaded`));
+          console.log(`[${a}] deps loaded`));
       })()),
       c)
     );
@@ -43,9 +43,9 @@ var __morbis_feature = (() => {
     p = null;
   function k() {
     if (document.getElementById('ext-radio-dt-css')) return;
-    let n = document.createElement('style');
-    ((n.id = 'ext-radio-dt-css'),
-      (n.textContent = `.ext-action-menu{position:relative;display:inline-block}
+    let a = document.createElement('style');
+    ((a.id = 'ext-radio-dt-css'),
+      (a.textContent = `.ext-action-menu{position:relative;display:inline-block}
 .ext-action-trigger{background:#7c3aed;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:13px;font-weight:500;cursor:pointer;min-width:90px;display:inline-flex;align-items:center;gap:6px;transition:background .15s}
 .ext-action-trigger:hover{background:#6d28d9}
 .ext-action-trigger:focus{outline:2px solid #7c3aed;outline-offset:2px}
@@ -55,11 +55,11 @@ var __morbis_feature = (() => {
 .ext-action-menu[aria-expanded="true"] .ext-action-dropdown{display:block}
 .ext-action-dropdown a{display:flex;align-items:center;gap:8px;padding:9px 12px;color:#1f2937;text-decoration:none;font-size:13px;border-bottom:1px solid #f3f4f6}
 .ext-action-dropdown a:last-child{border-bottom:none}
-.ext-action-dropdown a:hover{background:ROW#6d28d9;color:#6d28d9}
+.ext-action-dropdown a:hover{background:#faf5ff;color:#6d28d9}
 #content table.dataTable{font-size:14px!important}
 #content table.dataTable thead th{background:#f8fafc!important;color:#111827!important;font-weight:600;font-size:13.5px;padding:11px 9px!important;border-bottom:2px solid #e5e7eb!important;white-space:nowrap}
 #content table.dataTable tbody td{padding:9px 9px!important;vertical-align:middle;border-bottom:1px solid #f1f5f9!important;color:#1f2937;line-height:1.5}
-#content table.dataTable tbody tr:hover td{background:ROW#6d28d9!important}
+#content table.dataTable tbody tr:hover td{background:#faf5ff!important}
 #content .dataTables_scrollHead{position:sticky;top:0;z-index:10}
 .ext-badge{display:inline-flex;padding:3px 9px;border-radius:9999px;font-size:12px;font-weight:500;white-space:nowrap}
 .ext-badge--belum{background:#fef3c7;color:#92400e}
@@ -74,7 +74,7 @@ var __morbis_feature = (() => {
 #content .dataTables_filter input{min-width:220px!important}
 #content .dataTables_info{font-size:13px!important;color:#4b5563!important}
 .ext-row-clickable{cursor:pointer}
-.ext-row-clickable:hover{background:ROW#6d28d9!important}
+.ext-row-clickable:hover{background:#faf5ff!important}
 .ext-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
 .ext-modal{background:#fff;border-radius:12px;max-width:700px;width:100%;max-height:85vh;overflow:auto;box-shadow:0 20px 40px rgba(0,0,0,.2)}
 .ext-modal-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e5e7eb}
@@ -86,7 +86,7 @@ var __morbis_feature = (() => {
 .ext-modal-field{display:flex;flex-direction:column;gap:3px}
 .ext-modal-label{font-size:11px;font-weight:500;color:#6b7280;text-transform:uppercase;letter-spacing:.02em}
 .ext-modal-value{font-size:13.5px;color:#1f2937;word-break:break-word}`),
-      document.head.appendChild(n));
+      document.head.appendChild(a));
   }
   function v() {
     return `<div class="ext-action-menu" tabindex="0" role="menu" aria-expanded="false">
@@ -100,8 +100,8 @@ var __morbis_feature = (() => {
 <a role="menuitem" tabindex="-1" href="#" data-col="batal">Batal</a>
 </div></div>`;
   }
-  function E(n) {
-    let e = (n || '').toLowerCase(),
+  function E(a) {
+    let e = (a || '').toLowerCase(),
       t = 'ext-badge--belum';
     return (
       e.includes('lunas') || e.includes('sudah') || e.includes('selesai')
@@ -109,24 +109,24 @@ var __morbis_feature = (() => {
         : e.includes('proses')
           ? (t = 'ext-badge--proses')
           : e.includes('batal') && (t = 'ext-badge--batal'),
-      `<span class="ext-badge ${t}">${n}</span>`
+      `<span class="ext-badge ${t}">${a}</span>`
     );
   }
-  function L(n, e) {
+  function L(a, e) {
     let t = {};
-    for (let a = 0; a < e.length && a < n.length; a++)
-      t[n[a].textContent.trim()] = e[a].textContent.trim();
+    for (let n = 0; n < e.length && n < a.length; n++)
+      t[a[n].textContent.trim()] = e[n].textContent.trim();
     return t;
   }
-  function _(n) {
+  function _(a) {
     let e = f();
     if (!e) return;
     e('.ext-modal-overlay').remove();
-    let t = Object.entries(n)
-      .filter(([a]) => a !== 'Aksi')
+    let t = Object.entries(a)
+      .filter(([n]) => n !== 'Aksi')
       .map(
-        ([a, i]) =>
-          `<div class="ext-modal-field"><span class="ext-modal-label">${a}</span><span class="ext-modal-value">${i || '-'}</span></div>`,
+        ([n, i]) =>
+          `<div class="ext-modal-field"><span class="ext-modal-label">${n}</span><span class="ext-modal-value">${i || '-'}</span></div>`,
       )
       .join('');
     (e('body').append(`<div class="ext-modal-overlay" tabindex="-1" role="dialog" aria-modal="true">
@@ -137,25 +137,25 @@ var __morbis_feature = (() => {
 </div>
 <div class="ext-modal-body"><div class="ext-modal-grid">${t}</div></div>
 </div></div>`),
-      e('.ext-modal-overlay').on('click', function (a) {
-        a.target === this && e(this).remove();
+      e('.ext-modal-overlay').on('click', function (n) {
+        n.target === this && e(this).remove();
       }),
       e('.ext-modal-close').on('click', function () {
         e('.ext-modal-overlay').remove();
       }),
       e(document)
         .off('keydown.extModal')
-        .on('keydown.extModal', function (a) {
-          a.key === 'Escape' && e('.ext-modal-overlay').remove();
+        .on('keydown.extModal', function (n) {
+          n.key === 'Escape' && e('.ext-modal-overlay').remove();
         }));
   }
-  function S(n) {
-    (n.addEventListener('click', (e) => {
+  function S(a) {
+    (a.addEventListener('click', (e) => {
       let t = e.target,
-        a = t.closest('.ext-action-trigger');
-      if (a) {
+        n = t.closest('.ext-action-trigger');
+      if (n) {
         (e.preventDefault(), e.stopPropagation());
-        let l = a.closest('.ext-action-menu'),
+        let l = n.closest('.ext-action-menu'),
           r = l.getAttribute('aria-expanded') === 'true';
         if (
           (document.querySelectorAll('.ext-action-menu[aria-expanded="true"]').forEach((o) => {
@@ -182,14 +182,14 @@ var __morbis_feature = (() => {
         e.target.closest('.ext-action-menu') ||
           document.querySelectorAll('.ext-action-menu[aria-expanded="true"]').forEach((t) => {
             t.setAttribute('aria-expanded', 'false');
-            let a = t.querySelector('.ext-action-dropdown');
-            a && (a.hidden = !0);
+            let n = t.querySelector('.ext-action-dropdown');
+            n && (n.hidden = !0);
           });
       }));
   }
   function b() {
-    let n = f();
-    if (!n || !n.fn?.DataTable) return;
+    let a = f();
+    if (!a || !a.fn?.DataTable) return;
     let e = document.getElementById('content');
     if (!e) return;
     let t = e.querySelector('table');
@@ -223,7 +223,7 @@ var __morbis_feature = (() => {
       ];
     for (let r of [2, 5, 6, 7, 8, 10, 11, 12, 13])
       r < i && l.push({ targets: r, visible: !1, searchable: !1 });
-    ((p = n(t).DataTable({
+    ((p = a(t).DataTable({
       destroy: !0,
       pageLength: 25,
       lengthMenu: [
@@ -244,7 +244,7 @@ var __morbis_feature = (() => {
       scrollX: !0,
       autoWidth: !1,
       rowCallback: function (r) {
-        n(r)
+        a(r)
           .off('click keyup')
           .on('click keyup', function (o) {
             let d = o;
@@ -255,16 +255,16 @@ var __morbis_feature = (() => {
           });
       },
       initComplete: function () {
-        (console.log(`[${u}] DataTable ready`), (isInitialized = !0));
+        console.log(`[${u}] DataTable ready`);
       },
     })),
       (t.dataset.extDt = '1'));
   }
   function D() {
-    let n = window.contentloader;
-    typeof n == 'function' &&
+    let a = window.contentloader;
+    typeof a == 'function' &&
       (window.contentloader = function (e, t) {
-        (n.call(this, e, t),
+        (a.call(this, e, t),
           setTimeout(() => {
             let i = document.querySelector(t)?.querySelector('table');
             (i && (i.dataset.extDt = ''), b());
@@ -273,10 +273,10 @@ var __morbis_feature = (() => {
   }
   (function () {
     if (!window.location.pathname.includes('admisi/radiologi/pemeriksaan')) return;
-    let n = 0;
+    let a = 0;
     (function e() {
       if (document.documentElement.getAttribute('data-ext-radio-datatables') !== '1') {
-        if (n++ < 20) {
+        if (a++ < 20) {
           setTimeout(e, 300);
           return;
         }
@@ -288,10 +288,10 @@ var __morbis_feature = (() => {
         S(document),
         D(),
         g(u).then(() => {
-          let a = 0;
+          let n = 0;
           (function i() {
             let l = document.getElementById('content')?.querySelector('table');
-            l && l.querySelectorAll('tr').length > 1 ? b() : a++ < 30 && setTimeout(i, 300);
+            l && l.querySelectorAll('tr').length > 1 ? b() : n++ < 30 && setTimeout(i, 300);
           })();
         }));
     })();
