@@ -102,6 +102,48 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
     desc: 'Tools penerimaan resep',
     roles: ['admin'],
   },
+  {
+    key: 'antrianFarmasi',
+    name: 'Antrian Farmasi Voice',
+    desc: 'Display farmasi: fallback polling + TTS panggil pasien',
+    roles: ['apotek'],
+  },
+  {
+    key: 'labHistory',
+    name: 'Riwayat Permintaan Lab',
+    desc: 'Tombol lihat riwayat permintaan lab',
+    roles: ['labor'],
+  },
+  {
+    key: 'labDataTables',
+    name: 'DataTables Input Hasil Lab',
+    desc: 'Search, pagination, page length tabel hasil lab',
+    roles: ['labor', 'kasir', 'admin'],
+  },
+  {
+    key: 'radiologiDataTables',
+    name: 'DataTables Radiologi',
+    desc: 'Search, pagination, page length tabel radiologi',
+    roles: ['admin', 'dokter'],
+  },
+  {
+    key: 'konsulDataTables',
+    name: 'DataTables Konsultasi',
+    desc: 'Search, pagination, page length tabel konsultasi',
+    roles: ['casemix'],
+  },
+  {
+    key: 'laporanKasirTime',
+    name: 'Laporan Kasir Time',
+    desc: 'Flatpickr datetime, auto-fill, waktu di tabel',
+    roles: ['kasir', 'admin'],
+  },
+  {
+    key: 'cancelBatal',
+    name: 'Tombol Batal (Lab & Radiologi)',
+    desc: 'Tombol Batal pada tab Sudah Diinput Lab/Radiologi',
+    roles: ['admin'],
+  },
 ];
 
 const DEFAULT_URLS: CustomUrl[] = [
