@@ -1,51 +1,55 @@
 'use strict';
 var __morbis_feature = (() => {
-  var h = 'https://code.jquery.com/jquery-3.7.1.min.js',
-    y = 'https://cdn.datatables.net/1.13.11/css/jquery.dataTables.min.css',
-    w = 'https://cdn.datatables.net/1.13.11/js/jquery.dataTables.min.js',
-    p = null;
-  function T(n) {
-    if (document.querySelector(`link[href="${n}"]`)) return;
-    let e = document.createElement('link');
-    ((e.rel = 'stylesheet'), (e.href = n), document.head.appendChild(e));
+  // src/features/shared/dataTablesLoader.ts
+  var JQUERY_URL = 'https://code.jquery.com/jquery-3.7.1.min.js';
+  var DT_CSS_URL = 'https://cdn.datatables.net/1.13.11/css/jquery.dataTables.min.css';
+  var DT_JS_URL = 'https://cdn.datatables.net/1.13.11/js/jquery.dataTables.min.js';
+  var depsPromise = null;
+  function injectCSS(url) {
+    if (document.querySelector(`link[href="${url}"]`)) return;
+    const l = document.createElement('link');
+    l.rel = 'stylesheet';
+    l.href = url;
+    document.head.appendChild(l);
   }
-  function x(n) {
-    return new Promise((e, t) => {
-      if (document.querySelector(`script[src="${n}"]`)) return e();
-      let a = document.createElement('script');
-      ((a.src = n),
-        (a.onload = () => e()),
-        (a.onerror = () => t(new Error('Failed to load ' + n))),
-        document.head.appendChild(a));
+  function injectScript(url) {
+    return new Promise((resolve, reject) => {
+      if (document.querySelector(`script[src="${url}"]`)) return resolve();
+      const s = document.createElement('script');
+      s.src = url;
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('Failed to load ' + url));
+      document.head.appendChild(s);
     });
   }
-  function g(n) {
-    return (
-      p ||
-      ((p = (async () => {
-        (console.log(`[${n}] loading deps...`), T(y));
-        let e = window.$,
-          t = window.jQuery;
-        (await x(h),
-          await x(w),
-          (window.__extJQ = window.jQuery),
-          (window.$ = e),
-          (window.jQuery = t),
-          console.log(`[${n}] deps loaded`));
-      })()),
-      p)
-    );
+  function loadDataTablesDeps(logPrefix) {
+    if (depsPromise) return depsPromise;
+    depsPromise = (async () => {
+      console.log(`[${logPrefix}] loading deps...`);
+      injectCSS(DT_CSS_URL);
+      const _page$ = window.$;
+      const _pageJQ = window.jQuery;
+      await injectScript(JQUERY_URL);
+      await injectScript(DT_JS_URL);
+      window.__extJQ = window.jQuery;
+      window.$ = _page$;
+      window.jQuery = _pageJQ;
+      console.log(`[${logPrefix}] deps loaded`);
+    })();
+    return depsPromise;
   }
-  function m() {
+  function getExt$() {
     return window.__extJQ;
   }
-  var f = 'LabDT',
-    u = null;
-  function k() {
+
+  // src/features/labDataTables.ts
+  var LOG = 'LabDT';
+  var dtInstance = null;
+  function injectCSS2() {
     if (document.getElementById('ext-lab-dt-css')) return;
-    let n = document.createElement('style');
-    ((n.id = 'ext-lab-dt-css'),
-      (n.textContent = `.ext-action-menu{position:relative;display:inline-block}
+    const s = document.createElement('style');
+    s.id = 'ext-lab-dt-css';
+    s.textContent = `.ext-action-menu{position:relative;display:inline-block}
 .ext-action-trigger{background:#2563eb;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:13px;font-weight:500;cursor:pointer;min-width:90px;display:inline-flex;align-items:center;gap:6px;transition:background .15s}
 .ext-action-trigger:hover{background:#1d4ed8}
 .ext-action-trigger:focus{outline:2px solid #2563eb;outline-offset:2px}
@@ -85,10 +89,10 @@ var __morbis_feature = (() => {
 .ext-modal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 20px}
 .ext-modal-field{display:flex;flex-direction:column;gap:3px}
 .ext-modal-label{font-size:11px;font-weight:500;color:#6b7280;text-transform:uppercase;letter-spacing:.02em}
-.ext-modal-value{font-size:13.5px;color:#1f2937;word-break:break-word}`),
-      document.head.appendChild(n));
+.ext-modal-value{font-size:13.5px;color:#1f2937;word-break:break-word}`;
+    document.head.appendChild(s);
   }
-  function v() {
+  function makeDropdown() {
     return `<div class="ext-action-menu" tabindex="0" role="menu" aria-expanded="false">
 <button class="ext-action-trigger" aria-haspopup="true" type="button">Aksi <span class="caret">&#9660;</span></button>
 <div class="ext-action-dropdown" role="menu" hidden>
@@ -100,137 +104,143 @@ var __morbis_feature = (() => {
 <a role="menuitem" tabindex="-1" href="#" data-col="dokumen">Input Dokumen</a>
 </div></div>`;
   }
-  function E(n) {
-    let e = (n || '').toLowerCase(),
-      t = 'ext-badge--belum';
-    return (
-      e.includes('sudah') || e.includes('selesai')
-        ? (t = 'ext-badge--sudah')
-        : e.includes('proses')
-          ? (t = 'ext-badge--proses')
-          : e.includes('batal') && (t = 'ext-badge--batal'),
-      `<span class="ext-badge ${t}">${n}</span>`
-    );
+  function badge(text) {
+    const s = (text || '').toLowerCase();
+    let cls = 'ext-badge--belum';
+    if (s.includes('sudah') || s.includes('selesai')) cls = 'ext-badge--sudah';
+    else if (s.includes('proses')) cls = 'ext-badge--proses';
+    else if (s.includes('batal')) cls = 'ext-badge--batal';
+    return `<span class="ext-badge ${cls}">${text}</span>`;
   }
-  function L(n, e) {
-    let t = {};
-    for (let a = 0; a < e.length && a < n.length; a++)
-      t[n[a].textContent.trim()] = e[a].textContent.trim();
-    return t;
+  function rowToData(ths, tds) {
+    const d = {};
+    for (let i = 0; i < tds.length && i < ths.length; i++) {
+      d[ths[i].textContent.trim()] = tds[i].textContent.trim();
+    }
+    return d;
   }
-  function S(n) {
-    let e = m();
-    if (!e) return;
-    e('.ext-modal-overlay').remove();
-    let t = Object.entries(n)
-      .filter(([a]) => a !== 'AKSI')
+  function showModal(rowData) {
+    const $ = getExt$();
+    if (!$) return;
+    $('.ext-modal-overlay').remove();
+    const fields = Object.entries(rowData)
+      .filter(([k]) => k !== 'AKSI')
       .map(
-        ([a, i]) =>
-          `<div class="ext-modal-field"><span class="ext-modal-label">${a}</span><span class="ext-modal-value">${i || '-'}</span></div>`,
+        ([k, v]) =>
+          `<div class="ext-modal-field"><span class="ext-modal-label">${k}</span><span class="ext-modal-value">${v || '-'}</span></div>`,
       )
       .join('');
-    (e('body').append(`<div class="ext-modal-overlay" tabindex="-1" role="dialog" aria-modal="true">
+    $('body').append(`<div class="ext-modal-overlay" tabindex="-1" role="dialog" aria-modal="true">
 <div class="ext-modal">
 <div class="ext-modal-header">
 <h3 class="ext-modal-title">Detail Permintaan Lab</h3>
 <button class="ext-modal-close" aria-label="Tutup">&times;</button>
 </div>
-<div class="ext-modal-body"><div class="ext-modal-grid">${t}</div></div>
-</div></div>`),
-      e('.ext-modal-overlay').on('click', function (a) {
-        a.target === this && e(this).remove();
-      }),
-      e('.ext-modal-close').on('click', function () {
-        e('.ext-modal-overlay').remove();
-      }),
-      e(document)
-        .off('keydown.extModal')
-        .on('keydown.extModal', function (a) {
-          a.key === 'Escape' && e('.ext-modal-overlay').remove();
-        }));
+<div class="ext-modal-body"><div class="ext-modal-grid">${fields}</div></div>
+</div></div>`);
+    $('.ext-modal-overlay').on('click', function (e) {
+      if (e.target === this) $(this).remove();
+    });
+    $('.ext-modal-close').on('click', function () {
+      $('.ext-modal-overlay').remove();
+    });
+    $(document)
+      .off('keydown.extModal')
+      .on('keydown.extModal', function (e) {
+        if (e.key === 'Escape') $('.ext-modal-overlay').remove();
+      });
   }
-  function _(n) {
-    (n.addEventListener('click', (e) => {
-      let t = e.target,
-        a = t.closest('.ext-action-trigger');
-      if (a) {
-        (e.preventDefault(), e.stopPropagation());
-        let l = a.closest('.ext-action-menu'),
-          r = l.getAttribute('aria-expanded') === 'true';
-        if (
-          (document.querySelectorAll('.ext-action-menu[aria-expanded="true"]').forEach((o) => {
-            o.setAttribute('aria-expanded', 'false');
-            let d = o.querySelector('.ext-action-dropdown');
-            d && (d.hidden = !0);
-          }),
-          !r)
-        ) {
-          l.setAttribute('aria-expanded', 'true');
-          let o = l.querySelector('.ext-action-dropdown');
-          o && (o.hidden = !1);
+  function setupDropdownListeners(root) {
+    root.addEventListener('click', (e) => {
+      const target = e.target;
+      const trigger = target.closest('.ext-action-trigger');
+      if (trigger) {
+        e.preventDefault();
+        e.stopPropagation();
+        const menu = trigger.closest('.ext-action-menu');
+        const isOpen = menu.getAttribute('aria-expanded') === 'true';
+        document.querySelectorAll('.ext-action-menu[aria-expanded="true"]').forEach((m) => {
+          m.setAttribute('aria-expanded', 'false');
+          const dd = m.querySelector('.ext-action-dropdown');
+          if (dd) dd.hidden = true;
+        });
+        if (!isOpen) {
+          menu.setAttribute('aria-expanded', 'true');
+          const dd = menu.querySelector('.ext-action-dropdown');
+          if (dd) dd.hidden = false;
         }
         return;
       }
-      let i = t.closest('.ext-action-dropdown a');
-      if (i) {
-        (e.preventDefault(), i.closest('.ext-action-menu').setAttribute('aria-expanded', 'false'));
-        let l = i.closest('.ext-action-dropdown');
-        l && (l.hidden = !0);
+      const item = target.closest('.ext-action-dropdown a');
+      if (item) {
+        e.preventDefault();
+        item.closest('.ext-action-menu').setAttribute('aria-expanded', 'false');
+        const dd = item.closest('.ext-action-dropdown');
+        if (dd) dd.hidden = true;
       }
-    }),
-      document.addEventListener('click', (e) => {
-        e.target.closest('.ext-action-menu') ||
-          document.querySelectorAll('.ext-action-menu[aria-expanded="true"]').forEach((t) => {
-            t.setAttribute('aria-expanded', 'false');
-            let a = t.querySelector('.ext-action-dropdown');
-            a && (a.hidden = !0);
-          });
-      }));
+    });
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.ext-action-menu')) {
+        document.querySelectorAll('.ext-action-menu[aria-expanded="true"]').forEach((m) => {
+          m.setAttribute('aria-expanded', 'false');
+          const dd = m.querySelector('.ext-action-dropdown');
+          if (dd) dd.hidden = true;
+        });
+      }
+    });
   }
-  function b() {
-    let n = m();
-    if (!n || !n.fn?.DataTable) return;
-    let e = document.getElementById('content');
-    if (!e) return;
-    let t = e.querySelector('table');
-    if (!t || t.dataset.extDt) return;
-    if ((u && (u.destroy(!0), (u = null)), !t.querySelector('thead'))) {
-      let r = t.querySelector('tr');
-      if (r && r.querySelector('th')) {
-        let o = document.createElement('thead');
-        (o.appendChild(r), t.insertBefore(o, t.firstChild));
+  function initDataTable() {
+    const $ = getExt$();
+    if (!$ || !$.fn?.DataTable) return;
+    const contentEl = document.getElementById('content');
+    if (!contentEl) return;
+    const table = contentEl.querySelector('table');
+    if (!table || table.dataset.extDt) return;
+    if (dtInstance) {
+      dtInstance.destroy(true);
+      dtInstance = null;
+    }
+    if (!table.querySelector('thead')) {
+      const firstTr = table.querySelector('tr');
+      if (firstTr && firstTr.querySelector('th')) {
+        const th = document.createElement('thead');
+        th.appendChild(firstTr);
+        table.insertBefore(th, table.firstChild);
       }
     }
-    t.querySelectorAll('tbody tr').forEach((r) => {
-      let o = r.querySelectorAll('td');
-      if (o.length < 7) return;
-      let d = o[1];
-      if (d && !d.querySelector('.ext-action-menu')) {
-        let c = d.innerHTML;
-        ((d.innerHTML = v()),
-          d.querySelector('.ext-action-dropdown').setAttribute('data-original', btoa(c)));
+    const rows = table.querySelectorAll('tbody tr');
+    rows.forEach((tr) => {
+      const tds = tr.querySelectorAll('td');
+      if (tds.length < 7) return;
+      const aksi = tds[1];
+      if (aksi && !aksi.querySelector('.ext-action-menu')) {
+        const col = aksi.innerHTML;
+        aksi.innerHTML = makeDropdown();
+        aksi.querySelector('.ext-action-dropdown').setAttribute('data-original', btoa(col));
       }
-      let s = o[6];
-      if (s) {
-        let c = s.textContent.trim();
-        c && !s.querySelector('.ext-badge') && (s.innerHTML = E(c));
+      const st = tds[6];
+      if (st) {
+        const t = st.textContent.trim();
+        if (t && !st.querySelector('.ext-badge')) st.innerHTML = badge(t);
       }
-      (r.classList.add('ext-row-clickable'), r.setAttribute('tabindex', '0'));
+      tr.classList.add('ext-row-clickable');
+      tr.setAttribute('tabindex', '0');
     });
-    let i = t.querySelectorAll('thead th').length,
-      l = [
-        { targets: 0, width: '40px', orderable: !1, className: 'dt-center' },
-        { targets: 1, width: '100px', orderable: !1, searchable: !1 },
-        { targets: 2, width: '90px' },
-        { targets: 4, width: '160px' },
-        { targets: 5, width: '120px' },
-        { targets: 6, width: '80px' },
-        { targets: 10, width: '180px' },
-      ];
-    for (let r of [3, 7, 8, 9, 11, 12, 13, 14])
-      r < i && l.push({ targets: r, visible: !1, searchable: !1 });
-    ((u = n(t).DataTable({
-      destroy: !0,
+    const numCols = table.querySelectorAll('thead th').length;
+    const colDefs = [
+      { targets: 0, width: '40px', orderable: false, className: 'dt-center' },
+      { targets: 1, width: '100px', orderable: false, searchable: false },
+      { targets: 2, width: '90px' },
+      { targets: 4, width: '160px' },
+      { targets: 5, width: '120px' },
+      { targets: 6, width: '80px' },
+      { targets: 10, width: '180px' },
+    ];
+    for (const idx of [3, 7, 8, 9, 11, 12, 13, 14]) {
+      if (idx < numCols) colDefs.push({ targets: idx, visible: false, searchable: false });
+    }
+    dtInstance = $(table).DataTable({
+      destroy: true,
       pageLength: 25,
       lengthMenu: [
         [10, 25, 50, 100, -1],
@@ -245,61 +255,67 @@ var __morbis_feature = (() => {
         paginate: { first: 'Awal', last: 'Akhir', next: '\u2192', previous: '\u2190' },
         zeroRecords: 'Data tidak ditemukan',
       },
-      columnDefs: l,
+      columnDefs: colDefs,
       order: [],
-      scrollX: !0,
-      autoWidth: !1,
-      rowCallback: function (r) {
-        n(r)
+      scrollX: true,
+      autoWidth: false,
+      rowCallback: function (row) {
+        $(row)
           .off('click keyup')
-          .on('click keyup', function (o) {
-            let d = o;
-            if (o.type === 'click' || d.key === 'Enter' || d.key === ' ') {
-              if (o.target.closest('.ext-action-menu, a, button')) return;
-              (o.preventDefault(), S(L(t.querySelectorAll('thead th'), r.querySelectorAll('td'))));
+          .on('click keyup', function (e) {
+            const ke = e;
+            if (e.type === 'click' || ke.key === 'Enter' || ke.key === ' ') {
+              if (e.target.closest('.ext-action-menu, a, button')) return;
+              e.preventDefault();
+              showModal(rowToData(table.querySelectorAll('thead th'), row.querySelectorAll('td')));
             }
           });
       },
       initComplete: function () {
-        console.log(`[${f}] DataTable ready`);
+        console.log(`[${LOG}] DataTable ready`);
       },
-    })),
-      (t.dataset.extDt = '1'));
+    });
+    table.dataset.extDt = '1';
   }
-  function D() {
-    let n = window.contentloader;
-    typeof n == 'function' &&
-      (window.contentloader = function (e, t) {
-        (n.call(this, e, t),
-          setTimeout(() => {
-            let i = document.querySelector(t)?.querySelector('table');
-            (i && (i.dataset.extDt = ''), b());
-          }, 900));
-      });
+  function hookContentloader() {
+    const orig = window.contentloader;
+    if (typeof orig !== 'function') return;
+    window.contentloader = function (url, target) {
+      orig.call(this, url, target);
+      setTimeout(() => {
+        const el = document.querySelector(target);
+        const tbl = el?.querySelector('table');
+        if (tbl) tbl.dataset.extDt = '';
+        initDataTable();
+      }, 900);
+    };
   }
   (function () {
     if (!window.location.pathname.includes('laboratorium/input-hasil/view-lab')) return;
-    let n = 0;
-    (function e() {
-      if (document.documentElement.getAttribute('data-ext-lab-datatables') !== '1') {
-        if (n++ < 20) {
-          setTimeout(e, 300);
+    let polls = 0;
+    (function pollFlag() {
+      const flag = document.documentElement.getAttribute('data-ext-lab-datatables');
+      if (flag !== '1') {
+        if (polls++ < 20) {
+          setTimeout(pollFlag, 300);
           return;
         }
-        console.log(`[${f}] disabled`);
+        console.log(`[${LOG}] disabled`);
         return;
       }
-      (console.log(`[${f}] start`),
-        k(),
-        _(document),
-        D(),
-        g(f).then(() => {
-          let a = 0;
-          (function i() {
-            let l = document.getElementById('content')?.querySelector('table');
-            l && l.querySelectorAll('tr').length > 1 ? b() : a++ < 30 && setTimeout(i, 300);
-          })();
-        }));
+      console.log(`[${LOG}] start`);
+      injectCSS2();
+      setupDropdownListeners(document);
+      hookContentloader();
+      loadDataTablesDeps(LOG).then(() => {
+        let r = 0;
+        (function wait() {
+          const t = document.getElementById('content')?.querySelector('table');
+          if (t && t.querySelectorAll('tr').length > 1) initDataTable();
+          else if (r++ < 30) setTimeout(wait, 300);
+        })();
+      });
     })();
   })();
 })();
+//# sourceMappingURL=labDataTables.js.map

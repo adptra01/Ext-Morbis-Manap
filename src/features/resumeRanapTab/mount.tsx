@@ -218,6 +218,7 @@ function closeOverlay() {
 function mountReactApp(data: RanapFormData) {
   const container = document.createElement('div');
   container.id = 'ext-ri-container';
+  container.className = 'ri-modal';
   container.style.cssText =
     'position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center';
   document.body.appendChild(container);

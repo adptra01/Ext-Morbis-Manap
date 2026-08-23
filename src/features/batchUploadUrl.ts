@@ -59,6 +59,52 @@ function getTanggalMasukFromPage(): string {
   return getTodayFormatted();
 }
 
+/** Escape HTML entities to prevent XSS in innerHTML */
+function escHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/** Fetch with timeout (AbortController) — ponytail: 30s default, bump if large files */
+function fetchWithTimeout(
+  url: string,
+  init: RequestInit = {},
+  timeoutMs = 30000,
+): Promise<Response> {
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), timeoutMs);
+  return fetch(url, { ...init, signal: ac.signal }).finally(() => clearTimeout(timer));
+}
+
+/** Retry wrapper — ponytail: 2 retries with 1s/2s backoff for transient failures */
+async function fetchWithRetry(url: string, init: RequestInit = {}, retries = 2): Promise<Response> {
+  let lastErr: Error | null = null;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const resp = await fetchWithTimeout(url, init);
+      if (resp.ok) return resp;
+      // Don't retry client errors (4xx) except 429 (rate limit)
+      if (resp.status >= 400 && resp.status < 500 && resp.status !== 429) return resp;
+      lastErr = new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+    } catch (err) {
+      lastErr = err as Error;
+      // AbortError = timeout, always retry
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        lastErr = new Error('Request timeout');
+      }
+    }
+    if (attempt < retries) {
+      await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+      console.log(`[Batch Upload] Retry ${attempt + 1}/${retries} for ${url}`);
+    }
+  }
+  throw lastErr || new Error('Fetch failed after retries');
+}
+
 let batchQueue: BatchItem[] = [];
 let isProcessing = false;
 
@@ -117,6 +163,8 @@ function parseMetadataFromUrl(url: string): BatchItem {
       filename: 'error',
       norm: '',
       tanggal: getTanggalMasukFromPage(),
+      jenis_dokumen: 'Lain-lain',
+      keterangan: 'URL tidak valid',
       url,
       status: 'error',
       error: 'Invalid URL format',
@@ -297,17 +345,30 @@ function updatePreview(items: BatchItem[]): void {
     let modeText = '';
     if (item.tglFileTabel) {
       modeText = `<div style="font-size:11px;color:#4b5563;margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
-        <span>Dibuat: <strong style="color:#111827;">${item.tglFileTabel}</strong></span>
+        <span>Dibuat: <strong style="color:#111827;">${escHtml(item.tglFileTabel || '')}</strong></span>
         <span style="color:#d1d5db;">|</span>
-        <span>Diunggah: <strong style="color:#111827;">${item.tglUploadTabel}</strong></span>
+        <span>Diunggah: <strong style="color:#111827;">${escHtml(item.tglUploadTabel || '')}</strong></span>
       </div>`;
     } else {
       modeText = `<div style="font-size:11px;color:#4b5563;margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
-        <span>NORM: <strong style="color:#111827;">${item.norm || '-'}</strong></span>
+        <span>NORM: <strong style="color:#111827;">${escHtml(item.norm || '-')}</strong></span>
         <span style="color:#d1d5db;">|</span>
-        <span>Tgl Klaim: <strong style="color:#111827;">${item.tanggal}</strong></span>
+        <span>Tgl Klaim: <strong style="color:#111827;">${escHtml(item.tanggal)}</strong></span>
       </div>`;
     }
+
+    // Extension badge — ponytail: shows file type at a glance
+    const ext = (item.filename.split('.').pop() || '').toLowerCase();
+    const extColors: Record<string, string> = {
+      pdf: 'bg-red-100 text-red-700',
+      jpg: 'bg-blue-100 text-blue-700',
+      jpeg: 'bg-blue-100 text-blue-700',
+      png: 'bg-green-100 text-green-700',
+    };
+    const extClass = extColors[ext] || 'bg-gray-100 text-gray-700';
+    const extBadge = ext
+      ? `<span class="${extClass}" style="font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600;text-transform:uppercase;margin-left:6px;">${ext}</span>`
+      : '';
 
     const itemEl = document.createElement('div');
     itemEl.className = 'ext-delete-preview-item';
@@ -318,12 +379,12 @@ function updatePreview(items: BatchItem[]): void {
         <input type="checkbox" class="ext-checkbox" data-index="${i}" ${item.selected !== false ? 'checked' : ''} ${isProcessing ? 'disabled' : ''}>
         <div style="flex: 1; min-width: 0;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-            <strong style="font-size: 13px; color: #000000; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${i + 1}. ${item.filename}</strong>
+            <strong style="font-size: 13px; color: #000000; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${i + 1}. ${escHtml(item.filename)}${extBadge}</strong>
             ${item.status !== 'pending' ? `<span class="ext-status-badge" data-status="${item.status === 'success' ? 'success' : item.status === 'error' ? 'error' : 'deleting'}">${item.status === 'success' ? 'Sukses' : item.status === 'error' ? 'Gagal' : 'Memproses'}</span>` : ''}
           </div>
           ${modeText}
-          <input type="text" class="ext-keterangan-input" data-index="${i}" value="${item.keterangan || ''}" placeholder="Keterangan dokumen..." ${isProcessing ? 'disabled' : ''}>
-          ${item.error ? `<div style="font-size: 11px; color: #dc2626; margin-top: 4px;"><strong>Error:</strong> ${item.error}</div>` : ''}
+          <input type="text" class="ext-keterangan-input" data-index="${i}" value="${escHtml(item.keterangan || '')}" placeholder="Keterangan dokumen..." ${isProcessing ? 'disabled' : ''}>
+          ${item.error ? `<div style="font-size: 11px; color: #dc2626; margin-top: 4px;"><strong>Error:</strong> ${escHtml(item.error)}</div>` : ''}
         </div>
       </label>
       <button data-index="${i}" class="ext-delete-preview-btn" ${isProcessing ? 'disabled' : ''}>${Icons.eye} Preview</button>
@@ -513,7 +574,7 @@ async function crawlDokumenPasien(): Promise<void> {
     }> = [];
 
     for (let i = 1; i < rows.length; i++) {
-      const tr = rows[i];
+      const tr = rows[i] as HTMLTableRowElement;
       const linkEl = tr.querySelector('td:nth-child(2) a');
       if (!linkEl) continue;
 
@@ -561,21 +622,32 @@ async function crawlDokumenPasien(): Promise<void> {
 }
 
 async function fetchFileFromUrl(url: string, filename: string): Promise<File> {
-  updateStatus(`Mengunduh: ${filename}...`);
+  updateStatus(`Mengunduh: ${escHtml(filename)}...`);
   console.log('[Batch Upload] Fetching URL:', url);
 
-  const response = await fetch(url, {
-    method: 'GET',
-    mode: 'cors',
-    credentials: 'omit',
-  });
+  // Try same-origin first (credentials: same-origin), then fallback to CORS-less
+  let response: Response;
+  try {
+    response = await fetchWithRetry(url, { method: 'GET', credentials: 'same-origin' }, 2);
+  } catch {
+    // ponytail: CORS fallback — try without credentials (may fail on auth-gated URLs)
+    response = await fetchWithRetry(url, { method: 'GET', mode: 'cors', credentials: 'omit' }, 1);
+  }
 
   if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    const errText = await response.text().catch(() => '');
+    throw new Error(`HTTP ${response.status} — ${response.statusText || errText.slice(0, 120)}`);
   }
 
   const blob = await response.blob();
-  return new File([blob], filename, { type: blob.type });
+  if (blob.size === 0) throw new Error('File kosong (0 bytes) dari server');
+
+  // Preserve original extension from URL or filename
+  const ext = filename.includes('.') ? '.' + filename.split('.').pop() : '';
+  const safeName = filename.replace(/[<>:"/\\|?*]/g, '_'); // ponytail: sanitize filename
+  return new File([blob], safeName, {
+    type: blob.type || `application/${ext.slice(1) || 'octet-stream'}`,
+  });
 }
 
 async function processAndUploadSingleUrl(
@@ -583,6 +655,7 @@ async function processAndUploadSingleUrl(
   idVisitStr: string,
 ): Promise<{ success: boolean; result?: string; error?: string }> {
   try {
+    updateStatus(`Download: ${escHtml(metadata.filename)}...`);
     const file = await fetchFileFromUrl(metadata.url, metadata.filename);
 
     const formData = new FormData();
@@ -593,23 +666,50 @@ async function processAndUploadSingleUrl(
     formData.append('dok', file);
     formData.append('keterangan', metadata.keterangan || '');
 
-    updateStatus(`Mengupload: ${metadata.filename}...`);
+    updateStatus(`Upload: ${escHtml(metadata.filename)} (${(file.size / 1024).toFixed(0)} KB)...`);
 
-    const uploadResponse = await fetch(BATCH_UPLOAD_URL_CONFIG.uploadEndpoint, {
-      method: 'POST',
-      body: formData,
-      credentials: 'same-origin',
-    });
+    const uploadResponse = await fetchWithRetry(
+      BATCH_UPLOAD_URL_CONFIG.uploadEndpoint,
+      {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin',
+      },
+      2,
+    );
 
     if (!uploadResponse.ok) {
-      const errorText = await uploadResponse.text();
-      throw new Error(`Upload failed: ${uploadResponse.status} - ${errorText}`);
+      const errorText = await uploadResponse.text().catch(() => '');
+      // ponytail: extract meaningful error from server response
+      const snippet = errorText
+        .replace(/<[^>]+>/g, '')
+        .trim()
+        .slice(0, 200);
+      throw new Error(`Server ${uploadResponse.status}: ${snippet || uploadResponse.statusText}`);
     }
 
     const result = await uploadResponse.text();
+    // Check if server response indicates failure (MORBIS sometimes returns 200 with error)
+    if (result.includes('error') || result.includes('gagal')) {
+      const snippet = result
+        .replace(/<[^>]+>/g, '')
+        .trim()
+        .slice(0, 200);
+      return { success: false, error: `Server response: ${snippet}` };
+    }
     return { success: true, result };
   } catch (error) {
-    return { success: false, error: (error as Error).message };
+    const msg = (error as Error).message;
+    // ponytail: friendly error for common failure modes
+    let friendly = msg;
+    if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+      friendly = 'Network error — cek koneksi atau CORS';
+    } else if (msg.includes('timeout') || msg.includes('AbortError')) {
+      friendly = 'Timeout — server tidak merespon dalam 30 detik';
+    } else if (msg.includes('0 bytes')) {
+      friendly = 'File kosong dari server';
+    }
+    return { success: false, error: friendly };
   }
 }
 
@@ -662,6 +762,8 @@ async function runBatchQueue(): Promise<void> {
   for (let i = 0; i < total; i++) {
     const metadata = itemsToUpload[i];
 
+    updateStatus(`[${i + 1}/${total}] ${escHtml(metadata.filename)}...`);
+
     try {
       const result = await processAndUploadSingleUrl(metadata, idVisitStr);
       if (result.success) {
@@ -681,27 +783,47 @@ async function runBatchQueue(): Promise<void> {
     const progress = ((i + 1) / total) * 100;
     updateProgress(progress);
     updatePreview(batchQueue);
-    updateStatus(`Diproses: ${i + 1}/${total} - Sukses: ${successCount}, Gagal: ${errorCount}`);
   }
 
-  updateStatus(`Selesai! Sukses: ${successCount}, Gagal: ${errorCount}`);
+  // Final status with summary
+  const summaryParts = [`Selesai ${total} dokumen:`, `${successCount} sukses`];
+  if (errorCount > 0) summaryParts.push(`${errorCount} gagal`);
+  updateStatus(summaryParts.join(' '));
 
   if (errorCount > 0) {
-    console.log(
-      'Failed uploads:',
-      batchQueue.filter((item) => item.status === 'error'),
+    console.warn(
+      '[Batch Upload] Failed:',
+      batchQueue
+        .filter((item) => item.status === 'error')
+        .map((item) => `${item.filename}: ${item.error}`),
     );
   }
 
+  // Replace buttons: Reload + Retry Failed (if any)
   const buttonsContainer = document.querySelector('.ext-modal-buttons');
   if (buttonsContainer) {
-    buttonsContainer.innerHTML =
-      '<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">' +
-      Icons.refresh +
-      ' Reload Halaman</span></button>';
+    const reloadBtn = `<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">${Icons.refresh} Reload Halaman</span></button>`;
+    const retryBtn =
+      errorCount > 0
+        ? `<button class="ext-btn ext-btn-secondary" id="ext-retry-failed-btn" style="border-color:#fbbf24;color:#92400e;">Ulangi yang Gagal</button>`
+        : '';
+    buttonsContainer.innerHTML = `<div style="display:flex;gap:8px;justify-content:flex-end;">${retryBtn}${reloadBtn}</div>`;
     document
       .getElementById('ext-reload-btn')
       ?.addEventListener('click', () => window.location.reload());
+    if (errorCount > 0) {
+      document.getElementById('ext-retry-failed-btn')?.addEventListener('click', () => {
+        // Reset failed items to pending, re-run
+        batchQueue.forEach((item) => {
+          if (item.status === 'error') {
+            item.status = 'pending';
+            item.error = undefined;
+          }
+        });
+        updatePreview(batchQueue);
+        void runBatchQueue();
+      });
+    }
   }
 
   isProcessing = false;
@@ -760,9 +882,20 @@ function startBatchUpload(): void {
     });
     return;
   }
+  const selectedCount = batchQueue.filter((i) => i.selected !== false).length;
+  if (selectedCount === 0) {
+    void confirmLegacy({
+      title: 'Tidak ada dokumen dipilih',
+      message: 'Centang dokumen yang ingin diupload.',
+      variant: 'warning',
+      okLabel: 'OK',
+      hideCancel: true,
+    });
+    return;
+  }
   void (async () => {
     const yes = await confirmLegacy({
-      title: `Upload ${batchQueue.length} dokumen?`,
+      title: `Upload ${selectedCount} dokumen?`,
       message: 'Proses ini tidak dapat dibatalkan.',
       variant: 'warning',
       okLabel: 'Ya, Upload',
@@ -809,7 +942,7 @@ async function crawlDokumenPasienToSidepanel(): Promise<void> {
     }> = [];
 
     for (let i = 1; i < rows.length; i++) {
-      const tr = rows[i];
+      const tr = rows[i] as HTMLTableRowElement;
       const linkEl = tr.querySelector('td:nth-child(2) a');
       if (!linkEl) continue;
 
@@ -1107,8 +1240,8 @@ function initBatchUploadUrlFeature(): void {
 
 (window as any).batchUploadShowModal = showBatchUploadModal;
 
-if (typeof g.featureModules !== 'undefined') {
-  g.featureModules.batchUpload = {
+if (typeof g.featureModules !== 'undefined' && g.featureModules !== null) {
+  (g.featureModules as Record<string, unknown>).batchUpload = {
     id: 'batchUpload',
     name: 'Upload Dokumen Ulang',
     description: 'Upload Dokumen Ulang via paste URL dengan metadata extraction otomatis',

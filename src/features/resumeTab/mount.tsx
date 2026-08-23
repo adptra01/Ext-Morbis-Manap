@@ -1066,6 +1066,7 @@ function setupFloatingButton() {
 
   const container = document.createElement('div');
   container.id = 'ext-resume-container';
+  container.className = 'resume-modal';
   container.style.cssText =
     'position: fixed; inset: 0; z-index: 1000; display: none; background: rgba(0,0,0,.4); align-items: center; justify-content: center;';
   document.body.appendChild(container);
