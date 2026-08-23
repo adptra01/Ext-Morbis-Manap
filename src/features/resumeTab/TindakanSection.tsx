@@ -121,17 +121,11 @@ export function TindakanSection({ rows, onChange }: Props) {
   };
 
   return (
-    <div className="px-5 py-4 border-b border-border bg-muted/30">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-[18px] font-bold text-foreground font-['Lexend',system-ui,sans-serif]">
-          Tindakan (ICD-9){' '}
-          {rows.length > 0 && (
-            <span className="font-normal text-muted-foreground">({rows.length})</span>
-          )}
-        </h3>
+    <div>
+      <div className="flex justify-end mb-3">
         <Button
           variant="default"
-          size="lg"
+          size="sm"
           onClick={() =>
             onChange([
               ...rows,
@@ -146,7 +140,6 @@ export function TindakanSection({ rows, onChange }: Props) {
               },
             ])
           }
-          className="px-5 py-2.5 text-sm font-semibold"
         >
           <Plus className="size-4" /> Tambah Tindakan
         </Button>

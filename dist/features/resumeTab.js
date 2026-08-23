@@ -31964,285 +31964,10 @@ var __morbis_feature = (() => {
   );
   Textarea.displayName = 'Textarea';
 
-  // src/ui/components/button.tsx
-  var import_react2 = __toESM(require_react(), 1);
-
-  // node_modules/class-variance-authority/dist/index.mjs
-  var falsyToString = (value) =>
-    typeof value === 'boolean' ? `${value}` : value === 0 ? '0' : value;
-  var cx = clsx;
-  var cva = (base, config) => (props) => {
-    var _config_compoundVariants;
-    if ((config === null || config === void 0 ? void 0 : config.variants) == null)
-      return cx(
-        base,
-        props === null || props === void 0 ? void 0 : props.class,
-        props === null || props === void 0 ? void 0 : props.className,
-      );
-    const { variants: variants2, defaultVariants } = config;
-    const getVariantClassNames = Object.keys(variants2).map((variant) => {
-      const variantProp = props === null || props === void 0 ? void 0 : props[variant];
-      const defaultVariantProp =
-        defaultVariants === null || defaultVariants === void 0 ? void 0 : defaultVariants[variant];
-      if (variantProp === null) return null;
-      const variantKey = falsyToString(variantProp) || falsyToString(defaultVariantProp);
-      return variants2[variant][variantKey];
-    });
-    const propsWithoutUndefined =
-      props &&
-      Object.entries(props).reduce((acc, param) => {
-        let [key, value] = param;
-        if (value === void 0) {
-          return acc;
-        }
-        acc[key] = value;
-        return acc;
-      }, {});
-    const getCompoundVariantClassNames =
-      config === null || config === void 0
-        ? void 0
-        : (_config_compoundVariants = config.compoundVariants) === null ||
-            _config_compoundVariants === void 0
-          ? void 0
-          : _config_compoundVariants.reduce((acc, param) => {
-              let { class: cvClass, className: cvClassName, ...compoundVariantOptions } = param;
-              return Object.entries(compoundVariantOptions).every((param2) => {
-                let [key, value] = param2;
-                return Array.isArray(value)
-                  ? value.includes(
-                      {
-                        ...defaultVariants,
-                        ...propsWithoutUndefined,
-                      }[key],
-                    )
-                  : {
-                      ...defaultVariants,
-                      ...propsWithoutUndefined,
-                    }[key] === value;
-              })
-                ? [...acc, cvClass, cvClassName]
-                : acc;
-            }, []);
-    return cx(
-      base,
-      getVariantClassNames,
-      getCompoundVariantClassNames,
-      props === null || props === void 0 ? void 0 : props.class,
-      props === null || props === void 0 ? void 0 : props.className,
-    );
-  };
-
-  // src/ui/components/button.tsx
-  var import_jsx_runtime2 = __toESM(require_jsx_runtime(), 1);
-  var buttonVariants = cva(
-    'inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md text-md-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
-    {
-      variants: {
-        variant: {
-          default: 'bg-primary text-primary-foreground shadow hover:bg-primary/90',
-          destructive:
-            'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
-          outline:
-            'border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground',
-          secondary: 'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80',
-          ghost: 'hover:bg-accent hover:text-accent-foreground',
-          link: 'text-primary underline-offset-4 hover:underline',
-        },
-        size: {
-          default: 'h-8 px-3.5',
-          sm: 'h-7 px-2.5',
-          lg: 'h-9 px-4',
-          xl: 'h-11 px-6 text-base',
-          icon: 'h-8 w-8',
-        },
-      },
-      defaultVariants: {
-        variant: 'default',
-        size: 'default',
-      },
-    },
-  );
-  var Button = (0, import_react2.forwardRef)(
-    ({ className, variant, size: size4, ...props }, ref) => {
-      return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)('button', {
-        className: cn(buttonVariants({ variant, size: size4, className })),
-        ref,
-        ...props,
-      });
-    },
-  );
-  Button.displayName = 'Button';
-
-  // src/features/resumeTab/Header.tsx
-  var import_jsx_runtime3 = __toESM(require_jsx_runtime(), 1);
-  function Header({ title, onClose }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)('div', {
-      className:
-        'flex items-center justify-between px-6 py-4 shrink-0 bg-gradient-to-br from-primary to-primary/80',
-      children: [
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)('div', {
-          className: 'flex items-center gap-3',
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('div', {
-              className: 'flex items-center justify-center w-10 h-10 rounded-xl bg-white/15',
-              children: /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)('svg', {
-                width: '20',
-                height: '20',
-                viewBox: '0 0 24 24',
-                fill: 'none',
-                stroke: 'white',
-                strokeWidth: '2',
-                strokeLinecap: 'round',
-                strokeLinejoin: 'round',
-                children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('path', {
-                    d: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z',
-                  }),
-                  /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('polyline', {
-                    points: '14 2 14 8 20 8',
-                  }),
-                  /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('line', {
-                    x1: '16',
-                    y1: '13',
-                    x2: '8',
-                    y2: '13',
-                  }),
-                  /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('line', {
-                    x1: '16',
-                    y1: '17',
-                    x2: '8',
-                    y2: '17',
-                  }),
-                  /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('polyline', {
-                    points: '10 9 9 9 8 9',
-                  }),
-                ],
-              }),
-            }),
-            /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('h2', {
-              className: 'text-[20px] font-bold text-white tracking-tight',
-              children: title,
-            }),
-          ],
-        }),
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(Button, {
-          type: 'button',
-          variant: 'ghost',
-          size: 'sm',
-          onClick: onClose,
-          className: 'text-white/70 hover:text-white hover:bg-white/15',
-          'aria-label': 'Tutup',
-          children: /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)('svg', {
-            width: '24',
-            height: '24',
-            viewBox: '0 0 24 24',
-            fill: 'none',
-            stroke: 'currentColor',
-            strokeWidth: '2',
-            strokeLinecap: 'round',
-            strokeLinejoin: 'round',
-            children: [
-              /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('line', {
-                x1: '18',
-                y1: '6',
-                x2: '6',
-                y2: '18',
-              }),
-              /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('line', {
-                x1: '6',
-                y1: '6',
-                x2: '18',
-                y2: '18',
-              }),
-            ],
-          }),
-        }),
-      ],
-    });
-  }
-
-  // src/features/resumeTab/InfoBanner.tsx
-  var import_jsx_runtime4 = __toESM(require_jsx_runtime(), 1);
-  function InfoBanner({ data }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
-      className:
-        'rounded-xl p-5 flex flex-wrap items-center gap-x-8 gap-y-3 bg-gradient-to-br from-muted to-muted/50 border border-border',
-      children: [
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
-          className: 'flex items-center gap-3',
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('div', {
-              className: 'flex items-center justify-center w-10 h-10 rounded-full bg-primary/10',
-              children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('svg', {
-                width: '18',
-                height: '18',
-                viewBox: '0 0 24 24',
-                fill: 'none',
-                stroke: 'currentColor',
-                className: 'text-primary',
-                strokeWidth: '2',
-                strokeLinecap: 'round',
-                strokeLinejoin: 'round',
-                children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('path', {
-                    d: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2',
-                  }),
-                  /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('circle', {
-                    cx: '12',
-                    cy: '7',
-                    r: '4',
-                  }),
-                ],
-              }),
-            }),
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
-              children: [
-                /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('div', {
-                  className: 'text-[11px] font-bold text-muted-foreground uppercase tracking-wider',
-                  children: 'RM',
-                }),
-                /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('div', {
-                  className: 'text-[18px] font-bold text-foreground font-mono',
-                  children: data.norm || '\u2014',
-                }),
-              ],
-            }),
-          ],
-        }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('div', { className: 'w-px h-10 bg-border' }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('div', {
-              className: 'text-[11px] font-bold text-muted-foreground uppercase tracking-wider',
-              children: 'Pasien',
-            }),
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('div', {
-              className: 'text-[18px] font-bold text-foreground',
-              children: data.pasien || '\u2014',
-            }),
-          ],
-        }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('div', { className: 'w-px h-10 bg-border' }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('div', {
-              className: 'text-[11px] font-bold text-muted-foreground uppercase tracking-wider',
-              children: 'Dokter',
-            }),
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('div', {
-              className: 'text-[18px] font-bold text-foreground',
-              children: data.nama_dokter || '\u2014',
-            }),
-          ],
-        }),
-      ],
-    });
-  }
-
   // src/ui/components/Label.tsx
-  var import_jsx_runtime5 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime2 = __toESM(require_jsx_runtime(), 1);
   function Label({ className, required, children, ...props }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)('label', {
+    return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)('label', {
       className: cn(
         'block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1',
         className,
@@ -32251,7 +31976,7 @@ var __morbis_feature = (() => {
       children: [
         children,
         required &&
-          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('span', {
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)('span', {
             className: 'text-destructive ml-0.5',
             children: '*',
           }),
@@ -32259,43 +31984,134 @@ var __morbis_feature = (() => {
     });
   }
 
-  // src/features/resumeTab/ClinicalNotesSection.tsx
-  var import_jsx_runtime6 = __toESM(require_jsx_runtime(), 1);
-  function ClinicalNotesSection({ anamnesa, pemeriksaan, onChange }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)('div', {
-      className: 'py-5',
+  // src/ui/components/Card.tsx
+  var import_jsx_runtime3 = __toESM(require_jsx_runtime(), 1);
+  function Card({ title, children, className }) {
+    return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)('div', {
+      className: cn('bg-card border border-border rounded-lg mb-3 overflow-hidden', className),
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('h3', {
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)('div', {
           className:
-            "text-[18px] font-bold text-foreground mb-4 font-['Lexend',system-ui,sans-serif]",
-          children: 'Data Klinis',
-        }),
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)('div', {
-          className: 'space-y-5',
+            'px-3.5 py-2 bg-primary/5 border-b border-primary/15 text-[13px] font-bold text-primary flex items-center gap-1.5',
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)('div', {
+            /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('span', {
+              className: 'text-sm',
+              children: '\u25CF',
+            }),
+            title,
+          ],
+        }),
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('div', { className: 'p-3.5', children }),
+      ],
+    });
+  }
+
+  // src/features/resumeTab/Header.tsx
+  var import_jsx_runtime4 = __toESM(require_jsx_runtime(), 1);
+  function Header({ title, onClose, patientInfo }) {
+    return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
+      className:
+        'flex items-center justify-between px-5 py-3 bg-gradient-to-br from-primary to-primary/80 text-white shrink-0',
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
+          className: 'flex items-center gap-3',
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('div', {
+              className: 'flex items-center justify-center w-9 h-9 rounded-lg bg-white/15',
+              children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('svg', {
+                width: '18',
+                height: '18',
+                viewBox: '0 0 24 24',
+                fill: 'none',
+                stroke: 'white',
+                strokeWidth: '2',
+                strokeLinecap: 'round',
+                strokeLinejoin: 'round',
+                children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('path', {
+                    d: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z',
+                  }),
+                  /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('polyline', {
+                    points: '14 2 14 8 20 8',
+                  }),
+                  /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('line', {
+                    x1: '16',
+                    y1: '13',
+                    x2: '8',
+                    y2: '13',
+                  }),
+                  /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('line', {
+                    x1: '16',
+                    y1: '17',
+                    x2: '8',
+                    y2: '17',
+                  }),
+                  /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('polyline', {
+                    points: '10 9 9 9 8 9',
+                  }),
+                ],
+              }),
+            }),
+            /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(Label, { children: 'Anamnesa' }),
-                /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(Textarea, {
-                  value: anamnesa,
-                  onChange: (e) => onChange('anamnesa', e.target.value),
-                  placeholder: 'Keluhan pasien...',
-                  rows: 4,
+                /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('h2', {
+                  className: 'text-[15px] font-bold tracking-tight',
+                  children: title,
                 }),
+                patientInfo &&
+                  /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
+                    className: 'text-[11px] text-white/70 mt-0.5',
+                    children: [
+                      'RM ',
+                      patientInfo.norm || '\u2014',
+                      ' \xB7 ',
+                      patientInfo.pasien || '\u2014',
+                      ' \xB7',
+                      ' ',
+                      patientInfo.nama_dokter || '\u2014',
+                    ],
+                  }),
               ],
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)('div', {
-              children: [
-                /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(Label, {
-                  children: 'Pemeriksaan Fisik',
-                }),
-                /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(Textarea, {
-                  value: pemeriksaan,
-                  onChange: (e) => onChange('pemeriksaan', e.target.value),
-                  placeholder: 'Hasil pemeriksaan...',
-                  rows: 4,
-                }),
-              ],
+          ],
+        }),
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('button', {
+          type: 'button',
+          onClick: onClose,
+          className:
+            'bg-white/15 hover:bg-white/25 border-none text-white w-[28px] h-[28px] rounded-md text-sm flex items-center justify-center cursor-pointer transition-colors',
+          'aria-label': 'Tutup',
+          children: '\u2715',
+        }),
+      ],
+    });
+  }
+
+  // src/features/resumeTab/ClinicalNotesSection.tsx
+  var import_jsx_runtime5 = __toESM(require_jsx_runtime(), 1);
+  function ClinicalNotesSection({ anamnesa, pemeriksaan, onChange }) {
+    return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)('div', {
+      className: 'space-y-3',
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)('div', {
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Label, { children: 'Anamnesa' }),
+            /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Textarea, {
+              value: anamnesa,
+              onChange: (e) => onChange('anamnesa', e.target.value),
+              placeholder: 'Keluhan pasien...',
+              rows: 4,
+            }),
+          ],
+        }),
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)('div', {
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Label, { children: 'Pemeriksaan Fisik' }),
+            /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Textarea, {
+              value: pemeriksaan,
+              onChange: (e) => onChange('pemeriksaan', e.target.value),
+              placeholder: 'Hasil pemeriksaan...',
+              rows: 4,
             }),
           ],
         }),
@@ -32304,10 +32120,10 @@ var __morbis_feature = (() => {
   }
 
   // src/ui/components/input.tsx
-  var import_react3 = __toESM(require_react(), 1);
-  var import_jsx_runtime7 = __toESM(require_jsx_runtime(), 1);
-  var Input = (0, import_react3.forwardRef)(({ className, type, ...props }, ref) => {
-    return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)('input', {
+  var import_react2 = __toESM(require_react(), 1);
+  var import_jsx_runtime6 = __toESM(require_jsx_runtime(), 1);
+  var Input = (0, import_react2.forwardRef)(({ className, type, ...props }, ref) => {
+    return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('input', {
       type,
       className: cn(
         'flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-md-sm text-foreground',
@@ -32323,7 +32139,7 @@ var __morbis_feature = (() => {
   Input.displayName = 'Input';
 
   // src/features/resumeTab/VitalSignsSection.tsx
-  var import_jsx_runtime8 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime7 = __toESM(require_jsx_runtime(), 1);
   function VitalSignsSection({ vitals, onChange }) {
     const fields = [
       { key: 'tensi', label: 'Tensi', unit: 'mmHg', placeholder: '120/80' },
@@ -32333,44 +32149,35 @@ var __morbis_feature = (() => {
       { key: 'berat', label: 'Berat', unit: 'kg', placeholder: '60' },
       { key: 'tinggi', label: 'Tinggi', unit: 'cm', placeholder: '165' },
     ];
-    return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)('div', {
-      children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)('h3', {
-          className:
-            "text-[18px] font-bold text-foreground mb-4 font-['Lexend',system-ui,sans-serif]",
-          children: 'Tanda Vital',
-        }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)('div', {
-          className: 'grid grid-cols-2 sm:grid-cols-3 gap-4',
-          children: fields.map((f) =>
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
-              'div',
-              {
+    return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)('div', {
+      className: 'grid grid-cols-2 sm:grid-cols-3 gap-3',
+      children: fields.map((f) =>
+        /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(
+          'div',
+          {
+            children: [
+              /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Label, { children: f.label }),
+              /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)('div', {
+                className: 'relative',
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Label, { children: f.label }),
-                  /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)('div', {
-                    className: 'relative',
-                    children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Input, {
-                        value: vitals[f.key],
-                        onChange: (e) => onChange(f.key, e.target.value),
-                        placeholder: f.placeholder,
-                        className: 'pr-14',
-                      }),
-                      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)('span', {
-                        className:
-                          'absolute right-3 top-1/2 -translate-y-1/2 text-[13px] font-semibold text-muted-foreground pointer-events-none',
-                        children: f.unit,
-                      }),
-                    ],
+                  /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Input, {
+                    value: vitals[f.key],
+                    onChange: (e) => onChange(f.key, e.target.value),
+                    placeholder: f.placeholder,
+                    className: 'pr-14',
+                  }),
+                  /* @__PURE__ */ (0, import_jsx_runtime7.jsx)('span', {
+                    className:
+                      'absolute right-3 top-1/2 -translate-y-1/2 text-[13px] font-semibold text-muted-foreground pointer-events-none',
+                    children: f.unit,
                   }),
                 ],
-              },
-              f.key,
-            ),
-          ),
-        }),
-      ],
+              }),
+            ],
+          },
+          f.key,
+        ),
+      ),
     });
   }
 
@@ -32378,7 +32185,7 @@ var __morbis_feature = (() => {
   var import_react10 = __toESM(require_react(), 1);
 
   // node_modules/lucide-react/dist/esm/createLucideIcon.mjs
-  var import_react6 = __toESM(require_react(), 1);
+  var import_react5 = __toESM(require_react(), 1);
 
   // node_modules/lucide-react/dist/esm/shared/src/utils/mergeClasses.mjs
   var mergeClasses = (...classes) =>
@@ -32405,7 +32212,7 @@ var __morbis_feature = (() => {
   };
 
   // node_modules/lucide-react/dist/esm/Icon.mjs
-  var import_react5 = __toESM(require_react(), 1);
+  var import_react4 = __toESM(require_react(), 1);
 
   // node_modules/lucide-react/dist/esm/defaultAttributes.mjs
   var defaultAttributes = {
@@ -32431,12 +32238,12 @@ var __morbis_feature = (() => {
   };
 
   // node_modules/lucide-react/dist/esm/context.mjs
-  var import_react4 = __toESM(require_react(), 1);
-  var LucideContext = (0, import_react4.createContext)({});
-  var useLucideContext = () => (0, import_react4.useContext)(LucideContext);
+  var import_react3 = __toESM(require_react(), 1);
+  var LucideContext = (0, import_react3.createContext)({});
+  var useLucideContext = () => (0, import_react3.useContext)(LucideContext);
 
   // node_modules/lucide-react/dist/esm/Icon.mjs
-  var Icon = (0, import_react5.forwardRef)(
+  var Icon = (0, import_react4.forwardRef)(
     (
       {
         color,
@@ -32461,7 +32268,7 @@ var __morbis_feature = (() => {
         (absoluteStrokeWidth ?? contextAbsoluteStrokeWidth)
           ? (Number(strokeWidth ?? contextStrokeWidth) * 24) / Number(size4 ?? contextSize)
           : (strokeWidth ?? contextStrokeWidth);
-      return (0, import_react5.createElement)(
+      return (0, import_react4.createElement)(
         'svg',
         {
           ref,
@@ -32475,7 +32282,7 @@ var __morbis_feature = (() => {
           ...rest,
         },
         [
-          ...iconNode.map(([tag, attrs]) => (0, import_react5.createElement)(tag, attrs)),
+          ...iconNode.map(([tag, attrs]) => (0, import_react4.createElement)(tag, attrs)),
           ...(Array.isArray(children) ? children : [children]),
         ],
       );
@@ -32484,8 +32291,8 @@ var __morbis_feature = (() => {
 
   // node_modules/lucide-react/dist/esm/createLucideIcon.mjs
   var createLucideIcon = (iconName, iconNode) => {
-    const Component2 = (0, import_react6.forwardRef)(({ className, ...props }, ref) =>
-      (0, import_react6.createElement)(Icon, {
+    const Component2 = (0, import_react5.forwardRef)(({ className, ...props }, ref) =>
+      (0, import_react5.createElement)(Icon, {
         ref,
         iconNode,
         className: mergeClasses(
@@ -32553,6 +32360,115 @@ var __morbis_feature = (() => {
     ['path', { d: 'm6 6 12 12', key: 'd8bk6v' }],
   ];
   var X = createLucideIcon('x', __iconNode7);
+
+  // src/ui/components/button.tsx
+  var import_react6 = __toESM(require_react(), 1);
+
+  // node_modules/class-variance-authority/dist/index.mjs
+  var falsyToString = (value) =>
+    typeof value === 'boolean' ? `${value}` : value === 0 ? '0' : value;
+  var cx = clsx;
+  var cva = (base, config) => (props) => {
+    var _config_compoundVariants;
+    if ((config === null || config === void 0 ? void 0 : config.variants) == null)
+      return cx(
+        base,
+        props === null || props === void 0 ? void 0 : props.class,
+        props === null || props === void 0 ? void 0 : props.className,
+      );
+    const { variants: variants2, defaultVariants } = config;
+    const getVariantClassNames = Object.keys(variants2).map((variant) => {
+      const variantProp = props === null || props === void 0 ? void 0 : props[variant];
+      const defaultVariantProp =
+        defaultVariants === null || defaultVariants === void 0 ? void 0 : defaultVariants[variant];
+      if (variantProp === null) return null;
+      const variantKey = falsyToString(variantProp) || falsyToString(defaultVariantProp);
+      return variants2[variant][variantKey];
+    });
+    const propsWithoutUndefined =
+      props &&
+      Object.entries(props).reduce((acc, param) => {
+        let [key, value] = param;
+        if (value === void 0) {
+          return acc;
+        }
+        acc[key] = value;
+        return acc;
+      }, {});
+    const getCompoundVariantClassNames =
+      config === null || config === void 0
+        ? void 0
+        : (_config_compoundVariants = config.compoundVariants) === null ||
+            _config_compoundVariants === void 0
+          ? void 0
+          : _config_compoundVariants.reduce((acc, param) => {
+              let { class: cvClass, className: cvClassName, ...compoundVariantOptions } = param;
+              return Object.entries(compoundVariantOptions).every((param2) => {
+                let [key, value] = param2;
+                return Array.isArray(value)
+                  ? value.includes(
+                      {
+                        ...defaultVariants,
+                        ...propsWithoutUndefined,
+                      }[key],
+                    )
+                  : {
+                      ...defaultVariants,
+                      ...propsWithoutUndefined,
+                    }[key] === value;
+              })
+                ? [...acc, cvClass, cvClassName]
+                : acc;
+            }, []);
+    return cx(
+      base,
+      getVariantClassNames,
+      getCompoundVariantClassNames,
+      props === null || props === void 0 ? void 0 : props.class,
+      props === null || props === void 0 ? void 0 : props.className,
+    );
+  };
+
+  // src/ui/components/button.tsx
+  var import_jsx_runtime8 = __toESM(require_jsx_runtime(), 1);
+  var buttonVariants = cva(
+    'inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md text-md-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+    {
+      variants: {
+        variant: {
+          default: 'bg-primary text-primary-foreground shadow hover:bg-primary/90',
+          destructive:
+            'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
+          outline:
+            'border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground',
+          secondary: 'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80',
+          ghost: 'hover:bg-accent hover:text-accent-foreground',
+          link: 'text-primary underline-offset-4 hover:underline',
+        },
+        size: {
+          default: 'h-8 px-3.5',
+          sm: 'h-7 px-2.5',
+          lg: 'h-9 px-4',
+          xl: 'h-11 px-6 text-base',
+          icon: 'h-8 w-8',
+        },
+      },
+      defaultVariants: {
+        variant: 'default',
+        size: 'default',
+      },
+    },
+  );
+  var Button = (0, import_react6.forwardRef)(
+    ({ className, variant, size: size4, ...props }, ref) => {
+      return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)('button', {
+        className: cn(buttonVariants({ variant, size: size4, className })),
+        ref,
+        ...props,
+      });
+    },
+  );
+  Button.displayName = 'Button';
 
   // src/ui/components/select.tsx
   var import_react9 = __toESM(require_react(), 1);
@@ -38710,39 +38626,22 @@ var __morbis_feature = (() => {
       updateRow(i, { kode10: e.target.value });
     };
     return /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
-      className: 'px-5 py-4 border-b border-border bg-muted/30',
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
-          className: 'flex items-center justify-between mb-4',
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('h3', {
-              className:
-                "text-[18px] font-bold text-foreground font-['Lexend',system-ui,sans-serif]",
-              children: [
-                'Diagnosa (ICD-10)',
-                ' ',
-                rows.length > 0 &&
-                  /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('span', {
-                    className: 'font-normal text-muted-foreground',
-                    children: ['(', rows.length, ')'],
-                  }),
-              ],
-            }),
-            /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(Button, {
-              variant: 'default',
-              size: 'lg',
-              onClick: () =>
-                onChange([
-                  ...rows,
-                  { idicd: '', kode10: '', namaDiagnosa: '', kasus: '', komplikasi: '' },
-                ]),
-              className: 'px-5 py-2.5 text-sm font-semibold',
-              children: [
-                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Plus, { className: 'size-4' }),
-                ' Tambah Diagnosa',
-              ],
-            }),
-          ],
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('div', {
+          className: 'flex justify-end mb-3',
+          children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(Button, {
+            variant: 'default',
+            size: 'sm',
+            onClick: () =>
+              onChange([
+                ...rows,
+                { idicd: '', kode10: '', namaDiagnosa: '', kasus: '', komplikasi: '' },
+              ]),
+            children: [
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Plus, { className: 'size-4' }),
+              ' Tambah Diagnosa',
+            ],
+          }),
         }),
         rows.length === 0
           ? /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
@@ -39032,47 +38931,30 @@ var __morbis_feature = (() => {
       updateRow(i, { kode9: e.target.value });
     };
     return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('div', {
-      className: 'px-5 py-4 border-b border-border bg-muted/30',
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('div', {
-          className: 'flex items-center justify-between mb-4',
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('h3', {
-              className:
-                "text-[18px] font-bold text-foreground font-['Lexend',system-ui,sans-serif]",
-              children: [
-                'Tindakan (ICD-9)',
-                ' ',
-                rows.length > 0 &&
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('span', {
-                    className: 'font-normal text-muted-foreground',
-                    children: ['(', rows.length, ')'],
-                  }),
-              ],
-            }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(Button, {
-              variant: 'default',
-              size: 'lg',
-              onClick: () =>
-                onChange([
-                  ...rows,
-                  {
-                    idicdTindakan: '',
-                    kode9: '',
-                    namaTindakan: '',
-                    komorbid: '',
-                    kategoriProsedur: '',
-                    snomedProsedur: '',
-                    codeProsedur: '',
-                  },
-                ]),
-              className: 'px-5 py-2.5 text-sm font-semibold',
-              children: [
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Plus, { className: 'size-4' }),
-                ' Tambah Tindakan',
-              ],
-            }),
-          ],
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('div', {
+          className: 'flex justify-end mb-3',
+          children: /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(Button, {
+            variant: 'default',
+            size: 'sm',
+            onClick: () =>
+              onChange([
+                ...rows,
+                {
+                  idicdTindakan: '',
+                  kode9: '',
+                  namaTindakan: '',
+                  komorbid: '',
+                  kategoriProsedur: '',
+                  snomedProsedur: '',
+                  codeProsedur: '',
+                },
+              ]),
+            children: [
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Plus, { className: 'size-4' }),
+              ' Tambah Tindakan',
+            ],
+          }),
         }),
         rows.length === 0
           ? /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('div', {
@@ -39388,7 +39270,7 @@ var __morbis_feature = (() => {
   function Footer({ onCancel, onSave, saving, hasErrors, lastSaved, onRefresh }) {
     return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)('div', {
       className:
-        'flex items-center justify-between px-6 py-4 border-t-2 border-border shrink-0 bg-muted/30',
+        'flex items-center justify-between px-5 py-3 border-t border-border shrink-0 bg-card',
       children: [
         /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)('div', {
           className: 'flex items-center gap-3',
@@ -39401,8 +39283,8 @@ var __morbis_feature = (() => {
               }),
             lastSaved &&
               /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)('span', {
-                className: 'text-muted-foreground text-sm',
-                children: ['Tersimpan pukul ', lastSaved],
+                className: 'text-muted-foreground text-xs',
+                children: ['Tersimpan ', lastSaved],
               }),
             saving &&
               /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Badge, {
@@ -39413,15 +39295,15 @@ var __morbis_feature = (() => {
           ],
         }),
         /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)('div', {
-          className: 'flex items-center gap-3',
+          className: 'flex items-center gap-2',
           children: [
             onRefresh &&
               /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Button, {
                 type: 'button',
-                variant: 'outline',
+                variant: 'ghost',
                 size: 'default',
                 onClick: onRefresh,
-                children: 'Segarkan',
+                children: 'Reset',
               }),
             /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Button, {
               type: 'button',
@@ -39472,6 +39354,12 @@ var __morbis_feature = (() => {
     });
     return errors;
   }
+  var TABS = [
+    { id: 'klinis', label: 'Data Klinis' },
+    { id: 'catatan', label: 'Catatan' },
+    { id: 'diagnosis', label: 'Diagnosis' },
+    { id: 'tindakan', label: 'Tindakan' },
+  ];
   function App({ data: initialData, onSave, onClose }) {
     const [data, setData] = (0, import_react12.useState)(initialData);
     const [saving, setSaving] = (0, import_react12.useState)(false);
@@ -39479,6 +39367,7 @@ var __morbis_feature = (() => {
     const [saveAttempted, setSaveAttempted] = (0, import_react12.useState)(false);
     const [warnings, setWarnings] = (0, import_react12.useState)([]);
     const [extraErrors, setExtraErrors] = (0, import_react12.useState)([]);
+    const [activeTab, setActiveTab] = (0, import_react12.useState)('klinis');
     const hadDiagnosaInitially = (0, import_react12.useRef)(
       data.diagnosa.some((d) => d.idicd?.trim()),
     );
@@ -39522,93 +39411,113 @@ var __morbis_feature = (() => {
         /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Header, {
           title: 'Resume Rawat Jalan',
           onClose,
+          patientInfo: data.patientInfo,
+        }),
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)('div', {
+          className: 'flex border-b border-border shrink-0 bg-card',
+          children: TABS.map((tab) =>
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+              'button',
+              {
+                type: 'button',
+                onClick: () => setActiveTab(tab.id),
+                className: `flex-1 px-3 py-2.5 text-[13px] font-medium transition-colors cursor-pointer border-b-2 ${activeTab === tab.id ? 'text-primary border-primary bg-primary/5' : 'text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/50'}`,
+                children: tab.label,
+              },
+              tab.id,
+            ),
+          ),
         }),
         /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)('div', {
-          className: 'flex-1 overflow-y-auto px-6 py-5 space-y-6',
+          className: 'flex-1 overflow-y-auto px-5 py-4',
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(InfoBanner, { data: data.patientInfo }),
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(ClinicalNotesSection, {
-              anamnesa: data.clinicalNotes.anamnesa,
-              pemeriksaan: data.clinicalNotes.pemeriksaan_fisik,
-              onChange: (field, value) =>
-                updateNotes(field === 'pemeriksaan' ? 'pemeriksaan_fisik' : field, value),
-            }),
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)('hr', {
-              className: 'border-t-2 border-border',
-            }),
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)('div', {
-              children: [
-                /* @__PURE__ */ (0, import_jsx_runtime27.jsx)('h3', {
-                  className:
-                    "text-[18px] font-bold text-foreground mb-4 font-['Lexend',system-ui,sans-serif]",
-                  children: 'Catatan Diagnosa',
+            activeTab === 'klinis' &&
+              /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)('div', {
+                className: 'space-y-3',
+                children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Card, {
+                    title: 'Data Klinis',
+                    children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(ClinicalNotesSection, {
+                      anamnesa: data.clinicalNotes.anamnesa,
+                      pemeriksaan: data.clinicalNotes.pemeriksaan_fisik,
+                      onChange: (field, value) =>
+                        updateNotes(field === 'pemeriksaan' ? 'pemeriksaan_fisik' : field, value),
+                    }),
+                  }),
+                  /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Card, {
+                    title: 'Tanda Vital',
+                    children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(VitalSignsSection, {
+                      vitals: data.vitalSigns,
+                      onChange: (key, value) =>
+                        setData({ ...data, vitalSigns: { ...data.vitalSigns, [key]: value } }),
+                    }),
+                  }),
+                ],
+              }),
+            activeTab === 'catatan' &&
+              /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Card, {
+                title: 'Catatan Medis',
+                children: /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)('div', {
+                  className: 'space-y-3',
+                  children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)('div', {
+                      children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Label, {
+                          children: 'Catatan Diagnosis',
+                        }),
+                        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Textarea, {
+                          value: data.clinicalNotes.catatan,
+                          onChange: (e) => updateNotes('catatan', e.target.value),
+                          placeholder: 'Catatan diagnosa...',
+                          rows: 3,
+                        }),
+                      ],
+                    }),
+                    /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)('div', {
+                      children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Label, {
+                          children: 'Tindakan',
+                        }),
+                        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Textarea, {
+                          value: data.clinicalNotes.tindakan,
+                          onChange: (e) => updateNotes('tindakan', e.target.value),
+                          placeholder: 'Tindakan...',
+                          rows: 3,
+                        }),
+                      ],
+                    }),
+                    /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)('div', {
+                      children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Label, {
+                          children: 'Terapi Pengobatan',
+                        }),
+                        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Textarea, {
+                          value: data.clinicalNotes.terapi_pengobatan,
+                          onChange: (e) => updateNotes('terapi_pengobatan', e.target.value),
+                          placeholder: 'Terapi pengobatan...',
+                          rows: 3,
+                        }),
+                      ],
+                    }),
+                  ],
                 }),
-                /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Textarea, {
-                  value: data.clinicalNotes.catatan,
-                  onChange: (e) => updateNotes('catatan', e.target.value),
-                  placeholder: 'Catatan diagnosa...',
-                  rows: 3,
+              }),
+            activeTab === 'diagnosis' &&
+              /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Card, {
+                title: `Diagnosis (ICD-10)${data.diagnosa.length > 0 ? ` (${data.diagnosa.length})` : ''}`,
+                children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(DiagnosaSection, {
+                  rows: data.diagnosa,
+                  onChange: (diagnosa) => setData({ ...data, diagnosa }),
                 }),
-              ],
-            }),
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)('hr', {
-              className: 'border-t-2 border-border',
-            }),
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)('div', {
-              children: [
-                /* @__PURE__ */ (0, import_jsx_runtime27.jsx)('h3', {
-                  className:
-                    "text-[18px] font-bold text-foreground mb-4 font-['Lexend',system-ui,sans-serif]",
-                  children: 'Tindakan',
+              }),
+            activeTab === 'tindakan' &&
+              /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Card, {
+                title: `Tindakan (ICD-9)${data.tindakan.length > 0 ? ` (${data.tindakan.length})` : ''}`,
+                children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(TindakanSection, {
+                  rows: data.tindakan,
+                  onChange: (tindakan) => setData({ ...data, tindakan }),
                 }),
-                /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Textarea, {
-                  value: data.clinicalNotes.tindakan,
-                  onChange: (e) => updateNotes('tindakan', e.target.value),
-                  placeholder: 'Tindakan...',
-                  rows: 3,
-                }),
-              ],
-            }),
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)('hr', {
-              className: 'border-t-2 border-border',
-            }),
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)('div', {
-              children: [
-                /* @__PURE__ */ (0, import_jsx_runtime27.jsx)('h3', {
-                  className:
-                    "text-[18px] font-bold text-foreground mb-4 font-['Lexend',system-ui,sans-serif]",
-                  children: 'Terapi Pengobatan',
-                }),
-                /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Textarea, {
-                  value: data.clinicalNotes.terapi_pengobatan,
-                  onChange: (e) => updateNotes('terapi_pengobatan', e.target.value),
-                  placeholder: 'Terapi pengobatan...',
-                  rows: 3,
-                }),
-              ],
-            }),
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)('hr', {
-              className: 'border-t-2 border-border',
-            }),
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(VitalSignsSection, {
-              vitals: data.vitalSigns,
-              onChange: (key, value) =>
-                setData({ ...data, vitalSigns: { ...data.vitalSigns, [key]: value } }),
-            }),
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)('hr', {
-              className: 'border-t-2 border-border',
-            }),
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(DiagnosaSection, {
-              rows: data.diagnosa,
-              onChange: (diagnosa) => setData({ ...data, diagnosa }),
-            }),
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)('hr', {
-              className: 'border-t-2 border-border',
-            }),
-            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(TindakanSection, {
-              rows: data.tindakan,
-              onChange: (tindakan) => setData({ ...data, tindakan }),
-            }),
+              }),
           ],
         }),
         /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(ValidationPanel, {
@@ -40229,2199 +40138,7 @@ var __morbis_feature = (() => {
       s.id = 'morbis-resume-css';
       s.textContent =
         (true
-          ? `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
-
-*, ::before, ::after{
-  --tw-border-spacing-x: 0;
-  --tw-border-spacing-y: 0;
-  --tw-translate-x: 0;
-  --tw-translate-y: 0;
-  --tw-rotate: 0;
-  --tw-skew-x: 0;
-  --tw-skew-y: 0;
-  --tw-scale-x: 1;
-  --tw-scale-y: 1;
-  --tw-pan-x:  ;
-  --tw-pan-y:  ;
-  --tw-pinch-zoom:  ;
-  --tw-scroll-snap-strictness: proximity;
-  --tw-gradient-from-position:  ;
-  --tw-gradient-via-position:  ;
-  --tw-gradient-to-position:  ;
-  --tw-ordinal:  ;
-  --tw-slashed-zero:  ;
-  --tw-numeric-figure:  ;
-  --tw-numeric-spacing:  ;
-  --tw-numeric-fraction:  ;
-  --tw-ring-inset:  ;
-  --tw-ring-offset-width: 0px;
-  --tw-ring-offset-color: #fff;
-  --tw-ring-color: rgb(59 130 246 / 0.5);
-  --tw-ring-offset-shadow: 0 0 #0000;
-  --tw-ring-shadow: 0 0 #0000;
-  --tw-shadow: 0 0 #0000;
-  --tw-shadow-colored: 0 0 #0000;
-  --tw-blur:  ;
-  --tw-brightness:  ;
-  --tw-contrast:  ;
-  --tw-grayscale:  ;
-  --tw-hue-rotate:  ;
-  --tw-invert:  ;
-  --tw-saturate:  ;
-  --tw-sepia:  ;
-  --tw-drop-shadow:  ;
-  --tw-backdrop-blur:  ;
-  --tw-backdrop-brightness:  ;
-  --tw-backdrop-contrast:  ;
-  --tw-backdrop-grayscale:  ;
-  --tw-backdrop-hue-rotate:  ;
-  --tw-backdrop-invert:  ;
-  --tw-backdrop-opacity:  ;
-  --tw-backdrop-saturate:  ;
-  --tw-backdrop-sepia:  ;
-  --tw-contain-size:  ;
-  --tw-contain-layout:  ;
-  --tw-contain-paint:  ;
-  --tw-contain-style:  ;
-}
-
-::backdrop{
-  --tw-border-spacing-x: 0;
-  --tw-border-spacing-y: 0;
-  --tw-translate-x: 0;
-  --tw-translate-y: 0;
-  --tw-rotate: 0;
-  --tw-skew-x: 0;
-  --tw-skew-y: 0;
-  --tw-scale-x: 1;
-  --tw-scale-y: 1;
-  --tw-pan-x:  ;
-  --tw-pan-y:  ;
-  --tw-pinch-zoom:  ;
-  --tw-scroll-snap-strictness: proximity;
-  --tw-gradient-from-position:  ;
-  --tw-gradient-via-position:  ;
-  --tw-gradient-to-position:  ;
-  --tw-ordinal:  ;
-  --tw-slashed-zero:  ;
-  --tw-numeric-figure:  ;
-  --tw-numeric-spacing:  ;
-  --tw-numeric-fraction:  ;
-  --tw-ring-inset:  ;
-  --tw-ring-offset-width: 0px;
-  --tw-ring-offset-color: #fff;
-  --tw-ring-color: rgb(59 130 246 / 0.5);
-  --tw-ring-offset-shadow: 0 0 #0000;
-  --tw-ring-shadow: 0 0 #0000;
-  --tw-shadow: 0 0 #0000;
-  --tw-shadow-colored: 0 0 #0000;
-  --tw-blur:  ;
-  --tw-brightness:  ;
-  --tw-contrast:  ;
-  --tw-grayscale:  ;
-  --tw-hue-rotate:  ;
-  --tw-invert:  ;
-  --tw-saturate:  ;
-  --tw-sepia:  ;
-  --tw-drop-shadow:  ;
-  --tw-backdrop-blur:  ;
-  --tw-backdrop-brightness:  ;
-  --tw-backdrop-contrast:  ;
-  --tw-backdrop-grayscale:  ;
-  --tw-backdrop-hue-rotate:  ;
-  --tw-backdrop-invert:  ;
-  --tw-backdrop-opacity:  ;
-  --tw-backdrop-saturate:  ;
-  --tw-backdrop-sepia:  ;
-  --tw-contain-size:  ;
-  --tw-contain-layout:  ;
-  --tw-contain-paint:  ;
-  --tw-contain-style:  ;
-}
-
-/*
-! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com
-*/
-
-/*
-1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)
-2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)
-*/
-
-*,
-::before,
-::after {
-  box-sizing: border-box; /* 1 */
-  border-width: 0; /* 2 */
-  border-style: solid; /* 2 */
-  border-color: #e5e7eb; /* 2 */
-}
-
-::before,
-::after {
-  --tw-content: '';
-}
-
-/*
-1. Use a consistent sensible line-height in all browsers.
-2. Prevent adjustments of font size after orientation changes in iOS.
-3. Use a more readable tab size.
-4. Use the user's configured \`sans\` font-family by default.
-5. Use the user's configured \`sans\` font-feature-settings by default.
-6. Use the user's configured \`sans\` font-variation-settings by default.
-7. Disable tap highlights on iOS
-*/
-
-html,
-:host {
-  line-height: 1.5; /* 1 */
-  -webkit-text-size-adjust: 100%; /* 2 */
-  -moz-tab-size: 4; /* 3 */
-  -o-tab-size: 4;
-     tab-size: 4; /* 3 */
-  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; /* 4 */
-  font-feature-settings: normal; /* 5 */
-  font-variation-settings: normal; /* 6 */
-  -webkit-tap-highlight-color: transparent; /* 7 */
-}
-
-/*
-1. Remove the margin in all browsers.
-2. Inherit line-height from \`html\` so users can set them as a class directly on the \`html\` element.
-*/
-
-body {
-  margin: 0; /* 1 */
-  line-height: inherit; /* 2 */
-}
-
-/*
-1. Add the correct height in Firefox.
-2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)
-3. Ensure horizontal rules are visible by default.
-*/
-
-hr {
-  height: 0; /* 1 */
-  color: inherit; /* 2 */
-  border-top-width: 1px; /* 3 */
-}
-
-/*
-Add the correct text decoration in Chrome, Edge, and Safari.
-*/
-
-abbr:where([title]) {
-  -webkit-text-decoration: underline dotted;
-          text-decoration: underline dotted;
-}
-
-/*
-Remove the default font size and weight for headings.
-*/
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-size: inherit;
-  font-weight: inherit;
-}
-
-/*
-Reset links to optimize for opt-in styling instead of opt-out.
-*/
-
-a {
-  color: inherit;
-  text-decoration: inherit;
-}
-
-/*
-Add the correct font weight in Edge and Safari.
-*/
-
-b,
-strong {
-  font-weight: bolder;
-}
-
-/*
-1. Use the user's configured \`mono\` font-family by default.
-2. Use the user's configured \`mono\` font-feature-settings by default.
-3. Use the user's configured \`mono\` font-variation-settings by default.
-4. Correct the odd \`em\` font sizing in all browsers.
-*/
-
-code,
-kbd,
-samp,
-pre {
-  font-family: JetBrains Mono, Fira Code, Consolas, monospace; /* 1 */
-  font-feature-settings: normal; /* 2 */
-  font-variation-settings: normal; /* 3 */
-  font-size: 1em; /* 4 */
-}
-
-/*
-Add the correct font size in all browsers.
-*/
-
-small {
-  font-size: 80%;
-}
-
-/*
-Prevent \`sub\` and \`sup\` elements from affecting the line height in all browsers.
-*/
-
-sub,
-sup {
-  font-size: 75%;
-  line-height: 0;
-  position: relative;
-  vertical-align: baseline;
-}
-
-sub {
-  bottom: -0.25em;
-}
-
-sup {
-  top: -0.5em;
-}
-
-/*
-1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)
-2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)
-3. Remove gaps between table borders by default.
-*/
-
-table {
-  text-indent: 0; /* 1 */
-  border-color: inherit; /* 2 */
-  border-collapse: collapse; /* 3 */
-}
-
-/*
-1. Change the font styles in all browsers.
-2. Remove the margin in Firefox and Safari.
-3. Remove default padding in all browsers.
-*/
-
-button,
-input,
-optgroup,
-select,
-textarea {
-  font-family: inherit; /* 1 */
-  font-feature-settings: inherit; /* 1 */
-  font-variation-settings: inherit; /* 1 */
-  font-size: 100%; /* 1 */
-  font-weight: inherit; /* 1 */
-  line-height: inherit; /* 1 */
-  letter-spacing: inherit; /* 1 */
-  color: inherit; /* 1 */
-  margin: 0; /* 2 */
-  padding: 0; /* 3 */
-}
-
-/*
-Remove the inheritance of text transform in Edge and Firefox.
-*/
-
-button,
-select {
-  text-transform: none;
-}
-
-/*
-1. Correct the inability to style clickable types in iOS and Safari.
-2. Remove default button styles.
-*/
-
-button,
-input:where([type='button']),
-input:where([type='reset']),
-input:where([type='submit']) {
-  -webkit-appearance: button; /* 1 */
-  background-color: transparent; /* 2 */
-  background-image: none; /* 2 */
-}
-
-/*
-Use the modern Firefox focus style for all focusable elements.
-*/
-
-:-moz-focusring {
-  outline: auto;
-}
-
-/*
-Remove the additional \`:invalid\` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)
-*/
-
-:-moz-ui-invalid {
-  box-shadow: none;
-}
-
-/*
-Add the correct vertical alignment in Chrome and Firefox.
-*/
-
-progress {
-  vertical-align: baseline;
-}
-
-/*
-Correct the cursor style of increment and decrement buttons in Safari.
-*/
-
-::-webkit-inner-spin-button,
-::-webkit-outer-spin-button {
-  height: auto;
-}
-
-/*
-1. Correct the odd appearance in Chrome and Safari.
-2. Correct the outline style in Safari.
-*/
-
-[type='search'] {
-  -webkit-appearance: textfield; /* 1 */
-  outline-offset: -2px; /* 2 */
-}
-
-/*
-Remove the inner padding in Chrome and Safari on macOS.
-*/
-
-::-webkit-search-decoration {
-  -webkit-appearance: none;
-}
-
-/*
-1. Correct the inability to style clickable types in iOS and Safari.
-2. Change font properties to \`inherit\` in Safari.
-*/
-
-::-webkit-file-upload-button {
-  -webkit-appearance: button; /* 1 */
-  font: inherit; /* 2 */
-}
-
-/*
-Add the correct display in Chrome and Safari.
-*/
-
-summary {
-  display: list-item;
-}
-
-/*
-Removes the default spacing and border for appropriate elements.
-*/
-
-blockquote,
-dl,
-dd,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-hr,
-figure,
-p,
-pre {
-  margin: 0;
-}
-
-fieldset {
-  margin: 0;
-  padding: 0;
-}
-
-legend {
-  padding: 0;
-}
-
-ol,
-ul,
-menu {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-/*
-Reset default styling for dialogs.
-*/
-
-dialog {
-  padding: 0;
-}
-
-/*
-Prevent resizing textareas horizontally by default.
-*/
-
-textarea {
-  resize: vertical;
-}
-
-/*
-1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)
-2. Set the default placeholder color to the user's configured gray 400 color.
-*/
-
-input::-moz-placeholder, textarea::-moz-placeholder {
-  opacity: 1; /* 1 */
-  color: #9ca3af; /* 2 */
-}
-
-input::placeholder,
-textarea::placeholder {
-  opacity: 1; /* 1 */
-  color: #9ca3af; /* 2 */
-}
-
-/*
-Set the default cursor for buttons.
-*/
-
-button,
-[role="button"] {
-  cursor: pointer;
-}
-
-/*
-Make sure disabled buttons don't get the pointer cursor.
-*/
-
-:disabled {
-  cursor: default;
-}
-
-/*
-1. Make replaced elements \`display: block\` by default. (https://github.com/mozdevs/cssremedy/issues/14)
-2. Add \`vertical-align: middle\` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)
-   This can trigger a poorly considered lint error in some tools but is included by design.
-*/
-
-img,
-svg,
-video,
-canvas,
-audio,
-iframe,
-embed,
-object {
-  display: block; /* 1 */
-  vertical-align: middle; /* 2 */
-}
-
-/*
-Constrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)
-*/
-
-img,
-video {
-  max-width: 100%;
-  height: auto;
-}
-
-/* Make elements with the HTML hidden attribute stay hidden by default */
-
-[hidden]:where(:not([hidden="until-found"])) {
-  display: none;
-}
-
-*,
-  *::before,
-  *::after {
-    box-sizing: border-box;
-  }
-
-html {
-    font-family:
-      'Inter',
-      -apple-system,
-      BlinkMacSystemFont,
-      'Segoe UI',
-      sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-:root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.375rem;
-  }
-
-.dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
-    --md-scrollbar: #484d54;
-  }
-
-::-moz-selection {
-    background: #2469f0;
-    color: white;
-  }
-
-::selection {
-    background: #2469f0;
-    color: white;
-  }
-
-* {
-    scrollbar-width: thin;
-    scrollbar-color: #c9cdd4 transparent;
-  }
-
-.dark * {
-    scrollbar-color: var(--md-scrollbar) transparent;
-  }
-
-*::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-*::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-*::-webkit-scrollbar-thumb {
-    background: #c9cdd4;
-    border-radius: 3px;
-  }
-
-.dark *::-webkit-scrollbar-thumb {
-    background: var(--md-scrollbar);
-  }
-
-*::-webkit-scrollbar-thumb:hover {
-    background: #a4a9b3;
-  }
-
-.dark *::-webkit-scrollbar-thumb:hover {
-    background: #636971;
-  }
-.\\!container{
-  width: 100% !important;
-}
-.container{
-  width: 100%;
-}
-@media (min-width: 640px){
-
-  .\\!container{
-    max-width: 640px !important;
-  }
-
-  .container{
-    max-width: 640px;
-  }
-}
-@media (min-width: 768px){
-
-  .\\!container{
-    max-width: 768px !important;
-  }
-
-  .container{
-    max-width: 768px;
-  }
-}
-@media (min-width: 1024px){
-
-  .\\!container{
-    max-width: 1024px !important;
-  }
-
-  .container{
-    max-width: 1024px;
-  }
-}
-@media (min-width: 1280px){
-
-  .\\!container{
-    max-width: 1280px !important;
-  }
-
-  .container{
-    max-width: 1280px;
-  }
-}
-@media (min-width: 1536px){
-
-  .\\!container{
-    max-width: 1536px !important;
-  }
-
-  .container{
-    max-width: 1536px;
-  }
-}
-.pointer-events-none{
-  pointer-events: none;
-}
-.visible{
-  visibility: visible;
-}
-.static{
-  position: static;
-}
-.fixed{
-  position: fixed;
-}
-.absolute{
-  position: absolute;
-}
-.relative{
-  position: relative;
-}
-.bottom-4{
-  bottom: 1rem;
-}
-.left-0{
-  left: 0px;
-}
-.left-1\\/2{
-  left: 50%;
-}
-.right-0{
-  right: 0px;
-}
-.right-3{
-  right: 0.75rem;
-}
-.top-1\\/2{
-  top: 50%;
-}
-.top-full{
-  top: 100%;
-}
-.z-50{
-  z-index: 50;
-}
-.z-\\[1050\\]{
-  z-index: 1050;
-}
-.z-\\[2147483647\\]{
-  z-index: 2147483647;
-}
-.col-span-full{
-  grid-column: 1 / -1;
-}
-.mx-auto{
-  margin-left: auto;
-  margin-right: auto;
-}
-.-mb-\\[1px\\]{
-  margin-bottom: -1px;
-}
-.mb-1{
-  margin-bottom: 0.25rem;
-}
-.mb-1\\.5{
-  margin-bottom: 0.375rem;
-}
-.mb-2\\.5{
-  margin-bottom: 0.625rem;
-}
-.mb-3{
-  margin-bottom: 0.75rem;
-}
-.mb-3\\.5{
-  margin-bottom: 0.875rem;
-}
-.mb-4{
-  margin-bottom: 1rem;
-}
-.ml-0\\.5{
-  margin-left: 0.125rem;
-}
-.ml-1\\.5{
-  margin-left: 0.375rem;
-}
-.mr-1{
-  margin-right: 0.25rem;
-}
-.mr-2{
-  margin-right: 0.5rem;
-}
-.mr-3{
-  margin-right: 0.75rem;
-}
-.mr-auto{
-  margin-right: auto;
-}
-.mt-0\\.5{
-  margin-top: 0.125rem;
-}
-.mt-1{
-  margin-top: 0.25rem;
-}
-.mt-3{
-  margin-top: 0.75rem;
-}
-.mt-px{
-  margin-top: 1px;
-}
-.block{
-  display: block;
-}
-.inline-block{
-  display: inline-block;
-}
-.inline{
-  display: inline;
-}
-.flex{
-  display: flex;
-}
-.inline-flex{
-  display: inline-flex;
-}
-.\\!table{
-  display: table !important;
-}
-.table{
-  display: table;
-}
-.grid{
-  display: grid;
-}
-.\\!contents{
-  display: contents !important;
-}
-.contents{
-  display: contents;
-}
-.hidden{
-  display: none;
-}
-.size-1\\.5{
-  width: 0.375rem;
-  height: 0.375rem;
-}
-.size-10{
-  width: 2.5rem;
-  height: 2.5rem;
-}
-.size-2\\.5{
-  width: 0.625rem;
-  height: 0.625rem;
-}
-.size-3{
-  width: 0.75rem;
-  height: 0.75rem;
-}
-.size-3\\.5{
-  width: 0.875rem;
-  height: 0.875rem;
-}
-.size-4{
-  width: 1rem;
-  height: 1rem;
-}
-.size-5{
-  width: 1.25rem;
-  height: 1.25rem;
-}
-.h-1{
-  height: 0.25rem;
-}
-.h-10{
-  height: 2.5rem;
-}
-.h-11{
-  height: 2.75rem;
-}
-.h-12{
-  height: 3rem;
-}
-.h-2{
-  height: 0.5rem;
-}
-.h-24{
-  height: 6rem;
-}
-.h-4{
-  height: 1rem;
-}
-.h-5{
-  height: 1.25rem;
-}
-.h-6{
-  height: 1.5rem;
-}
-.h-7{
-  height: 1.75rem;
-}
-.h-8{
-  height: 2rem;
-}
-.h-9{
-  height: 2.25rem;
-}
-.h-\\[300px\\]{
-  height: 300px;
-}
-.h-\\[30px\\]{
-  height: 30px;
-}
-.h-\\[var\\(--radix-select-trigger-height\\)\\]{
-  height: var(--radix-select-trigger-height);
-}
-.h-full{
-  height: 100%;
-}
-.max-h-60{
-  max-height: 15rem;
-}
-.max-h-96{
-  max-height: 24rem;
-}
-.max-h-\\[180px\\]{
-  max-height: 180px;
-}
-.max-h-\\[220px\\]{
-  max-height: 220px;
-}
-.max-h-\\[240px\\]{
-  max-height: 240px;
-}
-.max-h-\\[600px\\]{
-  max-height: 600px;
-}
-.min-h-\\[200px\\]{
-  min-height: 200px;
-}
-.min-h-\\[50px\\]{
-  min-height: 50px;
-}
-.w-10{
-  width: 2.5rem;
-}
-.w-2{
-  width: 0.5rem;
-}
-.w-4{
-  width: 1rem;
-}
-.w-5{
-  width: 1.25rem;
-}
-.w-6{
-  width: 1.5rem;
-}
-.w-7{
-  width: 1.75rem;
-}
-.w-8{
-  width: 2rem;
-}
-.w-9{
-  width: 2.25rem;
-}
-.w-\\[100px\\]{
-  width: 100px;
-}
-.w-\\[120px\\]{
-  width: 120px;
-}
-.w-\\[30px\\]{
-  width: 30px;
-}
-.w-\\[340px\\]{
-  width: 340px;
-}
-.w-\\[35\\%\\]{
-  width: 35%;
-}
-.w-\\[90px\\]{
-  width: 90px;
-}
-.w-full{
-  width: 100%;
-}
-.w-px{
-  width: 1px;
-}
-.min-w-0{
-  min-width: 0px;
-}
-.min-w-\\[8rem\\]{
-  min-width: 8rem;
-}
-.min-w-\\[var\\(--radix-select-trigger-width\\)\\]{
-  min-width: var(--radix-select-trigger-width);
-}
-.max-w-\\[120px\\]{
-  max-width: 120px;
-}
-.max-w-\\[140px\\]{
-  max-width: 140px;
-}
-.max-w-\\[200px\\]{
-  max-width: 200px;
-}
-.flex-1{
-  flex: 1 1 0%;
-}
-.flex-shrink{
-  flex-shrink: 1;
-}
-.shrink-0{
-  flex-shrink: 0;
-}
-.-translate-x-1\\/2{
-  --tw-translate-x: -50%;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-.-translate-y-1\\/2{
-  --tw-translate-y: -50%;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-.scale-90{
-  --tw-scale-x: .9;
-  --tw-scale-y: .9;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-.transform{
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-@keyframes pulse{
-
-  50%{
-    opacity: .5;
-  }
-}
-.animate-pulse{
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-@keyframes slide-up{
-
-  0%{
-    opacity: 0;
-    transform: translateY(8px);
-  }
-
-  100%{
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.animate-slide-up{
-  animation: slide-up 0.15s ease-out;
-}
-.cursor-default{
-  cursor: default;
-}
-.cursor-not-allowed{
-  cursor: not-allowed;
-}
-.cursor-pointer{
-  cursor: pointer;
-}
-.select-none{
-  -webkit-user-select: none;
-     -moz-user-select: none;
-          user-select: none;
-}
-.resize-none{
-  resize: none;
-}
-.resize-y{
-  resize: vertical;
-}
-.resize{
-  resize: both;
-}
-.grid-cols-1{
-  grid-template-columns: repeat(1, minmax(0, 1fr));
-}
-.grid-cols-2{
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-.grid-cols-3{
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-.grid-cols-\\[repeat\\(auto-fill\\2c minmax\\(100px\\2c 1fr\\)\\)\\]{
-  grid-template-columns: repeat(auto-fill,minmax(100px,1fr));
-}
-.grid-cols-\\[repeat\\(auto-fill\\2c minmax\\(90px\\2c 1fr\\)\\)\\]{
-  grid-template-columns: repeat(auto-fill,minmax(90px,1fr));
-}
-.flex-col{
-  flex-direction: column;
-}
-.flex-wrap{
-  flex-wrap: wrap;
-}
-.items-start{
-  align-items: flex-start;
-}
-.items-center{
-  align-items: center;
-}
-.justify-end{
-  justify-content: flex-end;
-}
-.justify-center{
-  justify-content: center;
-}
-.justify-between{
-  justify-content: space-between;
-}
-.gap-0{
-  gap: 0px;
-}
-.gap-1{
-  gap: 0.25rem;
-}
-.gap-1\\.5{
-  gap: 0.375rem;
-}
-.gap-2{
-  gap: 0.5rem;
-}
-.gap-2\\.5{
-  gap: 0.625rem;
-}
-.gap-3{
-  gap: 0.75rem;
-}
-.gap-4{
-  gap: 1rem;
-}
-.gap-x-8{
-  -moz-column-gap: 2rem;
-       column-gap: 2rem;
-}
-.gap-y-3{
-  row-gap: 0.75rem;
-}
-.space-y-0\\.5 > :not([hidden]) ~ :not([hidden]){
-  --tw-space-y-reverse: 0;
-  margin-top: calc(0.125rem * calc(1 - var(--tw-space-y-reverse)));
-  margin-bottom: calc(0.125rem * var(--tw-space-y-reverse));
-}
-.space-y-1 > :not([hidden]) ~ :not([hidden]){
-  --tw-space-y-reverse: 0;
-  margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));
-  margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));
-}
-.space-y-1\\.5 > :not([hidden]) ~ :not([hidden]){
-  --tw-space-y-reverse: 0;
-  margin-top: calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));
-  margin-bottom: calc(0.375rem * var(--tw-space-y-reverse));
-}
-.space-y-2 > :not([hidden]) ~ :not([hidden]){
-  --tw-space-y-reverse: 0;
-  margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
-  margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));
-}
-.space-y-2\\.5 > :not([hidden]) ~ :not([hidden]){
-  --tw-space-y-reverse: 0;
-  margin-top: calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));
-  margin-bottom: calc(0.625rem * var(--tw-space-y-reverse));
-}
-.space-y-3 > :not([hidden]) ~ :not([hidden]){
-  --tw-space-y-reverse: 0;
-  margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));
-  margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));
-}
-.space-y-4 > :not([hidden]) ~ :not([hidden]){
-  --tw-space-y-reverse: 0;
-  margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));
-  margin-bottom: calc(1rem * var(--tw-space-y-reverse));
-}
-.space-y-5 > :not([hidden]) ~ :not([hidden]){
-  --tw-space-y-reverse: 0;
-  margin-top: calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));
-  margin-bottom: calc(1.25rem * var(--tw-space-y-reverse));
-}
-.space-y-6 > :not([hidden]) ~ :not([hidden]){
-  --tw-space-y-reverse: 0;
-  margin-top: calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));
-  margin-bottom: calc(1.5rem * var(--tw-space-y-reverse));
-}
-.divide-y > :not([hidden]) ~ :not([hidden]){
-  --tw-divide-y-reverse: 0;
-  border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));
-  border-bottom-width: calc(1px * var(--tw-divide-y-reverse));
-}
-.divide-border > :not([hidden]) ~ :not([hidden]){
-  border-color: hsl(var(--border));
-}
-.overflow-auto{
-  overflow: auto;
-}
-.overflow-hidden{
-  overflow: hidden;
-}
-.overflow-y-auto{
-  overflow-y: auto;
-}
-.truncate{
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.whitespace-nowrap{
-  white-space: nowrap;
-}
-.whitespace-pre-wrap{
-  white-space: pre-wrap;
-}
-.break-words{
-  overflow-wrap: break-word;
-}
-.rounded{
-  border-radius: 0.25rem;
-}
-.rounded-full{
-  border-radius: 9999px;
-}
-.rounded-lg{
-  border-radius: 0.5rem;
-}
-.rounded-md{
-  border-radius: 6px;
-}
-.rounded-sm{
-  border-radius: 0.125rem;
-}
-.rounded-xl{
-  border-radius: 0.75rem;
-}
-.border{
-  border-width: 1px;
-}
-.border-2{
-  border-width: 2px;
-}
-.border-b{
-  border-bottom-width: 1px;
-}
-.border-b-2{
-  border-bottom-width: 2px;
-}
-.border-l-2{
-  border-left-width: 2px;
-}
-.border-t{
-  border-top-width: 1px;
-}
-.border-t-2{
-  border-top-width: 2px;
-}
-.border-dashed{
-  border-style: dashed;
-}
-.border-none{
-  border-style: none;
-}
-.border-\\[\\#2469f0\\]{
-  --tw-border-opacity: 1;
-  border-color: rgb(36 105 240 / var(--tw-border-opacity, 1));
-}
-.border-amber-200{
-  --tw-border-opacity: 1;
-  border-color: rgb(253 230 138 / var(--tw-border-opacity, 1));
-}
-.border-border{
-  border-color: hsl(var(--border));
-}
-.border-destructive{
-  border-color: hsl(var(--destructive));
-}
-.border-destructive\\/20{
-  border-color: hsl(var(--destructive) / 0.2);
-}
-.border-foreground{
-  border-color: hsl(var(--foreground));
-}
-.border-green-200{
-  --tw-border-opacity: 1;
-  border-color: rgb(187 247 208 / var(--tw-border-opacity, 1));
-}
-.border-input{
-  border-color: hsl(var(--input));
-}
-.border-primary{
-  border-color: hsl(var(--primary));
-}
-.border-primary\\/15{
-  border-color: hsl(var(--primary) / 0.15);
-}
-.border-primary\\/20{
-  border-color: hsl(var(--primary) / 0.2);
-}
-.border-red-200{
-  --tw-border-opacity: 1;
-  border-color: rgb(254 202 202 / var(--tw-border-opacity, 1));
-}
-.border-red-500{
-  --tw-border-opacity: 1;
-  border-color: rgb(239 68 68 / var(--tw-border-opacity, 1));
-}
-.border-transparent{
-  border-color: transparent;
-}
-.bg-\\[\\#2469f0\\]{
-  --tw-bg-opacity: 1;
-  background-color: rgb(36 105 240 / var(--tw-bg-opacity, 1));
-}
-.bg-accent{
-  background-color: hsl(var(--accent));
-}
-.bg-accent\\/20{
-  background-color: hsl(var(--accent) / 0.2);
-}
-.bg-accent\\/40{
-  background-color: hsl(var(--accent) / 0.4);
-}
-.bg-accent\\/50{
-  background-color: hsl(var(--accent) / 0.5);
-}
-.bg-amber-50{
-  --tw-bg-opacity: 1;
-  background-color: rgb(255 251 235 / var(--tw-bg-opacity, 1));
-}
-.bg-amber-50\\/50{
-  background-color: rgb(255 251 235 / 0.5);
-}
-.bg-background{
-  background-color: hsl(var(--background));
-}
-.bg-blue-100{
-  --tw-bg-opacity: 1;
-  background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1));
-}
-.bg-blue-50{
-  --tw-bg-opacity: 1;
-  background-color: rgb(239 246 255 / var(--tw-bg-opacity, 1));
-}
-.bg-border{
-  background-color: hsl(var(--border));
-}
-.bg-card{
-  background-color: hsl(var(--card));
-}
-.bg-destructive{
-  background-color: hsl(var(--destructive));
-}
-.bg-destructive\\/10{
-  background-color: hsl(var(--destructive) / 0.1);
-}
-.bg-destructive\\/5{
-  background-color: hsl(var(--destructive) / 0.05);
-}
-.bg-foreground{
-  background-color: hsl(var(--foreground));
-}
-.bg-gray-100{
-  --tw-bg-opacity: 1;
-  background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
-}
-.bg-green-100{
-  --tw-bg-opacity: 1;
-  background-color: rgb(220 252 231 / var(--tw-bg-opacity, 1));
-}
-.bg-green-50{
-  --tw-bg-opacity: 1;
-  background-color: rgb(240 253 244 / var(--tw-bg-opacity, 1));
-}
-.bg-green-500{
-  --tw-bg-opacity: 1;
-  background-color: rgb(34 197 94 / var(--tw-bg-opacity, 1));
-}
-.bg-green-600{
-  --tw-bg-opacity: 1;
-  background-color: rgb(22 163 74 / var(--tw-bg-opacity, 1));
-}
-.bg-muted{
-  background-color: hsl(var(--muted));
-}
-.bg-muted-foreground{
-  background-color: hsl(var(--muted-foreground));
-}
-.bg-muted\\/30{
-  background-color: hsl(var(--muted) / 0.3);
-}
-.bg-muted\\/40{
-  background-color: hsl(var(--muted) / 0.4);
-}
-.bg-popover{
-  background-color: hsl(var(--popover));
-}
-.bg-primary{
-  background-color: hsl(var(--primary));
-}
-.bg-primary\\/10{
-  background-color: hsl(var(--primary) / 0.1);
-}
-.bg-primary\\/5{
-  background-color: hsl(var(--primary) / 0.05);
-}
-.bg-red-100{
-  --tw-bg-opacity: 1;
-  background-color: rgb(254 226 226 / var(--tw-bg-opacity, 1));
-}
-.bg-red-50{
-  --tw-bg-opacity: 1;
-  background-color: rgb(254 242 242 / var(--tw-bg-opacity, 1));
-}
-.bg-red-500\\/5{
-  background-color: rgb(239 68 68 / 0.05);
-}
-.bg-red-600{
-  --tw-bg-opacity: 1;
-  background-color: rgb(220 38 38 / var(--tw-bg-opacity, 1));
-}
-.bg-secondary{
-  background-color: hsl(var(--secondary));
-}
-.bg-white\\/15{
-  background-color: rgb(255 255 255 / 0.15);
-}
-.bg-yellow-50{
-  --tw-bg-opacity: 1;
-  background-color: rgb(254 252 232 / var(--tw-bg-opacity, 1));
-}
-.bg-gradient-to-br{
-  background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
-}
-.from-muted{
-  --tw-gradient-from: hsl(var(--muted)) var(--tw-gradient-from-position);
-  --tw-gradient-to: hsl(var(--muted) / 0) var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-}
-.from-primary{
-  --tw-gradient-from: hsl(var(--primary)) var(--tw-gradient-from-position);
-  --tw-gradient-to: hsl(var(--primary) / 0) var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-}
-.to-muted\\/50{
-  --tw-gradient-to: hsl(var(--muted) / 0.5) var(--tw-gradient-to-position);
-}
-.to-primary\\/80{
-  --tw-gradient-to: hsl(var(--primary) / 0.8) var(--tw-gradient-to-position);
-}
-.p-0\\.5{
-  padding: 0.125rem;
-}
-.p-1{
-  padding: 0.25rem;
-}
-.p-1\\.5{
-  padding: 0.375rem;
-}
-.p-2{
-  padding: 0.5rem;
-}
-.p-2\\.5{
-  padding: 0.625rem;
-}
-.p-3{
-  padding: 0.75rem;
-}
-.p-3\\.5{
-  padding: 0.875rem;
-}
-.p-4{
-  padding: 1rem;
-}
-.p-5{
-  padding: 1.25rem;
-}
-.p-8{
-  padding: 2rem;
-}
-.px-1{
-  padding-left: 0.25rem;
-  padding-right: 0.25rem;
-}
-.px-1\\.5{
-  padding-left: 0.375rem;
-  padding-right: 0.375rem;
-}
-.px-2{
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
-}
-.px-2\\.5{
-  padding-left: 0.625rem;
-  padding-right: 0.625rem;
-}
-.px-3{
-  padding-left: 0.75rem;
-  padding-right: 0.75rem;
-}
-.px-3\\.5{
-  padding-left: 0.875rem;
-  padding-right: 0.875rem;
-}
-.px-4{
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-.px-5{
-  padding-left: 1.25rem;
-  padding-right: 1.25rem;
-}
-.px-6{
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
-}
-.py-0{
-  padding-top: 0px;
-  padding-bottom: 0px;
-}
-.py-0\\.5{
-  padding-top: 0.125rem;
-  padding-bottom: 0.125rem;
-}
-.py-1{
-  padding-top: 0.25rem;
-  padding-bottom: 0.25rem;
-}
-.py-1\\.5{
-  padding-top: 0.375rem;
-  padding-bottom: 0.375rem;
-}
-.py-12{
-  padding-top: 3rem;
-  padding-bottom: 3rem;
-}
-.py-2{
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-}
-.py-2\\.5{
-  padding-top: 0.625rem;
-  padding-bottom: 0.625rem;
-}
-.py-3{
-  padding-top: 0.75rem;
-  padding-bottom: 0.75rem;
-}
-.py-4{
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-}
-.py-5{
-  padding-top: 1.25rem;
-  padding-bottom: 1.25rem;
-}
-.py-8{
-  padding-top: 2rem;
-  padding-bottom: 2rem;
-}
-.pb-1\\.5{
-  padding-bottom: 0.375rem;
-}
-.pb-2{
-  padding-bottom: 0.5rem;
-}
-.pl-2{
-  padding-left: 0.5rem;
-}
-.pr-14{
-  padding-right: 3.5rem;
-}
-.pr-8{
-  padding-right: 2rem;
-}
-.pt-3{
-  padding-top: 0.75rem;
-}
-.text-center{
-  text-align: center;
-}
-.font-\\[\\'Inter\\'\\2c system-ui\\2c sans-serif\\]{
-  font-family: 'Inter',system-ui,sans-serif;
-}
-.font-\\[\\'Lexend\\'\\2c system-ui\\2c sans-serif\\]{
-  font-family: 'Lexend',system-ui,sans-serif;
-}
-.font-mono{
-  font-family: JetBrains Mono, Fira Code, Consolas, monospace;
-}
-.text-\\[10px\\]{
-  font-size: 10px;
-}
-.text-\\[11px\\]{
-  font-size: 11px;
-}
-.text-\\[13px\\]{
-  font-size: 13px;
-}
-.text-\\[14px\\]{
-  font-size: 14px;
-}
-.text-\\[15px\\]{
-  font-size: 15px;
-}
-.text-\\[16px\\]{
-  font-size: 16px;
-}
-.text-\\[18px\\]{
-  font-size: 18px;
-}
-.text-\\[20px\\]{
-  font-size: 20px;
-}
-.text-\\[8px\\]{
-  font-size: 8px;
-}
-.text-\\[9px\\]{
-  font-size: 9px;
-}
-.text-base{
-  font-size: 1rem;
-  line-height: 1.5rem;
-}
-.text-md-sm{
-  font-size: 12px;
-  line-height: 18px;
-}
-.text-md-xs{
-  font-size: 11px;
-  line-height: 16px;
-}
-.text-sm{
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-}
-.text-xs{
-  font-size: 0.75rem;
-  line-height: 1rem;
-}
-.font-bold{
-  font-weight: 700;
-}
-.font-medium{
-  font-weight: 500;
-}
-.font-normal{
-  font-weight: 400;
-}
-.font-semibold{
-  font-weight: 600;
-}
-.uppercase{
-  text-transform: uppercase;
-}
-.leading-relaxed{
-  line-height: 1.625;
-}
-.tracking-tight{
-  letter-spacing: -0.025em;
-}
-.tracking-wide{
-  letter-spacing: 0.025em;
-}
-.tracking-wider{
-  letter-spacing: 0.05em;
-}
-.text-\\[\\#2469f0\\]{
-  --tw-text-opacity: 1;
-  color: rgb(36 105 240 / var(--tw-text-opacity, 1));
-}
-.text-amber-700{
-  --tw-text-opacity: 1;
-  color: rgb(180 83 9 / var(--tw-text-opacity, 1));
-}
-.text-background{
-  color: hsl(var(--background));
-}
-.text-blue-700{
-  --tw-text-opacity: 1;
-  color: rgb(29 78 216 / var(--tw-text-opacity, 1));
-}
-.text-card-foreground{
-  color: hsl(var(--card-foreground));
-}
-.text-destructive{
-  color: hsl(var(--destructive));
-}
-.text-destructive-foreground{
-  color: hsl(var(--destructive-foreground));
-}
-.text-destructive\\/80{
-  color: hsl(var(--destructive) / 0.8);
-}
-.text-foreground{
-  color: hsl(var(--foreground));
-}
-.text-gray-700{
-  --tw-text-opacity: 1;
-  color: rgb(55 65 81 / var(--tw-text-opacity, 1));
-}
-.text-green-500{
-  --tw-text-opacity: 1;
-  color: rgb(34 197 94 / var(--tw-text-opacity, 1));
-}
-.text-green-700{
-  --tw-text-opacity: 1;
-  color: rgb(21 128 61 / var(--tw-text-opacity, 1));
-}
-.text-muted-foreground{
-  color: hsl(var(--muted-foreground));
-}
-.text-popover-foreground{
-  color: hsl(var(--popover-foreground));
-}
-.text-primary{
-  color: hsl(var(--primary));
-}
-.text-primary-foreground{
-  color: hsl(var(--primary-foreground));
-}
-.text-red-500{
-  --tw-text-opacity: 1;
-  color: rgb(239 68 68 / var(--tw-text-opacity, 1));
-}
-.text-red-600{
-  --tw-text-opacity: 1;
-  color: rgb(220 38 38 / var(--tw-text-opacity, 1));
-}
-.text-red-700{
-  --tw-text-opacity: 1;
-  color: rgb(185 28 28 / var(--tw-text-opacity, 1));
-}
-.text-red-800{
-  --tw-text-opacity: 1;
-  color: rgb(153 27 27 / var(--tw-text-opacity, 1));
-}
-.text-red-900{
-  --tw-text-opacity: 1;
-  color: rgb(127 29 29 / var(--tw-text-opacity, 1));
-}
-.text-secondary-foreground{
-  color: hsl(var(--secondary-foreground));
-}
-.text-white{
-  --tw-text-opacity: 1;
-  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
-}
-.text-white\\/70{
-  color: rgb(255 255 255 / 0.7);
-}
-.text-yellow-600{
-  --tw-text-opacity: 1;
-  color: rgb(202 138 4 / var(--tw-text-opacity, 1));
-}
-.text-yellow-700{
-  --tw-text-opacity: 1;
-  color: rgb(161 98 7 / var(--tw-text-opacity, 1));
-}
-.text-yellow-800{
-  --tw-text-opacity: 1;
-  color: rgb(133 77 14 / var(--tw-text-opacity, 1));
-}
-.underline-offset-4{
-  text-underline-offset: 4px;
-}
-.antialiased{
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-.opacity-0{
-  opacity: 0;
-}
-.opacity-30{
-  opacity: 0.3;
-}
-.opacity-50{
-  opacity: 0.5;
-}
-.opacity-60{
-  opacity: 0.6;
-}
-.opacity-85{
-  opacity: 0.85;
-}
-.opacity-90{
-  opacity: 0.9;
-}
-.shadow{
-  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);
-  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
-}
-.shadow-lg{
-  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
-  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
-}
-.shadow-md{
-  --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
-  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
-}
-.shadow-sm{
-  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
-  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
-}
-.outline-none{
-  outline: 2px solid transparent;
-  outline-offset: 2px;
-}
-.outline{
-  outline-style: solid;
-}
-.ring{
-  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
-  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color);
-  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
-}
-.ring-0{
-  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
-  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);
-  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
-}
-.blur{
-  --tw-blur: blur(8px);
-  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
-}
-.grayscale{
-  --tw-grayscale: grayscale(100%);
-  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
-}
-.filter{
-  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
-}
-.backdrop-filter{
-  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
-}
-.transition{
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-.transition-all{
-  transition-property: all;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-.transition-colors{
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-.transition-transform{
-  transition-property: transform;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-.duration-150{
-  transition-duration: 150ms;
-}
-.duration-200{
-  transition-duration: 200ms;
-}
-.duration-300{
-  transition-duration: 300ms;
-}
-.ease-in-out{
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-.ease-out{
-  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
-}
-@keyframes enter{
-
-  from{
-    opacity: var(--tw-enter-opacity, 1);
-    transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0) scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1)) rotate(var(--tw-enter-rotate, 0));
-  }
-}
-@keyframes exit{
-
-  to{
-    opacity: var(--tw-exit-opacity, 1);
-    transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0) scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1)) rotate(var(--tw-exit-rotate, 0));
-  }
-}
-.animate-in{
-  animation-name: enter;
-  animation-duration: 150ms;
-  --tw-enter-opacity: initial;
-  --tw-enter-scale: initial;
-  --tw-enter-rotate: initial;
-  --tw-enter-translate-x: initial;
-  --tw-enter-translate-y: initial;
-}
-.fade-in{
-  --tw-enter-opacity: 0;
-}
-.fade-out{
-  --tw-exit-opacity: 0;
-}
-.duration-150{
-  animation-duration: 150ms;
-}
-.duration-200{
-  animation-duration: 200ms;
-}
-.duration-300{
-  animation-duration: 300ms;
-}
-.ease-in-out{
-  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-.ease-out{
-  animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
-}
-.running{
-  animation-play-state: running;
-}
-.placeholder\\:text-muted-foreground::-moz-placeholder{
-  color: hsl(var(--muted-foreground));
-}
-.placeholder\\:text-muted-foreground::placeholder{
-  color: hsl(var(--muted-foreground));
-}
-.hover\\:bg-accent:hover{
-  background-color: hsl(var(--accent));
-}
-.hover\\:bg-amber-100\\/50:hover{
-  background-color: rgb(254 243 199 / 0.5);
-}
-.hover\\:bg-destructive\\/10:hover{
-  background-color: hsl(var(--destructive) / 0.1);
-}
-.hover\\:bg-destructive\\/20:hover{
-  background-color: hsl(var(--destructive) / 0.2);
-}
-.hover\\:bg-destructive\\/90:hover{
-  background-color: hsl(var(--destructive) / 0.9);
-}
-.hover\\:bg-green-700:hover{
-  --tw-bg-opacity: 1;
-  background-color: rgb(21 128 61 / var(--tw-bg-opacity, 1));
-}
-.hover\\:bg-muted\\/50:hover{
-  background-color: hsl(var(--muted) / 0.5);
-}
-.hover\\:bg-primary\\/5:hover{
-  background-color: hsl(var(--primary) / 0.05);
-}
-.hover\\:bg-primary\\/90:hover{
-  background-color: hsl(var(--primary) / 0.9);
-}
-.hover\\:bg-red-500\\/10:hover{
-  background-color: rgb(239 68 68 / 0.1);
-}
-.hover\\:bg-red-700:hover{
-  --tw-bg-opacity: 1;
-  background-color: rgb(185 28 28 / var(--tw-bg-opacity, 1));
-}
-.hover\\:bg-secondary\\/80:hover{
-  background-color: hsl(var(--secondary) / 0.8);
-}
-.hover\\:bg-white\\/15:hover{
-  background-color: rgb(255 255 255 / 0.15);
-}
-.hover\\:bg-white\\/25:hover{
-  background-color: rgb(255 255 255 / 0.25);
-}
-.hover\\:text-accent-foreground:hover{
-  color: hsl(var(--accent-foreground));
-}
-.hover\\:text-destructive:hover{
-  color: hsl(var(--destructive));
-}
-.hover\\:text-foreground:hover{
-  color: hsl(var(--foreground));
-}
-.hover\\:text-red-600:hover{
-  --tw-text-opacity: 1;
-  color: rgb(220 38 38 / var(--tw-text-opacity, 1));
-}
-.hover\\:text-white:hover{
-  --tw-text-opacity: 1;
-  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
-}
-.hover\\:underline:hover{
-  text-decoration-line: underline;
-}
-.hover\\:opacity-70:hover{
-  opacity: 0.7;
-}
-.focus\\:bg-accent:focus{
-  background-color: hsl(var(--accent));
-}
-.focus\\:text-accent-foreground:focus{
-  color: hsl(var(--accent-foreground));
-}
-.focus\\:outline-none:focus{
-  outline: 2px solid transparent;
-  outline-offset: 2px;
-}
-.focus\\:ring-1:focus{
-  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
-  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);
-  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
-}
-.focus\\:ring-2:focus{
-  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
-  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
-  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
-}
-.focus\\:ring-primary:focus{
-  --tw-ring-color: hsl(var(--primary));
-}
-.focus\\:ring-red-500:focus{
-  --tw-ring-opacity: 1;
-  --tw-ring-color: rgb(239 68 68 / var(--tw-ring-opacity, 1));
-}
-.focus\\:ring-ring:focus{
-  --tw-ring-color: hsl(var(--ring));
-}
-.focus\\:ring-offset-1:focus{
-  --tw-ring-offset-width: 1px;
-}
-.focus-visible\\:outline-none:focus-visible{
-  outline: 2px solid transparent;
-  outline-offset: 2px;
-}
-.focus-visible\\:ring-2:focus-visible{
-  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
-  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
-  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
-}
-.focus-visible\\:ring-ring:focus-visible{
-  --tw-ring-color: hsl(var(--ring));
-}
-.focus-visible\\:ring-offset-1:focus-visible{
-  --tw-ring-offset-width: 1px;
-}
-.disabled\\:pointer-events-none:disabled{
-  pointer-events: none;
-}
-.disabled\\:cursor-not-allowed:disabled{
-  cursor: not-allowed;
-}
-.disabled\\:opacity-50:disabled{
-  opacity: 0.5;
-}
-.group:hover .group-hover\\:opacity-100{
-  opacity: 1;
-}
-.data-\\[disabled\\]\\:pointer-events-none[data-disabled]{
-  pointer-events: none;
-}
-.data-\\[side\\=bottom\\]\\:translate-y-1[data-side="bottom"]{
-  --tw-translate-y: 0.25rem;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-.data-\\[side\\=top\\]\\:-translate-y-1[data-side="top"]{
-  --tw-translate-y: -0.25rem;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-.data-\\[state\\=checked\\]\\:translate-x-4[data-state="checked"]{
-  --tw-translate-x: 1rem;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-.data-\\[state\\=unchecked\\]\\:translate-x-0[data-state="unchecked"]{
-  --tw-translate-x: 0px;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-.data-\\[state\\=checked\\]\\:bg-primary[data-state="checked"]{
-  background-color: hsl(var(--primary));
-}
-.data-\\[state\\=unchecked\\]\\:bg-input[data-state="unchecked"]{
-  background-color: hsl(var(--input));
-}
-.data-\\[disabled\\]\\:opacity-50[data-disabled]{
-  opacity: 0.5;
-}
-.data-\\[state\\=open\\]\\:animate-in[data-state="open"]{
-  animation-name: enter;
-  animation-duration: 150ms;
-  --tw-enter-opacity: initial;
-  --tw-enter-scale: initial;
-  --tw-enter-rotate: initial;
-  --tw-enter-translate-x: initial;
-  --tw-enter-translate-y: initial;
-}
-.data-\\[state\\=closed\\]\\:animate-out[data-state="closed"]{
-  animation-name: exit;
-  animation-duration: 150ms;
-  --tw-exit-opacity: initial;
-  --tw-exit-scale: initial;
-  --tw-exit-rotate: initial;
-  --tw-exit-translate-x: initial;
-  --tw-exit-translate-y: initial;
-}
-.data-\\[state\\=closed\\]\\:fade-out-0[data-state="closed"]{
-  --tw-exit-opacity: 0;
-}
-.data-\\[state\\=open\\]\\:fade-in-0[data-state="open"]{
-  --tw-enter-opacity: 0;
-}
-.data-\\[state\\=closed\\]\\:zoom-out-95[data-state="closed"]{
-  --tw-exit-scale: .95;
-}
-.data-\\[state\\=open\\]\\:zoom-in-95[data-state="open"]{
-  --tw-enter-scale: .95;
-}
-.dark\\:border-amber-800:is(.dark *){
-  --tw-border-opacity: 1;
-  border-color: rgb(146 64 14 / var(--tw-border-opacity, 1));
-}
-.dark\\:border-green-800:is(.dark *){
-  --tw-border-opacity: 1;
-  border-color: rgb(22 101 52 / var(--tw-border-opacity, 1));
-}
-.dark\\:border-red-900:is(.dark *){
-  --tw-border-opacity: 1;
-  border-color: rgb(127 29 29 / var(--tw-border-opacity, 1));
-}
-.dark\\:bg-amber-900\\/30:is(.dark *){
-  background-color: rgb(120 53 15 / 0.3);
-}
-.dark\\:bg-amber-950\\/20:is(.dark *){
-  background-color: rgb(69 26 3 / 0.2);
-}
-.dark\\:bg-blue-900\\/30:is(.dark *){
-  background-color: rgb(30 58 138 / 0.3);
-}
-.dark\\:bg-blue-950\\/20:is(.dark *){
-  background-color: rgb(23 37 84 / 0.2);
-}
-.dark\\:bg-green-950\\/20:is(.dark *){
-  background-color: rgb(5 46 22 / 0.2);
-}
-.dark\\:bg-red-950\\/20:is(.dark *){
-  background-color: rgb(69 10 10 / 0.2);
-}
-.dark\\:bg-yellow-950\\/30:is(.dark *){
-  background-color: rgb(66 32 6 / 0.3);
-}
-.dark\\:text-amber-300:is(.dark *){
-  --tw-text-opacity: 1;
-  color: rgb(252 211 77 / var(--tw-text-opacity, 1));
-}
-.dark\\:text-blue-300:is(.dark *){
-  --tw-text-opacity: 1;
-  color: rgb(147 197 253 / var(--tw-text-opacity, 1));
-}
-.dark\\:text-green-300:is(.dark *){
-  --tw-text-opacity: 1;
-  color: rgb(134 239 172 / var(--tw-text-opacity, 1));
-}
-.dark\\:text-red-200:is(.dark *){
-  --tw-text-opacity: 1;
-  color: rgb(254 202 202 / var(--tw-text-opacity, 1));
-}
-.dark\\:text-red-300:is(.dark *){
-  --tw-text-opacity: 1;
-  color: rgb(252 165 165 / var(--tw-text-opacity, 1));
-}
-.dark\\:text-yellow-300:is(.dark *){
-  --tw-text-opacity: 1;
-  color: rgb(253 224 71 / var(--tw-text-opacity, 1));
-}
-.dark\\:text-yellow-400:is(.dark *){
-  --tw-text-opacity: 1;
-  color: rgb(250 204 21 / var(--tw-text-opacity, 1));
-}
-.dark\\:text-yellow-500:is(.dark *){
-  --tw-text-opacity: 1;
-  color: rgb(234 179 8 / var(--tw-text-opacity, 1));
-}
-@media (min-width: 640px){
-
-  .sm\\:grid-cols-3{
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-@media (min-width: 768px){
-
-  .md\\:col-span-2{
-    grid-column: span 2 / span 2;
-  }
-
-  .md\\:grid-cols-2{
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-.\\[\\&\\>span\\]\\:line-clamp-1>span{
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
-}
-.\\[\\&\\>span\\]\\:h-3>span{
-  height: 0.75rem;
-}
-.\\[\\&\\>span\\]\\:w-3>span{
-  width: 0.75rem;
-}
-.data-\\[state\\=checked\\]\\:\\[\\&\\>span\\]\\:translate-x-3>span[data-state="checked"]{
-  --tw-translate-x: 0.75rem;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-.\\[\\&_svg\\]\\:pointer-events-none svg{
-  pointer-events: none;
-}
-.\\[\\&_svg\\]\\:size-4 svg{
-  width: 1rem;
-  height: 1rem;
-}
-.\\[\\&_svg\\]\\:shrink-0 svg{
-  flex-shrink: 0;
-}
-`
+          ? '@import url(\'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\');\n\n*, ::before, ::after{\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n\n::backdrop{\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n\n/*\n! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com\n*/\n\n/*\n1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)\n*/\n\n*,\n::before,\n::after {\n  box-sizing: border-box; /* 1 */\n  border-width: 0; /* 2 */\n  border-style: solid; /* 2 */\n  border-color: #e5e7eb; /* 2 */\n}\n\n::before,\n::after {\n  --tw-content: \'\';\n}\n\n/*\n1. Use a consistent sensible line-height in all browsers.\n2. Prevent adjustments of font size after orientation changes in iOS.\n3. Use a more readable tab size.\n4. Use the user\'s configured `sans` font-family by default.\n5. Use the user\'s configured `sans` font-feature-settings by default.\n6. Use the user\'s configured `sans` font-variation-settings by default.\n7. Disable tap highlights on iOS\n*/\n\nhtml,\n:host {\n  line-height: 1.5; /* 1 */\n  -webkit-text-size-adjust: 100%; /* 2 */\n  -moz-tab-size: 4; /* 3 */\n  -o-tab-size: 4;\n     tab-size: 4; /* 3 */\n  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; /* 4 */\n  font-feature-settings: normal; /* 5 */\n  font-variation-settings: normal; /* 6 */\n  -webkit-tap-highlight-color: transparent; /* 7 */\n}\n\n/*\n1. Remove the margin in all browsers.\n2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.\n*/\n\nbody {\n  margin: 0; /* 1 */\n  line-height: inherit; /* 2 */\n}\n\n/*\n1. Add the correct height in Firefox.\n2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n3. Ensure horizontal rules are visible by default.\n*/\n\nhr {\n  height: 0; /* 1 */\n  color: inherit; /* 2 */\n  border-top-width: 1px; /* 3 */\n}\n\n/*\nAdd the correct text decoration in Chrome, Edge, and Safari.\n*/\n\nabbr:where([title]) {\n  -webkit-text-decoration: underline dotted;\n          text-decoration: underline dotted;\n}\n\n/*\nRemove the default font size and weight for headings.\n*/\n\nh1,\nh2,\nh3,\nh4,\nh5,\nh6 {\n  font-size: inherit;\n  font-weight: inherit;\n}\n\n/*\nReset links to optimize for opt-in styling instead of opt-out.\n*/\n\na {\n  color: inherit;\n  text-decoration: inherit;\n}\n\n/*\nAdd the correct font weight in Edge and Safari.\n*/\n\nb,\nstrong {\n  font-weight: bolder;\n}\n\n/*\n1. Use the user\'s configured `mono` font-family by default.\n2. Use the user\'s configured `mono` font-feature-settings by default.\n3. Use the user\'s configured `mono` font-variation-settings by default.\n4. Correct the odd `em` font sizing in all browsers.\n*/\n\ncode,\nkbd,\nsamp,\npre {\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace; /* 1 */\n  font-feature-settings: normal; /* 2 */\n  font-variation-settings: normal; /* 3 */\n  font-size: 1em; /* 4 */\n}\n\n/*\nAdd the correct font size in all browsers.\n*/\n\nsmall {\n  font-size: 80%;\n}\n\n/*\nPrevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\nsub,\nsup {\n  font-size: 75%;\n  line-height: 0;\n  position: relative;\n  vertical-align: baseline;\n}\n\nsub {\n  bottom: -0.25em;\n}\n\nsup {\n  top: -0.5em;\n}\n\n/*\n1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n3. Remove gaps between table borders by default.\n*/\n\ntable {\n  text-indent: 0; /* 1 */\n  border-color: inherit; /* 2 */\n  border-collapse: collapse; /* 3 */\n}\n\n/*\n1. Change the font styles in all browsers.\n2. Remove the margin in Firefox and Safari.\n3. Remove default padding in all browsers.\n*/\n\nbutton,\ninput,\noptgroup,\nselect,\ntextarea {\n  font-family: inherit; /* 1 */\n  font-feature-settings: inherit; /* 1 */\n  font-variation-settings: inherit; /* 1 */\n  font-size: 100%; /* 1 */\n  font-weight: inherit; /* 1 */\n  line-height: inherit; /* 1 */\n  letter-spacing: inherit; /* 1 */\n  color: inherit; /* 1 */\n  margin: 0; /* 2 */\n  padding: 0; /* 3 */\n}\n\n/*\nRemove the inheritance of text transform in Edge and Firefox.\n*/\n\nbutton,\nselect {\n  text-transform: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Remove default button styles.\n*/\n\nbutton,\ninput:where([type=\'button\']),\ninput:where([type=\'reset\']),\ninput:where([type=\'submit\']) {\n  -webkit-appearance: button; /* 1 */\n  background-color: transparent; /* 2 */\n  background-image: none; /* 2 */\n}\n\n/*\nUse the modern Firefox focus style for all focusable elements.\n*/\n\n:-moz-focusring {\n  outline: auto;\n}\n\n/*\nRemove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n:-moz-ui-invalid {\n  box-shadow: none;\n}\n\n/*\nAdd the correct vertical alignment in Chrome and Firefox.\n*/\n\nprogress {\n  vertical-align: baseline;\n}\n\n/*\nCorrect the cursor style of increment and decrement buttons in Safari.\n*/\n\n::-webkit-inner-spin-button,\n::-webkit-outer-spin-button {\n  height: auto;\n}\n\n/*\n1. Correct the odd appearance in Chrome and Safari.\n2. Correct the outline style in Safari.\n*/\n\n[type=\'search\'] {\n  -webkit-appearance: textfield; /* 1 */\n  outline-offset: -2px; /* 2 */\n}\n\n/*\nRemove the inner padding in Chrome and Safari on macOS.\n*/\n\n::-webkit-search-decoration {\n  -webkit-appearance: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Change font properties to `inherit` in Safari.\n*/\n\n::-webkit-file-upload-button {\n  -webkit-appearance: button; /* 1 */\n  font: inherit; /* 2 */\n}\n\n/*\nAdd the correct display in Chrome and Safari.\n*/\n\nsummary {\n  display: list-item;\n}\n\n/*\nRemoves the default spacing and border for appropriate elements.\n*/\n\nblockquote,\ndl,\ndd,\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\nhr,\nfigure,\np,\npre {\n  margin: 0;\n}\n\nfieldset {\n  margin: 0;\n  padding: 0;\n}\n\nlegend {\n  padding: 0;\n}\n\nol,\nul,\nmenu {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n}\n\n/*\nReset default styling for dialogs.\n*/\n\ndialog {\n  padding: 0;\n}\n\n/*\nPrevent resizing textareas horizontally by default.\n*/\n\ntextarea {\n  resize: vertical;\n}\n\n/*\n1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n2. Set the default placeholder color to the user\'s configured gray 400 color.\n*/\n\ninput::-moz-placeholder, textarea::-moz-placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\ninput::placeholder,\ntextarea::placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\n/*\nSet the default cursor for buttons.\n*/\n\nbutton,\n[role="button"] {\n  cursor: pointer;\n}\n\n/*\nMake sure disabled buttons don\'t get the pointer cursor.\n*/\n\n:disabled {\n  cursor: default;\n}\n\n/*\n1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n   This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\nimg,\nsvg,\nvideo,\ncanvas,\naudio,\niframe,\nembed,\nobject {\n  display: block; /* 1 */\n  vertical-align: middle; /* 2 */\n}\n\n/*\nConstrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\nimg,\nvideo {\n  max-width: 100%;\n  height: auto;\n}\n\n/* Make elements with the HTML hidden attribute stay hidden by default */\n\n[hidden]:where(:not([hidden="until-found"])) {\n  display: none;\n}\n\n*,\n  *::before,\n  *::after {\n    box-sizing: border-box;\n  }\n\nhtml {\n    font-family:\n      \'Inter\',\n      -apple-system,\n      BlinkMacSystemFont,\n      \'Segoe UI\',\n      sans-serif;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale;\n  }\n\n:root {\n    --background: 0 0% 100%;\n    --foreground: 222.2 84% 4.9%;\n    --card: 0 0% 100%;\n    --card-foreground: 222.2 84% 4.9%;\n    --popover: 0 0% 100%;\n    --popover-foreground: 222.2 84% 4.9%;\n    --primary: 221.2 83.2% 53.3%;\n    --primary-foreground: 210 40% 98%;\n    --secondary: 210 40% 96.1%;\n    --secondary-foreground: 222.2 47.4% 11.2%;\n    --muted: 210 40% 96.1%;\n    --muted-foreground: 215.4 16.3% 46.9%;\n    --accent: 210 40% 96.1%;\n    --accent-foreground: 222.2 47.4% 11.2%;\n    --destructive: 0 84.2% 60.2%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 214.3 31.8% 91.4%;\n    --input: 214.3 31.8% 91.4%;\n    --ring: 221.2 83.2% 53.3%;\n    --radius: 0.375rem;\n  }\n\n.dark {\n    --background: 222.2 84% 4.9%;\n    --foreground: 210 40% 98%;\n    --card: 222.2 84% 4.9%;\n    --card-foreground: 210 40% 98%;\n    --popover: 222.2 84% 4.9%;\n    --popover-foreground: 210 40% 98%;\n    --primary: 217.2 91.2% 59.8%;\n    --primary-foreground: 222.2 47.4% 11.2%;\n    --secondary: 217.2 32.6% 17.5%;\n    --secondary-foreground: 210 40% 98%;\n    --muted: 217.2 32.6% 17.5%;\n    --muted-foreground: 215 20.2% 65.1%;\n    --accent: 217.2 32.6% 17.5%;\n    --accent-foreground: 210 40% 98%;\n    --destructive: 0 62.8% 30.6%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 217.2 32.6% 17.5%;\n    --input: 217.2 32.6% 17.5%;\n    --ring: 224.3 76.3% 48%;\n    --md-scrollbar: #484d54;\n  }\n\n::-moz-selection {\n    background: #2469f0;\n    color: white;\n  }\n\n::selection {\n    background: #2469f0;\n    color: white;\n  }\n\n* {\n    scrollbar-width: thin;\n    scrollbar-color: #c9cdd4 transparent;\n  }\n\n.dark * {\n    scrollbar-color: var(--md-scrollbar) transparent;\n  }\n\n*::-webkit-scrollbar {\n    width: 6px;\n    height: 6px;\n  }\n\n*::-webkit-scrollbar-track {\n    background: transparent;\n  }\n\n*::-webkit-scrollbar-thumb {\n    background: #c9cdd4;\n    border-radius: 3px;\n  }\n\n.dark *::-webkit-scrollbar-thumb {\n    background: var(--md-scrollbar);\n  }\n\n*::-webkit-scrollbar-thumb:hover {\n    background: #a4a9b3;\n  }\n\n.dark *::-webkit-scrollbar-thumb:hover {\n    background: #636971;\n  }\n.\\!container{\n  width: 100% !important;\n}\n.container{\n  width: 100%;\n}\n@media (min-width: 640px){\n\n  .\\!container{\n    max-width: 640px !important;\n  }\n\n  .container{\n    max-width: 640px;\n  }\n}\n@media (min-width: 768px){\n\n  .\\!container{\n    max-width: 768px !important;\n  }\n\n  .container{\n    max-width: 768px;\n  }\n}\n@media (min-width: 1024px){\n\n  .\\!container{\n    max-width: 1024px !important;\n  }\n\n  .container{\n    max-width: 1024px;\n  }\n}\n@media (min-width: 1280px){\n\n  .\\!container{\n    max-width: 1280px !important;\n  }\n\n  .container{\n    max-width: 1280px;\n  }\n}\n@media (min-width: 1536px){\n\n  .\\!container{\n    max-width: 1536px !important;\n  }\n\n  .container{\n    max-width: 1536px;\n  }\n}\n.pointer-events-none{\n  pointer-events: none;\n}\n.visible{\n  visibility: visible;\n}\n.static{\n  position: static;\n}\n.fixed{\n  position: fixed;\n}\n.absolute{\n  position: absolute;\n}\n.relative{\n  position: relative;\n}\n.bottom-4{\n  bottom: 1rem;\n}\n.left-0{\n  left: 0px;\n}\n.left-1\\/2{\n  left: 50%;\n}\n.right-0{\n  right: 0px;\n}\n.right-3{\n  right: 0.75rem;\n}\n.top-1\\/2{\n  top: 50%;\n}\n.top-full{\n  top: 100%;\n}\n.z-50{\n  z-index: 50;\n}\n.z-\\[1050\\]{\n  z-index: 1050;\n}\n.z-\\[2147483647\\]{\n  z-index: 2147483647;\n}\n.col-span-full{\n  grid-column: 1 / -1;\n}\n.mx-auto{\n  margin-left: auto;\n  margin-right: auto;\n}\n.-mb-\\[1px\\]{\n  margin-bottom: -1px;\n}\n.mb-1{\n  margin-bottom: 0.25rem;\n}\n.mb-1\\.5{\n  margin-bottom: 0.375rem;\n}\n.mb-2\\.5{\n  margin-bottom: 0.625rem;\n}\n.mb-3{\n  margin-bottom: 0.75rem;\n}\n.mb-3\\.5{\n  margin-bottom: 0.875rem;\n}\n.ml-0\\.5{\n  margin-left: 0.125rem;\n}\n.ml-1\\.5{\n  margin-left: 0.375rem;\n}\n.mr-1{\n  margin-right: 0.25rem;\n}\n.mr-2{\n  margin-right: 0.5rem;\n}\n.mr-3{\n  margin-right: 0.75rem;\n}\n.mr-auto{\n  margin-right: auto;\n}\n.mt-0\\.5{\n  margin-top: 0.125rem;\n}\n.mt-1{\n  margin-top: 0.25rem;\n}\n.mt-3{\n  margin-top: 0.75rem;\n}\n.mt-px{\n  margin-top: 1px;\n}\n.block{\n  display: block;\n}\n.inline-block{\n  display: inline-block;\n}\n.inline{\n  display: inline;\n}\n.flex{\n  display: flex;\n}\n.inline-flex{\n  display: inline-flex;\n}\n.\\!table{\n  display: table !important;\n}\n.table{\n  display: table;\n}\n.grid{\n  display: grid;\n}\n.\\!contents{\n  display: contents !important;\n}\n.contents{\n  display: contents;\n}\n.hidden{\n  display: none;\n}\n.size-1\\.5{\n  width: 0.375rem;\n  height: 0.375rem;\n}\n.size-10{\n  width: 2.5rem;\n  height: 2.5rem;\n}\n.size-2\\.5{\n  width: 0.625rem;\n  height: 0.625rem;\n}\n.size-3{\n  width: 0.75rem;\n  height: 0.75rem;\n}\n.size-3\\.5{\n  width: 0.875rem;\n  height: 0.875rem;\n}\n.size-4{\n  width: 1rem;\n  height: 1rem;\n}\n.size-5{\n  width: 1.25rem;\n  height: 1.25rem;\n}\n.h-1{\n  height: 0.25rem;\n}\n.h-10{\n  height: 2.5rem;\n}\n.h-11{\n  height: 2.75rem;\n}\n.h-12{\n  height: 3rem;\n}\n.h-2{\n  height: 0.5rem;\n}\n.h-24{\n  height: 6rem;\n}\n.h-4{\n  height: 1rem;\n}\n.h-5{\n  height: 1.25rem;\n}\n.h-6{\n  height: 1.5rem;\n}\n.h-7{\n  height: 1.75rem;\n}\n.h-8{\n  height: 2rem;\n}\n.h-9{\n  height: 2.25rem;\n}\n.h-\\[28px\\]{\n  height: 28px;\n}\n.h-\\[300px\\]{\n  height: 300px;\n}\n.h-\\[30px\\]{\n  height: 30px;\n}\n.h-\\[var\\(--radix-select-trigger-height\\)\\]{\n  height: var(--radix-select-trigger-height);\n}\n.h-full{\n  height: 100%;\n}\n.max-h-60{\n  max-height: 15rem;\n}\n.max-h-96{\n  max-height: 24rem;\n}\n.max-h-\\[180px\\]{\n  max-height: 180px;\n}\n.max-h-\\[220px\\]{\n  max-height: 220px;\n}\n.max-h-\\[240px\\]{\n  max-height: 240px;\n}\n.max-h-\\[600px\\]{\n  max-height: 600px;\n}\n.min-h-\\[200px\\]{\n  min-height: 200px;\n}\n.min-h-\\[50px\\]{\n  min-height: 50px;\n}\n.w-10{\n  width: 2.5rem;\n}\n.w-2{\n  width: 0.5rem;\n}\n.w-4{\n  width: 1rem;\n}\n.w-5{\n  width: 1.25rem;\n}\n.w-6{\n  width: 1.5rem;\n}\n.w-7{\n  width: 1.75rem;\n}\n.w-8{\n  width: 2rem;\n}\n.w-9{\n  width: 2.25rem;\n}\n.w-\\[100px\\]{\n  width: 100px;\n}\n.w-\\[120px\\]{\n  width: 120px;\n}\n.w-\\[28px\\]{\n  width: 28px;\n}\n.w-\\[30px\\]{\n  width: 30px;\n}\n.w-\\[340px\\]{\n  width: 340px;\n}\n.w-\\[35\\%\\]{\n  width: 35%;\n}\n.w-\\[90px\\]{\n  width: 90px;\n}\n.w-full{\n  width: 100%;\n}\n.w-px{\n  width: 1px;\n}\n.min-w-0{\n  min-width: 0px;\n}\n.min-w-\\[8rem\\]{\n  min-width: 8rem;\n}\n.min-w-\\[var\\(--radix-select-trigger-width\\)\\]{\n  min-width: var(--radix-select-trigger-width);\n}\n.max-w-\\[120px\\]{\n  max-width: 120px;\n}\n.max-w-\\[140px\\]{\n  max-width: 140px;\n}\n.max-w-\\[200px\\]{\n  max-width: 200px;\n}\n.flex-1{\n  flex: 1 1 0%;\n}\n.flex-shrink{\n  flex-shrink: 1;\n}\n.shrink-0{\n  flex-shrink: 0;\n}\n.-translate-x-1\\/2{\n  --tw-translate-x: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.-translate-y-1\\/2{\n  --tw-translate-y: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.scale-90{\n  --tw-scale-x: .9;\n  --tw-scale-y: .9;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.transform{\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n@keyframes pulse{\n\n  50%{\n    opacity: .5;\n  }\n}\n.animate-pulse{\n  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;\n}\n@keyframes slide-up{\n\n  0%{\n    opacity: 0;\n    transform: translateY(8px);\n  }\n\n  100%{\n    opacity: 1;\n    transform: translateY(0);\n  }\n}\n.animate-slide-up{\n  animation: slide-up 0.15s ease-out;\n}\n.cursor-default{\n  cursor: default;\n}\n.cursor-not-allowed{\n  cursor: not-allowed;\n}\n.cursor-pointer{\n  cursor: pointer;\n}\n.select-none{\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.resize-none{\n  resize: none;\n}\n.resize-y{\n  resize: vertical;\n}\n.resize{\n  resize: both;\n}\n.grid-cols-1{\n  grid-template-columns: repeat(1, minmax(0, 1fr));\n}\n.grid-cols-2{\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n}\n.grid-cols-3{\n  grid-template-columns: repeat(3, minmax(0, 1fr));\n}\n.grid-cols-\\[repeat\\(auto-fill\\2c minmax\\(100px\\2c 1fr\\)\\)\\]{\n  grid-template-columns: repeat(auto-fill,minmax(100px,1fr));\n}\n.grid-cols-\\[repeat\\(auto-fill\\2c minmax\\(90px\\2c 1fr\\)\\)\\]{\n  grid-template-columns: repeat(auto-fill,minmax(90px,1fr));\n}\n.flex-col{\n  flex-direction: column;\n}\n.flex-wrap{\n  flex-wrap: wrap;\n}\n.items-start{\n  align-items: flex-start;\n}\n.items-center{\n  align-items: center;\n}\n.justify-end{\n  justify-content: flex-end;\n}\n.justify-center{\n  justify-content: center;\n}\n.justify-between{\n  justify-content: space-between;\n}\n.gap-0{\n  gap: 0px;\n}\n.gap-1{\n  gap: 0.25rem;\n}\n.gap-1\\.5{\n  gap: 0.375rem;\n}\n.gap-2{\n  gap: 0.5rem;\n}\n.gap-2\\.5{\n  gap: 0.625rem;\n}\n.gap-3{\n  gap: 0.75rem;\n}\n.gap-4{\n  gap: 1rem;\n}\n.gap-x-8{\n  -moz-column-gap: 2rem;\n       column-gap: 2rem;\n}\n.gap-y-3{\n  row-gap: 0.75rem;\n}\n.space-y-0\\.5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.125rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.125rem * var(--tw-space-y-reverse));\n}\n.space-y-1 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));\n}\n.space-y-1\\.5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.375rem * var(--tw-space-y-reverse));\n}\n.space-y-2 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));\n}\n.space-y-2\\.5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.625rem * var(--tw-space-y-reverse));\n}\n.space-y-3 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));\n}\n.space-y-4 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1rem * var(--tw-space-y-reverse));\n}\n.divide-y > :not([hidden]) ~ :not([hidden]){\n  --tw-divide-y-reverse: 0;\n  border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));\n  border-bottom-width: calc(1px * var(--tw-divide-y-reverse));\n}\n.divide-border > :not([hidden]) ~ :not([hidden]){\n  border-color: hsl(var(--border));\n}\n.overflow-auto{\n  overflow: auto;\n}\n.overflow-hidden{\n  overflow: hidden;\n}\n.overflow-y-auto{\n  overflow-y: auto;\n}\n.truncate{\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n.whitespace-nowrap{\n  white-space: nowrap;\n}\n.whitespace-pre-wrap{\n  white-space: pre-wrap;\n}\n.break-words{\n  overflow-wrap: break-word;\n}\n.rounded{\n  border-radius: 0.25rem;\n}\n.rounded-full{\n  border-radius: 9999px;\n}\n.rounded-lg{\n  border-radius: 0.5rem;\n}\n.rounded-md{\n  border-radius: 6px;\n}\n.rounded-sm{\n  border-radius: 0.125rem;\n}\n.rounded-xl{\n  border-radius: 0.75rem;\n}\n.border{\n  border-width: 1px;\n}\n.border-2{\n  border-width: 2px;\n}\n.border-b{\n  border-bottom-width: 1px;\n}\n.border-b-2{\n  border-bottom-width: 2px;\n}\n.border-l-2{\n  border-left-width: 2px;\n}\n.border-t{\n  border-top-width: 1px;\n}\n.border-t-2{\n  border-top-width: 2px;\n}\n.border-dashed{\n  border-style: dashed;\n}\n.border-none{\n  border-style: none;\n}\n.border-\\[\\#2469f0\\]{\n  --tw-border-opacity: 1;\n  border-color: rgb(36 105 240 / var(--tw-border-opacity, 1));\n}\n.border-amber-200{\n  --tw-border-opacity: 1;\n  border-color: rgb(253 230 138 / var(--tw-border-opacity, 1));\n}\n.border-border{\n  border-color: hsl(var(--border));\n}\n.border-destructive{\n  border-color: hsl(var(--destructive));\n}\n.border-destructive\\/20{\n  border-color: hsl(var(--destructive) / 0.2);\n}\n.border-foreground{\n  border-color: hsl(var(--foreground));\n}\n.border-green-200{\n  --tw-border-opacity: 1;\n  border-color: rgb(187 247 208 / var(--tw-border-opacity, 1));\n}\n.border-input{\n  border-color: hsl(var(--input));\n}\n.border-primary{\n  border-color: hsl(var(--primary));\n}\n.border-primary\\/15{\n  border-color: hsl(var(--primary) / 0.15);\n}\n.border-primary\\/20{\n  border-color: hsl(var(--primary) / 0.2);\n}\n.border-red-200{\n  --tw-border-opacity: 1;\n  border-color: rgb(254 202 202 / var(--tw-border-opacity, 1));\n}\n.border-red-500{\n  --tw-border-opacity: 1;\n  border-color: rgb(239 68 68 / var(--tw-border-opacity, 1));\n}\n.border-transparent{\n  border-color: transparent;\n}\n.bg-\\[\\#2469f0\\]{\n  --tw-bg-opacity: 1;\n  background-color: rgb(36 105 240 / var(--tw-bg-opacity, 1));\n}\n.bg-accent{\n  background-color: hsl(var(--accent));\n}\n.bg-accent\\/20{\n  background-color: hsl(var(--accent) / 0.2);\n}\n.bg-accent\\/40{\n  background-color: hsl(var(--accent) / 0.4);\n}\n.bg-accent\\/50{\n  background-color: hsl(var(--accent) / 0.5);\n}\n.bg-amber-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(255 251 235 / var(--tw-bg-opacity, 1));\n}\n.bg-amber-50\\/50{\n  background-color: rgb(255 251 235 / 0.5);\n}\n.bg-background{\n  background-color: hsl(var(--background));\n}\n.bg-blue-100{\n  --tw-bg-opacity: 1;\n  background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1));\n}\n.bg-blue-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(239 246 255 / var(--tw-bg-opacity, 1));\n}\n.bg-border{\n  background-color: hsl(var(--border));\n}\n.bg-card{\n  background-color: hsl(var(--card));\n}\n.bg-destructive{\n  background-color: hsl(var(--destructive));\n}\n.bg-destructive\\/10{\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.bg-destructive\\/5{\n  background-color: hsl(var(--destructive) / 0.05);\n}\n.bg-foreground{\n  background-color: hsl(var(--foreground));\n}\n.bg-gray-100{\n  --tw-bg-opacity: 1;\n  background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));\n}\n.bg-green-100{\n  --tw-bg-opacity: 1;\n  background-color: rgb(220 252 231 / var(--tw-bg-opacity, 1));\n}\n.bg-green-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(240 253 244 / var(--tw-bg-opacity, 1));\n}\n.bg-green-500{\n  --tw-bg-opacity: 1;\n  background-color: rgb(34 197 94 / var(--tw-bg-opacity, 1));\n}\n.bg-green-600{\n  --tw-bg-opacity: 1;\n  background-color: rgb(22 163 74 / var(--tw-bg-opacity, 1));\n}\n.bg-muted{\n  background-color: hsl(var(--muted));\n}\n.bg-muted-foreground{\n  background-color: hsl(var(--muted-foreground));\n}\n.bg-muted\\/40{\n  background-color: hsl(var(--muted) / 0.4);\n}\n.bg-popover{\n  background-color: hsl(var(--popover));\n}\n.bg-primary{\n  background-color: hsl(var(--primary));\n}\n.bg-primary\\/10{\n  background-color: hsl(var(--primary) / 0.1);\n}\n.bg-primary\\/5{\n  background-color: hsl(var(--primary) / 0.05);\n}\n.bg-red-100{\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 226 226 / var(--tw-bg-opacity, 1));\n}\n.bg-red-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 242 242 / var(--tw-bg-opacity, 1));\n}\n.bg-red-500\\/5{\n  background-color: rgb(239 68 68 / 0.05);\n}\n.bg-red-600{\n  --tw-bg-opacity: 1;\n  background-color: rgb(220 38 38 / var(--tw-bg-opacity, 1));\n}\n.bg-secondary{\n  background-color: hsl(var(--secondary));\n}\n.bg-white\\/15{\n  background-color: rgb(255 255 255 / 0.15);\n}\n.bg-yellow-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 252 232 / var(--tw-bg-opacity, 1));\n}\n.bg-gradient-to-br{\n  background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));\n}\n.from-muted{\n  --tw-gradient-from: hsl(var(--muted)) var(--tw-gradient-from-position);\n  --tw-gradient-to: hsl(var(--muted) / 0) var(--tw-gradient-to-position);\n  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);\n}\n.from-primary{\n  --tw-gradient-from: hsl(var(--primary)) var(--tw-gradient-from-position);\n  --tw-gradient-to: hsl(var(--primary) / 0) var(--tw-gradient-to-position);\n  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);\n}\n.to-muted\\/50{\n  --tw-gradient-to: hsl(var(--muted) / 0.5) var(--tw-gradient-to-position);\n}\n.to-primary\\/80{\n  --tw-gradient-to: hsl(var(--primary) / 0.8) var(--tw-gradient-to-position);\n}\n.p-0\\.5{\n  padding: 0.125rem;\n}\n.p-1{\n  padding: 0.25rem;\n}\n.p-1\\.5{\n  padding: 0.375rem;\n}\n.p-2{\n  padding: 0.5rem;\n}\n.p-2\\.5{\n  padding: 0.625rem;\n}\n.p-3{\n  padding: 0.75rem;\n}\n.p-3\\.5{\n  padding: 0.875rem;\n}\n.p-4{\n  padding: 1rem;\n}\n.p-5{\n  padding: 1.25rem;\n}\n.p-8{\n  padding: 2rem;\n}\n.px-1{\n  padding-left: 0.25rem;\n  padding-right: 0.25rem;\n}\n.px-1\\.5{\n  padding-left: 0.375rem;\n  padding-right: 0.375rem;\n}\n.px-2{\n  padding-left: 0.5rem;\n  padding-right: 0.5rem;\n}\n.px-2\\.5{\n  padding-left: 0.625rem;\n  padding-right: 0.625rem;\n}\n.px-3{\n  padding-left: 0.75rem;\n  padding-right: 0.75rem;\n}\n.px-3\\.5{\n  padding-left: 0.875rem;\n  padding-right: 0.875rem;\n}\n.px-4{\n  padding-left: 1rem;\n  padding-right: 1rem;\n}\n.px-5{\n  padding-left: 1.25rem;\n  padding-right: 1.25rem;\n}\n.px-6{\n  padding-left: 1.5rem;\n  padding-right: 1.5rem;\n}\n.py-0{\n  padding-top: 0px;\n  padding-bottom: 0px;\n}\n.py-0\\.5{\n  padding-top: 0.125rem;\n  padding-bottom: 0.125rem;\n}\n.py-1{\n  padding-top: 0.25rem;\n  padding-bottom: 0.25rem;\n}\n.py-1\\.5{\n  padding-top: 0.375rem;\n  padding-bottom: 0.375rem;\n}\n.py-12{\n  padding-top: 3rem;\n  padding-bottom: 3rem;\n}\n.py-2{\n  padding-top: 0.5rem;\n  padding-bottom: 0.5rem;\n}\n.py-2\\.5{\n  padding-top: 0.625rem;\n  padding-bottom: 0.625rem;\n}\n.py-3{\n  padding-top: 0.75rem;\n  padding-bottom: 0.75rem;\n}\n.py-4{\n  padding-top: 1rem;\n  padding-bottom: 1rem;\n}\n.py-8{\n  padding-top: 2rem;\n  padding-bottom: 2rem;\n}\n.pb-1\\.5{\n  padding-bottom: 0.375rem;\n}\n.pb-2{\n  padding-bottom: 0.5rem;\n}\n.pl-2{\n  padding-left: 0.5rem;\n}\n.pr-14{\n  padding-right: 3.5rem;\n}\n.pr-8{\n  padding-right: 2rem;\n}\n.pt-3{\n  padding-top: 0.75rem;\n}\n.text-center{\n  text-align: center;\n}\n.font-\\[\\\'Inter\\\'\\2c system-ui\\2c sans-serif\\]{\n  font-family: \'Inter\',system-ui,sans-serif;\n}\n.font-mono{\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace;\n}\n.text-\\[10px\\]{\n  font-size: 10px;\n}\n.text-\\[11px\\]{\n  font-size: 11px;\n}\n.text-\\[13px\\]{\n  font-size: 13px;\n}\n.text-\\[14px\\]{\n  font-size: 14px;\n}\n.text-\\[15px\\]{\n  font-size: 15px;\n}\n.text-\\[16px\\]{\n  font-size: 16px;\n}\n.text-\\[18px\\]{\n  font-size: 18px;\n}\n.text-\\[8px\\]{\n  font-size: 8px;\n}\n.text-\\[9px\\]{\n  font-size: 9px;\n}\n.text-base{\n  font-size: 1rem;\n  line-height: 1.5rem;\n}\n.text-md-sm{\n  font-size: 12px;\n  line-height: 18px;\n}\n.text-md-xs{\n  font-size: 11px;\n  line-height: 16px;\n}\n.text-sm{\n  font-size: 0.875rem;\n  line-height: 1.25rem;\n}\n.text-xs{\n  font-size: 0.75rem;\n  line-height: 1rem;\n}\n.font-bold{\n  font-weight: 700;\n}\n.font-medium{\n  font-weight: 500;\n}\n.font-semibold{\n  font-weight: 600;\n}\n.uppercase{\n  text-transform: uppercase;\n}\n.leading-relaxed{\n  line-height: 1.625;\n}\n.tracking-tight{\n  letter-spacing: -0.025em;\n}\n.tracking-wide{\n  letter-spacing: 0.025em;\n}\n.tracking-wider{\n  letter-spacing: 0.05em;\n}\n.text-\\[\\#2469f0\\]{\n  --tw-text-opacity: 1;\n  color: rgb(36 105 240 / var(--tw-text-opacity, 1));\n}\n.text-amber-700{\n  --tw-text-opacity: 1;\n  color: rgb(180 83 9 / var(--tw-text-opacity, 1));\n}\n.text-background{\n  color: hsl(var(--background));\n}\n.text-blue-700{\n  --tw-text-opacity: 1;\n  color: rgb(29 78 216 / var(--tw-text-opacity, 1));\n}\n.text-card-foreground{\n  color: hsl(var(--card-foreground));\n}\n.text-destructive{\n  color: hsl(var(--destructive));\n}\n.text-destructive-foreground{\n  color: hsl(var(--destructive-foreground));\n}\n.text-destructive\\/80{\n  color: hsl(var(--destructive) / 0.8);\n}\n.text-foreground{\n  color: hsl(var(--foreground));\n}\n.text-gray-700{\n  --tw-text-opacity: 1;\n  color: rgb(55 65 81 / var(--tw-text-opacity, 1));\n}\n.text-green-500{\n  --tw-text-opacity: 1;\n  color: rgb(34 197 94 / var(--tw-text-opacity, 1));\n}\n.text-green-700{\n  --tw-text-opacity: 1;\n  color: rgb(21 128 61 / var(--tw-text-opacity, 1));\n}\n.text-muted-foreground{\n  color: hsl(var(--muted-foreground));\n}\n.text-popover-foreground{\n  color: hsl(var(--popover-foreground));\n}\n.text-primary{\n  color: hsl(var(--primary));\n}\n.text-primary-foreground{\n  color: hsl(var(--primary-foreground));\n}\n.text-red-500{\n  --tw-text-opacity: 1;\n  color: rgb(239 68 68 / var(--tw-text-opacity, 1));\n}\n.text-red-600{\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.text-red-700{\n  --tw-text-opacity: 1;\n  color: rgb(185 28 28 / var(--tw-text-opacity, 1));\n}\n.text-red-800{\n  --tw-text-opacity: 1;\n  color: rgb(153 27 27 / var(--tw-text-opacity, 1));\n}\n.text-red-900{\n  --tw-text-opacity: 1;\n  color: rgb(127 29 29 / var(--tw-text-opacity, 1));\n}\n.text-secondary-foreground{\n  color: hsl(var(--secondary-foreground));\n}\n.text-white{\n  --tw-text-opacity: 1;\n  color: rgb(255 255 255 / var(--tw-text-opacity, 1));\n}\n.text-white\\/70{\n  color: rgb(255 255 255 / 0.7);\n}\n.text-yellow-600{\n  --tw-text-opacity: 1;\n  color: rgb(202 138 4 / var(--tw-text-opacity, 1));\n}\n.text-yellow-700{\n  --tw-text-opacity: 1;\n  color: rgb(161 98 7 / var(--tw-text-opacity, 1));\n}\n.text-yellow-800{\n  --tw-text-opacity: 1;\n  color: rgb(133 77 14 / var(--tw-text-opacity, 1));\n}\n.underline-offset-4{\n  text-underline-offset: 4px;\n}\n.antialiased{\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n}\n.opacity-0{\n  opacity: 0;\n}\n.opacity-30{\n  opacity: 0.3;\n}\n.opacity-50{\n  opacity: 0.5;\n}\n.opacity-60{\n  opacity: 0.6;\n}\n.opacity-85{\n  opacity: 0.85;\n}\n.opacity-90{\n  opacity: 0.9;\n}\n.shadow{\n  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-lg{\n  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-md{\n  --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-sm{\n  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);\n  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.outline-none{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.outline{\n  outline-style: solid;\n}\n.ring{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.ring-0{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.blur{\n  --tw-blur: blur(8px);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.grayscale{\n  --tw-grayscale: grayscale(100%);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.filter{\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.backdrop-filter{\n  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);\n}\n.transition{\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-all{\n  transition-property: all;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-colors{\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-transform{\n  transition-property: transform;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.duration-150{\n  transition-duration: 150ms;\n}\n.duration-200{\n  transition-duration: 200ms;\n}\n.duration-300{\n  transition-duration: 300ms;\n}\n.ease-in-out{\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.ease-out{\n  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);\n}\n@keyframes enter{\n\n  from{\n    opacity: var(--tw-enter-opacity, 1);\n    transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0) scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1)) rotate(var(--tw-enter-rotate, 0));\n  }\n}\n@keyframes exit{\n\n  to{\n    opacity: var(--tw-exit-opacity, 1);\n    transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0) scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1)) rotate(var(--tw-exit-rotate, 0));\n  }\n}\n.animate-in{\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.fade-in{\n  --tw-enter-opacity: 0;\n}\n.fade-out{\n  --tw-exit-opacity: 0;\n}\n.duration-150{\n  animation-duration: 150ms;\n}\n.duration-200{\n  animation-duration: 200ms;\n}\n.duration-300{\n  animation-duration: 300ms;\n}\n.ease-in-out{\n  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.ease-out{\n  animation-timing-function: cubic-bezier(0, 0, 0.2, 1);\n}\n.running{\n  animation-play-state: running;\n}\n.placeholder\\:text-muted-foreground::-moz-placeholder{\n  color: hsl(var(--muted-foreground));\n}\n.placeholder\\:text-muted-foreground::placeholder{\n  color: hsl(var(--muted-foreground));\n}\n.hover\\:bg-accent:hover{\n  background-color: hsl(var(--accent));\n}\n.hover\\:bg-amber-100\\/50:hover{\n  background-color: rgb(254 243 199 / 0.5);\n}\n.hover\\:bg-destructive\\/10:hover{\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.hover\\:bg-destructive\\/20:hover{\n  background-color: hsl(var(--destructive) / 0.2);\n}\n.hover\\:bg-destructive\\/90:hover{\n  background-color: hsl(var(--destructive) / 0.9);\n}\n.hover\\:bg-green-700:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(21 128 61 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-muted\\/50:hover{\n  background-color: hsl(var(--muted) / 0.5);\n}\n.hover\\:bg-primary\\/5:hover{\n  background-color: hsl(var(--primary) / 0.05);\n}\n.hover\\:bg-primary\\/90:hover{\n  background-color: hsl(var(--primary) / 0.9);\n}\n.hover\\:bg-red-500\\/10:hover{\n  background-color: rgb(239 68 68 / 0.1);\n}\n.hover\\:bg-red-700:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(185 28 28 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-secondary\\/80:hover{\n  background-color: hsl(var(--secondary) / 0.8);\n}\n.hover\\:bg-white\\/25:hover{\n  background-color: rgb(255 255 255 / 0.25);\n}\n.hover\\:text-accent-foreground:hover{\n  color: hsl(var(--accent-foreground));\n}\n.hover\\:text-destructive:hover{\n  color: hsl(var(--destructive));\n}\n.hover\\:text-foreground:hover{\n  color: hsl(var(--foreground));\n}\n.hover\\:text-red-600:hover{\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.hover\\:underline:hover{\n  text-decoration-line: underline;\n}\n.hover\\:opacity-70:hover{\n  opacity: 0.7;\n}\n.focus\\:bg-accent:focus{\n  background-color: hsl(var(--accent));\n}\n.focus\\:text-accent-foreground:focus{\n  color: hsl(var(--accent-foreground));\n}\n.focus\\:outline-none:focus{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus\\:ring-1:focus{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-2:focus{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-primary:focus{\n  --tw-ring-color: hsl(var(--primary));\n}\n.focus\\:ring-red-500:focus{\n  --tw-ring-opacity: 1;\n  --tw-ring-color: rgb(239 68 68 / var(--tw-ring-opacity, 1));\n}\n.focus\\:ring-ring:focus{\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus\\:ring-offset-1:focus{\n  --tw-ring-offset-width: 1px;\n}\n.focus-visible\\:outline-none:focus-visible{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus-visible\\:ring-2:focus-visible{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus-visible\\:ring-ring:focus-visible{\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus-visible\\:ring-offset-1:focus-visible{\n  --tw-ring-offset-width: 1px;\n}\n.disabled\\:pointer-events-none:disabled{\n  pointer-events: none;\n}\n.disabled\\:cursor-not-allowed:disabled{\n  cursor: not-allowed;\n}\n.disabled\\:opacity-50:disabled{\n  opacity: 0.5;\n}\n.group:hover .group-hover\\:opacity-100{\n  opacity: 1;\n}\n.data-\\[disabled\\]\\:pointer-events-none[data-disabled]{\n  pointer-events: none;\n}\n.data-\\[side\\=bottom\\]\\:translate-y-1[data-side="bottom"]{\n  --tw-translate-y: 0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[side\\=top\\]\\:-translate-y-1[data-side="top"]{\n  --tw-translate-y: -0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:translate-x-4[data-state="checked"]{\n  --tw-translate-x: 1rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=unchecked\\]\\:translate-x-0[data-state="unchecked"]{\n  --tw-translate-x: 0px;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:bg-primary[data-state="checked"]{\n  background-color: hsl(var(--primary));\n}\n.data-\\[state\\=unchecked\\]\\:bg-input[data-state="unchecked"]{\n  background-color: hsl(var(--input));\n}\n.data-\\[disabled\\]\\:opacity-50[data-disabled]{\n  opacity: 0.5;\n}\n.data-\\[state\\=open\\]\\:animate-in[data-state="open"]{\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:animate-out[data-state="closed"]{\n  animation-name: exit;\n  animation-duration: 150ms;\n  --tw-exit-opacity: initial;\n  --tw-exit-scale: initial;\n  --tw-exit-rotate: initial;\n  --tw-exit-translate-x: initial;\n  --tw-exit-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:fade-out-0[data-state="closed"]{\n  --tw-exit-opacity: 0;\n}\n.data-\\[state\\=open\\]\\:fade-in-0[data-state="open"]{\n  --tw-enter-opacity: 0;\n}\n.data-\\[state\\=closed\\]\\:zoom-out-95[data-state="closed"]{\n  --tw-exit-scale: .95;\n}\n.data-\\[state\\=open\\]\\:zoom-in-95[data-state="open"]{\n  --tw-enter-scale: .95;\n}\n.dark\\:border-amber-800:is(.dark *){\n  --tw-border-opacity: 1;\n  border-color: rgb(146 64 14 / var(--tw-border-opacity, 1));\n}\n.dark\\:border-green-800:is(.dark *){\n  --tw-border-opacity: 1;\n  border-color: rgb(22 101 52 / var(--tw-border-opacity, 1));\n}\n.dark\\:border-red-900:is(.dark *){\n  --tw-border-opacity: 1;\n  border-color: rgb(127 29 29 / var(--tw-border-opacity, 1));\n}\n.dark\\:bg-amber-900\\/30:is(.dark *){\n  background-color: rgb(120 53 15 / 0.3);\n}\n.dark\\:bg-amber-950\\/20:is(.dark *){\n  background-color: rgb(69 26 3 / 0.2);\n}\n.dark\\:bg-blue-900\\/30:is(.dark *){\n  background-color: rgb(30 58 138 / 0.3);\n}\n.dark\\:bg-blue-950\\/20:is(.dark *){\n  background-color: rgb(23 37 84 / 0.2);\n}\n.dark\\:bg-green-950\\/20:is(.dark *){\n  background-color: rgb(5 46 22 / 0.2);\n}\n.dark\\:bg-red-950\\/20:is(.dark *){\n  background-color: rgb(69 10 10 / 0.2);\n}\n.dark\\:bg-yellow-950\\/30:is(.dark *){\n  background-color: rgb(66 32 6 / 0.3);\n}\n.dark\\:text-amber-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(252 211 77 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-blue-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(147 197 253 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-green-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(134 239 172 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-red-200:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(254 202 202 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-red-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(252 165 165 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-yellow-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(253 224 71 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-yellow-400:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(250 204 21 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-yellow-500:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(234 179 8 / var(--tw-text-opacity, 1));\n}\n@media (min-width: 640px){\n\n  .sm\\:grid-cols-3{\n    grid-template-columns: repeat(3, minmax(0, 1fr));\n  }\n}\n@media (min-width: 768px){\n\n  .md\\:col-span-2{\n    grid-column: span 2 / span 2;\n  }\n\n  .md\\:grid-cols-2{\n    grid-template-columns: repeat(2, minmax(0, 1fr));\n  }\n}\n.\\[\\&\\>span\\]\\:line-clamp-1>span{\n  overflow: hidden;\n  display: -webkit-box;\n  -webkit-box-orient: vertical;\n  -webkit-line-clamp: 1;\n}\n.\\[\\&\\>span\\]\\:h-3>span{\n  height: 0.75rem;\n}\n.\\[\\&\\>span\\]\\:w-3>span{\n  width: 0.75rem;\n}\n.data-\\[state\\=checked\\]\\:\\[\\&\\>span\\]\\:translate-x-3>span[data-state="checked"]{\n  --tw-translate-x: 0.75rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.\\[\\&_svg\\]\\:pointer-events-none svg{\n  pointer-events: none;\n}\n.\\[\\&_svg\\]\\:size-4 svg{\n  width: 1rem;\n  height: 1rem;\n}\n.\\[\\&_svg\\]\\:shrink-0 svg{\n  flex-shrink: 0;\n}\n'
           : '') +
         `
       /* \u2500\u2500 Reset host-page overrides inside the modal \u2500\u2500 */

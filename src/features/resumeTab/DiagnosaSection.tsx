@@ -102,24 +102,17 @@ export function DiagnosaSection({ rows, onChange }: Props) {
   };
 
   return (
-    <div className="px-5 py-4 border-b border-border bg-muted/30">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-[18px] font-bold text-foreground font-['Lexend',system-ui,sans-serif]">
-          Diagnosa (ICD-10){' '}
-          {rows.length > 0 && (
-            <span className="font-normal text-muted-foreground">({rows.length})</span>
-          )}
-        </h3>
+    <div>
+      <div className="flex justify-end mb-3">
         <Button
           variant="default"
-          size="lg"
+          size="sm"
           onClick={() =>
             onChange([
               ...rows,
               { idicd: '', kode10: '', namaDiagnosa: '', kasus: '', komplikasi: '' },
             ])
           }
-          className="px-5 py-2.5 text-sm font-semibold"
         >
           <Plus className="size-4" /> Tambah Diagnosa
         </Button>

@@ -1,8 +1,9 @@
 import { useState, useCallback, useRef } from 'react';
 import type { ResumeData, ValidationError } from './types';
 import { Textarea } from '../../ui/components/Textarea';
+import { Label } from '../../ui/components/Label';
+import { Card } from '../../ui/components/Card';
 import { Header } from './Header';
-import { InfoBanner } from './InfoBanner';
 import { ClinicalNotesSection } from './ClinicalNotesSection';
 import { VitalSignsSection } from './VitalSignsSection';
 import { DiagnosaSection } from './DiagnosaSection';
@@ -46,6 +47,15 @@ function validate(data: ResumeData): ValidationError[] {
   return errors;
 }
 
+type TabId = 'klinis' | 'catatan' | 'diagnosis' | 'tindakan';
+
+const TABS: { id: TabId; label: string }[] = [
+  { id: 'klinis', label: 'Data Klinis' },
+  { id: 'catatan', label: 'Catatan' },
+  { id: 'diagnosis', label: 'Diagnosis' },
+  { id: 'tindakan', label: 'Tindakan' },
+];
+
 export function App({ data: initialData, onSave, onClose }: AppProps) {
   const [data, setData] = useState<ResumeData>(initialData);
   const [saving, setSaving] = useState(false);
@@ -53,6 +63,7 @@ export function App({ data: initialData, onSave, onClose }: AppProps) {
   const [saveAttempted, setSaveAttempted] = useState(false);
   const [warnings, setWarnings] = useState<ValidationError[]>([]);
   const [extraErrors, setExtraErrors] = useState<ValidationError[]>([]);
+  const [activeTab, setActiveTab] = useState<TabId>('klinis');
 
   const hadDiagnosaInitially = useRef(data.diagnosa.some((d) => d.idicd?.trim()));
 
@@ -95,83 +106,109 @@ export function App({ data: initialData, onSave, onClose }: AppProps) {
 
   return (
     <div className="resume-modal">
-      <Header title="Resume Rawat Jalan" onClose={onClose} />
+      <Header title="Resume Rawat Jalan" onClose={onClose} patientInfo={data.patientInfo} />
 
-      <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
-        <InfoBanner data={data.patientInfo} />
+      {/* Tab navigation */}
+      <div className="flex border-b border-border shrink-0 bg-card">
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex-1 px-3 py-2.5 text-[13px] font-medium transition-colors cursor-pointer border-b-2 ${
+              activeTab === tab.id
+                ? 'text-primary border-primary bg-primary/5'
+                : 'text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/50'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-        <ClinicalNotesSection
-          anamnesa={data.clinicalNotes.anamnesa}
-          pemeriksaan={data.clinicalNotes.pemeriksaan_fisik}
-          onChange={(field, value) =>
-            updateNotes(field === 'pemeriksaan' ? 'pemeriksaan_fisik' : field, value)
-          }
-        />
+      {/* Tab content */}
+      <div className="flex-1 overflow-y-auto px-5 py-4">
+        {activeTab === 'klinis' && (
+          <div className="space-y-3">
+            <Card title="Data Klinis">
+              <ClinicalNotesSection
+                anamnesa={data.clinicalNotes.anamnesa}
+                pemeriksaan={data.clinicalNotes.pemeriksaan_fisik}
+                onChange={(field, value) =>
+                  updateNotes(field === 'pemeriksaan' ? 'pemeriksaan_fisik' : field, value)
+                }
+              />
+            </Card>
+            <Card title="Tanda Vital">
+              <VitalSignsSection
+                vitals={data.vitalSigns}
+                onChange={(key, value) =>
+                  setData({ ...data, vitalSigns: { ...data.vitalSigns, [key]: value } })
+                }
+              />
+            </Card>
+          </div>
+        )}
 
-        <hr className="border-t-2 border-border" />
+        {activeTab === 'catatan' && (
+          <Card title="Catatan Medis">
+            <div className="space-y-3">
+              <div>
+                <Label>Catatan Diagnosis</Label>
+                <Textarea
+                  value={data.clinicalNotes.catatan}
+                  onChange={(e) => updateNotes('catatan', e.target.value)}
+                  placeholder="Catatan diagnosa..."
+                  rows={3}
+                />
+              </div>
+              <div>
+                <Label>Tindakan</Label>
+                <Textarea
+                  value={data.clinicalNotes.tindakan}
+                  onChange={(e) => updateNotes('tindakan', e.target.value)}
+                  placeholder="Tindakan..."
+                  rows={3}
+                />
+              </div>
+              <div>
+                <Label>Terapi Pengobatan</Label>
+                <Textarea
+                  value={data.clinicalNotes.terapi_pengobatan}
+                  onChange={(e) => updateNotes('terapi_pengobatan', e.target.value)}
+                  placeholder="Terapi pengobatan..."
+                  rows={3}
+                />
+              </div>
+            </div>
+          </Card>
+        )}
 
-        <div>
-          <h3 className="text-[18px] font-bold text-foreground mb-4 font-['Lexend',system-ui,sans-serif]">
-            Catatan Diagnosa
-          </h3>
-          <Textarea
-            value={data.clinicalNotes.catatan}
-            onChange={(e) => updateNotes('catatan', e.target.value)}
-            placeholder="Catatan diagnosa..."
-            rows={3}
-          />
-        </div>
+        {activeTab === 'diagnosis' && (
+          <Card
+            title={`Diagnosis (ICD-10)${
+              data.diagnosa.length > 0 ? ` (${data.diagnosa.length})` : ''
+            }`}
+          >
+            <DiagnosaSection
+              rows={data.diagnosa}
+              onChange={(diagnosa) => setData({ ...data, diagnosa })}
+            />
+          </Card>
+        )}
 
-        <hr className="border-t-2 border-border" />
-
-        <div>
-          <h3 className="text-[18px] font-bold text-foreground mb-4 font-['Lexend',system-ui,sans-serif]">
-            Tindakan
-          </h3>
-          <Textarea
-            value={data.clinicalNotes.tindakan}
-            onChange={(e) => updateNotes('tindakan', e.target.value)}
-            placeholder="Tindakan..."
-            rows={3}
-          />
-        </div>
-
-        <hr className="border-t-2 border-border" />
-
-        <div>
-          <h3 className="text-[18px] font-bold text-foreground mb-4 font-['Lexend',system-ui,sans-serif]">
-            Terapi Pengobatan
-          </h3>
-          <Textarea
-            value={data.clinicalNotes.terapi_pengobatan}
-            onChange={(e) => updateNotes('terapi_pengobatan', e.target.value)}
-            placeholder="Terapi pengobatan..."
-            rows={3}
-          />
-        </div>
-
-        <hr className="border-t-2 border-border" />
-
-        <VitalSignsSection
-          vitals={data.vitalSigns}
-          onChange={(key, value) =>
-            setData({ ...data, vitalSigns: { ...data.vitalSigns, [key]: value } })
-          }
-        />
-
-        <hr className="border-t-2 border-border" />
-
-        <DiagnosaSection
-          rows={data.diagnosa}
-          onChange={(diagnosa) => setData({ ...data, diagnosa })}
-        />
-
-        <hr className="border-t-2 border-border" />
-
-        <TindakanSection
-          rows={data.tindakan}
-          onChange={(tindakan) => setData({ ...data, tindakan })}
-        />
+        {activeTab === 'tindakan' && (
+          <Card
+            title={`Tindakan (ICD-9)${
+              data.tindakan.length > 0 ? ` (${data.tindakan.length})` : ''
+            }`}
+          >
+            <TindakanSection
+              rows={data.tindakan}
+              onChange={(tindakan) => setData({ ...data, tindakan })}
+            />
+          </Card>
+        )}
       </div>
 
       <ValidationPanel errors={allErrors} warnings={warnings} />

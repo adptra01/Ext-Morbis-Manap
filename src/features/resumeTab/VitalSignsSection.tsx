@@ -24,28 +24,23 @@ export function VitalSignsSection({ vitals, onChange }: VitalSignsSectionProps) 
   ];
 
   return (
-    <div>
-      <h3 className="text-[18px] font-bold text-foreground mb-4 font-['Lexend',system-ui,sans-serif]">
-        Tanda Vital
-      </h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        {fields.map((f) => (
-          <div key={f.key}>
-            <Label>{f.label}</Label>
-            <div className="relative">
-              <Input
-                value={vitals[f.key as keyof typeof vitals]}
-                onChange={(e) => onChange(f.key, e.target.value)}
-                placeholder={f.placeholder}
-                className="pr-14"
-              />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[13px] font-semibold text-muted-foreground pointer-events-none">
-                {f.unit}
-              </span>
-            </div>
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      {fields.map((f) => (
+        <div key={f.key}>
+          <Label>{f.label}</Label>
+          <div className="relative">
+            <Input
+              value={vitals[f.key as keyof typeof vitals]}
+              onChange={(e) => onChange(f.key, e.target.value)}
+              placeholder={f.placeholder}
+              className="pr-14"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[13px] font-semibold text-muted-foreground pointer-events-none">
+              {f.unit}
+            </span>
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
   );
 }

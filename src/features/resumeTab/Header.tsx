@@ -1,18 +1,17 @@
-import { Button } from '../../ui/components/button';
-
 interface HeaderProps {
   title: string;
   onClose: () => void;
+  patientInfo?: { norm: string; pasien: string; nama_dokter: string };
 }
 
-export function Header({ title, onClose }: HeaderProps) {
+export function Header({ title, onClose, patientInfo }: HeaderProps) {
   return (
-    <div className="flex items-center justify-between px-6 py-4 shrink-0 bg-gradient-to-br from-primary to-primary/80">
+    <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-br from-primary to-primary/80 text-white shrink-0">
       <div className="flex items-center gap-3">
-        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-white/15">
+        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/15">
           <svg
-            width="20"
-            height="20"
+            width="18"
+            height="18"
             viewBox="0 0 24 24"
             fill="none"
             stroke="white"
@@ -27,30 +26,24 @@ export function Header({ title, onClose }: HeaderProps) {
             <polyline points="10 9 9 9 8 9" />
           </svg>
         </div>
-        <h2 className="text-[20px] font-bold text-white tracking-tight">{title}</h2>
+        <div>
+          <h2 className="text-[15px] font-bold tracking-tight">{title}</h2>
+          {patientInfo && (
+            <div className="text-[11px] text-white/70 mt-0.5">
+              RM {patientInfo.norm || '—'} · {patientInfo.pasien || '—'} ·{' '}
+              {patientInfo.nama_dokter || '—'}
+            </div>
+          )}
+        </div>
       </div>
-      <Button
+      <button
         type="button"
-        variant="ghost"
-        size="sm"
         onClick={onClose}
-        className="text-white/70 hover:text-white hover:bg-white/15"
+        className="bg-white/15 hover:bg-white/25 border-none text-white w-[28px] h-[28px] rounded-md text-sm flex items-center justify-center cursor-pointer transition-colors"
         aria-label="Tutup"
       >
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </Button>
+        ✕
+      </button>
     </div>
   );
 }

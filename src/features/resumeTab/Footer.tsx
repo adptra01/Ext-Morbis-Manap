@@ -12,26 +12,24 @@ interface FooterProps {
 
 export function Footer({ onCancel, onSave, saving, hasErrors, lastSaved, onRefresh }: FooterProps) {
   return (
-    <div className="flex items-center justify-between px-6 py-4 border-t-2 border-border shrink-0 bg-muted/30">
+    <div className="flex items-center justify-between px-5 py-3 border-t border-border shrink-0 bg-card">
       <div className="flex items-center gap-3">
         {hasErrors && (
           <Badge variant="danger" icon>
             Validasi gagal
           </Badge>
         )}
-        {lastSaved && (
-          <span className="text-muted-foreground text-sm">Tersimpan pukul {lastSaved}</span>
-        )}
+        {lastSaved && <span className="text-muted-foreground text-xs">Tersimpan {lastSaved}</span>}
         {saving && (
           <Badge variant="default" icon>
             Menyimpan...
           </Badge>
         )}
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         {onRefresh && (
-          <Button type="button" variant="outline" size="default" onClick={onRefresh}>
-            Segarkan
+          <Button type="button" variant="ghost" size="default" onClick={onRefresh}>
+            Reset
           </Button>
         )}
         <Button type="button" variant="outline" size="default" onClick={onCancel}>
