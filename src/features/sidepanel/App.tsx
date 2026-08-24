@@ -115,24 +115,6 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
     roles: ['labor'],
   },
   {
-    key: 'labDataTables',
-    name: 'DataTables Input Hasil Lab',
-    desc: 'Search, pagination, page length tabel hasil lab',
-    roles: ['labor', 'kasir', 'admin'],
-  },
-  {
-    key: 'radiologiDataTables',
-    name: 'DataTables Radiologi',
-    desc: 'Search, pagination, page length tabel radiologi',
-    roles: ['admin', 'dokter'],
-  },
-  {
-    key: 'konsulDataTables',
-    name: 'DataTables Konsultasi',
-    desc: 'Search, pagination, page length tabel konsultasi',
-    roles: ['casemix'],
-  },
-  {
     key: 'laporanKasirTime',
     name: 'Laporan Kasir Time',
     desc: 'Flatpickr datetime, auto-fill, waktu di tabel',

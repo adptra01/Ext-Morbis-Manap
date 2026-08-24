@@ -24,7 +24,14 @@ import { confirmExt } from '../ui/web';
     if (!el) return null;
     const onclick = el.getAttribute('onclick');
     if (!onclick) return null;
-    // id radiologi selalu ada sebagai query param `id=` di URL onclick
+    // Halaman lab: onclick berupa panggilan fungsi dgn id sebagai argumen pertama
+    // (mis. edit_hasil(168989, this) / cetak_nota(168989)) — bukan query param.
+    const mFn = onclick.match(/(?:edit_hasil|cetak_nota)\s*\(\s*['"]?(\d+)/);
+    if (mFn) {
+      const mVisitFn = onclick.match(/[?&]id_visit=(\d+)/);
+      return { id: mFn[1], idVisit: mVisitFn ? mVisitFn[1] : '' };
+    }
+    // Radiologi: id selalu ada sebagai query param `id=` di URL onclick
     // (mis. ?noRm=50801&status=1&id=53354) — bukan angka pertama yang bisa jadi noRm.
     const mId = onclick.match(/[?&]id=(\d+)/);
     const mVisit = onclick.match(/[?&]id_visit=(\d+)/);

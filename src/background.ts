@@ -272,24 +272,6 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       name: 'Riwayat Permintaan Lab',
       description: 'Tombol lihat riwayat permintaan lab di halaman input hasil',
     },
-    labDataTables: {
-      enabled: false,
-      allowedRoles: ['labor', 'kasir', 'admin'],
-      name: 'DataTables Input Hasil Lab',
-      description: 'Search, pagination, page length, dan tampilan rapi untuk tabel hasil lab',
-    },
-    radiologiDataTables: {
-      enabled: false,
-      allowedRoles: ['admin', 'dokter'],
-      name: 'DataTables Radiologi',
-      description: 'Search, pagination, page length, dan tampilan rapi untuk tabel radiologi',
-    },
-    konsulDataTables: {
-      enabled: false,
-      allowedRoles: ['casemix'],
-      name: 'DataTables Konsultasi',
-      description: 'Search, pagination, page length untuk tabel jawaban konsultasi',
-    },
     laporanKasirTime: {
       enabled: true,
       allowedRoles: ['kasir', 'admin'],

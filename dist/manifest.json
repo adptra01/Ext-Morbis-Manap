@@ -110,13 +110,6 @@
     {
       "matches": ["http://*/admisi/pengajuan_konsultasi/konsultasi*"],
       "js": ["features/consultationEnhancer.js"],
-      "run_at": "document_end",
-      "world": "MAIN",
-      "all_frames": false
-    },
-    {
-      "matches": ["http://*/admisi/pengajuan_konsultasi/konsultasi*"],
-      "js": ["features/konsulDataTables.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
@@ -209,20 +202,6 @@
     },
     {
       "matches": ["http://*/laboratorium/input-hasil/view-lab*"],
-      "js": ["features/labDataTables.js"],
-      "run_at": "document_idle",
-      "world": "MAIN",
-      "all_frames": false
-    },
-    {
-      "matches": ["http://*/admisi/informasi/laporan-kasir*"],
-      "js": ["features/laporanKasirTime.js"],
-      "run_at": "document_idle",
-      "world": "MAIN",
-      "all_frames": false
-    },
-    {
-      "matches": ["http://*/laboratorium/input-hasil/view-lab*"],
       "js": ["features/cancelButton.js"],
       "run_at": "document_idle",
       "world": "MAIN",
@@ -237,13 +216,6 @@
     {
       "matches": ["http://*/admisi/radiologi/pemeriksaan*"],
       "js": ["features/cancelButton.js"],
-      "run_at": "document_idle",
-      "world": "MAIN",
-      "all_frames": false
-    },
-    {
-      "matches": ["http://*/admisi/radiologi/pemeriksaan*"],
-      "js": ["features/radiologiDataTables.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false

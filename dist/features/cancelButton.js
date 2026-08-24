@@ -508,6 +508,11 @@ var __morbis_feature = (() => {
       if (!el) return null;
       const onclick = el.getAttribute('onclick');
       if (!onclick) return null;
+      const mFn = onclick.match(/(?:edit_hasil|cetak_nota)\s*\(\s*['"]?(\d+)/);
+      if (mFn) {
+        const mVisitFn = onclick.match(/[?&]id_visit=(\d+)/);
+        return { id: mFn[1], idVisit: mVisitFn ? mVisitFn[1] : '' };
+      }
       const mId = onclick.match(/[?&]id=(\d+)/);
       const mVisit = onclick.match(/[?&]id_visit=(\d+)/);
       if (!mId) return null;
