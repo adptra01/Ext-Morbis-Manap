@@ -1,211 +1,258 @@
 'use strict';
 var __morbis_feature = (() => {
-  function h() {
+  // src/features/shared/types.ts
+  function getMorbisGlobals() {
     return window;
   }
-  var a = h(),
-    g = null,
-    f = null,
-    d = null,
-    l = {
-      urlPatterns: [
-        '/v2/m-klaim/detail-v2-refaktor?id_visit={id}&tanggalAwal={tanggalAwal}&tanggalAkhir={tanggalAkhir}&norm=&nama=&reg=&billing=all&status=all&id_poli_cari=&poli_cari=',
-      ],
-      autoDate: !0,
-      dateFormat: 'id',
-      buttonSelectors: [
-        'button[onclick^="detail("]',
-        'a[onclick^="detail("]',
-        '[data-action="detail"]',
-        '[data-id-visit]',
-        '.btn-detail',
-        '[data-toggle="detail"]',
-      ],
-      debug: !1,
-    };
-  function c(t) {
-    if (!t) return null;
-    let e = [/detail\((\d+)\)/, /detail\(['"](\d+)['"]\)/, /id_visit=(\d+)/, /id=(\d+)/];
-    for (let i of e) {
-      let r = t.match(i);
-      if (r) return r[1];
+
+  // src/features/openDetail.ts
+  var g = getMorbisGlobals();
+  var _scanIntervalId = null;
+  var _textScanTimeoutId = null;
+  var _observer = null;
+  var OPEN_DETAIL_CONFIG = {
+    urlPatterns: [
+      '/v2/m-klaim/detail-v2-refaktor?id_visit={id}&tanggalAwal={tanggalAwal}&tanggalAkhir={tanggalAkhir}&norm=&nama=&reg=&billing=all&status=all&id_poli_cari=&poli_cari=',
+    ],
+    autoDate: true,
+    dateFormat: 'id',
+    buttonSelectors: [
+      'button[onclick^="detail("]',
+      'a[onclick^="detail("]',
+      '[data-action="detail"]',
+      '[data-id-visit]',
+      '.btn-detail',
+      '[data-toggle="detail"]',
+    ],
+    debug: false,
+  };
+  function extractIdFromOnclick(attrValue) {
+    if (!attrValue) return null;
+    const patterns = [/detail\((\d+)\)/, /detail\(['"](\d+)['"]\)/, /id_visit=(\d+)/, /id=(\d+)/];
+    for (const pattern of patterns) {
+      const match = attrValue.match(pattern);
+      if (match) return match[1];
     }
     return null;
   }
-  function E(t) {
-    let e = t;
-    if (e.dataset.idVisit) return e.dataset.idVisit;
-    if (e.dataset.idvisit) return e.dataset.idvisit;
-    if (e.dataset.id) return e.dataset.id;
-    let i = t.getAttribute('href');
-    if (i) {
-      let o = c(i);
-      if (o) return o;
+  function extractIdFromElement(element) {
+    const el = element;
+    if (el.dataset.idVisit) return el.dataset.idVisit;
+    if (el.dataset.idvisit) return el.dataset.idvisit;
+    if (el.dataset.id) return el.dataset.id;
+    const hrefAttr = element.getAttribute('href');
+    if (hrefAttr) {
+      const id = extractIdFromOnclick(hrefAttr);
+      if (id) return id;
     }
-    let r = t.getAttribute('onclick');
-    if (r) {
-      let o = c(r);
-      if (o) return o;
+    const onclickAttr = element.getAttribute('onclick');
+    if (onclickAttr) {
+      const id = extractIdFromOnclick(onclickAttr);
+      if (id) return id;
     }
-    let n = t.parentElement;
-    for (let o = 0; o < 5 && n; o++) {
-      let u = n;
-      if (u.dataset.idVisit) return u.dataset.idVisit;
-      if (u.dataset.idvisit) return u.dataset.idvisit;
-      let v = n.getAttribute('href');
-      if (v) {
-        let s = c(v);
-        if (s) return s;
+    let parent = element.parentElement;
+    for (let i = 0; i < 5 && parent; i++) {
+      const p = parent;
+      if (p.dataset.idVisit) return p.dataset.idVisit;
+      if (p.dataset.idvisit) return p.dataset.idvisit;
+      const parentHref = parent.getAttribute('href');
+      if (parentHref) {
+        const id = extractIdFromOnclick(parentHref);
+        if (id) return id;
       }
-      let w = n.getAttribute('onclick');
-      if (w) {
-        let s = c(w);
-        if (s) return s;
+      const parentOnclick = parent.getAttribute('onclick');
+      if (parentOnclick) {
+        const id = extractIdFromOnclick(parentOnclick);
+        if (id) return id;
       }
-      n = n.parentElement;
+      parent = parent.parentElement;
     }
     return null;
   }
-  function M(t) {
-    let e = String(t.getDate()).padStart(2, '0'),
-      i = String(t.getMonth() + 1).padStart(2, '0'),
-      r = t.getFullYear();
-    return `${e}-${i}-${r}`;
+  function formatDateOpenDetail(date) {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
   }
-  function k(t) {
-    let e = window.location.origin + l.urlPatterns[0];
-    if (((e = e.replace('{id}', t)), l.autoDate)) {
-      let r = document.getElementById('tanggalAwal')?.value,
-        n = document.getElementById('tanggalAkhir')?.value;
-      if (r && n)
-        e = e
-          .replace('{tanggalAwal}', encodeURIComponent(r))
-          .replace('{tanggalAkhir}', encodeURIComponent(n));
-      else {
-        let o = M(new Date());
-        e = e.replace('{tanggalAwal}', o).replace('{tanggalAkhir}', o);
+  function generateUrl(id) {
+    let url = window.location.origin + OPEN_DETAIL_CONFIG.urlPatterns[0];
+    url = url.replace('{id}', id);
+    if (OPEN_DETAIL_CONFIG.autoDate) {
+      const tanggalAwal = document.getElementById('tanggalAwal')?.value;
+      const tanggalAkhir = document.getElementById('tanggalAkhir')?.value;
+      if (tanggalAwal && tanggalAkhir) {
+        url = url
+          .replace('{tanggalAwal}', encodeURIComponent(tanggalAwal))
+          .replace('{tanggalAkhir}', encodeURIComponent(tanggalAkhir));
+      } else {
+        const today = formatDateOpenDetail(/* @__PURE__ */ new Date());
+        url = url.replace('{tanggalAwal}', today).replace('{tanggalAkhir}', today);
       }
     }
-    let i = new URLSearchParams(window.location.search);
-    return (
-      ['norm', 'nama', 'reg', 'billing', 'status', 'id_poli_cari', 'poli_cari'].forEach((r) => {
-        let n = i.get(r);
-        n && (e = e.replace(`{${r}}`, encodeURIComponent(n)));
-      }),
-      (e = e.replace(/{\w+}/g, '')),
-      e
-    );
+    const currentParams = new URLSearchParams(window.location.search);
+    ['norm', 'nama', 'reg', 'billing', 'status', 'id_poli_cari', 'poli_cari'].forEach((param) => {
+      const value = currentParams.get(param);
+      if (value) {
+        url = url.replace(`{${param}}`, encodeURIComponent(value));
+      }
+    });
+    url = url.replace(/{\w+}/g, '');
+    return url;
   }
-  function p(t) {
-    return t.dataset.detailModified === 'true';
+  function isModifiedEvent(element) {
+    return element.dataset.detailModified === 'true';
   }
-  function b(t) {
-    if (p(t)) return;
-    let e = E(t);
-    if (!e) {
-      l.debug && console.log('[OpenDetail] Gagal mengekstrak ID dari elemen:', t);
+  function overrideDetailButton(btn) {
+    if (isModifiedEvent(btn)) return;
+    const id = extractIdFromElement(btn);
+    if (!id) {
+      if (OPEN_DETAIL_CONFIG.debug) {
+        console.log('[OpenDetail] Gagal mengekstrak ID dari elemen:', btn);
+      }
       return;
     }
-    let i = t.getAttribute('onclick'),
-      r = t.getAttribute('target');
-    if (
-      ((t.dataset.originalOnclick = i || ''),
-      r && (t.dataset.originalTarget = r),
-      (t.dataset.detailModified = 'true'),
-      t.removeAttribute('onclick'),
-      t.removeAttribute('target'),
-      t.tagName.toLowerCase() === 'a')
-    ) {
-      let n = k(e);
-      t.setAttribute('href', n);
+    const originalOnclick = btn.getAttribute('onclick');
+    const originalTarget = btn.getAttribute('target');
+    btn.dataset.originalOnclick = originalOnclick || '';
+    if (originalTarget) btn.dataset.originalTarget = originalTarget;
+    btn.dataset.detailModified = 'true';
+    btn.removeAttribute('onclick');
+    btn.removeAttribute('target');
+    if (btn.tagName.toLowerCase() === 'a') {
+      const url = generateUrl(id);
+      btn.setAttribute('href', url);
     }
-    (t.addEventListener(
+    btn.addEventListener(
       'click',
-      function (n) {
-        if (n.ctrlKey || n.metaKey) return;
-        (n.preventDefault(), n.stopPropagation(), n.stopImmediatePropagation());
-        let o = k(e);
-        (console.log(`[OpenDetail] Membuka detail ID: ${e}, URL: ${o}`),
-          (window.location.href = o));
-      },
-      !0,
-    ),
-      (t.dataset.detailNewTab = 'true'),
-      l.debug && console.log(`[OpenDetail] Tombol detail ID: ${e} berhasil di-override`));
-  }
-  function m() {
-    if (!(
-      !a.currentConfig?.features?.openDetailInNewTab?.enabled ||
-      !a.ExtensionCore.isFeatureAllowed('openDetailInNewTab')
-    ))
-      for (let t of l.buttonSelectors)
-        try {
-          document.querySelectorAll(t).forEach((i) => b(i));
-        } catch {
-          l.debug && console.warn(`[OpenDetail] Invalid selector skipped: ${t}`);
+      function (e) {
+        if (e.ctrlKey || e.metaKey) {
+          return;
         }
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        const url = generateUrl(id);
+        console.log(`[OpenDetail] Membuka detail ID: ${id}, URL: ${url}`);
+        window.location.href = url;
+      },
+      true,
+    );
+    btn.dataset.detailNewTab = 'true';
+    if (OPEN_DETAIL_CONFIG.debug) {
+      console.log(`[OpenDetail] Tombol detail ID: ${id} berhasil di-override`);
+    }
   }
-  function D() {
-    document.querySelectorAll('[data-detail-modified="true"]').forEach((e) => {
-      let i = e.dataset.originalOnclick;
-      i && i !== '' && e.setAttribute('onclick', i);
-      let r = e.dataset.originalTarget;
-      (r && e.setAttribute('target', r),
-        delete e.dataset.detailModified,
-        delete e.dataset.detailNewTab,
-        delete e.dataset.originalOnclick,
-        delete e.dataset.originalTarget);
-      let n = e.cloneNode(!0);
-      e.parentNode && e.parentNode.replaceChild(n, e);
+  function overrideDetailButtons() {
+    if (
+      !g.currentConfig?.features?.openDetailInNewTab?.enabled ||
+      !g.ExtensionCore.isFeatureAllowed('openDetailInNewTab')
+    )
+      return;
+    for (const selector of OPEN_DETAIL_CONFIG.buttonSelectors) {
+      try {
+        const buttons = document.querySelectorAll(selector);
+        buttons.forEach((btn) => overrideDetailButton(btn));
+      } catch {
+        if (OPEN_DETAIL_CONFIG.debug) {
+          console.warn(`[OpenDetail] Invalid selector skipped: ${selector}`);
+        }
+      }
+    }
+  }
+  function restoreDetailButtons() {
+    const modifiedButtons = document.querySelectorAll('[data-detail-modified="true"]');
+    modifiedButtons.forEach((btn) => {
+      const originalOnclick = btn.dataset.originalOnclick;
+      if (originalOnclick && originalOnclick !== '') {
+        btn.setAttribute('onclick', originalOnclick);
+      }
+      const originalTarget = btn.dataset.originalTarget;
+      if (originalTarget) {
+        btn.setAttribute('target', originalTarget);
+      }
+      delete btn.dataset.detailModified;
+      delete btn.dataset.detailNewTab;
+      delete btn.dataset.originalOnclick;
+      delete btn.dataset.originalTarget;
+      const newBtn = btn.cloneNode(true);
+      if (btn.parentNode) {
+        btn.parentNode.replaceChild(newBtn, btn);
+      }
     });
   }
-  function A() {
-    if (!a.currentConfig?.features?.openDetailInNewTab?.enabled) return;
-    (document.querySelectorAll('button, a').forEach((i) => {
-      i.textContent?.trim().toLowerCase() === 'detail' && !p(i) && b(i);
-    }),
-      document.querySelectorAll('td').forEach((i) => {
-        i.textContent?.trim().toLowerCase().includes('detail') &&
-          i.querySelectorAll('button, a, span, div').forEach((n) => {
-            let o = n.textContent?.trim().toLowerCase();
-            !p(n) && (o === 'detail' || o === 'view' || o === 'lihat') && b(n);
-          });
-      }));
-  }
-  function C() {
-    (g !== null && (clearInterval(g), (g = null)),
-      f !== null && (clearTimeout(f), (f = null)),
-      d && (d.disconnect(), (d = null)));
-  }
-  function T() {
-    let t = a.currentConfig?.features?.openDetailInNewTab?.enabled;
-    C();
-    try {
-      (t
-        ? (console.log('[OpenDetail] Feature ENABLED'),
-          m(),
-          (f = window.setTimeout(() => A(), 500)),
-          (g = window.setInterval(() => m(), 2e3)))
-        : (console.log('[OpenDetail] Feature DISABLED'), D()),
-        (d = new MutationObserver(() => {
-          try {
-            t && m();
-          } catch (e) {
-            console.warn('[OpenDetail] MutationObserver error:', e);
+  function overrideButtonsByText() {
+    if (!g.currentConfig?.features?.openDetailInNewTab?.enabled) return;
+    const buttons = document.querySelectorAll('button, a');
+    buttons.forEach((btn) => {
+      if (btn.textContent?.trim().toLowerCase() === 'detail' && !isModifiedEvent(btn)) {
+        overrideDetailButton(btn);
+      }
+    });
+    const tableCells = document.querySelectorAll('td');
+    tableCells.forEach((cell) => {
+      if (cell.textContent?.trim().toLowerCase().includes('detail')) {
+        const elements = cell.querySelectorAll('button, a, span, div');
+        elements.forEach((el) => {
+          const text = el.textContent?.trim().toLowerCase();
+          if (!isModifiedEvent(el) && (text === 'detail' || text === 'view' || text === 'lihat')) {
+            overrideDetailButton(el);
           }
-        })),
-        d.observe(document.body, { childList: !0, subtree: !0 }));
+        });
+      }
+    });
+  }
+  function _cleanupOpenDetail() {
+    if (_scanIntervalId !== null) {
+      clearInterval(_scanIntervalId);
+      _scanIntervalId = null;
+    }
+    if (_textScanTimeoutId !== null) {
+      clearTimeout(_textScanTimeoutId);
+      _textScanTimeoutId = null;
+    }
+    if (_observer) {
+      _observer.disconnect();
+      _observer = null;
+    }
+  }
+  function runOpenDetailInNewTabFeature() {
+    const isEnabled = g.currentConfig?.features?.openDetailInNewTab?.enabled;
+    _cleanupOpenDetail();
+    try {
+      if (isEnabled) {
+        console.log('[OpenDetail] Feature ENABLED');
+        overrideDetailButtons();
+        _textScanTimeoutId = window.setTimeout(() => overrideButtonsByText(), 500);
+        _scanIntervalId = window.setInterval(() => overrideDetailButtons(), 2e3);
+      } else {
+        console.log('[OpenDetail] Feature DISABLED');
+        restoreDetailButtons();
+      }
+      _observer = new MutationObserver(() => {
+        try {
+          if (isEnabled) {
+            overrideDetailButtons();
+          }
+        } catch (e) {
+          console.warn('[OpenDetail] MutationObserver error:', e);
+        }
+      });
+      _observer.observe(document.body, { childList: true, subtree: true });
     } catch (e) {
       console.error('[OpenDetail] Error running feature:', e);
     }
   }
-  typeof a.featureModules < 'u'
-    ? (a.featureModules.openDetailInNewTab = {
-        id: 'openDetailInNewTab',
-        name: 'Do Not Open Detail in New Tab',
-        description: 'Override tombol detail agar buka di tab yang sama (mencegah new tab)',
-        match: { prefix: '/v2/m-klaim/' },
-        run: T,
-      })
-    : console.warn('[OpenDetail] featureModules not defined, module registration skipped');
+  if (typeof g.featureModules !== 'undefined') {
+    g.featureModules.openDetailInNewTab = {
+      id: 'openDetailInNewTab',
+      name: 'Do Not Open Detail in New Tab',
+      description: 'Override tombol detail agar buka di tab yang sama (mencegah new tab)',
+      match: { prefix: '/v2/m-klaim/' },
+      run: runOpenDetailInNewTabFeature,
+    };
+  } else {
+    console.warn('[OpenDetail] featureModules not defined, module registration skipped');
+  }
 })();
+//# sourceMappingURL=openDetail.js.map

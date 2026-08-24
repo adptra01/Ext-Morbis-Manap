@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Shell(curl -s -m 10 -X POST http://dev.rsudkotajambi.id/rs/api/queue/events  -H Content-Type: application/json  -d {\"event_id\":\"bat-test\",\"event\":\"BATAL\",\"queue_number\":\"R-15\",\"resep_id\":\"208755\"} 2 >& 1)",
+      "Shell(curl -s -m 10 -X GET http://dev.rsudkotajambi.id/rs/api/queue/lookup?resep_id=208755 2 >& 1)"
+    ],
+    "deny": [],
+    "defaultMode": "default"
+  }
+}

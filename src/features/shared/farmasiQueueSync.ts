@@ -121,7 +121,7 @@ let lastWarnMsg = '';
  *  nomor hasil ada di return.queue_number (dipakai cetak kartu). */
 export async function pushQueueEvent(
   p: QueueEventPayload,
-): Promise<{ ok: boolean; queue_number?: string }> {
+): Promise<{ ok: boolean; queue_number?: string; created?: boolean; duplicate?: boolean }> {
   try {
     const body: Record<string, unknown> = { ...p };
     if (p.event === 'ENQUEUE') delete body.queue_number;
@@ -145,8 +145,18 @@ export async function pushQueueEvent(
     });
     clearTimeout(t);
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const j = (await res.json()) as { ok?: boolean; queue?: { queue_number?: string } };
-    return { ok: !!j.ok, queue_number: j.queue?.queue_number };
+    const j = (await res.json()) as {
+      ok?: boolean;
+      created?: boolean;
+      duplicate?: boolean;
+      queue?: { queue_number?: string };
+    };
+    return {
+      ok: !!j.ok,
+      queue_number: j.queue?.queue_number,
+      created: j.created,
+      duplicate: j.duplicate,
+    };
   } catch (e) {
     const msg = (e as Error).message;
     // ponytail: "Failed to fetch" = farmasi app server tidak terjangkau —

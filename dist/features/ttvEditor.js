@@ -1,6 +1,7 @@
 'use strict';
 var __morbis_feature = (() => {
-  var l = {
+  // src/shared/ui/colors.ts
+  var colors = {
     background: '#ffffff',
     foreground: '#0a0a0e',
     card: '#ffffff',
@@ -19,6 +20,7 @@ var __morbis_feature = (() => {
     border: '#e2e8f0',
     input: '#e2e8f0',
     ring: '#2469f0',
+    /* semantic shortcuts */
     success: '#1b8a4b',
     successBg: '#eaf6ef',
     warning: '#c47a1a',
@@ -28,16 +30,22 @@ var __morbis_feature = (() => {
     info: '#2469f0',
     infoBg: '#eef3ff',
   };
-  var E = new Set();
-  function y(n, t) {
-    if (E.has(n)) {
-      let c = document.getElementById(n);
-      if (c) return c;
+
+  // src/shared/ui/index.ts
+  var injectedSheets = /* @__PURE__ */ new Set();
+  function injectCSS(id, css) {
+    if (injectedSheets.has(id)) {
+      const existing = document.getElementById(id);
+      if (existing) return existing;
     }
-    let a = document.createElement('style');
-    return ((a.id = n), (a.textContent = t), document.head.appendChild(a), E.add(n), a);
+    const style = document.createElement('style');
+    style.id = id;
+    style.textContent = css;
+    document.head.appendChild(style);
+    injectedSheets.add(id);
+    return style;
   }
-  y(
+  injectCSS(
     'ext-shared-animations',
     `
   @keyframes fadeSlideIn {
@@ -46,8 +54,10 @@ var __morbis_feature = (() => {
   }
 `,
   );
-  var C = '"Plus Jakarta Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif',
-    A = `
+
+  // src/ui/web/tokens.ts
+  var FONT_STACK = '"Plus Jakarta Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+  var TOKENS_CSS = `
   :host {
     /* Brand */
     --ext-primary: #00875a;
@@ -78,7 +88,7 @@ var __morbis_feature = (() => {
     --ext-text-on-primary: #ffffff;
 
     /* Typography \u2014 lebih besar dari default, untuk mudah dibaca */
-    --ext-font-family: ${C};
+    --ext-font-family: ${FONT_STACK};
     --ext-font-size-xs: 12px;
     --ext-font-size-sm: 13px;
     --ext-font-size-md: 15px;
@@ -113,27 +123,35 @@ var __morbis_feature = (() => {
     --ext-duration-fast: 140ms;
     --ext-duration-normal: 220ms;
   }
-`,
-    p = null;
-  function S() {
-    return (p || ((p = new CSSStyleSheet()), p.replaceSync(A)), p);
+`;
+  var sharedSheet = null;
+  function getTokenSheet() {
+    if (!sharedSheet) {
+      sharedSheet = new CSSStyleSheet();
+      sharedSheet.replaceSync(TOKENS_CSS);
+    }
+    return sharedSheet;
   }
-  var w = !1;
-  function T() {
-    if (w || document.getElementById('ext-pjs-font')) return;
-    w = !0;
-    let n = document.createElement('link');
-    ((n.id = 'ext-pjs-font'),
-      (n.rel = 'stylesheet'),
-      (n.href =
-        'http://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'),
-      document.head.appendChild(n));
+  var fontInjected = false;
+  function ensureFont() {
+    if (fontInjected || document.getElementById('ext-pjs-font')) return;
+    fontInjected = true;
+    const link = document.createElement('link');
+    link.id = 'ext-pjs-font';
+    link.rel = 'stylesheet';
+    link.href =
+      'http://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap';
+    document.head.appendChild(link);
   }
-  function x(n, t = 'open') {
-    let a = n.attachShadow({ mode: t });
-    return ((a.adoptedStyleSheets = [S()]), T(), a);
+  function attachShadowWithTokens(el, mode = 'open') {
+    const root = el.attachShadow({ mode });
+    root.adoptedStyleSheets = [getTokenSheet()];
+    ensureFont();
+    return root;
   }
-  var M = `
+
+  // src/ui/web/ext-btn.ts
+  var STYLE = `
   :host { display: inline-block; }
   button {
     display: inline-flex;
@@ -189,41 +207,45 @@ var __morbis_feature = (() => {
   :host([loading]) .spinner { display: inline-block; }
   :host([loading]) button { pointer-events: none; opacity: 0.8; }
   @keyframes ext-spin { to { transform: rotate(360deg); } }
-`,
-    m = class extends HTMLElement {
-      constructor() {
-        super();
-        let t = x(this);
-        ((t.innerHTML = `
-      <style>${M}</style>
+`;
+  var ExtBtn = class extends HTMLElement {
+    constructor() {
+      super();
+      const root = attachShadowWithTokens(this);
+      root.innerHTML = `
+      <style>${STYLE}</style>
       <button type="button">
         <span class="spinner" aria-hidden="true"></span>
         <span class="label"><slot></slot></span>
       </button>
-    `),
-          (this.btn = t.querySelector('button')));
+    `;
+      this.btn = root.querySelector('button');
+    }
+    connectedCallback() {
+      this.btn.disabled = this.hasAttribute('disabled') || this.hasAttribute('loading');
+      this.btn.setAttribute('aria-busy', this.hasAttribute('loading') ? 'true' : 'false');
+      this.btn.addEventListener('click', (e) => {
+        if (this.hasAttribute('loading') || this.hasAttribute('disabled')) {
+          e.stopPropagation();
+          e.preventDefault();
+          return;
+        }
+      });
+    }
+    static get observedAttributes() {
+      return ['disabled', 'loading'];
+    }
+    attributeChangedCallback(name) {
+      if (name === 'disabled' || name === 'loading') {
+        this.btn.disabled = this.hasAttribute('disabled') || this.hasAttribute('loading');
+        this.btn.setAttribute('aria-busy', this.hasAttribute('loading') ? 'true' : 'false');
       }
-      connectedCallback() {
-        ((this.btn.disabled = this.hasAttribute('disabled') || this.hasAttribute('loading')),
-          this.btn.setAttribute('aria-busy', this.hasAttribute('loading') ? 'true' : 'false'),
-          this.btn.addEventListener('click', (t) => {
-            if (this.hasAttribute('loading') || this.hasAttribute('disabled')) {
-              (t.stopPropagation(), t.preventDefault());
-              return;
-            }
-          }));
-      }
-      static get observedAttributes() {
-        return ['disabled', 'loading'];
-      }
-      attributeChangedCallback(t) {
-        (t === 'disabled' || t === 'loading') &&
-          ((this.btn.disabled = this.hasAttribute('disabled') || this.hasAttribute('loading')),
-          this.btn.setAttribute('aria-busy', this.hasAttribute('loading') ? 'true' : 'false'));
-      }
-    };
-  customElements.get('ext-btn') || customElements.define('ext-btn', m);
-  var H = `
+    }
+  };
+  if (!customElements.get('ext-btn')) customElements.define('ext-btn', ExtBtn);
+
+  // src/ui/web/ext-badge.ts
+  var STYLE2 = `
   :host {
     display: inline-flex;
     align-items: center;
@@ -244,16 +266,18 @@ var __morbis_feature = (() => {
   :host([variant='info']) { background: var(--ext-info-soft); color: var(--ext-info); border-color: #c3d6f5; }
   :host([variant='neutral']) { background: var(--ext-surface-2); color: var(--ext-text-secondary); border-color: var(--ext-border); }
   :host([variant='primary']) { background: var(--ext-primary-soft); color: var(--ext-primary); border-color: #b8ddcd; }
-`,
-    b = class extends HTMLElement {
-      constructor() {
-        super();
-        let t = x(this);
-        t.innerHTML = `<style>${H}</style><slot></slot>`;
-      }
-    };
-  customElements.get('ext-badge') || customElements.define('ext-badge', b);
-  var z = `
+`;
+  var ExtBadge = class extends HTMLElement {
+    constructor() {
+      super();
+      const root = attachShadowWithTokens(this);
+      root.innerHTML = `<style>${STYLE2}</style><slot></slot>`;
+    }
+  };
+  if (!customElements.get('ext-badge')) customElements.define('ext-badge', ExtBadge);
+
+  // src/ui/web/ext-tabs.ts
+  var STYLE3 = `
   :host {
     display: flex;
     flex-direction: column;
@@ -292,44 +316,46 @@ var __morbis_feature = (() => {
   .panels { padding: var(--ext-space-5); }
   ::slotted([slot='panel']) { display: none; }
   ::slotted([slot='panel'][data-active]) { display: block; }
-`,
-    v = class extends HTMLElement {
-      constructor() {
-        (super(), this.attachShadowWithTokens());
-      }
-      attachShadowWithTokens() {
-        let t = x(this);
-        t.innerHTML = `
-      <style>${z}</style>
+`;
+  var ExtTabs = class extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadowWithTokens();
+    }
+    attachShadowWithTokens() {
+      const root = attachShadowWithTokens(this);
+      root.innerHTML = `
+      <style>${STYLE3}</style>
       <div class="tablist"><slot name="tab"></slot></div>
       <div class="panels"><slot name="panel"></slot></div>
     `;
-      }
-      connectedCallback() {
-        this.addEventListener('click', (a) => {
-          let c = a.target.closest('[slot="tab"]');
-          !c || !this.contains(c) || this.activate(c.getAttribute('data-tab') || '');
-        });
-        let t = this.querySelector('[slot="tab"][data-active]');
-        t && this.activate(t.getAttribute('data-tab') || '');
-      }
-      activate(t) {
-        t &&
-          (this.querySelectorAll('[slot="tab"]').forEach((a) => {
-            a.getAttribute('data-tab') === t
-              ? a.setAttribute('data-active', '')
-              : a.removeAttribute('data-active');
-          }),
-          this.querySelectorAll('[slot="panel"]').forEach((a) => {
-            a.getAttribute('data-panel') === t
-              ? a.setAttribute('data-active', '')
-              : a.removeAttribute('data-active');
-          }),
-          this.dispatchEvent(new CustomEvent('ext-tab-change', { detail: { tab: t } })));
-      }
-    };
-  customElements.get('ext-tabs') || customElements.define('ext-tabs', v);
-  var B = `
+    }
+    connectedCallback() {
+      this.addEventListener('click', (e) => {
+        const tab = e.target.closest('[slot="tab"]');
+        if (!tab || !this.contains(tab)) return;
+        this.activate(tab.getAttribute('data-tab') || '');
+      });
+      const current = this.querySelector('[slot="tab"][data-active]');
+      if (current) this.activate(current.getAttribute('data-tab') || '');
+    }
+    activate(tabId) {
+      if (!tabId) return;
+      this.querySelectorAll('[slot="tab"]').forEach((t) => {
+        if (t.getAttribute('data-tab') === tabId) t.setAttribute('data-active', '');
+        else t.removeAttribute('data-active');
+      });
+      this.querySelectorAll('[slot="panel"]').forEach((p) => {
+        if (p.getAttribute('data-panel') === tabId) p.setAttribute('data-active', '');
+        else p.removeAttribute('data-active');
+      });
+      this.dispatchEvent(new CustomEvent('ext-tab-change', { detail: { tab: tabId } }));
+    }
+  };
+  if (!customElements.get('ext-tabs')) customElements.define('ext-tabs', ExtTabs);
+
+  // src/ui/web/ext-modal.ts
+  var STYLE4 = `
   :host { display: none; }
   :host([open]) { display: block; }
   .overlay {
@@ -413,16 +439,16 @@ var __morbis_feature = (() => {
   @keyframes ext-slide-up {
     from { opacity: 0; transform: translateY(18px) scale(0.98); }
   }
-`,
-    g = class extends HTMLElement {
-      constructor() {
-        super();
-        this.handleKey = (a) => {
-          a.key === 'Escape' && this.hasAttribute('open') && this.cancel();
-        };
-        ((this.root = x(this)),
-          (this.root.innerHTML = `
-      <style>${B}</style>
+`;
+  var ExtModal = class extends HTMLElement {
+    constructor() {
+      super();
+      this.handleKey = (e) => {
+        if (e.key === 'Escape' && this.hasAttribute('open')) this.cancel();
+      };
+      this.root = attachShadowWithTokens(this);
+      this.root.innerHTML = `
+      <style>${STYLE4}</style>
       <div class="overlay">
         <div class="modal" role="dialog" aria-modal="true">
           <div class="header">
@@ -435,77 +461,82 @@ var __morbis_feature = (() => {
           </div>
         </div>
       </div>
-    `));
-      }
-      connectedCallback() {
-        let a = this.root.querySelector('.overlay');
-        (this.root.querySelector('.close').addEventListener('click', () => this.cancel()),
-          a.addEventListener('click', (h) => {
-            h.target === a && this.cancel();
-          }),
-          document.addEventListener('keydown', this.handleKey));
-      }
-      disconnectedCallback() {
-        document.removeEventListener('keydown', this.handleKey);
-      }
-      get titleSlot() {
-        return this.querySelector('[slot="title"]');
-      }
-      get footerSlot() {
-        return this.querySelector('[slot="footer"]');
-      }
-      open() {
-        this.setAttribute('open', '');
-      }
-      close() {
-        this.removeAttribute('open');
-      }
-      cancel() {
-        (this.dispatchEvent(new CustomEvent('ext-cancel')), this.close());
-      }
-      ok() {
-        this.dispatchEvent(new CustomEvent('ext-ok'));
-      }
-    };
-  customElements.get('ext-modal') || customElements.define('ext-modal', g);
+    `;
+    }
+    connectedCallback() {
+      const overlay = this.root.querySelector('.overlay');
+      const closeBtn = this.root.querySelector('.close');
+      closeBtn.addEventListener('click', () => this.cancel());
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) this.cancel();
+      });
+      document.addEventListener('keydown', this.handleKey);
+    }
+    disconnectedCallback() {
+      document.removeEventListener('keydown', this.handleKey);
+    }
+    get titleSlot() {
+      return this.querySelector('[slot="title"]');
+    }
+    get footerSlot() {
+      return this.querySelector('[slot="footer"]');
+    }
+    open() {
+      this.setAttribute('open', '');
+    }
+    close() {
+      this.removeAttribute('open');
+    }
+    cancel() {
+      this.dispatchEvent(new CustomEvent('ext-cancel'));
+      this.close();
+    }
+    ok() {
+      this.dispatchEvent(new CustomEvent('ext-ok'));
+    }
+  };
+  if (!customElements.get('ext-modal')) customElements.define('ext-modal', ExtModal);
+
+  // src/features/ttvEditor.ts
   (function () {
-    let t = 0,
-      a = [
-        { index: 0, name: 'gcs', min: 1, max: 15, step: 1, unit: '', label: 'GCS' },
-        { index: 1, name: 'sistol', min: 50, max: 250, step: 1, unit: 'mmHg', label: 'Sistol' },
-        { index: 2, name: 'diastol', min: 20, max: 160, step: 1, unit: 'mmHg', label: 'Diastol' },
-        { index: 3, name: 'nadi', min: 20, max: 250, step: 1, unit: 'x/menit', label: 'Nadi' },
-        { index: 4, name: 'rr', min: 4, max: 80, step: 1, unit: 'x/menit', label: 'RR' },
-        { index: 5, name: 'suhu', min: 30, max: 45, step: 0.1, unit: '\xB0C', label: 'Suhu' },
-        { index: 6, name: 'berat_badan', min: 0.5, max: 500, step: 0.1, unit: 'kg', label: 'BB' },
-        { index: 7, name: 'tinggi_badan', min: 20, max: 300, step: 0.1, unit: 'cm', label: 'TB' },
-      ];
-    y(
+    const MAX_WAIT = 100;
+    let waited = 0;
+    const TTV_FIELDS = [
+      { index: 0, name: 'gcs', min: 1, max: 15, step: 1, unit: '', label: 'GCS' },
+      { index: 1, name: 'sistol', min: 50, max: 250, step: 1, unit: 'mmHg', label: 'Sistol' },
+      { index: 2, name: 'diastol', min: 20, max: 160, step: 1, unit: 'mmHg', label: 'Diastol' },
+      { index: 3, name: 'nadi', min: 20, max: 250, step: 1, unit: 'x/menit', label: 'Nadi' },
+      { index: 4, name: 'rr', min: 4, max: 80, step: 1, unit: 'x/menit', label: 'RR' },
+      { index: 5, name: 'suhu', min: 30, max: 45, step: 0.1, unit: '\xB0C', label: 'Suhu' },
+      { index: 6, name: 'berat_badan', min: 0.5, max: 500, step: 0.1, unit: 'kg', label: 'BB' },
+      { index: 7, name: 'tinggi_badan', min: 20, max: 300, step: 0.1, unit: 'cm', label: 'TB' },
+    ];
+    injectCSS(
       'ext-ttv-css',
       `
     .ext-ttv-editable {
       pointer-events: auto !important;
-      background: ${l.background} !important;
-      border: 2px solid ${l.primary} !important;
+      background: ${colors.background} !important;
+      border: 2px solid ${colors.primary} !important;
       border-radius: 4px !important;
       padding: 2px 6px !important;
       transition: border-color 0.2s, background-color 0.2s;
     }
     .ext-ttv-editable:focus {
       outline: none !important;
-      border-color: ${l.primaryHover} !important;
-      box-shadow: 0 0 0 3px ${l.primary}4D !important;
+      border-color: ${colors.primaryHover} !important;
+      box-shadow: 0 0 0 3px ${colors.primary}4D !important;
     }
     .ext-ttv-valid {
-      border-color: ${l.success} !important;
+      border-color: ${colors.success} !important;
     }
     .ext-ttv-valid:focus {
       border-color: #16a34a !important;
       box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.3) !important;
     }
     .ext-ttv-invalid {
-      border-color: ${l.error} !important;
-      background: ${l.errorBg} !important;
+      border-color: ${colors.error} !important;
+      background: ${colors.errorBg} !important;
     }
     .ext-ttv-invalid:focus {
       border-color: #dc2626 !important;
@@ -513,7 +544,7 @@ var __morbis_feature = (() => {
     }
     .ext-ttv-locked {
       pointer-events: none !important;
-      background: ${l.muted} !important;
+      background: ${colors.muted} !important;
       border: 2px solid #9ca3af !important;
       opacity: 0.7;
     }
@@ -523,118 +554,143 @@ var __morbis_feature = (() => {
       gap: 12px;
       padding: 10px 14px;
       margin-bottom: 12px;
-      background: var(--ext-surface-2, ${l.muted});
-      border: 1px solid var(--ext-border, ${l.border});
+      background: var(--ext-surface-2, ${colors.muted});
+      border: 1px solid var(--ext-border, ${colors.border});
       border-radius: var(--ext-radius-md, 6px);
       font-family: var(--ext-font-family, inherit);
     }
     .ext-ttv-status {
       font-size: 12px;
       font-weight: 600;
-      color: var(--ext-success, ${l.success});
+      color: var(--ext-success, ${colors.success});
     }
     .ext-ttv-status.ext-ttv-status-locked {
-      color: var(--ext-text-secondary, ${l.mutedForeground});
+      color: var(--ext-text-secondary, ${colors.mutedForeground});
     }
   `,
     );
-    let c = setInterval(function () {
-      t++;
-      let e = document.documentElement.getAttribute('data-ext-ttv-editor');
-      e !== null ? (clearInterval(c), e === '1' && h()) : t >= 100 && clearInterval(c);
+    const check = setInterval(function () {
+      waited++;
+      const enabled = document.documentElement.getAttribute('data-ext-ttv-editor');
+      if (enabled !== null) {
+        clearInterval(check);
+        if (enabled === '1') init();
+      } else if (waited >= MAX_WAIT) {
+        clearInterval(check);
+      }
     }, 50);
-    function h() {
+    function init() {
       if (!window.location.pathname.includes('/surat-pengantar-ri')) return;
-      let e = setInterval(function () {
-        let r = document.getElementById('formDataRujukan'),
-          s = document.querySelectorAll('input.hanya_baca');
-        r && s.length > 0 && (clearInterval(e), L(s));
+      const poll = setInterval(function () {
+        const form = document.getElementById('formDataRujukan');
+        const inputs = document.querySelectorAll('input.hanya_baca');
+        if (form && inputs.length > 0) {
+          clearInterval(poll);
+          makeEditable(inputs);
+        }
       }, 200);
     }
-    function L(e) {
-      let r = [];
-      (e.forEach(function (s, i) {
-        let o = s,
-          d = a.find(function (u) {
-            return u.index === i;
-          });
-        d &&
-          (o.removeAttribute('readonly'),
-          o.classList.remove('hanya_baca'),
-          o.classList.add('ext-ttv-editable'),
-          o.setAttribute('name', d.name),
-          o.setAttribute('data-ext-ttv', d.name),
-          o.setAttribute('placeholder', d.min + '-' + d.max),
-          (o.type = 'number'),
-          (o.min = String(d.min)),
-          (o.max = String(d.max)),
-          (o.step = String(d.step)),
-          o.addEventListener('input', function () {
-            k(o, d);
-          }),
-          o.addEventListener('blur', function () {
-            k(o, d);
-          }),
-          r.push(o));
-      }),
-        $(r));
+    function makeEditable(hanyaBacaInputs) {
+      const ttvInputs = [];
+      hanyaBacaInputs.forEach(function (el, i) {
+        const inp = el;
+        const fieldDef = TTV_FIELDS.find(function (f) {
+          return f.index === i;
+        });
+        if (!fieldDef) return;
+        inp.removeAttribute('readonly');
+        inp.classList.remove('hanya_baca');
+        inp.classList.add('ext-ttv-editable');
+        inp.setAttribute('name', fieldDef.name);
+        inp.setAttribute('data-ext-ttv', fieldDef.name);
+        inp.setAttribute('placeholder', fieldDef.min + '-' + fieldDef.max);
+        inp.type = 'number';
+        inp.min = String(fieldDef.min);
+        inp.max = String(fieldDef.max);
+        inp.step = String(fieldDef.step);
+        inp.addEventListener('input', function () {
+          validateField(inp, fieldDef);
+        });
+        inp.addEventListener('blur', function () {
+          validateField(inp, fieldDef);
+        });
+        ttvInputs.push(inp);
+      });
+      addTogglePanel(ttvInputs);
     }
-    function k(e, r) {
-      let s = parseFloat(e.value);
-      if ((e.classList.remove('ext-ttv-valid', 'ext-ttv-invalid'), e.value !== '')) {
+    function validateField(inp, field) {
+      const val = parseFloat(inp.value);
+      inp.classList.remove('ext-ttv-valid', 'ext-ttv-invalid');
+      if (inp.value === '') return;
+      if (isNaN(val) || val < field.min || val > field.max) {
+        inp.classList.add('ext-ttv-invalid');
+        inp.title = field.label + ' harus antara ' + field.min + '-' + field.max + ' ' + field.unit;
+      } else {
+        inp.classList.add('ext-ttv-valid');
+        inp.title = '';
+      }
+      if (field.name === 'sistol') {
+        const diastolInp = document.querySelector('input[data-ext-ttv="diastol"]');
         if (
-          (isNaN(s) || s < r.min || s > r.max
-            ? (e.classList.add('ext-ttv-invalid'),
-              (e.title = r.label + ' harus antara ' + r.min + '-' + r.max + ' ' + r.unit))
-            : (e.classList.add('ext-ttv-valid'), (e.title = '')),
-          r.name === 'sistol')
+          diastolInp &&
+          diastolInp.value &&
+          inp.value &&
+          parseFloat(inp.value) <= parseFloat(diastolInp.value)
         ) {
-          let i = document.querySelector('input[data-ext-ttv="diastol"]');
-          i &&
-            i.value &&
-            e.value &&
-            parseFloat(e.value) <= parseFloat(i.value) &&
-            (e.classList.remove('ext-ttv-valid'),
-            e.classList.add('ext-ttv-invalid'),
-            (e.title = 'Sistol harus lebih besar dari Diastol'));
+          inp.classList.remove('ext-ttv-valid');
+          inp.classList.add('ext-ttv-invalid');
+          inp.title = 'Sistol harus lebih besar dari Diastol';
         }
-        if (r.name === 'diastol') {
-          let i = document.querySelector('input[data-ext-ttv="sistol"]');
-          i &&
-            i.value &&
-            e.value &&
-            parseFloat(e.value) >= parseFloat(i.value) &&
-            (e.classList.remove('ext-ttv-valid'),
-            e.classList.add('ext-ttv-invalid'),
-            (e.title = 'Diastol harus lebih kecil dari Sistol'));
+      }
+      if (field.name === 'diastol') {
+        const sistolInp = document.querySelector('input[data-ext-ttv="sistol"]');
+        if (
+          sistolInp &&
+          sistolInp.value &&
+          inp.value &&
+          parseFloat(inp.value) >= parseFloat(sistolInp.value)
+        ) {
+          inp.classList.remove('ext-ttv-valid');
+          inp.classList.add('ext-ttv-invalid');
+          inp.title = 'Diastol harus lebih kecil dari Sistol';
         }
       }
     }
-    function $(e) {
-      let r = document.getElementById('formDataRujukan');
-      if (!r || r.querySelector('.ext-ttv-bar')) return;
-      let s = document.createElement('span');
-      ((s.className = 'ext-ttv-status'), (s.textContent = 'Editable'));
-      let i = document.createElement('ext-btn');
-      (i.setAttribute('variant', 'secondary'),
-        i.setAttribute('size', 'sm'),
-        (i.textContent = 'Kunci TTV'));
-      let o = document.createElement('ext-badge');
-      (o.setAttribute('variant', 'info'), (o.textContent = 'TTV Editor'));
-      let d = document.createElement('div');
-      ((d.className = 'ext-ttv-bar'), d.append(o, s, i), r.insertBefore(d, r.firstChild));
-      let u = !1;
-      i.addEventListener('click', function () {
-        ((u = !u),
-          e.forEach(function (f) {
-            u
-              ? (f.classList.add('ext-ttv-locked'), (f.readOnly = !0))
-              : (f.classList.remove('ext-ttv-locked'), (f.readOnly = !1));
-          }),
-          (s.textContent = u ? 'Locked' : 'Editable'),
-          s.classList.toggle('ext-ttv-status-locked', u),
-          (i.textContent = u ? 'Buka TTV' : 'Kunci TTV'));
+    function addTogglePanel(inputs) {
+      const form = document.getElementById('formDataRujukan');
+      if (!form) return;
+      if (form.querySelector('.ext-ttv-bar')) return;
+      const statusEl = document.createElement('span');
+      statusEl.className = 'ext-ttv-status';
+      statusEl.textContent = 'Editable';
+      const lockBtn = document.createElement('ext-btn');
+      lockBtn.setAttribute('variant', 'secondary');
+      lockBtn.setAttribute('size', 'sm');
+      lockBtn.textContent = 'Kunci TTV';
+      const badge = document.createElement('ext-badge');
+      badge.setAttribute('variant', 'info');
+      badge.textContent = 'TTV Editor';
+      const bar = document.createElement('div');
+      bar.className = 'ext-ttv-bar';
+      bar.append(badge, statusEl, lockBtn);
+      form.insertBefore(bar, form.firstChild);
+      let locked = false;
+      lockBtn.addEventListener('click', function () {
+        locked = !locked;
+        inputs.forEach(function (inp) {
+          if (locked) {
+            inp.classList.add('ext-ttv-locked');
+            inp.readOnly = true;
+          } else {
+            inp.classList.remove('ext-ttv-locked');
+            inp.readOnly = false;
+          }
+        });
+        statusEl.textContent = locked ? 'Locked' : 'Editable';
+        statusEl.classList.toggle('ext-ttv-status-locked', locked);
+        lockBtn.textContent = locked ? 'Buka TTV' : 'Kunci TTV';
       });
     }
   })();
 })();
+//# sourceMappingURL=ttvEditor.js.map

@@ -1,0 +1,383 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_md",
+      "label": "SKILL.md",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_agentix_ceo_skill",
+      "label": "Agentix \u2014 CEO Skill",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L8"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_environment_setup",
+      "label": "Environment Setup",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L12"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_credentials",
+      "label": "Credentials",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L29"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_ground_rules",
+      "label": "Ground Rules",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L59"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_getting_started",
+      "label": "Getting Started",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L67"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_which_path_are_you_on",
+      "label": "Which path are you on?",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L71"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_saas_setup_steps_1_4",
+      "label": "SaaS Setup (Steps 1\u20134)",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L78"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_step_1_register",
+      "label": "Step 1 \u2014 Register",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L82"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_step_2_poll_for_api_key",
+      "label": "Step 2 \u2014 Poll for API key",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L97"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_step_3_create_a_team",
+      "label": "Step 3 \u2014 Create a team",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L107"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_step_4_set_your_anthropic_api_key",
+      "label": "Step 4 \u2014 Set your Anthropic API key",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L118"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_playbook",
+      "label": "Playbook",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L133"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_first_time_setup",
+      "label": "First-time setup",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L148"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_switching_modes",
+      "label": "Switching modes",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L165"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_updating_the_playbook",
+      "label": "Updating the playbook",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L169"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_api_reference",
+      "label": "API Reference",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L182"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_teams",
+      "label": "Teams",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L184"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_roles",
+      "label": "Roles",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L203"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_tasks",
+      "label": "Tasks",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L218"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_workers",
+      "label": "Workers",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L232"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_events",
+      "label": "Events",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L241"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_api_keys",
+      "label": "API Keys",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L248"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_documentation",
+      "label": "Documentation",
+      "file_type": "document",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L258"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_agentix_ceo_skill",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_agentix_ceo_skill",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_environment_setup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_agentix_ceo_skill",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_credentials",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_agentix_ceo_skill",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_ground_rules",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L59",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_agentix_ceo_skill",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_getting_started",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L67",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_getting_started",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_which_path_are_you_on",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L71",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_getting_started",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_saas_setup_steps_1_4",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L78",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_getting_started",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_step_1_register",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L82",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_getting_started",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_step_2_poll_for_api_key",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L97",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_getting_started",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_step_3_create_a_team",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L107",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_getting_started",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_step_4_set_your_anthropic_api_key",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L118",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_agentix_ceo_skill",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_playbook",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L133",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_playbook",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_first_time_setup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L148",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_playbook",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_switching_modes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L165",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_playbook",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_updating_the_playbook",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L169",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_agentix_ceo_skill",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_api_reference",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L182",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_api_reference",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_teams",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L184",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_api_reference",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_roles",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L203",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_api_reference",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_tasks",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L218",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_api_reference",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_workers",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L232",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_api_reference",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_events",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L241",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_api_reference",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_api_keys",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L248",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_agentix_ceo_skill",
+      "target": "mnt_diskd_projects_ext_morbis_manap_agents_skills_agentix_ceo_skill_documentation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".agents/skills/agentix-ceo/SKILL.md",
+      "source_location": "L258",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

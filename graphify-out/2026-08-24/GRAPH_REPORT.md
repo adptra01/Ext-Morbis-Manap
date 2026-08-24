@@ -1,19 +1,19 @@
-# Graph Report - Ext-Morbis-Manap (2026-08-24)
+# Graph Report - Ext-Morbis-Manap (2026-08-19)
 
 ## Corpus Check
 
-- 196 files · ~153,697 words
+- 174 files · ~135,973 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
 
-- 2203 nodes · 3345 edges · 165 communities (132 shown, 33 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 88 edges (avg confidence: 0.53)
+- 2005 nodes · 2944 edges · 167 communities (135 shown, 32 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 76 edges (avg confidence: 0.52)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
 
-- Built from commit: `59b6de11`
+- Built from commit: `c75592ce`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -67,7 +67,6 @@
 - audit.mjs
 - lib
 - deploy.mjs
-- pindahOperasi/main.ts
 - Header.tsx
 - class-variance-authority
 - clsx
@@ -162,7 +161,6 @@
 - AGENTS.md
 - 14. Dependency Analysis
 - icons/README.md
-- labDataTables.ts
 - Role
 - autoprefixer
 - shortcutButtons.ts
@@ -173,7 +171,10 @@
 - 9. Key Constraints & Insights
 - probe-latency.mjs
 - scrollButtons.ts
+- resumeTab/types.ts
+- ErrorBoundary
 - ConsultationInfoPanel.tsx
+- tryInject
 
 ## God Nodes (most connected - your core abstractions)
 
@@ -184,12 +185,14 @@
 5. `scripts` - 19 edges
 6. `refreshCardNumber()` - 19 edges
 7. `getQueueState()` - 19 edges
-8. `confirmLegacy()` - 18 edges
-9. `include` - 18 edges
-10. `pollFallback()` - 17 edges
+8. `include` - 18 edges
+9. `pollFallback()` - 17 edges
+10. `init()` - 17 edges
 
 ## Surprising Connections (you probably didn't know these)
 
+- `ConsEnhancerApp()` --references--> `react` [EXTRACTED]
+  src/features/consultationEnhancer/ConsEnhancerApp.tsx → package.json
 - `initExtension()` --references--> `ExtensionCore` [EXTRACTED]
   init.js → src/core.ts
 - `DiagnosaSection()` --references--> `id` [EXTRACTED]
@@ -198,29 +201,27 @@
   src/features/resumeTab/TindakanSection.tsx → manifest.json
 - `init()` --indirect_call--> `loket()` [INFERRED]
   src/features/antrianTools.ts → src/features/antrianFarmasiDisplay.ts
-- `syncUrlParams()` --indirect_call--> `val()` [INFERRED]
-  src/features/cpptSearchFilter.ts → src/features/resumeValidator.ts
 
 ## Import Cycles
 
 - None detected.
 
-## Communities (165 total, 33 thin omitted)
+## Communities (167 total, 32 thin omitted)
 
 ### Community 0 - "cpptSearchFilter.ts"
 
-Cohesion: 0.05
-Nodes (53): applyFilters(), CpptFilterState, CpptPageType, findCpptTables(), g, getColumnIndex(), getCpptPageType(), getDataRows() (+45 more)
+Cohesion: 0.17
+Nodes (21): applyFilters(), CpptFilterState, CpptPageType, findCpptTables(), g, getColumnIndex(), getCpptPageType(), getDataRows() (+13 more)
 
 ### Community 1 - "batchUploadUrl.ts"
 
-Cohesion: 0.06
-Nodes (73): BATCH_DELETE_CONFIG, closeBatchDeleteModal(), crawlDokumenPasienDelete(), crawlDokumenPasienDeleteToSidepanel(), deleteDokumen(), DeleteItem, deleteQueue, deleteSingleFromQueue() (+65 more)
+Cohesion: 0.08
+Nodes (57): BATCH_DELETE_CONFIG, closeBatchDeleteModal(), crawlDokumenPasienDelete(), crawlDokumenPasienDeleteToSidepanel(), deleteDokumen(), DeleteItem, deleteQueue, deleteSingleFromQueue() (+49 more)
 
 ### Community 2 - "resumeRanapTab/App.tsx"
 
-Cohesion: 0.15
-Nodes (16): IcdAutocomplete(), ErrorBoundary, Props, State, arrVal(), closeOverlay(), extractIcdItems(), fetchFormData() (+8 more)
+Cohesion: 0.06
+Nodes (30): App(), CARA_KELUAR, dangerBtn, Hitt, IcdAutocomplete(), inputBase, JENIS_KASUS, KEADAAN_KELUAR (+22 more)
 
 ### Community 3 - "ponytail-activate.js"
 
@@ -234,8 +235,8 @@ writeHookOutput,
 
 ### Community 4 - "manifest.json"
 
-Cohesion: 0.06
-Nodes (34): action, default_popup, default_title, author, background, service_worker, content_scripts, content_security_policy (+26 more)
+Cohesion: 0.05
+Nodes (37): action, default_popup, default_title, author, background, service_worker, browser_specific_settings, gecko (+29 more)
 
 ### Community 5 - "scripts"
 
@@ -249,13 +250,13 @@ Nodes (54): fixCurrents(), patchTableCodes(), syncPublicNumbers(), buildPanel(),
 
 ### Community 7 - "resumeValidator.ts"
 
-Cohesion: 0.09
-Nodes (46): confirmBatal(), getIdFromOnclick(), injectLab(), injectRadio(), injectRadioForm(), isEnabled(), makeBtn(), run() (+38 more)
+Cohesion: 0.13
+Nodes (35): addRequiredAttributes(), attachSaveHandler(), autoExpandTextareas(), buildICD10Fields(), buildICD9Fields(), checkAndLockForm(), checkSession(), clearErrors() (+27 more)
 
 ### Community 8 - "legacy.ts"
 
-Cohesion: 0.06
-Nodes (34): check, Props, ConsEnhancerApp(), ConsInfoTabs(), Props, TABS, g, addSearchFilter() (+26 more)
+Cohesion: 0.09
+Nodes (25): check, Props, ConsEnhancerApp(), ConsInfoTabs(), Props, TABS, g, addSearchFilter() (+17 more)
 
 ### Community 9 - "MorbisSession"
 
@@ -264,13 +265,13 @@ Nodes (17): Client, analyze_feature(), diff_dom(), get_feature_source(), MorbisS
 
 ### Community 10 - "sidepanel/App.tsx"
 
-Cohesion: 0.12
-Nodes (23): App(), DEFAULT_URLS, FALLBACK_FEATURES, ConsultationDetailPanel(), Props, ConsultationInfoPanel(), Props, TAB_EP (+15 more)
+Cohesion: 0.10
+Nodes (20): App(), DEFAULT_URLS, FALLBACK_FEATURES, BatchDeletePanel(), BatchDeletePanelProps, DeleteItem, ConsultationDetailPanel(), Props (+12 more)
 
 ### Community 11 - "button.tsx"
 
-Cohesion: 0.08
-Nodes (28): Footer(), FooterProps, VitalSignsSection(), VitalSignsSectionProps, BatchDeletePanel(), BatchDeletePanelProps, DeleteItem, BatchItem (+20 more)
+Cohesion: 0.17
+Nodes (15): BatchItem, BatchUploadPanel(), BatchUploadPanelProps, DomainPanel(), isValidUrl(), Badge(), BadgeProps, icons (+7 more)
 
 ### Community 12 - "toolbar.ts"
 
@@ -284,8 +285,8 @@ Nodes (20): addFullscreenButton(), bellNote(), buildSpokenText(), buildStrukHtml
 
 ### Community 14 - "resumeTab/App.tsx"
 
-Cohesion: 0.11
-Nodes (23): ErrorBoundary, Props, State, AUTOCOMPLETE_URLS, closeOverlay(), extractBillingFromDOM(), extractFormData(), fetchAllPrescriptionHistories() (+15 more)
+Cohesion: 0.05
+Nodes (41): id, App(), AppProps, validate(), ClinicalNotesSection(), ClinicalNotesSectionProps, DiagnosaSection(), ErrorBoundary (+33 more)
 
 ### Community 15 - "penerimaan_resep/main.ts"
 
@@ -294,8 +295,8 @@ Nodes (21): attachAturanValidators(), attachDosisListeners(), g, getAllTipeDosis
 
 ### Community 16 - "resumeTab/mount.tsx"
 
-Cohesion: 0.12
-Nodes (20): App(), CARA_KELUAR, Hitt, JENIS_KASUS, KEADAAN_KELUAR, PEMERIKSAAN_LANJUT, Props, IcdItem (+12 more)
+Cohesion: 0.21
+Nodes (9): DomainPanelProps, Window, DomainPanelProps, PopupState, getConfig(), getConfigWithFallback(), CustomUrl, ExtensionConfig (+1 more)
 
 ### Community 17 - "compilerOptions"
 
@@ -304,13 +305,13 @@ Nodes (21): compilerOptions, allowSyntheticDefaultImports, declaration, declarat
 
 ### Community 18 - "build.mjs"
 
-Cohesion: 0.20
-Nodes (15): build(), buildTailwindCSS(), buildWithReact(), commonOptions, compileFeatureFiles(), copyFeatureFiles(), copyStaticFiles(), __dirname (+7 more)
+Cohesion: 0.18
+Nodes (16): build(), buildTailwindCSS(), buildWithReact(), commonOptions, compileFeatureFiles(), copyFeatureFiles(), copyStaticFiles(), __dirname (+8 more)
 
 ### Community 19 - "popup/StatusCard.tsx"
 
-Cohesion: 0.12
-Nodes (22): Hit, Props, Hit, JENIS_OPTIONS, KATEGORI_OPTIONS, Props, ClinicalNotes, DiagnosaRow (+14 more)
+Cohesion: 0.13
+Nodes (20): Hit, Props, Hit, JENIS_OPTIONS, KATEGORI_OPTIONS, Props, ClinicalNotes, DiagnosaRow (+12 more)
 
 ### Community 20 - "components.json"
 
@@ -324,13 +325,13 @@ Nodes (18): src/background.ts, src/core.ts, src/features/billingFilterPersistenc
 
 ### Community 22 - "background.ts"
 
-Cohesion: 0.09
-Nodes (27): broadcastConfigChange(), DEFAULT_CONFIG, DEFAULT_CUSTOM_URLS, loadConfig(), loadUrls(), log, migrateConfig(), persistOnChange() (+19 more)
+Cohesion: 0.13
+Nodes (19): broadcastConfigChange(), DEFAULT_CONFIG, DEFAULT_CUSTOM_URLS, loadConfig(), loadUrls(), log, migrateConfig(), persistOnChange() (+11 more)
 
 ### Community 23 - "src/types.ts"
 
-Cohesion: 0.10
-Nodes (28): evaluate(), EvaluateResult, Evaluator, EVALUATORS, matchPage(), normalizePath(), FeatureContext, FeatureMatch (+20 more)
+Cohesion: 0.16
+Nodes (20): evaluate(), EvaluateResult, Evaluator, EVALUATORS, matchPage(), normalizePath(), FeatureContext, FeatureMatch (+12 more)
 
 ### Community 24 - "popup.js"
 
@@ -339,8 +340,8 @@ Nodes (15): addNewUrl(), bgMessage(), bgWrite(), customUrls, DOM, init(), isVali
 
 ### Community 25 - "popup/App.tsx"
 
-Cohesion: 0.14
-Nodes (14): root, UsageLogEntry, clearUsageLog(), getUsageLog(), App(), loadAll(), reloadActiveTab(), FeaturesPanel() (+6 more)
+Cohesion: 0.10
+Nodes (17): root, App(), loadAll(), reloadActiveTab(), DomainPanel(), FeaturesPanel(), Footer(), FooterProps (+9 more)
 
 ### Community 26 - "core.ts"
 
@@ -369,8 +370,8 @@ Nodes (32): 1. Akses Fitur, 1. Deteksi dan Parsing URL, 2. Input URL Dokumen, 2.
 
 ### Community 31 - "cookieFilterStorage.ts"
 
-Cohesion: 0.08
-Nodes (24): 1. Latar Belakang, 2.1 Komponen yang tersedia, 2.2 Design Tokens (src/ui/web/tokens.ts), 2.3 Cara pakai, 2. Arsitektur Shared UI Layer, 3. Daftar Penerapan — Prioritas Tinggi → Rendah, 4.1 consultationEnhancer (P1-1) — SELESAI, 4.2 cancelButton (P1-2) — SELESAI (+16 more)
+Cohesion: 0.29
+Nodes (8): CookieFilterStorage, CookieFilterStorageAPI, initClearAllFilterButton(), _isFilterPageUrl(), _isLoginPage(), removeClearAllFilterButton(), setupFilterLogoutWatcher(), Window
 
 ### Community 32 - "asset-master.js"
 
@@ -410,7 +411,7 @@ Nodes (9): autoprefixer, devDependencies, autoprefixer, @playwright/test, postcs
 ### Community 39 - "shared/utils.ts"
 
 Cohesion: 0.06
-Nodes (79): announce(), AntrianFarmasiDebugState, cardSection(), clearCallState(), currentPatientName(), domSignal(), ensureControlsHost(), ensureStatusBadge() (+71 more)
+Nodes (78): announce(), AntrianFarmasiDebugState, cardSection(), clearCallState(), currentPatientName(), domSignal(), ensureControlsHost(), ensureStatusBadge() (+70 more)
 
 ### Community 40 - "background.js"
 
@@ -419,13 +420,13 @@ Nodes (5): DEFAULT_CONFIG, DEFAULT_CUSTOM_URLS, loadConfig(), migrateConfig(), R
 
 ### Community 41 - "resumeTab/types.ts"
 
-Cohesion: 0.08
-Nodes (23): Agentix — CEO Skill, API Keys, API Reference, Credentials, Documentation, Environment Setup, Events, First-time setup (+15 more)
+Cohesion: 0.32
+Nodes (8): FeaturesPanelProps, roleOptions, RoleSelector(), RoleSelectorProps, StatusCard(), StatusCardProps, FeatureConfig, Role
 
 ### Community 42 - "ErrorBoundary"
 
-Cohesion: 0.12
-Nodes (19): browser_specific_settings, gecko, id, update_url, App(), AppProps, validate(), ClinicalNotesSection() (+11 more)
+Cohesion: 0.18
+Nodes (13): addTogglePanel(), init(), makeEditable(), validateField(), colors, appendAll(), BtnVariant, createBadge() (+5 more)
 
 ### Community 43 - "ErrorBoundary"
 
@@ -434,8 +435,8 @@ Nodes (31): AUDIT_DELIVERY_SUMMARY.md, AUDIT_MIGRATION_VS_DEV.md, AUDIT_QUICK_RE
 
 ### Community 44 - "TindakanSection.tsx"
 
-Cohesion: 0.06
-Nodes (67): act(), actCooldown, activeCard(), buildPanel(), CAT_META, catOf(), column(), DisplayData (+59 more)
+Cohesion: 0.10
+Nodes (33): act(), buildPanel(), callBtn(), DisplayData, DisplayRow, hideNative(), init(), log() (+25 more)
 
 ### Community 45 - "audit.mjs"
 
@@ -447,11 +448,6 @@ Nodes (3): __dirname, rootDir, scripts
 Cohesion: 0.50
 Nodes (4): DOM, DOM.Iterable, ES2020, lib
 
-### Community 48 - "pindahOperasi/main.ts"
-
-Cohesion: 0.10
-Nodes (20): 1. WS Relay Docker Container ✅ FIXED, 2. Reports SIMRS — Bare Metal Server (P0 — CRITICAL), 3. Extension Resilience Hardening (DONE ✅), Appendix: File Changes v1.2.2, Architecture Overview, Arsitektur Deploy Farmasi Display — Stabil & Anti-Crash, Deep Dive: Masalah & Solusi per Komponen, Deployment Checklist (+12 more)
-
 ### Community 49 - "Header.tsx"
 
 Cohesion: 0.07
@@ -459,8 +455,8 @@ Nodes (26): 1. Data Pasien & Registrasi (System Generated), 2. Diagnosis, 3. Tin
 
 ### Community 51 - "clsx"
 
-Cohesion: 0.07
-Nodes (56): attachFilterListeners(), BILLING_FILTER_CONFIG, BillingFilterConfig, clearFilter(), g, isBillingVerifikasiPage(), restoreFilter(), runBillingFilterPersistence() (+48 more)
+Cohesion: 0.22
+Nodes (23): anyFeatureEnabled(), BTN_STYLES, buildUrl(), createBtn(), createLink(), dokumenPasienUrl(), editResumeUrl(), extractIdRawatJalan() (+15 more)
 
 ### Community 55 - "globals"
 
@@ -509,8 +505,8 @@ Nodes (17): Analisis Kode, Contoh Perubahan DOM, Detail Implementasi Teknis, Edg
 
 ### Community 91 - "MORBIS Extension Rewrite Audit: Migration vs Dev Branch"
 
-Cohesion: 0.21
-Nodes (11): initExtension(), ExtensionCore, getCurrentRole(), isFeatureAllowed(), loadConfig(), log(), ROLES, saveConfig() (+3 more)
+Cohesion: 0.19
+Nodes (12): initExtension(), ExtensionCore, getCurrentRole(), isFeatureAllowed(), loadConfig(), log(), ROLES, saveConfig() (+4 more)
 
 ### Community 92 - "Duplikasi Data ICD Diagnosis & Tindakan saat Input/Edit"
 
@@ -531,6 +527,11 @@ Nodes (12): Branching Strategy, Browser Didukung, Cara Pasang (3 Langkah), Cek I
 
 Cohesion: 0.15
 Nodes (12): Alur, Contoh Feature Yang Benar, Contoh Feature Yang SALAH, Controller Features — Pengecualian, Extension Architecture, FeatureContext, FeatureMatch Contract, Files (+4 more)
+
+### Community 96 - "scripts"
+
+Cohesion: 0.25
+Nodes (13): attachFilterListeners(), clearFilter(), FEATURE_MATCHES, featureMeta, g, getContext(), getFilterScope(), LEGACY_STORAGE_KEYS (+5 more)
 
 ### Community 97 - "Optimasi Cetak (Print Optimization)"
 
@@ -614,8 +615,8 @@ Nodes (7): 15. Final Recommendation, Alignment with Constraints, Execution Phase
 
 ### Community 113 - "cancelButton.ts"
 
-Cohesion: 0.18
-Nodes (10): description, name, private, scripts, build, format, pack, repack (+2 more)
+Cohesion: 0.67
+Nodes (5): getIdFromOnclick(), injectLab(), injectRadio(), isEnabled(), run()
 
 ### Community 114 - "Batch Features Refactor"
 
@@ -649,8 +650,8 @@ Nodes (4): Morbis DevTools MCP Server, Setup, Tools, Usage
 
 ### Community 120 - "ConsultationInfoPanel.tsx"
 
-Cohesion: 0.27
-Nodes (13): _cleanupOpenDetail(), extractIdFromElement(), extractIdFromOnclick(), formatDateOpenDetail(), g, generateUrl(), isModifiedEvent(), OPEN_DETAIL_CONFIG (+5 more)
+Cohesion: 0.29
+Nodes (12): extractIdFromElement(), extractIdFromOnclick(), formatDateOpenDetail(), g, generateUrl(), isModifiedEvent(), OPEN_DETAIL_CONFIG, overrideButtonsByText() (+4 more)
 
 ### Community 121 - "Verifikasi End-to-End Phase 1–3B (Antrian Global)"
 
@@ -787,15 +788,10 @@ Nodes (3): 7. TypeScript & Type Safety, Dev Branch Type Issues, Migration Branch
 Cohesion: 0.67
 Nodes (3): Opsi Konfigurasi, Pengaturan Spesifik Fitur, Pengaturan Tingkat Ekstensi
 
-### Community 151 - "labDataTables.ts"
-
-Cohesion: 0.50
-Nodes (3): Coding Style, Communication, User Taste Profile
-
 ### Community 154 - "shortcutButtons.ts"
 
-Cohesion: 0.50
-Nodes (3): IntrinsicElements, JSX, react
+Cohesion: 0.21
+Nodes (11): injectStyles(), injectStyle(), getMorbisGlobals(), BACK_DETAIL_BTN, extractParam(), formatDate(), g, generateDetailUrl() (+3 more)
 
 ### Community 155 - "14. Files Impact Report"
 
@@ -822,27 +818,42 @@ Nodes (4): addOverlayCSS(), ensureOverlay(), fadeOutDone(), monitor()
 Cohesion: 0.67
 Nodes (3): 9.1 Constraints, 9.2 Insights, 9. Key Constraints & Insights
 
+### Community 161 - "scrollButtons.ts"
+
+Cohesion: 0.35
+Nodes (10): easeInOutCubic(), g, renderScrollButtons(), runScrollButtonsFeature(), SCROLL_CONFIG, scrollButtonsExist(), scrollToBottom(), scrollToTop() (+2 more)
+
+### Community 163 - "resumeTab/types.ts"
+
+Cohesion: 0.35
+Nodes (10): attachFilterListeners(), clearFilter(), DOCTOR_FILTER_CONFIGS, DoctorFilterConfig, DoctorFilterConfigs, g, getCurrentPageConfig(), restoreFilter() (+2 more)
+
+### Community 164 - "ErrorBoundary"
+
+Cohesion: 0.31
+Nodes (9): attachFilterListeners(), BILLING_FILTER_CONFIG, BillingFilterConfig, clearFilter(), g, isBillingVerifikasiPage(), restoreFilter(), runBillingFilterPersistence() (+1 more)
+
 ## Knowledge Gaps
 
-- **1002 isolated node(s):** `$schema`, `sessionName`, `profile`, `headed`, `hideScrollbars` (+997 more)
+- **924 isolated node(s):** `$schema`, `sessionName`, `profile`, `headed`, `hideScrollbars` (+919 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **33 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **32 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `ExtModal` connect `legacy.ts` to `shared/utils.ts`, `resumeValidator.ts`?**
-  _High betweenness centrality (0.044) - this node is a cross-community bridge._
-- **Why does `confirmExt()` connect `resumeValidator.ts` to `legacy.ts`, `resumeRanapTab/App.tsx`?**
-  _High betweenness centrality (0.038) - this node is a cross-community bridge._
-- **Why does `confirmLegacy()` connect `batchUploadUrl.ts` to `TindakanSection.tsx`?**
-  _High betweenness centrality (0.027) - this node is a cross-community bridge._
+- **Why does `id` connect `resumeTab/App.tsx` to `manifest.json`?**
+  _High betweenness centrality (0.006) - this node is a cross-community bridge._
+- **Why does `gecko` connect `manifest.json` to `resumeTab/App.tsx`?**
+  _High betweenness centrality (0.006) - this node is a cross-community bridge._
 - **What connects `$schema`, `sessionName`, `profile` to the rest of the system?**
-  _1002 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `cpptSearchFilter.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.052214452214452214 - nodes in this community are weakly interconnected._
+  _924 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `batchUploadUrl.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.05906553041434029 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08248587570621468 - nodes in this community are weakly interconnected._
+- **Should `resumeRanapTab/App.tsx` be split into smaller, more focused modules?**
+  _Cohesion score 0.05782312925170068 - nodes in this community are weakly interconnected._
 - **Should `ponytail-activate.js` be split into smaller, more focused modules?**
   _Cohesion score 0.07342995169082125 - nodes in this community are weakly interconnected._
+- **Should `manifest.json` be split into smaller, more focused modules?**
+  _Cohesion score 0.05263157894736842 - nodes in this community are weakly interconnected._

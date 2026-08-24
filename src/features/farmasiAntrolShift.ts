@@ -339,7 +339,13 @@ function isResepBatal(antrianStatus?: string): boolean {
    *  Setelah itu resep bisa di-antrikan ulang (tombol racik/tunggal muncul lagi). */
   async function onBatalAntrian(code: string, nomorResep: string): Promise<void> {
     console.log('[MORBIS Ext] BATAL mulai — code:', code, '| nomorResep:', nomorResep);
-    const eid = queueEventId('bat', nomorResep, code);
+    // ponytail: event_id HARUS unik per klik — BATAL menghapus record (bukan
+    // reusable). Dulu deterministik per hari (bat-<id>-<code>-<tgl>): setelah
+    // resep di-antrikan ulang dan dapat nomor sama (nomor terhapus dipakai
+    // lagi oleh assignNomor), BATAL kedua ketemu event lama → backend
+    // short-circuit duplicate TANPA menghapus → ok:true tapi antrian tetap
+    // ada (bug "gagal walau console ok").
+    const eid = queueEventId('bat', nomorResep, code) + '-' + Date.now().toString(36);
     console.log('[MORBIS Ext] BATAL event_id:', eid);
     const sync = await pushQueueEvent({
       event_id: eid,
