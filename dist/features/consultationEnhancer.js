@@ -1557,7 +1557,7 @@ var __morbis_feature = (() => {
         exports.useTransition = function () {
           return resolveDispatcher().useTransition();
         };
-        exports.version = '19.2.7';
+        exports.version = '19.2.8';
         'undefined' !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ &&
           'function' === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop &&
           __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(Error());
@@ -1937,7 +1937,7 @@ var __morbis_feature = (() => {
         exports.useFormStatus = function () {
           return resolveDispatcher().useHostTransitionStatus();
         };
-        exports.version = '19.2.7';
+        exports.version = '19.2.8';
         'undefined' !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ &&
           'function' === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop &&
           __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(Error());
@@ -27015,11 +27015,11 @@ var __morbis_feature = (() => {
         };
         (function () {
           var isomorphicReactPackageVersion = React5.version;
-          if ('19.2.7' !== isomorphicReactPackageVersion)
+          if ('19.2.8' !== isomorphicReactPackageVersion)
             throw Error(
               'Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ' +
                 (isomorphicReactPackageVersion +
-                  '\n  - react-dom:  19.2.7\nLearn more: https://react.dev/warnings/version-mismatch'),
+                  '\n  - react-dom:  19.2.8\nLearn more: https://react.dev/warnings/version-mismatch'),
             );
         })();
         ('function' === typeof Map &&
@@ -27050,10 +27050,10 @@ var __morbis_feature = (() => {
           !(function () {
             var internals = {
               bundleType: 1,
-              version: '19.2.7',
+              version: '19.2.8',
               rendererPackageName: 'react-dom',
               currentDispatcherRef: ReactSharedInternals,
-              reconcilerVersion: '19.2.7',
+              reconcilerVersion: '19.2.8',
             };
             internals.overrideHookState = overrideHookState;
             internals.overrideHookStateDeletePath = overrideHookStateDeletePath;
@@ -27183,7 +27183,7 @@ var __morbis_feature = (() => {
           listenToAllSupportedEvents(container);
           return new ReactDOMHydrationRoot(initialChildren);
         };
-        exports.version = '19.2.7';
+        exports.version = '19.2.8';
         'undefined' !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ &&
           'function' === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop &&
           __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(Error());

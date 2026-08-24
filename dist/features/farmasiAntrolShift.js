@@ -309,8 +309,12 @@ var __morbis_feature = (() => {
       data.jenis || data.unit
         ? `<div style="font-size:16px;margin-top:2px;">${[data.jenis, data.unit].filter(Boolean).join(' \xB7 ')}</div>`
         : '';
+    const tglLahirLine = data.tglLahir
+      ? `<div style="font-size:13px;margin-top:4px;color:#555;">${data.tglLahir}</div>`
+      : '';
     win.document.write(
       `<html><head><title>Antrian Farmasi</title></head><body style="width:320px;padding-top:10px;font-family:Arial,Helvetica,sans-serif;text-align:center;"><div style="font-size:16px;font-weight:bold;text-transform:uppercase;">RSUD H. Abdul Manap</div><div style="font-size:14px;margin-top:2px;">Antrian Farmasi</div><div style="margin-top:14px;"><div style="font-size:110px;font-weight:900;letter-spacing:-2px;line-height:1;">${data.code}</div></div><div style="font-size:20px;font-weight:bold;margin-top:10px;">${data.nama}</div>` +
+        tglLahirLine +
         jenisLine +
         `<div style="font-size:11px;margin-top:10px;color:#333;">${data.tanggal}</div><div style="font-size:13px;margin-top:14px;color:#555;">Silakan menunggu panggilan</div></body></html>`,
     );
@@ -360,6 +364,21 @@ var __morbis_feature = (() => {
       const words = t.split(/\s+/).filter(Boolean);
       if (words.length < 2) continue;
       return t.toUpperCase();
+    }
+    return '';
+  }
+  function resolveTglLahir() {
+    const fromInput = document.querySelector('#tgl_lahir')?.value?.trim();
+    if (fromInput) return fromInput;
+    const rows = document.querySelectorAll('tr');
+    for (const row of rows) {
+      const cells = row.querySelectorAll('td');
+      for (let i = 0; i < cells.length - 1; i++) {
+        if (/^tanggal\s*lahir$/i.test(cells[i].textContent?.trim() || '') && cells[i + 1]) {
+          const val = cells[i + 1].textContent?.trim();
+          if (val && val !== ':') return val;
+        }
+      }
     }
     return '';
   }
@@ -532,6 +551,7 @@ var __morbis_feature = (() => {
         unit: String(row?.NAMA_UNIT ?? ''),
         tanggal: waktu ? waktu.slice(0, 10) : '',
         code,
+        tglLahir: resolveTglLahir(),
       });
       renderActionBar('issued', code);
     }
@@ -578,6 +598,7 @@ var __morbis_feature = (() => {
               unit: '',
               tanggal: '',
               code: code || '',
+              tglLahir: resolveTglLahir(),
             });
           } catch {}
         });

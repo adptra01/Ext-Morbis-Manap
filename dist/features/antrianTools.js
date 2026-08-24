@@ -226,11 +226,36 @@ var __morbis_feature = (() => {
         bellNote(_audioCtx, 523.25, now + 0.28, 1.1, 0.5);
       } catch {}
     }
-    function buildStrukHtml(nomor, loket) {
-      return `<html><head><style>@page{ size: 80mm 80mm; margin:0; } body{font-family:"Courier New",Courier,monospace;width:70mm;margin:0 auto;padding:8px 10px;text-align:center;color:#000;} .header{border-bottom:2px dashed #000;padding-bottom:6px;margin-bottom:8px;} .header h2{font-size:17px;margin:0 0 2px;} .header small{font-size:11px;} .nomor{font-size:40px;font-weight:bold;margin:8px 0;} .loket{font-size:15px;font-weight:bold;margin-bottom:5px;} .footer{border-top:2px dashed #000;padding-top:6px;margin-top:8px;font-size:10px;}</style></head><body><div class="header"><h2>RSUD H. ABDUL MANAP</h2><small>SISTEM ANTRIAN</small></div>${loket ? `<div class="loket">${loket.toUpperCase()}</div>` : ''}<div>NOMOR ANTRIAN ANDA</div><div class="nomor">${nomor}</div><div>Mohon menunggu nomor Anda dipanggil</div><div class="footer">${/* @__PURE__ */ new Date().toLocaleString('id-ID')}</div></body></html>`;
+    function getPatientInfo() {
+      const val = (sel) => {
+        const el = document.querySelector(sel);
+        return el?.value?.trim() || '';
+      };
+      const nama = val('#nama') || val('input[name="nama"]');
+      const tglLahir = val('#tgl_lahir') || val('input[name="tgl_lahir"]');
+      if (nama || tglLahir) return { nama, tglLahir };
+      let fallbackNama = '';
+      let fallbackTgl = '';
+      document.querySelectorAll('tr').forEach((row) => {
+        const cells = row.querySelectorAll('td');
+        for (let i = 0; i < cells.length - 1; i++) {
+          const label = cells[i].textContent?.trim() || '';
+          const value = cells[i + 1].textContent?.trim() || '';
+          if (/^tanggal\s*lahir$/i.test(label) && value && value !== ':') fallbackTgl = value;
+          if (/^nama\s*pasien/i.test(label) && value && value !== ':') fallbackNama = value;
+        }
+      });
+      return { nama: fallbackNama, tglLahir: fallbackTgl };
     }
-    function cetakStrukAntrian(nomor, loket) {
-      const html = buildStrukHtml(nomor, loket);
+    function buildStrukHtml(nomor, loket, info) {
+      const patientSection =
+        info?.nama || info?.tglLahir
+          ? `<div class="patient">${info.nama ? `<div>${info.nama}</div>` : ''}${info.tglLahir ? `<div>${info.tglLahir}</div>` : ''}</div>`
+          : '';
+      return `<html><head><style>@page{ size: 80mm 80mm; margin:0; } body{font-family:"Courier New",Courier,monospace;width:70mm;margin:0 auto;padding:8px 10px;text-align:center;color:#000;} .header{border-bottom:2px dashed #000;padding-bottom:6px;margin-bottom:8px;} .header h2{font-size:17px;margin:0 0 2px;} .header small{font-size:11px;} .patient{font-size:12px;margin:6px 0;padding:4px 8px;border:1px dashed #999;border-radius:4px;} .nomor{font-size:40px;font-weight:bold;margin:8px 0;} .loket{font-size:15px;font-weight:bold;margin-bottom:5px;} .footer{border-top:2px dashed #000;padding-top:6px;margin-top:8px;font-size:10px;}</style></head><body><div class="header"><h2>RSUD H. ABDUL MANAP</h2><small>SISTEM ANTRIAN</small></div>${loket ? `<div class="loket">${loket.toUpperCase()}</div>` : ''}${patientSection}<div>NOMOR ANTRIAN ANDA</div><div class="nomor">${nomor}</div><div>Mohon menunggu nomor Anda dipanggil</div><div class="footer">${/* @__PURE__ */ new Date().toLocaleString('id-ID')}</div></body></html>`;
+    }
+    function cetakStrukAntrian(nomor, loket, info) {
+      const html = buildStrukHtml(nomor, loket, info);
       const iframe = document.createElement('iframe');
       iframe.style.cssText =
         'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;';
@@ -254,9 +279,11 @@ var __morbis_feature = (() => {
       }, 300);
     }
     function init() {
-      if (document.documentElement.getAttribute('data-ext-antrian-tools') !== '1') return;
-      setHealth('injected');
       const path = window.location.pathname;
+      const isResepDetail = path.includes('/inventory/resep/penerimaan/detail');
+      if (!isResepDetail && document.documentElement.getAttribute('data-ext-antrian-tools') !== '1')
+        return;
+      setHealth('injected');
       const isViewAntrian = path.endsWith('/counter-antrian/view-antrian');
       const initMesin = () => {
         intervalPoll(renderMesinUI);
@@ -432,8 +459,9 @@ var __morbis_feature = (() => {
               lastPrintKey = key;
               lastPrintAt = Date.now();
               if (isDup) return;
-              cetakStrukAntrian(nomor, loket);
-              extLog('mesin_ticket', true, { idx, nomor, loket });
+              const info = getPatientInfo();
+              cetakStrukAntrian(nomor, loket, info.nama || info.tglLahir ? info : void 0);
+              extLog('mesin_ticket', true, { idx, nomor, loket, ...info });
             },
             true,
             // capture: jalan sebelum event server (antrian) & sebelum reload
@@ -675,12 +703,44 @@ var __morbis_feature = (() => {
         renderStatus();
         setHealth('ui');
       };
+      const initResepDetail = () => {
+        if (document.getElementById('ext-resep-print-btn')) return;
+        const norm = onlyDigits(document.getElementById('norm')?.value || '');
+        const noResep = document.getElementById('nomor_resep')?.value?.trim() || '';
+        const btn = document.createElement('button');
+        btn.id = 'ext-resep-print-btn';
+        btn.textContent = 'Cetak Struk';
+        Object.assign(btn.style, {
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          zIndex: '999999',
+          padding: '12px 24px',
+          border: 'none',
+          borderRadius: '12px',
+          background: '#0f5132',
+          color: '#fff',
+          font: '600 15px Inter, system-ui, sans-serif',
+          cursor: 'pointer',
+          boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
+        });
+        btn.addEventListener('click', () => {
+          const nomor = noResep || norm || '-';
+          const patient = getPatientInfo();
+          cetakStrukAntrian(nomor, 'FARMASI', patient.nama || patient.tglLahir ? patient : void 0);
+          extLog('resep_print', true, { nomor, ...patient });
+        });
+        document.body.appendChild(btn);
+        setHealth('ui');
+      };
       if (path.includes('/mesin-antrian')) {
         initMesin();
       } else if (isViewAntrian) {
         initDisplay();
       } else if (path.includes('/counter-antrian/counter')) {
         initCounter();
+      } else if (path.includes('/inventory/resep/penerimaan/detail')) {
+        initResepDetail();
       }
     }
     window.addEventListener('beforeunload', () => {

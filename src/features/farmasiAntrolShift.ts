@@ -83,6 +83,24 @@ function resolveNamaPasien(): string {
   return '';
 }
 
+/** Tanggal lahir pasien dari hidden input #tgl_lahir atau baris detail. */
+function resolveTglLahir(): string {
+  const fromInput = document.querySelector<HTMLInputElement>('#tgl_lahir')?.value?.trim();
+  if (fromInput) return fromInput;
+  // fallback: baris "Tanggal lahir" di tabel detail
+  const rows = document.querySelectorAll('tr');
+  for (const row of rows) {
+    const cells = row.querySelectorAll('td');
+    for (let i = 0; i < cells.length - 1; i++) {
+      if (/^tanggal\s*lahir$/i.test(cells[i].textContent?.trim() || '') && cells[i + 1]) {
+        const val = cells[i + 1].textContent?.trim();
+        if (val && val !== ':') return val;
+      }
+    }
+  }
+  return '';
+}
+
 /** Cek ke App Antrian: resep sudah di-antri hari ini? (utk ganti tombol jadi
  *  "Cetak Kembali"). Return info antrian atau null. */
 async function lookupAntrian(
@@ -310,6 +328,7 @@ function isResepBatal(antrianStatus?: string): boolean {
       unit: String(row?.NAMA_UNIT ?? ''),
       tanggal: waktu ? waktu.slice(0, 10) : '',
       code,
+      tglLahir: resolveTglLahir(),
     });
     // Setelah berhasil: ganti tombol jadi "Cetak Kembali" + "Batal antrian".
     renderActionBar('issued', code);
@@ -379,6 +398,7 @@ function isResepBatal(antrianStatus?: string): boolean {
             unit: '',
             tanggal: '',
             code: code || '',
+            tglLahir: resolveTglLahir(),
           });
         } catch {
           /* abaikan */

@@ -19,6 +19,7 @@ export interface KartuAntrian {
   unit: string; // poliklinik / unit tujuan depo
   tanggal: string;
   code: string;
+  tglLahir?: string; // ponytail: dari #tgl_lahir hidden input / baris tabel
 }
 
 export function printKartuAntrian(data: KartuAntrian): boolean {
@@ -37,6 +38,9 @@ export function printKartuAntrian(data: KartuAntrian): boolean {
     data.jenis || data.unit
       ? `<div style="font-size:16px;margin-top:2px;">${[data.jenis, data.unit].filter(Boolean).join(' · ')}</div>`
       : '';
+  const tglLahirLine = data.tglLahir
+    ? `<div style="font-size:13px;margin-top:4px;color:#555;">${data.tglLahir}</div>`
+    : '';
   win.document.write(
     '<html><head><title>Antrian Farmasi</title></head>' +
       '<body style="width:320px;padding-top:10px;font-family:Arial,Helvetica,sans-serif;text-align:center;">' +
@@ -46,6 +50,7 @@ export function printKartuAntrian(data: KartuAntrian): boolean {
       `<div style="font-size:110px;font-weight:900;letter-spacing:-2px;line-height:1;">${data.code}</div>` +
       '</div>' +
       `<div style="font-size:20px;font-weight:bold;margin-top:10px;">${data.nama}</div>` +
+      tglLahirLine +
       jenisLine +
       `<div style="font-size:11px;margin-top:10px;color:#333;">${data.tanggal}</div>` +
       '<div style="font-size:13px;margin-top:14px;color:#555;">Silakan menunggu panggilan</div>' +

@@ -166,7 +166,8 @@
       "matches": [
         "http://*/public/mesin-antrian*",
         "http://*/public/counter-antrian/view-antrian*",
-        "http://*/counter-antrian/counter*"
+        "http://*/counter-antrian/counter*",
+        "http://*/inventory/resep/penerimaan/detail*"
       ],
       "js": ["features/antrianTools.js"],
       "run_at": "document_idle",
