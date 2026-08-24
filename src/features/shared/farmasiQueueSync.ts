@@ -23,6 +23,7 @@ export interface QueueEventPayload {
   resep_id?: string;
   nama_pasien?: string;
   norm?: string;
+  tgl_lahir?: string;
   shift?: string;
   jenis?: string;
   payload?: Record<string, unknown>;

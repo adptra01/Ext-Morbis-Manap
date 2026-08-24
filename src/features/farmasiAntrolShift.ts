@@ -302,6 +302,7 @@ function isResepBatal(antrianStatus?: string): boolean {
       resep_id: nomorResep,
       nama_pasien: nama,
       norm: idPasien || undefined,
+      tgl_lahir: resolveTglLahir() || undefined,
       shift: '',
       jenis: jenisLabel,
       counter: '',
@@ -337,12 +338,14 @@ function isResepBatal(antrianStatus?: string): boolean {
   /** Kirim BATAL ke app: antrian DIHAPUS dari DB app (bukan sentuh MORBIS).
    *  Setelah itu resep bisa di-antrikan ulang (tombol racik/tunggal muncul lagi). */
   async function onBatalAntrian(code: string, nomorResep: string): Promise<void> {
+    console.log('[MORBIS Ext] BATAL:', code, nomorResep);
     const sync = await pushQueueEvent({
       event_id: queueEventId('bat', nomorResep, code),
       event: 'BATAL',
       queue_number: code,
       resep_id: nomorResep,
     });
+    console.log('[MORBIS Ext] BATAL result:', sync);
     if (!sync.ok) {
       // BATAL gagal — bisa karena record SUDAH dihapus (dari operator panel
       // HAPUS atau BATAL sebelumnya). Kalau lookup bilang tidak ada → anggap
@@ -404,10 +407,15 @@ function isResepBatal(antrianStatus?: string): boolean {
           /* abaikan */
         }
       });
-      bar.querySelector('#ext-antrian-batal')?.addEventListener('click', () => {
+      bar.querySelector('#ext-antrian-batal')?.addEventListener('click', async () => {
         if (!confirm('Batalkan antrian ' + code + '? Resep akan keluar dari daftar panggilan.'))
           return;
-        void onBatalAntrian(code || '', nomorResep);
+        const btn = bar.querySelector('#ext-antrian-batal') as HTMLButtonElement | null;
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = 'Membatalkan…';
+        }
+        await onBatalAntrian(code || '', nomorResep);
       });
       return;
     }
