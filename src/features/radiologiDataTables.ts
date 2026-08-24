@@ -120,6 +120,64 @@ function showModal(rowData: Record<string, string>): void {
     });
 }
 
+/** Jalankan aksi asli dari HTML tersimpan (base64) berdasarkan col pattern. */
+function execStoredLink(dropdownEl: HTMLElement, col: string): boolean {
+  const b64 = dropdownEl.getAttribute('data-original');
+  if (!b64) return false;
+  const container = document.createElement('div');
+  container.style.display = 'none';
+  container.innerHTML = atob(b64);
+  document.body.appendChild(container);
+  const patMap: Record<string, string[]> = {
+    edit: ['editPemeriksaan(', 'showEdit('],
+    foto: ['showAddFotoRadiologi('],
+    bacaan: ['editBacaan('],
+    label: ['cetak_label(', 'cetakLabel('],
+    nota: ['cetak_nota(', 'cetakNota('],
+  };
+  const pats = patMap[col] || [];
+  let found = false;
+  container.querySelectorAll<HTMLAnchorElement>('a').forEach((a) => {
+    if (found) return;
+    const oc = a.getAttribute('onclick') || '';
+    const href = a.getAttribute('href') || '';
+    if (pats.some((p) => oc.includes(p) || href.includes(p))) {
+      a.click();
+      found = true;
+    }
+  });
+  document.body.removeChild(container);
+  return found;
+}
+
+function execBatalRadio(dropdownEl: HTMLElement): boolean {
+  const b64 = dropdownEl.getAttribute('data-original');
+  if (!b64) return false;
+  const container = document.createElement('div');
+  container.style.display = 'none';
+  container.innerHTML = atob(b64);
+  document.body.appendChild(container);
+  const editLink = container.querySelector<HTMLElement>(
+    '[onclick*="editBacaan"],[onclick*="showAddFotoRadiologi"]',
+  );
+  const oc = editLink?.getAttribute('onclick') || '';
+  document.body.removeChild(container);
+  const mId = oc.match(/[?&]id=(\d+)/);
+  const mVisit = oc.match(/[?&]id_visit=(\d+)/);
+  if (!mId) return false;
+  const id = mId[1];
+  const idVisit = mVisit ? mVisit[1] : '';
+  const w = window as any;
+  if (typeof w.batal_radiologi === 'function') {
+    w.batal_radiologi(id);
+    return true;
+  } else if (typeof w.batal_pengajuan === 'function') {
+    w.batal_pengajuan(id, idVisit);
+    return true;
+  }
+  return false;
+}
+
 function setupDropdownListeners(root: Element | Document): void {
   root.addEventListener('click', (e) => {
     const target = e.target as HTMLElement;
@@ -144,9 +202,16 @@ function setupDropdownListeners(root: Element | Document): void {
     const item = target.closest('.ext-action-dropdown a');
     if (item) {
       e.preventDefault();
-      item.closest('.ext-action-menu')!.setAttribute('aria-expanded', 'false');
-      const dd = item.closest<HTMLElement>('.ext-action-dropdown');
-      if (dd) dd.hidden = true;
+      const menu = item.closest<HTMLElement>('.ext-action-menu')!;
+      const dropdown = item.closest<HTMLElement>('.ext-action-dropdown')!;
+      const col = item.getAttribute('data-col');
+      menu.setAttribute('aria-expanded', 'false');
+      dropdown.hidden = true;
+      if (col === 'batal') {
+        execBatalRadio(dropdown);
+      } else if (col) {
+        execStoredLink(dropdown, col);
+      }
     }
   });
   document.addEventListener('click', (e) => {
@@ -188,7 +253,9 @@ function initDataTable(): void {
     if (tds.length < 10) return;
     const aksi = tds[15];
     if (aksi && !aksi.querySelector('.ext-action-menu')) {
+      const col = aksi.innerHTML;
       aksi.innerHTML = makeDropdown();
+      aksi.querySelector('.ext-action-dropdown')!.setAttribute('data-original', btoa(col));
     }
     const sp = tds[14];
     if (sp) {
@@ -207,7 +274,7 @@ function initDataTable(): void {
     { targets: 9, width: '200px' },
     { targets: 14, width: '90px' },
   ];
-  for (const idx of [2, 5, 6, 7, 8, 10, 11, 12, 13]) {
+  for (const idx of [5, 6, 7, 8, 10, 11, 12, 13]) {
     if (idx < numCols) colDefs.push({ targets: idx, visible: false, searchable: false });
   }
 

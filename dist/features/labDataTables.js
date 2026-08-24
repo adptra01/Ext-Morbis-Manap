@@ -1,55 +1,51 @@
 'use strict';
 var __morbis_feature = (() => {
-  // src/features/shared/dataTablesLoader.ts
-  var JQUERY_URL = 'https://code.jquery.com/jquery-3.7.1.min.js';
-  var DT_CSS_URL = 'https://cdn.datatables.net/1.13.11/css/jquery.dataTables.min.css';
-  var DT_JS_URL = 'https://cdn.datatables.net/1.13.11/js/jquery.dataTables.min.js';
-  var depsPromise = null;
-  function injectCSS(url) {
-    if (document.querySelector(`link[href="${url}"]`)) return;
-    const l = document.createElement('link');
-    l.rel = 'stylesheet';
-    l.href = url;
-    document.head.appendChild(l);
+  var h = 'https://code.jquery.com/jquery-3.7.1.min.js',
+    y = 'https://cdn.datatables.net/1.13.11/css/jquery.dataTables.min.css',
+    w = 'https://cdn.datatables.net/1.13.11/js/jquery.dataTables.min.js',
+    u = null;
+  function T(o) {
+    if (document.querySelector(`link[href="${o}"]`)) return;
+    let e = document.createElement('link');
+    ((e.rel = 'stylesheet'), (e.href = o), document.head.appendChild(e));
   }
-  function injectScript(url) {
-    return new Promise((resolve, reject) => {
-      if (document.querySelector(`script[src="${url}"]`)) return resolve();
-      const s = document.createElement('script');
-      s.src = url;
-      s.onload = () => resolve();
-      s.onerror = () => reject(new Error('Failed to load ' + url));
-      document.head.appendChild(s);
+  function b(o) {
+    return new Promise((e, t) => {
+      if (document.querySelector(`script[src="${o}"]`)) return e();
+      let n = document.createElement('script');
+      ((n.src = o),
+        (n.onload = () => e()),
+        (n.onerror = () => t(new Error('Failed to load ' + o))),
+        document.head.appendChild(n));
     });
   }
-  function loadDataTablesDeps(logPrefix) {
-    if (depsPromise) return depsPromise;
-    depsPromise = (async () => {
-      console.log(`[${logPrefix}] loading deps...`);
-      injectCSS(DT_CSS_URL);
-      const _page$ = window.$;
-      const _pageJQ = window.jQuery;
-      await injectScript(JQUERY_URL);
-      await injectScript(DT_JS_URL);
-      window.__extJQ = window.jQuery;
-      window.$ = _page$;
-      window.jQuery = _pageJQ;
-      console.log(`[${logPrefix}] deps loaded`);
-    })();
-    return depsPromise;
+  function g(o) {
+    return (
+      u ||
+      ((u = (async () => {
+        (console.log(`[${o}] loading deps...`), T(y));
+        let e = window.$,
+          t = window.jQuery;
+        (await b(h),
+          await b(w),
+          (window.__extJQ = window.jQuery),
+          (window.$ = e),
+          (window.jQuery = t),
+          console.log(`[${o}] deps loaded`));
+      })()),
+      u)
+    );
   }
-  function getExt$() {
+  function m() {
     return window.__extJQ;
   }
-
-  // src/features/labDataTables.ts
-  var LOG = 'LabDT';
-  var dtInstance = null;
-  function injectCSS2() {
+  var f = 'LabDT',
+    p = null;
+  function k() {
     if (document.getElementById('ext-lab-dt-css')) return;
-    const s = document.createElement('style');
-    s.id = 'ext-lab-dt-css';
-    s.textContent = `.ext-action-menu{position:relative;display:inline-block}
+    let o = document.createElement('style');
+    ((o.id = 'ext-lab-dt-css'),
+      (o.textContent = `.ext-action-menu{position:relative;display:inline-block}
 .ext-action-trigger{background:#2563eb;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:13px;font-weight:500;cursor:pointer;min-width:90px;display:inline-flex;align-items:center;gap:6px;transition:background .15s}
 .ext-action-trigger:hover{background:#1d4ed8}
 .ext-action-trigger:focus{outline:2px solid #2563eb;outline-offset:2px}
@@ -89,10 +85,10 @@ var __morbis_feature = (() => {
 .ext-modal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 20px}
 .ext-modal-field{display:flex;flex-direction:column;gap:3px}
 .ext-modal-label{font-size:11px;font-weight:500;color:#6b7280;text-transform:uppercase;letter-spacing:.02em}
-.ext-modal-value{font-size:13.5px;color:#1f2937;word-break:break-word}`;
-    document.head.appendChild(s);
+.ext-modal-value{font-size:13.5px;color:#1f2937;word-break:break-word}`),
+      document.head.appendChild(o));
   }
-  function makeDropdown() {
+  function E() {
     return `<div class="ext-action-menu" tabindex="0" role="menu" aria-expanded="false">
 <button class="ext-action-trigger" aria-haspopup="true" type="button">Aksi <span class="caret">&#9660;</span></button>
 <div class="ext-action-dropdown" role="menu" hidden>
@@ -104,143 +100,178 @@ var __morbis_feature = (() => {
 <a role="menuitem" tabindex="-1" href="#" data-col="dokumen">Input Dokumen</a>
 </div></div>`;
   }
-  function badge(text) {
-    const s = (text || '').toLowerCase();
-    let cls = 'ext-badge--belum';
-    if (s.includes('sudah') || s.includes('selesai')) cls = 'ext-badge--sudah';
-    else if (s.includes('proses')) cls = 'ext-badge--proses';
-    else if (s.includes('batal')) cls = 'ext-badge--batal';
-    return `<span class="ext-badge ${cls}">${text}</span>`;
+  function v(o) {
+    let e = (o || '').toLowerCase(),
+      t = 'ext-badge--belum';
+    return (
+      e.includes('sudah') || e.includes('selesai')
+        ? (t = 'ext-badge--sudah')
+        : e.includes('proses')
+          ? (t = 'ext-badge--proses')
+          : e.includes('batal') && (t = 'ext-badge--batal'),
+      `<span class="ext-badge ${t}">${o}</span>`
+    );
   }
-  function rowToData(ths, tds) {
-    const d = {};
-    for (let i = 0; i < tds.length && i < ths.length; i++) {
-      d[ths[i].textContent.trim()] = tds[i].textContent.trim();
-    }
-    return d;
+  function L(o, e) {
+    let t = {};
+    for (let n = 0; n < e.length && n < o.length; n++)
+      t[o[n].textContent.trim()] = e[n].textContent.trim();
+    return t;
   }
-  function showModal(rowData) {
-    const $ = getExt$();
-    if (!$) return;
-    $('.ext-modal-overlay').remove();
-    const fields = Object.entries(rowData)
-      .filter(([k]) => k !== 'AKSI')
+  function _(o) {
+    let e = m();
+    if (!e) return;
+    e('.ext-modal-overlay').remove();
+    let t = Object.entries(o)
+      .filter(([n]) => n !== 'AKSI')
       .map(
-        ([k, v]) =>
-          `<div class="ext-modal-field"><span class="ext-modal-label">${k}</span><span class="ext-modal-value">${v || '-'}</span></div>`,
+        ([n, l]) =>
+          `<div class="ext-modal-field"><span class="ext-modal-label">${n}</span><span class="ext-modal-value">${l || '-'}</span></div>`,
       )
       .join('');
-    $('body').append(`<div class="ext-modal-overlay" tabindex="-1" role="dialog" aria-modal="true">
+    (e('body').append(`<div class="ext-modal-overlay" tabindex="-1" role="dialog" aria-modal="true">
 <div class="ext-modal">
 <div class="ext-modal-header">
 <h3 class="ext-modal-title">Detail Permintaan Lab</h3>
 <button class="ext-modal-close" aria-label="Tutup">&times;</button>
 </div>
-<div class="ext-modal-body"><div class="ext-modal-grid">${fields}</div></div>
-</div></div>`);
-    $('.ext-modal-overlay').on('click', function (e) {
-      if (e.target === this) $(this).remove();
-    });
-    $('.ext-modal-close').on('click', function () {
-      $('.ext-modal-overlay').remove();
-    });
-    $(document)
-      .off('keydown.extModal')
-      .on('keydown.extModal', function (e) {
-        if (e.key === 'Escape') $('.ext-modal-overlay').remove();
-      });
+<div class="ext-modal-body"><div class="ext-modal-grid">${t}</div></div>
+</div></div>`),
+      e('.ext-modal-overlay').on('click', function (n) {
+        n.target === this && e(this).remove();
+      }),
+      e('.ext-modal-close').on('click', function () {
+        e('.ext-modal-overlay').remove();
+      }),
+      e(document)
+        .off('keydown.extModal')
+        .on('keydown.extModal', function (n) {
+          n.key === 'Escape' && e('.ext-modal-overlay').remove();
+        }));
   }
-  function setupDropdownListeners(root) {
-    root.addEventListener('click', (e) => {
-      const target = e.target;
-      const trigger = target.closest('.ext-action-trigger');
-      if (trigger) {
-        e.preventDefault();
-        e.stopPropagation();
-        const menu = trigger.closest('.ext-action-menu');
-        const isOpen = menu.getAttribute('aria-expanded') === 'true';
-        document.querySelectorAll('.ext-action-menu[aria-expanded="true"]').forEach((m) => {
-          m.setAttribute('aria-expanded', 'false');
-          const dd = m.querySelector('.ext-action-dropdown');
-          if (dd) dd.hidden = true;
-        });
-        if (!isOpen) {
-          menu.setAttribute('aria-expanded', 'true');
-          const dd = menu.querySelector('.ext-action-dropdown');
-          if (dd) dd.hidden = false;
+  function M(o, e) {
+    let t = o.getAttribute('data-original');
+    if (!t) return !1;
+    let n = document.createElement('div');
+    ((n.style.display = 'none'), (n.innerHTML = atob(t)), document.body.appendChild(n));
+    let i =
+        {
+          'input-hasil': ['edit_hasil('],
+          'input-patologi': ['input_patologi('],
+          edit: ['edit('],
+          cetak: ['cetak_nota('],
+          dokumen: ['input_dokumen('],
+        }[e] || [],
+      a = !1;
+    return (
+      n.querySelectorAll('a').forEach((r) => {
+        if (a) return;
+        let d = r.getAttribute('onclick') || '',
+          c = r.getAttribute('href') || '';
+        i.some((s) => d.includes(s) || c.includes(s)) && (r.click(), (a = !0));
+      }),
+      document.body.removeChild(n),
+      a
+    );
+  }
+  function S(o, e) {
+    let t = o.getAttribute('data-original');
+    if (!t) return !1;
+    let n = document.createElement('div');
+    ((n.style.display = 'none'), (n.innerHTML = atob(t)), document.body.appendChild(n));
+    let i = n.querySelector('[onclick*="edit_hasil"]')?.getAttribute('onclick') || '';
+    document.body.removeChild(n);
+    let a = i.match(/edit_hasil\s*\(\s*['"]?(\d+)['"]?\s*,\s*['"]?(\d+)['"]?/);
+    if (!a) return !1;
+    let d = e.closest('tr')?.querySelector('td:nth-child(4)')?.textContent?.trim() || a[2] || '';
+    return typeof window.batal == 'function' ? (window.batal(a[1], d), !0) : !1;
+  }
+  function A(o) {
+    (o.addEventListener('click', (e) => {
+      let t = e.target,
+        n = t.closest('.ext-action-trigger');
+      if (n) {
+        (e.preventDefault(), e.stopPropagation());
+        let i = n.closest('.ext-action-menu'),
+          a = i.getAttribute('aria-expanded') === 'true';
+        if (
+          (document.querySelectorAll('.ext-action-menu[aria-expanded="true"]').forEach((r) => {
+            r.setAttribute('aria-expanded', 'false');
+            let d = r.querySelector('.ext-action-dropdown');
+            d && (d.hidden = !0);
+          }),
+          !a)
+        ) {
+          i.setAttribute('aria-expanded', 'true');
+          let r = i.querySelector('.ext-action-dropdown');
+          r && (r.hidden = !1);
         }
         return;
       }
-      const item = target.closest('.ext-action-dropdown a');
-      if (item) {
+      let l = t.closest('.ext-action-dropdown a');
+      if (l) {
         e.preventDefault();
-        item.closest('.ext-action-menu').setAttribute('aria-expanded', 'false');
-        const dd = item.closest('.ext-action-dropdown');
-        if (dd) dd.hidden = true;
+        let i = l.closest('.ext-action-menu'),
+          a = l.closest('.ext-action-dropdown'),
+          r = l.getAttribute('data-col');
+        (i.setAttribute('aria-expanded', 'false'),
+          (a.hidden = !0),
+          r === 'batal' ? S(a, i) : r && M(a, r));
       }
-    });
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('.ext-action-menu')) {
-        document.querySelectorAll('.ext-action-menu[aria-expanded="true"]').forEach((m) => {
-          m.setAttribute('aria-expanded', 'false');
-          const dd = m.querySelector('.ext-action-dropdown');
-          if (dd) dd.hidden = true;
-        });
-      }
-    });
+    }),
+      document.addEventListener('click', (e) => {
+        e.target.closest('.ext-action-menu') ||
+          document.querySelectorAll('.ext-action-menu[aria-expanded="true"]').forEach((t) => {
+            t.setAttribute('aria-expanded', 'false');
+            let n = t.querySelector('.ext-action-dropdown');
+            n && (n.hidden = !0);
+          });
+      }));
   }
-  function initDataTable() {
-    const $ = getExt$();
-    if (!$ || !$.fn?.DataTable) return;
-    const contentEl = document.getElementById('content');
-    if (!contentEl) return;
-    const table = contentEl.querySelector('table');
-    if (!table || table.dataset.extDt) return;
-    if (dtInstance) {
-      dtInstance.destroy(true);
-      dtInstance = null;
-    }
-    if (!table.querySelector('thead')) {
-      const firstTr = table.querySelector('tr');
-      if (firstTr && firstTr.querySelector('th')) {
-        const th = document.createElement('thead');
-        th.appendChild(firstTr);
-        table.insertBefore(th, table.firstChild);
+  function x() {
+    let o = m();
+    if (!o || !o.fn?.DataTable) return;
+    let e = document.getElementById('content');
+    if (!e) return;
+    let t = e.querySelector('table');
+    if (!t || t.dataset.extDt) return;
+    if ((p && (p.destroy(!0), (p = null)), !t.querySelector('thead'))) {
+      let a = t.querySelector('tr');
+      if (a && a.querySelector('th')) {
+        let r = document.createElement('thead');
+        (r.appendChild(a), t.insertBefore(r, t.firstChild));
       }
     }
-    const rows = table.querySelectorAll('tbody tr');
-    rows.forEach((tr) => {
-      const tds = tr.querySelectorAll('td');
-      if (tds.length < 7) return;
-      const aksi = tds[1];
-      if (aksi && !aksi.querySelector('.ext-action-menu')) {
-        const col = aksi.innerHTML;
-        aksi.innerHTML = makeDropdown();
-        aksi.querySelector('.ext-action-dropdown').setAttribute('data-original', btoa(col));
+    t.querySelectorAll('tbody tr').forEach((a) => {
+      let r = a.querySelectorAll('td');
+      if (r.length < 7) return;
+      let d = r[1];
+      if (d && !d.querySelector('.ext-action-menu')) {
+        let s = d.innerHTML;
+        ((d.innerHTML = E()),
+          d.querySelector('.ext-action-dropdown').setAttribute('data-original', btoa(s)));
       }
-      const st = tds[6];
-      if (st) {
-        const t = st.textContent.trim();
-        if (t && !st.querySelector('.ext-badge')) st.innerHTML = badge(t);
+      let c = r[6];
+      if (c) {
+        let s = c.textContent.trim();
+        s && !c.querySelector('.ext-badge') && (c.innerHTML = v(s));
       }
-      tr.classList.add('ext-row-clickable');
-      tr.setAttribute('tabindex', '0');
+      (a.classList.add('ext-row-clickable'), a.setAttribute('tabindex', '0'));
     });
-    const numCols = table.querySelectorAll('thead th').length;
-    const colDefs = [
-      { targets: 0, width: '40px', orderable: false, className: 'dt-center' },
-      { targets: 1, width: '100px', orderable: false, searchable: false },
-      { targets: 2, width: '90px' },
-      { targets: 4, width: '160px' },
-      { targets: 5, width: '120px' },
-      { targets: 6, width: '80px' },
-      { targets: 10, width: '180px' },
-    ];
-    for (const idx of [3, 7, 8, 9, 11, 12, 13, 14]) {
-      if (idx < numCols) colDefs.push({ targets: idx, visible: false, searchable: false });
-    }
-    dtInstance = $(table).DataTable({
-      destroy: true,
+    let l = t.querySelectorAll('thead th').length,
+      i = [
+        { targets: 0, width: '40px', orderable: !1, className: 'dt-center' },
+        { targets: 1, width: '100px', orderable: !1, searchable: !1 },
+        { targets: 2, width: '90px' },
+        { targets: 4, width: '160px' },
+        { targets: 5, width: '120px' },
+        { targets: 6, width: '80px' },
+        { targets: 10, width: '180px' },
+      ];
+    for (let a of [7, 8, 9, 11, 12, 13, 14])
+      a < l && i.push({ targets: a, visible: !1, searchable: !1 });
+    ((p = o(t).DataTable({
+      destroy: !0,
       pageLength: 25,
       lengthMenu: [
         [10, 25, 50, 100, -1],
@@ -255,67 +286,61 @@ var __morbis_feature = (() => {
         paginate: { first: 'Awal', last: 'Akhir', next: '\u2192', previous: '\u2190' },
         zeroRecords: 'Data tidak ditemukan',
       },
-      columnDefs: colDefs,
+      columnDefs: i,
       order: [],
-      scrollX: true,
-      autoWidth: false,
-      rowCallback: function (row) {
-        $(row)
+      scrollX: !0,
+      autoWidth: !1,
+      rowCallback: function (a) {
+        o(a)
           .off('click keyup')
-          .on('click keyup', function (e) {
-            const ke = e;
-            if (e.type === 'click' || ke.key === 'Enter' || ke.key === ' ') {
-              if (e.target.closest('.ext-action-menu, a, button')) return;
-              e.preventDefault();
-              showModal(rowToData(table.querySelectorAll('thead th'), row.querySelectorAll('td')));
+          .on('click keyup', function (r) {
+            let d = r;
+            if (r.type === 'click' || d.key === 'Enter' || d.key === ' ') {
+              if (r.target.closest('.ext-action-menu, a, button')) return;
+              (r.preventDefault(), _(L(t.querySelectorAll('thead th'), a.querySelectorAll('td'))));
             }
           });
       },
       initComplete: function () {
-        console.log(`[${LOG}] DataTable ready`);
+        console.log(`[${f}] DataTable ready`);
       },
-    });
-    table.dataset.extDt = '1';
+    })),
+      (t.dataset.extDt = '1'));
   }
-  function hookContentloader() {
-    const orig = window.contentloader;
-    if (typeof orig !== 'function') return;
-    window.contentloader = function (url, target) {
-      orig.call(this, url, target);
-      setTimeout(() => {
-        const el = document.querySelector(target);
-        const tbl = el?.querySelector('table');
-        if (tbl) tbl.dataset.extDt = '';
-        initDataTable();
-      }, 900);
-    };
+  function D() {
+    let o = window.contentloader;
+    typeof o == 'function' &&
+      (window.contentloader = function (e, t) {
+        (o.call(this, e, t),
+          setTimeout(() => {
+            let l = document.querySelector(t)?.querySelector('table');
+            (l && (l.dataset.extDt = ''), x());
+          }, 900));
+      });
   }
   (function () {
     if (!window.location.pathname.includes('laboratorium/input-hasil/view-lab')) return;
-    let polls = 0;
-    (function pollFlag() {
-      const flag = document.documentElement.getAttribute('data-ext-lab-datatables');
-      if (flag !== '1') {
-        if (polls++ < 20) {
-          setTimeout(pollFlag, 300);
+    let o = 0;
+    (function e() {
+      if (document.documentElement.getAttribute('data-ext-lab-datatables') !== '1') {
+        if (o++ < 20) {
+          setTimeout(e, 300);
           return;
         }
-        console.log(`[${LOG}] disabled`);
+        console.log(`[${f}] disabled`);
         return;
       }
-      console.log(`[${LOG}] start`);
-      injectCSS2();
-      setupDropdownListeners(document);
-      hookContentloader();
-      loadDataTablesDeps(LOG).then(() => {
-        let r = 0;
-        (function wait() {
-          const t = document.getElementById('content')?.querySelector('table');
-          if (t && t.querySelectorAll('tr').length > 1) initDataTable();
-          else if (r++ < 30) setTimeout(wait, 300);
-        })();
-      });
+      (console.log(`[${f}] start`),
+        k(),
+        A(document),
+        D(),
+        g(f).then(() => {
+          let n = 0;
+          (function l() {
+            let i = document.getElementById('content')?.querySelector('table');
+            i && i.querySelectorAll('tr').length > 1 ? x() : n++ < 30 && setTimeout(l, 300);
+          })();
+        }));
     })();
   })();
 })();
-//# sourceMappingURL=labDataTables.js.map

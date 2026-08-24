@@ -1,55 +1,51 @@
 'use strict';
 var __morbis_feature = (() => {
-  // src/features/shared/dataTablesLoader.ts
-  var JQUERY_URL = 'https://code.jquery.com/jquery-3.7.1.min.js';
-  var DT_CSS_URL = 'https://cdn.datatables.net/1.13.11/css/jquery.dataTables.min.css';
-  var DT_JS_URL = 'https://cdn.datatables.net/1.13.11/js/jquery.dataTables.min.js';
-  var depsPromise = null;
-  function injectCSS(url) {
-    if (document.querySelector(`link[href="${url}"]`)) return;
-    const l = document.createElement('link');
-    l.rel = 'stylesheet';
-    l.href = url;
-    document.head.appendChild(l);
+  var T = 'https://code.jquery.com/jquery-3.7.1.min.js',
+    w = 'https://cdn.datatables.net/1.13.11/css/jquery.dataTables.min.css',
+    k = 'https://cdn.datatables.net/1.13.11/js/jquery.dataTables.min.js',
+    u = null;
+  function v(t) {
+    if (document.querySelector(`link[href="${t}"]`)) return;
+    let e = document.createElement('link');
+    ((e.rel = 'stylesheet'), (e.href = t), document.head.appendChild(e));
   }
-  function injectScript(url) {
-    return new Promise((resolve, reject) => {
-      if (document.querySelector(`script[src="${url}"]`)) return resolve();
-      const s = document.createElement('script');
-      s.src = url;
-      s.onload = () => resolve();
-      s.onerror = () => reject(new Error('Failed to load ' + url));
-      document.head.appendChild(s);
+  function g(t) {
+    return new Promise((e, a) => {
+      if (document.querySelector(`script[src="${t}"]`)) return e();
+      let n = document.createElement('script');
+      ((n.src = t),
+        (n.onload = () => e()),
+        (n.onerror = () => a(new Error('Failed to load ' + t))),
+        document.head.appendChild(n));
     });
   }
-  function loadDataTablesDeps(logPrefix) {
-    if (depsPromise) return depsPromise;
-    depsPromise = (async () => {
-      console.log(`[${logPrefix}] loading deps...`);
-      injectCSS(DT_CSS_URL);
-      const _page$ = window.$;
-      const _pageJQ = window.jQuery;
-      await injectScript(JQUERY_URL);
-      await injectScript(DT_JS_URL);
-      window.__extJQ = window.jQuery;
-      window.$ = _page$;
-      window.jQuery = _pageJQ;
-      console.log(`[${logPrefix}] deps loaded`);
-    })();
-    return depsPromise;
+  function b(t) {
+    return (
+      u ||
+      ((u = (async () => {
+        (console.log(`[${t}] loading deps...`), v(w));
+        let e = window.$,
+          a = window.jQuery;
+        (await g(T),
+          await g(k),
+          (window.__extJQ = window.jQuery),
+          (window.$ = e),
+          (window.jQuery = a),
+          console.log(`[${t}] deps loaded`));
+      })()),
+      u)
+    );
   }
-  function getExt$() {
+  function m() {
     return window.__extJQ;
   }
-
-  // src/features/konsulDataTables.ts
-  var LOG = 'KonsulDT';
-  var dtInstances = /* @__PURE__ */ new Map();
-  function injectCSS2() {
+  var f = 'KonsulDT',
+    x = new Map();
+  function E() {
     if (document.getElementById('ext-konsul-dt-css')) return;
-    const s = document.createElement('style');
-    s.id = 'ext-konsul-dt-css';
-    s.textContent = `.ext-action-menu{position:relative;display:inline-block}
+    let t = document.createElement('style');
+    ((t.id = 'ext-konsul-dt-css'),
+      (t.textContent = `.ext-action-menu{position:relative;display:inline-block}
 .ext-action-trigger{background:#059669;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:13px;font-weight:500;cursor:pointer;min-width:90px;display:inline-flex;align-items:center;gap:6px;transition:background .15s}
 .ext-action-trigger:hover{background:#047857}
 .ext-action-trigger:focus{outline:2px solid #059669;outline-offset:2px}
@@ -89,10 +85,10 @@ var __morbis_feature = (() => {
 .ext-modal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 20px}
 .ext-modal-field{display:flex;flex-direction:column;gap:3px}
 .ext-modal-label{font-size:11px;font-weight:500;color:#6b7280;text-transform:uppercase;letter-spacing:.02em}
-.ext-modal-value{font-size:13.5px;color:#1f2937;word-break:break-word}`;
-    document.head.appendChild(s);
+.ext-modal-value{font-size:13.5px;color:#1f2937;word-break:break-word}`),
+      document.head.appendChild(t));
   }
-  function makeDropdown() {
+  function L() {
     return `<div class="ext-action-menu" tabindex="0" role="menu" aria-expanded="false">
 <button class="ext-action-trigger" aria-haspopup="true" type="button">Aksi <span class="caret">&#9660;</span></button>
 <div class="ext-action-dropdown" role="menu" hidden>
@@ -101,84 +97,82 @@ var __morbis_feature = (() => {
 <a role="menuitem" tabindex="-1" href="#" data-col="batal">Batal</a>
 </div></div>`;
   }
-  function rowToData(ths, tds) {
-    const d = {};
-    for (let i = 0; i < tds.length && i < ths.length; i++) {
-      d[ths[i].textContent.trim()] = tds[i].textContent.trim();
-    }
-    return d;
+  function _(t, e) {
+    let a = {};
+    for (let n = 0; n < e.length && n < t.length; n++)
+      a[t[n].textContent.trim()] = e[n].textContent.trim();
+    return a;
   }
-  function showModal(rowData) {
-    const $ = getExt$();
-    if (!$) return;
-    $('.ext-modal-overlay').remove();
-    const fields = Object.entries(rowData)
-      .filter(([k]) => k !== 'Aksi')
+  function M(t) {
+    let e = m();
+    if (!e) return;
+    e('.ext-modal-overlay').remove();
+    let a = Object.entries(t)
+      .filter(([n]) => n !== 'Aksi')
       .map(
-        ([k, v]) =>
-          `<div class="ext-modal-field"><span class="ext-modal-label">${k}</span><span class="ext-modal-value">${v || '-'}</span></div>`,
+        ([n, r]) =>
+          `<div class="ext-modal-field"><span class="ext-modal-label">${n}</span><span class="ext-modal-value">${r || '-'}</span></div>`,
       )
       .join('');
-    $('body').append(`<div class="ext-modal-overlay" tabindex="-1" role="dialog" aria-modal="true">
+    (e('body').append(`<div class="ext-modal-overlay" tabindex="-1" role="dialog" aria-modal="true">
 <div class="ext-modal">
 <div class="ext-modal-header">
 <h3 class="ext-modal-title">Detail Konsultasi</h3>
 <button class="ext-modal-close" aria-label="Tutup">&times;</button>
 </div>
-<div class="ext-modal-body"><div class="ext-modal-grid">${fields}</div></div>
-</div></div>`);
-    $('.ext-modal-overlay').on('click', function (e) {
-      if (e.target === this) $(this).remove();
-    });
-    $('.ext-modal-close').on('click', function () {
-      $('.ext-modal-overlay').remove();
-    });
-    $(document)
-      .off('keydown.extModal')
-      .on('keydown.extModal', function (e) {
-        if (e.key === 'Escape') $('.ext-modal-overlay').remove();
-      });
+<div class="ext-modal-body"><div class="ext-modal-grid">${a}</div></div>
+</div></div>`),
+      e('.ext-modal-overlay').on('click', function (n) {
+        n.target === this && e(this).remove();
+      }),
+      e('.ext-modal-close').on('click', function () {
+        e('.ext-modal-overlay').remove();
+      }),
+      e(document)
+        .off('keydown.extModal')
+        .on('keydown.extModal', function (n) {
+          n.key === 'Escape' && e('.ext-modal-overlay').remove();
+        }));
   }
-  function setupDropdownListeners(root) {
-    root.addEventListener('click', (e) => {
-      const target = e.target;
-      const trigger = target.closest('.ext-action-trigger');
-      if (trigger) {
-        e.preventDefault();
-        e.stopPropagation();
-        const menu = trigger.closest('.ext-action-menu');
-        const isOpen = menu.getAttribute('aria-expanded') === 'true';
-        document.querySelectorAll('.ext-action-menu[aria-expanded="true"]').forEach((m) => {
-          m.setAttribute('aria-expanded', 'false');
-          const dd = m.querySelector('.ext-action-dropdown');
-          if (dd) dd.hidden = true;
-        });
-        if (!isOpen) {
-          menu.setAttribute('aria-expanded', 'true');
-          const dd = menu.querySelector('.ext-action-dropdown');
-          if (dd) dd.hidden = false;
+  function D(t) {
+    (t.addEventListener('click', (e) => {
+      let a = e.target,
+        n = a.closest('.ext-action-trigger');
+      if (n) {
+        (e.preventDefault(), e.stopPropagation());
+        let d = n.closest('.ext-action-menu'),
+          p = d.getAttribute('aria-expanded') === 'true';
+        if (
+          (document.querySelectorAll('.ext-action-menu[aria-expanded="true"]').forEach((i) => {
+            i.setAttribute('aria-expanded', 'false');
+            let s = i.querySelector('.ext-action-dropdown');
+            s && (s.hidden = !0);
+          }),
+          !p)
+        ) {
+          d.setAttribute('aria-expanded', 'true');
+          let i = d.querySelector('.ext-action-dropdown');
+          i && (i.hidden = !1);
         }
         return;
       }
-      const item = target.closest('.ext-action-dropdown a');
-      if (item) {
-        e.preventDefault();
-        item.closest('.ext-action-menu').setAttribute('aria-expanded', 'false');
-        const dd = item.closest('.ext-action-dropdown');
-        if (dd) dd.hidden = true;
+      let r = a.closest('.ext-action-dropdown a');
+      if (r) {
+        (e.preventDefault(), r.closest('.ext-action-menu').setAttribute('aria-expanded', 'false'));
+        let d = r.closest('.ext-action-dropdown');
+        d && (d.hidden = !0);
       }
-    });
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('.ext-action-menu')) {
-        document.querySelectorAll('.ext-action-menu[aria-expanded="true"]').forEach((m) => {
-          m.setAttribute('aria-expanded', 'false');
-          const dd = m.querySelector('.ext-action-dropdown');
-          if (dd) dd.hidden = true;
-        });
-      }
-    });
+    }),
+      document.addEventListener('click', (e) => {
+        e.target.closest('.ext-action-menu') ||
+          document.querySelectorAll('.ext-action-menu[aria-expanded="true"]').forEach((a) => {
+            a.setAttribute('aria-expanded', 'false');
+            let n = a.querySelector('.ext-action-dropdown');
+            n && (n.hidden = !0);
+          });
+      }));
   }
-  var TABLE_CONFIGS = [
+  var y = [
     {
       selector: '.data-list:first-child table.tabel, .data-list:first-of-type table.tabel',
       hidden: [3, 4, 5, 6],
@@ -192,42 +186,32 @@ var __morbis_feature = (() => {
       key: 'sudah',
     },
   ];
-  function initTable(table, config) {
-    const $ = getExt$();
-    if (!$ || !$.fn?.DataTable) return;
-    const key = table.id || config.key;
-    const existing = dtInstances.get(key);
-    if (existing) {
-      existing.destroy(true);
-      dtInstances.delete(key);
-    }
-    if (table.dataset.extDt && !existing) return;
-    if (!table.querySelector('thead')) {
-      const firstTr = table.querySelector('tr');
-      if (firstTr && firstTr.querySelector('th')) {
-        const th = document.createElement('thead');
-        th.appendChild(firstTr);
-        table.insertBefore(th, table.firstChild);
+  function S(t, e) {
+    let a = m();
+    if (!a || !a.fn?.DataTable) return;
+    let n = t.id || e.key,
+      r = x.get(n);
+    if ((r && (r.destroy(!0), x.delete(n)), t.dataset.extDt && !r)) return;
+    if (!t.querySelector('thead')) {
+      let o = t.querySelector('tr');
+      if (o && o.querySelector('th')) {
+        let l = document.createElement('thead');
+        (l.appendChild(o), t.insertBefore(l, t.firstChild));
       }
     }
-    const rows = table.querySelectorAll('tbody tr');
-    rows.forEach((tr) => {
-      const tds = tr.querySelectorAll('td');
-      if (tds.length < config.aksiIdx + 1) return;
-      const aksi = tds[config.aksiIdx];
-      if (aksi && !aksi.querySelector('.ext-action-menu')) {
-        aksi.innerHTML = makeDropdown();
-      }
-      tr.classList.add('ext-row-clickable');
-      tr.setAttribute('tabindex', '0');
+    t.querySelectorAll('tbody tr').forEach((o) => {
+      let l = o.querySelectorAll('td');
+      if (l.length < e.aksiIdx + 1) return;
+      let c = l[e.aksiIdx];
+      (c && !c.querySelector('.ext-action-menu') && (c.innerHTML = L()),
+        o.classList.add('ext-row-clickable'),
+        o.setAttribute('tabindex', '0'));
     });
-    const numCols = table.querySelectorAll('thead th').length;
-    const colDefs = [{ targets: 0, width: '40px', orderable: false, className: 'dt-center' }];
-    for (const idx of config.hidden) {
-      if (idx < numCols) colDefs.push({ targets: idx, visible: false, searchable: false });
-    }
-    const instance = $(table).DataTable({
-      destroy: true,
+    let p = t.querySelectorAll('thead th').length,
+      i = [{ targets: 0, width: '40px', orderable: !1, className: 'dt-center' }];
+    for (let o of e.hidden) o < p && i.push({ targets: o, visible: !1, searchable: !1 });
+    let s = a(t).DataTable({
+      destroy: !0,
       pageLength: 15,
       lengthMenu: [
         [10, 15, 25, 50, -1],
@@ -242,75 +226,65 @@ var __morbis_feature = (() => {
         paginate: { first: 'Awal', last: 'Akhir', next: '\u2192', previous: '\u2190' },
         zeroRecords: 'Data tidak ditemukan',
       },
-      columnDefs: colDefs,
+      columnDefs: i,
       order: [],
-      scrollX: true,
-      autoWidth: false,
-      rowCallback: function (row) {
-        $(row)
+      scrollX: !0,
+      autoWidth: !1,
+      rowCallback: function (o) {
+        a(o)
           .off('click keyup')
-          .on('click keyup', function (e) {
-            const ke = e;
-            if (e.type === 'click' || ke.key === 'Enter' || ke.key === ' ') {
-              if (e.target.closest('.ext-action-menu, a, button')) return;
-              e.preventDefault();
-              showModal(rowToData(table.querySelectorAll('thead th'), row.querySelectorAll('td')));
+          .on('click keyup', function (l) {
+            let c = l;
+            if (l.type === 'click' || c.key === 'Enter' || c.key === ' ') {
+              if (l.target.closest('.ext-action-menu, a, button')) return;
+              (l.preventDefault(), M(_(t.querySelectorAll('thead th'), o.querySelectorAll('td'))));
             }
           });
       },
       initComplete: function () {
-        console.log(`[${LOG}] DataTable ready (${config.key})`);
+        console.log(`[${f}] DataTable ready (${e.key})`);
       },
     });
-    dtInstances.set(key, instance);
-    table.dataset.extDt = '1';
+    (x.set(n, s), (t.dataset.extDt = '1'));
   }
-  function scanTables() {
-    TABLE_CONFIGS.forEach((cfg) => {
-      const el = document.querySelector(cfg.selector);
-      if (el && !el.dataset.extDt) {
-        initTable(el, cfg);
-      }
+  function h() {
+    y.forEach((t) => {
+      let e = document.querySelector(t.selector);
+      e && !e.dataset.extDt && S(e, t);
     });
   }
   (function () {
     if (!window.location.pathname.includes('admisi/pengajuan_konsultasi/konsultasi')) return;
-    let polls = 0;
-    (function pollFlag() {
-      const flag = document.documentElement.getAttribute('data-ext-konsul-datatables');
-      if (flag !== '1') {
-        if (polls++ < 20) {
-          setTimeout(pollFlag, 300);
+    let t = 0;
+    (function e() {
+      if (document.documentElement.getAttribute('data-ext-konsul-datatables') !== '1') {
+        if (t++ < 20) {
+          setTimeout(e, 300);
           return;
         }
-        console.log(`[${LOG}] disabled`);
+        console.log(`[${f}] disabled`);
         return;
       }
-      console.log(`[${LOG}] start`);
-      injectCSS2();
-      setupDropdownListeners(document);
-      loadDataTablesDeps(LOG).then(() => {
-        let r = 0;
-        (function wait() {
-          scanTables();
-          if (r++ >= 30) return;
-          const anyPending = TABLE_CONFIGS.some((c) => {
-            const el = document.querySelector(c.selector);
-            return el && el.dataset.extDt !== '1';
-          });
-          if (anyPending) setTimeout(wait, 300);
-        })();
-      });
-      let timer = null;
+      (console.log(`[${f}] start`),
+        E(),
+        D(document),
+        b(f).then(() => {
+          let r = 0;
+          (function d() {
+            if ((h(), r++ >= 30)) return;
+            y.some((i) => {
+              let s = document.querySelector(i.selector);
+              return s && s.dataset.extDt !== '1';
+            }) && setTimeout(d, 300);
+          })();
+        }));
+      let n = null;
       new MutationObserver(() => {
-        if (!timer) {
-          timer = setTimeout(() => {
-            timer = null;
-            scanTables();
-          }, 600);
-        }
-      }).observe(document.body, { childList: true, subtree: true });
+        n ||
+          (n = setTimeout(() => {
+            ((n = null), h());
+          }, 600));
+      }).observe(document.body, { childList: !0, subtree: !0 });
     })();
   })();
 })();
-//# sourceMappingURL=konsulDataTables.js.map

@@ -294,50 +294,12 @@
   }
 
   /* ---- AUTO-PRINT (mesin) ---- */
-  // ponytail: ekstrak DOB dari DOM — cek hidden input dulu, lalu tabel visible
-  function getPatientInfo(): { nama: string; tglLahir: string } {
-    const val = (sel: string) => {
-      const el = document.querySelector(sel) as HTMLInputElement | null;
-      return el?.value?.trim() || '';
-    };
-    // hidden inputs (pola halaman detail MORBIS)
-    const nama = val('#nama') || val('input[name="nama"]');
-    const tglLahir = val('#tgl_lahir') || val('input[name="tgl_lahir"]');
-    if (nama || tglLahir) return { nama, tglLahir };
-    // fallback: cari tabel "Tanggal lahir" / "Nama" visible
-    let fallbackNama = '';
-    let fallbackTgl = '';
-    document.querySelectorAll('tr').forEach((row) => {
-      const cells = row.querySelectorAll('td');
-      for (let i = 0; i < cells.length - 1; i++) {
-        const label = cells[i].textContent?.trim() || '';
-        const value = cells[i + 1].textContent?.trim() || '';
-        if (/^tanggal\s*lahir$/i.test(label) && value && value !== ':') fallbackTgl = value;
-        if (/^nama\s*pasien/i.test(label) && value && value !== ':') fallbackNama = value;
-      }
-    });
-    return { nama: fallbackNama, tglLahir: fallbackTgl };
+  function buildStrukHtml(nomor: string, loket: string): string {
+    return `<html><head><style>@page{ size: 80mm 80mm; margin:0; } body{font-family:"Courier New",Courier,monospace;width:70mm;margin:0 auto;padding:8px 10px;text-align:center;color:#000;} .header{border-bottom:2px dashed #000;padding-bottom:6px;margin-bottom:8px;} .header h2{font-size:17px;margin:0 0 2px;} .header small{font-size:11px;} .nomor{font-size:40px;font-weight:bold;margin:8px 0;} .loket{font-size:15px;font-weight:bold;margin-bottom:5px;} .footer{border-top:2px dashed #000;padding-top:6px;margin-top:8px;font-size:10px;}</style></head><body><div class="header"><h2>RSUD H. ABDUL MANAP</h2><small>SISTEM ANTRIAN</small></div>${loket ? `<div class="loket">${loket.toUpperCase()}</div>` : ''}<div>NOMOR ANTRIAN ANDA</div><div class="nomor">${nomor}</div><div>Mohon menunggu nomor Anda dipanggil</div><div class="footer">${new Date().toLocaleString('id-ID')}</div></body></html>`;
   }
 
-  function buildStrukHtml(
-    nomor: string,
-    loket: string,
-    info?: { nama?: string; tglLahir?: string },
-  ): string {
-    // ponytail: tambahkan nama + DOB pasien bila tersedia di halaman
-    const patientSection =
-      info?.nama || info?.tglLahir
-        ? `<div class="patient">${info.nama ? `<div>${info.nama}</div>` : ''}${info.tglLahir ? `<div>${info.tglLahir}</div>` : ''}</div>`
-        : '';
-    return `<html><head><style>@page{ size: 80mm 80mm; margin:0; } body{font-family:"Courier New",Courier,monospace;width:70mm;margin:0 auto;padding:8px 10px;text-align:center;color:#000;} .header{border-bottom:2px dashed #000;padding-bottom:6px;margin-bottom:8px;} .header h2{font-size:17px;margin:0 0 2px;} .header small{font-size:11px;} .patient{font-size:12px;margin:6px 0;padding:4px 8px;border:1px dashed #999;border-radius:4px;} .nomor{font-size:40px;font-weight:bold;margin:8px 0;} .loket{font-size:15px;font-weight:bold;margin-bottom:5px;} .footer{border-top:2px dashed #000;padding-top:6px;margin-top:8px;font-size:10px;}</style></head><body><div class="header"><h2>RSUD H. ABDUL MANAP</h2><small>SISTEM ANTRIAN</small></div>${loket ? `<div class="loket">${loket.toUpperCase()}</div>` : ''}${patientSection}<div>NOMOR ANTRIAN ANDA</div><div class="nomor">${nomor}</div><div>Mohon menunggu nomor Anda dipanggil</div><div class="footer">${new Date().toLocaleString('id-ID')}</div></body></html>`;
-  }
-
-  function cetakStrukAntrian(
-    nomor: string,
-    loket: string,
-    info?: { nama?: string; tglLahir?: string },
-  ): void {
-    const html = buildStrukHtml(nomor, loket, info);
+  function cetakStrukAntrian(nomor: string, loket: string): void {
+    const html = buildStrukHtml(nomor, loket);
     // print via iframe tersembunyi di halaman yang sama — TANPA window.open:
     // window terpisah = popup blank yang bikin fullscreen mesin lepas + preview kosong.
     // (popup diblokir kiosk & butuh gestur; iframe cukup dan tetap jalan saat reload 1s)
@@ -368,12 +330,9 @@
   /* ---- INIT (no external calls) ---- */
   function init(): void {
     const path = window.location.pathname;
-    // resep detail: selalu jalan (tidak butuh flag antrian-tools)
-    const isResepDetail = path.includes('/inventory/resep/penerimaan/detail');
     // gate: hanya jalan jika fitur enabled + role diizinkan (attribute di-set init.ts
     // document_end; fitur ini MAIN world tidak punya chrome.storage)
-    if (!isResepDetail && document.documentElement.getAttribute('data-ext-antrian-tools') !== '1')
-      return;
+    if (document.documentElement.getAttribute('data-ext-antrian-tools') !== '1') return;
     setHealth('injected');
     // redesign display HANYA di view-antrian v1 (bukan view-antrian-v2)
     const isViewAntrian = path.endsWith('/counter-antrian/view-antrian');
@@ -613,9 +572,8 @@
             lastPrintKey = key;
             lastPrintAt = Date.now();
             if (isDup) return; // skip print ganda untuk nomor sama
-            const info = getPatientInfo();
-            cetakStrukAntrian(nomor, loket, info.nama || info.tglLahir ? info : undefined);
-            extLog('mesin_ticket', true, { idx, nomor, loket, ...info });
+            cetakStrukAntrian(nomor, loket);
+            extLog('mesin_ticket', true, { idx, nomor, loket });
           },
           true, // capture: jalan sebelum event server (antrian) & sebelum reload
         );
@@ -908,40 +866,6 @@
       renderStatus();
       setHealth('ui');
     };
-    /* ---- RESEP DETAIL (cetak struk pasien) ---- */
-    const initResepDetail = () => {
-      if (document.getElementById('ext-resep-print-btn')) return;
-      const norm = onlyDigits((document.getElementById('norm') as HTMLInputElement)?.value || '');
-      // nomor resep dari input hidden di halaman
-      const noResep =
-        (document.getElementById('nomor_resep') as HTMLInputElement)?.value?.trim() || '';
-      const btn = document.createElement('button');
-      btn.id = 'ext-resep-print-btn';
-      btn.textContent = 'Cetak Struk';
-      Object.assign(btn.style, {
-        position: 'fixed',
-        bottom: '24px',
-        right: '24px',
-        zIndex: '999999',
-        padding: '12px 24px',
-        border: 'none',
-        borderRadius: '12px',
-        background: '#0f5132',
-        color: '#fff',
-        font: '600 15px Inter, system-ui, sans-serif',
-        cursor: 'pointer',
-        boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
-      });
-      btn.addEventListener('click', () => {
-        // cetak struk — gunakan nomor resep sbg identifier, label "FARMASI" sbg loket
-        const nomor = noResep || norm || '-';
-        const patient = getPatientInfo();
-        cetakStrukAntrian(nomor, 'FARMASI', patient.nama || patient.tglLahir ? patient : undefined);
-        extLog('resep_print', true, { nomor, ...patient });
-      });
-      document.body.appendChild(btn);
-      setHealth('ui');
-    };
 
     /* ---- ROUTING ---- */
     if (path.includes('/mesin-antrian')) {
@@ -950,8 +874,6 @@
       initDisplay();
     } else if (path.includes('/counter-antrian/counter')) {
       initCounter();
-    } else if (path.includes('/inventory/resep/penerimaan/detail')) {
-      initResepDetail();
     }
   }
 

@@ -121,6 +121,57 @@ function showModal(rowData: Record<string, string>): void {
     });
 }
 
+/** Jalankan aksi asli dari HTML tersimpan (base64) berdasarkan col pattern. */
+function execStoredLink(dropdownEl: HTMLElement, col: string): boolean {
+  const b64 = dropdownEl.getAttribute('data-original');
+  if (!b64) return false;
+  const container = document.createElement('div');
+  container.style.display = 'none';
+  container.innerHTML = atob(b64);
+  document.body.appendChild(container);
+  const patMap: Record<string, string[]> = {
+    'input-hasil': ['edit_hasil('],
+    'input-patologi': ['input_patologi('],
+    edit: ['edit('],
+    cetak: ['cetak_nota('],
+    dokumen: ['input_dokumen('],
+  };
+  const pats = patMap[col] || [];
+  let found = false;
+  container.querySelectorAll<HTMLAnchorElement>('a').forEach((a) => {
+    if (found) return;
+    const oc = a.getAttribute('onclick') || '';
+    const href = a.getAttribute('href') || '';
+    if (pats.some((p) => oc.includes(p) || href.includes(p))) {
+      a.click();
+      found = true;
+    }
+  });
+  document.body.removeChild(container);
+  return found;
+}
+
+function execBatalLab(dropdownEl: HTMLElement, menuEl: HTMLElement): boolean {
+  const b64 = dropdownEl.getAttribute('data-original');
+  if (!b64) return false;
+  const container = document.createElement('div');
+  container.style.display = 'none';
+  container.innerHTML = atob(b64);
+  document.body.appendChild(container);
+  const editLink = container.querySelector<HTMLElement>('[onclick*="edit_hasil"]');
+  const oc = editLink?.getAttribute('onclick') || '';
+  document.body.removeChild(container);
+  const m = oc.match(/edit_hasil\s*\(\s*['"]?(\d+)['"]?\s*,\s*['"]?(\d+)['"]?/);
+  if (!m) return false;
+  const row = menuEl.closest('tr');
+  const idVisit = row?.querySelector('td:nth-child(4)')?.textContent?.trim() || m[2] || '';
+  if (typeof (window as any).batal === 'function') {
+    (window as any).batal(m[1], idVisit);
+    return true;
+  }
+  return false;
+}
+
 function setupDropdownListeners(root: Element | Document): void {
   root.addEventListener('click', (e) => {
     const target = e.target as HTMLElement;
@@ -145,9 +196,16 @@ function setupDropdownListeners(root: Element | Document): void {
     const item = target.closest('.ext-action-dropdown a');
     if (item) {
       e.preventDefault();
-      item.closest('.ext-action-menu')!.setAttribute('aria-expanded', 'false');
-      const dd = item.closest<HTMLElement>('.ext-action-dropdown');
-      if (dd) dd.hidden = true;
+      const menu = item.closest<HTMLElement>('.ext-action-menu')!;
+      const dropdown = item.closest<HTMLElement>('.ext-action-dropdown')!;
+      const col = item.getAttribute('data-col');
+      menu.setAttribute('aria-expanded', 'false');
+      dropdown.hidden = true;
+      if (col === 'batal') {
+        execBatalLab(dropdown, menu);
+      } else if (col) {
+        execStoredLink(dropdown, col);
+      }
     }
   });
   document.addEventListener('click', (e) => {
@@ -215,7 +273,7 @@ function initDataTable(): void {
     { targets: 6, width: '80px' },
     { targets: 10, width: '180px' },
   ];
-  for (const idx of [3, 7, 8, 9, 11, 12, 13, 14]) {
+  for (const idx of [7, 8, 9, 11, 12, 13, 14]) {
     if (idx < numCols) colDefs.push({ targets: idx, visible: false, searchable: false });
   }
 
