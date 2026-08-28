@@ -144,7 +144,15 @@ export async function pushQueueEvent(
       signal: ctrl.signal,
     });
     clearTimeout(t);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    if (!res.ok) {
+      let detail = '';
+      try {
+        detail = (await res.json())?.message || '';
+      } catch {
+        /* ignore */
+      }
+      throw new Error('HTTP ' + res.status + (detail ? ' — ' + detail : ''));
+    }
     const j = (await res.json()) as {
       ok?: boolean;
       created?: boolean;
