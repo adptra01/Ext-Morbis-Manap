@@ -11,6 +11,7 @@
  * Nomor publik berlaku utk TAMPILAN/cetak/panggilan saja.
  */
 import { getQueueState, getTicket, type QueueTicket } from './shared/farmasiQueue';
+import { HOSPITAL_NAME } from './shared/config';
 
 const LIST_URL = '/public/antrian-farmasi-v2/list-antrian-v2';
 
@@ -240,7 +241,9 @@ function openPrint(rows: Array<Record<string, unknown>>): void {
           return (
             '<div style="width:92mm;height:48mm;border:1px solid #000;box-sizing:border-box;padding:8px 10px;text-align:center;page-break-inside:avoid;' +
             'display:flex;flex-direction:column;justify-content:center;">' +
-            '<div style="font-size:10px;font-weight:600;text-transform:uppercase;">RSUD H. Abdul Manap</div>' +
+            '<div style="font-size:10px;font-weight:600;text-transform:uppercase;">' +
+            HOSPITAL_NAME +
+            '</div>' +
             '<div style="font-size:9px;margin-bottom:4px;">Antrian Farmasi</div>' +
             '<div style="font-size:30px;font-weight:700;letter-spacing:1px;">' +
             k +
@@ -302,7 +305,9 @@ function openPrintOne(rows: Array<Record<string, unknown>>, idx: number): void {
         '<div style="width:92mm;height:48mm;border:1px solid #000;box-sizing:border-box;margin:0 auto;' +
         'padding:14px 12px;text-align:center;display:flex;flex-direction:column;justify-content:center;gap:4px;' +
         'font-family:Arial,Helvetica,sans-serif;">' +
-        '<div style="font-size:11px;font-weight:600;text-transform:uppercase;">RSUD H. Abdul Manap</div>' +
+        '<div style="font-size:11px;font-weight:600;text-transform:uppercase;">' +
+        HOSPITAL_NAME +
+        '</div>' +
         '<div style="font-size:10px;">Antrian Farmasi</div>' +
         '<div style="font-size:34px;font-weight:700;letter-spacing:1px;margin:6px 0;">' +
         (nomorKe || '') +

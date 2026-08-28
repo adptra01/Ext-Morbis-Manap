@@ -21,6 +21,7 @@ import {
   whenAntrianFarmasiActive,
 } from './shared/farmasiQueueSync';
 import { printKartuAntrian } from './shared/printKartu';
+import { HOSPITAL_NAME } from './shared/config';
 
 interface DisplayRow {
   id: number;
@@ -55,6 +56,21 @@ let lastCounters: Record<string, number> = {};
 
 // FIX: simpan interval ID untuk cleanup pas unload
 let _opRenderIntervalId: number | null = null;
+let _opSseSource: EventSource | null = null;
+
+/** SSE listener utk operator — subscribe ke /api/queue/stream. */
+async function startOperatorSse(): Promise<void> {
+  try {
+    const base = await probeFarmasiAppBase();
+    _opSseSource = new EventSource(base + '/api/queue/stream');
+    _opSseSource.onmessage = () => void render(); // render segera saat event masuk
+    _opSseSource.onerror = () => {
+      /* auto-reconnect, biarkan fallback ke polling */
+    };
+  } catch {
+    /* probe gagal — biarkan polling jalan */
+  }
+}
 
 /** Ikon SVG inline (lucide-style, stroke currentColor) — bukan emoji. */
 const ICONS: Record<string, string> = {
@@ -156,7 +172,9 @@ function printSheetA4(): void {
         : '';
       return (
         '<div style="width:320px;padding-top:10px;padding-bottom:4px;font-family:Arial,Helvetica,sans-serif;text-align:center;page-break-after:always;">' +
-        '<div style="font-size:16px;font-weight:bold;text-transform:uppercase;">RSUD H. Abdul Manap</div>' +
+        '<div style="font-size:16px;font-weight:bold;text-transform:uppercase;">' +
+        HOSPITAL_NAME +
+        '</div>' +
         '<div style="font-size:14px;margin-top:2px;">Antrian Farmasi</div>' +
         '<div style="font-size:13px;margin-top:4px;color:#555;">' +
         lastTanggal +
@@ -315,7 +333,9 @@ function printBlankSheet(prefix: string, from: number, to: number): void {
   for (let i = from; i <= to; i++) {
     cards.push(
       '<div style="width:320px;padding-top:10px;padding-bottom:4px;font-family:Arial,Helvetica,sans-serif;text-align:center;page-break-after:always;">' +
-        '<div style="font-size:16px;font-weight:bold;text-transform:uppercase;">RSUD H. Abdul Manap</div>' +
+        '<div style="font-size:16px;font-weight:bold;text-transform:uppercase;">' +
+        HOSPITAL_NAME +
+        '</div>' +
         '<div style="font-size:14px;margin-top:2px;">Antrian Farmasi</div>' +
         '<div style="font-size:13px;margin-top:4px;color:#555;">' +
         (prefix === 'R' ? 'Racikan (R)' : 'Non Racikan (T)') +
@@ -922,14 +942,22 @@ function init(): void {
     void probeFarmasiAppBase().then(() => void render()); // fallback IP bila DNS gagal
     // FIX: simpan interval ID agar bisa di-clear pas unload/navigate
     _opRenderIntervalId = window.setInterval(() => void render(), POLL_MS);
+    // SSE: real-time update — saat event masuk, render segera tanpa tunggu POLL_MS
+    void startOperatorSse();
     log('panel operator aktif');
   };
   start();
   // MORBIS render ulang #isi tiap 30s — jaga display:none tetap menempel.
+  // Debounce 100ms + scope ke #isi utk kurangi CPU usage.
+  let _debounceTimer: number | undefined;
+  const _isi = document.getElementById('isi') || document.body;
   new MutationObserver(() => {
-    hideNative();
-    if (!document.getElementById('ext-farmasi-operator')) start();
-  }).observe(document.body, { childList: true, subtree: true });
+    clearTimeout(_debounceTimer);
+    _debounceTimer = window.setTimeout(() => {
+      hideNative();
+      if (!document.getElementById('ext-farmasi-operator')) start();
+    }, 100);
+  }).observe(_isi, { childList: true, subtree: true });
 
   // FIX: cleanup interval saat unload
   window.addEventListener('beforeunload', () => {

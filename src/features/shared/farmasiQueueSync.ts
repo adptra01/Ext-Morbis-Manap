@@ -173,9 +173,95 @@ export async function pushQueueEvent(
       console.warn('[MORBIS Ext] queue sync gagal:', msg);
       lastWarnMsg = msg;
     }
+    // Simpan ke retry queue supaya bisa dikirim ulang saat server up.
+    await saveToRetryQueue(p);
     return { ok: false };
   }
 }
+
+/* ── Retry Queue (chrome.storage.local) ─────────────────────────────── */
+
+const RETRY_KEY = 'ext-queue-retry-queue';
+const MAX_RETRY_ITEMS = 20; // batasi supaya storage tidak membesar
+
+/** Simpan event gagal ke retry queue. */
+async function saveToRetryQueue(p: QueueEventPayload): Promise<void> {
+  try {
+    const existing = (await chrome.storage.local.get(RETRY_KEY))[RETRY_KEY] ?? [];
+    // Dedupe by event_id — jangan simpan event yang sama 2x
+    if (existing.some((item: QueueEventPayload) => item.event_id === p.event_id)) return;
+    existing.push(p);
+    // Batasi jumlah item
+    if (existing.length > MAX_RETRY_ITEMS) existing.shift();
+    await chrome.storage.local.set({ [RETRY_KEY]: existing });
+    console.log('[MORBIS Ext] disimpan ke retry queue:', p.event, p.queue_number ?? '');
+  } catch {
+    // storage gagal — biarkan event hilang
+  }
+}
+
+/** Ambil semua pending events dari retry queue. */
+async function getRetryQueue(): Promise<QueueEventPayload[]> {
+  try {
+    return (await chrome.storage.local.get(RETRY_KEY))[RETRY_KEY] ?? [];
+  } catch {
+    return [];
+  }
+}
+
+/** Hapus satu event dari retry queue berdasarkan event_id. */
+async function removeFromRetryQueue(eventId: string): Promise<void> {
+  try {
+    const existing = (await chrome.storage.local.get(RETRY_KEY))[RETRY_KEY] ?? [];
+    const filtered = existing.filter((item: QueueEventPayload) => item.event_id !== eventId);
+    await chrome.storage.local.set({ [RETRY_KEY]: filtered });
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Flush retry queue — coba kirim ulang semua pending events. */
+async function flushRetryQueue(): Promise<void> {
+  const pending = await getRetryQueue();
+  if (!pending.length) return;
+  for (const item of [...pending]) {
+    try {
+      const result = await pushQueueEventDirect(item);
+      if (result.ok) {
+        await removeFromRetryQueue(item.event_id);
+        console.log('[MORBIS Ext] retry queue sukses:', item.event, item.queue_number ?? '');
+      }
+    } catch {
+      /* server masih down — biarkan di queue */
+    }
+  }
+}
+
+/** pushQueueEvent tanpa retry (untuk flushRetryQueue, hindari infinite loop). */
+async function pushQueueEventDirect(
+  p: QueueEventPayload,
+): Promise<{ ok: boolean; queue_number?: string }> {
+  const body: Record<string, unknown> = { ...p };
+  if (p.event === 'ENQUEUE') delete body.queue_number;
+  const base = await probeFarmasiAppBase();
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 8000);
+  const res = await fetch(base + '/api/queue/events', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    cache: 'no-store',
+    credentials: 'omit',
+    signal: ctrl.signal,
+  });
+  clearTimeout(t);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const j = (await res.json()) as { ok?: boolean; queue?: { queue_number?: string } };
+  return { ok: !!j.ok, queue_number: j.queue?.queue_number };
+}
+
+// Auto-flush tiap 10 detik
+setInterval(() => void flushRetryQueue(), 10000);
 
 /** event_id deterministik dari sumber (idVisit/resepId + nomor) — stabil utk retry. */
 export function queueEventId(prefix: string, source: string, nomor: string): string {
@@ -186,7 +272,8 @@ export function queueEventId(prefix: string, source: string, nomor: string): str
  *  data-ext-antrian-farmasi di-set init.ts bila feature enabled + role
  *  diizinkan). Polling singkat karena content script bisa jalan sebelum
  *  init.ts selesai loadConfig (document_start / satu entry dengan init.js).
- *  ponytail: polling 200ms max 5s — kalau init.ts lambat, fitur di-skip. */
+ *  ponytail: polling 200ms max 5s — kalau init.ts lambat, fitur di-skip
+ *  + tampilkan notifikasi ke user. */
 export function whenAntrianFarmasiActive(cb: () => void, timeoutMs = 5000): void {
   const el = document.documentElement;
   const t0 = Date.now();
@@ -195,7 +282,22 @@ export function whenAntrianFarmasiActive(cb: () => void, timeoutMs = 5000): void
       window.clearInterval(iv);
       cb();
     } else if (Date.now() - t0 > timeoutMs) {
-      window.clearInterval(iv); // fitur nonaktif / init gagal → jangan jalan
+      window.clearInterval(iv);
+      // Tampilkan notifikasi ke user agar tahu fitur tidak aktif
+      showFeatureGateNotif();
     }
   }, 200);
+}
+
+/** Tampilkan banner kecil di pojok kanan atas saat fitur antrian tidak aktif. */
+function showFeatureGateNotif(): void {
+  if (document.getElementById('ext-feature-gate-notif')) return; // sudah ada
+  const banner = document.createElement('div');
+  banner.id = 'ext-feature-gate-notif';
+  banner.textContent = '⚠️ Fitur antrian tidak aktif — muat ulang halaman (F5)';
+  banner.style.cssText =
+    'position:fixed;top:8px;right:8px;z-index:999999;background:#dc3545;color:#fff;' +
+    'padding:8px 16px;border-radius:6px;font:13px system-ui,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.2);';
+  document.body.appendChild(banner);
+  setTimeout(() => banner.remove(), 10000);
 }

@@ -58,6 +58,7 @@ import {
   parsePatients,
   type PatientByName,
 } from './shared/currentNumber';
+import { probeFarmasiAppBase } from './shared/farmasiQueueSync';
 
 // Observability (debug) — snapshot baca-saja, bukan sumber kebenaran.
 // Hanya dibuat bila URL memakai ?debug=1; production normal tetap bersih
@@ -134,6 +135,10 @@ declare global {
   // "Selanjutnya" turun dari ≤600ms → ≤350ms (+fetch). Naikkan ke 600 bila
   // server MORBIS terbebani (beban 2 endpoint/tick naik ~1.7x dari 600ms).
   const CARD_MS = 350;
+  // SSE (Server-Sent Events) — real-time update dari backend.
+  let _sseConnected = false;
+  let _sseSource: EventSource | null = null;
+
   // Badge status (pojok kanan-atas): memberi tahu petugas bahwa refresh berjalan
   // ("MEMPERBARUI…") vs selesai ("SIAP") — menandakan delay itu normal, bukan freeze.
   let statusBadge: HTMLDivElement | null = null;
@@ -888,6 +893,32 @@ declare global {
       // Recursive timeout: tunggu fetch selesai + jeda CARD_MS, baru tick
       // berikutnya. Kalau server lambat, tick bergeser (tidak menumpuk).
       cardTimer = window.setTimeout(() => void refreshCardNumber(), CARD_MS);
+    }
+  }
+
+  // SSE listener — subscribe ke /api/queue/stream. Saat event masuk (CALL,
+  // DONE, RECALL, dll), langsung trigger refreshCardNumber() tanpa tunggu
+  // CARD_MS timeout. Jika SSE gagal (nginx timeout / server down), biarkan
+  // polling tetap jalan sebagai fallback.
+  async function startSseListener(): Promise<void> {
+    try {
+      const base = await probeFarmasiAppBase();
+      _sseSource = new EventSource(base + '/api/queue/stream');
+      _sseSource.onmessage = () => {
+        _sseConnected = true;
+        // Force refresh segera — batalkan timer yang sedang berjalan
+        if (cardTimer !== null) {
+          clearTimeout(cardTimer);
+          cardTimer = null;
+        }
+        void refreshCardNumber();
+      };
+      _sseSource.onerror = () => {
+        _sseConnected = false;
+        // Jangan close — EventSource auto-reconnect. Biarkan fallback ke polling.
+      };
+    } catch {
+      // probeFarmasiAppBase gagal — biarkan polling jalan
     }
   }
 
@@ -2052,6 +2083,12 @@ declare global {
       // recursive setTimeout (lihat finally di refreshCardNumber): panggil
       // sekali → tick berikutnya dijadwalkan sendiri setelah fetch selesai.
       void refreshCardNumber();
+    }
+
+    // SSE: subscribe ke /api/queue/stream — real-time update tanpa polling.
+    // Fallback ke polling jika SSE gagal (server tidak support / nginx block).
+    if (typeof EventSource !== 'undefined' && !_sseConnected) {
+      void startSseListener();
     }
   }
 

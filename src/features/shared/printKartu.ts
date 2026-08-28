@@ -1,4 +1,5 @@
 import { confirmLegacy } from './batchUtils.js';
+import { HOSPITAL_NAME } from './config.js';
 
 /**
  * printKartuAntrian — buka popup kartu antrian format kita (bukan kartu MORBIS
@@ -44,7 +45,9 @@ export function printKartuAntrian(data: KartuAntrian): boolean {
   win.document.write(
     '<html><head><title>Antrian Farmasi</title></head>' +
       '<body style="width:320px;padding-top:10px;font-family:Arial,Helvetica,sans-serif;text-align:center;">' +
-      '<div style="font-size:16px;font-weight:bold;text-transform:uppercase;">RSUD H. Abdul Manap</div>' +
+      '<div style="font-size:16px;font-weight:bold;text-transform:uppercase;">' +
+      HOSPITAL_NAME +
+      '</div>' +
       '<div style="font-size:14px;margin-top:2px;">Antrian Farmasi</div>' +
       '<div style="margin-top:14px;">' +
       `<div style="font-size:110px;font-weight:900;letter-spacing:-2px;line-height:1;">${data.code}</div>` +
