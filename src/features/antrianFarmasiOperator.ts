@@ -593,6 +593,7 @@ function miniRow(r: DisplayRow, prefix: string): string {
           r.queue_number,
           prefix + '-print-' + r.queue_number,
         ) +
+        iconBtn('DEFER', 'pause', 'Tunda', r.queue_number, prefix + '-defer-' + r.queue_number) +
         iconBtn('DONE', 'check', 'Selesai', r.queue_number, prefix + '-done-' + r.queue_number)
       : r.status === 'CALLED'
         ? iconBtn(
@@ -719,6 +720,9 @@ function buildPanel(): HTMLDivElement {
     '<button id="ext-op-set-counter" data-tip="Set nomor lanjutan setelah kendala (mati lampu dll) — antrian berikutnya lanjut dari nomor itu" style="padding:7px 14px;border:1px solid #0d6efd;background:#fff;color:#0d6efd;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
     svg('refresh', 14, '#0d6efd') +
     'Set Nomor</button>' +
+    '<button id="ext-op-delete-all" data-tip="Hapus SEMUA antrian hari ini dari DB (aksi permanen — tidak bisa dibatalkan)" style="padding:7px 14px;border:1px solid #b02a37;background:#fff;color:#b02a37;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
+    svg('trash', 14, '#b02a37') +
+    'Hapus Semua</button>' +
     '<button id="ext-op-refresh" data-tip="Segarkan data antrean dari app" style="padding:7px 14px;border:1px solid #6c757d;background:#6c757d;color:#fff;border-radius:8px;cursor:pointer;">Segarkan</button>' +
     '</div></div>' +
     '<div id="ext-op-grid" style="display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:12px;align-items:start;">' +
@@ -879,6 +883,33 @@ async function act(ev: string, num: string, eid: string): Promise<void> {
   }
 }
 
+/** Hapus SEMUA record antrian hari ini dari DB app. Aksi permanen. */
+async function deleteAllQueue(): Promise<void> {
+  if (
+    !confirm(
+      'HAPUS SEMUA antrian hari ini?\n\nSemua record akan dihapus permanen dari DB. Aksi ini tidak bisa dibatalkan.',
+    )
+  ) {
+    return;
+  }
+  try {
+    const base = await probeFarmasiAppBase();
+    const res = await fetch(base + '/api/queue/delete-all', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+      cache: 'no-store',
+      credentials: 'omit',
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const j = (await res.json()) as { ok?: boolean; deleted?: number };
+    log('delete-all:', j.ok ? 'OK' : 'gagal', 'deleted', j.deleted);
+    await render();
+  } catch (e) {
+    alert('[MORBIS Ext] Gagal hapus semua antrian: ' + String((e as Error).message ?? e));
+  }
+}
+
 /** Reset STATUS antrian di DB app (bukan MORBIS): semua antrian hari ini
  *  kembali ke WAITING — display menampilkan ulang dari nomor pertama, bisa
  *  dipanggil ulang dari awal. Record tidak dihapus. */
@@ -930,6 +961,9 @@ function init(): void {
     });
     document.getElementById('ext-op-print-sheet')?.addEventListener('click', openPrintSheetDialog);
     document.getElementById('ext-op-set-counter')?.addEventListener('click', openSetCounterDialog);
+    document
+      .getElementById('ext-op-delete-all')
+      ?.addEventListener('click', () => void deleteAllQueue());
     document.getElementById('ext-op-refresh')?.addEventListener('click', () => void render());
     // Tombol duplikat di panel kanan (di-render ulang tiap fetch → pakai delegasi).
     panel.addEventListener('click', (e) => {
