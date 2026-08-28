@@ -280,24 +280,24 @@ function isResepBatal(antrianStatus?: string): boolean {
     // agar resolve ke ID antrian (check_antrian) akurat.
     const idPasien = document.querySelector<HTMLInputElement>('#id_pasien')?.value ?? '';
     const waktu = document.querySelector<HTMLInputElement>('#waktu_pengajuan')?.value ?? '';
-    let row: Record<string, unknown> | null = null;
-    for (let i = 0; i < 5 && !row; i++) {
-      row = await resolveAntrianRow(idPasien, waktu);
-      if (!row) await new Promise((r) => setTimeout(r, 400));
-    }
-    const antrianId = row ? String(row.ID ?? '') : idVisit;
-
-    // ENQUEUE ke App Antrian — TANPA queue_number (app assign R-XX utk racik,
-    // T-XX utk tunggal, berdasar field jenis). event_id UNIK per klik
-    // (timestamp): kalau deterministik per hari, ENQUEUE ulang setelah BATAL
-    // (record dihapus) ketemu event lama → duplicate → nomor lama yg Queue-nya
-    // sudah tidak ada. Double-click aman: backend reuse Queue WAITING/CALLED
-    // utk resep yang sama (resolveEnqueue), bukan via idempotency event.
     const nama = resolveNamaPasien();
     const jenisLabel = jenis === 'racik' ? 'racikan' : 'tunggal';
-    const sync = await pushQueueEvent({
+
+    // Parallel: resolveAntrianRow (retry 3×200ms) + pushQueueEvent ENQUEUE.
+    // pushQueueEvent pakai idVisit sebagai fallback antrianId — event_id tetap
+    // unik (Date.now() di suffix) & backend pakai resolveEnqueue utk dedup.
+    const rowPromise = (async (): Promise<Record<string, unknown> | null> => {
+      for (let i = 0; i < 3; i++) {
+        const r = await resolveAntrianRow(idPasien, waktu);
+        if (r) return r;
+        await new Promise((r2) => setTimeout(r2, 200));
+      }
+      return null;
+    })();
+
+    const syncPromise = pushQueueEvent({
       event_id:
-        queueEventId('enq', antrianId, idVisit + '-' + jenisLabel) + '-' + Date.now().toString(36),
+        queueEventId('enq', idVisit, idVisit + '-' + jenisLabel) + '-' + Date.now().toString(36),
       event: 'ENQUEUE',
       resep_id: nomorResep,
       nama_pasien: nama,
@@ -306,12 +306,11 @@ function isResepBatal(antrianStatus?: string): boolean {
       shift: '',
       jenis: jenisLabel,
       counter: '',
-      payload: {
-        idVisit,
-        unit: String(row?.NAMA_UNIT ?? ''),
-        waktu: waktu || '',
-      },
+      payload: { idVisit, unit: '', waktu: waktu || '' },
     });
+
+    const [row, sync] = await Promise.all([rowPromise, syncPromise]);
+
     if (!sync.ok) {
       alert('[MORBIS Ext] Gagal terhubung ke App Antrian. Coba lagi.');
       return;

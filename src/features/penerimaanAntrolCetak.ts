@@ -140,66 +140,65 @@ async function handleNoAntrian(idResep: string): Promise<void> {
     const okAntrol = await registerAntrian(idVisit);
     log('antrol', okAntrol ? 'OK' : 'gagal');
 
-    // Resolve ID antrian (check_antrian) — retry kecil karena antrol ditulis
-    // server. ID antrian bisa = ID_VISIT; fallback by pasien.
-    let row: Record<string, unknown> | undefined;
-    for (let i = 0; i < 5 && !row; i++) {
-      try {
-        const rows = await fetchCheckAntrian();
-        row =
-          findRow(rows, String(data.ID_PASIEN ?? ''), String(data.WAKTU_PENGAJUAN ?? '')) ??
-          rows.find((r) => String(r.ID ?? '') === idVisit);
-      } catch {
-        /* coba lagi */
-      }
-      if (!row) await new Promise((r) => setTimeout(r, 400));
-    }
-    const antrianId = row ? String(row.ID ?? '') : idVisit;
-
-    // Nomor publik = nomor native MORBIS (UT-xxx/BT-xxx) — Model A. SUMBER
-    // UTAMA = sel tabel penerimaan (kolom No Antrian): check_antrian hanya
-    // berisi subset sesi/unit & NOMOR-nya angka polos (bukan KODE-NOMOR),
-    // jadi tidak bisa diandalkan utk nomor native. row hanya utk JENIS/SHIFT.
+    // Ambil nomor dari DOM dulu (tidak perlu tunggu row).
     const tr = document.querySelector<HTMLTableRowElement>(`tr[id="${idResep}"]`);
     const cells = tr ? Array.from(tr.querySelectorAll('td')) : [];
-    const antrianCell = cells[2]; // kolom No Antrian (thead: No, No Resep, No Antrian, ...)
-    const nomor = extractNativeNumber(antrianCell) || String(row?.NOMOR ?? '');
-    if (!nomor) {
-      log('nomor native belum ada utk', antrianId);
+    const antrianCell = cells[2]; // kolom No Antrian
+    const nomorFromDom = extractNativeNumber(antrianCell) || '';
+    if (!nomorFromDom) {
+      log('nomor native belum ada utk', idVisit);
       alert('Nomor antrian belum terbit. Coba lagi.');
       return;
     }
-    log('nomor publik', nomor);
+    log('nomor publik', nomorFromDom);
 
-    // ENQUEUE ke App Antrian — TANPA queue_number (app assign T-XX/R-XX per
-    // jenis). event_id UNIK per klik (timestamp): kalau deterministik per hari,
-    // ENQUEUE ulang setelah BATAL ketemu event lama → duplicate → nomor lama
-    // yg Queue-nya sudah tidak ada. Klik ganda aman via backend reuse
-    // (resolveEnqueue: resep sama WAITING/CALLED → nomor sama).
-    const shift =
-      (row?.SHIFT as string | null) || (antrianCell ? extractShift(antrianCell) : '') || '';
-    const sync = await pushQueueEvent({
-      event_id: queueEventId('enq', antrianId, nomor) + '-' + Date.now().toString(36),
+    // Parallel: resolve row (retry 3×200ms) + pushQueueEvent ENQUEUE.
+    // pushQueueEvent pakai idVisit + nomorFromDom — event_id tetap unik
+    // (Date.now() suffix) & backend pakai resolveEnqueue utk dedup.
+    const nama = resolveNamaPasien(data, tr);
+    const rowPromise = (async (): Promise<Record<string, unknown> | undefined> => {
+      for (let i = 0; i < 3; i++) {
+        try {
+          const rows = await fetchCheckAntrian();
+          const found =
+            findRow(rows, String(data.ID_PASIEN ?? ''), String(data.WAKTU_PENGAJUAN ?? '')) ??
+            rows.find((r) => String(r.ID ?? '') === idVisit);
+          if (found) return found;
+        } catch {
+          /* coba lagi */
+        }
+        await new Promise((r) => setTimeout(r, 200));
+      }
+      return undefined;
+    })();
+
+    const syncPromise = pushQueueEvent({
+      event_id: queueEventId('enq', idVisit, nomorFromDom) + '-' + Date.now().toString(36),
       event: 'ENQUEUE',
       resep_id: idResep,
-      nama_pasien: resolveNamaPasien(data, tr),
+      nama_pasien: nama,
       norm: String(data.ID_PASIEN ?? ''),
-      shift,
-      jenis: (row?.JENIS as string | null) ?? '',
+      shift: '',
+      jenis: '',
       counter: '',
       payload: {
         idVisit,
-        unit: String(row?.NAMA_UNIT ?? data.UNIT_TUJUAN_DEPO ?? ''),
-        waktu: String(row?.WAKTU ?? data.WAKTU_PENGAJUAN ?? ''),
+        unit: String(data.UNIT_TUJUAN_DEPO ?? ''),
+        waktu: String(data.WAKTU_PENGAJUAN ?? ''),
       },
     });
+
+    const [row, sync] = await Promise.all([rowPromise, syncPromise]);
+
     if (!sync.ok) log('ENQUEUE app gagal (app tidak terjangkau?) — antrian tetap jalan di MORBIS');
 
     // Nomor publik = nomor hasil ASSIGN APP (T-XX/R-XX). Sumber resmi.
-    const publicNumber = sync.queue_number || nomor;
+    const publicNumber = sync.queue_number || nomorFromDom;
     log('nomor publik', publicNumber);
 
     // Tampilkan nomor app di kolom + ganti tombol jadi "Cetak Kembali".
+    const shift =
+      (row?.SHIFT as string | null) || (antrianCell ? extractShift(antrianCell) : '') || '';
     if (antrianCell && !antrianCell.hasAttribute('data-ext-code')) {
       const btnInCell = antrianCell.querySelector('button');
       const btnHtml = btnInCell ? btnInCell.outerHTML : '';
@@ -212,7 +211,7 @@ async function handleNoAntrian(idResep: string): Promise<void> {
 
     printKartuAntrian({
       nomorResep: idResep,
-      nama: resolveNamaPasien(data, tr),
+      nama,
       jenis: (row?.JENIS as string | null) ?? '',
       unit: String(row?.NAMA_UNIT ?? data.UNIT_TUJUAN_DEPO ?? ''),
       tanggal: String(data.WAKTU_PENGAJUAN ?? '').slice(0, 10),
