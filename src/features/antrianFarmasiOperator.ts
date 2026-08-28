@@ -499,6 +499,11 @@ function moveNativeButtons(): void {
   if (display) {
     const clone = display.cloneNode(true) as HTMLElement;
     clone.id = 'ext-op-display';
+    // Hapus onclick asli MORBIS — cloneNode menyalin atribut handler inline,
+    // sehingga tanpanya klik akan memicu handler lama (buka layar) + handler
+    // kita (window.open) sekaligus = 2 tab terlanjur terbuka.
+    clone.removeAttribute('onclick');
+    clone.removeAttribute('oninput');
     // Hijau solid (aksi navigasi aman) + buka tab BARU via window.open.
     clone.setAttribute('data-tip', 'Buka layar TV (tab baru)');
     clone.setAttribute('title', 'Buka layar TV antrian');

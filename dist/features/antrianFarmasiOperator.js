@@ -35,16 +35,16 @@ var __morbis_feature = (() => {
           t = [...new Set([...e, ...J])];
         for (let n of t)
           try {
-            let a = new AbortController(),
-              i = setTimeout(() => a.abort(), 2500),
-              o = await fetch(n + '/api/queue/lookup?resep_id=probe', {
+            let o = new AbortController(),
+              i = setTimeout(() => o.abort(), 2500),
+              a = await fetch(n + '/api/queue/lookup?resep_id=probe', {
                 cache: 'no-store',
                 credentials: 'omit',
-                signal: a.signal,
+                signal: o.signal,
               });
             clearTimeout(i);
-            let r = o.headers.get('content-type') || '';
-            if ((o.status === 200 || o.status === 422) && r.includes('application/json'))
+            let r = a.headers.get('content-type') || '';
+            if ((a.status === 200 || a.status === 422) && r.includes('application/json'))
               return ((y = n), n);
           } catch {}
         return j;
@@ -59,24 +59,24 @@ var __morbis_feature = (() => {
       if ((e.event === 'ENQUEUE' && delete t.queue_number, e.event === 'BATAL' && !e.queue_number))
         return (console.warn('[MORBIS Ext] BATAL tanpa queue_number \u2014 dilewati'), { ok: !1 });
       let n = await x(),
-        a = new AbortController(),
-        i = setTimeout(() => a.abort(), 8e3),
-        o = await fetch(n + '/api/queue/events', {
+        o = new AbortController(),
+        i = setTimeout(() => o.abort(), 8e3),
+        a = await fetch(n + '/api/queue/events', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(t),
           cache: 'no-store',
           credentials: 'omit',
-          signal: a.signal,
+          signal: o.signal,
         });
-      if ((clearTimeout(i), !o.ok)) {
+      if ((clearTimeout(i), !a.ok)) {
         let s = '';
         try {
-          s = (await o.json())?.message || '';
+          s = (await a.json())?.message || '';
         } catch {}
-        throw new Error('HTTP ' + o.status + (s ? ' \u2014 ' + s : ''));
+        throw new Error('HTTP ' + a.status + (s ? ' \u2014 ' + s : ''));
       }
-      let r = await o.json();
+      let r = await a.json();
       return {
         ok: !!r.ok,
         queue_number: r.queue?.queue_number,
@@ -113,7 +113,7 @@ var __morbis_feature = (() => {
   }
   async function ee(e) {
     try {
-      let n = ((await chrome.storage.local.get(g))[g] ?? []).filter((a) => a.event_id !== e);
+      let n = ((await chrome.storage.local.get(g))[g] ?? []).filter((o) => o.event_id !== e);
       await chrome.storage.local.set({ [g]: n });
     } catch {}
   }
@@ -131,18 +131,18 @@ var __morbis_feature = (() => {
     let t = { ...e };
     e.event === 'ENQUEUE' && delete t.queue_number;
     let n = await x(),
-      a = new AbortController(),
-      i = setTimeout(() => a.abort(), 8e3),
-      o = await fetch(n + '/api/queue/events', {
+      o = new AbortController(),
+      i = setTimeout(() => o.abort(), 8e3),
+      a = await fetch(n + '/api/queue/events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(t),
         cache: 'no-store',
         credentials: 'omit',
-        signal: a.signal,
+        signal: o.signal,
       });
-    if ((clearTimeout(i), !o.ok)) throw new Error('HTTP ' + o.status);
-    let r = await o.json();
+    if ((clearTimeout(i), !a.ok)) throw new Error('HTTP ' + a.status);
+    let r = await a.json();
     return { ok: !!r.ok, queue_number: r.queue?.queue_number };
   }
   setInterval(() => {
@@ -150,11 +150,11 @@ var __morbis_feature = (() => {
   }, 1e4);
   function C(e, t = 5e3) {
     let n = document.documentElement,
-      a = Date.now(),
+      o = Date.now(),
       i = window.setInterval(() => {
         n.getAttribute('data-ext-antrian-farmasi') === '1'
           ? (window.clearInterval(i), e())
-          : Date.now() - a > t && (window.clearInterval(i), ie());
+          : Date.now() - o > t && (window.clearInterval(i), ie());
       }, 200);
   }
   function ie() {
@@ -168,7 +168,7 @@ var __morbis_feature = (() => {
       setTimeout(() => e.remove(), 1e4));
   }
   var P = 'ext-batch-shared-style';
-  function ae() {
+  function oe() {
     if (document.getElementById(P)) return;
     let e = document.createElement('style');
     ((e.id = P),
@@ -320,12 +320,12 @@ var __morbis_feature = (() => {
   }
   function D(e) {
     return new Promise((t) => {
-      ae();
+      oe();
       let n = e.variant === 'danger' ? 'ext-btn-danger' : 'ext-btn-primary',
-        a = document.createElement('div');
-      ((a.style.cssText =
+        o = document.createElement('div');
+      ((o.style.cssText =
         'position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.55);backdrop-filter:blur(2px);'),
-        (a.innerHTML = `
+        (o.innerHTML = `
       <div class="ext-modal-content" style="max-width:480px;">
         <div class="ext-modal-header">
           <h3></h3>
@@ -337,8 +337,8 @@ var __morbis_feature = (() => {
           <button class="ext-btn ${n}" data-ext-ok>${e.okLabel ?? 'Lanjut'}</button>
         </div>
       </div>`),
-        (a.querySelector('h3').textContent = e.title));
-      let i = a.querySelector('.ext-confirm-body');
+        (o.querySelector('h3').textContent = e.title));
+      let i = o.querySelector('.ext-confirm-body');
       e.message &&
         e.message
           .split(
@@ -349,21 +349,21 @@ var __morbis_feature = (() => {
             (d > 0 && i.appendChild(document.createElement('br')),
               i.appendChild(document.createTextNode(l)));
           });
-      let o = (l) => {
-          (a.remove(), document.removeEventListener('keydown', r), t(l));
+      let a = (l) => {
+          (o.remove(), document.removeEventListener('keydown', r), t(l));
         },
         r = (l) => {
-          l.key === 'Escape' && o(!1);
+          l.key === 'Escape' && a(!1);
         };
-      (a.querySelector('.ext-modal-close').addEventListener('click', () => o(!1)),
-        a.addEventListener('click', (l) => {
-          l.target === a && o(!1);
+      (o.querySelector('.ext-modal-close').addEventListener('click', () => a(!1)),
+        o.addEventListener('click', (l) => {
+          l.target === o && a(!1);
         }),
-        a.querySelector('[data-ext-ok]').addEventListener('click', () => o(!0)));
-      let s = a.querySelector('[data-ext-cancel]');
-      (s && s.addEventListener('click', () => o(!1)),
+        o.querySelector('[data-ext-ok]').addEventListener('click', () => a(!0)));
+      let s = o.querySelector('[data-ext-cancel]');
+      (s && s.addEventListener('click', () => a(!1)),
         document.addEventListener('keydown', r),
-        document.body.appendChild(a));
+        document.body.appendChild(o));
     });
   }
   var w = 'RSUD H. Abdul Manap';
@@ -384,7 +384,7 @@ var __morbis_feature = (() => {
         e.jenis || e.unit
           ? `<div style="font-size:16px;margin-top:2px;">${[e.jenis, e.unit].filter(Boolean).join(' \xB7 ')}</div>`
           : '',
-      a = e.tglLahir
+      o = e.tglLahir
         ? `<div style="font-size:13px;margin-top:4px;color:#555;">${e.tglLahir}</div>`
         : '';
     return (
@@ -392,7 +392,7 @@ var __morbis_feature = (() => {
         '<html><head><title>Antrian Farmasi</title></head><body style="width:320px;padding-top:10px;font-family:Arial,Helvetica,sans-serif;text-align:center;"><div style="font-size:16px;font-weight:bold;text-transform:uppercase;">' +
           w +
           `</div><div style="font-size:14px;margin-top:2px;">Antrian Farmasi</div><div style="margin-top:14px;"><div style="font-size:110px;font-weight:900;letter-spacing:-2px;line-height:1;">${e.code}</div></div><div style="font-size:20px;font-weight:bold;margin-top:10px;">${e.nama}</div>` +
-          a +
+          o +
           n +
           `<div style="font-size:11px;margin-top:10px;color:#333;">${e.tanggal}</div><div style="font-size:13px;margin-top:14px;color:#555;">Silakan menunggu panggilan</div></body></html>`,
       ),
@@ -407,15 +407,15 @@ var __morbis_feature = (() => {
   }
   var k = {},
     S = null,
-    _ = null;
-  async function oe() {
+    A = null;
+  async function ae() {
     try {
       let e = await x();
-      ((_ = new EventSource(e + '/api/queue/stream')),
-        (_.onmessage = () => {
+      ((A = new EventSource(e + '/api/queue/stream')),
+        (A.onmessage = () => {
           u();
         }),
-        (_.onerror = () => {}));
+        (A.onerror = () => {}));
     } catch {}
   }
   var re = {
@@ -489,17 +489,17 @@ var __morbis_feature = (() => {
       return;
     }
     let n = [...T]
-      .sort((a, i) => a.queue_number.localeCompare(i.queue_number, void 0, { numeric: !0 }))
-      .map((a) => {
-        let i = a.jenis === 'racikan' ? 'Racikan' : a.jenis === 'tunggal' ? 'Non Racikan' : '',
-          o = i ? `<div style="font-size:16px;margin-top:2px;">${i}</div>` : '';
+      .sort((o, i) => o.queue_number.localeCompare(i.queue_number, void 0, { numeric: !0 }))
+      .map((o) => {
+        let i = o.jenis === 'racikan' ? 'Racikan' : o.jenis === 'tunggal' ? 'Non Racikan' : '',
+          a = i ? `<div style="font-size:16px;margin-top:2px;">${i}</div>` : '';
         return (
           '<div style="width:320px;padding-top:10px;padding-bottom:4px;font-family:Arial,Helvetica,sans-serif;text-align:center;page-break-after:always;"><div style="font-size:16px;font-weight:bold;text-transform:uppercase;">' +
           w +
           '</div><div style="font-size:14px;margin-top:2px;">Antrian Farmasi</div><div style="font-size:13px;margin-top:4px;color:#555;">' +
           L +
-          `</div><div style="margin-top:14px;"><div style="font-size:110px;font-weight:900;letter-spacing:-2px;line-height:1;">${a.queue_number}</div></div><div style="font-size:20px;font-weight:bold;margin-top:10px;">${a.nama_pasien || '-'}</div>` +
-          o +
+          `</div><div style="margin-top:14px;"><div style="font-size:110px;font-weight:900;letter-spacing:-2px;line-height:1;">${o.queue_number}</div></div><div style="font-size:20px;font-weight:bold;margin-top:10px;">${o.nama_pasien || '-'}</div>` +
+          a +
           '<div style="font-size:13px;margin-top:14px;color:#555;">Silakan menunggu panggilan</div></div>'
         );
       })
@@ -516,7 +516,7 @@ var __morbis_feature = (() => {
         } catch {}
       }, 300));
   }
-  function V(e, t, n, a = 'Simpan') {
+  function V(e, t, n, o = 'Simpan') {
     let i = document.createElement('div');
     ((i.style.cssText =
       'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2147483000;display:flex;align-items:center;justify-content:center;'),
@@ -524,15 +524,15 @@ var __morbis_feature = (() => {
         '<div style="background:#fff;border-radius:14px;padding:18px;width:400px;max-width:94vw;box-shadow:0 10px 40px rgba(0,0,0,.25);font:14px/1.5 system-ui,sans-serif;color:#212529;"><div style="font-size:15px;font-weight:800;margin-bottom:12px;">' +
         e +
         '</div><div class="ext-op-dlg-body"></div><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;"><button class="ext-op-dlg-cancel" style="padding:8px 14px;border:1px solid #ced4da;background:#fff;border-radius:8px;cursor:pointer;">Batal</button><button class="ext-op-dlg-ok" style="padding:8px 14px;border:none;background:#2193cf;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;">' +
-        a +
+        o +
         '</button></div></div>'),
       document.body.appendChild(i));
-    let o = i.firstElementChild,
-      r = o.querySelector('.ext-op-dlg-body');
+    let a = i.firstElementChild,
+      r = a.querySelector('.ext-op-dlg-body');
     r.innerHTML = t;
     let s = () => i.remove();
-    (o.querySelector('.ext-op-dlg-cancel')?.addEventListener('click', s),
-      o.querySelector('.ext-op-dlg-ok')?.addEventListener('click', () => {
+    (a.querySelector('.ext-op-dlg-cancel')?.addEventListener('click', s),
+      a.querySelector('.ext-op-dlg-ok')?.addEventListener('click', () => {
         try {
           n(r);
         } finally {
@@ -542,15 +542,15 @@ var __morbis_feature = (() => {
   }
   async function $(e, t) {
     let n = await x(),
-      a = await fetch(n + '/api/queue/counter', {
+      o = await fetch(n + '/api/queue/counter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prefix: e, last_seq: t }),
         cache: 'no-store',
         credentials: 'omit',
       });
-    if (!a.ok) throw new Error('HTTP ' + a.status);
-    let i = await a.json();
+    if (!o.ok) throw new Error('HTTP ' + o.status);
+    let i = await o.json();
     m('set counter:', e, t, '\u2192', i.next);
   }
   function ce() {
@@ -566,15 +566,15 @@ var __morbis_feature = (() => {
         '" style="width:100%;padding:7px 10px;border:1px solid #ced4da;border-radius:8px;font-size:15px;box-sizing:border-box;"><div style="margin-top:6px;font-size:11px;color:#6c757d;">Terakhir: ' +
         t +
         '</div></div></div>';
-    V('Set Nomor Lanjutan', n, (a) => {
-      let i = Math.max(0, parseInt(a.querySelector('#ext-op-cnt-seq-t').value, 10) || 0),
-        o = Math.max(0, parseInt(a.querySelector('#ext-op-cnt-seq-r').value, 10) || 0);
-      Promise.all([$('T', i), $('R', o)]).then(
+    V('Set Nomor Lanjutan', n, (o) => {
+      let i = Math.max(0, parseInt(o.querySelector('#ext-op-cnt-seq-t').value, 10) || 0),
+        a = Math.max(0, parseInt(o.querySelector('#ext-op-cnt-seq-r').value, 10) || 0);
+      Promise.all([$('T', i), $('R', a)]).then(
         () => {
-          ((k.T = i), (k.R = o));
+          ((k.T = i), (k.R = a));
           let r = document.getElementById('ext-op-status');
           (r &&
-            (r.textContent = 'nomor lanjut di-set: T \u2192 ' + (i + 1) + ', R \u2192 ' + (o + 1)),
+            (r.textContent = 'nomor lanjut di-set: T \u2192 ' + (i + 1) + ', R \u2192 ' + (a + 1)),
             alert(
               `Nomor lanjutan tersimpan.
 
@@ -582,7 +582,7 @@ T (Non Racikan) \u2192 lanjut T-` +
                 String(i + 1).padStart(2, '0') +
                 `
 R (Racikan) \u2192 lanjut R-` +
-                String(o + 1).padStart(2, '0'),
+                String(a + 1).padStart(2, '0'),
             ),
             u());
         },
@@ -591,13 +591,13 @@ R (Racikan) \u2192 lanjut R-` +
     });
   }
   function pe(e, t, n) {
-    let a = window.open('', '_blank', 'width=400,height=560');
-    if (!a) {
+    let o = window.open('', '_blank', 'width=400,height=560');
+    if (!o) {
       alert('Popup diblokir \u2014 izinkan popup untuk mencetak.');
       return;
     }
     let i = [];
-    for (let o = t; o <= n; o++)
+    for (let a = t; a <= n; a++)
       i.push(
         '<div style="width:320px;padding-top:10px;padding-bottom:4px;font-family:Arial,Helvetica,sans-serif;text-align:center;page-break-after:always;"><div style="font-size:16px;font-weight:bold;text-transform:uppercase;">' +
           w +
@@ -605,17 +605,17 @@ R (Racikan) \u2192 lanjut R-` +
           (e === 'R' ? 'Racikan (R)' : 'Non Racikan (T)') +
           ' \u2014 ' +
           L +
-          `</div><div style="margin-top:14px;"><div style="font-size:110px;font-weight:900;letter-spacing:-2px;line-height:1;">${e}-${String(o).padStart(2, '0')}</div></div><div style="font-size:13px;margin-top:14px;color:#555;">Silakan menunggu panggilan</div></div>`,
+          `</div><div style="margin-top:14px;"><div style="font-size:110px;font-weight:900;letter-spacing:-2px;line-height:1;">${e}-${String(a).padStart(2, '0')}</div></div><div style="font-size:13px;margin-top:14px;color:#555;">Silakan menunggu panggilan</div></div>`,
       );
-    (a.document.write(
+    (o.document.write(
       '<html><head><title>Antrian Farmasi \u2014 Sheet A4</title><style>@media print{@page{margin:0}}</style></head><body style="margin:0;font-family:Arial,Helvetica,sans-serif;">' +
         i.join('') +
         '</body></html>',
     ),
-      a.document.close(),
+      o.document.close(),
       window.setTimeout(() => {
         try {
-          (a.focus(), a.print());
+          (o.focus(), o.print());
         } catch {}
       }, 300));
   }
@@ -628,25 +628,25 @@ R (Racikan) \u2192 lanjut R-` +
           le();
           return;
         }
-        let a = t.querySelector('input[name="ext-op-sheet-prefix"]:checked').value,
+        let o = t.querySelector('input[name="ext-op-sheet-prefix"]:checked').value,
           i = Math.max(1, parseInt(t.querySelector('#ext-op-sheet-from').value, 10) || 1),
-          o = Math.max(
+          a = Math.max(
             i,
             Math.min(9999, parseInt(t.querySelector('#ext-op-sheet-to').value, 10) || i),
           );
-        if (o - i + 1 > 300) {
-          alert('Terlalu banyak (' + (o - i + 1) + ' kartu). Maksimal 300 kartu per cetak.');
+        if (a - i + 1 > 300) {
+          alert('Terlalu banyak (' + (a - i + 1) + ' kartu). Maksimal 300 kartu per cetak.');
           return;
         }
-        pe(a, i, o);
+        pe(o, i, a);
       },
     ),
       document.querySelectorAll('input[name="ext-op-sheet-src"]').forEach((t) =>
         t.addEventListener('change', () => {
           let n = document.getElementById('ext-op-sheet-blank');
           if (!n) return;
-          let a = document.querySelector('input[name="ext-op-sheet-src"]:checked')?.value;
-          n.style.display = a === 'blank' ? '' : 'none';
+          let o = document.querySelector('input[name="ext-op-sheet-src"]:checked')?.value;
+          n.style.display = o === 'blank' ? '' : 'none';
         }),
       ));
   }
@@ -673,7 +673,7 @@ R (Racikan) \u2192 lanjut R-` +
     let n = document.querySelector(
         'button[onclick*="reset_antrian"], input[onclick*="reset_antrian"]',
       ),
-      a = document.querySelector(
+      o = document.querySelector(
         'button[onclick*="view-call-websocet"], input[onclick*="view-call-websocet"]',
       );
     if (n) {
@@ -693,9 +693,11 @@ R (Racikan) \u2192 lanjut R-` +
         }),
         t.appendChild(i));
     }
-    if (a) {
-      let i = a.cloneNode(!0);
+    if (o) {
+      let i = o.cloneNode(!0);
       ((i.id = 'ext-op-display'),
+        i.removeAttribute('onclick'),
+        i.removeAttribute('oninput'),
         i.setAttribute('data-tip', 'Buka layar TV (tab baru)'),
         i.setAttribute('title', 'Buka layar TV antrian'),
         i.setAttribute(
@@ -709,12 +711,12 @@ R (Racikan) \u2192 lanjut R-` +
     }
     t.children.length && e.appendChild(t);
   }
-  function p(e, t, n, a, i, o) {
+  function p(e, t, n, o, i, a) {
     return (
       '<button class="ext-op-act" data-ev="' +
       e +
       '" data-num="' +
-      a +
+      o +
       '" data-eid="' +
       i +
       '" data-tip="' +
@@ -724,9 +726,9 @@ R (Racikan) \u2192 lanjut R-` +
       '" aria-label="' +
       n +
       '" style="width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #ced4da;background:#fff;color:' +
-      (o?.danger ? '#b02a37' : '#212529') +
+      (a?.danger ? '#b02a37' : '#212529') +
       ';border-radius:8px;cursor:pointer;">' +
-      h(t, 16, o?.danger ? '#b02a37' : '#212529') +
+      h(t, 16, a?.danger ? '#b02a37' : '#212529') +
       '</button>'
     );
   }
@@ -810,9 +812,9 @@ R (Racikan) \u2192 lanjut R-` +
     );
   }
   function Q(e, t, n) {
-    let a = G[e],
+    let o = G[e],
       i = n.slice(0, 5),
-      o = i.length
+      a = i.length
         ? '<button class="ext-op-act" data-ev="CALL" data-num="' +
           i[0].queue_number +
           '" data-eid="op-next-' +
@@ -820,7 +822,7 @@ R (Racikan) \u2192 lanjut R-` +
           '" data-tip="Panggil antrean berikutnya (' +
           i[0].queue_number +
           ')" title="Panggil antrean berikutnya" style="width:100%;margin-top:8px;padding:12px;border:none;border-radius:10px;background:' +
-          a.accent +
+          o.accent +
           ';color:#fff;font-size:15px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;">' +
           h('play', 16, '#fff') +
           'Selanjutnya \u2014 ' +
@@ -829,9 +831,9 @@ R (Racikan) \u2192 lanjut R-` +
         : '';
     return (
       '<div style="background:#f1f3f5;border:1px solid #dee2e6;border-radius:16px;padding:12px;display:flex;flex-direction:column;min-width:0;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;"><span style="width:10px;height:10px;border-radius:50%;background:' +
-      a.accent +
+      o.accent +
       ';"></span><b style="font-size:15px;color:#212529;">' +
-      a.label +
+      o.label +
       '</b></div>' +
       (t.length ? t.map((r) => ge(r, e)).join('') : '') +
       (t.length
@@ -841,7 +843,7 @@ R (Racikan) \u2192 lanjut R-` +
       (i.length
         ? i.map((r) => q(r, 'op-' + e)).join('')
         : '<div style="padding:10px;color:#adb5bd;text-align:center;font-size:12px;">Tidak ada antrean berikutnya</div>') +
-      o +
+      a +
       '</div>'
     );
   }
@@ -885,13 +887,13 @@ R (Racikan) \u2192 lanjut R-` +
       }))),
         (L = n.tanggal),
         (k = n.counters || {}));
-      let a = JSON.stringify({ c: n.current, q: n.queues });
-      if (a !== N) {
-        N = a;
+      let o = JSON.stringify({ c: n.current, q: n.queues });
+      if (o !== N) {
+        N = o;
         let i = document.getElementById('ext-col-tunggal'),
-          o = document.getElementById('ext-col-racikan'),
+          a = document.getElementById('ext-col-racikan'),
           r = document.getElementById('ext-col-panel');
-        if (i && o && r) {
+        if (i && a && r) {
           let s = n.queues || [],
             l = (c, b) => c.queue_number.localeCompare(b.queue_number, void 0, { numeric: !0 }),
             d = (c) => ({
@@ -901,7 +903,7 @@ R (Racikan) \u2192 lanjut R-` +
             f = d('tunggal'),
             R = d('racikan');
           ((i.innerHTML = Q('tunggal', f.active, f.next)),
-            (o.innerHTML = Q('racikan', R.active, R.next)));
+            (a.innerHTML = Q('racikan', R.active, R.next)));
           let I = s.filter((c) => c.status === 'DEFERRED' || c.status === 'SKIPPED').sort(l);
           r.innerHTML =
             '<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:8px;">Penerbitan & Kasus Khusus</div><div style="display:flex;gap:8px;margin-bottom:12px;"><button id="ext-op-print-sheet2" data-tip="Cetak daftar semua nomor antrian hari ini (format A4)" title="Cetak Sheet A4" style="flex:1;padding:9px;border:1px solid #2193cf;background:#2193cf;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;">' +
@@ -927,7 +929,7 @@ R (Racikan) \u2192 lanjut R-` +
     }
   }
   var K = 1500,
-    A = new Map();
+    _ = new Map();
   async function fe(e, t, n) {
     if (e === 'PRINT') {
       let d = T.find((f) => f.queue_number === t);
@@ -941,14 +943,14 @@ R (Racikan) \u2192 lanjut R-` +
       )
     )
       return;
-    let a = Date.now(),
+    let o = Date.now(),
       i = e + '|' + t,
-      o = A.get(i) || 0;
-    if (a - o < K) {
+      a = _.get(i) || 0;
+    if (o - a < K) {
       m('skip (cooldown) ' + i);
       return;
     }
-    A.set(i, a);
+    _.set(i, o);
     let r = document.querySelector(`.ext-op-act[data-ev="${e}"][data-num="${t}"]`),
       s = r?.textContent ?? '',
       l = r?.disabled ?? !1;
@@ -968,7 +970,7 @@ R (Racikan) \u2192 lanjut R-` +
         (d.style.opacity = ''),
         (d.style.cursor = ''),
         e === 'CALL' && (d.textContent = s)),
-        window.setTimeout(() => A.delete(i), K));
+        window.setTimeout(() => _.delete(i), K));
     }
   }
   async function me() {
@@ -1019,16 +1021,16 @@ Semua record akan dihapus permanen dari DB. Aksi ini tidak bisa dibatalkan.`)
     let e = () => {
       if (!document.getElementById('isi') || (U(), document.getElementById('ext-farmasi-operator')))
         return;
-      let a = xe();
-      ((document.getElementById('isi')?.parentElement || document.body).appendChild(a),
+      let o = xe();
+      ((document.getElementById('isi')?.parentElement || document.body).appendChild(o),
         ue(),
-        a.addEventListener('click', (i) => {
-          let o = i.target.closest('.ext-op-act');
-          if (o) {
+        o.addEventListener('click', (i) => {
+          let a = i.target.closest('.ext-op-act');
+          if (a) {
             fe(
-              o.getAttribute('data-ev') || '',
-              o.getAttribute('data-num') || '',
-              o.getAttribute('data-eid') || '',
+              a.getAttribute('data-ev') || '',
+              a.getAttribute('data-num') || '',
+              a.getAttribute('data-eid') || '',
             );
             return;
           }
@@ -1041,7 +1043,7 @@ Semua record akan dihapus permanen dari DB. Aksi ini tidak bisa dibatalkan.`)
         document.getElementById('ext-op-refresh')?.addEventListener('click', () => {
           u();
         }),
-        a.addEventListener('click', (i) => {
+        o.addEventListener('click', (i) => {
           (i.target.closest('#ext-op-print-sheet2') && F(),
             i.target.closest('#ext-op-refresh2') && u());
         }),
@@ -1052,7 +1054,7 @@ Semua record akan dihapus permanen dari DB. Aksi ini tidak bisa dibatalkan.`)
         (S = window.setInterval(() => {
           u();
         }, se)),
-        oe(),
+        ae(),
         m('panel operator aktif'));
     };
     e();
