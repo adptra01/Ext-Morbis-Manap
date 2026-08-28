@@ -80,7 +80,13 @@ var __morbis_feature = (() => {
         signal: ctrl.signal,
       });
       clearTimeout(t);
-      if (!res.ok) throw new Error('HTTP ' + res.status);
+      if (!res.ok) {
+        let detail = '';
+        try {
+          detail = (await res.json())?.message || '';
+        } catch {}
+        throw new Error('HTTP ' + res.status + (detail ? ' \u2014 ' + detail : ''));
+      }
       const j = await res.json();
       return {
         ok: !!j.ok,

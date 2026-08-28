@@ -572,7 +572,8 @@ function miniRow(r: DisplayRow, prefix: string): string {
           'Cetak tiket',
           r.queue_number,
           prefix + '-print-' + r.queue_number,
-        )
+        ) +
+        iconBtn('DONE', 'check', 'Selesai', r.queue_number, prefix + '-done-' + r.queue_number)
       : r.status === 'CALLED'
         ? iconBtn(
             'RECALL',
