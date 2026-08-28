@@ -148,6 +148,25 @@ async function initExtension(): Promise<void> {
     window: window,
   };
 
+  // Global print CSS: sembunyikan elemen ekstensi (color picker, toolbar, dll)
+  // agar tidak ikut tercetak. Pencegahan permanen utk semua halaman.
+  {
+    const s = document.createElement('style');
+    s.id = 'ext-print-css';
+    s.textContent = `@media print{
+#color_picker,#weStylesheet,aside,.color_ctx_menu,
+[data-toolbar],[data-shortcut-buttons],[data-back-to-detail-klaim],
+.no-print,.hilang-saat-print,.ext-btn,.ext-badge,
+.ext-op-actions,.ext-antrian-tools,.ext-display-tools{
+  display:none!important;height:0!important;width:0!important;
+  margin:0!important;padding:0!important;overflow:hidden!important;
+  visibility:hidden!important;position:absolute!important;
+  top:-9999px!important;left:-9999px!important;opacity:0!important;
+}
+}`;
+    document.head.appendChild(s);
+  }
+
   for (const [key, module] of Object.entries(window.featureModules)) {
     const featureConfig = cfg?.features?.[key];
 

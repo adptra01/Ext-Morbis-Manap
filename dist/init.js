@@ -36,7 +36,7 @@ var __morbis_init = (() => {
     }
     return { matched: !0 };
   }
-  function p(e, t) {
+  function b(e, t) {
     return e ? m(e, t).matched : !1;
   }
   var f = 'extUsageLog';
@@ -129,15 +129,31 @@ var __morbis_init = (() => {
             'isFeatureAllowed:',
             window.ExtensionCore?.isFeatureAllowed('cancelBatal'),
           )));
-    let x = {
+    let p = {
       pathname: h(window.location.pathname),
       url: new URL(window.location.href),
       document: window.document,
       window,
     };
+    {
+      let o = document.createElement('style');
+      ((o.id = 'ext-print-css'),
+        (o.textContent = `@media print{
+#color_picker,#weStylesheet,aside,.color_ctx_menu,
+[data-toolbar],[data-shortcut-buttons],[data-back-to-detail-klaim],
+.no-print,.hilang-saat-print,.ext-btn,.ext-badge,
+.ext-op-actions,.ext-antrian-tools,.ext-display-tools{
+  display:none!important;height:0!important;width:0!important;
+  margin:0!important;padding:0!important;overflow:hidden!important;
+  visibility:hidden!important;position:absolute!important;
+  top:-9999px!important;left:-9999px!important;opacity:0!important;
+}
+}`),
+        document.head.appendChild(o));
+    }
     for (let [o, s] of Object.entries(window.featureModules)) {
-      let b = a?.features?.[o];
-      if (b === void 0 || !b.enabled || !window.ExtensionCore.isFeatureAllowed(o)) {
+      let x = a?.features?.[o];
+      if (x === void 0 || !x.enabled || !window.ExtensionCore.isFeatureAllowed(o)) {
         (i(
           o,
           'skip',
@@ -149,11 +165,11 @@ var __morbis_init = (() => {
           ));
         continue;
       }
-      if (!p(s.match, x)) {
+      if (!b(s.match, p)) {
         (i(o, 'skip', !0, 'URL mismatch'), window.log(`Feature ${o} skipped: URL mismatch`));
         continue;
       }
-      if (s.enabledWhen && !s.enabledWhen(x)) {
+      if (s.enabledWhen && !s.enabledWhen(p)) {
         (i(o, 'skip', !0, 'enabledWhen returned false'),
           window.log(`Feature ${o} skipped: enabledWhen returned false`));
         continue;

@@ -13,7 +13,7 @@ var __morbis_feature = (() => {
     }
   }
   var D = ['http://dev.rsudkotajambi.id/rs', 'http://103.147.236.138/rs'];
-  function E() {
+  function k() {
     return (
       y ||
       ((y = (async () => {
@@ -42,13 +42,13 @@ var __morbis_feature = (() => {
       y)
     );
   }
-  var C = '';
-  async function L(e) {
+  var q = '';
+  async function E(e) {
     try {
       let n = { ...e };
       if ((e.event === 'ENQUEUE' && delete n.queue_number, e.event === 'BATAL' && !e.queue_number))
         return (console.warn('[MORBIS Ext] BATAL tanpa queue_number \u2014 dilewati'), { ok: !1 });
-      let t = await E(),
+      let t = await k(),
         o = new AbortController(),
         u = setTimeout(() => o.abort(), 8e3),
         a = await fetch(t + '/api/queue/events', {
@@ -75,13 +75,13 @@ var __morbis_feature = (() => {
       };
     } catch (n) {
       let t = n.message;
-      return (t !== C && (console.warn('[MORBIS Ext] queue sync gagal:', t), (C = t)), { ok: !1 });
+      return (t !== q && (console.warn('[MORBIS Ext] queue sync gagal:', t), (q = t)), { ok: !1 });
     }
   }
-  function S(e, n, t) {
+  function L(e, n, t) {
     return `${e}-${n}-${t}-${new Date().toISOString().slice(0, 10)}`;
   }
-  function B(e, n = 5e3) {
+  function C(e, n = 5e3) {
     let t = document.documentElement,
       o = Date.now(),
       u = window.setInterval(() => {
@@ -90,11 +90,11 @@ var __morbis_feature = (() => {
           : Date.now() - o > n && window.clearInterval(u);
       }, 200);
   }
-  var M = 'ext-batch-shared-style';
+  var B = 'ext-batch-shared-style';
   function F() {
-    if (document.getElementById(M)) return;
+    if (document.getElementById(B)) return;
     let e = document.createElement('style');
-    ((e.id = M),
+    ((e.id = B),
       (e.textContent = `
     .ext-modal-content {
       background: #ffffff; border-radius: 16px; padding: 28px 32px;
@@ -241,7 +241,7 @@ var __morbis_feature = (() => {
   `),
       document.head.appendChild(e));
   }
-  function R(e) {
+  function M(e) {
     return new Promise((n) => {
       F();
       let t = e.variant === 'danger' ? 'ext-btn-danger' : 'ext-btn-primary',
@@ -289,11 +289,11 @@ var __morbis_feature = (() => {
         document.body.appendChild(o));
     });
   }
-  function A(e) {
+  function S(e) {
     let n = window.open('', '_blank', 'width=400,height=560');
     if (!n)
       return (
-        R({
+        M({
           title: 'Popup Diblokir',
           message: 'Izinkan popup untuk mencetak.',
           variant: 'warning',
@@ -327,7 +327,7 @@ var __morbis_feature = (() => {
   }
   if (window.__extAntrolShift) throw new Error('skip double inject farmasiAntrolShift');
   window.__extAntrolShift = !0;
-  function j() {
+  function R() {
     let e = document.querySelector('#nama_pasien')?.value?.trim();
     if (e) return e.toUpperCase();
     let n = document.querySelector('#nama')?.value?.trim();
@@ -363,7 +363,7 @@ var __morbis_feature = (() => {
     }
     return '';
   }
-  function T() {
+  function A() {
     let e = document.querySelector('#tgl_lahir')?.value?.trim();
     if (e) return e;
     let n = document.querySelectorAll('tr');
@@ -379,7 +379,7 @@ var __morbis_feature = (() => {
   }
   async function K(e) {
     try {
-      let n = await fetch((await E()) + '/api/queue/lookup?resep_id=' + encodeURIComponent(e), {
+      let n = await fetch((await k()) + '/api/queue/lookup?resep_id=' + encodeURIComponent(e), {
         cache: 'no-store',
         credentials: 'omit',
       });
@@ -392,7 +392,7 @@ var __morbis_feature = (() => {
       return null;
     }
   }
-  async function H() {
+  async function j() {
     let e = [
       document.querySelector('#id_resep')?.value?.trim() || '',
       document.querySelector('input[name="nomor_resep"]')?.value?.trim() ||
@@ -500,57 +500,56 @@ var __morbis_feature = (() => {
       }
       let d = document.querySelector('#id_pasien')?.value ?? '',
         s = document.querySelector('#waktu_pengajuan')?.value ?? '',
-        m = j(),
+        m = R(),
         x = l === 'racik' ? 'racikan' : 'tunggal',
         b = (async () => {
           for (let _ = 0; _ < 3; _++) {
-            let q = await p(d, s);
-            if (q) return q;
+            let I = await p(d, s);
+            if (I) return I;
             await new Promise((z) => setTimeout(z, 200));
           }
           return null;
         })(),
-        U = L({
-          event_id: S('enq', c, c + '-' + x) + '-' + Date.now().toString(36),
+        P = E({
+          event_id: L('enq', c, c + '-' + x) + '-' + Date.now().toString(36),
           event: 'ENQUEUE',
           resep_id: i,
           nama_pasien: m,
           norm: d || void 0,
-          tgl_lahir: T() || void 0,
+          tgl_lahir: A() || void 0,
           shift: '',
           jenis: x,
           counter: '',
           payload: { idVisit: c, unit: '', waktu: s || '' },
         }),
-        [v, I] = await Promise.all([b, U]),
-        Q = v ? String(v.ID ?? '') : c;
-      if (!I.ok) {
+        [U, T] = await Promise.all([b, P]);
+      if (!T.ok) {
         alert('[MORBIS Ext] Gagal terhubung ke App Antrian. Coba lagi.');
         return;
       }
-      let k = I.queue_number || '';
-      if (!k) {
+      let v = T.queue_number || '';
+      if (!v) {
         alert('[MORBIS Ext] Nomor antrian belum terbit. Coba lagi.');
         return;
       }
-      (A({
+      (S({
         nomorResep: i,
         nama: m,
         jenis: x,
-        unit: String(v?.NAMA_UNIT ?? ''),
+        unit: String(U?.NAMA_UNIT ?? ''),
         tanggal: s ? s.slice(0, 10) : '',
-        code: k,
-        tglLahir: T(),
+        code: v,
+        tglLahir: A(),
       }),
-        w('issued', k));
+        w('issued', v));
     }
     async function g(c, i) {
       console.log('[MORBIS Ext] BATAL mulai \u2014 code:', c, '| nomorResep:', i);
-      let l = S('bat', i, c) + '-' + Date.now().toString(36);
+      let l = L('bat', i, c) + '-' + Date.now().toString(36);
       console.log('[MORBIS Ext] BATAL event_id:', l);
-      let r = await L({ event_id: l, event: 'BATAL', queue_number: c, resep_id: i });
+      let r = await E({ event_id: l, event: 'BATAL', queue_number: c, resep_id: i });
       if ((console.log('[MORBIS Ext] BATAL result:', JSON.stringify(r)), !r.ok)) {
-        if (!(await H())) {
+        if (!(await j())) {
           w('ready');
           return;
         }
@@ -579,14 +578,14 @@ var __morbis_feature = (() => {
           l.querySelector('#ext-antrian-cetak')?.addEventListener('click', () => {
             if (r)
               try {
-                A({
+                S({
                   nomorResep: r,
-                  nama: j(),
+                  nama: R(),
                   jenis: '',
                   unit: '',
                   tanggal: '',
                   code: i || '',
-                  tglLahir: T(),
+                  tglLahir: A(),
                 });
               } catch {}
           }),
@@ -621,7 +620,7 @@ var __morbis_feature = (() => {
       (l.querySelector('#ext-antrian-racik')?.addEventListener('click', () => d('racik')),
         l.querySelector('#ext-antrian-tunggal')?.addEventListener('click', () => d('tunggal')));
     }
-    function P() {
+    function H() {
       let c = () => {
           let l = Array.from(document.querySelectorAll('td[valign="top"]')).find((s) =>
             s.querySelector('fieldset#perhatian, fieldset[id="perhatian"]'),
@@ -648,7 +647,7 @@ var __morbis_feature = (() => {
               s < 10 ? window.setTimeout(() => d(s + 1), 800) : w('ready');
               return;
             }
-            H().then((x) => {
+            j().then((x) => {
               if (X(x?.status)) {
                 r.innerHTML =
                   '<span style="color:#b02a37;font-weight:700;">Resep dibatalkan \u2014 antrian tidak tersedia</span>';
@@ -669,8 +668,8 @@ var __morbis_feature = (() => {
         window.setTimeout(i, 2e3),
         window.setTimeout(i, 5e3));
     }
-    B(() => {
-      (u(), P());
+    C(() => {
+      (u(), H());
     });
   })();
 })();
