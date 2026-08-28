@@ -407,15 +407,15 @@ var __morbis_feature = (() => {
   }
   var k = {},
     S = null,
-    A = null;
+    _ = null;
   async function ae() {
     try {
       let e = await x();
-      ((A = new EventSource(e + '/api/queue/stream')),
-        (A.onmessage = () => {
+      ((_ = new EventSource(e + '/api/queue/stream')),
+        (_.onmessage = () => {
           u();
         }),
-        (A.onerror = () => {}));
+        (_.onerror = () => {}));
     } catch {}
   }
   var re = {
@@ -696,17 +696,12 @@ R (Racikan) \u2192 lanjut R-` +
     if (o) {
       let i = o.cloneNode(!0);
       ((i.id = 'ext-op-display'),
-        i.removeAttribute('onclick'),
-        i.removeAttribute('oninput'),
         i.setAttribute('data-tip', 'Buka layar TV (tab baru)'),
         i.setAttribute('title', 'Buka layar TV antrian'),
         i.setAttribute(
           'style',
           'padding:7px 14px;border:1px solid #00a65a;background:#00a65a;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;',
         ),
-        i.addEventListener('click', () => {
-          window.open('/public/antrian-farmasi-v2/view-call-websocet-v2', '_blank');
-        }),
         t.appendChild(i));
     }
     t.children.length && e.appendChild(t);
@@ -929,7 +924,7 @@ R (Racikan) \u2192 lanjut R-` +
     }
   }
   var K = 1500,
-    _ = new Map();
+    A = new Map();
   async function fe(e, t, n) {
     if (e === 'PRINT') {
       let d = T.find((f) => f.queue_number === t);
@@ -945,12 +940,12 @@ R (Racikan) \u2192 lanjut R-` +
       return;
     let o = Date.now(),
       i = e + '|' + t,
-      a = _.get(i) || 0;
+      a = A.get(i) || 0;
     if (o - a < K) {
       m('skip (cooldown) ' + i);
       return;
     }
-    _.set(i, o);
+    A.set(i, o);
     let r = document.querySelector(`.ext-op-act[data-ev="${e}"][data-num="${t}"]`),
       s = r?.textContent ?? '',
       l = r?.disabled ?? !1;
@@ -970,7 +965,7 @@ R (Racikan) \u2192 lanjut R-` +
         (d.style.opacity = ''),
         (d.style.cursor = ''),
         e === 'CALL' && (d.textContent = s)),
-        window.setTimeout(() => _.delete(i), K));
+        window.setTimeout(() => A.delete(i), K));
     }
   }
   async function me() {

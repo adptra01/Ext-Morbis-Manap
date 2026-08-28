@@ -499,12 +499,9 @@ function moveNativeButtons(): void {
   if (display) {
     const clone = display.cloneNode(true) as HTMLElement;
     clone.id = 'ext-op-display';
-    // Hapus onclick asli MORBIS — cloneNode menyalin atribut handler inline,
-    // sehingga tanpanya klik akan memicu handler lama (buka layar) + handler
-    // kita (window.open) sekaligus = 2 tab terlanjur terbuka.
-    clone.removeAttribute('onclick');
-    clone.removeAttribute('oninput');
-    // Hijau solid (aksi navigasi aman) + buka tab BARU via window.open.
+    // Pakai perilaku ASLI MORBIS saja (onclick native tetap ada — cloneNode
+    // menyalin handler inline) → 1 tab. JANGAN tambah window.open sendiri
+    // (dulu bikin 2 tab: handler native + handler kita jalan berbarengan).
     clone.setAttribute('data-tip', 'Buka layar TV (tab baru)');
     clone.setAttribute('title', 'Buka layar TV antrian');
     clone.setAttribute(
@@ -512,9 +509,6 @@ function moveNativeButtons(): void {
       'padding:7px 14px;border:1px solid #00a65a;background:#00a65a;color:#fff;' +
         'border-radius:8px;cursor:pointer;font-weight:700;',
     );
-    clone.addEventListener('click', () => {
-      window.open('/public/antrian-farmasi-v2/view-call-websocet-v2', '_blank');
-    });
     wrap.appendChild(clone);
   }
 
