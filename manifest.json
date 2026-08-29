@@ -8,7 +8,6 @@
       "update_url": "https://adptra01.github.io/Ext-Morbis-Manap/updates.json"
     }
   },
-  "update_url": "https://adptra01.github.io/Ext-Morbis-Manap/update.xml",
   "description": "Ekstensi produktivitas untuk SIMRS MORBIS Klaim - buka detail di tab baru, batch upload, dan fitur lainnya",
   "author": "Your Name",
   "icons": {
