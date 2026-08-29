@@ -765,9 +765,10 @@ async function render(): Promise<void> {
         const queues = d.queues || [];
         const sortNum = (a: DisplayRow, b: DisplayRow): number =>
           a.queue_number.localeCompare(b.queue_number, undefined, { numeric: true });
-        // Aktif per kategori: CALLED, terbaru dulu (current sudah sorted DESC).
+        // Aktif per kategori: CALLED, terbaru dulu → tampil maks 5 "Sedang
+        // Dipanggil" (kebijakan 2026-08-29). Backend juga auto-DONE kelebihannya.
         const byCat = (cat: string): { active: DisplayRow[]; next: DisplayRow[] } => ({
-          active: (d.current || []).filter((r) => catOf(r.queue_number) === cat),
+          active: (d.current || []).filter((r) => catOf(r.queue_number) === cat).slice(0, 5),
           next: queues
             .filter((r) => catOf(r.queue_number) === cat && r.status === 'WAITING')
             .sort(sortNum),

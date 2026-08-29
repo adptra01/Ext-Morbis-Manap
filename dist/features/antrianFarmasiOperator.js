@@ -892,7 +892,7 @@ R (Racikan) \u2192 lanjut R-` +
           let s = n.queues || [],
             l = (c, b) => c.queue_number.localeCompare(b.queue_number, void 0, { numeric: !0 }),
             d = (c) => ({
-              active: (n.current || []).filter((b) => O(b.queue_number) === c),
+              active: (n.current || []).filter((b) => O(b.queue_number) === c).slice(0, 5),
               next: s.filter((b) => O(b.queue_number) === c && b.status === 'WAITING').sort(l),
             }),
             f = d('tunggal'),
