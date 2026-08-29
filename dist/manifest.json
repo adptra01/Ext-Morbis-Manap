@@ -11,10 +11,10 @@
   "description": "Ekstensi produktivitas untuk SIMRS MORBIS Klaim - buka detail di tab baru, batch upload, dan fitur lainnya",
   "author": "Your Name",
   "icons": {
-    "16": "icons/bluemorbis16.png",
-    "32": "icons/bluemorbis32.png",
-    "48": "icons/bluemorbis48.png",
-    "128": "icons/bluemorbis128.png"
+    "16": "icons/rsud-logo-16.png",
+    "32": "icons/rsud-logo-32.png",
+    "48": "icons/rsud-logo-48.png",
+    "128": "icons/rsud-logo-128.png"
   },
   "background": {
     "service_worker": "background.js"
