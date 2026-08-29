@@ -247,6 +247,13 @@
       "all_frames": false
     },
     {
+      "matches": ["http://*/inventory/print/telaah-resep-manap*"],
+      "js": ["features/telaahResepPrint.js"],
+      "run_at": "document_idle",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
       "matches": ["http://*/antrian-farmasi/v2*"],
       "js": ["core.js", "features/antrianFarmasiOperator.js", "init.js"],
       "run_at": "document_idle"
