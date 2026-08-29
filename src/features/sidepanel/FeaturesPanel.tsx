@@ -25,7 +25,9 @@ export function FeaturesPanel({
   onToggle,
   onModeChange,
 }: FeaturesPanelProps) {
-  const visible = features.filter((f) => f.roles.includes(role));
+  // Admin melihat semua fitur (sama seperti popup), bukan hanya yang roles-nya
+  // berisi 'admin'.
+  const visible = features.filter((f) => role === 'admin' || f.roles.includes(role));
   const activeCount = visible.filter((f) => enabledFeatures[f.key]).length;
 
   return (

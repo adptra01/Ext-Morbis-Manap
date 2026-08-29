@@ -72,8 +72,6 @@ export function App() {
         showToast('Gagal mengubah role'),
       );
       showToast('Role berhasil diubah');
-      // ponytail: delay reload so user sees the selection before popup closes
-      setTimeout(() => reloadActiveTab(), 600);
     },
     [config, showToast],
   );
