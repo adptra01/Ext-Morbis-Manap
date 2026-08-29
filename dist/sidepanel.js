@@ -20,7 +20,7 @@ import {
   v as sendMessage,
   x as __toESM,
   y as require_client,
-} from './chunks/button-C27lgNH8.js';
+} from './chunks/button-Bu-LgqaV.js';
 /**
  * @license lucide-react v1.33.0 - ISC
  *
