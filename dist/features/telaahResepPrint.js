@@ -213,8 +213,8 @@ var __morbis_feature = (() => {
       let t = document.createElement('style');
       ((t.id = q),
         (t.textContent = `
-      .halaman{box-sizing:border-box;width:12.5cm!important;height:auto!important;margin:0!important;padding:0}
-      @page{size:12.5cm 11.5cm;margin:5mm}
+      .halaman{box-sizing:border-box;width:105mm!important;height:auto!important;margin:0!important;padding:0 3mm}
+      @page{size:105mm 241mm;margin:0}
       .halaman *{box-sizing:border-box;font-size:11px!important}
       .halaman{font-family:'Inter',Arial,sans-serif;font-size:11px;line-height:1.25;color:#000;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 
@@ -232,9 +232,9 @@ var __morbis_feature = (() => {
       .tm-label{width:105px;flex:none;color:#5b6470}
       .tm-dot{margin-right:8px}
 
-      /* MAIN 2 kolom */
-      .t-main{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
-      .t-left,.t-right{display:flex;flex-direction:column;gap:8px}
+      /* MAIN 2 kolom \u2014 portrait 105mm: kolom lebih ramping, gap kecil */
+      .t-main{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:start}
+      .t-left,.t-right{display:flex;flex-direction:column;gap:6px}
       .t-right .t-check{margin-bottom:0}
 
       /* DAFTAR OBAT */
@@ -248,7 +248,7 @@ var __morbis_feature = (() => {
 
       /* TABEL \u2014 checklist */
       table{width:100%;border-collapse:collapse;font-size:11px}
-      th,td{border:0.5pt solid #333;padding:2px 4px;font-weight:400;font-size:11px;line-height:11px}
+      th,td{border:0.5pt solid #333;padding:1px 3px;font-weight:400;font-size:11px;line-height:11px}
       thead th{font-weight:400}
       .yt{width:18px;text-align:center}
       .num{width:16px;text-align:center}
@@ -263,7 +263,7 @@ var __morbis_feature = (() => {
       .t-sub{text-align:center;font-size:11px;margin:4px 0}
 
       /* FOOTER + BUTTON */
-      .t-footer{margin-top:24px;text-align:center;font-weight:700;font-style:italic;font-size:11px}
+      .t-footer{margin-top:14px;text-align:center;font-weight:700;font-style:italic;font-size:11px}
       .t-print{margin-top:32px;display:flex;gap:8px}
       .t-btn{border:1px solid #d1d5db;background:#fff;border-radius:6px;padding:8px 16px;font-size:11px;cursor:pointer}
       .t-btn:hover{background:#f9fafb}
