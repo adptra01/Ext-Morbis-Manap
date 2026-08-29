@@ -84,7 +84,18 @@ var __morbis_feature = (() => {
           await removeFromRetryQueue(item.event_id);
           console.log('[MORBIS Ext] retry queue sukses:', item.event, item.queue_number ?? '');
         }
-      } catch {}
+      } catch (e) {
+        const msg = e.message ?? '';
+        if (msg.includes('HTTP 404') || msg.includes('HTTP 422')) {
+          await removeFromRetryQueue(item.event_id);
+          console.log(
+            '[MORBIS Ext] retry queue buang (stale):',
+            item.event,
+            item.queue_number ?? '',
+            msg,
+          );
+        }
+      }
     }
   }
   async function pushQueueEventDirect(p) {
