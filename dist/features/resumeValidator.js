@@ -1,6 +1,7 @@
 'use strict';
 var __morbis_feature = (() => {
-  var c = {
+  // src/shared/ui/colors.ts
+  var colors = {
     background: '#ffffff',
     foreground: '#0a0a0e',
     card: '#ffffff',
@@ -19,6 +20,7 @@ var __morbis_feature = (() => {
     border: '#e2e8f0',
     input: '#e2e8f0',
     ring: '#2469f0',
+    /* semantic shortcuts */
     success: '#1b8a4b',
     successBg: '#eaf6ef',
     warning: '#c47a1a',
@@ -28,16 +30,22 @@ var __morbis_feature = (() => {
     info: '#2469f0',
     infoBg: '#eef3ff',
   };
-  var G = new Set();
-  function C(s, d) {
-    if (G.has(s)) {
-      let f = document.getElementById(s);
-      if (f) return f;
+
+  // src/shared/ui/index.ts
+  var injectedSheets = /* @__PURE__ */ new Set();
+  function injectCSS(id, css) {
+    if (injectedSheets.has(id)) {
+      const existing = document.getElementById(id);
+      if (existing) return existing;
     }
-    let o = document.createElement('style');
-    return ((o.id = s), (o.textContent = d), document.head.appendChild(o), G.add(s), o);
+    const style = document.createElement('style');
+    style.id = id;
+    style.textContent = css;
+    document.head.appendChild(style);
+    injectedSheets.add(id);
+    return style;
   }
-  C(
+  injectCSS(
     'ext-shared-animations',
     `
   @keyframes fadeSlideIn {
@@ -46,8 +54,10 @@ var __morbis_feature = (() => {
   }
 `,
   );
-  var He = '"Plus Jakarta Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif',
-    Ce = `
+
+  // src/ui/web/tokens.ts
+  var FONT_STACK = '"Plus Jakarta Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+  var TOKENS_CSS = `
   :host {
     /* Brand */
     --ext-primary: #00875a;
@@ -78,7 +88,7 @@ var __morbis_feature = (() => {
     --ext-text-on-primary: #ffffff;
 
     /* Typography \u2014 lebih besar dari default, untuk mudah dibaca */
-    --ext-font-family: ${He};
+    --ext-font-family: ${FONT_STACK};
     --ext-font-size-xs: 12px;
     --ext-font-size-sm: 13px;
     --ext-font-size-md: 15px;
@@ -113,27 +123,35 @@ var __morbis_feature = (() => {
     --ext-duration-fast: 140ms;
     --ext-duration-normal: 220ms;
   }
-`,
-    S = null;
-  function Ie() {
-    return (S || ((S = new CSSStyleSheet()), S.replaceSync(Ce)), S);
+`;
+  var sharedSheet = null;
+  function getTokenSheet() {
+    if (!sharedSheet) {
+      sharedSheet = new CSSStyleSheet();
+      sharedSheet.replaceSync(TOKENS_CSS);
+    }
+    return sharedSheet;
   }
-  var X = !1;
-  function Ae() {
-    if (X || document.getElementById('ext-pjs-font')) return;
-    X = !0;
-    let s = document.createElement('link');
-    ((s.id = 'ext-pjs-font'),
-      (s.rel = 'stylesheet'),
-      (s.href =
-        'http://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'),
-      document.head.appendChild(s));
+  var fontInjected = false;
+  function ensureFont() {
+    if (fontInjected || document.getElementById('ext-pjs-font')) return;
+    fontInjected = true;
+    const link = document.createElement('link');
+    link.id = 'ext-pjs-font';
+    link.rel = 'stylesheet';
+    link.href =
+      'http://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap';
+    document.head.appendChild(link);
   }
-  function w(s, d = 'open') {
-    let o = s.attachShadow({ mode: d });
-    return ((o.adoptedStyleSheets = [Ie()]), Ae(), o);
+  function attachShadowWithTokens(el, mode = 'open') {
+    const root = el.attachShadow({ mode });
+    root.adoptedStyleSheets = [getTokenSheet()];
+    ensureFont();
+    return root;
   }
-  var $e = `
+
+  // src/ui/web/ext-modal.ts
+  var STYLE = `
   :host { display: none; }
   :host([open]) { display: block; }
   .overlay {
@@ -217,16 +235,16 @@ var __morbis_feature = (() => {
   @keyframes ext-slide-up {
     from { opacity: 0; transform: translateY(18px) scale(0.98); }
   }
-`,
-    I = class extends HTMLElement {
-      constructor() {
-        super();
-        this.handleKey = (o) => {
-          o.key === 'Escape' && this.hasAttribute('open') && this.cancel();
-        };
-        ((this.root = w(this)),
-          (this.root.innerHTML = `
-      <style>${$e}</style>
+`;
+  var ExtModal = class extends HTMLElement {
+    constructor() {
+      super();
+      this.handleKey = (e) => {
+        if (e.key === 'Escape' && this.hasAttribute('open')) this.cancel();
+      };
+      this.root = attachShadowWithTokens(this);
+      this.root.innerHTML = `
+      <style>${STYLE}</style>
       <div class="overlay">
         <div class="modal" role="dialog" aria-modal="true">
           <div class="header">
@@ -239,40 +257,44 @@ var __morbis_feature = (() => {
           </div>
         </div>
       </div>
-    `));
-      }
-      connectedCallback() {
-        let o = this.root.querySelector('.overlay');
-        (this.root.querySelector('.close').addEventListener('click', () => this.cancel()),
-          o.addEventListener('click', (p) => {
-            p.target === o && this.cancel();
-          }),
-          document.addEventListener('keydown', this.handleKey));
-      }
-      disconnectedCallback() {
-        document.removeEventListener('keydown', this.handleKey);
-      }
-      get titleSlot() {
-        return this.querySelector('[slot="title"]');
-      }
-      get footerSlot() {
-        return this.querySelector('[slot="footer"]');
-      }
-      open() {
-        this.setAttribute('open', '');
-      }
-      close() {
-        this.removeAttribute('open');
-      }
-      cancel() {
-        (this.dispatchEvent(new CustomEvent('ext-cancel')), this.close());
-      }
-      ok() {
-        this.dispatchEvent(new CustomEvent('ext-ok'));
-      }
-    };
-  customElements.get('ext-modal') || customElements.define('ext-modal', I);
-  var Be = `
+    `;
+    }
+    connectedCallback() {
+      const overlay = this.root.querySelector('.overlay');
+      const closeBtn = this.root.querySelector('.close');
+      closeBtn.addEventListener('click', () => this.cancel());
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) this.cancel();
+      });
+      document.addEventListener('keydown', this.handleKey);
+    }
+    disconnectedCallback() {
+      document.removeEventListener('keydown', this.handleKey);
+    }
+    get titleSlot() {
+      return this.querySelector('[slot="title"]');
+    }
+    get footerSlot() {
+      return this.querySelector('[slot="footer"]');
+    }
+    open() {
+      this.setAttribute('open', '');
+    }
+    close() {
+      this.removeAttribute('open');
+    }
+    cancel() {
+      this.dispatchEvent(new CustomEvent('ext-cancel'));
+      this.close();
+    }
+    ok() {
+      this.dispatchEvent(new CustomEvent('ext-ok'));
+    }
+  };
+  if (!customElements.get('ext-modal')) customElements.define('ext-modal', ExtModal);
+
+  // src/ui/web/ext-btn.ts
+  var STYLE2 = `
   :host { display: inline-block; }
   button {
     display: inline-flex;
@@ -328,358 +350,395 @@ var __morbis_feature = (() => {
   :host([loading]) .spinner { display: inline-block; }
   :host([loading]) button { pointer-events: none; opacity: 0.8; }
   @keyframes ext-spin { to { transform: rotate(360deg); } }
-`,
-    A = class extends HTMLElement {
-      constructor() {
-        super();
-        let d = w(this);
-        ((d.innerHTML = `
-      <style>${Be}</style>
+`;
+  var ExtBtn = class extends HTMLElement {
+    constructor() {
+      super();
+      const root = attachShadowWithTokens(this);
+      root.innerHTML = `
+      <style>${STYLE2}</style>
       <button type="button">
         <span class="spinner" aria-hidden="true"></span>
         <span class="label"><slot></slot></span>
       </button>
-    `),
-          (this.btn = d.querySelector('button')));
+    `;
+      this.btn = root.querySelector('button');
+    }
+    connectedCallback() {
+      this.btn.disabled = this.hasAttribute('disabled') || this.hasAttribute('loading');
+      this.btn.setAttribute('aria-busy', this.hasAttribute('loading') ? 'true' : 'false');
+      this.btn.addEventListener('click', (e) => {
+        if (this.hasAttribute('loading') || this.hasAttribute('disabled')) {
+          e.stopPropagation();
+          e.preventDefault();
+          return;
+        }
+      });
+    }
+    static get observedAttributes() {
+      return ['disabled', 'loading'];
+    }
+    attributeChangedCallback(name) {
+      if (name === 'disabled' || name === 'loading') {
+        this.btn.disabled = this.hasAttribute('disabled') || this.hasAttribute('loading');
+        this.btn.setAttribute('aria-busy', this.hasAttribute('loading') ? 'true' : 'false');
       }
-      connectedCallback() {
-        ((this.btn.disabled = this.hasAttribute('disabled') || this.hasAttribute('loading')),
-          this.btn.setAttribute('aria-busy', this.hasAttribute('loading') ? 'true' : 'false'),
-          this.btn.addEventListener('click', (d) => {
-            if (this.hasAttribute('loading') || this.hasAttribute('disabled')) {
-              (d.stopPropagation(), d.preventDefault());
-              return;
-            }
-          }));
-      }
-      static get observedAttributes() {
-        return ['disabled', 'loading'];
-      }
-      attributeChangedCallback(d) {
-        (d === 'disabled' || d === 'loading') &&
-          ((this.btn.disabled = this.hasAttribute('disabled') || this.hasAttribute('loading')),
-          this.btn.setAttribute('aria-busy', this.hasAttribute('loading') ? 'true' : 'false'));
-      }
-    };
-  customElements.get('ext-btn') || customElements.define('ext-btn', A);
-  function b(s) {
-    return new Promise((d) => {
-      let o = document.createElement('ext-modal');
-      (o.setAttribute('variant', s.variant ?? 'warning'),
-        s.okLabel && o.setAttribute('ok-label', s.okLabel),
-        s.cancelLabel && o.setAttribute('cancel-label', s.cancelLabel),
-        s.hideCancel && o.setAttribute('hide-cancel', ''),
-        (o.innerHTML = `<h3 slot="title"></h3><div class="ext-confirm-body"></div><div slot="footer">
+    }
+  };
+  if (!customElements.get('ext-btn')) customElements.define('ext-btn', ExtBtn);
+
+  // src/ui/web/confirm.ts
+  function confirmExt(opts) {
+    return new Promise((resolve) => {
+      const modal = document.createElement('ext-modal');
+      modal.setAttribute('variant', opts.variant ?? 'warning');
+      if (opts.okLabel) modal.setAttribute('ok-label', opts.okLabel);
+      if (opts.cancelLabel) modal.setAttribute('cancel-label', opts.cancelLabel);
+      if (opts.hideCancel) modal.setAttribute('hide-cancel', '');
+      modal.innerHTML = `<h3 slot="title"></h3><div class="ext-confirm-body"></div><div slot="footer">
          <ext-btn data-ext-confirm-cancel variant="secondary"></ext-btn>
          <ext-btn data-ext-confirm-ok></ext-btn>
-       </div>`));
-      let f = o.querySelector('[slot="title"]');
-      f.textContent = s.title;
-      let p = o.querySelector('.ext-confirm-body');
-      if (s.icon) {
-        let m = document.createElement('div');
-        ((m.className = 'ext-confirm-icon'), (m.textContent = s.icon), p.appendChild(m));
+       </div>`;
+      const title = modal.querySelector('[slot="title"]');
+      title.textContent = opts.title;
+      const body = modal.querySelector('.ext-confirm-body');
+      if (opts.icon) {
+        const icon = document.createElement('div');
+        icon.className = 'ext-confirm-icon';
+        icon.textContent = opts.icon;
+        body.appendChild(icon);
       }
-      (s.message &&
-        s.message
-          .split(
-            `
-`,
-          )
-          .forEach((x, h) => {
-            (h > 0 && p.appendChild(document.createElement('br')),
-              p.appendChild(document.createTextNode(x)));
-          }),
-        (o.querySelector('[data-ext-confirm-ok]').textContent = s.okLabel ?? 'Lanjut'),
-        o
-          .querySelector('[data-ext-confirm-ok]')
-          .setAttribute('variant', s.variant === 'danger' ? 'danger' : 'primary'),
-        s.hideCancel
-          ? o.querySelector('[data-ext-confirm-cancel]')?.remove()
-          : (o.querySelector('[data-ext-confirm-cancel]').textContent = s.cancelLabel ?? 'Batal'));
-      let _ = (m) => {
-        (o.remove(), d(m));
+      if (opts.message) {
+        const lines = opts.message.split('\n');
+        lines.forEach((line, i) => {
+          if (i > 0) body.appendChild(document.createElement('br'));
+          body.appendChild(document.createTextNode(line));
+        });
+      }
+      modal.querySelector('[data-ext-confirm-ok]').textContent = opts.okLabel ?? 'Lanjut';
+      const okBtn = modal.querySelector('[data-ext-confirm-ok]');
+      okBtn.setAttribute('variant', opts.variant === 'danger' ? 'danger' : 'primary');
+      if (opts.hideCancel) {
+        modal.querySelector('[data-ext-confirm-cancel]')?.remove();
+      } else {
+        modal.querySelector('[data-ext-confirm-cancel]').textContent = opts.cancelLabel ?? 'Batal';
+      }
+      const done = (result) => {
+        modal.remove();
+        resolve(result);
       };
-      (o.addEventListener('ext-ok', () => _(!0)),
-        o.addEventListener('ext-cancel', () => _(!1)),
-        document.body.appendChild(o),
-        o.open());
+      modal.addEventListener('ext-ok', () => done(true));
+      modal.addEventListener('ext-cancel', () => done(false));
+      document.body.appendChild(modal);
+      modal.open();
     });
   }
+
+  // src/features/resumeValidator.ts
   (function () {
-    let d = 0,
-      o = setInterval(function () {
-        d++;
-        let e = document.documentElement.getAttribute('data-ext-resume-validator');
-        if (e !== null) {
-          if ((clearInterval(o), e !== '1')) return;
-          f();
-        } else d >= 100 && clearInterval(o);
-      }, 50);
-    function f() {
+    const MAX_WAIT = 100;
+    let waited = 0;
+    const check = setInterval(function () {
+      waited++;
+      const enabled = document.documentElement.getAttribute('data-ext-resume-validator');
+      if (enabled !== null) {
+        clearInterval(check);
+        if (enabled !== '1') return;
+        waitForForm();
+      } else if (waited >= MAX_WAIT) {
+        clearInterval(check);
+      }
+    }, 50);
+    function waitForForm() {
       if (!window.location.pathname.includes('/tambah-resume-ri')) return;
-      let e = setInterval(function () {
-        let t = document.getElementById('save'),
-          n = document.querySelector('form[action*="rawat-inap-resume"]');
-        t && n && (clearInterval(e), p(n, t));
+      const poll = setInterval(function () {
+        const saveBtn = document.getElementById('save');
+        const form = document.querySelector('form[action*="rawat-inap-resume"]');
+        if (saveBtn && form) {
+          clearInterval(poll);
+          init(form, saveBtn);
+        }
       }, 200);
     }
-    function p(e, t) {
-      ($(),
-        _(e),
-        be(),
-        te(),
-        Q(e),
-        oe(),
-        se(),
-        le(),
-        de(),
-        ue(),
-        ce(),
-        me(),
-        ie(e),
-        ne(e, t),
-        ae(t, e));
+    function init(form, saveBtn) {
+      injectStyle();
+      setupCekForm(form);
+      setupAutoClearHandlers();
+      restoreDraft();
+      setupAutosave(form);
+      optimizeVitalInputs();
+      optimizeBloodPressure();
+      addRequiredAttributes();
+      preventEnterSubmit();
+      autoExpandTextareas();
+      setupColorIndicators();
+      setupAutoFormatICD();
+      setupUnsavedWarning(form);
+      checkAndLockForm(form, saveBtn);
+      setupUnifiedSaveHandler(saveBtn, form);
     }
-    function $() {
-      C(
+    function injectStyle() {
+      injectCSS(
         'ext-rv-css',
         [
-          `.ext-rv-error { border: 2px solid ${c.error} !important; background: ${c.errorBg} !important; transition: all 0.2s; }`,
-          '.ext-rv-toast { position: fixed; top: 20px; right: 20px; z-index: 99999; padding: 16px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,0.15); max-width: 420px; line-height: 1.5; }',
-          `.ext-rv-toast-error { background: ${c.errorBg}; color: #991b1b; border-left: 5px solid ${c.error}; }`,
-          `.ext-rv-toast-success { background: ${c.successBg}; color: #065f46; border-left: 5px solid ${c.success}; }`,
-          `.ext-rv-locked { background: ${c.muted} !important; cursor: not-allowed; opacity: 0.8; }`,
+          `.ext-rv-error { border: 2px solid ${colors.error} !important; background: ${colors.errorBg} !important; transition: all 0.2s; }`,
+          `.ext-rv-toast { position: fixed; top: 20px; right: 20px; z-index: 99999; padding: 16px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,0.15); max-width: 420px; line-height: 1.5; }`,
+          `.ext-rv-toast-error { background: ${colors.errorBg}; color: #991b1b; border-left: 5px solid ${colors.error}; }`,
+          `.ext-rv-toast-success { background: ${colors.successBg}; color: #065f46; border-left: 5px solid ${colors.success}; }`,
+          `.ext-rv-locked { background: ${colors.muted} !important; cursor: not-allowed; opacity: 0.8; }`,
           '.ext-rv-save-disabled { opacity: 0.5; pointer-events: none; }',
-          `.ext-rv-icd-valid { border: 2px solid ${c.success} !important; background: ${c.successBg} !important; }`,
-          `.ext-rv-icd-invalid { border: 2px solid ${c.error} !important; background: ${c.errorBg} !important; }`,
-        ].join(`
-`),
+          `.ext-rv-icd-valid { border: 2px solid ${colors.success} !important; background: ${colors.successBg} !important; }`,
+          `.ext-rv-icd-invalid { border: 2px solid ${colors.error} !important; background: ${colors.errorBg} !important; }`,
+        ].join('\n'),
       );
     }
-    function _(e) {
-      let t = window;
-      ((t.cekForm = function () {
-        return y();
-      }),
-        e.onsubmit !== null &&
-          (e.onsubmit = function (r) {
-            let l = y();
-            return (!l && r && r.preventDefault(), l);
-          }));
-      let n = t.jQuery;
-      n &&
-        n(e).on('submit', function (r) {
-          return y() ? !0 : (r.preventDefault(), !1);
+    function setupCekForm(form) {
+      const w = window;
+      w.cekForm = function () {
+        return runValidation();
+      };
+      if (form.onsubmit !== null) {
+        form.onsubmit = function (e) {
+          const result = runValidation();
+          if (!result && e) {
+            e.preventDefault();
+          }
+          return result;
+        };
+      }
+      const $2 = w.jQuery;
+      if ($2) {
+        $2(form).on('submit', function (e) {
+          if (!runValidation()) {
+            e.preventDefault();
+            return false;
+          }
+          return true;
         });
-      var a = e.submit.bind(e);
-      e.submit = function () {
-        if (y()) {
-          ((k = !1), Z());
-          try {
-            localStorage.removeItem(h());
-          } catch {}
-          a();
-        }
+      }
+      var origSubmit = form.submit.bind(form);
+      form.submit = function () {
+        if (!runValidation()) return;
+        _dirty = false;
+        clearAutosave();
+        try {
+          localStorage.removeItem(getDraftKey());
+        } catch (_e) {}
+        origSubmit();
       };
     }
-    let m = 'ext_draft_resume_';
-    var x = null;
-    function h() {
-      let e = i('id_visit');
-      return m + (e || 'unknown');
+    const DRAFT_PREFIX = 'ext_draft_resume_';
+    var _autosaveIntervalId = null;
+    function getDraftKey() {
+      const visitId = val('id_visit');
+      return DRAFT_PREFIX + (visitId || 'unknown');
     }
-    var M = null,
-      B = 2e3;
-    function D(e, t) {
+    var _debounceTimer = null;
+    var DEBOUNCE_MS = 2e3;
+    function debounce(fn, delay) {
       return function () {
-        (M && clearTimeout(M), (M = setTimeout(e, t)));
+        if (_debounceTimer) clearTimeout(_debounceTimer);
+        _debounceTimer = setTimeout(fn, delay);
       };
     }
-    function Q(e) {
-      if (!L()) {
-        var t = function () {
-            ee(e);
-          },
-          n = e.querySelectorAll('input, textarea, select');
-        (n.forEach(function (a) {
-          (a.addEventListener('change', D(t, B)), a.addEventListener('input', D(t, B)));
-        }),
-          (x = setInterval(t, 3e4)));
+    function setupAutosave(form) {
+      if (hasIdResume()) return;
+      var doSave = function () {
+        saveDraft(form);
+      };
+      var inputs = form.querySelectorAll('input, textarea, select');
+      inputs.forEach(function (el) {
+        el.addEventListener('change', debounce(doSave, DEBOUNCE_MS));
+        el.addEventListener('input', debounce(doSave, DEBOUNCE_MS));
+      });
+      _autosaveIntervalId = setInterval(doSave, 3e4);
+    }
+    function clearAutosave() {
+      if (_autosaveIntervalId !== null) {
+        clearInterval(_autosaveIntervalId);
+        _autosaveIntervalId = null;
       }
     }
-    function Z() {
-      x !== null && (clearInterval(x), (x = null));
-    }
-    function ee(e) {
-      let t = h(),
-        n = new FormData(e),
-        a = {};
-      (n.forEach(function (r, l) {
-        a[l] = r.toString();
-      }),
-        (a._saved_at = Date.now().toString()));
+    function saveDraft(form) {
+      const key = getDraftKey();
+      const data = new FormData(form);
+      const obj = {};
+      data.forEach(function (value, name) {
+        obj[name] = value.toString();
+      });
+      obj._saved_at = Date.now().toString();
       try {
-        localStorage.setItem(t, JSON.stringify(a));
-      } catch {}
+        localStorage.setItem(key, JSON.stringify(obj));
+      } catch (_e) {}
     }
-    async function te() {
-      if (L()) return;
-      let e = h(),
-        t = null;
+    async function restoreDraft() {
+      if (hasIdResume()) return;
+      const key = getDraftKey();
+      let raw = null;
       try {
-        t = localStorage.getItem(e);
-      } catch {
+        raw = localStorage.getItem(key);
+      } catch (_e) {
         return;
       }
-      if (!t) return;
-      let n;
+      if (!raw) return;
+      let draft;
       try {
-        n = JSON.parse(t);
-      } catch {
+        draft = JSON.parse(raw);
+      } catch (_e) {
         return;
       }
-      let a = function () {
-        for (let l in n) {
-          if (l === '_saved_at') continue;
-          let u = document.querySelector('[name="' + l + '"]');
-          u && !u.value && (u.value = n[l]);
+      const ok = function () {
+        for (const name in draft) {
+          if (name === '_saved_at') continue;
+          const el = document.querySelector('[name="' + name + '"]');
+          if (el && !el.value) {
+            el.value = draft[name];
+          }
         }
         try {
-          localStorage.removeItem(e);
-        } catch {}
+          localStorage.removeItem(key);
+        } catch (_e) {}
       };
-      if (
-        await b({
-          title: 'Draft Ditemukan',
-          message: 'Data draft sebelumnya ditemukan. Pulihkan?',
-          variant: 'info',
-          okLabel: 'Pulihkan',
-          cancelLabel: 'Hapus',
-        })
-      )
-        a();
-      else
+      const restore = await confirmExt({
+        title: 'Draft Ditemukan',
+        message: 'Data draft sebelumnya ditemukan. Pulihkan?',
+        variant: 'info',
+        okLabel: 'Pulihkan',
+        cancelLabel: 'Hapus',
+      });
+      if (restore) ok();
+      else {
         try {
-          localStorage.removeItem(e);
-        } catch {}
+          localStorage.removeItem(key);
+        } catch (_e) {}
+      }
     }
-    function L() {
-      let e = document.getElementById('id_resume_inap');
-      return !!e && !!e.value;
+    function hasIdResume() {
+      const el = document.getElementById('id_resume_inap');
+      return !!el && !!el.value;
     }
-    function ne(e, t) {
-      if (!L()) return;
-      let n = e.querySelectorAll('input, textarea, select');
-      (n.forEach(function (r) {
-        r.id === 'save' ||
-          r.type === 'button' ||
-          r.type === 'submit' ||
-          (r.tagName === 'SELECT' ? (r.disabled = !0) : (r.readOnly = !0),
-          r.classList.add('ext-rv-locked'));
-      }),
-        (t.textContent = 'Data Terkunci (Sudah Tersimpan)'),
-        (t.value = 'Data Terkunci (Sudah Tersimpan)'));
-      let a = function () {
-        (n.forEach(function (r) {
-          r.id === 'save' ||
-            r.type === 'button' ||
-            r.type === 'submit' ||
-            ((r.disabled = !1), (r.readOnly = !1), r.classList.remove('ext-rv-locked'));
-        }),
-          (t.textContent = 'Simpan Perubahan'),
-          (t.value = 'Simpan Perubahan'),
-          j(t, e));
+    function checkAndLockForm(form, saveBtn) {
+      if (!hasIdResume()) return;
+      const fields = form.querySelectorAll('input, textarea, select');
+      fields.forEach(function (el) {
+        if (el.id === 'save' || el.type === 'button' || el.type === 'submit') return;
+        if (el.tagName === 'SELECT') {
+          el.disabled = true;
+        } else {
+          el.readOnly = true;
+        }
+        el.classList.add('ext-rv-locked');
+      });
+      saveBtn.textContent = 'Data Terkunci (Sudah Tersimpan)';
+      saveBtn.value = 'Data Terkunci (Sudah Tersimpan)';
+      const unlock = function () {
+        fields.forEach(function (el) {
+          if (el.id === 'save' || el.type === 'button' || el.type === 'submit') return;
+          el.disabled = false;
+          el.readOnly = false;
+          el.classList.remove('ext-rv-locked');
+        });
+        saveBtn.textContent = 'Simpan Perubahan';
+        saveBtn.value = 'Simpan Perubahan';
+        attachSaveHandler(saveBtn, form);
       };
-      t.onclick = function (r) {
-        (r.preventDefault(),
-          (async function () {
-            (await b({
-              title: 'Buka Kunci?',
-              message: 'Data sudah tersimpan. Buka kunci untuk mengedit?',
-              variant: 'warning',
-              okLabel: 'Ya, Buka',
-              cancelLabel: 'Batal',
-            })) &&
-              (a(),
-              await b({
-                title: 'Siap Edit',
-                message: 'Field sudah bisa diedit. Klik Simpan Perubahan jika selesai.',
-                variant: 'success',
-                okLabel: 'OK',
-                hideCancel: !0,
-              }));
-          })());
-      };
-    }
-    function ae(e, t) {
-      L() || j(e, t);
-    }
-    function j(e, t) {
-      e.onclick = function (n) {
-        if (!y()) return (n.preventDefault(), !1);
-        (e.classList.add('ext-rv-save-disabled'),
-          (e.textContent = 'Mengecek Koneksi...'),
-          (e.value = 'Mengecek Koneksi...'),
-          re().then(function (a) {
-            if (!a) {
-              (e.classList.remove('ext-rv-save-disabled'),
-                (e.textContent = 'Simpan (Login Ulang Dulu)'),
-                (e.value = 'Simpan (Login Ulang Dulu)'),
-                b({
-                  title: 'Sesi Habis',
-                  message:
-                    'Jangan tutup halaman ini! Buka tab baru, login kembali, lalu klik Simpan lagi.',
-                  variant: 'danger',
-                  okLabel: 'OK, Saya Login Dulu',
-                  hideCancel: !0,
-                }));
-              return;
-            }
-            try {
-              localStorage.removeItem(h());
-            } catch {}
-            ((e.textContent = 'Menyimpan...'), (e.value = 'Menyimpan...'), t.submit());
-          }),
-          n.preventDefault());
+      saveBtn.onclick = function (e) {
+        e.preventDefault();
+        const ask = async function () {
+          const yes = await confirmExt({
+            title: 'Buka Kunci?',
+            message: 'Data sudah tersimpan. Buka kunci untuk mengedit?',
+            variant: 'warning',
+            okLabel: 'Ya, Buka',
+            cancelLabel: 'Batal',
+          });
+          if (yes) {
+            unlock();
+            await confirmExt({
+              title: 'Siap Edit',
+              message: 'Field sudah bisa diedit. Klik Simpan Perubahan jika selesai.',
+              variant: 'success',
+              okLabel: 'OK',
+              hideCancel: true,
+            });
+          }
+        };
+        ask();
       };
     }
-    async function re() {
+    function setupUnifiedSaveHandler(saveBtn, form) {
+      if (hasIdResume()) return;
+      attachSaveHandler(saveBtn, form);
+    }
+    function attachSaveHandler(saveBtn, form) {
+      saveBtn.onclick = function (e) {
+        if (!runValidation()) {
+          e.preventDefault();
+          return false;
+        }
+        saveBtn.classList.add('ext-rv-save-disabled');
+        saveBtn.textContent = 'Mengecek Koneksi...';
+        saveBtn.value = 'Mengecek Koneksi...';
+        checkSession().then(function (active) {
+          if (!active) {
+            saveBtn.classList.remove('ext-rv-save-disabled');
+            saveBtn.textContent = 'Simpan (Login Ulang Dulu)';
+            saveBtn.value = 'Simpan (Login Ulang Dulu)';
+            confirmExt({
+              title: 'Sesi Habis',
+              message:
+                'Jangan tutup halaman ini! Buka tab baru, login kembali, lalu klik Simpan lagi.',
+              variant: 'danger',
+              okLabel: 'OK, Saya Login Dulu',
+              hideCancel: true,
+            });
+            return;
+          }
+          try {
+            localStorage.removeItem(getDraftKey());
+          } catch (_e) {}
+          saveBtn.textContent = 'Menyimpan...';
+          saveBtn.value = 'Menyimpan...';
+          form.submit();
+        });
+        e.preventDefault();
+      };
+    }
+    async function checkSession() {
       try {
-        let e = await fetch('/admisi/search?opsi=norm_rekam_medik&q=1', {
+        const resp = await fetch('/admisi/search?opsi=norm_rekam_medik&q=1', {
           method: 'HEAD',
           cache: 'no-store',
         });
-        return !(e.redirected || e.status === 401 || e.status === 403);
-      } catch {
-        return !1;
+        if (resp.redirected || resp.status === 401 || resp.status === 403) return false;
+        return true;
+      } catch (_e) {
+        return false;
       }
     }
-    let k = !1;
-    function ie(e) {
-      var t = e.querySelectorAll('input, textarea, select');
-      (t.forEach(function (n) {
-        (n.addEventListener('change', function () {
-          k = !0;
-        }),
-          n.addEventListener('input', function () {
-            k = !0;
-          }));
-      }),
-        e.addEventListener('submit', function () {
-          k = !1;
-        }),
-        window.addEventListener('beforeunload', function (n) {
-          if (k)
-            return (
-              n.preventDefault(),
-              (n.returnValue = 'Data yang belum disimpan akan hilang.'),
-              n.returnValue
-            );
-        }));
+    let _dirty = false;
+    function setupUnsavedWarning(form) {
+      var inputs = form.querySelectorAll('input, textarea, select');
+      inputs.forEach(function (el) {
+        el.addEventListener('change', function () {
+          _dirty = true;
+        });
+        el.addEventListener('input', function () {
+          _dirty = true;
+        });
+      });
+      form.addEventListener('submit', function () {
+        _dirty = false;
+      });
+      window.addEventListener('beforeunload', function (e) {
+        if (!_dirty) return;
+        e.preventDefault();
+        e.returnValue = 'Data yang belum disimpan akan hilang.';
+        return e.returnValue;
+      });
     }
-    function oe() {
-      [
+    function optimizeVitalInputs() {
+      const fields = [
         { id: 'suhu_pulang', min: 30, max: 45, step: 0.1 },
         { id: 'suhu', min: 30, max: 45, step: 0.1 },
         { id: 'nadi_pulang', min: 20, max: 250, step: 1 },
@@ -692,28 +751,31 @@ var __morbis_feature = (() => {
         { id: 'gcs_m', min: 1, max: 6, step: 1 },
         { id: 'gcs_v', min: 1, max: 5, step: 1 },
         { id: 'berat', min: 1, max: 500, step: 0.1 },
-      ].forEach(function (t) {
-        var n = document.getElementById(t.id);
-        n &&
-          ((n.type = 'number'),
-          (n.min = String(t.min)),
-          (n.max = String(t.max)),
-          (n.step = String(t.step)),
-          n.placeholder || (n.placeholder = t.min + '-' + t.max));
+      ];
+      fields.forEach(function (f) {
+        var el = document.getElementById(f.id);
+        if (!el) return;
+        el.type = 'number';
+        el.min = String(f.min);
+        el.max = String(f.max);
+        el.step = String(f.step);
+        if (!el.placeholder) {
+          el.placeholder = f.min + '-' + f.max;
+        }
       });
     }
-    function se() {
-      var e = ['td_pulang', 'td', 'tensi', 'tensi_pulang'];
-      e.forEach(function (t) {
-        var n = document.getElementById(t);
-        n &&
-          ((n.placeholder = '120/80'),
-          (n.pattern = '[0-9]{2,3}/[0-9]{2,3}'),
-          (n.title = 'Format: angka/angka (Contoh: 120/80)'));
+    function optimizeBloodPressure() {
+      var ids = ['td_pulang', 'td', 'tensi', 'tensi_pulang'];
+      ids.forEach(function (id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.placeholder = '120/80';
+        el.pattern = '[0-9]{2,3}/[0-9]{2,3}';
+        el.title = 'Format: angka/angka (Contoh: 120/80)';
       });
     }
-    function le() {
-      var e = [
+    function addRequiredAttributes() {
+      var ids = [
         'alasan_rawat',
         'anamnesa',
         'diagnosa_primary',
@@ -723,313 +785,344 @@ var __morbis_feature = (() => {
         'cara_keluar',
         'tgl_keluar2',
       ];
-      e.forEach(function (t) {
-        var n = document.getElementById(t);
-        n && (n.required = !0);
+      ids.forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.required = true;
       });
     }
-    function de() {
+    function preventEnterSubmit() {
       document
         .querySelectorAll('input:not([type="submit"]):not([type="button"])')
-        .forEach(function (e) {
-          e.addEventListener('keydown', function (t) {
-            t.key === 'Enter' && t.preventDefault();
+        .forEach(function (el) {
+          el.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+            }
           });
         });
     }
-    function ue() {
-      document.querySelectorAll('textarea').forEach(function (e) {
-        ((e.style.overflow = 'hidden'),
-          (e.style.resize = 'vertical'),
-          e.addEventListener('input', function () {
-            ((e.style.height = 'auto'), (e.style.height = e.scrollHeight + 'px'));
-          }));
+    function autoExpandTextareas() {
+      document.querySelectorAll('textarea').forEach(function (el) {
+        el.style.overflow = 'hidden';
+        el.style.resize = 'vertical';
+        el.addEventListener('input', function () {
+          el.style.height = 'auto';
+          el.style.height = el.scrollHeight + 'px';
+        });
       });
     }
-    function ce() {
-      var e = z(),
-        t = q();
-      (e.forEach(function (n) {
-        var a = document.getElementById(n);
-        a &&
-          a.addEventListener('input', function () {
-            var r = a.value.trim();
-            (a.classList.remove('ext-rv-icd-valid', 'ext-rv-icd-invalid'),
-              r !== '' &&
-                (/^[A-Z][0-9][0-9](\.[0-9]{1,2})?$/i.test(r)
-                  ? a.classList.add('ext-rv-icd-valid')
-                  : a.classList.add('ext-rv-icd-invalid')));
-          });
-      }),
-        t.forEach(function (n) {
-          var a = document.getElementById(n);
-          a &&
-            a.addEventListener('input', function () {
-              var r = a.value.trim();
-              (a.classList.remove('ext-rv-icd-valid', 'ext-rv-icd-invalid'),
-                r !== '' &&
-                  (/^[0-9]{2}(\.[0-9]{1,2})?$/.test(r)
-                    ? a.classList.add('ext-rv-icd-valid')
-                    : a.classList.add('ext-rv-icd-invalid')));
-            });
-        }));
-    }
-    function me() {
-      var e = z();
-      e.forEach(function (n) {
-        var a = document.getElementById(n);
-        a &&
-          a.addEventListener('blur', function () {
-            var r = a.value.trim().toUpperCase();
-            r &&
-              ((r = r.replace('.', '')),
-              r.length > 3 && (r = r.substring(0, 3) + '.' + r.substring(3)),
-              (a.value = r),
-              a.dispatchEvent(new Event('input')));
-          });
+    function setupColorIndicators() {
+      var icd10Fields = buildICD10Fields();
+      var icd9Fields = buildICD9Fields();
+      icd10Fields.forEach(function (id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', function () {
+          var v = el.value.trim();
+          el.classList.remove('ext-rv-icd-valid', 'ext-rv-icd-invalid');
+          if (v === '') return;
+          if (/^[A-Z][0-9][0-9](\.[0-9]{1,2})?$/i.test(v)) {
+            el.classList.add('ext-rv-icd-valid');
+          } else {
+            el.classList.add('ext-rv-icd-invalid');
+          }
+        });
       });
-      var t = q();
-      t.forEach(function (n) {
-        var a = document.getElementById(n);
-        a &&
-          a.addEventListener('blur', function () {
-            var r = a.value.trim();
-            r &&
-              ((r = r.replace('.', '')),
-              r.length > 2 && (r = r.substring(0, 2) + '.' + r.substring(2)),
-              (a.value = r),
-              a.dispatchEvent(new Event('input')));
-          });
+      icd9Fields.forEach(function (id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', function () {
+          var v = el.value.trim();
+          el.classList.remove('ext-rv-icd-valid', 'ext-rv-icd-invalid');
+          if (v === '') return;
+          if (/^[0-9]{2}(\.[0-9]{1,2})?$/.test(v)) {
+            el.classList.add('ext-rv-icd-valid');
+          } else {
+            el.classList.add('ext-rv-icd-invalid');
+          }
+        });
       });
     }
-    function y() {
-      fe();
-      var e = [];
-      function t(Se, we, Me) {
-        Se || e.push({ msg: we, id: Me });
+    function setupAutoFormatICD() {
+      var icd10Fields = buildICD10Fields();
+      icd10Fields.forEach(function (id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('blur', function () {
+          var v = el.value.trim().toUpperCase();
+          if (!v) return;
+          v = v.replace('.', '');
+          if (v.length > 3) {
+            v = v.substring(0, 3) + '.' + v.substring(3);
+          }
+          el.value = v;
+          el.dispatchEvent(new Event('input'));
+        });
+      });
+      var icd9Fields = buildICD9Fields();
+      icd9Fields.forEach(function (id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('blur', function () {
+          var v = el.value.trim();
+          if (!v) return;
+          v = v.replace('.', '');
+          if (v.length > 2) {
+            v = v.substring(0, 2) + '.' + v.substring(2);
+          }
+          el.value = v;
+          el.dispatchEvent(new Event('input'));
+        });
+      });
+    }
+    function runValidation() {
+      clearErrors();
+      var errs = [];
+      function fail(ok, msg, id) {
+        if (!ok) errs.push({ msg, id });
       }
-      (t(!!i('norm'), 'No. RM harus diisi', 'norm'),
-        t(!!i('pasien'), 'Nama pasien harus diisi', 'pasien'),
-        t(!!i('id_visit'), 'Data kunjungan tidak valid', 'pasien'),
-        t(!!i('alasan_rawat'), 'Alasan rawat harus diisi', 'alasan_rawat'),
-        t(!!i('anamnesa'), 'Anamnesa harus diisi', 'anamnesa'),
-        t(!!i('diagnosa_primary'), 'Diagnosa primary harus diisi', 'diagnosa_primary'),
-        t(!!i('terapi_pengobatan'), 'Terapi/pengobatan harus diisi', 'terapi_pengobatan'),
-        t(
-          !!i('kode_diagnosa_utama'),
-          'Kode ICD-10 Diagnosa Utama harus diisi',
+      fail(!!val('norm'), 'No. RM harus diisi', 'norm');
+      fail(!!val('pasien'), 'Nama pasien harus diisi', 'pasien');
+      fail(!!val('id_visit'), 'Data kunjungan tidak valid', 'pasien');
+      fail(!!val('alasan_rawat'), 'Alasan rawat harus diisi', 'alasan_rawat');
+      fail(!!val('anamnesa'), 'Anamnesa harus diisi', 'anamnesa');
+      fail(!!val('diagnosa_primary'), 'Diagnosa primary harus diisi', 'diagnosa_primary');
+      fail(!!val('terapi_pengobatan'), 'Terapi/pengobatan harus diisi', 'terapi_pengobatan');
+      fail(
+        !!val('kode_diagnosa_utama'),
+        'Kode ICD-10 Diagnosa Utama harus diisi',
+        'kode_diagnosa_utama',
+      );
+      if (val('kode_diagnosa_utama'))
+        fail(
+          isICD10(val('kode_diagnosa_utama')),
+          'Format kode ICD-10 Diagnosa Utama tidak valid (contoh: A00, B20.9)',
           'kode_diagnosa_utama',
-        ),
-        i('kode_diagnosa_utama') &&
-          t(
-            F(i('kode_diagnosa_utama')),
-            'Format kode ICD-10 Diagnosa Utama tidak valid (contoh: A00, B20.9)',
-            'kode_diagnosa_utama',
-          ),
-        i('diagnosa_utama') &&
-          t(
-            !!i('id_diagnosa_utama'),
-            'Diagnosa Utama harus dipilih dari hasil pencarian (autocomplete)',
-            'diagnosa_utama',
-          ));
-      for (var n = 1; n <= 10; n++) {
-        var a = i('kode_diagnosa_sekunder' + n),
-          r = i('diagnosa_sekunder' + n),
-          l = i('id_diagnosa_sekunder' + n);
-        (a &&
-          t(
-            F(a),
-            'Format kode ICD-10 Diagnosa Sekunder ' + n + ' tidak valid',
-            'kode_diagnosa_sekunder' + n,
-          ),
-          r &&
-            t(
-              !!l,
-              'Diagnosa Sekunder ' + n + ' harus dipilih dari hasil pencarian',
-              'diagnosa_sekunder' + n,
-            ));
-      }
-      for (var u = 1; u <= 10; u++) {
-        var v = i('kode_tindakan' + u),
-          T = i('tindakan' + u),
-          ke = i('id_tindakan' + u);
-        (v &&
-          t(
-            xe(v),
-            'Format kode ICD-9 Tindakan ' + u + ' tidak valid (contoh: 45.16)',
-            'kode_tindakan' + u,
-          ),
-          T &&
-            t(
-              !!ke,
-              'Tindakan ' + u + ' harus dipilih dari hasil pencarian (autocomplete)',
-              'tindakan' + u,
-            ));
-      }
-      var K = i('td_pulang') || i('tensi');
-      K &&
-        t(
-          ve(K),
-          'Tekanan darah pulang tidak valid (contoh: 120/80)',
-          i('td_pulang') ? 'td_pulang' : 'tensi',
         );
-      var N = i('nadi_pulang');
-      N && t(g(N, 20, 250), 'Nadi pulang harus 20-250', 'nadi_pulang');
-      var P = i('suhu_pulang');
-      P && t(g(P, 30, 45), 'Suhu pulang harus 30-45\xB0C', 'suhu_pulang');
-      var R = i('rr_pulang');
-      R && t(g(R, 4, 80), 'RR pulang harus 4-80', 'rr_pulang');
-      var V = i('spo2_pulang');
-      (V && t(g(V, 50, 100), 'SpO2 pulang harus 50-100%', 'spo2_pulang'),
-        t(!!i('jenis_kasus'), 'Jenis kasus harus dipilih', 'jenis_kasus'),
-        t(!!i('keadaan_keluar'), 'Keadaan keluar harus dipilih', 'keadaan_keluar'),
-        t(!!i('cara_keluar'), 'Cara keluar harus dipilih', 'cara_keluar'),
-        t(!!i('tgl_keluar2'), 'Tanggal keluar harus diisi', 'tgl_keluar2'));
-      var O = i('gcs_e');
-      O && t(g(O, 1, 4), 'GCS Eye harus 1-4', 'gcs_e');
-      var U = i('gcs_m');
-      U && t(g(U, 1, 6), 'GCS Motor harus 1-6', 'gcs_m');
-      var Y = i('gcs_v');
-      Y && t(g(Y, 1, 5), 'GCS Verbal harus 1-5', 'gcs_v');
-      var ye = E('pasien_rujuk_masuk_opsi').toLowerCase();
-      ye === 'ya' &&
-        t(
-          H('pasien_rujuk_masuk'),
+      if (val('diagnosa_utama'))
+        fail(
+          !!val('id_diagnosa_utama'),
+          'Diagnosa Utama harus dipilih dari hasil pencarian (autocomplete)',
+          'diagnosa_utama',
+        );
+      for (var si = 1; si <= 10; si++) {
+        var kDS = val('kode_diagnosa_sekunder' + si);
+        var nDS = val('diagnosa_sekunder' + si);
+        var iDS = val('id_diagnosa_sekunder' + si);
+        if (kDS)
+          fail(
+            isICD10(kDS),
+            'Format kode ICD-10 Diagnosa Sekunder ' + si + ' tidak valid',
+            'kode_diagnosa_sekunder' + si,
+          );
+        if (nDS)
+          fail(
+            !!iDS,
+            'Diagnosa Sekunder ' + si + ' harus dipilih dari hasil pencarian',
+            'diagnosa_sekunder' + si,
+          );
+      }
+      for (var ti = 1; ti <= 10; ti++) {
+        var kTK = val('kode_tindakan' + ti);
+        var nTK = val('tindakan' + ti);
+        var iTK = val('id_tindakan' + ti);
+        if (kTK)
+          fail(
+            isICD9(kTK),
+            'Format kode ICD-9 Tindakan ' + ti + ' tidak valid (contoh: 45.16)',
+            'kode_tindakan' + ti,
+          );
+        if (nTK)
+          fail(
+            !!iTK,
+            'Tindakan ' + ti + ' harus dipilih dari hasil pencarian (autocomplete)',
+            'tindakan' + ti,
+          );
+      }
+      var td = val('td_pulang') || val('tensi');
+      if (td)
+        fail(
+          isNormalBP(td),
+          'Tekanan darah pulang tidak valid (contoh: 120/80)',
+          val('td_pulang') ? 'td_pulang' : 'tensi',
+        );
+      var nadi = val('nadi_pulang');
+      if (nadi) fail(isValidVital(nadi, 20, 250), 'Nadi pulang harus 20-250', 'nadi_pulang');
+      var suhu = val('suhu_pulang');
+      if (suhu) fail(isValidVital(suhu, 30, 45), 'Suhu pulang harus 30-45\xB0C', 'suhu_pulang');
+      var rr = val('rr_pulang');
+      if (rr) fail(isValidVital(rr, 4, 80), 'RR pulang harus 4-80', 'rr_pulang');
+      var spo2 = val('spo2_pulang');
+      if (spo2) fail(isValidVital(spo2, 50, 100), 'SpO2 pulang harus 50-100%', 'spo2_pulang');
+      fail(!!val('jenis_kasus'), 'Jenis kasus harus dipilih', 'jenis_kasus');
+      fail(!!val('keadaan_keluar'), 'Keadaan keluar harus dipilih', 'keadaan_keluar');
+      fail(!!val('cara_keluar'), 'Cara keluar harus dipilih', 'cara_keluar');
+      fail(!!val('tgl_keluar2'), 'Tanggal keluar harus diisi', 'tgl_keluar2');
+      var gcsE = val('gcs_e');
+      if (gcsE) fail(isValidVital(gcsE, 1, 4), 'GCS Eye harus 1-4', 'gcs_e');
+      var gcsM = val('gcs_m');
+      if (gcsM) fail(isValidVital(gcsM, 1, 6), 'GCS Motor harus 1-6', 'gcs_m');
+      var gcsV = val('gcs_v');
+      if (gcsV) fail(isValidVital(gcsV, 1, 5), 'GCS Verbal harus 1-5', 'gcs_v');
+      var opsiA = radioVal('pasien_rujuk_masuk_opsi').toLowerCase();
+      if (opsiA === 'ya')
+        fail(
+          hasRadio('pasien_rujuk_masuk'),
           'Alasan Datang poin A: pilih asal rujukan masuk',
           'pasien_rujuk_masuk_opsi-ya',
         );
-      var Ee = E('pasien_rujuk_dikembalikan_opsi').toLowerCase();
-      Ee === 'ya' &&
-        t(
-          H('pasien_rujuk_dikembalikan'),
+      var opsiB = radioVal('pasien_rujuk_dikembalikan_opsi').toLowerCase();
+      if (opsiB === 'ya')
+        fail(
+          hasRadio('pasien_rujuk_dikembalikan'),
           'Alasan Datang poin B: pilih asal rujukan dikembalikan',
           'pasien_rujuk_dikembalikan_opsi-ya',
         );
-      var _e = E('pasien_dirujuk_keluar_opsi').toLowerCase();
-      _e === 'ya' &&
-        t(
-          H('pasien_rujuk_keluar'),
+      var opsiC = radioVal('pasien_dirujuk_keluar_opsi').toLowerCase();
+      if (opsiC === 'ya')
+        fail(
+          hasRadio('pasien_rujuk_keluar'),
           'Alasan Datang poin C: pilih rujukan keluar',
           'pasien_dirujuk_keluar_opsi-ya',
         );
-      var Le = E('menggunakan_kb_opsi').toLowerCase();
-      Le === 'ya' &&
-        (t(!!i('jenis_kb'), 'Pelayanan KB: jenis KB harus dipilih', 'jenis_kb'),
-        t(!!i('waktu_kb'), 'Pelayanan KB: waktu KB harus dipilih', 'waktu_kb'),
-        t(
-          he('.monitoring_kb'),
+      var kb = radioVal('menggunakan_kb_opsi').toLowerCase();
+      if (kb === 'ya') {
+        fail(!!val('jenis_kb'), 'Pelayanan KB: jenis KB harus dipilih', 'jenis_kb');
+        fail(!!val('waktu_kb'), 'Pelayanan KB: waktu KB harus dipilih', 'waktu_kb');
+        fail(
+          hasChecked('.monitoring_kb'),
           'Pelayanan KB: pilih minimal satu monitoring KB',
           'monitoring_kb-komplikasi_kb',
-        ));
-      var Te = E('cek_status_covid').toLowerCase();
-      Te === '1' && t(!!i('status_covid'), 'Status COVID: pilih jenis COVID', 'status_covid');
-      var J = i('tgl_masuk') || i('tgl_masuk2'),
-        W = i('tgl_keluar2');
-      return (
-        J &&
-          W &&
-          t(
-            new Date(W) >= new Date(J),
-            'Tanggal keluar tidak boleh sebelum tanggal masuk',
-            'tgl_keluar2',
-          ),
-        e.length > 0 ? (pe(e), !1) : !0
-      );
+        );
+      }
+      var covid = radioVal('cek_status_covid').toLowerCase();
+      if (covid === '1')
+        fail(!!val('status_covid'), 'Status COVID: pilih jenis COVID', 'status_covid');
+      var tglMasuk = val('tgl_masuk') || val('tgl_masuk2');
+      var tglKeluar = val('tgl_keluar2');
+      if (tglMasuk && tglKeluar) {
+        fail(
+          new Date(tglKeluar) >= new Date(tglMasuk),
+          'Tanggal keluar tidak boleh sebelum tanggal masuk',
+          'tgl_keluar2',
+        );
+      }
+      if (errs.length > 0) {
+        warnAll(errs);
+        return false;
+      }
+      return true;
     }
-    function fe() {
-      document.querySelectorAll('.ext-rv-error').forEach(function (e) {
-        e.classList.remove('ext-rv-error');
+    function clearErrors() {
+      document.querySelectorAll('.ext-rv-error').forEach(function (el) {
+        el.classList.remove('ext-rv-error');
       });
     }
-    function pe(e) {
-      var t = e[0],
-        n = document.getElementById(t.id);
-      n &&
-        (n.focus(),
-        n.classList.add('ext-rv-error'),
+    function warnAll(errs) {
+      var first = errs[0];
+      var firstEl = document.getElementById(first.id);
+      if (firstEl) {
+        firstEl.focus();
+        firstEl.classList.add('ext-rv-error');
         setTimeout(function () {
-          n.classList.remove('ext-rv-error');
-        }, 3e3));
-      for (var a = 1; a < e.length; a++) {
-        var r = document.getElementById(e[a].id);
-        r &&
-          (r.classList.add('ext-rv-error'),
-          (function (v) {
-            setTimeout(function () {
-              v.classList.remove('ext-rv-error');
-            }, 3e3);
-          })(r));
+          firstEl.classList.remove('ext-rv-error');
+        }, 3e3);
       }
-      for (var l = [], a = 0; a < e.length; a++) l.push('\u2022 ' + e[a].msg);
-      var u = l.join(`
-`);
-      b({
-        title: 'Validasi Gagal (' + e.length + ' masalah)',
-        message: u,
+      for (var i = 1; i < errs.length; i++) {
+        var f = document.getElementById(errs[i].id);
+        if (f) {
+          f.classList.add('ext-rv-error');
+          (function (el) {
+            setTimeout(function () {
+              el.classList.remove('ext-rv-error');
+            }, 3e3);
+          })(f);
+        }
+      }
+      var lines = [];
+      for (var i = 0; i < errs.length; i++) {
+        lines.push('\u2022 ' + errs[i].msg);
+      }
+      var bulletList = lines.join('\n');
+      confirmExt({
+        title: 'Validasi Gagal (' + errs.length + ' masalah)',
+        message: bulletList,
         variant: 'warning',
         okLabel: 'OK',
-        hideCancel: !0,
+        hideCancel: true,
       });
     }
-    function ge(e) {
-      return document.getElementById(e);
+    function $(id) {
+      return document.getElementById(id);
     }
-    function i(e) {
-      return ge(e)?.value?.trim() || '';
+    function val(id) {
+      const el = $(id);
+      return el?.value?.trim() || '';
     }
-    function ve(e) {
-      let t = e.split('/');
-      if (t.length !== 2) return !1;
-      let n = parseInt(t[0]),
-        a = parseInt(t[1]);
-      return isNaN(n) || isNaN(a) ? !1 : n >= 50 && n <= 250 && a >= 20 && a <= 160;
+    function isNormalBP(v) {
+      const parts = v.split('/');
+      if (parts.length !== 2) return false;
+      const sys = parseInt(parts[0]);
+      const dia = parseInt(parts[1]);
+      if (isNaN(sys) || isNaN(dia)) return false;
+      return sys >= 50 && sys <= 250 && dia >= 20 && dia <= 160;
     }
-    function g(e, t, n) {
-      let a = parseFloat(e.replace(/,/g, '.'));
-      return !isNaN(a) && a >= t && a <= n;
+    function isValidVital(v, min, max) {
+      const n = parseFloat(v.replace(/,/g, '.'));
+      return !isNaN(n) && n >= min && n <= max;
     }
-    function F(e) {
-      return /^[A-Z][0-9][0-9](\.[0-9]{1,2})?$/.test(e.toUpperCase());
+    function isICD10(v) {
+      return /^[A-Z][0-9][0-9](\.[0-9]{1,2})?$/.test(v.toUpperCase());
     }
-    function xe(e) {
-      return /^[0-9]{2}(\.[0-9]{1,2})?$/.test(e);
+    function isICD9(v) {
+      return /^[0-9]{2}(\.[0-9]{1,2})?$/.test(v);
     }
-    function E(e) {
-      return document.querySelector('input[name="' + e + '"]:checked')?.value || '';
+    function radioVal(name) {
+      const el = document.querySelector('input[name="' + name + '"]:checked');
+      return el?.value || '';
     }
-    function H(e) {
-      return document.querySelector('input[name="' + e + '"]:checked') !== null;
+    function hasRadio(name) {
+      return document.querySelector('input[name="' + name + '"]:checked') !== null;
     }
-    function he(e) {
-      return document.querySelector(e + ':checked') !== null;
+    function hasChecked(sel) {
+      return document.querySelector(sel + ':checked') !== null;
     }
-    function be() {
-      function e(l, u) {
-        var v = document.getElementById(l);
-        v &&
-          v.addEventListener('input', function () {
-            var T = document.getElementById(u);
-            T && (T.value = '');
-          });
+    function setupAutoClearHandlers() {
+      function attachClear(fieldId, targetId) {
+        var el = document.getElementById(fieldId);
+        if (!el) return;
+        el.addEventListener('input', function () {
+          var idEl = document.getElementById(targetId);
+          if (idEl) idEl.value = '';
+        });
       }
-      (e('kode_diagnosa_utama', 'id_diagnosa_utama'), e('diagnosa_utama', 'id_diagnosa_utama'));
-      for (var t = 1; t <= 10; t++) {
-        var n = 'id_diagnosa_sekunder' + t;
-        (e('kode_diagnosa_sekunder' + t, n), e('diagnosa_sekunder' + t, n));
+      attachClear('kode_diagnosa_utama', 'id_diagnosa_utama');
+      attachClear('diagnosa_utama', 'id_diagnosa_utama');
+      for (var i = 1; i <= 10; i++) {
+        var tgtS = 'id_diagnosa_sekunder' + i;
+        attachClear('kode_diagnosa_sekunder' + i, tgtS);
+        attachClear('diagnosa_sekunder' + i, tgtS);
       }
-      for (var a = 1; a <= 10; a++) {
-        var r = 'id_tindakan' + a;
-        (e('kode_tindakan' + a, r), e('tindakan' + a, r));
+      for (var j = 1; j <= 10; j++) {
+        var tgtT = 'id_tindakan' + j;
+        attachClear('kode_tindakan' + j, tgtT);
+        attachClear('tindakan' + j, tgtT);
       }
     }
-    function z() {
-      for (var e = ['kode_diagnosa_utama'], t = 1; t <= 10; t++)
-        e.push('kode_diagnosa_sekunder' + t);
-      return e;
+    function buildICD10Fields() {
+      var result = ['kode_diagnosa_utama'];
+      for (var i = 1; i <= 10; i++) {
+        result.push('kode_diagnosa_sekunder' + i);
+      }
+      return result;
     }
-    function q() {
-      for (var e = [], t = 1; t <= 10; t++) e.push('kode_tindakan' + t);
-      return e;
+    function buildICD9Fields() {
+      var result = [];
+      for (var i = 1; i <= 10; i++) {
+        result.push('kode_tindakan' + i);
+      }
+      return result;
     }
   })();
 })();
+//# sourceMappingURL=resumeValidator.js.map

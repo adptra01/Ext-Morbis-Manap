@@ -248,6 +248,11 @@
     },
     {
       "matches": ["http://*/inventory/print/telaah-resep-manap*"],
+      "js": ["core.js", "init.js"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": ["http://*/inventory/print/telaah-resep-manap*"],
       "js": ["features/telaahResepPrint.js"],
       "run_at": "document_idle",
       "world": "MAIN",

@@ -20,7 +20,7 @@ import {
   v as sendMessage,
   x as __toESM,
   y as require_client,
-} from './chunks/button-C27lgNH8.js';
+} from './chunks/button-Bvs7gAki.js';
 /**
  * @license lucide-react v1.33.0 - ISC
  *
@@ -438,7 +438,7 @@ function StatusCard({ enabled, role, onToggle, onRoleChange }) {
 //#endregion
 //#region src/features/sidepanel/FeaturesPanel.tsx
 function FeaturesPanel({ features, enabledFeatures, role, disabled, onToggle, onModeChange }) {
-  const visible = features.filter((f) => f.roles.includes(role));
+  const visible = features.filter((f) => role === 'admin' || f.roles.includes(role));
   const activeCount = visible.filter((f) => enabledFeatures[f.key]).length;
   return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('div', {
     children: [
@@ -1903,6 +1903,23 @@ function App() {
           if (fallback.extensionCustomUrls) setUrls(fallback.extensionCustomUrls);
         });
       });
+  }, []);
+  (0, import_react.useEffect)(() => {
+    const handleStorageChange = (changes, areaName) => {
+      if (areaName !== 'sync') return;
+      if (changes.extensionConfig) {
+        const cfg = changes.extensionConfig.newValue;
+        if (cfg) {
+          setEnabled(cfg.extensionEnabled);
+          setRole(cfg.currentRole);
+          setFeatures(configToToggles(cfg.features || {}));
+          if (cfg.features) setFeaturesList(configToFeatureList(cfg.features));
+        }
+      }
+      if (changes.extensionCustomUrls) setUrls(changes.extensionCustomUrls.newValue ?? []);
+    };
+    chrome.storage.onChanged.addListener(handleStorageChange);
+    return () => chrome.storage.onChanged.removeListener(handleStorageChange);
   }, []);
   const showToast = (0, import_react.useCallback)((msg) => {
     setToast(msg);

@@ -210,6 +210,33 @@ export function App() {
       });
   }, []);
 
+  // Sinkron real-time: dengarkan perubahan config dari popup atau tempat lain.
+  // Tanpa listener ini, sidepanel tidak tahu saat role berubah di popup.
+  useEffect(() => {
+    const handleStorageChange = (
+      changes: { [key: string]: chrome.storage.StorageChange },
+      areaName: string,
+    ) => {
+      if (areaName !== 'sync') return;
+      if (changes.extensionConfig) {
+        const cfg = changes.extensionConfig.newValue;
+        if (cfg) {
+          setEnabled(cfg.extensionEnabled);
+          setRole(cfg.currentRole);
+          setFeatures(configToToggles(cfg.features || {}));
+          if (cfg.features) {
+            setFeaturesList(configToFeatureList(cfg.features));
+          }
+        }
+      }
+      if (changes.extensionCustomUrls) {
+        setUrls(changes.extensionCustomUrls.newValue ?? []);
+      }
+    };
+    chrome.storage.onChanged.addListener(handleStorageChange);
+    return () => chrome.storage.onChanged.removeListener(handleStorageChange);
+  }, []);
+
   const showToast = useCallback((msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 2500);

@@ -284,6 +284,13 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       name: 'Tombol Batal (Lab & Radiologi)',
       description: 'Tambahkan tombol Batal pada tab Sudah Diinput di Lab dan Radiologi',
     },
+    telaahResep: {
+      enabled: true,
+      allowedRoles: ['admin', 'apotek'],
+      name: 'UI Telaah Resep (Cetak)',
+      description:
+        'Kustomisasi tampilan cetak Telaah Resep (portrait Envelope #10, 2 kolom, info pasien/dokter)',
+    },
   },
 };
 

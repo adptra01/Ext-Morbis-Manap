@@ -141,6 +141,13 @@ async function initExtension(): Promise<void> {
     );
   }
 
+  const trCfg = cfg?.features?.telaahResep;
+  if (trCfg?.enabled && window.ExtensionCore.isFeatureAllowed('telaahResep')) {
+    document.documentElement.setAttribute('data-ext-telaah', '1');
+  } else {
+    document.documentElement.removeAttribute('data-ext-telaah');
+  }
+
   const ctx: FeatureContext = {
     pathname: normalizePath(window.location.pathname),
     url: new URL(window.location.href),
