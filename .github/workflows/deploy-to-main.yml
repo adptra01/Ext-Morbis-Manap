@@ -32,17 +32,18 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: npm run build
 
-      - name: Deploy dist → main (orphan-style)
+      - name: Deploy dist + docs → main (orphan-style)
         run: |
-          # Create orphan branch state — dist contents at root
+          # Create orphan branch state — dist contents at root + docs for GitHub Pages
           git config --global user.name github-actions
           git config --global user.email github-actions@github.com
           ORPHAN=$(mktemp -d)
           cp -r dist/* "$ORPHAN/"
           cp README.md "$ORPHAN/README.md"
+          cp -r docs "$ORPHAN/docs"
 
           cat > "$ORPHAN/.gitignore" << 'EOF'
-          # main branch — extension files at root
+          # main branch — extension files at root + docs for GitHub Pages
           /*
           !.gitignore
           !README.md
@@ -67,6 +68,8 @@ jobs:
           !rules/**
           !ui/
           !ui/**
+          !docs/
+          !docs/**
           EOF
 
           cd "$ORPHAN"
