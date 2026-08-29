@@ -1,12 +1,11 @@
 'use strict';
 var __morbis_feature = (() => {
-  // src/features/shared/batchUtils.ts
-  var BATCH_UTILS_STYLE_ID = 'ext-batch-shared-style';
-  function injectSharedCSS() {
-    if (document.getElementById(BATCH_UTILS_STYLE_ID)) return;
-    const style = document.createElement('style');
-    style.id = BATCH_UTILS_STYLE_ID;
-    style.textContent = `
+  var c = 'ext-batch-shared-style';
+  function u() {
+    if (document.getElementById(c)) return;
+    let e = document.createElement('style');
+    ((e.id = c),
+      (e.textContent = `
     .ext-modal-content {
       background: #ffffff; border-radius: 16px; padding: 28px 32px;
       max-width: 860px; width: 95%; max-height: 85vh; overflow-y: auto;
@@ -149,17 +148,17 @@ var __morbis_feature = (() => {
     .ext-preview-item.success { color: #059669; }
     .ext-preview-item.error { color: #dc2626; }
     .ext-preview-item.pending { color: #64748b; }
-  `;
-    document.head.appendChild(style);
+  `),
+      document.head.appendChild(e));
   }
-  function confirmLegacy(opts) {
-    return new Promise((resolve) => {
-      injectSharedCSS();
-      const variantClass = opts.variant === 'danger' ? 'ext-btn-danger' : 'ext-btn-primary';
-      const overlay = document.createElement('div');
-      overlay.style.cssText =
-        'position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.55);backdrop-filter:blur(2px);';
-      overlay.innerHTML = `
+  function d(e) {
+    return new Promise((t) => {
+      u();
+      let n = e.variant === 'danger' ? 'ext-btn-danger' : 'ext-btn-primary',
+        o = document.createElement('div');
+      ((o.style.cssText =
+        'position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.55);backdrop-filter:blur(2px);'),
+        (o.innerHTML = `
       <div class="ext-modal-content" style="max-width:480px;">
         <div class="ext-modal-header">
           <h3></h3>
@@ -167,155 +166,137 @@ var __morbis_feature = (() => {
         </div>
         <div class="ext-confirm-body" style="font-size:14px;color:#334155;line-height:1.6;"></div>
         <div class="ext-modal-buttons">
-          ${opts.hideCancel ? '' : `<button class="ext-btn ext-btn-secondary" data-ext-cancel>${opts.cancelLabel ?? 'Batal'}</button>`}
-          <button class="ext-btn ${variantClass}" data-ext-ok>${opts.okLabel ?? 'Lanjut'}</button>
+          ${e.hideCancel ? '' : `<button class="ext-btn ext-btn-secondary" data-ext-cancel>${e.cancelLabel ?? 'Batal'}</button>`}
+          <button class="ext-btn ${n}" data-ext-ok>${e.okLabel ?? 'Lanjut'}</button>
         </div>
-      </div>`;
-      overlay.querySelector('h3').textContent = opts.title;
-      const body = overlay.querySelector('.ext-confirm-body');
-      if (opts.message) {
-        opts.message.split('\n').forEach((line, i) => {
-          if (i > 0) body.appendChild(document.createElement('br'));
-          body.appendChild(document.createTextNode(line));
-        });
-      }
-      const done = (result) => {
-        overlay.remove();
-        document.removeEventListener('keydown', onKey);
-        resolve(result);
-      };
-      const onKey = (e) => {
-        if (e.key === 'Escape') done(false);
-      };
-      overlay.querySelector('.ext-modal-close').addEventListener('click', () => done(false));
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) done(false);
-      });
-      overlay.querySelector('[data-ext-ok]').addEventListener('click', () => done(true));
-      const cancelBtn = overlay.querySelector('[data-ext-cancel]');
-      if (cancelBtn) cancelBtn.addEventListener('click', () => done(false));
-      document.addEventListener('keydown', onKey);
-      document.body.appendChild(overlay);
+      </div>`),
+        (o.querySelector('h3').textContent = e.title));
+      let a = o.querySelector('.ext-confirm-body');
+      e.message &&
+        e.message
+          .split(
+            `
+`,
+          )
+          .forEach((s, f) => {
+            (f > 0 && a.appendChild(document.createElement('br')),
+              a.appendChild(document.createTextNode(s)));
+          });
+      let i = (s) => {
+          (o.remove(), document.removeEventListener('keydown', r), t(s));
+        },
+        r = (s) => {
+          s.key === 'Escape' && i(!1);
+        };
+      (o.querySelector('.ext-modal-close').addEventListener('click', () => i(!1)),
+        o.addEventListener('click', (s) => {
+          s.target === o && i(!1);
+        }),
+        o.querySelector('[data-ext-ok]').addEventListener('click', () => i(!0)));
+      let l = o.querySelector('[data-ext-cancel]');
+      (l && l.addEventListener('click', () => i(!1)),
+        document.addEventListener('keydown', r),
+        document.body.appendChild(o));
     });
   }
-
-  // src/features/pindahOperasi/main.ts
-  function pindahOperasi() {
-    const form = document.querySelector('#form-data');
-    if (!form) {
-      void confirmLegacy({
+  function b() {
+    let e = document.querySelector('#form-data');
+    if (!e) {
+      d({
         title: 'Error',
         message: 'Form #form-data tidak ditemukan',
         variant: 'warning',
         okLabel: 'OK',
-        hideCancel: true,
+        hideCancel: !0,
       });
       return;
     }
-    const targetVisit = prompt('Masukkan ID Visit tujuan:');
-    if (!targetVisit || !/^\d+$/.test(targetVisit)) return;
-    const targetKunjungan = prompt('Masukkan ID Kunjungan tujuan (opsional):') || '';
-    const fd = new FormData(form);
-    const params = new URLSearchParams();
-    for (const [k, v] of Array.from(fd.entries())) {
-      if (k !== 'id_pengajuan') params.append(k, v);
-    }
-    params.set('id_visit', targetVisit);
-    if (targetKunjungan) params.set('id_kunjungan', targetKunjungan);
-    const btn = document.querySelector('#simpan-pindah');
-    if (btn) {
-      btn.disabled = true;
-      btn.value = 'Memproses...';
-    }
-    fetch('/admisi/pelaksanaan_pelayanan/control/pengajuan-operasi?opsi=simpan', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'X-Requested-With': 'XMLHttpRequest',
-      },
-      body: params.toString(),
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.status === '200' || data.status === 200) {
-          void confirmLegacy({
-            title: 'Berhasil',
-            message: 'Operasi dipindahkan ke Visit ' + targetVisit,
-            variant: 'success',
-            okLabel: 'OK',
-            hideCancel: true,
-          });
-          location.reload();
-        } else {
-          void confirmLegacy({
-            title: 'Gagal',
-            message: data.message || 'Respon tidak dikenal',
-            variant: 'danger',
-            okLabel: 'OK',
-            hideCancel: true,
-          });
-        }
+    let t = prompt('Masukkan ID Visit tujuan:');
+    if (!t || !/^\d+$/.test(t)) return;
+    let n = prompt('Masukkan ID Kunjungan tujuan (opsional):') || '',
+      o = new FormData(e),
+      a = new URLSearchParams();
+    for (let [r, l] of Array.from(o.entries())) r !== 'id_pengajuan' && a.append(r, l);
+    (a.set('id_visit', t), n && a.set('id_kunjungan', n));
+    let i = document.querySelector('#simpan-pindah');
+    (i && ((i.disabled = !0), (i.value = 'Memproses...')),
+      fetch('/admisi/pelaksanaan_pelayanan/control/pengajuan-operasi?opsi=simpan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: a.toString(),
       })
-      .catch(
-        (e) =>
-          void confirmLegacy({
+        .then((r) => r.json())
+        .then((r) => {
+          r.status === '200' || r.status === 200
+            ? (d({
+                title: 'Berhasil',
+                message: 'Operasi dipindahkan ke Visit ' + t,
+                variant: 'success',
+                okLabel: 'OK',
+                hideCancel: !0,
+              }),
+              location.reload())
+            : d({
+                title: 'Gagal',
+                message: r.message || 'Respon tidak dikenal',
+                variant: 'danger',
+                okLabel: 'OK',
+                hideCancel: !0,
+              });
+        })
+        .catch((r) => {
+          d({
             title: 'Error',
-            message: e.message,
+            message: r.message,
             variant: 'danger',
             okLabel: 'OK',
-            hideCancel: true,
-          }),
-      )
-      .finally(() => {
-        if (btn) {
-          btn.disabled = false;
-          btn.value = 'Pindahkan Operasi';
-        }
-      });
+            hideCancel: !0,
+          });
+        })
+        .finally(() => {
+          i && ((i.disabled = !1), (i.value = 'Pindahkan Operasi'));
+        }));
   }
-  async function isAllowed() {
+  async function p() {
     try {
-      const result = await chrome.storage.sync.get('extensionConfig');
-      const cfg = result.extensionConfig;
-      if (!cfg || cfg.extensionEnabled !== true) return false;
-      const role = cfg.currentRole ?? 'admin';
-      const allowed = cfg.features?.pindahOperasi?.allowedRoles ?? ['admin'];
-      return allowed.includes(role);
+      let t = (await chrome.storage.sync.get('extensionConfig')).extensionConfig;
+      if (!t || t.extensionEnabled !== !0) return !1;
+      let n = t.currentRole ?? 'admin';
+      return (t.features?.pindahOperasi?.allowedRoles ?? ['admin']).includes(n);
     } catch {
-      return false;
+      return !1;
     }
   }
-  function init() {
-    const loginPaths = ['/login', '/auth', '/signin', '/masuk', '/keluar', '/logout'];
+  function x() {
     if (
-      loginPaths.some((p) => location.pathname.toLowerCase().includes(p)) ||
-      document.querySelectorAll('input[type="password"]').length > 0
+      ['/login', '/auth', '/signin', '/masuk', '/keluar', '/logout'].some((o) =>
+        location.pathname.toLowerCase().includes(o),
+      ) ||
+      document.querySelectorAll('input[type="password"]').length > 0 ||
+      document.getElementById('simpan-pindah')
     )
       return;
-    if (document.getElementById('simpan-pindah')) return;
-    const simpan = document.querySelector(
-      '#simpan, #save, input[type="submit"], button[type="submit"]',
-    );
-    if (!simpan || !simpan.parentNode) return;
-    const btn = document.createElement('input');
-    btn.type = 'button';
-    btn.className = 'btn btn-warning';
-    btn.id = 'simpan-pindah';
-    btn.value = 'Pindahkan Operasi';
-    btn.onclick = pindahOperasi;
-    simpan.parentNode.insertBefore(btn, simpan.nextSibling);
-    console.log('[PindahOperasi] Button added');
+    let t = document.querySelector('#simpan, #save, input[type="submit"], button[type="submit"]');
+    if (!t || !t.parentNode) return;
+    let n = document.createElement('input');
+    ((n.type = 'button'),
+      (n.className = 'btn btn-warning'),
+      (n.id = 'simpan-pindah'),
+      (n.value = 'Pindahkan Operasi'),
+      (n.onclick = b),
+      t.parentNode.insertBefore(n, t.nextSibling),
+      console.log('[PindahOperasi] Button added'));
   }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      isAllowed().then((ok) => {
-        if (ok) init();
+  document.readyState === 'loading'
+    ? document.addEventListener('DOMContentLoaded', () => {
+        p().then((e) => {
+          e && x();
+        });
+      })
+    : p().then((e) => {
+        e && x();
       });
-    });
-  } else {
-    isAllowed().then((ok) => {
-      if (ok) init();
-    });
-  }
 })();
-//# sourceMappingURL=main.js.map
