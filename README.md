@@ -4,17 +4,24 @@ Ekstensi produktivitas untuk sistem SIMRS MORBIS. Cukup satu kali klik — langs
 
 ---
 
-## Cara Pasang (3 Langkah)
+## Cara Pasang
 
-### Langkah 1: Download File `.reg`
+### Method 1: Download ZIP (Recommended)
+
+1. Buka halaman [Releases](https://github.com/adptra01/Ext-Morbis-Manap/releases) atau [main branch](https://github.com/adptra01/Ext-Morbis-Manap/tree/main)
+2. Klik **Code** → **Download ZIP**
+3. Extract ZIP
+4. Buka `chrome://extensions/` atau `edge://extensions/`
+5. Aktifkan **Developer mode**
+6. Klik **Load unpacked** → pilih folder hasil extract
+
+### Method 2: Auto Install via Registry (Enterprise)
 
 Buka halaman [GitHub Repo → deploy](https://github.com/adptra01/Ext-Morbis-Manap/tree/main/deploy), lalu download file **`Install_Morbis_Ext.reg`**:
 
 ![Download Install_Morbis_Ext.reg dari folder deploy](screenshots/02-deploy-folder.png)
 
 > **Klik** file `Install_Morbis_Ext.reg` → lalu klik tombol **Download** (ikon ⬇️) di pojok kanan atas.
-
-### Langkah 2: Double-Click File
 
 **Double-click** file yang sudah didownload.
 
@@ -25,13 +32,7 @@ Windows akan menampilkan dua dialog — klik **Yes** lalu **OK**:
 | Klik **Yes**                                                          | Klik **OK**                                                              |
 | _"Adding information can unintentionally change or delete values..."_ | _"The keys and values... have been successfully added to the registry."_ |
 
-### Langkah 3: Buka Browser
-
-**Selesai!**
-
-1. Tutup **semua** jendela browser
-2. Buka kembali browser
-3. Ekstensi otomatis terinstal
+**Selesai!** Tutup semua jendela browser, lalu buka kembali — ekstensi otomatis terinstal.
 
 ---
 
@@ -85,27 +86,32 @@ Cari **MORBIS Ext Unofficial** di daftar:
 
 ## Branching Strategy
 
-| Branch   | Isi                                         | Tujuan                        |
-| -------- | ------------------------------------------- | ----------------------------- |
-| **dev**  | Semua source code (`src/`, `scripts/`, dll) | Pengembangan                  |
-| **main** | Hanya `dist/` + `README.md` + `.gitignore`  | Distribusi / Chrome Web Store |
+| Branch   | Isi                                                                         | Tujuan                    |
+| -------- | --------------------------------------------------------------------------- | ------------------------- |
+| **dev**  | Semua source code (`src/`, `scripts/`, dll)                                 | Pengembangan              |
+| **main** | File ekstensi di root (`manifest.json`, `background.js`, dll) + `README.md` | Distribusi / Edge Add-ons |
 
 ### `dev` → `main` (CI/CD)
 
 Push ke `dev` otomatis:
 
 1. `npm ci && npm run build`
-2. Push `dist/` + `README.md` + `.gitignore` ke `main` (force)
+2. Copy isi `dist/` ke root `main` + `README.md` (force push)
 
 Pemasang cukup akses `main` — tidak perlu lihat source.
 
+### Cara Download
+
+1. Buka halaman [Releases](https://github.com/adptra01/Ext-Morbis-Manap/releases) atau [main branch](https://github.com/adptra01/Ext-Morbis-Manap/tree/main)
+2. Klik **Code** → **Download ZIP**
+3. Extract ZIP
+4. Buka `chrome://extensions/` atau `edge://extensions/`
+5. Aktifkan **Developer mode**
+6. Klik **Load unpacked** → pilih folder hasil extract
+
 ### Perbedaan dengan Branch Biasa
 
-`main` adalah **orphan-like** — tidak ada riwayat source code, hanya artefak build. Ini karena:
-
-- Ukuran repo tetap kecil untuk pemasang
-- Source code tidak perlu di-download siapa pun yang hanya pasang
-- History `main` linier dan bersih
+`main` adalah **orphan-like** — tidak ada riwayat source code, hanya artefak build. File ekstensi ada di root (bukan dalam folder `dist/`) sehingga ZIP download langsung siap pakai.
 
 ---
 
