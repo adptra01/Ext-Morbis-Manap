@@ -73,6 +73,7 @@ async function compileFeatureFiles() {
     'antrianFarmasiOperator.ts',
 
     'farmasiAntrolShift.ts',
+    'farmasiRecallDeleg.ts',
     'penerimaanAntrolCetak.ts',
     'ttvEditor.ts',
     'cancelButton.ts',
