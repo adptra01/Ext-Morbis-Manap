@@ -144,12 +144,13 @@
     : 'Obat tidak boleh diganti tanpa sepengetahuan Dokter';
 
   /** --- render (struktur template, CSS self-contained) --- */
+  // Metadata format: label di baris atas, nilai di baris bawah (stacked) —
+  // nilai bisa memanjang tanpa dibatasi lebar label.
   const metaLine = (label: string, value: string, vClass = ''): string =>
     '<div class="tm-row">' +
     '<span class="tm-label">' +
     esc(label) +
     '</span>' +
-    '<span class="tm-dot">:</span>' +
     '<span class="tm-val' +
     (vClass ? ' ' + vClass : '') +
     '">' +
@@ -336,12 +337,13 @@
       .t-hname{font-size:13px;font-weight:800;margin:0 0 4px;letter-spacing:-.01em}
       .t-hsub{line-height:1.3}
 
-      /* METADATA — tanpa border, tanpa bold. Pasien kiri & dokter kanan. */
-      .tm-card{background:#fff;padding:4px 0;margin-bottom:12px;font-size:11px}
-      .tm-col{display:flex;flex-direction:column;gap:2px}
-      .tm-row{display:flex;align-items:baseline}
-      .tm-label{width:105px;flex:none;color:#5b6470}
-      .tm-dot{margin-right:8px}
+/* METADATA — tanpa border, tanpa bold. Label kecil di atas, nilai di bawah
+      (stacked) sehingga isi bisa memanjang. Pasien kiri & dokter kanan. */
+      .tm-card{background:#fff;padding:4px 0;margin-bottom:6px;font-size:11px}
+      .tm-col{display:flex;flex-direction:column;gap:5px}
+      .tm-row{display:flex;flex-direction:column;gap:1px}
+      .tm-label{color:#5b6470;font-size:10px;line-height:1.2}
+      .tm-val{color:#000;line-height:1.3;word-wrap:break-word}
 
       /* MAIN 2 kolom — portrait 105mm: kolom lebih ramping, gap kecil */
       .t-main{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:start}
