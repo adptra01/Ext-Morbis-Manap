@@ -357,7 +357,7 @@
       .med-no{font-weight:400}
       .med-name{font-weight:700}
       .med-jml{white-space:nowrap;font-weight:400}
-      .med-aturan{margin-left:24px}
+      .med-aturan{margin-left:0}
 
       /* TABEL — checklist */
       table{width:100%;border-collapse:collapse;font-size:11px}
