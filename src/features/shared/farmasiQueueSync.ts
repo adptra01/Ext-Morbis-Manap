@@ -220,7 +220,9 @@ async function removeFromRetryQueue(eventId: string): Promise<void> {
   }
 }
 
-/** Flush retry queue — coba kirim ulang semua pending events. */
+/** Flush retry queue — coba kirim ulang semua pending events.
+ *  404/422 = event basi (record hilang / transisi ilegal) → hapus dari queue
+ *  supaya tidak retry tiap 10 detik. Error lain (network/500) → biarkan. */
 async function flushRetryQueue(): Promise<void> {
   const pending = await getRetryQueue();
   if (!pending.length) return;
@@ -231,13 +233,26 @@ async function flushRetryQueue(): Promise<void> {
         await removeFromRetryQueue(item.event_id);
         console.log('[MORBIS Ext] retry queue sukses:', item.event, item.queue_number ?? '');
       }
-    } catch {
-      /* server masih down — biarkan di queue */
+    } catch (e: unknown) {
+      const msg = (e as Error).message ?? '';
+      // 404 = record tidak ada; 422 = transisi ilegal — keduanya = event basi
+      if (msg.includes('HTTP 404') || msg.includes('HTTP 422')) {
+        await removeFromRetryQueue(item.event_id);
+        console.log(
+          '[MORBIS Ext] retry queue buang (stale):',
+          item.event,
+          item.queue_number ?? '',
+          msg,
+        );
+      }
+      // network/500/timeout — biarkan di queue utk retry berikutnya
     }
   }
 }
 
-/** pushQueueEvent tanpa retry (untuk flushRetryQueue, hindari infinite loop). */
+/** pushQueueEvent tanpa retry (untuk flushRetryQueue, hindari infinite loop).
+ *  Melempar Error dengan message "HTTP {status}" supaya caller bisa bedakan
+ *  transisi ilegal (422) dari network error. */
 async function pushQueueEventDirect(
   p: QueueEventPayload,
 ): Promise<{ ok: boolean; queue_number?: string }> {
