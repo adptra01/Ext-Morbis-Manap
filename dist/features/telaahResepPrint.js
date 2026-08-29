@@ -5,7 +5,7 @@ var __morbis_feature = (() => {
     let u = 'ext-telaah-proc',
       h = document.querySelector('.halaman');
     if (!h || h.getAttribute(u)) return;
-    let r = h,
+    let o = h,
       l = (t) => (t?.textContent || '').replace(/\s+/g, ' ').trim();
     function n(t) {
       return String(t ?? '').replace(
@@ -14,10 +14,10 @@ var __morbis_feature = (() => {
       );
     }
     let M =
-        r.querySelector('#logo img')?.getAttribute('src') || '/assets/images/logo/Kota Jambi.png',
+        o.querySelector('#logo img')?.getAttribute('src') || '/assets/images/logo/Kota Jambi.png',
       d = 'RSUD H. ABDUL MANAP',
       g = [],
-      b = r.querySelector('#head-cetak-logo');
+      b = o.querySelector('#head-cetak-logo');
     if (b) {
       let t = b.querySelector('b');
       d = t ? l(t) : d;
@@ -37,13 +37,13 @@ var __morbis_feature = (() => {
           .filter((a) => a !== d)));
     }
     let f = new Map();
-    r.querySelectorAll('.halaman > table:first-of-type table').forEach((t) => {
+    o.querySelectorAll('.halaman > table:first-of-type table').forEach((t) => {
       t.querySelectorAll('tr').forEach((e) => {
         let a = e.querySelectorAll('td');
         if (a.length < 2) return;
         let s = l(a[0]),
-          o = l(a[1]).replace(/^:\s*/, '');
-        s && !f.has(s) && f.set(s, o);
+          r = l(a[1]).replace(/^:\s*/, '');
+        s && !f.has(s) && f.set(s, r);
       });
     });
     let D = ['Dokter', 'SIP Dokter', 'Ruangan/Poli'],
@@ -61,7 +61,7 @@ var __morbis_feature = (() => {
         'Alamat',
       ],
       x = (t) => f.get(t) ?? '',
-      y = Array.from(r.querySelectorAll('table.resep-item')),
+      y = Array.from(o.querySelectorAll('table.resep-item')),
       k = y[0],
       A = [];
     if (k) {
@@ -69,11 +69,11 @@ var __morbis_feature = (() => {
       k.querySelectorAll('tr').forEach((e) => {
         let a = e.querySelectorAll('td'),
           s = l(a[0]),
-          o = a[1],
-          i = l(o);
+          r = a[1],
+          i = l(r);
         if (/^R\/\d+/.test(s)) {
           t = { no: s, name: '', jml: '', aturan: [] };
-          let c = o ? Array.from(o.querySelectorAll('p')) : [];
+          let c = r ? Array.from(r.querySelectorAll('p')) : [];
           t.name = c.length ? (c[0]?.textContent || i).trim() : i;
           let H = (c.length ? ((c[1] || c[0]).textContent || '').trim() : '').match(
             /Jml\s*:\s*(.+)/i,
@@ -83,7 +83,7 @@ var __morbis_feature = (() => {
       });
     }
     let w = y[1],
-      T = r.querySelector('#form_checklist_telaah_resep'),
+      T = o.querySelector('#form_checklist_telaah_resep'),
       j = (t) => {
         let e = [];
         if (!T) return e;
@@ -92,8 +92,8 @@ var __morbis_feature = (() => {
         );
         return (
           a &&
-            a.querySelectorAll('tr').forEach((s, o) => {
-              if (o === 0) return;
+            a.querySelectorAll('tr').forEach((s, r) => {
+              if (r === 0) return;
               let i = s.querySelectorAll('td');
               if (i.length < 2) return;
               let c = l(i[0]),
@@ -105,7 +105,7 @@ var __morbis_feature = (() => {
       },
       z = j('Telaah Resep'),
       L = j('Telaah Obat'),
-      E = Array.from(r.querySelectorAll('center, strong')).find((t) =>
+      E = Array.from(o.querySelectorAll('center, strong')).find((t) =>
         /Obat tidak boleh diganti/i.test(l(t)),
       ),
       P = E ? l(E) : 'Obat tidak boleh diganti tanpa sepengetahuan Dokter',
@@ -207,7 +207,7 @@ var __morbis_feature = (() => {
         '</section></main><footer class="t-footer">' +
         n(P) +
         '</footer><div class="t-print no-print"><button type="button" class="t-btn" onclick="window.print()">Cetak</button></div>';
-    (r.setAttribute(u, '1'), (r.innerHTML = K));
+    (o.setAttribute(u, '1'), (o.innerHTML = K));
     let q = 'ext-telaah-style';
     if (!document.getElementById(q)) {
       let t = document.createElement('style');
@@ -227,7 +227,7 @@ var __morbis_feature = (() => {
 
 /* METADATA \u2014 tanpa border, tanpa bold. Label kecil di atas, nilai di bawah
       (stacked) sehingga isi bisa memanjang. Pasien kiri & dokter kanan. */
-      .tm-card{background:#fff;padding:4px 0;margin-bottom:6px;font-size:11px}
+      .tm-card{background:#fff;padding:4px 0 6px;margin-bottom:6px;font-size:11px;border-bottom:0.5pt solid #333}
       .tm-col{display:flex;flex-direction:column;gap:5px}
       .tm-row{display:flex;flex-direction:column;gap:1px}
       .tm-label{color:#5b6470;font-size:10px;line-height:1.2}

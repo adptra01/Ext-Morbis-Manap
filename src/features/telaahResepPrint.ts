@@ -339,7 +339,7 @@
 
 /* METADATA — tanpa border, tanpa bold. Label kecil di atas, nilai di bawah
       (stacked) sehingga isi bisa memanjang. Pasien kiri & dokter kanan. */
-      .tm-card{background:#fff;padding:4px 0;margin-bottom:6px;font-size:11px}
+      .tm-card{background:#fff;padding:4px 0 6px;margin-bottom:6px;font-size:11px;border-bottom:0.5pt solid #333}
       .tm-col{display:flex;flex-direction:column;gap:5px}
       .tm-row{display:flex;flex-direction:column;gap:1px}
       .tm-label{color:#5b6470;font-size:10px;line-height:1.2}
