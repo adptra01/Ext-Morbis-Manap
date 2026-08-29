@@ -32,30 +32,41 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: npm run build
 
-      - name: Build zip for Edge Add-ons
-        run: |
-          VERSION=$(jq -r .version dist/manifest.json)
-          cd dist && zip -r "../MORBIS-Ext-v${VERSION}.zip" . && cd ..
-          echo "Zipped dist → MORBIS-Ext-v${VERSION}.zip"
-
       - name: Deploy dist → main (orphan-style)
         run: |
-          # Create orphan branch state
+          # Create orphan branch state — dist contents at root
           git config --global user.name github-actions
           git config --global user.email github-actions@github.com
           ORPHAN=$(mktemp -d)
-          cp -r dist "$ORPHAN/dist"
+          cp -r dist/* "$ORPHAN/"
           cp README.md "$ORPHAN/README.md"
-          cp MORBIS-Ext-v*.zip "$ORPHAN/"
 
           cat > "$ORPHAN/.gitignore" << 'EOF'
-          # main branch — only dist/ + README.md + zip are tracked
+          # main branch — extension files at root
           /*
           !.gitignore
           !README.md
-          !dist/
-          !dist/**
-          !MORBIS-Ext-v*.zip
+          !manifest.json
+          !background.js
+          !core.js
+          !init.js
+          !popup.js
+          !sidepanel.html
+          !sidepanel.js
+          !popup/
+          !popup/**
+          !assets/
+          !assets/**
+          !chunks/
+          !chunks/**
+          !features/
+          !features/**
+          !icons/
+          !icons/**
+          !rules/
+          !rules/**
+          !ui/
+          !ui/**
           EOF
 
           cd "$ORPHAN"
