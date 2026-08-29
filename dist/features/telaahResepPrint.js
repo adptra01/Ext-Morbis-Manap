@@ -1,218 +1,225 @@
 'use strict';
 var __morbis_feature = (() => {
+  // src/features/telaahResepPrint.ts
   (function () {
     'use strict';
-    let u = 'ext-telaah-proc',
-      h = document.querySelector('.halaman');
-    if (!h || h.getAttribute(u)) return;
-    let r = h,
-      l = (t) => (t?.textContent || '').replace(/\s+/g, ' ').trim();
-    function n(t) {
-      return String(t ?? '').replace(
+    const PAGE_GUARD = 'ext-telaah-proc';
+    const root = document.querySelector('.halaman');
+    if (!root || root.getAttribute(PAGE_GUARD)) return;
+    const page = root;
+    const txt = (el) => (el?.textContent || '').replace(/\s+/g, ' ').trim();
+    function esc(s) {
+      return String(s ?? '').replace(
         /[&<>"']/g,
-        (e) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[e],
+        (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
       );
     }
-    let M =
-        r.querySelector('#logo img')?.getAttribute('src') || '/assets/images/logo/Kota Jambi.png',
-      d = 'RSUD H. ABDUL MANAP',
-      g = [],
-      b = r.querySelector('#head-cetak-logo');
-    if (b) {
-      let t = b.querySelector('b');
-      d = t ? l(t) : d;
-      let e = document.createElement('div');
-      ((e.innerHTML = b.innerHTML.replace(
-        /<br\s*\/?>/gi,
-        `
-`,
-      )),
-        (g = (e.textContent || '')
-          .split(
-            `
-`,
-          )
-          .map((a) => a.trim())
-          .filter(Boolean)
-          .filter((a) => a !== d)));
+    const logoImg = page.querySelector('#logo img');
+    const logoSrc = logoImg?.getAttribute('src') || '/assets/images/logo/Kota Jambi.png';
+    let hospitalName = 'RSUD H. ABDUL MANAP';
+    let headBody = [];
+    const headEl = page.querySelector('#head-cetak-logo');
+    if (headEl) {
+      const b = headEl.querySelector('b');
+      hospitalName = b ? txt(b) : hospitalName;
+      const tmp = document.createElement('div');
+      tmp.innerHTML = headEl.innerHTML.replace(/<br\s*\/?>/gi, '\n');
+      headBody = (tmp.textContent || '')
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean)
+        .filter((l) => l !== hospitalName);
     }
-    let f = new Map();
-    r.querySelectorAll('.halaman > table:first-of-type table').forEach((t) => {
-      t.querySelectorAll('tr').forEach((e) => {
-        let a = e.querySelectorAll('td');
-        if (a.length < 2) return;
-        let s = l(a[0]),
-          o = l(a[1]).replace(/^:\s*/, '');
-        s && !f.has(s) && f.set(s, o);
+    const metaMap = /* @__PURE__ */ new Map();
+    page.querySelectorAll('.halaman > table:first-of-type table').forEach((t) => {
+      t.querySelectorAll('tr').forEach((tr) => {
+        const tds = tr.querySelectorAll('td');
+        if (tds.length < 2) return;
+        const label = txt(tds[0]);
+        const value = txt(tds[1]).replace(/^:\s*/, '');
+        if (label && !metaMap.has(label)) metaMap.set(label, value);
       });
     });
-    let D = ['Dokter', 'SIP Dokter', 'Ruangan/Poli'],
-      R = [
-        'No Resep',
-        'Tanggal & Jam',
-        'No. RM',
-        'Nama Pasien',
-        'Jenis Kelamin',
-        'Tgl. Lahir/Umur',
-        'No HP',
-        'Penjamin',
-        'Berat Badan',
-        'Riwayat Alergi',
-        'Alamat',
-      ],
-      x = (t) => f.get(t) ?? '',
-      y = Array.from(r.querySelectorAll('table.resep-item')),
-      k = y[0],
-      A = [];
-    if (k) {
-      let t = null;
-      k.querySelectorAll('tr').forEach((e) => {
-        let a = e.querySelectorAll('td'),
-          s = l(a[0]),
-          o = a[1],
-          i = l(o);
-        if (/^R\/\d+/.test(s)) {
-          t = { no: s, name: '', jml: '', aturan: [] };
-          let c = o ? Array.from(o.querySelectorAll('p')) : [];
-          t.name = c.length ? (c[0]?.textContent || i).trim() : i;
-          let H = (c.length ? ((c[1] || c[0]).textContent || '').trim() : '').match(
-            /Jml\s*:\s*(.+)/i,
-          );
-          ((t.jml = H ? H[1].trim() : ''), A.push(t));
-        } else t && i && t.aturan.push(i);
+    const DOCTOR_FIELDS = ['Dokter', 'SIP Dokter', 'Ruangan/Poli'];
+    const PATIENT_FIELDS = [
+      'No Resep',
+      'Tanggal & Jam',
+      'No. RM',
+      'Nama Pasien',
+      'Jenis Kelamin',
+      'Tgl. Lahir/Umur',
+      'No HP',
+      'Penjamin',
+      'Berat Badan',
+      'Riwayat Alergi',
+      'Alamat',
+    ];
+    const getMeta = (label) => metaMap.get(label) ?? '';
+    const medsTables = Array.from(page.querySelectorAll('table.resep-item'));
+    const medsTable = medsTables[0];
+    const meds = [];
+    if (medsTable) {
+      let cur = null;
+      medsTable.querySelectorAll('tr').forEach((tr) => {
+        const tds = tr.querySelectorAll('td');
+        const left = txt(tds[0]);
+        const rightEl = tds[1];
+        const right = txt(rightEl);
+        if (/^R\/\d+/.test(left)) {
+          cur = { no: left, name: '', jml: '', aturan: [] };
+          const ps = rightEl ? Array.from(rightEl.querySelectorAll('p')) : [];
+          cur.name = ps.length ? (ps[0]?.textContent || right).trim() : right;
+          const jmlT = ps.length ? ((ps[1] || ps[0]).textContent || '').trim() : '';
+          const mJml = jmlT.match(/Jml\s*:\s*(.+)/i);
+          cur.jml = mJml ? mJml[1].trim() : '';
+          meds.push(cur);
+        } else if (cur && right) {
+          cur.aturan.push(right);
+        }
       });
     }
-    let T = y[1],
-      w = r.querySelector('#form_checklist_telaah_resep'),
-      j = (t) => {
-        let e = [];
-        if (!w) return e;
-        let a = Array.from(w.querySelectorAll('table')).find(
-          (s) => l(s.querySelector('tr td')) === t,
-        );
-        return (
-          a &&
-            a.querySelectorAll('tr').forEach((s, o) => {
-              if (o === 0) return;
-              let i = s.querySelectorAll('td');
-              if (i.length < 2) return;
-              let c = l(i[0]),
-                p = l(i[1]);
-              c && p && p !== t && e.push([c, p]);
-            }),
-          e
-        );
-      },
-      P = j('Telaah Resep'),
-      z = j('Telaah Obat'),
-      E = Array.from(r.querySelectorAll('center, strong')).find((t) =>
-        /Obat tidak boleh diganti/i.test(l(t)),
-      ),
-      L = E ? l(E) : 'Obat tidak boleh diganti tanpa sepengetahuan Dokter',
-      S = (t, e, a = '') =>
-        '<div class="tm-row"><span class="tm-label">' +
-        n(t) +
-        '</span><span class="tm-dot">:</span><span class="tm-val' +
-        (a ? ' ' + a : '') +
-        '">' +
-        (e && e.trim() ? n(e) : '-') +
-        '</span></div>',
-      O =
-        '<section class="tm-card"><div class="tm-col">' +
-        R.map((t) => S(t, x(t))).join('') +
-        '</div></section>',
-      I =
-        '<section class="tm-card"><div class="tm-col">' +
-        D.map((t) => S(t, x(t))).join('') +
-        '</div></section>',
-      C = A.map(
-        (t) =>
+    const adminTable = medsTables[1];
+    const chkForm = page.querySelector('#form_checklist_telaah_resep');
+    const readCheck = (title) => {
+      const rows = [];
+      if (!chkForm) return rows;
+      const tbl = Array.from(chkForm.querySelectorAll('table')).find((t) => {
+        const th = txt(t.querySelector('tr td'));
+        return th === title;
+      });
+      if (!tbl) return rows;
+      tbl.querySelectorAll('tr').forEach((tr, i) => {
+        if (i === 0) return;
+        const tds = tr.querySelectorAll('td');
+        if (tds.length < 2) return;
+        const num = txt(tds[0]);
+        const item = txt(tds[1]);
+        if (num && item && item !== title) rows.push([num, item]);
+      });
+      return rows;
+    };
+    const telaahResep = readCheck('Telaah Resep');
+    const telaahObat = readCheck('Telaah Obat');
+    const footerEl = Array.from(page.querySelectorAll('center, strong')).find((el) =>
+      /Obat tidak boleh diganti/i.test(txt(el)),
+    );
+    const footerText = footerEl
+      ? txt(footerEl)
+      : 'Obat tidak boleh diganti tanpa sepengetahuan Dokter';
+    const metaLine = (label, value, vClass = '') =>
+      '<div class="tm-row"><span class="tm-label">' +
+      esc(label) +
+      '</span><span class="tm-dot">:</span><span class="tm-val' +
+      (vClass ? ' ' + vClass : '') +
+      '">' +
+      (value && value.trim() ? esc(value) : '-') +
+      '</span></div>';
+    const patientMetaHtml =
+      '<section class="tm-card"><div class="tm-col">' +
+      PATIENT_FIELDS.map((f) => metaLine(f, getMeta(f))).join('') +
+      '</div></section>';
+    const doctorMetaHtml =
+      '<section class="tm-card"><div class="tm-col">' +
+      DOCTOR_FIELDS.map((f) => metaLine(f, getMeta(f))).join('') +
+      '</div></section>';
+    const medListHtml = meds
+      .map(
+        (m) =>
           '<div class="med"><div class="med-head"><span class="med-txt"><span class="med-no">' +
-          n(t.no) +
+          esc(m.no) +
           '</span> <span class="med-name">' +
-          n(t.name) +
+          esc(m.name) +
           '</span></span>' +
-          (t.jml ? '<span class="med-jml">Jml: ' + n(t.jml) + '</span>' : '') +
+          (m.jml ? '<span class="med-jml">Jml: ' + esc(m.jml) + '</span>' : '') +
           '</div>' +
-          (t.aturan.length
-            ? '<div class="med-aturan">' + t.aturan.map((e) => n(e)).join('<br/>') + '</div>'
+          (m.aturan.length
+            ? '<div class="med-aturan">' + m.aturan.map((a) => esc(a)).join('<br/>') + '</div>'
             : '') +
           '</div>',
-      ).join(''),
-      m = T
-        ? Array.from(T.querySelectorAll('tr:first-child td'))
-            .map((t) => l(t))
-            .filter(Boolean)
-        : ['Hitung', 'Timbang', 'Kemas'];
-    m.some((t) => /paraf/i.test(t)) || m.push('Paraf');
-    let N = m.length,
-      B =
-        '<table class="t-admin"><thead><tr>' +
-        m.map((t) => '<th class="l">' + n(t) + '</th>').join('') +
-        '</tr></thead><tbody><tr>' +
-        Array.from({ length: N })
-          .map(() => '<td class="blk"></td>')
-          .join('') +
-        '</tr></tbody></table>',
-      v = (t, e) =>
-        '<table class="t-check"><thead><tr><th class="l" colspan="2">' +
-        n(t) +
-        '</th><th class="yt">Y</th><th class="yt">T</th></tr></thead><tbody>' +
-        e
-          .map(
-            ([a, s]) =>
-              '<tr><td class="num">' + n(a) + '</td><td>' + n(s) + '</td><td></td><td></td></tr>',
-          )
-          .join('') +
-        '</tbody></table>',
-      _ =
-        '<div class="t-sub">Persetujuan Perubahan Resep</div><table class="t-check"><thead><tr><th class="c" colspan="2">Perubahan resep</th></tr><tr><th class="c half">Tertulis</th><th class="c half">Menjadi</th></tr></thead><tbody><tr><td class="blk2"></td><td class="blk2"></td></tr><tr><td class="c">Apoteker</td><td class="c">Disetujui Dokter</td></tr><tr><td class="blk2"></td><td class="blk2"></td></tr></tbody></table>',
-      F =
-        '<table class="t-check"><thead><tr><th class="c" colspan="2">Waktu Tunggu</th></tr></thead><tbody><tr><td class="third">Masuk</td><td></td></tr><tr><td>Diserahkan</td><td></td></tr></tbody></table>',
-      J =
-        '<table class="t-check"><thead><tr><th class="c" colspan="2">Edukasi</th><th class="yt"></th></tr></thead><tbody>' +
-        [
-          ['1', 'Nama Obat'],
-          ['2', 'Kegunaan Obat'],
-          ['3', 'Dosis&Sediaan Obat'],
-          ['4', 'Rute & cara pakai'],
-          ['5', 'Cara penyimpanan'],
-          ['6', 'Efek samping'],
-          ['7', 'Alergi obat'],
-        ]
-          .map(([t, e]) => '<tr><td class="num">' + t + '</td><td>' + e + '</td><td></td></tr>')
-          .join('') +
-        '</tbody></table>',
-      K =
-        '<header class="t-head"><img class="t-logo" alt="Logo" src="' +
-        n(M) +
-        '"/><div class="t-bhead"><h1 class="t-hname">' +
-        n(d) +
-        '</h1>' +
-        (g[0] ? '<div class="t-hsub">' + n(g[0]) + '</div>' : '') +
-        '</div></header><main class="t-main"><section class="t-left">' +
-        O +
-        '<div class="t-meds">' +
-        C +
-        '</div>' +
-        B +
-        '</section><section class="t-right">' +
-        I +
-        v('Telaah Resep', P) +
-        v('Telaah Obat', z) +
-        _ +
-        F +
-        J +
-        '<table class="t-check"><tbody><tr><td class="twothird">Paraf dan Nama<br/>Pasien/Keluarga</td><td class="blk3"></td></tr></tbody></table>' +
-        '</section></main><footer class="t-footer">' +
-        n(L) +
-        '</footer><div class="t-print no-print"><button type="button" class="t-btn" onclick="window.print()">Cetak</button></div>';
-    (r.setAttribute(u, '1'), (r.innerHTML = K));
-    let q = 'ext-telaah-style';
-    if (!document.getElementById(q)) {
-      let t = document.createElement('style');
-      ((t.id = q),
-        (t.textContent = `
+      )
+      .join('');
+    const adminHeads = adminTable
+      ? Array.from(adminTable.querySelectorAll('tr:first-child td'))
+          .map((td) => txt(td))
+          .filter(Boolean)
+      : ['Hitung', 'Timbang', 'Kemas'];
+    if (!adminHeads.some((h) => /paraf/i.test(h))) adminHeads.push('Paraf');
+    const adminCols = adminHeads.length;
+    const adminHtml =
+      '<table class="t-admin"><thead><tr>' +
+      adminHeads.map((h) => '<th class="l">' + esc(h) + '</th>').join('') +
+      '</tr></thead><tbody><tr>' +
+      Array.from({ length: adminCols })
+        .map(() => '<td class="blk"></td>')
+        .join('') +
+      '</tr></tbody></table>';
+    const checkTable = (title, rows) =>
+      '<table class="t-check"><thead><tr><th class="l" colspan="2">' +
+      esc(title) +
+      '</th><th class="yt">Y</th><th class="yt">T</th></tr></thead><tbody>' +
+      rows
+        .map(
+          ([num, item]) =>
+            '<tr><td class="num">' +
+            esc(num) +
+            '</td><td>' +
+            esc(item) +
+            '</td><td></td><td></td></tr>',
+        )
+        .join('') +
+      '</tbody></table>';
+    const persetujuanHtml =
+      '<div class="t-sub">Persetujuan Perubahan Resep</div><table class="t-check"><thead><tr><th class="c" colspan="2">Perubahan resep</th></tr><tr><th class="c half">Tertulis</th><th class="c half">Menjadi</th></tr></thead><tbody><tr><td class="blk2"></td><td class="blk2"></td></tr><tr><td class="c">Apoteker</td><td class="c">Disetujui Dokter</td></tr><tr><td class="blk2"></td><td class="blk2"></td></tr></tbody></table>';
+    const waktuHtml =
+      '<table class="t-check"><thead><tr><th class="c" colspan="2">Waktu Tunggu</th></tr></thead><tbody><tr><td class="third">Masuk</td><td></td></tr><tr><td>Diserahkan</td><td></td></tr></tbody></table>';
+    const edukasiHtml =
+      '<table class="t-check"><thead><tr><th class="c" colspan="2">Edukasi</th><th class="yt"></th></tr></thead><tbody>' +
+      [
+        ['1', 'Nama Obat'],
+        ['2', 'Kegunaan Obat'],
+        ['3', 'Dosis&Sediaan Obat'],
+        ['4', 'Rute & cara pakai'],
+        ['5', 'Cara penyimpanan'],
+        ['6', 'Efek samping'],
+        ['7', 'Alergi obat'],
+      ]
+        .map(([n, item]) => '<tr><td class="num">' + n + '</td><td>' + item + '</td><td></td></tr>')
+        .join('') +
+      '</tbody></table>';
+    const parafHtml =
+      '<table class="t-check"><tbody><tr><td class="twothird">Paraf dan Nama<br/>Pasien/Keluarga</td><td class="blk3"></td></tr></tbody></table>';
+    const html =
+      // HEADER (priority template: items-center, logo 80px, nama + alamat saja)
+      '<header class="t-head"><img class="t-logo" alt="Logo" src="' +
+      esc(logoSrc) +
+      '"/><div class="t-bhead"><h1 class="t-hname">' +
+      esc(hospitalName) +
+      '</h1>' +
+      (headBody[0] ? '<div class="t-hsub">' + esc(headBody[0]) + '</div>' : '') +
+      '</div></header><main class="t-main"><section class="t-left">' +
+      patientMetaHtml +
+      '<div class="t-meds">' +
+      medListHtml +
+      '</div>' +
+      adminHtml +
+      '</section><section class="t-right">' +
+      doctorMetaHtml +
+      checkTable('Telaah Resep', telaahResep) +
+      checkTable('Telaah Obat', telaahObat) +
+      persetujuanHtml +
+      waktuHtml +
+      edukasiHtml +
+      parafHtml +
+      '</section></main><footer class="t-footer">' +
+      esc(footerText) +
+      '</footer><div class="t-print no-print"><button type="button" class="t-btn" onclick="window.print()">Cetak</button></div>';
+    page.setAttribute(PAGE_GUARD, '1');
+    page.innerHTML = html;
+    const STYLE_ID = 'ext-telaah-style';
+    if (!document.getElementById(STYLE_ID)) {
+      const s = document.createElement('style');
+      s.id = STYLE_ID;
+      s.textContent = `
       .halaman{box-sizing:border-box;width:105mm!important;height:auto!important;margin:0!important;padding:0 3mm}
       @page{size:105mm 241mm;margin:0}
       .halaman *{box-sizing:border-box;font-size:11px!important}
@@ -268,15 +275,16 @@ var __morbis_feature = (() => {
       .t-btn{border:1px solid #d1d5db;background:#fff;border-radius:6px;padding:8px 16px;font-size:11px;cursor:pointer}
       .t-btn:hover{background:#f9fafb}
       @media print{.no-print{display:none!important}}
-    `),
-        document.head.appendChild(t));
+    `;
+      document.head.appendChild(s);
     }
     if (!document.querySelector('link[href*="family=Inter"]')) {
-      let t = document.createElement('link');
-      ((t.rel = 'stylesheet'),
-        (t.href =
-          'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap'),
-        document.head.appendChild(t));
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href =
+        'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap';
+      document.head.appendChild(link);
     }
   })();
 })();
+//# sourceMappingURL=telaahResepPrint.js.map
