@@ -1,10 +1,3 @@
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../../ui/components/select';
 import type { Role } from './types';
 
 const roleOptions: { value: Role; label: string }[] = [
@@ -23,17 +16,16 @@ interface RoleSelectorProps {
 
 export function RoleSelector({ value, onChange }: RoleSelectorProps) {
   return (
-    <Select value={value} onValueChange={(v) => onChange(v as Role)}>
-      <SelectTrigger className="w-[120px]">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {roleOptions.map((opt) => (
-          <SelectItem key={opt.value} value={opt.value}>
-            {opt.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value as Role)}
+      className="w-[120px] h-7 rounded-md border border-input bg-background px-2 text-md-xs text-foreground outline-none focus:ring-2 focus:ring-ring"
+    >
+      {roleOptions.map((opt) => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
   );
 }

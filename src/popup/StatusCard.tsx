@@ -1,11 +1,4 @@
 import { Switch } from '../ui/components/switch';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../ui/components/select';
 import type { Role } from '../types';
 
 interface StatusCardProps {
@@ -54,18 +47,19 @@ export function StatusCard({ enabled, role, onToggle, onRoleChange }: StatusCard
           </p>
         </div>
       </div>
-      <Select value={role} onValueChange={(v) => onRoleChange(v as Role)}>
-        <SelectTrigger className="w-[120px]">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {ROLES.map((r) => (
-            <SelectItem key={r.value} value={r.value}>
-              {r.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {/* Native <select>: guaranteed no blur-trigger close in Chrome extension popup.
+          Radix/MUI portals render outside DOM → browser sees click as "outside" → popup closes. */}
+      <select
+        value={role}
+        onChange={(e) => onRoleChange(e.target.value as Role)}
+        className="w-[120px] h-8 rounded-md border border-input bg-background px-2 text-md-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
+      >
+        {ROLES.map((r) => (
+          <option key={r.value} value={r.value}>
+            {r.label}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }

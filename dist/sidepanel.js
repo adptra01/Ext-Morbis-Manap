@@ -367,27 +367,21 @@ var roleOptions = [
   },
 ];
 function RoleSelector({ value, onChange }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
+  return /* @__PURE__ */ (0, import_jsx_runtime.jsx)('select', {
     value,
-    onValueChange: (v) => onChange(v),
-    children: [
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-        className: 'w-[120px]',
-        children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {}),
-      }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
-        children: roleOptions.map((opt) =>
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-            SelectItem,
-            {
-              value: opt.value,
-              children: opt.label,
-            },
-            opt.value,
-          ),
-        ),
-      }),
-    ],
+    onChange: (e) => onChange(e.target.value),
+    className:
+      'w-[120px] h-7 rounded-md border border-input bg-background px-2 text-md-xs text-foreground outline-none focus:ring-2 focus:ring-ring',
+    children: roleOptions.map((opt) =>
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+        'option',
+        {
+          value: opt.value,
+          children: opt.label,
+        },
+        opt.value,
+      ),
+    ),
   });
 }
 //#endregion

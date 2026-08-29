@@ -95,27 +95,21 @@ function StatusCard({ enabled, role, onToggle, onRoleChange }) {
           }),
         ],
       }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Select, {
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)('select', {
         value: role,
-        onValueChange: (v) => onRoleChange(v),
-        children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectTrigger, {
-            className: 'w-[120px]',
-            children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectValue, {}),
-          }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(SelectContent, {
-            children: ROLES.map((r) =>
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                SelectItem,
-                {
-                  value: r.value,
-                  children: r.label,
-                },
-                r.value,
-              ),
-            ),
-          }),
-        ],
+        onChange: (e) => onRoleChange(e.target.value),
+        className:
+          'w-[120px] h-8 rounded-md border border-input bg-background px-2 text-md-sm text-foreground outline-none focus:ring-2 focus:ring-ring',
+        children: ROLES.map((r) =>
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+            'option',
+            {
+              value: r.value,
+              children: r.label,
+            },
+            r.value,
+          ),
+        ),
       }),
     ],
   });
