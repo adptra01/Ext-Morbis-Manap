@@ -220,7 +220,7 @@ var __morbis_feature = (() => {
 
       /* HEADER (priority: items-center, logo 80px) */
       .t-head{display:flex;align-items:center;padding-bottom:8px;border-bottom:1.5px solid #000;margin-bottom:12px;gap:14px}
-      .t-logo{width:80px;height:80px;object-fit:contain;object-position:left top;flex:none}
+      .t-logo{width:60px;height:60px;object-fit:contain;object-position:left top;flex:none}
       .t-bhead{flex:1;font-size:11px}
       .t-hname{font-size:13px;font-weight:800;margin:0 0 4px;letter-spacing:-.01em}
       .t-hsub{line-height:1.3}
