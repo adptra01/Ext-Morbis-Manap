@@ -1,0 +1,139 @@
+name: Publish to Edge Add-ons
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+      EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
+      EDGE_PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create extension zip
+        run: |
+          VERSION=$(jq -r .version manifest.json)
+          cd dist && zip -r "../morbis-ext-v${VERSION}.zip" . && cd ..
+          echo "ZIP=morbis-ext-v${VERSION}.zip" >> $GITHUB_ENV
+
+      - name: Upload package to Edge
+        id: upload
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -H "Authorization: ApiKey $EDGE_API_KEY" \
+            -H "X-ClientID: $EDGE_CLIENT_ID" \
+            -H "Content-Type: application/zip" \
+            -X POST \
+            -T "$ZIP" \
+            "https://api.addons.microsoftedge.microsoft.com/v1/products/$EDGE_PRODUCT_ID/submissions/draft/package")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "HTTP $HTTP_CODE"
+          echo "$BODY"
+
+          if [ "$HTTP_CODE" != "202" ]; then
+            echo "::error::Upload failed with HTTP $HTTP_CODE"
+            exit 1
+          fi
+
+          LOCATION=$(echo "$BODY" | grep -oP '"operationId"\s*:\s*"\K[^"]+')
+          echo "operation_id=$LOCATION" >> $GITHUB_OUTPUT
+          echo "Upload accepted, operation: $LOCATION"
+
+      - name: Wait for upload processing
+        run: |
+          MAX_RETRIES=30
+          RETRY=0
+          STATUS=""
+
+          while [ $RETRY -lt $MAX_RETRIES ] && [ "$STATUS" != "Succeeded" ]; do
+            sleep 5
+            RETRY=$((RETRY + 1))
+
+            RESPONSE=$(curl -s \
+              -H "Authorization: ApiKey $EDGE_API_KEY" \
+              -H "X-ClientID: $EDGE_CLIENT_ID" \
+              -X GET \
+              "https://api.addons.microsoftedge.microsoft.com/v1/products/$EDGE_PRODUCT_ID/submissions/draft/package/operations/${{ steps.upload.outputs.operation_id }}")
+
+            STATUS=$(echo "$RESPONSE" | grep -oP '"status"\s*:\s*"\K[^"]+')
+            echo "[$RETRY/$MAX_RETRIES] Status: $STATUS"
+
+            if [ "$STATUS" = "Failed" ]; then
+              echo "::error::Upload processing failed"
+              echo "$RESPONSE"
+              exit 1
+            fi
+          done
+
+          if [ "$STATUS" != "Succeeded" ]; then
+            echo "::error::Timeout waiting for upload"
+            exit 1
+          fi
+
+      - name: Publish submission
+        id: publish
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -H "Authorization: ApiKey $EDGE_API_KEY" \
+            -H "X-ClientID: $EDGE_CLIENT_ID" \
+            -H "Content-Type: application/json" \
+            -X POST \
+            -d '{"notes":"Auto-published from CI/CD"}' \
+            "https://api.addons.microsoftedge.microsoft.com/v1/products/$EDGE_PRODUCT_ID/submissions")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "HTTP $HTTP_CODE"
+          echo "$BODY"
+
+          if [ "$HTTP_CODE" != "202" ]; then
+            echo "::error::Publish failed with HTTP $HTTP_CODE"
+            exit 1
+          fi
+
+          LOCATION=$(echo "$BODY" | grep -oP '"operationId"\s*:\s*"\K[^"]+')
+          echo "operation_id=$LOCATION" >> $GITHUB_OUTPUT
+          echo "Publish accepted, operation: $LOCATION"
+
+      - name: Wait for publishing
+        run: |
+          MAX_RETRIES=60
+          RETRY=0
+          STATUS=""
+
+          while [ $RETRY -lt $MAX_RETRIES ] && [ "$STATUS" != "Succeeded" ]; do
+            sleep 10
+            RETRY=$((RETRY + 1))
+
+            RESPONSE=$(curl -s \
+              -H "Authorization: ApiKey $EDGE_API_KEY" \
+              -H "X-ClientID: $EDGE_CLIENT_ID" \
+              -X GET \
+              "https://api.addons.microsoftedge.microsoft.com/v1/products/$EDGE_PRODUCT_ID/submissions/operations/${{ steps.publish.outputs.operation_id }}")
+
+            STATUS=$(echo "$RESPONSE" | grep -oP '"status"\s*:\s*"\K[^"]+')
+            echo "[$RETRY/$MAX_RETRIES] Status: $STATUS"
+
+            if [ "$STATUS" = "Failed" ]; then
+              echo "::error::Publishing failed"
+              echo "$RESPONSE"
+              exit 1
+            fi
+          done
+
+          if [ "$STATUS" != "Succeeded" ]; then
+            echo "::error::Timeout waiting for publishing"
+            exit 1
+          fi
+
+          echo "Published successfully!"
