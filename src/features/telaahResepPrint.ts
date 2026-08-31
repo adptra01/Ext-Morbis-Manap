@@ -718,29 +718,21 @@
         .join('') +
       '</tbody></table>';
 
-    const persetujuanHtml =
-      '<div class="t-sub">Persetujuan Perubahan Resep</div>' +
+    // Bagian bawah digabung jadi 1 tabel: Persetujuan Perubahan Resep +
+    // Waktu Tunggu + Paraf Pasien/Keluarga.
+    const bawahHtml =
       '<table class="t-check">' +
       '<thead>' +
+      '<tr><th class="c" colspan="2">Persetujuan Perubahan Resep</th></tr>' +
       '<tr><th class="c" colspan="2">Perubahan resep</th></tr>' +
       '<tr><th class="c half">Tertulis</th><th class="c half">Menjadi</th></tr>' +
       '</thead><tbody>' +
       '<tr><td class="blk2"></td><td class="blk2"></td></tr>' +
       '<tr><td class="c">Apoteker</td><td class="c">Disetujui Dokter</td></tr>' +
       '<tr><td class="blk2"></td><td class="blk2"></td></tr>' +
-      '</tbody></table>';
-
-    const waktuHtml =
-      '<table class="t-check">' +
-      '<thead><tr><th class="c" colspan="2">Waktu Tunggu</th></tr></thead>' +
-      '<tbody>' +
+      '<tr><td class="c" colspan="2">Waktu Tunggu</td></tr>' +
       '<tr><td class="third">Masuk</td><td></td></tr>' +
       '<tr><td>Diserahkan</td><td></td></tr>' +
-      '</tbody></table>';
-
-    const parafHtml =
-      '<table class="t-check">' +
-      '<tbody>' +
       '<tr><td class="twothird">Paraf dan Nama<br/>Pasien/Keluarga</td><td class="blk3"></td></tr>' +
       '</tbody></table>';
 
@@ -779,9 +771,7 @@
       doctorMetaHtml +
       checkTable('Telaah Resep', telaahResep) +
       checkTable('Telaah Obat', telaahObat) +
-      persetujuanHtml +
-      waktuHtml +
-      parafHtml +
+      bawahHtml +
       '</section>' +
       '</main>' +
       // FOOTER + CETAK
