@@ -594,9 +594,10 @@
     };
     const alergi = look(/alergi/i);
     const bb = look(/berat|\bbb\b/i);
-    // "Paracetamol, Amlodipin, Injeksi, ... / BB 72 kg" (atau "- / BB 72 kg")
-    const alergiBB = (alergi ? alergi : '-') + (bb ? ' / BB ' + bb : '');
-
+    // "Paracetamol, Amlodipin, Injeksi, ... / BB 72 kg".
+    // Tanpa BB: " / - kg". Selalu sertakan satuan kg.
+    const bbTxt = bb ? (/\bkg\b/i.test(bb) ? bb : bb + ' kg') : '- kg';
+    const alergiBB = (alergi ? alergi : '-') + ' / ' + (bb ? 'BB ' + bbTxt : bbTxt);
     // ==== KIRI (pasien) — 6 baris ====
     const patientRows: [string, string][] = [
       ['Pasien', pasienJK],
