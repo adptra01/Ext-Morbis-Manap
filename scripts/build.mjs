@@ -24,10 +24,10 @@ async function ensureDir(dir) {
 async function copyStaticFiles() {
   // sidepanel.html handled by Vite
   const filesToCopy = [
-    { src: 'icons/bluemorbis16.png', dest: 'icons/bluemorbis16.png' },
-    { src: 'icons/bluemorbis32.png', dest: 'icons/bluemorbis32.png' },
-    { src: 'icons/bluemorbis48.png', dest: 'icons/bluemorbis48.png' },
-    { src: 'icons/bluemorbis128.png', dest: 'icons/bluemorbis128.png' },
+    { src: 'icons/rsud-logo-16.png', dest: 'icons/rsud-logo-16.png' },
+    { src: 'icons/rsud-logo-32.png', dest: 'icons/rsud-logo-32.png' },
+    { src: 'icons/rsud-logo-48.png', dest: 'icons/rsud-logo-48.png' },
+    { src: 'icons/rsud-logo-128.png', dest: 'icons/rsud-logo-128.png' },
     { src: 'rules/rules.json', dest: 'rules/rules.json' },
   ];
 
