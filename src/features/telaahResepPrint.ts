@@ -739,7 +739,7 @@
       '<tr><td class="c" colspan="2">Waktu Tunggu</td></tr>' +
       '<tr><td class="third">Masuk</td><td></td></tr>' +
       '<tr><td>Diserahkan</td><td></td></tr>' +
-      '<tr><td class="twothird">Paraf dan Pasien/Keluarga</td><td class="blk3"></td></tr>' +
+      '<tr><td class="twothird">Paraf Pasien/Keluarga</td><td class="blk3"></td></tr>' +
       '</tbody></table>';
 
     const html =
