@@ -101,6 +101,7 @@
       no: string;
       name: string;
       jml: string;
+      jumlahJadi: string; // jumlah jadi racik (total racikan)
       aturan: string[];
       subMeds: SubMed[];
     }
@@ -117,7 +118,7 @@
         const numMatch = left.match(/^(?:R\/)?(\d+)/);
         if (numMatch) {
           const num = numMatch[1];
-          const med: Med = { no: num, name: '', jml: '', aturan: [], subMeds: [] };
+          const med: Med = { no: num, name: '', jml: '', jumlahJadi: '', aturan: [], subMeds: [] };
           medsMap.set(num, med);
           lastMed = med;
           // Baris pertama racikan: bisa nama obat TUNGGAL (R/x + Jml) atau
@@ -160,7 +161,12 @@
           });
           return;
         }
-        // Sel polos: "Tablet" / "Jumlah : 10" / "(3x1)" → aturan/sediaan.
+        // Sel polos: "Tablet" (sediaan) / "Jumlah : 10" (total racikan) / "(3x1)" (aturan)
+        const jmlJadi = right.match(/^Jumlah\s*:\s*(.+)$/i);
+        if (jmlJadi) {
+          lastMed.jumlahJadi = jmlJadi[1].trim();
+          return;
+        }
         lastMed.aturan.push(right);
       });
       meds.push(...medsMap.values());
@@ -475,9 +481,15 @@
                 .join('') +
               '</div>'
             : '') +
-          // Aturan & baris sediaan/Jumlah (polos) milik racikan.
+          // Aturan & baris sediaan (polos) milik racikan.
           (m.aturan.length
             ? '<div class="med-aturan">' + m.aturan.map((a) => esc(a)).join('<br/>') + '</div>'
+            : '') +
+          // Jumlah jadi racik — ditaruh paling bawah dari blok obat ini.
+          (m.jumlahJadi
+            ? '<div class="med-jadiracik"><span>Jumlah jadi racik: ' +
+              esc(m.jumlahJadi) +
+              '</span></div>'
             : '') +
           '</div>',
       )
@@ -654,6 +666,9 @@
         .med-submed-name{font-weight:600}
         .med-submed-detail{font-weight:400}
         .med-submed-jml{font-weight:600;color:#047857}
+        /* JUMLAH JADI RACIK — di bawah aturan, menonjol */
+        .med-jadiracik{margin-top:4px;border-top:0.5pt solid #333;padding-top:3px;font-size:11px}
+        .med-jadiracik span{font-weight:700;color:#000}
 
         /* TABEL — checklist */
         table{width:100%;border-collapse:collapse;font-size:11px}
