@@ -251,10 +251,11 @@
     }, 10000);
   }
 
-  function buildSpokenText(nomor: string, loket: string): string {
+  function buildSpokenText(nomor: string, loket: string, nama?: string): string {
     const n = nomor || '';
-    if (!loket) return `Nomor antrian ${n}`;
-    return `Nomor antrian ${n}, ke loket ${loket.toUpperCase()}`;
+    const name = nama?.trim() || '';
+    if (!loket) return `Nomor antrian ${n}${name ? ', atas nama ' + name : ''}`;
+    return `Nomor antrian ${n}, ke loket ${loket.toUpperCase()}${name ? ', atas nama ' + name : ''}`;
   }
 
   /* ---- CHIME (bel 2 nada sebelum TTS) ---- */
@@ -600,9 +601,9 @@
           const loketName = String(
             (opt?.text || opt.value || '').replace(/^LOKET\s+/i, '').toUpperCase(),
           );
-          const spoken = buildSpokenText(antrian, loketName);
+          const spoken = buildSpokenText(antrian, loketName, nama);
           speak(spoken);
-          extLog('tts_call', true, { antrian, loket: loketName, spoken });
+          extLog('tts_call', true, { antrian, loket: loketName, nama, spoken });
           return origCall.apply(this, [antrian, nama]);
         };
         (wrapped as any).__extTtsHooked = true;
@@ -821,8 +822,9 @@
             if (callId && callId !== lastCallId) {
               lastCallId = callId;
               chime(); // bel dulu, baru suara (perhatian di ruang tunggu)
-              setTimeout(() => speak(buildSpokenText(nomor, loket)), 450);
-              extLog('display_active', true, { nomor, loket, id: callId });
+              const nama = String(r.NAMA_PASIEN || r.NAMA || '').trim();
+              setTimeout(() => speak(buildSpokenText(nomor, loket, nama)), 450);
+              extLog('display_active', true, { nomor, loket, nama, id: callId });
             }
           } catch {
             /* parse error */

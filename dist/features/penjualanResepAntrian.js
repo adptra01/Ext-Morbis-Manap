@@ -608,11 +608,14 @@ var __morbis_feature = (() => {
     });
   }
 
-  // src/features/farmasiAntrolShift.ts
-  if (window.__extAntrolShift) {
-    throw new Error('skip double inject farmasiAntrolShift');
+  // src/features/penjualanResepAntrian.ts
+  if (window.__extPenjualanAntrian) {
+    throw new Error('skip double inject penjualanResepAntrian');
   }
-  window.__extAntrolShift = true;
+  window.__extPenjualanAntrian = true;
+  var urlParams = new URLSearchParams(location.search);
+  var URL_ID_VISIT = urlParams.get('visit') ?? '';
+  var URL_ID_RESEP = urlParams.get('id') ?? '';
   function resolveNamaPasien() {
     const fromInput = document.querySelector('#nama_pasien')?.value?.trim();
     if (fromInput) return fromInput.toUpperCase();
@@ -635,9 +638,8 @@ var __morbis_feature = (() => {
     for (const h of headers) {
       if (
         h.closest('.modal, .modal-header, .modal-body, .dropdown, .dropdown-menu, [role="dialog"]')
-      ) {
+      )
         continue;
-      }
       const t = (h.textContent || '').trim();
       if (!t || t.length < 4 || t.length > 60) continue;
       if (PAGE_KEYWORDS.test(t)) continue;
@@ -662,25 +664,22 @@ var __morbis_feature = (() => {
     }
     return '';
   }
+  function getField(id, fallbackName) {
+    const v1 = document.querySelector('#' + id)?.value?.trim() || '';
+    if (v1) return v1;
+    if (fallbackName) {
+      const v2 = document.querySelector('input[name="' + fallbackName + '"]')?.value?.trim() || '';
+      if (v2) return v2;
+    }
+    if (id === 'id_resep') return URL_ID_RESEP;
+    if (id === 'id_visit') return URL_ID_VISIT;
+    return '';
+  }
   var reader = {
-    get: (id, fallbackName) =>
-      (
-        document.querySelector('#' + id)?.value ||
-        (fallbackName ? document.querySelector('input[name="' + fallbackName + '"]')?.value : '') ||
-        ''
-      ).trim(),
+    get: getField,
     namaPasien: resolveNamaPasien,
     tglLahir: resolveTglLahir,
   };
-  function getField(id, fallbackName) {
-    return (
-      document.querySelector('#' + id)?.value?.trim() ||
-      (fallbackName
-        ? document.querySelector('input[name="' + fallbackName + '"]')?.value?.trim()
-        : '') ||
-      ''
-    );
-  }
   function renderActionBar(state, code) {
     const bar = document.querySelector('#ext-antrian-bar');
     if (!bar) return;
@@ -734,7 +733,7 @@ var __morbis_feature = (() => {
         btn.textContent = 'Memproses\u2026';
       }
       antrikanResep(idVisit, nomorResep2, jenis, reader)
-        .then((code2) => renderActionBar('issued', code2))
+        .then((c) => renderActionBar('issued', c))
         .catch((e) => alert('[MORBIS Ext] ' + (e?.message || 'gagal mengantrikan')))
         .finally(() => {
           if (btn) {
@@ -751,17 +750,60 @@ var __morbis_feature = (() => {
       const td = Array.from(document.querySelectorAll('td[valign="top"]')).find((c) =>
         c.querySelector('fieldset#perhatian, fieldset[id="perhatian"]'),
       );
-      if (!td) return null;
-      const fieldset = document.createElement('fieldset');
-      fieldset.id = 'ext-antrian-fieldset';
-      fieldset.style.cssText = 'margin-top:6px;';
-      fieldset.innerHTML = '<legend>Antrian Farmasi</legend>';
-      const bar = document.createElement('div');
-      bar.id = 'ext-antrian-bar';
-      bar.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;';
-      fieldset.appendChild(bar);
-      td.appendChild(fieldset);
-      return bar;
+      if (td) {
+        const fieldset = document.createElement('fieldset');
+        fieldset.id = 'ext-antrian-fieldset';
+        fieldset.style.cssText = 'margin-top:6px;';
+        fieldset.innerHTML = '<legend>Antrian Farmasi</legend>';
+        const bar = document.createElement('div');
+        bar.id = 'ext-antrian-bar';
+        bar.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;';
+        fieldset.appendChild(bar);
+        td.appendChild(fieldset);
+        return bar;
+      }
+      const form = document.querySelector('form');
+      if (form) {
+        const fieldset = document.createElement('fieldset');
+        fieldset.id = 'ext-antrian-fieldset';
+        fieldset.style.cssText = 'margin-top:6px;';
+        fieldset.innerHTML = '<legend>Antrian Farmasi</legend>';
+        const bar = document.createElement('div');
+        bar.id = 'ext-antrian-bar';
+        bar.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;';
+        fieldset.appendChild(bar);
+        const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+        if (submitBtn) {
+          submitBtn.parentElement?.insertBefore(fieldset, submitBtn);
+        } else {
+          form.prepend(fieldset);
+        }
+        return bar;
+      }
+      const panel = document.querySelector('.card-body, .panel-body, .form-horizontal');
+      if (panel) {
+        const fieldset = document.createElement('fieldset');
+        fieldset.id = 'ext-antrian-fieldset';
+        fieldset.style.cssText = 'margin-top:6px;';
+        fieldset.innerHTML = '<legend>Antrian Farmasi</legend>';
+        const bar = document.createElement('div');
+        bar.id = 'ext-antrian-bar';
+        bar.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;';
+        fieldset.appendChild(bar);
+        panel.prepend(fieldset);
+        return bar;
+      }
+      if (!document.getElementById('ext-antrian-fieldset')) {
+        const div = document.createElement('div');
+        div.id = 'ext-antrian-fieldset';
+        div.style.cssText =
+          'position:fixed;top:60px;right:12px;z-index:9999;background:#fff;border:1px solid #ccc;border-radius:8px;padding:8px;box-shadow:0 2px 8px rgba(0,0,0,.15);';
+        div.innerHTML =
+          '<legend style="font-weight:700;margin-bottom:4px;display:block;">Antrian Farmasi</legend><div id="ext-antrian-bar" style="display:flex;flex-wrap:wrap;align-items:center;"></div>';
+        document.body.appendChild(div);
+        return div.querySelector('#ext-antrian-bar');
+      }
+      return null;
     };
     const tryInject = () => {
       const existing = document.querySelector('#ext-antrian-bar');
@@ -829,4 +871,4 @@ var __morbis_feature = (() => {
     };
   }
 })();
-//# sourceMappingURL=farmasiAntrolShift.js.map
+//# sourceMappingURL=penjualanResepAntrian.js.map

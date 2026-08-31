@@ -198,10 +198,11 @@ var __morbis_feature = (() => {
         }
       }, 1e4);
     }
-    function buildSpokenText(nomor, loket) {
+    function buildSpokenText(nomor, loket, nama) {
       const n = nomor || '';
-      if (!loket) return `Nomor antrian ${n}`;
-      return `Nomor antrian ${n}, ke loket ${loket.toUpperCase()}`;
+      const name = nama?.trim() || '';
+      if (!loket) return `Nomor antrian ${n}${name ? ', atas nama ' + name : ''}`;
+      return `Nomor antrian ${n}, ke loket ${loket.toUpperCase()}${name ? ', atas nama ' + name : ''}`;
     }
     function bellNote(ctx, freq, at, dur, vol) {
       [1, 2, 2.76, 5.4].forEach((h, i) => {
@@ -459,9 +460,9 @@ var __morbis_feature = (() => {
             const loketName = String(
               (opt?.text || opt.value || '').replace(/^LOKET\s+/i, '').toUpperCase(),
             );
-            const spoken = buildSpokenText(antrian, loketName);
+            const spoken = buildSpokenText(antrian, loketName, nama);
             speak(spoken);
-            extLog('tts_call', true, { antrian, loket: loketName, spoken });
+            extLog('tts_call', true, { antrian, loket: loketName, nama, spoken });
             return origCall.apply(this, [antrian, nama]);
           };
           wrapped.__extTtsHooked = true;
@@ -638,8 +639,9 @@ var __morbis_feature = (() => {
               if (callId && callId !== lastCallId) {
                 lastCallId = callId;
                 chime();
-                setTimeout(() => speak(buildSpokenText(nomor, loket)), 450);
-                extLog('display_active', true, { nomor, loket, id: callId });
+                const nama = String(r.NAMA_PASIEN || r.NAMA || '').trim();
+                setTimeout(() => speak(buildSpokenText(nomor, loket, nama)), 450);
+                extLog('display_active', true, { nomor, loket, nama, id: callId });
               }
             } catch {}
           };

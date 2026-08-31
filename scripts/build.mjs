@@ -77,6 +77,7 @@ async function compileFeatureFiles() {
     'penerimaanAntrolCetak.ts',
     'ttvEditor.ts',
     'cancelButton.ts',
+    'penjualanResepAntrian.ts',
     'telaahResepPrint.ts',
     'resumeTab/mount.tsx',
     'resumeRanapTab/mount.tsx',

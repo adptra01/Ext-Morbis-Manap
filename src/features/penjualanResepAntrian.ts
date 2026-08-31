@@ -1,15 +1,11 @@
 /**
- * farmasiAntrolShift
+ * penjualanResepAntrian
  *
- * Alur antrian farmasi berbasis keputusan petugas, bukan otomatis:
- *   pasien datang → petugas buka Detail → klik tombol "Antrian & Cetak"
- *   → resep masuk antrian (POST antrol) + ENQUEUE ke App Antrian (Reports
- *   SIMRS — source of truth nomor T-XX/R-XX, app assign per jenis)
- *   → kartu kertas tercetak (nomor dari app) → petugas siapkan → Simpan.
+ * Antrian farmasi di halaman detail penjualan resep edit:
+ *   /inventory/penjualan-resep-edit/detail?norm=...&visit=...&penjualan=...&id=...
  *
- * Host: /inventory/resep/penerimaan/detail?id=... (detail resep penerimaan).
- * Aksi antrian di-shared (lihat shared/antrianActions.ts) — host hanya
- * menyuplai baca-field DOM + target injeksi.
+ * Sama spt farmasiAntrolShift tapi target DOM & baca-field berbeda.
+ * Aksi antrian pakai shared/antrianActions.
  */
 import {
   lookupAntrianAny,
@@ -21,14 +17,18 @@ import {
 } from './shared/antrianActions';
 import { whenAntrianFarmasiActive } from './shared/farmasiQueueSync';
 
-// Guard anti double-inject (SPA MORBIS bisa inject content script >1×).
-if ((window as unknown as { __extAntrolShift?: boolean }).__extAntrolShift) {
-  throw new Error('skip double inject farmasiAntrolShift');
+// Guard anti double-inject
+if ((window as unknown as { __extPenjualanAntrian?: boolean }).__extPenjualanAntrian) {
+  throw new Error('skip double inject penjualanResepAntrian');
 }
-(window as unknown as { __extAntrolShift?: boolean }).__extAntrolShift = true;
+(window as unknown as { __extPenjualanAntrian?: boolean }).__extPenjualanAntrian = true;
 
-/** Nama pasien: input hidden #nama_pasien → #nama → sel berlabel "Nama Pasien"
- *  → header halaman (SANGAT ketat, tolak judul halaman). */
+/** URL params: visit=id_visit, id=id_resep. */
+const urlParams = new URLSearchParams(location.search);
+const URL_ID_VISIT = urlParams.get('visit') ?? '';
+const URL_ID_RESEP = urlParams.get('id') ?? '';
+
+/** Nama pasien: #nama_pasien / #nama / label "Nama Pasien" / header fallback. */
 function resolveNamaPasien(): string {
   const fromInput = document.querySelector<HTMLInputElement>('#nama_pasien')?.value?.trim();
   if (fromInput) return fromInput.toUpperCase();
@@ -51,11 +51,8 @@ function resolveNamaPasien(): string {
     /(resep|penjualan|antrian|farmasi|penerimaan|pendaftaran|detail|edit|input|rekap|daftar|shift|cetak|pembayaran|penyerahan|racik|racikan|obat|kasir|pilih|aturan|pakai|dosis|jumlah|satuan|harga|total|biaya|unit|depo|kekuatan|tipe|standar|kronis|klaim|inacbgs|batch|aksi|tambah|selesai|hapus|kembali|simpan)/i;
   const headers = Array.from(document.querySelectorAll('h1, h2, h3, .page-title, .card-title'));
   for (const h of headers) {
-    if (
-      h.closest('.modal, .modal-header, .modal-body, .dropdown, .dropdown-menu, [role="dialog"]')
-    ) {
+    if (h.closest('.modal, .modal-header, .modal-body, .dropdown, .dropdown-menu, [role="dialog"]'))
       continue;
-    }
     const t = (h.textContent || '').trim();
     if (!t || t.length < 4 || t.length > 60) continue;
     if (PAGE_KEYWORDS.test(t)) continue;
@@ -66,7 +63,7 @@ function resolveNamaPasien(): string {
   return '';
 }
 
-/** Tanggal lahir pasien dari hidden input #tgl_lahir / baris "Tanggal lahir". */
+/** Tanggal lahir: #tgl_lahir / baris "Tanggal lahir". */
 function resolveTglLahir(): string {
   const fromInput = document.querySelector<HTMLInputElement>('#tgl_lahir')?.value?.trim();
   if (fromInput) return fromInput;
@@ -83,32 +80,30 @@ function resolveTglLahir(): string {
   return '';
 }
 
+/** Baca field hidden input by id + fallback name. */
+function getField(id: string, fallbackName?: string): string {
+  const v1 = document.querySelector<HTMLInputElement>('#' + id)?.value?.trim() || '';
+  if (v1) return v1;
+  if (fallbackName) {
+    const v2 =
+      document
+        .querySelector<HTMLInputElement>('input[name="' + fallbackName + '"]')
+        ?.value?.trim() || '';
+    if (v2) return v2;
+  }
+  // Fallback ke URL params utk id_resep/id_visit
+  if (id === 'id_resep') return URL_ID_RESEP;
+  if (id === 'id_visit') return URL_ID_VISIT;
+  return '';
+}
+
 const reader: AntrianFieldReader = {
-  get: (id, fallbackName) =>
-    (
-      document.querySelector<HTMLInputElement>('#' + id)?.value ||
-      (fallbackName
-        ? document.querySelector<HTMLInputElement>('input[name="' + fallbackName + '"]')?.value
-        : '') ||
-      ''
-    ).trim(),
+  get: getField,
   namaPasien: resolveNamaPasien,
   tglLahir: resolveTglLahir,
 };
 
-function getField(id: string, fallbackName?: string): string {
-  return (
-    document.querySelector<HTMLInputElement>('#' + id)?.value?.trim() ||
-    (fallbackName
-      ? document
-          .querySelector<HTMLInputElement>('input[name="' + fallbackName + '"]')
-          ?.value?.trim()
-      : '') ||
-    ''
-  );
-}
-
-/** Render bar tombol aksi sesuai state: ready | issued (code). */
+/** Render bar tombol aksi: ready | issued(code). */
 function renderActionBar(state: 'ready' | 'issued', code?: string): void {
   const bar = document.querySelector<HTMLElement>('#ext-antrian-bar');
   if (!bar) return;
@@ -153,6 +148,7 @@ function renderActionBar(state: 'ready' | 'issued', code?: string): void {
     });
     return;
   }
+  // Ready state: tombol racik + tunggal
   bar.innerHTML =
     '<button id="ext-antrian-racik" class="btn" style="margin:2px 6px 2px 0;background:#d97706;color:#fff;border-color:#d97706;" title="Antrikan sebagai obat RACIKAN (nomor R-XX)">Antrikan obat racik</button>' +
     '<button id="ext-antrian-tunggal" class="btn" style="margin:2px 0;background:#2193cf;color:#fff;border-color:#2193cf;" title="Antrikan sebagai obat TUNGGAL (nomor T-XX)">Antrikan obat tunggal</button>';
@@ -171,7 +167,7 @@ function renderActionBar(state: 'ready' | 'issued', code?: string): void {
       btn.textContent = 'Memproses…';
     }
     antrikanResep(idVisit, nomorResep2, jenis, reader)
-      .then((code) => renderActionBar('issued', code))
+      .then((c) => renderActionBar('issued', c))
       .catch((e) => alert('[MORBIS Ext] ' + (e?.message || 'gagal mengantrikan')))
       .finally(() => {
         if (btn) {
@@ -184,22 +180,76 @@ function renderActionBar(state: 'ready' | 'issued', code?: string): void {
   bar.querySelector('#ext-antrian-tunggal')?.addEventListener('click', () => klik('tunggal'));
 }
 
+/** Cari host injeksi di halaman penjualan-resep-edit/detail.
+ *  Pola: cari form/detail container, sisipkan fieldset "Antrian Farmasi" di atas tombol Simpan
+ *  atau di kolom kanan form. Fallback: inject ke body (fixed top-right) agar tetap terlihat. */
 function addAntrianBar(): void {
   const findHost = (): HTMLElement | null => {
+    // Coba 1: fieldset perhatian (sama spt penerimaan)
     const td = Array.from(document.querySelectorAll<HTMLTableCellElement>('td[valign="top"]')).find(
       (c) => c.querySelector('fieldset#perhatian, fieldset[id="perhatian"]'),
     );
-    if (!td) return null;
-    const fieldset = document.createElement('fieldset');
-    fieldset.id = 'ext-antrian-fieldset';
-    fieldset.style.cssText = 'margin-top:6px;';
-    fieldset.innerHTML = '<legend>Antrian Farmasi</legend>';
-    const bar = document.createElement('div');
-    bar.id = 'ext-antrian-bar';
-    bar.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;';
-    fieldset.appendChild(bar);
-    td.appendChild(fieldset);
-    return bar;
+    if (td) {
+      const fieldset = document.createElement('fieldset');
+      fieldset.id = 'ext-antrian-fieldset';
+      fieldset.style.cssText = 'margin-top:6px;';
+      fieldset.innerHTML = '<legend>Antrian Farmasi</legend>';
+      const bar = document.createElement('div');
+      bar.id = 'ext-antrian-bar';
+      bar.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;';
+      fieldset.appendChild(bar);
+      td.appendChild(fieldset);
+      return bar;
+    }
+
+    // Coba 2: form detail utama — cari .card/.panel/form, inject sebelum tombol submit
+    const form = document.querySelector('form');
+    if (form) {
+      const fieldset = document.createElement('fieldset');
+      fieldset.id = 'ext-antrian-fieldset';
+      fieldset.style.cssText = 'margin-top:6px;';
+      fieldset.innerHTML = '<legend>Antrian Farmasi</legend>';
+      const bar = document.createElement('div');
+      bar.id = 'ext-antrian-bar';
+      bar.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;';
+      fieldset.appendChild(bar);
+      // Insert di awal form atau sebelum submit
+      const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+      if (submitBtn) {
+        submitBtn.parentElement?.insertBefore(fieldset, submitBtn);
+      } else {
+        form.prepend(fieldset);
+      }
+      return bar;
+    }
+
+    // Coba 3: .card-body / .panel-body / .form-horizontal
+    const panel = document.querySelector('.card-body, .panel-body, .form-horizontal');
+    if (panel) {
+      const fieldset = document.createElement('fieldset');
+      fieldset.id = 'ext-antrian-fieldset';
+      fieldset.style.cssText = 'margin-top:6px;';
+      fieldset.innerHTML = '<legend>Antrian Farmasi</legend>';
+      const bar = document.createElement('div');
+      bar.id = 'ext-antrian-bar';
+      bar.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;';
+      fieldset.appendChild(bar);
+      panel.prepend(fieldset);
+      return bar;
+    }
+
+    // Fallback: fixed badge di kanan atas halaman
+    if (!document.getElementById('ext-antrian-fieldset')) {
+      const div = document.createElement('div');
+      div.id = 'ext-antrian-fieldset';
+      div.style.cssText =
+        'position:fixed;top:60px;right:12px;z-index:9999;background:#fff;border:1px solid #ccc;border-radius:8px;padding:8px;box-shadow:0 2px 8px rgba(0,0,0,.15);';
+      div.innerHTML =
+        '<legend style="font-weight:700;margin-bottom:4px;display:block;">Antrian Farmasi</legend><div id="ext-antrian-bar" style="display:flex;flex-wrap:wrap;align-items:center;"></div>';
+      document.body.appendChild(div);
+      return div.querySelector('#ext-antrian-bar') as HTMLElement;
+    }
+    return null;
   };
 
   const tryInject = (): void => {
@@ -237,15 +287,13 @@ function addAntrianBar(): void {
   window.setTimeout(tryInject, 5000);
 }
 
-// Gate: hanya jalan bila fitur antrianFarmasi aktif di config + role.
+// Gate: fitur antrianFarmasi aktif?
 whenAntrianFarmasiActive(() => {
   blockAutoAntrol();
   addAntrianBar();
 });
 
-/** Blokir POST otomatis `/v2/antrol/search?sub=update_v2` (taskid=6) — MORBIS
- *  picu saat Detail di-load, supaya "buka Detail" tidak lagi otomatis
- *  mengantrikan resep (user memutuskan lewat tombol). */
+/** Blokir POST otomatis `/v2/antrol/search?sub=update_v2` (taskid=6) — sama spt penerimaan. */
 function blockAutoAntrol(): void {
   const isAntrolCall = (url: unknown, body: unknown): boolean =>
     String(url ?? '').includes('/v2/antrol/search') &&
@@ -273,7 +321,6 @@ function blockAutoAntrol(): void {
     }
     return origSend.apply(this, [body] as never);
   };
-
   const origFetch = window.fetch.bind(window);
   window.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
     const url =

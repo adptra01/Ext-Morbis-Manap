@@ -233,6 +233,13 @@
       "all_frames": false
     },
     {
+      "matches": ["http://*/inventory/penjualan-resep-edit/detail*"],
+      "js": ["features/penjualanResepAntrian.js"],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
       "matches": ["http://*/inventory/resep/penerimaan"],
       "js": ["core.js", "init.js"],
       "run_at": "document_end",

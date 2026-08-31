@@ -653,7 +653,7 @@ function miniRow(r: DisplayRow, prefix: string): string {
 /** Satu kolom kategori (swimlane): kartu aktif + berikutnya + tombol Selanjutnya. */
 function column(cat: 'tunggal' | 'racikan', active: DisplayRow[], next: DisplayRow[]): string {
   const m = CAT_META[cat];
-  const nextList = next.slice(0, 5);
+  const nextList = next; // ponytail: semua baris menunggu ditampilkan (scroll otomatis via overflow-y:auto)
   const nextBtn = nextList.length
     ? '<button class="ext-op-act" data-ev="CALL" data-num="' +
       nextList[0].queue_number +
@@ -685,13 +685,21 @@ function column(cat: 'tunggal' | 'racikan', active: DisplayRow[], next: DisplayR
     (active.length
       ? ''
       : '<div style="padding:14px;background:#fff;border:1px dashed #ced4da;border-radius:12px;color:#6c757d;text-align:center;font-size:13px;margin-bottom:10px;flex-shrink:0;">Belum ada panggilan aktif</div>') +
+    // "Berikutnya" section: label + scrollable list, button sticky di bawah.
+    '<div style="display:flex;flex-direction:column;flex:1;min-height:0;max-height:350px;overflow:hidden;">' +
     '<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin:4px 2px 6px;flex-shrink:0;">Berikutnya</div>' +
     '<div style="flex:1;min-height:0;overflow-y:auto;padding-right:4px;">' +
     (nextList.length
       ? nextList.map((r) => miniRow(r, 'op-' + cat)).join('')
       : '<div style="padding:10px;color:#adb5bd;text-align:center;font-size:12px;">Tidak ada antrean berikutnya</div>') +
+    // ponytail: button sticky di bawah scroll area — selalu terlihat meskipun banyak baris
+    (nextList.length
+      ? '<div style="position:sticky;bottom:0;padding:6px 0 2px;background:linear-gradient(transparent,#f1f3f5 30%);">' +
+        nextBtn.replace('width:100%;margin-top:8px;', 'width:100%;') +
+        '</div>'
+      : '') +
     '</div>' +
-    nextBtn.replace('width:100%;margin-top:8px;', 'width:100%;margin-top:8px;flex-shrink:0;') +
+    '</div>' +
     '</div>'
   );
 }
