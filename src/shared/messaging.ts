@@ -23,6 +23,10 @@ export const MessageTypes = {
   BATCH_UPLOAD_ACTION: 'BATCH_UPLOAD_ACTION',
   BATCH_DELETE_ACTION: 'BATCH_DELETE_ACTION',
   PROXY_FETCH: 'PROXY_FETCH',
+  // Queue API via service worker (PNA-immune): content script → background →
+  // server antrian. SW punya host_permissions http://*/* sehingga fetch ke server
+  // lokal/privat (192.168.x) dari halaman HTTP publik TIDAK diblokir PNA.
+  QUEUE_API: 'QUEUE_API',
   // TTS: content script → background service worker → local TTS service.
   // SW fetch bebas PNA/CORS halaman (host_permissions http://*/*) sehingga
   // halaman HTTP publik MORBIS bisa ambil MP3 dari 127.0.0.1:8765.
@@ -63,6 +67,14 @@ type RequestMap = {
   // Proxy fetch (side panel → background: fetch HTML from hospital server)
   PROXY_FETCH: { type: 'PROXY_FETCH'; url: string; method: string; data: Record<string, string> };
 
+  // Queue API proxied through service worker (PNA-immune). body optional JSON.
+  QUEUE_API: {
+    type: 'QUEUE_API';
+    url: string;
+    method?: string;
+    body?: unknown;
+  };
+
   // TTS local: content script → background → 127.0.0.1:8765/tts → MP3 bytes
   TTS_LOCAL: { type: 'TTS_LOCAL'; text: string };
 
@@ -101,6 +113,7 @@ type ResponseMap = {
   BATCH_UPLOAD_ACTION: { success: true };
   BATCH_DELETE_ACTION: { success: true };
   PROXY_FETCH: { success: boolean; html?: string; error?: string };
+  QUEUE_API: { ok: boolean; status?: number; contentType?: string; data?: unknown; error?: string };
   TTS_LOCAL: { ok: boolean; mime?: string; data?: string; reason?: string };
   LOG_TO_TELEGRAM: { success: boolean };
 };

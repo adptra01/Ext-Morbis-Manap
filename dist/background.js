@@ -24,6 +24,10 @@ var __morbis_bg = (() => {
     BATCH_UPLOAD_ACTION: 'BATCH_UPLOAD_ACTION',
     BATCH_DELETE_ACTION: 'BATCH_DELETE_ACTION',
     PROXY_FETCH: 'PROXY_FETCH',
+    // Queue API via service worker (PNA-immune): content script → background →
+    // server antrian. SW punya host_permissions http://*/* sehingga fetch ke server
+    // lokal/privat (192.168.x) dari halaman HTTP publik TIDAK diblokir PNA.
+    QUEUE_API: 'QUEUE_API',
     // TTS: content script → background service worker → local TTS service.
     // SW fetch bebas PNA/CORS halaman (host_permissions http://*/*) sehingga
     // halaman HTTP publik MORBIS bisa ambil MP3 dari 127.0.0.1:8765.
@@ -558,6 +562,35 @@ var __morbis_bg = (() => {
             sendResponse({ success: true, html: text });
           } catch (e) {
             sendResponse({ success: false, error: String(e) });
+          }
+        })();
+        return true;
+      }
+      case 'QUEUE_API': {
+        (async () => {
+          try {
+            const { url, method = 'GET', body } = validated;
+            const opts = { method, cache: 'no-store' };
+            if (body !== void 0 && body !== null) {
+              opts.body = JSON.stringify(body);
+              opts.headers = { 'Content-Type': 'application/json' };
+            }
+            const res = await fetch(url, opts);
+            const contentType = res.headers.get('content-type') || '';
+            let data = null;
+            try {
+              data = await res.json();
+            } catch {
+              data = await res.text();
+            }
+            sendResponse({
+              ok: true,
+              status: res.status,
+              contentType,
+              data,
+            });
+          } catch (e) {
+            sendResponse({ ok: false, error: String(e) });
           }
         })();
         return true;

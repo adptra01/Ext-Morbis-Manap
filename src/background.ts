@@ -610,6 +610,49 @@ chrome.runtime.onMessage.addListener(
         return true;
       }
 
+      case 'QUEUE_API': {
+        // Queue API diproxy lewat service worker: SW punya host_permissions
+        // http://*/* (bukan konteks halaman publik) → fetch ke server antrian
+        // lokal/privat (mis. 192.168.8.4) BEBAS dari blokir PNA/CORS halaman.
+        // Balas status + content-type + data JSON supaya caller bisa tolak
+        // host SPA (return 200 HTML, bukan JSON) sama seperti fetch langsung.
+        (async () => {
+          try {
+            const {
+              url,
+              method = 'GET',
+              body,
+            } = validated as unknown as {
+              url: string;
+              method?: string;
+              body?: unknown;
+            };
+            const opts: RequestInit = { method: method as string, cache: 'no-store' };
+            if (body !== undefined && body !== null) {
+              opts.body = JSON.stringify(body);
+              opts.headers = { 'Content-Type': 'application/json' };
+            }
+            const res = await fetch(url as string, opts);
+            const contentType = res.headers.get('content-type') || '';
+            let data: unknown = null;
+            try {
+              data = await res.json();
+            } catch {
+              data = await res.text();
+            }
+            sendResponse({
+              ok: true,
+              status: res.status,
+              contentType,
+              data,
+            });
+          } catch (e) {
+            sendResponse({ ok: false, error: String(e) });
+          }
+        })();
+        return true;
+      }
+
       case 'TTS_LOCAL': {
         // Network fetch Layer-0 dipindah ke sini: service worker punya izin host
         // http://*/* sehingga fetch ke 127.0.0.1:8765 TIDAK kena PNA/CORS halaman

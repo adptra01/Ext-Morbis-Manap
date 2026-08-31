@@ -118,7 +118,9 @@ async function compileFeatureFiles() {
       });
       console.log(`[build] Compiled ${relativePath}`);
     } catch (e) {
-      console.warn(`[build] Failed to compile ${relativePath}`);
+      console.warn(`[build] Failed to compile ${relativePath}: ${e.message?.slice(0, 120) || e}`);
+      // Write empty stub so manifest entry doesn't break extension load
+      writeFileSync(jsOutputPath, '// compile failed — stub');
     }
   }
 }

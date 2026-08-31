@@ -240,6 +240,19 @@ var __morbis_feature = (() => {
     return true;
   }
 
+  // src/shared/messaging.ts
+  function sendMessage(message) {
+    return new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage(message, (response) => {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError);
+        } else {
+          resolve(response);
+        }
+      });
+    });
+  }
+
   // src/features/shared/farmasiQueueSync.ts
   var FARMASI_APP_BASE = 'http://dev.rsudkotajambi.id/rs';
   var cachedBase = null;
@@ -254,6 +267,21 @@ var __morbis_feature = (() => {
     }
   }
   var FALLBACK_CANDIDATES = ['http://dev.rsudkotajambi.id/rs', 'http://103.147.236.138/rs'];
+  async function queueApiFetch(url, method, body) {
+    return sendMessage({ type: 'QUEUE_API', url, method, body });
+  }
+  function withTimeout(p, ms) {
+    return new Promise((resolve, reject) => {
+      const tid = setTimeout(() => reject(new Error('timeout')), ms);
+      p.then((v) => {
+        clearTimeout(tid);
+        resolve(v);
+      }).catch((e) => {
+        clearTimeout(tid);
+        reject(e);
+      });
+    });
+  }
   function probeFarmasiAppBase() {
     if (basePromise) return basePromise;
     basePromise = (async () => {
@@ -265,16 +293,12 @@ var __morbis_feature = (() => {
       const candidates = [.../* @__PURE__ */ new Set([...stored, ...FALLBACK_CANDIDATES])];
       for (const base of candidates) {
         try {
-          const ctrl = new AbortController();
-          const t = setTimeout(() => ctrl.abort(), 2500);
-          const res = await fetch(base + '/api/queue/lookup?resep_id=probe', {
-            cache: 'no-store',
-            credentials: 'omit',
-            signal: ctrl.signal,
-          });
-          clearTimeout(t);
-          const ct = res.headers.get('content-type') || '';
-          if ((res.status === 200 || res.status === 422) && ct.includes('application/json')) {
+          const r = await withTimeout(
+            queueApiFetch(base + '/api/queue/lookup?resep_id=probe', 'GET'),
+            2500,
+          );
+          const ct = r.contentType || '';
+          if ((r.status === 200 || r.status === 422) && ct.includes('application/json')) {
             cachedBase = base;
             return base;
           }

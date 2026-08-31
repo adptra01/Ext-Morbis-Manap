@@ -9,6 +9,8 @@
  * Override via localStorage 'ext-farmasi-app-base' (untuk tes lintas env, mis.
  * DDEV: http://simrs-reports.ddev.site).
  */
+import { sendMessage } from '../../shared/messaging';
+
 export const FARMASI_APP_BASE = 'http://dev.rsudkotajambi.id/rs';
 
 export type QueueEventType = 'ENQUEUE' | 'CALL' | 'RECALL' | 'SKIP' | 'DONE' | 'TUNDA' | 'BATAL';
@@ -50,6 +52,30 @@ async function storedBaseCandidates(): Promise<string[]> {
 
 const FALLBACK_CANDIDATES = ['http://dev.rsudkotajambi.id/rs', 'http://103.147.236.138/rs'];
 
+/** Fetch API antrian via service worker — PNA-immune. SW punya host_permissions
+ *  (semua http/https) dan tidak berjalan dari konteks halaman publik, jadi fetch
+ *  ke server lokal/privat (mis. 192.168.8.4) dari halaman http://103.x TIDAK
+ *  diblokir PNA. Balas { ok, status, contentType, data } supaya caller tetap bisa
+ *  menolak host SPA (return 200 HTML, bukan JSON) seperti fetch langsung. */
+// ponytail: cast supaya TS generic gak error (pre-existing sendMessage typing issue)
+type QAResult = { ok: boolean; status?: number; contentType?: string; data?: unknown };
+async function queueApiFetch(url: string, method: string, body?: unknown): Promise<QAResult> {
+  return sendMessage({ type: 'QUEUE_API', url, method, body } as never) as Promise<QAResult>;
+}
+
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const tid = setTimeout(() => reject(new Error('timeout')), ms);
+    p.then((v) => {
+      clearTimeout(tid);
+      resolve(v);
+    }).catch((e) => {
+      clearTimeout(tid);
+      reject(e);
+    });
+  });
+}
+
 /** Probe base mana yang hidup (GET /api/queue/lookup?resep_id= kosong → 422
  *  artinya app reachable). Hasil di-cache per sesi. */
 export function farmasiAppBase(): string {
@@ -89,18 +115,16 @@ export function probeFarmasiAppBase(): Promise<string> {
     const candidates = [...new Set([...stored, ...FALLBACK_CANDIDATES])];
     for (const base of candidates) {
       try {
-        const ctrl = new AbortController();
-        const t = setTimeout(() => ctrl.abort(), 2500);
-        const res = await fetch(base + '/api/queue/lookup?resep_id=probe', {
-          cache: 'no-store',
-          credentials: 'omit',
-          signal: ctrl.signal,
-        });
-        clearTimeout(t);
+        // Lewat service worker (QUEUE_API) — fetch langsung dari halaman publik
+        // ke server lokal/privat diblokir PNA; SW kebal PNA via host_permissions.
+        const r = await withTimeout(
+          queueApiFetch(base + '/api/queue/lookup?resep_id=probe', 'GET'),
+          2500,
+        );
         // App hidup = status 200/422 DAN body JSON. Host MORBIS (SPA) juga
         // return 200 untuk path apa pun, tapi HTML — harus ditolak.
-        const ct = res.headers.get('content-type') || '';
-        if ((res.status === 200 || res.status === 422) && ct.includes('application/json')) {
+        const ct = r.contentType || '';
+        if ((r.status === 200 || r.status === 422) && ct.includes('application/json')) {
           cachedBase = base;
           return base;
         }
