@@ -730,17 +730,16 @@
     const bawahHtml =
       '<table class="t-check">' +
       '<thead>' +
-      '<tr><th class="c" colspan="2">Persetujuan Perubahan Resep</th></tr>' +
       '<tr><th class="c" colspan="2">Perubahan resep</th></tr>' +
       '<tr><th class="c half">Tertulis</th><th class="c half">Menjadi</th></tr>' +
       '</thead><tbody>' +
-      '<tr><td class="blk2"></td><td class="blk2"></td></tr>' +
+      '<tr><td class="blk4"></td><td class="blk4"></td></tr>' +
       '<tr><td class="c">Apoteker</td><td class="c">Disetujui Dokter</td></tr>' +
-      '<tr><td class="blk2"></td><td class="blk2"></td></tr>' +
+      '<tr><td class="blk4"></td><td class="blk4"></td></tr>' +
       '<tr><td class="c" colspan="2">Waktu Tunggu</td></tr>' +
       '<tr><td class="third">Masuk</td><td></td></tr>' +
       '<tr><td>Diserahkan</td><td></td></tr>' +
-      '<tr><td class="twothird">Paraf dan Nama<br/>Pasien/Keluarga</td><td class="blk3"></td></tr>' +
+      '<tr><td class="twothird">Paraf dan Pasien/Keluarga</td><td class="blk3"></td></tr>' +
       '</tbody></table>';
 
     const html =
@@ -859,6 +858,7 @@
         .blk{height:34px;padding:.5pt 3px}
         .blk2{min-height:11px}
         .blk3{min-height:45px}
+        .blk4{height:34px;padding:.5pt 3px}
         .t-sub{text-align:center;font-size:11px;margin:4px 0}
 
         /* FOOTER + BUTTON */
