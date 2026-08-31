@@ -566,13 +566,6 @@
       ...(diagnosisUtama.length ? [diagnosisUtama.join(', ')] : []),
       ...(diagnosisSekunder.length ? [diagnosisSekunder.join(', ')] : []),
     ];
-    const diagHtml =
-      '<section class="tm-card">' +
-      '<div class="diag-title">Diagnosa</div>' +
-      '<div class="tm-row"><span class="tm-val">' +
-      (diagValues.length ? esc(diagValues.join(', ')) : '-') +
-      '</span></div>' +
-      '</section>';
 
     // Metadata: pasien (kiri) & dokter (kanan). No HP tetap kiri; data pasien
     // lain (No Resep, Tanggal & Jam, Penjamin) pindah kanan. TANPA bold.
@@ -616,10 +609,15 @@
       ['Penjamin', g('Penjamin')],
     ];
 
+    // Diagnosa digabung jadi baris terakhir di kolom pasien (tanpa border/card),
+    // menyatu setelah No HP. Label "Diagnosa", nilai di bawah.
+    const diagThen = metaLine('Diagnosa', diagValues.length ? diagValues.join(', ') : '-');
+
     const patientMetaHtml =
       '<section class="tm-card">' +
       '<div class="tm-col">' +
       patientRows.map(([l, v]) => metaLine(l, v)).join('') +
+      diagThen +
       '</div>' +
       '</section>';
     const doctorMetaHtml =
@@ -760,7 +758,6 @@
       '<main class="t-main">' +
       '<section class="t-left">' +
       patientMetaHtml +
-      diagHtml +
       '<div class="t-meds">' +
       medListHtml +
       '</div>' +
@@ -810,9 +807,6 @@
         .tm-row{display:flex;flex-direction:column;gap:1px}
         .tm-label{color:#5b6470;font-size:10px;line-height:1.2}
         .tm-val{color:#000;line-height:1.3;word-wrap:break-word}
-        /* DIAGNOSA — font & gaya disamakan dengan info pasien/dokter */
-        .diag-title{font-weight:600;font-size:11px;letter-spacing:0;text-transform:none;color:#000;margin-bottom:2px}
-
         /* MAIN 2 kolom — portrait 105mm: kolom lebih ramping, gap kecil.
            Kolom TIDAK dipaksa sama tinggi (align-items:start) agar bagian bawah
            paraf/tanda tangan tidak membentang kosong. */
