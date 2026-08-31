@@ -48,6 +48,8 @@
 
     // Metadata: peta label → nilai dari dua nested table.
     const metaMap = new Map<string, string>();
+    // Nilai Diagnosa, dipecah per <br> (server render telaah → baris "Diagnosa"):
+    let serverDiag: string[] = [];
     page.querySelectorAll('.halaman > table:first-of-type table').forEach((t) => {
       t.querySelectorAll('tr').forEach((tr) => {
         const tds = tr.querySelectorAll('td');
@@ -55,6 +57,16 @@
         const label = txt(tds[0]);
         const value = txt(tds[1]).replace(/^:\s*/, '');
         if (label && !metaMap.has(label)) metaMap.set(label, value);
+        if (/^diagnosa$/i.test(label)) {
+          // Preserve per-baris (server render pakai <br>) utk daftar diagnosa.
+          const raw = (tds[1].innerHTML || '').replace(/<br\s*\/?>/gi, '\n');
+          const cd = document.createElement('div');
+          cd.innerHTML = raw;
+          serverDiag = (cd.textContent || '')
+            .split('\n')
+            .map((l) => l.trim())
+            .filter((l) => l && !/^:/.test(l) && !/tidak ada/i.test(l));
+        }
       });
     });
 
@@ -146,7 +158,8 @@
     async function fetchRacikanDetails(): Promise<Map<string, SubMed[]>> {
       const map = new Map<string, SubMed[]>();
       const params = new URLSearchParams(window.location.search);
-      const resepId = params.get('id');
+      // Param bisa 'id_resep' (telaah print) ATAU 'id' (endpoint lain) & 'penjualan'
+      const resepId = params.get('id_resep') || params.get('id') || params.get('penjualan') || '';
       if (!resepId) return map;
 
       // Coba 2 endpoint detail: penerimaan & penjualan-edit (keduanya punya fieldset#perhatian)
@@ -302,10 +315,15 @@
 
     // Fetch nomor antrian dari App Antrian (Reports SIMRS) via resep_id
     const params = new URLSearchParams(window.location.search);
-    const resepIdForQueue = params.get('id') ?? '';
+    const resepIdForQueue =
+      params.get('id_resep') || params.get('id') || params.get('penjualan') || '';
     antrianNumber = resepIdForQueue ? await fetchAntrianNumber(resepIdForQueue) : '';
 
     const racikanMap = await fetchRacikanDetails();
+
+    // Fallback: kalau fetch detail tidak dapat diagnosa, pakai baris "Diagnosa"
+    // yang sudah di-render server di halaman telaah (reliable, tanpa network).
+    if (!diagnosisUtama.length && serverDiag.length) diagnosisUtama = serverDiag;
 
     // Merge sub-obat racikan ke dalam meds.
     for (const med of meds) {
