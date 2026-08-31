@@ -855,7 +855,7 @@
         .twothird{width:66.667%}
         /* Sel kosong isi tangan — height eksplisit (min-height tak andal utk
            <td>). Baris admin Hitung/Timbang/Kemas/Paraf. */
-        .blk{height:34px;padding:.5pt 3px}
+        .blk{height:20px;padding:.5pt 3px}
         .blk2{min-height:11px}
         .blk3{min-height:45px}
         .blk4{height:34px;padding:.5pt 3px}
