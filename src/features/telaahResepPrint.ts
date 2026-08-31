@@ -574,19 +574,18 @@
 
     // Diagnosa pasien (utama & sekunder) — dari fieldset#perhatian halaman detail.
     // Tampil sebelum daftar obat supaya konteks klinis jelas saat telaah.
+    // Diagnosa: Utama + Sekunder disatukan dalam satu nilai, tanpa label
+    // "Utama"/"Sekunder" (menyatu sesuai permintaan).
+    const diagValues = [
+      ...(diagnosisUtama.length ? [diagnosisUtama.join(', ')] : []),
+      ...(diagnosisSekunder.length ? [diagnosisSekunder.join(', ')] : []),
+    ];
     const diagHtml =
       '<section class="tm-card">' +
       '<div class="diag-title">Diagnosa</div>' +
-      '<div class="tm-row"><span class="tm-label">Utama</span>' +
-      '<span class="tm-val">' +
-      (diagnosisUtama.length ? esc(diagnosisUtama.join(', ')) : '-') +
+      '<div class="tm-row"><span class="tm-val">' +
+      (diagValues.length ? esc(diagValues.join(', ')) : '-') +
       '</span></div>' +
-      (diagnosisSekunder.length
-        ? '<div class="tm-row"><span class="tm-label">Sekunder</span>' +
-          '<span class="tm-val">' +
-          esc(diagnosisSekunder.join(', ')) +
-          '</span></div>'
-        : '') +
       '</section>';
 
     // Metadata: pasien (kiri, nyambung ke list obat) & dokter (kanan, nyambung
@@ -839,7 +838,9 @@
         .half{width:50%}
         .third{width:33.333%}
         .twothird{width:66.667%}
-        .blk{min-height:18px}
+        /* Sel kosong isi tangan — height eksplisit (min-height tak andal utk
+           <td>). Baris admin Hitung/Timbang/Kemas/Paraf. */
+        .blk{height:34px;padding:.5pt 3px}
         .blk2{min-height:11px}
         .blk3{min-height:45px}
         .t-sub{text-align:center;font-size:11px;margin:4px 0}
