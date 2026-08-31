@@ -743,7 +743,7 @@
       '</tbody></table>';
 
     const html =
-      // HEADER (priority template: items-center, logo 80px, nama + alamat saja)
+      // HEADER 3 kolom: logo | brand & alamat | no antrian
       '<header class="t-head">' +
       '<img class="t-logo" alt="Logo" src="' +
       esc(logoSrc) +
@@ -754,14 +754,7 @@
       '</h1>' +
       (headBody[0] ? '<div class="t-hsub">' + esc(headBody[0]) + '</div>' : '') +
       '</div>' +
-      (antrianNumber
-        ? '<div class="t-antrian">' +
-          '<span class="t-antrian-label">No. Antrian</span>' +
-          '<span class="t-antrian-val">' +
-          esc(antrianNumber) +
-          '</span>' +
-          '</div>'
-        : '') +
+      (antrianNumber ? '<div class="t-antrian">' + esc(antrianNumber) + '</div>' : '') +
       '</header>' +
       // METADATA + MAIN (2 kolom, metadata nyambung ke isi kolom masing-masing)
       '<main class="t-main">' +
@@ -801,16 +794,14 @@
         .halaman *{box-sizing:border-box;font-size:11px!important}
         .halaman{font-family:'Inter',Arial,sans-serif;font-size:11px;line-height:1.25;color:#000;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 
-        /* HEADER (priority: items-center, logo 80px) */
-        .t-head{display:flex;align-items:center;padding-bottom:8px;border-bottom:1.5px solid #000;margin-bottom:12px;gap:14px;position:relative}
+        /* HEADER 3 kolom: logo | brand & alamat | no antrian */
+        .t-head{display:flex;align-items:center;padding-bottom:8px;border-bottom:1.5px solid #000;margin-bottom:12px;gap:14px}
         .t-logo{width:60px;height:60px;object-fit:contain;object-position:left top;flex:none}
-        .t-bhead{flex:1;font-size:11px}
+        .t-bhead{flex:1;font-size:11px;min-width:0}
         .t-hname{font-size:13px;font-weight:800;margin:0 0 4px;letter-spacing:-.01em}
         .t-hsub{line-height:1.3}
-        /* ANTRIAN number top-right */
-        .t-antrian{position:absolute;top:0;right:0;text-align:right;font-size:10px;line-height:1.2}
-        .t-antrian-label{display:block;color:#5b6470;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
-        .t-antrian-val{display:block;font-size:18px;font-weight:800;color:#198754;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+        /* ANTRIAN (kolom kanan) — tanpa label, besar & tebal, contoh "T/R-XX" */
+        .t-antrian{flex:none;text-align:right;font-size:24px;font-weight:800;color:#198754;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap;min-width:0}
 
   /* METADATA — tanpa border, tanpa bold. Label kecil di atas, nilai di bawah
         (stacked) sehingga isi bisa memanjang. Pasien kiri & dokter kanan. */
