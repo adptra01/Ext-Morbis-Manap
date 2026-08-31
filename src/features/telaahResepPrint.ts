@@ -70,6 +70,20 @@
       });
     });
 
+    const DOCTOR_FIELDS = ['Dokter', 'SIP Dokter', 'Ruangan/Poli'];
+    const PATIENT_FIELDS = [
+      'No Resep',
+      'Tanggal & Jam',
+      'No. RM',
+      'Nama Pasien',
+      'Jenis Kelamin',
+      'Tgl. Lahir/Umur',
+      'No HP',
+      'Penjamin',
+      'Berat Badan',
+      'Riwayat Alergi',
+      'Alamat',
+    ];
     const getMeta = (label: string): string => metaMap.get(label) ?? '';
 
     // Daftar obat.
@@ -544,54 +558,18 @@
       : 'Obat tidak boleh diganti tanpa sepengetahuan Dokter';
 
     /** --- render (struktur template, CSS self-contained) --- */
-    // Header compact: identitas pasien + dokter, alergi/BB 1 baris, SIP kecil.
-    // Contoh: "No. RM / Pasien: 00044768 / ADI PUTRA (22/07/2001)"
-    const gm = (l: string): string => getMeta(l);
-    const noRm = gm('No. RM');
-    const namaPasien = gm('Nama Pasien');
-    const tglLahir = gm('Tgl. Lahir/Umur');
-    const pasienLine =
-      noRm || namaPasien
-        ? esc(noRm ? noRm + ' / ' + namaPasien : namaPasien) +
-          (tglLahir ? ' <span class="tm-dim">(' + esc(tglLahir) + ')</span>' : '')
-        : '-';
-
-    const dokter = gm('Dokter');
-    const sip = gm('SIP Dokter');
-    const ruangan = gm('Ruangan/Poli');
-    const dokterLine = dokter
-      ? esc(dokter) +
-        (sip ? ' <span class="tm-sip">' + esc(sip) + '</span>' : '') +
-        (ruangan ? ' / ' + esc(ruangan) : '')
-      : '-';
-
-    const alergi = gm('Riwayat Alergi');
-    const bb = gm('Berat Badan');
-    const bbAlergiLine =
-      (alergi && alergi.trim() ? 'Alergi: ' + esc(alergi) : '') +
-        (bb && bb.trim() ? (alergi ? ' &middot; ' : '') + 'BB: ' + esc(bb) : '') || '-';
-
-    const headerMetaHtml =
-      '<div class="tm-compact">' +
-      '<div class="tm-compact-row">' +
-      '<span class="tm-label">Pasien</span> ' +
-      '<span class="tm-val">' +
-      pasienLine +
+    // Metadata format: label di baris atas, nilai di baris bawah (stacked) —
+    // nilai bisa memanjang tanpa dibatasi lebar label.
+    const metaLine = (label: string, value: string, vClass = ''): string =>
+      '<div class="tm-row">' +
+      '<span class="tm-label">' +
+      esc(label) +
       '</span>' +
-      '</div>' +
-      '<div class="tm-compact-row">' +
-      '<span class="tm-label">Dokter</span> ' +
-      '<span class="tm-val">' +
-      dokterLine +
+      '<span class="tm-val' +
+      (vClass ? ' ' + vClass : '') +
+      '">' +
+      (value && value.trim() ? esc(value) : '-') +
       '</span>' +
-      '</div>' +
-      (bbAlergiLine !== '-'
-        ? '<div class="tm-compact-row">' +
-          '<span class="tm-val">' +
-          bbAlergiLine +
-          '</span>' +
-          '</div>'
-        : '') +
       '</div>';
 
     // Diagnosa pasien (utama & sekunder) — dari fieldset#perhatian halaman detail.
@@ -610,8 +588,20 @@
       '</span></div>' +
       '</section>';
 
-    // Metadata sudah di-render sebagai header compact di atas (headerMetaHtml).
-    // patientMetaHtml & doctorMetaHtml tidak dipakai lagi.
+    // Metadata: pasien (kiri, nyambung ke list obat) & dokter (kanan, nyambung
+    // ke Telaah Resep). TANPA bold.
+    const patientMetaHtml =
+      '<section class="tm-card">' +
+      '<div class="tm-col">' +
+      PATIENT_FIELDS.map((f) => metaLine(f, getMeta(f))).join('') +
+      '</div>' +
+      '</section>';
+    const doctorMetaHtml =
+      '<section class="tm-card">' +
+      '<div class="tm-col">' +
+      DOCTOR_FIELDS.map((f) => metaLine(f, getMeta(f))).join('') +
+      '</div>' +
+      '</section>';
 
     const medListHtml = meds
       .map((m) => {
@@ -756,11 +746,10 @@
           '</div>'
         : '') +
       '</header>' +
-      // HEADER METADATA: identitas pasien & dokter compact, full-width.
-      headerMetaHtml +
-      // MAIN (2 kolom: kiri = diagnosa + obat, kanan = telaah + admin)
+      // METADATA + MAIN (2 kolom, metadata nyambung ke isi kolom masing-masing)
       '<main class="t-main">' +
       '<section class="t-left">' +
+      patientMetaHtml +
       diagHtml +
       '<div class="t-meds">' +
       medListHtml +
@@ -768,6 +757,7 @@
       adminHtml +
       '</section>' +
       '<section class="t-right">' +
+      doctorMetaHtml +
       checkTable('Telaah Resep', telaahResep) +
       checkTable('Telaah Obat', telaahObat) +
       persetujuanHtml +
@@ -807,15 +797,13 @@
         .t-antrian-label{display:block;color:#5b6470;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
         .t-antrian-val{display:block;font-size:18px;font-weight:800;color:#198754;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 
-        /* METADATA COMPACT — header full-width, identitas pasien & dokter
-           inline, alergi/BB 1 baris, SIP font kecil. */
-        .tm-compact{border-bottom:0.5pt solid #333;padding:6px 0;margin-bottom:6px;font-size:11px;line-height:1.5}
-        .tm-compact-row{margin-bottom:2px}
-        .tm-field{display:flex;align-items:baseline;gap:0}
-        .tm-label{color:#5b6470;font-size:10px;line-height:1.3;flex:0 0 auto}
-        .tm-val{color:#000;line-height:1.3;word-wrap:break-word;flex:1 1 auto;min-width:0}
-        .tm-sip{font-size:9px;color:#6b7280}
-        .tm-dim{font-size:10px;color:#6b7280}
+  /* METADATA — tanpa border, tanpa bold. Label kecil di atas, nilai di bawah
+        (stacked) sehingga isi bisa memanjang. Pasien kiri & dokter kanan. */
+        .tm-card{background:#fff;padding:4px 0 6px;margin-bottom:6px;font-size:11px;border-bottom:0.5pt solid #333}
+        .tm-col{display:flex;flex-direction:column;gap:5px}
+        .tm-row{display:flex;flex-direction:column;gap:1px}
+        .tm-label{color:#5b6470;font-size:10px;line-height:1.2}
+        .tm-val{color:#000;line-height:1.3;word-wrap:break-word}
         /* DIAGNOSA — font & gaya disamakan dengan info pasien/dokter */
         .diag-title{font-weight:600;font-size:11px;letter-spacing:0;text-transform:none;color:#000;margin-bottom:2px}
 
