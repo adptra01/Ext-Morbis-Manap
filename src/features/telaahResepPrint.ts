@@ -612,8 +612,7 @@
           const aturan = m.aturan.length ? m.aturan.map((a) => esc(a)).join(' ') : '';
           const jadi = total + (aturan ? ' - ' + aturan : '');
           return (
-            '<div class="med med-racik">' +
-            '<div class="med-block-label">Racikan</div>' +
+            '<div class="med">' +
             lines +
             (jadi ? '<div class="med-jadiracik">' + jadi + '</div>' : '') +
             '</div>'
@@ -787,8 +786,8 @@
         .tm-row{display:flex;flex-direction:column;gap:1px}
         .tm-label{color:#5b6470;font-size:10px;line-height:1.2}
         .tm-val{color:#000;line-height:1.3;word-wrap:break-word}
-        /* DIAGNOSA — blok ringkas, label tebal di atas */
-        .diag-title{font-weight:800;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:#5b6470;margin-bottom:2px}
+        /* DIAGNOSA — font & gaya disamakan dengan info pasien/dokter */
+        .diag-title{font-weight:600;font-size:11px;letter-spacing:0;text-transform:none;color:#000;margin-bottom:2px}
 
         /* MAIN 2 kolom — portrait 105mm: kolom lebih ramping, gap kecil.
            Kolom TIDAK dipaksa sama tinggi (align-items:start) agar bagian bawah
@@ -798,10 +797,8 @@
         .t-right .t-check{margin-bottom:0}
         .t-meds{margin-bottom:16px;font-size:11px;min-width:0}
 
-        /* DAFTAR OBAT — format per-blok (racikan & tunggal) */
+        /* DAFTAR OBAT — format berurutan R/1, R/4, dst. */
         .med{margin-bottom:8px}
-        .med-racik{border:0.5pt solid #9ca3af;border-radius:3px;padding:4px 5px}
-        .med-block-label{font-weight:700;font-size:11px;margin-bottom:2px}
         .med-line{font-size:11px;line-height:1.35}
         .med-line.indent{margin-left:18px}
         .med-no{font-weight:400}
