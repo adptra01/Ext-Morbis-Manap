@@ -102,6 +102,7 @@
       name: string;
       jml: string;
       jumlahJadi: string; // jumlah jadi racik (total racikan)
+      sediaan: string; // bentuk sediaan racikan (mis. "Tablet")
       aturan: string[];
       subMeds: SubMed[];
     }
@@ -118,7 +119,15 @@
         const numMatch = left.match(/^(?:R\/)?(\d+)/);
         if (numMatch) {
           const num = numMatch[1];
-          const med: Med = { no: num, name: '', jml: '', jumlahJadi: '', aturan: [], subMeds: [] };
+          const med: Med = {
+            no: 'R/' + num,
+            name: '',
+            jml: '',
+            jumlahJadi: '',
+            sediaan: '',
+            aturan: [],
+            subMeds: [],
+          };
           medsMap.set(num, med);
           lastMed = med;
           // Baris pertama racikan: bisa nama obat TUNGGAL (R/x + Jml) atau
@@ -167,7 +176,17 @@
           lastMed.jumlahJadi = jmlJadi[1].trim();
           return;
         }
-        lastMed.aturan.push(right);
+        // Sediaan racikan = kata bentuk sediaan (Tablet/Kapsul/Kaplet/Puyer/...).
+        if (
+          /^(tablet|kapsul|kaplet|puyer|salep|sirup|drops?|supp|botol|tube|tab|obat\s+(luar|dalam))\b/i.test(
+            right,
+          )
+        ) {
+          lastMed.sediaan = right;
+          return;
+        }
+        // Aturan — buang kurung di sini, dipakai lagi dgn kurung saat render.
+        lastMed.aturan.push(right.replace(/^\(|\)$/g, ''));
       });
       meds.push(...medsMap.values());
     }
@@ -608,15 +627,15 @@
               );
             })
             .join('');
-          const total = m.jumlahJadi ? esc(m.jumlahJadi) + ' Racikan' : 'Racikan';
-          const aturan = m.aturan.length ? m.aturan.map((a) => esc(a)).join(' ') : '';
-          const jadi = total + (aturan ? ' - ' + aturan : '');
-          return (
-            '<div class="med">' +
-            lines +
-            (jadi ? '<div class="med-jadiracik">' + jadi + '</div>' : '') +
-            '</div>'
-          );
+          // "10 Tablet - (3x1)": total + sediaan + aturan (dalam kurung).
+          const total = m.jumlahJadi ? esc(m.jumlahJadi) : '';
+          const satuan = m.sediaan ? esc(m.sediaan) : 'Racikan';
+          const aturan = m.aturan.length
+            ? m.aturan.map((a) => esc(a.replace(/^\(|\)$/g, ''))).join(' ')
+            : '';
+          const jadiTxt = total ? total + ' ' + satuan + (aturan ? ' - (' + aturan + ')' : '') : '';
+          const jadi = jadiTxt ? '<div class="med-jadiracik">' + jadiTxt + '</div>' : '';
+          return '<div class="med">' + lines + jadi + '</div>';
         }
         // Tunggal: "R/N Nama - qty" + aturan.
         const jml = m.jml || '';
@@ -807,7 +826,7 @@
         .med-jml{white-space:nowrap;font-weight:600;color:#047857}
         .med-aturan{margin-left:0;font-size:10px;color:#374151;margin-top:1px}
         /* JUMLAH JADI RACIK — di bawah blok racikan */
-        .med-jadiracik{margin-top:4px;border-top:0.5pt solid #333;padding-top:3px;font-size:11px;font-weight:700}
+        .med-jadiracik{margin-top:4px;padding-top:2px;font-size:11px;font-weight:700}
 
         /* TABEL — checklist */
         table{width:100%;border-collapse:collapse;font-size:11px}
