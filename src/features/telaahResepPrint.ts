@@ -849,7 +849,7 @@
         .blk{height:20px;padding:.5pt 3px}
         .blk2{min-height:11px}
         .blk3{min-height:45px}
-        .blk4{height:34px;padding:.5pt 3px}
+        .blk4{height:20px;padding:.5pt 3px}
         .t-sub{text-align:center;font-size:11px;margin:4px 0}
 
         /* FOOTER + BUTTON */
