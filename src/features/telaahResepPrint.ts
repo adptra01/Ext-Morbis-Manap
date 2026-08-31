@@ -70,20 +70,6 @@
       });
     });
 
-    const DOCTOR_FIELDS = ['Dokter', 'SIP Dokter', 'Ruangan/Poli'];
-    const PATIENT_FIELDS = [
-      'No Resep',
-      'Tanggal & Jam',
-      'No. RM',
-      'Nama Pasien',
-      'Jenis Kelamin',
-      'Tgl. Lahir/Umur',
-      'No HP',
-      'Penjamin',
-      'Berat Badan',
-      'Riwayat Alergi',
-      'Alamat',
-    ];
     const getMeta = (label: string): string => metaMap.get(label) ?? '';
 
     // Daftar obat.
@@ -558,19 +544,25 @@
       : 'Obat tidak boleh diganti tanpa sepengetahuan Dokter';
 
     /** --- render (struktur template, CSS self-contained) --- */
-    // Metadata format: label di baris atas, nilai di baris bawah (stacked) —
-    // nilai bisa memanjang tanpa dibatasi lebar label.
-    const metaLine = (label: string, value: string, vClass = ''): string =>
+    // Metadata: label kiri, nilai kanan satu baris (inline). Dipasangkan
+    // dua-dua dalam `.tm-pair` agar kolom kiri tidak terlalu panjang.
+    // Field group: satu pasang label:nilai dalam .tm-row
+    const field = (label: string, value: string): string =>
       '<div class="tm-row">' +
       '<span class="tm-label">' +
       esc(label) +
       '</span>' +
-      '<span class="tm-val' +
-      (vClass ? ' ' + vClass : '') +
-      '">' +
+      '<span class="tm-val">' +
       (value && value.trim() ? esc(value) : '-') +
       '</span>' +
       '</div>';
+
+    // Pair: dua field berdampingan dalam .tm-pair (grid 2 kolom).
+    // Kalau salah satu field kosong/placeholder, tampil full-width (bukan grid).
+    const pair = (a: string, b: string): string =>
+      a.includes('>-') && b.includes('>-')
+        ? a + b // full-width kalau semua "-"
+        : '<div class="tm-pair">' + a + b + '</div>';
 
     // Diagnosa pasien (utama & sekunder) — dari fieldset#perhatian halaman detail.
     // Tampil sebelum daftar obat supaya konteks klinis jelas saat telaah.
@@ -588,18 +580,24 @@
       '</span></div>' +
       '</section>';
 
-    // Metadata: pasien (kiri, nyambung ke list obat) & dokter (kanan, nyambung
-    // ke Telaah Resep). TANPA bold.
+    // Metadata: pasien (kiri) — field dipasangkan dua-dua agar kolom kiri pendek.
+    const gm = (label: string): string => getMeta(label);
     const patientMetaHtml =
       '<section class="tm-card">' +
       '<div class="tm-col">' +
-      PATIENT_FIELDS.map((f) => metaLine(f, getMeta(f))).join('') +
+      pair(field('No Resep', gm('No Resep')), field('Tanggal', gm('Tanggal & Jam'))) +
+      pair(field('No. RM', gm('No. RM')), field('Nama Pasien', gm('Nama Pasien'))) +
+      pair(field('JK', gm('Jenis Kelamin')), field('Lahir/Umur', gm('Tgl. Lahir/Umur'))) +
+      pair(field('No HP', gm('No HP')), field('Penjamin', gm('Penjamin'))) +
+      pair(field('BB', gm('Berat Badan')), field('Alergi', gm('Riwayat Alergi'))) +
+      field('Alamat', gm('Alamat')) +
       '</div>' +
       '</section>';
     const doctorMetaHtml =
       '<section class="tm-card">' +
       '<div class="tm-col">' +
-      DOCTOR_FIELDS.map((f) => metaLine(f, getMeta(f))).join('') +
+      pair(field('Dokter', gm('Dokter')), field('SIP', gm('SIP Dokter'))) +
+      field('Ruang', gm('Ruangan/Poli')) +
       '</div>' +
       '</section>';
 
@@ -797,13 +795,15 @@
         .t-antrian-label{display:block;color:#5b6470;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
         .t-antrian-val{display:block;font-size:18px;font-weight:800;color:#198754;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 
-  /* METADATA — tanpa border, tanpa bold. Label kecil di atas, nilai di bawah
-        (stacked) sehingga isi bisa memanjang. Pasien kiri & dokter kanan. */
+        /* METADATA — tanpa border, tanpa bold. Label kiri, nilai kanan (inline),
+           dipasangkan dua kolom agar kolom kiri tidak terlalu panjang. */
         .tm-card{background:#fff;padding:4px 0 6px;margin-bottom:6px;font-size:11px;border-bottom:0.5pt solid #333}
-        .tm-col{display:flex;flex-direction:column;gap:5px}
-        .tm-row{display:flex;flex-direction:column;gap:1px}
-        .tm-label{color:#5b6470;font-size:10px;line-height:1.2}
-        .tm-val{color:#000;line-height:1.3;word-wrap:break-word}
+        .tm-col{display:flex;flex-direction:column;gap:3px}
+        .tm-row{display:flex;align-items:baseline;gap:6px}
+        .tm-label{color:#5b6470;font-size:10px;line-height:1.3;flex:0 0 auto}
+        .tm-val{color:#000;line-height:1.3;word-wrap:break-word;flex:1 1 auto;min-width:0}
+        /* Pair: dua field berdampingan dalam satu baris → tinggi kolom jauh lebih pendek. */
+        .tm-pair{display:grid;grid-template-columns:1fr 1fr;gap:0 8px}
         /* DIAGNOSA — font & gaya disamakan dengan info pasien/dokter */
         .diag-title{font-weight:600;font-size:11px;letter-spacing:0;text-transform:none;color:#000;margin-bottom:2px}
 
@@ -840,7 +840,7 @@
         .twothird{width:66.667%}
         /* Sel kosong isi tangan — height eksplisit (min-height tak andal utk
            <td>). Baris admin Hitung/Timbang/Kemas/Paraf. */
-        .blk{height:34px;padding:.5pt 3px}
+        .blk{height:26px;padding:.5pt 3px}
         .blk2{min-height:11px}
         .blk3{min-height:45px}
         .t-sub{text-align:center;font-size:11px;margin:4px 0}
