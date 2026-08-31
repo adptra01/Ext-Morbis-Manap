@@ -801,7 +801,7 @@
         .t-hname{font-size:13px;font-weight:800;margin:0 0 4px;letter-spacing:-.01em}
         .t-hsub{line-height:1.3}
         /* ANTRIAN (kolom kanan) — tanpa label, besar & tebal, contoh "T/R-XX" */
-        .t-antrian{flex:none;text-align:right;font-size:24px;font-weight:800;color:#198754;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap;min-width:0}
+        .t-antrian{flex:none;text-align:right;font-size:34px;font-weight:800;color:#198754;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap;min-width:0}
 
   /* METADATA — tanpa border, tanpa bold. Label kecil di atas, nilai di bawah
         (stacked) sehingga isi bisa memanjang. Pasien kiri & dokter kanan. */
