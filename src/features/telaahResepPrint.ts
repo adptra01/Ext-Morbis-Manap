@@ -132,151 +132,179 @@
     }
     const adminTable = medsTables[1];
 
-    // --- Fetch racikan detail dari halaman detail/edit ---
+    // --- Fetch racikan detail & diagnosa dari halaman detail/edit ---
     // Halaman cetak hanya punya data obat utama (R/x + Jml).
-    // Sub-obat racikan (Parasetamol + Amitriptilin + Codein) ada di
-    // /inventory/resep/penerimaan/detail?id=...
-    // Sekalian tangkap id_visit & id_kunjungan dari DOM halaman detail utk
-    // fetch diagnosa pasien (utama & sekunder).
+    // Sub-obat racikan + diagnosa (fieldset#perhatian > Riwayat Diagnosa Pasien) ada di
+    // /inventory/resep/penerimaan/detail?id=... ATAU /inventory/penjualan-resep-edit/detail?...
+    // Sekalian tangkap id_visit & id_kunjungan dari hidden input utk fallback.
     let diagVisit = '';
     let diagKunjungan = '';
+    let diagnosisUtama: string[] = [];
+    let diagnosisSekunder: string[] = [];
+    let antrianNumber = '';
+
     async function fetchRacikanDetails(): Promise<Map<string, SubMed[]>> {
       const map = new Map<string, SubMed[]>();
       const params = new URLSearchParams(window.location.search);
       const resepId = params.get('id');
       if (!resepId) return map;
 
-      try {
-        const resp = await fetch('/inventory/resep/penerimaan/detail?id=' + resepId, {
-          credentials: 'include',
-        });
-        if (!resp.ok) return map;
-        const html = await resp.text();
-        const doc = new DOMParser().parseFromString(html, 'text/html');
+      // Coba 2 endpoint detail: penerimaan & penjualan-edit (keduanya punya fieldset#perhatian)
+      const detailUrls = [
+        '/inventory/resep/penerimaan/detail?id=' + resepId,
+        '/inventory/penjualan-resep-edit/detail?id=' + resepId,
+      ];
 
-        // Tangkap id_visit / id_kunjungan dari hidden input di halaman detail
-        // (diisi MORBIS via AJAX setelah render, pola sama spt farmasiAntrolShift).
-        const inVal = (name: string): string => {
-          const el =
-            doc.querySelector<HTMLInputElement>('#' + name) ||
-            doc.querySelector<HTMLInputElement>('input[name="' + name + '"]') ||
-            doc.querySelector<HTMLInputElement>('input[id*="' + name + '"]');
-          return el?.value?.trim() || '';
-        };
-        diagVisit = inVal('id_visit') || params.get('visit') || '';
-        diagKunjungan = inVal('id_kunjungan') || '';
+      for (const url of detailUrls) {
+        try {
+          const resp = await fetch(url, { credentials: 'include' });
+          if (!resp.ok) continue;
+          const html = await resp.text();
+          const doc = new DOMParser().parseFromString(html, 'text/html');
 
-        // Cari tabel yang punya header "R/" — ini tabel obat tebus / racikan.
-        for (const table of doc.querySelectorAll('table')) {
-          const headerRow = table.querySelector('tr');
-          if (!headerRow) continue;
-          const headers = Array.from(headerRow.querySelectorAll('td, th')).map((td) => txt(td));
-          if (!headers.some((h) => /^R\//.test(h))) continue;
+          // Tangkap id_visit / id_kunjungan dari hidden input
+          const inVal = (name: string): string => {
+            const el =
+              doc.querySelector<HTMLInputElement>('#' + name) ||
+              doc.querySelector<HTMLInputElement>('input[name="' + name + '"]') ||
+              doc.querySelector<HTMLInputElement>('input[id*="' + name + '"]');
+            return el?.value?.trim() || '';
+          };
+          diagVisit = inVal('id_visit') || params.get('visit') || diagVisit;
+          diagKunjungan = inVal('id_kunjungan') || diagKunjungan;
 
-          // Tentukan indeks kolom dari header.
-          const colName = headers.findIndex((h) => /Packing|Nama.*Obat|Obat/i.test(h));
-          const colStrength = headers.findIndex((h) => /Kekuatan/i.test(h));
-          const colDose = headers.findIndex((h) => /Dosis/i.test(h));
-          const colJmlPerR = headers.findIndex((h) => /Jml.*per/i.test(h));
-          const colSediaan = headers.findIndex((h) => /Sediaan/i.test(h));
-
-          let currentNum = '';
-          table.querySelectorAll('tr').forEach((tr, i) => {
-            if (i === 0) return; // skip header
-            const tds = tr.querySelectorAll('td');
-            if (tds.length < 5) return;
-            const leftText = txt(tds[0]);
-            const numMatch = leftText.match(/(\d+)/);
-            if (numMatch) {
-              currentNum = numMatch[1];
-              if (!map.has(currentNum)) map.set(currentNum, []);
-              map.get(currentNum)!.push({
-                name: colName >= 0 ? txt(tds[colName]) : txt(tds[1]),
-                strength: colStrength >= 0 ? txt(tds[colStrength]) : '',
-                dose: colDose >= 0 ? txt(tds[colDose]) : '',
-                jmlPerR: colJmlPerR >= 0 ? txt(tds[colJmlPerR]) : '',
-                sediaan: colSediaan >= 0 ? txt(tds[colSediaan]) : '',
-              });
-            }
+          // Ambil diagnosa dari fieldset#perhatian yg punya legend "Riwayat Diagnosa Pasien"
+          // (ada beberapa fieldset#perhatian di halaman, pilih yg benar).
+          const fieldsets = Array.from(doc.querySelectorAll('fieldset#perhatian'));
+          const fs = fieldsets.find((f) => {
+            const leg = f.querySelector('legend');
+            return leg && /riwayat\s*diagnosa\s*pasien/i.test(txt(leg));
           });
-          break; // ketemu tabelnya, stop
+          if (fs) {
+            // Ambil SEMUA li dari fieldset ini, lalu pisahkan utama vs sekunder
+            // Struktur bisa 2 macam:
+            // A) <ol><li>utama</li></ol> + <strong>Sekunder</strong><ol><li>sekunder</li></ol> (sibling ol)
+            // B) <ol><li>utama</li><br><strong>Sekunder</strong><ol><li>sekunder</li></ol></ol> (nested di dalam ol pertama)
+            const allLis = Array.from(fs.querySelectorAll('li'))
+              .map((li) => txt(li))
+              .filter(Boolean);
+
+            // Cari index dimana "Diagnosa Sekunder" muncul (di dalam li atau di strong terpisah)
+            let sekunderStartIdx = -1;
+            const strongs = Array.from(fs.querySelectorAll('strong, b'));
+            for (const s of strongs) {
+              if (/diagnosa\s*sekunder/i.test(txt(s))) {
+                // Cari li yang mengandung strong ini, atau li setelahnya
+                const parentLi = s.closest('li');
+                if (parentLi) {
+                  const idx = Array.from(fs.querySelectorAll('li')).indexOf(parentLi);
+                  if (idx >= 0) sekunderStartIdx = idx;
+                } else {
+                  // Strong terpisah - cari ol berikutnya
+                  const nextOl = s.nextElementSibling;
+                  if (nextOl && nextOl.tagName === 'OL') {
+                    const firstSekunderLi = nextOl.querySelector('li');
+                    if (firstSekunderLi) {
+                      const idx = Array.from(fs.querySelectorAll('li')).indexOf(firstSekunderLi);
+                      if (idx >= 0) sekunderStartIdx = idx;
+                    }
+                  }
+                }
+                break;
+              }
+            }
+
+            if (sekunderStartIdx >= 0 && sekunderStartIdx < allLis.length) {
+              diagnosisUtama = allLis.slice(0, sekunderStartIdx);
+              diagnosisSekunder = allLis
+                .slice(sekunderStartIdx)
+                .filter((v) => v && !/tidak ada/i.test(v));
+            } else if (allLis.length) {
+              // Fallback: semua dianggap utama jika tidak ketemu pemisah
+              diagnosisUtama = allLis;
+            }
+          }
+
+          // Cari tabel racikan (header "R/")
+          for (const table of doc.querySelectorAll('table')) {
+            const headerRow = table.querySelector('tr');
+            if (!headerRow) continue;
+            const headers = Array.from(headerRow.querySelectorAll('td, th')).map((td) => txt(td));
+            if (!headers.some((h) => /^R\//.test(h))) continue;
+
+            const colName = headers.findIndex((h) => /Packing|Nama.*Obat|Obat/i.test(h));
+            const colStrength = headers.findIndex((h) => /Kekuatan/i.test(h));
+            const colDose = headers.findIndex((h) => /Dosis/i.test(h));
+            const colJmlPerR = headers.findIndex((h) => /Jml.*per/i.test(h));
+            const colSediaan = headers.findIndex((h) => /Sediaan/i.test(h));
+
+            let currentNum = '';
+            table.querySelectorAll('tr').forEach((tr, i) => {
+              if (i === 0) return;
+              const tds = tr.querySelectorAll('td');
+              if (tds.length < 5) return;
+              const leftText = txt(tds[0]);
+              const numMatch = leftText.match(/(\d+)/);
+              if (numMatch) {
+                currentNum = numMatch[1];
+                if (!map.has(currentNum)) map.set(currentNum, []);
+                map.get(currentNum)!.push({
+                  name: colName >= 0 ? txt(tds[colName]) : txt(tds[1]),
+                  strength: colStrength >= 0 ? txt(tds[colStrength]) : '',
+                  dose: colDose >= 0 ? txt(tds[colDose]) : '',
+                  jmlPerR: colJmlPerR >= 0 ? txt(tds[colJmlPerR]) : '',
+                  sediaan: colSediaan >= 0 ? txt(tds[colSediaan]) : '',
+                });
+              }
+            });
+            break; // ketemu tabel racikan, stop
+          }
+
+          // Kalau sudah dapat diagnosa & racikan, cukup
+          if (diagnosisUtama.length || map.size) break;
+        } catch {
+          /* coba url berikutnya */
         }
-      } catch {
-        /* fetch gagal — biarkan tanpa sub-obat */
       }
       return map;
     }
 
-    /** Fetch diagnosa pasien (utama & sekunder) dari halaman admisi rawat
-     *  jalan (halaman-utama → page 101 "pelaksanaan pelayanan"). Sumber data
-     *  sama spt yang ditampilkan saat periksa; fallback ke kosong bila halaman
-     *  tak terjangkau / id_visit tidak ada. */
-    async function fetchDiagnosis(): Promise<{ utama: string[]; sekunder: string[] }> {
-      const res = { utama: [] as string[], sekunder: [] as string[] };
-      if (!diagVisit) return res;
+    // Fetch nomor antrian dari App Antrian (Reports SIMRS) via resep_id
+    async function fetchAntrianNumber(resepId: string): Promise<string> {
       try {
-        const qs = new URLSearchParams({
-          id_visit: diagVisit,
-          page: '101',
-          status_periksa: 'belum',
-        });
-        if (diagKunjungan) qs.set('id_kunjungan', diagKunjungan);
-        const resp = await fetch('/admisi/pelaksanaan_pelayanan/halaman-utama?' + qs.toString(), {
-          credentials: 'include',
-        });
-        if (!resp.ok) return res;
-        const html = await resp.text();
-        const doc = new DOMParser().parseFromString(html, 'text/html');
-
-        // Cari blok "Diagnosa Utama" / "Diagnosa Sekunder". MORBIS biasanya
-        // render sebagai label + list input/teks. Robust: cari teks label lalu
-        // ambil nilai dari elemen sesudahnya (input, textarea, td, atau p).
-        // Label bisa "Diagnosa Utama", "Riwayat Diagnosa Pasien", "Diagnosa Utama & Sekunder", dll.
-        const grab = (
-          labels: string[],
-          out: { utama: string[]; sekunder: string[] },
-          key: 'utama' | 'sekunder',
-        ): void => {
-          const found: string[] = [];
-          doc.querySelectorAll('*').forEach((el: Element) => {
-            if (el.children.length) return; // skip elemen yang punya child (label di parent)
-            const t = txt(el);
-            if (!t) return;
-            const matched = labels.some((lbl) => new RegExp('^' + lbl + '\\s*:?$', 'i').test(t));
-            if (matched) {
-              // Nilai = teks elemen berikutnya dalam scope yang masuk akal.
-              let cur: Element | null = el;
-              for (let i = 0; i < 4; i++) {
-                cur = cur.nextElementSibling;
-                if (!cur) break;
-                const v = txt(cur);
-                if (v) {
-                  found.push(
-                    ...v
-                      .split(/\s*[,;]\s*/)
-                      .map((s) => s.trim())
-                      .filter(Boolean),
-                  );
-                  break;
-                }
-              }
-            }
-          });
-          out[key] = found;
-        };
-        grab(
-          ['Diagnosa Utama', 'Riwayat Diagnosa Pasien', 'Diagnosa Utama & Sekunder', 'Diagnosa'],
-          res,
-          'utama',
+        // Probe base URL app antrian (sama spt farmasiQueueSync)
+        let base = 'http://dev.rsudkotajambi.id/rs';
+        try {
+          const ov = localStorage.getItem('ext-farmasi-app-base');
+          if (ov && /^https?:\/\//.test(ov)) base = ov.replace(/\/+$/, '');
+        } catch {
+          /* ignore localStorage error */
+        }
+        const resp = await fetch(
+          base + '/api/queue/lookup?resep_id=' + encodeURIComponent(resepId),
+          {
+            cache: 'no-store',
+            credentials: 'omit',
+          },
         );
-        grab(['Diagnosa Sekunder'], res, 'sekunder');
+        if (!resp.ok) return '';
+        const j = (await resp.json()) as {
+          ok?: boolean;
+          found?: boolean;
+          queue?: { queue_number?: string };
+        };
+        if (j.ok && j.found && j.queue?.queue_number) return j.queue.queue_number;
       } catch {
-        /* fetch gagal — tanpa diagnosa */
+        /* app tidak terjangkau */
       }
-      return res;
+      return '';
     }
 
-    const diagnosis = await fetchDiagnosis();
+    // Fetch nomor antrian dari App Antrian (Reports SIMRS) via resep_id
+    const params = new URLSearchParams(window.location.search);
+    const resepIdForQueue = params.get('id') ?? '';
+    antrianNumber = resepIdForQueue ? await fetchAntrianNumber(resepIdForQueue) : '';
+
     const racikanMap = await fetchRacikanDetails();
 
     // Merge sub-obat racikan ke dalam meds.
@@ -334,19 +362,19 @@
       '</span>' +
       '</div>';
 
-    // Diagnosa pasien (utama & sekunder) — dari halaman admisi. Tampil sebelum
-    // daftar obat supaya konteks klinis jelas saat telaah.
+    // Diagnosa pasien (utama & sekunder) — dari fieldset#perhatian halaman detail.
+    // Tampil sebelum daftar obat supaya konteks klinis jelas saat telaah.
     const diagHtml =
       '<section class="tm-card">' +
       '<div class="diag-title">Diagnosa</div>' +
       '<div class="tm-row"><span class="tm-label">Utama</span>' +
       '<span class="tm-val">' +
-      (diagnosis.utama.length ? esc(diagnosis.utama.join(', ')) : '-') +
+      (diagnosisUtama.length ? esc(diagnosisUtama.join(', ')) : '-') +
       '</span></div>' +
-      (diagnosis.sekunder.length
+      (diagnosisSekunder.length
         ? '<div class="tm-row"><span class="tm-label">Sekunder</span>' +
           '<span class="tm-val">' +
-          esc(diagnosis.sekunder.join(', ')) +
+          esc(diagnosisSekunder.join(', ')) +
           '</span></div>'
         : '') +
       '</section>';
@@ -471,23 +499,6 @@
       '<tr><td>Diserahkan</td><td></td></tr>' +
       '</tbody></table>';
 
-    const edukasiHtml =
-      '<table class="t-check">' +
-      '<thead><tr><th class="c" colspan="2">Edukasi</th><th class="yt"></th></tr></thead>' +
-      '<tbody>' +
-      [
-        ['1', 'Nama Obat'],
-        ['2', 'Kegunaan Obat'],
-        ['3', 'Dosis&Sediaan Obat'],
-        ['4', 'Rute & cara pakai'],
-        ['5', 'Cara penyimpanan'],
-        ['6', 'Efek samping'],
-        ['7', 'Alergi obat'],
-      ]
-        .map(([n, item]) => '<tr><td class="num">' + n + '</td><td>' + item + '</td><td></td></tr>')
-        .join('') +
-      '</tbody></table>';
-
     const parafHtml =
       '<table class="t-check">' +
       '<tbody>' +
@@ -506,6 +517,14 @@
       '</h1>' +
       (headBody[0] ? '<div class="t-hsub">' + esc(headBody[0]) + '</div>' : '') +
       '</div>' +
+      (antrianNumber
+        ? '<div class="t-antrian">' +
+          '<span class="t-antrian-label">No. Antrian</span>' +
+          '<span class="t-antrian-val">' +
+          esc(antrianNumber) +
+          '</span>' +
+          '</div>'
+        : '') +
       '</header>' +
       // METADATA + MAIN (2 kolom, metadata nyambung ke isi kolom masing-masing)
       '<main class="t-main">' +
@@ -523,7 +542,6 @@
       checkTable('Telaah Obat', telaahObat) +
       persetujuanHtml +
       waktuHtml +
-      edukasiHtml +
       parafHtml +
       '</section>' +
       '</main>' +
@@ -549,11 +567,15 @@
         .halaman{font-family:'Inter',Arial,sans-serif;font-size:11px;line-height:1.25;color:#000;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 
         /* HEADER (priority: items-center, logo 80px) */
-        .t-head{display:flex;align-items:center;padding-bottom:8px;border-bottom:1.5px solid #000;margin-bottom:12px;gap:14px}
+        .t-head{display:flex;align-items:center;padding-bottom:8px;border-bottom:1.5px solid #000;margin-bottom:12px;gap:14px;position:relative}
         .t-logo{width:60px;height:60px;object-fit:contain;object-position:left top;flex:none}
         .t-bhead{flex:1;font-size:11px}
         .t-hname{font-size:13px;font-weight:800;margin:0 0 4px;letter-spacing:-.01em}
         .t-hsub{line-height:1.3}
+        /* ANTRIAN number top-right */
+        .t-antrian{position:absolute;top:0;right:0;text-align:right;font-size:10px;line-height:1.2}
+        .t-antrian-label{display:block;color:#5b6470;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+        .t-antrian-val{display:block;font-size:18px;font-weight:800;color:#198754;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 
   /* METADATA — tanpa border, tanpa bold. Label kecil di atas, nilai di bawah
         (stacked) sehingga isi bisa memanjang. Pasien kiri & dokter kanan. */
@@ -566,9 +588,12 @@
         .diag-title{font-weight:800;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:#5b6470;margin-bottom:2px}
 
         /* MAIN 2 kolom — portrait 105mm: kolom lebih ramping, gap kecil */
-        .t-main{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:start}
+        .t-main{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch}
         .t-left,.t-right{display:flex;flex-direction:column;gap:6px}
         .t-right .t-check{margin-bottom:0}
+        /* Samakan tinggi kolom kiri/kanan: flex-grow pada konten utama */
+        .t-left > *:last-child, .t-right > *:last-child {flex:1;min-height:0}
+        .t-meds{flex:1;min-height:0;overflow:hidden}
 
         /* DAFTAR OBAT */
         .t-meds{margin-bottom:16px;font-size:11px}

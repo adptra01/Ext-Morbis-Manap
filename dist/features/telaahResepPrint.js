@@ -100,114 +100,131 @@ var __morbis_feature = (() => {
       const adminTable = medsTables[1];
       let diagVisit = '';
       let diagKunjungan = '';
+      let diagnosisUtama = [];
+      let diagnosisSekunder = [];
+      let antrianNumber = '';
       async function fetchRacikanDetails() {
         const map = /* @__PURE__ */ new Map();
-        const params = new URLSearchParams(window.location.search);
-        const resepId = params.get('id');
+        const params2 = new URLSearchParams(window.location.search);
+        const resepId = params2.get('id');
         if (!resepId) return map;
-        try {
-          const resp = await fetch('/inventory/resep/penerimaan/detail?id=' + resepId, {
-            credentials: 'include',
-          });
-          if (!resp.ok) return map;
-          const html2 = await resp.text();
-          const doc = new DOMParser().parseFromString(html2, 'text/html');
-          const inVal = (name) => {
-            const el =
-              doc.querySelector('#' + name) ||
-              doc.querySelector('input[name="' + name + '"]') ||
-              doc.querySelector('input[id*="' + name + '"]');
-            return el?.value?.trim() || '';
-          };
-          diagVisit = inVal('id_visit') || params.get('visit') || '';
-          diagKunjungan = inVal('id_kunjungan') || '';
-          for (const table of doc.querySelectorAll('table')) {
-            const headerRow = table.querySelector('tr');
-            if (!headerRow) continue;
-            const headers = Array.from(headerRow.querySelectorAll('td, th')).map((td) => txt(td));
-            if (!headers.some((h) => /^R\//.test(h))) continue;
-            const colName = headers.findIndex((h) => /Packing|Nama.*Obat|Obat/i.test(h));
-            const colStrength = headers.findIndex((h) => /Kekuatan/i.test(h));
-            const colDose = headers.findIndex((h) => /Dosis/i.test(h));
-            const colJmlPerR = headers.findIndex((h) => /Jml.*per/i.test(h));
-            const colSediaan = headers.findIndex((h) => /Sediaan/i.test(h));
-            let currentNum = '';
-            table.querySelectorAll('tr').forEach((tr, i) => {
-              if (i === 0) return;
-              const tds = tr.querySelectorAll('td');
-              if (tds.length < 5) return;
-              const leftText = txt(tds[0]);
-              const numMatch = leftText.match(/(\d+)/);
-              if (numMatch) {
-                currentNum = numMatch[1];
-                if (!map.has(currentNum)) map.set(currentNum, []);
-                map.get(currentNum).push({
-                  name: colName >= 0 ? txt(tds[colName]) : txt(tds[1]),
-                  strength: colStrength >= 0 ? txt(tds[colStrength]) : '',
-                  dose: colDose >= 0 ? txt(tds[colDose]) : '',
-                  jmlPerR: colJmlPerR >= 0 ? txt(tds[colJmlPerR]) : '',
-                  sediaan: colSediaan >= 0 ? txt(tds[colSediaan]) : '',
-                });
-              }
+        const detailUrls = [
+          '/inventory/resep/penerimaan/detail?id=' + resepId,
+          '/inventory/penjualan-resep-edit/detail?id=' + resepId,
+        ];
+        for (const url of detailUrls) {
+          try {
+            const resp = await fetch(url, { credentials: 'include' });
+            if (!resp.ok) continue;
+            const html2 = await resp.text();
+            const doc = new DOMParser().parseFromString(html2, 'text/html');
+            const inVal = (name) => {
+              const el =
+                doc.querySelector('#' + name) ||
+                doc.querySelector('input[name="' + name + '"]') ||
+                doc.querySelector('input[id*="' + name + '"]');
+              return el?.value?.trim() || '';
+            };
+            diagVisit = inVal('id_visit') || params2.get('visit') || diagVisit;
+            diagKunjungan = inVal('id_kunjungan') || diagKunjungan;
+            const fieldsets = Array.from(doc.querySelectorAll('fieldset#perhatian'));
+            const fs = fieldsets.find((f) => {
+              const leg = f.querySelector('legend');
+              return leg && /riwayat\s*diagnosa\s*pasien/i.test(txt(leg));
             });
-            break;
-          }
-        } catch {}
-        return map;
-      }
-      async function fetchDiagnosis() {
-        const res = { utama: [], sekunder: [] };
-        if (!diagVisit) return res;
-        try {
-          const qs = new URLSearchParams({
-            id_visit: diagVisit,
-            page: '101',
-            status_periksa: 'belum',
-          });
-          if (diagKunjungan) qs.set('id_kunjungan', diagKunjungan);
-          const resp = await fetch('/admisi/pelaksanaan_pelayanan/halaman-utama?' + qs.toString(), {
-            credentials: 'include',
-          });
-          if (!resp.ok) return res;
-          const html2 = await resp.text();
-          const doc = new DOMParser().parseFromString(html2, 'text/html');
-          const grab = (labels, out, key) => {
-            const found = [];
-            doc.querySelectorAll('*').forEach((el) => {
-              if (el.children.length) return;
-              const t = txt(el);
-              if (!t) return;
-              const matched = labels.some((lbl) => new RegExp('^' + lbl + '\\s*:?$', 'i').test(t));
-              if (matched) {
-                let cur = el;
-                for (let i = 0; i < 4; i++) {
-                  cur = cur.nextElementSibling;
-                  if (!cur) break;
-                  const v = txt(cur);
-                  if (v) {
-                    found.push(
-                      ...v
-                        .split(/\s*[,;]\s*/)
-                        .map((s) => s.trim())
-                        .filter(Boolean),
-                    );
-                    break;
+            if (fs) {
+              const allLis = Array.from(fs.querySelectorAll('li'))
+                .map((li) => txt(li))
+                .filter(Boolean);
+              let sekunderStartIdx = -1;
+              const strongs = Array.from(fs.querySelectorAll('strong, b'));
+              for (const s of strongs) {
+                if (/diagnosa\s*sekunder/i.test(txt(s))) {
+                  const parentLi = s.closest('li');
+                  if (parentLi) {
+                    const idx = Array.from(fs.querySelectorAll('li')).indexOf(parentLi);
+                    if (idx >= 0) sekunderStartIdx = idx;
+                  } else {
+                    const nextOl = s.nextElementSibling;
+                    if (nextOl && nextOl.tagName === 'OL') {
+                      const firstSekunderLi = nextOl.querySelector('li');
+                      if (firstSekunderLi) {
+                        const idx = Array.from(fs.querySelectorAll('li')).indexOf(firstSekunderLi);
+                        if (idx >= 0) sekunderStartIdx = idx;
+                      }
+                    }
                   }
+                  break;
                 }
               }
-            });
-            out[key] = found;
-          };
-          grab(
-            ['Diagnosa Utama', 'Riwayat Diagnosa Pasien', 'Diagnosa Utama & Sekunder', 'Diagnosa'],
-            res,
-            'utama',
-          );
-          grab(['Diagnosa Sekunder'], res, 'sekunder');
-        } catch {}
-        return res;
+              if (sekunderStartIdx >= 0 && sekunderStartIdx < allLis.length) {
+                diagnosisUtama = allLis.slice(0, sekunderStartIdx);
+                diagnosisSekunder = allLis
+                  .slice(sekunderStartIdx)
+                  .filter((v) => v && !/tidak ada/i.test(v));
+              } else if (allLis.length) {
+                diagnosisUtama = allLis;
+              }
+            }
+            for (const table of doc.querySelectorAll('table')) {
+              const headerRow = table.querySelector('tr');
+              if (!headerRow) continue;
+              const headers = Array.from(headerRow.querySelectorAll('td, th')).map((td) => txt(td));
+              if (!headers.some((h) => /^R\//.test(h))) continue;
+              const colName = headers.findIndex((h) => /Packing|Nama.*Obat|Obat/i.test(h));
+              const colStrength = headers.findIndex((h) => /Kekuatan/i.test(h));
+              const colDose = headers.findIndex((h) => /Dosis/i.test(h));
+              const colJmlPerR = headers.findIndex((h) => /Jml.*per/i.test(h));
+              const colSediaan = headers.findIndex((h) => /Sediaan/i.test(h));
+              let currentNum = '';
+              table.querySelectorAll('tr').forEach((tr, i) => {
+                if (i === 0) return;
+                const tds = tr.querySelectorAll('td');
+                if (tds.length < 5) return;
+                const leftText = txt(tds[0]);
+                const numMatch = leftText.match(/(\d+)/);
+                if (numMatch) {
+                  currentNum = numMatch[1];
+                  if (!map.has(currentNum)) map.set(currentNum, []);
+                  map.get(currentNum).push({
+                    name: colName >= 0 ? txt(tds[colName]) : txt(tds[1]),
+                    strength: colStrength >= 0 ? txt(tds[colStrength]) : '',
+                    dose: colDose >= 0 ? txt(tds[colDose]) : '',
+                    jmlPerR: colJmlPerR >= 0 ? txt(tds[colJmlPerR]) : '',
+                    sediaan: colSediaan >= 0 ? txt(tds[colSediaan]) : '',
+                  });
+                }
+              });
+              break;
+            }
+            if (diagnosisUtama.length || map.size) break;
+          } catch {}
+        }
+        return map;
       }
-      const diagnosis = await fetchDiagnosis();
+      async function fetchAntrianNumber(resepId) {
+        try {
+          let base = 'http://dev.rsudkotajambi.id/rs';
+          try {
+            const ov = localStorage.getItem('ext-farmasi-app-base');
+            if (ov && /^https?:\/\//.test(ov)) base = ov.replace(/\/+$/, '');
+          } catch {}
+          const resp = await fetch(
+            base + '/api/queue/lookup?resep_id=' + encodeURIComponent(resepId),
+            {
+              cache: 'no-store',
+              credentials: 'omit',
+            },
+          );
+          if (!resp.ok) return '';
+          const j = await resp.json();
+          if (j.ok && j.found && j.queue?.queue_number) return j.queue.queue_number;
+        } catch {}
+        return '';
+      }
+      const params = new URLSearchParams(window.location.search);
+      const resepIdForQueue = params.get('id') ?? '';
+      antrianNumber = resepIdForQueue ? await fetchAntrianNumber(resepIdForQueue) : '';
       const racikanMap = await fetchRacikanDetails();
       for (const med of meds) {
         const num = med.no.replace(/\D/g, '');
@@ -253,11 +270,11 @@ var __morbis_feature = (() => {
         '</span></div>';
       const diagHtml =
         '<section class="tm-card"><div class="diag-title">Diagnosa</div><div class="tm-row"><span class="tm-label">Utama</span><span class="tm-val">' +
-        (diagnosis.utama.length ? esc(diagnosis.utama.join(', ')) : '-') +
+        (diagnosisUtama.length ? esc(diagnosisUtama.join(', ')) : '-') +
         '</span></div>' +
-        (diagnosis.sekunder.length
+        (diagnosisSekunder.length
           ? '<div class="tm-row"><span class="tm-label">Sekunder</span><span class="tm-val">' +
-            esc(diagnosis.sekunder.join(', ')) +
+            esc(diagnosisSekunder.join(', ')) +
             '</span></div>'
           : '') +
         '</section>';
@@ -344,22 +361,7 @@ var __morbis_feature = (() => {
         '<div class="t-sub">Persetujuan Perubahan Resep</div><table class="t-check"><thead><tr><th class="c" colspan="2">Perubahan resep</th></tr><tr><th class="c half">Tertulis</th><th class="c half">Menjadi</th></tr></thead><tbody><tr><td class="blk2"></td><td class="blk2"></td></tr><tr><td class="c">Apoteker</td><td class="c">Disetujui Dokter</td></tr><tr><td class="blk2"></td><td class="blk2"></td></tr></tbody></table>';
       const waktuHtml =
         '<table class="t-check"><thead><tr><th class="c" colspan="2">Waktu Tunggu</th></tr></thead><tbody><tr><td class="third">Masuk</td><td></td></tr><tr><td>Diserahkan</td><td></td></tr></tbody></table>';
-      const edukasiHtml =
-        '<table class="t-check"><thead><tr><th class="c" colspan="2">Edukasi</th><th class="yt"></th></tr></thead><tbody>' +
-        [
-          ['1', 'Nama Obat'],
-          ['2', 'Kegunaan Obat'],
-          ['3', 'Dosis&Sediaan Obat'],
-          ['4', 'Rute & cara pakai'],
-          ['5', 'Cara penyimpanan'],
-          ['6', 'Efek samping'],
-          ['7', 'Alergi obat'],
-        ]
-          .map(
-            ([n, item]) => '<tr><td class="num">' + n + '</td><td>' + item + '</td><td></td></tr>',
-          )
-          .join('') +
-        '</tbody></table>';
+      const edukasiHtml = '';
       const parafHtml =
         '<table class="t-check"><tbody><tr><td class="twothird">Paraf dan Nama<br/>Pasien/Keluarga</td><td class="blk3"></td></tr></tbody></table>';
       const html =
@@ -370,7 +372,13 @@ var __morbis_feature = (() => {
         esc(hospitalName) +
         '</h1>' +
         (headBody[0] ? '<div class="t-hsub">' + esc(headBody[0]) + '</div>' : '') +
-        '</div></header><main class="t-main"><section class="t-left">' +
+        '</div>' +
+        (antrianNumber
+          ? '<div class="t-antrian"><span class="t-antrian-label">No. Antrian</span><span class="t-antrian-val">' +
+            esc(antrianNumber) +
+            '</span></div>'
+          : '') +
+        '</header><main class="t-main"><section class="t-left">' +
         patientMetaHtml +
         diagHtml +
         '<div class="t-meds">' +
@@ -383,7 +391,6 @@ var __morbis_feature = (() => {
         checkTable('Telaah Obat', telaahObat) +
         persetujuanHtml +
         waktuHtml +
-        edukasiHtml +
         parafHtml +
         '</section></main><footer class="t-footer">' +
         esc(footerText) +
@@ -400,11 +407,15 @@ var __morbis_feature = (() => {
         .halaman{font-family:'Inter',Arial,sans-serif;font-size:11px;line-height:1.25;color:#000;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 
         /* HEADER (priority: items-center, logo 80px) */
-        .t-head{display:flex;align-items:center;padding-bottom:8px;border-bottom:1.5px solid #000;margin-bottom:12px;gap:14px}
+        .t-head{display:flex;align-items:center;padding-bottom:8px;border-bottom:1.5px solid #000;margin-bottom:12px;gap:14px;position:relative}
         .t-logo{width:60px;height:60px;object-fit:contain;object-position:left top;flex:none}
         .t-bhead{flex:1;font-size:11px}
         .t-hname{font-size:13px;font-weight:800;margin:0 0 4px;letter-spacing:-.01em}
         .t-hsub{line-height:1.3}
+        /* ANTRIAN number top-right */
+        .t-antrian{position:absolute;top:0;right:0;text-align:right;font-size:10px;line-height:1.2}
+        .t-antrian-label{display:block;color:#5b6470;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+        .t-antrian-val{display:block;font-size:18px;font-weight:800;color:#198754;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 
   /* METADATA \u2014 tanpa border, tanpa bold. Label kecil di atas, nilai di bawah
         (stacked) sehingga isi bisa memanjang. Pasien kiri & dokter kanan. */
@@ -417,9 +428,12 @@ var __morbis_feature = (() => {
         .diag-title{font-weight:800;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:#5b6470;margin-bottom:2px}
 
         /* MAIN 2 kolom \u2014 portrait 105mm: kolom lebih ramping, gap kecil */
-        .t-main{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:start}
+        .t-main{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch}
         .t-left,.t-right{display:flex;flex-direction:column;gap:6px}
         .t-right .t-check{margin-bottom:0}
+        /* Samakan tinggi kolom kiri/kanan: flex-grow pada konten utama */
+        .t-left > *:last-child, .t-right > *:last-child {flex:1;min-height:0}
+        .t-meds{flex:1;min-height:0;overflow:hidden}
 
         /* DAFTAR OBAT */
         .t-meds{margin-bottom:16px;font-size:11px}
