@@ -110,35 +110,58 @@
       let lastMed: Med | null = null;
       medsTable.querySelectorAll('tr').forEach((tr) => {
         const tds = tr.querySelectorAll('td');
+        if (tds.length < 2) return;
         const left = txt(tds[0]);
         const rightEl = tds[1];
         const right = txt(rightEl);
         const numMatch = left.match(/^(?:R\/)?(\d+)/);
         if (numMatch) {
           const num = numMatch[1];
-          if (medsMap.has(num)) {
-            const existing = medsMap.get(num)!;
-            if (right)
-              existing.subMeds.push({
-                name: right,
-                strength: '',
-                dose: '',
-                jmlPerR: '',
-                sediaan: '',
-              });
-            return;
-          }
           const med: Med = { no: num, name: '', jml: '', aturan: [], subMeds: [] };
           medsMap.set(num, med);
           lastMed = med;
+          // Baris pertama racikan: bisa nama obat TUNGGAL (R/x + Jml) atau
+          // bahan pertama dari racikan (R/1 + ingredient pertama).
           const ps = rightEl ? Array.from(rightEl.querySelectorAll('p')) : [];
           med.name = ps.length ? (ps[0]?.textContent || right).trim() : right;
-          const jmlT = ps.length ? ((ps[1] || ps[0]).textContent || '').trim() : '';
+          const jmlT = ps.length > 1 ? (ps[1]?.textContent || '').trim() : '';
           const mJml = jmlT.match(/Jml\s*:\s*(.+)/i);
           med.jml = mJml ? mJml[1].trim() : '';
-        } else if (lastMed && right) {
-          lastMed.aturan.push(right);
+          // Kalau ada Jml pada baris pertama → obat TUNGGAL (bukan racikan).
+          // Kalau tidak, maka ia bahan pertama racikan → jadikan subMeds.
+          if (ps.length && !mJml && med.name) {
+            med.subMeds.push({
+              name: med.name,
+              strength: '',
+              dose: '',
+              jmlPerR: '',
+              sediaan: '',
+            });
+            med.name = ''; // nama racikan kosong → tampilkan lewat subMeds
+          }
+          return;
         }
+        if (!lastMed || !right) return;
+        // Baris lanjutan (tanpa nomor R/):
+        // - Racikan: sel kanan memakai <div style='display:flex'><p>nama</p><p>Jml:N</p></div>
+        // - Sediaan/Jumlah/Aturan: sel polos (Tanpa <p>).
+        const ps = rightEl ? Array.from(rightEl.querySelectorAll('p')) : [];
+        if (ps.length) {
+          const ingName = (ps[0]?.textContent || '').trim();
+          if (!ingName) return;
+          const ingJml = ps.length > 1 ? (ps[1]?.textContent || '').trim() : '';
+          const ingJmlMatch = ingJml.match(/Jml\s*:\s*(.+)/i);
+          lastMed.subMeds.push({
+            name: ingName,
+            strength: '',
+            dose: '',
+            jmlPerR: ingJmlMatch ? ingJmlMatch[1].trim() : '',
+            sediaan: '',
+          });
+          return;
+        }
+        // Sel polos: "Tablet" / "Jumlah : 10" / "(3x1)" → aturan/sediaan.
+        lastMed.aturan.push(right);
       });
       meds.push(...medsMap.values());
     }
@@ -325,11 +348,12 @@
     // yang sudah di-render server di halaman telaah (reliable, tanpa network).
     if (!diagnosisUtama.length && serverDiag.length) diagnosisUtama = serverDiag;
 
-    // Merge sub-obat racikan ke dalam meds.
+    // Merge sub-obat racikan dari fetch detail (hanya kalau belum terisi dari
+    // parse tabel halaman telaah — parse lokal lebih akurat utk racikan).
     for (const med of meds) {
       const num = med.no.replace(/\D/g, '');
       const subs = racikanMap.get(num);
-      if (subs && subs.length > 1) {
+      if (subs && subs.length > 1 && med.subMeds.length === 0) {
         med.subMeds = subs;
       }
     }
@@ -421,12 +445,13 @@
           esc(m.no) +
           '</span> ' +
           '<span class="med-name">' +
-          esc(m.name) +
+          // Racikan: tidak ada nama tunggal → label "Racikan", sub-ingredients di bawah.
+          esc(m.subMeds.length ? m.name || 'Racikan' : m.name) +
           '</span></span>' +
           (m.jml ? '<span class="med-jml">Jml: ' + esc(m.jml) + '</span>' : '') +
           '</div>' +
-          // Sub-obat racikan (detail dari halaman edit)
-          (m.subMeds.length > 1
+          // Sub-ingredient racikan (nama + jml per R/).
+          (m.subMeds.length
             ? '<div class="med-submeds">' +
               m.subMeds
                 .map(
@@ -450,6 +475,7 @@
                 .join('') +
               '</div>'
             : '') +
+          // Aturan & baris sediaan/Jumlah (polos) milik racikan.
           (m.aturan.length
             ? '<div class="med-aturan">' + m.aturan.map((a) => esc(a)).join('<br/>') + '</div>'
             : '') +
