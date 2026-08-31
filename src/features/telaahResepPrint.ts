@@ -586,17 +586,23 @@
     // Dokter & Ruangan digabung: "dr. X / Poli Dalam"
     const dokterRuang = (g('Dokter') || '-') + (g('Ruangan/Poli') ? ' / ' + g('Ruangan/Poli') : '');
 
-    // Alergi (label "Alergi", bukan "Riwayat Alergi") & BB digabung 1 baris:
-    // "Paracetamol · BB: 72 kg"
-    const alergiBB =
-      (g('Riwayat Alergi') || '-') + (g('Berat Badan') ? ' &middot; BB: ' + g('Berat Badan') : '');
+    // Alergi & BB digabung 1 baris. Lookup label tahan variasi dari server
+    // (misal "Berat Badan / Umur", "BB", "Riwayat Alergi", dll).
+    const look = (re: RegExp): string => {
+      for (const k of metaMap.keys()) if (re.test(k)) return metaMap.get(k) || '';
+      return '';
+    };
+    const alergi = look(/alergi/i);
+    const bb = look(/berat|\bbb\b/i);
+    // "Paracetamol, Amlodipin, Injeksi, ... / BB 72 kg" (atau "- / BB 72 kg")
+    const alergiBB = (alergi ? alergi : '-') + (bb ? ' / BB ' + bb : '');
 
     // ==== KIRI (pasien) — 6 baris ====
     const patientRows: [string, string][] = [
       ['Pasien', pasienJK],
       ['No. RM', g('No. RM')],
       ['Tgl. Lahir/Umur', g('Tgl. Lahir/Umur')],
-      ['Alergi', alergiBB],
+      ['Riwayat Alergi & BB', alergiBB],
       ['Alamat', g('Alamat')],
       ['No HP', g('No HP')],
     ];
