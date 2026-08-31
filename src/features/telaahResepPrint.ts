@@ -311,6 +311,116 @@
       return map;
     }
 
+    // Sumber data per-obat racikan yang LENGKAP & terpercaya: halaman
+    // /inventory/print/cetak-resep-asli?id=<resep> — di-render server, berisi
+    // Jml masing-masing bahan (10/10/5), aturan (3x1), & total racikan (10).
+    // Tidak butuh id_penjualan (telaah print hanya punya id_resep).
+    const normName = (s: string): string =>
+      String(s || '')
+        .toLowerCase()
+        .replace(/\b(tablet|drops|kaplet|kapsul|puyer|salep)\b/g, '')
+        .replace(/[^a-z0-9]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    const namesMatch = (a: string, b: string): boolean => {
+      const na = normName(a);
+      const nb = normName(b);
+      if (!na || !nb) return false;
+      return na.includes(nb) || nb.includes(na);
+    };
+
+    // Parse satu dokumen salinan/asli resep ke dalam map { R/N -> {ingredients, aturan, jumlahRacikan} }.
+    function parseRacikanAsli(
+      doc: Document,
+      map: Map<
+        string,
+        { ingredients: { name: string; jml: string }[]; aturan: string[]; jumlahRacikan: string }
+      >,
+    ): void {
+      // Cari tabel yang punya sel kiri "R/N".
+      let tbl: Element | null = null;
+      for (const t of Array.from(doc.querySelectorAll('table'))) {
+        const lefts = Array.from(t.querySelectorAll('tr > td:first-child'));
+        if (lefts.some((td) => /^R\/\d+/.test(txt(td)))) {
+          tbl = t;
+          break;
+        }
+      }
+      if (!tbl) return;
+
+      let cur: {
+        ingredients: { name: string; jml: string }[];
+        aturan: string[];
+        jumlahRacikan: string;
+      } | null = null;
+      tbl.querySelectorAll('tr').forEach((tr) => {
+        const tds = tr.querySelectorAll('td');
+        if (tds.length < 2) return;
+        const left = txt(tds[0]);
+        const numMatch = left.match(/^R\/(\d+)/);
+        if (numMatch) {
+          cur = { ingredients: [], aturan: [], jumlahRacikan: '' };
+          map.set(numMatch[1], cur);
+          // Baris ini berisi bahan-bahan (dipisah <br>).
+          tds[1].innerHTML.split(/<br\s*\/?>/i).forEach((p) => {
+            const clean = p
+              .replace(/&nbsp;/g, ' ')
+              .replace(/<[^>]+>/g, ' ')
+              .replace(/\s+/g, ' ')
+              .trim();
+            if (!clean || /^Dosis/i.test(clean)) return;
+            const m = clean.match(/^(.+?)\s*Jml\.\s*([\d.,]+)$/i);
+            if (m) cur!.ingredients.push({ name: m[1].trim(), jml: m[2].trim() });
+          });
+          return;
+        }
+        if (!cur) return;
+        // Baris lanjutan blok: aturan &/atau "Jumlah/Jml. Racikan : N".
+        const right = txt(tds[1]);
+        const jr = right.match(/(?:Jumlah|Jml\.)\s*Racikan\s*:\s*([\d.,]+)/i);
+        if (jr) {
+          cur.jumlahRacikan = jr[1].trim();
+          return;
+        }
+        const aturanTxt = right.replace(/(?:Jumlah|Jml\.)\s*Racikan\s*:.*/i, '').trim();
+        if (aturanTxt && !/^Dosis/i.test(aturanTxt)) cur.aturan.push(aturanTxt);
+      });
+    }
+
+    // Sumber per-obat racikan lengkap. Menurut standar operasional farmasi &
+    // keselamatan pasien, Telaah Resep harus memakai RESEP ASLI (resep baru di
+    // kunjungan saat itu) → cetak-resep-asli diutamakan; salinan resep sebagai
+    // cadangan. Keduanya di-render server & cukup butuh id_resep.
+    const RACIKAN_ASLI_URLS = [
+      (id: string) => '/inventory/print/cetak-resep-asli?id=' + encodeURIComponent(id),
+      (id: string) => '/inventory/print/cetak-resep?id_resep=' + encodeURIComponent(id),
+    ];
+    async function fetchRacikanAsli(): Promise<
+      Map<
+        string,
+        { ingredients: { name: string; jml: string }[]; aturan: string[]; jumlahRacikan: string }
+      >
+    > {
+      const map = new Map<
+        string,
+        { ingredients: { name: string; jml: string }[]; aturan: string[]; jumlahRacikan: string }
+      >();
+      const resepId = params.get('id_resep') || params.get('id') || params.get('penjualan') || '';
+      if (!resepId) return map;
+      for (const build of RACIKAN_ASLI_URLS) {
+        try {
+          const resp = await fetch(build(resepId), { credentials: 'include' });
+          if (!resp.ok) continue;
+          const doc = new DOMParser().parseFromString(await resp.text(), 'text/html');
+          parseRacikanAsli(doc, map);
+          if (map.size > 0) break; // cukup satu sumber yang berhasil
+        } catch {
+          /* coba sumber berikutnya */
+        }
+      }
+      return map;
+    }
+
     // Fetch nomor antrian dari App Antrian (Reports SIMRS) via resep_id
     async function fetchAntrianNumber(resepId: string): Promise<string> {
       try {
@@ -349,6 +459,9 @@
     antrianNumber = resepIdForQueue ? await fetchAntrianNumber(resepIdForQueue) : '';
 
     const racikanMap = await fetchRacikanDetails();
+    // Sumber per-obat racikan yang LENGKAP (Jml tiap bahan + aturan + total
+    // racikan) dari halaman salinan/asli resep — andalan utama utk format baru.
+    const asliMap = await fetchRacikanAsli();
 
     // Fallback: kalau fetch detail tidak dapat diagnosa, pakai baris "Diagnosa"
     // yang sudah di-render server di halaman telaah (reliable, tanpa network).
@@ -361,6 +474,36 @@
       const subs = racikanMap.get(num);
       if (subs && subs.length > 1 && med.subMeds.length === 0) {
         med.subMeds = subs;
+      }
+    }
+
+    // Merge per-obat Jml + aturan + total racikan dari salinan/asli resep.
+    // Cocokkan per nama (bukan index) — urutan bisa beda antar halaman.
+    for (const med of meds) {
+      const num = med.no.replace(/\D/g, '');
+      const block = asliMap.get(num);
+      if (!block) continue;
+      if (block.jumlahRacikan) med.jumlahJadi = block.jumlahRacikan;
+      if (block.aturan.length) med.aturan = block.aturan;
+      if (med.subMeds.length === 0 && block.ingredients.length > 0) {
+        if (block.ingredients.length > 1) {
+          // Racikan: seluruh bahan jadi subMeds (lengkap dgn jml).
+          med.subMeds = block.ingredients.map((i) => ({
+            name: i.name,
+            strength: '',
+            dose: '',
+            sediaan: '',
+            jmlPerR: i.jml,
+          }));
+        } else if (!med.jml && block.ingredients[0].jml) {
+          // Tunggal: satu bahan → isi jml med, bukan subMeds.
+          med.jml = block.ingredients[0].jml;
+        }
+      } else {
+        for (const s of med.subMeds) {
+          const hit = block.ingredients.find((i) => namesMatch(s.name, i.name));
+          if (hit && !s.jmlPerR) s.jmlPerR = hit.jml;
+        }
       }
     }
 
@@ -443,56 +586,60 @@
       '</section>';
 
     const medListHtml = meds
-      .map(
-        (m) =>
+      .map((m) => {
+        // Racikan: label "Racikan", tiap bahan "R/N Nama - qty" (pertama) /
+        // "Nama - qty" (indent), lalu "N Racikan - aturan".
+        if (m.subMeds.length) {
+          const lines = m.subMeds
+            .map((s, i) => {
+              const jml = s.jmlPerR || '';
+              return (
+                '<div class="med-line' +
+                (i > 0 ? ' indent' : '') +
+                '">' +
+                (i === 0 ? '<span class="med-no">' + esc(m.no) + '</span> ' : '') +
+                '<span class="med-name">' +
+                esc(s.name) +
+                '</span>' +
+                (jml
+                  ? ' <span class="med-sep">-</span> <span class="med-jml">' + esc(jml) + '</span>'
+                  : '') +
+                '</div>'
+              );
+            })
+            .join('');
+          const total = m.jumlahJadi ? esc(m.jumlahJadi) + ' Racikan' : 'Racikan';
+          const aturan = m.aturan.length ? m.aturan.map((a) => esc(a)).join(' ') : '';
+          const jadi = total + (aturan ? ' - ' + aturan : '');
+          return (
+            '<div class="med med-racik">' +
+            '<div class="med-block-label">Racikan</div>' +
+            lines +
+            (jadi ? '<div class="med-jadiracik">' + jadi + '</div>' : '') +
+            '</div>'
+          );
+        }
+        // Tunggal: "R/N Nama - qty" + aturan.
+        const jml = m.jml || '';
+        return (
           '<div class="med">' +
-          '<div class="med-head">' +
-          '<span class="med-txt"><span class="med-no">' +
+          '<div class="med-line">' +
+          '<span class="med-no">' +
           esc(m.no) +
           '</span> ' +
           '<span class="med-name">' +
-          // Racikan: tidak ada nama tunggal → label "Racikan", sub-ingredients di bawah.
-          esc(m.subMeds.length ? m.name || 'Racikan' : m.name) +
-          '</span></span>' +
-          (m.jml ? '<span class="med-jml">Jml: ' + esc(m.jml) + '</span>' : '') +
-          '</div>' +
-          // Sub-ingredient racikan (nama + jml per R/).
-          (m.subMeds.length
-            ? '<div class="med-submeds">' +
-              m.subMeds
-                .map(
-                  (s) =>
-                    '<div class="med-submed">' +
-                    '<span class="med-submed-name">' +
-                    esc(s.name) +
-                    '</span>' +
-                    (s.strength
-                      ? ' <span class="med-submed-detail">' + esc(s.strength) + '</span>'
-                      : '') +
-                    (s.dose ? ' <span class="med-submed-detail">' + esc(s.dose) + '</span>' : '') +
-                    (s.jmlPerR
-                      ? ' <span class="med-submed-jml">' +
-                        esc(s.jmlPerR) +
-                        (s.sediaan ? '/' + esc(s.sediaan) : '') +
-                        '</span>'
-                      : '') +
-                    '</div>',
-                )
-                .join('') +
-              '</div>'
+          esc(m.name) +
+          '</span>' +
+          (jml
+            ? ' <span class="med-sep">-</span> <span class="med-jml">' + esc(jml) + '</span>'
             : '') +
-          // Aturan & baris sediaan (polos) milik racikan.
+          '</div>' +
           (m.aturan.length
             ? '<div class="med-aturan">' + m.aturan.map((a) => esc(a)).join('<br/>') + '</div>'
             : '') +
-          // Jumlah jadi racik — ditaruh paling bawah dari blok obat ini.
-          (m.jumlahJadi
-            ? '<div class="med-jadiracik"><span>Jumlah jadi racik: ' +
-              esc(m.jumlahJadi) +
-              '</span></div>'
-            : '') +
-          '</div>',
-      )
+          '</div>'
+        );
+      })
       .join('');
 
     // Tabel admin (Hitung/Timbang/Kemas/Paraf). Baris header sumber memuat sel
@@ -643,32 +790,27 @@
         /* DIAGNOSA — blok ringkas, label tebal di atas */
         .diag-title{font-weight:800;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:#5b6470;margin-bottom:2px}
 
-        /* MAIN 2 kolom — portrait 105mm: kolom lebih ramping, gap kecil */
-        .t-main{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch}
+        /* MAIN 2 kolom — portrait 105mm: kolom lebih ramping, gap kecil.
+           Kolom TIDAK dipaksa sama tinggi (align-items:start) agar bagian bawah
+           paraf/tanda tangan tidak membentang kosong. */
+        .t-main{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:start}
         .t-left,.t-right{display:flex;flex-direction:column;gap:6px}
         .t-right .t-check{margin-bottom:0}
-        /* Samakan tinggi kolom kiri/kanan: flex-grow pada konten utama */
-        .t-left > *:last-child, .t-right > *:last-child {flex:1;min-height:0}
-        .t-meds{flex:1;min-height:0;overflow:hidden}
+        .t-meds{margin-bottom:16px;font-size:11px;min-width:0}
 
-        /* DAFTAR OBAT */
-        .t-meds{margin-bottom:16px;font-size:11px}
-        .med{margin-bottom:7px}
-        .med-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+        /* DAFTAR OBAT — format per-blok (racikan & tunggal) */
+        .med{margin-bottom:8px}
+        .med-racik{border:0.5pt solid #9ca3af;border-radius:3px;padding:4px 5px}
+        .med-block-label{font-weight:700;font-size:11px;margin-bottom:2px}
+        .med-line{font-size:11px;line-height:1.35}
+        .med-line.indent{margin-left:18px}
         .med-no{font-weight:400}
-        .med-name{font-weight:700}
-        .med-jml{white-space:nowrap;font-weight:400}
-        .med-aturan{margin-left:0}
-
-        /* SUB-OBAT RACIKAN */
-        .med-submeds{margin-left:16px;margin-top:3px;border-top:0.5pt dashed #9ca3af;padding-top:3px}
-        .med-submed{font-size:10px;line-height:1.3;color:#374151;margin-bottom:1px}
-        .med-submed-name{font-weight:600}
-        .med-submed-detail{font-weight:400}
-        .med-submed-jml{font-weight:600;color:#047857}
-        /* JUMLAH JADI RACIK — di bawah aturan, menonjol */
-        .med-jadiracik{margin-top:4px;border-top:0.5pt solid #333;padding-top:3px;font-size:11px}
-        .med-jadiracik span{font-weight:700;color:#000}
+        .med-name{font-weight:600}
+        .med-sep{color:#374151}
+        .med-jml{white-space:nowrap;font-weight:600;color:#047857}
+        .med-aturan{margin-left:0;font-size:10px;color:#374151;margin-top:1px}
+        /* JUMLAH JADI RACIK — di bawah blok racikan */
+        .med-jadiracik{margin-top:4px;border-top:0.5pt solid #333;padding-top:3px;font-size:11px;font-weight:700}
 
         /* TABEL — checklist */
         table{width:100%;border-collapse:collapse;font-size:11px}
@@ -681,9 +823,9 @@
         .half{width:50%}
         .third{width:33.333%}
         .twothird{width:66.667%}
-        .blk{height:28px}
-        .blk2{height:11px}
-        .blk3{height:24px}
+        .blk{min-height:18px}
+        .blk2{min-height:11px}
+        .blk3{min-height:45px}
         .t-sub{text-align:center;font-size:11px;margin:4px 0}
 
         /* FOOTER + BUTTON */
