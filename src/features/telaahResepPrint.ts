@@ -231,8 +231,9 @@
         // Cari blok "Diagnosa Utama" / "Diagnosa Sekunder". MORBIS biasanya
         // render sebagai label + list input/teks. Robust: cari teks label lalu
         // ambil nilai dari elemen sesudahnya (input, textarea, td, atau p).
+        // Label bisa "Diagnosa Utama", "Riwayat Diagnosa Pasien", "Diagnosa Utama & Sekunder", dll.
         const grab = (
-          label: string,
+          labels: string[],
           out: { utama: string[]; sekunder: string[] },
           key: 'utama' | 'sekunder',
         ): void => {
@@ -241,7 +242,8 @@
             if (el.children.length) return; // skip elemen yang punya child (label di parent)
             const t = txt(el);
             if (!t) return;
-            if (new RegExp('^' + label + '\\s*:?$', 'i').test(t)) {
+            const matched = labels.some((lbl) => new RegExp('^' + lbl + '\\s*:?$', 'i').test(t));
+            if (matched) {
               // Nilai = teks elemen berikutnya dalam scope yang masuk akal.
               let cur: Element | null = el;
               for (let i = 0; i < 4; i++) {
@@ -262,8 +264,12 @@
           });
           out[key] = found;
         };
-        grab('Diagnosa Utama', res, 'utama');
-        grab('Diagnosa Sekunder', res, 'sekunder');
+        grab(
+          ['Diagnosa Utama', 'Riwayat Diagnosa Pasien', 'Diagnosa Utama & Sekunder', 'Diagnosa'],
+          res,
+          'utama',
+        );
+        grab(['Diagnosa Sekunder'], res, 'sekunder');
       } catch {
         /* fetch gagal — tanpa diagnosa */
       }

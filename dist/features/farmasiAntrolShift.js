@@ -471,7 +471,7 @@ var __morbis_feature = (() => {
   async function lookupAntrianAny(reader2) {
     const candidates = [
       reader2.get('id_resep') || '',
-      reader2.get('', 'nomor_resep') || reader2.get('', 'id_resep') || '',
+      reader2.get('id_resep', 'nomor_resep') || '',
       new URLSearchParams(location.search).get('id') ?? '',
     ].filter((v) => v && v.length >= 3);
     for (const c of candidates) {

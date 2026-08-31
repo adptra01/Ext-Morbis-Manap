@@ -57,7 +57,7 @@ export async function lookupAntrianAny(
 ): Promise<{ queue_number: string; status: string } | null> {
   const candidates = [
     reader.get('id_resep') || '',
-    reader.get('', 'nomor_resep') || reader.get('', 'id_resep') || '',
+    reader.get('id_resep', 'nomor_resep') || '',
     new URLSearchParams(location.search).get('id') ?? '',
   ].filter((v) => v && v.length >= 3);
   for (const c of candidates) {

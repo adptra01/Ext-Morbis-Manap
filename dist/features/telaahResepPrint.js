@@ -171,13 +171,14 @@ var __morbis_feature = (() => {
           if (!resp.ok) return res;
           const html2 = await resp.text();
           const doc = new DOMParser().parseFromString(html2, 'text/html');
-          const grab = (label, out, key) => {
+          const grab = (labels, out, key) => {
             const found = [];
             doc.querySelectorAll('*').forEach((el) => {
               if (el.children.length) return;
               const t = txt(el);
               if (!t) return;
-              if (new RegExp('^' + label + '\\s*:?$', 'i').test(t)) {
+              const matched = labels.some((lbl) => new RegExp('^' + lbl + '\\s*:?$', 'i').test(t));
+              if (matched) {
                 let cur = el;
                 for (let i = 0; i < 4; i++) {
                   cur = cur.nextElementSibling;
@@ -197,8 +198,12 @@ var __morbis_feature = (() => {
             });
             out[key] = found;
           };
-          grab('Diagnosa Utama', res, 'utama');
-          grab('Diagnosa Sekunder', res, 'sekunder');
+          grab(
+            ['Diagnosa Utama', 'Riwayat Diagnosa Pasien', 'Diagnosa Utama & Sekunder', 'Diagnosa'],
+            res,
+            'utama',
+          );
+          grab(['Diagnosa Sekunder'], res, 'sekunder');
         } catch {}
         return res;
       }

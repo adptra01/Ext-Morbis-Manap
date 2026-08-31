@@ -82,8 +82,10 @@ function resolveTglLahir(): string {
 
 /** Baca field hidden input by id + fallback name. */
 function getField(id: string, fallbackName?: string): string {
-  const v1 = document.querySelector<HTMLInputElement>('#' + id)?.value?.trim() || '';
-  if (v1) return v1;
+  if (id) {
+    const v1 = document.querySelector<HTMLInputElement>('#' + id)?.value?.trim() || '';
+    if (v1) return v1;
+  }
   if (fallbackName) {
     const v2 =
       document
