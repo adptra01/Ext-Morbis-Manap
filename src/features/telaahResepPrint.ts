@@ -70,20 +70,6 @@
       });
     });
 
-    const DOCTOR_FIELDS = ['Dokter', 'SIP Dokter', 'Ruangan/Poli'];
-    const PATIENT_FIELDS = [
-      'No Resep',
-      'Tanggal & Jam',
-      'No. RM',
-      'Nama Pasien',
-      'Jenis Kelamin',
-      'Tgl. Lahir/Umur',
-      'No HP',
-      'Penjamin',
-      'Berat Badan',
-      'Riwayat Alergi',
-      'Alamat',
-    ];
     const getMeta = (label: string): string => metaMap.get(label) ?? '';
 
     // Daftar obat.
@@ -588,18 +574,51 @@
       '</span></div>' +
       '</section>';
 
-    // Metadata: pasien (kiri, nyambung ke list obat) & dokter (kanan, nyambung
-    // ke Telaah Resep). TANPA bold.
+    // Metadata: pasien (kiri) & dokter (kanan). No HP tetap kiri; data pasien
+    // lain (No Resep, Tanggal & Jam, Penjamin) pindah kanan. TANPA bold.
+    const g = (l: string): string => getMeta(l);
+
+    // Pasien & JK digabung: "ADI PUTRA (L)"
+    const jk = g('Jenis Kelamin');
+    const jkShort = /^perempuan$/i.test(jk) ? 'P' : /^laki-laki$/i.test(jk) ? 'L' : jk;
+    const pasienJK = (g('Nama Pasien') || '-') + (jk ? ' (' + jkShort + ')' : '');
+
+    // Dokter & Ruangan digabung: "dr. X / Poli Dalam"
+    const dokterRuang = (g('Dokter') || '-') + (g('Ruangan/Poli') ? ' / ' + g('Ruangan/Poli') : '');
+
+    // Alergi (label "Alergi", bukan "Riwayat Alergi") & BB digabung 1 baris:
+    // "Paracetamol · BB: 72 kg"
+    const alergiBB =
+      (g('Riwayat Alergi') || '-') + (g('Berat Badan') ? ' &middot; BB: ' + g('Berat Badan') : '');
+
+    // ==== KIRI (pasien) — 6 baris ====
+    const patientRows: [string, string][] = [
+      ['Pasien', pasienJK],
+      ['No. RM', g('No. RM')],
+      ['Tgl. Lahir/Umur', g('Tgl. Lahir/Umur')],
+      ['Alergi', alergiBB],
+      ['Alamat', g('Alamat')],
+      ['No HP', g('No HP')],
+    ];
+    // ==== KANAN (dokter + data pasien pindahan) — 5 baris ====
+    const doctorRows: [string, string][] = [
+      ['Dokter', dokterRuang],
+      ['SIP Dokter', g('SIP Dokter')],
+      ['No Resep', g('No Resep')],
+      ['Tanggal & Jam', g('Tanggal & Jam')],
+      ['Penjamin', g('Penjamin')],
+    ];
+
     const patientMetaHtml =
       '<section class="tm-card">' +
       '<div class="tm-col">' +
-      PATIENT_FIELDS.map((f) => metaLine(f, getMeta(f))).join('') +
+      patientRows.map(([l, v]) => metaLine(l, v)).join('') +
       '</div>' +
       '</section>';
     const doctorMetaHtml =
       '<section class="tm-card">' +
       '<div class="tm-col">' +
-      DOCTOR_FIELDS.map((f) => metaLine(f, getMeta(f))).join('') +
+      doctorRows.map(([l, v]) => metaLine(l, v)).join('') +
       '</div>' +
       '</section>';
 
