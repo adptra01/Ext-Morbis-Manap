@@ -834,9 +834,9 @@
         .tm-row{display:grid;grid-template-columns:32% 68%;column-gap:3px;align-items:start}
         .tm-label{color:#5b6470;font-size:10px;line-height:1.25}
         .tm-val{color:#000;line-height:1.25;word-wrap:break-word}
-        /* untuk field panjang (alamat, diagnosa) — full width */
-        .tm-row.long{grid-template-columns:1fr}
-        .tm-row.long .tm-label{margin-bottom:1px}
+        /* untuk field panjang (alamat, diagnosa) — inline dulu, wrap jika overflow */
+        .tm-row.long{display:inline}
+        .tm-row.long .tm-label{display:inline}
 
         /* MAIN 2 kolom — kiri lebih lebar utk nama obat */
         .t-main{display:grid;grid-template-columns:62% 38%;gap:6px;align-items:start}
