@@ -716,7 +716,7 @@
       '<th class="l" colspan="2">' +
       esc(title) +
       '</th>' +
-      '<th class="yt">Y</th><th class="yt">T</th>' +
+      '<th class="yt">Y/T</th>' +
       '</tr></thead><tbody>' +
       rows
         .map(
@@ -725,7 +725,7 @@
             esc(num) +
             '</td><td>' +
             esc(item) +
-            '</td><td></td><td></td></tr>',
+            '</td><td class="yt"></td></tr>',
         )
         .join('') +
       '</tbody></table>';
@@ -859,7 +859,7 @@
         table{width:100%;border-collapse:collapse;font-size:11px}
         th,td{border:0.5pt solid #333;padding:1px 3px;font-weight:400;font-size:11px;line-height:1.2}
         thead th{font-weight:400}
-        .yt{width:18px;text-align:center}
+        .yt{width:32px;text-align:center}
         .num{width:16px;text-align:center}
         .l{text-align:left}
         .c{text-align:center}
