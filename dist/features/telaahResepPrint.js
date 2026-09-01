@@ -397,6 +397,16 @@ var __morbis_feature = (() => {
       const footerText = footerEl
         ? txt(footerEl)
         : 'Obat tidak boleh diganti tanpa sepengetahuan Dokter';
+      const metaLine = (label, value, vClass = '', rowClass = '') =>
+        '<div class="tm-row' +
+        (rowClass ? ' ' + rowClass : '') +
+        '"><span class="tm-label">' +
+        esc(label) +
+        ':</span><span class="tm-val' +
+        (vClass ? ' ' + vClass : '') +
+        '">' +
+        (value && value.trim() ? esc(value) : '-') +
+        '</span></div>';
       const diagValues = [
         ...(diagnosisUtama.length ? [diagnosisUtama.join(', ')] : []),
         ...(diagnosisSekunder.length ? [diagnosisSekunder.join(', ')] : []),
@@ -431,37 +441,21 @@ var __morbis_feature = (() => {
         ['Tanggal & Jam', g('Tanggal & Jam'), ''],
         ['Penjamin', g('Penjamin'), ''],
       ];
+      const diagThen = metaLine(
+        'Diagnosa',
+        diagValues.length ? diagValues.join(', ') : '-',
+        '',
+        'long',
+      );
       const patientMetaHtml =
-        '<section class="tm-card tm-card--small"><table style="width:100%;border-collapse:collapse;border:none">' +
-        patientRows
-          .map(
-            ([l, v, rc]) =>
-              '<tr><td class="tm-label" style="white-space:nowrap;vertical-align:top;padding:0 4px 0 0;border:none;font-size:10px;color:#555;width:110px">' +
-              esc(l) +
-              ':</td><td class="tm-val" style="vertical-align:top;padding:0;border:none;font-size:11px;white-space:normal;word-break:break-word">' +
-              (v && v.trim() ? esc(v) : '-') +
-              '</td></tr>',
-          )
-          .join('') +
-        (diagValues.length
-          ? '<tr><td class="tm-label" style="white-space:nowrap;vertical-align:top;padding:0 4px 0 0;border:none;font-size:10px;color:#555">Diagnosa:</td><td class="tm-val" style="vertical-align:top;padding:0;border:none;font-size:11px;white-space:normal;word-break:break-word">' +
-            esc(diagValues.join(', ')) +
-            '</td></tr>'
-          : '') +
-        '</table></section>';
+        '<section class="tm-card tm-card--small"><div class="tm-col">' +
+        patientRows.map(([l, v, rc]) => metaLine(l, v, '', rc)).join('') +
+        diagThen +
+        '</div></section>';
       const doctorMetaHtml =
-        '<section class="tm-card"><table style="width:100%;border-collapse:collapse;border:none">' +
-        doctorRows
-          .map(
-            ([l, v, rc]) =>
-              '<tr><td class="tm-label" style="white-space:nowrap;vertical-align:top;padding:0 4px 0 0;border:none;font-size:10px;color:#555;width:110px">' +
-              esc(l) +
-              ':</td><td class="tm-val" style="vertical-align:top;padding:0;border:none;font-size:11px;white-space:normal;word-break:break-word">' +
-              (v && v.trim() ? esc(v) : '-') +
-              '</td></tr>',
-          )
-          .join('') +
-        '</table></section>';
+        '<section class="tm-card"><div class="tm-col">' +
+        doctorRows.map(([l, v, rc]) => metaLine(l, v, '', rc)).join('') +
+        '</div></section>';
       const medListHtml = meds
         .map((m) => {
           if (m.subMeds.length) {
@@ -569,57 +563,67 @@ var __morbis_feature = (() => {
         esc(footerText) +
         '</footer><div class="t-print no-print"><button type="button" class="t-btn" onclick="window.print()">Cetak</button></div>';
       page.innerHTML = html;
+      const TARGET_HEIGHT_PX = 866;
+      const pageH = page.scrollHeight;
+      if (pageH > TARGET_HEIGHT_PX) {
+        page.classList.add('compact');
+        if (page.scrollHeight > TARGET_HEIGHT_PX) {
+          page.classList.remove('compact');
+          page.classList.add('ultra');
+        }
+      }
       const STYLE_ID = 'ext-telaah-style';
       if (!document.getElementById(STYLE_ID)) {
         const s = document.createElement('style');
         s.id = STYLE_ID;
         s.textContent = `
-        /* === PRINT: 105mm \xD7 241mm, overflow:hidden, no margin === */
-        .halaman{box-sizing:border-box;width:105mm!important;height:auto!important;margin:0!important;padding:0!important;overflow:hidden!important;font-family:Arial,Helvetica,sans-serif;font-size:14.6px;line-height:1.3;color:#000;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-        .halaman *{box-sizing:border-box}
+        /* === PRINT CONTRACT: 105mm \xD7 241mm === */
+        .halaman{box-sizing:border-box;width:105mm!important;height:auto!important;margin:0!important;padding:0 3mm}
         @page{size:105mm 241mm;margin:0}
+        .halaman *{box-sizing:border-box;font-size:11px!important}
+        .halaman{font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.25;color:#000;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 
-        /* HEADER \u2014 mepet pinggir */
-        .t-head{display:flex;align-items:center;padding:0 0 4px;border-bottom:1.5px solid #000;margin-bottom:6px;gap:8px}
-        .t-logo{width:60px;height:60px;object-fit:contain;object-position:left top;flex:none}
-        .t-bhead{flex:1;min-width:0}
-        .t-hname{font-size:14px;font-weight:800;margin:0 0 1px;letter-spacing:-.01em}
-        .t-hsub{line-height:1.2;font-size:11px}
-        .t-antrian{flex:none;text-align:right;font-size:36px!important;font-weight:800;color:#198754;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1;white-space:pre-line}
+        /* HEADER 3 kolom: logo | brand & alamat | no antrian */
+        .t-head{display:flex;align-items:center;padding-bottom:6px;border-bottom:1.5px solid #000;margin-bottom:8px;gap:10px}
+        .t-logo{width:50px;height:50px;object-fit:contain;object-position:left top;flex:none}
+        .t-bhead{flex:1;font-size:11px;min-width:0}
+        .t-hname{font-size:12px;font-weight:800;margin:0 0 2px;letter-spacing:-.01em}
+        .t-hsub{line-height:1.2;font-size:10px}
+        .t-antrian{flex:none;text-align:right;font-size:36px!important;font-weight:800;color:#198754;letter-spacing:-.02em;font-variant-numeric:tabular-nums;min-width:0;overflow-wrap:anywhere;line-height:1;white-space:pre-line}
 
-        /* METADATA \u2014 table-like grid, label:nowrap + value:isi baris penuh */
-        .tm-card{padding:0;margin:0 0 2px;font-size:11px;border-bottom:0.5pt solid #999}
-        .tm-card--small .tm-label{font-size:10px!important}
-        .tm-card--small .tm-val{font-size:11px!important}
-        .tm-col{display:flex;flex-direction:column;gap:0}
-        .tm-row{display:flex;gap:0;align-items:baseline;line-height:1.3}
-        .tm-label{flex:none;width:110px;color:#555;font-size:10px;white-space:nowrap}
-        .tm-val{flex:1;color:#000;font-size:11px;overflow:hidden;text-overflow:ellipsis}
-        .tm-row.long{flex-direction:column}
-        .tm-row.long .tm-label{width:auto;margin-bottom:0}
-        .tm-row.long .tm-val{white-space:normal;word-break:break-word}
+        /* METADATA \u2014 grid: label kiri, nilai kanan (efisien tinggi) */
+        .tm-card{background:#fff;padding:2px 0 4px;margin-bottom:4px;font-size:11px;border-bottom:0.5pt solid #333}
+        .tm-card--small .tm-label{font-size:9px!important}
+        .tm-card--small .tm-val{font-size:10px!important}
+        .tm-col{display:flex;flex-direction:column;gap:3px}
+        .tm-row{display:grid;grid-template-columns:32% 68%;column-gap:3px;align-items:start}
+        .tm-label{color:#5b6470;font-size:10px;line-height:1.25}
+        .tm-val{color:#000;line-height:1.25;word-wrap:break-word}
+        /* untuk field panjang (alamat, diagnosa) \u2014 full width */
+        .tm-row.long{grid-template-columns:1fr}
+        .tm-row.long .tm-label{margin-bottom:1px}
 
-        /* MAIN 2 kolom \u2014 kiri obat, kanan checklist */
-        .t-main{display:grid;grid-template-columns:62% 38%;gap:0;align-items:start}
-        .t-left,.t-right{display:flex;flex-direction:column;gap:0}
+        /* MAIN 2 kolom \u2014 kiri lebih lebar utk nama obat */
+        .t-main{display:grid;grid-template-columns:62% 38%;gap:6px;align-items:start}
+        .t-left,.t-right{display:flex;flex-direction:column;gap:5px}
         .t-right .t-check{margin-bottom:0}
-        .t-meds{margin:4px 0 0;font-size:14.6px}
+        .t-meds{margin-bottom:8px;font-size:11px;min-width:0}
 
-        /* DAFTAR OBAT \u2014 nowrap per baris */
-        .med{margin-bottom:2px}
-        .med-line{font-size:14.6px;line-height:1.3;text-align:left;white-space:nowrap;overflow:hidden}
-        .med-line.indent{margin-left:28px}
+        /* DAFTAR OBAT */
+        .med{margin-bottom:6px}
+        .med-line{font-size:11px;line-height:1.35;text-align:left}
+        .med-line.indent{margin-left:0}
         .med-no{font-weight:400}
         .med-name{font-weight:600}
         .med-sep{color:#374151}
         .med-jml{white-space:nowrap;font-weight:600;color:#047857}
-        .med-aturan{margin-left:28px;font-size:12px;color:#374151;margin-top:0;white-space:nowrap;overflow:hidden}
-        .med-jadiracik{margin-top:2px;padding-top:1px;font-size:14.6px;font-weight:700}
+        .med-aturan{margin-left:0;font-size:10px;color:#374151;margin-top:1px}
+        .med-jadiracik{margin-top:3px;padding-top:1px;font-size:11px;font-weight:700}
 
-        /* TABEL \u2014 checklist, mepet pinggir */
-        table{width:687px;border-collapse:collapse;font-size:12px;table-layout:fixed}
-        th,td{border:0.5pt solid #333;padding:1px 3px;font-weight:400;font-size:12px;line-height:1.2;white-space:nowrap;overflow:hidden}
-        thead th{font-weight:700}
+        /* TABEL \u2014 checklist */
+        table{width:100%;border-collapse:collapse;font-size:11px}
+        th,td{border:0.5pt solid #333;padding:1px 3px;font-weight:400;font-size:11px;line-height:1.2}
+        thead th{font-weight:400}
         .yt{width:18px;text-align:center}
         .num{width:16px;text-align:center}
         .l{text-align:left}
@@ -631,14 +635,50 @@ var __morbis_feature = (() => {
         .blk2{min-height:10px}
         .blk3{min-height:35px}
         .blk4{height:16px;padding:.5pt 3px}
-        .t-sub{text-align:center;font-size:12px;margin:2px 0}
+        .t-sub{text-align:center;font-size:11px;margin:3px 0}
 
         /* FOOTER + BUTTON */
-        .t-footer{margin-top:6px;text-align:center;font-weight:700;font-style:italic;font-size:12px}
-        .t-print{margin-top:16px;display:flex;gap:8px}
-        .t-btn{border:1px solid #d1d5db;background:#fff;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer}
+        .t-footer{margin-top:10px;text-align:center;font-weight:700;font-style:italic;font-size:11px}
+        .t-print{margin-top:24px;display:flex;gap:8px}
+        .t-btn{border:1px solid #d1d5db;background:#fff;border-radius:6px;padding:6px 14px;font-size:11px;cursor:pointer}
         .t-btn:hover{background:#f9fafb}
         @media print{.no-print{display:none!important}}
+
+        /* === ADAPTIVE DENSITY (gentle fallback) === */
+        .halaman.compact .t-head{padding-bottom:4px;margin-bottom:6px;gap:8px}
+        .halaman.compact .t-logo{width:45px;height:45px}
+        .halaman.compact .t-hname{font-size:11px}
+        .halaman.compact .t-antrian{font-size:30px!important}
+        .halaman.compact .tm-card{padding:1px 0 2px;margin-bottom:2px}
+        .halaman.compact .tm-col{gap:2px}
+        .halaman.compact .tm-label{font-size:9px}
+        .halaman.compact .tm-val{font-size:10px}
+        .halaman.compact .t-main{gap:4px}
+        .halaman.compact .t-left,.halaman.compact .t-right{gap:3px}
+        .halaman.compact .t-meds{margin-bottom:4px}
+        .halaman.compact .med{margin-bottom:3px}
+        .halaman.compact .blk{height:12px}
+        .halaman.compact .blk3{min-height:25px}
+        .halaman.compact .blk4{height:12px}
+        .halaman.compact .t-footer{margin-top:6px}
+
+        .halaman.ultra .t-head{padding-bottom:3px;margin-bottom:4px;gap:6px}
+        .halaman.ultra .t-logo{width:40px;height:40px}
+        .halaman.ultra .t-hname{font-size:10px}
+        .halaman.ultra .t-antrian{font-size:26px!important}
+        .halaman.ultra .tm-card{padding:1px 0;margin-bottom:1px}
+        .halaman.ultra .tm-col{gap:1px}
+        .halaman.ultra .tm-label{font-size:8px}
+        .halaman.ultra .tm-val{font-size:9px}
+        .halaman.ultra .t-main{gap:3px}
+        .halaman.ultra .t-left,.halaman.ultra .t-right{gap:2px}
+        .halaman.ultra .t-meds{margin-bottom:2px}
+        .halaman.ultra .med{margin-bottom:2px}
+        .halaman.ultra .med-line{font-size:10px}
+        .halaman.ultra .blk{height:10px}
+        .halaman.ultra .blk3{min-height:20px}
+        .halaman.ultra .blk4{height:10px}
+        .halaman.ultra .t-footer{margin-top:4px;font-size:10px}
       `;
         document.head.appendChild(s);
       }
