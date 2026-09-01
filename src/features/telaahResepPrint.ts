@@ -546,10 +546,11 @@
       : 'Obat tidak boleh diganti tanpa sepengetahuan Dokter';
 
     /** --- render (struktur template, CSS self-contained) --- */
-    // Metadata format: label di baris atas, nilai di baris bawah (stacked) —
-    // nilai bisa memanjang tanpa dibatasi lebar label.
-    const metaLine = (label: string, value: string, vClass = ''): string =>
-      '<div class="tm-row">' +
+    // Metadata format: grid (label kiri, nilai kanan). field panjang pakai 'long' class.
+    const metaLine = (label: string, value: string, vClass = '', rowClass = ''): string =>
+      '<div class="tm-row' +
+      (rowClass ? ' ' + rowClass : '') +
+      '">' +
       '<span class="tm-label">' +
       esc(label) +
       '</span>' +
@@ -594,39 +595,44 @@
     const bbTxt = bb ? (/\bkg\b/i.test(bb) ? bb : bb + ' kg') : '- kg';
     const alergiBB = (alergi ? alergi : '-') + ' / ' + (bb ? 'BB ' + bbTxt : bbTxt);
     // ==== KIRI (pasien) — 6 baris ====
-    const patientRows: [string, string][] = [
-      ['Pasien', pasienJK],
-      ['No. RM', g('No. RM')],
-      ['Tgl. Lahir/Umur', g('Tgl. Lahir/Umur')],
-      ['Riwayat Alergi & BB', alergiBB],
-      ['Alamat', g('Alamat')],
-      ['No HP', g('No HP')],
+    const patientRows: [string, string, string][] = [
+      ['Pasien', pasienJK, ''],
+      ['No. RM', g('No. RM'), ''],
+      ['Tgl. Lahir/Umur', g('Tgl. Lahir/Umur'), ''],
+      ['Riwayat Alergi & BB', alergiBB, ''],
+      ['Alamat', g('Alamat'), 'long'],
+      ['No HP', g('No HP'), ''],
     ];
     // ==== KANAN (dokter + data pasien pindahan) — 6 baris ====
-    const doctorRows: [string, string][] = [
-      ['Dokter', dokterRuang],
-      ['SIP Dokter', g('SIP Dokter')],
-      ['No Resep', g('No Resep')],
-      ['No SEP', noSep || '-'],
-      ['Tanggal & Jam', g('Tanggal & Jam')],
-      ['Penjamin', g('Penjamin')],
+    const doctorRows: [string, string, string][] = [
+      ['Dokter', dokterRuang, ''],
+      ['SIP Dokter', g('SIP Dokter'), ''],
+      ['No Resep', g('No Resep'), ''],
+      ['No SEP', noSep || '-', ''],
+      ['Tanggal & Jam', g('Tanggal & Jam'), ''],
+      ['Penjamin', g('Penjamin'), ''],
     ];
 
     // Diagnosa digabung jadi baris terakhir di kolom pasien (tanpa border/card),
-    // menyatu setelah No HP. Label "Diagnosa", nilai di bawah.
-    const diagThen = metaLine('Diagnosa', diagValues.length ? diagValues.join(', ') : '-');
+    // menyatu setelah No HP. Label "Diagnosa", nilai di bawah. Pakai 'long' class.
+    const diagThen = metaLine(
+      'Diagnosa',
+      diagValues.length ? diagValues.join(', ') : '-',
+      '',
+      'long',
+    );
 
     const patientMetaHtml =
       '<section class="tm-card">' +
       '<div class="tm-col">' +
-      patientRows.map(([l, v]) => metaLine(l, v)).join('') +
+      patientRows.map(([l, v, rc]) => metaLine(l, v, '', rc)).join('') +
       diagThen +
       '</div>' +
       '</section>';
     const doctorMetaHtml =
       '<section class="tm-card">' +
       '<div class="tm-col">' +
-      doctorRows.map(([l, v]) => metaLine(l, v)).join('') +
+      doctorRows.map(([l, v, rc]) => metaLine(l, v, '', rc)).join('') +
       '</div>' +
       '</section>';
 
@@ -781,43 +787,57 @@
 
     page.innerHTML = html;
 
+    // === ADAPTIVE DENSITY:ukur tinggi DOM, pilih kelas yang sesuai ===
+    // Target: 241mm = 912px (pada 96dpi). Beri buffer 5% utk sub-pixel.
+    const TARGET_HEIGHT_PX = 866; // 241mm * 96dpi / 25.4 * 0.95
+    const pageH = page.scrollHeight;
+    if (pageH > TARGET_HEIGHT_PX) {
+      page.classList.add('compact');
+      // Ukur lagi setelah CSS compact diterapkan
+      if (page.scrollHeight > TARGET_HEIGHT_PX) {
+        page.classList.remove('compact');
+        page.classList.add('ultra');
+      }
+    }
+
     // CSS self-contained — dijamin 2 kolom & tampilan template tanpa CDN.
     const STYLE_ID = 'ext-telaah-style';
     if (!document.getElementById(STYLE_ID)) {
       const s = document.createElement('style');
       s.id = STYLE_ID;
       s.textContent = `
+        /* === PRINT CONTRACT: 105mm × 241mm === */
         .halaman{box-sizing:border-box;width:105mm!important;height:auto!important;margin:0!important;padding:0 3mm}
         @page{size:105mm 241mm;margin:0}
         .halaman *{box-sizing:border-box;font-size:11px!important}
-        .halaman{font-family:'Inter',Arial,sans-serif;font-size:11px;line-height:1.25;color:#000;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+        .halaman{font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.25;color:#000;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 
         /* HEADER 3 kolom: logo | brand & alamat | no antrian */
-        .t-head{display:flex;align-items:center;padding-bottom:8px;border-bottom:1.5px solid #000;margin-bottom:12px;gap:14px}
-        .t-logo{width:60px;height:60px;object-fit:contain;object-position:left top;flex:none}
+        .t-head{display:flex;align-items:center;padding-bottom:6px;border-bottom:1.5px solid #000;margin-bottom:8px;gap:10px}
+        .t-logo{width:50px;height:50px;object-fit:contain;object-position:left top;flex:none}
         .t-bhead{flex:1;font-size:11px;min-width:0}
-        .t-hname{font-size:13px;font-weight:800;margin:0 0 4px;letter-spacing:-.01em}
-        .t-hsub{line-height:1.3}
-        /* ANTRIAN (kolom kanan) — tanpa label, besar & tebal, contoh "T/R-XX" */
-        .t-antrian{flex:none;text-align:right;font-size:34px!important;font-weight:800;color:#198754;letter-spacing:-.02em;font-variant-numeric:tabular-nums;min-width:0;overflow-wrap:anywhere;line-height:1.1}
+        .t-hname{font-size:12px;font-weight:800;margin:0 0 2px;letter-spacing:-.01em}
+        .t-hsub{line-height:1.2;font-size:10px}
+        .t-antrian{flex:none;text-align:right;font-size:28px!important;font-weight:800;color:#198754;letter-spacing:-.02em;font-variant-numeric:tabular-nums;min-width:0;overflow-wrap:anywhere;line-height:1.1}
 
-  /* METADATA — tanpa border, tanpa bold. Label kecil di atas, nilai di bawah
-        (stacked) sehingga isi bisa memanjang. Pasien kiri & dokter kanan. */
-        .tm-card{background:#fff;padding:4px 0 6px;margin-bottom:6px;font-size:11px;border-bottom:0.5pt solid #333}
-        .tm-col{display:flex;flex-direction:column;gap:5px}
-        .tm-row{display:flex;flex-direction:column;gap:1px}
-        .tm-label{color:#5b6470;font-size:10px;line-height:1.2}
-        .tm-val{color:#000;line-height:1.3;word-wrap:break-word}
-        /* MAIN 2 kolom — portrait 105mm: kolom lebih ramping, gap kecil.
-           Kolom TIDAK dipaksa sama tinggi (align-items:start) agar bagian bawah
-           paraf/tanda tangan tidak membentang kosong. */
-        .t-main{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:start}
-        .t-left,.t-right{display:flex;flex-direction:column;gap:6px}
+        /* METADATA — grid: label kiri, nilai kanan (efisien tinggi) */
+        .tm-card{background:#fff;padding:2px 0 4px;margin-bottom:4px;font-size:11px;border-bottom:0.5pt solid #333}
+        .tm-col{display:flex;flex-direction:column;gap:3px}
+        .tm-row{display:grid;grid-template-columns:32% 68%;column-gap:3px;align-items:start}
+        .tm-label{color:#5b6470;font-size:10px;line-height:1.25}
+        .tm-val{color:#000;line-height:1.25;word-wrap:break-word}
+        /* untuk field panjang (alamat, diagnosa) — full width */
+        .tm-row.long{grid-template-columns:1fr}
+        .tm-row.long .tm-label{margin-bottom:1px}
+
+        /* MAIN 2 kolom */
+        .t-main{display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:start}
+        .t-left,.t-right{display:flex;flex-direction:column;gap:5px}
         .t-right .t-check{margin-bottom:0}
-        .t-meds{margin-bottom:16px;font-size:11px;min-width:0}
+        .t-meds{margin-bottom:8px;font-size:11px;min-width:0}
 
-        /* DAFTAR OBAT — format berurutan R/1, R/4, dst. */
-        .med{margin-bottom:8px}
+        /* DAFTAR OBAT */
+        .med{margin-bottom:6px}
         .med-line{font-size:11px;line-height:1.35;text-align:left}
         .med-line.indent{margin-left:0}
         .med-no{font-weight:400}
@@ -825,12 +845,11 @@
         .med-sep{color:#374151}
         .med-jml{white-space:nowrap;font-weight:600;color:#047857}
         .med-aturan{margin-left:0;font-size:10px;color:#374151;margin-top:1px}
-        /* JUMLAH JADI RACIK — di bawah blok racikan */
-        .med-jadiracik{margin-top:4px;padding-top:2px;font-size:11px;font-weight:700}
+        .med-jadiracik{margin-top:3px;padding-top:1px;font-size:11px;font-weight:700}
 
         /* TABEL — checklist */
         table{width:100%;border-collapse:collapse;font-size:11px}
-        th,td{border:0.5pt solid #333;padding:1px 3px;font-weight:400;font-size:11px;line-height:11px}
+        th,td{border:0.5pt solid #333;padding:1px 3px;font-weight:400;font-size:11px;line-height:1.2}
         thead th{font-weight:400}
         .yt{width:18px;text-align:center}
         .num{width:16px;text-align:center}
@@ -839,31 +858,56 @@
         .half{width:50%}
         .third{width:33.333%}
         .twothird{width:66.667%}
-        /* Sel kosong isi tangan — height eksplisit (min-height tak andal utk
-           <td>). Baris admin Hitung/Timbang/Kemas/Paraf. */
-        .blk{height:20px;padding:.5pt 3px}
-        .blk2{min-height:11px}
-        .blk3{min-height:45px}
-        .blk4{height:20px;padding:.5pt 3px}
-        .t-sub{text-align:center;font-size:11px;margin:4px 0}
+        .blk{height:16px;padding:.5pt 3px}
+        .blk2{min-height:10px}
+        .blk3{min-height:35px}
+        .blk4{height:16px;padding:.5pt 3px}
+        .t-sub{text-align:center;font-size:11px;margin:3px 0}
 
         /* FOOTER + BUTTON */
-        .t-footer{margin-top:14px;text-align:center;font-weight:700;font-style:italic;font-size:11px}
-        .t-print{margin-top:32px;display:flex;gap:8px}
-        .t-btn{border:1px solid #d1d5db;background:#fff;border-radius:6px;padding:8px 16px;font-size:11px;cursor:pointer}
+        .t-footer{margin-top:10px;text-align:center;font-weight:700;font-style:italic;font-size:11px}
+        .t-print{margin-top:24px;display:flex;gap:8px}
+        .t-btn{border:1px solid #d1d5db;background:#fff;border-radius:6px;padding:6px 14px;font-size:11px;cursor:pointer}
         .t-btn:hover{background:#f9fafb}
         @media print{.no-print{display:none!important}}
+
+        /* === ADAPTIVE DENSITY (gentle fallback) === */
+        .halaman.compact .t-head{padding-bottom:4px;margin-bottom:6px;gap:8px}
+        .halaman.compact .t-logo{width:45px;height:45px}
+        .halaman.compact .t-hname{font-size:11px}
+        .halaman.compact .t-antrian{font-size:24px!important}
+        .halaman.compact .tm-card{padding:1px 0 2px;margin-bottom:2px}
+        .halaman.compact .tm-col{gap:2px}
+        .halaman.compact .tm-label{font-size:9px}
+        .halaman.compact .tm-val{font-size:10px}
+        .halaman.compact .t-main{gap:4px}
+        .halaman.compact .t-left,.halaman.compact .t-right{gap:3px}
+        .halaman.compact .t-meds{margin-bottom:4px}
+        .halaman.compact .med{margin-bottom:3px}
+        .halaman.compact .blk{height:12px}
+        .halaman.compact .blk3{min-height:25px}
+        .halaman.compact .blk4{height:12px}
+        .halaman.compact .t-footer{margin-top:6px}
+
+        .halaman.ultra .t-head{padding-bottom:3px;margin-bottom:4px;gap:6px}
+        .halaman.ultra .t-logo{width:40px;height:40px}
+        .halaman.ultra .t-hname{font-size:10px}
+        .halaman.ultra .t-antrian{font-size:20px!important}
+        .halaman.ultra .tm-card{padding:1px 0;margin-bottom:1px}
+        .halaman.ultra .tm-col{gap:1px}
+        .halaman.ultra .tm-label{font-size:8px}
+        .halaman.ultra .tm-val{font-size:9px}
+        .halaman.ultra .t-main{gap:3px}
+        .halaman.ultra .t-left,.halaman.ultra .t-right{gap:2px}
+        .halaman.ultra .t-meds{margin-bottom:2px}
+        .halaman.ultra .med{margin-bottom:2px}
+        .halaman.ultra .med-line{font-size:10px}
+        .halaman.ultra .blk{height:10px}
+        .halaman.ultra .blk3{min-height:20px}
+        .halaman.ultra .blk4{height:10px}
+        .halaman.ultra .t-footer{margin-top:4px;font-size:10px}
       `;
       document.head.appendChild(s);
-    }
-
-    // Font Inter (fallback Arial bila offline).
-    if (!document.querySelector('link[href*="family=Inter"]')) {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href =
-        'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap';
-      document.head.appendChild(link);
     }
   }
 
