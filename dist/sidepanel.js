@@ -20,9 +20,9 @@ import {
   v as sendMessage,
   x as __toESM,
   y as require_client,
-} from './chunks/button-kaNqAx6v.js';
+} from './chunks/button-FPXsw42f.js';
 /**
- * @license lucide-react v1.33.0 - ISC
+ * @license lucide-react v1.38.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
@@ -37,7 +37,7 @@ var Check = createLucideIcon('check', [
   ],
 ]);
 /**
- * @license lucide-react v1.33.0 - ISC
+ * @license lucide-react v1.38.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
@@ -74,7 +74,7 @@ var CircleAlert = createLucideIcon('circle-alert', [
   ],
 ]);
 /**
- * @license lucide-react v1.33.0 - ISC
+ * @license lucide-react v1.38.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
@@ -98,7 +98,7 @@ var Eye = createLucideIcon('eye', [
   ],
 ]);
 /**
- * @license lucide-react v1.33.0 - ISC
+ * @license lucide-react v1.38.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
@@ -129,7 +129,7 @@ var Info = createLucideIcon('info', [
   ],
 ]);
 /**
- * @license lucide-react v1.33.0 - ISC
+ * @license lucide-react v1.38.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
@@ -153,7 +153,7 @@ var Search = createLucideIcon('search', [
   ],
 ]);
 /**
- * @license lucide-react v1.33.0 - ISC
+ * @license lucide-react v1.38.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
@@ -196,7 +196,7 @@ var Trash2 = createLucideIcon('trash-2', [
   ],
 ]);
 /**
- * @license lucide-react v1.33.0 - ISC
+ * @license lucide-react v1.38.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
@@ -225,7 +225,7 @@ var TriangleAlert = createLucideIcon('triangle-alert', [
   ],
 ]);
 /**
- * @license lucide-react v1.33.0 - ISC
+ * @license lucide-react v1.38.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
