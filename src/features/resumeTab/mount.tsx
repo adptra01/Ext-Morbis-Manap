@@ -100,12 +100,6 @@ function extractBillingFromDOM(): { tindakan: string; terapiPengobatan: string }
   const sortedTindakan = sortItemsByPriority(tindakanLines);
   const sortedTerapi = sortItemsByPriority(terapiLines);
 
-  console.log('[RJ] extracted billing lines:', {
-    tindakanLines,
-    terapiLines,
-    sortedTindakan,
-    sortedTerapi,
-  });
   return {
     tindakan: formatAsList(sortedTindakan),
     terapiPengobatan: formatAsList(sortedTerapi),
@@ -252,7 +246,6 @@ function parseResumeView(): ResumeData | null {
 }
 
 function extractFormData(): ResumeData {
-  console.log('[RJ] extractFormData — path:', location.pathname);
   const fromView = parseResumeView();
 
   const doc = document;
@@ -592,9 +585,6 @@ function serializeRawatJalan(data: ResumeData): string {
   const pairs: [string, string][] = [];
   const add = (name: string, value: string | number) => pairs.push([name, String(value)]);
 
-  if (!cachedFormState?.['id_bed'])
-    console.log('[RJ] MISS id_bed — cfs keys:', Object.keys(cachedFormState || {}).join(','));
-
   const el = (name: string) =>
     (document.querySelector(`input[name="${name}"]`) as HTMLInputElement | null)?.value || '';
   const sel = (id: string) =>
@@ -627,7 +617,6 @@ function serializeRawatJalan(data: ResumeData): string {
   add('id_user', pi('id_user') || el('id_user') || fs('id_user') || '1');
   add('id_dokter', pi('id_dokter') || el('id_dokter') || fs('id_dokter') || '');
   add('id_bed', pi('id_bed') || el('id_bed') || fs('id_bed') || '');
-  if (!pi('id_bed') && !el('id_bed') && !fs('id_bed')) console.log('[RJ] id_bed STILL empty');
   add('norm', pi('norm') || el('norm') || fs('norm') || '');
   add('noregis', pi('noregis') || el('noregis') || fs('noregis') || '');
   add('pasien', pi('pasien') || el('pasien') || fs('pasien') || '');

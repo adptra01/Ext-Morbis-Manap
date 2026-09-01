@@ -40092,12 +40092,6 @@ var __morbis_feature = (() => {
     }
     const sortedTindakan = sortItemsByPriority(tindakanLines);
     const sortedTerapi = sortItemsByPriority(terapiLines);
-    console.log('[RJ] extracted billing lines:', {
-      tindakanLines,
-      terapiLines,
-      sortedTindakan,
-      sortedTerapi,
-    });
     return {
       tindakan: formatAsList(sortedTindakan),
       terapiPengobatan: formatAsList(sortedTerapi),
@@ -40230,7 +40224,6 @@ var __morbis_feature = (() => {
     };
   }
   function extractFormData() {
-    console.log('[RJ] extractFormData \u2014 path:', location.pathname);
     const fromView = parseResumeView();
     const doc = document;
     const getVal = (id) => doc.getElementById(id)?.value || '';
@@ -40451,11 +40444,6 @@ var __morbis_feature = (() => {
   function serializeRawatJalan(data) {
     const pairs = [];
     const add = (name, value) => pairs.push([name, String(value)]);
-    if (!cachedFormState?.['id_bed'])
-      console.log(
-        '[RJ] MISS id_bed \u2014 cfs keys:',
-        Object.keys(cachedFormState || {}).join(','),
-      );
     const el = (name) => document.querySelector(`input[name="${name}"]`)?.value || '';
     const sel = (id) => document.getElementById(id)?.value || '';
     const radioChecked = (name) =>
@@ -40482,7 +40470,6 @@ var __morbis_feature = (() => {
     add('id_user', pi('id_user') || el('id_user') || fs('id_user') || '1');
     add('id_dokter', pi('id_dokter') || el('id_dokter') || fs('id_dokter') || '');
     add('id_bed', pi('id_bed') || el('id_bed') || fs('id_bed') || '');
-    if (!pi('id_bed') && !el('id_bed') && !fs('id_bed')) console.log('[RJ] id_bed STILL empty');
     add('norm', pi('norm') || el('norm') || fs('norm') || '');
     add('noregis', pi('noregis') || el('noregis') || fs('noregis') || '');
     add('pasien', pi('pasien') || el('pasien') || fs('pasien') || '');
