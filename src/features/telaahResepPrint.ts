@@ -598,7 +598,7 @@
     const patientRows: [string, string, string][] = [
       ['Pasien', pasienJK, ''],
       ['No. RM', g('No. RM'), ''],
-      ['Tgl. Lahir/Umur', g('Tgl. Lahir/Umur'), ''],
+      ['Tgl. Lahir', g('Tgl. Lahir/Umur'), ''],
       ['Riwayat Alergi & BB', alergiBB, ''],
       ['Alamat', g('Alamat'), 'long'],
       ['No HP', g('No HP'), ''],
@@ -830,8 +830,8 @@
         .tm-row.long{grid-template-columns:1fr}
         .tm-row.long .tm-label{margin-bottom:1px}
 
-        /* MAIN 2 kolom */
-        .t-main{display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:start}
+        /* MAIN 2 kolom — kiri lebih lebar utk nama obat */
+        .t-main{display:grid;grid-template-columns:62% 38%;gap:6px;align-items:start}
         .t-left,.t-right{display:flex;flex-direction:column;gap:5px}
         .t-right .t-check{margin-bottom:0}
         .t-meds{margin-bottom:8px;font-size:11px;min-width:0}
