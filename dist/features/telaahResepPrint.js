@@ -448,12 +448,12 @@ var __morbis_feature = (() => {
         'long',
       );
       const patientMetaHtml =
-        '<section class="tm-card tm-card--small"><div class="tm-col">' +
+        '<section class="tm-card tm-card--small tm-card--left"><div class="tm-col">' +
         patientRows.map(([l, v, rc]) => metaLine(l, v, '', rc)).join('') +
         diagThen +
         '</div></section>';
       const doctorMetaHtml =
-        '<section class="tm-card"><div class="tm-col">' +
+        '<section class="tm-card tm-card--right"><div class="tm-col">' +
         doctorRows.map(([l, v, rc]) => metaLine(l, v, '', rc)).join('') +
         '</div></section>';
       const medListHtml = meds
@@ -597,7 +597,9 @@ var __morbis_feature = (() => {
         .tm-card--small .tm-label{font-size:9px!important}
         .tm-card--small .tm-val{font-size:10px!important}
         .tm-col{display:flex;flex-direction:column;gap:3px}
-        .tm-row{display:grid;grid-template-columns:28% 72%;column-gap:4px;align-items:start}
+        .tm-row{display:grid;grid-template-columns:35% 65%;column-gap:4px;align-items:start}
+        .tm-card--left .tm-row{grid-template-columns:20% 65%}
+        .tm-card--right .tm-row{grid-template-columns:30% 65%}
         .tm-label{color:#5b6470;font-size:10px;line-height:1.25;text-align:left}
         .tm-val{color:#000;line-height:1.25;word-wrap:break-word;overflow-wrap:anywhere}
         /* field panjang (alamat, diagnosa) tetap di grid 2 kolom biar wrap di kanan */
