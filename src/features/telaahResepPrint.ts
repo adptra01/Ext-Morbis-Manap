@@ -797,6 +797,8 @@
     const pageH = page.scrollHeight;
     if (pageH > TARGET_HEIGHT_PX) {
       page.classList.add('compact');
+      // Force reflow agar CSS compact diterapkan sebelum ukur ulang
+      void (page as HTMLElement).offsetHeight;
       // Ukur lagi setelah CSS compact diterapkan
       if (page.scrollHeight > TARGET_HEIGHT_PX) {
         page.classList.remove('compact');
@@ -811,7 +813,7 @@
       s.id = STYLE_ID;
       s.textContent = `
         /* === PRINT CONTRACT: 105mm × 241mm === */
-        .halaman{box-sizing:border-box;width:105mm!important;height:auto!important;margin:0!important;padding:0 3mm}
+        .halaman{box-sizing:border-box;width:105mm!important;height:auto!important;max-height:241mm;margin:0!important;padding:0 3mm}
         @page{size:105mm 241mm;margin:0}
         .halaman *{box-sizing:border-box;font-size:11px!important}
         .halaman{font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.25;color:#000;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -838,7 +840,7 @@
 
         /* MAIN 2 kolom — kiri lebih lebar utk nama obat */
         .t-main{display:grid;grid-template-columns:62% 38%;gap:6px;align-items:start}
-        .t-left,.t-right{display:flex;flex-direction:column;gap:5px}
+        .t-left,.t-right{display:flex;flex-direction:column;gap:5px;min-width:0}
         .t-right .t-check{margin-bottom:0}
         .t-meds{margin-bottom:8px;font-size:11px;min-width:0}
 
@@ -880,12 +882,12 @@
         /* === ADAPTIVE DENSITY (gentle fallback) === */
         .halaman.compact .t-head{padding-bottom:4px;margin-bottom:6px;gap:8px}
         .halaman.compact .t-logo{width:45px;height:45px}
-        .halaman.compact .t-hname{font-size:11px}
+        .halaman.compact .t-hname{font-size:11px!important}
         .halaman.compact .t-antrian{font-size:30px!important}
         .halaman.compact .tm-card{padding:1px 0 2px;margin-bottom:2px}
         .halaman.compact .tm-col{gap:2px}
-        .halaman.compact .tm-label{font-size:9px}
-        .halaman.compact .tm-val{font-size:10px}
+        .halaman.compact .tm-label{font-size:9px!important}
+        .halaman.compact .tm-val{font-size:10px!important}
         .halaman.compact .t-main{gap:4px}
         .halaman.compact .t-left,.halaman.compact .t-right{gap:3px}
         .halaman.compact .t-meds{margin-bottom:4px}
@@ -897,21 +899,21 @@
 
         .halaman.ultra .t-head{padding-bottom:3px;margin-bottom:4px;gap:6px}
         .halaman.ultra .t-logo{width:40px;height:40px}
-        .halaman.ultra .t-hname{font-size:10px}
+        .halaman.ultra .t-hname{font-size:10px!important}
         .halaman.ultra .t-antrian{font-size:26px!important}
         .halaman.ultra .tm-card{padding:1px 0;margin-bottom:1px}
         .halaman.ultra .tm-col{gap:1px}
-        .halaman.ultra .tm-label{font-size:8px}
-        .halaman.ultra .tm-val{font-size:9px}
+        .halaman.ultra .tm-label{font-size:8px!important}
+        .halaman.ultra .tm-val{font-size:9px!important}
         .halaman.ultra .t-main{gap:3px}
         .halaman.ultra .t-left,.halaman.ultra .t-right{gap:2px}
         .halaman.ultra .t-meds{margin-bottom:2px}
         .halaman.ultra .med{margin-bottom:2px}
-        .halaman.ultra .med-line{font-size:10px}
+        .halaman.ultra .med-line{font-size:10px!important}
         .halaman.ultra .blk{height:10px}
         .halaman.ultra .blk3{min-height:20px}
         .halaman.ultra .blk4{height:10px}
-        .halaman.ultra .t-footer{margin-top:4px;font-size:10px}
+        .halaman.ultra .t-footer{margin-top:4px;font-size:10px!important}
       `;
       document.head.appendChild(s);
     }
