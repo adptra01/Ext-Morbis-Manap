@@ -597,12 +597,12 @@ var __morbis_feature = (() => {
         .tm-card--small .tm-label{font-size:9px!important}
         .tm-card--small .tm-val{font-size:10px!important}
         .tm-col{display:flex;flex-direction:column;gap:3px}
-        .tm-row{display:grid;grid-template-columns:32% 68%;column-gap:6px;align-items:start}
-        .tm-label{color:#5b6470;font-size:10px;line-height:1.25;text-align:right}
+        .tm-row{display:grid;grid-template-columns:32% 68%;column-gap:3px;align-items:start}
+        .tm-label{color:#5b6470;font-size:10px;line-height:1.25;text-align:left}
         .tm-val{color:#000;line-height:1.25;word-wrap:break-word}
         /* untuk field panjang (alamat, diagnosa) \u2014 inline dulu, wrap jika overflow */
         .tm-row.long{display:inline}
-        .tm-row.long .tm-label{display:inline}
+        .tm-row.long .tm-label{display:inline;margin-right:4px}
 
         /* MAIN 2 kolom \u2014 kiri lebih lebar utk nama obat */
         .t-main{display:grid;grid-template-columns:62% 38%;gap:6px;align-items:start}
