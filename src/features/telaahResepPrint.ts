@@ -623,7 +623,7 @@
     );
 
     const patientMetaHtml =
-      '<section class="tm-card">' +
+      '<section class="tm-card tm-card--small">' +
       '<div class="tm-col">' +
       patientRows.map(([l, v, rc]) => metaLine(l, v, '', rc)).join('') +
       diagThen +
@@ -822,6 +822,8 @@
 
         /* METADATA — grid: label kiri, nilai kanan (efisien tinggi) */
         .tm-card{background:#fff;padding:2px 0 4px;margin-bottom:4px;font-size:11px;border-bottom:0.5pt solid #333}
+        .tm-card--small .tm-label{font-size:9px!important}
+        .tm-card--small .tm-val{font-size:10px!important}
         .tm-col{display:flex;flex-direction:column;gap:3px}
         .tm-row{display:grid;grid-template-columns:32% 68%;column-gap:3px;align-items:start}
         .tm-label{color:#5b6470;font-size:10px;line-height:1.25}
