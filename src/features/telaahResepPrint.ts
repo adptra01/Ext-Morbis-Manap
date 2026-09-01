@@ -803,7 +803,7 @@
       s.id = STYLE_ID;
       s.textContent = `
         /* === PRINT: 105mm × 241mm, overflow:hidden, no margin === */
-        .halaman{box-sizing:border-box;width:105mm!important;height:auto!important;margin:0!important;padding:0!important;overflow:hidden!important;font-family:Arial,Helvetica,sans-serif;font-size:14.6px;line-height:1.3;color:#000;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+        .halaman{box-sizing:border-box;width:105mm!important;height:auto!important;margin:0!important;padding:0!important;overflow:hidden!important;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.3;color:#000;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
         .halaman *{box-sizing:border-box}
         @page{size:105mm 241mm;margin:0}
 
@@ -831,18 +831,18 @@
         .t-main{display:grid;grid-template-columns:62% 38%;gap:0;align-items:start}
         .t-left,.t-right{display:flex;flex-direction:column;gap:0}
         .t-right .t-check{margin-bottom:0}
-        .t-meds{margin:4px 0 0;font-size:14.6px}
+        .t-meds{margin:4px 0 0;font-size:11px}
 
         /* DAFTAR OBAT — nowrap per baris */
         .med{margin-bottom:2px}
-        .med-line{font-size:14.6px;line-height:1.3;text-align:left;white-space:nowrap;overflow:hidden}
+        .med-line{font-size:11px;line-height:1.3;text-align:left;white-space:nowrap;overflow:hidden}
         .med-line.indent{margin-left:28px}
         .med-no{font-weight:400}
         .med-name{font-weight:600}
         .med-sep{color:#374151}
         .med-jml{white-space:nowrap;font-weight:600;color:#047857}
         .med-aturan{margin-left:28px;font-size:12px;color:#374151;margin-top:0;white-space:nowrap;overflow:hidden}
-        .med-jadiracik{margin-top:2px;padding-top:1px;font-size:14.6px;font-weight:700}
+        .med-jadiracik{margin-top:2px;padding-top:1px;font-size:11px;font-weight:700}
 
         /* TABEL — checklist, mepet pinggir */
         table{width:687px;border-collapse:collapse;font-size:12px;table-layout:fixed}
