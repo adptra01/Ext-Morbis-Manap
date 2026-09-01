@@ -429,7 +429,7 @@ var __morbis_feature = (() => {
         ['Pasien', pasienJK, ''],
         ['No. RM', g('No. RM'), ''],
         ['Tgl. Lahir', g('Tgl. Lahir/Umur'), ''],
-        ['Riwayat Alergi & BB', alergiBB, ''],
+        ['Alergi & BB', alergiBB, ''],
         ['Alamat', g('Alamat'), 'long'],
         ['No HP', g('No HP'), ''],
       ];
@@ -632,10 +632,10 @@ var __morbis_feature = (() => {
         .half{width:50%}
         .third{width:33.333%}
         .twothird{width:66.667%}
-        .blk{height:32px;padding:.5pt 3px}
+        .blk{height:40px;padding:.5pt 3px}
         .blk2{min-height:10px}
         .blk3{min-height:35px}
-        .blk4{height:20px;padding:.5pt 3px}
+        .blk4{height:40px;padding:.5pt 3px}
         .t-sub{text-align:center;font-size:10px!important;margin:3px 0}
 
         /* FOOTER + BUTTON */
@@ -658,9 +658,9 @@ var __morbis_feature = (() => {
         .halaman.compact .t-left,.halaman.compact .t-right{gap:3px}
         .halaman.compact .t-meds{margin-bottom:4px}
         .halaman.compact .med{margin-bottom:3px}
-        .halaman.compact .blk{height:22px}
+        .halaman.compact .blk{height:30px}
         .halaman.compact .blk3{min-height:25px}
-        .halaman.compact .blk4{height:14px}
+        .halaman.compact .blk4{height:30px}
         .halaman.compact .t-footer{margin-top:6px}
 
         .halaman.ultra .t-head{padding-bottom:3px;margin-bottom:4px;gap:6px}
@@ -676,9 +676,9 @@ var __morbis_feature = (() => {
         .halaman.ultra .t-meds{margin-bottom:2px}
         .halaman.ultra .med{margin-bottom:2px}
         .halaman.ultra .med-line{font-size:10px!important}
-        .halaman.ultra .blk{height:15px}
+        .halaman.ultra .blk{height:22px}
         .halaman.ultra .blk3{min-height:20px}
-        .halaman.ultra .blk4{height:11px}
+        .halaman.ultra .blk4{height:22px}
         .halaman.ultra .t-footer{margin-top:4px;font-size:10px!important}
       `;
         document.head.appendChild(s);
