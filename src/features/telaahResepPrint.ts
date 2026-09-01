@@ -609,7 +609,7 @@
       ['SIP Dokter', g('SIP Dokter'), ''],
       ['No Resep', g('No Resep'), ''],
       ['No SEP', noSep || '-', ''],
-      ['Tanggal & Jam', g('Tanggal & Jam'), ''],
+      ['Tanggal', g('Tanggal & Jam'), ''],
       ['Penjamin', g('Penjamin'), ''],
     ];
 
