@@ -912,9 +912,9 @@
         .halaman.ultra .t-meds{margin-bottom:2px}
         .halaman.ultra .med{margin-bottom:2px}
         .halaman.ultra .med-line{font-size:10px!important}
-        .halaman.ultra .blk{height:22px}
+        .halaman.ultra .blk{height:30px}
         .halaman.ultra .blk3{min-height:20px}
-        .halaman.ultra .blk4{height:22px}
+        .halaman.ultra .blk4{height:30px}
         .halaman.ultra .t-footer{margin-top:4px;font-size:10px!important}
       `;
       document.head.appendChild(s);
