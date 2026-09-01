@@ -857,7 +857,7 @@
 
         /* TABEL — checklist (font sama dengan info pasien & dokter = 10px) */
         table{width:100%;border-collapse:collapse;font-size:10px}
-        th,td{border:0.5pt solid #333;padding:1px 3px;font-weight:400;font-size:10px!important;line-height:1.2}
+        .halaman th,.halaman td{border:0.5pt solid #333;padding:1px 3px;font-weight:400;font-size:10px!important;line-height:1.2}
         thead th{font-weight:400}
         .yt{width:32px;text-align:center}
         .num{width:16px;text-align:center}
