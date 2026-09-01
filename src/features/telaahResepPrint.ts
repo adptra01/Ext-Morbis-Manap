@@ -546,14 +546,14 @@
       : 'Obat tidak boleh diganti tanpa sepengetahuan Dokter';
 
     /** --- render (struktur template, CSS self-contained) --- */
-    // Metadata format: grid (label kiri, nilai kanan). field panjang pakai 'long' class.
+    // Metadata format: grid (label kiri + titik dua, nilai kanan). field panjang pakai 'long' class.
     const metaLine = (label: string, value: string, vClass = '', rowClass = ''): string =>
       '<div class="tm-row' +
       (rowClass ? ' ' + rowClass : '') +
       '">' +
       '<span class="tm-label">' +
       esc(label) +
-      '</span>' +
+      ':</span>' +
       '<span class="tm-val' +
       (vClass ? ' ' + vClass : '') +
       '">' +
