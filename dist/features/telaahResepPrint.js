@@ -621,9 +621,9 @@ var __morbis_feature = (() => {
         .med-aturan{margin-left:0;font-size:10px;color:#374151;margin-top:1px}
         .med-jadiracik{margin-top:3px;padding-top:1px;font-size:11px;font-weight:700}
 
-        /* TABEL \u2014 checklist */
-        table{width:100%;border-collapse:collapse;font-size:11px}
-        th,td{border:0.5pt solid #333;padding:1px 3px;font-weight:400;font-size:11px;line-height:1.2}
+        /* TABEL \u2014 checklist (font sama dengan info pasien & dokter = 10px) */
+        table{width:100%;border-collapse:collapse;font-size:10px}
+        th,td{border:0.5pt solid #333;padding:1px 3px;font-weight:400;font-size:10px!important;line-height:1.2}
         thead th{font-weight:400}
         .yt{width:32px;text-align:center}
         .num{width:16px;text-align:center}
@@ -632,11 +632,11 @@ var __morbis_feature = (() => {
         .half{width:50%}
         .third{width:33.333%}
         .twothird{width:66.667%}
-        .blk{height:16px;padding:.5pt 3px}
+        .blk{height:32px;padding:.5pt 3px}
         .blk2{min-height:10px}
         .blk3{min-height:35px}
-        .blk4{height:16px;padding:.5pt 3px}
-        .t-sub{text-align:center;font-size:11px;margin:3px 0}
+        .blk4{height:20px;padding:.5pt 3px}
+        .t-sub{text-align:center;font-size:10px!important;margin:3px 0}
 
         /* FOOTER + BUTTON */
         .t-footer{margin-top:10px;text-align:center;font-weight:700;font-style:italic;font-size:11px}
@@ -658,9 +658,9 @@ var __morbis_feature = (() => {
         .halaman.compact .t-left,.halaman.compact .t-right{gap:3px}
         .halaman.compact .t-meds{margin-bottom:4px}
         .halaman.compact .med{margin-bottom:3px}
-        .halaman.compact .blk{height:12px}
+        .halaman.compact .blk{height:22px}
         .halaman.compact .blk3{min-height:25px}
-        .halaman.compact .blk4{height:12px}
+        .halaman.compact .blk4{height:14px}
         .halaman.compact .t-footer{margin-top:6px}
 
         .halaman.ultra .t-head{padding-bottom:3px;margin-bottom:4px;gap:6px}
@@ -676,9 +676,9 @@ var __morbis_feature = (() => {
         .halaman.ultra .t-meds{margin-bottom:2px}
         .halaman.ultra .med{margin-bottom:2px}
         .halaman.ultra .med-line{font-size:10px!important}
-        .halaman.ultra .blk{height:10px}
+        .halaman.ultra .blk{height:15px}
         .halaman.ultra .blk3{min-height:20px}
-        .halaman.ultra .blk4{height:10px}
+        .halaman.ultra .blk4{height:11px}
         .halaman.ultra .t-footer{margin-top:4px;font-size:10px!important}
       `;
         document.head.appendChild(s);
