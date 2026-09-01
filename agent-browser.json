@@ -3,5 +3,7 @@
   "sessionName": "morbis",
   "profile": "./.agent-browser-profile",
   "headed": false,
-  "hideScrollbars": true
+  "hideScrollbars": true,
+  "executablePath": "/usr/bin/google-chrome-stable",
+  "noSandbox": true
 }
