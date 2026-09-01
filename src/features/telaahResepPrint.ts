@@ -188,6 +188,7 @@
     let diagnosisUtama: string[] = [];
     let diagnosisSekunder: string[] = [];
     let antrianNumber = '';
+    let noSep = '';
 
     async function fetchRacikanDetails(): Promise<Map<string, SubMed[]>> {
       const map = new Map<string, SubMed[]>();
@@ -219,6 +220,7 @@
           };
           diagVisit = inVal('id_visit') || params.get('visit') || diagVisit;
           diagKunjungan = inVal('id_kunjungan') || diagKunjungan;
+          noSep = inVal('no_sep') || noSep;
 
           // Ambil diagnosa dari fieldset#perhatian yg punya legend "Riwayat Diagnosa Pasien"
           // (ada beberapa fieldset#perhatian di halaman, pilih yg benar).
@@ -600,11 +602,12 @@
       ['Alamat', g('Alamat')],
       ['No HP', g('No HP')],
     ];
-    // ==== KANAN (dokter + data pasien pindahan) — 5 baris ====
+    // ==== KANAN (dokter + data pasien pindahan) — 6 baris ====
     const doctorRows: [string, string][] = [
       ['Dokter', dokterRuang],
       ['SIP Dokter', g('SIP Dokter')],
       ['No Resep', g('No Resep')],
+      ['No SEP', noSep || '-'],
       ['Tanggal & Jam', g('Tanggal & Jam')],
       ['Penjamin', g('Penjamin')],
     ];
@@ -643,9 +646,7 @@
                 '<span class="med-name">' +
                 esc(s.name) +
                 '</span>' +
-                (jml
-                  ? ' <span class="med-sep">-</span> <span class="med-jml">' + esc(jml) + '</span>'
-                  : '') +
+                (jml ? ', <span class="med-jml">Jml: ' + esc(jml) + '</span>' : '') +
                 '</div>'
               );
             })
@@ -656,7 +657,9 @@
           const aturan = m.aturan.length
             ? m.aturan.map((a) => esc(a.replace(/^\(|\)$/g, ''))).join(' ')
             : '';
-          const jadiTxt = total ? total + ' ' + satuan + (aturan ? ' - (' + aturan + ')' : '') : '';
+          const jadiTxt = total
+            ? 'Jml ' + total + ' ' + satuan + (aturan ? ' - (' + aturan + ')' : '')
+            : '';
           const jadi = jadiTxt ? '<div class="med-jadiracik">' + jadiTxt + '</div>' : '';
           return '<div class="med">' + lines + jadi + '</div>';
         }
@@ -671,9 +674,7 @@
           '<span class="med-name">' +
           esc(m.name) +
           '</span>' +
-          (jml
-            ? ' <span class="med-sep">-</span> <span class="med-jml">' + esc(jml) + '</span>'
-            : '') +
+          (jml ? ', <span class="med-jml">Jml: ' + esc(jml) + '</span>' : '') +
           '</div>' +
           (m.aturan.length
             ? '<div class="med-aturan">' + m.aturan.map((a) => esc(a)).join('<br/>') + '</div>'
@@ -817,8 +818,8 @@
 
         /* DAFTAR OBAT — format berurutan R/1, R/4, dst. */
         .med{margin-bottom:8px}
-        .med-line{font-size:11px;line-height:1.35}
-        .med-line.indent{margin-left:18px}
+        .med-line{font-size:11px;line-height:1.35;text-align:left}
+        .med-line.indent{margin-left:0}
         .med-no{font-weight:400}
         .med-name{font-weight:600}
         .med-sep{color:#374151}

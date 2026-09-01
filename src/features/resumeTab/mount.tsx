@@ -91,7 +91,7 @@ function extractBillingFromDOM(): { tindakan: string; terapiPengobatan: string }
         const match = raw.match(/^\d+\s+(.*)/);
         const nama = match ? match[1] : raw;
         const freq = cells[2]?.textContent?.trim() || '';
-        terapiLines.push(freq ? `${nama} (${freq})` : nama);
+        terapiLines.push(freq ? `${nama} Jml: ${freq}` : nama);
       }
       row = row.nextElementSibling as HTMLTableRowElement | null;
     }
