@@ -759,7 +759,11 @@
       '</h1>' +
       (headBody[0] ? '<div class="t-hsub">' + esc(headBody[0]) + '</div>' : '') +
       '</div>' +
-      (antrianNumber ? '<div class="t-antrian">' + esc(antrianNumber) + '</div>' : '') +
+      (antrianNumber
+        ? '<div class="t-antrian">' +
+          esc(antrianNumber.replace(/^(.*?)(\d+)$/, '$1\n$2')) +
+          '</div>'
+        : '') +
       '</header>' +
       // METADATA + MAIN (2 kolom, metadata nyambung ke isi kolom masing-masing)
       '<main class="t-main">' +
@@ -818,7 +822,7 @@
         .t-bhead{flex:1;font-size:11px;min-width:0}
         .t-hname{font-size:12px;font-weight:800;margin:0 0 2px;letter-spacing:-.01em}
         .t-hsub{line-height:1.2;font-size:10px}
-        .t-antrian{flex:none;text-align:right;font-size:28px!important;font-weight:800;color:#198754;letter-spacing:-.02em;font-variant-numeric:tabular-nums;min-width:0;overflow-wrap:anywhere;line-height:1.1}
+        .t-antrian{flex:none;text-align:right;font-size:36px!important;font-weight:800;color:#198754;letter-spacing:-.02em;font-variant-numeric:tabular-nums;min-width:0;overflow-wrap:anywhere;line-height:1;white-space:pre-line}
 
         /* METADATA — grid: label kiri, nilai kanan (efisien tinggi) */
         .tm-card{background:#fff;padding:2px 0 4px;margin-bottom:4px;font-size:11px;border-bottom:0.5pt solid #333}
@@ -877,7 +881,7 @@
         .halaman.compact .t-head{padding-bottom:4px;margin-bottom:6px;gap:8px}
         .halaman.compact .t-logo{width:45px;height:45px}
         .halaman.compact .t-hname{font-size:11px}
-        .halaman.compact .t-antrian{font-size:24px!important}
+        .halaman.compact .t-antrian{font-size:30px!important}
         .halaman.compact .tm-card{padding:1px 0 2px;margin-bottom:2px}
         .halaman.compact .tm-col{gap:2px}
         .halaman.compact .tm-label{font-size:9px}
@@ -894,7 +898,7 @@
         .halaman.ultra .t-head{padding-bottom:3px;margin-bottom:4px;gap:6px}
         .halaman.ultra .t-logo{width:40px;height:40px}
         .halaman.ultra .t-hname{font-size:10px}
-        .halaman.ultra .t-antrian{font-size:20px!important}
+        .halaman.ultra .t-antrian{font-size:26px!important}
         .halaman.ultra .tm-card{padding:1px 0;margin-bottom:1px}
         .halaman.ultra .tm-col{gap:1px}
         .halaman.ultra .tm-label{font-size:8px}

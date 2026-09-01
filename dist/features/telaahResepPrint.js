@@ -402,7 +402,7 @@ var __morbis_feature = (() => {
         (rowClass ? ' ' + rowClass : '') +
         '"><span class="tm-label">' +
         esc(label) +
-        '</span><span class="tm-val' +
+        ':</span><span class="tm-val' +
         (vClass ? ' ' + vClass : '') +
         '">' +
         (value && value.trim() ? esc(value) : '-') +
@@ -428,7 +428,7 @@ var __morbis_feature = (() => {
       const patientRows = [
         ['Pasien', pasienJK, ''],
         ['No. RM', g('No. RM'), ''],
-        ['Tgl. Lahir/Umur', g('Tgl. Lahir/Umur'), ''],
+        ['Tgl. Lahir', g('Tgl. Lahir/Umur'), ''],
         ['Riwayat Alergi & BB', alergiBB, ''],
         ['Alamat', g('Alamat'), 'long'],
         ['No HP', g('No HP'), ''],
@@ -448,7 +448,7 @@ var __morbis_feature = (() => {
         'long',
       );
       const patientMetaHtml =
-        '<section class="tm-card"><div class="tm-col">' +
+        '<section class="tm-card tm-card--small"><div class="tm-col">' +
         patientRows.map(([l, v, rc]) => metaLine(l, v, '', rc)).join('') +
         diagThen +
         '</div></section>';
@@ -543,7 +543,11 @@ var __morbis_feature = (() => {
         '</h1>' +
         (headBody[0] ? '<div class="t-hsub">' + esc(headBody[0]) + '</div>' : '') +
         '</div>' +
-        (antrianNumber ? '<div class="t-antrian">' + esc(antrianNumber) + '</div>' : '') +
+        (antrianNumber
+          ? '<div class="t-antrian">' +
+            esc(antrianNumber.replace(/^(.*?)(\d+)$/, '$1\n$2')) +
+            '</div>'
+          : '') +
         '</header><main class="t-main"><section class="t-left">' +
         patientMetaHtml +
         '<div class="t-meds">' +
@@ -585,10 +589,12 @@ var __morbis_feature = (() => {
         .t-bhead{flex:1;font-size:11px;min-width:0}
         .t-hname{font-size:12px;font-weight:800;margin:0 0 2px;letter-spacing:-.01em}
         .t-hsub{line-height:1.2;font-size:10px}
-        .t-antrian{flex:none;text-align:right;font-size:28px!important;font-weight:800;color:#198754;letter-spacing:-.02em;font-variant-numeric:tabular-nums;min-width:0;overflow-wrap:anywhere;line-height:1.1}
+        .t-antrian{flex:none;text-align:right;font-size:36px!important;font-weight:800;color:#198754;letter-spacing:-.02em;font-variant-numeric:tabular-nums;min-width:0;overflow-wrap:anywhere;line-height:1;white-space:pre-line}
 
         /* METADATA \u2014 grid: label kiri, nilai kanan (efisien tinggi) */
         .tm-card{background:#fff;padding:2px 0 4px;margin-bottom:4px;font-size:11px;border-bottom:0.5pt solid #333}
+        .tm-card--small .tm-label{font-size:9px!important}
+        .tm-card--small .tm-val{font-size:10px!important}
         .tm-col{display:flex;flex-direction:column;gap:3px}
         .tm-row{display:grid;grid-template-columns:32% 68%;column-gap:3px;align-items:start}
         .tm-label{color:#5b6470;font-size:10px;line-height:1.25}
@@ -597,8 +603,8 @@ var __morbis_feature = (() => {
         .tm-row.long{grid-template-columns:1fr}
         .tm-row.long .tm-label{margin-bottom:1px}
 
-        /* MAIN 2 kolom */
-        .t-main{display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:start}
+        /* MAIN 2 kolom \u2014 kiri lebih lebar utk nama obat */
+        .t-main{display:grid;grid-template-columns:62% 38%;gap:6px;align-items:start}
         .t-left,.t-right{display:flex;flex-direction:column;gap:5px}
         .t-right .t-check{margin-bottom:0}
         .t-meds{margin-bottom:8px;font-size:11px;min-width:0}
@@ -642,7 +648,7 @@ var __morbis_feature = (() => {
         .halaman.compact .t-head{padding-bottom:4px;margin-bottom:6px;gap:8px}
         .halaman.compact .t-logo{width:45px;height:45px}
         .halaman.compact .t-hname{font-size:11px}
-        .halaman.compact .t-antrian{font-size:24px!important}
+        .halaman.compact .t-antrian{font-size:30px!important}
         .halaman.compact .tm-card{padding:1px 0 2px;margin-bottom:2px}
         .halaman.compact .tm-col{gap:2px}
         .halaman.compact .tm-label{font-size:9px}
@@ -659,7 +665,7 @@ var __morbis_feature = (() => {
         .halaman.ultra .t-head{padding-bottom:3px;margin-bottom:4px;gap:6px}
         .halaman.ultra .t-logo{width:40px;height:40px}
         .halaman.ultra .t-hname{font-size:10px}
-        .halaman.ultra .t-antrian{font-size:20px!important}
+        .halaman.ultra .t-antrian{font-size:26px!important}
         .halaman.ultra .tm-card{padding:1px 0;margin-bottom:1px}
         .halaman.ultra .tm-col{gap:1px}
         .halaman.ultra .tm-label{font-size:8px}
