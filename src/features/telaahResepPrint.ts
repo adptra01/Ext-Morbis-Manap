@@ -394,15 +394,15 @@
       });
     }
 
-    // Sumber per-obat racikan lengkap. Menurut standar operasional farmasi &
-    // keselamatan pasien, Telaah Resep harus memakai RESEP ASLI (resep baru di
-    // kunjungan saat itu) → cetak-resep-asli diutamakan; salinan resep sebagai
-    // cadangan. Keduanya di-render server & cukup butuh id_resep.
-    const RACIKAN_ASLI_URLS = [
-      (id: string) => '/inventory/print/cetak-resep-asli?id=' + encodeURIComponent(id),
+    // Sumber per-obat racikan lengkap. Data list obat yang ditampilkan pada
+    // Telaah Resep mengikuti FORMAT LIST SALINAN RESEP (cetak-resep?id_resep)
+    // sebagai sumber utama — bukan resep asli. resep asli (cetak-resep-asli)
+    // hanya dipakai sebagai cadangan. Keduanya di-render server & cukup butuh id_resep.
+    const RACIKAN_SALINAN_URLS = [
       (id: string) => '/inventory/print/cetak-resep?id_resep=' + encodeURIComponent(id),
+      (id: string) => '/inventory/print/cetak-resep-asli?id=' + encodeURIComponent(id),
     ];
-    async function fetchRacikanAsli(): Promise<
+    async function fetchRacikanSalinan(): Promise<
       Map<
         string,
         { ingredients: { name: string; jml: string }[]; aturan: string[]; jumlahRacikan: string }
@@ -414,7 +414,7 @@
       >();
       const resepId = params.get('id_resep') || params.get('id') || params.get('penjualan') || '';
       if (!resepId) return map;
-      for (const build of RACIKAN_ASLI_URLS) {
+      for (const build of RACIKAN_SALINAN_URLS) {
         try {
           const resp = await fetch(build(resepId), { credentials: 'include' });
           if (!resp.ok) continue;
@@ -467,8 +467,8 @@
 
     const racikanMap = await fetchRacikanDetails();
     // Sumber per-obat racikan yang LENGKAP (Jml tiap bahan + aturan + total
-    // racikan) dari halaman salinan/asli resep — andalan utama utk format baru.
-    const asliMap = await fetchRacikanAsli();
+    // racikan) dari halaman SALINAN resep — andalan utama utk format list obat.
+    const salinanMap = await fetchRacikanSalinan();
 
     // Fallback: kalau fetch detail tidak dapat diagnosa, pakai baris "Diagnosa"
     // yang sudah di-render server di halaman telaah (reliable, tanpa network).
@@ -484,11 +484,11 @@
       }
     }
 
-    // Merge per-obat Jml + aturan + total racikan dari salinan/asli resep.
+    // Merge per-obat Jml + aturan + total racikan dari salinan resep.
     // Cocokkan per nama (bukan index) — urutan bisa beda antar halaman.
     for (const med of meds) {
       const num = med.no.replace(/\D/g, '');
-      const block = asliMap.get(num);
+      const block = salinanMap.get(num);
       if (!block) continue;
       if (block.jumlahRacikan) med.jumlahJadi = block.jumlahRacikan;
       if (block.aturan.length) med.aturan = block.aturan;

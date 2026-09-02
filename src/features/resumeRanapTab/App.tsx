@@ -117,6 +117,12 @@ function IcdAutocomplete({
   const [activeIdx, setActiveIdx] = useState(-1);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
+  const activeRef = useRef<HTMLDivElement>(null);
+
+  // Keep the highlighted option in view while navigating with arrow keys.
+  useEffect(() => {
+    activeRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [activeIdx]);
 
   const search = useCallback(
     async (q: string) => {
@@ -213,20 +219,35 @@ function IcdAutocomplete({
         </div>
       </div>
       {show && suggestions.length > 0 && (
-        <div className="absolute top-full left-0 right-0 z-50 bg-card border border-border rounded-lg max-h-[180px] overflow-auto shadow-md mt-0.5">
-          {suggestions.map((hit, i) => (
-            <div
-              key={hit.ID}
-              onClick={() => pick(hit)}
-              onMouseEnter={() => setActiveIdx(i)}
-              className={`px-2.5 py-1.5 text-xs cursor-pointer border-b border-border transition-colors ${
-                i === activeIdx ? 'bg-primary/5' : 'bg-card'
-              }`}
-            >
-              <span className="font-bold text-primary font-mono">{hit.KODE}</span>
-              <span className="text-muted-foreground ml-1.5">{hit.NAMA}</span>
-            </div>
-          ))}
+        <div className="absolute top-full left-0 right-0 z-50 bg-card border border-border rounded-lg max-h-[220px] overflow-auto shadow-lg mt-1">
+          {suggestions.map((hit, i) => {
+            const active = i === activeIdx;
+            return (
+              <div
+                key={hit.ID}
+                ref={active ? activeRef : undefined}
+                onClick={() => pick(hit)}
+                onMouseEnter={() => setActiveIdx(i)}
+                className={`px-3 py-2 text-sm cursor-pointer border-b last:border-b-0 border-border transition-colors ${
+                  active ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-primary/15'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span
+                    className={`font-mono text-[13px] font-bold ${active ? 'text-primary-foreground' : 'text-primary'}`}
+                  >
+                    {hit.KODE}
+                  </span>
+                  {active && <span className="text-primary-foreground font-bold">&#10003;</span>}
+                </div>
+                <div
+                  className={`${active ? 'text-primary-foreground' : 'text-foreground'} leading-snug mt-0.5`}
+                >
+                  {hit.NAMA}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

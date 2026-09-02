@@ -292,15 +292,15 @@ var __morbis_feature = (() => {
           if (aturanTxt && !/^Dosis/i.test(aturanTxt)) cur.aturan.push(aturanTxt);
         });
       }
-      const RACIKAN_ASLI_URLS = [
-        (id) => '/inventory/print/cetak-resep-asli?id=' + encodeURIComponent(id),
+      const RACIKAN_SALINAN_URLS = [
         (id) => '/inventory/print/cetak-resep?id_resep=' + encodeURIComponent(id),
+        (id) => '/inventory/print/cetak-resep-asli?id=' + encodeURIComponent(id),
       ];
-      async function fetchRacikanAsli() {
+      async function fetchRacikanSalinan() {
         const map = /* @__PURE__ */ new Map();
         const resepId = params.get('id_resep') || params.get('id') || params.get('penjualan') || '';
         if (!resepId) return map;
-        for (const build of RACIKAN_ASLI_URLS) {
+        for (const build of RACIKAN_SALINAN_URLS) {
           try {
             const resp = await fetch(build(resepId), { credentials: 'include' });
             if (!resp.ok) continue;
@@ -336,7 +336,7 @@ var __morbis_feature = (() => {
         params.get('id_resep') || params.get('id') || params.get('penjualan') || '';
       antrianNumber = resepIdForQueue ? await fetchAntrianNumber(resepIdForQueue) : '';
       const racikanMap = await fetchRacikanDetails();
-      const asliMap = await fetchRacikanAsli();
+      const salinanMap = await fetchRacikanSalinan();
       if (!diagnosisUtama.length && serverDiag.length) diagnosisUtama = serverDiag;
       for (const med of meds) {
         const num = med.no.replace(/\D/g, '');
@@ -347,7 +347,7 @@ var __morbis_feature = (() => {
       }
       for (const med of meds) {
         const num = med.no.replace(/\D/g, '');
-        const block = asliMap.get(num);
+        const block = salinanMap.get(num);
         if (!block) continue;
         if (block.jumlahRacikan) med.jumlahJadi = block.jumlahRacikan;
         if (block.aturan.length) med.aturan = block.aturan;
