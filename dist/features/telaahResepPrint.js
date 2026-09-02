@@ -311,6 +311,33 @@ var __morbis_feature = (() => {
         }
         return map;
       }
+      async function fetchRacikanAturanData() {
+        const aturan = /* @__PURE__ */ new Map();
+        const sediaanRacikan = /* @__PURE__ */ new Map();
+        const resepId = params.get('id_resep') || params.get('id') || params.get('penjualan') || '';
+        if (!resepId) return { aturan, sediaanRacikan };
+        try {
+          const resp = await fetch(
+            '/inventory/resep/akses/penerimaan?type=ajax&opsi=data-resep-new&q=1&id=' +
+              encodeURIComponent(resepId),
+            { credentials: 'include', cache: 'no-store' },
+          );
+          if (!resp.ok) return { aturan, sediaanRacikan };
+          const j = await resp.json();
+          const items = Array.isArray(j?.resep) ? j.resep : [];
+          for (const it of items) {
+            const nama = String(it.NAMA ?? '').trim();
+            if (!nama) continue;
+            const manual = String(it.ATURAN_PAKAI_MANUAL ?? '').trim();
+            const generated = String(it.ATURAN_PAKAI ?? '').trim();
+            const a = manual || generated;
+            if (a) aturan.set(nama, a);
+            const racik = String(it.NAMA_RACIKAN ?? '').trim();
+            if (racik) sediaanRacikan.set(nama, racik);
+          }
+        } catch {}
+        return { aturan, sediaanRacikan };
+      }
       async function fetchAntrianNumber(resepId) {
         try {
           let base = 'http://dev.rsudkotajambi.id/rs';
@@ -337,6 +364,8 @@ var __morbis_feature = (() => {
       antrianNumber = resepIdForQueue ? await fetchAntrianNumber(resepIdForQueue) : '';
       const racikanMap = await fetchRacikanDetails();
       const salinanMap = await fetchRacikanSalinan();
+      const { aturan: aturanDataMap, sediaanRacikan: sediaanRacikanMap } =
+        await fetchRacikanAturanData();
       if (!diagnosisUtama.length && serverDiag.length) diagnosisUtama = serverDiag;
       for (const med of meds) {
         const num = med.no.replace(/\D/g, '');
@@ -367,6 +396,22 @@ var __morbis_feature = (() => {
           for (const s of med.subMeds) {
             const hit = block.ingredients.find((i) => namesMatch(s.name, i.name));
             if (hit && !s.jmlPerR) s.jmlPerR = hit.jml;
+          }
+        }
+      }
+      if (aturanDataMap.size > 0 || sediaanRacikanMap.size > 0) {
+        const lookup = (name, m) => {
+          if (m.has(name)) return m.get(name);
+          for (const [k, v] of m) if (namesMatch(name, k)) return v;
+          return '';
+        };
+        for (const med of meds) {
+          const matchName = med.subMeds.length > 1 ? med.subMeds[0].name : med.name;
+          const manual = lookup(matchName, aturanDataMap);
+          if (manual) med.aturan = [manual];
+          if (med.subMeds.length > 1 && !med.sediaan) {
+            const sediaan = lookup(matchName, sediaanRacikanMap);
+            if (sediaan) med.sediaan = sediaan;
           }
         }
       }

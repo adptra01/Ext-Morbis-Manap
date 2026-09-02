@@ -428,6 +428,46 @@
       return map;
     }
 
+    // Sumber aturan pakai yang BENAR: endpoint AJAX data-resep-new memuat field
+    // ATURAN_PAKAI_MANUAL (tulisan dokter) & ATURAN_PAKAI (generated) per item
+    // resep. Aturan MANUAL adalah sumber kebenaran — layout salinan/asli sering
+    // me-render versi generated yang salah (mis. Meloxicam tercetak "2x1/2 tab"
+    // padahal manual "1x15 mg"). Bangun map {nama → aturan} utk override.
+    // Juga tangkap NAMA_RACIKAN (bentuk sediaan racikan, mis. "Kapsul") utk
+    // dipakai sebagai satuan baris "Jml N …" alih-alih teks literal "Racikan".
+    async function fetchRacikanAturanData(): Promise<{
+      aturan: Map<string, string>;
+      sediaanRacikan: Map<string, string>;
+    }> {
+      const aturan = new Map<string, string>();
+      const sediaanRacikan = new Map<string, string>();
+      const resepId = params.get('id_resep') || params.get('id') || params.get('penjualan') || '';
+      if (!resepId) return { aturan, sediaanRacikan };
+      try {
+        const resp = await fetch(
+          '/inventory/resep/akses/penerimaan?type=ajax&opsi=data-resep-new&q=1&id=' +
+            encodeURIComponent(resepId),
+          { credentials: 'include', cache: 'no-store' },
+        );
+        if (!resp.ok) return { aturan, sediaanRacikan };
+        const j = (await resp.json()) as { resep?: Array<Record<string, unknown>> };
+        const items = Array.isArray(j?.resep) ? j.resep : [];
+        for (const it of items) {
+          const nama = String(it.NAMA ?? '').trim();
+          if (!nama) continue;
+          const manual = String(it.ATURAN_PAKAI_MANUAL ?? '').trim();
+          const generated = String(it.ATURAN_PAKAI ?? '').trim();
+          const a = manual || generated;
+          if (a) aturan.set(nama, a);
+          const racik = String(it.NAMA_RACIKAN ?? '').trim();
+          if (racik) sediaanRacikan.set(nama, racik);
+        }
+      } catch {
+        /* sumber tidak terjangkau — biarkan aturan dari sumber lain */
+      }
+      return { aturan, sediaanRacikan };
+    }
+
     // Fetch nomor antrian dari App Antrian (Reports SIMRS) via resep_id
     async function fetchAntrianNumber(resepId: string): Promise<string> {
       try {
@@ -469,6 +509,9 @@
     // Sumber per-obat racikan yang LENGKAP (Jml tiap bahan + aturan + total
     // racikan) dari halaman SALINAN resep — andalan utama utk format list obat.
     const salinanMap = await fetchRacikanSalinan();
+    // Sumber aturan pakai MANUAL (tulisan dokter) — prioritas tertinggi utk aturan.
+    const { aturan: aturanDataMap, sediaanRacikan: sediaanRacikanMap } =
+      await fetchRacikanAturanData();
 
     // Fallback: kalau fetch detail tidak dapat diagnosa, pakai baris "Diagnosa"
     // yang sudah di-render server di halaman telaah (reliable, tanpa network).
@@ -510,6 +553,31 @@
         for (const s of med.subMeds) {
           const hit = block.ingredients.find((i) => namesMatch(s.name, i.name));
           if (hit && !s.jmlPerR) s.jmlPerR = hit.jml;
+        }
+      }
+    }
+
+    // Prioritas tertinggi utk aturan pakai: nilai MANUAL dari data-resep-new
+    // (tulisan dokter). Layout salinan/asli me-render versi generated yang salah
+    // (mis. Meloxicam "2x1/2 tab" padahal manual "1x15 mg"). Untuk racikan,
+    // aturan diambil dari bahan pertama (subMeds[0]); untuk tunggal, dari med.name.
+    // Sumber yang sama juga memuat NAMA_RACIKAN (bentuk sediaan racikan, mis.
+    // "Kapsul") — dipakai sbg satuan baris "Jml N …" bila med.sediaan kosong,
+    // alih-alih teks literal "Racikan" (mis. "Jml 10 Racikan" → "Jml 10 Kapsul").
+    if (aturanDataMap.size > 0 || sediaanRacikanMap.size > 0) {
+      const lookup = (name: string, m: Map<string, string>): string => {
+        if (m.has(name)) return m.get(name)!;
+        for (const [k, v] of m) if (namesMatch(name, k)) return v;
+        return '';
+      };
+      for (const med of meds) {
+        const matchName = med.subMeds.length > 1 ? med.subMeds[0].name : med.name;
+        const manual = lookup(matchName, aturanDataMap);
+        if (manual) med.aturan = [manual];
+        // Hanya racikan: isi satuan "Jml N …" dari bentuk sediaan racikan.
+        if (med.subMeds.length > 1 && !med.sediaan) {
+          const sediaan = lookup(matchName, sediaanRacikanMap);
+          if (sediaan) med.sediaan = sediaan;
         }
       }
     }
