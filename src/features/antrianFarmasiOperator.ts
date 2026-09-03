@@ -89,6 +89,7 @@ const ICONS: Record<string, string> = {
     '<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/>',
   fullscreen:
     '<path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>',
+  list: '<path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/>',
 };
 
 function svg(name: string, size = 16, color = '#212529'): string {
@@ -737,6 +738,9 @@ function buildPanel(): HTMLDivElement {
     '<button id="ext-op-fullscreen" data-tip="Toggle fullscreen pada layar display TV (BroadcastChannel)" style="padding:7px 14px;border:1px solid #155e75;background:#155e75;color:#fff;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
     svg('fullscreen', 14, '#fff') +
     'Display FS</button>' +
+    '<button id="ext-op-display-waiting" data-tip="Tampilkan display ANTRIAN MENUNGGU di TV (daftar pasien yang belum dipanggil — ganti frame, link MORBIS tetap sama)" style="padding:7px 14px;border:1px solid #0d6efd;background:#0d6efd;color:#fff;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
+    svg('list', 14, '#fff') +
+    'Display Antrian</button>' +
     '<button id="ext-op-refresh" data-tip="Segarkan data antrean dari app" style="padding:7px 14px;border:1px solid #6c757d;background:#6c757d;color:#fff;border-radius:8px;cursor:pointer;">Segarkan</button>' +
     '</div></div>' +
     '<div id="ext-op-grid" style="display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:12px;align-items:stretch;flex:1;min-height:0;overflow:hidden;">' +
@@ -988,6 +992,15 @@ function init(): void {
       try {
         const fsChannel = new BroadcastChannel('morbis-antrian-display');
         fsChannel.postMessage({ type: 'toggleFullscreen' });
+      } catch {
+        /* BroadcastChannel not supported */
+      }
+    });
+    // Ganti frame display TV ke ANTRIAN MENUNGGU (link MORBIS tetap sama).
+    document.getElementById('ext-op-display-waiting')?.addEventListener('click', () => {
+      try {
+        const ch = new BroadcastChannel('morbis-antrian-display');
+        ch.postMessage({ type: 'setDisplay', mode: 'waiting' });
       } catch {
         /* BroadcastChannel not supported */
       }
