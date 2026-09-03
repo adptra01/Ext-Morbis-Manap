@@ -1325,10 +1325,10 @@ var __morbis_feature = (() => {
         lastRealtimeEvent: 'announce:' + row.id,
       });
       const kalimat = row.namaPasien
-        ? 'Antrian farmasi, atas nama ' +
+        ? 'Antrian resep obat, atas nama ' +
           titleCase(String(row.namaPasien)) +
           '. Silakan ke loket farmasi.'
-        : 'Antrian farmasi. Silakan ke loket farmasi.';
+        : 'Antrian resep obat. Silakan ke loket farmasi.';
       for (let i = queue.length - 1; i >= 0; i--) {
         const qi = queue[i];
         if (qi.kind === 'voice') queue.splice(i, 1);
