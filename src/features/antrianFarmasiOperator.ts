@@ -130,6 +130,14 @@ const POLL_MS = 2000; // ringan; delay panggilan di display mengikuti kecepatan 
 /** Snapshot baris terakhir utk cetak tiket / sheet A4 (data dari app). */
 let lastRows: DisplayRow[] = [];
 let lastTanggal = '';
+/** Teks pencarian live utk tabel "Ditunda / Lewat" & "Selesai Hari Ini".
+ *  Bertahan antar render() (panel di-render ulang tiap polling). */
+let specialSearch = '';
+let doneSearch = '';
+/** Restore fokus kotak pencarian setelah render() (agar mengetik tetap lancar
+ *  walau panel di-render ulang tiap keystroke/polling). */
+let fsFocusId = '';
+let fsFocusCaret = 0;
 
 /** Kategori dari prefix nomor publik (R- = racikan, T- = tunggal). */
 function catOf(num: string): 'tunggal' | 'racikan' {
@@ -138,6 +146,40 @@ function catOf(num: string): 'tunggal' | 'racikan' {
     .startsWith('R')
     ? 'racikan'
     : 'tunggal';
+}
+
+/** True bila baris cocok dgn kata kunci pencarian (nomor/nama/RM, case-insensitive). */
+function rowMatches(r: DisplayRow, term: string): boolean {
+  const t = term.trim().toLowerCase();
+  if (!t) return true;
+  return [r.queue_number, r.nama_pasien, r.norm, r.jenis]
+    .filter(Boolean)
+    .some((v) => String(v).toLowerCase().includes(t));
+}
+
+/** Escape teks utk atribut HTML (value="...") — mencegah query injection DOM. */
+function escAttr(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+/** Kembalikan fokus + posisi kursor ke kotak pencarian setelah render()
+ *  mengganti DOM-nya (dipanggil di akhir render()). */
+function restoreSearchFocus(): void {
+  if (!fsFocusId) return;
+  const el = document.getElementById(fsFocusId) as HTMLInputElement | null;
+  if (el) {
+    el.focus();
+    try {
+      el.setSelectionRange(fsFocusCaret, fsFocusCaret);
+    } catch {
+      /* browser yg tak mendukung setSelectionRange presisi */
+    }
+  }
+  fsFocusId = '';
 }
 
 /** Cetak tiket antrian pasien (kartu 1 lembar) — data dari app. */
@@ -462,64 +504,6 @@ function hideNative(): void {
   }
 }
 
-/** Pindahkan tombol native MORBIS "Reset Antrian" & "Display" ke bar tombol
- *  panel (sudut kanan, setelah Cetak Sheet A4 & Segarkan). Reset = outline
- *  merah + jarak lebar dari Display (hindari miss-click — aksi destruktif);
- *  Display = hijau solid (navigasi aman) + buka tab BARU (jangan kehilangan
- *  dashboard operator). */
-function moveNativeButtons(): void {
-  const bar = document.querySelector<HTMLElement>('#ext-op-actions');
-  if (!bar || bar.querySelector('#ext-op-reset')) return;
-
-  const wrap = document.createElement('span');
-  wrap.style.cssText = 'display:flex;gap:8px;align-items:center;flex-wrap:wrap;';
-
-  const reset = document.querySelector<HTMLElement>(
-    'button[onclick*="reset_antrian"], input[onclick*="reset_antrian"]',
-  );
-  const display = document.querySelector<HTMLElement>(
-    'button[onclick*="view-call-websocet"], input[onclick*="view-call-websocet"]',
-  );
-
-  if (reset) {
-    const clone = reset.cloneNode(true) as HTMLElement;
-    clone.id = 'ext-op-reset';
-    // Outline merah (peringatan) + jarak lebar di kiri — jauh dari Display.
-    clone.setAttribute(
-      'data-tip',
-      'Reset antrian DB app — semua antrian hari ini kembali ke status awal, nomor dipanggil ulang dari T-01/R-01',
-    );
-    clone.setAttribute('title', 'Reset Antrian (DB app) — aksi destruktif');
-    clone.setAttribute(
-      'style',
-      'margin-left:28px;padding:7px 14px;border:1.5px solid #dc3545;background:#fff;color:#dc3545;' +
-        'border-radius:8px;cursor:pointer;font-weight:700;',
-    );
-    clone.addEventListener('click', () => {
-      void resetQueueDb();
-    });
-    wrap.appendChild(clone);
-  }
-
-  if (display) {
-    const clone = display.cloneNode(true) as HTMLElement;
-    clone.id = 'ext-op-display';
-    // Pakai perilaku ASLI MORBIS saja (onclick native tetap ada — cloneNode
-    // menyalin handler inline) → 1 tab. JANGAN tambah window.open sendiri
-    // (dulu bikin 2 tab: handler native + handler kita jalan berbarengan).
-    clone.setAttribute('data-tip', 'Buka layar TV (tab baru)');
-    clone.setAttribute('title', 'Buka layar TV antrian');
-    clone.setAttribute(
-      'style',
-      'padding:7px 14px;border:1px solid #00a65a;background:#00a65a;color:#fff;' +
-        'border-radius:8px;cursor:pointer;font-weight:700;',
-    );
-    wrap.appendChild(clone);
-  }
-
-  if (wrap.children.length) bar.appendChild(wrap);
-}
-
 /** Tombol aksi — IKON kecil dengan tooltip (data-ev/data-num/data-eid). */
 function iconBtn(
   ev: string,
@@ -737,6 +721,9 @@ function buildPanel(): HTMLDivElement {
     '<button id="ext-op-delete-all" data-tip="Hapus SEMUA antrian hari ini dari DB (aksi permanen — tidak bisa dibatalkan)" style="padding:7px 14px;border:1px solid #b02a37;background:#fff;color:#b02a37;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
     svg('trash', 14, '#b02a37') +
     'Hapus Semua</button>' +
+    '<button id="ext-op-reset" data-tip="Reset antrian DB app — semua antrian hari ini kembali ke status awal, nomor dipanggil ulang dari T-01/R-01 (record tidak dihapus)" style="padding:7px 14px;border:1px solid #dc3545;background:#fff;color:#dc3545;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-weight:700;">' +
+    svg('refresh', 14, '#dc3545') +
+    'Reset Antrian</button>' +
     '<button id="ext-op-display-antrian" data-tip="Tampilkan display PANGGILAN AKTIF di TV (frame /antrian-farmasi)" style="padding:7px 14px;border:1px solid #155e75;background:#155e75;color:#fff;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
     svg('volume', 14, '#fff') +
     'Display Antrian</button>' +
@@ -816,21 +803,40 @@ async function render(): Promise<void> {
           '</div>' +
           '<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:6px;flex-shrink:0;">Ditunda / Lewat</div>' +
           '<div style="flex-shrink:0;">' +
-          (special.length
-            ? special.map((r) => miniRow(r, 'op-sp')).join('')
-            : '<div style="padding:10px;color:#adb5bd;text-align:center;font-size:12px;">Tidak ada</div>') +
+          '<input id="ext-op-search-special" type="search" placeholder="Cari nomor / nama / RM…" value="' +
+          escAttr(specialSearch) +
+          '" style="width:100%;margin-bottom:6px;padding:6px 10px;border:1px solid #ced4da;border-radius:8px;font-size:12px;box-sizing:border-box;">' +
+          '</div>' +
+          '<div style="flex-shrink:0;max-height:170px;overflow-y:auto;padding-right:4px;">' +
+          (special.filter((r) => rowMatches(r, specialSearch)).length
+            ? special
+                .filter((r) => rowMatches(r, specialSearch))
+                .map((r) => miniRow(r, 'op-sp'))
+                .join('')
+            : '<div style="padding:10px;color:#adb5bd;text-align:center;font-size:12px;">' +
+              (special.length ? 'Tidak cocok' : 'Tidak ada') +
+              '</div>') +
           '</div>' +
           '<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin:14px 0 6px;flex-shrink:0;">Selesai Hari Ini</div>' +
+          '<div style="flex-shrink:0;">' +
+          '<input id="ext-op-search-done" type="search" placeholder="Cari nomor / nama / RM…" value="' +
+          escAttr(doneSearch) +
+          '" style="width:100%;margin-bottom:6px;padding:6px 10px;border:1px solid #ced4da;border-radius:8px;font-size:12px;box-sizing:border-box;">' +
+          '</div>' +
           '<div style="flex:1;min-height:0;overflow-y:auto;padding-right:4px;">' +
           (queues
             .filter((r) => r.status === 'DONE')
             .sort(sortNum)
+            .filter((r) => rowMatches(r, doneSearch))
             .map((r) => miniRow(r, 'op-done'))
             .join('') ||
-            '<div style="padding:10px;color:#adb5bd;text-align:center;font-size:12px;">Belum ada</div>') +
+            '<div style="padding:10px;color:#adb5bd;text-align:center;font-size:12px;">' +
+              (queues.some((r) => r.status === 'DONE') ? 'Tidak cocok' : 'Belum ada') +
+              '</div>') +
           '</div></div>';
       }
     }
+    restoreSearchFocus();
     if (st) st.textContent = 'terhubung ke app (' + d.tanggal + ')';
   } catch (e) {
     if (st) st.textContent = 'gagal hubungi app — cek CORS/BASE';
@@ -974,7 +980,6 @@ function init(): void {
     if (document.getElementById('ext-farmasi-operator')) return;
     const panel = buildPanel();
     (document.getElementById('isi')?.parentElement || document.body).appendChild(panel);
-    moveNativeButtons();
     panel.addEventListener('click', (e) => {
       const btn = (e.target as HTMLElement).closest<HTMLElement>('.ext-op-act');
       if (btn) {
@@ -991,16 +996,49 @@ function init(): void {
     document
       .getElementById('ext-op-delete-all')
       ?.addEventListener('click', () => void deleteAllQueue());
+    document.getElementById('ext-op-reset')?.addEventListener('click', () => void resetQueueDb());
     document.getElementById('ext-op-refresh')?.addEventListener('click', () => void render());
-    // Remote fullscreen toggle for display TV via BroadcastChannel.
-    document.getElementById('ext-op-fullscreen')?.addEventListener('click', () => {
+    // Remote fullscreen untuk display TV via BroadcastChannel. Operator minta
+    // fullscreen → display menampilkan overlay "klik utk layar penuh" (fullscreen
+    // tetap butuh user-gesture di tab display; overlay itulah gesture-nya).
+    // Display kiri-kanan memakai channel yang sama, jadi pesan sampai ke
+    // SEMUA display yang terbuka. Feedback balik (fullscreenStatus) ditampung.
+    const fsChannel = (() => {
       try {
-        const fsChannel = new BroadcastChannel('morbis-antrian-display');
-        fsChannel.postMessage({ type: 'toggleFullscreen' });
+        return new BroadcastChannel('morbis-antrian-display');
       } catch {
-        /* BroadcastChannel not supported */
+        return null;
       }
+    })();
+    document.getElementById('ext-op-fullscreen')?.addEventListener('click', () => {
+      fsChannel?.postMessage({ type: 'requestFullscreen' });
+      fsFlash('minta layar penuh…');
     });
+    fsChannel?.addEventListener?.('message', (ev) => {
+      const d = ev.data;
+      if (d && d.type === 'fullscreenStatus')
+        fsFlash(d.on ? 'display: ✓ Fullscreen' : 'display: keluar fullscreen');
+    });
+    // Flash kecil sebentar di bar tombol utk umpan balik (hilang sendiri).
+    function fsFlash(msg: string): void {
+      let el = document.getElementById('ext-op-fs-feedback');
+      if (!el) {
+        el = document.createElement('span');
+        el.id = 'ext-op-fs-feedback';
+        el.style.cssText =
+          'padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:#6f42c1;' +
+          'color:#fff;opacity:0;transition:opacity .25s ease;display:inline-flex;align-items:center;gap:6px;';
+        document.getElementById('ext-op-actions')?.appendChild(el);
+      }
+      el.textContent = msg;
+      el.style.opacity = '1';
+      window.clearTimeout(Number(el.dataset.timer || 0));
+      el.dataset.timer = String(
+        window.setTimeout(() => {
+          el.style.opacity = '0';
+        }, 2600),
+      );
+    }
     // Tombol display: masing-masing buka TAB BARU ke halaman display Reports.
     // 'Display Antrian' → panggilan aktif; 'Display Tunggu' → daftar menunggu.
     document.getElementById('ext-op-display-antrian')?.addEventListener('click', () => {
@@ -1015,6 +1053,20 @@ function init(): void {
       if (s2) openPrintSheetDialog();
       const r2 = (e.target as HTMLElement).closest<HTMLElement>('#ext-op-refresh2');
       if (r2) void render();
+    });
+    // Pencarian live di tabel "Ditunda / Lewat" & "Selesai Hari Ini".
+    // Input di-render ulang tiap polling → delegasi ke panel; nilai disimpan di
+    // module state supaya bertahan antar render() (input tak reset tiap 2s).
+    panel.addEventListener('input', (e) => {
+      const el = e.target as HTMLInputElement;
+      if (el.id === 'ext-op-search-special' || el.id === 'ext-op-search-done') {
+        if (el.id === 'ext-op-search-special') specialSearch = el.value;
+        else doneSearch = el.value;
+        // Re-render cepat utk filter, lalu kembalikan fokus+karakter.
+        fsFocusId = el.id;
+        fsFocusCaret = el.selectionStart ?? el.value.length;
+        void render();
+      }
     });
     void render();
     void probeFarmasiAppBase().then(() => void render()); // fallback IP bila DNS gagal
