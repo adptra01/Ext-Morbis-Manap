@@ -1001,23 +1001,13 @@ function init(): void {
         /* BroadcastChannel not supported */
       }
     });
-    // Ganti frame display TV: 'Display Antrian' → panggilan aktif (calls),
-    // 'Display Tunggu' → daftar menunggu (waiting). Link MORBIS tetap sama.
+    // Tombol display: masing-masing buka TAB BARU ke halaman display Reports.
+    // 'Display Antrian' → panggilan aktif; 'Display Tunggu' → daftar menunggu.
     document.getElementById('ext-op-display-antrian')?.addEventListener('click', () => {
-      try {
-        const ch = new BroadcastChannel('morbis-antrian-display');
-        ch.postMessage({ type: 'setDisplay', mode: 'calls' });
-      } catch {
-        /* BroadcastChannel not supported */
-      }
+      window.open(farmasiAppBase() + '/antrian-farmasi', '_blank', 'noopener');
     });
     document.getElementById('ext-op-display-tunggu')?.addEventListener('click', () => {
-      try {
-        const ch = new BroadcastChannel('morbis-antrian-display');
-        ch.postMessage({ type: 'setDisplay', mode: 'waiting' });
-      } catch {
-        /* BroadcastChannel not supported */
-      }
+      window.open(farmasiAppBase() + '/antrian-farmasi-menunggu', '_blank', 'noopener');
     });
     // Tombol duplikat di panel kanan (di-render ulang tiap fetch → pakai delegasi).
     panel.addEventListener('click', (e) => {
