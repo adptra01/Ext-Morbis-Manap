@@ -688,7 +688,7 @@ function buildPanel(): HTMLDivElement {
     '<button id="ext-op-display-tunggu" data-tip="Tampilkan display ANTRIAN MENUNGGU di TV (frame /antrian-farmasi-menunggu — pasien lihat posisi antrean)" style="padding:7px 14px;border:1px solid #0d6efd;background:#0d6efd;color:#fff;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
     svg('list', 14, '#fff') +
     'Display Tunggu</button>' +
-    '<button id="ext-op-fullscreen" data-tip="Toggle fullscreen pada layar display TV (BroadcastChannel)" style="padding:7px 14px;border:1px solid #6f42c1;background:#6f42c1;color:#fff;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
+    '<button id="ext-op-fullscreen" data-tip="Toggle fullscreen pada layar display TV (relay SSE)" style="padding:7px 14px;border:1px solid #6f42c1;background:#6f42c1;color:#fff;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
     svg('fullscreen', 14, '#fff') +
     'Display FS</button>' +
     '<button id="ext-op-refresh" data-tip="Segarkan data antrean dari app" style="padding:7px 14px;border:1px solid #6c757d;background:#6c757d;color:#fff;border-radius:8px;cursor:pointer;">Segarkan</button>' +
@@ -937,27 +937,41 @@ function init(): void {
       ?.addEventListener('click', () => void deleteAllQueue());
     document.getElementById('ext-op-reset')?.addEventListener('click', () => void resetQueueDb());
     document.getElementById('ext-op-refresh')?.addEventListener('click', () => void render());
-    // Remote fullscreen untuk display TV via BroadcastChannel. Operator minta
-    // fullscreen → display menampilkan overlay "klik utk layar penuh" (fullscreen
-    // tetap butuh user-gesture di tab display; overlay itulah gesture-nya).
-    // Display kiri-kanan memakai channel yang sama, jadi pesan sampai ke
-    // SEMUA display yang terbuka. Feedback balik (fullscreenStatus) ditampung.
-    const fsChannel = (() => {
-      try {
-        return new BroadcastChannel('morbis-antrian-display');
-      } catch {
-        return null;
-      }
-    })();
+    // Remote fullscreen untuk display TV via relay server SSE. Operator origin
+    // BEDA dari display Reports (BroadcastChannel tak tembus), jadi event relay
+    // lewat server Reports: operator POST /api/queue/fullscreen-request; feedback
+    // status diterima via SSE /api/queue/fullscreen-stream. Display menampilkan
+    // overlay "klik utk layar penuh" (fullscreen tetap butuh user-gesture di
+    // display; overlay itulah gesture-nya). displayId 'all' → semua display.
+    const FS_API = farmasiAppBase() + '/api/queue';
     document.getElementById('ext-op-fullscreen')?.addEventListener('click', () => {
-      fsChannel?.postMessage({ type: 'requestFullscreen' });
+      try {
+        fetch(FS_API + '/fullscreen-request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ displayId: 'all' }),
+        }).catch(() => fsFlash('relay gagal (jaringan)'));
+      } catch {
+        fsFlash('relay gagal');
+      }
       fsFlash('minta layar penuh…');
     });
-    fsChannel?.addEventListener?.('message', (ev) => {
-      const d = ev.data;
-      if (d && d.type === 'fullscreenStatus')
-        fsFlash(d.on ? 'display: ✓ Fullscreen' : 'display: keluar fullscreen');
-    });
+    // Langgan SSE relay utk terima feedback status fullscreen dari display.
+    try {
+      const fsEs = new EventSource(FS_API + '/fullscreen-stream');
+      fsEs.onmessage = function (ev) {
+        let d;
+        try {
+          d = JSON.parse(ev.data);
+        } catch {
+          return;
+        }
+        if (d && d.type === 'fullscreenStatus')
+          fsFlash(d.on ? 'display: ✓ Fullscreen' : 'display: keluar fullscreen');
+      };
+    } catch {
+      /* SSE tak didukung — feedback nonaktif, tombol tetap kirim request */
+    }
     // Flash kecil sebentar di bar tombol utk umpan balik (hilang sendiri).
     function fsFlash(msg: string): void {
       let el = document.getElementById('ext-op-fs-feedback');
