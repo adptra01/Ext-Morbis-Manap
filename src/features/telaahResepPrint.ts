@@ -72,9 +72,7 @@
 
     const getMeta = (label: string): string => metaMap.get(label) ?? '';
 
-    // Daftar obat.
-    const medsTables = Array.from(page.querySelectorAll('table.resep-item'));
-    const medsTable = medsTables[0];
+    // Daftar obat — dibangun dari data-resep-new (bukan dari table.resep-item).
     interface SubMed {
       name: string;
       strength: string;
@@ -93,89 +91,7 @@
       subMeds: SubMed[];
     }
     const meds: Med[] = [];
-    if (medsTable) {
-      const medsMap = new Map<string, Med>();
-      let lastMed: Med | null = null;
-      medsTable.querySelectorAll('tr').forEach((tr) => {
-        const tds = tr.querySelectorAll('td');
-        if (tds.length < 2) return;
-        const left = txt(tds[0]);
-        const rightEl = tds[1];
-        const right = txt(rightEl);
-        const numMatch = left.match(/^(?:R\/)?(\d+)/);
-        if (numMatch) {
-          const num = numMatch[1];
-          const med: Med = {
-            no: 'R/' + num,
-            name: '',
-            jml: '',
-            jumlahJadi: '',
-            sediaan: '',
-            aturan: [],
-            subMeds: [],
-          };
-          medsMap.set(num, med);
-          lastMed = med;
-          // Baris pertama racikan: bisa nama obat TUNGGAL (R/x + Jml) atau
-          // bahan pertama dari racikan (R/1 + ingredient pertama).
-          const ps = rightEl ? Array.from(rightEl.querySelectorAll('p')) : [];
-          med.name = ps.length ? (ps[0]?.textContent || right).trim() : right;
-          const jmlT = ps.length > 1 ? (ps[1]?.textContent || '').trim() : '';
-          const mJml = jmlT.match(/Jml\s*:\s*(.+)/i);
-          med.jml = mJml ? mJml[1].trim() : '';
-          // Kalau ada Jml pada baris pertama → obat TUNGGAL (bukan racikan).
-          // Kalau tidak, maka ia bahan pertama racikan → jadikan subMeds.
-          if (ps.length && !mJml && med.name) {
-            med.subMeds.push({
-              name: med.name,
-              strength: '',
-              dose: '',
-              jmlPerR: '',
-              sediaan: '',
-            });
-            med.name = ''; // nama racikan kosong → tampilkan lewat subMeds
-          }
-          return;
-        }
-        if (!lastMed || !right) return;
-        // Baris lanjutan (tanpa nomor R/):
-        // - Racikan: sel kanan memakai <div style='display:flex'><p>nama</p><p>Jml:N</p></div>
-        // - Sediaan/Jumlah/Aturan: sel polos (Tanpa <p>).
-        const ps = rightEl ? Array.from(rightEl.querySelectorAll('p')) : [];
-        if (ps.length) {
-          const ingName = (ps[0]?.textContent || '').trim();
-          if (!ingName) return;
-          const ingJml = ps.length > 1 ? (ps[1]?.textContent || '').trim() : '';
-          const ingJmlMatch = ingJml.match(/Jml\s*:\s*(.+)/i);
-          lastMed.subMeds.push({
-            name: ingName,
-            strength: '',
-            dose: '',
-            jmlPerR: ingJmlMatch ? ingJmlMatch[1].trim() : '',
-            sediaan: '',
-          });
-          return;
-        }
-        // Sel polos: "Tablet" (sediaan) / "Jumlah : 10" (total racikan) / "(3x1)" (aturan)
-        const jmlJadi = right.match(/^Jumlah\s*:\s*(.+)$/i);
-        if (jmlJadi) {
-          lastMed.jumlahJadi = jmlJadi[1].trim();
-          return;
-        }
-        // Sediaan racikan = kata bentuk sediaan (Tablet/Kapsul/Kaplet/Puyer/...).
-        if (
-          /^(tablet|kapsul|kaplet|puyer|salep|sirup|drops?|supp|botol|tube|tab|obat\s+(luar|dalam))\b/i.test(
-            right,
-          )
-        ) {
-          lastMed.sediaan = right;
-          return;
-        }
-        // Aturan — buang kurung di sini, dipakai lagi dgn kurung saat render.
-        lastMed.aturan.push(right.replace(/^\(|\)$/g, ''));
-      });
-      meds.push(...medsMap.values());
-    }
+    const medsTables = Array.from(page.querySelectorAll('table.resep-item'));
     const adminTable = medsTables[1];
 
     // --- Fetch racikan detail & diagnosa dari halaman detail/edit ---
@@ -190,12 +106,11 @@
     let antrianNumber = '';
     let noSep = '';
 
-    async function fetchRacikanDetails(): Promise<Map<string, SubMed[]>> {
-      const map = new Map<string, SubMed[]>();
+    async function fetchRacikanDetails(): Promise<void> {
       const params = new URLSearchParams(window.location.search);
       // Param bisa 'id_resep' (telaah print) ATAU 'id' (endpoint lain) & 'penjualan'
       const resepId = params.get('id_resep') || params.get('id') || params.get('penjualan') || '';
-      if (!resepId) return map;
+      if (!resepId) return;
 
       // Coba 2 endpoint detail: penerimaan & penjualan-edit (keduanya punya fieldset#perhatian)
       const detailUrls = [
@@ -223,33 +138,25 @@
           noSep = inVal('no_sep') || noSep;
 
           // Ambil diagnosa dari fieldset#perhatian yg punya legend "Riwayat Diagnosa Pasien"
-          // (ada beberapa fieldset#perhatian di halaman, pilih yg benar).
           const fieldsets = Array.from(doc.querySelectorAll('fieldset#perhatian'));
           const fs = fieldsets.find((f) => {
             const leg = f.querySelector('legend');
             return leg && /riwayat\s*diagnosa\s*pasien/i.test(txt(leg));
           });
           if (fs) {
-            // Ambil SEMUA li dari fieldset ini, lalu pisahkan utama vs sekunder
-            // Struktur bisa 2 macam:
-            // A) <ol><li>utama</li></ol> + <strong>Sekunder</strong><ol><li>sekunder</li></ol> (sibling ol)
-            // B) <ol><li>utama</li><br><strong>Sekunder</strong><ol><li>sekunder</li></ol></ol> (nested di dalam ol pertama)
             const allLis = Array.from(fs.querySelectorAll('li'))
               .map((li) => txt(li))
               .filter(Boolean);
 
-            // Cari index dimana "Diagnosa Sekunder" muncul (di dalam li atau di strong terpisah)
             let sekunderStartIdx = -1;
             const strongs = Array.from(fs.querySelectorAll('strong, b'));
             for (const s of strongs) {
               if (/diagnosa\s*sekunder/i.test(txt(s))) {
-                // Cari li yang mengandung strong ini, atau li setelahnya
                 const parentLi = s.closest('li');
                 if (parentLi) {
                   const idx = Array.from(fs.querySelectorAll('li')).indexOf(parentLi);
                   if (idx >= 0) sekunderStartIdx = idx;
                 } else {
-                  // Strong terpisah - cari ol berikutnya
                   const nextOl = s.nextElementSibling;
                   if (nextOl && nextOl.tagName === 'OL') {
                     const firstSekunderLi = nextOl.querySelector('li');
@@ -269,203 +176,35 @@
                 .slice(sekunderStartIdx)
                 .filter((v) => v && !/tidak ada/i.test(v));
             } else if (allLis.length) {
-              // Fallback: semua dianggap utama jika tidak ketemu pemisah
               diagnosisUtama = allLis;
             }
           }
 
-          // Cari tabel racikan (header "R/")
-          for (const table of doc.querySelectorAll('table')) {
-            const headerRow = table.querySelector('tr');
-            if (!headerRow) continue;
-            const headers = Array.from(headerRow.querySelectorAll('td, th')).map((td) => txt(td));
-            if (!headers.some((h) => /^R\//.test(h))) continue;
-
-            const colName = headers.findIndex((h) => /Packing|Nama.*Obat|Obat/i.test(h));
-            const colStrength = headers.findIndex((h) => /Kekuatan/i.test(h));
-            const colDose = headers.findIndex((h) => /Dosis/i.test(h));
-            const colJmlPerR = headers.findIndex((h) => /Jml.*per/i.test(h));
-            const colSediaan = headers.findIndex((h) => /Sediaan/i.test(h));
-
-            let currentNum = '';
-            table.querySelectorAll('tr').forEach((tr, i) => {
-              if (i === 0) return;
-              const tds = tr.querySelectorAll('td');
-              if (tds.length < 5) return;
-              const leftText = txt(tds[0]);
-              const numMatch = leftText.match(/(\d+)/);
-              if (numMatch) {
-                currentNum = numMatch[1];
-                if (!map.has(currentNum)) map.set(currentNum, []);
-                map.get(currentNum)!.push({
-                  name: colName >= 0 ? txt(tds[colName]) : txt(tds[1]),
-                  strength: colStrength >= 0 ? txt(tds[colStrength]) : '',
-                  dose: colDose >= 0 ? txt(tds[colDose]) : '',
-                  jmlPerR: colJmlPerR >= 0 ? txt(tds[colJmlPerR]) : '',
-                  sediaan: colSediaan >= 0 ? txt(tds[colSediaan]) : '',
-                });
-              }
-            });
-            break; // ketemu tabel racikan, stop
-          }
-
-          // Kalau sudah dapat diagnosa & racikan, cukup
-          if (diagnosisUtama.length || map.size) break;
+          if (diagnosisUtama.length) break;
         } catch {
           /* coba url berikutnya */
         }
       }
-      return map;
     }
 
-    // Sumber data per-obat racikan yang LENGKAP & terpercaya: halaman
-    // /inventory/print/cetak-resep-asli?id=<resep> — di-render server, berisi
-    // Jml masing-masing bahan (10/10/5), aturan (3x1), & total racikan (10).
-    // Tidak butuh id_penjualan (telaah print hanya punya id_resep).
-    const normName = (s: string): string =>
-      String(s || '')
-        .toLowerCase()
-        .replace(/\b(tablet|drops|kaplet|kapsul|puyer|salep)\b/g, '')
-        .replace(/[^a-z0-9]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-    const namesMatch = (a: string, b: string): boolean => {
-      const na = normName(a);
-      const nb = normName(b);
-      if (!na || !nb) return false;
-      return na.includes(nb) || nb.includes(na);
-    };
-
-    // Parse satu dokumen salinan/asli resep ke dalam map { R/N -> {ingredients, aturan, jumlahRacikan} }.
-    function parseRacikanAsli(
-      doc: Document,
-      map: Map<
-        string,
-        { ingredients: { name: string; jml: string }[]; aturan: string[]; jumlahRacikan: string }
-      >,
-    ): void {
-      // Cari tabel yang punya sel kiri "R/N".
-      let tbl: Element | null = null;
-      for (const t of Array.from(doc.querySelectorAll('table'))) {
-        const lefts = Array.from(t.querySelectorAll('tr > td:first-child'));
-        if (lefts.some((td) => /^R\/\d+/.test(txt(td)))) {
-          tbl = t;
-          break;
-        }
-      }
-      if (!tbl) return;
-
-      let cur: {
-        ingredients: { name: string; jml: string }[];
-        aturan: string[];
-        jumlahRacikan: string;
-      } | null = null;
-      tbl.querySelectorAll('tr').forEach((tr) => {
-        const tds = tr.querySelectorAll('td');
-        if (tds.length < 2) return;
-        const left = txt(tds[0]);
-        const numMatch = left.match(/^R\/(\d+)/);
-        if (numMatch) {
-          cur = { ingredients: [], aturan: [], jumlahRacikan: '' };
-          map.set(numMatch[1], cur);
-          // Baris ini berisi bahan-bahan (dipisah <br>).
-          tds[1].innerHTML.split(/<br\s*\/?>/i).forEach((p) => {
-            const clean = p
-              .replace(/&nbsp;/g, ' ')
-              .replace(/<[^>]+>/g, ' ')
-              .replace(/\s+/g, ' ')
-              .trim();
-            if (!clean || /^Dosis/i.test(clean)) return;
-            const m = clean.match(/^(.+?)\s*Jml\.\s*([\d.,]+)$/i);
-            if (m) cur!.ingredients.push({ name: m[1].trim(), jml: m[2].trim() });
-          });
-          return;
-        }
-        if (!cur) return;
-        // Baris lanjutan blok: aturan &/atau "Jumlah/Jml. Racikan : N".
-        const right = txt(tds[1]);
-        const jr = right.match(/(?:Jumlah|Jml\.)\s*Racikan\s*:\s*([\d.,]+)/i);
-        if (jr) {
-          cur.jumlahRacikan = jr[1].trim();
-          return;
-        }
-        const aturanTxt = right.replace(/(?:Jumlah|Jml\.)\s*Racikan\s*:.*/i, '').trim();
-        if (aturanTxt && !/^Dosis/i.test(aturanTxt)) cur.aturan.push(aturanTxt);
-      });
-    }
-
-    // Sumber per-obat racikan lengkap. Data list obat yang ditampilkan pada
-    // Telaah Resep mengikuti FORMAT LIST SALINAN RESEP (cetak-resep?id_resep)
-    // sebagai sumber utama — bukan resep asli. resep asli (cetak-resep-asli)
-    // hanya dipakai sebagai cadangan. Keduanya di-render server & cukup butuh id_resep.
-    const RACIKAN_SALINAN_URLS = [
-      (id: string) => '/inventory/print/cetak-resep?id_resep=' + encodeURIComponent(id),
-      (id: string) => '/inventory/print/cetak-resep-asli?id=' + encodeURIComponent(id),
-    ];
-    async function fetchRacikanSalinan(): Promise<
-      Map<
-        string,
-        { ingredients: { name: string; jml: string }[]; aturan: string[]; jumlahRacikan: string }
-      >
-    > {
-      const map = new Map<
-        string,
-        { ingredients: { name: string; jml: string }[]; aturan: string[]; jumlahRacikan: string }
-      >();
+    // Endpoint AJAX data-resep-new: sumber utama utk daftar obat, aturan, & sediaan.
+    // Mengembalikan array resep lengkap — dipakai utk build meds langsung.
+    type ResepItem = Record<string, unknown>;
+    async function fetchResepItems(): Promise<ResepItem[]> {
       const resepId = params.get('id_resep') || params.get('id') || params.get('penjualan') || '';
-      if (!resepId) return map;
-      for (const build of RACIKAN_SALINAN_URLS) {
-        try {
-          const resp = await fetch(build(resepId), { credentials: 'include' });
-          if (!resp.ok) continue;
-          const doc = new DOMParser().parseFromString(await resp.text(), 'text/html');
-          parseRacikanAsli(doc, map);
-          if (map.size > 0) break; // cukup satu sumber yang berhasil
-        } catch {
-          /* coba sumber berikutnya */
-        }
-      }
-      return map;
-    }
-
-    // Sumber aturan pakai yang BENAR: endpoint AJAX data-resep-new memuat field
-    // ATURAN_PAKAI_MANUAL (tulisan dokter) & ATURAN_PAKAI (generated) per item
-    // resep. Aturan MANUAL adalah sumber kebenaran — layout salinan/asli sering
-    // me-render versi generated yang salah (mis. Meloxicam tercetak "2x1/2 tab"
-    // padahal manual "1x15 mg"). Bangun map {nama → aturan} utk override.
-    // Juga tangkap NAMA_RACIKAN (bentuk sediaan racikan, mis. "Kapsul") utk
-    // dipakai sebagai satuan baris "Jml N …" alih-alih teks literal "Racikan".
-    async function fetchRacikanAturanData(): Promise<{
-      aturan: Map<string, string>;
-      sediaanRacikan: Map<string, string>;
-    }> {
-      const aturan = new Map<string, string>();
-      const sediaanRacikan = new Map<string, string>();
-      const resepId = params.get('id_resep') || params.get('id') || params.get('penjualan') || '';
-      if (!resepId) return { aturan, sediaanRacikan };
+      if (!resepId) return [];
       try {
         const resp = await fetch(
           '/inventory/resep/akses/penerimaan?type=ajax&opsi=data-resep-new&q=1&id=' +
             encodeURIComponent(resepId),
           { credentials: 'include', cache: 'no-store' },
         );
-        if (!resp.ok) return { aturan, sediaanRacikan };
-        const j = (await resp.json()) as { resep?: Array<Record<string, unknown>> };
-        const items = Array.isArray(j?.resep) ? j.resep : [];
-        for (const it of items) {
-          const nama = String(it.NAMA ?? '').trim();
-          if (!nama) continue;
-          const manual = String(it.ATURAN_PAKAI_MANUAL ?? '').trim();
-          const generated = String(it.ATURAN_PAKAI ?? '').trim();
-          const a = manual || generated;
-          if (a) aturan.set(nama, a);
-          const racik = String(it.NAMA_RACIKAN ?? '').trim();
-          if (racik) sediaanRacikan.set(nama, racik);
-        }
+        if (!resp.ok) return [];
+        const j = (await resp.json()) as { resep?: ResepItem[] };
+        return Array.isArray(j?.resep) ? j.resep : [];
       } catch {
-        /* sumber tidak terjangkau — biarkan aturan dari sumber lain */
+        return [];
       }
-      return { aturan, sediaanRacikan };
     }
 
     // Fetch nomor antrian dari App Antrian (Reports SIMRS) via resep_id
@@ -505,82 +244,68 @@
       params.get('id_resep') || params.get('id') || params.get('penjualan') || '';
     antrianNumber = resepIdForQueue ? await fetchAntrianNumber(resepIdForQueue) : '';
 
-    const racikanMap = await fetchRacikanDetails();
-    // Sumber per-obat racikan yang LENGKAP (Jml tiap bahan + aturan + total
-    // racikan) dari halaman SALINAN resep — andalan utama utk format list obat.
-    const salinanMap = await fetchRacikanSalinan();
-    // Sumber aturan pakai MANUAL (tulisan dokter) — prioritas tertinggi utk aturan.
-    const { aturan: aturanDataMap, sediaanRacikan: sediaanRacikanMap } =
-      await fetchRacikanAturanData();
+    await fetchRacikanDetails(); // fetch diagnosa from detail page
+
+    // Sumber data obat: endpoint AJAX data-resep-new (sama dgn yg populate
+    // tabel resep obat di halaman detail). Build meds langsung dari sini —
+    // grouping by NO_R, discriminator: JENIS_R ("Racikan"/"Tunggal").
+    const resepItems = await fetchResepItems();
+    if (resepItems.length) {
+      meds.length = 0; // reset meds dari table.resep-item
+      const groups = new Map<string, ResepItem[]>();
+      for (const it of resepItems) {
+        const noR = String(it.NO_R ?? '').trim();
+        if (!noR) continue;
+        if (!groups.has(noR)) groups.set(noR, []);
+        groups.get(noR)!.push(it);
+      }
+      for (const [noR, items] of groups) {
+        const first = items[0];
+        const isRacikan =
+          String(first.JENIS_R ?? '').toLowerCase() === 'racikan' ||
+          String(first.JENIS_RSP ?? '').toLowerCase() === 'racikan';
+        const sediaanRacikan = String(first.NAMA_RACIKAN ?? '').trim();
+        // Aturan: ambil dari ATURAN_PAKAI_MANUAL, buang leading "- "
+        const rawAturan = String(first.ATURAN_PAKAI_MANUAL ?? '').trim();
+        const aturanTxt = rawAturan.replace(/^-\s*/, '').trim();
+
+        if (isRacikan || items.length > 1) {
+          // Racikan: tiap item = subMed (bahan)
+          const med: Med = {
+            no: 'R/' + noR,
+            name: sediaanRacikan || '',
+            jml: '',
+            jumlahJadi: String(first.JUMLAH_RACIKAN ?? '').trim() || '',
+            sediaan: sediaanRacikan,
+            aturan: aturanTxt ? [aturanTxt] : [],
+            subMeds: items.map((it) => ({
+              name: String(it.NAMA ?? '').trim(),
+              strength: String(it.KEKUATAN_R_RACIK ?? it.KEKUATAN ?? '').trim(),
+              dose: '',
+              jmlPerR: String(it.JUMLAH_R_PAKAI ?? '').trim(),
+              sediaan: String(it.SEDIAAN ?? '').trim(),
+            })),
+          };
+          meds.push(med);
+        } else {
+          // Tunggal: satu item
+          const med: Med = {
+            no: 'R/' + noR,
+            name: String(first.NAMA ?? '').trim(),
+            jml: String(first.JUMLAH_R_RESEP ?? first.JUMLAH_R_PAKAI ?? '').trim(),
+            jumlahJadi: '',
+            sediaan: String(first.SEDIAAN ?? '').trim(),
+            aturan: aturanTxt ? [aturanTxt] : [],
+            subMeds: [],
+          };
+          meds.push(med);
+        }
+      }
+    }
 
     // Fallback: kalau fetch detail tidak dapat diagnosa, pakai baris "Diagnosa"
     // yang sudah di-render server di halaman telaah (reliable, tanpa network).
     if (!diagnosisUtama.length && serverDiag.length) diagnosisUtama = serverDiag;
-
-    // Merge sub-obat racikan dari fetch detail (hanya kalau belum terisi dari
-    // parse tabel halaman telaah — parse lokal lebih akurat utk racikan).
-    for (const med of meds) {
-      const num = med.no.replace(/\D/g, '');
-      const subs = racikanMap.get(num);
-      if (subs && subs.length > 1 && med.subMeds.length === 0) {
-        med.subMeds = subs;
-      }
-    }
-
-    // Merge per-obat Jml + aturan + total racikan dari salinan resep.
-    // Cocokkan per nama (bukan index) — urutan bisa beda antar halaman.
-    for (const med of meds) {
-      const num = med.no.replace(/\D/g, '');
-      const block = salinanMap.get(num);
-      if (!block) continue;
-      if (block.jumlahRacikan) med.jumlahJadi = block.jumlahRacikan;
-      if (block.aturan.length) med.aturan = block.aturan;
-      if (med.subMeds.length === 0 && block.ingredients.length > 0) {
-        if (block.ingredients.length > 1) {
-          // Racikan: seluruh bahan jadi subMeds (lengkap dgn jml).
-          med.subMeds = block.ingredients.map((i) => ({
-            name: i.name,
-            strength: '',
-            dose: '',
-            sediaan: '',
-            jmlPerR: i.jml,
-          }));
-        } else if (!med.jml && block.ingredients[0].jml) {
-          // Tunggal: satu bahan → isi jml med, bukan subMeds.
-          med.jml = block.ingredients[0].jml;
-        }
-      } else {
-        for (const s of med.subMeds) {
-          const hit = block.ingredients.find((i) => namesMatch(s.name, i.name));
-          if (hit && !s.jmlPerR) s.jmlPerR = hit.jml;
-        }
-      }
-    }
-
-    // Prioritas tertinggi utk aturan pakai: nilai MANUAL dari data-resep-new
-    // (tulisan dokter). Layout salinan/asli me-render versi generated yang salah
-    // (mis. Meloxicam "2x1/2 tab" padahal manual "1x15 mg"). Untuk racikan,
-    // aturan diambil dari bahan pertama (subMeds[0]); untuk tunggal, dari med.name.
-    // Sumber yang sama juga memuat NAMA_RACIKAN (bentuk sediaan racikan, mis.
-    // "Kapsul") — dipakai sbg satuan baris "Jml N …" bila med.sediaan kosong,
-    // alih-alih teks literal "Racikan" (mis. "Jml 10 Racikan" → "Jml 10 Kapsul").
-    if (aturanDataMap.size > 0 || sediaanRacikanMap.size > 0) {
-      const lookup = (name: string, m: Map<string, string>): string => {
-        if (m.has(name)) return m.get(name)!;
-        for (const [k, v] of m) if (namesMatch(name, k)) return v;
-        return '';
-      };
-      for (const med of meds) {
-        const matchName = med.subMeds.length > 1 ? med.subMeds[0].name : med.name;
-        const manual = lookup(matchName, aturanDataMap);
-        if (manual) med.aturan = [manual];
-        // Hanya racikan: isi satuan "Jml N …" dari bentuk sediaan racikan.
-        if (med.subMeds.length > 1 && !med.sediaan) {
-          const sediaan = lookup(matchName, sediaanRacikanMap);
-          if (sediaan) med.sediaan = sediaan;
-        }
-      }
-    }
 
     // Checklist Telaah Resep & Telaah Obat.
     const chkForm = page.querySelector<HTMLFormElement>('#form_checklist_telaah_resep');

@@ -53,82 +53,8 @@ var __morbis_feature = (() => {
         });
       });
       const getMeta = (label) => metaMap.get(label) ?? '';
-      const medsTables = Array.from(page.querySelectorAll('table.resep-item'));
-      const medsTable = medsTables[0];
       const meds = [];
-      if (medsTable) {
-        const medsMap = /* @__PURE__ */ new Map();
-        let lastMed = null;
-        medsTable.querySelectorAll('tr').forEach((tr) => {
-          const tds = tr.querySelectorAll('td');
-          if (tds.length < 2) return;
-          const left = txt(tds[0]);
-          const rightEl = tds[1];
-          const right = txt(rightEl);
-          const numMatch = left.match(/^(?:R\/)?(\d+)/);
-          if (numMatch) {
-            const num = numMatch[1];
-            const med = {
-              no: 'R/' + num,
-              name: '',
-              jml: '',
-              jumlahJadi: '',
-              sediaan: '',
-              aturan: [],
-              subMeds: [],
-            };
-            medsMap.set(num, med);
-            lastMed = med;
-            const ps2 = rightEl ? Array.from(rightEl.querySelectorAll('p')) : [];
-            med.name = ps2.length ? (ps2[0]?.textContent || right).trim() : right;
-            const jmlT = ps2.length > 1 ? (ps2[1]?.textContent || '').trim() : '';
-            const mJml = jmlT.match(/Jml\s*:\s*(.+)/i);
-            med.jml = mJml ? mJml[1].trim() : '';
-            if (ps2.length && !mJml && med.name) {
-              med.subMeds.push({
-                name: med.name,
-                strength: '',
-                dose: '',
-                jmlPerR: '',
-                sediaan: '',
-              });
-              med.name = '';
-            }
-            return;
-          }
-          if (!lastMed || !right) return;
-          const ps = rightEl ? Array.from(rightEl.querySelectorAll('p')) : [];
-          if (ps.length) {
-            const ingName = (ps[0]?.textContent || '').trim();
-            if (!ingName) return;
-            const ingJml = ps.length > 1 ? (ps[1]?.textContent || '').trim() : '';
-            const ingJmlMatch = ingJml.match(/Jml\s*:\s*(.+)/i);
-            lastMed.subMeds.push({
-              name: ingName,
-              strength: '',
-              dose: '',
-              jmlPerR: ingJmlMatch ? ingJmlMatch[1].trim() : '',
-              sediaan: '',
-            });
-            return;
-          }
-          const jmlJadi = right.match(/^Jumlah\s*:\s*(.+)$/i);
-          if (jmlJadi) {
-            lastMed.jumlahJadi = jmlJadi[1].trim();
-            return;
-          }
-          if (
-            /^(tablet|kapsul|kaplet|puyer|salep|sirup|drops?|supp|botol|tube|tab|obat\s+(luar|dalam))\b/i.test(
-              right,
-            )
-          ) {
-            lastMed.sediaan = right;
-            return;
-          }
-          lastMed.aturan.push(right.replace(/^\(|\)$/g, ''));
-        });
-        meds.push(...medsMap.values());
-      }
+      const medsTables = Array.from(page.querySelectorAll('table.resep-item'));
       const adminTable = medsTables[1];
       let diagVisit = '';
       let diagKunjungan = '';
@@ -137,11 +63,10 @@ var __morbis_feature = (() => {
       let antrianNumber = '';
       let noSep = '';
       async function fetchRacikanDetails() {
-        const map = /* @__PURE__ */ new Map();
         const params2 = new URLSearchParams(window.location.search);
         const resepId =
           params2.get('id_resep') || params2.get('id') || params2.get('penjualan') || '';
-        if (!resepId) return map;
+        if (!resepId) return;
         const detailUrls = [
           '/inventory/resep/penerimaan/detail?id=' + resepId,
           '/inventory/penjualan-resep-edit/detail?id=' + resepId,
@@ -201,142 +126,25 @@ var __morbis_feature = (() => {
                 diagnosisUtama = allLis;
               }
             }
-            for (const table of doc.querySelectorAll('table')) {
-              const headerRow = table.querySelector('tr');
-              if (!headerRow) continue;
-              const headers = Array.from(headerRow.querySelectorAll('td, th')).map((td) => txt(td));
-              if (!headers.some((h) => /^R\//.test(h))) continue;
-              const colName = headers.findIndex((h) => /Packing|Nama.*Obat|Obat/i.test(h));
-              const colStrength = headers.findIndex((h) => /Kekuatan/i.test(h));
-              const colDose = headers.findIndex((h) => /Dosis/i.test(h));
-              const colJmlPerR = headers.findIndex((h) => /Jml.*per/i.test(h));
-              const colSediaan = headers.findIndex((h) => /Sediaan/i.test(h));
-              let currentNum = '';
-              table.querySelectorAll('tr').forEach((tr, i) => {
-                if (i === 0) return;
-                const tds = tr.querySelectorAll('td');
-                if (tds.length < 5) return;
-                const leftText = txt(tds[0]);
-                const numMatch = leftText.match(/(\d+)/);
-                if (numMatch) {
-                  currentNum = numMatch[1];
-                  if (!map.has(currentNum)) map.set(currentNum, []);
-                  map.get(currentNum).push({
-                    name: colName >= 0 ? txt(tds[colName]) : txt(tds[1]),
-                    strength: colStrength >= 0 ? txt(tds[colStrength]) : '',
-                    dose: colDose >= 0 ? txt(tds[colDose]) : '',
-                    jmlPerR: colJmlPerR >= 0 ? txt(tds[colJmlPerR]) : '',
-                    sediaan: colSediaan >= 0 ? txt(tds[colSediaan]) : '',
-                  });
-                }
-              });
-              break;
-            }
-            if (diagnosisUtama.length || map.size) break;
+            if (diagnosisUtama.length) break;
           } catch {}
         }
-        return map;
       }
-      const normName = (s) =>
-        String(s || '')
-          .toLowerCase()
-          .replace(/\b(tablet|drops|kaplet|kapsul|puyer|salep)\b/g, '')
-          .replace(/[^a-z0-9]/g, ' ')
-          .replace(/\s+/g, ' ')
-          .trim();
-      const namesMatch = (a, b) => {
-        const na = normName(a);
-        const nb = normName(b);
-        if (!na || !nb) return false;
-        return na.includes(nb) || nb.includes(na);
-      };
-      function parseRacikanAsli(doc, map) {
-        let tbl = null;
-        for (const t of Array.from(doc.querySelectorAll('table'))) {
-          const lefts = Array.from(t.querySelectorAll('tr > td:first-child'));
-          if (lefts.some((td) => /^R\/\d+/.test(txt(td)))) {
-            tbl = t;
-            break;
-          }
-        }
-        if (!tbl) return;
-        let cur = null;
-        tbl.querySelectorAll('tr').forEach((tr) => {
-          const tds = tr.querySelectorAll('td');
-          if (tds.length < 2) return;
-          const left = txt(tds[0]);
-          const numMatch = left.match(/^R\/(\d+)/);
-          if (numMatch) {
-            cur = { ingredients: [], aturan: [], jumlahRacikan: '' };
-            map.set(numMatch[1], cur);
-            tds[1].innerHTML.split(/<br\s*\/?>/i).forEach((p) => {
-              const clean = p
-                .replace(/&nbsp;/g, ' ')
-                .replace(/<[^>]+>/g, ' ')
-                .replace(/\s+/g, ' ')
-                .trim();
-              if (!clean || /^Dosis/i.test(clean)) return;
-              const m = clean.match(/^(.+?)\s*Jml\.\s*([\d.,]+)$/i);
-              if (m) cur.ingredients.push({ name: m[1].trim(), jml: m[2].trim() });
-            });
-            return;
-          }
-          if (!cur) return;
-          const right = txt(tds[1]);
-          const jr = right.match(/(?:Jumlah|Jml\.)\s*Racikan\s*:\s*([\d.,]+)/i);
-          if (jr) {
-            cur.jumlahRacikan = jr[1].trim();
-            return;
-          }
-          const aturanTxt = right.replace(/(?:Jumlah|Jml\.)\s*Racikan\s*:.*/i, '').trim();
-          if (aturanTxt && !/^Dosis/i.test(aturanTxt)) cur.aturan.push(aturanTxt);
-        });
-      }
-      const RACIKAN_SALINAN_URLS = [
-        (id) => '/inventory/print/cetak-resep?id_resep=' + encodeURIComponent(id),
-        (id) => '/inventory/print/cetak-resep-asli?id=' + encodeURIComponent(id),
-      ];
-      async function fetchRacikanSalinan() {
-        const map = /* @__PURE__ */ new Map();
+      async function fetchResepItems() {
         const resepId = params.get('id_resep') || params.get('id') || params.get('penjualan') || '';
-        if (!resepId) return map;
-        for (const build of RACIKAN_SALINAN_URLS) {
-          try {
-            const resp = await fetch(build(resepId), { credentials: 'include' });
-            if (!resp.ok) continue;
-            const doc = new DOMParser().parseFromString(await resp.text(), 'text/html');
-            parseRacikanAsli(doc, map);
-            if (map.size > 0) break;
-          } catch {}
-        }
-        return map;
-      }
-      async function fetchRacikanAturanData() {
-        const aturan = /* @__PURE__ */ new Map();
-        const sediaanRacikan = /* @__PURE__ */ new Map();
-        const resepId = params.get('id_resep') || params.get('id') || params.get('penjualan') || '';
-        if (!resepId) return { aturan, sediaanRacikan };
+        if (!resepId) return [];
         try {
           const resp = await fetch(
             '/inventory/resep/akses/penerimaan?type=ajax&opsi=data-resep-new&q=1&id=' +
               encodeURIComponent(resepId),
             { credentials: 'include', cache: 'no-store' },
           );
-          if (!resp.ok) return { aturan, sediaanRacikan };
+          if (!resp.ok) return [];
           const j = await resp.json();
-          const items = Array.isArray(j?.resep) ? j.resep : [];
-          for (const it of items) {
-            const nama = String(it.NAMA ?? '').trim();
-            if (!nama) continue;
-            const manual = String(it.ATURAN_PAKAI_MANUAL ?? '').trim();
-            const generated = String(it.ATURAN_PAKAI ?? '').trim();
-            const a = manual || generated;
-            if (a) aturan.set(nama, a);
-            const racik = String(it.NAMA_RACIKAN ?? '').trim();
-            if (racik) sediaanRacikan.set(nama, racik);
-          }
-        } catch {}
-        return { aturan, sediaanRacikan };
+          return Array.isArray(j?.resep) ? j.resep : [];
+        } catch {
+          return [];
+        }
       }
       async function fetchAntrianNumber(resepId) {
         try {
@@ -362,59 +170,57 @@ var __morbis_feature = (() => {
       const resepIdForQueue =
         params.get('id_resep') || params.get('id') || params.get('penjualan') || '';
       antrianNumber = resepIdForQueue ? await fetchAntrianNumber(resepIdForQueue) : '';
-      const racikanMap = await fetchRacikanDetails();
-      const salinanMap = await fetchRacikanSalinan();
-      const { aturan: aturanDataMap, sediaanRacikan: sediaanRacikanMap } =
-        await fetchRacikanAturanData();
+      await fetchRacikanDetails();
+      const resepItems = await fetchResepItems();
+      if (resepItems.length) {
+        meds.length = 0;
+        const groups = /* @__PURE__ */ new Map();
+        for (const it of resepItems) {
+          const noR = String(it.NO_R ?? '').trim();
+          if (!noR) continue;
+          if (!groups.has(noR)) groups.set(noR, []);
+          groups.get(noR).push(it);
+        }
+        for (const [noR, items] of groups) {
+          const first = items[0];
+          const isRacikan =
+            String(first.JENIS_R ?? '').toLowerCase() === 'racikan' ||
+            String(first.JENIS_RSP ?? '').toLowerCase() === 'racikan';
+          const sediaanRacikan = String(first.NAMA_RACIKAN ?? '').trim();
+          const rawAturan = String(first.ATURAN_PAKAI_MANUAL ?? '').trim();
+          const aturanTxt = rawAturan.replace(/^-\s*/, '').trim();
+          if (isRacikan || items.length > 1) {
+            const med = {
+              no: 'R/' + noR,
+              name: sediaanRacikan || '',
+              jml: '',
+              jumlahJadi: String(first.JUMLAH_RACIKAN ?? '').trim() || '',
+              sediaan: sediaanRacikan,
+              aturan: aturanTxt ? [aturanTxt] : [],
+              subMeds: items.map((it) => ({
+                name: String(it.NAMA ?? '').trim(),
+                strength: String(it.KEKUATAN_R_RACIK ?? it.KEKUATAN ?? '').trim(),
+                dose: '',
+                jmlPerR: String(it.JUMLAH_R_PAKAI ?? '').trim(),
+                sediaan: String(it.SEDIAAN ?? '').trim(),
+              })),
+            };
+            meds.push(med);
+          } else {
+            const med = {
+              no: 'R/' + noR,
+              name: String(first.NAMA ?? '').trim(),
+              jml: String(first.JUMLAH_R_RESEP ?? first.JUMLAH_R_PAKAI ?? '').trim(),
+              jumlahJadi: '',
+              sediaan: String(first.SEDIAAN ?? '').trim(),
+              aturan: aturanTxt ? [aturanTxt] : [],
+              subMeds: [],
+            };
+            meds.push(med);
+          }
+        }
+      }
       if (!diagnosisUtama.length && serverDiag.length) diagnosisUtama = serverDiag;
-      for (const med of meds) {
-        const num = med.no.replace(/\D/g, '');
-        const subs = racikanMap.get(num);
-        if (subs && subs.length > 1 && med.subMeds.length === 0) {
-          med.subMeds = subs;
-        }
-      }
-      for (const med of meds) {
-        const num = med.no.replace(/\D/g, '');
-        const block = salinanMap.get(num);
-        if (!block) continue;
-        if (block.jumlahRacikan) med.jumlahJadi = block.jumlahRacikan;
-        if (block.aturan.length) med.aturan = block.aturan;
-        if (med.subMeds.length === 0 && block.ingredients.length > 0) {
-          if (block.ingredients.length > 1) {
-            med.subMeds = block.ingredients.map((i) => ({
-              name: i.name,
-              strength: '',
-              dose: '',
-              sediaan: '',
-              jmlPerR: i.jml,
-            }));
-          } else if (!med.jml && block.ingredients[0].jml) {
-            med.jml = block.ingredients[0].jml;
-          }
-        } else {
-          for (const s of med.subMeds) {
-            const hit = block.ingredients.find((i) => namesMatch(s.name, i.name));
-            if (hit && !s.jmlPerR) s.jmlPerR = hit.jml;
-          }
-        }
-      }
-      if (aturanDataMap.size > 0 || sediaanRacikanMap.size > 0) {
-        const lookup = (name, m) => {
-          if (m.has(name)) return m.get(name);
-          for (const [k, v] of m) if (namesMatch(name, k)) return v;
-          return '';
-        };
-        for (const med of meds) {
-          const matchName = med.subMeds.length > 1 ? med.subMeds[0].name : med.name;
-          const manual = lookup(matchName, aturanDataMap);
-          if (manual) med.aturan = [manual];
-          if (med.subMeds.length > 1 && !med.sediaan) {
-            const sediaan = lookup(matchName, sediaanRacikanMap);
-            if (sediaan) med.sediaan = sediaan;
-          }
-        }
-      }
       const chkForm = page.querySelector('#form_checklist_telaah_resep');
       const readCheck = (title) => {
         const rows = [];
