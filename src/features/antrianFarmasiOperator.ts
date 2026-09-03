@@ -130,14 +130,6 @@ const POLL_MS = 2000; // ringan; delay panggilan di display mengikuti kecepatan 
 /** Snapshot baris terakhir utk cetak tiket / sheet A4 (data dari app). */
 let lastRows: DisplayRow[] = [];
 let lastTanggal = '';
-/** Teks pencarian live utk tabel "Ditunda / Lewat" & "Selesai Hari Ini".
- *  Bertahan antar render() (panel di-render ulang tiap polling). */
-let specialSearch = '';
-let doneSearch = '';
-/** Restore fokus kotak pencarian setelah render() (agar mengetik tetap lancar
- *  walau panel di-render ulang tiap keystroke/polling). */
-let fsFocusId = '';
-let fsFocusCaret = 0;
 
 /** Kategori dari prefix nomor publik (R- = racikan, T- = tunggal). */
 function catOf(num: string): 'tunggal' | 'racikan' {
@@ -146,40 +138,6 @@ function catOf(num: string): 'tunggal' | 'racikan' {
     .startsWith('R')
     ? 'racikan'
     : 'tunggal';
-}
-
-/** True bila baris cocok dgn kata kunci pencarian (nomor/nama/RM, case-insensitive). */
-function rowMatches(r: DisplayRow, term: string): boolean {
-  const t = term.trim().toLowerCase();
-  if (!t) return true;
-  return [r.queue_number, r.nama_pasien, r.norm, r.jenis]
-    .filter(Boolean)
-    .some((v) => String(v).toLowerCase().includes(t));
-}
-
-/** Escape teks utk atribut HTML (value="...") — mencegah query injection DOM. */
-function escAttr(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-}
-
-/** Kembalikan fokus + posisi kursor ke kotak pencarian setelah render()
- *  mengganti DOM-nya (dipanggil di akhir render()). */
-function restoreSearchFocus(): void {
-  if (!fsFocusId) return;
-  const el = document.getElementById(fsFocusId) as HTMLInputElement | null;
-  if (el) {
-    el.focus();
-    try {
-      el.setSelectionRange(fsFocusCaret, fsFocusCaret);
-    } catch {
-      /* browser yg tak mendukung setSelectionRange presisi */
-    }
-  }
-  fsFocusId = '';
 }
 
 /** Cetak tiket antrian pasien (kartu 1 lembar) — data dari app. */
@@ -802,41 +760,22 @@ async function render(): Promise<void> {
           '<button id="ext-op-refresh2" data-tip="Segarkan data antrean dari app" title="Segarkan" style="flex:1;padding:9px;border:1px solid #6c757d;background:#6c757d;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;">Segarkan</button>' +
           '</div>' +
           '<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:6px;flex-shrink:0;">Ditunda / Lewat</div>' +
-          '<div style="flex-shrink:0;">' +
-          '<input id="ext-op-search-special" type="search" placeholder="Cari nomor / nama / RM…" value="' +
-          escAttr(specialSearch) +
-          '" style="width:100%;margin-bottom:6px;padding:6px 10px;border:1px solid #ced4da;border-radius:8px;font-size:12px;box-sizing:border-box;">' +
-          '</div>' +
           '<div style="flex-shrink:0;max-height:170px;overflow-y:auto;padding-right:4px;">' +
-          (special.filter((r) => rowMatches(r, specialSearch)).length
-            ? special
-                .filter((r) => rowMatches(r, specialSearch))
-                .map((r) => miniRow(r, 'op-sp'))
-                .join('')
-            : '<div style="padding:10px;color:#adb5bd;text-align:center;font-size:12px;">' +
-              (special.length ? 'Tidak cocok' : 'Tidak ada') +
-              '</div>') +
+          (special.length
+            ? special.map((r) => miniRow(r, 'op-sp')).join('')
+            : '<div style="padding:10px;color:#adb5bd;text-align:center;font-size:12px;">Tidak ada</div>') +
           '</div>' +
           '<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin:14px 0 6px;flex-shrink:0;">Selesai Hari Ini</div>' +
-          '<div style="flex-shrink:0;">' +
-          '<input id="ext-op-search-done" type="search" placeholder="Cari nomor / nama / RM…" value="' +
-          escAttr(doneSearch) +
-          '" style="width:100%;margin-bottom:6px;padding:6px 10px;border:1px solid #ced4da;border-radius:8px;font-size:12px;box-sizing:border-box;">' +
-          '</div>' +
           '<div style="flex:1;min-height:0;overflow-y:auto;padding-right:4px;">' +
           (queues
             .filter((r) => r.status === 'DONE')
             .sort(sortNum)
-            .filter((r) => rowMatches(r, doneSearch))
             .map((r) => miniRow(r, 'op-done'))
             .join('') ||
-            '<div style="padding:10px;color:#adb5bd;text-align:center;font-size:12px;">' +
-              (queues.some((r) => r.status === 'DONE') ? 'Tidak cocok' : 'Belum ada') +
-              '</div>') +
+            '<div style="padding:10px;color:#adb5bd;text-align:center;font-size:12px;">Belum ada</div>') +
           '</div></div>';
       }
     }
-    restoreSearchFocus();
     if (st) st.textContent = 'terhubung ke app (' + d.tanggal + ')';
   } catch (e) {
     if (st) st.textContent = 'gagal hubungi app — cek CORS/BASE';
@@ -1053,20 +992,6 @@ function init(): void {
       if (s2) openPrintSheetDialog();
       const r2 = (e.target as HTMLElement).closest<HTMLElement>('#ext-op-refresh2');
       if (r2) void render();
-    });
-    // Pencarian live di tabel "Ditunda / Lewat" & "Selesai Hari Ini".
-    // Input di-render ulang tiap polling → delegasi ke panel; nilai disimpan di
-    // module state supaya bertahan antar render() (input tak reset tiap 2s).
-    panel.addEventListener('input', (e) => {
-      const el = e.target as HTMLInputElement;
-      if (el.id === 'ext-op-search-special' || el.id === 'ext-op-search-done') {
-        if (el.id === 'ext-op-search-special') specialSearch = el.value;
-        else doneSearch = el.value;
-        // Re-render cepat utk filter, lalu kembalikan fokus+karakter.
-        fsFocusId = el.id;
-        fsFocusCaret = el.selectionStart ?? el.value.length;
-        void render();
-      }
     });
     void render();
     void probeFarmasiAppBase().then(() => void render()); // fallback IP bila DNS gagal
