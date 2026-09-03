@@ -431,6 +431,23 @@ var __morbis_feature = (() => {
           el2.webkitRequestFullscreen();
         }
       });
+      try {
+        const fsChannel = new BroadcastChannel('morbis-antrian-display');
+        fsChannel.onmessage = (ev) => {
+          if (ev.data?.type === 'toggleFullscreen') {
+            const doc = document;
+            const el2 = document.documentElement;
+            if (document.fullscreenElement || doc.webkitFullscreenElement) {
+              if (document.exitFullscreen) document.exitFullscreen();
+              else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            } else if (el2.requestFullscreen) {
+              void el2.requestFullscreen();
+            } else if (el2.webkitRequestFullscreen) {
+              el2.webkitRequestFullscreen();
+            }
+          }
+        };
+      } catch {}
     }
     const WATCH_MS = 1500;
     const STALE_MAX = 2;

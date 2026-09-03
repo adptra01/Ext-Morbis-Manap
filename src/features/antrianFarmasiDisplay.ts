@@ -267,6 +267,32 @@ declare global {
         el.webkitRequestFullscreen();
       }
     });
+    // Remote fullscreen control via BroadcastChannel — operator bisa toggle
+    // fullscreen dari stasiun kerjanya (TV menghadap pasien, operator di belakang).
+    try {
+      const fsChannel = new BroadcastChannel('morbis-antrian-display');
+      fsChannel.onmessage = (ev: MessageEvent) => {
+        if (ev.data?.type === 'toggleFullscreen') {
+          const doc = document as Document & { webkitFullscreenElement?: unknown };
+          const el = document.documentElement as HTMLElement & {
+            webkitRequestFullscreen?: () => void;
+          };
+          if (document.fullscreenElement || doc.webkitFullscreenElement) {
+            if (document.exitFullscreen) document.exitFullscreen();
+            else if (
+              (document as Document & { webkitExitFullscreen?: () => void }).webkitExitFullscreen
+            )
+              (document as Document & { webkitExitFullscreen: () => void }).webkitExitFullscreen();
+          } else if (el.requestFullscreen) {
+            void el.requestFullscreen();
+          } else if (el.webkitRequestFullscreen) {
+            el.webkitRequestFullscreen();
+          }
+        }
+      };
+    } catch {
+      /* BroadcastChannel tidak didukung browser lama — abaikan */
+    }
   }
   // C1 — Native Activity Health Monitor: probe aktivitas DOM antrian (baca-only).
   // Bukan instrumentasi window.WebSocket — extension "mengamati konsekuensi transport

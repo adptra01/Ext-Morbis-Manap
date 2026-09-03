@@ -87,6 +87,8 @@ const ICONS: Record<string, string> = {
   play: '<polygon points="6 3 20 12 6 21 6 3"/>',
   trash:
     '<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/>',
+  fullscreen:
+    '<path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>',
 };
 
 function svg(name: string, size = 16, color = '#212529'): string {
@@ -732,6 +734,9 @@ function buildPanel(): HTMLDivElement {
     '<button id="ext-op-delete-all" data-tip="Hapus SEMUA antrian hari ini dari DB (aksi permanen — tidak bisa dibatalkan)" style="padding:7px 14px;border:1px solid #b02a37;background:#fff;color:#b02a37;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
     svg('trash', 14, '#b02a37') +
     'Hapus Semua</button>' +
+    '<button id="ext-op-fullscreen" data-tip="Toggle fullscreen pada layar display TV (BroadcastChannel)" style="padding:7px 14px;border:1px solid #155e75;background:#155e75;color:#fff;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
+    svg('fullscreen', 14, '#fff') +
+    'Display FS</button>' +
     '<button id="ext-op-refresh" data-tip="Segarkan data antrean dari app" style="padding:7px 14px;border:1px solid #6c757d;background:#6c757d;color:#fff;border-radius:8px;cursor:pointer;">Segarkan</button>' +
     '</div></div>' +
     '<div id="ext-op-grid" style="display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:12px;align-items:stretch;flex:1;min-height:0;overflow:hidden;">' +
@@ -978,6 +983,15 @@ function init(): void {
       .getElementById('ext-op-delete-all')
       ?.addEventListener('click', () => void deleteAllQueue());
     document.getElementById('ext-op-refresh')?.addEventListener('click', () => void render());
+    // Remote fullscreen toggle for display TV via BroadcastChannel.
+    document.getElementById('ext-op-fullscreen')?.addEventListener('click', () => {
+      try {
+        const fsChannel = new BroadcastChannel('morbis-antrian-display');
+        fsChannel.postMessage({ type: 'toggleFullscreen' });
+      } catch {
+        /* BroadcastChannel not supported */
+      }
+    });
     // Tombol duplikat di panel kanan (di-render ulang tiap fetch → pakai delegasi).
     panel.addEventListener('click', (e) => {
       const s2 = (e.target as HTMLElement).closest<HTMLElement>('#ext-op-print-sheet2');
