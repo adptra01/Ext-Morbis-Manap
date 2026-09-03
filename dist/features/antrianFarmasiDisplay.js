@@ -1325,8 +1325,8 @@ var __morbis_feature = (() => {
         lastRealtimeEvent: 'announce:' + row.id,
       });
       const kalimat = row.namaPasien
-        ? titleCase(String(row.namaPasien)) + ', silahkan menuju farmasi.'
-        : 'Silahkan menuju farmasi.';
+        ? titleCase(String(row.namaPasien)) + ', menuju farmasi.'
+        : 'Menuju farmasi.';
       for (let i = queue.length - 1; i >= 0; i--) {
         const qi = queue[i];
         if (qi.kind === 'voice') queue.splice(i, 1);

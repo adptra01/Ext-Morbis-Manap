@@ -1629,10 +1629,10 @@ declare global {
       lastCalledNumber: lastCalled.nomor,
       lastRealtimeEvent: 'announce:' + row.id,
     });
-    // TTS: ucapkan NAMA pasien saja (tanpa nomor antrian).
+    // TTS: ucapkan NAMA pasien saja (tanpa nomor, tanpa "silahkan").
     const kalimat = row.namaPasien
-      ? titleCase(String(row.namaPasien)) + ', silahkan menuju farmasi.'
-      : 'Silahkan menuju farmasi.';
+      ? titleCase(String(row.namaPasien)) + ', menuju farmasi.'
+      : 'Menuju farmasi.';
     // Antrean serial: bell → voice → voice (panggilan diucapkan DUA KALI —
     // permintaan user: pasien di ruang tunggu sering tak dengar sekali ucapan).
     // next() menunggu playVoice selesai per item, jadi pengulangan berjalan
