@@ -69,6 +69,7 @@ async function compileFeatureFiles() {
     'antrianTools.ts',
     'antrianLoader.ts',
 
+    'antrianFarmasiDisplay.ts',
     'antrianFarmasiDisplayApp.ts',
     'antrianFarmasiOperator.ts',
 

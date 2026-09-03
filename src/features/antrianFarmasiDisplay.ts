@@ -546,20 +546,33 @@ declare global {
       lastByJenis.tunggal?.namaPasien || '',
       lastByJenis.racikan?.namaPasien || '',
     ].filter(Boolean);
+    let highlighted: HTMLElement | null = null;
     for (const dl of lc.querySelectorAll('dl')) {
       const h4 = dl.querySelector('h4');
-      // Nomor MORBIS asli — baca dari data-nomor-morbis (kolom Antrian sudah
-      // di-patch ke publicCode T-xx/R-xx oleh patchListContentAntrian), fallback
-      // ke teks h4 saat kolom belum di-patch.
       const num =
         ((dl.getAttribute('data-nomor-morbis') || h4?.textContent || '').match(/(\d+)$/) ||
           [])[1] || '';
       const dd3 = dl.querySelector('dd.col-3, dd.col-md-3');
       const d = (dd3?.textContent || '').replace(/\s+/g, ' ').trim();
-      // nomor harus PERSIS (bukan substring) — hindari 5 cocok 15/25/35
       const matchNum = targets.some((n) => num && n === num);
       const matchName = names.some((nm) => nm && d === nm);
-      (dl as HTMLElement).style.background = matchNum || matchName ? '#fde68a' : '';
+      const isHighlight = matchNum || matchName;
+      (dl as HTMLElement).style.background = isHighlight ? '#fde68a' : '';
+      (dl as HTMLElement).style.fontSize = isHighlight ? '1.35em' : '';
+      if (isHighlight) {
+        highlighted = dl as HTMLElement;
+        (dl as HTMLElement).style.outline = '3px solid #b45309';
+        (dl as HTMLElement).style.outlineOffset = '2px';
+      } else {
+        (dl as HTMLElement).style.outline = '';
+      }
+    }
+    // Sorot baris yang dipanggil agar selalu terlihat (scroll + focus).
+    if (highlighted) {
+      highlighted.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      highlighted.focus?.();
+      highlighted.setAttribute('tabindex', '-1');
+      highlighted.focus();
     }
   }
 
@@ -1509,61 +1522,6 @@ declare global {
     console.error('[AFD] [TTS] semua engine gagal utk:', text.slice(0, 40));
   }
 
-  /* numberToWords lokal (bukan import shared → tanpa side-effect global). */
-  const N2W_SATUAN = [
-    '',
-    'satu',
-    'dua',
-    'tiga',
-    'empat',
-    'lima',
-    'enam',
-    'tujuh',
-    'delapan',
-    'sembilan',
-    'sepuluh',
-    'sebelas',
-  ];
-  function numberToWords(n: number | string): string {
-    const two = (x: number): string => {
-      if (x < 12) return N2W_SATUAN[x];
-      if (x < 20) return N2W_SATUAN[x - 10] + ' belas';
-      if (x < 100)
-        return x % 10 === 0
-          ? N2W_SATUAN[x / 10] + ' puluh'
-          : N2W_SATUAN[Math.trunc(x / 10)] + ' puluh ' + N2W_SATUAN[x % 10];
-      return '';
-    };
-    // "03" → "nol tiga" (tiket bertuliskan R-03; TTS baca "nol tiga" agar
-    // pasien tidak mengira R-3).
-    const nolPrefix = (digits: string): string =>
-      digits
-        .split('')
-        .map((d) => N2W_SATUAN[Number(d)])
-        .join(' ');
-    // Kode renumber "T-42"/"R-03" → ucapkan LENGKAP (prefix T/R + angka) supaya
-    // pasien mencocokkan persis dengan tiket kertas (permintaan user: "R-03
-    // bukan hanya 03"). Huruf diucapkan apa adanya ("R"/"T"), angka → kata.
-    const raw = String(n);
-    const m = raw.match(/^([TR])-(\d+)$/);
-    if (m) {
-      const kata = m[2].length > 1 && m[2][0] === '0' ? nolPrefix(m[2]) : two(Number(m[2]));
-      return m[1] + ' ' + kata;
-    }
-    const clean = raw.replace(/^[TR]-/, '');
-    const num = Math.abs(Math.trunc(Number(clean)));
-    if (!Number.isFinite(num)) return String(clean);
-    if (num === 0) return 'nol';
-    if (num < 100) return two(num);
-    if (num < 1000) {
-      const r = num % 100;
-      return (
-        (num < 200 ? 'seratus' : two(Math.trunc(num / 100)) + ' ratus') + (r ? ' ' + two(r) : '')
-      );
-    }
-    return String(num);
-  }
-
   // Bell sintesis Web Audio ("ding") — pengganti bell bawaan MORBIS (#unine).
   // Keunggulan: bukan audio morbis, durasi terukur sehingga onDone dipanggil
   // tepat saat bell selesai (TTS tidak tumpang-tindih), tanpa file eksternal.
@@ -1645,12 +1603,10 @@ declare global {
       lastCalledNumber: lastCalled.nomor,
       lastRealtimeEvent: 'announce:' + row.id,
     });
-    // TTS: ucapkan nomor; nama title-case agar TTS membacanya natural (bukan eja).
-    const kalimat =
-      'Antrian farmasi ' +
-      numberToWords(row.nomor) +
-      (row.namaPasien ? ', atas nama ' + titleCase(String(row.namaPasien)) : '') +
-      ', silahkan menuju farmasi.';
+    // TTS: ucapkan NAMA pasien saja (tanpa nomor antrian).
+    const kalimat = row.namaPasien
+      ? titleCase(String(row.namaPasien)) + ', silahkan menuju farmasi.'
+      : 'Silahkan menuju farmasi.';
     // Antrean serial: bell → voice → voice (panggilan diucapkan DUA KALI —
     // permintaan user: pasien di ruang tunggu sering tak dengar sekali ucapan).
     // next() menunggu playVoice selesai per item, jadi pengulangan berjalan
