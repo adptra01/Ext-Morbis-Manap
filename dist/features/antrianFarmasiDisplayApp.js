@@ -167,8 +167,14 @@ var __morbis_feature = (() => {
   }
 
   // src/features/antrianFarmasiDisplayApp.ts
+  var TARGETS = {
+    calls: { url: farmasiAppBase() + '/antrian-farmasi', label: 'panggilan aktif' },
+    waiting: { url: farmasiAppBase() + '/antrian-farmasi-menunggu', label: 'antrian menunggu' },
+  };
   (function () {
-    const TARGET = farmasiAppBase() + '/antrian-farmasi';
+    let currentMode = 'calls';
+    let iframe = null;
+    let corner = null;
     function blockNativeAudio() {
       try {
         const origPlay = HTMLMediaElement.prototype.play;
@@ -190,19 +196,40 @@ var __morbis_feature = (() => {
         });
       } catch {}
     }
+    function setMode(mode) {
+      if (!mode || !TARGETS[mode]) return;
+      if (mode === currentMode) return;
+      currentMode = mode;
+      const t = TARGETS[mode];
+      if (iframe) iframe.src = t.url;
+      if (corner) corner.textContent = 'display: ' + t.label + ' (' + t.url + ')';
+    }
     function takeOver() {
       if (document.getElementById('ext-farmasi-display-app')) return;
+      const t = TARGETS[currentMode];
       const app = document.createElement('div');
       app.id = 'ext-farmasi-display-app';
       app.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#fff;';
-      app.innerHTML =
-        '<iframe src="' +
-        TARGET +
-        '" style="width:100%;height:100%;border:0;" title="Display Antrian Farmasi" allow="autoplay" allowfullscreen></iframe><div style="position:fixed;bottom:8px;right:12px;font:11px/1.4 system-ui,sans-serif;color:#adb5cd;z-index:1;background:rgba(255,255,255,.7);padding:2px 8px;border-radius:6px;">display: ' +
-        TARGET +
-        '</div>';
+      iframe = document.createElement('iframe');
+      iframe.src = t.url;
+      iframe.style.cssText = 'width:100%;height:100%;border:0;';
+      iframe.title = 'Display Antrian Farmasi';
+      iframe.setAttribute('allow', 'autoplay');
+      iframe.setAttribute('allowfullscreen', '');
+      app.appendChild(iframe);
+      corner = document.createElement('div');
+      corner.style.cssText =
+        'position:fixed;bottom:8px;right:12px;font:11px/1.4 system-ui,sans-serif;color:#adb5cd;z-index:1;background:rgba(255,255,255,.7);padding:2px 8px;border-radius:6px;';
+      corner.textContent = 'display: ' + t.label + ' (' + t.url + ')';
+      app.appendChild(corner);
       (document.body || document.documentElement).appendChild(app);
       document.body.style.overflow = 'hidden';
+      try {
+        const ch = new BroadcastChannel('morbis-antrian-display');
+        ch.onmessage = (ev) => {
+          if (ev.data?.type === 'setDisplay') setMode(ev.data.mode);
+        };
+      } catch {}
     }
     blockNativeAudio();
     const start = () => {

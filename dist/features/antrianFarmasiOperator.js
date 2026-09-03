@@ -490,6 +490,9 @@ var __morbis_feature = (() => {
       '<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/>',
     fullscreen:
       '<path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>',
+    list: '<path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/>',
+    volume:
+      '<path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.4 5.6a9 9 0 0 1 0 12.8"/>',
   };
   function svg(name, size = 16, color = '#212529') {
     return (
@@ -732,47 +735,6 @@ var __morbis_feature = (() => {
       header.style.display = 'none';
     }
   }
-  function moveNativeButtons() {
-    const bar = document.querySelector('#ext-op-actions');
-    if (!bar || bar.querySelector('#ext-op-reset')) return;
-    const wrap = document.createElement('span');
-    wrap.style.cssText = 'display:flex;gap:8px;align-items:center;flex-wrap:wrap;';
-    const reset = document.querySelector(
-      'button[onclick*="reset_antrian"], input[onclick*="reset_antrian"]',
-    );
-    const display = document.querySelector(
-      'button[onclick*="view-call-websocet"], input[onclick*="view-call-websocet"]',
-    );
-    if (reset) {
-      const clone = reset.cloneNode(true);
-      clone.id = 'ext-op-reset';
-      clone.setAttribute(
-        'data-tip',
-        'Reset antrian DB app \u2014 semua antrian hari ini kembali ke status awal, nomor dipanggil ulang dari T-01/R-01',
-      );
-      clone.setAttribute('title', 'Reset Antrian (DB app) \u2014 aksi destruktif');
-      clone.setAttribute(
-        'style',
-        'margin-left:28px;padding:7px 14px;border:1.5px solid #dc3545;background:#fff;color:#dc3545;border-radius:8px;cursor:pointer;font-weight:700;',
-      );
-      clone.addEventListener('click', () => {
-        void resetQueueDb();
-      });
-      wrap.appendChild(clone);
-    }
-    if (display) {
-      const clone = display.cloneNode(true);
-      clone.id = 'ext-op-display';
-      clone.setAttribute('data-tip', 'Buka layar TV (tab baru)');
-      clone.setAttribute('title', 'Buka layar TV antrian');
-      clone.setAttribute(
-        'style',
-        'padding:7px 14px;border:1px solid #00a65a;background:#00a65a;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;',
-      );
-      wrap.appendChild(clone);
-    }
-    if (wrap.children.length) bar.appendChild(wrap);
-  }
   function iconBtn(ev, icon, title, num, eventId, opts) {
     return (
       '<button class="ext-op-act" data-ev="' +
@@ -945,7 +907,13 @@ var __morbis_feature = (() => {
       svg('refresh', 14, '#0d6efd') +
       'Set Nomor</button><button id="ext-op-delete-all" data-tip="Hapus SEMUA antrian hari ini dari DB (aksi permanen \u2014 tidak bisa dibatalkan)" style="padding:7px 14px;border:1px solid #b02a37;background:#fff;color:#b02a37;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
       svg('trash', 14, '#b02a37') +
-      'Hapus Semua</button><button id="ext-op-fullscreen" data-tip="Toggle fullscreen pada layar display TV (BroadcastChannel)" style="padding:7px 14px;border:1px solid #155e75;background:#155e75;color:#fff;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
+      'Hapus Semua</button><button id="ext-op-reset" data-tip="Reset antrian DB app \u2014 semua antrian hari ini kembali ke status awal, nomor dipanggil ulang dari T-01/R-01 (record tidak dihapus)" style="padding:7px 14px;border:1px solid #dc3545;background:#fff;color:#dc3545;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-weight:700;">' +
+      svg('refresh', 14, '#dc3545') +
+      'Reset Antrian</button><button id="ext-op-display-antrian" data-tip="Tampilkan display PANGGILAN AKTIF di TV (frame /antrian-farmasi)" style="padding:7px 14px;border:1px solid #155e75;background:#155e75;color:#fff;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
+      svg('volume', 14, '#fff') +
+      'Display Antrian</button><button id="ext-op-display-tunggu" data-tip="Tampilkan display ANTRIAN MENUNGGU di TV (frame /antrian-farmasi-menunggu \u2014 pasien lihat posisi antrean)" style="padding:7px 14px;border:1px solid #0d6efd;background:#0d6efd;color:#fff;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
+      svg('list', 14, '#fff') +
+      'Display Tunggu</button><button id="ext-op-fullscreen" data-tip="Toggle fullscreen pada layar display TV (relay SSE)" style="padding:7px 14px;border:1px solid #6f42c1;background:#6f42c1;color:#fff;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">' +
       svg('fullscreen', 14, '#fff') +
       'Display FS</button><button id="ext-op-refresh" data-tip="Segarkan data antrean dari app" style="padding:7px 14px;border:1px solid #6c757d;background:#6c757d;color:#fff;border-radius:8px;cursor:pointer;">Segarkan</button></div></div><div id="ext-op-grid" style="display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:12px;align-items:stretch;flex:1;min-height:0;overflow:hidden;"><div id="ext-col-tunggal"></div><div id="ext-col-racikan"></div><div id="ext-col-panel" style="background:#fff;border:1px solid #dee2e6;border-radius:16px;padding:12px;min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden;"></div></div>';
     return p;
@@ -999,7 +967,7 @@ var __morbis_feature = (() => {
           colP.innerHTML =
             '<div style="display:flex;flex-direction:column;min-height:0;height:100%;overflow:hidden;"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:8px;flex-shrink:0;">Penerbitan & Kasus Khusus</div><div style="display:flex;gap:8px;margin-bottom:12px;flex-shrink:0;"><button id="ext-op-print-sheet2" data-tip="Cetak daftar semua nomor antrian hari ini (format A4)" title="Cetak Sheet A4" style="flex:1;padding:9px;border:1px solid #2193cf;background:#2193cf;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;">' +
             svg('printer', 14, '#fff') +
-            'Sheet A4</button><button id="ext-op-refresh2" data-tip="Segarkan data antrean dari app" title="Segarkan" style="flex:1;padding:9px;border:1px solid #6c757d;background:#6c757d;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;">Segarkan</button></div><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:6px;flex-shrink:0;">Ditunda / Lewat</div><div style="flex-shrink:0;">' +
+            'Sheet A4</button><button id="ext-op-refresh2" data-tip="Segarkan data antrean dari app" title="Segarkan" style="flex:1;padding:9px;border:1px solid #6c757d;background:#6c757d;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;">Segarkan</button></div><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:6px;flex-shrink:0;">Ditunda / Lewat</div><div style="flex-shrink:0;max-height:170px;overflow-y:auto;padding-right:4px;">' +
             (special.length
               ? special.map((r) => miniRow(r, 'op-sp')).join('')
               : '<div style="padding:10px;color:#adb5bd;text-align:center;font-size:12px;">Tidak ada</div>') +
@@ -1130,7 +1098,6 @@ var __morbis_feature = (() => {
       if (document.getElementById('ext-farmasi-operator')) return;
       const panel = buildPanel();
       (document.getElementById('isi')?.parentElement || document.body).appendChild(panel);
-      moveNativeButtons();
       panel.addEventListener('click', (e) => {
         const btn = e.target.closest('.ext-op-act');
         if (btn) {
@@ -1151,12 +1118,57 @@ var __morbis_feature = (() => {
       document
         .getElementById('ext-op-delete-all')
         ?.addEventListener('click', () => void deleteAllQueue());
+      document.getElementById('ext-op-reset')?.addEventListener('click', () => void resetQueueDb());
       document.getElementById('ext-op-refresh')?.addEventListener('click', () => void render());
+      const FS_API = farmasiAppBase() + '/api/queue';
       document.getElementById('ext-op-fullscreen')?.addEventListener('click', () => {
         try {
-          const fsChannel = new BroadcastChannel('morbis-antrian-display');
-          fsChannel.postMessage({ type: 'toggleFullscreen' });
-        } catch {}
+          fetch(FS_API + '/fullscreen-request', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ displayId: 'all' }),
+          }).catch(() => fsFlash('relay gagal (jaringan)'));
+        } catch {
+          fsFlash('relay gagal');
+        }
+        fsFlash('minta layar penuh\u2026');
+      });
+      try {
+        const fsEs = new EventSource(FS_API + '/fullscreen-stream');
+        fsEs.onmessage = function (ev) {
+          let d;
+          try {
+            d = JSON.parse(ev.data);
+          } catch {
+            return;
+          }
+          if (d && d.type === 'fullscreenStatus')
+            fsFlash(d.on ? 'display: \u2713 Fullscreen' : 'display: keluar fullscreen');
+        };
+      } catch {}
+      function fsFlash(msg) {
+        let el = document.getElementById('ext-op-fs-feedback');
+        if (!el) {
+          el = document.createElement('span');
+          el.id = 'ext-op-fs-feedback';
+          el.style.cssText =
+            'padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:#6f42c1;color:#fff;opacity:0;transition:opacity .25s ease;display:inline-flex;align-items:center;gap:6px;';
+          document.getElementById('ext-op-actions')?.appendChild(el);
+        }
+        el.textContent = msg;
+        el.style.opacity = '1';
+        window.clearTimeout(Number(el.dataset.timer || 0));
+        el.dataset.timer = String(
+          window.setTimeout(() => {
+            el.style.opacity = '0';
+          }, 2600),
+        );
+      }
+      document.getElementById('ext-op-display-antrian')?.addEventListener('click', () => {
+        window.open(farmasiAppBase() + '/antrian-farmasi', '_blank', 'noopener');
+      });
+      document.getElementById('ext-op-display-tunggu')?.addEventListener('click', () => {
+        window.open(farmasiAppBase() + '/antrian-farmasi-menunggu', '_blank', 'noopener');
       });
       panel.addEventListener('click', (e) => {
         const s2 = e.target.closest('#ext-op-print-sheet2');
