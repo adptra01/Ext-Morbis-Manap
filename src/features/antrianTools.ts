@@ -13,9 +13,39 @@
     document.head.appendChild(s);
   }
 
-  function intervalPoll(cb: () => void): void {
-    const tries = setInterval(() => cb(), 500);
-    setTimeout(() => clearInterval(tries), 5000);
+  // Tunggu target DOM muncul (MutationObserver + debounce), panggil fn tiap mutasi
+  // sampai return true, lalu disconnect otomatis. Pengganti intervalPoll 500ms×10
+  // (yang mati setelah 5 detik — render mesin UI bisa tak pernah jalan): deterministik,
+  // nol interval aktif sesudah sukses, nol polling saat target sudah ada.
+  function waitForDom(fn: () => boolean, timeoutMs = 8000): void {
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      observer.disconnect();
+      window.clearTimeout(timer);
+    };
+    const timer = window.setTimeout(() => {
+      if (!done) {
+        done = true;
+        observer.disconnect();
+        extLog('dom_wait_timeout', false);
+      }
+    }, timeoutMs);
+    const observer = new MutationObserver(() => {
+      window.setTimeout(() => {
+        if (!done && fn()) finish();
+      }, 50); // debounce: batch mutasi serentak jadi 1 percobaan
+    });
+    try {
+      if (fn()) {
+        finish();
+        return;
+      }
+      observer.observe(document.body, { childList: true, subtree: true });
+    } catch {
+      observer.disconnect();
+    }
   }
 
   // health state via DOM attribute (bukan window): antrianLoader jalan di ISOLATED
@@ -124,6 +154,31 @@
   // Ceiling: endpoint translate_tts tidak resmi, bisa kena rate-limit; upgrade ke
   // provider berbayar (ResponsiveVoice dll) jika sering gagal di lapangan.
   let _ttsDead = false;
+  // Recovery: voice tersedia ≠ speechSynthesis sehat (utterance bisa nyangkut tanpa
+  // pernah start). Probe utterance kosong; onstart/onend terbukti jalan → pulihkan.
+  let _ttsProbeBusy = false;
+  function ttsHealthProbe(): void {
+    if (_ttsProbeBusy || !_ttsDead) return;
+    _ttsProbeBusy = true;
+    const unbusy = () => {
+      _ttsProbeBusy = false;
+    };
+    try {
+      const u = new SpeechSynthesisUtterance('');
+      // mulai ATAU selesai ATAU error = engine hidup (event diproses); hanya tenggelam
+      // total (tak ada event sama sekali) yang berarti tetap mati.
+      u.onstart = () => {
+        _ttsDead = false;
+        unbusy();
+      };
+      u.onend = unbusy;
+      u.onerror = unbusy;
+      speechSynthesis.cancel();
+      speechSynthesis.speak(u);
+    } catch {
+      unbusy();
+    }
+  }
   // Lapis 3: suara lokal sistem (espeak/Microsoft) — jaring terakhir saat internet mati.
   // Robotik, tapi lebih baik daripada diam. Hanya dipakai kalau MP3 Google pun gagal.
   function pickLocalVoice(): SpeechSynthesisVoice | null {
@@ -237,7 +292,9 @@
       speechSynthesis.addEventListener?.('voiceschanged', () => {
         // Chrome butuh beberapa detik setelah startup untuk memuat mesin suara Google.
         // Begitu voice online siap, izinkan speechSynthesis lagi (fallback MP3 di-bypass).
-        if (pickVoice()) _ttsDead = false;
+        // voice online siap ≠ engine sehat; probe utterance kosong membuktikan
+        // speechSynthesis benar-benar jalan sebelum pulih dari mode fallback MP3.
+        if (pickVoice()) ttsHealthProbe();
       });
     } catch {
       /* ignore */
@@ -248,6 +305,9 @@
       if (!speechSynthesis.speaking && !speechSynthesis.pending) {
         speechSynthesis.speak(new SpeechSynthesisUtterance(''));
       }
+      // kalau TTS mati (fallback MP3 aktif), coba pulihkan — tanpa menunggu
+      // voiceschanged berikutnya yang bisa tak pernah datang di sesi kiosk.
+      if (_ttsDead) ttsHealthProbe();
     }, 10000);
   }
 
@@ -344,8 +404,11 @@
     // - server antrian(N) membaca #poli-N dkk via jQuery → AJAX simpan → ws → cetak → reload
     // - attachPrintClick() menangkap klik → cetak struk (pakai #nomortampil-#nomor)
     const initMesin = () => {
-      intervalPoll(renderMesinUI);
-      intervalPoll(attachPrintClick);
+      waitForDom(() => {
+        const rendered = renderMesinUI();
+        attachPrintClick();
+        return rendered;
+      });
       setTimeout(() => {
         if (!document.getElementById('ext-mesin-ui')) {
           document.getElementById('ext-mesin-loader')?.remove();
@@ -372,10 +435,10 @@
       const rule = MESIN_ICON_RULES.find(([re]) => re.test(polinama));
       return rule ? rule[1] : 'person_add';
     };
-    const renderMesinUI = () => {
-      if (document.getElementById('ext-mesin-ui')) return; // sudah dirender
+    const renderMesinUI = (): boolean => {
+      if (document.getElementById('ext-mesin-ui')) return true; // sudah dirender
       const cards = Array.from(document.querySelectorAll('[onclick^="antrian("]'));
-      if (!cards.length) return; // card server belum ada — dipanggil ulang oleh intervalPoll
+      if (!cards.length) return false; // card server belum ada — dipanggil ulang oleh waitForDom
       const esc = (s: unknown) =>
         String(s ?? '')
           .replace(/&/g, '&amp;')
@@ -542,8 +605,9 @@
       ]);
       extLog('mesin_ui', true, { polis: polis.length });
       setHealth('ui');
+      return true;
     };
-    const attachPrintClick = () => {
+    const attachPrintClick = (): boolean => {
       // ponytail: anti print ganda — klik ganda sebelum reload 1s (server reload setelah simpan)
       let lastPrintKey = '';
       let lastPrintAt = 0;
@@ -579,36 +643,36 @@
           true, // capture: jalan sebelum event server (antrian) & sebelum reload
         );
       });
+      return true;
     };
     /* ---- COUNTER ---- */
     const initCounter = () => {
       showActiveBadge();
       addFullscreenButton();
-      hookCallTTS(); // sudah punya retry intervalPoll internal
+      waitForDom(hookCallTTS);
       setHealth('ui');
     };
-    function hookCallTTS(): void {
-      intervalPoll(() => {
-        const w = window as unknown as Record<string, unknown>;
-        const origCall = w.call as ((antrian: string, nama: string) => unknown) | undefined;
-        if (typeof origCall !== 'function') return;
-        if ((origCall as any).__extTtsHooked) return;
-        const sel = document.querySelector('select#no_loket') as HTMLSelectElement | null;
-        if (!sel) return;
-        const wrapped = function (this: unknown, antrian: string, nama: string) {
-          // baca LOKET saat dipanggil, bukan saat hook — user bisa ganti loket tanpa reload
-          const opt = sel.options[sel.selectedIndex];
-          const loketName = String(
-            (opt?.text || opt.value || '').replace(/^LOKET\s+/i, '').toUpperCase(),
-          );
-          const spoken = buildSpokenText(antrian, loketName, nama);
-          speak(spoken);
-          extLog('tts_call', true, { antrian, loket: loketName, nama, spoken });
-          return origCall.apply(this, [antrian, nama]);
-        };
-        (wrapped as any).__extTtsHooked = true;
-        w.call = wrapped;
-      });
+    function hookCallTTS(): boolean {
+      const w = window as unknown as Record<string, unknown>;
+      const origCall = w.call as ((antrian: string, nama: string) => unknown) | undefined;
+      if (typeof origCall !== 'function') return false;
+      if ((origCall as any).__extTtsHooked) return true;
+      const sel = document.querySelector('select#no_loket') as HTMLSelectElement | null;
+      if (!sel) return false;
+      const wrapped = function (this: unknown, antrian: string, nama: string) {
+        // baca LOKET saat dipanggil, bukan saat hook — user bisa ganti loket tanpa reload
+        const opt = sel.options[sel.selectedIndex];
+        const loketName = String(
+          (opt?.text || opt.value || '').replace(/^LOKET\s+/i, '').toUpperCase(),
+        );
+        const spoken = buildSpokenText(antrian, loketName, nama);
+        speak(spoken);
+        extLog('tts_call', true, { antrian, loket: loketName, nama, spoken });
+        return origCall.apply(this, [antrian, nama]);
+      };
+      (wrapped as any).__extTtsHooked = true;
+      w.call = wrapped;
+      return true;
     }
     /* ---- DISPLAY (v1) ---- */
     const initDisplay = () => {
@@ -732,7 +796,6 @@
       // TTS saat nomor panggilan berubah (suara TV)
       let lastCallId = '';
       // offline indicator: 3x gagal berturut-turut → badge "KONEKSI TERPUTUS"
-      let failCount = 0;
       const offlineBadge = () => {
         let el = document.getElementById('ext-offline-badge');
         if (!el) {
@@ -763,9 +826,17 @@
       let pollAlive = false;
       let lastSync: string | null = null;
       const statusBox = { span: null as HTMLElement | null };
-      // seq guard: timeout 10s > interval 1.5s → request lama yang timeout jangan
-      // dianggap gagal kalau request terbaru sudah sukses
-      let reqSeq = 0;
+      // Polling: recursive setTimeout + inflight guard + backoff + hidden-pause.
+      // Dulu setInterval(1.5s) tanpa guard → saat server lambat (timeout 10s) ada
+      // 6-7 request simultan per kiosk × N kiosk = banjir request. Sekarang interval
+      // dihitung SETELAH request selesai → max 1 request aktif per kiosk; kegagalan
+      // beruntun menaikkan jeda (backoff, 30s maks); tab hidden = nol request.
+      let failStreak = 0;
+      const POLL_BACKOFF = [1500, 3000, 5000, 10000, 20000, 30000];
+      let pollTimer: number | null = null;
+      let pollInflight = false;
+      let pollHidden = false;
+      let pollStopped = false;
       const renderStatus = () => {
         if (!statusBox.span) return;
         statusBox.span.textContent = pollAlive
@@ -773,31 +844,36 @@
           : '\u25cf POLLING MATI';
         statusBox.span.style.color = pollAlive ? '#6ee7b7' : '#fca5a5';
       };
-      const pollActive = () => {
-        const seq = ++reqSeq;
+      const scheduleNext = () => {
+        if (pollStopped || pollHidden || pollInflight) return;
+        const d = POLL_BACKOFF[Math.min(failStreak, POLL_BACKOFF.length - 1)];
+        pollTimer = window.setTimeout(runPoll, d);
+      };
+      const runPoll = () => {
+        if (pollStopped || pollHidden || pollInflight) return;
+        pollTimer = null;
+        pollInflight = true;
         const xhr = new XMLHttpRequest();
         xhr.open('POST', '/public/counter-antrian/data', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
         xhr.timeout = 10000;
         const onFail = () => {
-          if (seq !== reqSeq) return; // respon basi dari request yang lebih lama
-          if (++failCount >= 3) offlineBadge();
+          if (++failStreak >= 3) offlineBadge();
           pollAlive = false;
           renderStatus();
-          extLog('display_poll_fail', true, { failCount });
+          extLog('display_poll_fail', true, { failCount: failStreak });
         };
         xhr.onerror = onFail;
         xhr.ontimeout = onFail;
         xhr.onload = () => {
-          if (seq !== reqSeq) return; // jangan update UI dari respon basi
           try {
             // server balas JSON dengan Content-Type text/html — jangan guard header,
             // cek isi body mulai '{' (halaman login HTML / error terlewat aman)
             const txt = String(xhr.responseText || '').trim();
             if (!txt.startsWith('{')) return;
             const r: any = JSON.parse(txt);
-            failCount = 0;
+            failStreak = 0;
             hideOfflineBadge();
             pollAlive = true;
             lastSync = new Date().toLocaleTimeString('id-ID');
@@ -830,12 +906,36 @@
             /* parse error */
           }
         };
+        xhr.onloadend = () => {
+          pollInflight = false;
+          scheduleNext();
+        };
         const loketFromUrl = new URLSearchParams(window.location.search).get('loket') || '';
         xhr.send('option=get_data_call&loket=' + encodeURIComponent(loketFromUrl));
       };
-      pollActive();
-      // ponytail: polling permanen — intervalPoll() mati setelah 5 detik (bug TTS mati)
-      setInterval(pollActive, 1500);
+      const startPolling = () => {
+        if (pollStopped || pollHidden || pollInflight || pollTimer !== null) return;
+        runPoll();
+      };
+      document.addEventListener('visibilitychange', () => {
+        pollHidden = document.hidden;
+        if (document.hidden) return;
+        // kembali terlihat: reset backoff + refresh langsung, tanpa tunggu timer
+        failStreak = 0;
+        if (pollTimer !== null) {
+          window.clearTimeout(pollTimer);
+          pollTimer = null;
+        }
+        startPolling();
+      });
+      window.addEventListener('beforeunload', () => {
+        pollStopped = true;
+        if (pollTimer !== null) {
+          window.clearTimeout(pollTimer);
+          pollTimer = null;
+        }
+      });
+      startPolling();
 
       /* ---- CONTROL BAR (badge + fullscreen + test panggilan, satu baris bawah) ---- */
       const controls = ui.querySelector('.ext-controls') as HTMLElement;
