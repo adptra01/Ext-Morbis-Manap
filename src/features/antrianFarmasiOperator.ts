@@ -49,26 +49,38 @@ interface DisplayData {
   }>;
   history: Array<{ queue_number: string; event: string; created_at: string | null }>;
   counters?: Record<string, number>;
+  /** Signature signal server — client kirim balik via ?since= utk 304 (A1a). */
+  signal?: string;
 }
 
 /** Titik lanjut penomoran terakhir yang di-set petugas (per prefix T/R). */
 let lastCounters: Record<string, number> = {};
 
-// FIX: simpan interval ID untuk cleanup pas unload
-let _opRenderIntervalId: number | null = null;
-let _opSseSource: EventSource | null = null;
+// Conditional polling (pengganti setInterval + SSE, A1a): recursive setTimeout —
+// tick berikutnya dijadwalkan SETELAH fetch selesai (tak menumpuk saat server
+// lambat); gagal → backoff 5/10/15/30s (P3); ?since= → server jawab 304 tanpa
+// query DB; tab tersembunyi → skip fetch tapi tetap jadwal ulang (P5).
+let _opPollTimer: number | null = null;
+let _opPollBusy = false;
+let _opPollStarted = false;
+let _opSig = '';
+let _opFailStreak = 0;
+let _fsPollTimer: number | null = null;
+const OP_BACKOFF_MS = [2000, 5000, 10000, 15000, 30000];
 
-/** SSE listener utk operator — subscribe ke /api/queue/stream. */
-async function startOperatorSse(): Promise<void> {
+/** Poll antrian: render lalu jadwalkan berikutnya. Tab hidden → skip fetch
+ *  (resume otomatis saat terlihat lagi, timer tetap berjalan). */
+async function pollRender(): Promise<void> {
+  if (_opPollBusy) return;
+  _opPollBusy = true;
+  let ok = true;
   try {
-    const base = await probeFarmasiAppBase();
-    _opSseSource = new EventSource(base + '/api/queue/stream');
-    _opSseSource.onmessage = () => void render(); // render segera saat event masuk
-    _opSseSource.onerror = () => {
-      /* auto-reconnect, biarkan fallback ke polling */
-    };
-  } catch {
-    /* probe gagal — biarkan polling jalan */
+    if (document.hidden) return;
+    ok = await render();
+  } finally {
+    _opPollBusy = false;
+    _opFailStreak = ok ? 0 : Math.min(_opFailStreak + 1, OP_BACKOFF_MS.length - 1);
+    _opPollTimer = window.setTimeout(() => void pollRender(), OP_BACKOFF_MS[_opFailStreak]);
   }
 }
 
@@ -126,7 +138,6 @@ const CAT_META: Record<string, { label: string; accent: string; soft: string }> 
 };
 
 let lastState = '';
-const POLL_MS = 2000; // ringan; delay panggilan di display mengikuti kecepatan ini
 /** Snapshot baris terakhir utk cetak tiket / sheet A4 (data dari app). */
 let lastRows: DisplayRow[] = [];
 let lastTanggal = '';
@@ -701,85 +712,102 @@ function buildPanel(): HTMLDivElement {
   return p;
 }
 
-async function render(): Promise<void> {
+async function render(): Promise<boolean> {
   const st = document.getElementById('ext-op-status');
   try {
-    const res = await fetch(farmasiAppBase() + '/api/queue/display?limit=50', {
-      cache: 'no-store',
-      credentials: 'omit',
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const d = (await res.json()) as DisplayData;
-    lastRows = [...(d.current || []), ...(d.waiting || []), ...(d.called || [])].map((r) => ({
-      id: (r as unknown as { id?: number }).id ?? 0,
-      queue_number: r.queue_number,
-      resep_id: (r as unknown as { resep_id?: string | null }).resep_id ?? null,
-      nama_pasien: (r as unknown as { nama_pasien?: string | null }).nama_pasien ?? null,
-      norm: (r as unknown as { norm?: string | null }).norm ?? null,
-      shift: (r as unknown as { shift?: string | null }).shift ?? null,
-      jenis: (r as unknown as { jenis?: string | null }).jenis ?? null,
-      status: r.status,
-      called_at: (r as unknown as { called_at?: string | null }).called_at ?? null,
-      counter: (r as unknown as { counter?: { name: string } | null }).counter ?? null,
-    }));
-    lastTanggal = d.tanggal;
-    lastCounters = d.counters || {};
-    const key = JSON.stringify({ c: d.current, q: d.queues });
-    if (key !== lastState) {
-      lastState = key;
-      const colT = document.getElementById('ext-col-tunggal');
-      const colR = document.getElementById('ext-col-racikan');
-      const colP = document.getElementById('ext-col-panel');
-      if (colT && colR && colP) {
-        const queues = d.queues || [];
-        const sortNum = (a: DisplayRow, b: DisplayRow): number =>
-          a.queue_number.localeCompare(b.queue_number, undefined, { numeric: true });
-        // Aktif per kategori: CALLED, terbaru dulu → tampil maks 5 "Sedang
-        // Dipanggil" (kebijakan 2026-08-29). Backend juga auto-DONE kelebihannya.
-        const byCat = (cat: string): { active: DisplayRow[]; next: DisplayRow[] } => ({
-          active: (d.current || []).filter((r) => catOf(r.queue_number) === cat).slice(0, 5),
-          next: queues
-            .filter((r) => catOf(r.queue_number) === cat && r.status === 'WAITING')
-            .sort(sortNum),
-        });
-        const t = byCat('tunggal');
-        const r2 = byCat('racikan');
-        colT.innerHTML = column('tunggal', t.active, t.next);
-        colR.innerHTML = column('racikan', r2.active, r2.next);
-        // Panel kanan: status + kasus khusus (ditunda/lewat) + daftar lengkap ringkas.
-        const special = queues
-          .filter((r) => r.status === 'DEFERRED' || r.status === 'SKIPPED')
-          .sort(sortNum);
-        colP.innerHTML =
-          '<div style="display:flex;flex-direction:column;min-height:0;height:100%;overflow:hidden;">' +
-          '<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:8px;flex-shrink:0;">Penerbitan & Kasus Khusus</div>' +
-          '<div style="display:flex;gap:8px;margin-bottom:12px;flex-shrink:0;">' +
-          '<button id="ext-op-print-sheet2" data-tip="Cetak daftar semua nomor antrian hari ini (format A4)" title="Cetak Sheet A4" style="flex:1;padding:9px;border:1px solid #2193cf;background:#2193cf;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;">' +
-          svg('printer', 14, '#fff') +
-          'Sheet A4</button>' +
-          '<button id="ext-op-refresh2" data-tip="Segarkan data antrean dari app" title="Segarkan" style="flex:1;padding:9px;border:1px solid #6c757d;background:#6c757d;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;">Segarkan</button>' +
-          '</div>' +
-          '<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:6px;flex-shrink:0;">Ditunda / Lewat</div>' +
-          '<div style="flex-shrink:0;max-height:170px;overflow-y:auto;padding-right:4px;">' +
-          (special.length
-            ? special.map((r) => miniRow(r, 'op-sp')).join('')
-            : '<div style="padding:10px;color:#adb5bd;text-align:center;font-size:12px;">Tidak ada</div>') +
-          '</div>' +
-          '<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin:14px 0 6px;flex-shrink:0;">Selesai Hari Ini</div>' +
-          '<div style="flex:1;min-height:0;overflow-y:auto;padding-right:4px;">' +
-          (queues
-            .filter((r) => r.status === 'DONE')
-            .sort(sortNum)
-            .map((r) => miniRow(r, 'op-done'))
-            .join('') ||
-            '<div style="padding:10px;color:#adb5bd;text-align:center;font-size:12px;">Belum ada</div>') +
-          '</div></div>';
+    // Lead 5s: request gantung dibatalkan — poll berikutnya tak tersedot,
+    // backoff tak terpicu oleh request yang tak pernah selesai.
+    const ctrl = new AbortController();
+    const lead = window.setTimeout(() => ctrl.abort(), 5000);
+    try {
+      const url =
+        farmasiAppBase() +
+        '/api/queue/display?limit=50' +
+        (_opSig ? '&since=' + encodeURIComponent(_opSig) : '');
+      const res = await fetch(url, {
+        cache: 'no-store',
+        credentials: 'omit',
+        signal: ctrl.signal,
+      });
+      if (res.status === 304) return true; // tak ada perubahan — state terakhir valid
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const d = (await res.json()) as DisplayData;
+      if (d && d.signal) _opSig = d.signal;
+      lastRows = [...(d.current || []), ...(d.waiting || []), ...(d.called || [])].map((r) => ({
+        id: (r as unknown as { id?: number }).id ?? 0,
+        queue_number: r.queue_number,
+        resep_id: (r as unknown as { resep_id?: string | null }).resep_id ?? null,
+        nama_pasien: (r as unknown as { nama_pasien?: string | null }).nama_pasien ?? null,
+        norm: (r as unknown as { norm?: string | null }).norm ?? null,
+        shift: (r as unknown as { shift?: string | null }).shift ?? null,
+        jenis: (r as unknown as { jenis?: string | null }).jenis ?? null,
+        status: r.status,
+        called_at: (r as unknown as { called_at?: string | null }).called_at ?? null,
+        counter: (r as unknown as { counter?: { name: string } | null }).counter ?? null,
+      }));
+      lastTanggal = d.tanggal;
+      lastCounters = d.counters || {};
+      const key = JSON.stringify({ c: d.current, q: d.queues });
+      if (key !== lastState) {
+        lastState = key;
+        const colT = document.getElementById('ext-col-tunggal');
+        const colR = document.getElementById('ext-col-racikan');
+        const colP = document.getElementById('ext-col-panel');
+        if (colT && colR && colP) {
+          const queues = d.queues || [];
+          const sortNum = (a: DisplayRow, b: DisplayRow): number =>
+            a.queue_number.localeCompare(b.queue_number, undefined, { numeric: true });
+          // Aktif per kategori: CALLED, terbaru dulu → tampil maks 5 "Sedang
+          // Dipanggil" (kebijakan 2026-08-29). Backend juga auto-DONE kelebihannya.
+          const byCat = (cat: string): { active: DisplayRow[]; next: DisplayRow[] } => ({
+            active: (d.current || []).filter((r) => catOf(r.queue_number) === cat).slice(0, 5),
+            next: queues
+              .filter((r) => catOf(r.queue_number) === cat && r.status === 'WAITING')
+              .sort(sortNum),
+          });
+          const t = byCat('tunggal');
+          const r2 = byCat('racikan');
+          colT.innerHTML = column('tunggal', t.active, t.next);
+          colR.innerHTML = column('racikan', r2.active, r2.next);
+          // Panel kanan: status + kasus khusus (ditunda/lewat) + daftar lengkap ringkas.
+          const special = queues
+            .filter((r) => r.status === 'DEFERRED' || r.status === 'SKIPPED')
+            .sort(sortNum);
+          colP.innerHTML =
+            '<div style="display:flex;flex-direction:column;min-height:0;height:100%;overflow:hidden;">' +
+            '<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:8px;flex-shrink:0;">Penerbitan & Kasus Khusus</div>' +
+            '<div style="display:flex;gap:8px;margin-bottom:12px;flex-shrink:0;">' +
+            '<button id="ext-op-print-sheet2" data-tip="Cetak daftar semua nomor antrian hari ini (format A4)" title="Cetak Sheet A4" style="flex:1;padding:9px;border:1px solid #2193cf;background:#2193cf;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;">' +
+            svg('printer', 14, '#fff') +
+            'Sheet A4</button>' +
+            '<button id="ext-op-refresh2" data-tip="Segarkan data antrean dari app" title="Segarkan" style="flex:1;padding:9px;border:1px solid #6c757d;background:#6c757d;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;">Segarkan</button>' +
+            '</div>' +
+            '<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:6px;flex-shrink:0;">Ditunda / Lewat</div>' +
+            '<div style="flex-shrink:0;max-height:170px;overflow-y:auto;padding-right:4px;">' +
+            (special.length
+              ? special.map((r) => miniRow(r, 'op-sp')).join('')
+              : '<div style="padding:10px;color:#adb5bd;text-align:center;font-size:12px;">Tidak ada</div>') +
+            '</div>' +
+            '<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin:14px 0 6px;flex-shrink:0;">Selesai Hari Ini</div>' +
+            '<div style="flex:1;min-height:0;overflow-y:auto;padding-right:4px;">' +
+            (queues
+              .filter((r) => r.status === 'DONE')
+              .sort(sortNum)
+              .map((r) => miniRow(r, 'op-done'))
+              .join('') ||
+              '<div style="padding:10px;color:#adb5bd;text-align:center;font-size:12px;">Belum ada</div>') +
+            '</div></div>';
+        }
       }
+      if (st) st.textContent = 'terhubung ke app (' + d.tanggal + ')';
+      return true;
+    } finally {
+      window.clearTimeout(lead);
     }
-    if (st) st.textContent = 'terhubung ke app (' + d.tanggal + ')';
   } catch (e) {
     if (st) st.textContent = 'gagal hubungi app — cek CORS/BASE';
     log('display gagal:', (e as Error).message);
+    return false;
   }
 }
 
@@ -937,12 +965,13 @@ function init(): void {
       ?.addEventListener('click', () => void deleteAllQueue());
     document.getElementById('ext-op-reset')?.addEventListener('click', () => void resetQueueDb());
     document.getElementById('ext-op-refresh')?.addEventListener('click', () => void render());
-    // Remote fullscreen untuk display TV via relay server SSE. Operator origin
+    // Remote fullscreen untuk display TV via relay server (poll). Operator origin
     // BEDA dari display Reports (BroadcastChannel tak tembus), jadi event relay
     // lewat server Reports: operator POST /api/queue/fullscreen-request; feedback
-    // status diterima via SSE /api/queue/fullscreen-stream. Display menampilkan
-    // overlay "klik utk layar penuh" (fullscreen tetap butuh user-gesture di
-    // display; overlay itulah gesture-nya). displayId 'all' → semua display.
+    // status diterima via poll GET /api/queue/fullscreen-status?since= (pengganti
+    // SSE fullscreen-stream). Display menampilkan overlay "klik utk layar penuh"
+    // (fullscreen tetap butuh user-gesture di display; overlay itulah gesture-nya).
+    // displayId 'all' → semua display.
     const FS_API = farmasiAppBase() + '/api/queue';
     document.getElementById('ext-op-fullscreen')?.addEventListener('click', () => {
       try {
@@ -956,21 +985,27 @@ function init(): void {
       }
       fsFlash('minta layar penuh…');
     });
-    // Langgan SSE relay utk terima feedback status fullscreen dari display.
-    try {
-      const fsEs = new EventSource(FS_API + '/fullscreen-stream');
-      fsEs.onmessage = function (ev) {
-        let d;
-        try {
-          d = JSON.parse(ev.data);
-        } catch {
-          return;
-        }
-        if (d && d.type === 'fullscreenStatus')
-          fsFlash(d.on ? 'display: ✓ Fullscreen' : 'display: keluar fullscreen');
-      };
-    } catch {
-      /* SSE tak didukung — feedback nonaktif, tombol tetap kirim request */
+    // Poll relay fullscreen (pengganti SSE fullscreen-stream) utk terima feedback
+    // status dari display. Guard: start() bisa dipanggil ulang oleh MutationObserver
+    // → jangan dobel interval.
+    if (_fsPollTimer === null) {
+      let fsSig = '';
+      _fsPollTimer = window.setInterval(() => {
+        fetch(FS_API + '/fullscreen-status?since=' + encodeURIComponent(fsSig), {
+          cache: 'no-store',
+        })
+          .then((r) => (r.status === 304 ? null : r.json()))
+          .then((j) => {
+            if (!j || !j.data) return;
+            if (j.signal) fsSig = j.signal;
+            const d = j.data;
+            if (d.type === 'fullscreenStatus')
+              fsFlash(d.on ? 'display: ✓ Fullscreen' : 'display: keluar fullscreen');
+          })
+          .catch(() => {
+            /* jaringan — poll berikutnya coba lagi */
+          });
+      }, 1000);
     }
     // Flash kecil sebentar di bar tombol utk umpan balik (hilang sendiri).
     function fsFlash(msg: string): void {
@@ -1009,10 +1044,13 @@ function init(): void {
     });
     void render();
     void probeFarmasiAppBase().then(() => void render()); // fallback IP bila DNS gagal
-    // FIX: simpan interval ID agar bisa di-clear pas unload/navigate
-    _opRenderIntervalId = window.setInterval(() => void render(), POLL_MS);
-    // SSE: real-time update — saat event masuk, render segera tanpa tunggu POLL_MS
-    void startOperatorSse();
+    // Conditional polling 2s (pengganti setInterval + SSE): jadwal di pollRender.
+    // Guard --poll-started: start() dipanggil ulang oleh MutationObserver (MORBIS
+    // render ulang #isi tiap 30s) → jangan mulai rantai timer kedua.
+    if (!_opPollStarted) {
+      _opPollStarted = true;
+      void pollRender();
+    }
     log('panel operator aktif');
   };
   start();
@@ -1028,9 +1066,10 @@ function init(): void {
     }, 100);
   }).observe(_isi, { childList: true, subtree: true });
 
-  // FIX: cleanup interval saat unload
+  // FIX: cleanup timer saat unload
   window.addEventListener('beforeunload', () => {
-    if (_opRenderIntervalId !== null) clearInterval(_opRenderIntervalId);
+    if (_opPollTimer !== null) clearTimeout(_opPollTimer);
+    if (_fsPollTimer !== null) clearInterval(_fsPollTimer);
   });
 }
 

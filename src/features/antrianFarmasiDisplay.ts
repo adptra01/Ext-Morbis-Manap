@@ -58,7 +58,6 @@ import {
   parsePatients,
   type PatientByName,
 } from './shared/currentNumber';
-import { probeFarmasiAppBase } from './shared/farmasiQueueSync';
 
 // Observability (debug) — snapshot baca-saja, bukan sumber kebenaran.
 // Hanya dibuat bila URL memakai ?debug=1; production normal tetap bersih
@@ -127,17 +126,12 @@ declare global {
   // Jeda antar item antrean (bell→voice→voice). 0 = lanjut sesegera mungkin
   // (event loop ~4ms). Panggilan tetap serial via busy flag — tidak menimpa.
   const GAP_MS = 0;
-  // Segarkan card (angka panggilan last + nama) secara tetap — cepat (~600ms),
-  // tidak tergantung health/native/poll. Bikin display responsif setelah
-  // 'Selanjutnya'/recall tanpa menunggu WS native. 350ms = kompromi baru:
-  // latensi terukur fetch 2 endpoint ~130-260ms (paralel), jadi interval 350ms
-  // tidak menumpuk (tick selesai sebelum tick berikutnya); deteksi klik
-  // "Selanjutnya" turun dari ≤600ms → ≤350ms (+fetch). Naikkan ke 600 bila
-  // server MORBIS terbebani (beban 2 endpoint/tick naik ~1.7x dari 600ms).
-  const CARD_MS = 350;
-  // SSE (Server-Sent Events) — real-time update dari backend.
-  let _sseConnected = false;
-  let _sseSource: EventSource | null = null;
+  // Segarkan card (angka panggilan last + nama) secara tetap — tidak tergantung
+  // health/native/poll. Bikin display responsif setelah 'Selanjutnya'/recall
+  // tanpa menunggu WS native. 1000ms = A1a: SSE (real-time) diganti polling,
+  // refresh 1s masih jauh lebih cepat dari poll fallback (~2s) dan menekan beban
+  // 2 endpoint/tick MORBIS ~2.9x dari 350ms. Naikkan lagi bila MORBIS terbebani.
+  const CARD_MS = 1000;
 
   // Badge status (pojok kanan-atas): memberi tahu petugas bahwa refresh berjalan
   // ("MEMPERBARUI…") vs selesai ("SIAP") — menandakan delay itu normal, bukan freeze.
@@ -772,6 +766,12 @@ declare global {
   // (>CARD_MS per fetch) request tidak menumpuk/overlap — server-friendly.
   async function refreshCardNumber(): Promise<void> {
     const tickT0 = Date.now(); // untuk indikator jaringan lambat (fetch >1s)
+    // Tab tak terlihat (kiosk pindah tab/minimize) → skip fetch MORBIS, tetap
+    // jadwal ulang (P5): beban dari tab hidden = nol, resume otomatis saat aktif.
+    if (document.hidden) {
+      cardTimer = window.setTimeout(() => void refreshCardNumber(), CARD_MS);
+      return;
+    }
     setStatus('loading');
     processLocalRecall(); // recall lokal diproses duluan, tak peduli fetch gagal/tidak
     try {
@@ -935,31 +935,9 @@ declare global {
     }
   }
 
-  // SSE listener — subscribe ke /api/queue/stream. Saat event masuk (CALL,
-  // DONE, RECALL, dll), langsung trigger refreshCardNumber() tanpa tunggu
-  // CARD_MS timeout. Jika SSE gagal (nginx timeout / server down), biarkan
-  // polling tetap jalan sebagai fallback.
-  async function startSseListener(): Promise<void> {
-    try {
-      const base = await probeFarmasiAppBase();
-      _sseSource = new EventSource(base + '/api/queue/stream');
-      _sseSource.onmessage = () => {
-        _sseConnected = true;
-        // Force refresh segera — batalkan timer yang sedang berjalan
-        if (cardTimer !== null) {
-          clearTimeout(cardTimer);
-          cardTimer = null;
-        }
-        void refreshCardNumber();
-      };
-      _sseSource.onerror = () => {
-        _sseConnected = false;
-        // Jangan close — EventSource auto-reconnect. Biarkan fallback ke polling.
-      };
-    } catch {
-      // probeFarmasiAppBase gagal — biarkan polling jalan
-    }
-  }
+  // (A1a) SSE listener dihapus — polling 1s + koneksi WS native sudah cukup:
+  // SSE danau 1 worker PHP-FPM per tab tersambung selamanya (while(true) di
+  // stream()), akar lambatnya sistem. Refresh card tetap via refreshCardNumber().
 
   // P1: HANYA mengubah DOM bila panel punya data valid. Kalau panel kosong
   // (atau API gagal), DOM di-biarkan apa adanya — extension TIDAK menghapus/
@@ -2068,12 +2046,6 @@ declare global {
       // recursive setTimeout (lihat finally di refreshCardNumber): panggil
       // sekali → tick berikutnya dijadwalkan sendiri setelah fetch selesai.
       void refreshCardNumber();
-    }
-
-    // SSE: subscribe ke /api/queue/stream — real-time update tanpa polling.
-    // Fallback ke polling jika SSE gagal (server tidak support / nginx block).
-    if (typeof EventSource !== 'undefined' && !_sseConnected) {
-      void startSseListener();
     }
   }
 
