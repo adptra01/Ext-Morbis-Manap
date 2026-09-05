@@ -1,0 +1,880 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MORBIS Ext Unofficial</title>
+    <link rel="icon" href="https://adptra01.github.io/Ext-Morbis-Manap/icons/bluemorbis32.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bg: #0a0e17;
+        --bg-card: #111827;
+        --bg-card-hover: #1a2332;
+        --border: #1e293b;
+        --border-accent: #0ea5e9;
+        --text: #f1f5f9;
+        --text-muted: #94a3b8;
+        --accent: #0ea5e9;
+        --accent-glow: rgba(14, 165, 233, 0.15);
+        --accent-secondary: #06b6d4;
+        --green: #10b981;
+        --amber: #f59e0b;
+        --rose: #f43f5e;
+        --radius: 16px;
+        --radius-sm: 10px;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family:
+          'Plus Jakarta Sans',
+          -apple-system,
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* ── Grain overlay ── */
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        pointer-events: none;
+        opacity: 0.03;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      }
+
+      /* ── Ambient glow ── */
+      .glow-orb {
+        position: fixed;
+        border-radius: 50%;
+        filter: blur(120px);
+        pointer-events: none;
+        z-index: 0;
+      }
+      .glow-orb--1 {
+        width: 600px;
+        height: 600px;
+        top: -200px;
+        left: -100px;
+        background: radial-gradient(circle, rgba(14, 165, 233, 0.08), transparent 70%);
+      }
+      .glow-orb--2 {
+        width: 500px;
+        height: 500px;
+        bottom: -150px;
+        right: -100px;
+        background: radial-gradient(circle, rgba(6, 182, 212, 0.06), transparent 70%);
+      }
+
+      /* ── Nav ── */
+      nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        padding: 0 24px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(10, 14, 23, 0.8);
+        backdrop-filter: blur(20px) saturate(1.4);
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+        font-size: 15px;
+        letter-spacing: -0.02em;
+      }
+      .nav-brand img {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+      }
+      .nav-links {
+        display: flex;
+        gap: 8px;
+      }
+      .nav-links a {
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 500;
+        padding: 6px 14px;
+        border-radius: 8px;
+        transition: all 0.2s;
+      }
+      .nav-links a:hover {
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      /* ── Hero ── */
+      .hero {
+        position: relative;
+        z-index: 1;
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 120px 24px 80px;
+        text-align: center;
+      }
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 16px 6px 8px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: rgba(14, 165, 233, 0.06);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--accent);
+        letter-spacing: 0.03em;
+        margin-bottom: 32px;
+        animation: fadeInUp 0.6s ease both;
+      }
+      .hero-badge .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--green);
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+        animation: pulse 2s infinite;
+      }
+      .hero h1 {
+        font-size: clamp(40px, 7vw, 80px);
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        line-height: 1.05;
+        max-width: 800px;
+        animation: fadeInUp 0.6s ease 0.1s both;
+      }
+      .hero h1 .accent {
+        color: var(--accent);
+      }
+      .hero p {
+        margin-top: 20px;
+        font-size: 17px;
+        color: var(--text-muted);
+        max-width: 520px;
+        line-height: 1.7;
+        animation: fadeInUp 0.6s ease 0.2s both;
+      }
+      .hero-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 40px;
+        flex-wrap: wrap;
+        justify-content: center;
+        animation: fadeInUp 0.6s ease 0.3s both;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 28px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        cursor: pointer;
+        border: none;
+        font-family: inherit;
+      }
+      .btn--primary {
+        background: var(--accent);
+        color: #fff;
+        box-shadow:
+          0 0 0 1px rgba(14, 165, 233, 0.3),
+          0 4px 20px rgba(14, 165, 233, 0.25);
+      }
+      .btn--primary:hover {
+        transform: translateY(-2px);
+        box-shadow:
+          0 0 0 1px rgba(14, 165, 233, 0.5),
+          0 8px 30px rgba(14, 165, 233, 0.35);
+      }
+      .btn--ghost {
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text);
+        border: 1px solid var(--border);
+      }
+      .btn--ghost:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+      }
+
+      /* ── Browser compat row ── */
+      .browsers {
+        display: flex;
+        gap: 24px;
+        margin-top: 48px;
+        animation: fadeInUp 0.6s ease 0.4s both;
+      }
+      .browsers span {
+        font-size: 12px;
+        color: var(--text-muted);
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .browsers .check {
+        color: var(--green);
+        font-weight: 700;
+      }
+
+      /* ── Sections ── */
+      section {
+        position: relative;
+        z-index: 1;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 100px 24px;
+      }
+      .section-label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--accent);
+        margin-bottom: 12px;
+      }
+      .section-title {
+        font-size: clamp(28px, 4vw, 40px);
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1.15;
+        margin-bottom: 16px;
+      }
+      .section-desc {
+        font-size: 16px;
+        color: var(--text-muted);
+        max-width: 540px;
+        line-height: 1.7;
+        margin-bottom: 56px;
+      }
+
+      /* ── Features grid ── */
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+      .feature-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 32px 28px;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        overflow: hidden;
+      }
+      .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      .feature-card:hover {
+        border-color: rgba(14, 165, 233, 0.2);
+        background: var(--bg-card-hover);
+        transform: translateY(-4px);
+      }
+      .feature-card:hover::before {
+        opacity: 1;
+      }
+      .feature-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        font-size: 20px;
+      }
+      .feature-icon--blue {
+        background: rgba(14, 165, 233, 0.1);
+        color: var(--accent);
+      }
+      .feature-icon--green {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--green);
+      }
+      .feature-icon--amber {
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--amber);
+      }
+      .feature-icon--rose {
+        background: rgba(244, 63, 94, 0.1);
+        color: var(--rose);
+      }
+      .feature-icon--cyan {
+        background: rgba(6, 182, 212, 0.1);
+        color: var(--accent-secondary);
+      }
+      .feature-card h3 {
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        margin-bottom: 8px;
+      }
+      .feature-card p {
+        font-size: 13.5px;
+        color: var(--text-muted);
+        line-height: 1.65;
+      }
+
+      /* ── Install steps ── */
+      .steps {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        position: relative;
+      }
+      .steps::before {
+        content: '';
+        position: absolute;
+        left: 23px;
+        top: 48px;
+        bottom: 48px;
+        width: 1px;
+        background: linear-gradient(to bottom, var(--accent), var(--border), transparent);
+      }
+      .step {
+        display: flex;
+        gap: 24px;
+        padding: 28px 0;
+        position: relative;
+      }
+      .step-num {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        border-radius: 14px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--accent);
+        position: relative;
+        z-index: 1;
+      }
+      .step-content h3 {
+        font-size: 17px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        letter-spacing: -0.01em;
+      }
+      .step-content p {
+        font-size: 14px;
+        color: var(--text-muted);
+        line-height: 1.65;
+      }
+      .step-content code {
+        display: inline;
+        padding: 2px 8px;
+        border-radius: 6px;
+        background: rgba(14, 165, 233, 0.08);
+        border: 1px solid rgba(14, 165, 233, 0.15);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12.5px;
+        color: var(--accent);
+      }
+
+      /* ── Config table ── */
+      .config-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 32px;
+      }
+      .config-table th {
+        text-align: left;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--text-muted);
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border);
+      }
+      .config-table td {
+        padding: 14px 16px;
+        font-size: 14px;
+        border-bottom: 1px solid rgba(30, 41, 59, 0.5);
+      }
+      .config-table td:first-child {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        color: var(--accent);
+      }
+      .config-table tr:hover td {
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      /* ── Footer ── */
+      footer {
+        position: relative;
+        z-index: 1;
+        border-top: 1px solid var(--border);
+        padding: 40px 24px;
+        text-align: center;
+      }
+      footer p {
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+      footer a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      footer a:hover {
+        text-decoration: underline;
+      }
+
+      /* ── Animations ── */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      /* ── Responsive ── */
+      @media (max-width: 768px) {
+        .features-grid {
+          grid-template-columns: 1fr;
+        }
+        .nav-links {
+          display: none;
+        }
+        .browsers {
+          flex-wrap: wrap;
+          justify-content: center;
+        }
+        .hero {
+          padding: 100px 20px 60px;
+        }
+        section {
+          padding: 60px 20px;
+        }
+        .steps::before {
+          left: 23px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="glow-orb glow-orb--1"></div>
+    <div class="glow-orb glow-orb--2"></div>
+
+    <nav>
+      <div class="nav-brand">
+        <img
+          src="https://adptra01.github.io/Ext-Morbis-Manap/icons/bluemorbis32.png"
+          alt="MORBIS"
+        />
+        MORBIS Ext
+      </div>
+      <div class="nav-links">
+        <a href="#features">Fitur</a>
+        <a href="#install">Pasang</a>
+        <a href="#config">Konfigurasi</a>
+        <a href="https://github.com/adptra01/Ext-Morbis-Manap" target="_blank">GitHub</a>
+      </div>
+    </nav>
+
+    <!-- ── Hero ── -->
+    <section class="hero">
+      <div class="hero-badge">
+        <span class="dot"></span>
+        v1.4.0 — Stable Release
+      </div>
+      <h1>Ekstensi <span class="accent">MORBIS</span> untuk SIMRS</h1>
+      <p>
+        Buka detail pasien di tab baru, batch upload, antrian farmasi, telaah resep — semuanya dalam
+        satu klik.
+      </p>
+      <div class="hero-actions">
+        <a
+          href="https://github.com/adptra01/Ext-Morbis-Manap/tree/main"
+          class="btn btn--primary"
+          target="_blank"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path
+              d="M8 1v10M4 7l4 4 4-4"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path d="M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+          Download ZIP
+        </a>
+        <a
+          href="https://github.com/adptra01/Ext-Morbis-Manap/tree/main/deploy"
+          class="btn btn--ghost"
+          target="_blank"
+        >
+          Auto Install (.reg)
+        </a>
+      </div>
+      <div class="browsers">
+        <span><span class="check">&#10003;</span> Edge</span>
+        <span><span class="check">&#10003;</span> Chrome</span>
+        <span><span class="check">&#10003;</span> Firefox</span>
+        <span><span class="check">&#10003;</span> Brave</span>
+      </div>
+    </section>
+
+    <!-- ── Features ── -->
+    <section id="features">
+      <div class="section-label">Fitur</div>
+      <div class="section-title">Semua yang dibutuhkan,<br />satu ekstensi</div>
+      <div class="section-desc">
+        Dirancang khusus untuk alur kerja SIMRS MORBIS — dari pencarian pasien hingga pengelolaan
+        antrian farmasi.
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon feature-icon--blue">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+              <polyline points="10 17 15 12 10 7" />
+              <line x1="15" y1="12" x2="3" y2="12" />
+            </svg>
+          </div>
+          <h3>Buka di Tab Baru</h3>
+          <p>Detail pasien langsung terbuka di tab baru — tidak perlu klik bolak-balik.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon feature-icon--green">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+          </div>
+          <h3>Batch Upload</h3>
+          <p>Upload banyak file sekaligus — hemat waktu untuk dokumentasi yang banyak.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon feature-icon--amber">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+            </svg>
+          </div>
+          <h3>Telaah Resep</h3>
+          <p>Fitur telaah resep dengan cetak portrait — praktis untuk dokumentasi farmasi.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon feature-icon--rose">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12 2a10 10 0 1 0 10 10H12V2z" />
+              <path d="M20.66 7A10 10 0 0 0 14 2v6h6.66z" fill="currentColor" opacity="0.3" />
+            </svg>
+          </div>
+          <h3>Antrian Farmasi</h3>
+          <p>Kelola antrian obat dengan display TV, operator panel, dan TTS otomatis.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon feature-icon--cyan">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="3" />
+              <path
+                d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+              />
+            </svg>
+          </div>
+          <h3>Sidepanel Admin</h3>
+          <p>
+            Kontrol semua fitur dari sidepanel — filter, role switching, dan konfigurasi real-time.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon feature-icon--blue">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+          </div>
+          <h3>Enterprise Ready</h3>
+          <p>Auto install via registry untuk deploymententerprise — zero-touch installation.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Install ── -->
+    <section id="install">
+      <div class="section-label">Instalasi</div>
+      <div class="section-title">Tiga langkah sederhana</div>
+      <div class="section-desc">
+        Pilih metode yang paling cocok — manual download atau auto install untuk enterprise.
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px">
+        <!-- Manual -->
+        <div>
+          <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 24px; color: var(--accent)">
+            Method 1: Download ZIP
+          </h3>
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <h3>Download dari GitHub</h3>
+                <p>
+                  Buka halaman
+                  <a
+                    href="https://github.com/adptra01/Ext-Morbis-Manap/tree/main"
+                    style="color: var(--accent); text-decoration: none"
+                    >main branch</a
+                  >, klik <code>Code</code> lalu <code>Download ZIP</code>.
+                </p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <h3>Extract & Load</h3>
+                <p>
+                  Extract ZIP, buka <code>edge://extensions/</code>, aktifkan Developer mode, klik
+                  <code>Load unpacked</code> lalu pilih folder hasil extract.
+                </p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-content">
+                <h3>Selesai</h3>
+                <p>Ekstensi langsung aktif. Icon MORBIS muncul di toolbar browser.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Enterprise -->
+        <div>
+          <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 24px; color: var(--amber)">
+            Method 2: Auto Install (.reg)
+          </h3>
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <h3>Download File .reg</h3>
+                <p>
+                  Buka halaman
+                  <a
+                    href="https://github.com/adptra01/Ext-Morbis-Manap/tree/main/deploy"
+                    style="color: var(--accent); text-decoration: none"
+                    >deploy</a
+                  >, download <code>Install_Morbis_Ext.reg</code>.
+                </p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <h3>Double-Click</h3>
+                <p>
+                  jalankan file .reg, klik <code>Yes</code> lalu <code>OK</code> pada dialog
+                  Windows.
+                </p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-content">
+                <h3>Restart Browser</h3>
+                <p>Tutup semua jendela browser, buka kembali — ekstensi otomatis terinstal.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Config ── -->
+    <section id="config">
+      <div class="section-label">Konfigurasi</div>
+      <div class="section-title">Branching strategy</div>
+      <div class="section-desc">
+        Dua branch, satu tujuan — source code terpisah dari distribusi.
+      </div>
+
+      <table class="config-table">
+        <thead>
+          <tr>
+            <th>Branch</th>
+            <th>Isi</th>
+            <th>Tujuan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>dev</td>
+            <td>Source code lengkap (src/, scripts/, tests/)</td>
+            <td>Pengembangan</td>
+          </tr>
+          <tr>
+            <td>main</td>
+            <td>File ekstensi di root (manifest.json, background.js, dll)</td>
+            <td>Distribusi / Edge Add-ons</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p style="margin-top: 24px; font-size: 14px; color: var(--text-muted); line-height: 1.7">
+        Push ke
+        <code
+          style="
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(14, 165, 233, 0.08);
+            border: 1px solid rgba(14, 165, 233, 0.15);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--accent);
+          "
+          >dev</code
+        >
+        otomatis build dan deploy isi ke
+        <code
+          style="
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(14, 165, 233, 0.08);
+            border: 1px solid rgba(14, 165, 233, 0.15);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--accent);
+          "
+          >main</code
+        >
+        via GitHub Actions. File ekstensi ada di root — download langsung siap pakai.
+      </p>
+    </section>
+
+    <!-- ── Footer ── -->
+    <footer>
+      <p>MORBIS Ext Unofficial &mdash; built for <a href="#">RSUD Kota Manap</a></p>
+    </footer>
+  </body>
+</html>

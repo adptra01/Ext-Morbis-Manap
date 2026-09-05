@@ -1,0 +1,27 @@
+# main branch — extension files at root + docs for GitHub Pages
+/*
+!.gitignore
+!README.md
+!manifest.json
+!background.js
+!core.js
+!init.js
+!popup.js
+!sidepanel.html
+!sidepanel.js
+!popup/
+!popup/**
+!assets/
+!assets/**
+!chunks/
+!chunks/**
+!features/
+!features/**
+!icons/
+!icons/**
+!rules/
+!rules/**
+!ui/
+!ui/**
+!docs/
+!docs/**
