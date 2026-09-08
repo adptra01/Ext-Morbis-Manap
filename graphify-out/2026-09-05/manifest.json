@@ -60,8 +60,8 @@
     "semantic_hash": "7d0cbe8cf25240a82865d175a94ebffc"
   },
   "manifest.json": {
-    "mtime": 1788164987.0975542,
-    "ast_hash": "d4a905b9233960ceff3c1d9c365f190f",
+    "mtime": 1787559277.4257493,
+    "ast_hash": "e010be2bb376d6b993f534ef67e9ed20",
     "semantic_hash": ""
   },
   "mcp-servers/morbis-devtools/server.py": {
@@ -70,8 +70,8 @@
     "semantic_hash": "0b4be4b15db23a9b65ef2851bf914c37"
   },
   "package.json": {
-    "mtime": 1788269514.3919854,
-    "ast_hash": "af230c603d4df63d4b0a9c6cf244c1e8",
+    "mtime": 1787333360.7183652,
+    "ast_hash": "8e390c6e4c8f0de09ec8a6eba754f37b",
     "semantic_hash": ""
   },
   "popup.js": {
@@ -100,8 +100,8 @@
     "semantic_hash": "e45b4be960a63be199fb42618445aa07"
   },
   "scripts/build.mjs": {
-    "mtime": 1788421191.1324766,
-    "ast_hash": "9fa080c12723726707eb40f5d553239f",
+    "mtime": 1787559556.0378904,
+    "ast_hash": "fe3ebcdb8c2194434ebcd7cdbc5b9069",
     "semantic_hash": ""
   },
   "scripts/deploy.mjs": {
@@ -130,8 +130,8 @@
     "semantic_hash": ""
   },
   "src/background.ts": {
-    "mtime": 1788148405.478269,
-    "ast_hash": "b1beeca5d66866a9ca2e1505de5a972f",
+    "mtime": 1787559470.6482742,
+    "ast_hash": "cf0b69c291c899013db35bc97ce55867",
     "semantic_hash": ""
   },
   "src/core.ts": {
@@ -140,8 +140,8 @@
     "semantic_hash": ""
   },
   "src/features/antrianTools.ts": {
-    "mtime": 1788589989.8752818,
-    "ast_hash": "b8e6c02e9e696d704e90c1265c560509",
+    "mtime": 1787550610.5688365,
+    "ast_hash": "3fae315b30a8ee13cbdd28136f4f5943",
     "semantic_hash": ""
   },
   "src/features/batchDeleteFiles.ts": {
@@ -245,8 +245,8 @@
     "semantic_hash": ""
   },
   "src/features/resumeRanapTab/App.tsx": {
-    "mtime": 1788351858.9179797,
-    "ast_hash": "232b0652a894fd19df9aee3de99a8e96",
+    "mtime": 1787333360.7900188,
+    "ast_hash": "d539fb411025b05b86447b1b4b820b13",
     "semantic_hash": ""
   },
   "src/features/resumeRanapTab/ErrorBoundary.tsx": {
@@ -315,8 +315,8 @@
     "semantic_hash": ""
   },
   "src/features/resumeTab/mount.tsx": {
-    "mtime": 1788271613.2857957,
-    "ast_hash": "0dc6b49837a203c66fcf2e32ba915e1b",
+    "mtime": 1787508691.2226253,
+    "ast_hash": "120b33a297fecc819af2fcace4f5ebb4",
     "semantic_hash": ""
   },
   "src/features/resumeTab/types.ts": {
@@ -365,8 +365,8 @@
     "semantic_hash": ""
   },
   "src/features/sidepanel/App.tsx": {
-    "mtime": 1788008027.8238337,
-    "ast_hash": "72793d9aa264371ac66832c675106a2c",
+    "mtime": 1787559523.6221175,
+    "ast_hash": "b664321d69ca17609f9f365db5f1037a",
     "semantic_hash": ""
   },
   "src/features/sidepanel/BatchDeletePanel.tsx": {
@@ -395,9 +395,9 @@
     "semantic_hash": "f828dc9919dc8f1a6ab61570d4e89b48"
   },
   "src/features/sidepanel/FeaturesPanel.tsx": {
-    "mtime": 1788002785.2251463,
-    "ast_hash": "fcf93cb88fb5bdd5ff6b52d459935278",
-    "semantic_hash": ""
+    "mtime": 1787333360.8442707,
+    "ast_hash": "d2043e983a3b5018a22c29f05e2d7b8d",
+    "semantic_hash": "d2043e983a3b5018a22c29f05e2d7b8d"
   },
   "src/features/sidepanel/Footer.tsx": {
     "mtime": 1787333360.8455884,
@@ -405,8 +405,8 @@
     "semantic_hash": "0ff64dc1d0f6a59253d37a39016420d0"
   },
   "src/features/sidepanel/RoleSelector.tsx": {
-    "mtime": 1788008425.636244,
-    "ast_hash": "f5ee3d74f780c8e426b57f6324166d2c",
+    "mtime": 1787333360.8470283,
+    "ast_hash": "2fe12fac3fe19c45bdc454df49db86b3",
     "semantic_hash": ""
   },
   "src/features/sidepanel/StatusCard.tsx": {
@@ -440,13 +440,13 @@
     "semantic_hash": ""
   },
   "src/init.ts": {
-    "mtime": 1788008027.827213,
-    "ast_hash": "6ce599227fa0d1500e0af3a405ad821b",
+    "mtime": 1787559420.4308589,
+    "ast_hash": "9fb33e5729a155abdece99fa1bdb3ee5",
     "semantic_hash": ""
   },
   "src/popup/App.tsx": {
-    "mtime": 1788002773.2863998,
-    "ast_hash": "7dd1ad3050df54b1529236f02ed0a9a4",
+    "mtime": 1787365654.1104095,
+    "ast_hash": "63b12dd808b5e845ea68c2a74d383b94",
     "semantic_hash": ""
   },
   "src/popup/DomainPanel.tsx": {
@@ -465,8 +465,8 @@
     "semantic_hash": "eb6bffc9455e8b1a28f5c0546668126d"
   },
   "src/popup/StatusCard.tsx": {
-    "mtime": 1788008377.5860834,
-    "ast_hash": "bcecf336ac9f093eade4e660402fb7e3",
+    "mtime": 1787333360.8621886,
+    "ast_hash": "2dede923d1af71a8fac8899bdc61d7e9",
     "semantic_hash": ""
   },
   "src/popup/types.ts": {
@@ -480,8 +480,8 @@
     "semantic_hash": "d7e615bc1fe1ae86a47a5769d46013c6"
   },
   "src/shared/messaging.ts": {
-    "mtime": 1788146274.171794,
-    "ast_hash": "e89cd0046447eabb49481d3bd736f30e",
+    "mtime": 1787333360.867001,
+    "ast_hash": "41b9210136725a31f5d8b540e314d962",
     "semantic_hash": ""
   },
   "src/shared/storage.ts": {
@@ -530,8 +530,8 @@
     "semantic_hash": "df2bf6de2f3db891913275d5c3df4925"
   },
   "src/ui/components/select.tsx": {
-    "mtime": 1788008027.8284435,
-    "ast_hash": "2457f26186f66fd4cfe863147924ce54",
+    "mtime": 1787377312.7991073,
+    "ast_hash": "24afb155762f11b69a5abb01b181f404",
     "semantic_hash": ""
   },
   "src/ui/components/switch.tsx": {
@@ -570,8 +570,8 @@
     "semantic_hash": "1071ea792b39f85de9c49b02e651e988"
   },
   "agent-browser.json": {
-    "mtime": 1788200824.1640227,
-    "ast_hash": "e806f43124fae8bcb409ae06ae72a556",
+    "mtime": 1787333359.7959647,
+    "ast_hash": "567b0db43b011fb48d35e1cb411f230e",
     "semantic_hash": ""
   },
   "popup/main.tsx": {
@@ -580,8 +580,8 @@
     "semantic_hash": ""
   },
   "src/features/cancelButton.ts": {
-    "mtime": 1787579082.481652,
-    "ast_hash": "cf8c4e09bc236babbda7cf7a82b4d7d6",
+    "mtime": 1787333360.7564123,
+    "ast_hash": "c6d0de30715086d3a64adb556a9abfdc",
     "semantic_hash": ""
   },
   "src/features/shared/usageLog.ts": {
@@ -595,8 +595,8 @@
     "semantic_hash": ""
   },
   ".github/workflows/deploy-to-main.yml": {
-    "mtime": 1788014871.6378908,
-    "ast_hash": "20be38b191218d6d0e05d8437a6d0ea6",
+    "mtime": 1787333359.7914739,
+    "ast_hash": "15bf4581e20acd885a493ea4b190d859",
     "semantic_hash": ""
   },
   "AGENTS.md": {
@@ -605,8 +605,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1788014162.1698513,
-    "ast_hash": "1e31cec00a44b642df2933a3d21da98c",
+    "mtime": 1787333359.7947786,
+    "ast_hash": "f0b574d31980d106e4da71b4242ed014",
     "semantic_hash": ""
   },
   "VERIFY-PHASE1-3B.md": {
@@ -705,8 +705,8 @@
     "semantic_hash": ""
   },
   "src/features/antrianFarmasiDisplay.ts": {
-    "mtime": 1788578321.142598,
-    "ast_hash": "c3fc0f0b0ba1ad7cc651d188b8f76a68",
+    "mtime": 1787333360.7420115,
+    "ast_hash": "c1c57223155bf4b780220f9842444a11",
     "semantic_hash": ""
   },
   "src/features/shared/queueRule.ts": {
@@ -740,8 +740,8 @@
     "semantic_hash": ""
   },
   "src/features/farmasiAntrolShift.ts": {
-    "mtime": 1788165111.6699939,
-    "ast_hash": "03efcf4bd96d3db11e8455e23563b2dc",
+    "mtime": 1787560095.43221,
+    "ast_hash": "fe83b9e36b83aa18a89605497f18c584",
     "semantic_hash": ""
   },
   "src/features/farmasiBridge.ts": {
@@ -750,8 +750,8 @@
     "semantic_hash": ""
   },
   "src/features/farmasiIssue.ts": {
-    "mtime": 1787932614.245329,
-    "ast_hash": "fd20330956de51309e00b4457b130c07",
+    "mtime": 1787333360.7722561,
+    "ast_hash": "46b803a344dbee6997aa33b7f54b8bd3",
     "semantic_hash": ""
   },
   "src/features/farmasiRecallDeleg.ts": {
@@ -760,8 +760,8 @@
     "semantic_hash": ""
   },
   "src/features/penerimaanAntrolCetak.ts": {
-    "mtime": 1787906391.5430226,
-    "ast_hash": "863f1ff225d571958b35aa44af70eb0f",
+    "mtime": 1787333360.7823694,
+    "ast_hash": "a2f14413d678f3def31140c52a62c6de",
     "semantic_hash": ""
   },
   "src/features/shared/farmasiEvent.ts": {
@@ -785,8 +785,8 @@
     "semantic_hash": ""
   },
   "src/features/shared/printKartu.ts": {
-    "mtime": 1787932614.2877626,
-    "ast_hash": "059b7e65dc793594ddd50a2296a4973d",
+    "mtime": 1787547183.8917067,
+    "ast_hash": "1cda4c1d8157e0ae57415fd1b028112b",
     "semantic_hash": ""
   },
   "tts_service.py": {
@@ -925,23 +925,23 @@
     "semantic_hash": ""
   },
   "src/features/antrianFarmasiDisplayApp.ts": {
-    "mtime": 1788452545.6920846,
-    "ast_hash": "723e5a9832307fced7f91d04d91c44e7",
+    "mtime": 1787333360.7431548,
+    "ast_hash": "e63c3bd3e68db8c03d2c94038ef871d4",
     "semantic_hash": ""
   },
   "src/features/antrianFarmasiOperator.ts": {
-    "mtime": 1788582532.802092,
-    "ast_hash": "2c6843ce9e531c45e84663d861a7eebd",
+    "mtime": 1787333360.7447588,
+    "ast_hash": "462a4bc21b589cf4377f178b0edab662",
     "semantic_hash": ""
   },
   "src/features/shared/farmasiQueueSync.ts": {
-    "mtime": 1788148405.5161366,
-    "ast_hash": "9140092e336b7c5dbf38453445f71f10",
+    "mtime": 1787560131.6639452,
+    "ast_hash": "23dbecf9dd198a10c245458a1d1269a2",
     "semantic_hash": ""
   },
   ".commandcode/settings.json": {
-    "mtime": 1787563456.713463,
-    "ast_hash": "ceca4b39321a01d07fa89be1855fe1f9",
+    "mtime": 1787557869.1232753,
+    "ast_hash": "5a6147a0316088a063381713f0725b73",
     "semantic_hash": ""
   },
   "pack/package.json": {
@@ -1045,148 +1045,13 @@
     "semantic_hash": ""
   },
   ".commandcode/taste/taste.md": {
-    "mtime": 1787563456.7973056,
-    "ast_hash": "6243da75ac1135f2454787324fa06b9e",
+    "mtime": 1787559299.0641723,
+    "ast_hash": "89eb0555fe32da4651d6bf8f557a9c04",
     "semantic_hash": ""
   },
   "docs/UI-COMPONENT-ROLLOUT.md": {
-    "mtime": 1787561299.5894322,
-    "ast_hash": "cd371fafd1ae89f854d6a84296d08cff",
-    "semantic_hash": ""
-  },
-  "src/features/penjualanResepAntrian.ts": {
-    "mtime": 1788166137.346793,
-    "ast_hash": "52066e1a0679b00482824021be31c415",
-    "semantic_hash": ""
-  },
-  "src/features/shared/antrianActions.ts": {
-    "mtime": 1788166298.3081422,
-    "ast_hash": "9b2843f3af584bd2df402c72cc0bf447",
-    "semantic_hash": ""
-  },
-  "src/features/shared/config.ts": {
-    "mtime": 1787931481.334337,
-    "ast_hash": "15d0b18cc930825afa0db54e0fb82d60",
-    "semantic_hash": ""
-  },
-  "src/features/telaahResepPrint.ts": {
-    "mtime": 1788409739.1866195,
-    "ast_hash": "fd8699f635aaf6c35fa91431fd2bdc82",
-    "semantic_hash": ""
-  },
-  ".commandcode/taste/user-taste-profile/taste.md": {
-    "mtime": 1787574135.5914524,
-    "ast_hash": "83c2c7b6d19541aae216d42a02acbda7",
-    "semantic_hash": ""
-  },
-  ".github/workflows/deploy-pages.yml": {
-    "mtime": 1788015175.8824508,
-    "ast_hash": "01f126115b33f04b131d7405bebe8aa9",
-    "semantic_hash": ""
-  },
-  ".github/workflows/publish-edge.yml": {
-    "mtime": 1788023938.5533264,
-    "ast_hash": "6880ecf6fe12ecbf8bc60898203039bc",
-    "semantic_hash": ""
-  },
-  "docs/index.html": {
-    "mtime": 1788014532.4490173,
-    "ast_hash": "07d428f4f183f19d783add3bf64bc70f",
-    "semantic_hash": ""
-  },
-  "icons/LOGO.png": {
-    "mtime": 1788032934.6383204,
-    "ast_hash": "4a722915448e35fe0cd53713fcaa8ecd",
-    "semantic_hash": ""
-  },
-  "icons/logo-300-bg.png": {
-    "mtime": 1788025963.8689127,
-    "ast_hash": "f65848c85557174a730ba006e218b67c",
-    "semantic_hash": ""
-  },
-  "icons/logo-300.png": {
-    "mtime": 1788025963.8613904,
-    "ast_hash": "510eaea18f1f296df7f9803bf37b6f4a",
-    "semantic_hash": ""
-  },
-  "icons/promo-large.png": {
-    "mtime": 1788027272.4458232,
-    "ast_hash": "aafd3ec7ba006bf4c4bb844df0ff1899",
-    "semantic_hash": ""
-  },
-  "icons/promo-small.png": {
-    "mtime": 1788027272.4766953,
-    "ast_hash": "ee4611ae04adea6af3e708fc3cbed89d",
-    "semantic_hash": ""
-  },
-  "icons/rsud-logo-128.png": {
-    "mtime": 1788033206.0917995,
-    "ast_hash": "c3e12e49a34840bb65bc341cb89ccb42",
-    "semantic_hash": ""
-  },
-  "icons/rsud-logo-16.png": {
-    "mtime": 1788033206.0864422,
-    "ast_hash": "1f58886cc88aaf4a0799bdc5277a5423",
-    "semantic_hash": ""
-  },
-  "icons/rsud-logo-300-bg.png": {
-    "mtime": 1788033206.099068,
-    "ast_hash": "e8a2a4e6658985fdb9374f006c220e67",
-    "semantic_hash": ""
-  },
-  "icons/rsud-logo-300.png": {
-    "mtime": 1788027749.819643,
-    "ast_hash": "9ae1166a83d11c375442ed0c0ab0da03",
-    "semantic_hash": ""
-  },
-  "icons/rsud-logo-32.png": {
-    "mtime": 1788033206.0873241,
-    "ast_hash": "65fb1ffdf2c6b0e0593426e2aebd4e5e",
-    "semantic_hash": ""
-  },
-  "icons/rsud-logo-48.png": {
-    "mtime": 1788033206.0884302,
-    "ast_hash": "2b9403143f9dffb9e1fe07d20e726cf1",
-    "semantic_hash": ""
-  },
-  "icons/rsud-promo-large.png": {
-    "mtime": 1788033206.1279097,
-    "ast_hash": "6369eac87ce4c473fedb68f30248538e",
-    "semantic_hash": ""
-  },
-  "icons/rsud-promo-small.png": {
-    "mtime": 1788033206.1350365,
-    "ast_hash": "72cb39042b90605596c5a289b9840839",
-    "semantic_hash": ""
-  },
-  "icons/screenshot-1-popup.png": {
-    "mtime": 1788033206.1690965,
-    "ast_hash": "518d294f9a42afc8d1d9ae689198113e",
-    "semantic_hash": ""
-  },
-  "icons/screenshot-2-display.png": {
-    "mtime": 1788033206.2053967,
-    "ast_hash": "101318b5f2ff73e21f34f6d0ee70a820",
-    "semantic_hash": ""
-  },
-  "icons/screenshot-3-operator.png": {
-    "mtime": 1788033206.2375488,
-    "ast_hash": "77a7c05016b84d03dc5e473dddc5ee34",
-    "semantic_hash": ""
-  },
-  "icons/screenshot-4-sidepanel.png": {
-    "mtime": 1788033206.2736678,
-    "ast_hash": "00fc5d7daae42db2f0ef1ede3d8d63b8",
-    "semantic_hash": ""
-  },
-  "icons/screenshot-5-telaah.png": {
-    "mtime": 1788033206.301147,
-    "ast_hash": "49031033b0de0994a6a7ee1061e7e5fa",
-    "semantic_hash": ""
-  },
-  "icons/screenshot-6-batch.png": {
-    "mtime": 1788033206.3298376,
-    "ast_hash": "59f1d95916be2b13880ec080256261ee",
+    "mtime": 1787559819.483092,
+    "ast_hash": "ac89e41d24d079828e5a64212194d467",
     "semantic_hash": ""
   }
 }

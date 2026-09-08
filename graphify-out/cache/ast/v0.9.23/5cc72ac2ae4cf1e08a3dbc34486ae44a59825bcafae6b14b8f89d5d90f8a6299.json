@@ -1,0 +1,207 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_readme_md",
+      "label": "README.md",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_readme_img_src_icons_bluemorbis48_png_width_36_style_vertical_align_middle_morbis_ext_unofficial",
+      "label": "<img src=\"icons/bluemorbis48.png\" width=\"36\" style=\"vertical-align: middle;\"> MORBIS Ext Unofficial",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_readme_cara_pasang",
+      "label": "Cara Pasang",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_readme_method_1_download_zip_recommended",
+      "label": "Method 1: Download ZIP (Recommended)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L9"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_readme_method_2_auto_install_via_registry_enterprise",
+      "label": "Method 2: Auto Install via Registry (Enterprise)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L18"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_readme_cek_instalasi",
+      "label": "Cek Instalasi",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L39"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_readme_troubleshooting",
+      "label": "Troubleshooting",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L56"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_readme_yang_tidak_perlu_dilakukan",
+      "label": "Yang TIDAK Perlu Dilakukan",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L67"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_readme_browser_didukung",
+      "label": "Browser Didukung",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L79"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_readme_branching_strategy",
+      "label": "Branching Strategy",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L87"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_readme_dev_main_ci_cd",
+      "label": "`dev` \u2192 `main` (CI/CD)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L94"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_readme_cara_download",
+      "label": "Cara Download",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L103"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_readme_perbedaan_dengan_branch_biasa",
+      "label": "Perbedaan dengan Branch Biasa",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L112"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_readme_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_readme_img_src_icons_bluemorbis48_png_width_36_style_vertical_align_middle_morbis_ext_unofficial",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_readme_img_src_icons_bluemorbis48_png_width_36_style_vertical_align_middle_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_readme_cara_pasang",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_readme_cara_pasang",
+      "target": "mnt_diskd_projects_ext_morbis_manap_readme_method_1_download_zip_recommended",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_readme_cara_pasang",
+      "target": "mnt_diskd_projects_ext_morbis_manap_readme_method_2_auto_install_via_registry_enterprise",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_readme_img_src_icons_bluemorbis48_png_width_36_style_vertical_align_middle_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_readme_cek_instalasi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L39",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_readme_img_src_icons_bluemorbis48_png_width_36_style_vertical_align_middle_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_readme_troubleshooting",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L56",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_readme_img_src_icons_bluemorbis48_png_width_36_style_vertical_align_middle_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_readme_yang_tidak_perlu_dilakukan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L67",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_readme_img_src_icons_bluemorbis48_png_width_36_style_vertical_align_middle_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_readme_browser_didukung",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L79",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_readme_img_src_icons_bluemorbis48_png_width_36_style_vertical_align_middle_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_readme_branching_strategy",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L87",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_readme_branching_strategy",
+      "target": "mnt_diskd_projects_ext_morbis_manap_readme_dev_main_ci_cd",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L94",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_readme_branching_strategy",
+      "target": "mnt_diskd_projects_ext_morbis_manap_readme_cara_download",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L103",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_readme_branching_strategy",
+      "target": "mnt_diskd_projects_ext_morbis_manap_readme_perbedaan_dengan_branch_biasa",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L112",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}
