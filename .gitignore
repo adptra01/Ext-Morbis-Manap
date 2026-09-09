@@ -45,3 +45,4 @@ pages/
 .agent-browser-profile/
 .agent-notes/
 tts_cache/*
+docs/evidence/*
