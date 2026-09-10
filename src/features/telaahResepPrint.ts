@@ -190,6 +190,20 @@
     // tabel edit tidak tersedia.
     type ResepItem = Record<string, unknown>;
     type EditRow = Record<string, unknown>;
+    // Nama tampil di halaman edit = nama_barang + kekuatan + sediaan + satuan,
+    // mis. "<nama> <kekuatan>, <sediaan> @<satuan>". Komponen kosong dilewati
+    // beserta pemisahnya (terverifikasi cocok dengan kolom nama_barang_tampil).
+    function editDisplayName(row: EditRow): string {
+      const str = (v: unknown): string => (typeof v === 'string' ? v.trim() : '');
+      let display = str(row.nama_barang);
+      const kekuatan = str(row.kekuatan);
+      const sediaan = str(row.sediaan);
+      const satuan = str(row.satuan);
+      if (kekuatan) display += (display ? ' ' : '') + kekuatan;
+      if (sediaan) display += (display ? ', ' : '') + sediaan;
+      if (satuan) display += (display ? ' @' : '') + satuan;
+      return display;
+    }
     function normalizeEditRow(row: EditRow): ResepItem {
       return {
         NO_R: row.no_r,
@@ -198,7 +212,7 @@
         NAMA_RACIKAN: row.nama_racikan,
         ATURAN_PAKAI_MANUAL: row.aturan_pakai_manual,
         JUMLAH_RACIKAN: row.jumlah_racikan,
-        NAMA: row.nama_barang,
+        NAMA: editDisplayName(row),
         KEKUATAN_R_RACIK: row.kekuatan_r_racik,
         KEKUATAN: row.kekuatan,
         JUMLAH_R_PAKAI: row.jumlah_r_pakai,
