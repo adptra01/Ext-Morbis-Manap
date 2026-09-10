@@ -187,6 +187,8 @@ function renderActionBar(state: 'ready' | 'issued', code?: string): void {
  *  atau di kolom kanan form. Fallback: inject ke body (fixed top-right) agar tetap terlihat. */
 function addAntrianBar(): void {
   const findHost = (): HTMLElement | null => {
+    // document_start: body bisa belum ada — return null, tryInject retry via timeout.
+    if (!document.body) return null;
     // Coba 1: fieldset perhatian (sama spt penerimaan)
     const td = Array.from(document.querySelectorAll<HTMLTableCellElement>('td[valign="top"]')).find(
       (c) => c.querySelector('fieldset#perhatian, fieldset[id="perhatian"]'),
