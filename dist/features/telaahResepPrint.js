@@ -68,8 +68,8 @@ var __morbis_feature = (() => {
           params2.get('id_resep') || params2.get('id') || params2.get('penjualan') || '';
         if (!resepId) return;
         const detailUrls = [
-          '/inventory/resep/penerimaan/detail?id=' + resepId,
           '/inventory/penjualan-resep-edit/detail?id=' + resepId,
+          '/inventory/resep/penerimaan/detail?id=' + resepId,
         ];
         for (const url of detailUrls) {
           try {

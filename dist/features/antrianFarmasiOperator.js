@@ -464,15 +464,25 @@ var __morbis_feature = (() => {
 
   // src/features/antrianFarmasiOperator.ts
   var lastCounters = {};
-  var _opRenderIntervalId = null;
-  var _opSseSource = null;
-  async function startOperatorSse() {
+  var _opPollTimer = null;
+  var _opPollBusy = false;
+  var _opPollStarted = false;
+  var _opSig = '';
+  var _opFailStreak = 0;
+  var _fsPollTimer = null;
+  var OP_BACKOFF_MS = [2e3, 5e3, 1e4, 15e3, 3e4];
+  async function pollRender() {
+    if (_opPollBusy) return;
+    _opPollBusy = true;
+    let ok = true;
     try {
-      const base = await probeFarmasiAppBase();
-      _opSseSource = new EventSource(base + '/api/queue/stream');
-      _opSseSource.onmessage = () => void render();
-      _opSseSource.onerror = () => {};
-    } catch {}
+      if (document.hidden) return;
+      ok = await render();
+    } finally {
+      _opPollBusy = false;
+      _opFailStreak = ok ? 0 : Math.min(_opFailStreak + 1, OP_BACKOFF_MS.length - 1);
+      _opPollTimer = window.setTimeout(() => void pollRender(), OP_BACKOFF_MS[_opFailStreak]);
+    }
   }
   var ICONS = {
     speaker:
@@ -519,7 +529,6 @@ var __morbis_feature = (() => {
     racikan: { label: 'Racikan', accent: '#d97706', soft: '#fef3c7' },
   };
   var lastState = '';
-  var POLL_MS = 2e3;
   var lastRows = [];
   var lastTanggal = '';
   function catOf(num) {
@@ -921,70 +930,85 @@ var __morbis_feature = (() => {
   async function render() {
     const st = document.getElementById('ext-op-status');
     try {
-      const res = await fetch(farmasiAppBase() + '/api/queue/display?limit=50', {
-        cache: 'no-store',
-        credentials: 'omit',
-      });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const d = await res.json();
-      lastRows = [...(d.current || []), ...(d.waiting || []), ...(d.called || [])].map((r) => ({
-        id: r.id ?? 0,
-        queue_number: r.queue_number,
-        resep_id: r.resep_id ?? null,
-        nama_pasien: r.nama_pasien ?? null,
-        norm: r.norm ?? null,
-        shift: r.shift ?? null,
-        jenis: r.jenis ?? null,
-        status: r.status,
-        called_at: r.called_at ?? null,
-        counter: r.counter ?? null,
-      }));
-      lastTanggal = d.tanggal;
-      lastCounters = d.counters || {};
-      const key = JSON.stringify({ c: d.current, q: d.queues });
-      if (key !== lastState) {
-        lastState = key;
-        const colT = document.getElementById('ext-col-tunggal');
-        const colR = document.getElementById('ext-col-racikan');
-        const colP = document.getElementById('ext-col-panel');
-        if (colT && colR && colP) {
-          const queues = d.queues || [];
-          const sortNum = (a, b) =>
-            a.queue_number.localeCompare(b.queue_number, void 0, { numeric: true });
-          const byCat = (cat) => ({
-            active: (d.current || []).filter((r) => catOf(r.queue_number) === cat).slice(0, 5),
-            next: queues
-              .filter((r) => catOf(r.queue_number) === cat && r.status === 'WAITING')
-              .sort(sortNum),
-          });
-          const t = byCat('tunggal');
-          const r2 = byCat('racikan');
-          colT.innerHTML = column('tunggal', t.active, t.next);
-          colR.innerHTML = column('racikan', r2.active, r2.next);
-          const special = queues
-            .filter((r) => r.status === 'DEFERRED' || r.status === 'SKIPPED')
-            .sort(sortNum);
-          colP.innerHTML =
-            '<div style="display:flex;flex-direction:column;min-height:0;height:100%;overflow:hidden;"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:8px;flex-shrink:0;">Penerbitan & Kasus Khusus</div><div style="display:flex;gap:8px;margin-bottom:12px;flex-shrink:0;"><button id="ext-op-print-sheet2" data-tip="Cetak daftar semua nomor antrian hari ini (format A4)" title="Cetak Sheet A4" style="flex:1;padding:9px;border:1px solid #2193cf;background:#2193cf;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;">' +
-            svg('printer', 14, '#fff') +
-            'Sheet A4</button><button id="ext-op-refresh2" data-tip="Segarkan data antrean dari app" title="Segarkan" style="flex:1;padding:9px;border:1px solid #6c757d;background:#6c757d;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;">Segarkan</button></div><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:6px;flex-shrink:0;">Ditunda / Lewat</div><div style="flex-shrink:0;max-height:170px;overflow-y:auto;padding-right:4px;">' +
-            (special.length
-              ? special.map((r) => miniRow(r, 'op-sp')).join('')
-              : '<div style="padding:10px;color:#adb5bd;text-align:center;font-size:12px;">Tidak ada</div>') +
-            '</div><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin:14px 0 6px;flex-shrink:0;">Selesai Hari Ini</div><div style="flex:1;min-height:0;overflow-y:auto;padding-right:4px;">' +
-            (queues
-              .filter((r) => r.status === 'DONE')
-              .sort(sortNum)
-              .map((r) => miniRow(r, 'op-done'))
-              .join('') ||
-              '<div style="padding:10px;color:#adb5bd;text-align:center;font-size:12px;">Belum ada</div>') +
-            '</div></div>';
+      const ctrl = new AbortController();
+      const lead = window.setTimeout(() => ctrl.abort(), 5e3);
+      try {
+        const url =
+          farmasiAppBase() +
+          '/api/queue/display?limit=50' +
+          (_opSig ? '&since=' + encodeURIComponent(_opSig) : '');
+        const res = await fetch(url, {
+          cache: 'no-store',
+          credentials: 'omit',
+          signal: ctrl.signal,
+        });
+        if (res.status === 304) return true;
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const d = await res.json();
+        if (d && d.signal) _opSig = d.signal;
+        lastRows = [...(d.current || []), ...(d.waiting || []), ...(d.called || [])].map((r) => ({
+          id: r.id ?? 0,
+          queue_number: r.queue_number,
+          resep_id: r.resep_id ?? null,
+          nama_pasien: r.nama_pasien ?? null,
+          norm: r.norm ?? null,
+          shift: r.shift ?? null,
+          jenis: r.jenis ?? null,
+          status: r.status,
+          called_at: r.called_at ?? null,
+          counter: r.counter ?? null,
+        }));
+        lastTanggal = d.tanggal;
+        lastCounters = d.counters || {};
+        const key = JSON.stringify({ c: d.current, q: d.queues });
+        if (key !== lastState) {
+          lastState = key;
+          const colT = document.getElementById('ext-col-tunggal');
+          const colR = document.getElementById('ext-col-racikan');
+          const colP = document.getElementById('ext-col-panel');
+          if (colT && colR && colP) {
+            const queues = d.queues || [];
+            const sortNum = (a, b) =>
+              a.queue_number.localeCompare(b.queue_number, void 0, { numeric: true });
+            const byCat = (cat) => ({
+              active: (d.current || []).filter((r) => catOf(r.queue_number) === cat).slice(0, 5),
+              next: queues
+                .filter((r) => catOf(r.queue_number) === cat && r.status === 'WAITING')
+                .sort(sortNum),
+            });
+            const t = byCat('tunggal');
+            const r2 = byCat('racikan');
+            colT.innerHTML = column('tunggal', t.active, t.next);
+            colR.innerHTML = column('racikan', r2.active, r2.next);
+            const special = queues
+              .filter((r) => r.status === 'DEFERRED' || r.status === 'SKIPPED')
+              .sort(sortNum);
+            colP.innerHTML =
+              '<div style="display:flex;flex-direction:column;min-height:0;height:100%;overflow:hidden;"><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:8px;flex-shrink:0;">Penerbitan & Kasus Khusus</div><div style="display:flex;gap:8px;margin-bottom:12px;flex-shrink:0;"><button id="ext-op-print-sheet2" data-tip="Cetak daftar semua nomor antrian hari ini (format A4)" title="Cetak Sheet A4" style="flex:1;padding:9px;border:1px solid #2193cf;background:#2193cf;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;">' +
+              svg('printer', 14, '#fff') +
+              'Sheet A4</button><button id="ext-op-refresh2" data-tip="Segarkan data antrean dari app" title="Segarkan" style="flex:1;padding:9px;border:1px solid #6c757d;background:#6c757d;color:#fff;border-radius:8px;cursor:pointer;font-weight:700;">Segarkan</button></div><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin-bottom:6px;flex-shrink:0;">Ditunda / Lewat</div><div style="flex-shrink:0;max-height:170px;overflow-y:auto;padding-right:4px;">' +
+              (special.length
+                ? special.map((r) => miniRow(r, 'op-sp')).join('')
+                : '<div style="padding:10px;color:#adb5bd;text-align:center;font-size:12px;">Tidak ada</div>') +
+              '</div><div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6c757d;margin:14px 0 6px;flex-shrink:0;">Selesai Hari Ini</div><div style="flex:1;min-height:0;overflow-y:auto;padding-right:4px;">' +
+              (queues
+                .filter((r) => r.status === 'DONE')
+                .sort(sortNum)
+                .map((r) => miniRow(r, 'op-done'))
+                .join('') ||
+                '<div style="padding:10px;color:#adb5bd;text-align:center;font-size:12px;">Belum ada</div>') +
+              '</div></div>';
+          }
         }
+        if (st) st.textContent = 'terhubung ke app (' + d.tanggal + ')';
+        return true;
+      } finally {
+        window.clearTimeout(lead);
       }
-      if (st) st.textContent = 'terhubung ke app (' + d.tanggal + ')';
     } catch (e) {
       if (st) st.textContent = 'gagal hubungi app \u2014 cek CORS/BASE';
       log('display gagal:', e.message);
+      return false;
     }
   }
   var ACT_COOLDOWN_MS = 1500;
@@ -1133,19 +1157,23 @@ var __morbis_feature = (() => {
         }
         fsFlash('minta layar penuh\u2026');
       });
-      try {
-        const fsEs = new EventSource(FS_API + '/fullscreen-stream');
-        fsEs.onmessage = function (ev) {
-          let d;
-          try {
-            d = JSON.parse(ev.data);
-          } catch {
-            return;
-          }
-          if (d && d.type === 'fullscreenStatus')
-            fsFlash(d.on ? 'display: \u2713 Fullscreen' : 'display: keluar fullscreen');
-        };
-      } catch {}
+      if (_fsPollTimer === null) {
+        let fsSig = '';
+        _fsPollTimer = window.setInterval(() => {
+          fetch(FS_API + '/fullscreen-status?since=' + encodeURIComponent(fsSig), {
+            cache: 'no-store',
+          })
+            .then((r) => (r.status === 304 ? null : r.json()))
+            .then((j) => {
+              if (!j || !j.data) return;
+              if (j.signal) fsSig = j.signal;
+              const d = j.data;
+              if (d.type === 'fullscreenStatus')
+                fsFlash(d.on ? 'display: \u2713 Fullscreen' : 'display: keluar fullscreen');
+            })
+            .catch(() => {});
+        }, 1e3);
+      }
       function fsFlash(msg) {
         let el = document.getElementById('ext-op-fs-feedback');
         if (!el) {
@@ -1178,8 +1206,10 @@ var __morbis_feature = (() => {
       });
       void render();
       void probeFarmasiAppBase().then(() => void render());
-      _opRenderIntervalId = window.setInterval(() => void render(), POLL_MS);
-      void startOperatorSse();
+      if (!_opPollStarted) {
+        _opPollStarted = true;
+        void pollRender();
+      }
       log('panel operator aktif');
     };
     start();
@@ -1193,7 +1223,8 @@ var __morbis_feature = (() => {
       }, 100);
     }).observe(_isi, { childList: true, subtree: true });
     window.addEventListener('beforeunload', () => {
-      if (_opRenderIntervalId !== null) clearInterval(_opRenderIntervalId);
+      if (_opPollTimer !== null) clearTimeout(_opPollTimer);
+      if (_fsPollTimer !== null) clearInterval(_fsPollTimer);
     });
   }
   whenAntrianFarmasiActive(init);

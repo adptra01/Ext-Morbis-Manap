@@ -72,7 +72,7 @@
 
     const getMeta = (label: string): string => metaMap.get(label) ?? '';
 
-    // Daftar obat — dibangun dari data-resep-new (bukan dari table.resep-item).
+    // Daftar obat — sumber utama tabel_penjualan_lama (transaksi edit); fallback data-resep-new.
     interface SubMed {
       name: string;
       strength: string;
@@ -112,11 +112,9 @@
       const resepId = params.get('id_resep') || params.get('id') || params.get('penjualan') || '';
       if (!resepId) return;
 
-      // Coba 2 endpoint detail: penerimaan & penjualan-edit (keduanya punya fieldset#perhatian)
-      const detailUrls = [
-        '/inventory/resep/penerimaan/detail?id=' + resepId,
-        '/inventory/penjualan-resep-edit/detail?id=' + resepId,
-      ];
+      // Diagnosa dari halaman detail. Halaman edit butuh norm/visit/penjualan
+      // lengkap; varian id-only mengembalikan error aplikasi, jadi jangan dipakai.
+      const detailUrls = ['/inventory/resep/penerimaan/detail?id=' + resepId];
 
       for (const url of detailUrls) {
         try {
@@ -187,9 +185,45 @@
       }
     }
 
-    // Endpoint AJAX data-resep-new: sumber utama utk daftar obat, aturan, & sediaan.
-    // Mengembalikan array resep lengkap — dipakai utk build meds langsung.
+    // Daftar obat: tabel_penjualan_lama (halaman/transaksi edit) adalah sumber utama.
+    // data-resep-new hanya dipakai untuk menemukan ID_PENJUALAN, lalu fallback bila
+    // tabel edit tidak tersedia.
     type ResepItem = Record<string, unknown>;
+    type EditRow = Record<string, unknown>;
+    function normalizeEditRow(row: EditRow): ResepItem {
+      return {
+        NO_R: row.no_r,
+        JENIS_R: row.jenis_r,
+        JENIS_RSP: row.jenis_r,
+        NAMA_RACIKAN: row.nama_racikan,
+        ATURAN_PAKAI_MANUAL: row.aturan_pakai_manual,
+        JUMLAH_RACIKAN: row.jumlah_racikan,
+        NAMA: row.nama_barang,
+        KEKUATAN_R_RACIK: row.kekuatan_r_racik,
+        KEKUATAN: row.kekuatan,
+        JUMLAH_R_PAKAI: row.jumlah_r_pakai,
+        SEDIAAN: row.sediaan,
+        JUMLAH_R_RESEP: row.jumlah_r_resep,
+      };
+    }
+    async function fetchEditItems(penjualanId: string): Promise<ResepItem[]> {
+      try {
+        const resp = await fetch(
+          '/inventory/search?opsi=tabel_penjualan_lama&&q=1&id_penjualan=' +
+            encodeURIComponent(penjualanId),
+          { credentials: 'include', cache: 'no-store' },
+        );
+        if (!resp.ok) return [];
+        const payload = (await resp.json()) as EditRow[] | Record<string, EditRow>;
+        const rows = Array.isArray(payload) ? payload : Object.values(payload ?? {});
+        return rows
+          .filter((row): row is EditRow => typeof row === 'object' && row !== null)
+          .map(normalizeEditRow)
+          .filter((item) => String(item.NO_R ?? '').trim() !== '');
+      } catch {
+        return [];
+      }
+    }
     async function fetchResepItems(): Promise<ResepItem[]> {
       const resepId = params.get('id_resep') || params.get('id') || params.get('penjualan') || '';
       if (!resepId) return [];
@@ -200,8 +234,16 @@
           { credentials: 'include', cache: 'no-store' },
         );
         if (!resp.ok) return [];
-        const j = (await resp.json()) as { resep?: ResepItem[] };
-        return Array.isArray(j?.resep) ? j.resep : [];
+        const envelope = (await resp.json()) as {
+          resep?: ResepItem[];
+          ID_PENJUALAN?: unknown;
+        };
+        const penjualanId = String(envelope?.ID_PENJUALAN ?? '').trim();
+        if (penjualanId && penjualanId !== '0') {
+          const editItems = await fetchEditItems(penjualanId);
+          if (editItems.length) return editItems;
+        }
+        return Array.isArray(envelope?.resep) ? envelope.resep : [];
       } catch {
         return [];
       }
@@ -246,9 +288,9 @@
 
     await fetchRacikanDetails(); // fetch diagnosa from detail page
 
-    // Sumber data obat: endpoint AJAX data-resep-new (sama dgn yg populate
-    // tabel resep obat di halaman detail). Build meds langsung dari sini —
-    // grouping by NO_R, discriminator: JENIS_R ("Racikan"/"Tunggal").
+    // Sumber data obat: tabel_penjualan_lama (halaman edit) bila tersedia;
+    // fallback data-resep-new (halaman detail). Grouping by NO_R,
+    // discriminator: JENIS_R ("Racikan"/"Tunggal").
     const resepItems = await fetchResepItems();
     if (resepItems.length) {
       meds.length = 0; // reset meds dari table.resep-item

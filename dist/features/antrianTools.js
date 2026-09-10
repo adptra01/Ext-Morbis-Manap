@@ -12,9 +12,35 @@ var __morbis_feature = (() => {
       s.textContent = rules.join('\n');
       document.head.appendChild(s);
     }
-    function intervalPoll(cb) {
-      const tries = setInterval(() => cb(), 500);
-      setTimeout(() => clearInterval(tries), 5e3);
+    function waitForDom(fn, timeoutMs = 8e3) {
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        observer.disconnect();
+        window.clearTimeout(timer);
+      };
+      const timer = window.setTimeout(() => {
+        if (!done) {
+          done = true;
+          observer.disconnect();
+          extLog('dom_wait_timeout', false);
+        }
+      }, timeoutMs);
+      const observer = new MutationObserver(() => {
+        window.setTimeout(() => {
+          if (!done && fn()) finish();
+        }, 50);
+      });
+      try {
+        if (fn()) {
+          finish();
+          return;
+        }
+        observer.observe(document.body, { childList: true, subtree: true });
+      } catch {
+        observer.disconnect();
+      }
     }
     function setHealth(state) {
       document.documentElement.setAttribute('data-ext-antrian-tools-health', state);
@@ -100,6 +126,27 @@ var __morbis_feature = (() => {
       }
     }
     let _ttsDead = false;
+    let _ttsProbeBusy = false;
+    function ttsHealthProbe() {
+      if (_ttsProbeBusy || !_ttsDead) return;
+      _ttsProbeBusy = true;
+      const unbusy = () => {
+        _ttsProbeBusy = false;
+      };
+      try {
+        const u = new SpeechSynthesisUtterance('');
+        u.onstart = () => {
+          _ttsDead = false;
+          unbusy();
+        };
+        u.onend = unbusy;
+        u.onerror = unbusy;
+        speechSynthesis.cancel();
+        speechSynthesis.speak(u);
+      } catch {
+        unbusy();
+      }
+    }
     function pickLocalVoice() {
       try {
         const vs = speechSynthesis.getVoices() || [];
@@ -189,13 +236,14 @@ var __morbis_feature = (() => {
       try {
         speechSynthesis.getVoices();
         speechSynthesis.addEventListener?.('voiceschanged', () => {
-          if (pickVoice()) _ttsDead = false;
+          if (pickVoice()) ttsHealthProbe();
         });
       } catch {}
       setInterval(() => {
         if (!speechSynthesis.speaking && !speechSynthesis.pending) {
           speechSynthesis.speak(new SpeechSynthesisUtterance(''));
         }
+        if (_ttsDead) ttsHealthProbe();
       }, 1e4);
     }
     function buildSpokenText(nomor, loket, nama) {
@@ -260,8 +308,11 @@ var __morbis_feature = (() => {
       setHealth('injected');
       const isViewAntrian = path.endsWith('/counter-antrian/view-antrian');
       const initMesin = () => {
-        intervalPoll(renderMesinUI);
-        intervalPoll(attachPrintClick);
+        waitForDom(() => {
+          const rendered = renderMesinUI();
+          attachPrintClick();
+          return rendered;
+        });
         setTimeout(() => {
           if (!document.getElementById('ext-mesin-ui')) {
             document.getElementById('ext-mesin-loader')?.remove();
@@ -288,9 +339,9 @@ var __morbis_feature = (() => {
         return rule ? rule[1] : 'person_add';
       };
       const renderMesinUI = () => {
-        if (document.getElementById('ext-mesin-ui')) return;
+        if (document.getElementById('ext-mesin-ui')) return true;
         const cards = Array.from(document.querySelectorAll('[onclick^="antrian("]'));
-        if (!cards.length) return;
+        if (!cards.length) return false;
         const esc = (s) =>
           String(s ?? '')
             .replace(/&/g, '&amp;')
@@ -406,6 +457,7 @@ var __morbis_feature = (() => {
         ]);
         extLog('mesin_ui', true, { polis: polis.length });
         setHealth('ui');
+        return true;
       };
       const attachPrintClick = () => {
         let lastPrintKey = '';
@@ -440,34 +492,34 @@ var __morbis_feature = (() => {
             // capture: jalan sebelum event server (antrian) & sebelum reload
           );
         });
+        return true;
       };
       const initCounter = () => {
         showActiveBadge();
         addFullscreenButton();
-        hookCallTTS();
+        waitForDom(hookCallTTS);
         setHealth('ui');
       };
       function hookCallTTS() {
-        intervalPoll(() => {
-          const w = window;
-          const origCall = w.call;
-          if (typeof origCall !== 'function') return;
-          if (origCall.__extTtsHooked) return;
-          const sel = document.querySelector('select#no_loket');
-          if (!sel) return;
-          const wrapped = function (antrian, nama) {
-            const opt = sel.options[sel.selectedIndex];
-            const loketName = String(
-              (opt?.text || opt.value || '').replace(/^LOKET\s+/i, '').toUpperCase(),
-            );
-            const spoken = buildSpokenText(antrian, loketName, nama);
-            speak(spoken);
-            extLog('tts_call', true, { antrian, loket: loketName, nama, spoken });
-            return origCall.apply(this, [antrian, nama]);
-          };
-          wrapped.__extTtsHooked = true;
-          w.call = wrapped;
-        });
+        const w = window;
+        const origCall = w.call;
+        if (typeof origCall !== 'function') return false;
+        if (origCall.__extTtsHooked) return true;
+        const sel = document.querySelector('select#no_loket');
+        if (!sel) return false;
+        const wrapped = function (antrian, nama) {
+          const opt = sel.options[sel.selectedIndex];
+          const loketName = String(
+            (opt?.text || opt.value || '').replace(/^LOKET\s+/i, '').toUpperCase(),
+          );
+          const spoken = buildSpokenText(antrian, loketName, nama);
+          speak(spoken);
+          extLog('tts_call', true, { antrian, loket: loketName, nama, spoken });
+          return origCall.apply(this, [antrian, nama]);
+        };
+        wrapped.__extTtsHooked = true;
+        w.call = wrapped;
+        return true;
       }
       const initDisplay = () => {
         unlockTts();
@@ -557,7 +609,6 @@ var __morbis_feature = (() => {
           '@media(max-width:767px){#ext-display-ui{padding:10px;gap:14px;}.ext-head{padding:14px 18px;flex-direction:column;align-items:center;text-align:center;min-height:0;margin-bottom:0;}.ext-brand{gap:12px;}.ext-logo{width:54px;height:54px;border-width:1px;}.ext-titles h1{font-size:clamp(20px,5.5vw,24px);line-height:1.2;}.ext-titles p{font-size:13px;}.ext-clock{padding:8px 14px;border-radius:12px;width:fit-content;}.ext-clock #ext-date{font-size:11px;}.ext-clock #ext-time{font-size:clamp(20px,9vw,24px);}.ext-main{flex:1 0 auto;flex-direction:column;padding:14px;border-radius:18px;margin-bottom:0;}.ext-card{width:100%;max-width:none;height:clamp(360px,58vh,520px);padding:24px;gap:14px;}.ext-number{font-size:clamp(100px,20vw,150px);}.ext-void{display:none;}.ext-foot{height:42px;}.ext-marquee span{font-size:13px;padding:0 32px;}}',
         ]);
         let lastCallId = '';
-        let failCount = 0;
         const offlineBadge = () => {
           let el = document.getElementById('ext-offline-badge');
           if (!el) {
@@ -587,7 +638,12 @@ var __morbis_feature = (() => {
         let pollAlive = false;
         let lastSync = null;
         const statusBox = { span: null };
-        let reqSeq = 0;
+        let failStreak = 0;
+        const POLL_BACKOFF = [1500, 3e3, 5e3, 1e4, 2e4, 3e4];
+        let pollTimer = null;
+        let pollInflight = false;
+        let pollHidden = false;
+        let pollStopped = false;
         const renderStatus = () => {
           if (!statusBox.span) return;
           statusBox.span.textContent = pollAlive
@@ -595,29 +651,34 @@ var __morbis_feature = (() => {
             : '\u25CF POLLING MATI';
           statusBox.span.style.color = pollAlive ? '#6ee7b7' : '#fca5a5';
         };
-        const pollActive = () => {
-          const seq = ++reqSeq;
+        const scheduleNext = () => {
+          if (pollStopped || pollHidden || pollInflight) return;
+          const d = POLL_BACKOFF[Math.min(failStreak, POLL_BACKOFF.length - 1)];
+          pollTimer = window.setTimeout(runPoll, d);
+        };
+        const runPoll = () => {
+          if (pollStopped || pollHidden || pollInflight) return;
+          pollTimer = null;
+          pollInflight = true;
           const xhr = new XMLHttpRequest();
           xhr.open('POST', '/public/counter-antrian/data', true);
           xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
           xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
           xhr.timeout = 1e4;
           const onFail = () => {
-            if (seq !== reqSeq) return;
-            if (++failCount >= 3) offlineBadge();
+            if (++failStreak >= 3) offlineBadge();
             pollAlive = false;
             renderStatus();
-            extLog('display_poll_fail', true, { failCount });
+            extLog('display_poll_fail', true, { failCount: failStreak });
           };
           xhr.onerror = onFail;
           xhr.ontimeout = onFail;
           xhr.onload = () => {
-            if (seq !== reqSeq) return;
             try {
               const txt = String(xhr.responseText || '').trim();
               if (!txt.startsWith('{')) return;
               const r = JSON.parse(txt);
-              failCount = 0;
+              failStreak = 0;
               hideOfflineBadge();
               pollAlive = true;
               lastSync = /* @__PURE__ */ new Date().toLocaleTimeString('id-ID');
@@ -645,11 +706,35 @@ var __morbis_feature = (() => {
               }
             } catch {}
           };
+          xhr.onloadend = () => {
+            pollInflight = false;
+            scheduleNext();
+          };
           const loketFromUrl = new URLSearchParams(window.location.search).get('loket') || '';
           xhr.send('option=get_data_call&loket=' + encodeURIComponent(loketFromUrl));
         };
-        pollActive();
-        setInterval(pollActive, 1500);
+        const startPolling = () => {
+          if (pollStopped || pollHidden || pollInflight || pollTimer !== null) return;
+          runPoll();
+        };
+        document.addEventListener('visibilitychange', () => {
+          pollHidden = document.hidden;
+          if (document.hidden) return;
+          failStreak = 0;
+          if (pollTimer !== null) {
+            window.clearTimeout(pollTimer);
+            pollTimer = null;
+          }
+          startPolling();
+        });
+        window.addEventListener('beforeunload', () => {
+          pollStopped = true;
+          if (pollTimer !== null) {
+            window.clearTimeout(pollTimer);
+            pollTimer = null;
+          }
+        });
+        startPolling();
         const controls = ui.querySelector('.ext-controls');
         const fsBtn = controls.querySelector('.ext-c-fs');
         const badgeBtn = controls.querySelector('.ext-c-badge');

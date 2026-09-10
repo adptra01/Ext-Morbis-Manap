@@ -188,134 +188,6 @@ var __morbis_feature = (() => {
     return false;
   }
 
-  // src/shared/messaging.ts
-  function sendMessage(message) {
-    return new Promise((resolve, reject) => {
-      chrome.runtime.sendMessage(message, (response) => {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
-        } else {
-          resolve(response);
-        }
-      });
-    });
-  }
-
-  // src/features/shared/farmasiQueueSync.ts
-  var FARMASI_APP_BASE = 'http://dev.rsudkotajambi.id/rs';
-  var cachedBase = null;
-  var basePromise = null;
-  async function storedBaseCandidates() {
-    try {
-      const result = await chrome.storage.sync.get('extensionCustomUrls');
-      const urls = (result.extensionCustomUrls ?? []).filter((u) => u.url && u.enabled !== false);
-      return urls.map((u) => u.url.replace(/\/+$/, '') + '/rs');
-    } catch {
-      return [];
-    }
-  }
-  var FALLBACK_CANDIDATES = ['http://dev.rsudkotajambi.id/rs', 'http://103.147.236.138/rs'];
-  async function queueApiFetch(url, method, body) {
-    return sendMessage({ type: 'QUEUE_API', url, method, body });
-  }
-  function withTimeout(p, ms) {
-    return new Promise((resolve, reject) => {
-      const tid = setTimeout(() => reject(new Error('timeout')), ms);
-      p.then((v) => {
-        clearTimeout(tid);
-        resolve(v);
-      }).catch((e) => {
-        clearTimeout(tid);
-        reject(e);
-      });
-    });
-  }
-  function probeFarmasiAppBase() {
-    if (basePromise) return basePromise;
-    basePromise = (async () => {
-      try {
-        const ov = localStorage.getItem('ext-farmasi-app-base');
-        if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
-      } catch {}
-      const stored = await storedBaseCandidates();
-      const candidates = [.../* @__PURE__ */ new Set([...stored, ...FALLBACK_CANDIDATES])];
-      for (const base of candidates) {
-        try {
-          const r = await withTimeout(
-            queueApiFetch(base + '/api/queue/lookup?resep_id=probe', 'GET'),
-            2500,
-          );
-          const ct = r.contentType || '';
-          if ((r.status === 200 || r.status === 422) && ct.includes('application/json')) {
-            cachedBase = base;
-            return base;
-          }
-        } catch {}
-      }
-      return FARMASI_APP_BASE;
-    })();
-    return basePromise;
-  }
-  var RETRY_KEY = 'ext-queue-retry-queue';
-  async function getRetryQueue() {
-    try {
-      return (await chrome.storage.local.get(RETRY_KEY))[RETRY_KEY] ?? [];
-    } catch {
-      return [];
-    }
-  }
-  async function removeFromRetryQueue(eventId) {
-    try {
-      const existing = (await chrome.storage.local.get(RETRY_KEY))[RETRY_KEY] ?? [];
-      const filtered = existing.filter((item) => item.event_id !== eventId);
-      await chrome.storage.local.set({ [RETRY_KEY]: filtered });
-    } catch {}
-  }
-  async function flushRetryQueue() {
-    const pending = await getRetryQueue();
-    if (!pending.length) return;
-    for (const item of [...pending]) {
-      try {
-        const result = await pushQueueEventDirect(item);
-        if (result.ok) {
-          await removeFromRetryQueue(item.event_id);
-          console.log('[MORBIS Ext] retry queue sukses:', item.event, item.queue_number ?? '');
-        }
-      } catch (e) {
-        const msg = e.message ?? '';
-        if (msg.includes('HTTP 404') || msg.includes('HTTP 422')) {
-          await removeFromRetryQueue(item.event_id);
-          console.log(
-            '[MORBIS Ext] retry queue buang (stale):',
-            item.event,
-            item.queue_number ?? '',
-            msg,
-          );
-        }
-      }
-    }
-  }
-  async function pushQueueEventDirect(p) {
-    const body = { ...p };
-    if (p.event === 'ENQUEUE') delete body.queue_number;
-    const base = await probeFarmasiAppBase();
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 8e3);
-    const res = await fetch(base + '/api/queue/events', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-      cache: 'no-store',
-      credentials: 'omit',
-      signal: ctrl.signal,
-    });
-    clearTimeout(t);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const j = await res.json();
-    return { ok: !!j.ok, queue_number: j.queue?.queue_number };
-  }
-  setInterval(() => void flushRetryQueue(), 1e4);
-
   // src/features/antrianFarmasiDisplay.ts
   (function () {
     const LIST_URL = '/public/antrian-farmasi-v2/list-antrian-v2';
@@ -329,9 +201,7 @@ var __morbis_feature = (() => {
     };
     const POLL_LADDER_MS = [500, 1500, 3e3, 6e3];
     const GAP_MS = 0;
-    const CARD_MS = 350;
-    let _sseConnected = false;
-    let _sseSource = null;
+    const CARD_MS = 1e3;
     let statusBadge = null;
     let controlsHost = null;
     function ensureControlsHost() {
@@ -743,6 +613,10 @@ var __morbis_feature = (() => {
     }
     async function refreshCardNumber() {
       const tickT0 = Date.now();
+      if (document.hidden) {
+        cardTimer = window.setTimeout(() => void refreshCardNumber(), CARD_MS);
+        return;
+      }
       setStatus('loading');
       processLocalRecall();
       try {
@@ -851,23 +725,6 @@ var __morbis_feature = (() => {
         }
         cardTimer = window.setTimeout(() => void refreshCardNumber(), CARD_MS);
       }
-    }
-    async function startSseListener() {
-      try {
-        const base = await probeFarmasiAppBase();
-        _sseSource = new EventSource(base + '/api/queue/stream');
-        _sseSource.onmessage = () => {
-          _sseConnected = true;
-          if (cardTimer !== null) {
-            clearTimeout(cardTimer);
-            cardTimer = null;
-          }
-          void refreshCardNumber();
-        };
-        _sseSource.onerror = () => {
-          _sseConnected = false;
-        };
-      } catch {}
     }
     function renderDisplay(view, call) {
       renderCardPanel(view);
@@ -1631,9 +1488,6 @@ var __morbis_feature = (() => {
       }
       if (cardTimer === null) {
         void refreshCardNumber();
-      }
-      if (typeof EventSource !== 'undefined' && !_sseConnected) {
-        void startSseListener();
       }
     }
     startWithRole();
