@@ -157,7 +157,7 @@ var __morbis_feature = (() => {
       async function fetchEditItems(penjualanId) {
         try {
           const resp = await fetch(
-            '/inventory/search?opsi=tabel_penjualan_lama&&q=1&id_penjualan=' +
+            '/inventory/search?opsi=tabel_penjualan_lama&&id_penjualan=' +
               encodeURIComponent(penjualanId),
             { credentials: 'include', cache: 'no-store' },
           );
