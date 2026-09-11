@@ -330,6 +330,7 @@ export function whenAntrianFarmasiActive(cb: () => void, timeoutMs = 5000): void
 
 /** Tampilkan banner kecil di pojok kanan atas saat fitur antrian tidak aktif. */
 function showFeatureGateNotif(): void {
+  if (!document.body) return; // DOM belum siap (server lambat) — lewati, crash mdpl
   if (document.getElementById('ext-feature-gate-notif')) return; // sudah ada
   const banner = document.createElement('div');
   banner.id = 'ext-feature-gate-notif';

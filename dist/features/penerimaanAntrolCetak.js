@@ -440,6 +440,7 @@ var __morbis_feature = (() => {
     }, 200);
   }
   function showFeatureGateNotif() {
+    if (!document.body) return;
     if (document.getElementById('ext-feature-gate-notif')) return;
     const banner = document.createElement('div');
     banner.id = 'ext-feature-gate-notif';

@@ -67,10 +67,7 @@ var __morbis_feature = (() => {
         const resepId =
           params2.get('id_resep') || params2.get('id') || params2.get('penjualan') || '';
         if (!resepId) return;
-        const detailUrls = [
-          '/inventory/penjualan-resep-edit/detail?id=' + resepId,
-          '/inventory/resep/penerimaan/detail?id=' + resepId,
-        ];
+        const detailUrls = ['/inventory/resep/penerimaan/detail?id=' + resepId];
         for (const url of detailUrls) {
           try {
             const resp = await fetch(url, { credentials: 'include' });
@@ -130,6 +127,51 @@ var __morbis_feature = (() => {
           } catch {}
         }
       }
+      function editDisplayName(row) {
+        const str = (v) => (typeof v === 'string' ? v.trim() : '');
+        let display = str(row.nama_barang);
+        const kekuatan = str(row.kekuatan);
+        const sediaan = str(row.sediaan);
+        const satuan = str(row.satuan);
+        if (kekuatan) display += (display ? ' ' : '') + kekuatan;
+        if (sediaan) display += (display ? ', ' : '') + sediaan;
+        if (satuan) display += (display ? ' @' : '') + satuan;
+        return display;
+      }
+      function normalizeEditRow(row) {
+        return {
+          NO_R: row.no_r,
+          JENIS_R: row.jenis_r,
+          JENIS_RSP: row.jenis_r,
+          NAMA_RACIKAN: row.nama_racikan,
+          ATURAN_PAKAI_MANUAL: row.aturan_pakai_manual,
+          JUMLAH_RACIKAN: row.jumlah_racikan,
+          NAMA: editDisplayName(row),
+          KEKUATAN_R_RACIK: row.kekuatan_r_racik,
+          KEKUATAN: row.kekuatan,
+          JUMLAH_R_PAKAI: row.jumlah_r_pakai,
+          SEDIAAN: row.sediaan,
+          JUMLAH_R_RESEP: row.jumlah_r_resep,
+        };
+      }
+      async function fetchEditItems(penjualanId) {
+        try {
+          const resp = await fetch(
+            '/inventory/search?opsi=tabel_penjualan_lama&&q=1&id_penjualan=' +
+              encodeURIComponent(penjualanId),
+            { credentials: 'include', cache: 'no-store' },
+          );
+          if (!resp.ok) return [];
+          const payload = await resp.json();
+          const rows = Array.isArray(payload) ? payload : Object.values(payload ?? {});
+          return rows
+            .filter((row) => typeof row === 'object' && row !== null)
+            .map(normalizeEditRow)
+            .filter((item) => String(item.NO_R ?? '').trim() !== '');
+        } catch {
+          return [];
+        }
+      }
       async function fetchResepItems() {
         const resepId = params.get('id_resep') || params.get('id') || params.get('penjualan') || '';
         if (!resepId) return [];
@@ -140,8 +182,13 @@ var __morbis_feature = (() => {
             { credentials: 'include', cache: 'no-store' },
           );
           if (!resp.ok) return [];
-          const j = await resp.json();
-          return Array.isArray(j?.resep) ? j.resep : [];
+          const envelope = await resp.json();
+          const penjualanId = String(envelope?.ID_PENJUALAN ?? '').trim();
+          if (penjualanId && penjualanId !== '0') {
+            const editItems = await fetchEditItems(penjualanId);
+            if (editItems.length) return editItems;
+          }
+          return Array.isArray(envelope?.resep) ? envelope.resep : [];
         } catch {
           return [];
         }

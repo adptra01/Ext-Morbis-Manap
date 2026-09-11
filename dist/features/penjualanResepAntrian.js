@@ -200,6 +200,7 @@ var __morbis_feature = (() => {
     }, 200);
   }
   function showFeatureGateNotif() {
+    if (!document.body) return;
     if (document.getElementById('ext-feature-gate-notif')) return;
     const banner = document.createElement('div');
     banner.id = 'ext-feature-gate-notif';
@@ -749,6 +750,7 @@ var __morbis_feature = (() => {
   }
   function addAntrianBar() {
     const findHost = () => {
+      if (!document.body) return null;
       const td = Array.from(document.querySelectorAll('td[valign="top"]')).find((c) =>
         c.querySelector('fieldset#perhatian, fieldset[id="perhatian"]'),
       );
