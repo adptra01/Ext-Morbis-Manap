@@ -110,6 +110,8 @@ import { createRoot, type Root } from 'react-dom/client';
 import { App } from './App';
 import { ErrorBoundary } from './ErrorBoundary';
 import type { ResumeData, DiagnosaRow, TindakanRow } from './types';
+import { logResumeHistory, loadLast } from '../shared/resumeHistory.js';
+import { resumeDataToSnap } from './snap.js';
 
 const isRj = location.pathname.includes('rm-rawat-jalan-new');
 
@@ -873,6 +875,20 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
       throw new Error(phpErrors.join('\n'));
     }
     cachedFormState = null;
+
+    // Riwayat: catat snapshot sesudah simpan (nama petugas dibaca di module).
+    const idVisit =
+      resumeData.patientInfo.id_visit || new URLSearchParams(location.search).get('id_visit') || '';
+    const idResume =
+      resumeData.patientInfo.id_rawat_jalan || new URLSearchParams(location.search).get('id') || '';
+    logResumeHistory({
+      idVisit,
+      idResume,
+      tipe: 'rajal',
+      aksi: idResume ? 'ubah' : 'buat',
+      before: loadLast(idVisit, 'rajal') ?? {},
+      after: resumeDataToSnap(resumeData),
+    });
   };
 
   reactRoot.render(

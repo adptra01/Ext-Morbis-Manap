@@ -28016,6 +28016,367 @@ var __morbis_feature = (() => {
   // src/features/resumeRanapTab/App.tsx
   var import_react8 = __toESM(require_react(), 1);
 
+  // src/features/shared/resumeHistory.ts
+  function defaultStore() {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+    } catch (_e) {}
+    return null;
+  }
+  var HIST_PREFIX = 'ext_rv_history_';
+  var LEGACY_HIST_PREFIX = HIST_PREFIX;
+  var LAST_PREFIX = 'ext_rv_lastform_';
+  var MAX_ENTRIES = 50;
+  function getHistoryKey(idVisit, tipe) {
+    return `${HIST_PREFIX}${tipe === 'ranap' ? 'ri' : 'rj'}_${idVisit || 'unknown'}`;
+  }
+  function getLastKey(idVisit, tipe) {
+    return `${LAST_PREFIX}${tipe === 'ranap' ? 'ri' : 'rj'}_${idVisit || 'unknown'}`;
+  }
+  function readJson(store, key) {
+    if (!store) return null;
+    try {
+      const raw = store.getItem(key);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch (_e) {
+      return null;
+    }
+  }
+  function writeJson(store, key, value) {
+    if (!store) return;
+    try {
+      store.setItem(key, JSON.stringify(value));
+    } catch (_e) {}
+  }
+  function sameSnapVal(a, b) {
+    return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+  }
+  function diffSnap(before, after) {
+    const keys = {};
+    Object.keys(before).forEach((k) => (keys[k] = true));
+    Object.keys(after).forEach((k) => (keys[k] = true));
+    return Object.keys(keys).filter((k) => !sameSnapVal(before[k], after[k]));
+  }
+  function shortSnapVal(v) {
+    const s = v === void 0 ? '-' : JSON.stringify(v);
+    return s.length > 60 ? s.slice(0, 60) + '\u2026' : s;
+  }
+  function loadHistory(idVisit, tipe, store = defaultStore()) {
+    const arr = readJson(store, getHistoryKey(idVisit, tipe));
+    const list = Array.isArray(arr) ? arr : [];
+    if (tipe === 'ranap') {
+      const legacy = readJson(store, LEGACY_HIST_PREFIX + idVisit);
+      if (Array.isArray(legacy) && legacy.length > 0 && list.length === 0) {
+        const migrated = legacy.map((e) => ({ ...e, tipe: 'ranap' }));
+        saveHistory(migrated, idVisit, 'ranap', store);
+        return migrated;
+      }
+    }
+    return list;
+  }
+  function saveHistory(list, idVisit, tipe, store = defaultStore()) {
+    writeJson(store, getHistoryKey(idVisit, tipe), list.slice(-MAX_ENTRIES));
+  }
+  function loadLast(idVisit, tipe, store = defaultStore()) {
+    const snap = readJson(store, getLastKey(idVisit, tipe));
+    if (snap) return snap;
+    if (tipe === 'ranap') return readJson(store, LAST_PREFIX + idVisit);
+    return null;
+  }
+  function storeLast(snap, idVisit, tipe, store = defaultStore()) {
+    writeJson(store, getLastKey(idVisit, tipe), snap);
+  }
+  function readPetugas() {
+    try {
+      const panel = document.getElementById('userpanel');
+      if (panel) {
+        let username = '';
+        let role = '';
+        panel.querySelectorAll('.subgroup').forEach((sg) => {
+          const title = (sg.querySelector('.subtitle')?.textContent || '').trim().toLowerCase();
+          const content = (sg.querySelector('.subcontent')?.textContent || '').trim();
+          if (title === 'username' && content) username = content;
+          if (title === 'role' && content) role = content;
+        });
+        if (username) return `${username}${role ? ` (${role})` : ''}`;
+        const a = panel.querySelector('a');
+        const t2 = (a?.textContent || '').trim();
+        if (t2 && t2 !== 'Petugas Rumah Sakit') return t2;
+      }
+      const el = document.querySelector('#petugas, .petugas, .username, #username, .user-name');
+      const t = (el?.textContent || '').trim();
+      if (t) return t.slice(0, 80);
+      const dokter = document
+        .querySelector('input[name="dokter"], #dokter, input[name="nama_dokter"]')
+        ?.value?.trim();
+      if (dokter) return dokter.slice(0, 80);
+      const idUser = document.querySelector('input[name="id_user"], #id_user')?.value?.trim();
+      if (idUser) return `User #${idUser}`;
+    } catch (_e) {}
+    return 'petugas';
+  }
+  var REPORTS_API_PATH = '/api/reports/resume-history';
+  var REPORTS_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
+  function resolveReportsBase() {
+    try {
+      const ov = localStorage.getItem('ext-farmasi-app-base');
+      if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
+    } catch (_e) {}
+    return REPORTS_BASE_FALLBACK;
+  }
+  function postToReports(entry, idVisit, fetcher = fetch) {
+    try {
+      const payload = {
+        id_visit: idVisit,
+        id_resume: entry.id_resume,
+        aksi: entry.aksi,
+        waktu: new Date(entry.at).toISOString(),
+        user: entry.user,
+        before: entry.before,
+        after: entry.after,
+        changed: entry.changed,
+      };
+      fetcher(resolveReportsBase() + REPORTS_API_PATH, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true,
+        credentials: 'omit',
+      }).catch(function () {});
+    } catch (_e) {}
+  }
+  var _lastLogHash = null;
+  var _lastLogAt = 0;
+  function logResumeHistory(opts) {
+    const now = opts.now ?? Date.now();
+    const hash = JSON.stringify(opts.after);
+    if (_lastLogHash === hash && now - _lastLogAt < 5e3) return null;
+    _lastLogHash = hash;
+    _lastLogAt = now;
+    const entry = {
+      at: now,
+      aksi: opts.aksi,
+      id_resume: opts.idResume ?? '',
+      user: opts.user ?? readPetugas(),
+      tipe: opts.tipe,
+      before: opts.before ?? {},
+      after: opts.after,
+      changed: diffSnap(opts.before ?? {}, opts.after),
+    };
+    const store = opts.store ?? defaultStore();
+    const list = loadHistory(opts.idVisit, opts.tipe, store);
+    list.push(entry);
+    saveHistory(list, opts.idVisit, opts.tipe, store);
+    storeLast(opts.after, opts.idVisit, opts.tipe, store);
+    postToReports(entry, opts.idVisit, opts.fetcher ?? fetch);
+    return entry;
+  }
+  function openHistoryModal(opts) {
+    try {
+      document.querySelector('#ext-rv-history-overlay')?.remove();
+    } catch (_e) {}
+    const list = loadHistory(opts.idVisit, opts.tipe, opts.store ?? defaultStore())
+      .slice()
+      .reverse();
+    const z = opts.zIndex ?? 99998;
+    const ov = document.createElement('div');
+    ov.id = 'ext-rv-history-overlay';
+    ov.style.cssText = `position:fixed;inset:0;z-index:${z};background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:24px;`;
+    ov.addEventListener('click', function (e) {
+      if (e.target === ov) ov.remove();
+    });
+    const box = document.createElement('div');
+    box.style.cssText =
+      'background:#fff;border-radius:12px;max-width:680px;width:100%;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;font-size:14px;color:#1c2530;font-family:system-ui,sans-serif;';
+    ov.appendChild(box);
+    const head = document.createElement('div');
+    head.style.cssText =
+      'display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #d0d5dd;font-weight:700;';
+    head.textContent = `${opts.title ?? 'Riwayat Resume'} (${list.length})`;
+    const x = document.createElement('button');
+    x.type = 'button';
+    x.textContent = '\xD7';
+    x.style.cssText =
+      'border:none;background:#f8fafc;width:32px;height:32px;border-radius:50%;font-size:20px;cursor:pointer;';
+    x.onclick = function () {
+      ov.remove();
+    };
+    head.appendChild(x);
+    box.appendChild(head);
+    const body = document.createElement('div');
+    body.style.cssText = 'padding:14px 18px;overflow-y:auto;';
+    box.appendChild(body);
+    if (!list.length) {
+      body.textContent =
+        'Belum ada riwayat untuk kunjungan ini. Riwayat tercatat otomatis setiap kali Simpan ditekan.';
+    }
+    list.forEach(function (entry, idx) {
+      const no = list.length - idx;
+      const row = document.createElement('div');
+      row.style.cssText =
+        'border:1px solid #d0d5dd;border-radius:8px;padding:10px 12px;margin-bottom:10px;';
+      const title = document.createElement('div');
+      title.style.fontWeight = '600';
+      const who = entry.user ? ` \u2014 oleh ${entry.user}` : '';
+      title.textContent = `#${no} \u2014 ${new Date(entry.at).toLocaleString('id-ID')} \u2014 ${entry.aksi === 'buat' ? 'Buat baru' : 'Ubah'}${who} \u2014 ${entry.changed.length} field berubah`;
+      row.appendChild(title);
+      const detail = document.createElement('div');
+      detail.style.cssText =
+        'display:none;margin-top:8px;background:#f8fafc;border-radius:6px;padding:8px 10px;font-size:12px;max-height:180px;overflow-y:auto;white-space:pre-wrap;';
+      if (!entry.changed.length) {
+        detail.textContent = 'Tidak ada perbedaan field.';
+      } else {
+        detail.textContent = entry.changed
+          .map(function (k) {
+            return (
+              k + ': ' + shortSnapVal(entry.before[k]) + ' \u2192 ' + shortSnapVal(entry.after[k])
+            );
+          })
+          .join('\n');
+      }
+      row.appendChild(detail);
+      const bar = document.createElement('div');
+      bar.style.cssText = 'margin-top:8px;display:flex;gap:8px;';
+      const btnLihat = document.createElement('button');
+      btnLihat.type = 'button';
+      btnLihat.textContent = 'Lihat';
+      btnLihat.style.cssText =
+        'border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;';
+      btnLihat.onclick = function () {
+        detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
+      };
+      bar.appendChild(btnLihat);
+      const btnSalin = document.createElement('button');
+      btnSalin.type = 'button';
+      btnSalin.textContent = 'Salin ke Form';
+      btnSalin.style.cssText =
+        'background:#00875a;color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;';
+      btnSalin.onclick = function () {
+        try {
+          opts.onApply(entry.after);
+          ov.remove();
+        } catch (_e) {}
+      };
+      bar.appendChild(btnSalin);
+      row.appendChild(bar);
+      body.appendChild(row);
+    });
+    try {
+      document.body.appendChild(ov);
+    } catch (_e) {}
+  }
+
+  // src/features/resumeRanapTab/snap.ts
+  var STRING_KEYS = [
+    'alasan_rawat',
+    'anamnesa',
+    'riwayat_penyakit',
+    'tensi',
+    'nadi',
+    'suhu',
+    'spo2',
+    'nafas',
+    'gcs_e',
+    'gcs_m',
+    'gcs_v',
+    'fisik_text',
+    'laborat',
+    'diagnosa_primary',
+    'diagnosa_skunder',
+    'diagnosa_tindakan',
+    'tindakan',
+    'terapi_pengobatan',
+    'obat_plg',
+    'tindakan_dua',
+    'jenis_kasus',
+    'kode_diagnosa_utama',
+    'id_diagnosa_utama',
+    'ku',
+    'kes',
+    'td_pulang',
+    'nadi_pulang',
+    'suhu_pulang',
+    'rr_pulang',
+    'spo2_pulang',
+    'catatan_keluar',
+    'keadaan_keluar',
+    'cara_keluar',
+    'penyebab_kematian',
+    'instruksi_pulang',
+    'tgl_keluar',
+    'jadwal_kontrol',
+    'pemeriksaan_lanjut',
+    'kelas',
+    'id_kelas',
+  ];
+  var ROWS = [
+    {
+      field: 'icd_sekunder',
+      idName: 'id_diagnosa_sekunder[]',
+      kodePrefix: 'kode_diagnosa_sekunder',
+      namaPrefix: 'diagnosa_sekunder',
+    },
+    {
+      field: 'icd_tindakan',
+      idName: 'id_tindakan[]',
+      kodePrefix: 'kode_tindakan',
+      namaPrefix: 'tindakan',
+    },
+    {
+      field: 'icd_nosokomial',
+      idName: 'id_nosokomial[]',
+      kodePrefix: 'kode_nosokomial',
+      namaPrefix: 'nosokomial',
+    },
+  ];
+  function ranapToSnap(d) {
+    const snap = {};
+    for (const k of STRING_KEYS) {
+      const v = d[k];
+      if (typeof v === 'string') snap[k] = v;
+    }
+    snap['diagnosa_utama'] = d.diagnosa_utama_nama;
+    for (const cfg of ROWS) {
+      const items = d[cfg.field];
+      snap[cfg.idName] = items.map((i) => i.id);
+      items.forEach((it, i) => {
+        snap[`${cfg.kodePrefix}${i + 1}`] = it.kode;
+        snap[`${cfg.namaPrefix}${i + 1}`] = it.nama;
+      });
+    }
+    return snap;
+  }
+  function snapStr(snap, k) {
+    const v = snap[k];
+    return typeof v === 'string' ? v : Array.isArray(v) ? (v[0] ?? '') : '';
+  }
+  function snapToRanapForm(snap, cur) {
+    const d = structuredClone(cur);
+    for (const k of STRING_KEYS) {
+      const v = snap[k];
+      if (typeof v === 'string') d[k] = v;
+    }
+    const namaUtama = snapStr(snap, 'diagnosa_utama');
+    if (namaUtama) d.diagnosa_utama_nama = namaUtama;
+    const readRows = (cfg) => {
+      const ids = snap[cfg.idName];
+      const idArr = Array.isArray(ids) ? ids : [];
+      const items = [];
+      for (let i = 1; i <= 10; i++) {
+        const kode = snapStr(snap, `${cfg.kodePrefix}${i}`);
+        const nama = snapStr(snap, `${cfg.namaPrefix}${i}`);
+        if (!kode && !nama) continue;
+        items.push({ id: idArr[i - 1] ?? '', kode, nama });
+      }
+      return items;
+    };
+    d.icd_sekunder = readRows(ROWS[0]);
+    d.icd_tindakan = readRows(ROWS[1]);
+    d.icd_nosokomial = readRows(ROWS[2]);
+    return d;
+  }
+
   // src/ui/components/input.tsx
   var import_react = __toESM(require_react(), 1);
 
@@ -33177,6 +33538,16 @@ var __morbis_feature = (() => {
       p({ icd_nosokomial: [...d.icd_nosokomial, { id: '', kode: '', nama: '' }] });
     const removeNosokomial = (i) =>
       p({ icd_nosokomial: d.icd_nosokomial.filter((_, idx) => idx !== i) });
+    const openHistory = () => {
+      openHistoryModal({
+        idVisit: d.id_visit,
+        tipe: 'ranap',
+        title: 'Riwayat Resume Rawat Inap',
+        zIndex: 2147483647,
+        // di atas modal React
+        onApply: (snap) => setD(snapToRanapForm(snap, d)),
+      });
+    };
     return /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)('form', {
       onSubmit: handleSubmit,
       className: "ri-modal font-['Inter',system-ui,sans-serif]",
@@ -33683,6 +34054,13 @@ var __morbis_feature = (() => {
             /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Button, {
               type: 'button',
               variant: 'outline',
+              onClick: openHistory,
+              disabled: saving,
+              children: 'Riwayat',
+            }),
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Button, {
+              type: 'button',
+              variant: 'outline',
               onClick: onClose,
               disabled: saving,
               children: 'Batal',
@@ -34062,6 +34440,14 @@ var __morbis_feature = (() => {
       const phpPattern = /(?:Notice|Warning|Fatal error|Parse error)/i;
       if (phpPattern.test(text) && text.length < 300) throw new Error('PHP error');
       cachedData = null;
+      logResumeHistory({
+        idVisit: formData.id_visit,
+        idResume: formData.id_resume_inap,
+        tipe: 'ranap',
+        aksi: formData.id_resume_inap ? 'ubah' : 'buat',
+        before: loadLast(formData.id_visit, 'ranap') ?? {},
+        after: ranapToSnap(formData),
+      });
     };
     reactRoot.render(
       /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(ErrorBoundary, {

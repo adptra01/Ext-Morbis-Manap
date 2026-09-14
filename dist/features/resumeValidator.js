@@ -463,6 +463,267 @@ var __morbis_feature = (() => {
     });
   }
 
+  // src/features/shared/resumeHistory.ts
+  function defaultStore() {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+    } catch (_e) {}
+    return null;
+  }
+  var HIST_PREFIX = 'ext_rv_history_';
+  var LEGACY_HIST_PREFIX = HIST_PREFIX;
+  var LAST_PREFIX = 'ext_rv_lastform_';
+  var MAX_ENTRIES = 50;
+  function getHistoryKey(idVisit, tipe) {
+    return `${HIST_PREFIX}${tipe === 'ranap' ? 'ri' : 'rj'}_${idVisit || 'unknown'}`;
+  }
+  function getLastKey(idVisit, tipe) {
+    return `${LAST_PREFIX}${tipe === 'ranap' ? 'ri' : 'rj'}_${idVisit || 'unknown'}`;
+  }
+  function readJson(store, key) {
+    if (!store) return null;
+    try {
+      const raw = store.getItem(key);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch (_e) {
+      return null;
+    }
+  }
+  function writeJson(store, key, value) {
+    if (!store) return;
+    try {
+      store.setItem(key, JSON.stringify(value));
+    } catch (_e) {}
+  }
+  function sameSnapVal(a, b) {
+    return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+  }
+  function diffSnap(before, after) {
+    const keys = {};
+    Object.keys(before).forEach((k) => (keys[k] = true));
+    Object.keys(after).forEach((k) => (keys[k] = true));
+    return Object.keys(keys).filter((k) => !sameSnapVal(before[k], after[k]));
+  }
+  function shortSnapVal(v) {
+    const s = v === void 0 ? '-' : JSON.stringify(v);
+    return s.length > 60 ? s.slice(0, 60) + '\u2026' : s;
+  }
+  function loadHistory(idVisit, tipe, store = defaultStore()) {
+    const arr = readJson(store, getHistoryKey(idVisit, tipe));
+    const list = Array.isArray(arr) ? arr : [];
+    if (tipe === 'ranap') {
+      const legacy = readJson(store, LEGACY_HIST_PREFIX + idVisit);
+      if (Array.isArray(legacy) && legacy.length > 0 && list.length === 0) {
+        const migrated = legacy.map((e) => ({ ...e, tipe: 'ranap' }));
+        saveHistory(migrated, idVisit, 'ranap', store);
+        return migrated;
+      }
+    }
+    return list;
+  }
+  function saveHistory(list, idVisit, tipe, store = defaultStore()) {
+    writeJson(store, getHistoryKey(idVisit, tipe), list.slice(-MAX_ENTRIES));
+  }
+  function loadLast(idVisit, tipe, store = defaultStore()) {
+    const snap = readJson(store, getLastKey(idVisit, tipe));
+    if (snap) return snap;
+    if (tipe === 'ranap') return readJson(store, LAST_PREFIX + idVisit);
+    return null;
+  }
+  function storeLast(snap, idVisit, tipe, store = defaultStore()) {
+    writeJson(store, getLastKey(idVisit, tipe), snap);
+  }
+  function readPetugas() {
+    try {
+      const panel = document.getElementById('userpanel');
+      if (panel) {
+        let username = '';
+        let role = '';
+        panel.querySelectorAll('.subgroup').forEach((sg) => {
+          const title = (sg.querySelector('.subtitle')?.textContent || '').trim().toLowerCase();
+          const content = (sg.querySelector('.subcontent')?.textContent || '').trim();
+          if (title === 'username' && content) username = content;
+          if (title === 'role' && content) role = content;
+        });
+        if (username) return `${username}${role ? ` (${role})` : ''}`;
+        const a = panel.querySelector('a');
+        const t2 = (a?.textContent || '').trim();
+        if (t2 && t2 !== 'Petugas Rumah Sakit') return t2;
+      }
+      const el = document.querySelector('#petugas, .petugas, .username, #username, .user-name');
+      const t = (el?.textContent || '').trim();
+      if (t) return t.slice(0, 80);
+      const dokter = document
+        .querySelector('input[name="dokter"], #dokter, input[name="nama_dokter"]')
+        ?.value?.trim();
+      if (dokter) return dokter.slice(0, 80);
+      const idUser = document.querySelector('input[name="id_user"], #id_user')?.value?.trim();
+      if (idUser) return `User #${idUser}`;
+    } catch (_e) {}
+    return 'petugas';
+  }
+  var REPORTS_API_PATH = '/api/reports/resume-history';
+  var REPORTS_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
+  function resolveReportsBase() {
+    try {
+      const ov = localStorage.getItem('ext-farmasi-app-base');
+      if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
+    } catch (_e) {}
+    return REPORTS_BASE_FALLBACK;
+  }
+  function postToReports(entry, idVisit, fetcher = fetch) {
+    try {
+      const payload = {
+        id_visit: idVisit,
+        id_resume: entry.id_resume,
+        aksi: entry.aksi,
+        waktu: new Date(entry.at).toISOString(),
+        user: entry.user,
+        before: entry.before,
+        after: entry.after,
+        changed: entry.changed,
+      };
+      fetcher(resolveReportsBase() + REPORTS_API_PATH, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true,
+        credentials: 'omit',
+      }).catch(function () {});
+    } catch (_e) {}
+  }
+  var _lastLogHash = null;
+  var _lastLogAt = 0;
+  function logResumeHistory(opts) {
+    const now = opts.now ?? Date.now();
+    const hash = JSON.stringify(opts.after);
+    if (_lastLogHash === hash && now - _lastLogAt < 5e3) return null;
+    _lastLogHash = hash;
+    _lastLogAt = now;
+    const entry = {
+      at: now,
+      aksi: opts.aksi,
+      id_resume: opts.idResume ?? '',
+      user: opts.user ?? readPetugas(),
+      tipe: opts.tipe,
+      before: opts.before ?? {},
+      after: opts.after,
+      changed: diffSnap(opts.before ?? {}, opts.after),
+    };
+    const store = opts.store ?? defaultStore();
+    const list = loadHistory(opts.idVisit, opts.tipe, store);
+    list.push(entry);
+    saveHistory(list, opts.idVisit, opts.tipe, store);
+    storeLast(opts.after, opts.idVisit, opts.tipe, store);
+    postToReports(entry, opts.idVisit, opts.fetcher ?? fetch);
+    return entry;
+  }
+  function showHistToast(msg) {
+    try {
+      const t = document.createElement('div');
+      t.textContent = msg;
+      t.style.cssText =
+        'position:fixed;top:20px;right:20px;z-index:2147483647;padding:14px 18px;border-radius:8px;background:#dcfce7;color:#065f46;border-left:5px solid #16a34a;font-weight:600;font-size:14px;box-shadow:0 4px 16px rgba(0,0,0,.15);max-width:420px;line-height:1.5;';
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 4e3);
+    } catch (_e) {}
+  }
+  function openHistoryModal(opts) {
+    try {
+      document.querySelector('#ext-rv-history-overlay')?.remove();
+    } catch (_e) {}
+    const list = loadHistory(opts.idVisit, opts.tipe, opts.store ?? defaultStore())
+      .slice()
+      .reverse();
+    const z = opts.zIndex ?? 99998;
+    const ov = document.createElement('div');
+    ov.id = 'ext-rv-history-overlay';
+    ov.style.cssText = `position:fixed;inset:0;z-index:${z};background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:24px;`;
+    ov.addEventListener('click', function (e) {
+      if (e.target === ov) ov.remove();
+    });
+    const box = document.createElement('div');
+    box.style.cssText =
+      'background:#fff;border-radius:12px;max-width:680px;width:100%;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;font-size:14px;color:#1c2530;font-family:system-ui,sans-serif;';
+    ov.appendChild(box);
+    const head = document.createElement('div');
+    head.style.cssText =
+      'display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #d0d5dd;font-weight:700;';
+    head.textContent = `${opts.title ?? 'Riwayat Resume'} (${list.length})`;
+    const x = document.createElement('button');
+    x.type = 'button';
+    x.textContent = '\xD7';
+    x.style.cssText =
+      'border:none;background:#f8fafc;width:32px;height:32px;border-radius:50%;font-size:20px;cursor:pointer;';
+    x.onclick = function () {
+      ov.remove();
+    };
+    head.appendChild(x);
+    box.appendChild(head);
+    const body = document.createElement('div');
+    body.style.cssText = 'padding:14px 18px;overflow-y:auto;';
+    box.appendChild(body);
+    if (!list.length) {
+      body.textContent =
+        'Belum ada riwayat untuk kunjungan ini. Riwayat tercatat otomatis setiap kali Simpan ditekan.';
+    }
+    list.forEach(function (entry, idx) {
+      const no = list.length - idx;
+      const row = document.createElement('div');
+      row.style.cssText =
+        'border:1px solid #d0d5dd;border-radius:8px;padding:10px 12px;margin-bottom:10px;';
+      const title = document.createElement('div');
+      title.style.fontWeight = '600';
+      const who = entry.user ? ` \u2014 oleh ${entry.user}` : '';
+      title.textContent = `#${no} \u2014 ${new Date(entry.at).toLocaleString('id-ID')} \u2014 ${entry.aksi === 'buat' ? 'Buat baru' : 'Ubah'}${who} \u2014 ${entry.changed.length} field berubah`;
+      row.appendChild(title);
+      const detail = document.createElement('div');
+      detail.style.cssText =
+        'display:none;margin-top:8px;background:#f8fafc;border-radius:6px;padding:8px 10px;font-size:12px;max-height:180px;overflow-y:auto;white-space:pre-wrap;';
+      if (!entry.changed.length) {
+        detail.textContent = 'Tidak ada perbedaan field.';
+      } else {
+        detail.textContent = entry.changed
+          .map(function (k) {
+            return (
+              k + ': ' + shortSnapVal(entry.before[k]) + ' \u2192 ' + shortSnapVal(entry.after[k])
+            );
+          })
+          .join('\n');
+      }
+      row.appendChild(detail);
+      const bar = document.createElement('div');
+      bar.style.cssText = 'margin-top:8px;display:flex;gap:8px;';
+      const btnLihat = document.createElement('button');
+      btnLihat.type = 'button';
+      btnLihat.textContent = 'Lihat';
+      btnLihat.style.cssText =
+        'border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;';
+      btnLihat.onclick = function () {
+        detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
+      };
+      bar.appendChild(btnLihat);
+      const btnSalin = document.createElement('button');
+      btnSalin.type = 'button';
+      btnSalin.textContent = 'Salin ke Form';
+      btnSalin.style.cssText =
+        'background:#00875a;color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;';
+      btnSalin.onclick = function () {
+        try {
+          opts.onApply(entry.after);
+          ov.remove();
+        } catch (_e) {}
+      };
+      bar.appendChild(btnSalin);
+      row.appendChild(bar);
+      body.appendChild(row);
+    });
+    try {
+      document.body.appendChild(ov);
+    } catch (_e) {}
+  }
+
   // src/features/resumeValidator.ts
   (function () {
     const MAX_WAIT = 100;
@@ -478,34 +739,52 @@ var __morbis_feature = (() => {
         clearInterval(check);
       }
     }, 50);
+    function pageTipe() {
+      const p = window.location.pathname;
+      if (p.includes('/tambah-resume-ri') || p.includes('/edit-resume-ri')) return 'ranap';
+      if (p.includes('/rm-rawat-jalan-new')) return 'rajal';
+      return null;
+    }
     function waitForForm() {
-      if (!window.location.pathname.includes('/tambah-resume-ri')) return;
+      const tipe = pageTipe();
+      if (!tipe) return;
       const poll = setInterval(function () {
         const saveBtn = document.getElementById('save');
-        const form = document.querySelector('form[action*="rawat-inap-resume"]');
+        const form =
+          tipe === 'ranap'
+            ? document.querySelector(
+                'form[action*="rawat-inap-resume"], form[action*="edit-resume-rawat-inap"]',
+              )
+            : document.querySelector('form#formdata, form[action*="rm-rawat-jalan"]');
         if (saveBtn && form) {
           clearInterval(poll);
-          init(form, saveBtn);
+          init(form, saveBtn, tipe);
         }
       }, 200);
     }
-    function init(form, saveBtn) {
+    function init(form, saveBtn, tipe) {
       injectStyle();
-      setupCekForm(form);
-      setupAutoClearHandlers();
-      restoreDraft();
-      setupAutosave(form);
+      setupCekForm(form, tipe);
+      setupAutoClearHandlers(tipe);
+      if (tipe === 'ranap') {
+        if (!hasIdResume('ranap')) {
+          restoreDraft();
+          setupAutosave(form);
+        }
+      }
       optimizeVitalInputs();
       optimizeBloodPressure();
-      addRequiredAttributes();
+      addRequiredAttributes(tipe);
       preventEnterSubmit();
       autoExpandTextareas();
-      setupColorIndicators();
-      setupAutoFormatICD();
+      setupColorIndicators(tipe);
+      setupAutoFormatICD(tipe);
       setupUnsavedWarning(form);
-      checkAndLockForm(form, saveBtn);
-      setupUnifiedSaveHandler(saveBtn, form);
-      setupHistory(form, saveBtn);
+      if (tipe === 'ranap') checkAndLockForm(form, saveBtn, tipe);
+      if (tipe === 'ranap' && !hasIdResume('ranap')) {
+        setupUnifiedSaveHandler(saveBtn, form, tipe);
+      }
+      setupHistory(form, saveBtn, tipe);
     }
     function injectStyle() {
       injectCSS(
@@ -522,27 +801,43 @@ var __morbis_feature = (() => {
         ].join('\n'),
       );
     }
-    function setupCekForm(form) {
+    function setupCekForm(form, tipe) {
       const w = window;
-      w.cekForm = function () {
-        return runValidation();
-      };
+      if (tipe === 'rajal') {
+        const origSimpan = typeof w.simpan === 'function' ? w.simpan : null;
+        if (origSimpan && !origSimpan.__extWrapped) {
+          const wrapped = function (...args) {
+            if (!runValidation(tipe)) return false;
+            logResumeSave(form, tipe);
+            _dirty = false;
+            try {
+              localStorage.removeItem(getDraftKey());
+            } catch (_e) {}
+            return origSimpan.apply(this, args);
+          };
+          wrapped.__extWrapped = true;
+          w.simpan = wrapped;
+        }
+      } else {
+        w.cekForm = function () {
+          return runValidation(tipe);
+        };
+      }
       if (form.onsubmit !== null) {
         form.onsubmit = function (e) {
-          const result = runValidation();
+          const result = runValidation(tipe);
           if (!result && e) {
             e.preventDefault();
-          } else if (!_rvSubmitLogged) {
-            logResumeSave(form);
+          } else {
+            logResumeSave(form, tipe);
           }
-          _rvSubmitLogged = false;
           return result;
         };
       }
       const $2 = w.jQuery;
-      if (typeof $2 === 'function' && $2.fn && typeof $2.fn.on === 'function') {
-        $2(form).on('submit', function (e) {
-          if (!runValidation()) {
+      if (typeof $2 === 'object' && $2 && typeof $2.fn?.on === 'function') {
+        $2.fn.on('submit', function (e) {
+          if (!runValidation(tipe)) {
             e.preventDefault();
             return false;
           }
@@ -551,8 +846,8 @@ var __morbis_feature = (() => {
       }
       var origSubmit = form.submit.bind(form);
       form.submit = function () {
-        if (!runValidation()) return;
-        logResumeSave(form);
+        if (!runValidation(tipe)) return;
+        logResumeSave(form, tipe);
         _dirty = false;
         clearAutosave();
         try {
@@ -576,7 +871,6 @@ var __morbis_feature = (() => {
       };
     }
     function setupAutosave(form) {
-      if (hasIdResume()) return;
       var doSave = function () {
         saveDraft(form);
       };
@@ -606,7 +900,6 @@ var __morbis_feature = (() => {
       } catch (_e) {}
     }
     async function restoreDraft() {
-      if (hasIdResume()) return;
       const key = getDraftKey();
       let raw = null;
       try {
@@ -647,12 +940,13 @@ var __morbis_feature = (() => {
         } catch (_e) {}
       }
     }
-    function hasIdResume() {
-      const el = document.getElementById('id_resume_inap');
+    function hasIdResume(tipe) {
+      const id = tipe === 'rajal' ? 'id_rawat_jalan' : 'id_resume_inap';
+      const el = document.getElementById(id);
       return !!el && !!el.value;
     }
-    function checkAndLockForm(form, saveBtn) {
-      if (!hasIdResume()) return;
+    function checkAndLockForm(form, saveBtn, tipe) {
+      if (!hasIdResume(tipe)) return;
       const fields = form.querySelectorAll('input, textarea, select');
       fields.forEach(function (el) {
         if (el.id === 'save' || el.type === 'button' || el.type === 'submit') return;
@@ -674,8 +968,8 @@ var __morbis_feature = (() => {
         });
         saveBtn.textContent = 'Simpan Perubahan';
         saveBtn.value = 'Simpan Perubahan';
-        attachSaveHandler(saveBtn, form);
-        refreshBeforeSnapshot(form);
+        attachSaveHandler(saveBtn, form, tipe);
+        refreshBeforeSnapshot(form, tipe);
       };
       saveBtn.onclick = function (e) {
         e.preventDefault();
@@ -701,13 +995,13 @@ var __morbis_feature = (() => {
         ask();
       };
     }
-    function setupUnifiedSaveHandler(saveBtn, form) {
-      if (hasIdResume()) return;
-      attachSaveHandler(saveBtn, form);
+    function setupUnifiedSaveHandler(saveBtn, form, tipe) {
+      if (hasIdResume(tipe)) return;
+      attachSaveHandler(saveBtn, form, tipe);
     }
-    function attachSaveHandler(saveBtn, form) {
+    function attachSaveHandler(saveBtn, form, tipe) {
       saveBtn.onclick = function (e) {
-        if (!runValidation()) {
+        if (!runValidation(tipe)) {
           e.preventDefault();
           return false;
         }
@@ -737,39 +1031,66 @@ var __morbis_feature = (() => {
           form.submit();
         });
         e.preventDefault();
+        return true;
       };
     }
-    const HIST_PREFIX = 'ext_rv_history_';
-    const LAST_PREFIX = 'ext_rv_lastform_';
-    const REPORTS_API_PATH = '/api/reports/resume-history';
-    const REPORTS_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
-    function resolveReportsBase() {
-      try {
-        const ov = localStorage.getItem('ext-farmasi-app-base');
-        if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
-      } catch (_e) {}
-      return REPORTS_BASE_FALLBACK;
-    }
-    var _lastLogHash = null;
-    var _lastLogAt = 0;
-    var _rvSubmitLogged = false;
     var _historyBtn = null;
     function getVisitId() {
       return val('id_visit');
     }
-    function getHistoryKey() {
-      return HIST_PREFIX + (getVisitId() || 'unknown');
+    function logResumeSave(form, tipe) {
+      const after = takeSnapshot(form);
+      const idVisit = getVisitId();
+      const idResume = tipe === 'rajal' ? val('id_rawat_jalan') : val('id_resume_inap');
+      const aksi = hasIdResume(tipe) ? 'ubah' : 'buat';
+      const before = loadLast(idVisit, tipe) || {};
+      logResumeHistory({
+        idVisit,
+        idResume,
+        tipe,
+        aksi,
+        before,
+        after,
+      });
+      refreshHistoryBtn(idVisit, tipe);
     }
-    function getLastKey() {
-      return LAST_PREFIX + (getVisitId() || 'unknown');
+    function refreshBeforeSnapshot(form, tipe) {
+      storeLast(takeSnapshot(form), getVisitId(), tipe);
     }
-    function readPetugas() {
-      const el = document.querySelector('#petugas, .petugas, .username, #username');
-      return (el?.textContent ?? '').trim().slice(0, 80);
+    function setupHistory(form, saveBtn, tipe) {
+      const idVisit = getVisitId();
+      storeLast(takeSnapshot(form), idVisit, tipe);
+      refreshHistoryBtn(idVisit, tipe);
+      if (_historyBtn || !saveBtn.parentElement) return;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.id = 'ext-rv-history-btn';
+      btn.textContent = 'Riwayat';
+      btn.style.cssText =
+        'margin-left:8px;border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px;';
+      btn.onclick = function () {
+        openHistoryModal({
+          idVisit,
+          tipe,
+          title: tipe === 'rajal' ? 'Riwayat Resume Rajal' : 'Riwayat Resume Rawat Inap',
+          zIndex: 99998,
+          onApply: function (snap) {
+            applySnapshot(form, saveBtn, snap, tipe);
+          },
+        });
+      };
+      saveBtn.parentElement.insertBefore(btn, saveBtn.nextSibling);
+      _historyBtn = btn;
+      refreshHistoryBtn(idVisit, tipe);
+    }
+    function refreshHistoryBtn(idVisit, tipe) {
+      if (!_historyBtn) return;
+      const n = loadHistory(idVisit, tipe).length;
+      _historyBtn.textContent = n > 0 ? 'Riwayat (' + n + ')' : 'Riwayat';
     }
     function takeSnapshot(form) {
       const snap = {};
-      const ICD_ID_RE = /^(kode_|diagnosa_|tindakan\d+$|nosokomial\d+$)/;
+      const ICD_ID_RE = /^(kode_|diagnosa_|tindakan\d+$|nosokomial\d+$|kode\d+$|kode9\d+$)/;
       const els = form.querySelectorAll(
         'input[name], textarea[name], select[name], input[id]:not([name]):not([type=button]):not([type=submit]), textarea[id]:not([name]), select[id]:not([name])',
       );
@@ -779,10 +1100,10 @@ var __morbis_feature = (() => {
         if (!key || key === '_saved_at' || key === 'save') return;
         if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')) {
           if (!el.checked) return;
-          const cur = snap[key];
-          if (cur === void 0) snap[key] = el.value;
-          else if (Array.isArray(cur)) cur.push(el.value);
-          else snap[key] = [cur, el.value];
+          const cur2 = snap[key];
+          if (cur2 === void 0) snap[key] = el.value;
+          else if (Array.isArray(cur2)) cur2.push(el.value);
+          else snap[key] = [cur2, el.value];
           return;
         }
         if (el instanceof HTMLSelectElement && el.multiple) {
@@ -791,229 +1112,19 @@ var __morbis_feature = (() => {
           });
           return;
         }
-        snap[key] = el.value;
+        const cur = snap[key];
+        if (cur !== void 0 && !Array.isArray(cur)) {
+          snap[key] = [cur, el.value];
+        } else if (Array.isArray(cur)) {
+          cur.push(el.value);
+        } else {
+          snap[key] = el.value;
+        }
       });
       return snap;
     }
-    function sameSnapVal(a, b) {
-      return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
-    }
-    function diffSnap(before, after) {
-      const keys = {};
-      Object.keys(before).forEach(function (k) {
-        keys[k] = true;
-      });
-      Object.keys(after).forEach(function (k) {
-        keys[k] = true;
-      });
-      return Object.keys(keys).filter(function (k) {
-        return !sameSnapVal(before[k], after[k]);
-      });
-    }
-    function loadHistory() {
-      try {
-        const raw = localStorage.getItem(getHistoryKey());
-        if (!raw) return [];
-        const arr = JSON.parse(raw);
-        return Array.isArray(arr) ? arr : [];
-      } catch (_e) {
-        return [];
-      }
-    }
-    function saveHistory(list) {
-      try {
-        localStorage.setItem(getHistoryKey(), JSON.stringify(list.slice(-50)));
-      } catch (_e) {}
-    }
-    function loadLast() {
-      try {
-        const raw = localStorage.getItem(getLastKey());
-        return raw ? JSON.parse(raw) : null;
-      } catch (_e) {
-        return null;
-      }
-    }
-    function storeLast(snap) {
-      try {
-        localStorage.setItem(getLastKey(), JSON.stringify(snap));
-      } catch (_e) {}
-    }
-    function postToReports(entry) {
-      try {
-        const payload = {
-          id_visit: getVisitId(),
-          id_resume: entry.id_resume,
-          aksi: entry.aksi,
-          waktu: new Date(entry.at).toISOString(),
-          user: entry.user,
-          before: entry.before,
-          after: entry.after,
-          changed: entry.changed,
-        };
-        fetch(resolveReportsBase() + REPORTS_API_PATH, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-          keepalive: true,
-          credentials: 'omit',
-        }).catch(function () {});
-      } catch (_e) {}
-    }
-    function logResumeSave(form) {
-      const after = takeSnapshot(form);
-      const hash = JSON.stringify(after);
-      const now = Date.now();
-      if (_lastLogHash === hash && now - _lastLogAt < 5e3) return;
-      _lastLogHash = hash;
-      _lastLogAt = now;
-      const before = loadLast() || {};
-      const entry = {
-        at: now,
-        aksi: hasIdResume() ? 'ubah' : 'buat',
-        id_resume: val('id_resume_inap'),
-        user: readPetugas(),
-        before,
-        after,
-        changed: diffSnap(before, after),
-      };
-      const list = loadHistory();
-      list.push(entry);
-      saveHistory(list);
-      storeLast(after);
-      postToReports(entry);
-      refreshHistoryBtn();
-    }
-    function refreshBeforeSnapshot(form) {
-      storeLast(takeSnapshot(form));
-    }
-    function setupHistory(form, saveBtn) {
-      storeLast(takeSnapshot(form));
-      refreshHistoryBtn();
-      if (_historyBtn || !saveBtn.parentElement) return;
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.id = 'ext-rv-history-btn';
-      btn.textContent = 'Riwayat';
-      btn.style.marginLeft = '8px';
-      btn.onclick = function () {
-        openHistory(form, saveBtn);
-      };
-      saveBtn.parentElement.insertBefore(btn, saveBtn.nextSibling);
-      _historyBtn = btn;
-      refreshHistoryBtn();
-    }
-    function refreshHistoryBtn() {
-      if (!_historyBtn) return;
-      const n = loadHistory().length;
-      _historyBtn.textContent = n > 0 ? 'Riwayat (' + n + ')' : 'Riwayat';
-    }
-    function shortSnapVal(v) {
-      const s = v === void 0 ? '-' : JSON.stringify(v);
-      return s.length > 60 ? s.slice(0, 60) + '\u2026' : s;
-    }
-    function showHistToast(msg) {
-      const t = document.createElement('div');
-      t.className = 'ext-rv-toast ext-rv-toast-success';
-      t.textContent = msg;
-      document.body.appendChild(t);
-      setTimeout(function () {
-        t.remove();
-      }, 4e3);
-    }
-    function openHistory(form, saveBtn) {
-      document.querySelector('#ext-rv-history-overlay')?.remove();
-      const list = loadHistory().slice().reverse();
-      const ov = document.createElement('div');
-      ov.id = 'ext-rv-history-overlay';
-      ov.style.cssText =
-        'position:fixed;inset:0;z-index:99998;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:24px;';
-      ov.addEventListener('click', function (e) {
-        if (e.target === ov) ov.remove();
-      });
-      const box = document.createElement('div');
-      box.style.cssText =
-        'background:#fff;border-radius:12px;max-width:680px;width:100%;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;font-size:14px;color:#1c2530;';
-      ov.appendChild(box);
-      const head = document.createElement('div');
-      head.style.cssText =
-        'display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #d0d5dd;font-weight:700;';
-      head.textContent = 'Riwayat Resume \u2014 1 Kunjungan (' + list.length + ')';
-      const x = document.createElement('button');
-      x.type = 'button';
-      x.textContent = '\xD7';
-      x.style.cssText =
-        'border:none;background:#f8fafc;width:32px;height:32px;border-radius:50%;font-size:20px;cursor:pointer;';
-      x.onclick = function () {
-        ov.remove();
-      };
-      head.appendChild(x);
-      box.appendChild(head);
-      const body = document.createElement('div');
-      body.style.cssText = 'padding:14px 18px;overflow-y:auto;';
-      box.appendChild(body);
-      if (!list.length) {
-        body.textContent =
-          'Belum ada riwayat untuk kunjungan ini. Riwayat tercatat otomatis setiap kali Simpan ditekan.';
-      }
-      list.forEach(function (entry, idx) {
-        const no = list.length - idx;
-        const row = document.createElement('div');
-        row.style.cssText =
-          'border:1px solid #d0d5dd;border-radius:8px;padding:10px 12px;margin-bottom:10px;';
-        const title = document.createElement('div');
-        title.style.fontWeight = '600';
-        title.textContent =
-          '#' +
-          no +
-          ' \u2014 ' +
-          new Date(entry.at).toLocaleString('id-ID') +
-          ' \u2014 ' +
-          (entry.aksi === 'buat' ? 'Buat baru' : 'Ubah') +
-          ' \u2014 ' +
-          entry.changed.length +
-          ' field berubah';
-        row.appendChild(title);
-        const detail = document.createElement('div');
-        detail.style.cssText =
-          'display:none;margin-top:8px;background:#f8fafc;border-radius:6px;padding:8px 10px;font-size:12px;max-height:180px;overflow-y:auto;white-space:pre-wrap;';
-        if (!entry.changed.length) {
-          detail.textContent = 'Tidak ada perbedaan field.';
-        } else {
-          detail.textContent = entry.changed
-            .map(function (k) {
-              return (
-                k + ': ' + shortSnapVal(entry.before[k]) + ' \u2192 ' + shortSnapVal(entry.after[k])
-              );
-            })
-            .join('\n');
-        }
-        row.appendChild(detail);
-        const bar = document.createElement('div');
-        bar.style.cssText = 'margin-top:8px;display:flex;gap:8px;';
-        const btnLihat = document.createElement('button');
-        btnLihat.type = 'button';
-        btnLihat.textContent = 'Lihat';
-        btnLihat.onclick = function () {
-          detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
-        };
-        bar.appendChild(btnLihat);
-        const btnSalin = document.createElement('button');
-        btnSalin.type = 'button';
-        btnSalin.textContent = 'Salin ke Form';
-        btnSalin.style.cssText =
-          'background:#00875a;color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;';
-        btnSalin.onclick = function () {
-          applySnapshot(form, saveBtn, entry.after);
-          ov.remove();
-        };
-        bar.appendChild(btnSalin);
-        row.appendChild(bar);
-        body.appendChild(row);
-      });
-      document.body.appendChild(ov);
-    }
-    function applySnapshot(form, saveBtn, snap) {
-      if (hasIdResume()) {
+    function applySnapshot(form, saveBtn, snap, tipe) {
+      if (tipe === 'ranap' && hasIdResume('ranap')) {
         const locked = form.querySelector('.ext-rv-locked');
         if (locked) {
           const fields = form.querySelectorAll('input, textarea, select');
@@ -1027,7 +1138,7 @@ var __morbis_feature = (() => {
           });
           saveBtn.textContent = 'Simpan Perubahan';
           saveBtn.value = 'Simpan Perubahan';
-          attachSaveHandler(saveBtn, form);
+          attachSaveHandler(saveBtn, form, tipe);
         }
       }
       let filled = 0;
@@ -1043,7 +1154,8 @@ var __morbis_feature = (() => {
           missing++;
           return;
         }
-        els.forEach(function (el) {
+        const arrVal = Array.isArray(v) ? v : [v];
+        els.forEach(function (el, idx) {
           if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')) {
             el.checked = Array.isArray(v) ? v.indexOf(el.value) >= 0 : el.value === v;
           } else if (el instanceof HTMLSelectElement && el.multiple) {
@@ -1052,7 +1164,7 @@ var __morbis_feature = (() => {
               o.selected = arr.indexOf(o.value) >= 0;
             });
           } else {
-            el.value = Array.isArray(v) ? (v[0] ?? '') : (v ?? '');
+            el.value = arrVal[idx] ?? '';
           }
           el.dispatchEvent(new Event('input', { bubbles: true }));
           el.dispatchEvent(new Event('change', { bubbles: true }));
@@ -1113,6 +1225,7 @@ var __morbis_feature = (() => {
         { id: 'gcs_e', min: 1, max: 4, step: 1 },
         { id: 'gcs_m', min: 1, max: 6, step: 1 },
         { id: 'gcs_v', min: 1, max: 5, step: 1 },
+        { id: 'tinggi', min: 30, max: 250, step: 1 },
         { id: 'berat', min: 1, max: 500, step: 0.1 },
       ];
       fields.forEach(function (f) {
@@ -1137,17 +1250,20 @@ var __morbis_feature = (() => {
         el.title = 'Format: angka/angka (Contoh: 120/80)';
       });
     }
-    function addRequiredAttributes() {
-      var ids = [
-        'alasan_rawat',
-        'anamnesa',
-        'diagnosa_primary',
-        'kode_diagnosa_utama',
-        'jenis_kasus',
-        'keadaan_keluar',
-        'cara_keluar',
-        'tgl_keluar2',
-      ];
+    function addRequiredAttributes(tipe) {
+      var ids =
+        tipe === 'rajal'
+          ? ['anamnesa', 'catatan', 'terapi_pengobatan', 'jenis_kasus', 'tindak_lanjut']
+          : [
+              'alasan_rawat',
+              'anamnesa',
+              'diagnosa_primary',
+              'kode_diagnosa_utama',
+              'jenis_kasus',
+              'keadaan_keluar',
+              'cara_keluar',
+              'tgl_keluar2',
+            ];
       ids.forEach(function (id) {
         var el = document.getElementById(id);
         if (el) el.required = true;
@@ -1174,11 +1290,11 @@ var __morbis_feature = (() => {
         });
       });
     }
-    function setupColorIndicators() {
-      var icd10Fields = buildICD10Fields();
-      var icd9Fields = buildICD9Fields();
+    function setupColorIndicators(tipe) {
+      var icd10Fields = buildICD10Fields(tipe);
+      var icd9Fields = buildICD9Fields(tipe);
       icd10Fields.forEach(function (id) {
-        var el = document.getElementById(id);
+        const el = document.getElementById(id);
         if (!el) return;
         el.addEventListener('input', function () {
           var v = el.value.trim();
@@ -1192,7 +1308,7 @@ var __morbis_feature = (() => {
         });
       });
       icd9Fields.forEach(function (id) {
-        var el = document.getElementById(id);
+        const el = document.getElementById(id);
         if (!el) return;
         el.addEventListener('input', function () {
           var v = el.value.trim();
@@ -1206,10 +1322,10 @@ var __morbis_feature = (() => {
         });
       });
     }
-    function setupAutoFormatICD() {
-      var icd10Fields = buildICD10Fields();
+    function setupAutoFormatICD(tipe) {
+      var icd10Fields = buildICD10Fields(tipe);
       icd10Fields.forEach(function (id) {
-        var el = document.getElementById(id);
+        const el = document.getElementById(id);
         if (!el) return;
         el.addEventListener('blur', function () {
           var v = el.value.trim().toUpperCase();
@@ -1222,9 +1338,9 @@ var __morbis_feature = (() => {
           el.dispatchEvent(new Event('input'));
         });
       });
-      var icd9Fields = buildICD9Fields();
+      var icd9Fields = buildICD9Fields(tipe);
       icd9Fields.forEach(function (id) {
-        var el = document.getElementById(id);
+        const el = document.getElementById(id);
         if (!el) return;
         el.addEventListener('blur', function () {
           var v = el.value.trim();
@@ -1238,7 +1354,41 @@ var __morbis_feature = (() => {
         });
       });
     }
-    function runValidation() {
+    function buildICD10Fields(tipe) {
+      if (tipe === 'rajal') {
+        const ids = [];
+        document.querySelectorAll('input[name="kode10[]"]').forEach(function (el) {
+          if (el.id) ids.push(el.id);
+        });
+        if (ids.length) return ids;
+        const numbered = [];
+        for (let i2 = 1; i2 <= 20; i2++) numbered.push('kode' + i2);
+        return numbered;
+      }
+      var result = ['kode_diagnosa_utama'];
+      for (var i = 1; i <= 10; i++) {
+        result.push('kode_diagnosa_sekunder' + i);
+      }
+      return result;
+    }
+    function buildICD9Fields(tipe) {
+      if (tipe === 'rajal') {
+        const ids = [];
+        document.querySelectorAll('input[name="kode9[]"]').forEach(function (el) {
+          if (el.id) ids.push(el.id);
+        });
+        if (ids.length) return ids;
+        const numbered = [];
+        for (let i2 = 1; i2 <= 20; i2++) numbered.push('kode9' + i2);
+        return numbered;
+      }
+      var result = [];
+      for (var i = 1; i <= 10; i++) {
+        result.push('kode_tindakan' + i);
+      }
+      return result;
+    }
+    function runValidation(tipe) {
       clearErrors();
       var errs = [];
       function fail(ok, msg, id) {
@@ -1250,6 +1400,18 @@ var __morbis_feature = (() => {
         else if (!isUsableText(v))
           fail(false, label + ' tidak boleh hanya berisi simbol atau karakter khusus', id);
       }
+      if (tipe === 'rajal') {
+        runRajalValidation(fail, failText);
+      } else {
+        runRanapValidation(fail, failText);
+      }
+      if (errs.length > 0) {
+        warnAll(errs);
+        return false;
+      }
+      return true;
+    }
+    function runRanapValidation(fail, failText) {
       fail(!!val('norm'), 'No. RM harus diisi', 'norm');
       fail(!!val('pasien'), 'Nama pasien harus diisi', 'pasien');
       fail(!!val('id_visit'), 'Data kunjungan tidak valid', 'pasien');
@@ -1376,11 +1538,81 @@ var __morbis_feature = (() => {
           'tgl_keluar2',
         );
       }
-      if (errs.length > 0) {
-        warnAll(errs);
-        return false;
-      }
-      return true;
+    }
+    function runRajalValidation(fail, failText) {
+      fail(!!val('id_visit'), 'Data kunjungan tidak valid', 'id_visit');
+      fail(!!val('nama_pasien'), 'Nama pasien harus diisi', 'nama_pasien');
+      failText('anamnesa', 'Anamnesa');
+      failText('catatan', 'Catatan diagnosa');
+      failText('terapi_pengobatan', 'Terapi/pengobatan');
+      const optText = ['pemeriksaan_fisik', 'tindakan', 'planning'];
+      optText.forEach(function (id) {
+        const v = val(id);
+        if (v && !isUsableText(v))
+          fail(
+            false,
+            (id === 'pemeriksaan_fisik'
+              ? 'Pemeriksaan fisik'
+              : id === 'planning'
+                ? 'Planning'
+                : 'Tindakan') + ' tidak boleh hanya berisi simbol atau karakter khusus',
+            id,
+          );
+      });
+      document.querySelectorAll('input[name="kode10[]"]').forEach(function (inp, i) {
+        const kode = (inp.value || '').trim();
+        const row = inp.closest('tr');
+        const idicd = (row?.querySelector('input[name="idicd[]"]')?.value || '').trim();
+        const nama = (row?.querySelector('input[name="nama[]"]')?.value || '').trim();
+        const errId = inp.id || `kode10-${i}`;
+        if (kode && !isICD10(kode))
+          fail(
+            false,
+            'Format kode ICD-10 baris ' + (i + 1) + ' tidak valid (contoh: A00, B20.9)',
+            errId,
+          );
+        if ((kode || nama) && !idicd)
+          fail(
+            false,
+            'Diagnosa baris ' + (i + 1) + ' harus dipilih dari hasil pencarian (autocomplete)',
+            errId,
+          );
+      });
+      document.querySelectorAll('input[name="kode9[]"]').forEach(function (inp, i) {
+        const kode = (inp.value || '').trim();
+        const row = inp.closest('tr');
+        const idicd = (row?.querySelector('input[name="idicdTindakan[]"]')?.value || '').trim();
+        const nama = (row?.querySelector('input[name="namaTindakan[]"]')?.value || '').trim();
+        const errId = inp.id || `kode9-${i}`;
+        if (kode && !isICD9(kode))
+          fail(
+            false,
+            'Format kode ICD-9 Tindakan baris ' + (i + 1) + ' tidak valid (contoh: 45.16)',
+            errId,
+          );
+        if ((kode || nama) && !idicd)
+          fail(
+            false,
+            'Tindakan baris ' + (i + 1) + ' harus dipilih dari hasil pencarian (autocomplete)',
+            errId,
+          );
+      });
+      const tensi = val('tensi');
+      if (tensi) fail(isNormalBP(tensi), 'Tekanan darah tidak valid (contoh: 120/80)', 'tensi');
+      const nadi = val('nadi');
+      if (nadi) fail(isValidVital(nadi, 20, 250), 'Nadi harus 20-250', 'nadi');
+      const suhu = val('suhu');
+      if (suhu) fail(isValidVital(suhu, 30, 45), 'Suhu harus 30-45\xB0C', 'suhu');
+      const nafas = val('nafas');
+      if (nafas) fail(isValidVital(nafas, 4, 80), 'Nafas harus 4-80', 'nafas');
+      const spo2 = val('spo2');
+      if (spo2) fail(isValidVital(spo2, 50, 100), 'SpO2 harus 50-100%', 'spo2');
+      const tinggi = val('tinggi');
+      if (tinggi) fail(isValidVital(tinggi, 30, 250), 'Tinggi badan harus 30-250 cm', 'tinggi');
+      const berat = val('berat');
+      if (berat) fail(isValidVital(berat, 1, 500), 'Berat badan harus 1-500 kg', 'berat');
+      fail(!!val('jenis_kasus'), 'Jenis kasus harus dipilih', 'jenis_kasus');
+      fail(!!val('tindak_lanjut'), 'Tindak lanjut harus dipilih', 'tindak_lanjut');
     }
     function clearErrors() {
       document.querySelectorAll('.ext-rv-error').forEach(function (el) {
@@ -1389,7 +1621,7 @@ var __morbis_feature = (() => {
     }
     function warnAll(errs) {
       var first = errs[0];
-      var firstEl = document.getElementById(first.id);
+      const firstEl = document.getElementById(first.id);
       if (firstEl) {
         firstEl.focus();
         firstEl.classList.add('ext-rv-error');
@@ -1438,7 +1670,8 @@ var __morbis_feature = (() => {
     function hasChecked(sel) {
       return document.querySelector(sel + ':checked') !== null;
     }
-    function setupAutoClearHandlers() {
+    function setupAutoClearHandlers(tipe) {
+      if (tipe === 'rajal') return;
       function attachClear(fieldId, targetId) {
         var el = document.getElementById(fieldId);
         if (!el) return;
@@ -1459,20 +1692,6 @@ var __morbis_feature = (() => {
         attachClear('kode_tindakan' + j, tgtT);
         attachClear('tindakan' + j, tgtT);
       }
-    }
-    function buildICD10Fields() {
-      var result = ['kode_diagnosa_utama'];
-      for (var i = 1; i <= 10; i++) {
-        result.push('kode_diagnosa_sekunder' + i);
-      }
-      return result;
-    }
-    function buildICD9Fields() {
-      var result = [];
-      for (var i = 1; i <= 10; i++) {
-        result.push('kode_tindakan' + i);
-      }
-      return result;
     }
   })();
 })();

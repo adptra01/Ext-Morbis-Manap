@@ -1,5 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import type { ResumeData, ValidationError } from './types';
+import { openHistoryModal } from '../shared/resumeHistory.js';
+import { snapToResumeData } from './snap.js';
 import { Textarea } from '../../ui/components/Textarea';
 import { Label } from '../../ui/components/Label';
 import { Card } from '../../ui/components/Card';
@@ -94,6 +96,17 @@ export function App({ data: initialData, onSave, onClose }: AppProps) {
   const updateNotes = (field: string, value: string) =>
     setData({ ...data, clinicalNotes: { ...data.clinicalNotes, [field]: value } });
 
+  const openHistory = () => {
+    openHistoryModal({
+      idVisit:
+        data.patientInfo.id_visit || new URLSearchParams(location.search).get('id_visit') || '',
+      tipe: 'rajal',
+      title: 'Riwayat Resume Rajal',
+      zIndex: 2147483647, // di atas modal React
+      onApply: (snap) => setData(snapToResumeData(snap, data)),
+    });
+  };
+
   return (
     <div className="resume-modal">
       <Header title="Resume Rawat Jalan" onClose={onClose} patientInfo={data.patientInfo} />
@@ -179,6 +192,7 @@ export function App({ data: initialData, onSave, onClose }: AppProps) {
         onSave={handleSave}
         onCancel={onClose}
         onRefresh={() => location.reload()}
+        onHistory={openHistory}
       />
     </div>
   );

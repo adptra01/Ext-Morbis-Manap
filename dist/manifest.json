@@ -114,7 +114,12 @@
       "all_frames": false
     },
     {
-      "matches": ["http://*/admisi/detail-rawat-inap/tambah-resume-ri*"],
+      "matches": [
+        "http://*/admisi/detail-rawat-inap/tambah-resume-ri*",
+        "http://*/admisi/detail-rawat-inap/edit-resume-ri*",
+        "http://*/rekam-medik/rm-rawat-jalan-new*",
+        "http://*/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new*"
+      ],
       "js": ["features/resumeValidator.js"],
       "run_at": "document_idle",
       "world": "MAIN",

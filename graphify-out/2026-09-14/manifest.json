@@ -325,8 +325,8 @@
     "semantic_hash": "10f1dc6fa7c2f5e3a4829d2e53336d0b"
   },
   "src/features/resumeValidator.ts": {
-    "mtime": 1789396819.7363327,
-    "ast_hash": "4a8ae1bcda75df26e985e6cae8d664a9",
+    "mtime": 1789377894.033382,
+    "ast_hash": "214680eace7ce97636c3c173ac039f02",
     "semantic_hash": ""
   },
   "src/features/scrollButtons.ts": {
@@ -1192,11 +1192,6 @@
   "src/features/billingAdjustment.ts": {
     "mtime": 1789371688.0505652,
     "ast_hash": "6e30d9b1d8c1c752b9df533be7d7d114",
-    "semantic_hash": ""
-  },
-  "src/features/shared/resumeValidation.ts": {
-    "mtime": 1789396764.7401457,
-    "ast_hash": "d731abe59b2e7081ba93ec074642894c",
     "semantic_hash": ""
   }
 }

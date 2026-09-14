@@ -5,6 +5,8 @@ import { confirmExt } from '../../ui/web';
 import { App } from './App';
 import { ErrorBoundary } from './ErrorBoundary';
 import type { RanapFormData, IcdItem } from './types';
+import { logResumeHistory, loadLast } from '../shared/resumeHistory.js';
+import { ranapToSnap } from './snap.js';
 
 const FORM_URL = '/admisi/detail-rawat-inap/edit-resume-ri';
 const ENDPOINT = '/rekam-medik/control/edit-resume-rawat-inap';
@@ -365,6 +367,16 @@ function mountReactApp(data: RanapFormData) {
     const phpPattern = /(?:Notice|Warning|Fatal error|Parse error)/i;
     if (phpPattern.test(text) && text.length < 300) throw new Error('PHP error');
     cachedData = null;
+
+    // Riwayat: catat snapshot sesudah simpan (nama petugas dibaca di module).
+    logResumeHistory({
+      idVisit: formData.id_visit,
+      idResume: formData.id_resume_inap,
+      tipe: 'ranap',
+      aksi: formData.id_resume_inap ? 'ubah' : 'buat',
+      before: loadLast(formData.id_visit, 'ranap') ?? {},
+      after: ranapToSnap(formData),
+    });
   };
 
   reactRoot.render(

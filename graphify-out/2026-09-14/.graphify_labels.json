@@ -168,14 +168,9 @@
   "166": "penerimaanAntrolCetak.ts",
   "167": "farmasiQueueSync.ts",
   "168": "sidepanel/DomainPanel.tsx",
-  "169": "features/shared/types.ts",
   "170": "ui/index.ts",
-  "171": "resumeTab/App.tsx",
   "172": "antrianFarmasiDisplayApp.ts",
   "173": "injectCSS",
-  "174": "ErrorBoundary",
-  "175": "resumeValidation.ts",
   "176": "tryInject",
-  "177": "ConsultationInfoPanel.tsx",
   "178": "telaahResepPrint.ts"
 }

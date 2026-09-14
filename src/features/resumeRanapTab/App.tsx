@@ -1,5 +1,7 @@
 import { useState, useCallback, useRef, useEffect, type FormEvent } from 'react';
 import type { RanapFormData, IcdItem, SelectOption } from './types';
+import { openHistoryModal } from '../shared/resumeHistory.js';
+import { snapToRanapForm } from './snap.js';
 import { Input } from '../../ui/components/input';
 import { Textarea } from '../../ui/components/Textarea';
 import { Label } from '../../ui/components/Label';
@@ -363,6 +365,16 @@ export function App({ data, onSave, onClose }: Props) {
   const removeNosokomial = (i: number) =>
     p({ icd_nosokomial: d.icd_nosokomial.filter((_, idx) => idx !== i) });
 
+  const openHistory = () => {
+    openHistoryModal({
+      idVisit: d.id_visit,
+      tipe: 'ranap',
+      title: 'Riwayat Resume Rawat Inap',
+      zIndex: 2147483647, // di atas modal React
+      onApply: (snap) => setD(snapToRanapForm(snap, d)),
+    });
+  };
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -698,6 +710,9 @@ export function App({ data, onSave, onClose }: Props) {
             {error}
           </Badge>
         )}
+        <Button type="button" variant="outline" onClick={openHistory} disabled={saving}>
+          Riwayat
+        </Button>
         <Button type="button" variant="outline" onClick={onClose} disabled={saving}>
           Batal
         </Button>

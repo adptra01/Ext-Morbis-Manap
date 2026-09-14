@@ -8,9 +8,18 @@ interface FooterProps {
   hasErrors?: boolean;
   lastSaved?: string | null;
   onRefresh?: () => void;
+  onHistory?: () => void;
 }
 
-export function Footer({ onCancel, onSave, saving, hasErrors, lastSaved, onRefresh }: FooterProps) {
+export function Footer({
+  onCancel,
+  onSave,
+  saving,
+  hasErrors,
+  lastSaved,
+  onRefresh,
+  onHistory,
+}: FooterProps) {
   return (
     <div className="flex items-center justify-between px-5 py-3 border-t border-border shrink-0 bg-card">
       <div className="flex items-center gap-3">
@@ -27,6 +36,11 @@ export function Footer({ onCancel, onSave, saving, hasErrors, lastSaved, onRefre
         )}
       </div>
       <div className="flex items-center gap-2">
+        {onHistory && (
+          <Button type="button" variant="ghost" size="default" onClick={onHistory}>
+            Riwayat
+          </Button>
+        )}
         {onRefresh && (
           <Button type="button" variant="ghost" size="default" onClick={onRefresh}>
             Reset

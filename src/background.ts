@@ -232,7 +232,8 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       enabled: true,
       allowedRoles: ['casemix', 'dokter'],
       name: 'Resume Validator',
-      description: 'Validasi ketat form resume rawat inap agar tidak gagal simpan tanpa error',
+      description:
+        'Validasi ketat form resume rawat inap & rawat jalan + riwayat simpan (petugas, before/after)',
     },
     antrianTools: {
       enabled: true,

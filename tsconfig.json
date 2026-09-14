@@ -36,6 +36,7 @@
     "src/features/sidepanel/**/*.ts",
     "src/features/sidepanel/**/*.tsx",
     "src/features/shared/*.ts",
+    "src/features/resumeValidator.ts",
     "src/features/fixJasaPelayanan.ts",
     "src/features/filterPersistence.ts",
     "src/features/billingFilterPersistence.ts",

@@ -7,6 +7,16 @@ import {
   isUsableText,
 } from './shared/resumeValidation.js';
 import { confirmExt } from '../ui/web/confirm';
+import {
+  type FormSnap,
+  type TipeResume,
+  loadHistory,
+  loadLast,
+  storeLast,
+  logResumeHistory,
+  openHistoryModal,
+  showHistToast,
+} from './shared/resumeHistory.js';
 
 /* eslint-disable @typescript-eslint/no-unused-vars, no-var */
 (function () {
@@ -25,37 +35,61 @@ import { confirmExt } from '../ui/web/confirm';
     }
   }, 50);
 
+  /** Deteksi tipe halaman: ranap (tambah/edit resume RI) atau rajal (rm-rawat-jalan-new). */
+  function pageTipe(): TipeResume | null {
+    const p = window.location.pathname;
+    if (p.includes('/tambah-resume-ri') || p.includes('/edit-resume-ri')) return 'ranap';
+    if (p.includes('/rm-rawat-jalan-new')) return 'rajal';
+    return null;
+  }
+
   function waitForForm(): void {
-    if (!window.location.pathname.includes('/tambah-resume-ri')) return;
+    const tipe = pageTipe();
+    if (!tipe) return;
 
     const poll = setInterval(function () {
       const saveBtn = document.getElementById('save') as HTMLElement | null;
-      const form = document.querySelector<HTMLFormElement>('form[action*="rawat-inap-resume"]');
+      const form =
+        tipe === 'ranap'
+          ? document.querySelector<HTMLFormElement>(
+              'form[action*="rawat-inap-resume"], form[action*="edit-resume-rawat-inap"]',
+            )
+          : document.querySelector<HTMLFormElement>(
+              'form#formdata, form[action*="rm-rawat-jalan"]',
+            );
       if (saveBtn && form) {
         clearInterval(poll);
-        init(form, saveBtn);
+        init(form, saveBtn, tipe);
       }
     }, 200);
   }
 
-  function init(form: HTMLFormElement, saveBtn: HTMLElement): void {
+  function init(form: HTMLFormElement, saveBtn: HTMLElement, tipe: TipeResume): void {
     injectStyle();
 
-    setupCekForm(form);
-    setupAutoClearHandlers();
-    restoreDraft();
-    setupAutosave(form);
+    setupCekForm(form, tipe);
+    setupAutoClearHandlers(tipe);
+    // Draft/autosave hanya untuk form BARU ranap (Rajal adalah form kerja
+    // utama RM — autosave rajal akan menulis localStorage besar tiap ketik).
+    if (tipe === 'ranap') {
+      if (!hasIdResume('ranap')) {
+        restoreDraft();
+        setupAutosave(form);
+      }
+    }
     optimizeVitalInputs();
     optimizeBloodPressure();
-    addRequiredAttributes();
+    addRequiredAttributes(tipe);
     preventEnterSubmit();
     autoExpandTextareas();
-    setupColorIndicators();
-    setupAutoFormatICD();
+    setupColorIndicators(tipe);
+    setupAutoFormatICD(tipe);
     setupUnsavedWarning(form);
-    checkAndLockForm(form, saveBtn);
-    setupUnifiedSaveHandler(saveBtn, form);
-    setupHistory(form, saveBtn);
+    if (tipe === 'ranap') checkAndLockForm(form, saveBtn, tipe);
+    if (tipe === 'ranap' && !hasIdResume('ranap')) {
+      setupUnifiedSaveHandler(saveBtn, form, tipe);
+    }
+    setupHistory(form, saveBtn, tipe);
   }
 
   function injectStyle(): void {
@@ -74,44 +108,75 @@ import { confirmExt } from '../ui/web/confirm';
     );
   }
 
-  function setupCekForm(form: HTMLFormElement): void {
+  /**
+   * Intercept jalur simpan:
+   * - Ranap: `window.cekForm` (dipanggil form.onsubmit native) → validasi kami.
+   * - Rajal: `window.simpan` (global, dipanggil `onclick="simpan()"` di #save)
+   *   → validasi kami jalan duluan, baru native `simpan()` asli.
+   * - Keduanya: override `form.submit` + jQuery submit guard.
+   */
+  function setupCekForm(form: HTMLFormElement, tipe: TipeResume): void {
     const w = window as unknown as Record<string, unknown>;
 
-    w.cekForm = function (): boolean {
-      return runValidation();
-    };
+    if (tipe === 'rajal') {
+      const origSimpan =
+        typeof w.simpan === 'function' ? (w.simpan as (...a: unknown[]) => unknown) : null;
+      if (origSimpan && !(origSimpan as unknown as { __extWrapped?: boolean }).__extWrapped) {
+        const wrapped = function (this: unknown, ...args: unknown[]): unknown {
+          if (!runValidation(tipe)) return false;
+          logResumeSave(form, tipe);
+          _dirty = false;
+          try {
+            localStorage.removeItem(getDraftKey());
+          } catch (_e) {
+            /* ignore */
+          }
+          return origSimpan.apply(this, args);
+        };
+        (wrapped as unknown as { __extWrapped: boolean }).__extWrapped = true;
+        w.simpan = wrapped;
+      }
+    } else {
+      w.cekForm = function (): boolean {
+        return runValidation(tipe);
+      };
+    }
 
     if (form.onsubmit !== null) {
       form.onsubmit = function (e: Event) {
-        const result = runValidation();
+        const result = runValidation(tipe);
         if (!result && e) {
           e.preventDefault();
-        } else if (!_rvSubmitLogged) {
-          // jalur submit native (mode edit): log history saat validasi lolos
-          logResumeSave(form);
+        } else {
+          // jalur submit native (mode edit): log history saat validasi lolos.
+          // Duplikat dari jalur lain ditangkap dedup 5s di logResumeHistory.
+          logResumeSave(form, tipe);
         }
-        _rvSubmitLogged = false;
         return result;
       };
     }
 
-    const $ = w.jQuery as JQueryStatic | undefined;
+    const $ = (w as { jQuery?: unknown }).jQuery as
+      { fn?: { on?: (ev: string, h: (e: Event) => boolean) => void } } | undefined;
     // ponytail: global jQuery may be a shim/not-ready on some MORBIS instances;
     // never let the jQuery binding kill the whole feature.
-    if (typeof $ === 'function' && $.fn && typeof $.fn.on === 'function') {
-      $(form).on('submit', function (e: Event) {
-        if (!runValidation()) {
-          e.preventDefault();
-          return false;
-        }
-        return true;
-      });
+    if (typeof $ === 'object' && $ && typeof $.fn?.on === 'function') {
+      ($ as unknown as { fn: { on: (ev: string, h: (e: Event) => boolean) => void } }).fn.on(
+        'submit',
+        function (e: Event) {
+          if (!runValidation(tipe)) {
+            e.preventDefault();
+            return false;
+          }
+          return true;
+        },
+      );
     }
 
     var origSubmit = form.submit.bind(form);
     form.submit = function () {
-      if (!runValidation()) return;
-      logResumeSave(form);
+      if (!runValidation(tipe)) return;
+      logResumeSave(form, tipe);
       _dirty = false;
       // FIX: stop autosave interval saat submit (form akan navigasi away)
       clearAutosave();
@@ -124,7 +189,7 @@ import { confirmExt } from '../ui/web/confirm';
     };
   }
 
-  // ===================== DRAFT AUTOSAVE =====================
+  // ===================== DRAFT AUTOSAVE (ranap baru) =====================
 
   const DRAFT_PREFIX = 'ext_draft_resume_';
   var _autosaveIntervalId: number | null = null;
@@ -145,8 +210,6 @@ import { confirmExt } from '../ui/web/confirm';
   }
 
   function setupAutosave(form: HTMLFormElement): void {
-    if (hasIdResume()) return;
-
     var doSave = function () {
       saveDraft(form);
     };
@@ -186,8 +249,6 @@ import { confirmExt } from '../ui/web/confirm';
   }
 
   async function restoreDraft(): Promise<void> {
-    if (hasIdResume()) return;
-
     const key = getDraftKey();
     let raw: string | null = null;
     try {
@@ -238,15 +299,16 @@ import { confirmExt } from '../ui/web/confirm';
     }
   }
 
-  // ===================== AUTO-LOCK (EDIT MODE) =====================
+  // ===================== AUTO-LOCK (EDIT MODE, ranap) =====================
 
-  function hasIdResume(): boolean {
-    const el = document.getElementById('id_resume_inap') as HTMLInputElement | null;
+  function hasIdResume(tipe: TipeResume): boolean {
+    const id = tipe === 'rajal' ? 'id_rawat_jalan' : 'id_resume_inap';
+    const el = document.getElementById(id) as HTMLInputElement | null;
     return !!el && !!el.value;
   }
 
-  function checkAndLockForm(form: HTMLFormElement, saveBtn: HTMLElement): void {
-    if (!hasIdResume()) return;
+  function checkAndLockForm(form: HTMLFormElement, saveBtn: HTMLElement, tipe: TipeResume): void {
+    if (!hasIdResume(tipe)) return;
 
     const fields = form.querySelectorAll<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -256,7 +318,7 @@ import { confirmExt } from '../ui/web/confirm';
       if (el.tagName === 'SELECT') {
         el.disabled = true;
       } else {
-        el.readOnly = true;
+        (el as HTMLInputElement | HTMLTextAreaElement).readOnly = true;
       }
       el.classList.add('ext-rv-locked');
     });
@@ -268,14 +330,14 @@ import { confirmExt } from '../ui/web/confirm';
       fields.forEach(function (el) {
         if (el.id === 'save' || el.type === 'button' || el.type === 'submit') return;
         el.disabled = false;
-        el.readOnly = false;
+        (el as HTMLInputElement | HTMLTextAreaElement).readOnly = false;
         el.classList.remove('ext-rv-locked');
       });
       saveBtn.textContent = 'Simpan Perubahan';
       (saveBtn as HTMLInputElement).value = 'Simpan Perubahan';
 
-      attachSaveHandler(saveBtn, form);
-      refreshBeforeSnapshot(form);
+      attachSaveHandler(saveBtn, form, tipe);
+      refreshBeforeSnapshot(form, tipe);
     };
 
     saveBtn.onclick = function (e: Event) {
@@ -303,16 +365,20 @@ import { confirmExt } from '../ui/web/confirm';
     };
   }
 
-  // ===================== SAVE HANDLER (SHARED by tambah & edit) =====================
+  // ===================== SAVE HANDLER (ranap tambah) =====================
 
-  function setupUnifiedSaveHandler(saveBtn: HTMLElement, form: HTMLFormElement): void {
-    if (hasIdResume()) return;
-    attachSaveHandler(saveBtn, form);
+  function setupUnifiedSaveHandler(
+    saveBtn: HTMLElement,
+    form: HTMLFormElement,
+    tipe: TipeResume,
+  ): void {
+    if (hasIdResume(tipe)) return;
+    attachSaveHandler(saveBtn, form, tipe);
   }
 
-  function attachSaveHandler(saveBtn: HTMLElement, form: HTMLFormElement): void {
+  function attachSaveHandler(saveBtn: HTMLElement, form: HTMLFormElement, tipe: TipeResume): void {
     saveBtn.onclick = function (e: Event) {
-      if (!runValidation()) {
+      if (!runValidation(tipe)) {
         e.preventDefault();
         return false;
       }
@@ -351,64 +417,75 @@ import { confirmExt } from '../ui/web/confirm';
       });
 
       e.preventDefault();
+      return true;
     };
   }
 
   // ===================== RIWAYAT RESUME (HISTORY LOG) =====================
-  // Setiap simpan (baru/edit) dicatat: snapshot SEBELUM + SESUDAH + field berubah.
-  // - Lokal: localStorage per kunjungan -> tombol "Riwayat" -> salin ke form.
-  // - Server: POST ke REPORTS_ENDPOINT (proyek Reports SIMRS) — fire-and-forget.
+  // Logika tersimpan di shared/resumeHistory.ts (dipakai juga oleh modal React).
+  // Di sini hanya: snapshot DOM → log, tombol Riwayat, salin-ke-form.
 
-  const HIST_PREFIX = 'ext_rv_history_';
-  const LAST_PREFIX = 'ext_rv_lastform_';
-  // App Reports SIMRS tempat log dikirim (sama dengan antrian farmasi):
-  //   PROD   → http://dev.rsudkotajambi.id/rs/api/reports/resume-history
-  //   DDEV   → override localStorage 'ext-farmasi-app-base' (mis. http://simrs-reports.ddev.site)
-  const REPORTS_API_PATH = '/api/reports/resume-history';
-  const REPORTS_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
-
-  function resolveReportsBase(): string {
-    try {
-      const ov = localStorage.getItem('ext-farmasi-app-base');
-      if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
-    } catch (_e) {
-      /* ignore */
-    }
-    return REPORTS_BASE_FALLBACK;
-  }
-
-  type FormSnap = Record<string, string | string[]>;
-
-  interface ResumeHistoryEntry {
-    at: number;
-    aksi: 'buat' | 'ubah';
-    id_resume: string;
-    user: string;
-    before: FormSnap;
-    after: FormSnap;
-    changed: string[];
-  }
-
-  var _lastLogHash: string | null = null;
-  var _lastLogAt = 0;
-  var _rvSubmitLogged = false;
   var _historyBtn: HTMLElement | null = null;
 
   function getVisitId(): string {
     return val('id_visit');
   }
 
-  function getHistoryKey(): string {
-    return HIST_PREFIX + (getVisitId() || 'unknown');
+  /** Dipanggil TEPAT sebelum submit: catat before/after + kirim Reports. */
+  function logResumeSave(form: HTMLFormElement, tipe: TipeResume): void {
+    const after = takeSnapshot(form);
+    const idVisit = getVisitId();
+    const idResume = tipe === 'rajal' ? val('id_rawat_jalan') : val('id_resume_inap');
+    const aksi: 'buat' | 'ubah' = hasIdResume(tipe) ? 'ubah' : 'buat';
+    const before = loadLast(idVisit, tipe) || {};
+    logResumeHistory({
+      idVisit: idVisit,
+      idResume: idResume,
+      tipe: tipe,
+      aksi: aksi,
+      before: before,
+      after: after,
+    });
+    refreshHistoryBtn(idVisit, tipe);
   }
 
-  function getLastKey(): string {
-    return LAST_PREFIX + (getVisitId() || 'unknown');
+  /** Baseline "sebelum": saat form dibuka (baru) / saat unlock (edit). */
+  function refreshBeforeSnapshot(form: HTMLFormElement, tipe: TipeResume): void {
+    storeLast(takeSnapshot(form), getVisitId(), tipe);
   }
 
-  function readPetugas(): string {
-    const el = document.querySelector('#petugas, .petugas, .username, #username');
-    return (el?.textContent ?? '').trim().slice(0, 80);
+  function setupHistory(form: HTMLFormElement, saveBtn: HTMLElement, tipe: TipeResume): void {
+    const idVisit = getVisitId();
+    storeLast(takeSnapshot(form), idVisit, tipe);
+    refreshHistoryBtn(idVisit, tipe);
+    if (_historyBtn || !saveBtn.parentElement) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = 'ext-rv-history-btn';
+    btn.textContent = 'Riwayat';
+    btn.style.cssText =
+      'margin-left:8px;border:1px solid #cbd5e1;background:#fff;border-radius:6px;' +
+      'padding:6px 12px;cursor:pointer;font-size:13px;';
+    btn.onclick = function () {
+      openHistoryModal({
+        idVisit: idVisit,
+        tipe: tipe,
+        title: tipe === 'rajal' ? 'Riwayat Resume Rajal' : 'Riwayat Resume Rawat Inap',
+        zIndex: 99998,
+        onApply: function (snap) {
+          applySnapshot(form, saveBtn, snap, tipe);
+        },
+      });
+    };
+    saveBtn.parentElement.insertBefore(btn, saveBtn.nextSibling);
+    _historyBtn = btn;
+    refreshHistoryBtn(idVisit, tipe);
+  }
+
+  function refreshHistoryBtn(idVisit: string, tipe: TipeResume): void {
+    if (!_historyBtn) return;
+    const n = loadHistory(idVisit, tipe).length;
+    _historyBtn.textContent = n > 0 ? 'Riwayat (' + n + ')' : 'Riwayat';
   }
 
   /** Snapshot SEMUA kontrol form (termasuk disabled/readonly) by name. */
@@ -416,7 +493,7 @@ import { confirmExt } from '../ui/web/confirm';
     const snap: FormSnap = {};
     // ponytail: field ICD (dan row tindakan/nosokomial) ada yang id-only tanpa `name` —
     // "form tersembunyi" yang tetap harus ikut history & salin-ke-form.
-    const ICD_ID_RE = /^(kode_|diagnosa_|tindakan\d+$|nosokomial\d+$)/;
+    const ICD_ID_RE = /^(kode_|diagnosa_|tindakan\d+$|nosokomial\d+$|kode\d+$|kode9\d+$)/;
     const els = form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
       'input[name], textarea[name], select[name], input[id]:not([name]):not([type=button]):not([type=submit]), textarea[id]:not([name]), select[id]:not([name])',
     );
@@ -438,276 +515,28 @@ import { confirmExt } from '../ui/web/confirm';
         });
         return;
       }
-      snap[key] = el.value;
+      // name berulang (kode10[], nama[], idicd[], ...) → kumpulkan jadi array
+      const cur = snap[key];
+      if (cur !== undefined && !Array.isArray(cur)) {
+        snap[key] = [cur as string, el.value];
+      } else if (Array.isArray(cur)) {
+        cur.push(el.value);
+      } else {
+        snap[key] = el.value;
+      }
     });
     return snap;
   }
 
-  function sameSnapVal(
-    a: string | string[] | undefined,
-    b: string | string[] | undefined,
-  ): boolean {
-    return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
-  }
-
-  function diffSnap(before: FormSnap, after: FormSnap): string[] {
-    const keys: Record<string, boolean> = {};
-    Object.keys(before).forEach(function (k) {
-      keys[k] = true;
-    });
-    Object.keys(after).forEach(function (k) {
-      keys[k] = true;
-    });
-    return Object.keys(keys).filter(function (k) {
-      return !sameSnapVal(before[k], after[k]);
-    });
-  }
-
-  function loadHistory(): ResumeHistoryEntry[] {
-    try {
-      const raw = localStorage.getItem(getHistoryKey());
-      if (!raw) return [];
-      const arr = JSON.parse(raw);
-      return Array.isArray(arr) ? (arr as ResumeHistoryEntry[]) : [];
-    } catch (_e) {
-      return [];
-    }
-  }
-
-  function saveHistory(list: ResumeHistoryEntry[]): void {
-    try {
-      localStorage.setItem(getHistoryKey(), JSON.stringify(list.slice(-50)));
-    } catch (_e) {
-      /* storage full */
-    }
-  }
-
-  function loadLast(): FormSnap | null {
-    try {
-      const raw = localStorage.getItem(getLastKey());
-      return raw ? (JSON.parse(raw) as FormSnap) : null;
-    } catch (_e) {
-      return null;
-    }
-  }
-
-  function storeLast(snap: FormSnap): void {
-    try {
-      localStorage.setItem(getLastKey(), JSON.stringify(snap));
-    } catch (_e) {
-      /* ignore */
-    }
-  }
-
-  function postToReports(entry: ResumeHistoryEntry): void {
-    try {
-      const payload = {
-        id_visit: getVisitId(),
-        id_resume: entry.id_resume,
-        aksi: entry.aksi,
-        waktu: new Date(entry.at).toISOString(),
-        user: entry.user,
-        before: entry.before,
-        after: entry.after,
-        changed: entry.changed,
-      };
-      fetch(resolveReportsBase() + REPORTS_API_PATH, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        keepalive: true,
-        credentials: 'omit',
-      }).catch(function () {
-        /* endpoint Reports belum ada — riwayat lokal tetap aman */
-      });
-    } catch (_e) {
-      /* ignore */
-    }
-  }
-
-  /** Dipanggil TEPAT sebelum submit: catat before/after + kirim Reports. */
-  function logResumeSave(form: HTMLFormElement): void {
-    const after = takeSnapshot(form);
-    const hash = JSON.stringify(after);
-    const now = Date.now();
-    if (_lastLogHash === hash && now - _lastLogAt < 5000) return; // cegah dobel-klik
-    _lastLogHash = hash;
-    _lastLogAt = now;
-
-    const before = loadLast() || {};
-    const entry: ResumeHistoryEntry = {
-      at: now,
-      aksi: hasIdResume() ? 'ubah' : 'buat',
-      id_resume: val('id_resume_inap'),
-      user: readPetugas(),
-      before: before,
-      after: after,
-      changed: diffSnap(before, after),
-    };
-    const list = loadHistory();
-    list.push(entry);
-    saveHistory(list);
-    storeLast(after); // sesudah ini jadi "sebelum" berikutnya
-    postToReports(entry);
-    refreshHistoryBtn();
-  }
-
-  /** Baseline "sebelum": saat form dibuka (baru) / saat unlock (edit). */
-  function refreshBeforeSnapshot(form: HTMLFormElement): void {
-    storeLast(takeSnapshot(form));
-  }
-
-  function setupHistory(form: HTMLFormElement, saveBtn: HTMLElement): void {
-    storeLast(takeSnapshot(form));
-    refreshHistoryBtn();
-    if (_historyBtn || !saveBtn.parentElement) return;
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.id = 'ext-rv-history-btn';
-    btn.textContent = 'Riwayat';
-    btn.style.marginLeft = '8px';
-    btn.onclick = function () {
-      openHistory(form, saveBtn);
-    };
-    saveBtn.parentElement.insertBefore(btn, saveBtn.nextSibling);
-    _historyBtn = btn;
-    refreshHistoryBtn();
-  }
-
-  function refreshHistoryBtn(): void {
-    if (!_historyBtn) return;
-    const n = loadHistory().length;
-    _historyBtn.textContent = n > 0 ? 'Riwayat (' + n + ')' : 'Riwayat';
-  }
-
-  function shortSnapVal(v: string | string[] | undefined): string {
-    const s = v === undefined ? '-' : JSON.stringify(v);
-    return s.length > 60 ? s.slice(0, 60) + '…' : s;
-  }
-
-  function showHistToast(msg: string): void {
-    const t = document.createElement('div');
-    t.className = 'ext-rv-toast ext-rv-toast-success';
-    t.textContent = msg;
-    document.body.appendChild(t);
-    setTimeout(function () {
-      t.remove();
-    }, 4000);
-  }
-
-  function openHistory(form: HTMLFormElement, saveBtn: HTMLElement): void {
-    document.querySelector('#ext-rv-history-overlay')?.remove();
-    const list = loadHistory().slice().reverse();
-
-    const ov = document.createElement('div');
-    ov.id = 'ext-rv-history-overlay';
-    ov.style.cssText =
-      'position:fixed;inset:0;z-index:99998;background:rgba(15,23,42,.55);' +
-      'display:flex;align-items:center;justify-content:center;padding:24px;';
-    ov.addEventListener('click', function (e) {
-      if (e.target === ov) ov.remove();
-    });
-
-    const box = document.createElement('div');
-    box.style.cssText =
-      'background:#fff;border-radius:12px;max-width:680px;width:100%;max-height:82vh;' +
-      'display:flex;flex-direction:column;overflow:hidden;font-size:14px;color:#1c2530;';
-    ov.appendChild(box);
-
-    const head = document.createElement('div');
-    head.style.cssText =
-      'display:flex;align-items:center;justify-content:space-between;' +
-      'padding:14px 18px;border-bottom:1px solid #d0d5dd;font-weight:700;';
-    head.textContent = 'Riwayat Resume — 1 Kunjungan (' + list.length + ')';
-    const x = document.createElement('button');
-    x.type = 'button';
-    x.textContent = '×';
-    x.style.cssText =
-      'border:none;background:#f8fafc;width:32px;height:32px;border-radius:50%;' +
-      'font-size:20px;cursor:pointer;';
-    x.onclick = function () {
-      ov.remove();
-    };
-    head.appendChild(x);
-    box.appendChild(head);
-
-    const body = document.createElement('div');
-    body.style.cssText = 'padding:14px 18px;overflow-y:auto;';
-    box.appendChild(body);
-
-    if (!list.length) {
-      body.textContent =
-        'Belum ada riwayat untuk kunjungan ini. Riwayat tercatat otomatis setiap kali Simpan ditekan.';
-    }
-
-    list.forEach(function (entry, idx) {
-      const no = list.length - idx;
-      const row = document.createElement('div');
-      row.style.cssText =
-        'border:1px solid #d0d5dd;border-radius:8px;padding:10px 12px;margin-bottom:10px;';
-
-      const title = document.createElement('div');
-      title.style.fontWeight = '600';
-      title.textContent =
-        '#' +
-        no +
-        ' — ' +
-        new Date(entry.at).toLocaleString('id-ID') +
-        ' — ' +
-        (entry.aksi === 'buat' ? 'Buat baru' : 'Ubah') +
-        ' — ' +
-        entry.changed.length +
-        ' field berubah';
-      row.appendChild(title);
-
-      const detail = document.createElement('div');
-      detail.style.cssText =
-        'display:none;margin-top:8px;background:#f8fafc;border-radius:6px;padding:8px 10px;' +
-        'font-size:12px;max-height:180px;overflow-y:auto;white-space:pre-wrap;';
-      if (!entry.changed.length) {
-        detail.textContent = 'Tidak ada perbedaan field.';
-      } else {
-        detail.textContent = entry.changed
-          .map(function (k) {
-            return k + ': ' + shortSnapVal(entry.before[k]) + ' → ' + shortSnapVal(entry.after[k]);
-          })
-          .join('\n');
-      }
-      row.appendChild(detail);
-
-      const bar = document.createElement('div');
-      bar.style.cssText = 'margin-top:8px;display:flex;gap:8px;';
-
-      const btnLihat = document.createElement('button');
-      btnLihat.type = 'button';
-      btnLihat.textContent = 'Lihat';
-      btnLihat.onclick = function () {
-        detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
-      };
-      bar.appendChild(btnLihat);
-
-      const btnSalin = document.createElement('button');
-      btnSalin.type = 'button';
-      btnSalin.textContent = 'Salin ke Form';
-      btnSalin.style.cssText =
-        'background:#00875a;color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;';
-      btnSalin.onclick = function () {
-        applySnapshot(form, saveBtn, entry.after);
-        ov.remove();
-      };
-      bar.appendChild(btnSalin);
-      row.appendChild(bar);
-
-      body.appendChild(row);
-    });
-
-    document.body.appendChild(ov);
-  }
-
   /** Isi SEMUA field form dari snapshot (termasuk hidden), lalu user tinggal Simpan. */
-  function applySnapshot(form: HTMLFormElement, saveBtn: HTMLElement, snap: FormSnap): void {
+  function applySnapshot(
+    form: HTMLFormElement,
+    saveBtn: HTMLElement,
+    snap: FormSnap,
+    tipe: TipeResume,
+  ): void {
     // Buka kunci dulu bila form terkunci agar semua field ikut ke-submit.
-    if (hasIdResume()) {
+    if (tipe === 'ranap' && hasIdResume('ranap')) {
       const locked = form.querySelector('.ext-rv-locked');
       if (locked) {
         const fields = form.querySelectorAll<
@@ -717,13 +546,13 @@ import { confirmExt } from '../ui/web/confirm';
           if (el.id === 'save' || el.type === 'button' || el.type === 'submit') return;
           el.disabled = false;
           if (el.tagName !== 'SELECT') {
-            (el as HTMLInputElement).readOnly = false;
+            (el as HTMLInputElement | HTMLTextAreaElement).readOnly = false;
           }
           el.classList.remove('ext-rv-locked');
         });
         saveBtn.textContent = 'Simpan Perubahan';
         (saveBtn as HTMLInputElement).value = 'Simpan Perubahan';
-        attachSaveHandler(saveBtn, form);
+        attachSaveHandler(saveBtn, form, tipe);
       }
     }
 
@@ -747,7 +576,9 @@ import { confirmExt } from '../ui/web/confirm';
         missing++;
         return;
       }
-      els.forEach(function (el) {
+      // value array (kode10[], nama[], ...) → isi per elemen dengan indeks sama
+      const arrVal = Array.isArray(v) ? v : [v as string];
+      els.forEach(function (el, idx) {
         if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')) {
           el.checked = Array.isArray(v) ? v.indexOf(el.value) >= 0 : el.value === v;
         } else if (el instanceof HTMLSelectElement && el.multiple) {
@@ -756,11 +587,8 @@ import { confirmExt } from '../ui/web/confirm';
             o.selected = arr.indexOf(o.value) >= 0;
           });
         } else {
-          (el as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).value = Array.isArray(
-            v,
-          )
-            ? (v[0] ?? '')
-            : ((v as string) ?? '');
+          (el as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).value =
+            arrVal[idx] ?? '';
         }
         el.dispatchEvent(new Event('input', { bubbles: true }));
         el.dispatchEvent(new Event('change', { bubbles: true }));
@@ -833,6 +661,7 @@ import { confirmExt } from '../ui/web/confirm';
       { id: 'gcs_e', min: 1, max: 4, step: 1 },
       { id: 'gcs_m', min: 1, max: 6, step: 1 },
       { id: 'gcs_v', min: 1, max: 5, step: 1 },
+      { id: 'tinggi', min: 30, max: 250, step: 1 },
       { id: 'berat', min: 1, max: 500, step: 0.1 },
     ];
 
@@ -860,17 +689,20 @@ import { confirmExt } from '../ui/web/confirm';
     });
   }
 
-  function addRequiredAttributes(): void {
-    var ids = [
-      'alasan_rawat',
-      'anamnesa',
-      'diagnosa_primary',
-      'kode_diagnosa_utama',
-      'jenis_kasus',
-      'keadaan_keluar',
-      'cara_keluar',
-      'tgl_keluar2',
-    ];
+  function addRequiredAttributes(tipe: TipeResume): void {
+    var ids =
+      tipe === 'rajal'
+        ? ['anamnesa', 'catatan', 'terapi_pengobatan', 'jenis_kasus', 'tindak_lanjut']
+        : [
+            'alasan_rawat',
+            'anamnesa',
+            'diagnosa_primary',
+            'kode_diagnosa_utama',
+            'jenis_kasus',
+            'keadaan_keluar',
+            'cara_keluar',
+            'tgl_keluar2',
+          ];
     ids.forEach(function (id) {
       var el = document.getElementById(id) as
         HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null;
@@ -903,12 +735,12 @@ import { confirmExt } from '../ui/web/confirm';
 
   // ===================== COLOR INDICATORS =====================
 
-  function setupColorIndicators(): void {
-    var icd10Fields = buildICD10Fields();
-    var icd9Fields = buildICD9Fields();
+  function setupColorIndicators(tipe: TipeResume): void {
+    var icd10Fields = buildICD10Fields(tipe);
+    var icd9Fields = buildICD9Fields(tipe);
 
     icd10Fields.forEach(function (id) {
-      var el = document.getElementById(id) as HTMLInputElement | null;
+      const el = document.getElementById(id) as HTMLInputElement | null;
       if (!el) return;
       el.addEventListener('input', function () {
         var v = el.value.trim();
@@ -923,7 +755,7 @@ import { confirmExt } from '../ui/web/confirm';
     });
 
     icd9Fields.forEach(function (id) {
-      var el = document.getElementById(id) as HTMLInputElement | null;
+      const el = document.getElementById(id) as HTMLInputElement | null;
       if (!el) return;
       el.addEventListener('input', function () {
         var v = el.value.trim();
@@ -940,10 +772,10 @@ import { confirmExt } from '../ui/web/confirm';
 
   // ===================== AUTO-FORMAT ICD =====================
 
-  function setupAutoFormatICD(): void {
-    var icd10Fields = buildICD10Fields();
+  function setupAutoFormatICD(tipe: TipeResume): void {
+    var icd10Fields = buildICD10Fields(tipe);
     icd10Fields.forEach(function (id) {
-      var el = document.getElementById(id) as HTMLInputElement | null;
+      const el = document.getElementById(id) as HTMLInputElement | null;
       if (!el) return;
       el.addEventListener('blur', function () {
         var v = el.value.trim().toUpperCase();
@@ -957,9 +789,9 @@ import { confirmExt } from '../ui/web/confirm';
       });
     });
 
-    var icd9Fields = buildICD9Fields();
+    var icd9Fields = buildICD9Fields(tipe);
     icd9Fields.forEach(function (id) {
-      var el = document.getElementById(id) as HTMLInputElement | null;
+      const el = document.getElementById(id) as HTMLInputElement | null;
       if (!el) return;
       el.addEventListener('blur', function () {
         var v = el.value.trim();
@@ -974,9 +806,48 @@ import { confirmExt } from '../ui/web/confirm';
     });
   }
 
+  function buildICD10Fields(tipe: TipeResume): string[] {
+    if (tipe === 'rajal') {
+      // Baris diagnosa Rajal: input name="kode10[]" ber-id `kode1`, `kode2`, ...
+      const ids: string[] = [];
+      document.querySelectorAll<HTMLInputElement>('input[name="kode10[]"]').forEach(function (el) {
+        if (el.id) ids.push(el.id);
+      });
+      if (ids.length) return ids;
+      // fallback id pattern kalau name tak ada
+      const numbered: string[] = [];
+      for (let i = 1; i <= 20; i++) numbered.push('kode' + i);
+      return numbered;
+    }
+    var result = ['kode_diagnosa_utama'];
+    for (var i = 1; i <= 10; i++) {
+      result.push('kode_diagnosa_sekunder' + i);
+    }
+    return result;
+  }
+
+  function buildICD9Fields(tipe: TipeResume): string[] {
+    if (tipe === 'rajal') {
+      // Baris tindakan Rajal: input name="kode9[]" ber-id `kode91`, `kode92`, ...
+      const ids: string[] = [];
+      document.querySelectorAll<HTMLInputElement>('input[name="kode9[]"]').forEach(function (el) {
+        if (el.id) ids.push(el.id);
+      });
+      if (ids.length) return ids;
+      const numbered: string[] = [];
+      for (let i = 1; i <= 20; i++) numbered.push('kode9' + i);
+      return numbered;
+    }
+    var result: string[] = [];
+    for (var i = 1; i <= 10; i++) {
+      result.push('kode_tindakan' + i);
+    }
+    return result;
+  }
+
   // ===================== VALIDATION =====================
 
-  function runValidation(): boolean {
+  function runValidation(tipe: TipeResume): boolean {
     clearErrors();
     var errs: Array<{ msg: string; id: string }> = [];
 
@@ -991,6 +862,23 @@ import { confirmExt } from '../ui/web/confirm';
         fail(false, label + ' tidak boleh hanya berisi simbol atau karakter khusus', id);
     }
 
+    if (tipe === 'rajal') {
+      runRajalValidation(fail, failText);
+    } else {
+      runRanapValidation(fail, failText);
+    }
+
+    if (errs.length > 0) {
+      warnAll(errs);
+      return false;
+    }
+    return true;
+  }
+
+  function runRanapValidation(
+    fail: (ok: boolean, msg: string, id: string) => void,
+    failText: (id: string, label: string) => void,
+  ): void {
     fail(!!val('norm'), 'No. RM harus diisi', 'norm');
     fail(!!val('pasien'), 'Nama pasien harus diisi', 'pasien');
     fail(!!val('id_visit'), 'Data kunjungan tidak valid', 'pasien');
@@ -1134,12 +1022,110 @@ import { confirmExt } from '../ui/web/confirm';
         'tgl_keluar2',
       );
     }
+  }
 
-    if (errs.length > 0) {
-      warnAll(errs);
-      return false;
-    }
-    return true;
+  function runRajalValidation(
+    fail: (ok: boolean, msg: string, id: string) => void,
+    failText: (id: string, label: string) => void,
+  ): void {
+    fail(!!val('id_visit'), 'Data kunjungan tidak valid', 'id_visit');
+    fail(!!val('nama_pasien'), 'Nama pasien harus diisi', 'nama_pasien');
+
+    failText('anamnesa', 'Anamnesa');
+    failText('catatan', 'Catatan diagnosa');
+    failText('terapi_pengobatan', 'Terapi/pengobatan');
+
+    // Opsional tapi jika diisi tidak boleh hanya simbol
+    const optText = ['pemeriksaan_fisik', 'tindakan', 'planning'];
+    optText.forEach(function (id) {
+      const v = val(id);
+      if (v && !isUsableText(v))
+        fail(
+          false,
+          (id === 'pemeriksaan_fisik'
+            ? 'Pemeriksaan fisik'
+            : id === 'planning'
+              ? 'Planning'
+              : 'Tindakan') + ' tidak boleh hanya berisi simbol atau karakter khusus',
+          id,
+        );
+    });
+
+    // Baris diagnosa ICD-10 (kode10[] / idicd[] / nama[])
+    document
+      .querySelectorAll<HTMLInputElement>('input[name="kode10[]"]')
+      .forEach(function (inp, i) {
+        const kode = (inp.value || '').trim();
+        const row = inp.closest('tr');
+        const idicd = (
+          row?.querySelector<HTMLInputElement>('input[name="idicd[]"]')?.value || ''
+        ).trim();
+        const nama = (
+          row?.querySelector<HTMLInputElement>('input[name="nama[]"]')?.value || ''
+        ).trim();
+        const errId = inp.id || `kode10-${i}`;
+        if (kode && !isICD10(kode))
+          fail(
+            false,
+            'Format kode ICD-10 baris ' + (i + 1) + ' tidak valid (contoh: A00, B20.9)',
+            errId,
+          );
+        if ((kode || nama) && !idicd)
+          fail(
+            false,
+            'Diagnosa baris ' + (i + 1) + ' harus dipilih dari hasil pencarian (autocomplete)',
+            errId,
+          );
+      });
+
+    // Baris tindakan ICD-9 (kode9[] / idicdTindakan[] / namaTindakan[])
+    document.querySelectorAll<HTMLInputElement>('input[name="kode9[]"]').forEach(function (inp, i) {
+      const kode = (inp.value || '').trim();
+      const row = inp.closest('tr');
+      const idicd = (
+        row?.querySelector<HTMLInputElement>('input[name="idicdTindakan[]"]')?.value || ''
+      ).trim();
+      const nama = (
+        row?.querySelector<HTMLInputElement>('input[name="namaTindakan[]"]')?.value || ''
+      ).trim();
+      const errId = inp.id || `kode9-${i}`;
+      if (kode && !isICD9(kode))
+        fail(
+          false,
+          'Format kode ICD-9 Tindakan baris ' + (i + 1) + ' tidak valid (contoh: 45.16)',
+          errId,
+        );
+      if ((kode || nama) && !idicd)
+        fail(
+          false,
+          'Tindakan baris ' + (i + 1) + ' harus dipilih dari hasil pencarian (autocomplete)',
+          errId,
+        );
+    });
+
+    const tensi = val('tensi');
+    if (tensi) fail(isNormalBP(tensi), 'Tekanan darah tidak valid (contoh: 120/80)', 'tensi');
+
+    const nadi = val('nadi');
+    if (nadi) fail(isValidVital(nadi, 20, 250), 'Nadi harus 20-250', 'nadi');
+
+    const suhu = val('suhu');
+    if (suhu) fail(isValidVital(suhu, 30, 45), 'Suhu harus 30-45°C', 'suhu');
+
+    const nafas = val('nafas');
+    if (nafas) fail(isValidVital(nafas, 4, 80), 'Nafas harus 4-80', 'nafas');
+
+    const spo2 = val('spo2');
+    if (spo2) fail(isValidVital(spo2, 50, 100), 'SpO2 harus 50-100%', 'spo2');
+
+    const tinggi = val('tinggi');
+    if (tinggi) fail(isValidVital(tinggi, 30, 250), 'Tinggi badan harus 30-250 cm', 'tinggi');
+
+    const berat = val('berat');
+    if (berat) fail(isValidVital(berat, 1, 500), 'Berat badan harus 1-500 kg', 'berat');
+
+    fail(!!val('jenis_kasus'), 'Jenis kasus harus dipilih', 'jenis_kasus');
+    fail(!!val('tindak_lanjut'), 'Tindak lanjut harus dipilih', 'tindak_lanjut');
   }
 
   function clearErrors(): void {
@@ -1150,7 +1136,7 @@ import { confirmExt } from '../ui/web/confirm';
 
   function warnAll(errs: Array<{ msg: string; id: string }>): void {
     var first = errs[0];
-    var firstEl = document.getElementById(first.id);
+    const firstEl = document.getElementById(first.id);
     if (firstEl) {
       firstEl.focus();
       firstEl.classList.add('ext-rv-error');
@@ -1210,7 +1196,8 @@ import { confirmExt } from '../ui/web/confirm';
     return document.querySelector<HTMLInputElement>(sel + ':checked') !== null;
   }
 
-  function setupAutoClearHandlers(): void {
+  function setupAutoClearHandlers(tipe: TipeResume): void {
+    if (tipe === 'rajal') return; // Rajal pakai autocomplete per-baris MORBIS sendiri
     function attachClear(fieldId: string, targetId: string): void {
       var el = document.getElementById(fieldId);
       if (!el) return;
@@ -1234,21 +1221,5 @@ import { confirmExt } from '../ui/web/confirm';
       attachClear('kode_tindakan' + j, tgtT);
       attachClear('tindakan' + j, tgtT);
     }
-  }
-
-  function buildICD10Fields(): string[] {
-    var result = ['kode_diagnosa_utama'];
-    for (var i = 1; i <= 10; i++) {
-      result.push('kode_diagnosa_sekunder' + i);
-    }
-    return result;
-  }
-
-  function buildICD9Fields(): string[] {
-    var result: string[] = [];
-    for (var i = 1; i <= 10; i++) {
-      result.push('kode_tindakan' + i);
-    }
-    return result;
   }
 })();
