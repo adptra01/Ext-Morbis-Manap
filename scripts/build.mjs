@@ -83,6 +83,7 @@ async function compileFeatureFiles() {
     'resumeTab/mount.tsx',
     'resumeRanapTab/mount.tsx',
     'pindahOperasi/main.ts',
+    'billingAdjustment.ts',
   ];
 
   for (const relativePath of tsFiles) {

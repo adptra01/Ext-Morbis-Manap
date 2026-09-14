@@ -148,6 +148,13 @@ async function initExtension(): Promise<void> {
     document.documentElement.removeAttribute('data-ext-telaah');
   }
 
+  const baCfg = cfg?.features?.billingAdjustment;
+  if (baCfg?.enabled && window.ExtensionCore.isFeatureAllowed('billingAdjustment')) {
+    document.documentElement.setAttribute('data-ext-billing-adj', '1');
+  } else {
+    document.documentElement.removeAttribute('data-ext-billing-adj');
+  }
+
   const ctx: FeatureContext = {
     pathname: normalizePath(window.location.pathname),
     url: new URL(window.location.href),

@@ -1,4 +1,11 @@
 import { colors, injectCSS } from '../shared/ui/index.js';
+import {
+  isICD10,
+  isICD9,
+  isNormalBP,
+  isValidVital,
+  isUsableText,
+} from './shared/resumeValidation.js';
 import { confirmExt } from '../ui/web/confirm';
 
 /* eslint-disable @typescript-eslint/no-unused-vars, no-var */
@@ -48,6 +55,7 @@ import { confirmExt } from '../ui/web/confirm';
     setupUnsavedWarning(form);
     checkAndLockForm(form, saveBtn);
     setupUnifiedSaveHandler(saveBtn, form);
+    setupHistory(form, saveBtn);
   }
 
   function injectStyle(): void {
@@ -78,13 +86,19 @@ import { confirmExt } from '../ui/web/confirm';
         const result = runValidation();
         if (!result && e) {
           e.preventDefault();
+        } else if (!_rvSubmitLogged) {
+          // jalur submit native (mode edit): log history saat validasi lolos
+          logResumeSave(form);
         }
+        _rvSubmitLogged = false;
         return result;
       };
     }
 
     const $ = w.jQuery as JQueryStatic | undefined;
-    if ($) {
+    // ponytail: global jQuery may be a shim/not-ready on some MORBIS instances;
+    // never let the jQuery binding kill the whole feature.
+    if (typeof $ === 'function' && $.fn && typeof $.fn.on === 'function') {
       $(form).on('submit', function (e: Event) {
         if (!runValidation()) {
           e.preventDefault();
@@ -97,6 +111,7 @@ import { confirmExt } from '../ui/web/confirm';
     var origSubmit = form.submit.bind(form);
     form.submit = function () {
       if (!runValidation()) return;
+      logResumeSave(form);
       _dirty = false;
       // FIX: stop autosave interval saat submit (form akan navigasi away)
       clearAutosave();
@@ -260,6 +275,7 @@ import { confirmExt } from '../ui/web/confirm';
       (saveBtn as HTMLInputElement).value = 'Simpan Perubahan';
 
       attachSaveHandler(saveBtn, form);
+      refreshBeforeSnapshot(form);
     };
 
     saveBtn.onclick = function (e: Event) {
@@ -336,6 +352,428 @@ import { confirmExt } from '../ui/web/confirm';
 
       e.preventDefault();
     };
+  }
+
+  // ===================== RIWAYAT RESUME (HISTORY LOG) =====================
+  // Setiap simpan (baru/edit) dicatat: snapshot SEBELUM + SESUDAH + field berubah.
+  // - Lokal: localStorage per kunjungan -> tombol "Riwayat" -> salin ke form.
+  // - Server: POST ke REPORTS_ENDPOINT (proyek Reports SIMRS) — fire-and-forget.
+
+  const HIST_PREFIX = 'ext_rv_history_';
+  const LAST_PREFIX = 'ext_rv_lastform_';
+  // App Reports SIMRS tempat log dikirim (sama dengan antrian farmasi):
+  //   PROD   → http://dev.rsudkotajambi.id/rs/api/reports/resume-history
+  //   DDEV   → override localStorage 'ext-farmasi-app-base' (mis. http://simrs-reports.ddev.site)
+  const REPORTS_API_PATH = '/api/reports/resume-history';
+  const REPORTS_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
+
+  function resolveReportsBase(): string {
+    try {
+      const ov = localStorage.getItem('ext-farmasi-app-base');
+      if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
+    } catch (_e) {
+      /* ignore */
+    }
+    return REPORTS_BASE_FALLBACK;
+  }
+
+  type FormSnap = Record<string, string | string[]>;
+
+  interface ResumeHistoryEntry {
+    at: number;
+    aksi: 'buat' | 'ubah';
+    id_resume: string;
+    user: string;
+    before: FormSnap;
+    after: FormSnap;
+    changed: string[];
+  }
+
+  var _lastLogHash: string | null = null;
+  var _lastLogAt = 0;
+  var _rvSubmitLogged = false;
+  var _historyBtn: HTMLElement | null = null;
+
+  function getVisitId(): string {
+    return val('id_visit');
+  }
+
+  function getHistoryKey(): string {
+    return HIST_PREFIX + (getVisitId() || 'unknown');
+  }
+
+  function getLastKey(): string {
+    return LAST_PREFIX + (getVisitId() || 'unknown');
+  }
+
+  function readPetugas(): string {
+    const el = document.querySelector('#petugas, .petugas, .username, #username');
+    return (el?.textContent ?? '').trim().slice(0, 80);
+  }
+
+  /** Snapshot SEMUA kontrol form (termasuk disabled/readonly) by name. */
+  function takeSnapshot(form: HTMLFormElement): FormSnap {
+    const snap: FormSnap = {};
+    // ponytail: field ICD (dan row tindakan/nosokomial) ada yang id-only tanpa `name` —
+    // "form tersembunyi" yang tetap harus ikut history & salin-ke-form.
+    const ICD_ID_RE = /^(kode_|diagnosa_|tindakan\d+$|nosokomial\d+$)/;
+    const els = form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
+      'input[name], textarea[name], select[name], input[id]:not([name]):not([type=button]):not([type=submit]), textarea[id]:not([name]), select[id]:not([name])',
+    );
+    els.forEach(function (el) {
+      const name = el.getAttribute('name');
+      const key = name || (ICD_ID_RE.test(el.id) ? el.id : '');
+      if (!key || key === '_saved_at' || key === 'save') return;
+      if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')) {
+        if (!el.checked) return;
+        const cur = snap[key];
+        if (cur === undefined) snap[key] = el.value;
+        else if (Array.isArray(cur)) cur.push(el.value);
+        else snap[key] = [cur as string, el.value];
+        return;
+      }
+      if (el instanceof HTMLSelectElement && el.multiple) {
+        snap[key] = Array.from(el.selectedOptions).map(function (o) {
+          return o.value;
+        });
+        return;
+      }
+      snap[key] = el.value;
+    });
+    return snap;
+  }
+
+  function sameSnapVal(
+    a: string | string[] | undefined,
+    b: string | string[] | undefined,
+  ): boolean {
+    return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+  }
+
+  function diffSnap(before: FormSnap, after: FormSnap): string[] {
+    const keys: Record<string, boolean> = {};
+    Object.keys(before).forEach(function (k) {
+      keys[k] = true;
+    });
+    Object.keys(after).forEach(function (k) {
+      keys[k] = true;
+    });
+    return Object.keys(keys).filter(function (k) {
+      return !sameSnapVal(before[k], after[k]);
+    });
+  }
+
+  function loadHistory(): ResumeHistoryEntry[] {
+    try {
+      const raw = localStorage.getItem(getHistoryKey());
+      if (!raw) return [];
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? (arr as ResumeHistoryEntry[]) : [];
+    } catch (_e) {
+      return [];
+    }
+  }
+
+  function saveHistory(list: ResumeHistoryEntry[]): void {
+    try {
+      localStorage.setItem(getHistoryKey(), JSON.stringify(list.slice(-50)));
+    } catch (_e) {
+      /* storage full */
+    }
+  }
+
+  function loadLast(): FormSnap | null {
+    try {
+      const raw = localStorage.getItem(getLastKey());
+      return raw ? (JSON.parse(raw) as FormSnap) : null;
+    } catch (_e) {
+      return null;
+    }
+  }
+
+  function storeLast(snap: FormSnap): void {
+    try {
+      localStorage.setItem(getLastKey(), JSON.stringify(snap));
+    } catch (_e) {
+      /* ignore */
+    }
+  }
+
+  function postToReports(entry: ResumeHistoryEntry): void {
+    try {
+      const payload = {
+        id_visit: getVisitId(),
+        id_resume: entry.id_resume,
+        aksi: entry.aksi,
+        waktu: new Date(entry.at).toISOString(),
+        user: entry.user,
+        before: entry.before,
+        after: entry.after,
+        changed: entry.changed,
+      };
+      fetch(resolveReportsBase() + REPORTS_API_PATH, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true,
+        credentials: 'omit',
+      }).catch(function () {
+        /* endpoint Reports belum ada — riwayat lokal tetap aman */
+      });
+    } catch (_e) {
+      /* ignore */
+    }
+  }
+
+  /** Dipanggil TEPAT sebelum submit: catat before/after + kirim Reports. */
+  function logResumeSave(form: HTMLFormElement): void {
+    const after = takeSnapshot(form);
+    const hash = JSON.stringify(after);
+    const now = Date.now();
+    if (_lastLogHash === hash && now - _lastLogAt < 5000) return; // cegah dobel-klik
+    _lastLogHash = hash;
+    _lastLogAt = now;
+
+    const before = loadLast() || {};
+    const entry: ResumeHistoryEntry = {
+      at: now,
+      aksi: hasIdResume() ? 'ubah' : 'buat',
+      id_resume: val('id_resume_inap'),
+      user: readPetugas(),
+      before: before,
+      after: after,
+      changed: diffSnap(before, after),
+    };
+    const list = loadHistory();
+    list.push(entry);
+    saveHistory(list);
+    storeLast(after); // sesudah ini jadi "sebelum" berikutnya
+    postToReports(entry);
+    refreshHistoryBtn();
+  }
+
+  /** Baseline "sebelum": saat form dibuka (baru) / saat unlock (edit). */
+  function refreshBeforeSnapshot(form: HTMLFormElement): void {
+    storeLast(takeSnapshot(form));
+  }
+
+  function setupHistory(form: HTMLFormElement, saveBtn: HTMLElement): void {
+    storeLast(takeSnapshot(form));
+    refreshHistoryBtn();
+    if (_historyBtn || !saveBtn.parentElement) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = 'ext-rv-history-btn';
+    btn.textContent = 'Riwayat';
+    btn.style.marginLeft = '8px';
+    btn.onclick = function () {
+      openHistory(form, saveBtn);
+    };
+    saveBtn.parentElement.insertBefore(btn, saveBtn.nextSibling);
+    _historyBtn = btn;
+    refreshHistoryBtn();
+  }
+
+  function refreshHistoryBtn(): void {
+    if (!_historyBtn) return;
+    const n = loadHistory().length;
+    _historyBtn.textContent = n > 0 ? 'Riwayat (' + n + ')' : 'Riwayat';
+  }
+
+  function shortSnapVal(v: string | string[] | undefined): string {
+    const s = v === undefined ? '-' : JSON.stringify(v);
+    return s.length > 60 ? s.slice(0, 60) + '…' : s;
+  }
+
+  function showHistToast(msg: string): void {
+    const t = document.createElement('div');
+    t.className = 'ext-rv-toast ext-rv-toast-success';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function () {
+      t.remove();
+    }, 4000);
+  }
+
+  function openHistory(form: HTMLFormElement, saveBtn: HTMLElement): void {
+    document.querySelector('#ext-rv-history-overlay')?.remove();
+    const list = loadHistory().slice().reverse();
+
+    const ov = document.createElement('div');
+    ov.id = 'ext-rv-history-overlay';
+    ov.style.cssText =
+      'position:fixed;inset:0;z-index:99998;background:rgba(15,23,42,.55);' +
+      'display:flex;align-items:center;justify-content:center;padding:24px;';
+    ov.addEventListener('click', function (e) {
+      if (e.target === ov) ov.remove();
+    });
+
+    const box = document.createElement('div');
+    box.style.cssText =
+      'background:#fff;border-radius:12px;max-width:680px;width:100%;max-height:82vh;' +
+      'display:flex;flex-direction:column;overflow:hidden;font-size:14px;color:#1c2530;';
+    ov.appendChild(box);
+
+    const head = document.createElement('div');
+    head.style.cssText =
+      'display:flex;align-items:center;justify-content:space-between;' +
+      'padding:14px 18px;border-bottom:1px solid #d0d5dd;font-weight:700;';
+    head.textContent = 'Riwayat Resume — 1 Kunjungan (' + list.length + ')';
+    const x = document.createElement('button');
+    x.type = 'button';
+    x.textContent = '×';
+    x.style.cssText =
+      'border:none;background:#f8fafc;width:32px;height:32px;border-radius:50%;' +
+      'font-size:20px;cursor:pointer;';
+    x.onclick = function () {
+      ov.remove();
+    };
+    head.appendChild(x);
+    box.appendChild(head);
+
+    const body = document.createElement('div');
+    body.style.cssText = 'padding:14px 18px;overflow-y:auto;';
+    box.appendChild(body);
+
+    if (!list.length) {
+      body.textContent =
+        'Belum ada riwayat untuk kunjungan ini. Riwayat tercatat otomatis setiap kali Simpan ditekan.';
+    }
+
+    list.forEach(function (entry, idx) {
+      const no = list.length - idx;
+      const row = document.createElement('div');
+      row.style.cssText =
+        'border:1px solid #d0d5dd;border-radius:8px;padding:10px 12px;margin-bottom:10px;';
+
+      const title = document.createElement('div');
+      title.style.fontWeight = '600';
+      title.textContent =
+        '#' +
+        no +
+        ' — ' +
+        new Date(entry.at).toLocaleString('id-ID') +
+        ' — ' +
+        (entry.aksi === 'buat' ? 'Buat baru' : 'Ubah') +
+        ' — ' +
+        entry.changed.length +
+        ' field berubah';
+      row.appendChild(title);
+
+      const detail = document.createElement('div');
+      detail.style.cssText =
+        'display:none;margin-top:8px;background:#f8fafc;border-radius:6px;padding:8px 10px;' +
+        'font-size:12px;max-height:180px;overflow-y:auto;white-space:pre-wrap;';
+      if (!entry.changed.length) {
+        detail.textContent = 'Tidak ada perbedaan field.';
+      } else {
+        detail.textContent = entry.changed
+          .map(function (k) {
+            return k + ': ' + shortSnapVal(entry.before[k]) + ' → ' + shortSnapVal(entry.after[k]);
+          })
+          .join('\n');
+      }
+      row.appendChild(detail);
+
+      const bar = document.createElement('div');
+      bar.style.cssText = 'margin-top:8px;display:flex;gap:8px;';
+
+      const btnLihat = document.createElement('button');
+      btnLihat.type = 'button';
+      btnLihat.textContent = 'Lihat';
+      btnLihat.onclick = function () {
+        detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
+      };
+      bar.appendChild(btnLihat);
+
+      const btnSalin = document.createElement('button');
+      btnSalin.type = 'button';
+      btnSalin.textContent = 'Salin ke Form';
+      btnSalin.style.cssText =
+        'background:#00875a;color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;';
+      btnSalin.onclick = function () {
+        applySnapshot(form, saveBtn, entry.after);
+        ov.remove();
+      };
+      bar.appendChild(btnSalin);
+      row.appendChild(bar);
+
+      body.appendChild(row);
+    });
+
+    document.body.appendChild(ov);
+  }
+
+  /** Isi SEMUA field form dari snapshot (termasuk hidden), lalu user tinggal Simpan. */
+  function applySnapshot(form: HTMLFormElement, saveBtn: HTMLElement, snap: FormSnap): void {
+    // Buka kunci dulu bila form terkunci agar semua field ikut ke-submit.
+    if (hasIdResume()) {
+      const locked = form.querySelector('.ext-rv-locked');
+      if (locked) {
+        const fields = form.querySelectorAll<
+          HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+        >('input, textarea, select');
+        fields.forEach(function (el) {
+          if (el.id === 'save' || el.type === 'button' || el.type === 'submit') return;
+          el.disabled = false;
+          if (el.tagName !== 'SELECT') {
+            (el as HTMLInputElement).readOnly = false;
+          }
+          el.classList.remove('ext-rv-locked');
+        });
+        saveBtn.textContent = 'Simpan Perubahan';
+        (saveBtn as HTMLInputElement).value = 'Simpan Perubahan';
+        attachSaveHandler(saveBtn, form);
+      }
+    }
+
+    let filled = 0;
+    let missing = 0;
+    Object.keys(snap).forEach(function (name) {
+      const v = snap[name];
+      let els = Array.from(
+        form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
+          '[name="' + name + '"]',
+        ),
+      );
+      if (!els.length) {
+        // ponytail: fallback ke id untuk field ICD id-only (tanpa name)
+        const byId = form.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
+          '#' + CSS.escape(name),
+        );
+        els = byId ? [byId] : [];
+      }
+      if (!els.length) {
+        missing++;
+        return;
+      }
+      els.forEach(function (el) {
+        if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')) {
+          el.checked = Array.isArray(v) ? v.indexOf(el.value) >= 0 : el.value === v;
+        } else if (el instanceof HTMLSelectElement && el.multiple) {
+          const arr = Array.isArray(v) ? v : [v as string];
+          Array.from(el.options).forEach(function (o) {
+            o.selected = arr.indexOf(o.value) >= 0;
+          });
+        } else {
+          (el as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).value = Array.isArray(
+            v,
+          )
+            ? (v[0] ?? '')
+            : ((v as string) ?? '');
+        }
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+        filled++;
+      });
+    });
+    showHistToast(
+      'Disalin ' +
+        filled +
+        ' field' +
+        (missing > 0 ? ', ' + missing + ' nama tak ditemukan' : '') +
+        '. Periksa lalu klik Simpan.',
+    );
   }
 
   async function checkSession(): Promise<boolean> {
@@ -546,14 +984,21 @@ import { confirmExt } from '../ui/web/confirm';
       if (!ok) errs.push({ msg: msg, id: id });
     }
 
+    function failText(id: string, label: string): void {
+      const v = val(id);
+      if (!v) fail(false, label + ' harus diisi', id);
+      else if (!isUsableText(v))
+        fail(false, label + ' tidak boleh hanya berisi simbol atau karakter khusus', id);
+    }
+
     fail(!!val('norm'), 'No. RM harus diisi', 'norm');
     fail(!!val('pasien'), 'Nama pasien harus diisi', 'pasien');
     fail(!!val('id_visit'), 'Data kunjungan tidak valid', 'pasien');
 
-    fail(!!val('alasan_rawat'), 'Alasan rawat harus diisi', 'alasan_rawat');
-    fail(!!val('anamnesa'), 'Anamnesa harus diisi', 'anamnesa');
-    fail(!!val('diagnosa_primary'), 'Diagnosa primary harus diisi', 'diagnosa_primary');
-    fail(!!val('terapi_pengobatan'), 'Terapi/pengobatan harus diisi', 'terapi_pengobatan');
+    failText('alasan_rawat', 'Alasan rawat');
+    failText('anamnesa', 'Anamnesa');
+    failText('diagnosa_primary', 'Diagnosa primary');
+    failText('terapi_pengobatan', 'Terapi/pengobatan');
 
     fail(
       !!val('kode_diagnosa_utama'),
@@ -750,28 +1195,6 @@ import { confirmExt } from '../ui/web/confirm';
   function val(id: string): string {
     const el = $(id) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null;
     return el?.value?.trim() || '';
-  }
-
-  function isNormalBP(v: string): boolean {
-    const parts = v.split('/');
-    if (parts.length !== 2) return false;
-    const sys = parseInt(parts[0]);
-    const dia = parseInt(parts[1]);
-    if (isNaN(sys) || isNaN(dia)) return false;
-    return sys >= 50 && sys <= 250 && dia >= 20 && dia <= 160;
-  }
-
-  function isValidVital(v: string, min: number, max: number): boolean {
-    const n = parseFloat(v.replace(/,/g, '.'));
-    return !isNaN(n) && n >= min && n <= max;
-  }
-
-  function isICD10(v: string): boolean {
-    return /^[A-Z][0-9][0-9](\.[0-9]{1,2})?$/.test(v.toUpperCase());
-  }
-
-  function isICD9(v: string): boolean {
-    return /^[0-9]{2}(\.[0-9]{1,2})?$/.test(v);
   }
 
   function radioVal(name: string): string {
