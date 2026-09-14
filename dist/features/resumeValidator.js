@@ -55,6 +55,35 @@ var __morbis_feature = (() => {
 `,
   );
 
+  // src/features/shared/resumeValidation.ts
+  var ICD10_RE = /^[A-Z][0-9][0-9](\.[0-9]{1,2})?$/;
+  var ICD9_RE = /^[0-9]{2}(\.[0-9]{1,2})?$/;
+  var BP_RE = /^(\d{1,3})\/(\d{1,3})$/;
+  var NUM_RE = /^\d+(\.\d+)?$/;
+  function isICD10(v) {
+    return ICD10_RE.test(v.trim().toUpperCase());
+  }
+  function isICD9(v) {
+    return ICD9_RE.test(v.trim());
+  }
+  function isNormalBP(v) {
+    const s = v.trim().replace(/\s+/g, '');
+    const m = BP_RE.exec(s);
+    if (!m) return false;
+    const sys = parseInt(m[1], 10);
+    const dia = parseInt(m[2], 10);
+    return sys >= 50 && sys <= 250 && dia >= 20 && dia <= 160;
+  }
+  function isValidVital(v, min, max) {
+    const s = v.trim().replace(',', '.');
+    if (!NUM_RE.test(s)) return false;
+    const n = parseFloat(s);
+    return !isNaN(n) && n >= min && n <= max;
+  }
+  function isUsableText(v) {
+    return /[\p{L}\p{N}]/u.test(v);
+  }
+
   // src/ui/web/tokens.ts
   var FONT_STACK = '"Plus Jakarta Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
   var TOKENS_CSS = `
@@ -476,6 +505,7 @@ var __morbis_feature = (() => {
       setupUnsavedWarning(form);
       checkAndLockForm(form, saveBtn);
       setupUnifiedSaveHandler(saveBtn, form);
+      setupHistory(form, saveBtn);
     }
     function injectStyle() {
       injectCSS(
@@ -502,12 +532,15 @@ var __morbis_feature = (() => {
           const result = runValidation();
           if (!result && e) {
             e.preventDefault();
+          } else if (!_rvSubmitLogged) {
+            logResumeSave(form);
           }
+          _rvSubmitLogged = false;
           return result;
         };
       }
       const $2 = w.jQuery;
-      if ($2) {
+      if (typeof $2 === 'function' && $2.fn && typeof $2.fn.on === 'function') {
         $2(form).on('submit', function (e) {
           if (!runValidation()) {
             e.preventDefault();
@@ -519,6 +552,7 @@ var __morbis_feature = (() => {
       var origSubmit = form.submit.bind(form);
       form.submit = function () {
         if (!runValidation()) return;
+        logResumeSave(form);
         _dirty = false;
         clearAutosave();
         try {
@@ -641,6 +675,7 @@ var __morbis_feature = (() => {
         saveBtn.textContent = 'Simpan Perubahan';
         saveBtn.value = 'Simpan Perubahan';
         attachSaveHandler(saveBtn, form);
+        refreshBeforeSnapshot(form);
       };
       saveBtn.onclick = function (e) {
         e.preventDefault();
@@ -703,6 +738,334 @@ var __morbis_feature = (() => {
         });
         e.preventDefault();
       };
+    }
+    const HIST_PREFIX = 'ext_rv_history_';
+    const LAST_PREFIX = 'ext_rv_lastform_';
+    const REPORTS_API_PATH = '/api/reports/resume-history';
+    const REPORTS_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
+    function resolveReportsBase() {
+      try {
+        const ov = localStorage.getItem('ext-farmasi-app-base');
+        if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
+      } catch (_e) {}
+      return REPORTS_BASE_FALLBACK;
+    }
+    var _lastLogHash = null;
+    var _lastLogAt = 0;
+    var _rvSubmitLogged = false;
+    var _historyBtn = null;
+    function getVisitId() {
+      return val('id_visit');
+    }
+    function getHistoryKey() {
+      return HIST_PREFIX + (getVisitId() || 'unknown');
+    }
+    function getLastKey() {
+      return LAST_PREFIX + (getVisitId() || 'unknown');
+    }
+    function readPetugas() {
+      const el = document.querySelector('#petugas, .petugas, .username, #username');
+      return (el?.textContent ?? '').trim().slice(0, 80);
+    }
+    function takeSnapshot(form) {
+      const snap = {};
+      const ICD_ID_RE = /^(kode_|diagnosa_|tindakan\d+$|nosokomial\d+$)/;
+      const els = form.querySelectorAll(
+        'input[name], textarea[name], select[name], input[id]:not([name]):not([type=button]):not([type=submit]), textarea[id]:not([name]), select[id]:not([name])',
+      );
+      els.forEach(function (el) {
+        const name = el.getAttribute('name');
+        const key = name || (ICD_ID_RE.test(el.id) ? el.id : '');
+        if (!key || key === '_saved_at' || key === 'save') return;
+        if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')) {
+          if (!el.checked) return;
+          const cur = snap[key];
+          if (cur === void 0) snap[key] = el.value;
+          else if (Array.isArray(cur)) cur.push(el.value);
+          else snap[key] = [cur, el.value];
+          return;
+        }
+        if (el instanceof HTMLSelectElement && el.multiple) {
+          snap[key] = Array.from(el.selectedOptions).map(function (o) {
+            return o.value;
+          });
+          return;
+        }
+        snap[key] = el.value;
+      });
+      return snap;
+    }
+    function sameSnapVal(a, b) {
+      return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+    }
+    function diffSnap(before, after) {
+      const keys = {};
+      Object.keys(before).forEach(function (k) {
+        keys[k] = true;
+      });
+      Object.keys(after).forEach(function (k) {
+        keys[k] = true;
+      });
+      return Object.keys(keys).filter(function (k) {
+        return !sameSnapVal(before[k], after[k]);
+      });
+    }
+    function loadHistory() {
+      try {
+        const raw = localStorage.getItem(getHistoryKey());
+        if (!raw) return [];
+        const arr = JSON.parse(raw);
+        return Array.isArray(arr) ? arr : [];
+      } catch (_e) {
+        return [];
+      }
+    }
+    function saveHistory(list) {
+      try {
+        localStorage.setItem(getHistoryKey(), JSON.stringify(list.slice(-50)));
+      } catch (_e) {}
+    }
+    function loadLast() {
+      try {
+        const raw = localStorage.getItem(getLastKey());
+        return raw ? JSON.parse(raw) : null;
+      } catch (_e) {
+        return null;
+      }
+    }
+    function storeLast(snap) {
+      try {
+        localStorage.setItem(getLastKey(), JSON.stringify(snap));
+      } catch (_e) {}
+    }
+    function postToReports(entry) {
+      try {
+        const payload = {
+          id_visit: getVisitId(),
+          id_resume: entry.id_resume,
+          aksi: entry.aksi,
+          waktu: new Date(entry.at).toISOString(),
+          user: entry.user,
+          before: entry.before,
+          after: entry.after,
+          changed: entry.changed,
+        };
+        fetch(resolveReportsBase() + REPORTS_API_PATH, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          keepalive: true,
+          credentials: 'omit',
+        }).catch(function () {});
+      } catch (_e) {}
+    }
+    function logResumeSave(form) {
+      const after = takeSnapshot(form);
+      const hash = JSON.stringify(after);
+      const now = Date.now();
+      if (_lastLogHash === hash && now - _lastLogAt < 5e3) return;
+      _lastLogHash = hash;
+      _lastLogAt = now;
+      const before = loadLast() || {};
+      const entry = {
+        at: now,
+        aksi: hasIdResume() ? 'ubah' : 'buat',
+        id_resume: val('id_resume_inap'),
+        user: readPetugas(),
+        before,
+        after,
+        changed: diffSnap(before, after),
+      };
+      const list = loadHistory();
+      list.push(entry);
+      saveHistory(list);
+      storeLast(after);
+      postToReports(entry);
+      refreshHistoryBtn();
+    }
+    function refreshBeforeSnapshot(form) {
+      storeLast(takeSnapshot(form));
+    }
+    function setupHistory(form, saveBtn) {
+      storeLast(takeSnapshot(form));
+      refreshHistoryBtn();
+      if (_historyBtn || !saveBtn.parentElement) return;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.id = 'ext-rv-history-btn';
+      btn.textContent = 'Riwayat';
+      btn.style.marginLeft = '8px';
+      btn.onclick = function () {
+        openHistory(form, saveBtn);
+      };
+      saveBtn.parentElement.insertBefore(btn, saveBtn.nextSibling);
+      _historyBtn = btn;
+      refreshHistoryBtn();
+    }
+    function refreshHistoryBtn() {
+      if (!_historyBtn) return;
+      const n = loadHistory().length;
+      _historyBtn.textContent = n > 0 ? 'Riwayat (' + n + ')' : 'Riwayat';
+    }
+    function shortSnapVal(v) {
+      const s = v === void 0 ? '-' : JSON.stringify(v);
+      return s.length > 60 ? s.slice(0, 60) + '\u2026' : s;
+    }
+    function showHistToast(msg) {
+      const t = document.createElement('div');
+      t.className = 'ext-rv-toast ext-rv-toast-success';
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(function () {
+        t.remove();
+      }, 4e3);
+    }
+    function openHistory(form, saveBtn) {
+      document.querySelector('#ext-rv-history-overlay')?.remove();
+      const list = loadHistory().slice().reverse();
+      const ov = document.createElement('div');
+      ov.id = 'ext-rv-history-overlay';
+      ov.style.cssText =
+        'position:fixed;inset:0;z-index:99998;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:24px;';
+      ov.addEventListener('click', function (e) {
+        if (e.target === ov) ov.remove();
+      });
+      const box = document.createElement('div');
+      box.style.cssText =
+        'background:#fff;border-radius:12px;max-width:680px;width:100%;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;font-size:14px;color:#1c2530;';
+      ov.appendChild(box);
+      const head = document.createElement('div');
+      head.style.cssText =
+        'display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #d0d5dd;font-weight:700;';
+      head.textContent = 'Riwayat Resume \u2014 1 Kunjungan (' + list.length + ')';
+      const x = document.createElement('button');
+      x.type = 'button';
+      x.textContent = '\xD7';
+      x.style.cssText =
+        'border:none;background:#f8fafc;width:32px;height:32px;border-radius:50%;font-size:20px;cursor:pointer;';
+      x.onclick = function () {
+        ov.remove();
+      };
+      head.appendChild(x);
+      box.appendChild(head);
+      const body = document.createElement('div');
+      body.style.cssText = 'padding:14px 18px;overflow-y:auto;';
+      box.appendChild(body);
+      if (!list.length) {
+        body.textContent =
+          'Belum ada riwayat untuk kunjungan ini. Riwayat tercatat otomatis setiap kali Simpan ditekan.';
+      }
+      list.forEach(function (entry, idx) {
+        const no = list.length - idx;
+        const row = document.createElement('div');
+        row.style.cssText =
+          'border:1px solid #d0d5dd;border-radius:8px;padding:10px 12px;margin-bottom:10px;';
+        const title = document.createElement('div');
+        title.style.fontWeight = '600';
+        title.textContent =
+          '#' +
+          no +
+          ' \u2014 ' +
+          new Date(entry.at).toLocaleString('id-ID') +
+          ' \u2014 ' +
+          (entry.aksi === 'buat' ? 'Buat baru' : 'Ubah') +
+          ' \u2014 ' +
+          entry.changed.length +
+          ' field berubah';
+        row.appendChild(title);
+        const detail = document.createElement('div');
+        detail.style.cssText =
+          'display:none;margin-top:8px;background:#f8fafc;border-radius:6px;padding:8px 10px;font-size:12px;max-height:180px;overflow-y:auto;white-space:pre-wrap;';
+        if (!entry.changed.length) {
+          detail.textContent = 'Tidak ada perbedaan field.';
+        } else {
+          detail.textContent = entry.changed
+            .map(function (k) {
+              return (
+                k + ': ' + shortSnapVal(entry.before[k]) + ' \u2192 ' + shortSnapVal(entry.after[k])
+              );
+            })
+            .join('\n');
+        }
+        row.appendChild(detail);
+        const bar = document.createElement('div');
+        bar.style.cssText = 'margin-top:8px;display:flex;gap:8px;';
+        const btnLihat = document.createElement('button');
+        btnLihat.type = 'button';
+        btnLihat.textContent = 'Lihat';
+        btnLihat.onclick = function () {
+          detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
+        };
+        bar.appendChild(btnLihat);
+        const btnSalin = document.createElement('button');
+        btnSalin.type = 'button';
+        btnSalin.textContent = 'Salin ke Form';
+        btnSalin.style.cssText =
+          'background:#00875a;color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;';
+        btnSalin.onclick = function () {
+          applySnapshot(form, saveBtn, entry.after);
+          ov.remove();
+        };
+        bar.appendChild(btnSalin);
+        row.appendChild(bar);
+        body.appendChild(row);
+      });
+      document.body.appendChild(ov);
+    }
+    function applySnapshot(form, saveBtn, snap) {
+      if (hasIdResume()) {
+        const locked = form.querySelector('.ext-rv-locked');
+        if (locked) {
+          const fields = form.querySelectorAll('input, textarea, select');
+          fields.forEach(function (el) {
+            if (el.id === 'save' || el.type === 'button' || el.type === 'submit') return;
+            el.disabled = false;
+            if (el.tagName !== 'SELECT') {
+              el.readOnly = false;
+            }
+            el.classList.remove('ext-rv-locked');
+          });
+          saveBtn.textContent = 'Simpan Perubahan';
+          saveBtn.value = 'Simpan Perubahan';
+          attachSaveHandler(saveBtn, form);
+        }
+      }
+      let filled = 0;
+      let missing = 0;
+      Object.keys(snap).forEach(function (name) {
+        const v = snap[name];
+        let els = Array.from(form.querySelectorAll('[name="' + name + '"]'));
+        if (!els.length) {
+          const byId = form.querySelector('#' + CSS.escape(name));
+          els = byId ? [byId] : [];
+        }
+        if (!els.length) {
+          missing++;
+          return;
+        }
+        els.forEach(function (el) {
+          if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')) {
+            el.checked = Array.isArray(v) ? v.indexOf(el.value) >= 0 : el.value === v;
+          } else if (el instanceof HTMLSelectElement && el.multiple) {
+            const arr = Array.isArray(v) ? v : [v];
+            Array.from(el.options).forEach(function (o) {
+              o.selected = arr.indexOf(o.value) >= 0;
+            });
+          } else {
+            el.value = Array.isArray(v) ? (v[0] ?? '') : (v ?? '');
+          }
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+          filled++;
+        });
+      });
+      showHistToast(
+        'Disalin ' +
+          filled +
+          ' field' +
+          (missing > 0 ? ', ' + missing + ' nama tak ditemukan' : '') +
+          '. Periksa lalu klik Simpan.',
+      );
     }
     async function checkSession() {
       try {
@@ -881,13 +1244,19 @@ var __morbis_feature = (() => {
       function fail(ok, msg, id) {
         if (!ok) errs.push({ msg, id });
       }
+      function failText(id, label) {
+        const v = val(id);
+        if (!v) fail(false, label + ' harus diisi', id);
+        else if (!isUsableText(v))
+          fail(false, label + ' tidak boleh hanya berisi simbol atau karakter khusus', id);
+      }
       fail(!!val('norm'), 'No. RM harus diisi', 'norm');
       fail(!!val('pasien'), 'Nama pasien harus diisi', 'pasien');
       fail(!!val('id_visit'), 'Data kunjungan tidak valid', 'pasien');
-      fail(!!val('alasan_rawat'), 'Alasan rawat harus diisi', 'alasan_rawat');
-      fail(!!val('anamnesa'), 'Anamnesa harus diisi', 'anamnesa');
-      fail(!!val('diagnosa_primary'), 'Diagnosa primary harus diisi', 'diagnosa_primary');
-      fail(!!val('terapi_pengobatan'), 'Terapi/pengobatan harus diisi', 'terapi_pengobatan');
+      failText('alasan_rawat', 'Alasan rawat');
+      failText('anamnesa', 'Anamnesa');
+      failText('diagnosa_primary', 'Diagnosa primary');
+      failText('terapi_pengobatan', 'Terapi/pengobatan');
       fail(
         !!val('kode_diagnosa_utama'),
         'Kode ICD-10 Diagnosa Utama harus diisi',
@@ -1058,24 +1427,6 @@ var __morbis_feature = (() => {
     function val(id) {
       const el = $(id);
       return el?.value?.trim() || '';
-    }
-    function isNormalBP(v) {
-      const parts = v.split('/');
-      if (parts.length !== 2) return false;
-      const sys = parseInt(parts[0]);
-      const dia = parseInt(parts[1]);
-      if (isNaN(sys) || isNaN(dia)) return false;
-      return sys >= 50 && sys <= 250 && dia >= 20 && dia <= 160;
-    }
-    function isValidVital(v, min, max) {
-      const n = parseFloat(v.replace(/,/g, '.'));
-      return !isNaN(n) && n >= min && n <= max;
-    }
-    function isICD10(v) {
-      return /^[A-Z][0-9][0-9](\.[0-9]{1,2})?$/.test(v.toUpperCase());
-    }
-    function isICD9(v) {
-      return /^[0-9]{2}(\.[0-9]{1,2})?$/.test(v);
     }
     function radioVal(name) {
       const el = document.querySelector('input[name="' + name + '"]:checked');
