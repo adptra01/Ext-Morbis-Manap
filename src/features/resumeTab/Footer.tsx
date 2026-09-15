@@ -37,16 +37,16 @@ export function Footer({
       </div>
       <div className="flex items-center gap-2">
         {onHistory && (
-          <Button type="button" variant="ghost" size="default" onClick={onHistory}>
+          <Button type="button" variant="outline" size="default" onClick={onHistory}>
             Riwayat
           </Button>
         )}
         {onRefresh && (
-          <Button type="button" variant="ghost" size="default" onClick={onRefresh}>
+          <Button type="button" variant="outline" size="default" onClick={onRefresh}>
             Reset
           </Button>
         )}
-        <Button type="button" variant="outline" size="default" onClick={onCancel}>
+        <Button type="button" variant="secondary" size="default" onClick={onCancel}>
           Batal
         </Button>
         <Button

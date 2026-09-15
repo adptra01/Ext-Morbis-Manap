@@ -134,7 +134,7 @@ export function TindakanSection({ rows, onChange }: Props) {
                 kode9: '',
                 namaTindakan: '',
                 komorbid: '',
-                kategoriProsedur: '',
+                kategoriProsedur: KATEGORI_OPTIONS[1]?.value ?? '',
                 snomedProsedur: '',
                 codeProsedur: '',
               },
@@ -254,10 +254,10 @@ export function TindakanSection({ rows, onChange }: Props) {
                     </Select>
                   </div>
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="icon"
                     onClick={() => removeRow(i)}
-                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                    className="h-8 w-8 text-destructive border-destructive/50 hover:bg-destructive hover:text-destructive-foreground"
                   >
                     <Trash2 className="size-4" />
                   </Button>
