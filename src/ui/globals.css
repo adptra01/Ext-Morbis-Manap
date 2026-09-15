@@ -1,4 +1,4 @@
-/* ponytail: no @import here — constructable stylesheets (Shadow DOM) reject @import */
+/* shadow-dom base */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

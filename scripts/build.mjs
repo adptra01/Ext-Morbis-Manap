@@ -172,7 +172,9 @@ async function buildTailwindCSS() {
       from: cssPath,
       to: join(uiDest, 'shadow.css'),
     });
-    writeFileSync(join(uiDest, 'shadow.css'), result.css);
+    // Constructable Stylesheets tidak boleh mengandung @import
+    const cleanCss = result.css.replace(/@import[^;]+;/g, '');
+    writeFileSync(join(uiDest, 'shadow.css'), cleanCss);
     console.log(`[build] Compiled ui/shadow.css (${result.css.length}b)`);
   } catch (e) {
     console.warn('[build] Tailwind CSS build failed:', e.message);

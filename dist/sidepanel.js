@@ -20,239 +20,305 @@ import {
   v as sendMessage,
   x as __toESM,
   y as require_client,
-} from './chunks/button-C0V2Qka4.js';
+} from './chunks/button-j2itH9Vk.js';
+//#region node_modules/lucide-react/dist/esm/icons/check.mjs
 /**
- * @license lucide-react v1.38.0 - ISC
+ * @license lucide-react v1.46.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-var Check = createLucideIcon('check', [
-  [
-    'path',
-    {
-      d: 'M20 6 9 17l-5-5',
-      key: '1gmf2c',
-    },
+var __iconData$7 = {
+  name: 'check',
+  size: 24,
+  node: [
+    [
+      'path',
+      {
+        d: 'M20 6 9 17l-5-5',
+        key: '1gmf2c',
+      },
+    ],
   ],
-]);
+};
+__iconData$7.node;
+var Check = createLucideIcon(__iconData$7);
+//#endregion
+//#region node_modules/lucide-react/dist/esm/icons/circle-alert.mjs
 /**
- * @license lucide-react v1.38.0 - ISC
+ * @license lucide-react v1.46.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-var CircleAlert = createLucideIcon('circle-alert', [
-  [
-    'circle',
-    {
-      cx: '12',
-      cy: '12',
-      r: '10',
-      key: '1mglay',
-    },
+var __iconData$6 = {
+  name: 'circle-alert',
+  size: 24,
+  node: [
+    [
+      'circle',
+      {
+        cx: '12',
+        cy: '12',
+        r: '10',
+        key: '1mglay',
+      },
+    ],
+    [
+      'line',
+      {
+        x1: '12',
+        x2: '12',
+        y1: '8',
+        y2: '12',
+        key: '1pkeuh',
+      },
+    ],
+    [
+      'line',
+      {
+        x1: '12',
+        x2: '12.01',
+        y1: '16',
+        y2: '16',
+        key: '4dfq90',
+      },
+    ],
   ],
-  [
-    'line',
-    {
-      x1: '12',
-      x2: '12',
-      y1: '8',
-      y2: '12',
-      key: '1pkeuh',
-    },
-  ],
-  [
-    'line',
-    {
-      x1: '12',
-      x2: '12.01',
-      y1: '16',
-      y2: '16',
-      key: '4dfq90',
-    },
-  ],
-]);
+  aliases: ['alert-circle'],
+};
+__iconData$6.node;
+var CircleAlert = createLucideIcon(__iconData$6);
+//#endregion
+//#region node_modules/lucide-react/dist/esm/icons/eye.mjs
 /**
- * @license lucide-react v1.38.0 - ISC
+ * @license lucide-react v1.46.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-var Eye = createLucideIcon('eye', [
-  [
-    'path',
-    {
-      d: 'M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0',
-      key: '1nclc0',
-    },
+var __iconData$5 = {
+  name: 'eye',
+  size: 24,
+  node: [
+    [
+      'path',
+      {
+        d: 'M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0',
+        key: '1nclc0',
+      },
+    ],
+    [
+      'circle',
+      {
+        cx: '12',
+        cy: '12',
+        r: '3',
+        key: '1v7zrd',
+      },
+    ],
   ],
-  [
-    'circle',
-    {
-      cx: '12',
-      cy: '12',
-      r: '3',
-      key: '1v7zrd',
-    },
-  ],
-]);
+};
+__iconData$5.node;
+var Eye = createLucideIcon(__iconData$5);
+//#endregion
+//#region node_modules/lucide-react/dist/esm/icons/info.mjs
 /**
- * @license lucide-react v1.38.0 - ISC
+ * @license lucide-react v1.46.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-var Info = createLucideIcon('info', [
-  [
-    'circle',
-    {
-      cx: '12',
-      cy: '12',
-      r: '10',
-      key: '1mglay',
-    },
+var __iconData$4 = {
+  name: 'info',
+  size: 24,
+  node: [
+    [
+      'circle',
+      {
+        cx: '12',
+        cy: '12',
+        r: '10',
+        key: '1mglay',
+      },
+    ],
+    [
+      'path',
+      {
+        d: 'M12 16v-4',
+        key: '1dtifu',
+      },
+    ],
+    [
+      'path',
+      {
+        d: 'M12 8h.01',
+        key: 'e9boi3',
+      },
+    ],
   ],
-  [
-    'path',
-    {
-      d: 'M12 16v-4',
-      key: '1dtifu',
-    },
-  ],
-  [
-    'path',
-    {
-      d: 'M12 8h.01',
-      key: 'e9boi3',
-    },
-  ],
-]);
+};
+__iconData$4.node;
+var Info = createLucideIcon(__iconData$4);
+//#endregion
+//#region node_modules/lucide-react/dist/esm/icons/search.mjs
 /**
- * @license lucide-react v1.38.0 - ISC
+ * @license lucide-react v1.46.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-var Search = createLucideIcon('search', [
-  [
-    'path',
-    {
-      d: 'm21 21-4.34-4.34',
-      key: '14j7rj',
-    },
+var __iconData$3 = {
+  name: 'search',
+  size: 24,
+  node: [
+    [
+      'path',
+      {
+        d: 'm21 21-4.34-4.34',
+        key: '14j7rj',
+      },
+    ],
+    [
+      'circle',
+      {
+        cx: '11',
+        cy: '11',
+        r: '8',
+        key: '4ej97u',
+      },
+    ],
   ],
-  [
-    'circle',
-    {
-      cx: '11',
-      cy: '11',
-      r: '8',
-      key: '4ej97u',
-    },
-  ],
-]);
+};
+__iconData$3.node;
+var Search = createLucideIcon(__iconData$3);
+//#endregion
+//#region node_modules/lucide-react/dist/esm/icons/trash.mjs
 /**
- * @license lucide-react v1.38.0 - ISC
+ * @license lucide-react v1.46.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-var Trash2 = createLucideIcon('trash-2', [
-  [
-    'path',
-    {
-      d: 'M10 11v6',
-      key: 'nco0om',
-    },
+var __iconData$2 = {
+  name: 'trash',
+  size: 24,
+  node: [
+    [
+      'path',
+      {
+        d: 'M10 11v6',
+        key: 'nco0om',
+      },
+    ],
+    [
+      'path',
+      {
+        d: 'M14 11v6',
+        key: 'outv1u',
+      },
+    ],
+    [
+      'path',
+      {
+        d: 'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6',
+        key: 'miytrc',
+      },
+    ],
+    [
+      'path',
+      {
+        d: 'M3 6h18',
+        key: 'd0wm0j',
+      },
+    ],
+    [
+      'path',
+      {
+        d: 'M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2',
+        key: 'e791ji',
+      },
+    ],
   ],
-  [
-    'path',
-    {
-      d: 'M14 11v6',
-      key: 'outv1u',
-    },
-  ],
-  [
-    'path',
-    {
-      d: 'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6',
-      key: 'miytrc',
-    },
-  ],
-  [
-    'path',
-    {
-      d: 'M3 6h18',
-      key: 'd0wm0j',
-    },
-  ],
-  [
-    'path',
-    {
-      d: 'M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2',
-      key: 'e791ji',
-    },
-  ],
-]);
+  aliases: ['trash-2'],
+};
+__iconData$2.node;
+var Trash = createLucideIcon(__iconData$2);
+//#endregion
+//#region node_modules/lucide-react/dist/esm/icons/triangle-alert.mjs
 /**
- * @license lucide-react v1.38.0 - ISC
+ * @license lucide-react v1.46.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-var TriangleAlert = createLucideIcon('triangle-alert', [
-  [
-    'path',
-    {
-      d: 'm21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3',
-      key: 'wmoenq',
-    },
+var __iconData$1 = {
+  name: 'triangle-alert',
+  size: 24,
+  node: [
+    [
+      'path',
+      {
+        d: 'm21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3',
+        key: 'wmoenq',
+      },
+    ],
+    [
+      'path',
+      {
+        d: 'M12 9v4',
+        key: 'juzpu7',
+      },
+    ],
+    [
+      'path',
+      {
+        d: 'M12 17h.01',
+        key: 'p32p05',
+      },
+    ],
   ],
-  [
-    'path',
-    {
-      d: 'M12 9v4',
-      key: 'juzpu7',
-    },
-  ],
-  [
-    'path',
-    {
-      d: 'M12 17h.01',
-      key: 'p32p05',
-    },
-  ],
-]);
+  aliases: ['alert-triangle'],
+};
+__iconData$1.node;
+var TriangleAlert = createLucideIcon(__iconData$1);
+//#endregion
+//#region node_modules/lucide-react/dist/esm/icons/upload.mjs
 /**
- * @license lucide-react v1.38.0 - ISC
+ * @license lucide-react v1.46.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-var Upload = createLucideIcon('upload', [
-  [
-    'path',
-    {
-      d: 'M12 3v12',
-      key: '1x0j5s',
-    },
+var __iconData = {
+  name: 'upload',
+  size: 24,
+  node: [
+    [
+      'path',
+      {
+        d: 'M12 3v12',
+        key: '1x0j5s',
+      },
+    ],
+    [
+      'path',
+      {
+        d: 'm17 8-5-5-5 5',
+        key: '7q97r8',
+      },
+    ],
+    [
+      'path',
+      {
+        d: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4',
+        key: 'ih7n3h',
+      },
+    ],
   ],
-  [
-    'path',
-    {
-      d: 'm17 8-5-5-5 5',
-      key: '7q97r8',
-    },
-  ],
-  [
-    'path',
-    {
-      d: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4',
-      key: 'ih7n3h',
-    },
-  ],
-]);
+};
+__iconData.node;
+var Upload = createLucideIcon(__iconData);
 //#endregion
 //#region src/ui/hooks/useDarkMode.ts
 var import_client = require_client();
@@ -321,19 +387,19 @@ function Badge({ variant = 'default', icon, children, className, onDismiss }) {
   const Icon = icons[variant];
   return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('span', {
     className: cn(
-      'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold',
+      'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-semibold',
       variants[variant],
       className,
     ),
     children: [
-      icon && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Icon, { className: 'size-3' }),
+      icon && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Icon, { className: 'size-3.5' }),
       children,
       onDismiss &&
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)('button', {
           onClick: onDismiss,
-          className: 'ml-0.5 hover:opacity-70',
+          className: 'ml-1 hover:opacity-70 p-0.5',
           'aria-label': 'Dismiss',
-          children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(X, { className: 'size-2.5' }),
+          children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(X, { className: 'size-3.5' }),
         }),
     ],
   });
@@ -1387,7 +1453,7 @@ function BatchDeletePanel({ tabId }) {
                               className:
                                 'p-1 hover:bg-red-500/10 rounded text-muted-foreground hover:text-red-600 transition-all disabled:opacity-50',
                               title: 'Hapus Dokumen',
-                              children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash2, {
+                              children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash, {
                                 className: 'size-3.5',
                               }),
                             }),
@@ -1428,7 +1494,7 @@ function BatchDeletePanel({ tabId }) {
               disabled: isProcessing || items.length === 0 || selectedCount === 0,
               className: 'w-full bg-red-600 hover:bg-red-700 text-white disabled:opacity-50',
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash2, { className: 'size-3.5 mr-1' }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash, { className: 'size-3.5 mr-1' }),
                 ' Hapus Terpilih (',
                 selectedCount,
                 ')',

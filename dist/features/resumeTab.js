@@ -9,6 +9,15 @@ var __morbis_feature = (() => {
   var __typeError = (msg) => {
     throw TypeError(msg);
   };
+  var __esm = (fn, res, err) =>
+    function __init() {
+      if (err) throw err[0];
+      try {
+        return (fn && (res = (0, fn[__getOwnPropNames(fn)[0]])((fn = 0))), res);
+      } catch (e) {
+        throw ((err = [e]), e);
+      }
+    };
   var __commonJS = (cb, mod) =>
     function __require() {
       try {
@@ -20,6 +29,9 @@ var __morbis_feature = (() => {
         throw ((mod = 0), e);
       }
     };
+  var __export = (target, all) => {
+    for (var name in all) __defProp(target, name, { get: all[name], enumerable: true });
+  };
   var __copyProps = (to, from, except, desc) => {
     if ((from && typeof from === 'object') || typeof from === 'function') {
       for (let key of __getOwnPropNames(from))
@@ -494,6 +506,8 @@ var __morbis_feature = (() => {
               return 'SuspenseList';
             case REACT_ACTIVITY_TYPE:
               return 'Activity';
+            case REACT_VIEW_TRANSITION_TYPE:
+              return 'ViewTransition';
           }
           if ('object' === typeof type)
             switch (
@@ -817,8 +831,15 @@ var __morbis_feature = (() => {
         }
         function lazyInitializer(payload) {
           if (-1 === payload._status) {
-            var ioInfo = payload._ioInfo;
-            null != ioInfo && (ioInfo.start = ioInfo.end = performance.now());
+            var resolveDebugValue = null,
+              rejectDebugValue = null,
+              ioInfo = payload._ioInfo;
+            null != ioInfo &&
+              ((ioInfo.start = ioInfo.end = performance.now()),
+              (ioInfo.value = new Promise(function (resolve, reject) {
+                resolveDebugValue = resolve;
+                rejectDebugValue = reject;
+              })));
             ioInfo = payload._result;
             var thenable = ioInfo();
             thenable.then(
@@ -827,7 +848,13 @@ var __morbis_feature = (() => {
                   payload._status = 1;
                   payload._result = moduleObject;
                   var _ioInfo = payload._ioInfo;
-                  null != _ioInfo && (_ioInfo.end = performance.now());
+                  if (null != _ioInfo) {
+                    _ioInfo.end = performance.now();
+                    var debugValue = null == moduleObject ? void 0 : moduleObject.default;
+                    resolveDebugValue(debugValue);
+                    _ioInfo.value.status = 'fulfilled';
+                    _ioInfo.value.value = debugValue;
+                  }
                   void 0 === thenable.status &&
                     ((thenable.status = 'fulfilled'), (thenable.value = moduleObject));
                 }
@@ -837,7 +864,12 @@ var __morbis_feature = (() => {
                   payload._status = 2;
                   payload._result = error;
                   var _ioInfo2 = payload._ioInfo;
-                  null != _ioInfo2 && (_ioInfo2.end = performance.now());
+                  null != _ioInfo2 &&
+                    ((_ioInfo2.end = performance.now()),
+                    _ioInfo2.value.then(noop3, noop3),
+                    rejectDebugValue(error),
+                    (_ioInfo2.value.status = 'rejected'),
+                    (_ioInfo2.value.reason = error));
                   void 0 === thenable.status &&
                     ((thenable.status = 'rejected'), (thenable.reason = error));
                 }
@@ -845,7 +877,6 @@ var __morbis_feature = (() => {
             );
             ioInfo = payload._ioInfo;
             if (null != ioInfo) {
-              ioInfo.value = thenable;
               var displayName = thenable.displayName;
               'string' === typeof displayName && (ioInfo.name = displayName);
             }
@@ -878,6 +909,59 @@ var __morbis_feature = (() => {
         }
         function releaseAsyncTransition() {
           ReactSharedInternals.asyncTransitions--;
+        }
+        function startTransition(scope) {
+          var prevTransition = ReactSharedInternals.T,
+            currentTransition = {};
+          currentTransition.types = null !== prevTransition ? prevTransition.types : null;
+          currentTransition._updatedFibers = /* @__PURE__ */ new Set();
+          ReactSharedInternals.T = currentTransition;
+          try {
+            var returnValue = scope(),
+              onStartTransitionFinish = ReactSharedInternals.S;
+            null !== onStartTransitionFinish &&
+              onStartTransitionFinish(currentTransition, returnValue);
+            'object' === typeof returnValue &&
+              null !== returnValue &&
+              'function' === typeof returnValue.then &&
+              (ReactSharedInternals.asyncTransitions++,
+              returnValue.then(releaseAsyncTransition, releaseAsyncTransition),
+              returnValue.then(noop3, reportGlobalError));
+          } catch (error) {
+            reportGlobalError(error);
+          } finally {
+            (null === prevTransition &&
+              currentTransition._updatedFibers &&
+              ((scope = currentTransition._updatedFibers.size),
+              currentTransition._updatedFibers.clear(),
+              10 < scope &&
+                console.warn(
+                  'Detected a large number of updates inside startTransition. If this is due to a subscription please re-write it to use React provided hooks. Otherwise concurrent mode guarantees are off the table.',
+                )),
+              null !== prevTransition &&
+                null !== currentTransition.types &&
+                (null !== prevTransition.types &&
+                  prevTransition.types !== currentTransition.types &&
+                  console.error(
+                    'We expected inner Transitions to have transferred the outer types set and that you cannot add to the outer Transition while inside the inner.This is a bug in React.',
+                  ),
+                (prevTransition.types = currentTransition.types)),
+              (ReactSharedInternals.T = prevTransition));
+          }
+        }
+        function addTransitionType(type) {
+          var transition = ReactSharedInternals.T;
+          if (null !== transition) {
+            var transitionTypes = transition.types;
+            null === transitionTypes
+              ? (transition.types = [type])
+              : -1 === transitionTypes.indexOf(type) && transitionTypes.push(type);
+          } else
+            (0 === ReactSharedInternals.asyncTransitions &&
+              console.error(
+                'addTransitionType can only be called inside a `startTransition()` callback. It must be associated with a specific Transition.',
+              ),
+              startTransition(addTransitionType.bind(null, type)));
         }
         function enqueueTask(task) {
           if (null === enqueueTaskImpl)
@@ -978,6 +1062,7 @@ var __morbis_feature = (() => {
           REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for('react.memo'),
           REACT_LAZY_TYPE2 = /* @__PURE__ */ Symbol.for('react.lazy'),
           REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for('react.activity'),
+          REACT_VIEW_TRANSITION_TYPE = /* @__PURE__ */ Symbol.for('react.view_transition'),
           MAYBE_ITERATOR_SYMBOL = Symbol.iterator,
           didWarnStateUpdateForUnmountedComponent = {},
           ReactNoopUpdateQueue = {
@@ -1147,6 +1232,7 @@ var __morbis_feature = (() => {
         exports.PureComponent = PureComponent;
         exports.StrictMode = REACT_STRICT_MODE_TYPE;
         exports.Suspense = REACT_SUSPENSE_TYPE;
+        exports.ViewTransition = REACT_VIEW_TRANSITION_TYPE;
         exports.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE =
           ReactSharedInternals;
         exports.__COMPILER_RUNTIME = deprecatedAPIs;
@@ -1244,6 +1330,7 @@ var __morbis_feature = (() => {
             },
           };
         };
+        exports.addTransitionType = addTransitionType;
         exports.cache = function (fn) {
           return function () {
             return fn.apply(null, arguments);
@@ -1323,6 +1410,7 @@ var __morbis_feature = (() => {
         };
         exports.createElement = function (type, config, children) {
           for (var i = 2; i < arguments.length; i++) validateChildKeys(arguments[i]);
+          var propName;
           i = {};
           var key = null;
           if (null != config)
@@ -1356,13 +1444,18 @@ var __morbis_feature = (() => {
               i,
               'function' === typeof type ? type.displayName || type.name || 'Unknown' : type,
             );
-          var propName = 1e4 > ReactSharedInternals.recentlyCreatedOwnerStacks++;
+          (propName = 1e4 > ReactSharedInternals.recentlyCreatedOwnerStacks++)
+            ? ((childArray = Error.stackTraceLimit),
+              (Error.stackTraceLimit = 10),
+              (childrenLength = Error('react-stack-top-frame')),
+              (Error.stackTraceLimit = childArray))
+            : (childrenLength = unknownOwnerDebugStack);
           return ReactElement(
             type,
             key,
             i,
             getOwner(),
-            propName ? Error('react-stack-top-frame') : unknownOwnerDebugStack,
+            childrenLength,
             propName ? createTask(getTaskName(type)) : unknownOwnerDebugTask,
           );
         };
@@ -1460,44 +1553,7 @@ var __morbis_feature = (() => {
           });
           return compare;
         };
-        exports.startTransition = function (scope) {
-          var prevTransition = ReactSharedInternals.T,
-            currentTransition = {};
-          currentTransition._updatedFibers = /* @__PURE__ */ new Set();
-          ReactSharedInternals.T = currentTransition;
-          try {
-            var returnValue = scope(),
-              onStartTransitionFinish = ReactSharedInternals.S;
-            null !== onStartTransitionFinish &&
-              onStartTransitionFinish(currentTransition, returnValue);
-            'object' === typeof returnValue &&
-              null !== returnValue &&
-              'function' === typeof returnValue.then &&
-              (ReactSharedInternals.asyncTransitions++,
-              returnValue.then(releaseAsyncTransition, releaseAsyncTransition),
-              returnValue.then(noop3, reportGlobalError));
-          } catch (error) {
-            reportGlobalError(error);
-          } finally {
-            (null === prevTransition &&
-              currentTransition._updatedFibers &&
-              ((scope = currentTransition._updatedFibers.size),
-              currentTransition._updatedFibers.clear(),
-              10 < scope &&
-                console.warn(
-                  'Detected a large number of updates inside startTransition. If this is due to a subscription please re-write it to use React provided hooks. Otherwise concurrent mode guarantees are off the table.',
-                )),
-              null !== prevTransition &&
-                null !== currentTransition.types &&
-                (null !== prevTransition.types &&
-                  prevTransition.types !== currentTransition.types &&
-                  console.error(
-                    'We expected inner Transitions to have transferred the outer types set and that you cannot add to the outer Transition while inside the inner.This is a bug in React.',
-                  ),
-                (prevTransition.types = currentTransition.types)),
-              (ReactSharedInternals.T = prevTransition));
-          }
-        };
+        exports.startTransition = startTransition;
         exports.unstable_useCacheRefresh = function () {
           return resolveDispatcher().useCacheRefresh();
         };
@@ -1579,7 +1635,7 @@ var __morbis_feature = (() => {
         exports.useTransition = function () {
           return resolveDispatcher().useTransition();
         };
-        exports.version = '19.2.8';
+        exports.version = '19.3.0';
         'undefined' !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ &&
           'function' === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop &&
           __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(Error());
@@ -1610,23 +1666,28 @@ var __morbis_feature = (() => {
         }
         function createPortal$1(children, containerInfo, implementation) {
           var key = 3 < arguments.length && void 0 !== arguments[3] ? arguments[3] : null;
-          try {
-            testStringCoercion(key);
-            var JSCompiler_inline_result = false;
-          } catch (e) {
-            JSCompiler_inline_result = true;
+          if (null == key) key = null;
+          else if (key === REACT_OPTIMISTIC_KEY) key = REACT_OPTIMISTIC_KEY;
+          else {
+            try {
+              testStringCoercion(key);
+              var JSCompiler_inline_result = false;
+            } catch (e) {
+              JSCompiler_inline_result = true;
+            }
+            JSCompiler_inline_result &&
+              (console.error(
+                'The provided key is an unsupported type %s. This value must be coerced to a string before using it here.',
+                ('function' === typeof Symbol && Symbol.toStringTag && key[Symbol.toStringTag]) ||
+                  key.constructor.name ||
+                  'Object',
+              ),
+              testStringCoercion(key));
+            key = '' + key;
           }
-          JSCompiler_inline_result &&
-            (console.error(
-              'The provided key is an unsupported type %s. This value must be coerced to a string before using it here.',
-              ('function' === typeof Symbol && Symbol.toStringTag && key[Symbol.toStringTag]) ||
-                key.constructor.name ||
-                'Object',
-            ),
-            testStringCoercion(key));
           return {
             $$typeof: REACT_PORTAL_TYPE,
-            key: null == key ? null : '' + key,
+            key,
             children,
             containerInfo,
             implementation,
@@ -1669,7 +1730,7 @@ var __morbis_feature = (() => {
         'undefined' !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ &&
           'function' === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart &&
           __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
-        var React32 = require_react(),
+        var React33 = require_react(),
           Internals = {
             d: {
               f: noop3,
@@ -1690,8 +1751,10 @@ var __morbis_feature = (() => {
             findDOMNode: null,
           },
           REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for('react.portal'),
+          REACT_RECOVERABLE_TYPE = /* @__PURE__ */ Symbol.for('react.recoverable'),
+          REACT_OPTIMISTIC_KEY = /* @__PURE__ */ Symbol.for('react.optimistic_key'),
           ReactSharedInternals =
-            React32.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
+            React33.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
         ('function' === typeof Map &&
           null != Map.prototype &&
           'function' === typeof Map.prototype.forEach &&
@@ -1703,6 +1766,9 @@ var __morbis_feature = (() => {
             'React depends on Map and Set built-in types. Make sure that you load a polyfill in older browsers. https://reactjs.org/link/react-polyfills',
           );
         exports.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE = Internals;
+        exports.browser = function (reason) {
+          return { $$typeof: REACT_RECOVERABLE_TYPE, _reason: reason };
+        };
         exports.createPortal = function (children, container) {
           var key = 2 < arguments.length && void 0 !== arguments[2] ? arguments[2] : null;
           if (
@@ -1864,6 +1930,8 @@ var __morbis_feature = (() => {
                     crossOrigin: encountered,
                     integrity: 'string' === typeof options2.integrity ? options2.integrity : void 0,
                     nonce: 'string' === typeof options2.nonce ? options2.nonce : void 0,
+                    fetchPriority:
+                      'string' === typeof options2.fetchPriority ? options2.fetchPriority : void 0,
                   }));
             } else null == options2 && Internals.d.M(href);
         };
@@ -1946,6 +2014,9 @@ var __morbis_feature = (() => {
                       : void 0,
                   crossOrigin: encountered,
                   integrity: 'string' === typeof options2.integrity ? options2.integrity : void 0,
+                  nonce: 'string' === typeof options2.nonce ? options2.nonce : void 0,
+                  fetchPriority:
+                    'string' === typeof options2.fetchPriority ? options2.fetchPriority : void 0,
                 }))
               : Internals.d.m(href));
         };
@@ -1961,7 +2032,7 @@ var __morbis_feature = (() => {
         exports.useFormStatus = function () {
           return resolveDispatcher().useHostTransitionStatus();
         };
-        exports.version = '19.2.8';
+        exports.version = '19.3.0';
         'undefined' !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ &&
           'function' === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop &&
           __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(Error());
@@ -2077,18 +2148,12 @@ var __morbis_feature = (() => {
           return !(!node || (1 !== node.nodeType && 9 !== node.nodeType && 11 !== node.nodeType));
         }
         function getNearestMountedFiber(fiber) {
-          var node = fiber,
-            nearestMounted = fiber;
-          if (fiber.alternate) for (; node.return;) node = node.return;
-          else {
-            fiber = node;
-            do
-              ((node = fiber),
-                0 !== (node.flags & 4098) && (nearestMounted = node.return),
-                (fiber = node.return));
-            while (fiber);
-          }
-          return 3 === node.tag ? nearestMounted : null;
+          for (var node = fiber, nextNode = node; nextNode && !nextNode.alternate;)
+            ((node = nextNode),
+              0 !== (node.flags & 4098) && (fiber = node.return),
+              (nextNode = node.return));
+          for (; node.return;) node = node.return;
+          return 3 === node.tag ? fiber : null;
         }
         function getSuspenseInstanceFromFiber(fiber) {
           if (13 === fiber.tag) {
@@ -2196,6 +2261,114 @@ var __morbis_feature = (() => {
           }
           return null;
         }
+        function traverseFragmentInstancesAndTextInstances(fragmentFiber, fn, a, b, c) {
+          traverseVisibleInstancesAndTextInstances(fragmentFiber.child, false, fn, a, b, c);
+        }
+        function traverseVisibleInstancesAndTextInstances(child, searchWithinHosts, fn, a, b, c) {
+          for (; null !== child;) {
+            if (
+              ((5 === child.tag || 27 === child.tag || 6 === child.tag) && fn(child, a, b, c)) ||
+              ((22 !== child.tag || null === child.memoizedState) &&
+                (searchWithinHosts || (5 !== child.tag && 27 !== child.tag)) &&
+                traverseVisibleInstancesAndTextInstances(
+                  child.child,
+                  searchWithinHosts,
+                  fn,
+                  a,
+                  b,
+                  c,
+                ))
+            )
+              return true;
+            child = child.sibling;
+          }
+          return false;
+        }
+        function getFragmentParentInstanceOrContainerFiber(fiber) {
+          for (fiber = fiber.return; null !== fiber;) {
+            if (3 === fiber.tag || 5 === fiber.tag || 27 === fiber.tag) return fiber;
+            fiber = fiber.return;
+          }
+          return null;
+        }
+        function fiberIsPortaledIntoHost(fiber) {
+          var foundPortalParent = false;
+          for (fiber = fiber.return; null !== fiber;) {
+            4 === fiber.tag && (foundPortalParent = true);
+            if (3 === fiber.tag || 5 === fiber.tag || 27 === fiber.tag) break;
+            fiber = fiber.return;
+          }
+          return foundPortalParent;
+        }
+        function getFragmentInstanceOrTextInstanceSiblings(fiber) {
+          var result = [null, null],
+            parentHostFiber = getFragmentParentInstanceOrContainerFiber(fiber);
+          if (null === parentHostFiber) return result;
+          findFragmentInstanceOrTextInstanceSiblings(result, fiber, parentHostFiber.child, {
+            foundSelf: false,
+          });
+          return result;
+        }
+        function findFragmentInstanceOrTextInstanceSiblings(result, self, child, state) {
+          for (; null !== child;) {
+            if (child === self) state.foundSelf = true;
+            else if (5 === child.tag || 27 === child.tag || 6 === child.tag) {
+              if (state.foundSelf) return ((result[1] = child), true);
+              result[0] = child;
+            } else if (
+              (22 !== child.tag || null === child.memoizedState) &&
+              findFragmentInstanceOrTextInstanceSiblings(result, self, child.child, state)
+            )
+              return true;
+            child = child.sibling;
+          }
+          return false;
+        }
+        function getInstanceFromHostFiber(fiber) {
+          switch (fiber.tag) {
+            case 5:
+            case 27:
+            case 6:
+              return fiber.stateNode;
+            case 3:
+              return fiber.stateNode.containerInfo;
+            default:
+              throw Error('Expected to find a host node. This is a bug in React.');
+          }
+        }
+        function isFiberPrecedingCheck(child, target, boundary) {
+          return child === boundary
+            ? true
+            : child === target
+              ? ((searchTarget = child), true)
+              : false;
+        }
+        function isFiberFollowingCheck(child, target, boundary) {
+          return child === boundary
+            ? ((searchBoundary = child), false)
+            : child === target
+              ? (null !== searchBoundary && (searchTarget = child), true)
+              : false;
+        }
+        function getParentForFragmentAncestors(inst) {
+          if (null === inst) return null;
+          do inst = null === inst ? null : inst.return;
+          while (inst && 5 !== inst.tag && 27 !== inst.tag && 3 !== inst.tag);
+          return inst ? inst : null;
+        }
+        function getLowestCommonAncestor(instA, instB, getParent2) {
+          for (var depthA = 0, tempA = instA; tempA; tempA = getParent2(tempA)) depthA++;
+          tempA = 0;
+          for (var tempB = instB; tempB; tempB = getParent2(tempB)) tempA++;
+          for (; 0 < depthA - tempA;) ((instA = getParent2(instA)), depthA--);
+          for (; 0 < tempA - depthA;) ((instB = getParent2(instB)), tempA--);
+          for (; depthA--;) {
+            if (instA === instB || (null !== instB && instA === instB.alternate)) return instA;
+            instA = getParent2(instA);
+            instB = getParent2(instB);
+          }
+          return null;
+        }
         function getIteratorFn(maybeIterable) {
           if (null === maybeIterable || 'object' !== typeof maybeIterable) return null;
           maybeIterable =
@@ -2223,6 +2396,8 @@ var __morbis_feature = (() => {
               return 'SuspenseList';
             case REACT_ACTIVITY_TYPE:
               return 'Activity';
+            case REACT_VIEW_TRANSITION_TYPE:
+              return 'ViewTransition';
           }
           if ('object' === typeof type)
             switch (
@@ -2302,7 +2477,8 @@ var __morbis_feature = (() => {
             case 8:
               return type === REACT_STRICT_MODE_TYPE ? 'StrictMode' : 'Mode';
             case 22:
-              return 'Offscreen';
+              if (null !== fiber.return) return getComponentNameFromFiber(fiber.return);
+              break;
             case 12:
               return 'Profiler';
             case 21:
@@ -2313,6 +2489,8 @@ var __morbis_feature = (() => {
               return 'SuspenseList';
             case 25:
               return 'TracingMarker';
+            case 30:
+              return 'ViewTransition';
             case 1:
             case 0:
             case 14:
@@ -2407,13 +2585,16 @@ var __morbis_feature = (() => {
           return requiredContext(contextStackCursor.current);
         }
         function pushHostContext(fiber) {
-          null !== fiber.memoizedState && push(hostTransitionProviderCursor, fiber, fiber);
-          var context = requiredContext(contextStackCursor.current);
+          var stateHook = fiber.memoizedState;
+          null !== stateHook &&
+            ((HostTransitionContext._currentValue = stateHook.memoizedState),
+            push(hostTransitionProviderCursor, fiber, fiber));
+          stateHook = requiredContext(contextStackCursor.current);
           var type = fiber.type;
-          var nextContext = getChildHostContextProd(context.context, type);
-          type = updatedAncestorInfoDev(context.ancestorInfo, type);
+          var nextContext = getChildHostContextProd(stateHook.context, type);
+          type = updatedAncestorInfoDev(stateHook.ancestorInfo, type);
           nextContext = { context: nextContext, ancestorInfo: type };
-          context !== nextContext &&
+          stateHook !== nextContext &&
             (push(contextFiberStackCursor, fiber, fiber),
             push(contextStackCursor, nextContext, fiber));
         }
@@ -2539,7 +2720,23 @@ var __morbis_feature = (() => {
                       } catch (x$0) {
                         control = x$0;
                       }
-                      fn.call(Fake.prototype);
+                      Fake = false;
+                      try {
+                        var prevProps = Object.getOwnPropertyDescriptor(fn.prototype, 'props');
+                        Object.defineProperty(fn.prototype, 'props', {
+                          configurable: true,
+                          set: function () {
+                            throw Error();
+                          },
+                        });
+                        Fake = true;
+                        new fn();
+                      } finally {
+                        Fake &&
+                          (void 0 !== prevProps
+                            ? Object.defineProperty(fn.prototype, 'props', prevProps)
+                            : delete fn.prototype.props);
+                      }
                     }
                   } else {
                     try {
@@ -2658,6 +2855,8 @@ var __morbis_feature = (() => {
               return describeNativeComponentFrame(fiber.type, true);
             case 31:
               return describeBuiltInComponentFrame('Activity');
+            case 30:
+              return describeBuiltInComponentFrame('ViewTransition');
             default:
               return '';
           }
@@ -2734,6 +2933,8 @@ var __morbis_feature = (() => {
                 info += describeBuiltInComponentFrame('Activity');
                 break;
               case 30:
+                info += describeBuiltInComponentFrame('ViewTransition');
+                break;
               case 0:
               case 15:
               case 1:
@@ -2900,7 +3101,7 @@ var __morbis_feature = (() => {
             case 32768:
             case 65536:
             case 131072:
-              return lanes & 261888;
+              return lanes & -lanes;
             case 262144:
             case 524288:
             case 1048576:
@@ -2972,6 +3173,21 @@ var __morbis_feature = (() => {
           return (
             0 === (root2.pendingLanes & ~(root2.suspendedLanes & ~root2.pingedLanes) & renderLanes2)
           );
+        }
+        function getEntangledLanes(root2, renderLanes2) {
+          0 !== (renderLanes2 & 8) && (renderLanes2 |= renderLanes2 & 32);
+          var allEntangledLanes = root2.entangledLanes;
+          if (0 !== allEntangledLanes)
+            for (
+              root2 = root2.entanglements, allEntangledLanes &= renderLanes2;
+              0 < allEntangledLanes;
+            ) {
+              var index2 = 31 - clz32(allEntangledLanes),
+                lane = 1 << index2;
+              renderLanes2 |= root2[index2];
+              allEntangledLanes &= ~lane;
+            }
+          return renderLanes2;
         }
         function computeExpirationTime(lane, currentTime) {
           switch (lane) {
@@ -3196,13 +3412,12 @@ var __morbis_feature = (() => {
         function detachDeletedInstance(node) {
           delete node[internalInstanceKey];
           delete node[internalPropsKey];
-          delete node[internalEventHandlersKey];
           delete node[internalEventHandlerListenersKey];
           delete node[internalEventHandlesSetKey];
         }
         function getClosestInstanceFromNode(targetNode) {
-          var targetInst = targetNode[internalInstanceKey];
-          if (targetInst) return targetInst;
+          var targetInst;
+          if ((targetInst = targetNode[internalInstanceKey])) return targetInst;
           for (var parentNode = targetNode.parentNode; parentNode;) {
             if (
               (targetInst =
@@ -3255,6 +3470,9 @@ var __morbis_feature = (() => {
         function markNodeAsHoistable(node) {
           node[internalHoistableMarker] = true;
         }
+        function clearPendingLoadOnNode(node) {
+          node[internalLoadPendingKey] = void 0;
+        }
         function registerTwoPhaseEvent(registrationName, dependencies) {
           registerDirectEvent(registrationName, dependencies);
           registerDirectEvent(registrationName + 'Capture', dependencies);
@@ -3304,6 +3522,11 @@ var __morbis_feature = (() => {
           console.error('Invalid attribute name: `%s`', attributeName);
           return false;
         }
+        function pushMutationContext() {
+          var prev = viewTransitionMutationContext;
+          viewTransitionMutationContext = false;
+          return prev;
+        }
         function getValueForAttributeOnCustomComponent(node, name, expected) {
           if (isAttributeNameSafe(name)) {
             if (!node.hasAttribute(name)) {
@@ -3318,7 +3541,7 @@ var __morbis_feature = (() => {
               }
               return void 0 === expected ? void 0 : null;
             }
-            node = node.getAttribute(name);
+            node = 'nonce' === name.toLowerCase() ? node.nonce : node.getAttribute(name);
             if ('' === node && true === expected) return true;
             checkAttributeStringCoercion(expected, name);
             return node === '' + expected ? expected : node;
@@ -3342,7 +3565,7 @@ var __morbis_feature = (() => {
                   }
               }
               checkAttributeStringCoercion(value, name);
-              node.setAttribute(name, '' + value);
+              node.setAttribute(name, value);
             }
         }
         function setValueForKnownAttribute(node, name, value) {
@@ -3357,7 +3580,7 @@ var __morbis_feature = (() => {
                 return;
             }
             checkAttributeStringCoercion(value, name);
-            node.setAttribute(name, '' + value);
+            node.setAttribute(name, value);
           }
         }
         function setValueForNamespacedAttribute(node, namespace, name, value) {
@@ -3372,7 +3595,7 @@ var __morbis_feature = (() => {
                 return;
             }
             checkAttributeStringCoercion(value, name);
-            node.setAttributeNS(namespace, name, '' + value);
+            node.setAttributeNS(namespace, name, value);
           }
         }
         function getToStringValue(value) {
@@ -3452,15 +3675,6 @@ var __morbis_feature = (() => {
           node = value;
           return node !== lastValue ? (tracker.setValue(node), true) : false;
         }
-        function getActiveElement2(doc) {
-          doc = doc || ('undefined' !== typeof document ? document : void 0);
-          if ('undefined' === typeof doc) return null;
-          try {
-            return doc.activeElement || doc.body;
-          } catch (e) {
-            return doc.body;
-          }
-        }
         function escapeSelectorAttributeValueInsideDoubleQuotes(value) {
           return value.replace(escapeSelectorAttributeValueInsideDoubleQuotesRegex, function (ch) {
             return '\\' + ch.charCodeAt(0).toString(16) + ' ';
@@ -3512,9 +3726,11 @@ var __morbis_feature = (() => {
                 (element.value = '' + getToStringValue(value));
           else ('submit' !== type && 'reset' !== type) || element.removeAttribute('value');
           null != value
-            ? setDefaultValue(element, type, getToStringValue(value))
+            ? 'number' === type && element.value == value
+              ? setDefaultValue(element, getToStringValue(element.value))
+              : setDefaultValue(element, getToStringValue(value))
             : null != defaultValue
-              ? setDefaultValue(element, type, getToStringValue(defaultValue))
+              ? setDefaultValue(element, getToStringValue(defaultValue))
               : null != lastDefaultValue && element.removeAttribute('value');
           null == checked && null != defaultChecked && (element.defaultChecked = !!defaultChecked);
           null != checked &&
@@ -3567,15 +3783,13 @@ var __morbis_feature = (() => {
             (checkAttributeStringCoercion(name, 'name'), (element.name = name));
           track(element);
         }
-        function setDefaultValue(node, type, value) {
-          ('number' === type && getActiveElement2(node.ownerDocument) === node) ||
-            node.defaultValue === '' + value ||
-            (node.defaultValue = '' + value);
+        function setDefaultValue(node, value) {
+          node.defaultValue !== '' + value && (node.defaultValue = '' + value);
         }
         function validateOptionProps(element, props) {
           null == props.value &&
             ('object' === typeof props.children && null !== props.children
-              ? React32.Children.forEach(props.children, function (child) {
+              ? React33.Children.forEach(props.children, function (child) {
                   null == child ||
                     'string' === typeof child ||
                     'number' === typeof child ||
@@ -4130,19 +4344,6 @@ var __morbis_feature = (() => {
         }
         function isTagValidWithParent(tag, parentTag, implicitRootScope) {
           switch (parentTag) {
-            case 'select':
-              return (
-                'hr' === tag ||
-                'option' === tag ||
-                'optgroup' === tag ||
-                'script' === tag ||
-                'template' === tag ||
-                '#text' === tag
-              );
-            case 'optgroup':
-              return 'option' === tag || '#text' === tag;
-            case 'option':
-              return '#text' === tag;
             case 'tr':
               return (
                 'th' === tag ||
@@ -4211,6 +4412,8 @@ var __morbis_feature = (() => {
             case 'caption':
             case 'col':
             case 'colgroup':
+            case 'input':
+              return 'select' !== parentTag;
             case 'frameset':
             case 'frame':
             case 'tbody':
@@ -4526,12 +4729,14 @@ var __morbis_feature = (() => {
                   ? node.setProperty(styleName, '')
                   : 'float' === styleName
                     ? (node.cssFloat = '')
-                    : (node[styleName] = ''));
+                    : (node[styleName] = ''),
+                (viewTransitionMutationContext = true));
             for (var _styleName in styles)
               ((_key2 = styles[_styleName]),
                 styles.hasOwnProperty(_styleName) &&
                   prevStyles[_styleName] !== _key2 &&
-                  setValueForStyle(node, _styleName, _key2));
+                  (setValueForStyle(node, _styleName, _key2),
+                  (viewTransitionMutationContext = true)));
           } else
             for (expandedUpdates in styles)
               styles.hasOwnProperty(expandedUpdates) &&
@@ -4742,6 +4947,7 @@ var __morbis_feature = (() => {
                 case 'async':
                 case 'autoPlay':
                 case 'controls':
+                case 'credentialless':
                 case 'default':
                 case 'defer':
                 case 'disabled':
@@ -4802,6 +5008,7 @@ var __morbis_feature = (() => {
                   case 'async':
                   case 'autoPlay':
                   case 'controls':
+                  case 'credentialless':
                   case 'default':
                   case 'defer':
                   case 'disabled':
@@ -5260,6 +5467,15 @@ var __morbis_feature = (() => {
           }
           return true;
         }
+        function getActiveElement2(doc) {
+          doc = doc || ('undefined' !== typeof document ? document : void 0);
+          if ('undefined' === typeof doc) return null;
+          try {
+            return doc.activeElement || doc.body;
+          } catch (e$2) {
+            return doc.body;
+          }
+        }
         function getLeafNode(node) {
           for (; node && node.firstChild;) node = node.firstChild;
           return node;
@@ -5396,8 +5612,41 @@ var __morbis_feature = (() => {
           topLevelEventsToReactNames.set(domEventName, reactName);
           registerTwoPhaseEvent(reactName, [domEventName]);
         }
+        function getViewTransitionName(props, instance) {
+          if (null != props.name && 'auto' !== props.name) return props.name;
+          if (null !== instance.autoName) return instance.autoName;
+          props = pendingEffectsRoot.identifierPrefix;
+          var globalClientId = globalClientIdCounter$1++;
+          props = '_' + props + 't_' + globalClientId.toString(32) + '_';
+          return (instance.autoName = props);
+        }
+        function getClassNameByType(classByType) {
+          if (null == classByType || 'string' === typeof classByType) return classByType;
+          var className = null,
+            activeTypes = pendingTransitionTypes;
+          if (null !== activeTypes)
+            for (var i = 0; i < activeTypes.length; i++) {
+              var match = classByType[activeTypes[i]];
+              if (null != match) {
+                if ('none' === match) return 'none';
+                className = null == className ? match : className + (' ' + match);
+              }
+            }
+          return null == className ? classByType.default : className;
+        }
+        function getViewTransitionClassName(defaultClass, eventClass) {
+          defaultClass = getClassNameByType(defaultClass);
+          eventClass = getClassNameByType(eventClass);
+          return null == eventClass
+            ? 'auto' === defaultClass
+              ? null
+              : defaultClass
+            : 'auto' === eventClass
+              ? null
+              : eventClass;
+        }
         function getArrayKind(array) {
-          for (var kind = EMPTY_ARRAY, i = 0; i < array.length; i++) {
+          for (var kind = EMPTY_ARRAY, i = 0; i < array.length && i < OBJECT_WIDTH_LIMIT; i++) {
             var value = array[i];
             if ('object' === typeof value && null !== value)
               if (isArrayImpl(value) && 2 === value.length && 'string' === typeof value[0]) {
@@ -5408,7 +5657,8 @@ var __morbis_feature = (() => {
               if (
                 'function' === typeof value ||
                 ('string' === typeof value && 50 < value.length) ||
-                (kind !== EMPTY_ARRAY && kind !== PRIMITIVE_ARRAY)
+                (kind !== EMPTY_ARRAY && kind !== PRIMITIVE_ARRAY) ||
+                'bigint' === typeof value
               )
                 return COMPLEX_ARRAY;
               kind = PRIMITIVE_ARRAY;
@@ -5417,10 +5667,33 @@ var __morbis_feature = (() => {
           return kind;
         }
         function addObjectToProperties(object, properties, indent, prefix2) {
-          for (var key in object)
-            hasOwnProperty.call(object, key) &&
-              '_' !== key[0] &&
-              addValueToProperties(key, object[key], properties, indent, prefix2);
+          if (!ArrayBuffer.isView(object)) {
+            var addedProperties = 0,
+              key;
+            for (key in object)
+              if (
+                hasOwnProperty.call(object, key) &&
+                '_' !== key[0] &&
+                (addedProperties++,
+                addValueToProperties(key, object[key], properties, indent, prefix2),
+                addedProperties >= OBJECT_WIDTH_LIMIT)
+              ) {
+                properties.push([
+                  prefix2 +
+                    '\xA0\xA0'.repeat(indent) +
+                    'Only ' +
+                    OBJECT_WIDTH_LIMIT +
+                    ' properties are shown. React will not log more properties of this object.',
+                  '',
+                ]);
+                break;
+              }
+          }
+        }
+        function readReactElementTypeof(value) {
+          return '$$typeof' in value && hasOwnProperty.call(value, '$$typeof')
+            ? value.$$typeof
+            : void 0;
         }
         function addValueToProperties(propertyName, value, properties, indent, prefix2) {
           switch (typeof value) {
@@ -5429,7 +5702,7 @@ var __morbis_feature = (() => {
                 value = 'null';
                 break;
               } else {
-                if (value.$$typeof === REACT_ELEMENT_TYPE) {
+                if (readReactElementTypeof(value) === REACT_ELEMENT_TYPE) {
                   var typeName2 = getComponentNameFromType(value.type) || '\u2026',
                     key = value.key;
                   value = value.props;
@@ -5452,35 +5725,53 @@ var __morbis_feature = (() => {
                   ]);
                   null !== key && addValueToProperties('key', key, properties, indent + 1, prefix2);
                   propertyName = false;
+                  key = 0;
                   for (var propKey in value)
-                    'children' === propKey
-                      ? null != value.children &&
-                        (!isArrayImpl(value.children) || 0 < value.children.length) &&
-                        (propertyName = true)
-                      : hasOwnProperty.call(value, propKey) &&
-                        '_' !== propKey[0] &&
-                        addValueToProperties(
-                          propKey,
-                          value[propKey],
-                          properties,
-                          indent + 1,
-                          prefix2,
-                        );
+                    if (
+                      (key++,
+                      'children' === propKey
+                        ? null != value.children &&
+                          (!isArrayImpl(value.children) || 0 < value.children.length) &&
+                          (propertyName = true)
+                        : hasOwnProperty.call(value, propKey) &&
+                          '_' !== propKey[0] &&
+                          addValueToProperties(
+                            propKey,
+                            value[propKey],
+                            properties,
+                            indent + 1,
+                            prefix2,
+                          ),
+                      key >= OBJECT_WIDTH_LIMIT)
+                    )
+                      break;
                   properties.push(['', propertyName ? '>\u2026</' + typeName2 + '>' : '/>']);
                   return;
                 }
                 typeName2 = Object.prototype.toString.call(value);
                 typeName2 = typeName2.slice(8, typeName2.length - 1);
+                if (ArrayBuffer.isView(value)) {
+                  value = value.length;
+                  value = 'number' === typeof value ? typeName2 + '(' + value + ')' : typeName2;
+                  break;
+                }
                 if ('Array' === typeName2) {
                   if (
-                    ((propKey = getArrayKind(value)),
-                    propKey === PRIMITIVE_ARRAY || propKey === EMPTY_ARRAY)
+                    ((propKey = value.length > OBJECT_WIDTH_LIMIT),
+                    (key = getArrayKind(value)),
+                    key === PRIMITIVE_ARRAY || key === EMPTY_ARRAY)
                   ) {
-                    value = JSON.stringify(value);
+                    value = JSON.stringify(
+                      propKey ? value.slice(0, OBJECT_WIDTH_LIMIT).concat('\u2026') : value,
+                    );
                     break;
-                  } else if (propKey === ENTRIES_ARRAY) {
+                  } else if (key === ENTRIES_ARRAY) {
                     properties.push([prefix2 + '\xA0\xA0'.repeat(indent) + propertyName, '']);
-                    for (propertyName = 0; propertyName < value.length; propertyName++)
+                    for (
+                      propertyName = 0;
+                      propertyName < value.length && propertyName < OBJECT_WIDTH_LIMIT;
+                      propertyName++
+                    )
                       ((typeName2 = value[propertyName]),
                         addValueToProperties(
                           typeName2[0],
@@ -5489,6 +5780,14 @@ var __morbis_feature = (() => {
                           indent + 1,
                           prefix2,
                         ));
+                    propKey &&
+                      addValueToProperties(
+                        OBJECT_WIDTH_LIMIT.toString(),
+                        '\u2026',
+                        properties,
+                        indent + 1,
+                        prefix2,
+                      );
                     return;
                   }
                 }
@@ -5528,10 +5827,14 @@ var __morbis_feature = (() => {
                 return;
               }
             case 'function':
-              value = '' === value.name ? '() => {}' : value.name + '() {}';
+              value = value.name;
+              value = '' === value || 'string' !== typeof value ? '() => {}' : value + '() {}';
               break;
             case 'string':
-              value = value === OMITTED_PROP_ERROR ? '\u2026' : JSON.stringify(value);
+              value =
+                value === OMITTED_PROP_ERROR
+                  ? '\u2026'
+                  : JSON.stringify(1024 <= value.length ? value.slice(0, 1023) + '\u2026' : value);
               break;
             case 'undefined':
               value = 'undefined';
@@ -5545,89 +5848,116 @@ var __morbis_feature = (() => {
           properties.push([prefix2 + '\xA0\xA0'.repeat(indent) + propertyName, value]);
         }
         function addObjectDiffToProperties(prev, next, properties, indent) {
-          var isDeeplyEqual = true;
-          for (key in prev)
+          var isDeeplyEqual = true,
+            prevPropertiesChecked = 0;
+          for (key in prev) {
+            if (prevPropertiesChecked > OBJECT_WIDTH_LIMIT) {
+              properties.push([
+                'Previous object has more than ' +
+                  OBJECT_WIDTH_LIMIT +
+                  ' properties. React will not attempt to diff objects with too many properties.',
+                '',
+              ]);
+              isDeeplyEqual = false;
+              break;
+            }
             key in next ||
               (properties.push([REMOVED + '\xA0\xA0'.repeat(indent) + key, '\u2026']),
               (isDeeplyEqual = false));
-          for (var _key in next)
+            prevPropertiesChecked++;
+          }
+          prevPropertiesChecked = 0;
+          for (var _key in next) {
+            if (prevPropertiesChecked > OBJECT_WIDTH_LIMIT) {
+              properties.push([
+                'Next object has more than ' +
+                  OBJECT_WIDTH_LIMIT +
+                  ' properties. React will not attempt to diff objects with too many properties.',
+                '',
+              ]);
+              isDeeplyEqual = false;
+              break;
+            }
             if (_key in prev) {
               var key = prev[_key];
               var nextValue = next[_key];
               if (key !== nextValue) {
-                if (0 === indent && 'children' === _key)
-                  ((isDeeplyEqual = '\xA0\xA0'.repeat(indent) + _key),
-                    properties.push(
-                      [REMOVED + isDeeplyEqual, '\u2026'],
-                      [ADDED + isDeeplyEqual, '\u2026'],
-                    ));
-                else {
-                  if (!(3 <= indent)) {
-                    if (
-                      'object' === typeof key &&
-                      'object' === typeof nextValue &&
-                      null !== key &&
-                      null !== nextValue &&
-                      key.$$typeof === nextValue.$$typeof
-                    )
-                      if (nextValue.$$typeof === REACT_ELEMENT_TYPE) {
-                        if (key.type === nextValue.type && key.key === nextValue.key) {
-                          key = getComponentNameFromType(nextValue.type) || '\u2026';
-                          isDeeplyEqual = '\xA0\xA0'.repeat(indent) + _key;
-                          key = '<' + key + ' \u2026 />';
-                          properties.push(
-                            [REMOVED + isDeeplyEqual, key],
-                            [ADDED + isDeeplyEqual, key],
-                          );
-                          isDeeplyEqual = false;
-                          continue;
-                        }
-                      } else {
-                        var prevKind = Object.prototype.toString.call(key),
-                          nextKind = Object.prototype.toString.call(nextValue);
-                        if (
-                          prevKind === nextKind &&
-                          ('[object Object]' === nextKind || '[object Array]' === nextKind)
-                        ) {
-                          prevKind = [
-                            UNCHANGED + '\xA0\xA0'.repeat(indent) + _key,
-                            '[object Array]' === nextKind ? 'Array' : '',
-                          ];
-                          properties.push(prevKind);
-                          nextKind = properties.length;
-                          addObjectDiffToProperties(key, nextValue, properties, indent + 1)
-                            ? nextKind === properties.length &&
-                              (prevKind[1] =
-                                'Referentially unequal but deeply equal objects. Consider memoization.')
-                            : (isDeeplyEqual = false);
-                          continue;
-                        }
-                      }
-                    else if (
-                      'function' === typeof key &&
-                      'function' === typeof nextValue &&
-                      key.name === nextValue.name &&
-                      key.length === nextValue.length &&
-                      ((prevKind = Function.prototype.toString.call(key)),
-                      (nextKind = Function.prototype.toString.call(nextValue)),
-                      prevKind === nextKind)
-                    ) {
-                      key = '' === nextValue.name ? '() => {}' : nextValue.name + '() {}';
-                      properties.push([
-                        UNCHANGED + '\xA0\xA0'.repeat(indent) + _key,
-                        key + ' Referentially unequal function closure. Consider memoization.',
-                      ]);
-                      continue;
-                    }
-                  }
-                  addValueToProperties(_key, key, properties, indent, REMOVED);
-                  addValueToProperties(_key, nextValue, properties, indent, ADDED);
+                if (0 === indent && 'children' === _key) {
+                  isDeeplyEqual = '\xA0\xA0'.repeat(indent) + _key;
+                  properties.push(
+                    [REMOVED + isDeeplyEqual, '\u2026'],
+                    [ADDED + isDeeplyEqual, '\u2026'],
+                  );
+                  isDeeplyEqual = false;
+                  continue;
                 }
+                if (!(3 <= indent)) {
+                  if (
+                    'object' === typeof key &&
+                    'object' === typeof nextValue &&
+                    null !== key &&
+                    null !== nextValue &&
+                    readReactElementTypeof(key) === readReactElementTypeof(nextValue)
+                  )
+                    if (readReactElementTypeof(nextValue) === REACT_ELEMENT_TYPE) {
+                      if (key.type === nextValue.type && key.key === nextValue.key) {
+                        key = getComponentNameFromType(nextValue.type) || '\u2026';
+                        isDeeplyEqual = '\xA0\xA0'.repeat(indent) + _key;
+                        key = '<' + key + ' \u2026 />';
+                        properties.push(
+                          [REMOVED + isDeeplyEqual, key],
+                          [ADDED + isDeeplyEqual, key],
+                        );
+                        isDeeplyEqual = false;
+                        continue;
+                      }
+                    } else {
+                      var prevKind = Object.prototype.toString.call(key),
+                        nextKind = Object.prototype.toString.call(nextValue);
+                      if (
+                        prevKind === nextKind &&
+                        ('[object Object]' === nextKind || '[object Array]' === nextKind)
+                      ) {
+                        prevKind = [
+                          UNCHANGED + '\xA0\xA0'.repeat(indent) + _key,
+                          '[object Array]' === nextKind ? 'Array' : '',
+                        ];
+                        properties.push(prevKind);
+                        nextKind = properties.length;
+                        addObjectDiffToProperties(key, nextValue, properties, indent + 1)
+                          ? nextKind === properties.length &&
+                            (prevKind[1] =
+                              'Referentially unequal but deeply equal objects. Consider memoization.')
+                          : (isDeeplyEqual = false);
+                        continue;
+                      }
+                    }
+                  else if (
+                    'function' === typeof key &&
+                    'function' === typeof nextValue &&
+                    key.name === nextValue.name &&
+                    key.length === nextValue.length &&
+                    ((prevKind = Function.prototype.toString.call(key)),
+                    (nextKind = Function.prototype.toString.call(nextValue)),
+                    prevKind === nextKind)
+                  ) {
+                    key = '' === nextValue.name ? '() => {}' : nextValue.name + '() {}';
+                    properties.push([
+                      UNCHANGED + '\xA0\xA0'.repeat(indent) + _key,
+                      key + ' Referentially unequal function closure. Consider memoization.',
+                    ]);
+                    continue;
+                  }
+                }
+                addValueToProperties(_key, key, properties, indent, REMOVED);
+                addValueToProperties(_key, nextValue, properties, indent, ADDED);
                 isDeeplyEqual = false;
               }
             } else
               (properties.push([ADDED + '\xA0\xA0'.repeat(indent) + _key, '\u2026']),
                 (isDeeplyEqual = false));
+            prevPropertiesChecked++;
+          }
           return isDeeplyEqual;
         }
         function setCurrentTrackFromLanes(lanes) {
@@ -5653,7 +5983,8 @@ var __morbis_feature = (() => {
             (reusableComponentDevToolDetails.properties = null),
             (fiber = fiber._debugTask)
               ? fiber.run(performance.measure.bind(performance, trigger, reusableComponentOptions))
-              : performance.measure(trigger, reusableComponentOptions));
+              : performance.measure(trigger, reusableComponentOptions),
+            performance.clearMeasures(trigger));
         }
         function logComponentReappeared(fiber, startTime, endTime) {
           logComponentTrigger(fiber, startTime, endTime, 'Reconnect');
@@ -5666,7 +5997,7 @@ var __morbis_feature = (() => {
             if (null === alternate || alternate.child !== fiber.child)
               for (var child = fiber.child; null !== child; child = child.sibling)
                 selfTime -= child.actualDuration;
-            wasHydrated =
+            selfTime =
               0.5 > selfTime
                 ? wasHydrated
                   ? 'tertiary-light'
@@ -5681,35 +6012,53 @@ var __morbis_feature = (() => {
                       : 'primary-dark'
                     : 'error';
             var props = fiber.memoizedProps;
-            selfTime = fiber._debugTask;
+            wasHydrated = fiber._debugTask;
             null !== props && null !== alternate && alternate.memoizedProps !== props
-              ? ((child = [resuableChangedPropsEntry]),
+              ? ((child = [reusableChangedPropsEntry]),
                 (props = addObjectDiffToProperties(alternate.memoizedProps, props, child, 0)),
-                1 < child.length &&
-                  (props &&
-                  !alreadyWarnedForDeepEquality &&
-                  0 === (alternate.lanes & committedLanes) &&
-                  100 < fiber.actualDuration
-                    ? ((alreadyWarnedForDeepEquality = true),
-                      (child[0] = reusableDeeplyEqualPropsEntry),
-                      (reusableComponentDevToolDetails.color = 'warning'),
-                      (reusableComponentDevToolDetails.tooltipText = DEEP_EQUALITY_WARNING))
-                    : ((reusableComponentDevToolDetails.color = wasHydrated),
-                      (reusableComponentDevToolDetails.tooltipText = name)),
-                  (reusableComponentDevToolDetails.properties = child),
-                  (reusableComponentOptions.start = startTime),
-                  (reusableComponentOptions.end = endTime),
-                  null != selfTime
-                    ? selfTime.run(
-                        performance.measure.bind(
-                          performance,
-                          '\u200B' + name,
-                          reusableComponentOptions,
+                1 < child.length
+                  ? (props &&
+                    !alreadyWarnedForDeepEquality &&
+                    0 === (alternate.lanes & committedLanes) &&
+                    100 < fiber.actualDuration
+                      ? ((alreadyWarnedForDeepEquality = true),
+                        (child[0] = reusableDeeplyEqualPropsEntry),
+                        (reusableComponentDevToolDetails.color = 'warning'),
+                        (reusableComponentDevToolDetails.tooltipText = DEEP_EQUALITY_WARNING))
+                      : ((reusableComponentDevToolDetails.color = selfTime),
+                        (reusableComponentDevToolDetails.tooltipText = name)),
+                    (reusableComponentDevToolDetails.properties = child),
+                    (reusableComponentOptions.start = startTime),
+                    (reusableComponentOptions.end = endTime),
+                    (fiber = '\u200B' + name),
+                    null != wasHydrated
+                      ? wasHydrated.run(
+                          performance.measure.bind(performance, fiber, reusableComponentOptions),
+                        )
+                      : performance.measure(fiber, reusableComponentOptions),
+                    performance.clearMeasures(fiber))
+                  : null != wasHydrated
+                    ? wasHydrated.run(
+                        console.timeStamp.bind(
+                          console,
+                          name,
+                          startTime,
+                          endTime,
+                          COMPONENTS_TRACK,
+                          void 0,
+                          selfTime,
                         ),
                       )
-                    : performance.measure('\u200B' + name, reusableComponentOptions)))
-              : null != selfTime
-                ? selfTime.run(
+                    : console.timeStamp(
+                        name,
+                        startTime,
+                        endTime,
+                        COMPONENTS_TRACK,
+                        void 0,
+                        selfTime,
+                      ))
+              : null != wasHydrated
+                ? wasHydrated.run(
                     console.timeStamp.bind(
                       console,
                       name,
@@ -5717,17 +6066,10 @@ var __morbis_feature = (() => {
                       endTime,
                       COMPONENTS_TRACK,
                       void 0,
-                      wasHydrated,
+                      selfTime,
                     ),
                   )
-                : console.timeStamp(
-                    name,
-                    startTime,
-                    endTime,
-                    COMPONENTS_TRACK,
-                    void 0,
-                    wasHydrated,
-                  );
+                : console.timeStamp(name, startTime, endTime, COMPONENTS_TRACK, void 0, selfTime);
           }
         }
         function logComponentErrored(fiber, startTime, endTime, errors) {
@@ -5766,9 +6108,11 @@ var __morbis_feature = (() => {
                   },
                 },
               };
+              name = '\u200B' + name;
               debugTask
-                ? debugTask.run(performance.measure.bind(performance, '\u200B' + name, fiber))
-                : performance.measure('\u200B' + name, fiber);
+                ? debugTask.run(performance.measure.bind(performance, name, fiber))
+                : performance.measure(name, fiber);
+              performance.clearMeasures(name);
             }
           }
         }
@@ -5802,9 +6146,12 @@ var __morbis_feature = (() => {
                     },
                   },
                 };
-                (fiber = fiber._debugTask)
-                  ? fiber.run(performance.measure.bind(performance, '\u200B' + name, startTime))
-                  : performance.measure('\u200B' + name, startTime);
+                fiber = fiber._debugTask;
+                endTime = '\u200B' + name;
+                fiber
+                  ? fiber.run(performance.measure.bind(performance, endTime, startTime))
+                  : performance.measure(endTime, startTime);
+                performance.clearMeasures(endTime);
               }
             }
           } else
@@ -5832,37 +6179,6 @@ var __morbis_feature = (() => {
                       ),
                     )
                   : console.timeStamp(name, startTime, endTime, COMPONENTS_TRACK, void 0, errors)));
-        }
-        function logRenderPhase(startTime, endTime, lanes, debugTask) {
-          if (supportsUserTiming && !(endTime <= startTime)) {
-            var color = (lanes & 738197653) === lanes ? 'tertiary-dark' : 'primary-dark';
-            lanes =
-              (lanes & 536870912) === lanes
-                ? 'Prepared'
-                : (lanes & 201326741) === lanes
-                  ? 'Hydrated'
-                  : 'Render';
-            debugTask
-              ? debugTask.run(
-                  console.timeStamp.bind(
-                    console,
-                    lanes,
-                    startTime,
-                    endTime,
-                    currentTrack,
-                    LANES_TRACK_GROUP,
-                    color,
-                  ),
-                )
-              : console.timeStamp(
-                  lanes,
-                  startTime,
-                  endTime,
-                  currentTrack,
-                  LANES_TRACK_GROUP,
-                  color,
-                );
-          }
         }
         function logSuspendedRenderPhase(startTime, endTime, lanes, debugTask) {
           !supportsUserTiming ||
@@ -5913,43 +6229,6 @@ var __morbis_feature = (() => {
                   LANES_TRACK_GROUP,
                   lanes,
                 ));
-        }
-        function logRecoveredRenderPhase(
-          startTime,
-          endTime,
-          lanes,
-          recoverableErrors,
-          hydrationFailed,
-          debugTask,
-        ) {
-          if (supportsUserTiming && !(endTime <= startTime)) {
-            lanes = [];
-            for (var i = 0; i < recoverableErrors.length; i++) {
-              var error = recoverableErrors[i].value;
-              lanes.push([
-                'Recoverable Error',
-                'object' === typeof error && null !== error && 'string' === typeof error.message
-                  ? String(error.message)
-                  : String(error),
-              ]);
-            }
-            startTime = {
-              start: startTime,
-              end: endTime,
-              detail: {
-                devtools: {
-                  color: 'primary-dark',
-                  track: currentTrack,
-                  trackGroup: LANES_TRACK_GROUP,
-                  tooltipText: hydrationFailed ? 'Hydration Failed' : 'Recovered after Error',
-                  properties: lanes,
-                },
-              },
-            };
-            debugTask
-              ? debugTask.run(performance.measure.bind(performance, 'Recovered', startTime))
-              : performance.measure('Recovered', startTime);
-          }
         }
         function logErroredRenderPhase(startTime, endTime, lanes, debugTask) {
           !supportsUserTiming ||
@@ -6026,7 +6305,34 @@ var __morbis_feature = (() => {
             debugTask
               ? debugTask.run(performance.measure.bind(performance, 'Errored', startTime))
               : performance.measure('Errored', startTime);
+            performance.clearMeasures('Errored');
           }
+        }
+        function logCommitPhase(startTime, endTime, errors, abortedViewTransition, debugTask) {
+          null !== errors
+            ? logCommitErrored(startTime, endTime, errors, false, debugTask)
+            : !supportsUserTiming ||
+              endTime <= startTime ||
+              (debugTask
+                ? debugTask.run(
+                    console.timeStamp.bind(
+                      console,
+                      abortedViewTransition ? 'Commit Interrupted View Transition' : 'Commit',
+                      startTime,
+                      endTime,
+                      currentTrack,
+                      LANES_TRACK_GROUP,
+                      abortedViewTransition ? 'error' : 'secondary-dark',
+                    ),
+                  )
+                : console.timeStamp(
+                    abortedViewTransition ? 'Commit Interrupted View Transition' : 'Commit',
+                    startTime,
+                    endTime,
+                    currentTrack,
+                    LANES_TRACK_GROUP,
+                    abortedViewTransition ? 'error' : 'secondary-dark',
+                  ));
         }
         function logAnimatingPhase(startTime, endTime, debugTask) {
           !supportsUserTiming ||
@@ -6147,28 +6453,15 @@ var __morbis_feature = (() => {
               (parent = node.return));
           return 3 === node.tag ? node.stateNode : null;
         }
-        function resolveFunctionForHotReloading(type) {
+        function resolveTypeForHotReloading(type) {
           if (null === resolveFamily) return type;
           var family = resolveFamily(type);
           return void 0 === family ? type : family.current;
         }
-        function resolveForwardRefForHotReloading(type) {
-          if (null === resolveFamily) return type;
-          var family = resolveFamily(type);
-          return void 0 === family
-            ? null !== type &&
-              void 0 !== type &&
-              'function' === typeof type.render &&
-              ((family = resolveFunctionForHotReloading(type.render)), type.render !== family)
-              ? ((family = { $$typeof: REACT_FORWARD_REF_TYPE, render: family }),
-                void 0 !== type.displayName && (family.displayName = type.displayName),
-                family)
-              : type
-            : family.current;
-        }
         function isCompatibleFamilyForHotReloading(fiber, element) {
           if (null === resolveFamily) return false;
-          var prevType = fiber.elementType;
+          var resolve = resolveFamily,
+            prevType = fiber.elementType;
           element = element.type;
           var needsCompareFamilies = false,
             $$typeofNextType =
@@ -6197,8 +6490,7 @@ var __morbis_feature = (() => {
               return false;
           }
           return needsCompareFamilies &&
-            ((fiber = resolveFamily(prevType)),
-            void 0 !== fiber && fiber === resolveFamily(element))
+            ((fiber = resolve(prevType)), void 0 !== fiber && fiber === resolve(element))
             ? true
             : false;
         }
@@ -6214,39 +6506,58 @@ var __morbis_feature = (() => {
               alternate = _fiber.alternate,
               child = _fiber.child,
               sibling = _fiber.sibling,
-              tag = _fiber.tag;
-            _fiber = _fiber.type;
-            var candidateType = null;
+              tag = _fiber.tag,
+              type = _fiber.type,
+              elementType = _fiber.elementType,
+              candidateType = null;
+            _fiber = null;
             switch (tag) {
               case 0:
-              case 15:
               case 1:
-                candidateType = _fiber;
+                candidateType = type;
+                break;
+              case 15:
+                candidateType = type;
+                _fiber = elementType;
+                break;
+              case 14:
+                _fiber = elementType;
                 break;
               case 11:
-                candidateType = _fiber.render;
+                ((candidateType = type.render), (_fiber = elementType));
             }
             if (null === resolveFamily)
               throw Error('Expected resolveFamily to be set during hot reload.');
-            var needsRender = false;
-            _fiber = false;
+            var resolve = resolveFamily;
+            type = elementType = false;
             null !== candidateType &&
-              ((candidateType = resolveFamily(candidateType)),
+              ((candidateType = resolve(candidateType)),
               void 0 !== candidateType &&
                 (staleFamilies.has(candidateType)
-                  ? (_fiber = true)
+                  ? (type = true)
                   : updatedFamilies.has(candidateType) &&
-                    (1 === tag ? (_fiber = true) : (needsRender = true))));
+                    (1 === tag ? (type = true) : (elementType = true))));
+            type ||
+              null === _fiber ||
+              ((tag = resolve(_fiber)),
+              void 0 !== tag && staleFamilies.has(tag)
+                ? (type = true)
+                : 'object' === typeof _fiber &&
+                  _fiber.$$typeof === REACT_LAZY_TYPE2 &&
+                  ((tag = _fiber._payload),
+                  1 === tag._status &&
+                    ((tag = resolve(tag._result.default)),
+                    void 0 !== tag && staleFamilies.has(tag) && (type = true))));
             null !== failedBoundaries &&
               (failedBoundaries.has(fiber) ||
                 (null !== alternate && failedBoundaries.has(alternate))) &&
-              (_fiber = true);
-            _fiber && (fiber._debugNeedsRemount = true);
-            if (_fiber || needsRender)
+              (type = true);
+            type && (fiber._debugNeedsRemount = true);
+            if (type || elementType)
               ((alternate = enqueueConcurrentRenderForLane(fiber, 2)),
                 null !== alternate && scheduleUpdateOnFiber(alternate, fiber, 2));
             null === child ||
-              _fiber ||
+              type ||
               scheduleFibersWithFamiliesRecursively(child, updatedFamilies, staleFamilies);
             if (null === sibling) break;
             fiber = sibling;
@@ -6310,7 +6621,7 @@ var __morbis_feature = (() => {
               (workInProgress2.deletions = null),
               (workInProgress2.actualDuration = -0),
               (workInProgress2.actualStartTime = -1.1));
-          workInProgress2.flags = current2.flags & 65011712;
+          workInProgress2.flags = current2.flags & 1206910976;
           workInProgress2.childLanes = current2.childLanes;
           workInProgress2.lanes = current2.lanes;
           workInProgress2.child = current2.child;
@@ -6337,18 +6648,15 @@ var __morbis_feature = (() => {
           switch (workInProgress2.tag) {
             case 0:
             case 15:
-              workInProgress2.type = resolveFunctionForHotReloading(current2.type);
-              break;
+            case 14:
             case 1:
-              workInProgress2.type = resolveFunctionForHotReloading(current2.type);
-              break;
             case 11:
-              workInProgress2.type = resolveForwardRefForHotReloading(current2.type);
+              workInProgress2.type = resolveTypeForHotReloading(current2.type);
           }
           return workInProgress2;
         }
         function resetWorkInProgress(workInProgress2, renderLanes2) {
-          workInProgress2.flags &= 65011714;
+          workInProgress2.flags &= 1206910978;
           var current2 = workInProgress2.alternate;
           null === current2
             ? ((workInProgress2.childLanes = 0),
@@ -6385,12 +6693,10 @@ var __morbis_feature = (() => {
           return workInProgress2;
         }
         function createFiberFromTypeAndProps(type, key, pendingProps, owner, mode, lanes) {
-          var fiberTag = 0,
-            resolvedType = type;
-          if ('function' === typeof type)
-            (shouldConstruct(type) && (fiberTag = 1),
-              (resolvedType = resolveFunctionForHotReloading(resolvedType)));
-          else if ('string' === typeof type)
+          var fiberTag = 0;
+          var resolvedType = resolveTypeForHotReloading(type);
+          if ('function' === typeof resolvedType) shouldConstruct(resolvedType) && (fiberTag = 1);
+          else if ('string' === typeof resolvedType)
             ((fiberTag = getHostContext()),
               (fiberTag = isHostHoistableType(type, pendingProps, fiberTag)
                 ? 26
@@ -6398,7 +6704,7 @@ var __morbis_feature = (() => {
                   ? 27
                   : 5));
           else
-            a: switch (type) {
+            a: switch (resolvedType) {
               case REACT_ACTIVITY_TYPE:
                 return (
                   (key = createFiber(31, pendingProps, key, mode)),
@@ -6442,9 +6748,24 @@ var __morbis_feature = (() => {
                   (key.lanes = lanes),
                   key
                 );
+              case REACT_LEGACY_HIDDEN_TYPE:
+              case REACT_VIEW_TRANSITION_TYPE:
+                return (
+                  (type = mode | SuspenseyImagesMode),
+                  (key = createFiber(30, pendingProps, key, type)),
+                  (key.elementType = REACT_VIEW_TRANSITION_TYPE),
+                  (key.lanes = lanes),
+                  (key.stateNode = {
+                    autoName: null,
+                    paired: null,
+                    clones: null,
+                    ref: null,
+                  }),
+                  key
+                );
               default:
-                if ('object' === typeof type && null !== type)
-                  switch (type.$$typeof) {
+                if ('object' === typeof resolvedType && null !== resolvedType)
+                  switch (resolvedType.$$typeof) {
                     case REACT_CONTEXT_TYPE:
                       fiberTag = 10;
                       break a;
@@ -6453,7 +6774,6 @@ var __morbis_feature = (() => {
                       break a;
                     case REACT_FORWARD_REF_TYPE:
                       fiberTag = 11;
-                      resolvedType = resolveForwardRefForHotReloading(resolvedType);
                       break a;
                     case REACT_MEMO_TYPE:
                       fiberTag = 14;
@@ -6463,29 +6783,29 @@ var __morbis_feature = (() => {
                       resolvedType = null;
                       break a;
                   }
-                resolvedType = '';
+                pendingProps = '';
                 if (
                   void 0 === type ||
                   ('object' === typeof type && null !== type && 0 === Object.keys(type).length)
                 )
-                  resolvedType +=
+                  pendingProps +=
                     " You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.";
                 null === type
-                  ? (pendingProps = 'null')
+                  ? (resolvedType = 'null')
                   : isArrayImpl(type)
-                    ? (pendingProps = 'array')
+                    ? (resolvedType = 'array')
                     : void 0 !== type && type.$$typeof === REACT_ELEMENT_TYPE
-                      ? ((pendingProps =
+                      ? ((resolvedType =
                           '<' + (getComponentNameFromType(type.type) || 'Unknown') + ' />'),
-                        (resolvedType =
+                        (pendingProps =
                           ' Did you accidentally export a JSX literal instead of a component?'))
-                      : (pendingProps = typeof type);
+                      : (resolvedType = typeof type);
                 (fiberTag = owner ? getComponentNameFromOwner(owner) : null) &&
-                  (resolvedType += '\n\nCheck the render method of `' + fiberTag + '`.');
+                  (pendingProps += '\n\nCheck the render method of `' + fiberTag + '`.');
                 fiberTag = 29;
                 pendingProps = Error(
                   'Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: ' +
-                    (pendingProps + '.' + resolvedType),
+                    (resolvedType + '.' + pendingProps),
                 );
                 resolvedType = null;
             }
@@ -6955,7 +7275,17 @@ var __morbis_feature = (() => {
               null !== list && (list.lanes |= renderLanes2);
               scheduleContextWorkOnParentPath(nextFiber, renderLanes2, workInProgress2);
               nextFiber = null;
-            } else nextFiber = fiber.child;
+            } else
+              13 === fiber.tag &&
+              null !== fiber.memoizedState &&
+              null === fiber.memoizedState.dehydrated
+                ? ((fiber.lanes |= renderLanes2),
+                  (nextFiber = fiber.alternate),
+                  null !== nextFiber && (nextFiber.lanes |= renderLanes2),
+                  scheduleContextWorkOnParentPath(fiber.return, renderLanes2, workInProgress2),
+                  (nextFiber = fiber.child),
+                  (nextFiber = null !== nextFiber ? nextFiber.sibling : null))
+                : (nextFiber = fiber.child);
             if (null !== nextFiber) nextFiber.return = fiber;
             else
               for (nextFiber = fiber; null !== nextFiber;) {
@@ -7015,6 +7345,7 @@ var __morbis_feature = (() => {
               forcePropagateEntireTree,
             );
           workInProgress2.flags |= 262144;
+          return null !== current2;
         }
         function checkIfContextChanged(currentDependencies) {
           for (
@@ -7091,6 +7422,21 @@ var __morbis_feature = (() => {
             scheduleCallback$2(NormalPriority, function () {
               cache.controller.abort();
             });
+        }
+        function queueTransitionTypes(root2, transitionTypes) {
+          if (0 !== (root2.pendingLanes & 4194048)) {
+            var queued = root2.transitionTypes;
+            null === queued && (queued = root2.transitionTypes = []);
+            for (root2 = 0; root2 < transitionTypes.length; root2++) {
+              var transitionType = transitionTypes[root2];
+              -1 === queued.indexOf(transitionType) && queued.push(transitionType);
+            }
+          }
+        }
+        function claimQueuedTransitionTypes(root2) {
+          var claimed = root2.transitionTypes;
+          root2.transitionTypes = null;
+          return claimed;
         }
         function startUpdateTimerByLane(lane, method, fiber) {
           if (0 !== (lane & 127))
@@ -7261,6 +7607,7 @@ var __morbis_feature = (() => {
           if (
             0 === --currentEntangledPendingCount &&
             (-1 < transitionUpdateTime || (transitionStartTime = -1.1),
+            (entangledTransitionTypes = null),
             null !== currentEntangledListeners)
           ) {
             null !== currentEntangledActionThenable &&
@@ -7320,7 +7667,7 @@ var __morbis_feature = (() => {
           thenable = thenable.status;
           return 'fulfilled' === thenable || 'rejected' === thenable;
         }
-        function trackUsedThenable(thenableState2, thenable, index2) {
+        function trackUsedThenable(thenableState2, thenable, index2, fiber) {
           null !== ReactSharedInternals.actQueue && (ReactSharedInternals.didUsePromise = true);
           var trackedThenables = thenableState2.thenables;
           index2 = trackedThenables[index2];
@@ -7355,11 +7702,13 @@ var __morbis_feature = (() => {
             case 'fulfilled':
               return thenable.value;
             case 'rejected':
-              throw (
-                (thenableState2 = thenable.reason),
-                checkIfUseWrappedInAsyncCatch(thenableState2),
-                thenableState2
-              );
+              fiber = thenable.reason;
+              checkIfUseWrappedInAsyncCatch(fiber);
+              if (void 0 === fiber && !('reason' in thenable))
+                throw Error(
+                  "A rejected Promise was passed to React without a `reason` property. React threw a generic error from where the Promise was used to assist in identifying the problematic Promise. Make sure that instrumented Promises correctly set the `reason` property when setting `status` to `'rejected'`.",
+                );
+              throw fiber;
             default:
               if ('string' === typeof thenable.status) thenable.then(noop$1, noop$1);
               else {
@@ -7391,14 +7740,17 @@ var __morbis_feature = (() => {
                 case 'fulfilled':
                   return thenable.value;
                 case 'rejected':
-                  throw (
-                    (thenableState2 = thenable.reason),
-                    checkIfUseWrappedInAsyncCatch(thenableState2),
-                    thenableState2
-                  );
+                  throw ((fiber = thenable.reason), checkIfUseWrappedInAsyncCatch(fiber), fiber);
               }
               suspendedThenable = thenable;
               needsToResetSuspendedThenableDEV = true;
+              didIssueUseWarning ||
+                null === fiber ||
+                null !== fiber.alternate ||
+                ((lastSuspendedFiber = fiber),
+                (lastSuspendedStack = Error(
+                  'This library called use() to suspend in a previous render but did not call use() when it finished. This indicates an incorrect use of use(). Learn more: https://react.dev/warnings/conditional-use-of-use',
+                )));
               throw SuspenseException;
           }
         }
@@ -7431,6 +7783,19 @@ var __morbis_feature = (() => {
               "Hooks are not supported inside an async component. This error is often caused by accidentally adding `'use client'` to a module that was originally written for the server.",
             );
         }
+        function areSameKeyPath(a, b) {
+          return a === b
+            ? true
+            : a.tag !== b.tag ||
+                a.type !== b.type ||
+                a.key !== b.key ||
+                a.index !== b.index ||
+                (3 === a.tag && a.stateNode !== b.stateNode) ||
+                null === a.return ||
+                null === b.return
+              ? false
+              : areSameKeyPath(a.return, b.return);
+        }
         function pushDebugInfo(debugInfo) {
           var previousDebugInfo = currentDebugInfo;
           null != debugInfo &&
@@ -7452,7 +7817,7 @@ var __morbis_feature = (() => {
         function validateFragmentProps(element, fiber, returnFiber) {
           for (var keys = Object.keys(element.props), i = 0; i < keys.length; i++) {
             var key = keys[i];
-            if ('children' !== key && 'key' !== key) {
+            if ('children' !== key && 'key' !== key && 'ref' !== key) {
               null === fiber &&
                 ((fiber = createFiberFromElement(element, returnFiber.mode, 0)),
                 (fiber._debugInfo = currentDebugInfo),
@@ -7461,7 +7826,7 @@ var __morbis_feature = (() => {
                 fiber,
                 function (erroredKey) {
                   console.error(
-                    'Invalid prop `%s` supplied to `React.Fragment`. React.Fragment can only have `key` and `children` props.',
+                    'Invalid prop `%s` supplied to `React.Fragment`. React.Fragment can only have `key`, `ref`, and `children` props.',
                     erroredKey,
                   );
                 },
@@ -7475,7 +7840,7 @@ var __morbis_feature = (() => {
           var index2 = thenableIndexCounter$1;
           thenableIndexCounter$1 += 1;
           null === thenableState$1 && (thenableState$1 = createThenableState());
-          return trackUsedThenable(thenableState$1, thenable, index2);
+          return trackUsedThenable(thenableState$1, thenable, index2, null);
         }
         function coerceRef(workInProgress2, element) {
           element = element.props.ref;
@@ -7569,9 +7934,9 @@ var __morbis_feature = (() => {
           }
           function mapRemainingChildren(currentFirstChild) {
             for (var existingChildren = /* @__PURE__ */ new Map(); null !== currentFirstChild;)
-              (null !== currentFirstChild.key
-                ? existingChildren.set(currentFirstChild.key, currentFirstChild)
-                : existingChildren.set(currentFirstChild.index, currentFirstChild),
+              (null === currentFirstChild.key
+                ? existingChildren.set(currentFirstChild.index, currentFirstChild)
+                : existingChildren.set(currentFirstChild.key, currentFirstChild),
                 (currentFirstChild = currentFirstChild.sibling));
             return existingChildren;
           }
@@ -7588,15 +7953,13 @@ var __morbis_feature = (() => {
             if (null !== newIndex)
               return (
                 (newIndex = newIndex.index),
-                newIndex < lastPlacedIndex
-                  ? ((newFiber.flags |= 67108866), lastPlacedIndex)
-                  : newIndex
+                newIndex < lastPlacedIndex ? ((newFiber.flags |= 2), lastPlacedIndex) : newIndex
               );
-            newFiber.flags |= 67108866;
+            newFiber.flags |= 134217730;
             return lastPlacedIndex;
           }
           function placeSingleChild(newFiber) {
-            shouldTrackSideEffects && null === newFiber.alternate && (newFiber.flags |= 67108866);
+            shouldTrackSideEffects && null === newFiber.alternate && (newFiber.flags |= 134217730);
             return newFiber;
           }
           function updateTextNode(returnFiber, current2, textContent, lanes) {
@@ -7625,6 +7988,7 @@ var __morbis_feature = (() => {
                   lanes,
                   element.key,
                 )),
+                coerceRef(current2, element),
                 validateFragmentProps(element, current2, returnFiber),
                 current2
               );
@@ -7994,8 +8358,9 @@ var __morbis_feature = (() => {
                     knownKeys,
                   )),
                   shouldTrackSideEffects &&
-                    null !== nextOldFiber.alternate &&
-                    oldFiber.delete(null === nextOldFiber.key ? newIdx : nextOldFiber.key),
+                    ((newFiber = nextOldFiber.alternate),
+                    null !== newFiber &&
+                      oldFiber.delete(null === newFiber.key ? newIdx : newFiber.key)),
                   (currentFirstChild = placeChild(nextOldFiber, currentFirstChild, newIdx)),
                   null === previousNewFiber
                     ? (resultingFirstChild = nextOldFiber)
@@ -8069,8 +8434,8 @@ var __morbis_feature = (() => {
                 null !== nextOldFiber &&
                   ((knownKeys = warnOnInvalidKey(returnFiber, nextOldFiber, step.value, knownKeys)),
                   shouldTrackSideEffects &&
-                    null !== nextOldFiber.alternate &&
-                    oldFiber.delete(null === nextOldFiber.key ? newIdx : nextOldFiber.key),
+                    ((step = nextOldFiber.alternate),
+                    null !== step && oldFiber.delete(null === step.key ? newIdx : step.key)),
                   (currentFirstChild = placeChild(nextOldFiber, currentFirstChild, newIdx)),
                   null === previousNewFiber
                     ? (resultingFirstChild = nextOldFiber)
@@ -8088,6 +8453,7 @@ var __morbis_feature = (() => {
               null !== newChild &&
               newChild.type === REACT_FRAGMENT_TYPE &&
               null === newChild.key &&
+              void 0 === newChild.props.ref &&
               (validateFragmentProps(newChild, null, returnFiber),
               (newChild = newChild.props.children));
             if ('object' === typeof newChild && null !== newChild) {
@@ -8102,6 +8468,7 @@ var __morbis_feature = (() => {
                           if (7 === currentFirstChild.tag) {
                             deleteRemainingChildren(returnFiber, currentFirstChild.sibling);
                             lanes = useFiber(currentFirstChild, newChild.props.children);
+                            coerceRef(lanes, newChild);
                             lanes.return = returnFiber;
                             lanes._debugOwner = newChild._owner;
                             lanes._debugInfo = currentDebugInfo;
@@ -8138,6 +8505,7 @@ var __morbis_feature = (() => {
                           lanes,
                           newChild.key,
                         )),
+                        coerceRef(lanes, newChild),
                         (lanes.return = returnFiber),
                         (lanes._debugOwner = returnFiber),
                         (lanes._debugTask = returnFiber._debugTask),
@@ -8197,31 +8565,21 @@ var __morbis_feature = (() => {
                   );
               }
               if (isArrayImpl(newChild))
-                return (
-                  (prevDebugInfo = pushDebugInfo(newChild._debugInfo)),
-                  (returnFiber = reconcileChildrenArray(
-                    returnFiber,
-                    currentFirstChild,
-                    newChild,
-                    lanes,
-                  )),
-                  (currentDebugInfo = prevDebugInfo),
-                  returnFiber
-                );
+                return reconcileChildrenArray(returnFiber, currentFirstChild, newChild, lanes);
               if (getIteratorFn(newChild)) {
-                prevDebugInfo = pushDebugInfo(newChild._debugInfo);
-                key = getIteratorFn(newChild);
-                if ('function' !== typeof key)
+                prevDebugInfo = newChild;
+                newChild = getIteratorFn(prevDebugInfo);
+                if ('function' !== typeof newChild)
                   throw Error(
                     'An object is not an iterable. This error is likely caused by a bug in React. Please file an issue.',
                   );
-                var newChildren = key.call(newChild);
-                if (newChildren === newChild) {
+                key = newChild.call(prevDebugInfo);
+                if (key === prevDebugInfo) {
                   if (
                     0 !== returnFiber.tag ||
                     '[object GeneratorFunction]' !==
                       Object.prototype.toString.call(returnFiber.type) ||
-                    '[object Generator]' !== Object.prototype.toString.call(newChildren)
+                    '[object Generator]' !== Object.prototype.toString.call(key)
                   )
                     (didWarnAboutGenerators ||
                       console.error(
@@ -8229,20 +8587,13 @@ var __morbis_feature = (() => {
                       ),
                       (didWarnAboutGenerators = true));
                 } else
-                  newChild.entries !== key ||
+                  prevDebugInfo.entries !== newChild ||
                     didWarnAboutMaps ||
                     (console.error(
                       'Using Maps as children is not supported. Use an array of keyed ReactElements instead.',
                     ),
                     (didWarnAboutMaps = true));
-                returnFiber = reconcileChildrenIterator(
-                  returnFiber,
-                  currentFirstChild,
-                  newChildren,
-                  lanes,
-                );
-                currentDebugInfo = prevDebugInfo;
-                return returnFiber;
+                return reconcileChildrenIterator(returnFiber, currentFirstChild, key, lanes);
               }
               if ('function' === typeof newChild.then)
                 return (
@@ -8669,6 +9020,15 @@ var __morbis_feature = (() => {
           shellBoundary === fiber && (shellBoundary = null);
           pop(suspenseStackCursor, fiber);
         }
+        function pushSuspenseListContext(fiber, newContext) {
+          push(suspenseHandlerStackCursor, suspenseHandlerStackCursor.current, fiber);
+          push(suspenseStackCursor, newContext, fiber);
+        }
+        function popSuspenseListContext(fiber) {
+          pop(suspenseStackCursor, fiber);
+          pop(suspenseHandlerStackCursor, fiber);
+          shellBoundary === fiber && (shellBoundary = null);
+        }
         function findFirstSuspended(row) {
           for (var node = row; null !== node;) {
             if (13 === node.tag) {
@@ -8681,13 +9041,7 @@ var __morbis_feature = (() => {
                   isSuspenseInstanceFallback(state))
               )
                 return node;
-            } else if (
-              19 === node.tag &&
-              ('forwards' === node.memoizedProps.revealOrder ||
-                'backwards' === node.memoizedProps.revealOrder ||
-                'unstable_legacy-backwards' === node.memoizedProps.revealOrder ||
-                'together' === node.memoizedProps.revealOrder)
-            ) {
+            } else if (19 === node.tag && 'independent' !== node.memoizedProps.revealOrder) {
               if (0 !== (node.flags & 128)) return node;
             } else if (null !== node.child) {
               node.child.return = node;
@@ -8840,8 +9194,16 @@ var __morbis_feature = (() => {
                 _debugThenableState: thenableState,
               })
             : (workInProgress2.dependencies._debugThenableState = thenableState);
+          var thenableState$jscomp$0 = thenableState;
+          null !== lastSuspendedFiber &&
+            areSameKeyPath(lastSuspendedFiber, workInProgress2) &&
+            (null !== thenableState$jscomp$0 ||
+              null === lastSuspendedStack ||
+              didIssueUseWarning ||
+              ((didIssueUseWarning = true), console.error(lastSuspendedStack)),
+            (lastSuspendedStack = lastSuspendedFiber = null));
           ReactSharedInternals.H = ContextOnlyDispatcher;
-          var didRenderTooFewHooks = null !== currentHook && null !== currentHook.next;
+          thenableState$jscomp$0 = null !== currentHook && null !== currentHook.next;
           renderLanes = 0;
           hookTypesDev =
             currentHookNameInDev =
@@ -8851,14 +9213,14 @@ var __morbis_feature = (() => {
               null;
           hookTypesUpdateIndexDev = -1;
           null !== current2 &&
-            (current2.flags & 65011712) !== (workInProgress2.flags & 65011712) &&
+            (current2.flags & 1206910976) !== (workInProgress2.flags & 1206910976) &&
             console.error(
               'Internal React error: Expected static flag was missing. Please notify the React team.',
             );
           didScheduleRenderPhaseUpdate = false;
           thenableIndexCounter = 0;
           thenableState = null;
-          if (didRenderTooFewHooks)
+          if (thenableState$jscomp$0)
             throw Error(
               'Rendered fewer hooks than expected. This may be caused by an accidental early return statement.',
             );
@@ -8924,7 +9286,7 @@ var __morbis_feature = (() => {
           workInProgress2.updateQueue = current2.updateQueue;
           workInProgress2.flags =
             (workInProgress2.mode & StrictEffectsMode) !== NoMode
-              ? workInProgress2.flags & -402655237
+              ? workInProgress2.flags & -805308421
               : workInProgress2.flags & -2053;
           current2.lanes &= ~lanes;
         }
@@ -8998,7 +9360,7 @@ var __morbis_feature = (() => {
           var index2 = thenableIndexCounter;
           thenableIndexCounter += 1;
           null === thenableState && (thenableState = createThenableState());
-          thenable = trackUsedThenable(thenableState, thenable, index2);
+          thenable = trackUsedThenable(thenableState, thenable, index2, currentlyRenderingFiber);
           index2 = currentlyRenderingFiber;
           null === (null === workInProgressHook ? index2.memoizedState : workInProgressHook.next) &&
             ((index2 = index2.alternate),
@@ -9011,6 +9373,7 @@ var __morbis_feature = (() => {
         function use2(usable) {
           if (null !== usable && 'object' === typeof usable) {
             if ('function' === typeof usable.then) return useThenable(usable);
+            if (usable.$$typeof === REACT_RECOVERABLE_TYPE) return;
             if (usable.$$typeof === REACT_CONTEXT_TYPE) return readContext(usable);
           }
           throw Error('An unsupported type was passed to use(): ' + String(usable));
@@ -9297,18 +9660,19 @@ var __morbis_feature = (() => {
           hook = hook.queue;
           var create = subscribeToStore.bind(null, fiber, hook, subscribe);
           updateEffectImpl(2048, Passive, create, [subscribe]);
-          if (
+          subscribe =
             hook.getSnapshot !== getSnapshot ||
             cachedSnapshot ||
-            (null !== workInProgressHook && workInProgressHook.memoizedState.tag & HasEffect)
-          ) {
+            (null !== workInProgressHook &&
+              (workInProgressHook.memoizedState.tag & HasEffect) !== NoFlags);
+          pushSimpleEffect(
+            subscribe ? HasEffect | Passive : Passive,
+            { destroy: void 0 },
+            updateStoreInstance.bind(null, fiber, hook, getServerSnapshot, getSnapshot),
+            null,
+          );
+          if (subscribe) {
             fiber.flags |= 2048;
-            pushSimpleEffect(
-              HasEffect | Passive,
-              { destroy: void 0 },
-              updateStoreInstance.bind(null, fiber, hook, getServerSnapshot, getSnapshot),
-              null,
-            );
             if (null === workInProgressRoot)
               throw Error(
                 'Expected a work-in-progress root. This is a bug in React. Please file an issue.',
@@ -9424,7 +9788,8 @@ var __morbis_feature = (() => {
           return [passthrough, hook.queue.dispatch];
         }
         function dispatchActionState(fiber, actionQueue, setPendingState, setState, payload) {
-          if (isRenderPhaseUpdate(fiber)) throw Error('Cannot update form state while rendering.');
+          if (isRenderPhaseUpdate(fiber))
+            throw Error('Cannot update action state while rendering.');
           fiber = actionQueue.action;
           if (null !== fiber) {
             var actionNode = {
@@ -9459,6 +9824,7 @@ var __morbis_feature = (() => {
           if (node.isTransition) {
             var prevTransition = ReactSharedInternals.T,
               currentTransition = {};
+            currentTransition.types = null !== prevTransition ? prevTransition.types : null;
             currentTransition._updatedFibers = /* @__PURE__ */ new Set();
             ReactSharedInternals.T = currentTransition;
             try {
@@ -9492,8 +9858,8 @@ var __morbis_feature = (() => {
             try {
               ((currentTransition = action(prevState, payload)),
                 handleActionReturnValue(actionQueue, node, currentTransition));
-            } catch (error$4) {
-              onActionError(actionQueue, node, error$4);
+            } catch (error$5) {
+              onActionError(actionQueue, node, error$5);
             }
         }
         function handleActionReturnValue(actionQueue, node, returnValue) {
@@ -9723,7 +10089,7 @@ var __morbis_feature = (() => {
         }
         function mountEffect(create, deps) {
           (currentlyRenderingFiber.mode & StrictEffectsMode) !== NoMode
-            ? mountEffectImpl(276826112, Passive, create, deps)
+            ? mountEffectImpl(545261568, Passive, create, deps)
             : mountEffectImpl(8390656, Passive, create, deps);
         }
         function useEffectEventImpl(payload) {
@@ -9760,7 +10126,7 @@ var __morbis_feature = (() => {
         function mountLayoutEffect(create, deps) {
           var fiberFlags = 4194308;
           (currentlyRenderingFiber.mode & StrictEffectsMode) !== NoMode &&
-            (fiberFlags |= 134217728);
+            (fiberFlags |= 268435456);
           return mountEffectImpl(fiberFlags, Layout, create, deps);
         }
         function imperativeHandleEffect(create, ref) {
@@ -9794,7 +10160,7 @@ var __morbis_feature = (() => {
           deps = null !== deps && void 0 !== deps ? deps.concat([ref]) : null;
           var fiberFlags = 4194308;
           (currentlyRenderingFiber.mode & StrictEffectsMode) !== NoMode &&
-            (fiberFlags |= 134217728);
+            (fiberFlags |= 268435456);
           mountEffectImpl(fiberFlags, Layout, imperativeHandleEffect.bind(null, create, ref), deps);
         }
         function updateImperativeHandle(ref, create, deps) {
@@ -9885,7 +10251,7 @@ var __morbis_feature = (() => {
               hook
             );
           if (
-            0 === (renderLanes & 42) ||
+            0 === (renderLanes & 106) ||
             (0 !== (renderLanes & 1073741824) && 0 === (workInProgressRootRenderLanes & 261930))
           )
             return ((didReceiveUpdate = true), (hook.memoizedState = value));
@@ -9905,6 +10271,7 @@ var __morbis_feature = (() => {
               : ContinuousEventPriority;
           var prevTransition = ReactSharedInternals.T,
             currentTransition = {};
+          currentTransition.types = null !== prevTransition ? prevTransition.types : null;
           currentTransition._updatedFibers = /* @__PURE__ */ new Set();
           ReactSharedInternals.T = currentTransition;
           dispatchOptimisticSetState(fiber, false, queue, pendingState);
@@ -10397,9 +10764,9 @@ var __morbis_feature = (() => {
               var onUncaughtError = root2.onUncaughtError;
               onUncaughtError(error, { componentStack: errorInfo.stack });
             }
-          } catch (e$5) {
+          } catch (e$6) {
             setTimeout(function () {
-              throw e$5;
+              throw e$6;
             });
           }
         }
@@ -10412,9 +10779,9 @@ var __morbis_feature = (() => {
               componentStack: errorInfo.stack,
               errorBoundary: 1 === boundary.tag ? boundary.stateNode : null,
             });
-          } catch (e$6) {
+          } catch (e$7) {
             setTimeout(function () {
-              throw e$6;
+              throw e$7;
             });
           }
         }
@@ -10476,6 +10843,7 @@ var __morbis_feature = (() => {
               switch (sourceFiber.tag) {
                 case 31:
                 case 13:
+                case 19:
                   return (
                     null === shellBoundary
                       ? renderDidSuspendDelayIfPossible()
@@ -10530,7 +10898,11 @@ var __morbis_feature = (() => {
               (didSuspendOrErrorDEV = true),
               (returnFiber = suspenseHandlerStackCursor.current),
               null !== returnFiber
-                ? (0 === (returnFiber.flags & 65536) && (returnFiber.flags |= 256),
+                ? (19 === returnFiber.tag &&
+                    console.error(
+                      'SuspenseList should never catch while hydrating. This is a bug in React.',
+                    ),
+                  0 === (returnFiber.flags & 65536) && (returnFiber.flags |= 256),
                   (returnFiber.flags |= 65536),
                   (returnFiber.lanes = rootRenderLanes),
                   value !== HydrationMismatchException &&
@@ -10595,15 +10967,15 @@ var __morbis_feature = (() => {
                   false
                 );
               case 1:
+                returnFiber = sourceFiber.type;
+                error = sourceFiber.stateNode;
                 if (
-                  ((returnFiber = sourceFiber.type),
-                  (error = sourceFiber.stateNode),
                   0 === (sourceFiber.flags & 128) &&
-                    ('function' === typeof returnFiber.getDerivedStateFromError ||
-                      (null !== error &&
-                        'function' === typeof error.componentDidCatch &&
-                        (null === legacyErrorBoundariesThatAlreadyFailed ||
-                          !legacyErrorBoundariesThatAlreadyFailed.has(error)))))
+                  ('function' === typeof returnFiber.getDerivedStateFromError ||
+                    (null !== error &&
+                      'function' === typeof error.componentDidCatch &&
+                      (null === legacyErrorBoundariesThatAlreadyFailed ||
+                        !legacyErrorBoundariesThatAlreadyFailed.has(error))))
                 )
                   return (
                     (sourceFiber.flags |= 65536),
@@ -10614,6 +10986,10 @@ var __morbis_feature = (() => {
                     enqueueCapturedUpdate(sourceFiber, rootRenderLanes),
                     false
                   );
+                break;
+              case 22:
+                if (null !== sourceFiber.memoizedState)
+                  return ((sourceFiber.flags |= 65536), false);
             }
             sourceFiber = sourceFiber.return;
           } while (null !== sourceFiber);
@@ -10627,7 +11003,10 @@ var __morbis_feature = (() => {
         }
         function updateForwardRef(current2, workInProgress2, Component2, nextProps, renderLanes2) {
           Component2 = Component2.render;
-          var ref = workInProgress2.ref;
+          var resolvedRender = resolveTypeForHotReloading(Component2);
+          resolvedRender !== Component2 &&
+            ((Component2 = resolvedRender), null !== current2 && (didReceiveUpdate = true));
+          resolvedRender = workInProgress2.ref;
           if ('ref' in nextProps) {
             var propsWithoutRef = {};
             for (var key in nextProps) 'ref' !== key && (propsWithoutRef[key] = nextProps[key]);
@@ -10638,7 +11017,7 @@ var __morbis_feature = (() => {
             workInProgress2,
             Component2,
             propsWithoutRef,
-            ref,
+            resolvedRender,
             renderLanes2,
           );
           key = checkDidRenderIdHook();
@@ -10668,7 +11047,7 @@ var __morbis_feature = (() => {
               null === Component2.compare
             )
               return (
-                (Component2 = resolveFunctionForHotReloading(type)),
+                (Component2 = resolveTypeForHotReloading(type)),
                 (workInProgress2.tag = 15),
                 (workInProgress2.type = Component2),
                 validateFunctionComponentInDev(workInProgress2, type),
@@ -10879,6 +11258,7 @@ var __morbis_feature = (() => {
                 return (
                   (current2 = mountActivityChildren(workInProgress2, nextProps)),
                   (workInProgress2.lanes = 536870912),
+                  (current2.memoizedState = { baseLanes: 0, cachePool: null }),
                   bailoutOffscreenComponent(null, current2)
                 );
               pushDehydratedActivitySuspenseHandler(workInProgress2);
@@ -10940,19 +11320,21 @@ var __morbis_feature = (() => {
               (didSuspend = 0 !== (renderLanes2 & current2.childLanes)),
               didReceiveUpdate || didSuspend)
             ) {
-              nextProps = workInProgressRoot;
-              if (
-                null !== nextProps &&
-                ((activityInstance = getBumpedLaneForHydration(nextProps, renderLanes2)),
-                0 !== activityInstance && activityInstance !== prevState.retryLane)
-              )
-                throw (
-                  (prevState.retryLane = activityInstance),
-                  enqueueConcurrentRenderForLane(current2, activityInstance),
-                  scheduleUpdateOnFiber(nextProps, current2, activityInstance),
-                  SelectiveHydrationException
-                );
-              renderDidSuspendDelayIfPossible();
+              if (null === currentTreeHiddenStackCursor.current) {
+                nextProps = workInProgressRoot;
+                if (
+                  null !== nextProps &&
+                  ((activityInstance = getBumpedLaneForHydration(nextProps, renderLanes2)),
+                  0 !== activityInstance && activityInstance !== prevState.retryLane)
+                )
+                  throw (
+                    (prevState.retryLane = activityInstance),
+                    enqueueConcurrentRenderForLane(current2, activityInstance),
+                    scheduleUpdateOnFiber(nextProps, current2, activityInstance),
+                    SelectiveHydrationException
+                  );
+                renderDidSuspendDelayIfPossible();
+              }
               workInProgress2 = retryActivityComponentWithoutHydrating(
                 current2,
                 workInProgress2,
@@ -10969,7 +11351,7 @@ var __morbis_feature = (() => {
                 (rootOrSingletonContext = false),
                 null !== current2 && restoreSuspendedTreeContext(workInProgress2, current2),
                 (workInProgress2 = mountActivityChildren(workInProgress2, nextProps)),
-                (workInProgress2.flags |= 4096));
+                (workInProgress2.flags |= 134221824));
             return workInProgress2;
           }
           prevState = current2.child;
@@ -11356,7 +11738,7 @@ var __morbis_feature = (() => {
               (_instance.state = workInProgress2.memoizedState));
             'function' === typeof _instance.componentDidMount && (workInProgress2.flags |= 4194308);
             (workInProgress2.mode & StrictEffectsMode) !== NoMode &&
-              (workInProgress2.flags |= 134217728);
+              (workInProgress2.flags |= 268435456);
             _instance = true;
           } else if (null === current2) {
             _instance = workInProgress2.stateNode;
@@ -11410,11 +11792,11 @@ var __morbis_feature = (() => {
                     'function' === typeof _instance.componentDidMount &&
                       (workInProgress2.flags |= 4194308),
                     (workInProgress2.mode & StrictEffectsMode) !== NoMode &&
-                      (workInProgress2.flags |= 134217728))
+                      (workInProgress2.flags |= 268435456))
                   : ('function' === typeof _instance.componentDidMount &&
                       (workInProgress2.flags |= 4194308),
                     (workInProgress2.mode & StrictEffectsMode) !== NoMode &&
-                      (workInProgress2.flags |= 134217728),
+                      (workInProgress2.flags |= 268435456),
                     (workInProgress2.memoizedProps = nextProps),
                     (workInProgress2.memoizedState = oldContext)),
                 (_instance.props = nextProps),
@@ -11424,7 +11806,7 @@ var __morbis_feature = (() => {
               : ('function' === typeof _instance.componentDidMount &&
                   (workInProgress2.flags |= 4194308),
                 (workInProgress2.mode & StrictEffectsMode) !== NoMode &&
-                  (workInProgress2.flags |= 134217728),
+                  (workInProgress2.flags |= 268435456),
                 (_instance = false));
           } else {
             _instance = workInProgress2.stateNode;
@@ -11601,23 +11983,22 @@ var __morbis_feature = (() => {
           return current2;
         }
         function updateSuspenseComponent(current2, workInProgress2, renderLanes2) {
-          var JSCompiler_object_inline_digest_2724;
-          var JSCompiler_object_inline_stack_2725 = workInProgress2.pendingProps;
+          var nextProps = workInProgress2.pendingProps;
           shouldSuspendImpl(workInProgress2) && (workInProgress2.flags |= 128);
-          var JSCompiler_object_inline_message_2723 = false;
-          var didSuspend = 0 !== (workInProgress2.flags & 128);
-          (JSCompiler_object_inline_digest_2724 = didSuspend) ||
-            (JSCompiler_object_inline_digest_2724 =
+          var showFallback = false,
+            didSuspend = 0 !== (workInProgress2.flags & 128),
+            JSCompiler_temp;
+          (JSCompiler_temp = didSuspend) ||
+            (JSCompiler_temp =
               null !== current2 && null === current2.memoizedState
                 ? false
                 : 0 !== (suspenseStackCursor.current & ForceSuspenseFallback));
-          JSCompiler_object_inline_digest_2724 &&
-            ((JSCompiler_object_inline_message_2723 = true), (workInProgress2.flags &= -129));
-          JSCompiler_object_inline_digest_2724 = 0 !== (workInProgress2.flags & 32);
+          JSCompiler_temp && ((showFallback = true), (workInProgress2.flags &= -129));
+          JSCompiler_temp = 0 !== (workInProgress2.flags & 32);
           workInProgress2.flags &= -33;
           if (null === current2) {
             if (isHydrating) {
-              JSCompiler_object_inline_message_2723
+              showFallback
                 ? pushPrimaryTreeSuspenseHandler(workInProgress2)
                 : reuseSuspenseHandlerOnStack(workInProgress2);
               (current2 = nextHydratableInstance)
@@ -11627,17 +12008,16 @@ var __morbis_feature = (() => {
                       ? renderLanes2
                       : null),
                   null !== renderLanes2 &&
-                    ((JSCompiler_object_inline_digest_2724 = {
+                    ((JSCompiler_temp = {
                       dehydrated: renderLanes2,
                       treeContext: getSuspendedTreeContext(),
                       retryLane: 536870912,
                       hydrationErrors: null,
                     }),
-                    (workInProgress2.memoizedState = JSCompiler_object_inline_digest_2724),
-                    (JSCompiler_object_inline_digest_2724 =
-                      createFiberFromDehydratedFragment(renderLanes2)),
-                    (JSCompiler_object_inline_digest_2724.return = workInProgress2),
-                    (workInProgress2.child = JSCompiler_object_inline_digest_2724),
+                    (workInProgress2.memoizedState = JSCompiler_temp),
+                    (JSCompiler_temp = createFiberFromDehydratedFragment(renderLanes2)),
+                    (JSCompiler_temp.return = workInProgress2),
+                    (workInProgress2.child = JSCompiler_temp),
                     (hydrationParentFiber = workInProgress2),
                     (nextHydratableInstance = null)))
                 : (renderLanes2 = null);
@@ -11651,246 +12031,99 @@ var __morbis_feature = (() => {
                 : (workInProgress2.lanes = 536870912);
               return null;
             }
-            var nextPrimaryChildren = JSCompiler_object_inline_stack_2725.children;
-            JSCompiler_object_inline_stack_2725 = JSCompiler_object_inline_stack_2725.fallback;
-            if (JSCompiler_object_inline_message_2723) {
-              reuseSuspenseHandlerOnStack(workInProgress2);
-              var mode = workInProgress2.mode;
-              nextPrimaryChildren = mountWorkInProgressOffscreenFiber(
-                { mode: 'hidden', children: nextPrimaryChildren },
-                mode,
+            didSuspend = nextProps.children;
+            nextProps = nextProps.fallback;
+            if (showFallback)
+              return (
+                reuseSuspenseHandlerOnStack(workInProgress2),
+                (showFallback = workInProgress2.mode),
+                (didSuspend = mountWorkInProgressOffscreenFiber(
+                  { mode: 'hidden', children: didSuspend },
+                  showFallback,
+                )),
+                (nextProps = createFiberFromFragment(nextProps, showFallback, renderLanes2, null)),
+                (didSuspend.return = workInProgress2),
+                (nextProps.return = workInProgress2),
+                (didSuspend.sibling = nextProps),
+                (workInProgress2.child = didSuspend),
+                (nextProps = workInProgress2.child),
+                (nextProps.memoizedState = mountSuspenseOffscreenState(renderLanes2)),
+                (nextProps.childLanes = getRemainingWorkInPrimaryTree(
+                  current2,
+                  JSCompiler_temp,
+                  renderLanes2,
+                )),
+                (workInProgress2.memoizedState = SUSPENDED_MARKER),
+                bailoutOffscreenComponent(null, nextProps)
               );
-              JSCompiler_object_inline_stack_2725 = createFiberFromFragment(
-                JSCompiler_object_inline_stack_2725,
-                mode,
-                renderLanes2,
-                null,
-              );
-              nextPrimaryChildren.return = workInProgress2;
-              JSCompiler_object_inline_stack_2725.return = workInProgress2;
-              nextPrimaryChildren.sibling = JSCompiler_object_inline_stack_2725;
-              workInProgress2.child = nextPrimaryChildren;
-              JSCompiler_object_inline_stack_2725 = workInProgress2.child;
-              JSCompiler_object_inline_stack_2725.memoizedState =
-                mountSuspenseOffscreenState(renderLanes2);
-              JSCompiler_object_inline_stack_2725.childLanes = getRemainingWorkInPrimaryTree(
-                current2,
-                JSCompiler_object_inline_digest_2724,
-                renderLanes2,
-              );
-              workInProgress2.memoizedState = SUSPENDED_MARKER;
-              return bailoutOffscreenComponent(null, JSCompiler_object_inline_stack_2725);
-            }
             pushPrimaryTreeSuspenseHandler(workInProgress2);
-            return mountSuspensePrimaryChildren(workInProgress2, nextPrimaryChildren);
+            return mountSuspensePrimaryChildren(workInProgress2, didSuspend);
           }
           var prevState = current2.memoizedState;
           if (null !== prevState) {
-            var JSCompiler_object_inline_componentStack_2726 = prevState.dehydrated;
-            if (null !== JSCompiler_object_inline_componentStack_2726) {
-              if (didSuspend)
-                workInProgress2.flags & 256
-                  ? (pushPrimaryTreeSuspenseHandler(workInProgress2),
-                    (workInProgress2.flags &= -257),
-                    (workInProgress2 = retrySuspenseComponentWithoutHydrating(
-                      current2,
-                      workInProgress2,
-                      renderLanes2,
-                    )))
-                  : null !== workInProgress2.memoizedState
-                    ? (reuseSuspenseHandlerOnStack(workInProgress2),
-                      (workInProgress2.child = current2.child),
-                      (workInProgress2.flags |= 128),
-                      (workInProgress2 = null))
-                    : (reuseSuspenseHandlerOnStack(workInProgress2),
-                      (nextPrimaryChildren = JSCompiler_object_inline_stack_2725.fallback),
-                      (mode = workInProgress2.mode),
-                      (JSCompiler_object_inline_stack_2725 = mountWorkInProgressOffscreenFiber(
-                        {
-                          mode: 'visible',
-                          children: JSCompiler_object_inline_stack_2725.children,
-                        },
-                        mode,
-                      )),
-                      (nextPrimaryChildren = createFiberFromFragment(
-                        nextPrimaryChildren,
-                        mode,
-                        renderLanes2,
-                        null,
-                      )),
-                      (nextPrimaryChildren.flags |= 2),
-                      (JSCompiler_object_inline_stack_2725.return = workInProgress2),
-                      (nextPrimaryChildren.return = workInProgress2),
-                      (JSCompiler_object_inline_stack_2725.sibling = nextPrimaryChildren),
-                      (workInProgress2.child = JSCompiler_object_inline_stack_2725),
-                      reconcileChildFibers(workInProgress2, current2.child, null, renderLanes2),
-                      (JSCompiler_object_inline_stack_2725 = workInProgress2.child),
-                      (JSCompiler_object_inline_stack_2725.memoizedState =
-                        mountSuspenseOffscreenState(renderLanes2)),
-                      (JSCompiler_object_inline_stack_2725.childLanes =
-                        getRemainingWorkInPrimaryTree(
-                          current2,
-                          JSCompiler_object_inline_digest_2724,
-                          renderLanes2,
-                        )),
-                      (workInProgress2.memoizedState = SUSPENDED_MARKER),
-                      (workInProgress2 = bailoutOffscreenComponent(
-                        null,
-                        JSCompiler_object_inline_stack_2725,
-                      )));
-              else if (
-                (pushPrimaryTreeSuspenseHandler(workInProgress2),
-                warnIfHydrating(),
-                0 !== (renderLanes2 & 536870912) && markRenderDerivedCause(workInProgress2),
-                isSuspenseInstanceFallback(JSCompiler_object_inline_componentStack_2726))
-              ) {
-                JSCompiler_object_inline_digest_2724 =
-                  JSCompiler_object_inline_componentStack_2726.nextSibling &&
-                  JSCompiler_object_inline_componentStack_2726.nextSibling.dataset;
-                if (JSCompiler_object_inline_digest_2724) {
-                  nextPrimaryChildren = JSCompiler_object_inline_digest_2724.dgst;
-                  var message = JSCompiler_object_inline_digest_2724.msg;
-                  mode = JSCompiler_object_inline_digest_2724.stck;
-                  var componentStack = JSCompiler_object_inline_digest_2724.cstck;
-                }
-                JSCompiler_object_inline_message_2723 = message;
-                JSCompiler_object_inline_digest_2724 = nextPrimaryChildren;
-                JSCompiler_object_inline_stack_2725 = mode;
-                JSCompiler_object_inline_componentStack_2726 = componentStack;
-                nextPrimaryChildren = JSCompiler_object_inline_message_2723;
-                mode = JSCompiler_object_inline_componentStack_2726;
-                nextPrimaryChildren = nextPrimaryChildren
-                  ? Error(nextPrimaryChildren)
-                  : Error(
-                      'The server could not finish this Suspense boundary, likely due to an error during server rendering. Switched to client rendering.',
-                    );
-                nextPrimaryChildren.stack = JSCompiler_object_inline_stack_2725 || '';
-                nextPrimaryChildren.digest = JSCompiler_object_inline_digest_2724;
-                JSCompiler_object_inline_digest_2724 = void 0 === mode ? null : mode;
-                JSCompiler_object_inline_stack_2725 = {
-                  value: nextPrimaryChildren,
-                  source: null,
-                  stack: JSCompiler_object_inline_digest_2724,
-                };
-                'string' === typeof JSCompiler_object_inline_digest_2724 &&
-                  CapturedStacks.set(nextPrimaryChildren, JSCompiler_object_inline_stack_2725);
-                queueHydrationError(JSCompiler_object_inline_stack_2725);
-                workInProgress2 = retrySuspenseComponentWithoutHydrating(
-                  current2,
-                  workInProgress2,
-                  renderLanes2,
-                );
-              } else if (
-                (didReceiveUpdate ||
-                  propagateParentContextChanges(current2, workInProgress2, renderLanes2, false),
-                (JSCompiler_object_inline_digest_2724 = 0 !== (renderLanes2 & current2.childLanes)),
-                didReceiveUpdate || JSCompiler_object_inline_digest_2724)
-              ) {
-                JSCompiler_object_inline_digest_2724 = workInProgressRoot;
-                if (
-                  null !== JSCompiler_object_inline_digest_2724 &&
-                  ((JSCompiler_object_inline_stack_2725 = getBumpedLaneForHydration(
-                    JSCompiler_object_inline_digest_2724,
-                    renderLanes2,
-                  )),
-                  0 !== JSCompiler_object_inline_stack_2725 &&
-                    JSCompiler_object_inline_stack_2725 !== prevState.retryLane)
-                )
-                  throw (
-                    (prevState.retryLane = JSCompiler_object_inline_stack_2725),
-                    enqueueConcurrentRenderForLane(current2, JSCompiler_object_inline_stack_2725),
-                    scheduleUpdateOnFiber(
-                      JSCompiler_object_inline_digest_2724,
-                      current2,
-                      JSCompiler_object_inline_stack_2725,
-                    ),
-                    SelectiveHydrationException
-                  );
-                isSuspenseInstancePending(JSCompiler_object_inline_componentStack_2726) ||
-                  renderDidSuspendDelayIfPossible();
-                workInProgress2 = retrySuspenseComponentWithoutHydrating(
-                  current2,
-                  workInProgress2,
-                  renderLanes2,
-                );
-              } else
-                isSuspenseInstancePending(JSCompiler_object_inline_componentStack_2726)
-                  ? ((workInProgress2.flags |= 192),
-                    (workInProgress2.child = current2.child),
-                    (workInProgress2 = null))
-                  : ((current2 = prevState.treeContext),
-                    (nextHydratableInstance = getNextHydratable(
-                      JSCompiler_object_inline_componentStack_2726.nextSibling,
-                    )),
-                    (hydrationParentFiber = workInProgress2),
-                    (isHydrating = true),
-                    (hydrationErrors = null),
-                    (didSuspendOrErrorDEV = false),
-                    (hydrationDiffRootDEV = null),
-                    (rootOrSingletonContext = false),
-                    null !== current2 && restoreSuspendedTreeContext(workInProgress2, current2),
-                    (workInProgress2 = mountSuspensePrimaryChildren(
-                      workInProgress2,
-                      JSCompiler_object_inline_stack_2725.children,
-                    )),
-                    (workInProgress2.flags |= 4096));
-              return workInProgress2;
-            }
+            var _dehydrated2 = prevState.dehydrated;
+            if (null !== _dehydrated2)
+              return updateDehydratedSuspenseComponent(
+                current2,
+                workInProgress2,
+                didSuspend,
+                JSCompiler_temp,
+                nextProps,
+                _dehydrated2,
+                prevState,
+                renderLanes2,
+              );
           }
-          if (JSCompiler_object_inline_message_2723)
+          if (showFallback)
             return (
               reuseSuspenseHandlerOnStack(workInProgress2),
-              (nextPrimaryChildren = JSCompiler_object_inline_stack_2725.fallback),
-              (mode = workInProgress2.mode),
-              (componentStack = current2.child),
-              (JSCompiler_object_inline_componentStack_2726 = componentStack.sibling),
-              (JSCompiler_object_inline_stack_2725 = createWorkInProgress(componentStack, {
+              (showFallback = nextProps.fallback),
+              (didSuspend = workInProgress2.mode),
+              (prevState = current2.child),
+              (_dehydrated2 = prevState.sibling),
+              (nextProps = createWorkInProgress(prevState, {
                 mode: 'hidden',
-                children: JSCompiler_object_inline_stack_2725.children,
+                children: nextProps.children,
               })),
-              (JSCompiler_object_inline_stack_2725.subtreeFlags =
-                componentStack.subtreeFlags & 65011712),
-              null !== JSCompiler_object_inline_componentStack_2726
-                ? (nextPrimaryChildren = createWorkInProgress(
-                    JSCompiler_object_inline_componentStack_2726,
-                    nextPrimaryChildren,
-                  ))
-                : ((nextPrimaryChildren = createFiberFromFragment(
-                    nextPrimaryChildren,
-                    mode,
+              (nextProps.subtreeFlags = prevState.subtreeFlags & 1206910976),
+              null !== _dehydrated2
+                ? (showFallback = createWorkInProgress(_dehydrated2, showFallback))
+                : ((showFallback = createFiberFromFragment(
+                    showFallback,
+                    didSuspend,
                     renderLanes2,
                     null,
                   )),
-                  (nextPrimaryChildren.flags |= 2)),
-              (nextPrimaryChildren.return = workInProgress2),
-              (JSCompiler_object_inline_stack_2725.return = workInProgress2),
-              (JSCompiler_object_inline_stack_2725.sibling = nextPrimaryChildren),
-              (workInProgress2.child = JSCompiler_object_inline_stack_2725),
-              bailoutOffscreenComponent(null, JSCompiler_object_inline_stack_2725),
-              (JSCompiler_object_inline_stack_2725 = workInProgress2.child),
-              (nextPrimaryChildren = current2.child.memoizedState),
-              null === nextPrimaryChildren
-                ? (nextPrimaryChildren = mountSuspenseOffscreenState(renderLanes2))
-                : ((mode = nextPrimaryChildren.cachePool),
-                  null !== mode
-                    ? ((componentStack = CacheContext._currentValue),
-                      (mode =
-                        mode.parent !== componentStack
-                          ? { parent: componentStack, pool: componentStack }
-                          : mode))
-                    : (mode = getSuspendedCache()),
-                  (nextPrimaryChildren = {
-                    baseLanes: nextPrimaryChildren.baseLanes | renderLanes2,
-                    cachePool: mode,
+                  (showFallback.flags |= 2)),
+              (showFallback.return = workInProgress2),
+              (nextProps.return = workInProgress2),
+              (nextProps.sibling = showFallback),
+              (workInProgress2.child = nextProps),
+              bailoutOffscreenComponent(null, nextProps),
+              (nextProps = workInProgress2.child),
+              (showFallback = current2.child.memoizedState),
+              null === showFallback
+                ? (showFallback = mountSuspenseOffscreenState(renderLanes2))
+                : ((didSuspend = showFallback.cachePool),
+                  null !== didSuspend
+                    ? ((prevState = CacheContext._currentValue),
+                      (didSuspend =
+                        didSuspend.parent !== prevState
+                          ? { parent: prevState, pool: prevState }
+                          : didSuspend))
+                    : (didSuspend = getSuspendedCache()),
+                  (showFallback = {
+                    baseLanes: showFallback.baseLanes | renderLanes2,
+                    cachePool: didSuspend,
                   })),
-              (JSCompiler_object_inline_stack_2725.memoizedState = nextPrimaryChildren),
-              (JSCompiler_object_inline_stack_2725.childLanes = getRemainingWorkInPrimaryTree(
+              (nextProps.memoizedState = showFallback),
+              (nextProps.childLanes = getRemainingWorkInPrimaryTree(
                 current2,
-                JSCompiler_object_inline_digest_2724,
+                JSCompiler_temp,
                 renderLanes2,
               )),
               (workInProgress2.memoizedState = SUSPENDED_MARKER),
-              bailoutOffscreenComponent(current2.child, JSCompiler_object_inline_stack_2725)
+              bailoutOffscreenComponent(current2.child, nextProps)
             );
           null !== prevState &&
             (renderLanes2 & 62914560) === renderLanes2 &&
@@ -11901,15 +12134,15 @@ var __morbis_feature = (() => {
           current2 = renderLanes2.sibling;
           renderLanes2 = createWorkInProgress(renderLanes2, {
             mode: 'visible',
-            children: JSCompiler_object_inline_stack_2725.children,
+            children: nextProps.children,
           });
           renderLanes2.return = workInProgress2;
           renderLanes2.sibling = null;
           null !== current2 &&
-            ((JSCompiler_object_inline_digest_2724 = workInProgress2.deletions),
-            null === JSCompiler_object_inline_digest_2724
+            ((JSCompiler_temp = workInProgress2.deletions),
+            null === JSCompiler_temp
               ? ((workInProgress2.deletions = [current2]), (workInProgress2.flags |= 16))
-              : JSCompiler_object_inline_digest_2724.push(current2));
+              : JSCompiler_temp.push(current2));
           workInProgress2.child = renderLanes2;
           workInProgress2.memoizedState = null;
           return renderLanes2;
@@ -11937,11 +12170,156 @@ var __morbis_feature = (() => {
           workInProgress2.memoizedState = null;
           return current2;
         }
+        function updateDehydratedSuspenseComponent(
+          current2,
+          workInProgress2,
+          didSuspend,
+          didPrimaryChildrenDefer,
+          nextProps,
+          suspenseInstance,
+          suspenseState,
+          renderLanes2,
+        ) {
+          if (didSuspend) {
+            if (workInProgress2.flags & 256)
+              return (
+                pushPrimaryTreeSuspenseHandler(workInProgress2),
+                (workInProgress2.flags &= -257),
+                retrySuspenseComponentWithoutHydrating(current2, workInProgress2, renderLanes2)
+              );
+            if (null !== workInProgress2.memoizedState)
+              return (
+                reuseSuspenseHandlerOnStack(workInProgress2),
+                (workInProgress2.child = current2.child),
+                (workInProgress2.flags |= 128),
+                null
+              );
+            reuseSuspenseHandlerOnStack(workInProgress2);
+            var fallbackChildren = nextProps.fallback,
+              fiberMode = workInProgress2.mode,
+              primaryChildFragment = mountWorkInProgressOffscreenFiber(
+                { mode: 'visible', children: nextProps.children },
+                fiberMode,
+              );
+            fallbackChildren = createFiberFromFragment(
+              fallbackChildren,
+              fiberMode,
+              renderLanes2,
+              null,
+            );
+            fallbackChildren.flags |= 2;
+            primaryChildFragment.return = workInProgress2;
+            fallbackChildren.return = workInProgress2;
+            primaryChildFragment.sibling = fallbackChildren;
+            workInProgress2.child = primaryChildFragment;
+            reconcileChildFibers(workInProgress2, current2.child, null, renderLanes2);
+            fallbackChildren = workInProgress2.child;
+            fallbackChildren.memoizedState = mountSuspenseOffscreenState(renderLanes2);
+            fallbackChildren.childLanes = getRemainingWorkInPrimaryTree(
+              current2,
+              didPrimaryChildrenDefer,
+              renderLanes2,
+            );
+            workInProgress2.memoizedState = SUSPENDED_MARKER;
+            return bailoutOffscreenComponent(null, fallbackChildren);
+          }
+          pushPrimaryTreeSuspenseHandler(workInProgress2);
+          warnIfHydrating();
+          0 !== (renderLanes2 & 536870912) && markRenderDerivedCause(workInProgress2);
+          if (isSuspenseInstanceFallback(suspenseInstance)) {
+            didPrimaryChildrenDefer =
+              suspenseInstance.nextSibling && suspenseInstance.nextSibling.dataset;
+            if (didPrimaryChildrenDefer) {
+              fallbackChildren = didPrimaryChildrenDefer.dgst;
+              var message = didPrimaryChildrenDefer.msg;
+              fiberMode = didPrimaryChildrenDefer.stck;
+              primaryChildFragment = didPrimaryChildrenDefer.cstck;
+            }
+            suspenseInstance = message;
+            suspenseState = fallbackChildren;
+            nextProps = fiberMode;
+            didPrimaryChildrenDefer = primaryChildFragment;
+            fallbackChildren = suspenseState;
+            fiberMode = suspenseInstance;
+            primaryChildFragment = nextProps;
+            nextProps = didPrimaryChildrenDefer;
+            fallbackChildren !== REACT_RECOVERABLE_DIGEST &&
+              ((didPrimaryChildrenDefer = fiberMode
+                ? Error(fiberMode)
+                : Error(
+                    'The server could not finish this Suspense boundary, likely due to an error during server rendering. Switched to client rendering.',
+                  )),
+              (didPrimaryChildrenDefer.stack = primaryChildFragment || ''),
+              (didPrimaryChildrenDefer.digest = fallbackChildren),
+              (fallbackChildren = void 0 === nextProps ? null : nextProps),
+              (fiberMode = {
+                value: didPrimaryChildrenDefer,
+                source: null,
+                stack: fallbackChildren,
+              }),
+              'string' === typeof fallbackChildren &&
+                CapturedStacks.set(didPrimaryChildrenDefer, fiberMode),
+              queueHydrationError(fiberMode));
+            return retrySuspenseComponentWithoutHydrating(current2, workInProgress2, renderLanes2);
+          }
+          didReceiveUpdate ||
+            propagateParentContextChanges(current2, workInProgress2, renderLanes2, false);
+          didPrimaryChildrenDefer = 0 !== (renderLanes2 & current2.childLanes);
+          if (didReceiveUpdate || didPrimaryChildrenDefer) {
+            if (null !== currentTreeHiddenStackCursor.current)
+              return retrySuspenseComponentWithoutHydrating(
+                current2,
+                workInProgress2,
+                renderLanes2,
+              );
+            didPrimaryChildrenDefer = workInProgressRoot;
+            if (
+              null !== didPrimaryChildrenDefer &&
+              ((fallbackChildren = getBumpedLaneForHydration(
+                didPrimaryChildrenDefer,
+                renderLanes2,
+              )),
+              0 !== fallbackChildren && fallbackChildren !== suspenseState.retryLane)
+            )
+              throw (
+                (suspenseState.retryLane = fallbackChildren),
+                enqueueConcurrentRenderForLane(current2, fallbackChildren),
+                scheduleUpdateOnFiber(didPrimaryChildrenDefer, current2, fallbackChildren),
+                SelectiveHydrationException
+              );
+            isSuspenseInstancePending(suspenseInstance) || renderDidSuspendDelayIfPossible();
+            return retrySuspenseComponentWithoutHydrating(current2, workInProgress2, renderLanes2);
+          }
+          if (isSuspenseInstancePending(suspenseInstance))
+            return ((workInProgress2.flags |= 192), (workInProgress2.child = current2.child), null);
+          current2 = suspenseState.treeContext;
+          nextHydratableInstance = getNextHydratable(suspenseInstance.nextSibling);
+          hydrationParentFiber = workInProgress2;
+          isHydrating = true;
+          hydrationErrors = null;
+          didSuspendOrErrorDEV = false;
+          hydrationDiffRootDEV = null;
+          rootOrSingletonContext = false;
+          null !== current2 && restoreSuspendedTreeContext(workInProgress2, current2);
+          workInProgress2 = mountSuspensePrimaryChildren(workInProgress2, nextProps.children);
+          workInProgress2.flags |= 134221824;
+          return workInProgress2;
+        }
         function scheduleSuspenseWorkOnFiber(fiber, renderLanes2, propagationRoot) {
           fiber.lanes |= renderLanes2;
           var alternate = fiber.alternate;
           null !== alternate && (alternate.lanes |= renderLanes2);
           scheduleContextWorkOnParentPath(fiber.return, renderLanes2, propagationRoot);
+        }
+        function findLastContentRow(firstChild) {
+          for (var lastContentRow = null; null !== firstChild;) {
+            var currentRow = firstChild.alternate;
+            null !== currentRow &&
+              null === findFirstSuspended(currentRow) &&
+              (lastContentRow = firstChild);
+            firstChild = firstChild.sibling;
+          }
+          return lastContentRow;
         }
         function initSuspenseListRenderState(
           workInProgress2,
@@ -11970,35 +12348,42 @@ var __morbis_feature = (() => {
               (renderState.tailMode = tailMode),
               (renderState.treeForkCount = treeForkCount2));
         }
+        function reverseChildren(fiber) {
+          var row = fiber.child;
+          for (fiber.child = null; null !== row;) {
+            var nextRow = row.sibling;
+            row.sibling = fiber.child;
+            fiber.child = row;
+            row = nextRow;
+          }
+        }
         function updateSuspenseListComponent(current2, workInProgress2, renderLanes2) {
           var nextProps = workInProgress2.pendingProps,
             revealOrder = nextProps.revealOrder,
             tailMode = nextProps.tail,
             newChildren = nextProps.children,
             suspenseContext = suspenseStackCursor.current;
+          if (workInProgress2.flags & 128)
+            return (pushSuspenseListContext(workInProgress2, suspenseContext), null);
           (nextProps = 0 !== (suspenseContext & ForceSuspenseFallback))
             ? ((suspenseContext =
                 (suspenseContext & SubtreeSuspenseContextMask) | ForceSuspenseFallback),
               (workInProgress2.flags |= 128))
             : (suspenseContext &= SubtreeSuspenseContextMask);
-          push(suspenseStackCursor, suspenseContext, workInProgress2);
+          pushSuspenseListContext(workInProgress2, suspenseContext);
           suspenseContext = null == revealOrder ? 'null' : revealOrder;
           if (
+            null != revealOrder &&
             'forwards' !== revealOrder &&
+            'backwards' !== revealOrder &&
             'unstable_legacy-backwards' !== revealOrder &&
             'together' !== revealOrder &&
             'independent' !== revealOrder &&
             !didWarnAboutRevealOrder[suspenseContext]
           )
-            if (((didWarnAboutRevealOrder[suspenseContext] = true), null == revealOrder))
-              console.error(
-                'The default for the <SuspenseList revealOrder="..."> prop is changing. To be future compatible you must explictly specify either "independent" (the current default), "together", "forwards" or "legacy_unstable-backwards".',
-              );
-            else if ('backwards' === revealOrder)
-              console.error(
-                'The rendering order of <SuspenseList revealOrder="backwards"> is changing. To be future compatible you must specify revealOrder="legacy_unstable-backwards" instead.',
-              );
-            else if ('string' === typeof revealOrder)
+            if (
+              ((didWarnAboutRevealOrder[suspenseContext] = true), 'string' === typeof revealOrder)
+            )
               switch (revealOrder.toLowerCase()) {
                 case 'together':
                 case 'forwards':
@@ -12030,34 +12415,26 @@ var __morbis_feature = (() => {
                 revealOrder,
               );
           suspenseContext = null == tailMode ? 'null' : tailMode;
-          if (!didWarnAboutTailOptions[suspenseContext])
-            if (null == tailMode) {
-              if (
-                'forwards' === revealOrder ||
-                'backwards' === revealOrder ||
-                'unstable_legacy-backwards' === revealOrder
-              )
+          didWarnAboutTailOptions[suspenseContext] ||
+            null == tailMode ||
+            ('visible' !== tailMode && 'collapsed' !== tailMode && 'hidden' !== tailMode
+              ? ((didWarnAboutTailOptions[suspenseContext] = true),
+                console.error(
+                  '"%s" is not a supported value for tail on <SuspenseList />. Did you mean "visible", "collapsed" or "hidden"?',
+                  tailMode,
+                ))
+              : null != revealOrder &&
+                'forwards' !== revealOrder &&
+                'backwards' !== revealOrder &&
+                'unstable_legacy-backwards' !== revealOrder &&
                 ((didWarnAboutTailOptions[suspenseContext] = true),
-                  console.error(
-                    'The default for the <SuspenseList tail="..."> prop is changing. To be future compatible you must explictly specify either "visible" (the current default), "collapsed" or "hidden".',
-                  ));
-            } else
-              'visible' !== tailMode && 'collapsed' !== tailMode && 'hidden' !== tailMode
-                ? ((didWarnAboutTailOptions[suspenseContext] = true),
-                  console.error(
-                    '"%s" is not a supported value for tail on <SuspenseList />. Did you mean "visible", "collapsed" or "hidden"?',
-                    tailMode,
-                  ))
-                : 'forwards' !== revealOrder &&
-                  'backwards' !== revealOrder &&
-                  'unstable_legacy-backwards' !== revealOrder &&
-                  ((didWarnAboutTailOptions[suspenseContext] = true),
-                  console.error(
-                    '<SuspenseList tail="%s" /> is only valid if revealOrder is "forwards" or "backwards". Did you mean to specify revealOrder="forwards"?',
-                    tailMode,
-                  ));
+                console.error(
+                  '<SuspenseList tail="%s" /> is only valid if revealOrder is "forwards" (default) or "backwards". Did you mean to specify revealOrder="forwards"?',
+                  tailMode,
+                )));
           a: if (
-            ('forwards' === revealOrder ||
+            (null == revealOrder ||
+              'forwards' === revealOrder ||
               'backwards' === revealOrder ||
               'unstable_legacy-backwards' === revealOrder) &&
             void 0 !== newChildren &&
@@ -12087,7 +12464,11 @@ var __morbis_feature = (() => {
                 'A single row was passed to a <SuspenseList revealOrder="%s" />. This is not useful since it needs multiple rows. Did you mean to pass multiple children or an array?',
                 revealOrder,
               );
-          reconcileChildren(current2, workInProgress2, newChildren, renderLanes2);
+          'backwards' === revealOrder && null !== current2
+            ? (reverseChildren(current2),
+              reconcileChildren(current2, workInProgress2, newChildren, renderLanes2),
+              reverseChildren(current2))
+            : reconcileChildren(current2, workInProgress2, newChildren, renderLanes2);
           isHydrating ? (warnIfNotHydrating(), (newChildren = treeForkCount)) : (newChildren = 0);
           if (!nextProps && null !== current2 && 0 !== (current2.flags & 128))
             a: for (current2 = workInProgress2.child; null !== current2;) {
@@ -12110,28 +12491,22 @@ var __morbis_feature = (() => {
               current2 = current2.sibling;
             }
           switch (revealOrder) {
-            case 'forwards':
-              renderLanes2 = workInProgress2.child;
-              for (revealOrder = null; null !== renderLanes2;)
-                ((current2 = renderLanes2.alternate),
-                  null !== current2 &&
-                    null === findFirstSuspended(current2) &&
-                    (revealOrder = renderLanes2),
-                  (renderLanes2 = renderLanes2.sibling));
-              renderLanes2 = revealOrder;
+            case 'backwards':
+              renderLanes2 = findLastContentRow(workInProgress2.child);
               null === renderLanes2
                 ? ((revealOrder = workInProgress2.child), (workInProgress2.child = null))
-                : ((revealOrder = renderLanes2.sibling), (renderLanes2.sibling = null));
+                : ((revealOrder = renderLanes2.sibling),
+                  (renderLanes2.sibling = null),
+                  reverseChildren(workInProgress2));
               initSuspenseListRenderState(
                 workInProgress2,
-                false,
+                true,
                 revealOrder,
-                renderLanes2,
+                null,
                 tailMode,
                 newChildren,
               );
               break;
-            case 'backwards':
             case 'unstable_legacy-backwards':
               renderLanes2 = null;
               revealOrder = workInProgress2.child;
@@ -12158,9 +12533,37 @@ var __morbis_feature = (() => {
             case 'together':
               initSuspenseListRenderState(workInProgress2, false, null, null, void 0, newChildren);
               break;
-            default:
+            case 'independent':
               workInProgress2.memoizedState = null;
+              break;
+            default:
+              ((renderLanes2 = findLastContentRow(workInProgress2.child)),
+                null === renderLanes2
+                  ? ((revealOrder = workInProgress2.child), (workInProgress2.child = null))
+                  : ((revealOrder = renderLanes2.sibling), (renderLanes2.sibling = null)),
+                initSuspenseListRenderState(
+                  workInProgress2,
+                  false,
+                  revealOrder,
+                  renderLanes2,
+                  tailMode,
+                  newChildren,
+                ));
           }
+          return workInProgress2.child;
+        }
+        function updateContextProvider(current2, workInProgress2, renderLanes2) {
+          var context = workInProgress2.type,
+            newProps = workInProgress2.pendingProps,
+            newValue = newProps.value;
+          'value' in newProps ||
+            hasWarnedAboutUsingNoValuePropOnContextProvider ||
+            ((hasWarnedAboutUsingNoValuePropOnContextProvider = true),
+            console.error(
+              'The `value` prop is required for the `<Context.Provider>`. Did you misspell it or forget to pass it?',
+            ));
+          pushProvider(workInProgress2, context, newValue);
+          reconcileChildren(current2, workInProgress2, newProps.children, renderLanes2);
           return workInProgress2.child;
         }
         function bailoutOnAlreadyFinishedWork(current2, workInProgress2, renderLanes2) {
@@ -12240,7 +12643,14 @@ var __morbis_feature = (() => {
                     (workInProgress2.flags |= 128),
                     null
                   );
-                if (0 !== (renderLanes2 & workInProgress2.child.childLanes))
+                stateNode = propagateParentContextChanges(
+                  current2,
+                  workInProgress2,
+                  renderLanes2,
+                  false,
+                );
+                var primaryChildLanes = workInProgress2.child.childLanes;
+                if (stateNode || 0 !== (renderLanes2 & primaryChildLanes))
                   return updateSuspenseComponent(current2, workInProgress2, renderLanes2);
                 pushPrimaryTreeSuspenseHandler(workInProgress2);
                 current2 = bailoutOnAlreadyFinishedWork(current2, workInProgress2, renderLanes2);
@@ -12249,22 +12659,24 @@ var __morbis_feature = (() => {
               pushPrimaryTreeSuspenseHandler(workInProgress2);
               break;
             case 19:
-              var didSuspendBefore = 0 !== (current2.flags & 128);
+              if (workInProgress2.flags & 128)
+                return updateSuspenseListComponent(current2, workInProgress2, renderLanes2);
+              primaryChildLanes = 0 !== (current2.flags & 128);
               stateNode = 0 !== (renderLanes2 & workInProgress2.childLanes);
               stateNode ||
                 (propagateParentContextChanges(current2, workInProgress2, renderLanes2, false),
                 (stateNode = 0 !== (renderLanes2 & workInProgress2.childLanes)));
-              if (didSuspendBefore) {
+              if (primaryChildLanes) {
                 if (stateNode)
                   return updateSuspenseListComponent(current2, workInProgress2, renderLanes2);
                 workInProgress2.flags |= 128;
               }
-              didSuspendBefore = workInProgress2.memoizedState;
-              null !== didSuspendBefore &&
-                ((didSuspendBefore.rendering = null),
-                (didSuspendBefore.tail = null),
-                (didSuspendBefore.lastEffect = null));
-              push(suspenseStackCursor, suspenseStackCursor.current, workInProgress2);
+              primaryChildLanes = workInProgress2.memoizedState;
+              null !== primaryChildLanes &&
+                ((primaryChildLanes.rendering = null),
+                (primaryChildLanes.tail = null),
+                (primaryChildLanes.lastEffect = null));
+              pushSuspenseListContext(workInProgress2, suspenseStackCursor.current);
               if (stateNode) break;
               else return null;
             case 22:
@@ -12285,7 +12697,7 @@ var __morbis_feature = (() => {
         function beginWork(current2, workInProgress2, renderLanes2) {
           if (workInProgress2._debugNeedsRemount && null !== current2) {
             renderLanes2 = createFiberFromTypeAndProps(
-              workInProgress2.type,
+              resolveTypeForHotReloading(workInProgress2.elementType),
               workInProgress2.key,
               workInProgress2.pendingProps,
               workInProgress2._debugOwner || null,
@@ -12316,7 +12728,7 @@ var __morbis_feature = (() => {
             null === workInProgress2
               ? ((returnFiber.deletions = [current2]), (returnFiber.flags |= 16))
               : workInProgress2.push(current2);
-            renderLanes2.flags |= 2;
+            renderLanes2.flags |= 134217730;
             return renderLanes2;
           }
           if (null !== current2)
@@ -12351,13 +12763,13 @@ var __morbis_feature = (() => {
               a: if (
                 ((returnFiber = workInProgress2.pendingProps),
                 (current2 = resolveLazy(workInProgress2.elementType)),
+                (current2 = resolveTypeForHotReloading(current2)),
                 (workInProgress2.type = current2),
                 'function' === typeof current2)
               )
                 shouldConstruct(current2)
                   ? ((returnFiber = resolveClassComponentProps(current2, returnFiber)),
                     (workInProgress2.tag = 1),
-                    (workInProgress2.type = current2 = resolveFunctionForHotReloading(current2)),
                     (workInProgress2 = updateClassComponent(
                       null,
                       workInProgress2,
@@ -12367,7 +12779,6 @@ var __morbis_feature = (() => {
                     )))
                   : ((workInProgress2.tag = 0),
                     validateFunctionComponentInDev(workInProgress2, current2),
-                    (workInProgress2.type = current2 = resolveFunctionForHotReloading(current2)),
                     (workInProgress2 = updateFunctionComponent(
                       null,
                       workInProgress2,
@@ -12379,7 +12790,6 @@ var __morbis_feature = (() => {
                 if (void 0 !== current2 && null !== current2) {
                   if (((prevSibling = current2.$$typeof), prevSibling === REACT_FORWARD_REF_TYPE)) {
                     workInProgress2.tag = 11;
-                    workInProgress2.type = current2 = resolveForwardRefForHotReloading(current2);
                     workInProgress2 = updateForwardRef(
                       null,
                       workInProgress2,
@@ -12397,6 +12807,11 @@ var __morbis_feature = (() => {
                       returnFiber,
                       renderLanes2,
                     );
+                    break a;
+                  } else if (prevSibling === REACT_CONTEXT_TYPE) {
+                    workInProgress2.tag = 10;
+                    workInProgress2.type = current2;
+                    workInProgress2 = updateContextProvider(null, workInProgress2, renderLanes2);
                     break a;
                   }
                 }
@@ -12511,7 +12926,7 @@ var __morbis_feature = (() => {
                       renderLanes2,
                     );
                     for (workInProgress2.child = renderLanes2; renderLanes2;)
-                      ((renderLanes2.flags = (renderLanes2.flags & -3) | 4096),
+                      ((renderLanes2.flags = (renderLanes2.flags & -3) | 134221824),
                         (renderLanes2 = renderLanes2.sibling));
                   }
                 else {
@@ -12541,16 +12956,12 @@ var __morbis_feature = (() => {
                     ))
                     ? (workInProgress2.memoizedState = renderLanes2)
                     : isHydrating ||
-                      ((renderLanes2 = workInProgress2.type),
-                      (current2 = workInProgress2.pendingProps),
-                      (returnFiber = requiredContext(rootInstanceStackCursor.current)),
-                      (returnFiber =
-                        getOwnerDocumentFromRootContainer(returnFiber).createElement(renderLanes2)),
-                      (returnFiber[internalInstanceKey] = workInProgress2),
-                      (returnFiber[internalPropsKey] = current2),
-                      setInitialProperties(returnFiber, renderLanes2, current2),
-                      markNodeAsHoistable(returnFiber),
-                      (workInProgress2.stateNode = returnFiber))
+                      (workInProgress2.stateNode = createHoistableInstance(
+                        workInProgress2.type,
+                        workInProgress2.pendingProps,
+                        requiredContext(rootInstanceStackCursor.current),
+                        workInProgress2,
+                      ))
                   : (workInProgress2.memoizedState = getResource(
                       workInProgress2.type,
                       current2.memoizedProps,
@@ -12718,12 +13129,9 @@ var __morbis_feature = (() => {
               );
             case 7:
               return (
-                reconcileChildren(
-                  current2,
-                  workInProgress2,
-                  workInProgress2.pendingProps,
-                  renderLanes2,
-                ),
+                (returnFiber = workInProgress2.pendingProps),
+                markRef(current2, workInProgress2),
+                reconcileChildren(current2, workInProgress2, returnFiber, renderLanes2),
                 workInProgress2.child
               );
             case 8:
@@ -12752,20 +13160,7 @@ var __morbis_feature = (() => {
                 workInProgress2.child
               );
             case 10:
-              return (
-                (returnFiber = workInProgress2.type),
-                (prevSibling = workInProgress2.pendingProps),
-                (prevState = prevSibling.value),
-                'value' in prevSibling ||
-                  hasWarnedAboutUsingNoValuePropOnContextProvider ||
-                  ((hasWarnedAboutUsingNoValuePropOnContextProvider = true),
-                  console.error(
-                    'The `value` prop is required for the `<Context.Provider>`. Did you misspell it or forget to pass it?',
-                  )),
-                pushProvider(workInProgress2, returnFiber, prevState),
-                reconcileChildren(current2, workInProgress2, prevSibling.children, renderLanes2),
-                workInProgress2.child
-              );
+              return updateContextProvider(current2, workInProgress2, renderLanes2);
             case 9:
               return (
                 (prevSibling = workInProgress2.type._context),
@@ -12860,6 +13255,39 @@ var __morbis_feature = (() => {
                 ),
                 workInProgress2.child
               );
+            case 30:
+              return (
+                null === workInProgress2.stateNode &&
+                  (workInProgress2.stateNode = {
+                    autoName: null,
+                    paired: null,
+                    clones: null,
+                    ref: null,
+                  }),
+                (returnFiber = workInProgress2.pendingProps),
+                null != returnFiber.name && 'auto' !== returnFiber.name
+                  ? (workInProgress2.flags |= null === current2 ? 18882560 : 18874368)
+                  : isHydrating && pushMaterializedTreeId(workInProgress2),
+                void 0 !== returnFiber.className &&
+                  ((prevSibling =
+                    'string' === typeof returnFiber.className
+                      ? JSON.stringify(returnFiber.className)
+                      : '{...}'),
+                  didWarnAboutClassNameOnViewTransition[prevSibling] ||
+                    ((didWarnAboutClassNameOnViewTransition[prevSibling] = true),
+                    console.error(
+                      `<ViewTransition> doesn't accept a "className" prop. It has been renamed to "default".
+-   <ViewTransition className=%s>
++   <ViewTransition default=%s>`,
+                      prevSibling,
+                      prevSibling,
+                    ))),
+                null !== current2 && current2.memoizedProps.name !== returnFiber.name
+                  ? (workInProgress2.flags |= 4194816)
+                  : markRef(current2, workInProgress2),
+                reconcileChildren(current2, workInProgress2, returnFiber.children, renderLanes2),
+                workInProgress2.child
+              );
             case 29:
               throw workInProgress2.pendingProps;
           }
@@ -12879,8 +13307,14 @@ var __morbis_feature = (() => {
           newProps,
           renderLanes2,
         ) {
-          if ((type = (workInProgress2.mode & SuspenseyImagesMode) !== NoMode)) type = false;
-          if (type) {
+          var JSCompiler_temp;
+          if ((JSCompiler_temp = (workInProgress2.mode & SuspenseyImagesMode) !== NoMode))
+            JSCompiler_temp =
+              null === oldProps
+                ? maySuspendCommit(type, newProps)
+                : maySuspendCommit(type, newProps) &&
+                  (newProps.src !== oldProps.src || newProps.srcSet !== oldProps.srcSet);
+          if (JSCompiler_temp) {
             if (((workInProgress2.flags |= 16777216), (renderLanes2 & 335544128) === renderLanes2))
               if (workInProgress2.stateNode.complete) workInProgress2.flags |= 8192;
               else if (shouldRemainOnPreviousScreen()) workInProgress2.flags |= 8192;
@@ -12906,24 +13340,25 @@ var __morbis_feature = (() => {
         function cutOffTailIfNeeded(renderState, hasRenderedATailFallback) {
           if (!isHydrating)
             switch (renderState.tailMode) {
-              case 'hidden':
-                hasRenderedATailFallback = renderState.tail;
-                for (var lastTailNode = null; null !== hasRenderedATailFallback;)
-                  (null !== hasRenderedATailFallback.alternate &&
-                    (lastTailNode = hasRenderedATailFallback),
-                    (hasRenderedATailFallback = hasRenderedATailFallback.sibling));
-                null === lastTailNode ? (renderState.tail = null) : (lastTailNode.sibling = null);
+              case 'visible':
                 break;
               case 'collapsed':
-                lastTailNode = renderState.tail;
-                for (var _lastTailNode = null; null !== lastTailNode;)
-                  (null !== lastTailNode.alternate && (_lastTailNode = lastTailNode),
-                    (lastTailNode = lastTailNode.sibling));
-                null === _lastTailNode
+                for (var tailNode = renderState.tail, lastTailNode = null; null !== tailNode;)
+                  (null !== tailNode.alternate && (lastTailNode = tailNode),
+                    (tailNode = tailNode.sibling));
+                null === lastTailNode
                   ? hasRenderedATailFallback || null === renderState.tail
                     ? (renderState.tail = null)
                     : (renderState.tail.sibling = null)
-                  : (_lastTailNode.sibling = null);
+                  : (lastTailNode.sibling = null);
+                break;
+              default:
+                hasRenderedATailFallback = renderState.tail;
+                for (tailNode = null; null !== hasRenderedATailFallback;)
+                  (null !== hasRenderedATailFallback.alternate &&
+                    (tailNode = hasRenderedATailFallback),
+                    (hasRenderedATailFallback = hasRenderedATailFallback.sibling));
+                null === tailNode ? (renderState.tail = null) : (tailNode.sibling = null);
             }
         }
         function bubbleProperties(completedWork) {
@@ -12940,16 +13375,16 @@ var __morbis_feature = (() => {
                 null !== _child2;
               )
                 ((newChildLanes |= _child2.lanes | _child2.childLanes),
-                  (subtreeFlags |= _child2.subtreeFlags & 65011712),
-                  (subtreeFlags |= _child2.flags & 65011712),
+                  (subtreeFlags |= _child2.subtreeFlags & 1206910976),
+                  (subtreeFlags |= _child2.flags & 1206910976),
                   (_treeBaseDuration += _child2.treeBaseDuration),
                   (_child2 = _child2.sibling));
               completedWork.treeBaseDuration = _treeBaseDuration;
             } else
               for (_treeBaseDuration = completedWork.child; null !== _treeBaseDuration;)
                 ((newChildLanes |= _treeBaseDuration.lanes | _treeBaseDuration.childLanes),
-                  (subtreeFlags |= _treeBaseDuration.subtreeFlags & 65011712),
-                  (subtreeFlags |= _treeBaseDuration.flags & 65011712),
+                  (subtreeFlags |= _treeBaseDuration.subtreeFlags & 1206910976),
+                  (subtreeFlags |= _treeBaseDuration.flags & 1206910976),
                   (_treeBaseDuration.return = completedWork),
                   (_treeBaseDuration = _treeBaseDuration.sibling));
           else if ((completedWork.mode & ProfileMode) !== NoMode) {
@@ -13055,6 +13490,7 @@ var __morbis_feature = (() => {
                       'We must have new props for new mounts. This error is likely caused by a bug in React. Please file an issue.',
                     );
                   bubbleProperties(workInProgress2);
+                  workInProgress2.subtreeFlags &= -33554433;
                   return null;
                 }
                 current2 = getHostContext();
@@ -13071,6 +13507,7 @@ var __morbis_feature = (() => {
                     markUpdate(workInProgress2));
               }
               bubbleProperties(workInProgress2);
+              workInProgress2.subtreeFlags &= -33554433;
               return null;
             case 5:
               popHostContext(workInProgress2);
@@ -13084,6 +13521,7 @@ var __morbis_feature = (() => {
                       'We must have new props for new mounts. This error is likely caused by a bug in React. Please file an issue.',
                     );
                   bubbleProperties(workInProgress2);
+                  workInProgress2.subtreeFlags &= -33554433;
                   return null;
                 }
                 var _currentHostContext = getHostContext();
@@ -13111,6 +13549,12 @@ var __morbis_feature = (() => {
                           break;
                         case 'script':
                           nextResource = nextResource.createElement('div');
+                          didWarnScriptTags ||
+                            isScriptDataBlock(newProps) ||
+                            (console.error(
+                              'Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template).',
+                            ),
+                            (didWarnScriptTags = true));
                           nextResource.innerHTML = '<script><\/script>';
                           nextResource = nextResource.removeChild(nextResource.firstChild);
                           break;
@@ -13195,6 +13639,7 @@ var __morbis_feature = (() => {
                 }
               }
               bubbleProperties(workInProgress2);
+              workInProgress2.subtreeFlags &= -33554433;
               preloadInstanceAndSuspendIfNeeded(
                 workInProgress2,
                 workInProgress2.type,
@@ -13409,6 +13854,7 @@ var __morbis_feature = (() => {
                 popHostContainer(workInProgress2),
                 null === current2 &&
                   listenToAllSupportedEvents(workInProgress2.stateNode.containerInfo),
+                (workInProgress2.flags |= 67108864),
                 bubbleProperties(workInProgress2),
                 null
               );
@@ -13419,7 +13865,7 @@ var __morbis_feature = (() => {
                 null
               );
             case 19:
-              pop(suspenseStackCursor, workInProgress2);
+              popSuspenseListContext(workInProgress2);
               newProps = workInProgress2.memoizedState;
               if (null === newProps) return (bubbleProperties(workInProgress2), null);
               type = 0 !== (workInProgress2.flags & 128);
@@ -13444,11 +13890,10 @@ var __morbis_feature = (() => {
                         for (renderLanes2 = workInProgress2.child; null !== renderLanes2;)
                           (resetWorkInProgress(renderLanes2, current2),
                             (renderLanes2 = renderLanes2.sibling));
-                        push(
-                          suspenseStackCursor,
+                        pushSuspenseListContext(
+                          workInProgress2,
                           (suspenseStackCursor.current & SubtreeSuspenseContextMask) |
                             ForceSuspenseFallback,
-                          workInProgress2,
                         );
                         isHydrating && pushTreeFork(workInProgress2, newProps.treeForkCount);
                         return workInProgress2.child;
@@ -13473,7 +13918,8 @@ var __morbis_feature = (() => {
                       scheduleRetryEffect(workInProgress2, current2),
                       cutOffTailIfNeeded(newProps, true),
                       null === newProps.tail &&
-                        'hidden' === newProps.tailMode &&
+                        'collapsed' !== newProps.tailMode &&
+                        'visible' !== newProps.tailMode &&
                         !nextResource.alternate &&
                         !isHydrating)
                     )
@@ -13495,21 +13941,38 @@ var __morbis_feature = (() => {
                       : (workInProgress2.child = nextResource),
                     (newProps.last = nextResource));
               }
-              if (null !== newProps.tail)
-                return (
-                  (current2 = newProps.tail),
-                  (newProps.rendering = current2),
-                  (newProps.tail = current2.sibling),
-                  (newProps.renderingStartTime = now$1()),
-                  (current2.sibling = null),
-                  (renderLanes2 = suspenseStackCursor.current),
-                  (renderLanes2 = type
-                    ? (renderLanes2 & SubtreeSuspenseContextMask) | ForceSuspenseFallback
-                    : renderLanes2 & SubtreeSuspenseContextMask),
-                  push(suspenseStackCursor, renderLanes2, workInProgress2),
-                  isHydrating && pushTreeFork(workInProgress2, newProps.treeForkCount),
-                  current2
-                );
+              if (null !== newProps.tail) {
+                current2 = newProps.tail;
+                a: {
+                  for (renderLanes2 = current2; null !== renderLanes2;) {
+                    if (null !== renderLanes2.alternate) {
+                      renderLanes2 = false;
+                      break a;
+                    }
+                    renderLanes2 = renderLanes2.sibling;
+                  }
+                  renderLanes2 = true;
+                }
+                newProps.rendering = current2;
+                newProps.tail = current2.sibling;
+                newProps.renderingStartTime = now$1();
+                current2.sibling = null;
+                nextResource = suspenseStackCursor.current;
+                nextResource = type
+                  ? (nextResource & SubtreeSuspenseContextMask) | ForceSuspenseFallback
+                  : nextResource & SubtreeSuspenseContextMask;
+                'visible' === newProps.tailMode ||
+                'collapsed' === newProps.tailMode ||
+                !renderLanes2 ||
+                isHydrating
+                  ? pushSuspenseListContext(workInProgress2, nextResource)
+                  : ((renderLanes2 = nextResource),
+                    push(suspenseHandlerStackCursor, workInProgress2, workInProgress2),
+                    push(suspenseStackCursor, renderLanes2, workInProgress2),
+                    null === shellBoundary && (shellBoundary = workInProgress2));
+                isHydrating && pushTreeFork(workInProgress2, newProps.treeForkCount);
+                return current2;
+              }
               bubbleProperties(workInProgress2);
               return null;
             case 22:
@@ -13557,7 +14020,7 @@ var __morbis_feature = (() => {
             case 25:
               return null;
             case 30:
-              return null;
+              return ((workInProgress2.flags |= 33554432), bubbleProperties(workInProgress2), null);
           }
           throw Error(
             'Unknown unit of work tag (' +
@@ -13625,7 +14088,17 @@ var __morbis_feature = (() => {
                   workInProgress2)
                 : null;
             case 19:
-              return (pop(suspenseStackCursor, workInProgress2), null);
+              return (
+                popSuspenseListContext(workInProgress2),
+                (current2 = workInProgress2.flags),
+                current2 & 65536
+                  ? ((workInProgress2.flags = (current2 & -65537) | 128),
+                    (current2 = workInProgress2.memoizedState),
+                    null !== current2 && ((current2.rendering = null), (current2.tail = null)),
+                    (workInProgress2.flags |= 4),
+                    workInProgress2)
+                  : null
+              );
             case 4:
               return (popHostContainer(workInProgress2), null);
             case 10:
@@ -13674,7 +14147,7 @@ var __morbis_feature = (() => {
               popSuspenseHandler(interruptedWork);
               break;
             case 19:
-              pop(suspenseStackCursor, interruptedWork);
+              popSuspenseListContext(interruptedWork);
               break;
             case 10:
               popProvider(interruptedWork.type, interruptedWork);
@@ -13905,6 +14378,21 @@ var __morbis_feature = (() => {
                 break;
               case 30:
                 instanceToUse = finishedWork.stateNode;
+                var name = getViewTransitionName(finishedWork.memoizedProps, instanceToUse);
+                if (null === instanceToUse.ref || instanceToUse.ref.name !== name)
+                  instanceToUse.ref = createViewTransitionInstance(name);
+                instanceToUse = instanceToUse.ref;
+                break;
+              case 7:
+                null === finishedWork.stateNode &&
+                  ((instanceToUse = new FragmentInstance(finishedWork)),
+                  traverseFragmentInstancesAndTextInstances(
+                    finishedWork,
+                    addFragmentHandleToFiber,
+                    instanceToUse,
+                  ),
+                  (finishedWork.stateNode = instanceToUse));
+                instanceToUse = finishedWork.stateNode;
                 break;
               default:
                 instanceToUse = finishedWork.stateNode;
@@ -13964,8 +14452,8 @@ var __morbis_feature = (() => {
                     recordEffectDuration(current2);
                   }
                 else runWithFiberInDEV(current2, ref, null);
-              } catch (error$7) {
-                captureCommitPhaseError(current2, nearestMountedAncestor, error$7);
+              } catch (error$8) {
+                captureCommitPhaseError(current2, nearestMountedAncestor, error$8);
               }
             else ref.current = null;
         }
@@ -14001,6 +14489,37 @@ var __morbis_feature = (() => {
           currentUpdateIsNested && (current2 = 'nested-update');
           'function' === typeof _finishedWork$memoize2 &&
             _finishedWork$memoize2(finishedWork, current2, passiveEffectDuration, commitStartTime2);
+        }
+        function commitNewChildToFragmentInstances(fiber, parentFragmentInstances) {
+          if (
+            (5 === fiber.tag || 27 === fiber.tag || 6 === fiber.tag) &&
+            null === fiber.alternate &&
+            null !== parentFragmentInstances
+          )
+            for (var i = 0; i < parentFragmentInstances.length; i++)
+              commitNewChildToFragmentInstance(fiber.stateNode, parentFragmentInstances[i]);
+        }
+        function commitFragmentInstanceInsertionEffects(fiber) {
+          for (var parent = fiber.return; null !== parent;) {
+            isFragmentInstanceParent(parent) &&
+              commitNewChildToFragmentInstance(fiber.stateNode, parent.stateNode);
+            if (isFragmentInstanceHostBoundary(parent)) break;
+            parent = parent.return;
+          }
+        }
+        function commitFragmentInstanceDeletionEffects(fiber) {
+          for (var parent = fiber.return; null !== parent;) {
+            isFragmentInstanceParent(parent) &&
+              deleteChildFromFragmentInstance(fiber.stateNode, parent.stateNode);
+            if (isFragmentInstanceHostBoundary(parent)) break;
+            parent = parent.return;
+          }
+        }
+        function isFragmentInstanceHostBoundary(fiber) {
+          return 5 === fiber.tag || 3 === fiber.tag || 27 === fiber.tag;
+        }
+        function isFragmentInstanceParent(fiber) {
+          return fiber && 7 === fiber.tag && null !== fiber.stateNode;
         }
         function commitHostMount(finishedWork) {
           var type = finishedWork.type,
@@ -14052,10 +14571,15 @@ var __morbis_feature = (() => {
             if (!(fiber.flags & 2)) return fiber.stateNode;
           }
         }
-        function insertOrAppendPlacementNodeIntoContainer(node, before, parent) {
+        function insertOrAppendPlacementNodeIntoContainer(
+          node,
+          before,
+          parent,
+          parentFragmentInstances,
+        ) {
           var tag = node.tag;
           if (5 === tag || 6 === tag)
-            ((node = node.stateNode),
+            ((tag = node.stateNode),
               before
                 ? (warnForReactChildrenConflict(parent),
                   (9 === parent.nodeType
@@ -14063,7 +14587,7 @@ var __morbis_feature = (() => {
                     : 'HTML' === parent.nodeName
                       ? parent.ownerDocument.body
                       : parent
-                  ).insertBefore(node, before))
+                  ).insertBefore(tag, before))
                 : (warnForReactChildrenConflict(parent),
                   (before =
                     9 === parent.nodeType
@@ -14071,42 +14595,63 @@ var __morbis_feature = (() => {
                       : 'HTML' === parent.nodeName
                         ? parent.ownerDocument.body
                         : parent),
-                  before.appendChild(node),
-                  (parent = parent._reactRootContainer),
-                  (null !== parent && void 0 !== parent) ||
+                  before.appendChild(tag),
+                  (tag = parent._reactRootContainer),
+                  (null !== tag && void 0 !== tag) ||
                     null !== before.onclick ||
-                    (before.onclick = noop$1)));
+                    (before.onclick = noop$1)),
+              commitNewChildToFragmentInstances(node, parentFragmentInstances),
+              (viewTransitionMutationContext = true));
           else if (
             4 !== tag &&
             (27 === tag &&
-              isSingletonScope(node.type) &&
-              ((parent = node.stateNode), (before = null)),
+              (commitNewChildToFragmentInstances(node, parentFragmentInstances),
+              (parentFragmentInstances = null),
+              isSingletonScope(node.type) && ((parent = node.stateNode), (before = null))),
             (node = node.child),
             null !== node)
           )
             for (
-              insertOrAppendPlacementNodeIntoContainer(node, before, parent), node = node.sibling;
+              insertOrAppendPlacementNodeIntoContainer(
+                node,
+                before,
+                parent,
+                parentFragmentInstances,
+              ),
+                node = node.sibling;
               null !== node;
             )
-              (insertOrAppendPlacementNodeIntoContainer(node, before, parent),
+              (insertOrAppendPlacementNodeIntoContainer(
+                node,
+                before,
+                parent,
+                parentFragmentInstances,
+              ),
                 (node = node.sibling));
         }
-        function insertOrAppendPlacementNode(node, before, parent) {
+        function insertOrAppendPlacementNode(node, before, parent, parentFragmentInstances) {
           var tag = node.tag;
           if (5 === tag || 6 === tag)
-            ((node = node.stateNode),
-              before ? parent.insertBefore(node, before) : parent.appendChild(node));
+            ((tag = node.stateNode),
+              before ? parent.insertBefore(tag, before) : parent.appendChild(tag),
+              commitNewChildToFragmentInstances(node, parentFragmentInstances),
+              (viewTransitionMutationContext = true));
           else if (
             4 !== tag &&
-            (27 === tag && isSingletonScope(node.type) && (parent = node.stateNode),
+            (27 === tag &&
+              (commitNewChildToFragmentInstances(node, parentFragmentInstances),
+              (parentFragmentInstances = null),
+              isSingletonScope(node.type) && (parent = node.stateNode)),
             (node = node.child),
             null !== node)
           )
             for (
-              insertOrAppendPlacementNode(node, before, parent), node = node.sibling;
+              insertOrAppendPlacementNode(node, before, parent, parentFragmentInstances),
+                node = node.sibling;
               null !== node;
             )
-              (insertOrAppendPlacementNode(node, before, parent), (node = node.sibling));
+              (insertOrAppendPlacementNode(node, before, parent, parentFragmentInstances),
+                (node = node.sibling));
         }
         function commitPlacement(finishedWork) {
           for (var hostParentFiber, parentFiber = finishedWork.return; null !== parentFiber;) {
@@ -14116,6 +14661,17 @@ var __morbis_feature = (() => {
             }
             parentFiber = parentFiber.return;
           }
+          parentFiber = null;
+          for (var parent = finishedWork.return; null !== parent;) {
+            if (isFragmentInstanceParent(parent)) {
+              var fragmentInstance = parent.stateNode;
+              null === parentFiber
+                ? (parentFiber = [fragmentInstance])
+                : parentFiber.push(fragmentInstance);
+            }
+            if (isFragmentInstanceHostBoundary(parent)) break;
+            parent = parent.return;
+          }
           if (null == hostParentFiber)
             throw Error(
               'Expected to find a host parent. This error is likely caused by a bug in React. Please file an issue.',
@@ -14123,21 +14679,26 @@ var __morbis_feature = (() => {
           switch (hostParentFiber.tag) {
             case 27:
               hostParentFiber = hostParentFiber.stateNode;
-              parentFiber = getHostSibling(finishedWork);
-              insertOrAppendPlacementNode(finishedWork, parentFiber, hostParentFiber);
+              parent = getHostSibling(finishedWork);
+              insertOrAppendPlacementNode(finishedWork, parent, hostParentFiber, parentFiber);
               break;
             case 5:
-              parentFiber = hostParentFiber.stateNode;
+              parent = hostParentFiber.stateNode;
               hostParentFiber.flags & 32 &&
-                (resetTextContent(parentFiber), (hostParentFiber.flags &= -33));
+                (resetTextContent(parent), (hostParentFiber.flags &= -33));
               hostParentFiber = getHostSibling(finishedWork);
-              insertOrAppendPlacementNode(finishedWork, hostParentFiber, parentFiber);
+              insertOrAppendPlacementNode(finishedWork, hostParentFiber, parent, parentFiber);
               break;
             case 3:
             case 4:
               hostParentFiber = hostParentFiber.stateNode.containerInfo;
-              parentFiber = getHostSibling(finishedWork);
-              insertOrAppendPlacementNodeIntoContainer(finishedWork, parentFiber, hostParentFiber);
+              parent = getHostSibling(finishedWork);
+              insertOrAppendPlacementNodeIntoContainer(
+                finishedWork,
+                parent,
+                hostParentFiber,
+                parentFiber,
+              );
               break;
             default:
               throw Error(
@@ -14161,6 +14722,386 @@ var __morbis_feature = (() => {
             captureCommitPhaseError(finishedWork, finishedWork.return, error);
           }
         }
+        function trackEnterViewTransitions(placement) {
+          if (30 === placement.tag || 0 !== (placement.subtreeFlags & 33554432))
+            shouldStartViewTransition = true;
+        }
+        function pushViewTransitionCancelableScope() {
+          var prevChildren = viewTransitionCancelableChildren;
+          viewTransitionCancelableChildren = null;
+          return prevChildren;
+        }
+        function applyViewTransitionToHostInstances(
+          fiber,
+          name,
+          className,
+          collectMeasurements,
+          stopAtNestedViewTransitions,
+        ) {
+          viewTransitionHostInstanceIdx = 0;
+          (name = applyViewTransitionToHostInstancesRecursive(
+            fiber.child,
+            name,
+            className,
+            collectMeasurements,
+            stopAtNestedViewTransitions,
+          )) &&
+            null != fiber._debugTask &&
+            null === animatingTask &&
+            (animatingTask = fiber._debugTask);
+          return name;
+        }
+        function applyViewTransitionToHostInstancesRecursive(
+          child,
+          name,
+          className,
+          collectMeasurements,
+          stopAtNestedViewTransitions,
+        ) {
+          for (var inViewport = false; null !== child;) {
+            if (5 === child.tag) {
+              var _instance = child.stateNode;
+              if (null !== collectMeasurements) {
+                var measurement = measureInstance(_instance);
+                collectMeasurements.push(measurement);
+                measurement.view && (inViewport = true);
+              } else inViewport || (measureInstance(_instance).view && (inViewport = true));
+              shouldStartViewTransition = true;
+              applyViewTransitionName(
+                _instance,
+                0 === viewTransitionHostInstanceIdx
+                  ? name
+                  : name + '_' + viewTransitionHostInstanceIdx,
+                className,
+              );
+              viewTransitionHostInstanceIdx++;
+            } else if (22 !== child.tag || null === child.memoizedState)
+              (30 === child.tag && stopAtNestedViewTransitions) ||
+                (applyViewTransitionToHostInstancesRecursive(
+                  child.child,
+                  name,
+                  className,
+                  collectMeasurements,
+                  stopAtNestedViewTransitions,
+                ) &&
+                  (inViewport = true));
+            child = child.sibling;
+          }
+          return inViewport;
+        }
+        function restoreViewTransitionOnHostInstances(child, stopAtNestedViewTransitions) {
+          for (; null !== child;) {
+            if (5 === child.tag) restoreViewTransitionName(child.stateNode, child.memoizedProps);
+            else if (22 !== child.tag || null === child.memoizedState)
+              (30 === child.tag && stopAtNestedViewTransitions) ||
+                restoreViewTransitionOnHostInstances(child.child, stopAtNestedViewTransitions);
+            child = child.sibling;
+          }
+        }
+        function commitAppearingPairViewTransitions(placement) {
+          if (0 !== (placement.subtreeFlags & 18874368))
+            for (placement = placement.child; null !== placement;) {
+              if (22 !== placement.tag || null === placement.memoizedState) {
+                if (
+                  (commitAppearingPairViewTransitions(placement),
+                  30 === placement.tag &&
+                    0 !== (placement.flags & 18874368) &&
+                    placement.stateNode.paired)
+                ) {
+                  var props = placement.memoizedProps;
+                  if (null == props.name || 'auto' === props.name)
+                    throw Error('Found a pair with an auto name. This is a bug in React.');
+                  var name = props.name;
+                  props = getViewTransitionClassName(props.default, props.share);
+                  'none' !== props &&
+                    (applyViewTransitionToHostInstances(placement, name, props, null, false) ||
+                      restoreViewTransitionOnHostInstances(placement.child, false));
+                }
+              }
+              placement = placement.sibling;
+            }
+        }
+        function commitEnterViewTransitions(placement, gesture) {
+          if (30 === placement.tag) {
+            var state = placement.stateNode,
+              props = placement.memoizedProps,
+              name = getViewTransitionName(props, state),
+              className = getViewTransitionClassName(
+                props.default,
+                state.paired ? props.share : props.enter,
+              );
+            'none' !== className
+              ? applyViewTransitionToHostInstances(placement, name, className, null, false)
+                ? (commitAppearingPairViewTransitions(placement),
+                  state.paired || gesture || scheduleViewTransitionEvent(placement, props.onEnter))
+                : restoreViewTransitionOnHostInstances(placement.child, false)
+              : commitAppearingPairViewTransitions(placement);
+          } else if (0 !== (placement.subtreeFlags & 33554432))
+            for (placement = placement.child; null !== placement;)
+              (commitEnterViewTransitions(placement, gesture), (placement = placement.sibling));
+          else commitAppearingPairViewTransitions(placement);
+        }
+        function commitDeletedPairViewTransitions(deletion) {
+          if (null !== appearingViewTransitions && 0 !== appearingViewTransitions.size) {
+            var pairs = appearingViewTransitions;
+            if (0 !== (deletion.subtreeFlags & 18874368))
+              for (deletion = deletion.child; null !== deletion;) {
+                if (22 !== deletion.tag || null === deletion.memoizedState) {
+                  if (30 === deletion.tag && 0 !== (deletion.flags & 18874368)) {
+                    var props = deletion.memoizedProps,
+                      name = props.name;
+                    if (null != name && 'auto' !== name) {
+                      var pair = pairs.get(name);
+                      if (void 0 !== pair) {
+                        var className = getViewTransitionClassName(props.default, props.share);
+                        'none' !== className &&
+                          (applyViewTransitionToHostInstances(
+                            deletion,
+                            name,
+                            className,
+                            null,
+                            false,
+                          )
+                            ? ((className = deletion.stateNode),
+                              (pair.paired = className),
+                              (className.paired = pair),
+                              scheduleViewTransitionEvent(deletion, props.onShare))
+                            : restoreViewTransitionOnHostInstances(deletion.child, false));
+                        pairs.delete(name);
+                        if (0 === pairs.size) break;
+                      }
+                    }
+                  }
+                  commitDeletedPairViewTransitions(deletion);
+                }
+                deletion = deletion.sibling;
+              }
+          }
+        }
+        function commitExitViewTransitions(deletion) {
+          if (30 === deletion.tag) {
+            var props = deletion.memoizedProps,
+              name = getViewTransitionName(props, deletion.stateNode),
+              pair =
+                null !== appearingViewTransitions ? appearingViewTransitions.get(name) : void 0,
+              className = getViewTransitionClassName(
+                props.default,
+                void 0 !== pair ? props.share : props.exit,
+              );
+            'none' !== className &&
+              (applyViewTransitionToHostInstances(deletion, name, className, null, false)
+                ? void 0 !== pair
+                  ? ((className = deletion.stateNode),
+                    (pair.paired = className),
+                    (className.paired = pair),
+                    appearingViewTransitions.delete(name),
+                    scheduleViewTransitionEvent(deletion, props.onShare))
+                  : scheduleViewTransitionEvent(deletion, props.onExit)
+                : restoreViewTransitionOnHostInstances(deletion.child, false));
+            null !== appearingViewTransitions && commitDeletedPairViewTransitions(deletion);
+          } else if (0 !== (deletion.subtreeFlags & 33554432))
+            for (deletion = deletion.child; null !== deletion;)
+              (commitExitViewTransitions(deletion), (deletion = deletion.sibling));
+          else null !== appearingViewTransitions && commitDeletedPairViewTransitions(deletion);
+        }
+        function commitNestedViewTransitions(changedParent) {
+          for (changedParent = changedParent.child; null !== changedParent;) {
+            if (30 === changedParent.tag) {
+              var props = changedParent.memoizedProps,
+                name = getViewTransitionName(props, changedParent.stateNode);
+              props = getViewTransitionClassName(props.default, props.update);
+              changedParent.flags &= -5;
+              'none' !== props &&
+                applyViewTransitionToHostInstances(
+                  changedParent,
+                  name,
+                  props,
+                  (changedParent.memoizedState = []),
+                  false,
+                );
+            } else
+              0 !== (changedParent.subtreeFlags & 33554432) &&
+                commitNestedViewTransitions(changedParent);
+            changedParent = changedParent.sibling;
+          }
+        }
+        function restorePairedViewTransitions(parent) {
+          if (0 !== (parent.subtreeFlags & 18874368))
+            for (parent = parent.child; null !== parent;) {
+              if (22 !== parent.tag || null === parent.memoizedState) {
+                if (30 === parent.tag && 0 !== (parent.flags & 18874368)) {
+                  var instance = parent.stateNode;
+                  null !== instance.paired &&
+                    ((instance.paired = null),
+                    restoreViewTransitionOnHostInstances(parent.child, false));
+                }
+                restorePairedViewTransitions(parent);
+              }
+              parent = parent.sibling;
+            }
+        }
+        function restoreEnterOrExitViewTransitions(fiber) {
+          if (30 === fiber.tag)
+            ((fiber.stateNode.paired = null),
+              restoreViewTransitionOnHostInstances(fiber.child, false),
+              restorePairedViewTransitions(fiber));
+          else if (0 !== (fiber.subtreeFlags & 33554432))
+            for (fiber = fiber.child; null !== fiber;)
+              (restoreEnterOrExitViewTransitions(fiber), (fiber = fiber.sibling));
+          else restorePairedViewTransitions(fiber);
+        }
+        function restoreNestedViewTransitions(changedParent) {
+          for (changedParent = changedParent.child; null !== changedParent;)
+            (30 === changedParent.tag
+              ? restoreViewTransitionOnHostInstances(changedParent.child, false)
+              : 0 !== (changedParent.subtreeFlags & 33554432) &&
+                restoreNestedViewTransitions(changedParent),
+              (changedParent = changedParent.sibling));
+        }
+        function measureViewTransitionHostInstancesRecursive(
+          parentViewTransition,
+          child,
+          newName,
+          oldName,
+          className,
+          previousMeasurements,
+          stopAtNestedViewTransitions,
+        ) {
+          for (var inViewport = false; null !== child;) {
+            if (5 === child.tag) {
+              var _instance2 = child.stateNode;
+              if (
+                null !== previousMeasurements &&
+                viewTransitionHostInstanceIdx < previousMeasurements.length
+              ) {
+                var previousMeasurement = previousMeasurements[viewTransitionHostInstanceIdx],
+                  nextMeasurement = measureInstance(_instance2);
+                if (previousMeasurement.view || nextMeasurement.view) inViewport = true;
+                var JSCompiler_temp;
+                if ((JSCompiler_temp = 0 === (parentViewTransition.flags & 4)))
+                  if (nextMeasurement.clip) JSCompiler_temp = true;
+                  else {
+                    JSCompiler_temp = previousMeasurement.rect;
+                    var newRect = nextMeasurement.rect;
+                    JSCompiler_temp =
+                      JSCompiler_temp.y !== newRect.y ||
+                      JSCompiler_temp.x !== newRect.x ||
+                      JSCompiler_temp.height !== newRect.height ||
+                      JSCompiler_temp.width !== newRect.width;
+                  }
+                JSCompiler_temp && (parentViewTransition.flags |= 4);
+                nextMeasurement.abs
+                  ? (nextMeasurement = !previousMeasurement.abs)
+                  : ((previousMeasurement = previousMeasurement.rect),
+                    (nextMeasurement = nextMeasurement.rect),
+                    (nextMeasurement =
+                      previousMeasurement.height !== nextMeasurement.height ||
+                      previousMeasurement.width !== nextMeasurement.width));
+                nextMeasurement && (parentViewTransition.flags |= 32);
+              } else parentViewTransition.flags |= 32;
+              0 !== (parentViewTransition.flags & 4) &&
+                applyViewTransitionName(
+                  _instance2,
+                  0 === viewTransitionHostInstanceIdx
+                    ? newName
+                    : newName + '_' + viewTransitionHostInstanceIdx,
+                  className,
+                );
+              (inViewport && 0 !== (parentViewTransition.flags & 4)) ||
+                (null === viewTransitionCancelableChildren &&
+                  (viewTransitionCancelableChildren = []),
+                viewTransitionCancelableChildren.push(
+                  _instance2,
+                  0 === viewTransitionHostInstanceIdx
+                    ? oldName
+                    : oldName + '_' + viewTransitionHostInstanceIdx,
+                  child.memoizedProps,
+                ));
+              viewTransitionHostInstanceIdx++;
+            } else if (22 !== child.tag || null === child.memoizedState)
+              30 === child.tag && stopAtNestedViewTransitions
+                ? (parentViewTransition.flags |= child.flags & 32)
+                : measureViewTransitionHostInstancesRecursive(
+                    parentViewTransition,
+                    child.child,
+                    newName,
+                    oldName,
+                    className,
+                    previousMeasurements,
+                    stopAtNestedViewTransitions,
+                  ) && (inViewport = true);
+            child = child.sibling;
+          }
+          return inViewport;
+        }
+        function measureNestedViewTransitions(changedParent, gesture) {
+          for (changedParent = changedParent.child; null !== changedParent;) {
+            if (30 === changedParent.tag) {
+              var props = changedParent.memoizedProps,
+                state = changedParent.stateNode,
+                name = getViewTransitionName(props, state),
+                className = getViewTransitionClassName(props.default, props.update);
+              if (gesture) {
+                state = state.clones;
+                var previousMeasurements = null === state ? null : state.map(measureClonedInstance);
+              } else
+                ((previousMeasurements = changedParent.memoizedState),
+                  (changedParent.memoizedState = null));
+              state = changedParent;
+              var child = changedParent.child,
+                newName = name;
+              viewTransitionHostInstanceIdx = 0;
+              className = measureViewTransitionHostInstancesRecursive(
+                state,
+                child,
+                newName,
+                name,
+                className,
+                previousMeasurements,
+                false,
+              );
+              0 !== (changedParent.flags & 4) &&
+                className &&
+                (gesture || scheduleViewTransitionEvent(changedParent, props.onUpdate));
+            } else
+              0 !== (changedParent.subtreeFlags & 33554432) &&
+                measureNestedViewTransitions(changedParent, gesture);
+            changedParent = changedParent.sibling;
+          }
+        }
+        function trackNamedViewTransition(fiber) {
+          var name = fiber.memoizedProps.name;
+          if (null != name && 'auto' !== name) {
+            var existing = mountedNamedViewTransitions.get(name);
+            if (void 0 !== existing) {
+              if (existing !== fiber && existing !== fiber.alternate && !didWarnAboutName[name]) {
+                didWarnAboutName[name] = true;
+                var stringifiedName = JSON.stringify(name);
+                runWithFiberInDEV(fiber, function () {
+                  console.error(
+                    'There are two <ViewTransition name=%s> components with the same name mounted at the same time. This is not supported and will cause View Transitions to error. Try to use a more unique name e.g. by using a namespace prefix and adding the id of an item to the name.',
+                    stringifiedName,
+                  );
+                });
+                runWithFiberInDEV(existing, function () {
+                  console.error(
+                    'The existing <ViewTransition name=%s> duplicate has this stack trace.',
+                    stringifiedName,
+                  );
+                });
+              }
+            } else mountedNamedViewTransitions.set(name, fiber);
+          }
+        }
+        function untrackNamedViewTransition(fiber) {
+          var name = fiber.memoizedProps.name;
+          if (null != name && 'auto' !== name) {
+            var existing = mountedNamedViewTransitions.get(name);
+            void 0 === existing ||
+              (existing !== fiber && existing !== fiber.alternate) ||
+              mountedNamedViewTransitions.delete(name);
+          }
+        }
         function isHydratingParent(current2, finishedWork) {
           return 31 === finishedWork.tag
             ? ((finishedWork = finishedWork.memoizedState),
@@ -14175,7 +15116,7 @@ var __morbis_feature = (() => {
                 ? current2.memoizedState.isDehydrated && 0 === (finishedWork.flags & 256)
                 : false;
         }
-        function commitBeforeMutationEffects(root2, firstChild) {
+        function commitBeforeMutationEffects(root2, firstChild, committedLanes) {
           root2 = root2.containerInfo;
           eventsEnabled = _enabled;
           root2 = getActiveElementDeep(root2);
@@ -14198,7 +15139,7 @@ var __morbis_feature = (() => {
                   selection = selection.focusOffset;
                   try {
                     (JSCompiler_temp.nodeType, focusNode.nodeType);
-                  } catch (e$2) {
+                  } catch (e$3) {
                     JSCompiler_temp = null;
                     break a;
                   }
@@ -14246,79 +15187,118 @@ var __morbis_feature = (() => {
             selectionRange: JSCompiler_temp,
           };
           _enabled = false;
-          for (nextEffect = firstChild; null !== nextEffect;)
-            if (
-              ((firstChild = nextEffect),
-              (root2 = firstChild.child),
-              0 !== (firstChild.subtreeFlags & 1028) && null !== root2)
-            )
-              ((root2.return = firstChild), (nextEffect = root2));
-            else
-              for (; null !== nextEffect;) {
-                root2 = firstChild = nextEffect;
-                JSCompiler_temp = root2.alternate;
-                anchorOffset = root2.flags;
-                switch (root2.tag) {
-                  case 0:
-                    if (
-                      0 !== (anchorOffset & 4) &&
-                      ((root2 = root2.updateQueue),
-                      (root2 = null !== root2 ? root2.events : null),
-                      null !== root2)
-                    )
-                      for (JSCompiler_temp = 0; JSCompiler_temp < root2.length; JSCompiler_temp++)
-                        ((anchorOffset = root2[JSCompiler_temp]),
-                          (anchorOffset.ref.impl = anchorOffset.nextImpl));
-                    break;
-                  case 11:
-                  case 15:
-                    break;
-                  case 1:
-                    0 !== (anchorOffset & 1024) &&
-                      null !== JSCompiler_temp &&
-                      commitClassSnapshot(root2, JSCompiler_temp);
-                    break;
-                  case 3:
-                    if (0 !== (anchorOffset & 1024)) {
-                      if (
-                        ((root2 = root2.stateNode.containerInfo),
-                        (JSCompiler_temp = root2.nodeType),
-                        9 === JSCompiler_temp)
-                      )
-                        clearContainerSparingly(root2);
-                      else if (1 === JSCompiler_temp)
-                        switch (root2.nodeName) {
-                          case 'HEAD':
-                          case 'HTML':
-                          case 'BODY':
-                            clearContainerSparingly(root2);
-                            break;
-                          default:
-                            root2.textContent = '';
-                        }
-                    }
-                    break;
-                  case 5:
-                  case 26:
-                  case 27:
-                  case 6:
-                  case 4:
-                  case 17:
-                    break;
-                  default:
-                    if (0 !== (anchorOffset & 1024))
-                      throw Error(
-                        'This unit of work tag should not have side-effects. This error is likely caused by a bug in React. Please file an issue.',
-                      );
+          committedLanes = (committedLanes & 335544064) === committedLanes;
+          nextEffect = firstChild;
+          for (firstChild = committedLanes ? 9270 : 1024; null !== nextEffect;) {
+            root2 = nextEffect;
+            if (committedLanes && ((JSCompiler_temp = root2.deletions), null !== JSCompiler_temp))
+              for (anchorOffset = 0; anchorOffset < JSCompiler_temp.length; anchorOffset++)
+                committedLanes && commitExitViewTransitions(JSCompiler_temp[anchorOffset]);
+            if (null === root2.alternate && 0 !== (root2.flags & 2))
+              (committedLanes && trackEnterViewTransitions(root2),
+                commitBeforeMutationEffects_complete(committedLanes));
+            else {
+              if (22 === root2.tag) {
+                if (((JSCompiler_temp = root2.alternate), null !== root2.memoizedState)) {
+                  null !== JSCompiler_temp &&
+                    null === JSCompiler_temp.memoizedState &&
+                    committedLanes &&
+                    commitExitViewTransitions(JSCompiler_temp);
+                  commitBeforeMutationEffects_complete(committedLanes);
+                  continue;
+                } else if (null !== JSCompiler_temp && null !== JSCompiler_temp.memoizedState) {
+                  committedLanes && trackEnterViewTransitions(root2);
+                  commitBeforeMutationEffects_complete(committedLanes);
+                  continue;
                 }
-                root2 = firstChild.sibling;
-                if (null !== root2) {
-                  root2.return = firstChild.return;
-                  nextEffect = root2;
-                  break;
-                }
-                nextEffect = firstChild.return;
               }
+              JSCompiler_temp = root2.child;
+              0 !== (root2.subtreeFlags & firstChild) && null !== JSCompiler_temp
+                ? ((JSCompiler_temp.return = root2), (nextEffect = JSCompiler_temp))
+                : (committedLanes && commitNestedViewTransitions(root2),
+                  commitBeforeMutationEffects_complete(committedLanes));
+            }
+          }
+          appearingViewTransitions = null;
+        }
+        function commitBeforeMutationEffects_complete(isViewTransitionEligible$jscomp$0) {
+          for (; null !== nextEffect;) {
+            var fiber = nextEffect,
+              finishedWork = fiber,
+              isViewTransitionEligible = isViewTransitionEligible$jscomp$0,
+              current2 = finishedWork.alternate,
+              flags = finishedWork.flags;
+            switch (finishedWork.tag) {
+              case 0:
+              case 11:
+              case 15:
+                break;
+              case 1:
+                0 !== (flags & 1024) &&
+                  null !== current2 &&
+                  commitClassSnapshot(finishedWork, current2);
+                break;
+              case 3:
+                if (0 !== (flags & 1024)) {
+                  if (
+                    ((isViewTransitionEligible = finishedWork.stateNode.containerInfo),
+                    (finishedWork = isViewTransitionEligible.nodeType),
+                    9 === finishedWork)
+                  )
+                    clearContainerSparingly(isViewTransitionEligible);
+                  else if (1 === finishedWork)
+                    switch (isViewTransitionEligible.nodeName) {
+                      case 'HEAD':
+                      case 'HTML':
+                      case 'BODY':
+                        clearContainerSparingly(isViewTransitionEligible);
+                        break;
+                      default:
+                        isViewTransitionEligible.textContent = '';
+                    }
+                }
+                break;
+              case 5:
+              case 26:
+              case 27:
+              case 6:
+              case 4:
+              case 17:
+                break;
+              case 30:
+                isViewTransitionEligible &&
+                  null !== current2 &&
+                  ((isViewTransitionEligible = current2),
+                  (current2 = finishedWork),
+                  (finishedWork = getViewTransitionName(
+                    isViewTransitionEligible.memoizedProps,
+                    isViewTransitionEligible.stateNode,
+                  )),
+                  (current2 = current2.memoizedProps),
+                  (current2 = getViewTransitionClassName(current2.default, current2.update)),
+                  'none' !== current2 &&
+                    applyViewTransitionToHostInstances(
+                      isViewTransitionEligible,
+                      finishedWork,
+                      current2,
+                      (isViewTransitionEligible.memoizedState = []),
+                      true,
+                    ));
+                break;
+              default:
+                if (0 !== (flags & 1024))
+                  throw Error(
+                    'This unit of work tag should not have side-effects. This error is likely caused by a bug in React. Please file an issue.',
+                  );
+            }
+            isViewTransitionEligible = fiber.sibling;
+            if (null !== isViewTransitionEligible) {
+              isViewTransitionEligible.return = fiber.return;
+              nextEffect = isViewTransitionEligible;
+              break;
+            }
+            nextEffect = fiber.return;
+          }
         }
         function commitLayoutEffectOnFiber(finishedRoot, current2, finishedWork) {
           var prevEffectStart = pushComponentEffectStart(),
@@ -14496,18 +15476,17 @@ var __morbis_feature = (() => {
             case 22:
               flags = null !== finishedWork.memoizedState || offscreenSubtreeIsHidden;
               if (!flags) {
-                current2 =
+                var newOffscreenSubtreeWasHidden =
                   (null !== current2 && null !== current2.memoizedState) ||
                   offscreenSubtreeWasHidden;
-                prevProps = offscreenSubtreeIsHidden;
-                var prevOffscreenSubtreeWasHidden = offscreenSubtreeWasHidden;
+                current2 = offscreenSubtreeIsHidden;
+                prevProps = offscreenSubtreeWasHidden;
                 offscreenSubtreeIsHidden = flags;
-                (offscreenSubtreeWasHidden = current2) && !prevOffscreenSubtreeWasHidden
-                  ? (recursivelyTraverseReappearLayoutEffects(
-                      finishedRoot,
-                      finishedWork,
-                      0 !== (finishedWork.subtreeFlags & 8772),
-                    ),
+                (offscreenSubtreeWasHidden = newOffscreenSubtreeWasHidden) && !prevProps
+                  ? ((flags = IncludeHostSingletons),
+                    0 !== (finishedWork.subtreeFlags & 8772) &&
+                      (flags |= IncludeWorkInProgressEffects),
+                    recursivelyTraverseReappearLayoutEffects(finishedRoot, finishedWork, flags),
                     (finishedWork.mode & ProfileMode) !== NoMode &&
                       0 <= componentEffectStartTime &&
                       0 <= componentEffectEndTime &&
@@ -14518,12 +15497,17 @@ var __morbis_feature = (() => {
                         componentEffectEndTime,
                       ))
                   : recursivelyTraverseLayoutEffects(finishedRoot, finishedWork);
-                offscreenSubtreeIsHidden = prevProps;
-                offscreenSubtreeWasHidden = prevOffscreenSubtreeWasHidden;
+                offscreenSubtreeIsHidden = current2;
+                offscreenSubtreeWasHidden = prevProps;
               }
               break;
             case 30:
+              flags & 18874368 && trackNamedViewTransition(finishedWork);
+              recursivelyTraverseLayoutEffects(finishedRoot, finishedWork);
+              flags & 512 && safelyAttachRef(finishedWork, finishedWork.return);
               break;
+            case 7:
+              flags & 512 && safelyAttachRef(finishedWork, finishedWork.return);
             default:
               recursivelyTraverseLayoutEffects(finishedRoot, finishedWork);
           }
@@ -14553,6 +15537,79 @@ var __morbis_feature = (() => {
           popComponentEffectDuration(prevEffectDuration);
           componentEffectErrors = prevEffectErrors;
           componentEffectSpawnedUpdate = prevEffectDidSpawnUpdate;
+        }
+        function hideOrUnhideAllChildren(parentFiber, isHidden2) {
+          for (parentFiber = parentFiber.child; null !== parentFiber;)
+            (hideOrUnhideAllChildrenOnFiber(parentFiber, isHidden2),
+              (parentFiber = parentFiber.sibling));
+        }
+        function hideOrUnhideAllChildrenOnFiber(fiber, isHidden2) {
+          switch (fiber.tag) {
+            case 5:
+            case 26:
+              try {
+                var instance = fiber.stateNode;
+                isHidden2
+                  ? runWithFiberInDEV(fiber, hideInstance, instance)
+                  : runWithFiberInDEV(fiber, unhideInstance, fiber.stateNode, fiber.memoizedProps);
+              } catch (error) {
+                captureCommitPhaseError(fiber, fiber.return, error);
+              }
+              hideOrUnhideNearestPortals(fiber, isHidden2);
+              break;
+            case 6:
+              try {
+                var instance$jscomp$0 = fiber.stateNode;
+                isHidden2
+                  ? runWithFiberInDEV(fiber, hideTextInstance, instance$jscomp$0)
+                  : runWithFiberInDEV(
+                      fiber,
+                      unhideTextInstance,
+                      instance$jscomp$0,
+                      fiber.memoizedProps,
+                    );
+                viewTransitionMutationContext = true;
+              } catch (error) {
+                captureCommitPhaseError(fiber, fiber.return, error);
+              }
+              break;
+            case 18:
+              try {
+                var instance$jscomp$1 = fiber.stateNode;
+                isHidden2
+                  ? runWithFiberInDEV(fiber, hideDehydratedBoundary, instance$jscomp$1)
+                  : runWithFiberInDEV(fiber, unhideDehydratedBoundary, fiber.stateNode);
+              } catch (error) {
+                captureCommitPhaseError(fiber, fiber.return, error);
+              }
+              break;
+            case 22:
+            case 23:
+              null === fiber.memoizedState && hideOrUnhideAllChildren(fiber, isHidden2);
+              break;
+            default:
+              hideOrUnhideAllChildren(fiber, isHidden2);
+          }
+        }
+        function hideOrUnhideNearestPortals(parentFiber, isHidden$jscomp$0) {
+          if (parentFiber.subtreeFlags & 67108864)
+            for (parentFiber = parentFiber.child; null !== parentFiber;) {
+              a: {
+                var fiber = parentFiber,
+                  isHidden2 = isHidden$jscomp$0;
+                switch (fiber.tag) {
+                  case 4:
+                    hideOrUnhideAllChildrenOnFiber(fiber, isHidden2);
+                    break a;
+                  case 22:
+                    null === fiber.memoizedState && hideOrUnhideNearestPortals(fiber, isHidden2);
+                    break a;
+                  default:
+                    hideOrUnhideNearestPortals(fiber, isHidden2);
+                }
+              }
+              parentFiber = parentFiber.sibling;
+            }
         }
         function detachFiberAfterEffects(fiber) {
           var alternate = fiber.alternate;
@@ -14601,11 +15658,13 @@ var __morbis_feature = (() => {
               deletedFiber.memoizedState
                 ? deletedFiber.memoizedState.count--
                 : deletedFiber.stateNode &&
+                  !offscreenSubtreeWasHidden &&
                   ((finishedRoot = deletedFiber.stateNode),
                   finishedRoot.parentNode.removeChild(finishedRoot));
               break;
             case 27:
               offscreenSubtreeWasHidden || safelyDetachRef(deletedFiber, nearestMountedAncestor);
+              commitFragmentInstanceDeletionEffects(deletedFiber);
               var prevHostParent = hostParent,
                 prevHostParentIsContainer = hostParentIsContainer;
               isSingletonScope(deletedFiber.type) &&
@@ -14615,13 +15674,21 @@ var __morbis_feature = (() => {
                 nearestMountedAncestor,
                 deletedFiber,
               );
-              runWithFiberInDEV(deletedFiber, releaseSingletonInstance, deletedFiber.stateNode);
+              runWithFiberInDEV(
+                deletedFiber,
+                releaseSingletonInstance,
+                deletedFiber.stateNode,
+                deletedFiber.type,
+                deletedFiber.memoizedProps,
+              );
               hostParent = prevHostParent;
               hostParentIsContainer = prevHostParentIsContainer;
               break;
             case 5:
-              offscreenSubtreeWasHidden || safelyDetachRef(deletedFiber, nearestMountedAncestor);
+              (offscreenSubtreeWasHidden || safelyDetachRef(deletedFiber, nearestMountedAncestor),
+                commitFragmentInstanceDeletionEffects(deletedFiber));
             case 6:
+              6 === deletedFiber.tag && commitFragmentInstanceDeletionEffects(deletedFiber);
               prevHostParent = hostParent;
               prevHostParentIsContainer = hostParentIsContainer;
               hostParent = null;
@@ -14635,23 +15702,25 @@ var __morbis_feature = (() => {
               if (null !== hostParent)
                 if (hostParentIsContainer)
                   try {
-                    runWithFiberInDEV(
+                    (runWithFiberInDEV(
                       deletedFiber,
                       removeChildFromContainer,
                       hostParent,
                       deletedFiber.stateNode,
-                    );
+                    ),
+                      (viewTransitionMutationContext = true));
                   } catch (error) {
                     captureCommitPhaseError(deletedFiber, nearestMountedAncestor, error);
                   }
                 else
                   try {
-                    runWithFiberInDEV(
+                    (runWithFiberInDEV(
                       deletedFiber,
                       removeChild,
                       hostParent,
                       deletedFiber.stateNode,
-                    );
+                    ),
+                      (viewTransitionMutationContext = true));
                   } catch (error) {
                     captureCommitPhaseError(deletedFiber, nearestMountedAncestor, error);
                   }
@@ -14729,6 +15798,23 @@ var __morbis_feature = (() => {
                 deletedFiber,
               );
               offscreenSubtreeWasHidden = prevHostParent;
+              break;
+            case 30:
+              deletedFiber.flags & 18874368 && untrackNamedViewTransition(deletedFiber);
+              safelyDetachRef(deletedFiber, nearestMountedAncestor);
+              recursivelyTraverseDeletionEffects(
+                finishedRoot,
+                nearestMountedAncestor,
+                deletedFiber,
+              );
+              break;
+            case 7:
+              offscreenSubtreeWasHidden || safelyDetachRef(deletedFiber, nearestMountedAncestor);
+              recursivelyTraverseDeletionEffects(
+                finishedRoot,
+                nearestMountedAncestor,
+                deletedFiber,
+              );
               break;
             default:
               recursivelyTraverseDeletionEffects(
@@ -14824,7 +15910,7 @@ var __morbis_feature = (() => {
             }
           });
         }
-        function recursivelyTraverseMutationEffects(root$jscomp$0, parentFiber) {
+        function recursivelyTraverseMutationEffects(root$jscomp$0, parentFiber, lanes) {
           var deletions = parentFiber.deletions;
           if (null !== deletions)
             for (var i = 0; i < deletions.length; i++) {
@@ -14879,10 +15965,10 @@ var __morbis_feature = (() => {
             }
           if (parentFiber.subtreeFlags & 13886)
             for (parentFiber = parentFiber.child; null !== parentFiber;)
-              (commitMutationEffectsOnFiber(parentFiber, root$jscomp$0),
+              (commitMutationEffectsOnFiber(parentFiber, root$jscomp$0, lanes),
                 (parentFiber = parentFiber.sibling));
         }
-        function commitMutationEffectsOnFiber(finishedWork, root2) {
+        function commitMutationEffectsOnFiber(finishedWork, root2, lanes) {
           var prevEffectStart = pushComponentEffectStart(),
             prevEffectDuration = pushComponentEffectDuration(),
             prevEffectErrors = pushComponentEffectErrors(),
@@ -14894,7 +15980,17 @@ var __morbis_feature = (() => {
             case 11:
             case 14:
             case 15:
-              recursivelyTraverseMutationEffects(root2, finishedWork);
+              if (
+                flags & 4 &&
+                ((current2 = finishedWork.updateQueue),
+                (current2 = null !== current2 ? current2.events : null),
+                null !== current2)
+              )
+                for (var ii = 0; ii < current2.length; ii++) {
+                  var _eventPayloads$ii2 = current2[ii];
+                  _eventPayloads$ii2.ref.impl = _eventPayloads$ii2.nextImpl;
+                }
+              recursivelyTraverseMutationEffects(root2, finishedWork, lanes);
               commitReconciliationEffects(finishedWork);
               flags & 4 &&
                 (commitHookEffectListUnmount(
@@ -14910,178 +16006,175 @@ var __morbis_feature = (() => {
                 ));
               break;
             case 1:
-              recursivelyTraverseMutationEffects(root2, finishedWork);
+              recursivelyTraverseMutationEffects(root2, finishedWork, lanes);
               commitReconciliationEffects(finishedWork);
               flags & 512 &&
                 (offscreenSubtreeWasHidden ||
                   null === current2 ||
                   safelyDetachRef(current2, current2.return));
-              if (
-                flags & 64 &&
+              flags & 64 &&
                 offscreenSubtreeIsHidden &&
-                ((flags = finishedWork.updateQueue),
-                null !== flags && ((current2 = flags.callbacks), null !== current2))
-              ) {
-                var existingHiddenCallbacks = flags.shared.hiddenCallbacks;
-                flags.shared.hiddenCallbacks =
-                  null === existingHiddenCallbacks
-                    ? current2
-                    : existingHiddenCallbacks.concat(current2);
-              }
+                ((root2 = finishedWork.updateQueue),
+                null !== root2 &&
+                  ((lanes = root2.callbacks),
+                  null !== lanes &&
+                    ((flags = root2.shared.hiddenCallbacks),
+                    (root2.shared.hiddenCallbacks =
+                      null === flags ? lanes : flags.concat(lanes)))));
               break;
             case 26:
-              existingHiddenCallbacks = currentHoistableRoot;
-              recursivelyTraverseMutationEffects(root2, finishedWork);
+              ii = currentHoistableRoot;
+              recursivelyTraverseMutationEffects(root2, finishedWork, lanes);
               commitReconciliationEffects(finishedWork);
               flags & 512 &&
                 (offscreenSubtreeWasHidden ||
                   null === current2 ||
                   safelyDetachRef(current2, current2.return));
-              if (flags & 4) {
-                var currentResource = null !== current2 ? current2.memoizedState : null;
-                flags = finishedWork.memoizedState;
-                if (null === current2)
-                  if (null === flags)
-                    if (null === finishedWork.stateNode) {
-                      a: {
-                        flags = finishedWork.type;
-                        current2 = finishedWork.memoizedProps;
-                        existingHiddenCallbacks =
-                          existingHiddenCallbacks.ownerDocument || existingHiddenCallbacks;
-                        b: switch (flags) {
-                          case 'title':
-                            currentResource =
-                              existingHiddenCallbacks.getElementsByTagName('title')[0];
-                            if (
-                              !currentResource ||
-                              currentResource[internalHoistableMarker] ||
-                              currentResource[internalInstanceKey] ||
-                              currentResource.namespaceURI === SVG_NAMESPACE ||
-                              currentResource.hasAttribute('itemprop')
-                            )
-                              ((currentResource = existingHiddenCallbacks.createElement(flags)),
-                                existingHiddenCallbacks.head.insertBefore(
-                                  currentResource,
-                                  existingHiddenCallbacks.querySelector('head > title'),
-                                ));
-                            setInitialProperties(currentResource, flags, current2);
-                            currentResource[internalInstanceKey] = finishedWork;
-                            markNodeAsHoistable(currentResource);
-                            flags = currentResource;
-                            break a;
-                          case 'link':
-                            var maybeNodes = getHydratableHoistableCache(
-                              'link',
-                              'href',
-                              existingHiddenCallbacks,
-                            ).get(flags + (current2.href || ''));
-                            if (maybeNodes) {
-                              for (var i = 0; i < maybeNodes.length; i++)
-                                if (
-                                  ((currentResource = maybeNodes[i]),
-                                  currentResource.getAttribute('href') ===
-                                    (null == current2.href || '' === current2.href
-                                      ? null
-                                      : current2.href) &&
-                                    currentResource.getAttribute('rel') ===
-                                      (null == current2.rel ? null : current2.rel) &&
-                                    currentResource.getAttribute('title') ===
-                                      (null == current2.title ? null : current2.title) &&
-                                    currentResource.getAttribute('crossorigin') ===
-                                      (null == current2.crossOrigin ? null : current2.crossOrigin))
-                                ) {
-                                  maybeNodes.splice(i, 1);
-                                  break b;
-                                }
-                            }
-                            currentResource = existingHiddenCallbacks.createElement(flags);
-                            setInitialProperties(currentResource, flags, current2);
-                            existingHiddenCallbacks.head.appendChild(currentResource);
-                            break;
-                          case 'meta':
-                            if (
-                              (maybeNodes = getHydratableHoistableCache(
-                                'meta',
-                                'content',
-                                existingHiddenCallbacks,
-                              ).get(flags + (current2.content || '')))
-                            ) {
-                              for (i = 0; i < maybeNodes.length; i++)
-                                if (
-                                  ((currentResource = maybeNodes[i]),
-                                  checkAttributeStringCoercion(current2.content, 'content'),
-                                  currentResource.getAttribute('content') ===
-                                    (null == current2.content ? null : '' + current2.content) &&
-                                    currentResource.getAttribute('name') ===
-                                      (null == current2.name ? null : current2.name) &&
-                                    currentResource.getAttribute('property') ===
-                                      (null == current2.property ? null : current2.property) &&
-                                    currentResource.getAttribute('http-equiv') ===
-                                      (null == current2.httpEquiv ? null : current2.httpEquiv) &&
-                                    currentResource.getAttribute('charset') ===
-                                      (null == current2.charSet ? null : current2.charSet))
-                                ) {
-                                  maybeNodes.splice(i, 1);
-                                  break b;
-                                }
-                            }
-                            currentResource = existingHiddenCallbacks.createElement(flags);
-                            setInitialProperties(currentResource, flags, current2);
-                            existingHiddenCallbacks.head.appendChild(currentResource);
-                            break;
-                          default:
-                            throw Error(
-                              'getNodesForType encountered a type it did not expect: "' +
-                                flags +
-                                '". This is a bug in React.',
-                            );
+              if (flags & 4)
+                if (
+                  ((flags = null !== current2 ? current2.memoizedState : null),
+                  (lanes = finishedWork.memoizedState),
+                  null === current2)
+                )
+                  if (null === lanes)
+                    if (null === finishedWork.stateNode)
+                      if (offscreenSubtreeIsHidden)
+                        finishedWork.stateNode = createHoistableInstance(
+                          finishedWork.type,
+                          finishedWork.memoizedProps,
+                          root2.containerInfo,
+                          finishedWork,
+                        );
+                      else {
+                        a: {
+                          root2 = finishedWork.type;
+                          lanes = finishedWork.memoizedProps;
+                          flags = ii.ownerDocument || ii;
+                          b: switch (root2) {
+                            case 'title':
+                              current2 = flags.getElementsByTagName('title')[0];
+                              if (
+                                !current2 ||
+                                current2[internalHoistableMarker] ||
+                                current2[internalInstanceKey] ||
+                                current2.namespaceURI === SVG_NAMESPACE ||
+                                current2.hasAttribute('itemprop')
+                              )
+                                ((current2 = flags.createElement(root2)),
+                                  flags.head.insertBefore(
+                                    current2,
+                                    flags.querySelector('head > title'),
+                                  ));
+                              setInitialProperties(current2, root2, lanes);
+                              current2[internalInstanceKey] = finishedWork;
+                              markNodeAsHoistable(current2);
+                              root2 = current2;
+                              break a;
+                            case 'link':
+                              if (
+                                (ii = getHydratableHoistableCache('link', 'href', flags).get(
+                                  root2 + (lanes.href || ''),
+                                ))
+                              ) {
+                                for (
+                                  _eventPayloads$ii2 = 0;
+                                  _eventPayloads$ii2 < ii.length;
+                                  _eventPayloads$ii2++
+                                )
+                                  if (
+                                    ((current2 = ii[_eventPayloads$ii2]),
+                                    current2.getAttribute('href') ===
+                                      (null == lanes.href || '' === lanes.href
+                                        ? null
+                                        : lanes.href) &&
+                                      current2.getAttribute('rel') ===
+                                        (null == lanes.rel ? null : lanes.rel) &&
+                                      current2.getAttribute('title') ===
+                                        (null == lanes.title ? null : lanes.title) &&
+                                      current2.getAttribute('crossorigin') ===
+                                        (null == lanes.crossOrigin ? null : lanes.crossOrigin))
+                                  ) {
+                                    ii.splice(_eventPayloads$ii2, 1);
+                                    break b;
+                                  }
+                              }
+                              current2 = flags.createElement(root2);
+                              setInitialProperties(current2, root2, lanes);
+                              flags.head.appendChild(current2);
+                              break;
+                            case 'meta':
+                              if (
+                                (ii = getHydratableHoistableCache('meta', 'content', flags).get(
+                                  root2 + (lanes.content || ''),
+                                ))
+                              ) {
+                                for (
+                                  _eventPayloads$ii2 = 0;
+                                  _eventPayloads$ii2 < ii.length;
+                                  _eventPayloads$ii2++
+                                )
+                                  if (
+                                    ((current2 = ii[_eventPayloads$ii2]),
+                                    checkAttributeStringCoercion(lanes.content, 'content'),
+                                    current2.getAttribute('content') ===
+                                      (null == lanes.content ? null : '' + lanes.content) &&
+                                      current2.getAttribute('name') ===
+                                        (null == lanes.name ? null : lanes.name) &&
+                                      current2.getAttribute('property') ===
+                                        (null == lanes.property ? null : lanes.property) &&
+                                      current2.getAttribute('http-equiv') ===
+                                        (null == lanes.httpEquiv ? null : lanes.httpEquiv) &&
+                                      current2.getAttribute('charset') ===
+                                        (null == lanes.charSet ? null : lanes.charSet))
+                                  ) {
+                                    ii.splice(_eventPayloads$ii2, 1);
+                                    break b;
+                                  }
+                              }
+                              current2 = flags.createElement(root2);
+                              setInitialProperties(current2, root2, lanes);
+                              flags.head.appendChild(current2);
+                              break;
+                            default:
+                              throw Error(
+                                'getNodesForType encountered a type it did not expect: "' +
+                                  root2 +
+                                  '". This is a bug in React.',
+                              );
+                          }
+                          current2[internalInstanceKey] = finishedWork;
+                          markNodeAsHoistable(current2);
+                          root2 = current2;
                         }
-                        currentResource[internalInstanceKey] = finishedWork;
-                        markNodeAsHoistable(currentResource);
-                        flags = currentResource;
+                        finishedWork.stateNode = root2;
                       }
-                      finishedWork.stateNode = flags;
-                    } else
-                      mountHoistable(
-                        existingHiddenCallbacks,
-                        finishedWork.type,
-                        finishedWork.stateNode,
-                      );
+                    else
+                      offscreenSubtreeIsHidden ||
+                        mountHoistable(ii, finishedWork.type, finishedWork.stateNode);
                   else
-                    finishedWork.stateNode = acquireResource(
-                      existingHiddenCallbacks,
-                      flags,
-                      finishedWork.memoizedProps,
-                    );
+                    finishedWork.stateNode = acquireResource(ii, lanes, finishedWork.memoizedProps);
                 else
-                  currentResource !== flags
-                    ? (null === currentResource
-                        ? null !== current2.stateNode &&
-                          ((current2 = current2.stateNode),
-                          current2.parentNode.removeChild(current2))
-                        : currentResource.count--,
-                      null === flags
-                        ? mountHoistable(
-                            existingHiddenCallbacks,
-                            finishedWork.type,
-                            finishedWork.stateNode,
-                          )
-                        : acquireResource(
-                            existingHiddenCallbacks,
-                            flags,
-                            finishedWork.memoizedProps,
-                          ))
-                    : null === flags &&
+                  flags !== lanes
+                    ? (null === flags
+                        ? ((root2 = current2.stateNode),
+                          null === root2 ||
+                            offscreenSubtreeWasHidden ||
+                            root2.parentNode.removeChild(root2))
+                        : flags.count--,
+                      null === lanes
+                        ? offscreenSubtreeIsHidden ||
+                          mountHoistable(ii, finishedWork.type, finishedWork.stateNode)
+                        : acquireResource(ii, lanes, finishedWork.memoizedProps))
+                    : null === lanes &&
                       null !== finishedWork.stateNode &&
                       commitHostUpdate(
                         finishedWork,
                         finishedWork.memoizedProps,
                         current2.memoizedProps,
                       );
-              }
               break;
             case 27:
-              recursivelyTraverseMutationEffects(root2, finishedWork);
+              recursivelyTraverseMutationEffects(root2, finishedWork, lanes);
               commitReconciliationEffects(finishedWork);
               flags & 512 &&
                 (offscreenSubtreeWasHidden ||
@@ -15092,27 +16185,31 @@ var __morbis_feature = (() => {
                 commitHostUpdate(finishedWork, finishedWork.memoizedProps, current2.memoizedProps);
               break;
             case 5:
-              recursivelyTraverseMutationEffects(root2, finishedWork);
+              ii = offscreenDirectParentIsHidden;
+              offscreenDirectParentIsHidden = false;
+              recursivelyTraverseMutationEffects(root2, finishedWork, lanes);
+              offscreenDirectParentIsHidden = ii;
               commitReconciliationEffects(finishedWork);
               flags & 512 &&
                 (offscreenSubtreeWasHidden ||
                   null === current2 ||
                   safelyDetachRef(current2, current2.return));
               if (finishedWork.flags & 32) {
-                existingHiddenCallbacks = finishedWork.stateNode;
+                root2 = finishedWork.stateNode;
                 try {
-                  runWithFiberInDEV(finishedWork, resetTextContent, existingHiddenCallbacks);
+                  (runWithFiberInDEV(finishedWork, resetTextContent, root2),
+                    (viewTransitionMutationContext = true));
                 } catch (error) {
                   captureCommitPhaseError(finishedWork, finishedWork.return, error);
                 }
               }
               flags & 4 &&
                 null != finishedWork.stateNode &&
-                ((existingHiddenCallbacks = finishedWork.memoizedProps),
+                ((root2 = finishedWork.memoizedProps),
                 commitHostUpdate(
                   finishedWork,
-                  existingHiddenCallbacks,
-                  null !== current2 ? current2.memoizedProps : existingHiddenCallbacks,
+                  root2,
+                  null !== current2 ? current2.memoizedProps : root2,
                 ));
               flags & 1024 &&
                 ((needsFormReset = true),
@@ -15122,36 +16219,32 @@ var __morbis_feature = (() => {
                   ));
               break;
             case 6:
-              recursivelyTraverseMutationEffects(root2, finishedWork);
+              recursivelyTraverseMutationEffects(root2, finishedWork, lanes);
               commitReconciliationEffects(finishedWork);
               if (flags & 4) {
                 if (null === finishedWork.stateNode)
                   throw Error(
                     'This should have a text node initialized. This error is likely caused by a bug in React. Please file an issue.',
                   );
-                flags = finishedWork.memoizedProps;
-                current2 = null !== current2 ? current2.memoizedProps : flags;
-                existingHiddenCallbacks = finishedWork.stateNode;
+                root2 = finishedWork.memoizedProps;
+                lanes = null !== current2 ? current2.memoizedProps : root2;
+                flags = finishedWork.stateNode;
                 try {
-                  runWithFiberInDEV(
-                    finishedWork,
-                    commitTextUpdate,
-                    existingHiddenCallbacks,
-                    current2,
-                    flags,
-                  );
+                  (runWithFiberInDEV(finishedWork, commitTextUpdate, flags, lanes, root2),
+                    (viewTransitionMutationContext = true));
                 } catch (error) {
                   captureCommitPhaseError(finishedWork, finishedWork.return, error);
                 }
               }
               break;
             case 3:
-              existingHiddenCallbacks = pushNestedEffectDurations();
+              ii = pushNestedEffectDurations();
+              viewTransitionMutationContext = false;
               tagCaches = null;
-              currentResource = currentHoistableRoot;
+              _eventPayloads$ii2 = currentHoistableRoot;
               currentHoistableRoot = getHoistableRoot(root2.containerInfo);
-              recursivelyTraverseMutationEffects(root2, finishedWork);
-              currentHoistableRoot = currentResource;
+              recursivelyTraverseMutationEffects(root2, finishedWork, lanes);
+              currentHoistableRoot = _eventPayloads$ii2;
               commitReconciliationEffects(finishedWork);
               if (flags & 4 && null !== current2 && current2.memoizedState.isDehydrated)
                 try {
@@ -15160,55 +16253,67 @@ var __morbis_feature = (() => {
                   captureCommitPhaseError(finishedWork, finishedWork.return, error);
                 }
               needsFormReset && ((needsFormReset = false), recursivelyResetForms(finishedWork));
-              root2.effectDuration += popNestedEffectDurations(existingHiddenCallbacks);
+              root2.effectDuration += popNestedEffectDurations(ii);
+              viewTransitionMutationContext = false;
               break;
             case 4:
-              flags = currentHoistableRoot;
+              flags = offscreenDirectParentIsHidden;
+              offscreenDirectParentIsHidden = offscreenSubtreeIsHidden;
+              current2 = pushMutationContext();
+              ii = currentHoistableRoot;
               currentHoistableRoot = getHoistableRoot(finishedWork.stateNode.containerInfo);
-              recursivelyTraverseMutationEffects(root2, finishedWork);
+              recursivelyTraverseMutationEffects(root2, finishedWork, lanes);
               commitReconciliationEffects(finishedWork);
-              currentHoistableRoot = flags;
+              currentHoistableRoot = ii;
+              viewTransitionMutationContext &&
+                inUpdateViewTransition &&
+                (rootViewTransitionAffected = true);
+              viewTransitionMutationContext = current2;
+              offscreenDirectParentIsHidden = flags;
               break;
             case 12:
               flags = pushNestedEffectDurations();
-              recursivelyTraverseMutationEffects(root2, finishedWork);
+              recursivelyTraverseMutationEffects(root2, finishedWork, lanes);
               commitReconciliationEffects(finishedWork);
               finishedWork.stateNode.effectDuration += bubbleNestedEffectDurations(flags);
               break;
             case 31:
-              recursivelyTraverseMutationEffects(root2, finishedWork);
+              recursivelyTraverseMutationEffects(root2, finishedWork, lanes);
               commitReconciliationEffects(finishedWork);
               flags & 4 &&
-                ((flags = finishedWork.updateQueue),
-                null !== flags &&
+                ((root2 = finishedWork.updateQueue),
+                null !== root2 &&
                   ((finishedWork.updateQueue = null),
-                  attachSuspenseRetryListeners(finishedWork, flags)));
+                  attachSuspenseRetryListeners(finishedWork, root2)));
               break;
             case 13:
-              recursivelyTraverseMutationEffects(root2, finishedWork);
+              recursivelyTraverseMutationEffects(root2, finishedWork, lanes);
               commitReconciliationEffects(finishedWork);
               finishedWork.child.flags & 8192 &&
                 (null !== finishedWork.memoizedState) !==
                   (null !== current2 && null !== current2.memoizedState) &&
                 (globalMostRecentFallbackTime = now$1());
               flags & 4 &&
-                ((flags = finishedWork.updateQueue),
-                null !== flags &&
+                ((root2 = finishedWork.updateQueue),
+                null !== root2 &&
                   ((finishedWork.updateQueue = null),
-                  attachSuspenseRetryListeners(finishedWork, flags)));
+                  attachSuspenseRetryListeners(finishedWork, root2)));
               break;
             case 22:
-              existingHiddenCallbacks = null !== finishedWork.memoizedState;
-              var wasHidden = null !== current2 && null !== current2.memoizedState,
-                prevOffscreenSubtreeIsHidden = offscreenSubtreeIsHidden,
-                prevOffscreenSubtreeWasHidden = offscreenSubtreeWasHidden;
-              offscreenSubtreeIsHidden = prevOffscreenSubtreeIsHidden || existingHiddenCallbacks;
-              offscreenSubtreeWasHidden = prevOffscreenSubtreeWasHidden || wasHidden;
-              recursivelyTraverseMutationEffects(root2, finishedWork);
+              ii = null !== finishedWork.memoizedState;
+              _eventPayloads$ii2 = null !== current2 && null !== current2.memoizedState;
+              var prevOffscreenSubtreeIsHidden = offscreenSubtreeIsHidden,
+                prevOffscreenSubtreeWasHidden = offscreenSubtreeWasHidden,
+                _prevOffscreenDirectParentIsHidden2 = offscreenDirectParentIsHidden;
+              offscreenSubtreeIsHidden = prevOffscreenSubtreeIsHidden || ii;
+              offscreenDirectParentIsHidden = _prevOffscreenDirectParentIsHidden2 || ii;
+              offscreenSubtreeWasHidden = prevOffscreenSubtreeWasHidden || _eventPayloads$ii2;
+              recursivelyTraverseMutationEffects(root2, finishedWork, lanes);
               offscreenSubtreeWasHidden = prevOffscreenSubtreeWasHidden;
+              offscreenDirectParentIsHidden = _prevOffscreenDirectParentIsHidden2;
               offscreenSubtreeIsHidden = prevOffscreenSubtreeIsHidden;
-              wasHidden &&
-                !existingHiddenCallbacks &&
+              _eventPayloads$ii2 &&
+                !ii &&
                 !prevOffscreenSubtreeIsHidden &&
                 !prevOffscreenSubtreeWasHidden &&
                 (finishedWork.mode & ProfileMode) !== NoMode &&
@@ -15221,125 +16326,91 @@ var __morbis_feature = (() => {
                   componentEffectEndTime,
                 );
               commitReconciliationEffects(finishedWork);
-              if (flags & 8192)
-                a: for (
-                  root2 = finishedWork.stateNode,
-                    root2._visibility = existingHiddenCallbacks
-                      ? root2._visibility & ~OffscreenVisible
-                      : root2._visibility | OffscreenVisible,
-                    !existingHiddenCallbacks ||
-                      null === current2 ||
-                      wasHidden ||
-                      offscreenSubtreeIsHidden ||
-                      offscreenSubtreeWasHidden ||
-                      (recursivelyTraverseDisappearLayoutEffects(finishedWork),
-                      (finishedWork.mode & ProfileMode) !== NoMode &&
-                        0 <= componentEffectStartTime &&
-                        0 <= componentEffectEndTime &&
-                        0.05 < componentEffectEndTime - componentEffectStartTime &&
-                        logComponentTrigger(
-                          finishedWork,
-                          componentEffectStartTime,
-                          componentEffectEndTime,
-                          'Disconnect',
-                        )),
-                    current2 = null,
-                    root2 = finishedWork;
-                  ;
-                ) {
-                  if (5 === root2.tag || 26 === root2.tag) {
-                    if (null === current2) {
-                      wasHidden = current2 = root2;
-                      try {
-                        ((currentResource = wasHidden.stateNode),
-                          existingHiddenCallbacks
-                            ? runWithFiberInDEV(wasHidden, hideInstance, currentResource)
-                            : runWithFiberInDEV(
-                                wasHidden,
-                                unhideInstance,
-                                wasHidden.stateNode,
-                                wasHidden.memoizedProps,
-                              ));
-                      } catch (error) {
-                        captureCommitPhaseError(wasHidden, wasHidden.return, error);
-                      }
-                    }
-                  } else if (6 === root2.tag) {
-                    if (null === current2) {
-                      wasHidden = root2;
-                      try {
-                        ((maybeNodes = wasHidden.stateNode),
-                          existingHiddenCallbacks
-                            ? runWithFiberInDEV(wasHidden, hideTextInstance, maybeNodes)
-                            : runWithFiberInDEV(
-                                wasHidden,
-                                unhideTextInstance,
-                                maybeNodes,
-                                wasHidden.memoizedProps,
-                              ));
-                      } catch (error) {
-                        captureCommitPhaseError(wasHidden, wasHidden.return, error);
-                      }
-                    }
-                  } else if (18 === root2.tag) {
-                    if (null === current2) {
-                      wasHidden = root2;
-                      try {
-                        ((i = wasHidden.stateNode),
-                          existingHiddenCallbacks
-                            ? runWithFiberInDEV(wasHidden, hideDehydratedBoundary, i)
-                            : runWithFiberInDEV(
-                                wasHidden,
-                                unhideDehydratedBoundary,
-                                wasHidden.stateNode,
-                              ));
-                      } catch (error) {
-                        captureCommitPhaseError(wasHidden, wasHidden.return, error);
-                      }
-                    }
-                  } else if (
-                    ((22 !== root2.tag && 23 !== root2.tag) ||
-                      null === root2.memoizedState ||
-                      root2 === finishedWork) &&
-                    null !== root2.child
-                  ) {
-                    root2.child.return = root2;
-                    root2 = root2.child;
-                    continue;
-                  }
-                  if (root2 === finishedWork) break a;
-                  for (; null === root2.sibling;) {
-                    if (null === root2.return || root2.return === finishedWork) break a;
-                    current2 === root2 && (current2 = null);
-                    root2 = root2.return;
-                  }
-                  current2 === root2 && (current2 = null);
-                  root2.sibling.return = root2.return;
-                  root2 = root2.sibling;
-                }
+              flags & 8192 &&
+                ((root2 = finishedWork.stateNode),
+                (root2._visibility = ii
+                  ? root2._visibility & ~OffscreenVisible
+                  : root2._visibility | OffscreenVisible),
+                !ii ||
+                  null === current2 ||
+                  _eventPayloads$ii2 ||
+                  offscreenSubtreeIsHidden ||
+                  offscreenSubtreeWasHidden ||
+                  ((root2 = IncludeHostSingletons),
+                  (lanes = _eventPayloads$ii2 || offscreenSubtreeWasHidden),
+                  (current2 = offscreenSubtreeIsHidden),
+                  (_eventPayloads$ii2 = offscreenSubtreeWasHidden),
+                  (offscreenSubtreeIsHidden = ii || offscreenSubtreeIsHidden),
+                  (offscreenSubtreeWasHidden = lanes),
+                  recursivelyTraverseDisappearLayoutEffects(finishedWork, root2),
+                  (finishedWork.mode & ProfileMode) !== NoMode &&
+                    0 <= componentEffectStartTime &&
+                    0 <= componentEffectEndTime &&
+                    0.05 < componentEffectEndTime - componentEffectStartTime &&
+                    logComponentTrigger(
+                      finishedWork,
+                      componentEffectStartTime,
+                      componentEffectEndTime,
+                      'Disconnect',
+                    ),
+                  (offscreenSubtreeIsHidden = current2),
+                  (offscreenSubtreeWasHidden = _eventPayloads$ii2)),
+                (!ii && offscreenDirectParentIsHidden) ||
+                  hideOrUnhideAllChildren(finishedWork, ii));
               flags & 4 &&
-                ((flags = finishedWork.updateQueue),
-                null !== flags &&
-                  ((current2 = flags.retryQueue),
-                  null !== current2 &&
-                    ((flags.retryQueue = null),
-                    attachSuspenseRetryListeners(finishedWork, current2))));
+                ((root2 = finishedWork.updateQueue),
+                null !== root2 &&
+                  ((lanes = root2.retryQueue),
+                  null !== lanes &&
+                    ((root2.retryQueue = null),
+                    attachSuspenseRetryListeners(finishedWork, lanes))));
               break;
             case 19:
-              recursivelyTraverseMutationEffects(root2, finishedWork);
+              recursivelyTraverseMutationEffects(root2, finishedWork, lanes);
               commitReconciliationEffects(finishedWork);
               flags & 4 &&
-                ((flags = finishedWork.updateQueue),
-                null !== flags &&
+                ((root2 = finishedWork.updateQueue),
+                null !== root2 &&
                   ((finishedWork.updateQueue = null),
-                  attachSuspenseRetryListeners(finishedWork, flags)));
+                  attachSuspenseRetryListeners(finishedWork, root2)));
               break;
             case 30:
+              flags & 512 &&
+                (offscreenSubtreeWasHidden ||
+                  null === current2 ||
+                  safelyDetachRef(current2, current2.return));
+              flags = pushMutationContext();
+              ii = inUpdateViewTransition;
+              _eventPayloads$ii2 = (lanes & 335544064) === lanes;
+              prevOffscreenSubtreeIsHidden = finishedWork.memoizedProps;
+              inUpdateViewTransition =
+                _eventPayloads$ii2 &&
+                'none' !==
+                  getViewTransitionClassName(
+                    prevOffscreenSubtreeIsHidden.default,
+                    prevOffscreenSubtreeIsHidden.update,
+                  );
+              recursivelyTraverseMutationEffects(root2, finishedWork, lanes);
+              commitReconciliationEffects(finishedWork);
+              _eventPayloads$ii2 &&
+                null !== current2 &&
+                viewTransitionMutationContext &&
+                (finishedWork.flags |= 4);
+              inUpdateViewTransition = ii;
+              viewTransitionMutationContext = flags;
               break;
             case 21:
               break;
+            case 7:
+              (flags & 512 &&
+                (offscreenSubtreeWasHidden ||
+                  null === current2 ||
+                  safelyDetachRef(current2, current2.return)),
+                current2 &&
+                  null !== current2.stateNode &&
+                  (current2.stateNode._fragmentFiber = finishedWork));
             default:
-              (recursivelyTraverseMutationEffects(root2, finishedWork),
+              (recursivelyTraverseMutationEffects(root2, finishedWork, lanes),
                 commitReconciliationEffects(finishedWork));
           }
           (finishedWork.mode & ProfileMode) !== NoMode &&
@@ -15386,8 +16457,128 @@ var __morbis_feature = (() => {
             for (parentFiber = parentFiber.child; null !== parentFiber;) {
               var fiber = parentFiber;
               recursivelyResetForms(fiber);
-              5 === fiber.tag && fiber.flags & 1024 && fiber.stateNode.reset();
+              5 === fiber.tag &&
+                fiber.flags & 1024 &&
+                ((fiber = fiber.stateNode), (_enabled = true), fiber.reset(), (_enabled = false));
               parentFiber = parentFiber.sibling;
+            }
+        }
+        function recursivelyTraverseAfterMutationEffects(root2, parentFiber) {
+          if (parentFiber.subtreeFlags & 9270)
+            for (parentFiber = parentFiber.child; null !== parentFiber;)
+              (commitAfterMutationEffectsOnFiber(parentFiber, root2),
+                (parentFiber = parentFiber.sibling));
+          else measureNestedViewTransitions(parentFiber, false);
+        }
+        function commitAfterMutationEffectsOnFiber(finishedWork, root2) {
+          var current2 = finishedWork.alternate;
+          if (null === current2) commitEnterViewTransitions(finishedWork, false);
+          else
+            switch (finishedWork.tag) {
+              case 3:
+                rootViewTransitionNameCanceled = viewTransitionContextChanged = false;
+                pushViewTransitionCancelableScope();
+                recursivelyTraverseAfterMutationEffects(root2, finishedWork);
+                if (!viewTransitionContextChanged && !rootViewTransitionAffected) {
+                  finishedWork = viewTransitionCancelableChildren;
+                  if (null !== finishedWork)
+                    for (var i = 0; i < finishedWork.length; i += 3) {
+                      current2 = finishedWork[i];
+                      var oldName = finishedWork[i + 1];
+                      restoreViewTransitionName(current2, finishedWork[i + 2]);
+                      current2 = current2.ownerDocument.documentElement;
+                      null !== current2 &&
+                        current2.animate(
+                          { opacity: [0, 0], pointerEvents: ['none', 'none'] },
+                          {
+                            duration: 0,
+                            fill: 'forwards',
+                            pseudoElement: '::view-transition-group(' + oldName + ')',
+                          },
+                        );
+                    }
+                  finishedWork = root2.containerInfo;
+                  finishedWork =
+                    9 === finishedWork.nodeType
+                      ? finishedWork.documentElement
+                      : finishedWork.ownerDocument.documentElement;
+                  null !== finishedWork &&
+                    '' === finishedWork.style.viewTransitionName &&
+                    ((finishedWork.style.viewTransitionName = 'none'),
+                    finishedWork.animate(
+                      { opacity: [0, 0], pointerEvents: ['none', 'none'] },
+                      {
+                        duration: 0,
+                        fill: 'forwards',
+                        pseudoElement: '::view-transition-group(root)',
+                      },
+                    ),
+                    finishedWork.animate(
+                      { width: [0, 0], height: [0, 0] },
+                      {
+                        duration: 0,
+                        fill: 'forwards',
+                        pseudoElement: '::view-transition',
+                      },
+                    ));
+                  rootViewTransitionNameCanceled = true;
+                }
+                viewTransitionCancelableChildren = null;
+                break;
+              case 5:
+                recursivelyTraverseAfterMutationEffects(root2, finishedWork);
+                break;
+              case 4:
+                i = viewTransitionContextChanged;
+                viewTransitionContextChanged = false;
+                recursivelyTraverseAfterMutationEffects(root2, finishedWork);
+                viewTransitionContextChanged && (rootViewTransitionAffected = true);
+                viewTransitionContextChanged = i;
+                break;
+              case 22:
+                null === finishedWork.memoizedState &&
+                  (null !== current2.memoizedState
+                    ? commitEnterViewTransitions(finishedWork, false)
+                    : recursivelyTraverseAfterMutationEffects(root2, finishedWork));
+                break;
+              case 30:
+                i = viewTransitionContextChanged;
+                oldName = pushViewTransitionCancelableScope();
+                viewTransitionContextChanged = false;
+                recursivelyTraverseAfterMutationEffects(root2, finishedWork);
+                viewTransitionContextChanged && (finishedWork.flags |= 4);
+                var props = finishedWork.memoizedProps,
+                  state = finishedWork.stateNode;
+                root2 = getViewTransitionName(props, state);
+                state = getViewTransitionName(current2.memoizedProps, state);
+                var className = getViewTransitionClassName(props.default, props.update);
+                'none' === className
+                  ? (root2 = false)
+                  : ((props = current2.memoizedState),
+                    (current2.memoizedState = null),
+                    (current2 = finishedWork.child),
+                    (viewTransitionHostInstanceIdx = 0),
+                    (root2 = measureViewTransitionHostInstancesRecursive(
+                      finishedWork,
+                      current2,
+                      root2,
+                      state,
+                      className,
+                      props,
+                      true,
+                    )),
+                    viewTransitionHostInstanceIdx !== (null === props ? 0 : props.length) &&
+                      (finishedWork.flags |= 32));
+                0 !== (finishedWork.flags & 4) && root2
+                  ? (scheduleViewTransitionEvent(finishedWork, finishedWork.memoizedProps.onUpdate),
+                    (viewTransitionCancelableChildren = oldName))
+                  : null !== oldName &&
+                    (oldName.push.apply(oldName, viewTransitionCancelableChildren),
+                    (viewTransitionCancelableChildren = oldName));
+                viewTransitionContextChanged = 0 !== (finishedWork.flags & 32) ? true : i;
+                break;
+              default:
+                recursivelyTraverseAfterMutationEffects(root2, finishedWork);
             }
         }
         function recursivelyTraverseLayoutEffects(root2, parentFiber) {
@@ -15396,7 +16587,7 @@ var __morbis_feature = (() => {
               (commitLayoutEffectOnFiber(root2, parentFiber.alternate, parentFiber),
                 (parentFiber = parentFiber.sibling));
         }
-        function disappearLayoutEffects(finishedWork) {
+        function disappearLayoutEffects(finishedWork, layoutEffectTraversalFlags) {
           var prevEffectStart = pushComponentEffectStart(),
             prevEffectDuration = pushComponentEffectDuration(),
             prevEffectErrors = pushComponentEffectErrors(),
@@ -15407,31 +16598,56 @@ var __morbis_feature = (() => {
             case 14:
             case 15:
               commitHookLayoutUnmountEffects(finishedWork, finishedWork.return, Layout);
-              recursivelyTraverseDisappearLayoutEffects(finishedWork);
+              recursivelyTraverseDisappearLayoutEffects(finishedWork, layoutEffectTraversalFlags);
               break;
             case 1:
               safelyDetachRef(finishedWork, finishedWork.return);
               var instance = finishedWork.stateNode;
               'function' === typeof instance.componentWillUnmount &&
                 safelyCallComponentWillUnmount(finishedWork, finishedWork.return, instance);
-              recursivelyTraverseDisappearLayoutEffects(finishedWork);
+              recursivelyTraverseDisappearLayoutEffects(finishedWork, layoutEffectTraversalFlags);
               break;
             case 27:
-              runWithFiberInDEV(finishedWork, releaseSingletonInstance, finishedWork.stateNode);
-            case 26:
+              (layoutEffectTraversalFlags & IncludeHostSingletons) !==
+                NoLayoutEffectTraversalFlags &&
+                runWithFiberInDEV(
+                  finishedWork,
+                  releaseSingletonInstance,
+                  finishedWork.stateNode,
+                  finishedWork.type,
+                  finishedWork.memoizedProps,
+                );
             case 5:
               safelyDetachRef(finishedWork, finishedWork.return);
-              recursivelyTraverseDisappearLayoutEffects(finishedWork);
+              (5 !== finishedWork.tag && 27 !== finishedWork.tag) ||
+                commitFragmentInstanceDeletionEffects(finishedWork);
+              recursivelyTraverseDisappearLayoutEffects(finishedWork, layoutEffectTraversalFlags);
+              break;
+            case 6:
+              commitFragmentInstanceDeletionEffects(finishedWork);
+              break;
+            case 26:
+              safelyDetachRef(finishedWork, finishedWork.return);
+              instance = finishedWork.stateNode;
+              null !== finishedWork.memoizedState ||
+                null === instance ||
+                offscreenSubtreeWasHidden ||
+                instance.parentNode.removeChild(instance);
+              recursivelyTraverseDisappearLayoutEffects(finishedWork, layoutEffectTraversalFlags);
               break;
             case 22:
               null === finishedWork.memoizedState &&
-                recursivelyTraverseDisappearLayoutEffects(finishedWork);
+                recursivelyTraverseDisappearLayoutEffects(finishedWork, layoutEffectTraversalFlags);
               break;
             case 30:
-              recursivelyTraverseDisappearLayoutEffects(finishedWork);
+              finishedWork.flags & 18874368 && untrackNamedViewTransition(finishedWork);
+              safelyDetachRef(finishedWork, finishedWork.return);
+              recursivelyTraverseDisappearLayoutEffects(finishedWork, layoutEffectTraversalFlags);
               break;
+            case 7:
+              safelyDetachRef(finishedWork, finishedWork.return);
             default:
-              recursivelyTraverseDisappearLayoutEffects(finishedWork);
+              recursivelyTraverseDisappearLayoutEffects(finishedWork, layoutEffectTraversalFlags);
           }
           (finishedWork.mode & ProfileMode) !== NoMode &&
             0 <= componentEffectStartTime &&
@@ -15449,21 +16665,28 @@ var __morbis_feature = (() => {
           componentEffectErrors = prevEffectErrors;
           componentEffectSpawnedUpdate = prevEffectDidSpawnUpdate;
         }
-        function recursivelyTraverseDisappearLayoutEffects(parentFiber) {
+        function recursivelyTraverseDisappearLayoutEffects(
+          parentFiber,
+          layoutEffectTraversalFlags,
+        ) {
           for (parentFiber = parentFiber.child; null !== parentFiber;)
-            (disappearLayoutEffects(parentFiber), (parentFiber = parentFiber.sibling));
+            (disappearLayoutEffects(parentFiber, layoutEffectTraversalFlags),
+              (parentFiber = parentFiber.sibling));
         }
         function reappearLayoutEffects(
           finishedRoot,
           current2,
           finishedWork,
-          includeWorkInProgressEffects,
+          layoutEffectTraversalFlags,
         ) {
           var prevEffectStart = pushComponentEffectStart(),
             prevEffectDuration = pushComponentEffectDuration(),
             prevEffectErrors = pushComponentEffectErrors(),
             prevEffectDidSpawnUpdate = pushComponentEffectDidSpawnUpdate(),
-            flags = finishedWork.flags;
+            flags = finishedWork.flags,
+            includeWorkInProgressEffects =
+              (layoutEffectTraversalFlags & IncludeWorkInProgressEffects) !==
+              NoLayoutEffectTraversalFlags;
           switch (finishedWork.tag) {
             case 0:
             case 11:
@@ -15471,7 +16694,7 @@ var __morbis_feature = (() => {
               recursivelyTraverseReappearLayoutEffects(
                 finishedRoot,
                 finishedWork,
-                includeWorkInProgressEffects,
+                layoutEffectTraversalFlags,
               );
               commitHookLayoutEffects(finishedWork, Layout);
               break;
@@ -15479,7 +16702,7 @@ var __morbis_feature = (() => {
               recursivelyTraverseReappearLayoutEffects(
                 finishedRoot,
                 finishedWork,
-                includeWorkInProgressEffects,
+                layoutEffectTraversalFlags,
               );
               current2 = finishedWork.stateNode;
               'function' === typeof current2.componentDidMount &&
@@ -15497,13 +16720,39 @@ var __morbis_feature = (() => {
               safelyAttachRef(finishedWork, finishedWork.return);
               break;
             case 27:
-              commitHostSingletonAcquisition(finishedWork);
-            case 26:
+              (layoutEffectTraversalFlags & IncludeHostSingletons) !==
+                NoLayoutEffectTraversalFlags && commitHostSingletonAcquisition(finishedWork);
             case 5:
+              (5 !== finishedWork.tag && 27 !== finishedWork.tag) ||
+                commitFragmentInstanceInsertionEffects(finishedWork);
               recursivelyTraverseReappearLayoutEffects(
                 finishedRoot,
                 finishedWork,
-                includeWorkInProgressEffects,
+                layoutEffectTraversalFlags,
+              );
+              includeWorkInProgressEffects &&
+                null === current2 &&
+                flags & 4 &&
+                commitHostMount(finishedWork);
+              safelyAttachRef(finishedWork, finishedWork.return);
+              break;
+            case 6:
+              commitFragmentInstanceInsertionEffects(finishedWork);
+              break;
+            case 26:
+              var instance = finishedWork.stateNode;
+              null !== finishedWork.memoizedState ||
+                null === instance ||
+                offscreenSubtreeIsHidden ||
+                mountHoistable(
+                  getHoistableRoot(instance.ownerDocument),
+                  finishedWork.type,
+                  instance,
+                );
+              recursivelyTraverseReappearLayoutEffects(
+                finishedRoot,
+                finishedWork,
+                layoutEffectTraversalFlags,
               );
               includeWorkInProgressEffects &&
                 null === current2 &&
@@ -15517,7 +16766,7 @@ var __morbis_feature = (() => {
                 recursivelyTraverseReappearLayoutEffects(
                   finishedRoot,
                   finishedWork,
-                  includeWorkInProgressEffects,
+                  layoutEffectTraversalFlags,
                 );
                 includeWorkInProgressEffects = finishedWork.stateNode;
                 includeWorkInProgressEffects.effectDuration += bubbleNestedEffectDurations(flags);
@@ -15537,14 +16786,14 @@ var __morbis_feature = (() => {
                 recursivelyTraverseReappearLayoutEffects(
                   finishedRoot,
                   finishedWork,
-                  includeWorkInProgressEffects,
+                  layoutEffectTraversalFlags,
                 );
               break;
             case 31:
               recursivelyTraverseReappearLayoutEffects(
                 finishedRoot,
                 finishedWork,
-                includeWorkInProgressEffects,
+                layoutEffectTraversalFlags,
               );
               includeWorkInProgressEffects &&
                 flags & 4 &&
@@ -15554,7 +16803,7 @@ var __morbis_feature = (() => {
               recursivelyTraverseReappearLayoutEffects(
                 finishedRoot,
                 finishedWork,
-                includeWorkInProgressEffects,
+                layoutEffectTraversalFlags,
               );
               includeWorkInProgressEffects &&
                 flags & 4 &&
@@ -15565,17 +16814,26 @@ var __morbis_feature = (() => {
                 recursivelyTraverseReappearLayoutEffects(
                   finishedRoot,
                   finishedWork,
-                  includeWorkInProgressEffects,
+                  layoutEffectTraversalFlags,
                 );
               safelyAttachRef(finishedWork, finishedWork.return);
               break;
             case 30:
+              recursivelyTraverseReappearLayoutEffects(
+                finishedRoot,
+                finishedWork,
+                layoutEffectTraversalFlags,
+              );
+              flags & 18874368 && trackNamedViewTransition(finishedWork);
+              safelyAttachRef(finishedWork, finishedWork.return);
               break;
+            case 7:
+              safelyAttachRef(finishedWork, finishedWork.return);
             default:
               recursivelyTraverseReappearLayoutEffects(
                 finishedRoot,
                 finishedWork,
-                includeWorkInProgressEffects,
+                layoutEffectTraversalFlags,
               );
           }
           (finishedWork.mode & ProfileMode) !== NoMode &&
@@ -15597,16 +16855,18 @@ var __morbis_feature = (() => {
         function recursivelyTraverseReappearLayoutEffects(
           finishedRoot,
           parentFiber,
-          includeWorkInProgressEffects,
+          layoutEffectTraversalFlags,
         ) {
-          includeWorkInProgressEffects =
-            includeWorkInProgressEffects && 0 !== (parentFiber.subtreeFlags & 8772);
+          layoutEffectTraversalFlags =
+            0 !== (parentFiber.subtreeFlags & 8772)
+              ? layoutEffectTraversalFlags
+              : layoutEffectTraversalFlags & ~IncludeWorkInProgressEffects;
           for (parentFiber = parentFiber.child; null !== parentFiber;)
             (reappearLayoutEffects(
               finishedRoot,
               parentFiber.alternate,
               parentFiber,
-              includeWorkInProgressEffects,
+              layoutEffectTraversalFlags,
             ),
               (parentFiber = parentFiber.sibling));
         }
@@ -15639,22 +16899,25 @@ var __morbis_feature = (() => {
           committedTransitions,
           endTime,
         ) {
+          var isViewTransitionEligible = (committedLanes & 335544064) === committedLanes;
           if (
-            parentFiber.subtreeFlags & 10256 ||
+            parentFiber.subtreeFlags & (isViewTransitionEligible ? 10262 : 10256) ||
             (0 !== parentFiber.actualDuration &&
               (null === parentFiber.alternate || parentFiber.alternate.child !== parentFiber.child))
           )
-            for (parentFiber = parentFiber.child; null !== parentFiber;) {
-              var nextSibling = parentFiber.sibling;
-              commitPassiveMountOnFiber(
-                root2,
-                parentFiber,
-                committedLanes,
-                committedTransitions,
-                null !== nextSibling ? nextSibling.actualStartTime : endTime,
-              );
-              parentFiber = nextSibling;
-            }
+            for (parentFiber = parentFiber.child; null !== parentFiber;)
+              ((isViewTransitionEligible = parentFiber.sibling),
+                commitPassiveMountOnFiber(
+                  root2,
+                  parentFiber,
+                  committedLanes,
+                  committedTransitions,
+                  null !== isViewTransitionEligible
+                    ? isViewTransitionEligible.actualStartTime
+                    : endTime,
+                ),
+                (parentFiber = isViewTransitionEligible));
+          else isViewTransitionEligible && restoreNestedViewTransitions(parentFiber);
         }
         function commitPassiveMountOnFiber(
           finishedRoot,
@@ -15668,7 +16931,13 @@ var __morbis_feature = (() => {
             prevEffectErrors = pushComponentEffectErrors(),
             prevEffectDidSpawnUpdate = pushComponentEffectDidSpawnUpdate(),
             prevDeepEquality = alreadyWarnedForDeepEquality,
-            flags = finishedWork.flags;
+            isViewTransitionEligible = (committedLanes & 335544064) === committedLanes;
+          isViewTransitionEligible &&
+            null === finishedWork.alternate &&
+            null !== finishedWork.return &&
+            null !== finishedWork.return.alternate &&
+            restoreEnterOrExitViewTransitions(finishedWork);
+          var flags = finishedWork.flags;
           switch (finishedWork.tag) {
             case 0:
             case 11:
@@ -15728,6 +16997,21 @@ var __morbis_feature = (() => {
                 endTime,
               );
               inHydratedSubtree = wasInHydratedSubtree;
+              isViewTransitionEligible &&
+                rootViewTransitionNameCanceled &&
+                ((committedLanes = finishedRoot.containerInfo),
+                (committedLanes =
+                  9 === committedLanes.nodeType
+                    ? committedLanes.body
+                    : 'HTML' === committedLanes.nodeName
+                      ? committedLanes.ownerDocument.body
+                      : committedLanes),
+                'root' === committedLanes.style.viewTransitionName &&
+                  (committedLanes.style.viewTransitionName = ''),
+                (committedLanes = committedLanes.ownerDocument.documentElement),
+                null !== committedLanes &&
+                  'none' === committedLanes.style.viewTransitionName &&
+                  (committedLanes.style.viewTransitionName = ''));
               flags & 2048 &&
                 ((committedLanes = null),
                 null !== finishedWork.alternate &&
@@ -15777,12 +17061,12 @@ var __morbis_feature = (() => {
               flags = inHydratedSubtree;
               prevProfilerEffectDuration =
                 null !== finishedWork.alternate ? finishedWork.alternate.memoizedState : null;
-              wasInHydratedSubtree = finishedWork.memoizedState;
-              null !== prevProfilerEffectDuration && null === wasInHydratedSubtree
-                ? ((wasInHydratedSubtree = finishedWork.deletions),
-                  null !== wasInHydratedSubtree &&
-                  0 < wasInHydratedSubtree.length &&
-                  18 === wasInHydratedSubtree[0].tag
+              isViewTransitionEligible = finishedWork.memoizedState;
+              null !== prevProfilerEffectDuration && null === isViewTransitionEligible
+                ? ((isViewTransitionEligible = finishedWork.deletions),
+                  null !== isViewTransitionEligible &&
+                  0 < isViewTransitionEligible.length &&
+                  18 === isViewTransitionEligible[0].tag
                     ? ((inHydratedSubtree = false),
                       (prevProfilerEffectDuration = prevProfilerEffectDuration.hydrationErrors),
                       null !== prevProfilerEffectDuration &&
@@ -15807,15 +17091,15 @@ var __morbis_feature = (() => {
               flags = inHydratedSubtree;
               prevProfilerEffectDuration =
                 null !== finishedWork.alternate ? finishedWork.alternate.memoizedState : null;
-              wasInHydratedSubtree = finishedWork.memoizedState;
+              isViewTransitionEligible = finishedWork.memoizedState;
               null === prevProfilerEffectDuration ||
               null === prevProfilerEffectDuration.dehydrated ||
-              (null !== wasInHydratedSubtree && null !== wasInHydratedSubtree.dehydrated)
+              (null !== isViewTransitionEligible && null !== isViewTransitionEligible.dehydrated)
                 ? (inHydratedSubtree = false)
-                : ((wasInHydratedSubtree = finishedWork.deletions),
-                  null !== wasInHydratedSubtree &&
-                  0 < wasInHydratedSubtree.length &&
-                  18 === wasInHydratedSubtree[0].tag
+                : ((isViewTransitionEligible = finishedWork.deletions),
+                  null !== isViewTransitionEligible &&
+                  0 < isViewTransitionEligible.length &&
+                  18 === isViewTransitionEligible[0].tag
                     ? ((inHydratedSubtree = false),
                       (prevProfilerEffectDuration = prevProfilerEffectDuration.hydrationErrors),
                       null !== prevProfilerEffectDuration &&
@@ -15841,55 +17125,63 @@ var __morbis_feature = (() => {
               wasInHydratedSubtree = finishedWork.stateNode;
               prevProfilerEffectDuration = finishedWork.alternate;
               null !== finishedWork.memoizedState
-                ? wasInHydratedSubtree._visibility & OffscreenPassiveEffectsConnected
-                  ? recursivelyTraversePassiveMountEffects(
-                      finishedRoot,
-                      finishedWork,
-                      committedLanes,
-                      committedTransitions,
-                      endTime,
-                    )
-                  : recursivelyTraverseAtomicPassiveEffects(
-                      finishedRoot,
-                      finishedWork,
-                      committedLanes,
-                      committedTransitions,
-                      endTime,
-                    )
-                : wasInHydratedSubtree._visibility & OffscreenPassiveEffectsConnected
-                  ? recursivelyTraversePassiveMountEffects(
-                      finishedRoot,
-                      finishedWork,
-                      committedLanes,
-                      committedTransitions,
-                      endTime,
-                    )
-                  : ((wasInHydratedSubtree._visibility |= OffscreenPassiveEffectsConnected),
-                    recursivelyTraverseReconnectPassiveEffects(
-                      finishedRoot,
-                      finishedWork,
-                      committedLanes,
-                      committedTransitions,
-                      0 !== (finishedWork.subtreeFlags & 10256) ||
-                        (0 !== finishedWork.actualDuration &&
-                          (null === finishedWork.alternate ||
-                            finishedWork.alternate.child !== finishedWork.child)),
-                      endTime,
-                    ),
-                    (finishedWork.mode & ProfileMode) === NoMode ||
-                      inHydratedSubtree ||
-                      ((finishedRoot = finishedWork.actualStartTime),
-                      0 <= finishedRoot &&
-                        0.05 < endTime - finishedRoot &&
-                        logComponentReappeared(finishedWork, finishedRoot, endTime),
-                      0 <= componentEffectStartTime &&
-                        0 <= componentEffectEndTime &&
-                        0.05 < componentEffectEndTime - componentEffectStartTime &&
-                        logComponentReappeared(
-                          finishedWork,
-                          componentEffectStartTime,
-                          componentEffectEndTime,
-                        )));
+                ? (isViewTransitionEligible &&
+                    null !== prevProfilerEffectDuration &&
+                    null === prevProfilerEffectDuration.memoizedState &&
+                    restoreEnterOrExitViewTransitions(prevProfilerEffectDuration),
+                  wasInHydratedSubtree._visibility & OffscreenPassiveEffectsConnected
+                    ? recursivelyTraversePassiveMountEffects(
+                        finishedRoot,
+                        finishedWork,
+                        committedLanes,
+                        committedTransitions,
+                        endTime,
+                      )
+                    : recursivelyTraverseAtomicPassiveEffects(
+                        finishedRoot,
+                        finishedWork,
+                        committedLanes,
+                        committedTransitions,
+                        endTime,
+                      ))
+                : (isViewTransitionEligible &&
+                    null !== prevProfilerEffectDuration &&
+                    null !== prevProfilerEffectDuration.memoizedState &&
+                    restoreEnterOrExitViewTransitions(finishedWork),
+                  wasInHydratedSubtree._visibility & OffscreenPassiveEffectsConnected
+                    ? recursivelyTraversePassiveMountEffects(
+                        finishedRoot,
+                        finishedWork,
+                        committedLanes,
+                        committedTransitions,
+                        endTime,
+                      )
+                    : ((wasInHydratedSubtree._visibility |= OffscreenPassiveEffectsConnected),
+                      recursivelyTraverseReconnectPassiveEffects(
+                        finishedRoot,
+                        finishedWork,
+                        committedLanes,
+                        committedTransitions,
+                        0 !== (finishedWork.subtreeFlags & 10256) ||
+                          (0 !== finishedWork.actualDuration &&
+                            (null === finishedWork.alternate ||
+                              finishedWork.alternate.child !== finishedWork.child)),
+                        endTime,
+                      ),
+                      (finishedWork.mode & ProfileMode) === NoMode ||
+                        inHydratedSubtree ||
+                        ((finishedRoot = finishedWork.actualStartTime),
+                        0 <= finishedRoot &&
+                          0.05 < endTime - finishedRoot &&
+                          logComponentReappeared(finishedWork, finishedRoot, endTime),
+                        0 <= componentEffectStartTime &&
+                          0 <= componentEffectEndTime &&
+                          0.05 < componentEffectEndTime - componentEffectStartTime &&
+                          logComponentReappeared(
+                            finishedWork,
+                            componentEffectStartTime,
+                            componentEffectEndTime,
+                          ))));
               flags & 2048 &&
                 commitOffscreenPassiveMountEffects(prevProfilerEffectDuration, finishedWork);
               break;
@@ -15902,6 +17194,20 @@ var __morbis_feature = (() => {
                 endTime,
               );
               flags & 2048 && commitCachePassiveMountEffect(finishedWork.alternate, finishedWork);
+              break;
+            case 30:
+              isViewTransitionEligible &&
+                ((flags = finishedWork.alternate),
+                null !== flags &&
+                  (restoreViewTransitionOnHostInstances(flags.child, true),
+                  restoreViewTransitionOnHostInstances(finishedWork.child, true)));
+              recursivelyTraversePassiveMountEffects(
+                finishedRoot,
+                finishedWork,
+                committedLanes,
+                committedTransitions,
+                endTime,
+              );
               break;
             default:
               recursivelyTraversePassiveMountEffects(
@@ -16018,9 +17324,9 @@ var __morbis_feature = (() => {
             case 23:
               break;
             case 22:
-              var _instance2 = finishedWork.stateNode;
+              var _instance4 = finishedWork.stateNode;
               null !== finishedWork.memoizedState
-                ? _instance2._visibility & OffscreenPassiveEffectsConnected
+                ? _instance4._visibility & OffscreenPassiveEffectsConnected
                   ? recursivelyTraverseReconnectPassiveEffects(
                       finishedRoot,
                       finishedWork,
@@ -16036,7 +17342,7 @@ var __morbis_feature = (() => {
                       committedTransitions,
                       endTime,
                     )
-                : ((_instance2._visibility |= OffscreenPassiveEffectsConnected),
+                : ((_instance4._visibility |= OffscreenPassiveEffectsConnected),
                   recursivelyTraverseReconnectPassiveEffects(
                     finishedRoot,
                     finishedWork,
@@ -16164,16 +17470,23 @@ var __morbis_feature = (() => {
             case 26:
               recursivelyAccumulateSuspenseyCommit(fiber, committedLanes, suspendedState);
               fiber.flags & suspenseyCommitFlag &&
-                null !== fiber.memoizedState &&
-                suspendResource(
-                  suspendedState,
-                  currentHoistableRoot,
-                  fiber.memoizedState,
-                  fiber.memoizedProps,
-                );
+                (null !== fiber.memoizedState
+                  ? suspendResource(
+                      suspendedState,
+                      currentHoistableRoot,
+                      fiber.memoizedState,
+                      fiber.memoizedProps,
+                    )
+                  : ((fiber = fiber.stateNode),
+                    (committedLanes & 335544128) === committedLanes &&
+                      suspendInstance(suspendedState, fiber)));
               break;
             case 5:
               recursivelyAccumulateSuspenseyCommit(fiber, committedLanes, suspendedState);
+              fiber.flags & suspenseyCommitFlag &&
+                ((fiber = fiber.stateNode),
+                (committedLanes & 335544128) === committedLanes &&
+                  suspendInstance(suspendedState, fiber));
               break;
             case 3:
             case 4:
@@ -16191,6 +17504,20 @@ var __morbis_feature = (() => {
                     recursivelyAccumulateSuspenseyCommit(fiber, committedLanes, suspendedState),
                     (suspenseyCommitFlag = previousHoistableRoot))
                   : recursivelyAccumulateSuspenseyCommit(fiber, committedLanes, suspendedState));
+              break;
+            case 30:
+              if (
+                0 !== (fiber.flags & suspenseyCommitFlag) &&
+                ((previousHoistableRoot = fiber.memoizedProps.name),
+                null != previousHoistableRoot && 'auto' !== previousHoistableRoot)
+              ) {
+                var state = fiber.stateNode;
+                state.paired = null;
+                null === appearingViewTransitions &&
+                  (appearingViewTransitions = /* @__PURE__ */ new Map());
+                appearingViewTransitions.set(previousHoistableRoot, state);
+              }
+              recursivelyAccumulateSuspenseyCommit(fiber, committedLanes, suspendedState);
               break;
             default:
               recursivelyAccumulateSuspenseyCommit(fiber, committedLanes, suspendedState);
@@ -16453,11 +17780,18 @@ var __morbis_feature = (() => {
           )
             return workInProgressRootRenderLanes & -workInProgressRootRenderLanes;
           var transition = ReactSharedInternals.T;
-          return null !== transition
-            ? (transition._updatedFibers || (transition._updatedFibers = /* @__PURE__ */ new Set()),
+          if (null !== transition)
+            return (
+              transition._updatedFibers || (transition._updatedFibers = /* @__PURE__ */ new Set()),
               transition._updatedFibers.add(fiber),
-              requestTransitionLane())
-            : resolveUpdatePriority();
+              null !== lastSuspendedFiber &&
+                resolveUpdatePriority() === DiscreteEventPriority &&
+                (lastSuspendedFiber = null),
+              requestTransitionLane()
+            );
+          fiber = resolveUpdatePriority();
+          fiber === DiscreteEventPriority && (lastSuspendedFiber = null);
+          return fiber;
         }
         function requestDeferredLane() {
           if (0 === workInProgressDeferredLane)
@@ -16470,6 +17804,17 @@ var __morbis_feature = (() => {
           lane = suspenseHandlerStackCursor.current;
           null !== lane && (lane.flags |= 32);
           return workInProgressDeferredLane;
+        }
+        function scheduleViewTransitionEvent(fiber, callback) {
+          if (null != callback) {
+            var state = fiber.stateNode,
+              instance = state.ref;
+            null === instance &&
+              (instance = state.ref =
+                createViewTransitionInstance(getViewTransitionName(fiber.memoizedProps, state)));
+            null === pendingViewTransitionEvents && (pendingViewTransitionEvents = []);
+            pendingViewTransitionEvents.push(callback.bind(null, instance));
+          }
         }
         function scheduleUpdateOnFiber(root2, fiber, lane) {
           isRunningInsertionEffect &&
@@ -16683,7 +18028,10 @@ var __morbis_feature = (() => {
                     wasRootDehydrated &&
                       (prepareFreshStack(yieldedFiber, errorRetryLanes).flags |= 256);
                     errorRetryLanes = renderRootSync(yieldedFiber, errorRetryLanes, false);
-                    if (errorRetryLanes !== RootErrored) {
+                    if (
+                      errorRetryLanes !== RootErrored &&
+                      errorRetryLanes !== RootSuspendedAtTheShell
+                    ) {
                       if (workInProgressRootDidAttachPingListener && !wasRootDehydrated) {
                         yieldedFiber.errorRecoveryDisabledLanes |= startTime;
                         workInProgressRootInterleavedUpdatedLanes |= startTime;
@@ -16727,7 +18075,7 @@ var __morbis_feature = (() => {
                   case RootFatalErrored:
                     throw Error('Root did not complete. This is a bug in React.');
                   case RootSuspendedWithDelay:
-                    if ((lanes & 4194048) !== lanes) break;
+                    if ((lanes & 4194048) !== lanes && (lanes & 62914560) !== lanes) break;
                   case RootSuspendedAtTheShell:
                     setCurrentTrackFromLanes(lanes);
                     logSuspendedRenderPhase(
@@ -16758,7 +18106,7 @@ var __morbis_feature = (() => {
                     throw Error('Unknown root exit status.');
                 }
                 if (null !== ReactSharedInternals.actQueue)
-                  commitRoot(
+                  completeRoot(
                     forceSync,
                     yieldEndTime,
                     lanes,
@@ -16768,6 +18116,7 @@ var __morbis_feature = (() => {
                     workInProgressDeferredLane,
                     workInProgressRootInterleavedUpdatedLanes,
                     workInProgressSuspendedRetryLanes,
+                    workInProgressRootDidSkipSuspendedSiblings,
                     startTime,
                     null,
                     null,
@@ -16790,7 +18139,7 @@ var __morbis_feature = (() => {
                     if (0 !== getNextLanes(forceSync, 0, true)) break a;
                     pendingEffectsLanes = lanes;
                     forceSync.timeoutHandle = scheduleTimeout(
-                      commitRootWhenReady.bind(
+                      completeRootWhenReady.bind(
                         null,
                         forceSync,
                         yieldEndTime,
@@ -16811,7 +18160,7 @@ var __morbis_feature = (() => {
                     );
                     break a;
                   }
-                  commitRootWhenReady(
+                  completeRootWhenReady(
                     forceSync,
                     yieldEndTime,
                     workInProgressRootRecoverableErrors,
@@ -16834,7 +18183,7 @@ var __morbis_feature = (() => {
           } while (1);
           ensureRootIsScheduled(root2);
         }
-        function commitRootWhenReady(
+        function completeRootWhenReady(
           root2,
           finishedWork,
           recoverableErrors,
@@ -16852,8 +18201,13 @@ var __morbis_feature = (() => {
         ) {
           root2.timeoutHandle = noTimeout;
           var subtreeFlags = finishedWork.subtreeFlags,
+            isViewTransitionEligible = (lanes & 335544064) === lanes,
             suspendedState = null;
-          if (subtreeFlags & 8192 || 16785408 === (subtreeFlags & 16785408)) {
+          if (
+            isViewTransitionEligible ||
+            subtreeFlags & 8192 ||
+            16785408 === (subtreeFlags & 16785408)
+          ) {
             if (
               ((suspendedState = {
                 stylesheets: null,
@@ -16865,7 +18219,21 @@ var __morbis_feature = (() => {
                 waitingForViewTransition: false,
                 unsuspend: noop$1,
               }),
+              (appearingViewTransitions = null),
               accumulateSuspenseyCommitOnFiber(finishedWork, lanes, suspendedState),
+              isViewTransitionEligible &&
+                ((subtreeFlags = suspendedState),
+                (isViewTransitionEligible = root2.containerInfo),
+                (isViewTransitionEligible = (
+                  9 === isViewTransitionEligible.nodeType
+                    ? isViewTransitionEligible
+                    : isViewTransitionEligible.ownerDocument
+                ).__reactViewTransition),
+                null != isViewTransitionEligible &&
+                  (subtreeFlags.count++,
+                  (subtreeFlags.waitingForViewTransition = true),
+                  (subtreeFlags = onUnsuspend.bind(subtreeFlags)),
+                  isViewTransitionEligible.finished.then(subtreeFlags, subtreeFlags))),
               (subtreeFlags =
                 (lanes & 62914560) === lanes
                   ? globalMostRecentFallbackTime - now$1()
@@ -16877,7 +18245,7 @@ var __morbis_feature = (() => {
             ) {
               pendingEffectsLanes = lanes;
               root2.cancelPendingCommit = subtreeFlags(
-                commitRoot.bind(
+                completeRoot.bind(
                   null,
                   root2,
                   finishedWork,
@@ -16888,6 +18256,7 @@ var __morbis_feature = (() => {
                   spawnedLane,
                   updatedLanes,
                   suspendedRetryLanes,
+                  didSkipSuspendedSiblings,
                   exitStatus,
                   suspendedState,
                   suspendedState.waitingForViewTransition
@@ -16909,7 +18278,7 @@ var __morbis_feature = (() => {
               return;
             }
           }
-          commitRoot(
+          completeRoot(
             root2,
             finishedWork,
             lanes,
@@ -16919,6 +18288,7 @@ var __morbis_feature = (() => {
             spawnedLane,
             updatedLanes,
             suspendedRetryLanes,
+            didSkipSuspendedSiblings,
             exitStatus,
             suspendedState,
             suspendedCommitReason,
@@ -16959,6 +18329,7 @@ var __morbis_feature = (() => {
           return true;
         }
         function markRootSuspended(root2, suspendedLanes, spawnedLane, didAttemptEntireTree) {
+          suspendedLanes = getEntangledLanes(root2, suspendedLanes);
           suspendedLanes &= ~workInProgressRootPingedLanes;
           suspendedLanes &= ~workInProgressRootInterleavedUpdatedLanes;
           root2.suspendedLanes |= suspendedLanes;
@@ -17185,7 +18556,8 @@ var __morbis_feature = (() => {
                         previousRenderStartTime,
                       ),
                     )
-                  : performance.measure(isSpawnedUpdate, previousRenderStartTime));
+                  : performance.measure(isSpawnedUpdate, previousRenderStartTime),
+                performance.clearMeasures(isSpawnedUpdate));
             }
             blockingUpdateTime = -1.1;
             blockingUpdateType = 0;
@@ -17314,7 +18686,8 @@ var __morbis_feature = (() => {
                   ? endTime.run(
                       performance.measure.bind(performance, debugTask, previousRenderStartTime),
                     )
-                  : performance.measure(debugTask, previousRenderStartTime))),
+                  : performance.measure(debugTask, previousRenderStartTime),
+                performance.clearMeasures(debugTask))),
             (transitionUpdateTime = transitionStartTime = -1.1),
             (transitionUpdateType = 0),
             (transitionSuspendedTime = -1.1),
@@ -17354,15 +18727,7 @@ var __morbis_feature = (() => {
               0;
           workInProgressRootRecoverableErrors = workInProgressRootConcurrentErrors = null;
           workInProgressRootDidIncludeRecursiveRenderUpdate = false;
-          0 !== (lanes & 8) && (lanes |= lanes & 32);
-          endTime = root2.entangledLanes;
-          if (0 !== endTime)
-            for (root2 = root2.entanglements, endTime &= lanes; 0 < endTime;)
-              ((debugTask = 31 - clz32(endTime)),
-                (color = 1 << debugTask),
-                (lanes |= root2[debugTask]),
-                (endTime &= ~color));
-          entangledRenderLanes = lanes;
+          entangledRenderLanes = getEntangledLanes(root2, lanes);
           finishQueueingConcurrentUpdates();
           root2 = getCurrentTime();
           1e3 < root2 - lastResetTime &&
@@ -17493,8 +18858,8 @@ var __morbis_feature = (() => {
               workLoopSync();
               memoizedUpdaters = workInProgressRootExitStatus;
               break;
-            } catch (thrownValue$8) {
-              handleThrow(root2, thrownValue$8);
+            } catch (thrownValue$9) {
+              handleThrow(root2, thrownValue$9);
             }
           while (1);
           lanes && root2.shellSuspendCounter++;
@@ -17635,8 +19000,8 @@ var __morbis_feature = (() => {
                 ? workLoopSync()
                 : workLoopConcurrentByScheduler();
               break;
-            } catch (thrownValue$9) {
-              handleThrow(root2, thrownValue$9);
+            } catch (thrownValue$10) {
+              handleThrow(root2, thrownValue$10);
             }
           while (1);
           resetContextDependencies();
@@ -17707,6 +19072,14 @@ var __morbis_feature = (() => {
               break;
             case 5:
               resetHooksOnUnwind(unitOfWork);
+              var fiber = unitOfWork;
+              fiber === hydrationParentFiber &&
+                (isHydrating
+                  ? (popToNextHostParent(fiber),
+                    5 === fiber.tag &&
+                      null != fiber.stateNode &&
+                      (nextHydratableInstance = fiber.stateNode))
+                  : (popToNextHostParent(fiber), (isHydrating = true)));
             default:
               (unwindInterruptedWork(current2, unitOfWork),
                 (unitOfWork = workInProgress =
@@ -17825,7 +19198,7 @@ var __morbis_feature = (() => {
           workInProgressRootExitStatus = RootSuspendedAtTheShell;
           workInProgress = null;
         }
-        function commitRoot(
+        function completeRoot(
           root2,
           finishedWork,
           lanes,
@@ -17835,6 +19208,7 @@ var __morbis_feature = (() => {
           spawnedLane,
           updatedLanes,
           suspendedRetryLanes,
+          didSkipSuspendedSiblings,
           exitStatus,
           suspendedState,
           suspendedCommitReason,
@@ -17849,31 +19223,87 @@ var __morbis_feature = (() => {
           if ((executionContext & (RenderContext | CommitContext)) !== NoContext)
             throw Error('Should not already be working.');
           setCurrentTrackFromLanes(lanes);
-          exitStatus === RootErrored
-            ? logErroredRenderPhase(
-                completedRenderStartTime,
-                completedRenderEndTime,
-                lanes,
-                workInProgressUpdateTask,
-              )
-            : null !== recoverableErrors
-              ? logRecoveredRenderPhase(
-                  completedRenderStartTime,
-                  completedRenderEndTime,
-                  lanes,
-                  recoverableErrors,
-                  null !== finishedWork &&
-                    null !== finishedWork.alternate &&
-                    finishedWork.alternate.memoizedState.isDehydrated &&
-                    0 !== (finishedWork.flags & 256),
-                  workInProgressUpdateTask,
-                )
-              : logRenderPhase(
-                  completedRenderStartTime,
-                  completedRenderEndTime,
-                  lanes,
-                  workInProgressUpdateTask,
-                );
+          if (exitStatus === RootErrored)
+            logErroredRenderPhase(
+              completedRenderStartTime,
+              completedRenderEndTime,
+              lanes,
+              workInProgressUpdateTask,
+            );
+          else if (null !== recoverableErrors) {
+            if (
+              ((didSkipSuspendedSiblings =
+                null !== finishedWork &&
+                null !== finishedWork.alternate &&
+                finishedWork.alternate.memoizedState.isDehydrated &&
+                0 !== (finishedWork.flags & 256)),
+              (didIncludeRenderPhaseUpdate = workInProgressUpdateTask),
+              supportsUserTiming && !(completedRenderEndTime <= completedRenderStartTime))
+            ) {
+              exitStatus = [];
+              for (var i = 0; i < recoverableErrors.length; i++) {
+                var error = recoverableErrors[i].value;
+                exitStatus.push([
+                  'Recoverable Error',
+                  'object' === typeof error && null !== error && 'string' === typeof error.message
+                    ? String(error.message)
+                    : String(error),
+                ]);
+              }
+              completedRenderStartTime = {
+                start: completedRenderStartTime,
+                end: completedRenderEndTime,
+                detail: {
+                  devtools: {
+                    color: 'primary-dark',
+                    track: currentTrack,
+                    trackGroup: LANES_TRACK_GROUP,
+                    tooltipText: didSkipSuspendedSiblings
+                      ? 'Hydration Failed'
+                      : 'Recovered after Error',
+                    properties: exitStatus,
+                  },
+                },
+              };
+              didIncludeRenderPhaseUpdate
+                ? didIncludeRenderPhaseUpdate.run(
+                    performance.measure.bind(performance, 'Recovered', completedRenderStartTime),
+                  )
+                : performance.measure('Recovered', completedRenderStartTime);
+              performance.clearMeasures('Recovered');
+            }
+          } else
+            ((didIncludeRenderPhaseUpdate = workInProgressUpdateTask),
+              !supportsUserTiming ||
+                completedRenderEndTime <= completedRenderStartTime ||
+                ((didSkipSuspendedSiblings =
+                  (lanes & 738197653) === lanes ? 'tertiary-dark' : 'primary-dark'),
+                (exitStatus =
+                  (lanes & 536870912) === lanes
+                    ? 'Prepared'
+                    : (lanes & 201326741) === lanes
+                      ? 'Hydrated'
+                      : 'Render'),
+                didIncludeRenderPhaseUpdate
+                  ? didIncludeRenderPhaseUpdate.run(
+                      console.timeStamp.bind(
+                        console,
+                        exitStatus,
+                        completedRenderStartTime,
+                        completedRenderEndTime,
+                        currentTrack,
+                        LANES_TRACK_GROUP,
+                        didSkipSuspendedSiblings,
+                      ),
+                    )
+                  : console.timeStamp(
+                      exitStatus,
+                      completedRenderStartTime,
+                      completedRenderEndTime,
+                      currentTrack,
+                      LANES_TRACK_GROUP,
+                      didSkipSuspendedSiblings,
+                    )));
           if (null !== finishedWork) {
             0 === lanes &&
               console.error(
@@ -17883,71 +19313,157 @@ var __morbis_feature = (() => {
               throw Error(
                 'Cannot commit the same tree as before. This error is likely caused by a bug in React. Please file an issue.',
               );
-            didIncludeRenderPhaseUpdate = finishedWork.lanes | finishedWork.childLanes;
-            didIncludeRenderPhaseUpdate |= concurrentlyUpdatedLanes;
-            markRootFinished(
-              root2,
-              lanes,
-              didIncludeRenderPhaseUpdate,
-              spawnedLane,
-              updatedLanes,
-              suspendedRetryLanes,
-            );
             root2 === workInProgressRoot &&
               ((workInProgress = workInProgressRoot = null), (workInProgressRootRenderLanes = 0));
             pendingFinishedWork = finishedWork;
             pendingEffectsRoot = root2;
             pendingEffectsLanes = lanes;
-            pendingEffectsRemainingLanes = didIncludeRenderPhaseUpdate;
             pendingPassiveTransitions = transitions;
             pendingRecoverableErrors = recoverableErrors;
             pendingEffectsRenderEndTime = completedRenderEndTime;
             pendingSuspendedCommitReason = suspendedCommitReason;
             pendingDelayedCommitReason = IMMEDIATE_COMMIT;
             pendingSuspendedViewTransitionReason = null;
-            0 !== finishedWork.actualDuration ||
-            0 !== (finishedWork.subtreeFlags & 10256) ||
-            0 !== (finishedWork.flags & 10256)
-              ? ((root2.callbackNode = null),
-                (root2.callbackPriority = 0),
-                scheduleCallback$1(NormalPriority$1, function () {
-                  schedulerEvent = window.event;
-                  pendingDelayedCommitReason === IMMEDIATE_COMMIT &&
-                    (pendingDelayedCommitReason = DELAYED_PASSIVE_COMMIT);
-                  flushPassiveEffects();
-                  return null;
-                }))
-              : ((root2.callbackNode = null), (root2.callbackPriority = 0));
-            commitErrors = null;
-            commitStartTime = now();
-            null !== suspendedCommitReason &&
-              logSuspendedCommitPhase(
-                completedRenderEndTime,
-                commitStartTime,
-                suspendedCommitReason,
-                workInProgressUpdateTask,
-              );
-            recoverableErrors = 0 !== (finishedWork.flags & 13878);
-            if (0 !== (finishedWork.subtreeFlags & 13878) || recoverableErrors) {
-              recoverableErrors = ReactSharedInternals.T;
-              ReactSharedInternals.T = null;
-              transitions = ReactDOMSharedInternals.p;
-              ReactDOMSharedInternals.p = DiscreteEventPriority;
-              spawnedLane = executionContext;
-              executionContext |= CommitContext;
-              try {
-                commitBeforeMutationEffects(root2, finishedWork, lanes);
-              } finally {
-                ((executionContext = spawnedLane),
-                  (ReactDOMSharedInternals.p = transitions),
-                  (ReactSharedInternals.T = recoverableErrors));
-              }
-            }
-            pendingEffectsStatus = PENDING_MUTATION_PHASE;
-            flushMutationEffects();
-            flushLayoutEffects();
-            flushSpawnedWork();
+            commitRoot(
+              root2,
+              finishedWork,
+              lanes,
+              spawnedLane,
+              updatedLanes,
+              suspendedRetryLanes,
+              suspendedState,
+              suspendedCommitReason,
+              completedRenderEndTime,
+            );
           }
+        }
+        function commitRoot(
+          root2,
+          finishedWork,
+          lanes,
+          spawnedLane,
+          updatedLanes,
+          suspendedRetryLanes,
+          suspendedState,
+          suspendedCommitReason,
+          completedRenderEndTime,
+        ) {
+          var remainingLanes = finishedWork.lanes | finishedWork.childLanes;
+          pendingEffectsRemainingLanes = remainingLanes;
+          remainingLanes |= concurrentlyUpdatedLanes;
+          markRootFinished(
+            root2,
+            lanes,
+            remainingLanes,
+            spawnedLane,
+            updatedLanes,
+            suspendedRetryLanes,
+          );
+          pendingViewTransitionEvents = null;
+          (lanes & 335544064) === lanes
+            ? ((pendingTransitionTypes = claimQueuedTransitionTypes(root2)), (spawnedLane = 10262))
+            : ((pendingTransitionTypes = null), (spawnedLane = 10256));
+          0 !== finishedWork.actualDuration ||
+          0 !== (finishedWork.subtreeFlags & spawnedLane) ||
+          0 !== (finishedWork.flags & spawnedLane)
+            ? ((root2.callbackNode = null),
+              (root2.callbackPriority = 0),
+              scheduleCallback$1(NormalPriority$1, function () {
+                schedulerEvent = window.event;
+                pendingDelayedCommitReason === IMMEDIATE_COMMIT &&
+                  (pendingDelayedCommitReason = DELAYED_PASSIVE_COMMIT);
+                flushPassiveEffects();
+                return null;
+              }))
+            : ((root2.callbackNode = null), (root2.callbackPriority = 0));
+          commitErrors = null;
+          commitStartTime = now();
+          null !== suspendedCommitReason &&
+            logSuspendedCommitPhase(
+              completedRenderEndTime,
+              commitStartTime,
+              suspendedCommitReason,
+              workInProgressUpdateTask,
+            );
+          shouldStartViewTransition = false;
+          suspendedCommitReason = 0 !== (finishedWork.flags & 13878);
+          if (0 !== (finishedWork.subtreeFlags & 13878) || suspendedCommitReason) {
+            suspendedCommitReason = ReactSharedInternals.T;
+            ReactSharedInternals.T = null;
+            completedRenderEndTime = ReactDOMSharedInternals.p;
+            ReactDOMSharedInternals.p = DiscreteEventPriority;
+            spawnedLane = executionContext;
+            executionContext |= CommitContext;
+            try {
+              commitBeforeMutationEffects(root2, finishedWork, lanes);
+            } finally {
+              ((executionContext = spawnedLane),
+                (ReactDOMSharedInternals.p = completedRenderEndTime),
+                (ReactSharedInternals.T = suspendedCommitReason));
+            }
+          }
+          pendingEffectsStatus = PENDING_MUTATION_PHASE;
+          shouldStartViewTransition
+            ? ((animatingLanes |= lanes),
+              (animatingTask = null),
+              (pendingViewTransition = startViewTransition(
+                suspendedState,
+                root2.containerInfo,
+                pendingTransitionTypes,
+                flushMutationEffects,
+                flushLayoutEffects,
+                flushAfterMutationEffects,
+                flushSpawnedWork,
+                flushPassiveEffects,
+                reportViewTransitionError,
+                suspendedViewTransition,
+                finishedViewTransition.bind(null, lanes),
+              )))
+            : (flushMutationEffects(), flushLayoutEffects(), flushSpawnedWork());
+        }
+        function reportViewTransitionError(error) {
+          if (pendingEffectsStatus !== NO_PENDING_EFFECTS) {
+            var onRecoverableError = pendingEffectsRoot.onRecoverableError;
+            onRecoverableError(error, makeErrorInfo(null));
+          }
+        }
+        function suspendedViewTransition(reason) {
+          commitEndTime = now();
+          logCommitPhase(
+            null === pendingSuspendedCommitReason ? pendingEffectsRenderEndTime : commitStartTime,
+            commitEndTime,
+            commitErrors,
+            pendingDelayedCommitReason === ABORTED_VIEW_TRANSITION_COMMIT,
+            workInProgressUpdateTask,
+          );
+          pendingSuspendedCommitReason = pendingSuspendedViewTransitionReason = reason;
+        }
+        function finishedViewTransition(lanes) {
+          if (0 !== (animatingLanes & lanes)) {
+            var task = animatingTask;
+            animatingLanes &= ~lanes;
+            animatingTask = null;
+            0 !== (lanes & 4194048) &&
+              0 === (workInProgressRootRenderLanes & 4194048) &&
+              0 === (pendingEffectsLanes & 4194048) &&
+              (setCurrentTrackFromLanes(256),
+              logAnimatingPhase(transitionClampTime, now$1(), task));
+            0 !== (lanes & 62914560) &&
+              0 === (workInProgressRootRenderLanes & 62914560) &&
+              0 === (pendingEffectsLanes & 62914560) &&
+              (setCurrentTrackFromLanes(4194304), logAnimatingPhase(retryClampTime, now$1(), task));
+            0 !== (lanes & 2080374784) &&
+              0 === (workInProgressRootRenderLanes & 2080374784) &&
+              0 === (pendingEffectsLanes & 2080374784) &&
+              (setCurrentTrackFromLanes(268435456),
+              logAnimatingPhase(idleClampTime, now$1(), task));
+          }
+        }
+        function flushAfterMutationEffects() {
+          pendingEffectsStatus === PENDING_AFTER_MUTATION_PHASE &&
+            ((pendingEffectsStatus = NO_PENDING_EFFECTS),
+            commitAfterMutationEffectsOnFiber(pendingFinishedWork, pendingEffectsRoot),
+            (pendingEffectsStatus = PENDING_SPAWNED_WORK));
         }
         function flushMutationEffects() {
           if (pendingEffectsStatus === PENDING_MUTATION_PHASE) {
@@ -17966,8 +19482,9 @@ var __morbis_feature = (() => {
               try {
                 inProgressLanes = lanes;
                 inProgressRoot = root2;
+                inUpdateViewTransition = rootViewTransitionAffected = false;
                 resetComponentEffectTimers();
-                commitMutationEffectsOnFiber(finishedWork, root2);
+                commitMutationEffectsOnFiber(finishedWork, root2, lanes);
                 inProgressRoot = inProgressLanes = null;
                 lanes = selectionInformation;
                 var curFocusedElem = getActiveElementDeep(root2.containerInfo),
@@ -18119,41 +19636,13 @@ var __morbis_feature = (() => {
             suspendedViewTransitionReason = pendingEffectsRenderEndTime;
             startTime = pendingSuspendedCommitReason;
             commitEndTime = now();
-            suspendedViewTransitionReason =
-              null === startTime ? suspendedViewTransitionReason : commitStartTime;
-            startTime = commitEndTime;
-            endTime = pendingDelayedCommitReason === ABORTED_VIEW_TRANSITION_COMMIT;
-            rootHasLayoutEffect = workInProgressUpdateTask;
-            null !== commitErrors
-              ? logCommitErrored(
-                  suspendedViewTransitionReason,
-                  startTime,
-                  commitErrors,
-                  false,
-                  rootHasLayoutEffect,
-                )
-              : !supportsUserTiming ||
-                startTime <= suspendedViewTransitionReason ||
-                (rootHasLayoutEffect
-                  ? rootHasLayoutEffect.run(
-                      console.timeStamp.bind(
-                        console,
-                        endTime ? 'Commit Interrupted View Transition' : 'Commit',
-                        suspendedViewTransitionReason,
-                        startTime,
-                        currentTrack,
-                        LANES_TRACK_GROUP,
-                        endTime ? 'error' : 'secondary-dark',
-                      ),
-                    )
-                  : console.timeStamp(
-                      endTime ? 'Commit Interrupted View Transition' : 'Commit',
-                      suspendedViewTransitionReason,
-                      startTime,
-                      currentTrack,
-                      LANES_TRACK_GROUP,
-                      endTime ? 'error' : 'secondary-dark',
-                    ));
+            logCommitPhase(
+              null === startTime ? suspendedViewTransitionReason : commitStartTime,
+              commitEndTime,
+              commitErrors,
+              pendingDelayedCommitReason === ABORTED_VIEW_TRANSITION_COMMIT,
+              workInProgressUpdateTask,
+            );
             pendingEffectsStatus = PENDING_AFTER_MUTATION_PHASE;
           }
         }
@@ -18196,30 +19685,29 @@ var __morbis_feature = (() => {
                 (pendingDelayedCommitReason = ANIMATION_STARTED_COMMIT);
             }
             pendingEffectsStatus = NO_PENDING_EFFECTS;
+            startViewTransitionStartTime = pendingViewTransition;
+            pendingViewTransition = null;
             requestPaint();
-            startViewTransitionStartTime = pendingEffectsRoot;
+            endTime = pendingEffectsRoot;
             var finishedWork = pendingFinishedWork;
-            endTime = pendingEffectsLanes;
-            abortedViewTransition = pendingRecoverableErrors;
-            var rootDidHavePassiveEffects =
+            abortedViewTransition = pendingEffectsLanes;
+            var recoverableErrors = pendingRecoverableErrors,
+              passiveSubtreeMask =
+                (abortedViewTransition & 335544064) === abortedViewTransition ? 10262 : 10256;
+            (passiveSubtreeMask =
               0 !== finishedWork.actualDuration ||
-              0 !== (finishedWork.subtreeFlags & 10256) ||
-              0 !== (finishedWork.flags & 10256);
-            rootDidHavePassiveEffects
+              0 !== (finishedWork.subtreeFlags & passiveSubtreeMask) ||
+              0 !== (finishedWork.flags & passiveSubtreeMask))
               ? (pendingEffectsStatus = PENDING_PASSIVE_PHASE)
               : ((pendingEffectsStatus = NO_PENDING_EFFECTS),
                 (pendingFinishedWork = pendingEffectsRoot = null),
-                releaseRootPooledCache(
-                  startViewTransitionStartTime,
-                  startViewTransitionStartTime.pendingLanes,
-                ),
+                releaseRootPooledCache(endTime, endTime.pendingLanes),
                 (nestedPassiveUpdateCount = 0),
                 (rootWithPassiveNestedUpdates = null));
-            var remainingLanes = startViewTransitionStartTime.pendingLanes;
+            var remainingLanes = endTime.pendingLanes;
             0 === remainingLanes && (legacyErrorBoundariesThatAlreadyFailed = null);
-            rootDidHavePassiveEffects ||
-              commitDoubleInvokeEffectsInDEV(startViewTransitionStartTime);
-            remainingLanes = lanesToEventPriority(endTime);
+            passiveSubtreeMask || commitDoubleInvokeEffectsInDEV(endTime);
+            remainingLanes = lanesToEventPriority(abortedViewTransition);
             finishedWork = finishedWork.stateNode;
             if (injectedHook && 'function' === typeof injectedHook.onCommitFiberRoot)
               try {
@@ -18251,21 +19739,17 @@ var __morbis_feature = (() => {
                   ((hasLoggedError = true),
                   console.error('React instrumentation encountered an error: %o', err));
               }
-            isDevToolsPresent && startViewTransitionStartTime.memoizedUpdaters.clear();
+            isDevToolsPresent && endTime.memoizedUpdaters.clear();
             onCommitRoot();
-            if (null !== abortedViewTransition) {
+            if (null !== recoverableErrors) {
               didError = ReactSharedInternals.T;
               schedulerPriority = ReactDOMSharedInternals.p;
               ReactDOMSharedInternals.p = DiscreteEventPriority;
               ReactSharedInternals.T = null;
               try {
-                var onRecoverableError = startViewTransitionStartTime.onRecoverableError;
-                for (
-                  finishedWork = 0;
-                  finishedWork < abortedViewTransition.length;
-                  finishedWork++
-                ) {
-                  var recoverableError = abortedViewTransition[finishedWork],
+                var onRecoverableError = endTime.onRecoverableError;
+                for (finishedWork = 0; finishedWork < recoverableErrors.length; finishedWork++) {
+                  var recoverableError = recoverableErrors[finishedWork],
                     errorInfo = makeErrorInfo(recoverableError.stack);
                   runWithFiberInDEV(
                     recoverableError.source,
@@ -18279,17 +19763,29 @@ var __morbis_feature = (() => {
                   (ReactDOMSharedInternals.p = schedulerPriority));
               }
             }
+            onRecoverableError = pendingViewTransitionEvents;
+            recoverableError = pendingTransitionTypes;
+            pendingTransitionTypes = null;
+            if (
+              null !== onRecoverableError &&
+              ((pendingViewTransitionEvents = null),
+              null === recoverableError && (recoverableError = []),
+              null !== startViewTransitionStartTime)
+            )
+              for (errorInfo = 0; errorInfo < onRecoverableError.length; errorInfo++)
+                ((recoverableErrors = (0, onRecoverableError[errorInfo])(recoverableError)),
+                  void 0 !== recoverableErrors &&
+                    startViewTransitionStartTime.finished.finally(recoverableErrors));
             0 !== (pendingEffectsLanes & 3) && flushPendingEffects();
-            ensureRootIsScheduled(startViewTransitionStartTime);
-            remainingLanes = startViewTransitionStartTime.pendingLanes;
-            0 !== (endTime & 261930) && 0 !== (remainingLanes & 42)
+            ensureRootIsScheduled(endTime);
+            remainingLanes = endTime.pendingLanes;
+            0 !== (abortedViewTransition & 261930) && 0 !== (remainingLanes & 42)
               ? ((nestedUpdateScheduled = true),
-                startViewTransitionStartTime === rootWithNestedUpdates
+                endTime === rootWithNestedUpdates
                   ? nestedUpdateCount++
-                  : ((nestedUpdateCount = 0),
-                    (rootWithNestedUpdates = startViewTransitionStartTime)))
-              : (nestedUpdateCount = 0);
-            rootDidHavePassiveEffects || finalizeRender(endTime, commitEndTime);
+                  : ((nestedUpdateCount = 0), (rootWithNestedUpdates = endTime)))
+              : ((nestedUpdateCount = 0), (rootWithNestedUpdates = null));
+            passiveSubtreeMask || finalizeRender(abortedViewTransition, commitEndTime);
             flushSyncWorkAcrossRoots_impl(0, false);
           }
         }
@@ -18310,6 +19806,15 @@ var __morbis_feature = (() => {
             null != remainingLanes && ((root2.pooledCache = null), releaseCache(remainingLanes)));
         }
         function flushPendingEffects() {
+          null !== pendingViewTransition &&
+            (pendingViewTransition.skipTransition(),
+            didWarnAboutInterruptedViewTransitions ||
+              ((didWarnAboutInterruptedViewTransitions = true),
+              console.warn(
+                "A flushSync update cancelled a View Transition because it was called while the View Transition was still preparing. To preserve the synchronous semantics, React had to skip the View Transition. If you can, try to avoid flushSync() in a scenario that's likely to interfere.",
+              )),
+            (pendingViewTransition = null),
+            (pendingDelayedCommitReason = ABORTED_VIEW_TRANSITION_COMMIT));
           flushMutationEffects();
           flushLayoutEffects();
           flushSpawnedWork();
@@ -18541,7 +20046,9 @@ var __morbis_feature = (() => {
             (workInProgressRootExitStatus === RootSuspended &&
               (workInProgressRootRenderLanes & 62914560) === workInProgressRootRenderLanes &&
               now$1() - globalMostRecentFallbackTime < FALLBACK_THROTTLE_MS)
-              ? (executionContext & RenderContext) === NoContext && prepareFreshStack(root2, 0)
+              ? (executionContext & RenderContext) === NoContext
+                ? prepareFreshStack(root2, 0)
+                : (workInProgressRootPingedLanes |= pingedLanes)
               : (workInProgressRootPingedLanes |= pingedLanes),
             workInProgressSuspendedRetryLanes === workInProgressRootRenderLanes &&
               (workInProgressSuspendedRetryLanes = 0));
@@ -18587,21 +20094,21 @@ var __morbis_feature = (() => {
           parentFiber,
           isInStrictMode,
         ) {
-          if (0 !== (parentFiber.subtreeFlags & 67117056))
+          if (0 !== (parentFiber.subtreeFlags & 134225920))
             for (parentFiber = parentFiber.child; null !== parentFiber;) {
               var root2 = root$jscomp$0,
                 fiber = parentFiber,
                 isStrictModeFiber = fiber.type === REACT_STRICT_MODE_TYPE;
               isStrictModeFiber = isInStrictMode || isStrictModeFiber;
               22 !== fiber.tag
-                ? fiber.flags & 67108864
+                ? fiber.flags & 134217728
                   ? isStrictModeFiber &&
                     runWithFiberInDEV(fiber, doubleInvokeEffectsOnFiber, root2, fiber)
                   : recursivelyTraverseAndDoubleInvokeEffectsInDEV(root2, fiber, isStrictModeFiber)
                 : null === fiber.memoizedState &&
-                  (isStrictModeFiber && fiber.flags & 8192
+                  (isStrictModeFiber && fiber.flags & 134225920
                     ? runWithFiberInDEV(fiber, doubleInvokeEffectsOnFiber, root2, fiber)
-                    : fiber.subtreeFlags & 67108864 &&
+                    : fiber.subtreeFlags & 134217728 &&
                       runWithFiberInDEV(
                         fiber,
                         recursivelyTraverseAndDoubleInvokeEffectsInDEV,
@@ -18615,9 +20122,9 @@ var __morbis_feature = (() => {
         function doubleInvokeEffectsOnFiber(root2, fiber) {
           setIsStrictModeForDevtools(true);
           try {
-            (disappearLayoutEffects(fiber),
+            (disappearLayoutEffects(fiber, NoLayoutEffectTraversalFlags),
               disconnectPassiveEffect(fiber),
-              reappearLayoutEffects(root2, fiber.alternate, fiber, false),
+              reappearLayoutEffects(root2, fiber.alternate, fiber, NoLayoutEffectTraversalFlags),
               reconnectPassiveEffects(root2, fiber, 0, null, false, 0));
           } finally {
             setIsStrictModeForDevtools(false);
@@ -18891,17 +20398,7 @@ var __morbis_feature = (() => {
             return null;
           if ('function' === typeof actionProp) return actionProp;
           checkAttributeStringCoercion(actionProp, 'action');
-          return sanitizeURL('' + actionProp);
-        }
-        function createFormDataWithSubmitter(form, submitter) {
-          var temp = submitter.ownerDocument.createElement('input');
-          temp.name = submitter.name;
-          temp.value = submitter.value;
-          form.id && temp.setAttribute('form', form.id);
-          submitter.parentNode.insertBefore(temp, submitter);
-          form = new FormData(form);
-          temp.parentNode.removeChild(temp);
-          return form;
+          return sanitizeURL(actionProp);
         }
         function extractEvents$1(
           dispatchQueue,
@@ -18937,9 +20434,7 @@ var __morbis_feature = (() => {
                   listener: function () {
                     if (nativeEvent.defaultPrevented) {
                       if (0 !== currentEventTransitionLane) {
-                        var formData = submitter
-                            ? createFormDataWithSubmitter(nativeEventTarget, submitter)
-                            : new FormData(nativeEventTarget),
+                        var formData = new FormData(nativeEventTarget, submitter),
                           pendingState = {
                             pending: true,
                             data: formData,
@@ -18952,9 +20447,7 @@ var __morbis_feature = (() => {
                     } else
                       'function' === typeof action &&
                         (event.preventDefault(),
-                        (formData = submitter
-                          ? createFormDataWithSubmitter(nativeEventTarget, submitter)
-                          : new FormData(nativeEventTarget)),
+                        (formData = new FormData(nativeEventTarget, submitter)),
                         (pendingState = {
                           pending: true,
                           data: formData,
@@ -19239,6 +20732,9 @@ var __morbis_feature = (() => {
                   case 'pointerup':
                     SyntheticEventCtor = SyntheticPointerEvent;
                     break;
+                  case 'submit':
+                    SyntheticEventCtor = SyntheticSubmitEvent;
+                    break;
                   case 'toggle':
                   case 'beforetoggle':
                     SyntheticEventCtor = SyntheticToggleEvent;
@@ -19283,39 +20779,39 @@ var __morbis_feature = (() => {
             }
             if (0 === (eventSystemFlags & 7)) {
               a: {
-                reactName = 'mouseover' === domEventName || 'pointerover' === domEventName;
-                SyntheticEventCtor = 'mouseout' === domEventName || 'pointerout' === domEventName;
+                SyntheticEventCtor = 'mouseover' === domEventName || 'pointerover' === domEventName;
+                reactName = 'mouseout' === domEventName || 'pointerout' === domEventName;
                 if (
-                  reactName &&
+                  SyntheticEventCtor &&
                   nativeEvent !== currentReplayingEvent &&
                   (reactEventType = nativeEvent.relatedTarget || nativeEvent.fromElement) &&
                   (getClosestInstanceFromNode(reactEventType) ||
                     reactEventType[internalContainerInstanceKey])
                 )
                   break a;
-                if (SyntheticEventCtor || reactName) {
-                  reactName =
+                if (reactName || SyntheticEventCtor) {
+                  reactEventType =
                     nativeEventTarget.window === nativeEventTarget
                       ? nativeEventTarget
-                      : (reactName = nativeEventTarget.ownerDocument)
-                        ? reactName.defaultView || reactName.parentWindow
+                      : (SyntheticEventCtor = nativeEventTarget.ownerDocument)
+                        ? SyntheticEventCtor.defaultView || SyntheticEventCtor.parentWindow
                         : window;
-                  if (SyntheticEventCtor) {
+                  if (reactName) {
                     if (
-                      ((reactEventType = nativeEvent.relatedTarget || nativeEvent.toElement),
-                      (SyntheticEventCtor = targetInst),
-                      (reactEventType = reactEventType
-                        ? getClosestInstanceFromNode(reactEventType)
+                      ((SyntheticEventCtor = nativeEvent.relatedTarget || nativeEvent.toElement),
+                      (reactName = targetInst),
+                      (SyntheticEventCtor = SyntheticEventCtor
+                        ? getClosestInstanceFromNode(SyntheticEventCtor)
                         : null),
-                      null !== reactEventType &&
-                        ((accumulateTargetOnly = getNearestMountedFiber(reactEventType)),
-                        (inCapturePhase = reactEventType.tag),
-                        reactEventType !== accumulateTargetOnly ||
+                      null !== SyntheticEventCtor &&
+                        ((accumulateTargetOnly = getNearestMountedFiber(SyntheticEventCtor)),
+                        (inCapturePhase = SyntheticEventCtor.tag),
+                        SyntheticEventCtor !== accumulateTargetOnly ||
                           (5 !== inCapturePhase && 27 !== inCapturePhase && 6 !== inCapturePhase)))
                     )
-                      reactEventType = null;
-                  } else ((SyntheticEventCtor = null), (reactEventType = targetInst));
-                  if (SyntheticEventCtor !== reactEventType) {
+                      SyntheticEventCtor = null;
+                  } else ((reactName = null), (SyntheticEventCtor = targetInst));
+                  if (reactName !== SyntheticEventCtor) {
                     inCapturePhase = SyntheticMouseEvent;
                     _instance2 = 'onMouseLeave';
                     reactEventName = 'onMouseEnter';
@@ -19326,26 +20822,26 @@ var __morbis_feature = (() => {
                         (reactEventName = 'onPointerEnter'),
                         (instance = 'pointer'));
                     accumulateTargetOnly =
-                      null == SyntheticEventCtor
-                        ? reactName
-                        : getNodeFromInstance(SyntheticEventCtor);
+                      null == reactName ? reactEventType : getNodeFromInstance(reactName);
                     lastHostComponent =
-                      null == reactEventType ? reactName : getNodeFromInstance(reactEventType);
-                    reactName = new inCapturePhase(
+                      null == SyntheticEventCtor
+                        ? reactEventType
+                        : getNodeFromInstance(SyntheticEventCtor);
+                    reactEventType = new inCapturePhase(
                       _instance2,
                       instance + 'leave',
-                      SyntheticEventCtor,
+                      reactName,
                       nativeEvent,
                       nativeEventTarget,
                     );
-                    reactName.target = accumulateTargetOnly;
-                    reactName.relatedTarget = lastHostComponent;
+                    reactEventType.target = accumulateTargetOnly;
+                    reactEventType.relatedTarget = lastHostComponent;
                     _instance2 = null;
                     getClosestInstanceFromNode(nativeEventTarget) === targetInst &&
                       ((inCapturePhase = new inCapturePhase(
                         reactEventName,
                         instance + 'enter',
-                        reactEventType,
+                        SyntheticEventCtor,
                         nativeEvent,
                         nativeEventTarget,
                       )),
@@ -19353,53 +20849,24 @@ var __morbis_feature = (() => {
                       (inCapturePhase.relatedTarget = accumulateTargetOnly),
                       (_instance2 = inCapturePhase));
                     accumulateTargetOnly = _instance2;
-                    if (SyntheticEventCtor && reactEventType)
-                      b: {
-                        inCapturePhase = getParent;
-                        reactEventName = SyntheticEventCtor;
-                        instance = reactEventType;
-                        lastHostComponent = 0;
-                        for (
-                          _instance2 = reactEventName;
-                          _instance2;
-                          _instance2 = inCapturePhase(_instance2)
-                        )
-                          lastHostComponent++;
-                        _instance2 = 0;
-                        for (var tempB = instance; tempB; tempB = inCapturePhase(tempB))
-                          _instance2++;
-                        for (; 0 < lastHostComponent - _instance2;)
-                          ((reactEventName = inCapturePhase(reactEventName)), lastHostComponent--);
-                        for (; 0 < _instance2 - lastHostComponent;)
-                          ((instance = inCapturePhase(instance)), _instance2--);
-                        for (; lastHostComponent--;) {
-                          if (
-                            reactEventName === instance ||
-                            (null !== instance && reactEventName === instance.alternate)
-                          ) {
-                            inCapturePhase = reactEventName;
-                            break b;
-                          }
-                          reactEventName = inCapturePhase(reactEventName);
-                          instance = inCapturePhase(instance);
-                        }
-                        inCapturePhase = null;
-                      }
-                    else inCapturePhase = null;
-                    null !== SyntheticEventCtor &&
+                    inCapturePhase =
+                      reactName && SyntheticEventCtor
+                        ? getLowestCommonAncestor(reactName, SyntheticEventCtor, getParent)
+                        : null;
+                    null !== reactName &&
                       accumulateEnterLeaveListenersForEvent(
                         dispatchQueue,
+                        reactEventType,
                         reactName,
-                        SyntheticEventCtor,
                         inCapturePhase,
                         false,
                       );
-                    null !== reactEventType &&
+                    null !== SyntheticEventCtor &&
                       null !== accumulateTargetOnly &&
                       accumulateEnterLeaveListenersForEvent(
                         dispatchQueue,
                         accumulateTargetOnly,
-                        reactEventType,
+                        SyntheticEventCtor,
                         inCapturePhase,
                         true,
                       );
@@ -19442,11 +20909,6 @@ var __morbis_feature = (() => {
                   break a;
                 }
                 handleEventFunc && handleEventFunc(domEventName, reactName, targetInst);
-                'focusout' === domEventName &&
-                  targetInst &&
-                  'number' === reactName.type &&
-                  null != targetInst.memoizedProps.value &&
-                  setDefaultValue(reactName, 'number', reactName.value);
               }
               handleEventFunc = targetInst ? getNodeFromInstance(targetInst) : window;
               switch (domEventName) {
@@ -19653,12 +21115,33 @@ var __morbis_feature = (() => {
             normalizeMarkupForTextOrAttribute(serverValue) !== clientValue &&
               (serverDifferences[propName] = serverValue));
         }
+        function hasViewTransition(htmlElement) {
+          return !!(
+            htmlElement.getAttribute('vt-share') ||
+            htmlElement.getAttribute('vt-exit') ||
+            htmlElement.getAttribute('vt-enter') ||
+            htmlElement.getAttribute('vt-update')
+          );
+        }
+        function isExpectedViewTransitionName(htmlElement) {
+          if (!hasViewTransition(htmlElement)) return false;
+          var expectedVtName = htmlElement.getAttribute('vt-name');
+          htmlElement = htmlElement.style['view-transition-name'];
+          return expectedVtName ? expectedVtName === htmlElement : htmlElement.startsWith('_T_');
+        }
         function warnForExtraAttributes(domElement, attributeNames, serverDifferences) {
           attributeNames.forEach(function (attributeName) {
-            serverDifferences[getPropNameFromAttributeName(attributeName)] =
-              'style' === attributeName
-                ? getStylesObjectFromElement(domElement)
-                : domElement.getAttribute(attributeName);
+            'style' === attributeName
+              ? '' !== domElement.getAttribute(attributeName) &&
+                ((attributeName = domElement.style),
+                (((1 === attributeName.length && 'view-transition-name' === attributeName[0]) ||
+                  (2 === attributeName.length &&
+                    'view-transition-class' === attributeName[0] &&
+                    'view-transition-name' === attributeName[1])) &&
+                  isExpectedViewTransitionName(domElement)) ||
+                  (serverDifferences.style = getStylesObjectFromElement(domElement)))
+              : (serverDifferences[getPropNameFromAttributeName(attributeName)] =
+                  domElement.getAttribute(attributeName));
           });
         }
         function warnForInvalidEventListener(registrationName, listener) {
@@ -19709,6 +21192,7 @@ var __morbis_feature = (() => {
               else if ('number' === typeof value || 'bigint' === typeof value)
                 (validateTextNesting('' + value, tag, false),
                   'body' !== tag && setTextContent(domElement, '' + value));
+              else return;
               break;
             case 'className':
               setValueForKnownAttribute(domElement, 'class', value);
@@ -19725,7 +21209,7 @@ var __morbis_feature = (() => {
               break;
             case 'style':
               setValueForStyles(domElement, value, prevValue);
-              break;
+              return;
             case 'data':
               if ('object' !== tag) {
                 setValueForKnownAttribute(domElement, 'data', value);
@@ -19758,7 +21242,7 @@ var __morbis_feature = (() => {
                 break;
               }
               checkAttributeStringCoercion(value, key);
-              value = sanitizeURL('' + value);
+              value = sanitizeURL(value);
               domElement.setAttribute(key, value);
               break;
             case 'action':
@@ -19848,24 +21332,24 @@ var __morbis_feature = (() => {
                 break;
               }
               checkAttributeStringCoercion(value, key);
-              value = sanitizeURL('' + value);
+              value = sanitizeURL(value);
               domElement.setAttribute(key, value);
               break;
             case 'onClick':
               null != value &&
                 ('function' !== typeof value && warnForInvalidEventListener(key, value),
                 (domElement.onclick = noop$1));
-              break;
+              return;
             case 'onScroll':
               null != value &&
                 ('function' !== typeof value && warnForInvalidEventListener(key, value),
                 listenToNonDelegatedEvent('scroll', domElement));
-              break;
+              return;
             case 'onScrollEnd':
               null != value &&
                 ('function' !== typeof value && warnForInvalidEventListener(key, value),
                 listenToNonDelegatedEvent('scrollend', domElement));
-              break;
+              return;
             case 'dangerouslySetInnerHTML':
               if (null != value) {
                 if ('object' !== typeof value || !('__html' in value))
@@ -19878,7 +21362,8 @@ var __morbis_feature = (() => {
                     throw Error(
                       'Can only set one of `children` or `props.dangerouslySetInnerHTML`.',
                     );
-                  domElement.innerHTML = key;
+                  (null != prevValue ? prevValue.__html : void 0) !== key &&
+                    (domElement.innerHTML = key);
                 }
               }
               break;
@@ -19909,7 +21394,7 @@ var __morbis_feature = (() => {
                 break;
               }
               checkAttributeStringCoercion(value, key);
-              key = sanitizeURL('' + value);
+              key = sanitizeURL(value);
               domElement.setAttributeNS(xlinkNamespace, 'xlink:href', key);
               break;
             case 'contentEditable':
@@ -19921,8 +21406,7 @@ var __morbis_feature = (() => {
             case 'focusable':
             case 'preserveAlpha':
               null != value && 'function' !== typeof value && 'symbol' !== typeof value
-                ? (checkAttributeStringCoercion(value, key),
-                  domElement.setAttribute(key, '' + value))
+                ? (checkAttributeStringCoercion(value, key), domElement.setAttribute(key, value))
                 : domElement.removeAttribute(key);
               break;
             case 'inert':
@@ -19937,6 +21421,7 @@ var __morbis_feature = (() => {
             case 'async':
             case 'autoPlay':
             case 'controls':
+            case 'credentialless':
             case 'default':
             case 'defer':
             case 'disabled':
@@ -20030,7 +21515,7 @@ var __morbis_feature = (() => {
               break;
             case 'innerText':
             case 'textContent':
-              break;
+              return;
             case 'popoverTarget':
               didWarnPopoverTargetObject ||
                 null == value ||
@@ -20041,21 +21526,27 @@ var __morbis_feature = (() => {
                   value,
                 ));
             default:
-              !(2 < key.length) ||
-              ('o' !== key[0] && 'O' !== key[0]) ||
-              ('n' !== key[1] && 'N' !== key[1])
-                ? ((key = getAttributeAlias(key)), setValueForAttribute(domElement, key, value))
-                : registrationNameDependencies.hasOwnProperty(key) &&
+              if (
+                !(2 < key.length) ||
+                ('o' !== key[0] && 'O' !== key[0]) ||
+                ('n' !== key[1] && 'N' !== key[1])
+              )
+                ((key = getAttributeAlias(key)), setValueForAttribute(domElement, key, value));
+              else {
+                registrationNameDependencies.hasOwnProperty(key) &&
                   null != value &&
                   'function' !== typeof value &&
                   warnForInvalidEventListener(key, value);
+                return;
+              }
           }
+          viewTransitionMutationContext = true;
         }
         function setPropOnCustomElement(domElement, tag, key, value, props, prevValue) {
           switch (key) {
             case 'style':
               setValueForStyles(domElement, value, prevValue);
-              break;
+              return;
             case 'dangerouslySetInnerHTML':
               if (null != value) {
                 if ('object' !== typeof value || !('__html' in value))
@@ -20068,39 +21559,40 @@ var __morbis_feature = (() => {
                     throw Error(
                       'Can only set one of `children` or `props.dangerouslySetInnerHTML`.',
                     );
-                  domElement.innerHTML = key;
+                  (null != prevValue ? prevValue.__html : void 0) !== key &&
+                    (domElement.innerHTML = key);
                 }
               }
               break;
             case 'children':
-              'string' === typeof value
-                ? setTextContent(domElement, value)
-                : ('number' === typeof value || 'bigint' === typeof value) &&
-                  setTextContent(domElement, '' + value);
+              if ('string' === typeof value) setTextContent(domElement, value);
+              else if ('number' === typeof value || 'bigint' === typeof value)
+                setTextContent(domElement, '' + value);
+              else return;
               break;
             case 'onScroll':
               null != value &&
                 ('function' !== typeof value && warnForInvalidEventListener(key, value),
                 listenToNonDelegatedEvent('scroll', domElement));
-              break;
+              return;
             case 'onScrollEnd':
               null != value &&
                 ('function' !== typeof value && warnForInvalidEventListener(key, value),
                 listenToNonDelegatedEvent('scrollend', domElement));
-              break;
+              return;
             case 'onClick':
               null != value &&
                 ('function' !== typeof value && warnForInvalidEventListener(key, value),
                 (domElement.onclick = noop$1));
-              break;
+              return;
             case 'suppressContentEditableWarning':
             case 'suppressHydrationWarning':
             case 'innerHTML':
             case 'ref':
-              break;
+              return;
             case 'innerText':
             case 'textContent':
-              break;
+              return;
             default:
               if (registrationNameDependencies.hasOwnProperty(key))
                 null != value &&
@@ -20112,28 +21604,31 @@ var __morbis_feature = (() => {
                     'o' === key[0] &&
                     'n' === key[1] &&
                     ((props = key.endsWith('Capture')),
-                    (tag = key.slice(2, props ? key.length - 7 : void 0)),
-                    (prevValue = domElement[internalPropsKey] || null),
-                    (prevValue = null != prevValue ? prevValue[key] : null),
-                    'function' === typeof prevValue &&
-                      domElement.removeEventListener(tag, prevValue, props),
+                    (prevValue = key.slice(2, props ? key.length - 7 : void 0)),
+                    (tag = domElement[internalPropsKey] || null),
+                    (tag = null != tag ? tag[key] : null),
+                    'function' === typeof tag &&
+                      domElement.removeEventListener(prevValue, tag, props),
                     'function' === typeof value)
                   ) {
-                    'function' !== typeof prevValue &&
-                      null !== prevValue &&
+                    'function' !== typeof tag &&
+                      null !== tag &&
                       (key in domElement
                         ? (domElement[key] = null)
                         : domElement.hasAttribute(key) && domElement.removeAttribute(key));
-                    domElement.addEventListener(tag, value, props);
+                    domElement.addEventListener(prevValue, value, props);
                     break a;
                   }
+                  viewTransitionMutationContext = true;
                   key in domElement
                     ? (domElement[key] = value)
                     : true === value
                       ? domElement.setAttribute(key, '')
                       : setValueForAttribute(domElement, key, value);
                 }
+              return;
           }
+          viewTransitionMutationContext = true;
         }
         function setInitialProperties(domElement, tag, props) {
           validatePropertiesInDevelopment(tag, props);
@@ -20411,21 +21906,27 @@ var __morbis_feature = (() => {
                 if (nextProps.hasOwnProperty(_propKey8) && (null != propKey || null != lastProp))
                   switch (_propKey8) {
                     case 'type':
+                      propKey !== lastProp && (viewTransitionMutationContext = true);
                       type = propKey;
                       break;
                     case 'name':
+                      propKey !== lastProp && (viewTransitionMutationContext = true);
                       name = propKey;
                       break;
                     case 'checked':
+                      propKey !== lastProp && (viewTransitionMutationContext = true);
                       checked = propKey;
                       break;
                     case 'defaultChecked':
+                      propKey !== lastProp && (viewTransitionMutationContext = true);
                       defaultChecked = propKey;
                       break;
                     case 'value':
+                      propKey !== lastProp && (viewTransitionMutationContext = true);
                       value = propKey;
                       break;
                     case 'defaultValue':
+                      propKey !== lastProp && (viewTransitionMutationContext = true);
                       defaultValue = propKey;
                       break;
                     case 'children':
@@ -20498,13 +21999,16 @@ var __morbis_feature = (() => {
                 )
                   switch (name) {
                     case 'value':
+                      type !== lastDefaultValue && (viewTransitionMutationContext = true);
                       _propKey8 = type;
                       break;
                     case 'defaultValue':
+                      type !== lastDefaultValue && (viewTransitionMutationContext = true);
                       defaultValue = type;
                       break;
                     case 'multiple':
-                      value = type;
+                      (type !== lastDefaultValue && (viewTransitionMutationContext = true),
+                        (value = type));
                     default:
                       type !== lastDefaultValue &&
                         setProp(domElement, tag, name, type, nextProps, lastDefaultValue);
@@ -20544,9 +22048,11 @@ var __morbis_feature = (() => {
                 )
                   switch (value) {
                     case 'value':
+                      name !== type && (viewTransitionMutationContext = true);
                       _propKey8 = name;
                       break;
                     case 'defaultValue':
+                      name !== type && (viewTransitionMutationContext = true);
                       propKey = name;
                       break;
                     case 'children':
@@ -20585,6 +22091,7 @@ var __morbis_feature = (() => {
                 )
                   switch (lastDefaultValue) {
                     case 'selected':
+                      _propKey8 !== propKey && (viewTransitionMutationContext = true);
                       domElement.selected =
                         _propKey8 &&
                         'function' !== typeof _propKey8 &&
@@ -20693,11 +22200,14 @@ var __morbis_feature = (() => {
           }
         }
         function getStylesObjectFromElement(domElement) {
-          var serverValueInObjectForm = {};
-          domElement = domElement.style;
-          for (var i = 0; i < domElement.length; i++) {
-            var styleName = domElement[i];
-            serverValueInObjectForm[styleName] = domElement.getPropertyValue(styleName);
+          for (
+            var serverValueInObjectForm = {}, style2 = domElement.style, i = 0;
+            i < style2.length;
+            i++
+          ) {
+            var styleName = style2[i];
+            ('view-transition-name' === styleName && isExpectedViewTransitionName(domElement)) ||
+              (serverValueInObjectForm[styleName] = style2.getPropertyValue(styleName));
           }
           return serverValueInObjectForm;
         }
@@ -20744,7 +22254,10 @@ var __morbis_feature = (() => {
             value$jscomp$0 = domElement.getAttribute('style');
             value$jscomp$0 !== clientValue &&
               ((clientValue = normalizeMarkupForTextOrAttribute(clientValue)),
-              normalizeMarkupForTextOrAttribute(value$jscomp$0) !== clientValue &&
+              (value$jscomp$0 = normalizeMarkupForTextOrAttribute(value$jscomp$0)),
+              value$jscomp$0 === clientValue ||
+                (';' === value$jscomp$0[value$jscomp$0.length - 1] &&
+                  hasViewTransition(domElement)) ||
                 (serverDifferences.style = getStylesObjectFromElement(domElement)));
           }
         }
@@ -20917,6 +22430,14 @@ var __morbis_feature = (() => {
               case 'checked':
                 break;
               case 'selected':
+                break;
+              case 'vt-name':
+              case 'vt-update':
+              case 'vt-enter':
+              case 'vt-exit':
+              case 'vt-share':
+              case 'vt-parent-enter':
+              case 'vt-parent-exit':
                 break;
               default:
                 extraAttributes.add(attributes[i].name);
@@ -21183,6 +22704,7 @@ var __morbis_feature = (() => {
                     case 'async':
                     case 'autoPlay':
                     case 'controls':
+                    case 'credentialless':
                     case 'default':
                     case 'defer':
                     case 'disabled':
@@ -21446,9 +22968,10 @@ var __morbis_feature = (() => {
                           isAttributeNameSafe(serverDifferences$jscomp$0))
                         )
                           if (attributeName.hasAttribute(serverDifferences$jscomp$0))
-                            ((attributeName = attributeName.getAttribute(
-                              serverDifferences$jscomp$0,
-                            )),
+                            ((attributeName =
+                              'nonce' === serverDifferences$jscomp$0.toLowerCase()
+                                ? attributeName.nonce
+                                : attributeName.getAttribute(serverDifferences$jscomp$0)),
                               checkAttributeStringCoercion(i, serverDifferences$jscomp$0),
                               (i = attributeName === '' + i ? i : attributeName));
                           else {
@@ -21577,6 +23100,47 @@ var __morbis_feature = (() => {
             ? HostContextNamespaceNone
             : parentNamespace;
         }
+        function createHoistableInstance(
+          type,
+          props,
+          rootContainerInstance,
+          internalInstanceHandle,
+        ) {
+          rootContainerInstance =
+            getOwnerDocumentFromRootContainer(rootContainerInstance).createElement(type);
+          rootContainerInstance[internalInstanceKey] = internalInstanceHandle;
+          rootContainerInstance[internalPropsKey] = props;
+          setInitialProperties(rootContainerInstance, type, props);
+          markNodeAsHoistable(rootContainerInstance);
+          return rootContainerInstance;
+        }
+        function isScriptDataBlock(props) {
+          props = props.type;
+          if ('string' !== typeof props || '' === props) return false;
+          props = props.toLowerCase();
+          if ('module' === props || 'importmap' === props || 'speculationrules' === props)
+            return false;
+          switch (props) {
+            case 'application/ecmascript':
+            case 'application/javascript':
+            case 'application/x-ecmascript':
+            case 'application/x-javascript':
+            case 'text/ecmascript':
+            case 'text/javascript':
+            case 'text/javascript1.0':
+            case 'text/javascript1.1':
+            case 'text/javascript1.2':
+            case 'text/javascript1.3':
+            case 'text/javascript1.4':
+            case 'text/javascript1.5':
+            case 'text/jscript':
+            case 'text/livescript':
+            case 'text/x-ecmascript':
+            case 'text/x-javascript':
+              return false;
+          }
+          return true;
+        }
         function shouldSetTextContent(type, props) {
           return (
             'textarea' === type ||
@@ -21699,10 +23263,10 @@ var __morbis_feature = (() => {
               )
                 depth++;
               else if (node === PREAMBLE_CONTRIBUTION_HTML)
-                releaseSingletonInstance(parentInstance.ownerDocument.documentElement);
+                clearSingletonPreambleContribution(parentInstance.ownerDocument.documentElement);
               else if (node === PREAMBLE_CONTRIBUTION_HEAD) {
                 node = parentInstance.ownerDocument.head;
-                releaseSingletonInstance(node);
+                clearSingletonPreambleContribution(node);
                 for (var node$jscomp$0 = node.firstChild; node$jscomp$0;) {
                   var nextNode$jscomp$0 = node$jscomp$0.nextSibling,
                     nodeName = node$jscomp$0.nodeName;
@@ -21715,7 +23279,7 @@ var __morbis_feature = (() => {
                 }
               } else
                 node === PREAMBLE_CONTRIBUTION_BODY &&
-                  releaseSingletonInstance(parentInstance.ownerDocument.body);
+                  clearSingletonPreambleContribution(parentInstance.ownerDocument.body);
             node = nextNode;
           } while (node);
           retryIfBlockedOn(hydrationInstance);
@@ -21763,7 +23327,7 @@ var __morbis_feature = (() => {
           hideOrUnhideDehydratedBoundary(dehydratedInstance, false);
         }
         function unhideInstance(instance, props) {
-          props = props[STYLE];
+          props = props[STYLE3];
           props =
             void 0 !== props && null !== props && props.hasOwnProperty('display')
               ? props.display
@@ -21773,6 +23337,631 @@ var __morbis_feature = (() => {
         }
         function unhideTextInstance(textInstance, text) {
           textInstance.nodeValue = text;
+        }
+        function warnForBlockInsideInline(instance) {
+          for (var nextNode = instance.firstChild; null != nextNode;) {
+            if (1 === nextNode.nodeType && 'block' === getComputedStyle(nextNode).display) {
+              var fiber = getInstanceFromNode(nextNode) || getInstanceFromNode(instance);
+              runWithFiberInDEV(
+                fiber,
+                function (parentTag, childTag) {
+                  console.error(
+                    "You're about to start a <ViewTransition> around a display: inline element <%s>, which itself has a display: block element <%s> inside it. This might trigger a bug in Safari which causes the View Transition to be skipped with a duplicate name error.\nhttps://bugs.webkit.org/show_bug.cgi?id=290923",
+                    parentTag.toLocaleLowerCase(),
+                    childTag.toLocaleLowerCase(),
+                  );
+                },
+                instance.tagName,
+                nextNode.tagName,
+              );
+              break;
+            }
+            if (null != nextNode.firstChild) nextNode = nextNode.firstChild;
+            else {
+              if (nextNode === instance) break;
+              for (
+                ;
+                null == nextNode.nextSibling &&
+                null != nextNode.parentNode &&
+                nextNode.parentNode !== instance;
+              )
+                nextNode = nextNode.parentNode;
+              nextNode = nextNode.nextSibling;
+            }
+          }
+        }
+        function applyViewTransitionName(instance, name, className) {
+          name = CSS.escape(name) !== name ? 'r-' + btoa(name).replace(/=/g, '') : name;
+          instance.style.viewTransitionName = name;
+          null != className && (instance.style.viewTransitionClass = className);
+          className = getComputedStyle(instance);
+          if ('inline' === className.display) {
+            name = instance.getClientRects();
+            if (1 === name.length) var JSCompiler_inline_result = 1;
+            else
+              for (var i = (JSCompiler_inline_result = 0); i < name.length; i++) {
+                var rect = name[i];
+                0 < rect.width && 0 < rect.height && JSCompiler_inline_result++;
+              }
+            1 === JSCompiler_inline_result
+              ? ((instance = instance.style),
+                (instance.display = 1 === name.length ? 'inline-block' : 'block'),
+                (instance.marginTop = '-' + className.paddingTop),
+                (instance.marginBottom = '-' + className.paddingBottom))
+              : warnForBlockInsideInline(instance);
+          }
+        }
+        function restoreViewTransitionName(instance, props) {
+          instance = instance.style;
+          props = props[STYLE3];
+          var viewTransitionName =
+            null != props
+              ? props.hasOwnProperty('viewTransitionName')
+                ? props.viewTransitionName
+                : props.hasOwnProperty('view-transition-name')
+                  ? props['view-transition-name']
+                  : null
+              : null;
+          instance.viewTransitionName =
+            null == viewTransitionName || 'boolean' === typeof viewTransitionName
+              ? ''
+              : ('' + viewTransitionName).trim();
+          viewTransitionName =
+            null != props
+              ? props.hasOwnProperty('viewTransitionClass')
+                ? props.viewTransitionClass
+                : props.hasOwnProperty('view-transition-class')
+                  ? props['view-transition-class']
+                  : null
+              : null;
+          instance.viewTransitionClass =
+            null == viewTransitionName || 'boolean' === typeof viewTransitionName
+              ? ''
+              : ('' + viewTransitionName).trim();
+          'inline-block' === instance.display &&
+            (null == props
+              ? (instance.display = instance.margin = '')
+              : ((viewTransitionName = props.display),
+                (instance.display =
+                  null == viewTransitionName || 'boolean' === typeof viewTransitionName
+                    ? ''
+                    : viewTransitionName),
+                (viewTransitionName = props.margin),
+                null != viewTransitionName
+                  ? (instance.margin = viewTransitionName)
+                  : ((viewTransitionName = props.hasOwnProperty('marginTop')
+                      ? props.marginTop
+                      : props['margin-top']),
+                    (instance.marginTop =
+                      null == viewTransitionName || 'boolean' === typeof viewTransitionName
+                        ? ''
+                        : viewTransitionName),
+                    (props = props.hasOwnProperty('marginBottom')
+                      ? props.marginBottom
+                      : props['margin-bottom']),
+                    (instance.marginBottom =
+                      null == props || 'boolean' === typeof props ? '' : props))));
+        }
+        function createMeasurement(rect, computedStyle, element) {
+          element = element.ownerDocument.defaultView;
+          return {
+            rect,
+            abs: 'absolute' === computedStyle.position || 'fixed' === computedStyle.position,
+            clip:
+              'none' !== computedStyle.clipPath ||
+              'visible' !== computedStyle.overflow ||
+              'none' !== computedStyle.filter ||
+              'none' !== computedStyle.mask ||
+              'none' !== computedStyle.mask ||
+              '0px' !== computedStyle.borderRadius,
+            view:
+              0 <= rect.bottom &&
+              0 <= rect.right &&
+              rect.top <= element.innerHeight &&
+              rect.left <= element.innerWidth,
+          };
+        }
+        function measureInstance(instance) {
+          var rect = instance.getBoundingClientRect(),
+            computedStyle = getComputedStyle(instance);
+          return createMeasurement(rect, computedStyle, instance);
+        }
+        function measureClonedInstance(instance) {
+          var measuredRect = instance.getBoundingClientRect();
+          measuredRect = new DOMRect(
+            measuredRect.x + 2e4,
+            measuredRect.y + 2e4,
+            measuredRect.width,
+            measuredRect.height,
+          );
+          var computedStyle = getComputedStyle(instance);
+          return createMeasurement(measuredRect, computedStyle, instance);
+        }
+        function customizeViewTransitionError(error, ignoreAbort) {
+          if ('object' === typeof error && null !== error)
+            switch (error.name) {
+              case 'TimeoutError':
+                return Error(
+                  "A ViewTransition timed out because a Navigation stalled. This can happen if a Navigation is blocked on React itself. Such as if it's resolved inside useEffect. This can be solved by moving the resolution to useLayoutEffect.",
+                  { cause: error },
+                );
+              case 'AbortError':
+                return ignoreAbort
+                  ? null
+                  : Error(
+                      "A ViewTransition was aborted early. This might be because you have other View Transition libraries on the page and only one can run at a time. To avoid this, use only React's built-in <ViewTransition> to coordinate.",
+                      { cause: error },
+                    );
+              case 'InvalidStateError':
+                if (
+                  'View transition was skipped because document visibility state is hidden.' ===
+                    error.message ||
+                  'Skipping view transition because document visibility state has become hidden.' ===
+                    error.message ||
+                  'Skipping view transition because viewport size changed.' === error.message ||
+                  'Transition was aborted because of invalid state' === error.message
+                )
+                  return null;
+            }
+          return error;
+        }
+        function forceLayout(ownerDocument) {
+          return ownerDocument.documentElement.clientHeight;
+        }
+        function waitForImageToLoad(resolve) {
+          this.addEventListener('load', resolve);
+          this.addEventListener('error', resolve);
+        }
+        function startViewTransition(
+          suspendedState,
+          rootContainer,
+          transitionTypes,
+          mutationCallback,
+          layoutCallback,
+          afterMutationCallback,
+          spawnedWorkCallback,
+          passiveCallback,
+          errorCallback,
+          blockedCallback,
+          finishedAnimation,
+        ) {
+          var ownerDocument =
+            9 === rootContainer.nodeType ? rootContainer : rootContainer.ownerDocument;
+          try {
+            var transition = ownerDocument.startViewTransition({
+              update: function () {
+                var ownerWindow = ownerDocument.defaultView,
+                  pendingNavigation = ownerWindow.navigation && ownerWindow.navigation.transition,
+                  previousFontLoadingStatus = ownerDocument.fonts.status;
+                mutationCallback();
+                var blockingPromises = [];
+                'loaded' === previousFontLoadingStatus &&
+                  (forceLayout(ownerDocument),
+                  'loading' === ownerDocument.fonts.status &&
+                    blockingPromises.push(ownerDocument.fonts.ready));
+                previousFontLoadingStatus = blockingPromises.length;
+                if (null !== suspendedState)
+                  for (
+                    var suspenseyImages = suspendedState.suspenseyImages, imgBytes = 0, i = 0;
+                    i < suspenseyImages.length;
+                    i++
+                  ) {
+                    var suspenseyImage = suspenseyImages[i];
+                    if (!suspenseyImage.complete) {
+                      var rect = suspenseyImage.getBoundingClientRect();
+                      if (
+                        0 < rect.bottom &&
+                        0 < rect.right &&
+                        rect.top < ownerWindow.innerHeight &&
+                        rect.left < ownerWindow.innerWidth
+                      ) {
+                        imgBytes += estimateImageBytes(suspenseyImage);
+                        if (imgBytes > estimatedBytesWithinLimit) {
+                          blockingPromises.length = previousFontLoadingStatus;
+                          break;
+                        }
+                        suspenseyImage = new Promise(waitForImageToLoad.bind(suspenseyImage));
+                        blockingPromises.push(suspenseyImage);
+                      }
+                    }
+                  }
+                if (0 < blockingPromises.length)
+                  return (
+                    blockedCallback(
+                      0 < previousFontLoadingStatus
+                        ? blockingPromises.length > previousFontLoadingStatus
+                          ? 'Waiting on Fonts and Images'
+                          : 'Waiting on Fonts'
+                        : 'Waiting on Images',
+                    ),
+                    (ownerWindow = Promise.race([
+                      Promise.all(blockingPromises),
+                      new Promise(function (resolve) {
+                        return setTimeout(resolve, SUSPENSEY_FONT_AND_IMAGE_TIMEOUT);
+                      }),
+                    ]).then(layoutCallback, layoutCallback)),
+                    (pendingNavigation
+                      ? Promise.allSettled([pendingNavigation.finished, ownerWindow])
+                      : ownerWindow
+                    ).then(afterMutationCallback, afterMutationCallback)
+                  );
+                layoutCallback();
+                if (pendingNavigation)
+                  return pendingNavigation.finished.then(
+                    afterMutationCallback,
+                    afterMutationCallback,
+                  );
+                afterMutationCallback();
+              },
+              types: transitionTypes,
+            });
+            ownerDocument.__reactViewTransition = transition;
+            var viewTransitionAnimations = [];
+            transition.ready.then(
+              function () {
+                for (
+                  var animations = ownerDocument.documentElement.getAnimations({
+                      subtree: true,
+                    }),
+                    i = 0;
+                  i < animations.length;
+                  i++
+                ) {
+                  var animation = animations[i],
+                    effect = animation.effect,
+                    pseudoElement = effect.pseudoElement;
+                  if (null != pseudoElement && pseudoElement.startsWith('::view-transition')) {
+                    viewTransitionAnimations.push(animation);
+                    animation = effect.getKeyframes();
+                    for (
+                      var height = (pseudoElement = void 0), unchangedDimensions = true, j = 0;
+                      j < animation.length;
+                      j++
+                    ) {
+                      var keyframe = animation[j],
+                        w = keyframe.width;
+                      if (void 0 === pseudoElement) pseudoElement = w;
+                      else if (pseudoElement !== w) {
+                        unchangedDimensions = false;
+                        break;
+                      }
+                      w = keyframe.height;
+                      if (void 0 === height) height = w;
+                      else if (height !== w) {
+                        unchangedDimensions = false;
+                        break;
+                      }
+                      delete keyframe.width;
+                      delete keyframe.height;
+                      'none' === keyframe.transform && delete keyframe.transform;
+                    }
+                    unchangedDimensions &&
+                      void 0 !== pseudoElement &&
+                      void 0 !== height &&
+                      (effect.setKeyframes(animation),
+                      (unchangedDimensions = getComputedStyle(effect.target, effect.pseudoElement)),
+                      unchangedDimensions.width !== pseudoElement ||
+                        unchangedDimensions.height !== height) &&
+                      ((unchangedDimensions = animation[0]),
+                      (unchangedDimensions.width = pseudoElement),
+                      (unchangedDimensions.height = height),
+                      (unchangedDimensions = animation[animation.length - 1]),
+                      (unchangedDimensions.width = pseudoElement),
+                      (unchangedDimensions.height = height),
+                      effect.setKeyframes(animation));
+                  }
+                }
+                spawnedWorkCallback();
+              },
+              function (error) {
+                ownerDocument.__reactViewTransition === transition &&
+                  (ownerDocument.__reactViewTransition = null);
+                try {
+                  ((error = customizeViewTransitionError(error, false)),
+                    null !== error && errorCallback(error));
+                } finally {
+                  (mutationCallback(),
+                    layoutCallback(),
+                    spawnedWorkCallback(),
+                    finishedAnimation());
+                }
+              },
+            );
+            transition.finished.finally(function () {
+              for (var i = 0; i < viewTransitionAnimations.length; i++)
+                viewTransitionAnimations[i].cancel();
+              ownerDocument.__reactViewTransition === transition &&
+                (ownerDocument.__reactViewTransition = null);
+              finishedAnimation();
+              passiveCallback();
+            });
+            return transition;
+          } catch (x) {
+            return (
+              mutationCallback(),
+              layoutCallback(),
+              finishedAnimation(),
+              spawnedWorkCallback(),
+              null
+            );
+          }
+        }
+        function ViewTransitionPseudoElement(pseudo, name) {
+          this._scope = document.documentElement;
+          this._selector = '::view-transition-' + pseudo + '(' + name + ')';
+        }
+        function createViewTransitionInstance(name) {
+          return {
+            name,
+            group: new ViewTransitionPseudoElement('group', name),
+            imagePair: new ViewTransitionPseudoElement('image-pair', name),
+            old: new ViewTransitionPseudoElement('old', name),
+            new: new ViewTransitionPseudoElement('new', name),
+          };
+        }
+        function FragmentInstance(fragmentFiber) {
+          this._fragmentFiber = fragmentFiber;
+          this._observers = this._eventListeners = null;
+        }
+        function addEventListenerToChild(child, type, listener, optionsOrUseCapture) {
+          getInstanceFromHostFiber(child).addEventListener(type, listener, optionsOrUseCapture);
+          return false;
+        }
+        function removeEventListenerFromChild(child, type, listener, optionsOrUseCapture) {
+          getInstanceFromHostFiber(child).removeEventListener(type, listener, optionsOrUseCapture);
+          return false;
+        }
+        function getAttachOptions(opts) {
+          return null != opts &&
+            'boolean' !== typeof opts &&
+            (true === opts.once || opts.signal instanceof AbortSignal)
+            ? { capture: opts.capture, passive: opts.passive }
+            : opts;
+        }
+        function normalizeListenerOptions(opts) {
+          return null == opts
+            ? 'c=0'
+            : 'boolean' === typeof opts
+              ? 'c=' + (opts ? '1' : '0')
+              : 'c=' + (opts.capture ? '1' : '0');
+        }
+        function indexOfEventListener(eventListeners, type, listener, optionsOrUseCapture) {
+          if (0 === eventListeners.length) return -1;
+          optionsOrUseCapture = normalizeListenerOptions(optionsOrUseCapture);
+          for (var i = 0; i < eventListeners.length; i++) {
+            var item = eventListeners[i];
+            if (
+              item.type === type &&
+              item.listener === listener &&
+              normalizeListenerOptions(item.optionsOrUseCapture) === optionsOrUseCapture
+            )
+              return i;
+          }
+          return -1;
+        }
+        function setFocusOnFiberIfFocusable(fiber, focusOptions) {
+          if (6 === fiber.tag) return false;
+          fiber = getInstanceFromHostFiber(fiber);
+          return setFocusIfFocusable(fiber, focusOptions);
+        }
+        function collectChildren(child, collection) {
+          collection.push(child);
+          return false;
+        }
+        function blurActiveElementWithinFragment(child, activeElement2) {
+          if (6 === child.tag) return false;
+          child = getInstanceFromHostFiber(child);
+          return child === activeElement2 || child.contains(activeElement2)
+            ? (activeElement2.blur(), true)
+            : false;
+        }
+        function observeChild(child, observer) {
+          if (6 === child.tag) return false;
+          child = getInstanceFromHostFiber(child);
+          observer.observe(child);
+          return false;
+        }
+        function unobserveChild(child, observer) {
+          if (6 === child.tag) return false;
+          child = getInstanceFromHostFiber(child);
+          observer.unobserve(child);
+          return false;
+        }
+        function schedulePendingIntersectionUnobserve(fragmentInstance, observer, instance) {
+          pendingIntersectionUnobserves.push({
+            fragmentInstance,
+            observer,
+            instance,
+          });
+          intersectionUnobserveScheduled ||
+            ((intersectionUnobserveScheduled = true),
+            requestPostPaintCallback(function () {
+              intersectionUnobserveScheduled = false;
+              var pending = pendingIntersectionUnobserves;
+              pendingIntersectionUnobserves = [];
+              for (var i = 0; i < pending.length; i++) {
+                var item = pending[i];
+                item.observer.unobserve(item.instance);
+              }
+            }));
+        }
+        function collectClientRects(child, rects) {
+          if (6 === child.tag) {
+            child = child.stateNode;
+            var range = child.ownerDocument.createRange();
+            range.selectNodeContents(child);
+            rects.push.apply(rects, range.getClientRects());
+          } else
+            ((child = getInstanceFromHostFiber(child)),
+              rects.push.apply(rects, child.getClientRects()));
+          return false;
+        }
+        function validateDocumentPositionWithFiberTree(
+          documentPosition,
+          fragmentFiber,
+          precedingBoundaryFiber,
+          followingBoundaryFiber,
+          otherNode,
+        ) {
+          var otherFiber = getClosestInstanceFromNode(otherNode);
+          if (documentPosition & Node.DOCUMENT_POSITION_CONTAINED_BY) {
+            if ((precedingBoundaryFiber = !!otherFiber))
+              a: {
+                for (; null !== otherFiber;) {
+                  if (
+                    7 === otherFiber.tag &&
+                    (otherFiber === fragmentFiber || otherFiber.alternate === fragmentFiber)
+                  ) {
+                    precedingBoundaryFiber = true;
+                    break a;
+                  }
+                  otherFiber = otherFiber.return;
+                }
+                precedingBoundaryFiber = false;
+              }
+            return precedingBoundaryFiber;
+          }
+          if (documentPosition & Node.DOCUMENT_POSITION_CONTAINS) {
+            if (null === otherFiber)
+              return (
+                (otherFiber = otherNode.ownerDocument),
+                otherNode === otherFiber ||
+                  otherNode === otherFiber.documentElement ||
+                  otherNode === otherFiber.body
+              );
+            a: {
+              otherFiber = fragmentFiber;
+              for (
+                fragmentFiber = getFragmentParentInstanceOrContainerFiber(fragmentFiber);
+                null !== otherFiber;
+              ) {
+                if (!(
+                  (5 !== otherFiber.tag && 3 !== otherFiber.tag && 27 !== otherFiber.tag) ||
+                  (otherFiber !== fragmentFiber && otherFiber.alternate !== fragmentFiber)
+                )) {
+                  otherFiber = true;
+                  break a;
+                }
+                otherFiber = otherFiber.return;
+              }
+              otherFiber = false;
+            }
+            return otherFiber;
+          }
+          return documentPosition & Node.DOCUMENT_POSITION_PRECEDING
+            ? ((fragmentFiber = !!otherFiber) &&
+                !(fragmentFiber = otherFiber === precedingBoundaryFiber) &&
+                ((fragmentFiber = getLowestCommonAncestor(
+                  precedingBoundaryFiber,
+                  otherFiber,
+                  getParentForFragmentAncestors,
+                )),
+                null === fragmentFiber
+                  ? (fragmentFiber = false)
+                  : (traverseVisibleInstancesAndTextInstances(
+                      fragmentFiber,
+                      true,
+                      isFiberPrecedingCheck,
+                      otherFiber,
+                      precedingBoundaryFiber,
+                    ),
+                    (otherFiber = searchTarget),
+                    (searchTarget = null),
+                    (fragmentFiber = null !== otherFiber))),
+              fragmentFiber)
+            : documentPosition & Node.DOCUMENT_POSITION_FOLLOWING
+              ? ((fragmentFiber = !!otherFiber) &&
+                  !(fragmentFiber = otherFiber === followingBoundaryFiber) &&
+                  ((fragmentFiber = getLowestCommonAncestor(
+                    followingBoundaryFiber,
+                    otherFiber,
+                    getParentForFragmentAncestors,
+                  )),
+                  null === fragmentFiber
+                    ? (fragmentFiber = false)
+                    : (traverseVisibleInstancesAndTextInstances(
+                        fragmentFiber,
+                        true,
+                        isFiberFollowingCheck,
+                        otherFiber,
+                        followingBoundaryFiber,
+                      ),
+                      (otherFiber = searchTarget),
+                      (searchBoundary = searchTarget = null),
+                      (fragmentFiber = null !== otherFiber))),
+                fragmentFiber)
+              : false;
+        }
+        function scrollTextNodeIntoView(textNode, resolvedAlignToTop) {
+          var range = textNode.ownerDocument.createRange();
+          range.selectNodeContents(textNode);
+          textNode = range.getBoundingClientRect();
+          window.scrollTo(
+            window.scrollX + textNode.left,
+            resolvedAlignToTop
+              ? window.scrollY + textNode.top
+              : window.scrollY + textNode.bottom - window.innerHeight,
+          );
+        }
+        function addFragmentHandleToFiber(child, fragmentInstance) {
+          child = getInstanceFromHostFiber(child);
+          addFragmentHandleToInstance(child, fragmentInstance);
+          return false;
+        }
+        function addFragmentHandleToInstance(instance, fragmentInstance) {
+          null == instance.reactFragments && (instance.reactFragments = /* @__PURE__ */ new Set());
+          instance.reactFragments.add(fragmentInstance);
+        }
+        function commitNewChildToFragmentInstance(childInstance, fragmentInstance) {
+          var eventListeners = fragmentInstance._eventListeners;
+          if (null !== eventListeners)
+            for (var i$jscomp$0 = 0; i$jscomp$0 < eventListeners.length; i$jscomp$0++) {
+              var _eventListeners$i2 = eventListeners[i$jscomp$0];
+              childInstance.addEventListener(
+                _eventListeners$i2.type,
+                _eventListeners$i2.attachedListener,
+                getAttachOptions(_eventListeners$i2.optionsOrUseCapture),
+              );
+            }
+          3 !== childInstance.nodeType &&
+            ((eventListeners = fragmentInstance._observers),
+            null !== eventListeners &&
+              eventListeners.forEach(function (observer) {
+                for (var writeIdx = 0, i = 0; i < pendingIntersectionUnobserves.length; i++) {
+                  var pending = pendingIntersectionUnobserves[i];
+                  if (
+                    pending.fragmentInstance !== fragmentInstance ||
+                    pending.observer !== observer ||
+                    pending.instance !== childInstance
+                  )
+                    pendingIntersectionUnobserves[writeIdx++] = pending;
+                }
+                pendingIntersectionUnobserves.length = writeIdx;
+                observer.observe(childInstance);
+              }),
+            addFragmentHandleToInstance(childInstance, fragmentInstance));
+        }
+        function deleteChildFromFragmentInstance(childInstance, fragmentInstance) {
+          var eventListeners = fragmentInstance._eventListeners;
+          if (null !== eventListeners)
+            for (var i = 0; i < eventListeners.length; i++) {
+              var _eventListeners$i3 = eventListeners[i];
+              childInstance.removeEventListener(
+                _eventListeners$i3.type,
+                _eventListeners$i3.attachedListener,
+                getAttachOptions(_eventListeners$i3.optionsOrUseCapture),
+              );
+            }
+          3 !== childInstance.nodeType &&
+            ((eventListeners = fragmentInstance._observers),
+            null !== eventListeners &&
+              eventListeners.forEach(function (observer) {
+                'string' === typeof observer.rootMargin
+                  ? schedulePendingIntersectionUnobserve(fragmentInstance, observer, childInstance)
+                  : observer.unobserve(childInstance);
+              }),
+            null != childInstance.reactFragments &&
+              childInstance.reactFragments.delete(fragmentInstance));
         }
         function clearContainerSparingly(container) {
           var nextNode = container.firstChild;
@@ -22021,6 +24210,27 @@ var __morbis_feature = (() => {
         function commitHydratedSuspenseInstance(suspenseInstance) {
           retryIfBlockedOn(suspenseInstance);
         }
+        function setFocusIfFocusable(node, focusOptions) {
+          function handleFocus() {
+            didFocus = true;
+          }
+          if (node.ownerDocument.activeElement === node) return true;
+          var didFocus = false;
+          try {
+            (node.ownerDocument.addEventListener('focus', handleFocus, true),
+              (node.focus || HTMLElement.prototype.focus).call(node, focusOptions));
+          } finally {
+            node.ownerDocument.removeEventListener('focus', handleFocus, true);
+          }
+          return didFocus;
+        }
+        function requestPostPaintCallback(callback) {
+          localRequestAnimationFrame(function () {
+            localRequestAnimationFrame(function (time) {
+              return callback(time);
+            });
+          });
+        }
         function resolveSingletonInstance(
           type,
           props,
@@ -22084,17 +24294,28 @@ var __morbis_feature = (() => {
           instance[internalInstanceKey] = internalInstanceHandle;
           instance[internalPropsKey] = props;
         }
-        function releaseSingletonInstance(instance) {
+        function releaseSingletonInstance(instance, type, props) {
+          for (var propKey in props) {
+            var propValue = props[propKey];
+            props.hasOwnProperty(propKey) &&
+              null != propValue &&
+              setProp(instance, type, propKey, null, emptyProps, propValue);
+          }
+          null != props.dangerouslySetInnerHTML && (instance.textContent = '');
+          instance.onclick === noop$1 && (instance.onclick = null);
+          detachDeletedInstance(instance);
+        }
+        function clearSingletonPreambleContribution(instance) {
           for (var attributes = instance.attributes; attributes.length;)
             instance.removeAttributeNode(attributes[0]);
           detachDeletedInstance(instance);
         }
         function getHoistableRoot(container) {
-          return 'function' === typeof container.getRootNode
-            ? container.getRootNode()
-            : 9 === container.nodeType
-              ? container
-              : container.ownerDocument;
+          if ('function' === typeof container.getRootNode) {
+            var rootNode = container.getRootNode();
+            if (9 === rootNode.nodeType || 11 === rootNode.nodeType) return rootNode;
+          }
+          return 9 === container.nodeType ? container : container.ownerDocument;
         }
         function preconnectAs(rel, href, crossOrigin) {
           var ownerDocument = globalDocument;
@@ -22148,8 +24369,7 @@ var __morbis_feature = (() => {
                 type = getStyleKey(pendingProps.href);
                 var _styles = getResourcesFromRoot(resourceRoot).hoistableStyles,
                   _resource = _styles.get(type);
-                if (
-                  !_resource &&
+                _resource ||
                   ((resourceRoot = resourceRoot.ownerDocument || resourceRoot),
                   (_resource = {
                     type: 'stylesheet',
@@ -22158,24 +24378,24 @@ var __morbis_feature = (() => {
                     state: { loading: NotLoaded, preload: null },
                   }),
                   _styles.set(type, _resource),
-                  (_styles = resourceRoot.querySelector(getStylesheetSelectorFromKey(type))) &&
-                    !_styles._p &&
-                    ((_resource.instance = _styles), (_resource.state.loading = Loaded | Inserted)),
-                  !preloadPropsMap.has(type))
-                ) {
-                  var preloadProps = {
-                    rel: 'preload',
-                    as: 'style',
-                    href: pendingProps.href,
-                    crossOrigin: pendingProps.crossOrigin,
-                    integrity: pendingProps.integrity,
-                    media: pendingProps.media,
-                    hrefLang: pendingProps.hrefLang,
-                    referrerPolicy: pendingProps.referrerPolicy,
-                  };
-                  preloadPropsMap.set(type, preloadProps);
-                  _styles || preloadStylesheet(resourceRoot, type, preloadProps, _resource.state);
-                }
+                  (_styles = resourceRoot.querySelector(getStylesheetSelectorFromKey(type)))
+                    ? _styles._p ||
+                      ((_resource.instance = _styles),
+                      (_resource.state.loading = Loaded | Inserted))
+                    : ((_styles = preloadPropsMap.get(type)),
+                      _styles ||
+                        ((_styles = {
+                          rel: 'preload',
+                          as: 'style',
+                          href: pendingProps.href,
+                          crossOrigin: pendingProps.crossOrigin,
+                          integrity: pendingProps.integrity,
+                          media: pendingProps.media,
+                          hrefLang: pendingProps.hrefLang,
+                          referrerPolicy: pendingProps.referrerPolicy,
+                        }),
+                        preloadPropsMap.set(type, _styles)),
+                      preloadStylesheet(resourceRoot, type, _styles, _resource.state)));
                 if (currentProps && null === currentResource)
                   throw (
                     (pendingProps =
@@ -22276,19 +24496,25 @@ var __morbis_feature = (() => {
           });
         }
         function preloadStylesheet(ownerDocument, key, preloadProps, state) {
-          ownerDocument.querySelector('link[rel="preload"][as="style"][' + key + ']')
-            ? (state.loading = Loaded)
-            : ((key = ownerDocument.createElement('link')),
-              (state.preload = key),
-              key.addEventListener('load', function () {
-                return (state.loading |= Loaded);
-              }),
-              key.addEventListener('error', function () {
-                return (state.loading |= Errored);
-              }),
+          if ((key = ownerDocument.querySelector('link[rel="preload"][as="style"][' + key + ']'))) {
+            if (true !== key[internalLoadPendingKey]) {
+              state.loading = Loaded;
+              return;
+            }
+          } else
+            ((key = ownerDocument.createElement('link')),
+              (key[internalLoadPendingKey] = true),
+              (key.onload = key.onerror = clearPendingLoadOnNode.bind(null, key)),
               setInitialProperties(key, 'link', preloadProps),
               markNodeAsHoistable(key),
               ownerDocument.head.appendChild(key));
+          state.preload = key;
+          key.addEventListener('load', function () {
+            return (state.loading |= Loaded);
+          });
+          key.addEventListener('error', function () {
+            return (state.loading |= Errored);
+          });
         }
         function getScriptKey(src) {
           return '[src="' + escapeSelectorAttributeValueInsideDoubleQuotes(src) + '"]';
@@ -22575,10 +24801,36 @@ var __morbis_feature = (() => {
           }
           return false;
         }
+        function maySuspendCommit(type, props) {
+          return (
+            'img' === type &&
+            null != props.src &&
+            '' !== props.src &&
+            null == props.onLoad &&
+            'lazy' !== props.loading
+          );
+        }
         function preloadResource(resource) {
           return 'stylesheet' === resource.type && (resource.state.loading & Settled) === NotLoaded
             ? false
             : true;
+        }
+        function estimateImageBytes(instance) {
+          return (
+            (instance.width || 100) *
+            (instance.height || 100) *
+            ('number' === typeof devicePixelRatio ? devicePixelRatio : 1) *
+            0.25
+          );
+        }
+        function suspendInstance(state, instance) {
+          'function' === typeof instance.decode &&
+            (state.imgCount++,
+            instance.complete ||
+              ((state.imgBytes += estimateImageBytes(instance)),
+              state.suspenseyImages.push(instance)),
+            (state = onUnsuspendImg.bind(state)),
+            instance.decode().then(state, state));
         }
         function suspendResource(state, hoistableRoot, resource, props) {
           if (
@@ -22668,16 +24920,23 @@ var __morbis_feature = (() => {
               }
             : null;
         }
-        function onUnsuspend() {
-          this.count--;
-          if (0 === this.count && (0 === this.imgCount || !this.waitingForImages)) {
-            if (this.stylesheets) insertSuspendedStylesheets(this, this.stylesheets);
-            else if (this.unsuspend) {
-              var unsuspend = this.unsuspend;
-              this.unsuspend = null;
+        function checkIfFullyUnsuspended(state) {
+          if (0 === state.count && (0 === state.imgCount || !state.waitingForImages)) {
+            if (state.stylesheets) insertSuspendedStylesheets(state, state.stylesheets);
+            else if (state.unsuspend) {
+              var unsuspend = state.unsuspend;
+              state.unsuspend = null;
               unsuspend();
             }
           }
+        }
+        function onUnsuspend() {
+          this.count--;
+          checkIfFullyUnsuspended(this);
+        }
+        function onUnsuspendImg() {
+          this.imgCount--;
+          checkIfFullyUnsuspended(this);
         }
         function insertSuspendedStylesheets(state, resources) {
           state.stylesheets = null;
@@ -22764,6 +25023,7 @@ var __morbis_feature = (() => {
           this.pooledCache = null;
           this.pooledCacheLanes = 0;
           this.formState = formState;
+          this.transitionTypes = null;
           this.incompleteTransitions = /* @__PURE__ */ new Map();
           this.passiveEffectDuration = this.effectDuration = -0;
           this.memoizedUpdaters = /* @__PURE__ */ new Set();
@@ -23057,7 +25317,6 @@ var __morbis_feature = (() => {
             case 'pointerup':
             case 'ratechange':
             case 'reset':
-            case 'resize':
             case 'seeked':
             case 'submit':
             case 'toggle':
@@ -23076,6 +25335,7 @@ var __morbis_feature = (() => {
             case 'beforeinput':
             case 'blur':
             case 'fullscreenchange':
+            case 'fullscreenerror':
             case 'focus':
             case 'hashchange':
             case 'popstate':
@@ -23093,6 +25353,7 @@ var __morbis_feature = (() => {
             case 'pointermove':
             case 'pointerout':
             case 'pointerover':
+            case 'resize':
             case 'scroll':
             case 'touchmove':
             case 'wheel':
@@ -23485,8 +25746,10 @@ var __morbis_feature = (() => {
           'function' === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart &&
           __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
         var Scheduler = require_scheduler(),
-          React32 = require_react(),
-          ReactDOM4 = require_react_dom(),
+          React33 = require_react(),
+          ReactDOM5 = require_react_dom(),
+          searchTarget = null,
+          searchBoundary = null,
           assign = Object.assign,
           REACT_LEGACY_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for('react.element'),
           REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for('react.transitional.element'),
@@ -23502,18 +25765,19 @@ var __morbis_feature = (() => {
           REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for('react.memo'),
           REACT_LAZY_TYPE2 = /* @__PURE__ */ Symbol.for('react.lazy');
         /* @__PURE__ */ Symbol.for('react.scope');
-        var REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for('react.activity');
-        /* @__PURE__ */ Symbol.for('react.legacy_hidden');
+        var REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for('react.activity'),
+          REACT_LEGACY_HIDDEN_TYPE = /* @__PURE__ */ Symbol.for('react.legacy_hidden');
         /* @__PURE__ */ Symbol.for('react.tracing_marker');
-        var REACT_MEMO_CACHE_SENTINEL = /* @__PURE__ */ Symbol.for('react.memo_cache_sentinel');
-        /* @__PURE__ */ Symbol.for('react.view_transition');
-        var MAYBE_ITERATOR_SYMBOL = Symbol.iterator,
+        var REACT_MEMO_CACHE_SENTINEL = /* @__PURE__ */ Symbol.for('react.memo_cache_sentinel'),
+          REACT_VIEW_TRANSITION_TYPE = /* @__PURE__ */ Symbol.for('react.view_transition'),
+          REACT_RECOVERABLE_TYPE = /* @__PURE__ */ Symbol.for('react.recoverable'),
+          MAYBE_ITERATOR_SYMBOL = Symbol.iterator,
           REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for('react.client.reference'),
           isArrayImpl = Array.isArray,
           ReactSharedInternals =
-            React32.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
+            React33.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
           ReactDOMSharedInternals =
-            ReactDOM4.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
+            ReactDOM5.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
           NotPending = Object.freeze({
             pending: false,
             data: null,
@@ -23579,6 +25843,7 @@ var __morbis_feature = (() => {
           internalEventHandlesSetKey = '__reactHandles$' + randomKey,
           internalRootNodeResourcesKey = '__reactResources$' + randomKey,
           internalHoistableMarker = '__reactMarker$' + randomKey,
+          internalLoadPendingKey = '__reactLoad$' + randomKey,
           allNativeEvents = /* @__PURE__ */ new Set(),
           registrationNameDependencies = {},
           possibleRegistrationNames = {},
@@ -23596,6 +25861,7 @@ var __morbis_feature = (() => {
           ),
           illegalAttributeNameCache = {},
           validatedAttributeNameCache = {},
+          viewTransitionMutationContext = false,
           escapeSelectorAttributeValueInsideDoubleQuotesRegex = /[\n"\\]/g,
           didWarnValueDefaultValue$1 = false,
           didWarnCheckedDefaultChecked = false,
@@ -23611,7 +25877,7 @@ var __morbis_feature = (() => {
               ' ',
             ),
           inScopeTags =
-            'applet caption html table td th marquee object template foreignObject desc title'.split(
+            'applet caption html table td th marquee object select template foreignObject desc title'.split(
               ' ',
             ),
           buttonScopeTags = inScopeTags.concat(['button']),
@@ -23643,12 +25909,19 @@ var __morbis_feature = (() => {
               'borderBottomColor borderBottomStyle borderBottomWidth borderImageOutset borderImageRepeat borderImageSlice borderImageSource borderImageWidth borderLeftColor borderLeftStyle borderLeftWidth borderRightColor borderRightStyle borderRightWidth borderTopColor borderTopStyle borderTopWidth'.split(
                 ' ',
               ),
+            borderBlock:
+              'borderBlockEndColor borderBlockEndStyle borderBlockEndWidth borderBlockStartColor borderBlockStartStyle borderBlockStartWidth'.split(
+                ' ',
+              ),
+            borderBlockColor: ['borderBlockEndColor', 'borderBlockStartColor'],
             borderBlockEnd: ['borderBlockEndColor', 'borderBlockEndStyle', 'borderBlockEndWidth'],
             borderBlockStart: [
               'borderBlockStartColor',
               'borderBlockStartStyle',
               'borderBlockStartWidth',
             ],
+            borderBlockStyle: ['borderBlockEndStyle', 'borderBlockStartStyle'],
+            borderBlockWidth: ['borderBlockEndWidth', 'borderBlockStartWidth'],
             borderBottom: ['borderBottomColor', 'borderBottomStyle', 'borderBottomWidth'],
             borderColor: [
               'borderBottomColor',
@@ -23663,6 +25936,11 @@ var __morbis_feature = (() => {
               'borderImageSource',
               'borderImageWidth',
             ],
+            borderInline:
+              'borderInlineEndColor borderInlineEndStyle borderInlineEndWidth borderInlineStartColor borderInlineStartStyle borderInlineStartWidth'.split(
+                ' ',
+              ),
+            borderInlineColor: ['borderInlineEndColor', 'borderInlineStartColor'],
             borderInlineEnd: [
               'borderInlineEndColor',
               'borderInlineEndStyle',
@@ -23673,6 +25951,8 @@ var __morbis_feature = (() => {
               'borderInlineStartStyle',
               'borderInlineStartWidth',
             ],
+            borderInlineStyle: ['borderInlineEndStyle', 'borderInlineStartStyle'],
+            borderInlineWidth: ['borderInlineEndWidth', 'borderInlineStartWidth'],
             borderLeft: ['borderLeftColor', 'borderLeftStyle', 'borderLeftWidth'],
             borderRadius: [
               'borderBottomLeftRadius',
@@ -23694,13 +25974,22 @@ var __morbis_feature = (() => {
               'borderRightWidth',
               'borderTopWidth',
             ],
+            colorAdjust: ['printColorAdjust'],
             columnRule: ['columnRuleColor', 'columnRuleStyle', 'columnRuleWidth'],
             columns: ['columnCount', 'columnWidth'],
+            containIntrinsicSize: ['containIntrinsicHeight', 'containIntrinsicWidth'],
+            container: ['containerName', 'containerType'],
             flex: ['flexBasis', 'flexGrow', 'flexShrink'],
             flexFlow: ['flexDirection', 'flexWrap'],
             font: 'fontFamily fontFeatureSettings fontKerning fontLanguageOverride fontSize fontSizeAdjust fontStretch fontStyle fontVariant fontVariantAlternates fontVariantCaps fontVariantEastAsian fontVariantLigatures fontVariantNumeric fontVariantPosition fontWeight lineHeight'.split(
               ' ',
             ),
+            fontSynthesis: [
+              'fontSynthesisPosition',
+              'fontSynthesisSmallCaps',
+              'fontSynthesisStyle',
+              'fontSynthesisWeight',
+            ],
             fontVariant:
               'fontVariantAlternates fontVariantCaps fontVariantEastAsian fontVariantLigatures fontVariantNumeric fontVariantPosition'.split(
                 ' ',
@@ -23716,27 +26005,70 @@ var __morbis_feature = (() => {
             gridRow: ['gridRowEnd', 'gridRowStart'],
             gridRowGap: ['rowGap'],
             gridTemplate: ['gridTemplateAreas', 'gridTemplateColumns', 'gridTemplateRows'],
+            inset: ['bottom', 'left', 'right', 'top'],
+            insetBlock: ['insetBlockEnd', 'insetBlockStart'],
+            insetInline: ['insetInlineEnd', 'insetInlineStart'],
             listStyle: ['listStyleImage', 'listStylePosition', 'listStyleType'],
             margin: ['marginBottom', 'marginLeft', 'marginRight', 'marginTop'],
+            marginBlock: ['marginBlockEnd', 'marginBlockStart'],
+            marginInline: ['marginInlineEnd', 'marginInlineStart'],
             marker: ['markerEnd', 'markerMid', 'markerStart'],
             mask: 'maskClip maskComposite maskImage maskMode maskOrigin maskPositionX maskPositionY maskRepeat maskSize'.split(
               ' ',
             ),
             maskPosition: ['maskPositionX', 'maskPositionY'],
+            offset: [
+              'offsetAnchor',
+              'offsetDistance',
+              'offsetPath',
+              'offsetPosition',
+              'offsetRotate',
+            ],
             outline: ['outlineColor', 'outlineStyle', 'outlineWidth'],
             overflow: ['overflowX', 'overflowY'],
+            overscrollBehavior: ['overscrollBehaviorX', 'overscrollBehaviorY'],
             padding: ['paddingBottom', 'paddingLeft', 'paddingRight', 'paddingTop'],
+            paddingBlock: ['paddingBlockEnd', 'paddingBlockStart'],
+            paddingInline: ['paddingInlineEnd', 'paddingInlineStart'],
+            pageBreakAfter: ['breakAfter'],
+            pageBreakBefore: ['breakBefore'],
+            pageBreakInside: ['breakInside'],
             placeContent: ['alignContent', 'justifyContent'],
             placeItems: ['alignItems', 'justifyItems'],
             placeSelf: ['alignSelf', 'justifySelf'],
-            textDecoration: ['textDecorationColor', 'textDecorationLine', 'textDecorationStyle'],
+            scrollMargin: [
+              'scrollMarginBottom',
+              'scrollMarginLeft',
+              'scrollMarginRight',
+              'scrollMarginTop',
+            ],
+            scrollMarginBlock: ['scrollMarginBlockEnd', 'scrollMarginBlockStart'],
+            scrollMarginInline: ['scrollMarginInlineEnd', 'scrollMarginInlineStart'],
+            scrollPadding: [
+              'scrollPaddingBottom',
+              'scrollPaddingLeft',
+              'scrollPaddingRight',
+              'scrollPaddingTop',
+            ],
+            scrollPaddingBlock: ['scrollPaddingBlockEnd', 'scrollPaddingBlockStart'],
+            scrollPaddingInline: ['scrollPaddingInlineEnd', 'scrollPaddingInlineStart'],
+            textDecoration: [
+              'textDecorationColor',
+              'textDecorationLine',
+              'textDecorationStyle',
+              'textDecorationThickness',
+            ],
             textEmphasis: ['textEmphasisColor', 'textEmphasisStyle'],
+            textWrap: ['textWrapMode', 'textWrapStyle'],
             transition: [
+              'transitionBehavior',
               'transitionDelay',
               'transitionDuration',
               'transitionProperty',
               'transitionTimingFunction',
             ],
+            verticalAlign: ['alignmentBaseline', 'baselineShift', 'baselineSource'],
+            whiteSpace: ['textWrapMode', 'whiteSpaceCollapse'],
             wordWrap: ['overflowWrap'],
           },
           uppercasePattern = /([A-Z])/g,
@@ -23796,6 +26128,7 @@ var __morbis_feature = (() => {
             ['markerEnd', 'marker-end'],
             ['markerMid', 'marker-mid'],
             ['markerStart', 'marker-start'],
+            ['maskType', 'mask-type'],
             ['overlinePosition', 'overline-position'],
             ['overlineThickness', 'overline-thickness'],
             ['paintOrder', 'paint-order'],
@@ -23871,6 +26204,7 @@ var __morbis_feature = (() => {
             controls: 'controls',
             controlslist: 'controlsList',
             coords: 'coords',
+            credentialless: 'credentialless',
             crossorigin: 'crossOrigin',
             dangerouslysetinnerhtml: 'dangerouslySetInnerHTML',
             data: 'data',
@@ -24139,6 +26473,7 @@ var __morbis_feature = (() => {
             markerwidth: 'markerWidth',
             mask: 'mask',
             maskcontentunits: 'maskContentUnits',
+            masktype: 'maskType',
             maskunits: 'maskUnits',
             mathematical: 'mathematical',
             mode: 'mode',
@@ -24609,6 +26944,8 @@ var __morbis_feature = (() => {
             isPrimary: 0,
           }),
           SyntheticPointerEvent = createSyntheticEvent(PointerEventInterface),
+          SubmitEventInterface = assign({}, EventInterface, { submitter: 0 }),
+          SyntheticSubmitEvent = createSyntheticEvent(SubmitEventInterface),
           TouchEventInterface = assign({}, UIEventInterface, {
             touches: 0,
             targetTouches: 0,
@@ -24650,6 +26987,7 @@ var __morbis_feature = (() => {
           ToggleEventInterface = assign({}, EventInterface, {
             newState: 0,
             oldState: 0,
+            source: 0,
           }),
           SyntheticToggleEvent = createSyntheticEvent(ToggleEventInterface),
           END_KEYCODES = [9, 13, 27, 32],
@@ -24722,11 +27060,12 @@ var __morbis_feature = (() => {
           TRANSITION_END = getVendorPrefixedEventName('transitionend'),
           topLevelEventsToReactNames = /* @__PURE__ */ new Map(),
           simpleEventPluginEvents =
-            'abort auxClick beforeToggle cancel canPlay canPlayThrough click close contextMenu copy cut drag dragEnd dragEnter dragExit dragLeave dragOver dragStart drop durationChange emptied encrypted ended error gotPointerCapture input invalid keyDown keyPress keyUp load loadedData loadedMetadata loadStart lostPointerCapture mouseDown mouseMove mouseOut mouseOver mouseUp paste pause play playing pointerCancel pointerDown pointerMove pointerOut pointerOver pointerUp progress rateChange reset resize seeked seeking stalled submit suspend timeUpdate touchCancel touchEnd touchStart volumeChange scroll toggle touchMove waiting wheel'.split(
+            'abort auxClick beforeToggle cancel canPlay canPlayThrough click close contextMenu copy cut drag dragEnd dragEnter dragExit dragLeave dragOver dragStart drop durationChange emptied encrypted ended error fullscreenChange fullscreenError gotPointerCapture input invalid keyDown keyPress keyUp load loadedData loadedMetadata loadStart lostPointerCapture mouseDown mouseMove mouseOut mouseOver mouseUp paste pause play playing pointerCancel pointerDown pointerMove pointerOut pointerOver pointerUp progress rateChange reset resize seeked seeking stalled submit suspend timeUpdate touchCancel touchEnd touchStart volumeChange scroll toggle touchMove waiting wheel'.split(
               ' ',
             );
         simpleEventPluginEvents.push('scrollEnd');
-        var lastResetTime = 0;
+        var globalClientIdCounter$1 = 0,
+          lastResetTime = 0;
         if ('object' === typeof performance && 'function' === typeof performance.now) {
           var localPerformance = performance;
           var getCurrentTime = function () {
@@ -24767,7 +27106,8 @@ var __morbis_feature = (() => {
           COMPLEX_ARRAY = 1,
           PRIMITIVE_ARRAY = 2,
           ENTRIES_ARRAY = 3,
-          REMOVED = '\u2013\xA0',
+          OBJECT_WIDTH_LIMIT = 100,
+          REMOVED = '-\xA0',
           ADDED = '+\xA0',
           UNCHANGED = '\u2007\xA0',
           supportsUserTiming =
@@ -24790,7 +27130,7 @@ var __morbis_feature = (() => {
             end: -0,
             detail: { devtools: reusableComponentDevToolDetails },
           },
-          resuableChangedPropsEntry = ['Changed Props', ''],
+          reusableChangedPropsEntry = ['Changed Props', ''],
           DEEP_EQUALITY_WARNING =
             'This component received deeply equal props. It might benefit from useMemo or the React Compiler in its owner.',
           reusableDeeplyEqualPropsEntry = ['Changed Props', DEEP_EQUALITY_WARNING],
@@ -24814,7 +27154,7 @@ var __morbis_feature = (() => {
           var nonExtensibleObject = Object.preventExtensions({});
           /* @__PURE__ */ new Map([[nonExtensibleObject, null]]);
           /* @__PURE__ */ new Set([nonExtensibleObject]);
-        } catch (e$3) {
+        } catch (e$4) {
           hasBadMapPolyfill = true;
         }
         var CapturedStacks = /* @__PURE__ */ new WeakMap(),
@@ -24873,6 +27213,7 @@ var __morbis_feature = (() => {
             _currentRenderer: null,
             _currentRenderer2: null,
           },
+          entangledTransitionTypes = null,
           now = Scheduler.unstable_now,
           createTask = console.createTask
             ? console.createTask
@@ -24946,6 +27287,24 @@ var __morbis_feature = (() => {
               transitionEventType = newEventType;
             }
             entangleAsyncAction(transition, returnValue);
+          }
+          if (null !== entangledTransitionTypes)
+            for (newEventTime = firstScheduledRoot; null !== newEventTime;)
+              (queueTransitionTypes(newEventTime, entangledTransitionTypes),
+                (newEventTime = newEventTime.next));
+          newEventTime = transition.types;
+          if (null !== newEventTime) {
+            for (newEventType = firstScheduledRoot; null !== newEventType;)
+              (queueTransitionTypes(newEventType, newEventTime),
+                (newEventType = newEventType.next));
+            if (0 !== currentEntangledLane) {
+              newEventType = entangledTransitionTypes;
+              null === newEventType && (newEventType = entangledTransitionTypes = []);
+              for (var i = 0; i < newEventTime.length; i++) {
+                var transitionType = newEventTime[i];
+                -1 === newEventType.indexOf(transitionType) && newEventType.push(transitionType);
+              }
+            }
           }
           null !== prevOnStartTransitionFinish &&
             prevOnStartTransitionFinish(transition, returnValue);
@@ -25121,7 +27480,8 @@ var __morbis_feature = (() => {
           pendingUNSAFE_ComponentWillUpdateWarnings = [];
           pendingLegacyContextWarning = /* @__PURE__ */ new Map();
         };
-        var callComponent = {
+        var REACT_RECOVERABLE_DIGEST = '',
+          callComponent = {
             react_stack_bottom_frame: function (Component2, props, secondArg) {
               var wasRendering = isRendering;
               isRendering = true;
@@ -25236,6 +27596,9 @@ var __morbis_feature = (() => {
               );
             },
           },
+          lastSuspendedFiber = null,
+          lastSuspendedStack = null,
+          didIssueUseWarning = false,
           suspendedThenable = null,
           needsToResetSuspendedThenableDEV = false,
           thenableState$1 = null,
@@ -25360,9 +27723,9 @@ var __morbis_feature = (() => {
             useOptimistic: throwInvalidHookError,
             useMemoCache: throwInvalidHookError,
             useCacheRefresh: throwInvalidHookError,
-          };
-        ContextOnlyDispatcher.useEffectEvent = throwInvalidHookError;
-        var HooksDispatcherOnMountInDEV = null,
+            useEffectEvent: throwInvalidHookError,
+          },
+          HooksDispatcherOnMountInDEV = null,
           HooksDispatcherOnMountWithHookTypesInDEV = null,
           HooksDispatcherOnUpdateInDEV = null,
           HooksDispatcherOnRerenderInDEV = null,
@@ -26402,6 +28765,7 @@ var __morbis_feature = (() => {
         var didWarnAboutReassigningProps = false;
         var didWarnAboutRevealOrder = {};
         var didWarnAboutTailOptions = {};
+        var didWarnAboutClassNameOnViewTransition = {};
         var SUSPENDED_MARKER = {
             dehydrated: null,
             treeContext: null,
@@ -26411,13 +28775,27 @@ var __morbis_feature = (() => {
           hasWarnedAboutUsingNoValuePropOnContextProvider = false,
           didWarnAboutUndefinedSnapshotBeforeUpdate = null;
         didWarnAboutUndefinedSnapshotBeforeUpdate = /* @__PURE__ */ new Set();
-        var offscreenSubtreeIsHidden = false,
+        var shouldStartViewTransition = false,
+          appearingViewTransitions = null,
+          viewTransitionCancelableChildren = null,
+          viewTransitionHostInstanceIdx = 0,
+          mountedNamedViewTransitions = /* @__PURE__ */ new Map(),
+          didWarnAboutName = {},
+          NoLayoutEffectTraversalFlags = 0,
+          IncludeWorkInProgressEffects = 1,
+          IncludeHostSingletons = 2,
+          offscreenSubtreeIsHidden = false,
           offscreenSubtreeWasHidden = false,
+          offscreenDirectParentIsHidden = false,
           needsFormReset = false,
           PossiblyWeakSet = 'function' === typeof WeakSet ? WeakSet : Set,
           nextEffect = null,
           inProgressLanes = null,
           inProgressRoot = null,
+          viewTransitionContextChanged = false,
+          inUpdateViewTransition = false,
+          rootViewTransitionAffected = false,
+          rootViewTransitionNameCanceled = false,
           hostParent = null,
           hostParentIsContainer = false,
           currentHoistableRoot = null,
@@ -26513,6 +28891,9 @@ var __morbis_feature = (() => {
           pendingEffectsRenderEndTime = -0,
           pendingPassiveTransitions = null,
           pendingRecoverableErrors = null,
+          pendingViewTransition = null,
+          pendingViewTransitionEvents = null,
+          pendingTransitionTypes = null,
           pendingSuspendedCommitReason = null,
           pendingDelayedCommitReason = IMMEDIATE_COMMIT,
           pendingSuspendedViewTransitionReason = null,
@@ -26525,6 +28906,7 @@ var __morbis_feature = (() => {
           nestedPassiveUpdateCount = 0,
           rootWithPassiveNestedUpdates = null,
           isRunningInsertionEffect = false,
+          didWarnAboutInterruptedViewTransitions = false,
           didWarnStateUpdateForNotYetMountedComponent = null,
           didWarnAboutUpdateInRender = false;
         var didWarnAboutUpdateInRenderForAnotherComponent = /* @__PURE__ */ new Set();
@@ -26609,6 +28991,7 @@ var __morbis_feature = (() => {
           NORMALIZE_NULL_AND_REPLACEMENT_REGEX = /\u0000|\uFFFD/g,
           xlinkNamespace = 'http://www.w3.org/1999/xlink',
           xmlNamespace = 'http://www.w3.org/XML/1998/namespace',
+          emptyProps = {},
           EXPECTED_FORM_ACTION_URL =
             "javascript:throw new Error('React form unexpectedly submitted.')",
           SUPPRESS_HYDRATION_WARNING = 'suppressHydrationWarning',
@@ -26625,12 +29008,13 @@ var __morbis_feature = (() => {
           FORM_STATE_IS_MATCHING = 'F!',
           FORM_STATE_IS_NOT_MATCHING = 'F',
           DOCUMENT_READY_STATE_LOADING = 'loading',
-          STYLE = 'style',
+          STYLE3 = 'style',
           HostContextNamespaceNone = 0,
           HostContextNamespaceSvg = 1,
           HostContextNamespaceMath = 2,
           eventsEnabled = null,
           selectionInformation = null,
+          didWarnScriptTags = false,
           warnedUnknownTags = { dialog: true, webview: true },
           currentPopstateTransitionEvent = null,
           schedulerEvent = void 0,
@@ -26638,6 +29022,8 @@ var __morbis_feature = (() => {
           cancelTimeout = 'function' === typeof clearTimeout ? clearTimeout : void 0,
           noTimeout = -1,
           localPromise = 'function' === typeof Promise ? Promise : void 0,
+          localRequestAnimationFrame =
+            'function' === typeof requestAnimationFrame ? requestAnimationFrame : scheduleTimeout,
           scheduleMicrotask =
             'function' === typeof queueMicrotask
               ? queueMicrotask
@@ -26646,7 +29032,366 @@ var __morbis_feature = (() => {
                     return localPromise.resolve(null).then(callback).catch(handleErrorInNextTick);
                   }
                 : scheduleTimeout,
-          previousHydratableOnEnteringScopedSingleton = null,
+          SUSPENSEY_FONT_AND_IMAGE_TIMEOUT = 500;
+        ViewTransitionPseudoElement.prototype.animate = function (keyframes, options2) {
+          options2 = 'number' === typeof options2 ? { duration: options2 } : assign({}, options2);
+          options2.pseudoElement = this._selector;
+          return this._scope.animate(keyframes, options2);
+        };
+        ViewTransitionPseudoElement.prototype.getAnimations = function () {
+          for (
+            var scope = this._scope,
+              selector = this._selector,
+              animations = scope.getAnimations({ subtree: true }),
+              result = [],
+              i = 0;
+            i < animations.length;
+            i++
+          ) {
+            var effect = animations[i].effect;
+            null !== effect &&
+              effect.target === scope &&
+              effect.pseudoElement === selector &&
+              result.push(animations[i]);
+          }
+          return result;
+        };
+        ViewTransitionPseudoElement.prototype.getComputedStyle = function () {
+          return getComputedStyle(this._scope, this._selector);
+        };
+        FragmentInstance.prototype.addEventListener = function (
+          type,
+          listener,
+          optionsOrUseCapture,
+        ) {
+          var signal = null,
+            cleanup = null;
+          if (
+            null != optionsOrUseCapture &&
+            'boolean' !== typeof optionsOrUseCapture &&
+            ((signal = optionsOrUseCapture.signal || null), null !== signal && signal.aborted)
+          )
+            return;
+          null === this._eventListeners && (this._eventListeners = []);
+          var listeners = this._eventListeners;
+          if (-1 === indexOfEventListener(listeners, type, listener, optionsOrUseCapture)) {
+            var fragmentInstance = this,
+              attachedListener = listener;
+            null != optionsOrUseCapture &&
+              'boolean' !== typeof optionsOrUseCapture &&
+              true === optionsOrUseCapture.once &&
+              (attachedListener = function (event) {
+                fragmentInstance.removeEventListener(type, listener, optionsOrUseCapture);
+                'function' === typeof listener
+                  ? listener.call(this, event)
+                  : listener.handleEvent(event);
+              });
+            null !== signal &&
+              ((cleanup = fragmentInstance.removeEventListener.bind(
+                fragmentInstance,
+                type,
+                listener,
+                optionsOrUseCapture,
+              )),
+              signal.addEventListener('abort', cleanup, { once: true }),
+              (cleanup = signal.removeEventListener.bind(signal, 'abort', cleanup)));
+            signal = getAttachOptions(optionsOrUseCapture);
+            listeners.push({
+              type,
+              listener,
+              optionsOrUseCapture,
+              attachedListener,
+              cleanup,
+            });
+            traverseFragmentInstancesAndTextInstances(
+              this._fragmentFiber,
+              addEventListenerToChild,
+              type,
+              attachedListener,
+              signal,
+            );
+          }
+          this._eventListeners = listeners;
+        };
+        FragmentInstance.prototype.removeEventListener = function (
+          type,
+          listener,
+          optionsOrUseCapture,
+        ) {
+          var listeners = this._eventListeners;
+          if (
+            null !== listeners &&
+            ((listener = indexOfEventListener(listeners, type, listener, optionsOrUseCapture)),
+            -1 !== listener)
+          ) {
+            var _listeners$index = listeners[listener];
+            optionsOrUseCapture = _listeners$index.attachedListener;
+            var cleanup = _listeners$index.cleanup;
+            _listeners$index = getAttachOptions(_listeners$index.optionsOrUseCapture);
+            traverseFragmentInstancesAndTextInstances(
+              this._fragmentFiber,
+              removeEventListenerFromChild,
+              type,
+              optionsOrUseCapture,
+              _listeners$index,
+            );
+            listeners.splice(listener, 1);
+            null !== cleanup && cleanup();
+          }
+        };
+        FragmentInstance.prototype.dispatchEvent = function (event) {
+          var parentHostFiber = getFragmentParentInstanceOrContainerFiber(this._fragmentFiber);
+          if (null === parentHostFiber) return true;
+          parentHostFiber = getInstanceFromHostFiber(parentHostFiber);
+          var eventListeners = this._eventListeners;
+          if ((null !== eventListeners && 0 < eventListeners.length) || !event.bubbles) {
+            var temp =
+              9 === parentHostFiber.nodeType
+                ? parentHostFiber.createComment('')
+                : document.createTextNode('');
+            if (eventListeners)
+              for (var i = 0; i < eventListeners.length; i++) {
+                var _eventListeners$i = eventListeners[i];
+                temp.addEventListener(
+                  _eventListeners$i.type,
+                  _eventListeners$i.attachedListener,
+                  getAttachOptions(_eventListeners$i.optionsOrUseCapture),
+                );
+              }
+            parentHostFiber.appendChild(temp);
+            event = temp.dispatchEvent(event);
+            if (eventListeners)
+              for (i = 0; i < eventListeners.length; i++)
+                ((_eventListeners$i = eventListeners[i]),
+                  temp.removeEventListener(
+                    _eventListeners$i.type,
+                    _eventListeners$i.attachedListener,
+                    getAttachOptions(_eventListeners$i.optionsOrUseCapture),
+                  ));
+            parentHostFiber.removeChild(temp);
+            return event;
+          }
+          return parentHostFiber.dispatchEvent(event);
+        };
+        FragmentInstance.prototype.focus = function (focusOptions) {
+          traverseVisibleInstancesAndTextInstances(
+            this._fragmentFiber.child,
+            true,
+            setFocusOnFiberIfFocusable,
+            focusOptions,
+            void 0,
+            void 0,
+          );
+        };
+        FragmentInstance.prototype.focusLast = function (focusOptions) {
+          var children = [];
+          traverseVisibleInstancesAndTextInstances(
+            this._fragmentFiber.child,
+            true,
+            collectChildren,
+            children,
+            void 0,
+            void 0,
+          );
+          for (
+            var i = children.length - 1;
+            0 <= i && !setFocusOnFiberIfFocusable(children[i], focusOptions);
+            i--
+          );
+        };
+        FragmentInstance.prototype.blur = function () {
+          var parentHostFiber = getFragmentParentInstanceOrContainerFiber(this._fragmentFiber);
+          null !== parentHostFiber &&
+            ((parentHostFiber = getInstanceFromHostFiber(parentHostFiber)),
+            (parentHostFiber = getOwnerDocumentFromRootContainer(parentHostFiber).activeElement),
+            null !== parentHostFiber &&
+              traverseFragmentInstancesAndTextInstances(
+                this._fragmentFiber,
+                blurActiveElementWithinFragment,
+                parentHostFiber,
+              ));
+        };
+        FragmentInstance.prototype.observeUsing = function (observer) {
+          var hasText = false,
+            hasElement = false;
+          traverseFragmentInstancesAndTextInstances(this._fragmentFiber, function (child) {
+            if (6 === child.tag) hasText = true;
+            else return (hasElement = true);
+            return false;
+          });
+          hasText &&
+            !hasElement &&
+            console.error(
+              'observeUsing() was called on a FragmentInstance with only text children. Observers do not work on text nodes.',
+            );
+          null === this._observers && (this._observers = /* @__PURE__ */ new Set());
+          this._observers.add(observer);
+          traverseFragmentInstancesAndTextInstances(this._fragmentFiber, observeChild, observer);
+        };
+        FragmentInstance.prototype.unobserveUsing = function (observer) {
+          var observers = this._observers;
+          if (null !== observers && observers.has(observer)) {
+            observers.delete(observer);
+            traverseFragmentInstancesAndTextInstances(
+              this._fragmentFiber,
+              unobserveChild,
+              observer,
+            );
+            for (var i = (observers = 0); i < pendingIntersectionUnobserves.length; i++) {
+              var pending = pendingIntersectionUnobserves[i];
+              pending.fragmentInstance === this && pending.observer === observer
+                ? observer.unobserve(pending.instance)
+                : (pendingIntersectionUnobserves[observers++] = pending);
+            }
+            pendingIntersectionUnobserves.length = observers;
+          } else
+            console.error(
+              'You are calling unobserveUsing() with an observer that is not being observed with this fragment instance. First attach the observer with observeUsing()',
+            );
+        };
+        var pendingIntersectionUnobserves = [],
+          intersectionUnobserveScheduled = false;
+        FragmentInstance.prototype.getClientRects = function () {
+          var rects = [];
+          traverseFragmentInstancesAndTextInstances(this._fragmentFiber, collectClientRects, rects);
+          return rects;
+        };
+        FragmentInstance.prototype.getRootNode = function (getRootNodeOptions) {
+          var parentHostFiber = getFragmentParentInstanceOrContainerFiber(this._fragmentFiber);
+          return null === parentHostFiber
+            ? this
+            : getInstanceFromHostFiber(parentHostFiber).getRootNode(getRootNodeOptions);
+        };
+        FragmentInstance.prototype.compareDocumentPosition = function (otherNode) {
+          var parentHostFiber = getFragmentParentInstanceOrContainerFiber(this._fragmentFiber);
+          if (null === parentHostFiber) return Node.DOCUMENT_POSITION_DISCONNECTED;
+          var children = [];
+          traverseFragmentInstancesAndTextInstances(this._fragmentFiber, collectChildren, children);
+          var parentHostInstance = getInstanceFromHostFiber(parentHostFiber);
+          if (0 === children.length) {
+            parentHostFiber = parentHostInstance;
+            if (fiberIsPortaledIntoHost(this._fragmentFiber)) {
+              a: {
+                for (children = this._fragmentFiber.return; null !== children;) {
+                  if (4 === children.tag) {
+                    children = children.stateNode.containerInfo;
+                    break a;
+                  }
+                  if (3 === children.tag || 5 === children.tag || 27 === children.tag) break;
+                  children = children.return;
+                }
+                children = null;
+              }
+              null != children && (parentHostFiber = children);
+            }
+            children = this._fragmentFiber;
+            var result = (parentHostInstance = parentHostFiber.compareDocumentPosition(otherNode));
+            parentHostFiber === otherNode
+              ? (result = Node.DOCUMENT_POSITION_CONTAINS)
+              : parentHostInstance & Node.DOCUMENT_POSITION_CONTAINED_BY &&
+                ((children = getFragmentInstanceOrTextInstanceSiblings(children)[1]),
+                null === children
+                  ? (result = Node.DOCUMENT_POSITION_PRECEDING)
+                  : ((otherNode =
+                      getInstanceFromHostFiber(children).compareDocumentPosition(otherNode)),
+                    (result =
+                      0 === otherNode || otherNode & Node.DOCUMENT_POSITION_FOLLOWING
+                        ? Node.DOCUMENT_POSITION_FOLLOWING
+                        : Node.DOCUMENT_POSITION_PRECEDING)));
+            return (result |= Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC);
+          }
+          parentHostFiber = getInstanceFromHostFiber(children[0]);
+          result = getInstanceFromHostFiber(children[children.length - 1]);
+          var parentHostInstanceFromDOM = fiberIsPortaledIntoHost(this._fragmentFiber)
+            ? parentHostFiber.parentElement
+            : parentHostInstance;
+          if (null == parentHostInstanceFromDOM) return Node.DOCUMENT_POSITION_DISCONNECTED;
+          parentHostInstance =
+            parentHostInstanceFromDOM.compareDocumentPosition(parentHostFiber) &
+            Node.DOCUMENT_POSITION_CONTAINED_BY;
+          parentHostInstanceFromDOM =
+            parentHostInstanceFromDOM.compareDocumentPosition(result) &
+            Node.DOCUMENT_POSITION_CONTAINED_BY;
+          var firstResult = parentHostFiber.compareDocumentPosition(otherNode),
+            lastResult = result.compareDocumentPosition(otherNode),
+            otherNodeIsWithinFirstOrLastChild =
+              firstResult & Node.DOCUMENT_POSITION_CONTAINED_BY ||
+              lastResult & Node.DOCUMENT_POSITION_CONTAINED_BY;
+          lastResult =
+            parentHostInstance &&
+            parentHostInstanceFromDOM &&
+            firstResult & Node.DOCUMENT_POSITION_FOLLOWING &&
+            lastResult & Node.DOCUMENT_POSITION_PRECEDING;
+          parentHostFiber =
+            (parentHostInstance && parentHostFiber === otherNode) ||
+            (parentHostInstanceFromDOM && result === otherNode) ||
+            otherNodeIsWithinFirstOrLastChild ||
+            lastResult
+              ? Node.DOCUMENT_POSITION_CONTAINED_BY
+              : (!parentHostInstance && parentHostFiber === otherNode) ||
+                  (!parentHostInstanceFromDOM && result === otherNode)
+                ? Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC
+                : firstResult;
+          return parentHostFiber & Node.DOCUMENT_POSITION_DISCONNECTED ||
+            parentHostFiber & Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC ||
+            validateDocumentPositionWithFiberTree(
+              parentHostFiber,
+              this._fragmentFiber,
+              children[0],
+              children[children.length - 1],
+              otherNode,
+            )
+            ? parentHostFiber
+            : Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
+        };
+        FragmentInstance.prototype.scrollIntoView = function (alignToTop) {
+          if ('object' === typeof alignToTop)
+            throw Error(
+              'FragmentInstance.scrollIntoView() does not support scrollIntoViewOptions. Use the alignToTop boolean instead.',
+            );
+          var children = [];
+          traverseFragmentInstancesAndTextInstances(this._fragmentFiber, collectChildren, children);
+          var resolvedAlignToTop = false !== alignToTop;
+          if (0 === children.length) {
+            var hostSiblings = getFragmentInstanceOrTextInstanceSiblings(this._fragmentFiber);
+            hostSiblings = resolvedAlignToTop
+              ? hostSiblings[1] ||
+                hostSiblings[0] ||
+                getFragmentParentInstanceOrContainerFiber(this._fragmentFiber)
+              : hostSiblings[0] || hostSiblings[1];
+            if (null === hostSiblings) return;
+            if (6 === hostSiblings.tag) {
+              alignToTop = getInstanceFromHostFiber(hostSiblings);
+              scrollTextNodeIntoView(alignToTop, resolvedAlignToTop);
+              return;
+            }
+            hostSiblings = getInstanceFromHostFiber(hostSiblings);
+            if (9 !== hostSiblings.nodeType) {
+              if (11 === hostSiblings.nodeType) {
+                resolvedAlignToTop = 'host' in hostSiblings ? hostSiblings.host : null;
+                null !== resolvedAlignToTop
+                  ? resolvedAlignToTop.scrollIntoView(alignToTop)
+                  : console.warn(
+                      'You are attempting to scroll a FragmentInstance that is only mounted inside a detached DocumentFragment. No scroll was performed.',
+                    );
+                return;
+              }
+              hostSiblings.scrollIntoView(alignToTop);
+            }
+          }
+          for (
+            hostSiblings = resolvedAlignToTop ? children.length - 1 : 0;
+            hostSiblings !== (resolvedAlignToTop ? -1 : children.length);
+          ) {
+            var child = children[hostSiblings];
+            6 === child.tag
+              ? ((child = getInstanceFromHostFiber(child)),
+                scrollTextNodeIntoView(child, resolvedAlignToTop))
+              : getInstanceFromHostFiber(child).scrollIntoView(alignToTop);
+            hostSiblings += resolvedAlignToTop ? -1 : 1;
+          }
+        };
+        var previousHydratableOnEnteringScopedSingleton = null,
           NotLoaded = 0,
           Loaded = 1,
           Errored = 2,
@@ -26706,7 +29451,8 @@ var __morbis_feature = (() => {
                 case 'script':
                   key = getScriptKey(href);
               }
-              preloadPropsMap.has(key) ||
+              if (!(
+                preloadPropsMap.has(key) ||
                 ((href = assign(
                   {
                     rel: 'preload',
@@ -26719,11 +29465,19 @@ var __morbis_feature = (() => {
                 null !== ownerDocument.querySelector(preloadSelector) ||
                   ('style' === as &&
                     ownerDocument.querySelector(getStylesheetSelectorFromKey(key))) ||
-                  ('script' === as && ownerDocument.querySelector(getScriptSelectorFromKey(key))) ||
-                  ((as = ownerDocument.createElement('link')),
-                  setInitialProperties(as, 'link', href),
-                  markNodeAsHoistable(as),
-                  ownerDocument.head.appendChild(as)));
+                  ('script' === as && ownerDocument.querySelector(getScriptSelectorFromKey(key))))
+              )) {
+                var instance = ownerDocument.createElement('link');
+                setInitialProperties(instance, 'link', href);
+                'style' === as &&
+                  ((instance[internalLoadPendingKey] = true),
+                  (instance.onload = instance.onerror =
+                    function () {
+                      clearPendingLoadOnNode(instance);
+                    }));
+                markNodeAsHoistable(instance);
+                ownerDocument.head.appendChild(instance);
+              }
             }
           },
           m: function (href, options2) {
@@ -27040,12 +29794,12 @@ var __morbis_feature = (() => {
           }
         };
         (function () {
-          var isomorphicReactPackageVersion = React32.version;
-          if ('19.2.8' !== isomorphicReactPackageVersion)
+          var isomorphicReactPackageVersion = React33.version;
+          if ('19.3.0' !== isomorphicReactPackageVersion)
             throw Error(
               'Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ' +
                 (isomorphicReactPackageVersion +
-                  '\n  - react-dom:  19.2.8\nLearn more: https://react.dev/warnings/version-mismatch'),
+                  '\n  - react-dom:  19.3.0\nLearn more: https://react.dev/warnings/version-mismatch'),
             );
         })();
         ('function' === typeof Map &&
@@ -27076,10 +29830,10 @@ var __morbis_feature = (() => {
           !(function () {
             var internals = {
               bundleType: 1,
-              version: '19.2.8',
+              version: '19.3.0',
               rendererPackageName: 'react-dom',
               currentDispatcherRef: ReactSharedInternals,
-              reconcilerVersion: '19.2.8',
+              reconcilerVersion: '19.3.0',
             };
             internals.overrideHookState = overrideHookState;
             internals.overrideHookStateDeletePath = overrideHookStateDeletePath;
@@ -27209,7 +29963,7 @@ var __morbis_feature = (() => {
           listenToAllSupportedEvents(container);
           return new ReactDOMHydrationRoot(initialChildren);
         };
-        exports.version = '19.2.8';
+        exports.version = '19.3.0';
         'undefined' !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ &&
           'function' === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop &&
           __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(Error());
@@ -27255,6 +30009,8 @@ var __morbis_feature = (() => {
               return 'SuspenseList';
             case REACT_ACTIVITY_TYPE:
               return 'Activity';
+            case REACT_VIEW_TRANSITION_TYPE:
+              return 'ViewTransition';
           }
           if ('object' === typeof type)
             switch (
@@ -27474,7 +30230,7 @@ var __morbis_feature = (() => {
             'object' === typeof object && null !== object && object.$$typeof === REACT_ELEMENT_TYPE
           );
         }
-        var React32 = require_react(),
+        var React33 = require_react(),
           REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for('react.transitional.element'),
           REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for('react.portal'),
           REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for('react.fragment'),
@@ -27488,9 +30244,10 @@ var __morbis_feature = (() => {
           REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for('react.memo'),
           REACT_LAZY_TYPE2 = /* @__PURE__ */ Symbol.for('react.lazy'),
           REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for('react.activity'),
+          REACT_VIEW_TRANSITION_TYPE = /* @__PURE__ */ Symbol.for('react.view_transition'),
           REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for('react.client.reference'),
           ReactSharedInternals =
-            React32.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
+            React33.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
           hasOwnProperty = Object.prototype.hasOwnProperty,
           isArrayImpl = Array.isArray,
           createTask = console.createTask
@@ -27498,36 +30255,48 @@ var __morbis_feature = (() => {
             : function () {
                 return null;
               };
-        React32 = {
+        React33 = {
           react_stack_bottom_frame: function (callStackForError) {
             return callStackForError();
           },
         };
         var specialPropKeyWarningShown;
         var didWarnAboutElementRef = {};
-        var unknownOwnerDebugStack = React32.react_stack_bottom_frame.bind(React32, UnknownOwner)();
+        var unknownOwnerDebugStack = React33.react_stack_bottom_frame.bind(React33, UnknownOwner)();
         var unknownOwnerDebugTask = createTask(getTaskName(UnknownOwner));
         var didWarnAboutKeySpread = {};
         exports.Fragment = REACT_FRAGMENT_TYPE;
         exports.jsx = function (type, config, maybeKey) {
           var trackActualOwner = 1e4 > ReactSharedInternals.recentlyCreatedOwnerStacks++;
+          if (trackActualOwner) {
+            var previousStackTraceLimit = Error.stackTraceLimit;
+            Error.stackTraceLimit = 10;
+            var debugStackDEV = Error('react-stack-top-frame');
+            Error.stackTraceLimit = previousStackTraceLimit;
+          } else debugStackDEV = unknownOwnerDebugStack;
           return jsxDEVImpl(
             type,
             config,
             maybeKey,
             false,
-            trackActualOwner ? Error('react-stack-top-frame') : unknownOwnerDebugStack,
+            debugStackDEV,
             trackActualOwner ? createTask(getTaskName(type)) : unknownOwnerDebugTask,
           );
         };
         exports.jsxs = function (type, config, maybeKey) {
           var trackActualOwner = 1e4 > ReactSharedInternals.recentlyCreatedOwnerStacks++;
+          if (trackActualOwner) {
+            var previousStackTraceLimit = Error.stackTraceLimit;
+            Error.stackTraceLimit = 10;
+            var debugStackDEV = Error('react-stack-top-frame');
+            Error.stackTraceLimit = previousStackTraceLimit;
+          } else debugStackDEV = unknownOwnerDebugStack;
           return jsxDEVImpl(
             type,
             config,
             maybeKey,
             true,
-            trackActualOwner ? Error('react-stack-top-frame') : unknownOwnerDebugStack,
+            debugStackDEV,
             trackActualOwner ? createTask(getTaskName(type)) : unknownOwnerDebugTask,
           );
         };
@@ -27544,6 +30313,416 @@ var __morbis_feature = (() => {
       } else {
         module.exports = require_react_jsx_runtime_development();
       }
+    },
+  });
+
+  // src/ui/web/tokens.ts
+  function getTokenSheet() {
+    if (!sharedSheet) {
+      sharedSheet = new CSSStyleSheet();
+      sharedSheet.replaceSync(TOKENS_CSS);
+    }
+    return sharedSheet;
+  }
+  function ensureFont() {
+    if (fontInjected || document.getElementById('ext-pjs-font')) return;
+    fontInjected = true;
+    const link = document.createElement('link');
+    link.id = 'ext-pjs-font';
+    link.rel = 'stylesheet';
+    link.href =
+      'http://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap';
+    document.head.appendChild(link);
+  }
+  function attachShadowWithTokens(el, mode = 'open') {
+    const root = el.attachShadow({ mode });
+    root.adoptedStyleSheets = [getTokenSheet()];
+    ensureFont();
+    return root;
+  }
+  var FONT_STACK, TOKENS_CSS, sharedSheet, fontInjected;
+  var init_tokens = __esm({
+    'src/ui/web/tokens.ts'() {
+      'use strict';
+      FONT_STACK = '"Plus Jakarta Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+      TOKENS_CSS = `
+  :host {
+    /* Brand */
+    --ext-primary: #00875a;
+    --ext-primary-hover: #007049;
+    --ext-primary-soft: #e6f4ef;
+
+    /* Semantic */
+    --ext-success: #027a48;
+    --ext-success-soft: #e8f6ef;
+    --ext-warning: #b54708;
+    --ext-warning-soft: #fdf1e3;
+    --ext-danger: #d92d20;
+    --ext-danger-hover: #b42318;
+    --ext-danger-soft: #fdeceb;
+    --ext-info: #175cd3;
+    --ext-info-soft: #e8f0fd;
+
+    /* Surface */
+    --ext-bg: #f4f6f8;
+    --ext-surface: #ffffff;
+    --ext-surface-2: #f8fafc;
+    --ext-border: #d0d5dd;
+
+    /* Text \u2014 kontras tinggi untuk keterbacaan usia 30-40 */
+    --ext-text: #1c2530;
+    --ext-text-secondary: #475467;
+    --ext-text-muted: #667085;
+    --ext-text-on-primary: #ffffff;
+
+    /* Typography \u2014 lebih besar dari default, untuk mudah dibaca */
+    --ext-font-family: ${FONT_STACK};
+    --ext-font-size-xs: 12px;
+    --ext-font-size-sm: 13px;
+    --ext-font-size-md: 15px;
+    --ext-font-size-lg: 17px;
+    --ext-font-size-xl: 20px;
+    --ext-line-height: 1.5;
+
+    /* Radius */
+    --ext-radius-sm: 6px;
+    --ext-radius-md: 10px;
+    --ext-radius-lg: 14px;
+
+    /* Spacing */
+    --ext-space-1: 4px;
+    --ext-space-2: 8px;
+    --ext-space-3: 12px;
+    --ext-space-4: 16px;
+    --ext-space-5: 20px;
+    --ext-space-6: 24px;
+    --ext-space-8: 32px;
+
+    /* Shadow */
+    --ext-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+    --ext-shadow-md: 0 6px 20px rgba(16, 24, 40, 0.1);
+    --ext-shadow-lg: 0 20px 50px rgba(16, 24, 40, 0.18);
+
+    /* Focus ring \u2014 terlihat jelas, penting utk usability */
+    --ext-ring: 0 0 0 3px rgba(0, 135, 90, 0.35);
+
+    /* Motion */
+    --ext-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --ext-duration-fast: 140ms;
+    --ext-duration-normal: 220ms;
+  }
+`;
+      sharedSheet = null;
+      fontInjected = false;
+    },
+  });
+
+  // src/ui/web/ext-modal.ts
+  var STYLE, ExtModal;
+  var init_ext_modal = __esm({
+    'src/ui/web/ext-modal.ts'() {
+      'use strict';
+      init_tokens();
+      STYLE = `
+  :host { display: none; }
+  :host([open]) { display: block; }
+  .overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(2px);
+    animation: ext-fade var(--ext-duration-normal) var(--ext-ease);
+    padding: var(--ext-space-6);
+  }
+  .modal {
+    width: 520px;
+    max-width: 100%;
+    background: var(--ext-surface);
+    border-radius: var(--ext-radius-lg);
+    box-shadow: var(--ext-shadow-lg);
+    overflow: hidden;
+    animation: ext-slide-up var(--ext-duration-normal) var(--ext-ease);
+  }
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ext-space-4);
+    padding: var(--ext-space-5) var(--ext-space-6);
+    border-bottom: 1px solid var(--ext-border);
+  }
+  .title {
+    font-family: var(--ext-font-family);
+    font-size: var(--ext-font-size-lg);
+    font-weight: 700;
+    color: var(--ext-text);
+    margin: 0;
+  }
+  .close {
+    appearance: none;
+    border: none;
+    background: var(--ext-surface-2);
+    color: var(--ext-text-secondary);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color var(--ext-duration-fast) var(--ext-ease), color var(--ext-duration-fast) var(--ext-ease);
+  }
+  .close:hover { background: var(--ext-danger-soft); color: var(--ext-danger); }
+  .close:focus-visible { outline: none; box-shadow: var(--ext-ring); }
+
+  .body {
+    font-family: var(--ext-font-family);
+    font-size: var(--ext-font-size-md);
+    line-height: var(--ext-line-height);
+    color: var(--ext-text-secondary);
+    padding: var(--ext-space-6);
+  }
+  .footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--ext-space-3);
+    padding: 0 var(--ext-space-6) var(--ext-space-6);
+  }
+  /* tombol utama di dalam modal memakai komponen ext-btn \u2014 styling via atribut host */
+  ::slotted(*) { font-family: var(--ext-font-family); }
+
+  /* variant accent line */
+  :host([variant='danger']) .header { box-shadow: inset 4px 0 0 var(--ext-danger); }
+  :host([variant='success']) .header { box-shadow: inset 4px 0 0 var(--ext-success); }
+  :host([variant='info']) .header { box-shadow: inset 4px 0 0 var(--ext-info); }
+  :host([variant='warning']) .header { box-shadow: inset 4px 0 0 var(--ext-warning); }
+
+  @keyframes ext-fade { from { opacity: 0; } }
+  @keyframes ext-slide-up {
+    from { opacity: 0; transform: translateY(18px) scale(0.98); }
+  }
+`;
+      ExtModal = class extends HTMLElement {
+        constructor() {
+          super();
+          this.handleKey = (e) => {
+            if (e.key === 'Escape' && this.hasAttribute('open')) this.cancel();
+          };
+          this.root = attachShadowWithTokens(this);
+          this.root.innerHTML = `
+      <style>${STYLE}</style>
+      <div class="overlay">
+        <div class="modal" role="dialog" aria-modal="true">
+          <div class="header">
+            <h3 class="title"><slot name="title"></slot></h3>
+            <button class="close" part="close" aria-label="Tutup">&times;</button>
+          </div>
+          <div class="body"><slot></slot></div>
+          <div class="footer">
+            <slot name="footer"></slot>
+          </div>
+        </div>
+      </div>
+    `;
+        }
+        connectedCallback() {
+          const overlay = this.root.querySelector('.overlay');
+          const closeBtn = this.root.querySelector('.close');
+          closeBtn.addEventListener('click', () => this.cancel());
+          overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) this.cancel();
+          });
+          document.addEventListener('keydown', this.handleKey);
+        }
+        disconnectedCallback() {
+          document.removeEventListener('keydown', this.handleKey);
+        }
+        get titleSlot() {
+          return this.querySelector('[slot="title"]');
+        }
+        get footerSlot() {
+          return this.querySelector('[slot="footer"]');
+        }
+        open() {
+          this.setAttribute('open', '');
+        }
+        close() {
+          this.removeAttribute('open');
+        }
+        cancel() {
+          this.dispatchEvent(new CustomEvent('ext-cancel'));
+          this.close();
+        }
+        ok() {
+          this.dispatchEvent(new CustomEvent('ext-ok'));
+        }
+      };
+      if (!customElements.get('ext-modal')) customElements.define('ext-modal', ExtModal);
+    },
+  });
+
+  // src/ui/web/ext-btn.ts
+  var STYLE2, ExtBtn;
+  var init_ext_btn = __esm({
+    'src/ui/web/ext-btn.ts'() {
+      'use strict';
+      init_tokens();
+      STYLE2 = `
+  :host { display: inline-block; }
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--ext-space-2);
+    font-family: var(--ext-font-family);
+    font-size: var(--ext-font-size-md);
+    font-weight: 600;
+    line-height: 1.2;
+    border: 1px solid transparent;
+    border-radius: var(--ext-radius-md);
+    padding: 10px 18px;
+    cursor: pointer;
+    transition: background-color var(--ext-duration-fast) var(--ext-ease),
+      border-color var(--ext-duration-fast) var(--ext-ease),
+      transform var(--ext-duration-fast) var(--ext-ease),
+      box-shadow var(--ext-duration-fast) var(--ext-ease);
+    min-height: 42px;
+    white-space: nowrap;
+  }
+  button:hover:not(:disabled) { transform: translateY(-1px); }
+  button:active:not(:disabled) { transform: translateY(0); }
+  button:focus-visible { outline: none; box-shadow: var(--ext-ring); }
+  button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  /* sizes */
+  :host([size='sm']) button { font-size: var(--ext-font-size-sm); padding: 6px 12px; min-height: 32px; border-radius: var(--ext-radius-sm); }
+  :host([size='lg']) button { font-size: var(--ext-font-size-lg); padding: 13px 24px; min-height: 50px; }
+
+  /* variants */
+  :host([variant='primary']) button { background: var(--ext-primary); color: var(--ext-text-on-primary); }
+  :host([variant='primary']) button:hover:not(:disabled) { background: var(--ext-primary-hover); }
+  :host([variant='danger']) button { background: var(--ext-danger); color: var(--ext-text-on-primary); }
+  :host([variant='danger']) button:hover:not(:disabled) { background: var(--ext-danger-hover); }
+  :host([variant='success']) button { background: var(--ext-success); color: var(--ext-text-on-primary); }
+  :host([variant='secondary']) button { background: var(--ext-surface); color: var(--ext-text); border-color: var(--ext-border); }
+  :host([variant='secondary']) button:hover:not(:disabled) { background: var(--ext-surface-2); }
+  :host([variant='ghost']) button { background: transparent; color: var(--ext-primary); }
+  :host([variant='ghost']) button:hover:not(:disabled) { background: var(--ext-primary-soft); }
+  :host([variant='ghost-danger']) button { background: transparent; color: var(--ext-danger); }
+  :host([variant='ghost-danger']) button:hover:not(:disabled) { background: var(--ext-danger-soft); }
+
+  /* loading spinner */
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: ext-spin 0.7s linear infinite;
+    display: none;
+  }
+  :host([loading]) .spinner { display: inline-block; }
+  :host([loading]) button { pointer-events: none; opacity: 0.8; }
+  @keyframes ext-spin { to { transform: rotate(360deg); } }
+`;
+      ExtBtn = class extends HTMLElement {
+        constructor() {
+          super();
+          const root = attachShadowWithTokens(this);
+          root.innerHTML = `
+      <style>${STYLE2}</style>
+      <button type="button">
+        <span class="spinner" aria-hidden="true"></span>
+        <span class="label"><slot></slot></span>
+      </button>
+    `;
+          this.btn = root.querySelector('button');
+        }
+        connectedCallback() {
+          this.btn.disabled = this.hasAttribute('disabled') || this.hasAttribute('loading');
+          this.btn.setAttribute('aria-busy', this.hasAttribute('loading') ? 'true' : 'false');
+          this.btn.addEventListener('click', (e) => {
+            if (this.hasAttribute('loading') || this.hasAttribute('disabled')) {
+              e.stopPropagation();
+              e.preventDefault();
+              return;
+            }
+          });
+        }
+        static get observedAttributes() {
+          return ['disabled', 'loading'];
+        }
+        attributeChangedCallback(name) {
+          if (name === 'disabled' || name === 'loading') {
+            this.btn.disabled = this.hasAttribute('disabled') || this.hasAttribute('loading');
+            this.btn.setAttribute('aria-busy', this.hasAttribute('loading') ? 'true' : 'false');
+          }
+        }
+      };
+      if (!customElements.get('ext-btn')) customElements.define('ext-btn', ExtBtn);
+    },
+  });
+
+  // src/ui/web/confirm.ts
+  var confirm_exports = {};
+  __export(confirm_exports, {
+    confirmExt: () => confirmExt,
+  });
+  function confirmExt(opts) {
+    return new Promise((resolve) => {
+      const modal = document.createElement('ext-modal');
+      modal.setAttribute('variant', opts.variant ?? 'warning');
+      if (opts.okLabel) modal.setAttribute('ok-label', opts.okLabel);
+      if (opts.cancelLabel) modal.setAttribute('cancel-label', opts.cancelLabel);
+      if (opts.hideCancel) modal.setAttribute('hide-cancel', '');
+      modal.innerHTML = `<h3 slot="title"></h3><div class="ext-confirm-body"></div><div slot="footer">
+         <ext-btn data-ext-confirm-cancel variant="secondary"></ext-btn>
+         <ext-btn data-ext-confirm-ok></ext-btn>
+       </div>`;
+      const title = modal.querySelector('[slot="title"]');
+      title.textContent = opts.title;
+      const body = modal.querySelector('.ext-confirm-body');
+      if (opts.icon) {
+        const icon = document.createElement('div');
+        icon.className = 'ext-confirm-icon';
+        icon.textContent = opts.icon;
+        body.appendChild(icon);
+      }
+      if (opts.message) {
+        const lines = opts.message.split('\n');
+        lines.forEach((line, i) => {
+          if (i > 0) body.appendChild(document.createElement('br'));
+          body.appendChild(document.createTextNode(line));
+        });
+      }
+      modal.querySelector('[data-ext-confirm-ok]').textContent = opts.okLabel ?? 'Lanjut';
+      const okBtn = modal.querySelector('[data-ext-confirm-ok]');
+      okBtn.setAttribute('variant', opts.variant === 'danger' ? 'danger' : 'primary');
+      if (opts.hideCancel) {
+        modal.querySelector('[data-ext-confirm-cancel]')?.remove();
+      } else {
+        modal.querySelector('[data-ext-confirm-cancel]').textContent = opts.cancelLabel ?? 'Batal';
+      }
+      const done = (result) => {
+        modal.remove();
+        resolve(result);
+      };
+      modal.addEventListener('ext-ok', () => done(true));
+      modal.addEventListener('ext-cancel', () => done(false));
+      document.body.appendChild(modal);
+      modal.open();
+    });
+  }
+  var init_confirm = __esm({
+    'src/ui/web/confirm.ts'() {
+      'use strict';
+      init_ext_modal();
+      init_ext_btn();
     },
   });
 
@@ -28417,6 +31596,7 @@ var __morbis_feature = (() => {
   var fromTheme = (key) => {
     const themeGetter = (theme) => theme[key] || fallbackThemeArr;
     themeGetter.isThemeGetter = true;
+    themeGetter.themeKey = key;
     return themeGetter;
   };
   var arbitraryValueRegex = /^\[(?:(\w[\w-]*):)?(.+)\]$/i;
@@ -28425,7 +31605,7 @@ var __morbis_feature = (() => {
   var tshirtUnitRegex = /^(\d+(\.\d+)?)?(xs|sm|md|lg|xl)$/;
   var lengthUnitRegex =
     /\d+(%|px|r?em|[sdl]?v([hwib]|min|max)|pt|pc|in|cm|mm|cap|ch|ex|r?lh|cq(w|h|i|b|min|max))|\b(calc|min|max|clamp)\(.+\)|^0$/;
-  var colorFunctionRegex = /^(rgba?|hsla?|hwb|(ok)?(lab|lch)|color-mix)\(.+\)$/;
+  var colorFunctionRegex = /^(rgba?|hsla?|hwb|(ok)?(lab|lch)|color-mix|color|light-dark)\(.+\)$/;
   var shadowRegex = /^(inset_)?-?((\d+)?\.?(\d+)[a-z]+|0)_-?((\d+)?\.?(\d+)[a-z]+|0)/;
   var imageRegex =
     /^(url|image|image-set|cross-fade|element|(repeating-)?(linear|radial|conic)-gradient)\(.+\)$/;
@@ -28619,6 +31799,7 @@ var __morbis_feature = (() => {
       ...scaleUnambiguousSpacing(),
     ];
     const scaleSizingInline = () => [
+      themeContainer,
       isFraction,
       'screen',
       'full',
@@ -28799,7 +31980,7 @@ var __morbis_feature = (() => {
          */
         columns: [
           {
-            columns: [isNumber, isArbitraryValue, isArbitraryVariable, themeContainer],
+            columns: [isNumber, 'auto', isArbitraryValue, isArbitraryVariable, themeContainer],
           },
         ],
         /**
@@ -29629,7 +32810,7 @@ var __morbis_feature = (() => {
         ],
         /**
          * Inline Size
-         * @see https://tailwindcss.com/docs/width
+         * @see https://tailwindcss.com/docs/inline-size
          */
         'inline-size': [
           {
@@ -29638,7 +32819,7 @@ var __morbis_feature = (() => {
         ],
         /**
          * Min-Inline Size
-         * @see https://tailwindcss.com/docs/min-width
+         * @see https://tailwindcss.com/docs/min-inline-size
          */
         'min-inline-size': [
           {
@@ -29647,7 +32828,7 @@ var __morbis_feature = (() => {
         ],
         /**
          * Max-Inline Size
-         * @see https://tailwindcss.com/docs/max-width
+         * @see https://tailwindcss.com/docs/max-inline-size
          */
         'max-inline-size': [
           {
@@ -29656,7 +32837,7 @@ var __morbis_feature = (() => {
         ],
         /**
          * Block Size
-         * @see https://tailwindcss.com/docs/height
+         * @see https://tailwindcss.com/docs/block-size
          */
         'block-size': [
           {
@@ -29665,7 +32846,7 @@ var __morbis_feature = (() => {
         ],
         /**
          * Min-Block Size
-         * @see https://tailwindcss.com/docs/min-height
+         * @see https://tailwindcss.com/docs/min-block-size
          */
         'min-block-size': [
           {
@@ -29674,7 +32855,7 @@ var __morbis_feature = (() => {
         ],
         /**
          * Max-Block Size
-         * @see https://tailwindcss.com/docs/max-height
+         * @see https://tailwindcss.com/docs/max-block-size
          */
         'max-block-size': [
           {
@@ -29749,7 +32930,7 @@ var __morbis_feature = (() => {
          */
         'max-h': [
           {
-            'max-h': ['screen', 'lh', ...scaleSizing()],
+            'max-h': ['screen', 'lh', 'none', ...scaleSizing()],
           },
         ],
         // ------------------
@@ -29877,6 +33058,7 @@ var __morbis_feature = (() => {
         leading: [
           {
             leading: [
+              'none',
               /** Deprecated since Tailwind CSS v4.0.0. @see https://github.com/tailwindlabs/tailwindcss.com/issues/2027#issuecomment-2620152757 */
               themeLeading,
               ...scaleUnambiguousSpacing(),
@@ -30156,7 +33338,7 @@ var __morbis_feature = (() => {
                   isArbitraryValue,
                 ],
                 radial: ['', isArbitraryVariable, isArbitraryValue],
-                conic: [isInteger, isArbitraryVariable, isArbitraryValue],
+                conic: ['', isInteger, isArbitraryVariable, isArbitraryValue],
               },
               isArbitraryVariableImage,
               isArbitraryImage,
@@ -30665,6 +33847,8 @@ var __morbis_feature = (() => {
             shadow: [
               // Deprecated since Tailwind CSS v4.0.0
               '',
+              // Deprecated since Tailwind CSS v4.0.0
+              'inner',
               'none',
               themeShadow,
               isArbitraryVariableShadow,
@@ -32170,16 +35354,16 @@ var __morbis_feature = (() => {
           'bottom',
           'left',
         ],
-        'inset-x': ['right', 'left'],
-        'inset-y': ['top', 'bottom'],
+        'inset-x': ['start', 'end', 'right', 'left'],
+        'inset-y': ['inset-bs', 'inset-be', 'top', 'bottom'],
         flex: ['basis', 'grow', 'shrink'],
         gap: ['gap-x', 'gap-y'],
         p: ['px', 'py', 'ps', 'pe', 'pbs', 'pbe', 'pt', 'pr', 'pb', 'pl'],
-        px: ['pr', 'pl'],
-        py: ['pt', 'pb'],
+        px: ['ps', 'pe', 'pr', 'pl'],
+        py: ['pbs', 'pbe', 'pt', 'pb'],
         m: ['mx', 'my', 'ms', 'me', 'mbs', 'mbe', 'mt', 'mr', 'mb', 'ml'],
-        mx: ['mr', 'ml'],
-        my: ['mt', 'mb'],
+        mx: ['ms', 'me', 'mr', 'ml'],
+        my: ['mbs', 'mbe', 'mt', 'mb'],
         size: ['w', 'h'],
         'font-size': ['leading'],
         'fvn-normal': [
@@ -32230,8 +35414,8 @@ var __morbis_feature = (() => {
           'border-w-b',
           'border-w-l',
         ],
-        'border-w-x': ['border-w-r', 'border-w-l'],
-        'border-w-y': ['border-w-t', 'border-w-b'],
+        'border-w-x': ['border-w-s', 'border-w-e', 'border-w-r', 'border-w-l'],
+        'border-w-y': ['border-w-bs', 'border-w-be', 'border-w-t', 'border-w-b'],
         'border-color': [
           'border-color-x',
           'border-color-y',
@@ -32244,8 +35428,13 @@ var __morbis_feature = (() => {
           'border-color-b',
           'border-color-l',
         ],
-        'border-color-x': ['border-color-r', 'border-color-l'],
-        'border-color-y': ['border-color-t', 'border-color-b'],
+        'border-color-x': ['border-color-s', 'border-color-e', 'border-color-r', 'border-color-l'],
+        'border-color-y': [
+          'border-color-bs',
+          'border-color-be',
+          'border-color-t',
+          'border-color-b',
+        ],
         translate: ['translate-x', 'translate-y', 'translate-none'],
         'translate-none': ['translate', 'translate-x', 'translate-y', 'translate-z'],
         'scroll-m': [
@@ -32260,8 +35449,8 @@ var __morbis_feature = (() => {
           'scroll-mb',
           'scroll-ml',
         ],
-        'scroll-mx': ['scroll-mr', 'scroll-ml'],
-        'scroll-my': ['scroll-mt', 'scroll-mb'],
+        'scroll-mx': ['scroll-ms', 'scroll-me', 'scroll-mr', 'scroll-ml'],
+        'scroll-my': ['scroll-mbs', 'scroll-mbe', 'scroll-mt', 'scroll-mb'],
         'scroll-p': [
           'scroll-px',
           'scroll-py',
@@ -32274,8 +35463,8 @@ var __morbis_feature = (() => {
           'scroll-pb',
           'scroll-pl',
         ],
-        'scroll-px': ['scroll-pr', 'scroll-pl'],
-        'scroll-py': ['scroll-pt', 'scroll-pb'],
+        'scroll-px': ['scroll-ps', 'scroll-pe', 'scroll-pr', 'scroll-pl'],
+        'scroll-py': ['scroll-pbs', 'scroll-pbe', 'scroll-pt', 'scroll-pb'],
         touch: ['touch-x', 'touch-y', 'touch-pz'],
         'touch-x': ['touch'],
         'touch-y': ['touch'],
@@ -32330,11 +35519,11 @@ var __morbis_feature = (() => {
       return /* @__PURE__ */ (0, import_jsx_runtime.jsx)('textarea', {
         ref: textareaRef,
         className: cn(
-          'flex w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-md-sm text-foreground',
+          'flex w-full rounded-lg border-2 border-input bg-background px-3.5 py-3 text-base text-foreground leading-relaxed',
           'placeholder:text-muted-foreground',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
-          'disabled:cursor-not-allowed disabled:opacity-50',
-          'resize-y min-h-[50px] leading-relaxed',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 border-primary/50',
+          'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-muted',
+          'resize-y min-h-[80px]',
           className,
         ),
         onChange: handleChange,
@@ -32346,10 +35535,10 @@ var __morbis_feature = (() => {
 
   // src/ui/components/Label.tsx
   var import_jsx_runtime2 = __toESM(require_jsx_runtime(), 1);
-  function Label({ className, required, children, ...props }) {
+  function Label({ className, required, helperText, children, ...props }) {
     return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)('label', {
       className: cn(
-        'block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1',
+        'block text-base font-semibold text-foreground uppercase tracking-wide mb-1.5',
         className,
       ),
       ...props,
@@ -32357,7 +35546,8 @@ var __morbis_feature = (() => {
         children,
         required &&
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)('span', {
-            className: 'text-destructive ml-0.5',
+            className: 'text-destructive ml-1',
+            'aria-hidden': 'true',
             children: '*',
           }),
       ],
@@ -32368,45 +35558,403 @@ var __morbis_feature = (() => {
   var import_jsx_runtime3 = __toESM(require_jsx_runtime(), 1);
   function Card({ title, children, className }) {
     return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)('div', {
-      className: cn('bg-card border border-border rounded-lg mb-3 overflow-hidden', className),
+      className: cn(
+        'bg-background border-2 border-border rounded-xl mb-4 overflow-hidden shadow-sm',
+        className,
+      ),
       children: [
         /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)('div', {
           className:
-            'px-3.5 py-2 bg-primary/5 border-b border-primary/15 text-[13px] font-bold text-primary flex items-center gap-1.5',
+            'px-4 py-3 bg-primary/5 border-b border-primary/20 text-base font-bold text-primary flex items-center gap-2',
           children: [
             /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('span', {
-              className: 'text-sm',
+              className: 'text-base',
+              'aria-hidden': 'true',
               children: '\u25CF',
             }),
             title,
           ],
         }),
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('div', { className: 'p-3.5', children }),
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)('div', {
+          className: 'p-4 space-y-4',
+          children,
+        }),
       ],
     });
   }
 
+  // node_modules/lucide-react/dist/esm/createLucideIcon.mjs
+  var import_react4 = __toESM(require_react(), 1);
+
+  // node_modules/lucide-react/dist/esm/shared/src/utils/toKebabCase.mjs
+  var toKebabCase = (string) => string?.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+
+  // node_modules/lucide-react/dist/esm/shared/src/utils/toLucideIconData.mjs
+  function toLucideIconData(iconName, iconNode, aliases = []) {
+    if (iconNode == null) {
+      throw new Error('[lucide]: iconNode is required when icon name is used');
+    }
+    return {
+      name: toKebabCase(iconName),
+      size: 24,
+      node: iconNode,
+      ...(aliases.length > 0 ? { aliases } : {}),
+    };
+  }
+
+  // node_modules/lucide-react/dist/esm/shared/src/utils/toCamelCase.mjs
+  var toCamelCase = (string) => {
+    let out = '';
+    let upperNext = false;
+    for (const ch of string) {
+      if (ch === '-' || ch === '_' || ch <= ' ') {
+        upperNext = out.length > 0;
+        continue;
+      }
+      if (out.length === 0) {
+        out += ch.toLowerCase();
+      } else {
+        out += upperNext ? ch.toUpperCase() : ch;
+      }
+      upperNext = false;
+    }
+    return out;
+  };
+
+  // node_modules/lucide-react/dist/esm/shared/src/utils/toPascalCase.mjs
+  var toPascalCase = (string) => {
+    const camelCase = toCamelCase(string);
+    return camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
+  };
+
+  // node_modules/lucide-react/dist/esm/Icon.mjs
+  var import_react3 = __toESM(require_react(), 1);
+
+  // node_modules/lucide-react/dist/esm/shared/src/utils/mergeClasses.mjs
+  var mergeClasses = (...classes) =>
+    classes
+      .filter((className, index2, array) => {
+        return Boolean(className) && className.trim() !== '' && array.indexOf(className) === index2;
+      })
+      .join(' ')
+      .trim();
+
+  // node_modules/lucide-react/dist/esm/shared/src/build/defaultAttributes.mjs
+  var defaultAttributes = {
+    xmlns: 'http://www.w3.org/2000/svg',
+    width: 24,
+    height: 24,
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    'stroke-width': 2,
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+  };
+
+  // node_modules/lucide-react/dist/esm/shared/src/build/buildLucideIconNode.mjs
+  function isDefined(value) {
+    return value !== null && value !== void 0;
+  }
+  function buildLucideIconNode(icon, params = {}) {
+    const attributeNames = params.attributeNames ?? {};
+    const getAttributeName = (attributeName) => attributeNames[attributeName] ?? attributeName;
+    const viewBoxWidth = icon.size ?? icon.width ?? defaultAttributes['width'];
+    const viewBoxHeight = icon.size ?? icon.height ?? defaultAttributes['height'];
+    const aliasClassNames =
+      icon.aliases
+        ?.filter((alias) => typeof alias === 'string' && alias.trim() !== '')
+        .map((alias) => `lucide-${alias}`) ?? [];
+    const iconClassNames = [...(icon.name ? [`lucide-${icon.name}`] : []), ...aliasClassNames];
+    const classNamesFromClassName = params.className?.split(' ').filter(Boolean) ?? [];
+    const className =
+      params.includeDefaultClasses === false
+        ? mergeClasses(...classNamesFromClassName)
+        : mergeClasses('lucide', ...iconClassNames, ...classNamesFromClassName);
+    const calculatedStrokeWidth = params.absoluteStrokeWidth
+      ? (Number(params.strokeWidth ?? defaultAttributes['stroke-width']) *
+          Number(icon.size ?? icon.width ?? defaultAttributes['width'])) /
+        Number(params.size ?? params.width ?? defaultAttributes['width'])
+      : (params.strokeWidth ?? defaultAttributes['stroke-width']);
+    const attributes = {
+      ...Object.entries(defaultAttributes).reduce((attrs, [attrName, value]) => {
+        attrs[getAttributeName(attrName)] = value;
+        return attrs;
+      }, {}),
+      ...('color' in params &&
+        params.color && {
+          [getAttributeName('stroke')]: params.color,
+        }),
+      ...('size' in params &&
+        isDefined(params.size) && {
+          [getAttributeName('width')]: params.size,
+          [getAttributeName('height')]: params.size,
+        }),
+      ...('width' in params &&
+        isDefined(params.width) && {
+          [getAttributeName('width')]: params.width,
+        }),
+      ...('height' in params &&
+        isDefined(params.height) && {
+          [getAttributeName('height')]: params.height,
+        }),
+      [getAttributeName('stroke-width')]: calculatedStrokeWidth,
+      ...(className && {
+        [getAttributeName('class')]: className,
+      }),
+      [getAttributeName('viewBox')]: `0 0 ${viewBoxWidth} ${viewBoxHeight}`,
+      ...(params.hasA11yProp === false
+        ? {
+            [getAttributeName('aria-hidden')]: 'true',
+          }
+        : {}),
+      ...('attributes' in params && params.attributes),
+    };
+    return [
+      'svg',
+      attributes,
+      icon.node.map((child) => {
+        const [name, attrs, children] = child;
+        const nextAttrs = params.nonScalingStroke
+          ? { [getAttributeName('vector-effect')]: 'non-scaling-stroke', ...attrs }
+          : attrs;
+        return children ? [name, nextAttrs, children] : [name, nextAttrs];
+      }),
+    ];
+  }
+
+  // node_modules/lucide-react/dist/esm/shared/src/build/buildLucideIconForReact.mjs
+  function buildLucideIconForReact(icon, params = {}) {
+    return buildLucideIconNode(icon, {
+      ...params,
+      attributeNames: {
+        ...params.attributeNames,
+        class: 'className',
+        'stroke-width': 'strokeWidth',
+        'stroke-linecap': 'strokeLinecap',
+        'stroke-linejoin': 'strokeLinejoin',
+        'vector-effect': 'vectorEffect',
+      },
+    });
+  }
+
+  // node_modules/lucide-react/dist/esm/shared/src/utils/hasA11yProp.mjs
+  var hasA11yProp = (props) => {
+    for (const prop in props) {
+      if (prop.startsWith('aria-') || prop === 'role' || prop === 'title') {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  // node_modules/lucide-react/dist/esm/context.mjs
+  var import_react2 = __toESM(require_react(), 1);
+  var LucideContext = (0, import_react2.createContext)({});
+  var useLucideContext = () => (0, import_react2.useContext)(LucideContext);
+
+  // node_modules/lucide-react/dist/esm/Icon.mjs
+  var Icon = (0, import_react3.forwardRef)(
+    (
+      {
+        color,
+        size: size4,
+        width,
+        height,
+        strokeWidth,
+        absoluteStrokeWidth,
+        nonScalingStroke,
+        className = '',
+        children,
+        iconNode = [],
+        icon = {
+          node: iconNode,
+          aliases: [],
+          size: 24,
+        },
+        ...rest
+      },
+      ref,
+    ) => {
+      const {
+        size: contextSize = 24,
+        strokeWidth: contextStrokeWidth = 2,
+        absoluteStrokeWidth: contextAbsoluteStrokeWidth = false,
+        nonScalingStroke: contextNonScalingStroke = false,
+        color: contextColor = 'currentColor',
+        className: contextClass = '',
+      } = useLucideContext() ?? {};
+      const hasAccessibleProp = Boolean(children) || hasA11yProp(rest);
+      const [name, svgAttributes, builtIconNode = []] = buildLucideIconForReact(icon, {
+        color: color ?? contextColor,
+        width: width ?? size4 ?? contextSize,
+        height: height ?? size4 ?? contextSize,
+        strokeWidth: strokeWidth ?? contextStrokeWidth,
+        absoluteStrokeWidth: absoluteStrokeWidth ?? contextAbsoluteStrokeWidth,
+        nonScalingStroke: nonScalingStroke ?? contextNonScalingStroke,
+        className: mergeClasses(contextClass, className),
+        hasA11yProp: hasAccessibleProp,
+        attributes: rest,
+      });
+      return (0, import_react3.createElement)(
+        name,
+        {
+          ref,
+          ...svgAttributes,
+        },
+        [
+          ...builtIconNode.map(([tag, attrs]) => (0, import_react3.createElement)(tag, attrs)),
+          ...(Array.isArray(children) ? children : [children]),
+        ],
+      );
+    },
+  );
+
+  // node_modules/lucide-react/dist/esm/createLucideIcon.mjs
+  function createLucideIcon(iconDataOrName, iconNode = [], aliases = []) {
+    const iconData =
+      typeof iconDataOrName === 'string'
+        ? toLucideIconData(iconDataOrName, iconNode, aliases)
+        : iconDataOrName;
+    const Component2 = (0, import_react4.forwardRef)(({ className, ...props }, ref) =>
+      (0, import_react4.createElement)(Icon, {
+        ref,
+        icon: iconData,
+        className,
+        ...props,
+      }),
+    );
+    if (iconData.name) {
+      Component2.displayName = toPascalCase(iconData.name);
+    }
+    return Component2;
+  }
+
+  // node_modules/lucide-react/dist/esm/icons/check.mjs
+  var __iconData = {
+    name: 'check',
+    size: 24,
+    node: [['path', { d: 'M20 6 9 17l-5-5', key: '1gmf2c' }]],
+  };
+  __iconData.node;
+  var Check = createLucideIcon(__iconData);
+
+  // node_modules/lucide-react/dist/esm/icons/chevron-down.mjs
+  var __iconData2 = {
+    name: 'chevron-down',
+    size: 24,
+    node: [['path', { d: 'm6 9 6 6 6-6', key: 'qrunsl' }]],
+  };
+  __iconData2.node;
+  var ChevronDown = createLucideIcon(__iconData2);
+
+  // node_modules/lucide-react/dist/esm/icons/info.mjs
+  var __iconData3 = {
+    name: 'info',
+    size: 24,
+    node: [
+      ['circle', { cx: '12', cy: '12', r: '10', key: '1mglay' }],
+      ['path', { d: 'M12 16v-4', key: '1dtifu' }],
+      ['path', { d: 'M12 8h.01', key: 'e9boi3' }],
+    ],
+  };
+  __iconData3.node;
+  var Info = createLucideIcon(__iconData3);
+
+  // node_modules/lucide-react/dist/esm/icons/plus.mjs
+  var __iconData4 = {
+    name: 'plus',
+    size: 24,
+    node: [
+      ['path', { d: 'M5 12h14', key: '1ays0h' }],
+      ['path', { d: 'M12 5v14', key: 's699le' }],
+    ],
+  };
+  __iconData4.node;
+  var Plus = createLucideIcon(__iconData4);
+
+  // node_modules/lucide-react/dist/esm/icons/search.mjs
+  var __iconData5 = {
+    name: 'search',
+    size: 24,
+    node: [
+      ['path', { d: 'm21 21-4.34-4.34', key: '14j7rj' }],
+      ['circle', { cx: '11', cy: '11', r: '8', key: '4ej97u' }],
+    ],
+  };
+  __iconData5.node;
+  var Search = createLucideIcon(__iconData5);
+
+  // node_modules/lucide-react/dist/esm/icons/trash.mjs
+  var __iconData6 = {
+    name: 'trash',
+    size: 24,
+    node: [
+      ['path', { d: 'M10 11v6', key: 'nco0om' }],
+      ['path', { d: 'M14 11v6', key: 'outv1u' }],
+      ['path', { d: 'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6', key: 'miytrc' }],
+      ['path', { d: 'M3 6h18', key: 'd0wm0j' }],
+      ['path', { d: 'M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2', key: 'e791ji' }],
+    ],
+    aliases: ['trash-2'],
+  };
+  __iconData6.node;
+  var Trash = createLucideIcon(__iconData6);
+
+  // node_modules/lucide-react/dist/esm/icons/triangle-alert.mjs
+  var __iconData7 = {
+    name: 'triangle-alert',
+    size: 24,
+    node: [
+      [
+        'path',
+        {
+          d: 'm21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3',
+          key: 'wmoenq',
+        },
+      ],
+      ['path', { d: 'M12 9v4', key: 'juzpu7' }],
+      ['path', { d: 'M12 17h.01', key: 'p32p05' }],
+    ],
+    aliases: ['alert-triangle'],
+  };
+  __iconData7.node;
+  var TriangleAlert = createLucideIcon(__iconData7);
+
+  // node_modules/lucide-react/dist/esm/icons/x.mjs
+  var __iconData8 = {
+    name: 'x',
+    size: 24,
+    node: [
+      ['path', { d: 'M18 6 6 18', key: '1bl5f8' }],
+      ['path', { d: 'm6 6 12 12', key: 'd8bk6v' }],
+    ],
+  };
+  __iconData8.node;
+  var X = createLucideIcon(__iconData8);
+
   // src/features/resumeTab/Header.tsx
   var import_jsx_runtime4 = __toESM(require_jsx_runtime(), 1);
-  function Header({ title, onClose, patientInfo }) {
+  function Header({ title, subtitle, onClose, patientInfo }) {
     return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
-      className:
-        'flex items-center justify-between px-5 py-3 bg-gradient-to-br from-primary to-primary/80 text-white shrink-0',
+      className: 'flex items-center justify-between px-5 py-4 bg-primary text-white shrink-0',
       children: [
         /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
-          className: 'flex items-center gap-3',
+          className: 'flex items-center gap-3 min-w-0',
           children: [
             /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('div', {
-              className: 'flex items-center justify-center w-9 h-9 rounded-lg bg-white/15',
+              className:
+                'flex items-center justify-center w-11 h-11 rounded-xl bg-white/15 flex-shrink-0',
               children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('svg', {
-                width: '18',
-                height: '18',
+                width: '22',
+                height: '22',
                 viewBox: '0 0 24 24',
                 fill: 'none',
-                stroke: 'white',
+                stroke: 'currentColor',
                 strokeWidth: '2',
                 strokeLinecap: 'round',
                 strokeLinejoin: 'round',
+                'aria-hidden': 'true',
                 children: [
                   /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('path', {
                     d: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z',
@@ -32433,14 +35981,22 @@ var __morbis_feature = (() => {
               }),
             }),
             /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
+              className: 'min-w-0',
               children: [
                 /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('h2', {
-                  className: 'text-[15px] font-bold tracking-tight',
+                  className: 'text-xl font-bold tracking-tight',
                   children: title,
                 }),
+                subtitle
+                  ? /* @__PURE__ */ (0, import_jsx_runtime4.jsx)('p', {
+                      className: 'text-base text-white/80 mt-0.5',
+                      children: subtitle,
+                    })
+                  : null,
                 patientInfo &&
+                  (patientInfo.norm || patientInfo.pasien || patientInfo.nama_dokter) &&
                   /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)('div', {
-                    className: 'text-[11px] text-white/70 mt-0.5',
+                    className: 'text-base text-white/70 mt-1',
                     children: [
                       'RM ',
                       patientInfo.norm || '\u2014',
@@ -32459,9 +36015,9 @@ var __morbis_feature = (() => {
           type: 'button',
           onClick: onClose,
           className:
-            'bg-white/15 hover:bg-white/25 border-none text-white w-[28px] h-[28px] rounded-md text-sm flex items-center justify-center cursor-pointer transition-colors',
-          'aria-label': 'Tutup',
-          children: '\u2715',
+            'bg-white/15 hover:bg-white/25 border-none text-white w-12 h-12 rounded-lg text-xl flex items-center justify-center cursor-pointer transition-colors flex-shrink-0',
+          'aria-label': 'Tutup modal',
+          children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(X, { className: 'size-6' }),
         }),
       ],
     });
@@ -32471,7 +36027,7 @@ var __morbis_feature = (() => {
   var import_jsx_runtime5 = __toESM(require_jsx_runtime(), 1);
   function ClinicalNotesSection({ anamnesa, pemeriksaan, onChange }) {
     return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)('div', {
-      className: 'space-y-3',
+      className: 'space-y-5',
       children: [
         /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)('div', {
           children: [
@@ -32480,7 +36036,14 @@ var __morbis_feature = (() => {
               value: anamnesa,
               onChange: (e) => onChange('anamnesa', e.target.value),
               placeholder: 'Keluhan pasien...',
-              rows: 4,
+              rows: 5,
+              'aria-describedby': 'anamnesa-help',
+            }),
+            /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('p', {
+              id: 'anamnesa-help',
+              className: 'text-base text-muted-foreground mt-1',
+              children:
+                'Tuliskan keluhan utama, riwayat penyakit sekarang, dan riwayat penyakit dahulu',
             }),
           ],
         }),
@@ -32490,8 +36053,14 @@ var __morbis_feature = (() => {
             /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Textarea, {
               value: pemeriksaan,
               onChange: (e) => onChange('pemeriksaan', e.target.value),
-              placeholder: 'Hasil pemeriksaan...',
-              rows: 4,
+              placeholder: 'Hasil pemeriksaan fisik...',
+              rows: 5,
+              'aria-describedby': 'pemeriksaan-help',
+            }),
+            /* @__PURE__ */ (0, import_jsx_runtime5.jsx)('p', {
+              id: 'pemeriksaan-help',
+              className: 'text-base text-muted-foreground mt-1',
+              children: 'Catat hasil pemeriksaan umum dan sistemik',
             }),
           ],
         }),
@@ -32500,16 +36069,16 @@ var __morbis_feature = (() => {
   }
 
   // src/ui/components/input.tsx
-  var import_react2 = __toESM(require_react(), 1);
+  var import_react5 = __toESM(require_react(), 1);
   var import_jsx_runtime6 = __toESM(require_jsx_runtime(), 1);
-  var Input = (0, import_react2.forwardRef)(({ className, type, ...props }, ref) => {
+  var Input = (0, import_react5.forwardRef)(({ className, type, ...props }, ref) => {
     return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)('input', {
       type,
       className: cn(
-        'flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-md-sm text-foreground',
+        'flex h-11 w-full rounded-lg border-2 border-input bg-background px-3.5 py-2.5 text-base text-foreground leading-normal',
         'placeholder:text-muted-foreground',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
-        'disabled:cursor-not-allowed disabled:opacity-50',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 border-primary/50',
+        'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-muted',
         className,
       ),
       ref,
@@ -32522,19 +36091,20 @@ var __morbis_feature = (() => {
   var import_jsx_runtime7 = __toESM(require_jsx_runtime(), 1);
   function VitalSignsSection({ vitals, onChange }) {
     const fields = [
-      { key: 'tensi', label: 'Tensi', unit: 'mmHg', placeholder: '120/80' },
-      { key: 'nadi', label: 'Nadi', unit: 'x/mnt', placeholder: '80' },
-      { key: 'suhu', label: 'Suhu', unit: '\xB0C', placeholder: '36.5' },
-      { key: 'nafas', label: 'Nafas', unit: 'x/mnt', placeholder: '20' },
-      { key: 'berat', label: 'Berat', unit: 'kg', placeholder: '60' },
-      { key: 'tinggi', label: 'Tinggi', unit: 'cm', placeholder: '165' },
+      { key: 'tensi', label: 'Tekanan Darah', unit: 'mmHg', placeholder: '120/80' },
+      { key: 'nadi', label: 'Nadi', unit: 'x/menit', placeholder: '80' },
+      { key: 'suhu', label: 'Suhu Tubuh', unit: '\xB0C', placeholder: '36.5' },
+      { key: 'nafas', label: 'Respirasi', unit: 'x/menit', placeholder: '20' },
+      { key: 'berat', label: 'Berat Badan', unit: 'kg', placeholder: '60' },
+      { key: 'tinggi', label: 'Tinggi Badan', unit: 'cm', placeholder: '165' },
     ];
     return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)('div', {
-      className: 'grid grid-cols-2 sm:grid-cols-3 gap-3',
+      className: 'grid grid-cols-2 sm:grid-cols-3 gap-4',
       children: fields.map((f) =>
         /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(
           'div',
           {
+            className: 'space-y-1.5',
             children: [
               /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Label, { children: f.label }),
               /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)('div', {
@@ -32544,11 +36114,12 @@ var __morbis_feature = (() => {
                     value: vitals[f.key],
                     onChange: (e) => onChange(f.key, e.target.value),
                     placeholder: f.placeholder,
-                    className: 'pr-14',
+                    className: 'pr-20 font-mono text-base',
+                    'aria-label': f.label,
                   }),
                   /* @__PURE__ */ (0, import_jsx_runtime7.jsx)('span', {
                     className:
-                      'absolute right-3 top-1/2 -translate-y-1/2 text-[13px] font-semibold text-muted-foreground pointer-events-none',
+                      'absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground pointer-events-none',
                     children: f.unit,
                   }),
                 ],
@@ -32563,183 +36134,6 @@ var __morbis_feature = (() => {
 
   // src/features/resumeTab/DiagnosaSection.tsx
   var import_react10 = __toESM(require_react(), 1);
-
-  // node_modules/lucide-react/dist/esm/createLucideIcon.mjs
-  var import_react5 = __toESM(require_react(), 1);
-
-  // node_modules/lucide-react/dist/esm/shared/src/utils/mergeClasses.mjs
-  var mergeClasses = (...classes) =>
-    classes
-      .filter((className, index2, array) => {
-        return Boolean(className) && className.trim() !== '' && array.indexOf(className) === index2;
-      })
-      .join(' ')
-      .trim();
-
-  // node_modules/lucide-react/dist/esm/shared/src/utils/toKebabCase.mjs
-  var toKebabCase = (string) => string.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
-
-  // node_modules/lucide-react/dist/esm/shared/src/utils/toCamelCase.mjs
-  var toCamelCase = (string) =>
-    string.replace(/^([A-Z])|[\s-_]+(\w)/g, (match, p1, p2) =>
-      p2 ? p2.toUpperCase() : p1.toLowerCase(),
-    );
-
-  // node_modules/lucide-react/dist/esm/shared/src/utils/toPascalCase.mjs
-  var toPascalCase = (string) => {
-    const camelCase = toCamelCase(string);
-    return camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
-  };
-
-  // node_modules/lucide-react/dist/esm/Icon.mjs
-  var import_react4 = __toESM(require_react(), 1);
-
-  // node_modules/lucide-react/dist/esm/defaultAttributes.mjs
-  var defaultAttributes = {
-    xmlns: 'http://www.w3.org/2000/svg',
-    width: 24,
-    height: 24,
-    viewBox: '0 0 24 24',
-    fill: 'none',
-    stroke: 'currentColor',
-    strokeWidth: 2,
-    strokeLinecap: 'round',
-    strokeLinejoin: 'round',
-  };
-
-  // node_modules/lucide-react/dist/esm/shared/src/utils/hasA11yProp.mjs
-  var hasA11yProp = (props) => {
-    for (const prop in props) {
-      if (prop.startsWith('aria-') || prop === 'role' || prop === 'title') {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  // node_modules/lucide-react/dist/esm/context.mjs
-  var import_react3 = __toESM(require_react(), 1);
-  var LucideContext = (0, import_react3.createContext)({});
-  var useLucideContext = () => (0, import_react3.useContext)(LucideContext);
-
-  // node_modules/lucide-react/dist/esm/Icon.mjs
-  var Icon = (0, import_react4.forwardRef)(
-    (
-      {
-        color,
-        size: size4,
-        strokeWidth,
-        absoluteStrokeWidth,
-        className = '',
-        children,
-        iconNode,
-        ...rest
-      },
-      ref,
-    ) => {
-      const {
-        size: contextSize = 24,
-        strokeWidth: contextStrokeWidth = 2,
-        absoluteStrokeWidth: contextAbsoluteStrokeWidth = false,
-        color: contextColor = 'currentColor',
-        className: contextClass = '',
-      } = useLucideContext() ?? {};
-      const calculatedStrokeWidth =
-        (absoluteStrokeWidth ?? contextAbsoluteStrokeWidth)
-          ? (Number(strokeWidth ?? contextStrokeWidth) * 24) / Number(size4 ?? contextSize)
-          : (strokeWidth ?? contextStrokeWidth);
-      return (0, import_react4.createElement)(
-        'svg',
-        {
-          ref,
-          ...defaultAttributes,
-          width: size4 ?? contextSize ?? defaultAttributes.width,
-          height: size4 ?? contextSize ?? defaultAttributes.height,
-          stroke: color ?? contextColor,
-          strokeWidth: calculatedStrokeWidth,
-          className: mergeClasses('lucide', contextClass, className),
-          ...(!children && !hasA11yProp(rest) && { 'aria-hidden': 'true' }),
-          ...rest,
-        },
-        [
-          ...iconNode.map(([tag, attrs]) => (0, import_react4.createElement)(tag, attrs)),
-          ...(Array.isArray(children) ? children : [children]),
-        ],
-      );
-    },
-  );
-
-  // node_modules/lucide-react/dist/esm/createLucideIcon.mjs
-  var createLucideIcon = (iconName, iconNode) => {
-    const Component2 = (0, import_react5.forwardRef)(({ className, ...props }, ref) =>
-      (0, import_react5.createElement)(Icon, {
-        ref,
-        iconNode,
-        className: mergeClasses(
-          `lucide-${toKebabCase(toPascalCase(iconName))}`,
-          `lucide-${iconName}`,
-          className,
-        ),
-        ...props,
-      }),
-    );
-    Component2.displayName = toPascalCase(iconName);
-    return Component2;
-  };
-
-  // node_modules/lucide-react/dist/esm/icons/check.mjs
-  var __iconNode = [['path', { d: 'M20 6 9 17l-5-5', key: '1gmf2c' }]];
-  var Check = createLucideIcon('check', __iconNode);
-
-  // node_modules/lucide-react/dist/esm/icons/chevron-down.mjs
-  var __iconNode2 = [['path', { d: 'm6 9 6 6 6-6', key: 'qrunsl' }]];
-  var ChevronDown = createLucideIcon('chevron-down', __iconNode2);
-
-  // node_modules/lucide-react/dist/esm/icons/info.mjs
-  var __iconNode3 = [
-    ['circle', { cx: '12', cy: '12', r: '10', key: '1mglay' }],
-    ['path', { d: 'M12 16v-4', key: '1dtifu' }],
-    ['path', { d: 'M12 8h.01', key: 'e9boi3' }],
-  ];
-  var Info = createLucideIcon('info', __iconNode3);
-
-  // node_modules/lucide-react/dist/esm/icons/plus.mjs
-  var __iconNode4 = [
-    ['path', { d: 'M5 12h14', key: '1ays0h' }],
-    ['path', { d: 'M12 5v14', key: 's699le' }],
-  ];
-  var Plus = createLucideIcon('plus', __iconNode4);
-
-  // node_modules/lucide-react/dist/esm/icons/trash-2.mjs
-  var __iconNode5 = [
-    ['path', { d: 'M10 11v6', key: 'nco0om' }],
-    ['path', { d: 'M14 11v6', key: 'outv1u' }],
-    ['path', { d: 'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6', key: 'miytrc' }],
-    ['path', { d: 'M3 6h18', key: 'd0wm0j' }],
-    ['path', { d: 'M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2', key: 'e791ji' }],
-  ];
-  var Trash2 = createLucideIcon('trash-2', __iconNode5);
-
-  // node_modules/lucide-react/dist/esm/icons/triangle-alert.mjs
-  var __iconNode6 = [
-    [
-      'path',
-      {
-        d: 'm21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3',
-        key: 'wmoenq',
-      },
-    ],
-    ['path', { d: 'M12 9v4', key: 'juzpu7' }],
-    ['path', { d: 'M12 17h.01', key: 'p32p05' }],
-  ];
-  var TriangleAlert = createLucideIcon('triangle-alert', __iconNode6);
-
-  // node_modules/lucide-react/dist/esm/icons/x.mjs
-  var __iconNode7 = [
-    ['path', { d: 'M18 6 6 18', key: '1bl5f8' }],
-    ['path', { d: 'm6 6 12 12', key: 'd8bk6v' }],
-  ];
-  var X = createLucideIcon('x', __iconNode7);
 
   // src/ui/components/button.tsx
   var import_react6 = __toESM(require_react(), 1);
@@ -32812,25 +36206,27 @@ var __morbis_feature = (() => {
   // src/ui/components/button.tsx
   var import_jsx_runtime8 = __toESM(require_jsx_runtime(), 1);
   var buttonVariants = cva(
-    'inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md text-md-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+    'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-base font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-5 [&_svg]:shrink-0',
     {
       variants: {
         variant: {
-          default: 'bg-primary text-primary-foreground shadow hover:bg-primary/90',
+          default:
+            'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 active:bg-primary',
           destructive:
-            'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
+            'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 active:bg-destructive',
           outline:
-            'border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground',
-          secondary: 'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80',
-          ghost: 'hover:bg-accent hover:text-accent-foreground',
+            'border-2 border-border bg-background shadow-sm hover:bg-accent hover:text-accent-foreground active:bg-accent',
+          secondary:
+            'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 active:bg-secondary',
+          ghost: 'hover:bg-accent hover:text-accent-foreground active:bg-accent',
           link: 'text-primary underline-offset-4 hover:underline',
         },
         size: {
-          default: 'h-8 px-3.5',
-          sm: 'h-7 px-2.5',
-          lg: 'h-9 px-4',
-          xl: 'h-11 px-6 text-base',
-          icon: 'h-8 w-8',
+          default: 'h-11 px-5 min-w-[90px]',
+          sm: 'h-9 px-3.5 min-w-[80px]',
+          lg: 'h-12 px-6 text-base min-w-[100px]',
+          xl: 'h-13 px-7 text-lg min-w-[110px]',
+          icon: 'h-11 w-11',
         },
       },
       defaultVariants: {
@@ -32854,8 +36250,8 @@ var __morbis_feature = (() => {
   var import_react9 = __toESM(require_react(), 1);
 
   // node_modules/@radix-ui/react-select/dist/index.mjs
-  var React31 = __toESM(require_react(), 1);
-  var ReactDOM3 = __toESM(require_react_dom(), 1);
+  var React32 = __toESM(require_react(), 1);
+  var ReactDOM4 = __toESM(require_react_dom(), 1);
 
   // node_modules/@radix-ui/number/dist/index.mjs
   var __defProp2 = Object.defineProperty;
@@ -36868,19 +40264,43 @@ var __morbis_feature = (() => {
   var Anchor = PopperAnchor;
   var Content = PopperContent;
 
-  // node_modules/@radix-ui/react-presence/dist/index.mjs
-  var React23 = __toESM(require_react(), 1);
+  // node_modules/@radix-ui/react-portal/dist/index.mjs
   var React16 = __toESM(require_react(), 1);
+  var ReactDOM3 = __toESM(require_react_dom(), 1);
+  var import_jsx_runtime17 = __toESM(require_jsx_runtime(), 1);
   var __defProp17 = Object.defineProperty;
   var __name16 = (target, value) => __defProp17(target, 'name', { value, configurable: true });
+  var Portal = /* @__PURE__ */ React16.forwardRef(
+    /* @__PURE__ */ __name16(function Portal2(props, forwardedRef) {
+      const { container: containerProp, ...portalProps } = props;
+      const [mounted, setMounted] = React16.useState(false);
+      useLayoutEffect2(() => setMounted(true), []);
+      const container = containerProp || (mounted && globalThis?.document?.body);
+      return container
+        ? ReactDOM3.createPortal(
+            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Primitive.div, {
+              ...portalProps,
+              ref: forwardedRef,
+            }),
+            container,
+          )
+        : null;
+    }, 'Portal'),
+  );
+
+  // node_modules/@radix-ui/react-presence/dist/index.mjs
+  var React23 = __toESM(require_react(), 1);
+  var React17 = __toESM(require_react(), 1);
+  var __defProp18 = Object.defineProperty;
+  var __name17 = (target, value) => __defProp18(target, 'name', { value, configurable: true });
   function useStateMachine(initialState, machine) {
-    return React16.useReducer((state, event) => {
+    return React17.useReducer((state, event) => {
       const nextState = machine[state][event];
       return nextState ?? state;
     }, initialState);
   }
-  __name16(useStateMachine, 'useStateMachine');
-  var Presence = /* @__PURE__ */ __name16((props) => {
+  __name17(useStateMachine, 'useStateMachine');
+  var Presence = /* @__PURE__ */ __name17((props) => {
     const { present, children } = props;
     const presence = usePresence(present);
     const child =
@@ -36947,7 +40367,7 @@ var __morbis_feature = (() => {
       if (node) {
         let timeoutId;
         const ownerWindow = node.ownerDocument.defaultView ?? window;
-        const handleAnimationEnd = /* @__PURE__ */ __name16((event) => {
+        const handleAnimationEnd = /* @__PURE__ */ __name17((event) => {
           const currentAnimationName = getAnimationName(stylesRef.current);
           const isCurrentAnimation = currentAnimationName.includes(CSS.escape(event.animationName));
           if (event.target === node && isCurrentAnimation) {
@@ -36963,7 +40383,7 @@ var __morbis_feature = (() => {
             }
           }
         }, 'handleAnimationEnd');
-        const handleAnimationStart = /* @__PURE__ */ __name16((event) => {
+        const handleAnimationStart = /* @__PURE__ */ __name17((event) => {
           if (event.target === node) {
             prevAnimationNameRef.current = getAnimationName(stylesRef.current);
           }
@@ -36995,7 +40415,7 @@ var __morbis_feature = (() => {
       }, []),
     };
   }
-  __name16(usePresence, 'usePresence');
+  __name17(usePresence, 'usePresence');
   function setRef2(ref, value) {
     if (typeof ref === 'function') {
       return ref(value);
@@ -37003,7 +40423,7 @@ var __morbis_feature = (() => {
       ref.current = value;
     }
   }
-  __name16(setRef2, 'setRef');
+  __name17(setRef2, 'setRef');
   function useStableComposedRefs(...refs) {
     const refsRef = React23.useRef(refs);
     refsRef.current = refs;
@@ -37031,11 +40451,11 @@ var __morbis_feature = (() => {
       }
     }, []);
   }
-  __name16(useStableComposedRefs, 'useStableComposedRefs');
+  __name17(useStableComposedRefs, 'useStableComposedRefs');
   function getAnimationName(styles) {
     return styles?.animationName || 'none';
   }
-  __name16(getAnimationName, 'getAnimationName');
+  __name17(getAnimationName, 'getAnimationName');
   function getElementRef2(element) {
     let getter = Object.getOwnPropertyDescriptor(element.props, 'ref')?.get;
     let mayWarn = getter && 'isReactWarning' in getter && getter.isReactWarning;
@@ -37049,10 +40469,10 @@ var __morbis_feature = (() => {
     }
     return element.props.ref || element.ref;
   }
-  __name16(getElementRef2, 'getElementRef');
+  __name17(getElementRef2, 'getElementRef');
 
   // node_modules/@radix-ui/react-use-controllable-state/dist/index.mjs
-  var React18 = __toESM(require_react(), 1);
+  var React19 = __toESM(require_react(), 1);
 
   // node_modules/@radix-ui/primitive/dist/internal/is-development.false.mjs
   var IS_DEVELOPMENT = false;
@@ -37061,16 +40481,16 @@ var __morbis_feature = (() => {
   var React24 = __toESM(require_react(), 1);
 
   // node_modules/@radix-ui/react-use-effect-event/dist/index.mjs
-  var React17 = __toESM(require_react(), 1);
-  var __defProp18 = Object.defineProperty;
-  var __name17 = (target, value) => __defProp18(target, 'name', { value, configurable: true });
-  var useReactEffectEvent = React17[' useEffectEvent '.trim().toString()];
-  var useReactInsertionEffect = React17[' useInsertionEffect '.trim().toString()];
+  var React18 = __toESM(require_react(), 1);
+  var __defProp19 = Object.defineProperty;
+  var __name18 = (target, value) => __defProp19(target, 'name', { value, configurable: true });
+  var useReactEffectEvent = React18[' useEffectEvent '.trim().toString()];
+  var useReactInsertionEffect = React18[' useInsertionEffect '.trim().toString()];
   function useEffectEvent(callback) {
     if (typeof useReactEffectEvent === 'function') {
       return useReactEffectEvent(callback);
     }
-    const ref = React17.useRef(() => {
+    const ref = React18.useRef(() => {
       throw new Error('Cannot call an event handler while rendering.');
     });
     if (typeof useReactInsertionEffect === 'function') {
@@ -37082,23 +40502,23 @@ var __morbis_feature = (() => {
         ref.current = callback;
       });
     }
-    return React17.useMemo(
+    return React18.useMemo(
       () =>
         (...args) =>
           ref.current?.(...args),
       [],
     );
   }
-  __name17(useEffectEvent, 'useEffectEvent');
+  __name18(useEffectEvent, 'useEffectEvent');
 
   // node_modules/@radix-ui/react-use-controllable-state/dist/index.mjs
-  var __defProp19 = Object.defineProperty;
-  var __name18 = (target, value) => __defProp19(target, 'name', { value, configurable: true });
-  var useInsertionEffect = React18[' useInsertionEffect '.trim().toString()] || useLayoutEffect2;
+  var __defProp20 = Object.defineProperty;
+  var __name19 = (target, value) => __defProp20(target, 'name', { value, configurable: true });
+  var useInsertionEffect = React19[' useInsertionEffect '.trim().toString()] || useLayoutEffect2;
   function useControllableState({
     prop,
     defaultProp,
-    onChange = /* @__PURE__ */ __name18(() => {}, 'onChange'),
+    onChange = /* @__PURE__ */ __name19(() => {}, 'onChange'),
     caller,
   }) {
     const [uncontrolledProp, setUncontrolledProp, onChangeRef] = useUncontrolledState({
@@ -37108,8 +40528,8 @@ var __morbis_feature = (() => {
     const isControlled = prop !== void 0;
     const value = isControlled ? prop : uncontrolledProp;
     if (IS_DEVELOPMENT) {
-      const isControlledRef = React18.useRef(prop !== void 0);
-      React18.useEffect(() => {
+      const isControlledRef = React19.useRef(prop !== void 0);
+      React19.useEffect(() => {
         const wasControlled = isControlledRef.current;
         if (wasControlled !== isControlled) {
           const from = wasControlled ? 'controlled' : 'uncontrolled';
@@ -37121,7 +40541,7 @@ var __morbis_feature = (() => {
         isControlledRef.current = isControlled;
       }, [isControlled, caller]);
     }
-    const setValue = React18.useCallback(
+    const setValue = React19.useCallback(
       (nextValue) => {
         if (isControlled) {
           const value2 = isFunction(nextValue) ? nextValue(prop) : nextValue;
@@ -37136,15 +40556,15 @@ var __morbis_feature = (() => {
     );
     return [value, setValue];
   }
-  __name18(useControllableState, 'useControllableState');
+  __name19(useControllableState, 'useControllableState');
   function useUncontrolledState({ defaultProp, onChange }) {
-    const [value, setValue] = React18.useState(defaultProp);
-    const prevValueRef = React18.useRef(value);
-    const onChangeRef = React18.useRef(onChange);
+    const [value, setValue] = React19.useState(defaultProp);
+    const prevValueRef = React19.useRef(value);
+    const onChangeRef = React19.useRef(onChange);
     useInsertionEffect(() => {
       onChangeRef.current = onChange;
     }, [onChange]);
-    React18.useEffect(() => {
+    React19.useEffect(() => {
       if (prevValueRef.current !== value) {
         onChangeRef.current?.(value);
         prevValueRef.current = value;
@@ -37152,11 +40572,11 @@ var __morbis_feature = (() => {
     }, [value, prevValueRef]);
     return [value, setValue, onChangeRef];
   }
-  __name18(useUncontrolledState, 'useUncontrolledState');
+  __name19(useUncontrolledState, 'useUncontrolledState');
   function isFunction(value) {
     return typeof value === 'function';
   }
-  __name18(isFunction, 'isFunction');
+  __name19(isFunction, 'isFunction');
   var SYNC_STATE = /* @__PURE__ */ Symbol('RADIX:SYNC_STATE');
   function useControllableStateReducer(reducer, userArgs, initialArg, init) {
     const { prop: controlledState, defaultProp, onChange: onChangeProp, caller } = userArgs;
@@ -37217,15 +40637,15 @@ var __morbis_feature = (() => {
     }, [controlledState, internalState.state, isControlled]);
     return [state, dispatch];
   }
-  __name18(useControllableStateReducer, 'useControllableStateReducer');
+  __name19(useControllableStateReducer, 'useControllableStateReducer');
 
   // node_modules/@radix-ui/react-use-previous/dist/index.mjs
-  var React19 = __toESM(require_react(), 1);
-  var __defProp20 = Object.defineProperty;
-  var __name19 = (target, value) => __defProp20(target, 'name', { value, configurable: true });
+  var React20 = __toESM(require_react(), 1);
+  var __defProp21 = Object.defineProperty;
+  var __name20 = (target, value) => __defProp21(target, 'name', { value, configurable: true });
   function usePrevious(value) {
-    const ref = React19.useRef({ value, previous: value });
-    return React19.useMemo(() => {
+    const ref = React20.useRef({ value, previous: value });
+    return React20.useMemo(() => {
       if (ref.current.value !== value) {
         ref.current.previous = ref.current.value;
         ref.current.value = value;
@@ -37233,11 +40653,11 @@ var __morbis_feature = (() => {
       return ref.current.previous;
     }, [value]);
   }
-  __name19(usePrevious, 'usePrevious');
+  __name20(usePrevious, 'usePrevious');
 
   // node_modules/@radix-ui/react-visually-hidden/dist/index.mjs
-  var React20 = __toESM(require_react(), 1);
-  var import_jsx_runtime17 = __toESM(require_jsx_runtime(), 1);
+  var React21 = __toESM(require_react(), 1);
+  var import_jsx_runtime18 = __toESM(require_jsx_runtime(), 1);
   var VISUALLY_HIDDEN_STYLES = Object.freeze({
     // See: https://github.com/twbs/bootstrap/blob/main/scss/mixins/_visually-hidden.scss
     position: 'absolute',
@@ -37417,10 +40837,10 @@ var __morbis_feature = (() => {
   }
 
   // node_modules/react-remove-scroll/dist/es2015/Combination.js
-  var React30 = __toESM(require_react());
+  var React31 = __toESM(require_react());
 
   // node_modules/react-remove-scroll/dist/es2015/UI.js
-  var React26 = __toESM(require_react());
+  var React27 = __toESM(require_react());
 
   // node_modules/react-remove-scroll-bar/dist/es2015/constants.js
   var zeroRightClassName = 'right-scroll-bar-position';
@@ -37467,9 +40887,9 @@ var __morbis_feature = (() => {
   }
 
   // node_modules/use-callback-ref/dist/es2015/useMergeRef.js
-  var React21 = __toESM(require_react());
+  var React25 = __toESM(require_react());
   var useIsomorphicLayoutEffect =
-    typeof window !== 'undefined' ? React21.useLayoutEffect : React21.useEffect;
+    typeof window !== 'undefined' ? React25.useLayoutEffect : React25.useEffect;
   var currentValues = /* @__PURE__ */ new WeakMap();
   function useMergeRefs(refs, defaultValue) {
     var callbackRef = useCallbackRef2(defaultValue || null, function (newValue) {
@@ -37591,7 +41011,7 @@ var __morbis_feature = (() => {
   }
 
   // node_modules/use-sidecar/dist/es2015/exports.js
-  var React25 = __toESM(require_react());
+  var React26 = __toESM(require_react());
   var SideCar = function (_a2) {
     var sideCar = _a2.sideCar,
       rest = __rest(_a2, ['sideCar']);
@@ -37602,7 +41022,7 @@ var __morbis_feature = (() => {
     if (!Target) {
       throw new Error('Sidecar medium not found');
     }
-    return React25.createElement(Target, __assign({}, rest));
+    return React26.createElement(Target, __assign({}, rest));
   };
   SideCar.isSideCarExport = true;
   function exportSidecar(medium, exported) {
@@ -37617,9 +41037,9 @@ var __morbis_feature = (() => {
   var nothing = function () {
     return;
   };
-  var RemoveScroll = React26.forwardRef(function (props, parentRef) {
-    var ref = React26.useRef(null);
-    var _a2 = React26.useState({
+  var RemoveScroll = React27.forwardRef(function (props, parentRef) {
+    var ref = React27.useRef(null);
+    var _a2 = React27.useState({
         onScrollCapture: nothing,
         onWheelCapture: nothing,
         onTouchMoveCapture: nothing,
@@ -37658,11 +41078,11 @@ var __morbis_feature = (() => {
     var SideCar2 = sideCar;
     var containerRef = useMergeRefs([ref, parentRef]);
     var containerProps = __assign(__assign({}, rest), callbacks);
-    return React26.createElement(
-      React26.Fragment,
+    return React27.createElement(
+      React27.Fragment,
       null,
       enabled &&
-        React26.createElement(SideCar2, {
+        React27.createElement(SideCar2, {
           sideCar: effectCar,
           removeScrollBar,
           shards,
@@ -37675,11 +41095,11 @@ var __morbis_feature = (() => {
           gapMode,
         }),
       forwardProps
-        ? React26.cloneElement(
-            React26.Children.only(children),
+        ? React27.cloneElement(
+            React27.Children.only(children),
             __assign(__assign({}, containerProps), { ref: containerRef }),
           )
-        : React26.createElement(
+        : React27.createElement(
             Container,
             __assign({}, containerProps, { className, ref: containerRef }),
             children,
@@ -37697,13 +41117,13 @@ var __morbis_feature = (() => {
   };
 
   // node_modules/react-remove-scroll/dist/es2015/SideEffect.js
-  var React29 = __toESM(require_react());
+  var React30 = __toESM(require_react());
 
   // node_modules/react-remove-scroll-bar/dist/es2015/component.js
-  var React28 = __toESM(require_react());
+  var React29 = __toESM(require_react());
 
   // node_modules/react-style-singleton/dist/es2015/hook.js
-  var React27 = __toESM(require_react());
+  var React28 = __toESM(require_react());
 
   // node_modules/get-nonce/dist/es2015/index.js
   var currentNonce;
@@ -37766,7 +41186,7 @@ var __morbis_feature = (() => {
   var styleHookSingleton = function () {
     var sheet = stylesheetSingleton();
     return function (styles, isDynamic) {
-      React27.useEffect(
+      React28.useEffect(
         function () {
           sheet.add(styles);
           return function () {
@@ -37880,7 +41300,7 @@ var __morbis_feature = (() => {
     return isFinite(counter) ? counter : 0;
   };
   var useLockAttribute = function () {
-    React28.useEffect(function () {
+    React29.useEffect(function () {
       document.body.setAttribute(lockAttribute, (getCurrentUseCounter() + 1).toString());
       return function () {
         var newCounter = getCurrentUseCounter() - 1;
@@ -37898,13 +41318,13 @@ var __morbis_feature = (() => {
       _b = _a2.gapMode,
       gapMode = _b === void 0 ? 'margin' : _b;
     useLockAttribute();
-    var gap = React28.useMemo(
+    var gap = React29.useMemo(
       function () {
         return getGapWidth(gapMode);
       },
       [gapMode],
     );
-    return React28.createElement(Style, {
+    return React29.createElement(Style, {
       styles: getStyles(gap, !noRelative, gapMode, !noImportant ? '!important' : ''),
     });
   };
@@ -38065,19 +41485,19 @@ var __morbis_feature = (() => {
   var idCounter = 0;
   var lockStack = [];
   function RemoveScrollSideCar(props) {
-    var shouldPreventQueue = React29.useRef([]);
-    var touchStartRef = React29.useRef([0, 0]);
-    var activeAxis = React29.useRef();
-    var id = React29.useState(idCounter++)[0];
-    var Style2 = React29.useState(styleSingleton)[0];
-    var lastProps = React29.useRef(props);
-    React29.useEffect(
+    var shouldPreventQueue = React30.useRef([]);
+    var touchStartRef = React30.useRef([0, 0]);
+    var activeAxis = React30.useRef();
+    var id = React30.useState(idCounter++)[0];
+    var Style2 = React30.useState(styleSingleton)[0];
+    var lastProps = React30.useRef(props);
+    React30.useEffect(
       function () {
         lastProps.current = props;
       },
       [props],
     );
-    React29.useEffect(
+    React30.useEffect(
       function () {
         if (props.inert) {
           document.body.classList.add('block-interactivity-'.concat(id));
@@ -38100,7 +41520,7 @@ var __morbis_feature = (() => {
       },
       [props.inert, props.lockRef.current, props.shards],
     );
-    var shouldCancelEvent = React29.useCallback(function (event, parent) {
+    var shouldCancelEvent = React30.useCallback(function (event, parent) {
       if (
         ('touches' in event && event.touches.length === 2) ||
         (event.type === 'wheel' && event.ctrlKey)
@@ -38153,7 +41573,7 @@ var __morbis_feature = (() => {
         true,
       );
     }, []);
-    var shouldPrevent = React29.useCallback(function (_event) {
+    var shouldPrevent = React30.useCallback(function (_event) {
       var event = _event;
       if (!lockStack.length || lockStack[lockStack.length - 1] !== Style2) {
         return;
@@ -38190,7 +41610,7 @@ var __morbis_feature = (() => {
         }
       }
     }, []);
-    var shouldCancel = React29.useCallback(function (name, delta, target, should) {
+    var shouldCancel = React30.useCallback(function (name, delta, target, should) {
       var event = { name, delta, target, should, shadowParent: getOutermostShadowParent(target) };
       shouldPreventQueue.current.push(event);
       setTimeout(function () {
@@ -38199,11 +41619,11 @@ var __morbis_feature = (() => {
         });
       }, 1);
     }, []);
-    var scrollTouchStart = React29.useCallback(function (event) {
+    var scrollTouchStart = React30.useCallback(function (event) {
       touchStartRef.current = getTouchXY(event);
       activeAxis.current = void 0;
     }, []);
-    var scrollWheel = React29.useCallback(function (event) {
+    var scrollWheel = React30.useCallback(function (event) {
       shouldCancel(
         event.type,
         getDeltaXY(event),
@@ -38211,7 +41631,7 @@ var __morbis_feature = (() => {
         shouldCancelEvent(event, props.lockRef.current),
       );
     }, []);
-    var scrollTouchMove = React29.useCallback(function (event) {
+    var scrollTouchMove = React30.useCallback(function (event) {
       shouldCancel(
         event.type,
         getTouchXY(event),
@@ -38219,7 +41639,7 @@ var __morbis_feature = (() => {
         shouldCancelEvent(event, props.lockRef.current),
       );
     }, []);
-    React29.useEffect(function () {
+    React30.useEffect(function () {
       lockStack.push(Style2);
       props.setCallbacks({
         onScrollCapture: scrollWheel,
@@ -38240,12 +41660,12 @@ var __morbis_feature = (() => {
     }, []);
     var removeScrollBar = props.removeScrollBar,
       inert = props.inert;
-    return React29.createElement(
-      React29.Fragment,
+    return React30.createElement(
+      React30.Fragment,
       null,
-      inert ? React29.createElement(Style2, { styles: generateStyle(id) }) : null,
+      inert ? React30.createElement(Style2, { styles: generateStyle(id) }) : null,
       removeScrollBar
-        ? React29.createElement(RemoveScrollBar, {
+        ? React30.createElement(RemoveScrollBar, {
             noRelative: props.noRelative,
             gapMode: props.gapMode,
           })
@@ -38268,8 +41688,8 @@ var __morbis_feature = (() => {
   var sidecar_default = exportSidecar(effectCar, RemoveScrollSideCar);
 
   // node_modules/react-remove-scroll/dist/es2015/Combination.js
-  var ReactRemoveScroll = React30.forwardRef(function (props, ref) {
-    return React30.createElement(
+  var ReactRemoveScroll = React31.forwardRef(function (props, ref) {
+    return React31.createElement(
       RemoveScroll,
       __assign({}, props, { ref, sideCar: sidecar_default }),
     );
@@ -38278,9 +41698,9 @@ var __morbis_feature = (() => {
   var Combination_default = ReactRemoveScroll;
 
   // node_modules/@radix-ui/react-select/dist/index.mjs
-  var import_jsx_runtime18 = __toESM(require_jsx_runtime(), 1);
-  var __defProp21 = Object.defineProperty;
-  var __name20 = (target, value) => __defProp21(target, 'name', { value, configurable: true });
+  var import_jsx_runtime19 = __toESM(require_jsx_runtime(), 1);
+  var __defProp22 = Object.defineProperty;
+  var __name21 = (target, value) => __defProp22(target, 'name', { value, configurable: true });
   var OPEN_KEYS = [' ', 'Enter', 'ArrowUp', 'ArrowDown'];
   var SELECTION_KEYS = [' ', 'Enter'];
   var SELECT_NAME = 'Select';
@@ -38313,9 +41733,9 @@ var __morbis_feature = (() => {
       internal_do_not_use_render,
     } = props;
     const popperScope = usePopperScope(__scopeSelect);
-    const [trigger, setTrigger] = React31.useState(null);
-    const [valueNode, setValueNode] = React31.useState(null);
-    const [valueNodeHasChildren, setValueNodeHasChildren] = React31.useState(false);
+    const [trigger, setTrigger] = React32.useState(null);
+    const [valueNode, setValueNode] = React32.useState(null);
+    const [valueNodeHasChildren, setValueNodeHasChildren] = React32.useState(false);
     const direction = useDirection(dir);
     const [open, setOpen] = useControllableState({
       prop: openProp,
@@ -38329,26 +41749,26 @@ var __morbis_feature = (() => {
       onChange: onValueChange,
       caller: SELECT_NAME,
     });
-    const triggerPointerDownPosRef = React31.useRef(null);
-    const initialValueRef = React31.useRef(value);
-    React31.useEffect(() => {
+    const triggerPointerDownPosRef = React32.useRef(null);
+    const initialValueRef = React32.useRef(value);
+    React32.useEffect(() => {
       const associatedForm = form ? trigger?.ownerDocument.getElementById(form) : trigger?.form;
       if (associatedForm instanceof HTMLFormElement) {
-        const reset = /* @__PURE__ */ __name20(() => setValue(initialValueRef.current), 'reset');
+        const reset = /* @__PURE__ */ __name21(() => setValue(initialValueRef.current), 'reset');
         associatedForm.addEventListener('reset', reset);
         return () => associatedForm.removeEventListener('reset', reset);
       }
     }, [form, trigger, setValue]);
     const isFormControl = trigger ? !!form || !!trigger.closest('form') : true;
-    const [nativeOptionsSet, setNativeOptionsSet] = React31.useState(/* @__PURE__ */ new Set());
+    const [nativeOptionsSet, setNativeOptionsSet] = React32.useState(/* @__PURE__ */ new Set());
     const contentId = useId();
     const nativeSelectKey = Array.from(nativeOptionsSet)
       .map((option) => option.props.value)
       .join(';');
-    const handleNativeOptionAdd = React31.useCallback((option) => {
+    const handleNativeOptionAdd = React32.useCallback((option) => {
       setNativeOptionsSet((prev) => new Set(prev).add(option));
     }, []);
-    const handleNativeOptionRemove = React31.useCallback((option) => {
+    const handleNativeOptionRemove = React32.useCallback((option) => {
       setNativeOptionsSet((prev) => {
         const optionsSet = new Set(prev);
         optionsSet.delete(option);
@@ -38378,14 +41798,14 @@ var __morbis_feature = (() => {
       nativeSelectKey,
       isFormControl,
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Root2, {
+    return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Root2, {
       ...popperScope,
-      children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectProviderImpl, {
+      children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectProviderImpl, {
         scope: __scopeSelect,
         ...context,
-        children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Collection.Provider, {
+        children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Collection.Provider, {
           scope: __scopeSelect,
-          children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectNativeOptionsProvider, {
+          children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectNativeOptionsProvider, {
             scope: __scopeSelect,
             onNativeOptionAdd: handleNativeOptionAdd,
             onNativeOptionRemove: handleNativeOptionRemove,
@@ -38397,18 +41817,18 @@ var __morbis_feature = (() => {
       }),
     });
   }
-  __name20(SelectProvider, 'SelectProvider');
-  var Select = /* @__PURE__ */ __name20((props) => {
+  __name21(SelectProvider, 'SelectProvider');
+  var Select = /* @__PURE__ */ __name21((props) => {
     const { __scopeSelect, children, ...providerProps } = props;
-    return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectProvider, {
+    return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectProvider, {
       __scopeSelect,
       ...providerProps,
       internal_do_not_use_render: ({ isFormControl }) =>
-        /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(import_jsx_runtime18.Fragment, {
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, {
           children: [
             children,
             isFormControl
-              ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectBubbleInput, {
+              ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectBubbleInput, {
                   __scopeSelect,
                 })
               : null,
@@ -38417,15 +41837,15 @@ var __morbis_feature = (() => {
     });
   }, 'Select');
   var TRIGGER_NAME = 'SelectTrigger';
-  var SelectTrigger = /* @__PURE__ */ React31.forwardRef(
-    /* @__PURE__ */ __name20(function SelectTrigger2(props, forwardedRef) {
+  var SelectTrigger = /* @__PURE__ */ React32.forwardRef(
+    /* @__PURE__ */ __name21(function SelectTrigger2(props, forwardedRef) {
       const { __scopeSelect, disabled = false, ...triggerProps } = props;
       const popperScope = usePopperScope(__scopeSelect);
       const context = useSelectContext(TRIGGER_NAME, __scopeSelect);
       const isDisabled = context.disabled || disabled;
       const composedRefs = useComposedRefs(forwardedRef, context.onTriggerChange);
       const getItems = useCollection(__scopeSelect);
-      const pointerTypeRef = React31.useRef('touch');
+      const pointerTypeRef = React32.useRef('touch');
       const [searchRef, handleTypeaheadSearch, resetTypeahead] = useTypeaheadSearch((search) => {
         const enabledItems = getItems().filter((item) => !item.disabled);
         const currentItem = enabledItems.find((item) => item.value === context.value);
@@ -38434,7 +41854,7 @@ var __morbis_feature = (() => {
           context.onValueChange(nextItem.value);
         }
       });
-      const handleOpen = /* @__PURE__ */ __name20((pointerEvent) => {
+      const handleOpen = /* @__PURE__ */ __name21((pointerEvent) => {
         if (!isDisabled) {
           context.onOpenChange(true);
           resetTypeahead();
@@ -38446,10 +41866,10 @@ var __morbis_feature = (() => {
           };
         }
       }, 'handleOpen');
-      return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Anchor, {
+      return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Anchor, {
         asChild: true,
         ...popperScope,
-        children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.button, {
+        children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Primitive.button, {
           type: 'button',
           role: 'combobox',
           'aria-controls': context.open ? context.contentId : void 0,
@@ -38495,8 +41915,8 @@ var __morbis_feature = (() => {
     }, 'SelectTrigger'),
   );
   var VALUE_NAME = 'SelectValue';
-  var SelectValue = /* @__PURE__ */ React31.forwardRef(
-    /* @__PURE__ */ __name20(function SelectValue2(props, forwardedRef) {
+  var SelectValue = /* @__PURE__ */ React32.forwardRef(
+    /* @__PURE__ */ __name21(function SelectValue2(props, forwardedRef) {
       const { __scopeSelect, className, style, children, placeholder = '', ...valueProps } = props;
       const context = useSelectContext(VALUE_NAME, __scopeSelect);
       const { onValueNodeHasChildrenChange } = context;
@@ -38506,23 +41926,23 @@ var __morbis_feature = (() => {
         onValueNodeHasChildrenChange(hasChildren);
       }, [onValueNodeHasChildrenChange, hasChildren]);
       const showPlaceholder = shouldShowPlaceholder(context.value);
-      return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.span, {
+      return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Primitive.span, {
         ...valueProps,
         asChild: showPlaceholder ? false : valueProps.asChild,
         ref: composedRefs,
         style: { pointerEvents: 'none' },
-        children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
-          React31.Fragment,
+        children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+          React32.Fragment,
           { children: showPlaceholder ? placeholder : children },
           showPlaceholder ? 'placeholder' : 'value',
         ),
       });
     }, 'SelectValue'),
   );
-  var SelectIcon = /* @__PURE__ */ React31.forwardRef(
-    /* @__PURE__ */ __name20(function SelectIcon2(props, forwardedRef) {
+  var SelectIcon = /* @__PURE__ */ React32.forwardRef(
+    /* @__PURE__ */ __name21(function SelectIcon2(props, forwardedRef) {
       const { __scopeSelect, children, ...iconProps } = props;
-      return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.span, {
+      return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Primitive.span, {
         'aria-hidden': true,
         ...iconProps,
         ref: forwardedRef,
@@ -38534,41 +41954,52 @@ var __morbis_feature = (() => {
   var [PortalProvider, usePortalContext] = createSelectContext(PORTAL_NAME, {
     forceMount: void 0,
   });
+  var SelectPortal = /* @__PURE__ */ __name21((props) => {
+    const { __scopeSelect, forceMount, ...portalProps } = props;
+    return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(PortalProvider, {
+      scope: props.__scopeSelect,
+      forceMount,
+      children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Portal, {
+        asChild: true,
+        ...portalProps,
+      }),
+    });
+  }, 'SelectPortal');
   var CONTENT_NAME2 = 'SelectContent';
-  var SelectContent = /* @__PURE__ */ React31.forwardRef(
-    /* @__PURE__ */ __name20(function SelectContent2(props, forwardedRef) {
+  var SelectContent = /* @__PURE__ */ React32.forwardRef(
+    /* @__PURE__ */ __name21(function SelectContent2(props, forwardedRef) {
       const portalContext = usePortalContext(CONTENT_NAME2, props.__scopeSelect);
       const { forceMount = portalContext.forceMount, ...contentProps } = props;
       const context = useSelectContext(CONTENT_NAME2, props.__scopeSelect);
-      const [fragment, setFragment] = React31.useState();
+      const [fragment, setFragment] = React32.useState();
       useLayoutEffect2(() => {
         setFragment(new DocumentFragment());
       }, []);
-      return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Presence, {
+      return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Presence, {
         present: forceMount || context.open,
         children: ({ present }) =>
           present
-            ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectContentImpl, {
+            ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectContentImpl, {
                 ...contentProps,
                 ref: forwardedRef,
               })
-            : /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectContentFragment, {
+            : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectContentFragment, {
                 ...contentProps,
                 fragment,
               }),
       });
     }, 'SelectContent'),
   );
-  var SelectContentFragment = /* @__PURE__ */ React31.forwardRef(
-    /* @__PURE__ */ __name20(function SelectContentFragment2(props, forwardedRef) {
+  var SelectContentFragment = /* @__PURE__ */ React32.forwardRef(
+    /* @__PURE__ */ __name21(function SelectContentFragment2(props, forwardedRef) {
       const { __scopeSelect, children, fragment } = props;
       if (!fragment) return null;
-      return ReactDOM3.createPortal(
-        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectContentProvider, {
+      return ReactDOM4.createPortal(
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectContentProvider, {
           scope: __scopeSelect,
-          children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Collection.Slot, {
+          children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Collection.Slot, {
             scope: __scopeSelect,
-            children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)('div', {
+            children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)('div', {
               ref: forwardedRef,
               children,
             }),
@@ -38581,9 +42012,9 @@ var __morbis_feature = (() => {
   var CONTENT_MARGIN = 10;
   var [SelectContentProvider, useSelectContentContext] = createSelectContext(CONTENT_NAME2);
   var Slot = createSlot('SelectContent.RemoveScroll');
-  var SelectContentImpl = /* @__PURE__ */ React31.forwardRef(
+  var SelectContentImpl = /* @__PURE__ */ React32.forwardRef(
     // blank line to reduce diff noise
-    /* @__PURE__ */ __name20(function SelectContentImpl2(props, forwardedRef) {
+    /* @__PURE__ */ __name21(function SelectContentImpl2(props, forwardedRef) {
       const { __scopeSelect } = props;
       const {
         position = 'item-aligned',
@@ -38606,19 +42037,19 @@ var __morbis_feature = (() => {
         ...contentProps
       } = props;
       const context = useSelectContext(CONTENT_NAME2, __scopeSelect);
-      const [content, setContent] = React31.useState(null);
-      const [viewport, setViewport] = React31.useState(null);
+      const [content, setContent] = React32.useState(null);
+      const [viewport, setViewport] = React32.useState(null);
       const composedRefs = useComposedRefs(forwardedRef, setContent);
-      const [selectedItem, setSelectedItem] = React31.useState(null);
-      const [selectedItemText, setSelectedItemText] = React31.useState(null);
+      const [selectedItem, setSelectedItem] = React32.useState(null);
+      const [selectedItemText, setSelectedItemText] = React32.useState(null);
       const getItems = useCollection(__scopeSelect);
-      const [isPositioned, setIsPositioned] = React31.useState(false);
-      const firstValidItemFoundRef = React31.useRef(false);
-      React31.useEffect(() => {
+      const [isPositioned, setIsPositioned] = React32.useState(false);
+      const firstValidItemFoundRef = React32.useRef(false);
+      React32.useEffect(() => {
         if (content) return hideOthers(content);
       }, [content]);
       useFocusGuards();
-      const focusFirst2 = React31.useCallback(
+      const focusFirst2 = React32.useCallback(
         (candidates) => {
           const [firstItem, ...restItems] = getItems().map((item) => item.ref.current);
           const [lastItem] = restItems.slice(-1);
@@ -38634,26 +42065,26 @@ var __morbis_feature = (() => {
         },
         [getItems, viewport],
       );
-      const focusSelectedItem = React31.useCallback(
+      const focusSelectedItem = React32.useCallback(
         () => focusFirst2([selectedItem, content]),
         [focusFirst2, selectedItem, content],
       );
-      React31.useEffect(() => {
+      React32.useEffect(() => {
         if (isPositioned) {
           focusSelectedItem();
         }
       }, [isPositioned, focusSelectedItem]);
       const { onOpenChange, triggerPointerDownPosRef } = context;
-      React31.useEffect(() => {
+      React32.useEffect(() => {
         if (content) {
           let pointerMoveDelta = { x: 0, y: 0 };
-          const handlePointerMove = /* @__PURE__ */ __name20((event) => {
+          const handlePointerMove = /* @__PURE__ */ __name21((event) => {
             pointerMoveDelta = {
               x: Math.abs(Math.round(event.pageX) - (triggerPointerDownPosRef.current?.x ?? 0)),
               y: Math.abs(Math.round(event.pageY) - (triggerPointerDownPosRef.current?.y ?? 0)),
             };
           }, 'handlePointerMove');
-          const handlePointerUp = /* @__PURE__ */ __name20((event) => {
+          const handlePointerUp = /* @__PURE__ */ __name21((event) => {
             if (pointerMoveDelta.x <= 10 && pointerMoveDelta.y <= 10) {
               event.preventDefault();
             } else {
@@ -38674,8 +42105,8 @@ var __morbis_feature = (() => {
           };
         }
       }, [content, onOpenChange, triggerPointerDownPosRef]);
-      React31.useEffect(() => {
-        const close = /* @__PURE__ */ __name20(() => onOpenChange(false), 'close');
+      React32.useEffect(() => {
+        const close = /* @__PURE__ */ __name21(() => onOpenChange(false), 'close');
         window.addEventListener('blur', close);
         window.addEventListener('resize', close);
         return () => {
@@ -38693,7 +42124,7 @@ var __morbis_feature = (() => {
           setTimeout(() => nextItem.ref.current?.focus());
         }
       });
-      const itemRefCallback = React31.useCallback(
+      const itemRefCallback = React32.useCallback(
         (node, value, disabled) => {
           const isFirstValidItem = !firstValidItemFoundRef.current && !disabled;
           const isSelectedItem = context.value !== void 0 && context.value === value;
@@ -38704,8 +42135,8 @@ var __morbis_feature = (() => {
         },
         [context.value],
       );
-      const handleItemLeave = React31.useCallback(() => content?.focus(), [content]);
-      const itemTextRefCallback = React31.useCallback(
+      const handleItemLeave = React32.useCallback(() => content?.focus(), [content]);
+      const itemTextRefCallback = React32.useCallback(
         (node, value, disabled) => {
           const isFirstValidItem = !firstValidItemFoundRef.current && !disabled;
           const isSelectedItem = context.value !== void 0 && context.value === value;
@@ -38732,7 +42163,7 @@ var __morbis_feature = (() => {
               avoidCollisions,
             }
           : {};
-      return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectContentProvider, {
+      return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectContentProvider, {
         scope: __scopeSelect,
         content,
         viewport,
@@ -38746,10 +42177,10 @@ var __morbis_feature = (() => {
         position,
         isPositioned,
         searchRef,
-        children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Combination_default, {
+        children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Combination_default, {
           as: Slot,
           allowPinchZoom: true,
-          children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(FocusScope, {
+          children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(FocusScope, {
             asChild: true,
             trapped: context.open,
             onMountAutoFocus: (event) => {
@@ -38759,14 +42190,14 @@ var __morbis_feature = (() => {
               context.trigger?.focus({ preventScroll: true });
               event.preventDefault();
             }),
-            children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(DismissableLayer, {
+            children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(DismissableLayer, {
               asChild: true,
               disableOutsidePointerEvents: true,
               onEscapeKeyDown,
               onPointerDownOutside,
               onFocusOutside: (event) => event.preventDefault(),
               onDismiss: () => context.onOpenChange(false),
-              children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectPosition, {
+              children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectPosition, {
                 role: 'listbox',
                 id: context.contentId,
                 'data-state': context.open ? 'open' : 'closed',
@@ -38810,19 +42241,19 @@ var __morbis_feature = (() => {
       });
     }, 'SelectContentImpl'),
   );
-  var SelectItemAlignedPosition = /* @__PURE__ */ React31.forwardRef(
-    /* @__PURE__ */ __name20(function SelectItemAlignedPosition2(props, forwardedRef) {
+  var SelectItemAlignedPosition = /* @__PURE__ */ React32.forwardRef(
+    /* @__PURE__ */ __name21(function SelectItemAlignedPosition2(props, forwardedRef) {
       const { __scopeSelect, onPlaced, ...popperProps } = props;
       const context = useSelectContext(CONTENT_NAME2, __scopeSelect);
       const contentContext = useSelectContentContext(CONTENT_NAME2, __scopeSelect);
-      const [contentWrapper, setContentWrapper] = React31.useState(null);
-      const [content, setContent] = React31.useState(null);
+      const [contentWrapper, setContentWrapper] = React32.useState(null);
+      const [content, setContent] = React32.useState(null);
       const composedRefs = useComposedRefs(forwardedRef, setContent);
       const getItems = useCollection(__scopeSelect);
-      const shouldExpandOnScrollRef = React31.useRef(false);
-      const shouldRepositionRef = React31.useRef(true);
+      const shouldExpandOnScrollRef = React32.useRef(false);
+      const shouldRepositionRef = React32.useRef(true);
       const { viewport, selectedItem, selectedItemText, focusSelectedItem } = contentContext;
-      const position = React31.useCallback(() => {
+      const position = React32.useCallback(() => {
         if (
           context.trigger &&
           context.valueNode &&
@@ -38943,11 +42374,11 @@ var __morbis_feature = (() => {
         onPlaced,
       ]);
       useLayoutEffect2(() => position(), [position]);
-      const [contentZIndex, setContentZIndex] = React31.useState();
+      const [contentZIndex, setContentZIndex] = React32.useState();
       useLayoutEffect2(() => {
         if (content) setContentZIndex(window.getComputedStyle(content).zIndex);
       }, [content]);
-      const handleScrollButtonChange = React31.useCallback(
+      const handleScrollButtonChange = React32.useCallback(
         (node) => {
           if (node && shouldRepositionRef.current === true) {
             position();
@@ -38957,12 +42388,12 @@ var __morbis_feature = (() => {
         },
         [position, focusSelectedItem],
       );
-      return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectViewportProvider, {
+      return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectViewportProvider, {
         scope: __scopeSelect,
         contentWrapper,
         shouldExpandOnScrollRef,
         onScrollButtonChange: handleScrollButtonChange,
-        children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)('div', {
+        children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)('div', {
           ref: setContentWrapper,
           style: {
             display: 'flex',
@@ -38970,7 +42401,7 @@ var __morbis_feature = (() => {
             position: 'fixed',
             zIndex: contentZIndex,
           },
-          children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.div, {
+          children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Primitive.div, {
             ...popperProps,
             ref: composedRefs,
             style: {
@@ -38986,8 +42417,8 @@ var __morbis_feature = (() => {
       });
     }, 'SelectItemAlignedPosition'),
   );
-  var SelectPopperPosition = /* @__PURE__ */ React31.forwardRef(
-    /* @__PURE__ */ __name20(function SelectPopperPosition2(props, forwardedRef) {
+  var SelectPopperPosition = /* @__PURE__ */ React32.forwardRef(
+    /* @__PURE__ */ __name21(function SelectPopperPosition2(props, forwardedRef) {
       const {
         __scopeSelect,
         align = 'start',
@@ -38995,7 +42426,7 @@ var __morbis_feature = (() => {
         ...popperProps
       } = props;
       const popperScope = usePopperScope(__scopeSelect);
-      return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Content, {
+      return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Content, {
         ...popperScope,
         ...popperProps,
         ref: forwardedRef,
@@ -39019,24 +42450,24 @@ var __morbis_feature = (() => {
   );
   var [SelectViewportProvider, useSelectViewportContext] = createSelectContext(CONTENT_NAME2, {});
   var VIEWPORT_NAME = 'SelectViewport';
-  var SelectViewport = /* @__PURE__ */ React31.forwardRef(
-    /* @__PURE__ */ __name20(function SelectViewport2(props, forwardedRef) {
+  var SelectViewport = /* @__PURE__ */ React32.forwardRef(
+    /* @__PURE__ */ __name21(function SelectViewport2(props, forwardedRef) {
       const { __scopeSelect, nonce, ...viewportProps } = props;
       const contentContext = useSelectContentContext(VIEWPORT_NAME, __scopeSelect);
       const viewportContext = useSelectViewportContext(VIEWPORT_NAME, __scopeSelect);
       const composedRefs = useComposedRefs(forwardedRef, contentContext.onViewportChange);
-      const prevScrollTopRef = React31.useRef(0);
-      return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(import_jsx_runtime18.Fragment, {
+      const prevScrollTopRef = React32.useRef(0);
+      return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, {
         children: [
-          /* @__PURE__ */ (0, import_jsx_runtime18.jsx)('style', {
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)('style', {
             dangerouslySetInnerHTML: {
               __html: `[data-radix-select-viewport]{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;}[data-radix-select-viewport]::-webkit-scrollbar{display:none}`,
             },
             nonce,
           }),
-          /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Collection.Slot, {
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Collection.Slot, {
             scope: __scopeSelect,
-            children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.div, {
+            children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Primitive.div, {
               'data-radix-select-viewport': '',
               role: 'presentation',
               ...viewportProps,
@@ -39088,8 +42519,8 @@ var __morbis_feature = (() => {
   var [SelectGroupContextProvider, useSelectGroupContext] = createSelectContext(GROUP_NAME);
   var ITEM_NAME = 'SelectItem';
   var [SelectItemContextProvider, useSelectItemContext] = createSelectContext(ITEM_NAME);
-  var SelectItem = /* @__PURE__ */ React31.forwardRef(
-    /* @__PURE__ */ __name20(function SelectItem2(props, forwardedRef) {
+  var SelectItem = /* @__PURE__ */ React32.forwardRef(
+    /* @__PURE__ */ __name21(function SelectItem2(props, forwardedRef) {
       const {
         __scopeSelect,
         value,
@@ -39100,35 +42531,35 @@ var __morbis_feature = (() => {
       const context = useSelectContext(ITEM_NAME, __scopeSelect);
       const contentContext = useSelectContentContext(ITEM_NAME, __scopeSelect);
       const isSelected = context.value === value;
-      const [textValue, setTextValue] = React31.useState(textValueProp ?? '');
-      const [isFocused, setIsFocused] = React31.useState(false);
+      const [textValue, setTextValue] = React32.useState(textValueProp ?? '');
+      const [isFocused, setIsFocused] = React32.useState(false);
       const handleItemRefCallback = useCallbackRef((node) =>
         contentContext.itemRefCallback?.(node, value, disabled),
       );
       const composedRefs = useComposedRefs(forwardedRef, handleItemRefCallback);
       const textId = useId();
-      const pointerTypeRef = React31.useRef('touch');
-      const handleSelect = /* @__PURE__ */ __name20(() => {
+      const pointerTypeRef = React32.useRef('touch');
+      const handleSelect = /* @__PURE__ */ __name21(() => {
         if (!disabled) {
           context.onValueChange(value);
           context.onOpenChange(false);
         }
       }, 'handleSelect');
-      return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(SelectItemContextProvider, {
+      return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectItemContextProvider, {
         scope: __scopeSelect,
         value,
         disabled,
         textId,
         isSelected,
-        onItemTextChange: React31.useCallback((node) => {
+        onItemTextChange: React32.useCallback((node) => {
           setTextValue((prevTextValue) => prevTextValue || (node?.textContent ?? '').trim());
         }, []),
-        children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Collection.ItemSlot, {
+        children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Collection.ItemSlot, {
           scope: __scopeSelect,
           value,
           disabled,
           textValue,
-          children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.div, {
+          children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Primitive.div, {
             role: 'option',
             'aria-labelledby': textId,
             'data-highlighted': isFocused ? '' : void 0,
@@ -39184,14 +42615,14 @@ var __morbis_feature = (() => {
     }, 'SelectItem'),
   );
   var ITEM_TEXT_NAME = 'SelectItemText';
-  var SelectItemText = /* @__PURE__ */ React31.forwardRef(
-    /* @__PURE__ */ __name20(function SelectItemText2(props, forwardedRef) {
+  var SelectItemText = /* @__PURE__ */ React32.forwardRef(
+    /* @__PURE__ */ __name21(function SelectItemText2(props, forwardedRef) {
       const { __scopeSelect, className, style, ...itemTextProps } = props;
       const context = useSelectContext(ITEM_TEXT_NAME, __scopeSelect);
       const contentContext = useSelectContentContext(ITEM_TEXT_NAME, __scopeSelect);
       const itemContext = useSelectItemContext(ITEM_TEXT_NAME, __scopeSelect);
       const nativeOptionsContext = useSelectNativeOptionsContext(ITEM_TEXT_NAME, __scopeSelect);
-      const [itemTextNode, setItemTextNode] = React31.useState(null);
+      const [itemTextNode, setItemTextNode] = React32.useState(null);
       const handleItemTextRefCallback = useCallbackRef((node) =>
         contentContext.itemTextRefCallback?.(node, itemContext.value, itemContext.disabled),
       );
@@ -39202,9 +42633,9 @@ var __morbis_feature = (() => {
         handleItemTextRefCallback,
       );
       const textContent = itemTextNode?.textContent;
-      const nativeOption = React31.useMemo(
+      const nativeOption = React32.useMemo(
         () =>
-          /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
             'option',
             { value: itemContext.value, disabled: itemContext.disabled, children: textContent },
             itemContext.value,
@@ -39216,9 +42647,9 @@ var __morbis_feature = (() => {
         onNativeOptionAdd(nativeOption);
         return () => onNativeOptionRemove(nativeOption);
       }, [onNativeOptionAdd, onNativeOptionRemove, nativeOption]);
-      return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(import_jsx_runtime18.Fragment, {
+      return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, {
         children: [
-          /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Primitive.span, {
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Primitive.span, {
             id: itemContext.textId,
             ...itemTextProps,
             ref: composedRefs,
@@ -39227,30 +42658,30 @@ var __morbis_feature = (() => {
           context.valueNode &&
           !context.valueNodeHasChildren &&
           !shouldShowPlaceholder(context.value)
-            ? ReactDOM3.createPortal(itemTextProps.children, context.valueNode)
+            ? ReactDOM4.createPortal(itemTextProps.children, context.valueNode)
             : null,
         ],
       });
     }, 'SelectItemText'),
   );
   var BUBBLE_INPUT_NAME = 'SelectBubbleInput';
-  var SelectBubbleInput = /* @__PURE__ */ React31.forwardRef(
+  var SelectBubbleInput = /* @__PURE__ */ React32.forwardRef(
     // blank line to reduce diff noise
-    /* @__PURE__ */ __name20(function SelectBubbleInput2(
+    /* @__PURE__ */ __name21(function SelectBubbleInput2(
       { __scopeSelect, ...props },
       forwardedRef,
     ) {
       const context = useSelectContext(BUBBLE_INPUT_NAME, __scopeSelect);
       const { value, onValueChange, required, disabled, name, autoComplete, form } = context;
       const { nativeOptions, nativeSelectKey } = context;
-      const ref = React31.useRef(null);
+      const ref = React32.useRef(null);
       const composedRefs = useComposedRefs(forwardedRef, ref);
       const selectValue = value ?? '';
       const prevValue = usePrevious(selectValue);
       const hasEmptyValueOption = Array.from(nativeOptions).some(
         (option) => (option.props.value ?? '') === '',
       );
-      React31.useEffect(() => {
+      React32.useEffect(() => {
         const select = ref.current;
         if (!select) return;
         const selectProto = window.HTMLSelectElement.prototype;
@@ -39262,7 +42693,7 @@ var __morbis_feature = (() => {
           select.dispatchEvent(event);
         }
       }, [prevValue, selectValue]);
-      return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(
+      return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(
         Primitive.select,
         {
           'aria-hidden': true,
@@ -39279,7 +42710,7 @@ var __morbis_feature = (() => {
           defaultValue: selectValue,
           children: [
             shouldShowPlaceholder(value) && !hasEmptyValueOption
-              ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)('option', { value: '' })
+              ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)('option', { value: '' })
               : null,
             Array.from(nativeOptions),
           ],
@@ -39291,20 +42722,20 @@ var __morbis_feature = (() => {
   function isFunction2(value) {
     return typeof value === 'function';
   }
-  __name20(isFunction2, 'isFunction');
+  __name21(isFunction2, 'isFunction');
   function shouldShowPlaceholder(value) {
     return value === '' || value === void 0;
   }
-  __name20(shouldShowPlaceholder, 'shouldShowPlaceholder');
+  __name21(shouldShowPlaceholder, 'shouldShowPlaceholder');
   function useTypeaheadSearch(onSearchChange) {
     const handleSearchChange = useCallbackRef(onSearchChange);
-    const searchRef = React31.useRef('');
-    const timerRef = React31.useRef(0);
-    const handleTypeaheadSearch = React31.useCallback(
+    const searchRef = React32.useRef('');
+    const timerRef = React32.useRef(0);
+    const handleTypeaheadSearch = React32.useCallback(
       (key) => {
         const search = searchRef.current + key;
         handleSearchChange(search);
-        /* @__PURE__ */ __name20(function updateSearch(value) {
+        /* @__PURE__ */ __name21(function updateSearch(value) {
           searchRef.current = value;
           window.clearTimeout(timerRef.current);
           if (value !== '') timerRef.current = window.setTimeout(() => updateSearch(''), 1e3);
@@ -39312,16 +42743,16 @@ var __morbis_feature = (() => {
       },
       [handleSearchChange],
     );
-    const resetTypeahead = React31.useCallback(() => {
+    const resetTypeahead = React32.useCallback(() => {
       searchRef.current = '';
       window.clearTimeout(timerRef.current);
     }, []);
-    React31.useEffect(() => {
+    React32.useEffect(() => {
       return () => window.clearTimeout(timerRef.current);
     }, []);
     return [searchRef, handleTypeaheadSearch, resetTypeahead];
   }
-  __name20(useTypeaheadSearch, 'useTypeaheadSearch');
+  __name21(useTypeaheadSearch, 'useTypeaheadSearch');
   function findNextItem(items, search, currentItem) {
     const isRepeated = search.length > 1 && Array.from(search).every((char) => char === search[0]);
     const normalizedSearch = isRepeated ? search[0] : search;
@@ -39334,81 +42765,93 @@ var __morbis_feature = (() => {
     );
     return nextItem !== currentItem ? nextItem : void 0;
   }
-  __name20(findNextItem, 'findNextItem');
+  __name21(findNextItem, 'findNextItem');
   function wrapArray(array, startIndex) {
     return array.map((_, index2) => array[(startIndex + index2) % array.length]);
   }
-  __name20(wrapArray, 'wrapArray');
+  __name21(wrapArray, 'wrapArray');
 
   // src/ui/components/select.tsx
-  var import_jsx_runtime19 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime20 = __toESM(require_jsx_runtime(), 1);
   var Select2 = Select;
   var SelectValue3 = SelectValue;
   var SelectTrigger3 = (0, import_react9.forwardRef)(({ className, children, ...props }, ref) =>
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(SelectTrigger, {
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(SelectTrigger, {
       ref,
       className: cn(
-        'flex h-8 w-full items-center justify-between gap-1 rounded-md border border-input bg-background px-2.5 py-1 text-md-sm text-foreground',
-        'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1',
-        'disabled:cursor-not-allowed disabled:opacity-50',
+        'flex h-11 w-full items-center justify-between gap-2 rounded-lg border-2 border-input bg-background px-3.5 py-2.5 text-base text-foreground',
+        'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 border-primary/50',
+        'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-muted',
         '[&>span]:line-clamp-1',
         className,
       ),
       ...props,
       children: [
         children,
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectIcon, {
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectIcon, {
           asChild: true,
-          children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(ChevronDown, {
-            className: 'h-4 w-4 opacity-50',
+          children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(ChevronDown, {
+            className: 'h-5 w-5 opacity-60 flex-shrink-0',
           }),
         }),
       ],
     }),
   );
   SelectTrigger3.displayName = SelectTrigger.displayName;
+  function getShadowApp() {
+    try {
+      return document.getElementById('morbis-manap-root')?.shadowRoot?.getElementById('app');
+    } catch {
+      return void 0;
+    }
+  }
   var SelectContent3 = (0, import_react9.forwardRef)(
-    ({ className, children, position = 'item-aligned', ...props }, ref) =>
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectContent, {
-        ref,
-        className: cn(
-          'relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md',
-          'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
-          'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
-          position === 'popper' &&
-            'data-[side=bottom]:translate-y-1 data-[side=top]:-translate-y-1',
-          className,
-        ),
-        position,
-        ...props,
-        children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectViewport, {
+    ({ className, children, position = 'item-aligned', container, ...props }, ref) => {
+      const resolved = container ?? getShadowApp();
+      return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectPortal, {
+        container: resolved,
+        children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectContent, {
+          ref,
           className: cn(
-            'p-1',
+            'relative z-[2147483647] max-h-[360px] min-w-[12rem] overflow-hidden rounded-lg border bg-popover text-popover-foreground shadow-lg',
+            'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
+            'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
             position === 'popper' &&
-              'h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]',
+              'data-[side=bottom]:translate-y-1 data-[side=top]:-translate-y-1',
+            className,
           ),
-          children,
+          position,
+          ...props,
+          children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectViewport, {
+            className: cn(
+              'p-1.5',
+              position === 'popper' &&
+                'h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]',
+            ),
+            children,
+          }),
         }),
-      }),
+      });
+    },
   );
   SelectContent3.displayName = SelectContent.displayName;
   var SelectItem3 = (0, import_react9.forwardRef)(({ className, children, ...props }, ref) =>
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectItem, {
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectItem, {
       ref,
       className: cn(
-        'relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-md-sm outline-none',
+        'relative flex w-full cursor-default select-none items-center rounded-md px-3 py-2.5 text-base outline-none',
         'focus:bg-accent focus:text-accent-foreground',
         'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
         className,
       ),
       ...props,
-      children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectItemText, { children }),
+      children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectItemText, { children }),
     }),
   );
   SelectItem3.displayName = SelectItem.displayName;
 
   // src/features/resumeTab/DiagnosaSection.tsx
-  var import_jsx_runtime20 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime21 = __toESM(require_jsx_runtime(), 1);
   var ICD10_URL = '/rekam-medik/search?opsi=kodeicd10&q=';
   function DiagnosaSection({ rows, onChange }) {
     const [hits, setHits] = (0, import_react10.useState)([]);
@@ -39429,7 +42872,7 @@ var __morbis_feature = (() => {
         return;
       }
       const r2 = el.getBoundingClientRect();
-      setHitPos({ top: r2.bottom + 2, left: r2.left, width: r2.width });
+      setHitPos({ top: r2.bottom + 4, left: r2.left, width: r2.width });
       t.current = setTimeout(async () => {
         const ac = new AbortController();
         abortRef.current = ac;
@@ -39479,65 +42922,101 @@ var __morbis_feature = (() => {
     const makeKodeChange = (i) => (e) => {
       updateRow(i, { kode10: e.target.value });
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('div', {
+    return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
+      className: 'space-y-4',
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('div', {
-          className: 'flex justify-end mb-3',
-          children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(Button, {
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
+          className: 'flex justify-end',
+          children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(Button, {
             variant: 'default',
-            size: 'sm',
+            size: 'lg',
+            className: 'gap-2 px-5 py-3',
             onClick: () =>
               onChange([
                 ...rows,
                 { idicd: '', kode10: '', namaDiagnosa: '', kasus: '', komplikasi: '' },
               ]),
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Plus, { className: 'size-4' }),
+              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Plus, { className: 'size-5' }),
               ' Tambah Diagnosa',
             ],
           }),
         }),
         rows.length === 0
-          ? /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('div', {
-              className: 'border-2 border-dashed border-border rounded-xl py-8 text-center bg-card',
+          ? /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
+              className:
+                'border-2 border-dashed border-border rounded-xl py-12 text-center bg-background',
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('p', {
-                  className: 'text-[16px] text-muted-foreground',
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('p', {
+                  className: 'text-lg text-muted-foreground mb-2',
                   children: 'Belum ada diagnosa',
                 }),
-                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('p', {
-                  className: 'text-[14px] text-muted-foreground mt-1',
+                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('p', {
+                  className: 'text-base text-muted-foreground',
                   children: 'Klik "Tambah Diagnosa" untuk menambahkan',
                 }),
               ],
             })
-          : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('div', {
-              className: 'space-y-3',
+          : /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
+              className: 'space-y-4',
               children: rows.map((row, i) => {
                 const no = i + 1;
-                return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+                return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
                   'div',
                   {
-                    className: 'bg-card rounded-xl border-2 border-border p-3',
+                    className:
+                      'bg-background border-2 border-border rounded-xl p-4 space-y-4 shadow-sm',
                     children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('div', {
-                        className: 'mb-2',
+                      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
+                        className: 'flex items-center justify-between',
                         children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Label, {
+                          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('span', {
+                            className: 'text-base font-semibold text-primary',
+                            children: ['Diagnosa #', no],
+                          }),
+                          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Button, {
+                            variant: 'ghost',
+                            size: 'icon',
+                            onClick: () => removeRow(i),
+                            className:
+                              'h-11 w-11 text-destructive border-destructive/30 hover:bg-destructive hover:text-destructive-foreground',
+                            'aria-label': `Hapus diagnosa #{no}`,
+                            children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Trash, {
+                              className: 'size-5',
+                            }),
+                          }),
+                        ],
+                      }),
+                      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
+                        className: 'space-y-2',
+                        children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Label, {
                             children: 'Nama Diagnosa',
                           }),
-                          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('div', {
+                          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
                             className: 'relative',
                             children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Input, {
+                              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Input, {
                                 id: `rj-nama${no}`,
                                 name: 'nama[]',
                                 value: row.namaDiagnosa,
-                                placeholder: 'Cari diagnosa...',
+                                placeholder: 'Cari diagnosa atau ketik nama...',
                                 autoComplete: 'off',
                                 onChange: makeSearch(i),
+                                className: 'pr-12',
+                                'aria-describedby': `rj-nama-help-${no}`,
                               }),
-                              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('input', {
+                              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Search, {
+                                className:
+                                  'absolute right-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none',
+                                'aria-hidden': 'true',
+                              }),
+                              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('p', {
+                                id: `rj-nama-help-${no}`,
+                                className: 'sr-only',
+                                children: 'Ketik minimal 3 karakter untuk mencari diagnosis ICD-10',
+                              }),
+                              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('input', {
                                 type: 'hidden',
                                 id: `rj-idicd${no}`,
                                 name: 'idicd[]',
@@ -39545,28 +43024,31 @@ var __morbis_feature = (() => {
                               }),
                               hits.length > 0 &&
                                 hitRow === i &&
-                                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('div', {
+                                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
                                   className:
-                                    'fixed z-[2147483647] bg-card border-2 border-border rounded-xl shadow-lg max-h-[240px] overflow-auto',
+                                    'fixed z-[2147483647] bg-background border-2 border-border rounded-xl shadow-lg max-h-[280px] overflow-auto',
                                   style: {
                                     top: hitPos.top,
                                     left: hitPos.left,
                                     width: hitPos.width,
                                   },
+                                  role: 'listbox',
+                                  'aria-label': 'Hasil pencarian ICD-10',
                                   children: hits.map((item, ri) =>
-                                    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+                                    /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
                                       'div',
                                       {
                                         onClick: () => pick(i, item),
+                                        role: 'option',
                                         className:
-                                          'px-3.5 py-2.5 cursor-pointer text-sm border-b border-border hover:bg-muted/50 transition-colors',
+                                          'px-4 py-3 cursor-pointer text-base border-b border-border hover:bg-accent transition-colors',
                                         children: [
-                                          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('div', {
+                                          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
                                             className: 'font-medium text-foreground',
                                             children: item.NAMA,
                                           }),
-                                          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('div', {
-                                            className: 'text-muted-foreground text-xs',
+                                          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
+                                            className: 'text-muted-foreground text-base font-mono',
                                             children: item.KODE,
                                           }),
                                         ],
@@ -39576,58 +43058,68 @@ var __morbis_feature = (() => {
                                   ),
                                 }),
                               errMsg &&
-                                /* @__PURE__ */ (0, import_jsx_runtime20.jsx)('div', {
+                                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
                                   className:
-                                    'fixed z-[2147483647] bg-destructive/10 border-2 border-destructive rounded-xl px-2.5 py-2 text-sm text-destructive',
+                                    'fixed z-[2147483647] bg-destructive/10 border-2 border-destructive rounded-xl px-3 py-2.5 text-base text-destructive',
                                   style: { top: hitPos.top, left: hitPos.left },
+                                  role: 'alert',
                                   children: errMsg,
                                 }),
                             ],
                           }),
                         ],
                       }),
-                      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('div', {
-                        className: 'grid grid-cols-[1fr_120px_100px_36px] gap-2 items-end',
+                      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
+                        className: 'grid grid-cols-[1fr_140px_120px_50px] gap-4 items-end',
                         children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('div', {
+                          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
+                            className: 'space-y-1.5',
                             children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Label, {
+                              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Label, {
                                 children: 'Kode ICD-10',
                               }),
-                              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Input, {
+                              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Input, {
                                 id: `rj-kode${no}`,
                                 name: 'kode10[]',
                                 value: row.kode10,
                                 placeholder: 'Kode',
                                 onChange: makeKodeChange(i),
-                                className: 'font-mono',
+                                className: 'font-mono text-base',
+                                'aria-describedby': `rj-kode-help-${no}`,
+                              }),
+                              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('p', {
+                                id: `rj-kode-help-${no}`,
+                                className: 'sr-only',
+                                children:
+                                  'Kode ICD-10 otomatis terisi saat memilih diagnosa, atau ketik manual',
                               }),
                             ],
                           }),
-                          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('div', {
+                          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
+                            className: 'space-y-1.5',
                             children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Label, {
+                              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Label, {
                                 children: 'Kasus',
                               }),
-                              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(Select2, {
+                              /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(Select2, {
                                 value: row.kasus,
                                 onValueChange: (v) => updateRow(i, { kasus: v }),
                                 children: [
-                                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectTrigger3, {
-                                    className: 'h-[32px] text-xs',
-                                    children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SelectTrigger3, {
+                                    className: 'h-11 text-base',
+                                    children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
                                       SelectValue3,
                                       { placeholder: 'Pilih' },
                                     ),
                                   }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(SelectContent3, {
+                                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(SelectContent3, {
                                     className: 'z-[1050]',
                                     children: [
-                                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectItem3, {
+                                      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SelectItem3, {
                                         value: 'BARU',
                                         children: 'Baru',
                                       }),
-                                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectItem3, {
+                                      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SelectItem3, {
                                         value: 'LAMA',
                                         children: 'Lama',
                                       }),
@@ -39637,30 +43129,31 @@ var __morbis_feature = (() => {
                               }),
                             ],
                           }),
-                          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)('div', {
+                          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
+                            className: 'space-y-1.5',
                             children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Label, {
+                              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Label, {
                                 children: 'Komplikasi',
                               }),
-                              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(Select2, {
+                              /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(Select2, {
                                 value: row.komplikasi,
                                 onValueChange: (v) => updateRow(i, { komplikasi: v }),
                                 children: [
-                                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectTrigger3, {
-                                    className: 'h-[32px] text-xs',
-                                    children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+                                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SelectTrigger3, {
+                                    className: 'h-11 text-base',
+                                    children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
                                       SelectValue3,
                                       { placeholder: 'Pilih' },
                                     ),
                                   }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(SelectContent3, {
+                                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(SelectContent3, {
                                     className: 'z-[1050]',
                                     children: [
-                                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectItem3, {
+                                      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SelectItem3, {
                                         value: 'YA',
                                         children: 'Ya',
                                       }),
-                                      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectItem3, {
+                                      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SelectItem3, {
                                         value: 'TIDAK',
                                         children: 'Tidak',
                                       }),
@@ -39670,13 +43163,11 @@ var __morbis_feature = (() => {
                               }),
                             ],
                           }),
-                          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Button, {
-                            variant: 'ghost',
-                            size: 'icon',
-                            onClick: () => removeRow(i),
-                            className: 'h-8 w-8 text-muted-foreground hover:text-destructive',
-                            children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Trash2, {
-                              className: 'size-4',
+                          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
+                            className: 'space-y-1.5',
+                            children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Label, {
+                              className: 'invisible',
+                              children: 'Hapus',
                             }),
                           }),
                         ],
@@ -39693,7 +43184,7 @@ var __morbis_feature = (() => {
 
   // src/features/resumeTab/TindakanSection.tsx
   var import_react11 = __toESM(require_react(), 1);
-  var import_jsx_runtime21 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime22 = __toESM(require_jsx_runtime(), 1);
   var ICD9_URL = '/rekam-medik/search?opsi=clauseDiagnose_icd9&q=';
   var JENIS_OPTIONS = [
     { value: 'Primer', label: 'Utama (Primer)' },
@@ -39729,14 +43220,12 @@ var __morbis_feature = (() => {
         return;
       }
       const r2 = el.getBoundingClientRect();
-      setHitPos({ top: r2.bottom + 2, left: r2.left, width: r2.width });
+      setHitPos({ top: r2.bottom + 4, left: r2.left, width: r2.width });
       t.current = setTimeout(async () => {
         const ac = new AbortController();
         abortRef.current = ac;
         try {
-          const resp = await fetch(`${ICD9_URL}${encodeURIComponent(q)}&limit=10`, {
-            signal: ac.signal,
-          });
+          const resp = await fetch(`${ICD9_URL}${encodeURIComponent(q)}`, { signal: ac.signal });
           if (!resp.ok) {
             setErrMsg('HTTP ' + resp.status);
             return;
@@ -39781,13 +43270,15 @@ var __morbis_feature = (() => {
     const makeKodeChange = (i) => (e) => {
       updateRow(i, { kode9: e.target.value });
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
+    return /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
+      className: 'space-y-4',
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
-          className: 'flex justify-end mb-3',
-          children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(Button, {
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('div', {
+          className: 'flex justify-end',
+          children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(Button, {
             variant: 'default',
-            size: 'sm',
+            size: 'lg',
+            className: 'gap-2 px-5 py-3',
             onClick: () =>
               onChange([
                 ...rows,
@@ -39796,87 +43287,127 @@ var __morbis_feature = (() => {
                   kode9: '',
                   namaTindakan: '',
                   komorbid: '',
-                  kategoriProsedur: KATEGORI_OPTIONS[1]?.value ?? '',
+                  kategoriProsedur: '',
                   snomedProsedur: '',
                   codeProsedur: '',
                 },
               ]),
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Plus, { className: 'size-4' }),
+              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Plus, { className: 'size-5' }),
               ' Tambah Tindakan',
             ],
           }),
         }),
         rows.length === 0
-          ? /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
-              className: 'border-2 border-dashed border-border rounded-xl py-8 text-center bg-card',
+          ? /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
+              className:
+                'border-2 border-dashed border-border rounded-xl py-12 text-center bg-background',
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('p', {
-                  className: 'text-[16px] text-muted-foreground',
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('p', {
+                  className: 'text-lg text-muted-foreground mb-2',
                   children: 'Belum ada tindakan',
                 }),
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('p', {
-                  className: 'text-[14px] text-muted-foreground mt-1',
+                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('p', {
+                  className: 'text-base text-muted-foreground',
                   children: 'Klik "Tambah Tindakan" untuk menambahkan',
                 }),
               ],
             })
-          : /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
-              className: 'space-y-3',
+          : /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('div', {
+              className: 'space-y-4',
               children: rows.map((row, i) => {
                 const no = i + 1;
-                return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
+                return /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
                   'div',
                   {
-                    className: 'bg-card rounded-xl border-2 border-border p-3',
+                    className:
+                      'bg-background border-2 border-border rounded-xl p-4 space-y-4 shadow-sm',
                     children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
-                        className: 'mb-2',
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
+                        className: 'flex items-center justify-between',
                         children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Label, {
+                          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('span', {
+                            className: 'text-base font-semibold text-primary',
+                            children: ['Tindakan #', no],
+                          }),
+                          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(Button, {
+                            variant: 'ghost',
+                            onClick: () => removeRow(i),
+                            className:
+                              'h-11 px-4 text-destructive border-destructive/30 hover:bg-destructive hover:text-destructive-foreground gap-2',
+                            'aria-label': `Hapus tindakan #${no}`,
+                            children: [
+                              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Trash, {
+                                className: 'size-5',
+                              }),
+                              ' Hapus',
+                            ],
+                          }),
+                        ],
+                      }),
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
+                        className: 'space-y-2',
+                        children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Label, {
                             children: 'Nama Tindakan',
                           }),
-                          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
+                          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
                             className: 'relative',
                             children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Input, {
-                                id: `rj-tindakan${no}`,
-                                name: 'namaTindakan[]',
+                              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Input, {
+                                id: `rj-nama-tindakan${no}`,
+                                name: 'nama_tindakan[]',
                                 value: row.namaTindakan,
-                                placeholder: 'Cari tindakan...',
+                                placeholder: 'Cari tindakan atau ketik nama...',
                                 autoComplete: 'off',
                                 onChange: makeSearch(i),
+                                className: 'pr-12',
+                                'aria-describedby': `rj-tindakan-help-${no}`,
                               }),
-                              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('input', {
+                              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Search, {
+                                className:
+                                  'absolute right-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none',
+                                'aria-hidden': 'true',
+                              }),
+                              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('p', {
+                                id: `rj-tindakan-help-${no}`,
+                                className: 'sr-only',
+                                children: 'Ketik minimal 3 karakter untuk mencari tindakan ICD-9',
+                              }),
+                              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('input', {
                                 type: 'hidden',
-                                id: `rj-idicdTindakan${no}`,
-                                name: 'idicdTindakan[]',
+                                id: `rj-idicd-tindakan${no}`,
+                                name: 'idicd_tindakan[]',
                                 value: row.idicdTindakan,
+                                autoComplete: 'off',
                               }),
                               hits.length > 0 &&
                                 hitRow === i &&
-                                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
+                                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('div', {
                                   className:
-                                    'fixed z-[2147483647] bg-card border-2 border-border rounded-xl shadow-lg max-h-[240px] overflow-auto',
+                                    'fixed z-[2147483647] bg-background border-2 border-border rounded-xl shadow-lg max-h-[280px] overflow-auto',
                                   style: {
                                     top: hitPos.top,
                                     left: hitPos.left,
                                     width: hitPos.width,
                                   },
+                                  role: 'listbox',
+                                  'aria-label': 'Hasil pencarian ICD-9',
                                   children: hits.map((item, ri) =>
-                                    /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
+                                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
                                       'div',
                                       {
                                         onClick: () => pick(i, item),
+                                        role: 'option',
                                         className:
-                                          'px-3.5 py-2.5 cursor-pointer text-sm border-b border-border hover:bg-muted/50 transition-colors',
+                                          'px-4 py-3 cursor-pointer text-base border-b border-border hover:bg-accent transition-colors',
                                         children: [
-                                          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
+                                          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('div', {
                                             className: 'font-medium text-foreground',
                                             children: item.NAMA,
                                           }),
-                                          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
-                                            className: 'text-muted-foreground text-xs',
+                                          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('div', {
+                                            className: 'text-muted-foreground text-base font-mono',
                                             children: item.KODE,
                                           }),
                                         ],
@@ -39886,57 +43417,67 @@ var __morbis_feature = (() => {
                                   ),
                                 }),
                               errMsg &&
-                                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
+                                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('div', {
                                   className:
-                                    'fixed z-[2147483647] bg-destructive/10 border-2 border-destructive rounded-xl px-2.5 py-2 text-sm text-destructive',
+                                    'fixed z-[2147483647] bg-destructive/10 border-2 border-destructive rounded-xl px-3 py-2.5 text-base text-destructive',
                                   style: { top: hitPos.top, left: hitPos.left },
+                                  role: 'alert',
                                   children: errMsg,
                                 }),
                             ],
                           }),
                         ],
                       }),
-                      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
-                        className: 'grid grid-cols-[1fr_140px_180px_36px] gap-2 items-end',
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
+                        className: 'grid grid-cols-[1fr_1fr] gap-4',
                         children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
+                          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
+                            className: 'space-y-1.5',
                             children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Label, {
+                              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Label, {
                                 children: 'Kode ICD-9',
                               }),
-                              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Input, {
+                              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Input, {
                                 id: `rj-kode9${no}`,
                                 name: 'kode9[]',
                                 value: row.kode9,
                                 placeholder: 'Kode',
                                 onChange: makeKodeChange(i),
-                                className: 'font-mono',
+                                className: 'font-mono text-base',
+                                'aria-describedby': `rj-kode9-help-${no}`,
+                              }),
+                              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('p', {
+                                id: `rj-kode9-help-${no}`,
+                                className: 'sr-only',
+                                children:
+                                  'Kode ICD-9 otomatis terisi saat memilih tindakan, atau ketik manual',
                               }),
                             ],
                           }),
-                          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
+                          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
+                            className: 'space-y-1.5',
                             children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Label, {
+                              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Label, {
                                 children: 'Jenis',
                               }),
-                              /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(Select2, {
-                                value: row.komorbid,
-                                onValueChange: (v) => updateRow(i, { komorbid: v }),
+                              /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(Select2, {
+                                value: row.jenis || 'Primer',
+                                onValueChange: (v) => updateRow(i, { jenis: v }),
                                 children: [
-                                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SelectTrigger3, {
-                                    className: 'h-[32px] text-xs',
-                                    children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+                                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(SelectTrigger3, {
+                                    className: 'h-11 text-base',
+                                    children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                                       SelectValue3,
                                       { placeholder: 'Pilih' },
                                     ),
                                   }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SelectContent3, {
+                                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(SelectContent3, {
                                     className: 'z-[1050]',
-                                    children: JENIS_OPTIONS.map((o) =>
-                                      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+                                    children: JENIS_OPTIONS.map((opt) =>
+                                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
                                         SelectItem3,
-                                        { value: o.value, children: o.label },
-                                        o.value,
+                                        { value: opt.value, children: opt.label },
+                                        opt.value,
                                       ),
                                     ),
                                   }),
@@ -39944,46 +43485,36 @@ var __morbis_feature = (() => {
                               }),
                             ],
                           }),
-                          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
+                        ],
+                      }),
+                      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
+                        className: 'space-y-1.5',
+                        children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Label, {
+                            children: 'Kategori Prosedur',
+                          }),
+                          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(Select2, {
+                            value: row.kategoriProsedur || '',
+                            onValueChange: (v) => updateRow(i, { kategoriProsedur: v }),
                             children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Label, {
-                                required: true,
-                                children: 'Kategori Prosedur',
+                              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(SelectTrigger3, {
+                                className: 'h-11 text-base',
+                                children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
+                                  SelectValue3,
+                                  { placeholder: 'Pilih Kategori Prosedur' },
+                                ),
                               }),
-                              /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(Select2, {
-                                value: row.kategoriProsedur,
-                                onValueChange: (v) => updateRow(i, { kategoriProsedur: v }),
-                                children: [
-                                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SelectTrigger3, {
-                                    className: 'h-[32px] text-xs',
-                                    children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
-                                      SelectValue3,
-                                      { placeholder: 'Pilih Kategori' },
-                                    ),
-                                  }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SelectContent3, {
-                                    className: 'z-[1050]',
-                                    children: KATEGORI_OPTIONS.map((o) =>
-                                      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
-                                        SelectItem3,
-                                        { value: o.value, children: o.label },
-                                        o.value || 'empty',
-                                      ),
-                                    ),
-                                  }),
-                                ],
+                              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(SelectContent3, {
+                                className: 'z-[1050]',
+                                children: KATEGORI_OPTIONS.map((opt) =>
+                                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
+                                    SelectItem3,
+                                    { value: opt.value, children: opt.label },
+                                    opt.value,
+                                  ),
+                                ),
                               }),
                             ],
-                          }),
-                          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Button, {
-                            variant: 'outline',
-                            size: 'icon',
-                            onClick: () => removeRow(i),
-                            className:
-                              'h-8 w-8 text-destructive border-destructive/50 hover:bg-destructive hover:text-destructive-foreground',
-                            children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Trash2, {
-                              className: 'size-4',
-                            }),
                           }),
                         ],
                       }),
@@ -39998,32 +43529,32 @@ var __morbis_feature = (() => {
   }
 
   // src/features/resumeTab/ValidationPanel.tsx
-  var import_jsx_runtime22 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime23 = __toESM(require_jsx_runtime(), 1);
   function ValidationPanel({ errors, warnings = [] }) {
     const hasAny = errors.length > 0 || warnings.length > 0;
     if (!hasAny) return null;
-    return /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(import_jsx_runtime22.Fragment, {
+    return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(import_jsx_runtime23.Fragment, {
       children: [
         warnings.length > 0 &&
-          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('div', {
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('div', {
             className: 'px-6 py-4 border-t-2 border-border bg-yellow-50 dark:bg-yellow-950/30',
             role: 'alert',
-            children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
+            children: /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('div', {
               className: 'flex items-start gap-3',
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(TriangleAlert, {
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(TriangleAlert, {
                   className: 'size-5 text-yellow-600 dark:text-yellow-500 shrink-0 mt-0.5',
                 }),
-                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('div', {
                   children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('p', {
+                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('p', {
                       className: 'text-[15px] font-bold text-yellow-800 dark:text-yellow-300 mb-1',
                       children: 'Perhatian',
                     }),
-                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('ul', {
+                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('ul', {
                       className: 'space-y-1',
                       children: warnings.map((w, i) =>
-                        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
+                        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
                           'li',
                           {
                             className: 'text-[14px] text-yellow-700 dark:text-yellow-400',
@@ -40039,25 +43570,25 @@ var __morbis_feature = (() => {
             }),
           }),
         errors.length > 0 &&
-          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('div', {
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('div', {
             className: 'px-6 py-4 border-t-2 border-border bg-destructive/5',
             role: 'alert',
-            children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
+            children: /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('div', {
               className: 'flex items-start gap-3',
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(TriangleAlert, {
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(TriangleAlert, {
                   className: 'size-5 text-destructive shrink-0 mt-0.5',
                 }),
-                /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
+                /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('div', {
                   children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('p', {
+                    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('p', {
                       className: 'text-[15px] font-bold text-destructive mb-1',
                       children: ['Terdapat ', errors.length, ' kesalahan'],
                     }),
-                    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('ul', {
+                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('ul', {
                       className: 'space-y-1',
                       children: errors.map((err, i) =>
-                        /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
+                        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
                           'li',
                           {
                             className: 'text-[14px] text-destructive/80',
@@ -40077,7 +43608,7 @@ var __morbis_feature = (() => {
   }
 
   // src/ui/components/Badge.tsx
-  var import_jsx_runtime23 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime24 = __toESM(require_jsx_runtime(), 1);
   var variants = {
     default: 'bg-primary/10 text-primary border-primary/20',
     success:
@@ -40094,87 +43625,101 @@ var __morbis_feature = (() => {
   };
   function Badge({ variant = 'default', icon, children, className, onDismiss }) {
     const Icon2 = icons[variant];
-    return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('span', {
+    return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)('span', {
       className: cn(
-        'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold',
+        'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-semibold',
         variants[variant],
         className,
       ),
       children: [
-        icon && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Icon2, { className: 'size-3' }),
+        icon && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Icon2, { className: 'size-3.5' }),
         children,
         onDismiss &&
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('button', {
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)('button', {
             onClick: onDismiss,
-            className: 'ml-0.5 hover:opacity-70',
+            className: 'ml-1 hover:opacity-70 p-0.5',
             'aria-label': 'Dismiss',
-            children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(X, { className: 'size-2.5' }),
+            children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(X, { className: 'size-3.5' }),
           }),
       ],
     });
   }
 
   // src/features/resumeTab/Footer.tsx
-  var import_jsx_runtime24 = __toESM(require_jsx_runtime(), 1);
-  function Footer({ onCancel, onSave, saving, hasErrors, lastSaved, onRefresh, onHistory }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)('div', {
+  var import_jsx_runtime25 = __toESM(require_jsx_runtime(), 1);
+  function Footer({
+    onCancel,
+    onSave,
+    onRefresh,
+    onReset,
+    onHistory,
+    saving,
+    hasErrors,
+    lastSaved,
+  }) {
+    const handleReset = onReset ?? onRefresh;
+    return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)('div', {
       className:
-        'flex items-center justify-between px-5 py-3 border-t border-border shrink-0 bg-card',
+        'flex items-center justify-between px-6 py-4 border-t-2 border-border bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/60 shrink-0 sticky bottom-0 z-[1]',
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)('div', {
-          className: 'flex items-center gap-3',
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)('div', {
+          className: 'flex items-center gap-3 min-w-0',
           children: [
             hasErrors &&
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Badge, {
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Badge, {
                 variant: 'danger',
                 icon: true,
                 children: 'Validasi gagal',
               }),
             lastSaved &&
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)('span', {
-                className: 'text-muted-foreground text-xs',
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)('span', {
+                className: 'text-base text-muted-foreground truncate',
                 children: ['Tersimpan ', lastSaved],
               }),
             saving &&
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Badge, {
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Badge, {
                 variant: 'default',
                 icon: true,
                 children: 'Menyimpan...',
               }),
           ],
         }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)('div', {
-          className: 'flex items-center gap-2',
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)('div', {
+          className: 'flex items-center gap-3',
           children: [
             onHistory &&
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Button, {
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Button, {
                 type: 'button',
                 variant: 'outline',
                 size: 'default',
                 onClick: onHistory,
+                className: 'gap-2',
                 children: 'Riwayat',
               }),
-            onRefresh &&
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Button, {
+            handleReset &&
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Button, {
                 type: 'button',
                 variant: 'outline',
                 size: 'default',
-                onClick: onRefresh,
-                children: 'Reset',
+                onClick: handleReset,
+                className: 'gap-2',
+                children: 'Reset Formulir',
               }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Button, {
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Button, {
               type: 'button',
               variant: 'secondary',
               size: 'default',
               onClick: onCancel,
               children: 'Batal',
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Button, {
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Button, {
               type: 'button',
               variant: 'default',
               size: 'lg',
               onClick: onSave,
               disabled: saving || hasErrors,
+              className: 'gap-2 px-7 min-h-11',
+              'aria-label': 'Simpan resume',
               children: saving ? 'Menyimpan...' : 'Simpan',
             }),
           ],
@@ -40184,7 +43729,7 @@ var __morbis_feature = (() => {
   }
 
   // src/features/resumeTab/App.tsx
-  var import_jsx_runtime25 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime26 = __toESM(require_jsx_runtime(), 1);
   function validate(data) {
     const errors = [];
     data.diagnosa.forEach((d, i) => {
@@ -40255,6 +43800,44 @@ var __morbis_feature = (() => {
     }, [data, onSave]);
     const updateNotes = (field, value) =>
       setData({ ...data, clinicalNotes: { ...data.clinicalNotes, [field]: value } });
+    const confirmReset = async () => {
+      const { confirmExt: confirmExt2 } = await Promise.resolve().then(
+        () => (init_confirm(), confirm_exports),
+      );
+      return confirmExt2({
+        title: 'Reset semua data?',
+        message:
+          'Semua data yang sudah dimasukkan akan dihapus. Tindakan ini tidak dapat dibatalkan.',
+        variant: 'danger',
+        cancelLabel: 'Kembali',
+        okLabel: 'Reset',
+      });
+    };
+    const confirmSave = async () => {
+      const { confirmExt: confirmExt2 } = await Promise.resolve().then(
+        () => (init_confirm(), confirm_exports),
+      );
+      return confirmExt2({
+        title: 'Simpan resume medis?',
+        message: 'Pastikan diagnosis dan tindakan sudah sesuai.',
+        variant: 'info',
+        cancelLabel: 'Kembali',
+        okLabel: 'Simpan Resume',
+      });
+    };
+    const handleRefresh = async () => {
+      const ok = await confirmReset();
+      if (ok) location.reload();
+    };
+    const handleSaveWrapped = async () => {
+      if (validationErrors.length > 0) {
+        setSaveAttempted(true);
+        return;
+      }
+      const ok = await confirmSave();
+      if (!ok) return;
+      await handleSave();
+    };
     const openHistory = () => {
       openHistoryModal({
         idVisit:
@@ -40266,45 +43849,45 @@ var __morbis_feature = (() => {
         onApply: (snap) => setData(snapToResumeData(snap, data)),
       });
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)('div', {
+    return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)('div', {
       className: 'resume-modal',
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Header, {
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Header, {
           title: 'Resume Rawat Jalan',
           onClose,
           patientInfo: data.patientInfo,
         }),
-        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)('div', {
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)('div', {
           className: 'flex-1 overflow-y-auto px-5 py-4 space-y-3',
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Card, {
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Card, {
               title: 'Data Klinis',
-              children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(ClinicalNotesSection, {
+              children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(ClinicalNotesSection, {
                 anamnesa: data.clinicalNotes.anamnesa,
                 pemeriksaan: data.clinicalNotes.pemeriksaan_fisik,
                 onChange: (field, value) =>
                   updateNotes(field === 'pemeriksaan' ? 'pemeriksaan_fisik' : field, value),
               }),
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Card, {
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Card, {
               title: 'Tanda Vital',
-              children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(VitalSignsSection, {
+              children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(VitalSignsSection, {
                 vitals: data.vitalSigns,
                 onChange: (key, value) =>
                   setData({ ...data, vitalSigns: { ...data.vitalSigns, [key]: value } }),
               }),
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Card, {
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Card, {
               title: 'Catatan Medis',
-              children: /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)('div', {
+              children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)('div', {
                 className: 'space-y-3',
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)('div', {
+                  /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)('div', {
                     children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Label, {
+                      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Label, {
                         children: 'Catatan Diagnosis',
                       }),
-                      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Textarea, {
+                      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Textarea, {
                         value: data.clinicalNotes.catatan,
                         onChange: (e) => updateNotes('catatan', e.target.value),
                         placeholder: 'Catatan diagnosa...',
@@ -40312,12 +43895,12 @@ var __morbis_feature = (() => {
                       }),
                     ],
                   }),
-                  /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)('div', {
+                  /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)('div', {
                     children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Label, {
+                      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Label, {
                         children: 'Tindakan',
                       }),
-                      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Textarea, {
+                      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Textarea, {
                         value: data.clinicalNotes.tindakan,
                         onChange: (e) => updateNotes('tindakan', e.target.value),
                         placeholder: 'Tindakan...',
@@ -40325,12 +43908,12 @@ var __morbis_feature = (() => {
                       }),
                     ],
                   }),
-                  /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)('div', {
+                  /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)('div', {
                     children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Label, {
+                      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Label, {
                         children: 'Terapi Pengobatan',
                       }),
-                      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Textarea, {
+                      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Textarea, {
                         value: data.clinicalNotes.terapi_pengobatan,
                         onChange: (e) => updateNotes('terapi_pengobatan', e.target.value),
                         placeholder: 'Terapi pengobatan...',
@@ -40341,33 +43924,33 @@ var __morbis_feature = (() => {
                 ],
               }),
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Card, {
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Card, {
               title: `Diagnosis (ICD-10)${data.diagnosa.length > 0 ? ` (${data.diagnosa.length})` : ''}`,
-              children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(DiagnosaSection, {
+              children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(DiagnosaSection, {
                 rows: data.diagnosa,
                 onChange: (diagnosa) => setData({ ...data, diagnosa }),
               }),
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Card, {
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Card, {
               title: `Tindakan (ICD-9)${data.tindakan.length > 0 ? ` (${data.tindakan.length})` : ''}`,
-              children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(TindakanSection, {
+              children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(TindakanSection, {
                 rows: data.tindakan,
                 onChange: (tindakan) => setData({ ...data, tindakan }),
               }),
             }),
           ],
         }),
-        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(ValidationPanel, {
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(ValidationPanel, {
           errors: allErrors,
           warnings,
         }),
-        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Footer, {
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Footer, {
           saving,
           hasErrors: hasBlocking,
           lastSaved,
-          onSave: handleSave,
+          onSave: handleSaveWrapped,
           onCancel: onClose,
-          onRefresh: () => location.reload(),
+          onRefresh: handleRefresh,
           onHistory: openHistory,
         }),
       ],
@@ -40394,7 +43977,7 @@ var __morbis_feature = (() => {
   };
 
   // src/features/resumeTab/mount.tsx
-  var import_jsx_runtime26 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime27 = __toESM(require_jsx_runtime(), 1);
   var ITEM_PRIORITIES = [
     { pattern: 'periksa.*dokter', weight: 1 },
     { pattern: 'konsultasi', weight: 2 },
@@ -40939,17 +44522,37 @@ var __morbis_feature = (() => {
       reactRoot.unmount();
       reactRoot = null;
     }
-    container.innerHTML = '';
-    container.style.display = 'none';
+    try {
+      container.innerHTML = '';
+      container.style.display = 'none';
+    } catch {}
+    const sh = document.getElementById('morbis-manap-root')?.shadowRoot;
+    const sc = sh?.getElementById('ext-resume-shadow-container');
+    if (sc) {
+      try {
+        const r2 = sc._reactRoot;
+        r2?.unmount?.();
+      } catch {}
+      sc.remove();
+    }
     document.body.classList.remove('ext-resume-open');
-    if (overlayBtn) overlayBtn.disabled = false;
+    if (overlayBtn) {
+      overlayBtn.disabled = false;
+      overlayBtn.style.display = '';
+    }
+    const sbClose = document.querySelector('[data-scroll-buttons]');
+    if (sbClose) sbClose.style.display = '';
   }
   function mountReactApp(container, data) {
     if (reactRoot) {
-      reactRoot.unmount();
+      try {
+        reactRoot.unmount();
+      } catch {}
       reactRoot = null;
     }
-    container.innerHTML = '';
+    try {
+      container.innerHTML = '';
+    } catch {}
     if (!document.getElementById('morbis-resume-fonts')) {
       const link = document.createElement('link');
       link.id = 'morbis-resume-fonts';
@@ -40958,13 +44561,128 @@ var __morbis_feature = (() => {
         'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Lexend:wght@400;500;600;700&display=swap';
       document.head.appendChild(link);
     }
+    const getShadow = () => {
+      let host = document.getElementById('morbis-manap-root');
+      if (host?.shadowRoot) return host.shadowRoot;
+      if (host && !host.shadowRoot) return null;
+      host = document.createElement('div');
+      host.id = 'morbis-manap-root';
+      host.style.cssText =
+        'position:fixed;inset:0;z-index:2147483647;pointer-events:none;display:block';
+      document.body.appendChild(host);
+      const sr = host.attachShadow({ mode: 'open' });
+      const app = document.createElement('div');
+      app.id = 'app';
+      sr.appendChild(app);
+      const ms = document.createElement('style');
+      ms.id = 'morbis-shadow-reset';
+      ms.textContent = `:host{display:block}#app{isolation:isolate;color-scheme:light}`;
+      sr.appendChild(ms);
+      try {
+        let css0 = true
+          ? '/* shadow-dom base */\n*, ::before, ::after {\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n::backdrop {\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n/* ! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com *//*\n1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)\n*/\n\n*,\n::before,\n::after {\n  box-sizing: border-box; /* 1 */\n  border-width: 0; /* 2 */\n  border-style: solid; /* 2 */\n  border-color: #e5e7eb; /* 2 */\n}\n\n::before,\n::after {\n  --tw-content: \'\';\n}\n\n/*\n1. Use a consistent sensible line-height in all browsers.\n2. Prevent adjustments of font size after orientation changes in iOS.\n3. Use a more readable tab size.\n4. Use the user\'s configured `sans` font-family by default.\n5. Use the user\'s configured `sans` font-feature-settings by default.\n6. Use the user\'s configured `sans` font-variation-settings by default.\n7. Disable tap highlights on iOS\n*/\n\nhtml,\n:host {\n  line-height: 1.5; /* 1 */\n  -webkit-text-size-adjust: 100%; /* 2 */\n  -moz-tab-size: 4; /* 3 */\n  -o-tab-size: 4;\n     tab-size: 4; /* 3 */\n  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; /* 4 */\n  font-feature-settings: normal; /* 5 */\n  font-variation-settings: normal; /* 6 */\n  -webkit-tap-highlight-color: transparent; /* 7 */\n}\n\n/*\n1. Remove the margin in all browsers.\n2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.\n*/\n\nbody {\n  margin: 0; /* 1 */\n  line-height: inherit; /* 2 */\n}\n\n/*\n1. Add the correct height in Firefox.\n2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n3. Ensure horizontal rules are visible by default.\n*/\n\nhr {\n  height: 0; /* 1 */\n  color: inherit; /* 2 */\n  border-top-width: 1px; /* 3 */\n}\n\n/*\nAdd the correct text decoration in Chrome, Edge, and Safari.\n*/\n\nabbr:where([title]) {\n  -webkit-text-decoration: underline dotted;\n          text-decoration: underline dotted;\n}\n\n/*\nRemove the default font size and weight for headings.\n*/\n\nh1,\nh2,\nh3,\nh4,\nh5,\nh6 {\n  font-size: inherit;\n  font-weight: inherit;\n}\n\n/*\nReset links to optimize for opt-in styling instead of opt-out.\n*/\n\na {\n  color: inherit;\n  text-decoration: inherit;\n}\n\n/*\nAdd the correct font weight in Edge and Safari.\n*/\n\nb,\nstrong {\n  font-weight: bolder;\n}\n\n/*\n1. Use the user\'s configured `mono` font-family by default.\n2. Use the user\'s configured `mono` font-feature-settings by default.\n3. Use the user\'s configured `mono` font-variation-settings by default.\n4. Correct the odd `em` font sizing in all browsers.\n*/\n\ncode,\nkbd,\nsamp,\npre {\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace; /* 1 */\n  font-feature-settings: normal; /* 2 */\n  font-variation-settings: normal; /* 3 */\n  font-size: 1em; /* 4 */\n}\n\n/*\nAdd the correct font size in all browsers.\n*/\n\nsmall {\n  font-size: 80%;\n}\n\n/*\nPrevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\nsub,\nsup {\n  font-size: 75%;\n  line-height: 0;\n  position: relative;\n  vertical-align: baseline;\n}\n\nsub {\n  bottom: -0.25em;\n}\n\nsup {\n  top: -0.5em;\n}\n\n/*\n1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n3. Remove gaps between table borders by default.\n*/\n\ntable {\n  text-indent: 0; /* 1 */\n  border-color: inherit; /* 2 */\n  border-collapse: collapse; /* 3 */\n}\n\n/*\n1. Change the font styles in all browsers.\n2. Remove the margin in Firefox and Safari.\n3. Remove default padding in all browsers.\n*/\n\nbutton,\ninput,\noptgroup,\nselect,\ntextarea {\n  font-family: inherit; /* 1 */\n  font-feature-settings: inherit; /* 1 */\n  font-variation-settings: inherit; /* 1 */\n  font-size: 100%; /* 1 */\n  font-weight: inherit; /* 1 */\n  line-height: inherit; /* 1 */\n  letter-spacing: inherit; /* 1 */\n  color: inherit; /* 1 */\n  margin: 0; /* 2 */\n  padding: 0; /* 3 */\n}\n\n/*\nRemove the inheritance of text transform in Edge and Firefox.\n*/\n\nbutton,\nselect {\n  text-transform: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Remove default button styles.\n*/\n\nbutton,\ninput:where([type=\'button\']),\ninput:where([type=\'reset\']),\ninput:where([type=\'submit\']) {\n  -webkit-appearance: button; /* 1 */\n  background-color: transparent; /* 2 */\n  background-image: none; /* 2 */\n}\n\n/*\nUse the modern Firefox focus style for all focusable elements.\n*/\n\n:-moz-focusring {\n  outline: auto;\n}\n\n/*\nRemove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n:-moz-ui-invalid {\n  box-shadow: none;\n}\n\n/*\nAdd the correct vertical alignment in Chrome and Firefox.\n*/\n\nprogress {\n  vertical-align: baseline;\n}\n\n/*\nCorrect the cursor style of increment and decrement buttons in Safari.\n*/\n\n::-webkit-inner-spin-button,\n::-webkit-outer-spin-button {\n  height: auto;\n}\n\n/*\n1. Correct the odd appearance in Chrome and Safari.\n2. Correct the outline style in Safari.\n*/\n\n[type=\'search\'] {\n  -webkit-appearance: textfield; /* 1 */\n  outline-offset: -2px; /* 2 */\n}\n\n/*\nRemove the inner padding in Chrome and Safari on macOS.\n*/\n\n::-webkit-search-decoration {\n  -webkit-appearance: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Change font properties to `inherit` in Safari.\n*/\n\n::-webkit-file-upload-button {\n  -webkit-appearance: button; /* 1 */\n  font: inherit; /* 2 */\n}\n\n/*\nAdd the correct display in Chrome and Safari.\n*/\n\nsummary {\n  display: list-item;\n}\n\n/*\nRemoves the default spacing and border for appropriate elements.\n*/\n\nblockquote,\ndl,\ndd,\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\nhr,\nfigure,\np,\npre {\n  margin: 0;\n}\n\nfieldset {\n  margin: 0;\n  padding: 0;\n}\n\nlegend {\n  padding: 0;\n}\n\nol,\nul,\nmenu {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n}\n\n/*\nReset default styling for dialogs.\n*/\ndialog {\n  padding: 0;\n}\n\n/*\nPrevent resizing textareas horizontally by default.\n*/\n\ntextarea {\n  resize: vertical;\n}\n\n/*\n1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n2. Set the default placeholder color to the user\'s configured gray 400 color.\n*/\n\ninput::-moz-placeholder, textarea::-moz-placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\ninput::placeholder,\ntextarea::placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\n/*\nSet the default cursor for buttons.\n*/\n\nbutton,\n[role="button"] {\n  cursor: pointer;\n}\n\n/*\nMake sure disabled buttons don\'t get the pointer cursor.\n*/\n:disabled {\n  cursor: default;\n}\n\n/*\n1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n   This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\nimg,\nsvg,\nvideo,\ncanvas,\naudio,\niframe,\nembed,\nobject {\n  display: block; /* 1 */\n  vertical-align: middle; /* 2 */\n}\n\n/*\nConstrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\nimg,\nvideo {\n  max-width: 100%;\n  height: auto;\n}\n\n/* Make elements with the HTML hidden attribute stay hidden by default */\n[hidden]:where(:not([hidden="until-found"])) {\n  display: none;\n}\n  *,\n  *::before,\n  *::after {\n    box-sizing: border-box;\n  }\n\n  html {\n    font-family:\n      \'Inter\',\n      -apple-system,\n      BlinkMacSystemFont,\n      \'Segoe UI\',\n      sans-serif;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale;\n  }\n\n  /* ponytail: senior preset \u2014 :root for popup/sidepanel, :host+#app for Shadow DOM (resume modals).\n     Keep in sync: edit :root. */\n  :root,\n  :host,\n  #app {\n    --background: 0 0% 100%;\n    --foreground: 222.2 47% 11%;\n    --card: 0 0% 100%;\n    --card-foreground: 222.2 47% 11%;\n    --popover: 0 0% 100%;\n    --popover-foreground: 222.2 47% 11%;\n    --primary: 221.2 83% 53%;\n    --primary-foreground: 210 40% 98%;\n    --secondary: 210 40% 96%;\n    --secondary-foreground: 222.2 47% 11%;\n    --muted: 210 40% 96%;\n    --muted-foreground: 215 20% 35%;\n    --accent: 210 40% 96%;\n    --accent-foreground: 222.2 47% 11%;\n    --destructive: 0 84% 60%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 214 32% 85%;\n    --input: 214 32% 85%;\n    --ring: 221 83% 53%;\n    --radius: 0.75rem;\n    --warning: 38 92% 50%;\n    --warning-foreground: 48 96% 12%;\n  }\n\n  /* ponytail: Shadow DOM needs its own color-scheme + base reset; :host isolates from page CSS */\n  :host {\n    all: initial;\n  }\n  #app {\n    color-scheme: light;\n    isolation: isolate;\n    font-family:\n      \'Inter\',\n      -apple-system,\n      BlinkMacSystemFont,\n      \'Segoe UI\',\n      sans-serif;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale;\n    box-sizing: border-box;\n  }\n  #app *,\n  #app *::before,\n  #app *::after {\n    box-sizing: border-box;\n  }\n\n  @theme inline {\n    --color-warning: var(--warning);\n    --color-warning-foreground: var(--warning-foreground);\n  }\n\n  .dark {\n    --background: 222.2 84% 4.9%;\n    --foreground: 210 40% 98%;\n    --card: 222.2 84% 4.9%;\n    --card-foreground: 210 40% 98%;\n    --popover: 222.2 84% 4.9%;\n    --popover-foreground: 210 40% 98%;\n    --primary: 217.2 91.2% 59.8%;\n    --primary-foreground: 222.2 47.4% 11.2%;\n    --secondary: 217.2 32.6% 17.5%;\n    --secondary-foreground: 210 40% 98%;\n    --muted: 217.2 32.6% 17.5%;\n    --muted-foreground: 215 20.2% 65.1%;\n    --accent: 217.2 32.6% 17.5%;\n    --accent-foreground: 210 40% 98%;\n    --destructive: 0 62.8% 30.6%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 217.2 32.6% 17.5%;\n    --input: 217.2 32.6% 17.5%;\n    --ring: 224.3 76.3% 48%;\n    --md-scrollbar: #484d54;\n  }\n\n  ::-moz-selection {\n    background: #2469f0;\n    color: white;\n  }\n\n  ::selection {\n    background: #2469f0;\n    color: white;\n  }\n\n  * {\n    scrollbar-width: thin;\n    scrollbar-color: #c9cdd4 transparent;\n  }\n\n  .dark * {\n    scrollbar-color: var(--md-scrollbar) transparent;\n  }\n\n  *::-webkit-scrollbar {\n    width: 6px;\n    height: 6px;\n  }\n\n  *::-webkit-scrollbar-track {\n    background: transparent;\n  }\n\n  *::-webkit-scrollbar-thumb {\n    background: #c9cdd4;\n    border-radius: 3px;\n  }\n\n  .dark *::-webkit-scrollbar-thumb {\n    background: var(--md-scrollbar);\n  }\n\n  *::-webkit-scrollbar-thumb:hover {\n    background: #a4a9b3;\n  }\n\n  .dark *::-webkit-scrollbar-thumb:hover {\n    background: #636971;\n  }\n.\\!container {\n  width: 100% !important;\n}\n.container {\n  width: 100%;\n}\n@media (min-width: 640px) {\n  .\\!container {\n    max-width: 640px !important;\n  }\n  .container {\n    max-width: 640px;\n  }\n}\n@media (min-width: 768px) {\n  .\\!container {\n    max-width: 768px !important;\n  }\n  .container {\n    max-width: 768px;\n  }\n}\n@media (min-width: 1024px) {\n  .\\!container {\n    max-width: 1024px !important;\n  }\n  .container {\n    max-width: 1024px;\n  }\n}\n@media (min-width: 1280px) {\n  .\\!container {\n    max-width: 1280px !important;\n  }\n  .container {\n    max-width: 1280px;\n  }\n}\n@media (min-width: 1536px) {\n  .\\!container {\n    max-width: 1536px !important;\n  }\n  .container {\n    max-width: 1536px;\n  }\n}\n.sr-only {\n  position: absolute;\n  width: 1px;\n  height: 1px;\n  padding: 0;\n  margin: -1px;\n  overflow: hidden;\n  clip: rect(0, 0, 0, 0);\n  white-space: nowrap;\n  border-width: 0;\n}\n.pointer-events-none {\n  pointer-events: none;\n}\n.visible {\n  visibility: visible;\n}\n.invisible {\n  visibility: hidden;\n}\n.static {\n  position: static;\n}\n.fixed {\n  position: fixed;\n}\n.absolute {\n  position: absolute;\n}\n.relative {\n  position: relative;\n}\n.sticky {\n  position: sticky;\n}\n.bottom-0 {\n  bottom: 0px;\n}\n.bottom-4 {\n  bottom: 1rem;\n}\n.left-1\\/2 {\n  left: 50%;\n}\n.right-4 {\n  right: 1rem;\n}\n.top-1\\/2 {\n  top: 50%;\n}\n.z-10 {\n  z-index: 10;\n}\n.z-50 {\n  z-index: 50;\n}\n.z-\\[1050\\] {\n  z-index: 1050;\n}\n.z-\\[1\\] {\n  z-index: 1;\n}\n.z-\\[2147483647\\] {\n  z-index: 2147483647;\n}\n.col-span-full {\n  grid-column: 1 / -1;\n}\n.mx-auto {\n  margin-left: auto;\n  margin-right: auto;\n}\n.-mb-\\[1px\\] {\n  margin-bottom: -1px;\n}\n.mb-1 {\n  margin-bottom: 0.25rem;\n}\n.mb-1\\.5 {\n  margin-bottom: 0.375rem;\n}\n.mb-2 {\n  margin-bottom: 0.5rem;\n}\n.mb-3 {\n  margin-bottom: 0.75rem;\n}\n.mb-4 {\n  margin-bottom: 1rem;\n}\n.ml-1 {\n  margin-left: 0.25rem;\n}\n.ml-auto {\n  margin-left: auto;\n}\n.mr-1 {\n  margin-right: 0.25rem;\n}\n.mr-2 {\n  margin-right: 0.5rem;\n}\n.mr-3 {\n  margin-right: 0.75rem;\n}\n.mr-auto {\n  margin-right: auto;\n}\n.mt-0\\.5 {\n  margin-top: 0.125rem;\n}\n.mt-1 {\n  margin-top: 0.25rem;\n}\n.mt-3 {\n  margin-top: 0.75rem;\n}\n.block {\n  display: block;\n}\n.inline-block {\n  display: inline-block;\n}\n.inline {\n  display: inline;\n}\n.flex {\n  display: flex;\n}\n.inline-flex {\n  display: inline-flex;\n}\n.\\!table {\n  display: table !important;\n}\n.table {\n  display: table;\n}\n.grid {\n  display: grid;\n}\n.\\!contents {\n  display: contents !important;\n}\n.contents {\n  display: contents;\n}\n.hidden {\n  display: none;\n}\n.size-1\\.5 {\n  width: 0.375rem;\n  height: 0.375rem;\n}\n.size-10 {\n  width: 2.5rem;\n  height: 2.5rem;\n}\n.size-3 {\n  width: 0.75rem;\n  height: 0.75rem;\n}\n.size-3\\.5 {\n  width: 0.875rem;\n  height: 0.875rem;\n}\n.size-4 {\n  width: 1rem;\n  height: 1rem;\n}\n.size-5 {\n  width: 1.25rem;\n  height: 1.25rem;\n}\n.size-6 {\n  width: 1.5rem;\n  height: 1.5rem;\n}\n.h-1 {\n  height: 0.25rem;\n}\n.h-10 {\n  height: 2.5rem;\n}\n.h-11 {\n  height: 2.75rem;\n}\n.h-12 {\n  height: 3rem;\n}\n.h-2 {\n  height: 0.5rem;\n}\n.h-24 {\n  height: 6rem;\n}\n.h-4 {\n  height: 1rem;\n}\n.h-5 {\n  height: 1.25rem;\n}\n.h-6 {\n  height: 1.5rem;\n}\n.h-7 {\n  height: 1.75rem;\n}\n.h-8 {\n  height: 2rem;\n}\n.h-9 {\n  height: 2.25rem;\n}\n.h-\\[300px\\] {\n  height: 300px;\n}\n.h-\\[var\\(--radix-select-trigger-height\\)\\] {\n  height: var(--radix-select-trigger-height);\n}\n.h-full {\n  height: 100%;\n}\n.max-h-60 {\n  max-height: 15rem;\n}\n.max-h-\\[220px\\] {\n  max-height: 220px;\n}\n.max-h-\\[280px\\] {\n  max-height: 280px;\n}\n.max-h-\\[360px\\] {\n  max-height: 360px;\n}\n.max-h-\\[600px\\] {\n  max-height: 600px;\n}\n.min-h-11 {\n  min-height: 2.75rem;\n}\n.min-h-\\[200px\\] {\n  min-height: 200px;\n}\n.min-h-\\[80px\\] {\n  min-height: 80px;\n}\n.w-10 {\n  width: 2.5rem;\n}\n.w-11 {\n  width: 2.75rem;\n}\n.w-12 {\n  width: 3rem;\n}\n.w-2 {\n  width: 0.5rem;\n}\n.w-4 {\n  width: 1rem;\n}\n.w-5 {\n  width: 1.25rem;\n}\n.w-6 {\n  width: 1.5rem;\n}\n.w-7 {\n  width: 1.75rem;\n}\n.w-9 {\n  width: 2.25rem;\n}\n.w-\\[100px\\] {\n  width: 100px;\n}\n.w-\\[120px\\] {\n  width: 120px;\n}\n.w-\\[32\\%\\] {\n  width: 32%;\n}\n.w-\\[340px\\] {\n  width: 340px;\n}\n.w-\\[90px\\] {\n  width: 90px;\n}\n.w-full {\n  width: 100%;\n}\n.w-px {\n  width: 1px;\n}\n.min-w-0 {\n  min-width: 0px;\n}\n.min-w-\\[100px\\] {\n  min-width: 100px;\n}\n.min-w-\\[110px\\] {\n  min-width: 110px;\n}\n.min-w-\\[12rem\\] {\n  min-width: 12rem;\n}\n.min-w-\\[80px\\] {\n  min-width: 80px;\n}\n.min-w-\\[90px\\] {\n  min-width: 90px;\n}\n.min-w-\\[var\\(--radix-select-trigger-width\\)\\] {\n  min-width: var(--radix-select-trigger-width);\n}\n.max-w-\\[120px\\] {\n  max-width: 120px;\n}\n.max-w-\\[140px\\] {\n  max-width: 140px;\n}\n.max-w-\\[200px\\] {\n  max-width: 200px;\n}\n.flex-1 {\n  flex: 1 1 0%;\n}\n.flex-shrink {\n  flex-shrink: 1;\n}\n.flex-shrink-0 {\n  flex-shrink: 0;\n}\n.shrink-0 {\n  flex-shrink: 0;\n}\n.-translate-x-1\\/2 {\n  --tw-translate-x: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.-translate-y-1\\/2 {\n  --tw-translate-y: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.scale-90 {\n  --tw-scale-x: .9;\n  --tw-scale-y: .9;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.transform {\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n@keyframes pulse {\n  50% {\n    opacity: .5;\n  }\n}\n.animate-pulse {\n  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;\n}\n@keyframes slide-up {\n  0% {\n    opacity: 0;\n    transform: translateY(8px);\n  }\n  100% {\n    opacity: 1;\n    transform: translateY(0);\n  }\n}\n.animate-slide-up {\n  animation: slide-up 0.15s ease-out;\n}\n.cursor-default {\n  cursor: default;\n}\n.cursor-not-allowed {\n  cursor: not-allowed;\n}\n.cursor-pointer {\n  cursor: pointer;\n}\n.select-none {\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.resize-none {\n  resize: none;\n}\n.resize-y {\n  resize: vertical;\n}\n.resize {\n  resize: both;\n}\n.grid-cols-1 {\n  grid-template-columns: repeat(1, minmax(0, 1fr));\n}\n.grid-cols-2 {\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n}\n.grid-cols-\\[1fr_140px_120px_50px\\] {\n  grid-template-columns: 1fr 140px 120px 50px;\n}\n.grid-cols-\\[1fr_1fr\\] {\n  grid-template-columns: 1fr 1fr;\n}\n.grid-cols-\\[repeat\\(auto-fill\\2c minmax\\(90px\\2c 1fr\\)\\)\\] {\n  grid-template-columns: repeat(auto-fill,minmax(90px,1fr));\n}\n.flex-col {\n  flex-direction: column;\n}\n.flex-wrap {\n  flex-wrap: wrap;\n}\n.items-start {\n  align-items: flex-start;\n}\n.items-end {\n  align-items: flex-end;\n}\n.items-center {\n  align-items: center;\n}\n.justify-end {\n  justify-content: flex-end;\n}\n.justify-center {\n  justify-content: center;\n}\n.justify-between {\n  justify-content: space-between;\n}\n.gap-0 {\n  gap: 0px;\n}\n.gap-1 {\n  gap: 0.25rem;\n}\n.gap-1\\.5 {\n  gap: 0.375rem;\n}\n.gap-2 {\n  gap: 0.5rem;\n}\n.gap-2\\.5 {\n  gap: 0.625rem;\n}\n.gap-3 {\n  gap: 0.75rem;\n}\n.gap-4 {\n  gap: 1rem;\n}\n.gap-x-8 {\n  -moz-column-gap: 2rem;\n       column-gap: 2rem;\n}\n.gap-y-3 {\n  row-gap: 0.75rem;\n}\n.space-y-0\\.5 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.125rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.125rem * var(--tw-space-y-reverse));\n}\n.space-y-1 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));\n}\n.space-y-1\\.5 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.375rem * var(--tw-space-y-reverse));\n}\n.space-y-2 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));\n}\n.space-y-2\\.5 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.625rem * var(--tw-space-y-reverse));\n}\n.space-y-3 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));\n}\n.space-y-4 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1rem * var(--tw-space-y-reverse));\n}\n.space-y-5 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1.25rem * var(--tw-space-y-reverse));\n}\n.divide-y > :not([hidden]) ~ :not([hidden]) {\n  --tw-divide-y-reverse: 0;\n  border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));\n  border-bottom-width: calc(1px * var(--tw-divide-y-reverse));\n}\n.divide-border > :not([hidden]) ~ :not([hidden]) {\n  border-color: hsl(var(--border));\n}\n.overflow-auto {\n  overflow: auto;\n}\n.overflow-hidden {\n  overflow: hidden;\n}\n.overflow-y-auto {\n  overflow-y: auto;\n}\n.truncate {\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n.whitespace-nowrap {\n  white-space: nowrap;\n}\n.whitespace-pre-wrap {\n  white-space: pre-wrap;\n}\n.break-words {\n  overflow-wrap: break-word;\n}\n.rounded {\n  border-radius: 0.25rem;\n}\n.rounded-full {\n  border-radius: 9999px;\n}\n.rounded-lg {\n  border-radius: 0.5rem;\n}\n.rounded-md {\n  border-radius: 6px;\n}\n.rounded-xl {\n  border-radius: 0.75rem;\n}\n.rounded-b-2xl {\n  border-bottom-right-radius: 1rem;\n  border-bottom-left-radius: 1rem;\n}\n.border {\n  border-width: 1px;\n}\n.border-2 {\n  border-width: 2px;\n}\n.border-b {\n  border-bottom-width: 1px;\n}\n.border-b-2 {\n  border-bottom-width: 2px;\n}\n.border-l-2 {\n  border-left-width: 2px;\n}\n.border-t {\n  border-top-width: 1px;\n}\n.border-t-2 {\n  border-top-width: 2px;\n}\n.border-dashed {\n  border-style: dashed;\n}\n.border-none {\n  border-style: none;\n}\n.border-\\[\\#2469f0\\] {\n  --tw-border-opacity: 1;\n  border-color: rgb(36 105 240 / var(--tw-border-opacity, 1));\n}\n.border-amber-200 {\n  --tw-border-opacity: 1;\n  border-color: rgb(253 230 138 / var(--tw-border-opacity, 1));\n}\n.border-border {\n  border-color: hsl(var(--border));\n}\n.border-destructive {\n  border-color: hsl(var(--destructive));\n}\n.border-destructive\\/20 {\n  border-color: hsl(var(--destructive) / 0.2);\n}\n.border-destructive\\/30 {\n  border-color: hsl(var(--destructive) / 0.3);\n}\n.border-foreground {\n  border-color: hsl(var(--foreground));\n}\n.border-green-200 {\n  --tw-border-opacity: 1;\n  border-color: rgb(187 247 208 / var(--tw-border-opacity, 1));\n}\n.border-input {\n  border-color: hsl(var(--input));\n}\n.border-primary {\n  border-color: hsl(var(--primary));\n}\n.border-primary\\/20 {\n  border-color: hsl(var(--primary) / 0.2);\n}\n.border-primary\\/50 {\n  border-color: hsl(var(--primary) / 0.5);\n}\n.border-red-200 {\n  --tw-border-opacity: 1;\n  border-color: rgb(254 202 202 / var(--tw-border-opacity, 1));\n}\n.border-red-500 {\n  --tw-border-opacity: 1;\n  border-color: rgb(239 68 68 / var(--tw-border-opacity, 1));\n}\n.border-transparent {\n  border-color: transparent;\n}\n.bg-\\[\\#2469f0\\] {\n  --tw-bg-opacity: 1;\n  background-color: rgb(36 105 240 / var(--tw-bg-opacity, 1));\n}\n.bg-accent {\n  background-color: hsl(var(--accent));\n}\n.bg-accent\\/20 {\n  background-color: hsl(var(--accent) / 0.2);\n}\n.bg-accent\\/40 {\n  background-color: hsl(var(--accent) / 0.4);\n}\n.bg-accent\\/50 {\n  background-color: hsl(var(--accent) / 0.5);\n}\n.bg-amber-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(255 251 235 / var(--tw-bg-opacity, 1));\n}\n.bg-amber-50\\/50 {\n  background-color: rgb(255 251 235 / 0.5);\n}\n.bg-background {\n  background-color: hsl(var(--background));\n}\n.bg-background\\/60 {\n  background-color: hsl(var(--background) / 0.6);\n}\n.bg-blue-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1));\n}\n.bg-blue-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(239 246 255 / var(--tw-bg-opacity, 1));\n}\n.bg-border {\n  background-color: hsl(var(--border));\n}\n.bg-card {\n  background-color: hsl(var(--card));\n}\n.bg-destructive {\n  background-color: hsl(var(--destructive));\n}\n.bg-destructive\\/10 {\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.bg-destructive\\/5 {\n  background-color: hsl(var(--destructive) / 0.05);\n}\n.bg-foreground {\n  background-color: hsl(var(--foreground));\n}\n.bg-gray-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));\n}\n.bg-green-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(220 252 231 / var(--tw-bg-opacity, 1));\n}\n.bg-green-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(240 253 244 / var(--tw-bg-opacity, 1));\n}\n.bg-green-500 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(34 197 94 / var(--tw-bg-opacity, 1));\n}\n.bg-green-600 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(22 163 74 / var(--tw-bg-opacity, 1));\n}\n.bg-muted {\n  background-color: hsl(var(--muted));\n}\n.bg-muted-foreground {\n  background-color: hsl(var(--muted-foreground));\n}\n.bg-muted\\/20 {\n  background-color: hsl(var(--muted) / 0.2);\n}\n.bg-muted\\/40 {\n  background-color: hsl(var(--muted) / 0.4);\n}\n.bg-popover {\n  background-color: hsl(var(--popover));\n}\n.bg-primary {\n  background-color: hsl(var(--primary));\n}\n.bg-primary\\/10 {\n  background-color: hsl(var(--primary) / 0.1);\n}\n.bg-primary\\/5 {\n  background-color: hsl(var(--primary) / 0.05);\n}\n.bg-red-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 226 226 / var(--tw-bg-opacity, 1));\n}\n.bg-red-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 242 242 / var(--tw-bg-opacity, 1));\n}\n.bg-red-500\\/5 {\n  background-color: rgb(239 68 68 / 0.05);\n}\n.bg-red-600 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(220 38 38 / var(--tw-bg-opacity, 1));\n}\n.bg-secondary {\n  background-color: hsl(var(--secondary));\n}\n.bg-white\\/15 {\n  background-color: rgb(255 255 255 / 0.15);\n}\n.bg-yellow-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 252 232 / var(--tw-bg-opacity, 1));\n}\n.bg-gradient-to-br {\n  background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));\n}\n.from-muted {\n  --tw-gradient-from: hsl(var(--muted)) var(--tw-gradient-from-position);\n  --tw-gradient-to: hsl(var(--muted) / 0) var(--tw-gradient-to-position);\n  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);\n}\n.to-muted\\/50 {\n  --tw-gradient-to: hsl(var(--muted) / 0.5) var(--tw-gradient-to-position);\n}\n.p-0\\.5 {\n  padding: 0.125rem;\n}\n.p-1 {\n  padding: 0.25rem;\n}\n.p-1\\.5 {\n  padding: 0.375rem;\n}\n.p-2 {\n  padding: 0.5rem;\n}\n.p-2\\.5 {\n  padding: 0.625rem;\n}\n.p-3 {\n  padding: 0.75rem;\n}\n.p-4 {\n  padding: 1rem;\n}\n.p-5 {\n  padding: 1.25rem;\n}\n.p-8 {\n  padding: 2rem;\n}\n.px-1 {\n  padding-left: 0.25rem;\n  padding-right: 0.25rem;\n}\n.px-1\\.5 {\n  padding-left: 0.375rem;\n  padding-right: 0.375rem;\n}\n.px-2 {\n  padding-left: 0.5rem;\n  padding-right: 0.5rem;\n}\n.px-2\\.5 {\n  padding-left: 0.625rem;\n  padding-right: 0.625rem;\n}\n.px-3 {\n  padding-left: 0.75rem;\n  padding-right: 0.75rem;\n}\n.px-3\\.5 {\n  padding-left: 0.875rem;\n  padding-right: 0.875rem;\n}\n.px-4 {\n  padding-left: 1rem;\n  padding-right: 1rem;\n}\n.px-5 {\n  padding-left: 1.25rem;\n  padding-right: 1.25rem;\n}\n.px-6 {\n  padding-left: 1.5rem;\n  padding-right: 1.5rem;\n}\n.px-7 {\n  padding-left: 1.75rem;\n  padding-right: 1.75rem;\n}\n.py-0 {\n  padding-top: 0px;\n  padding-bottom: 0px;\n}\n.py-0\\.5 {\n  padding-top: 0.125rem;\n  padding-bottom: 0.125rem;\n}\n.py-1 {\n  padding-top: 0.25rem;\n  padding-bottom: 0.25rem;\n}\n.py-1\\.5 {\n  padding-top: 0.375rem;\n  padding-bottom: 0.375rem;\n}\n.py-12 {\n  padding-top: 3rem;\n  padding-bottom: 3rem;\n}\n.py-2 {\n  padding-top: 0.5rem;\n  padding-bottom: 0.5rem;\n}\n.py-2\\.5 {\n  padding-top: 0.625rem;\n  padding-bottom: 0.625rem;\n}\n.py-3 {\n  padding-top: 0.75rem;\n  padding-bottom: 0.75rem;\n}\n.py-3\\.5 {\n  padding-top: 0.875rem;\n  padding-bottom: 0.875rem;\n}\n.py-4 {\n  padding-top: 1rem;\n  padding-bottom: 1rem;\n}\n.py-8 {\n  padding-top: 2rem;\n  padding-bottom: 2rem;\n}\n.pb-1\\.5 {\n  padding-bottom: 0.375rem;\n}\n.pb-2 {\n  padding-bottom: 0.5rem;\n}\n.pr-12 {\n  padding-right: 3rem;\n}\n.pr-20 {\n  padding-right: 5rem;\n}\n.pt-3 {\n  padding-top: 0.75rem;\n}\n.text-center {\n  text-align: center;\n}\n.font-\\[\\\'Inter\\\'\\2c system-ui\\2c sans-serif\\] {\n  font-family: \'Inter\',system-ui,sans-serif;\n}\n.font-mono {\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace;\n}\n.text-\\[10px\\] {\n  font-size: 10px;\n}\n.text-\\[11px\\] {\n  font-size: 11px;\n}\n.text-\\[14px\\] {\n  font-size: 14px;\n}\n.text-\\[15px\\] {\n  font-size: 15px;\n}\n.text-\\[18px\\] {\n  font-size: 18px;\n}\n.text-\\[8px\\] {\n  font-size: 8px;\n}\n.text-\\[9px\\] {\n  font-size: 9px;\n}\n.text-base {\n  font-size: 1rem;\n  line-height: 1.5rem;\n}\n.text-lg {\n  font-size: 1.125rem;\n  line-height: 1.75rem;\n}\n.text-md-sm {\n  font-size: 12px;\n  line-height: 18px;\n}\n.text-md-xs {\n  font-size: 11px;\n  line-height: 16px;\n}\n.text-sm {\n  font-size: 0.875rem;\n  line-height: 1.25rem;\n}\n.text-xl {\n  font-size: 1.25rem;\n  line-height: 1.75rem;\n}\n.text-xs {\n  font-size: 0.75rem;\n  line-height: 1rem;\n}\n.font-bold {\n  font-weight: 700;\n}\n.font-medium {\n  font-weight: 500;\n}\n.font-semibold {\n  font-weight: 600;\n}\n.uppercase {\n  text-transform: uppercase;\n}\n.leading-normal {\n  line-height: 1.5;\n}\n.leading-relaxed {\n  line-height: 1.625;\n}\n.leading-snug {\n  line-height: 1.375;\n}\n.tracking-tight {\n  letter-spacing: -0.025em;\n}\n.tracking-wide {\n  letter-spacing: 0.025em;\n}\n.tracking-wider {\n  letter-spacing: 0.05em;\n}\n.text-\\[\\#2469f0\\] {\n  --tw-text-opacity: 1;\n  color: rgb(36 105 240 / var(--tw-text-opacity, 1));\n}\n.text-amber-700 {\n  --tw-text-opacity: 1;\n  color: rgb(180 83 9 / var(--tw-text-opacity, 1));\n}\n.text-background {\n  color: hsl(var(--background));\n}\n.text-blue-700 {\n  --tw-text-opacity: 1;\n  color: rgb(29 78 216 / var(--tw-text-opacity, 1));\n}\n.text-card-foreground {\n  color: hsl(var(--card-foreground));\n}\n.text-destructive {\n  color: hsl(var(--destructive));\n}\n.text-destructive-foreground {\n  color: hsl(var(--destructive-foreground));\n}\n.text-destructive\\/80 {\n  color: hsl(var(--destructive) / 0.8);\n}\n.text-foreground {\n  color: hsl(var(--foreground));\n}\n.text-gray-700 {\n  --tw-text-opacity: 1;\n  color: rgb(55 65 81 / var(--tw-text-opacity, 1));\n}\n.text-green-500 {\n  --tw-text-opacity: 1;\n  color: rgb(34 197 94 / var(--tw-text-opacity, 1));\n}\n.text-green-700 {\n  --tw-text-opacity: 1;\n  color: rgb(21 128 61 / var(--tw-text-opacity, 1));\n}\n.text-muted-foreground {\n  color: hsl(var(--muted-foreground));\n}\n.text-popover-foreground {\n  color: hsl(var(--popover-foreground));\n}\n.text-primary {\n  color: hsl(var(--primary));\n}\n.text-primary-foreground {\n  color: hsl(var(--primary-foreground));\n}\n.text-red-500 {\n  --tw-text-opacity: 1;\n  color: rgb(239 68 68 / var(--tw-text-opacity, 1));\n}\n.text-red-600 {\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.text-red-700 {\n  --tw-text-opacity: 1;\n  color: rgb(185 28 28 / var(--tw-text-opacity, 1));\n}\n.text-red-800 {\n  --tw-text-opacity: 1;\n  color: rgb(153 27 27 / var(--tw-text-opacity, 1));\n}\n.text-red-900 {\n  --tw-text-opacity: 1;\n  color: rgb(127 29 29 / var(--tw-text-opacity, 1));\n}\n.text-secondary-foreground {\n  color: hsl(var(--secondary-foreground));\n}\n.text-white {\n  --tw-text-opacity: 1;\n  color: rgb(255 255 255 / var(--tw-text-opacity, 1));\n}\n.text-white\\/70 {\n  color: rgb(255 255 255 / 0.7);\n}\n.text-white\\/80 {\n  color: rgb(255 255 255 / 0.8);\n}\n.text-yellow-600 {\n  --tw-text-opacity: 1;\n  color: rgb(202 138 4 / var(--tw-text-opacity, 1));\n}\n.text-yellow-700 {\n  --tw-text-opacity: 1;\n  color: rgb(161 98 7 / var(--tw-text-opacity, 1));\n}\n.text-yellow-800 {\n  --tw-text-opacity: 1;\n  color: rgb(133 77 14 / var(--tw-text-opacity, 1));\n}\n.underline-offset-4 {\n  text-underline-offset: 4px;\n}\n.antialiased {\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n}\n.opacity-0 {\n  opacity: 0;\n}\n.opacity-30 {\n  opacity: 0.3;\n}\n.opacity-50 {\n  opacity: 0.5;\n}\n.opacity-60 {\n  opacity: 0.6;\n}\n.opacity-85 {\n  opacity: 0.85;\n}\n.opacity-90 {\n  opacity: 0.9;\n}\n.shadow {\n  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-lg {\n  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-sm {\n  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);\n  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-xl {\n  --tw-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.outline-none {\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.outline {\n  outline-style: solid;\n}\n.ring {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.ring-0 {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.blur {\n  --tw-blur: blur(8px);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.grayscale {\n  --tw-grayscale: grayscale(100%);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.filter {\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.backdrop-blur {\n  --tw-backdrop-blur: blur(8px);\n  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);\n}\n.backdrop-filter {\n  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);\n}\n.transition {\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-all {\n  transition-property: all;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-colors {\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-transform {\n  transition-property: transform;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.duration-200 {\n  transition-duration: 200ms;\n}\n.duration-300 {\n  transition-duration: 300ms;\n}\n.ease-in-out {\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.ease-out {\n  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);\n}\n@keyframes enter {\n  from {\n    opacity: var(--tw-enter-opacity, 1);\n    transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0) scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1)) rotate(var(--tw-enter-rotate, 0));\n  }\n}\n@keyframes exit {\n  to {\n    opacity: var(--tw-exit-opacity, 1);\n    transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0) scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1)) rotate(var(--tw-exit-rotate, 0));\n  }\n}\n.animate-in {\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.fade-in {\n  --tw-enter-opacity: 0;\n}\n.fade-out {\n  --tw-exit-opacity: 0;\n}\n.duration-200 {\n  animation-duration: 200ms;\n}\n.duration-300 {\n  animation-duration: 300ms;\n}\n.ease-in-out {\n  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.ease-out {\n  animation-timing-function: cubic-bezier(0, 0, 0.2, 1);\n}\n.running {\n  animation-play-state: running;\n}\n.placeholder\\:text-muted-foreground::-moz-placeholder {\n  color: hsl(var(--muted-foreground));\n}\n.placeholder\\:text-muted-foreground::placeholder {\n  color: hsl(var(--muted-foreground));\n}\n.last\\:border-b-0:last-child {\n  border-bottom-width: 0px;\n}\n.hover\\:bg-accent:hover {\n  background-color: hsl(var(--accent));\n}\n.hover\\:bg-amber-100\\/50:hover {\n  background-color: rgb(254 243 199 / 0.5);\n}\n.hover\\:bg-destructive:hover {\n  background-color: hsl(var(--destructive));\n}\n.hover\\:bg-destructive\\/10:hover {\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.hover\\:bg-destructive\\/20:hover {\n  background-color: hsl(var(--destructive) / 0.2);\n}\n.hover\\:bg-destructive\\/90:hover {\n  background-color: hsl(var(--destructive) / 0.9);\n}\n.hover\\:bg-green-700:hover {\n  --tw-bg-opacity: 1;\n  background-color: rgb(21 128 61 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-primary\\/5:hover {\n  background-color: hsl(var(--primary) / 0.05);\n}\n.hover\\:bg-primary\\/90:hover {\n  background-color: hsl(var(--primary) / 0.9);\n}\n.hover\\:bg-red-500\\/10:hover {\n  background-color: rgb(239 68 68 / 0.1);\n}\n.hover\\:bg-red-700:hover {\n  --tw-bg-opacity: 1;\n  background-color: rgb(185 28 28 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-secondary\\/80:hover {\n  background-color: hsl(var(--secondary) / 0.8);\n}\n.hover\\:bg-white\\/25:hover {\n  background-color: rgb(255 255 255 / 0.25);\n}\n.hover\\:text-accent-foreground:hover {\n  color: hsl(var(--accent-foreground));\n}\n.hover\\:text-destructive:hover {\n  color: hsl(var(--destructive));\n}\n.hover\\:text-destructive-foreground:hover {\n  color: hsl(var(--destructive-foreground));\n}\n.hover\\:text-foreground:hover {\n  color: hsl(var(--foreground));\n}\n.hover\\:text-red-600:hover {\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.hover\\:underline:hover {\n  text-decoration-line: underline;\n}\n.hover\\:opacity-70:hover {\n  opacity: 0.7;\n}\n.focus\\:bg-accent:focus {\n  background-color: hsl(var(--accent));\n}\n.focus\\:text-accent-foreground:focus {\n  color: hsl(var(--accent-foreground));\n}\n.focus\\:outline-none:focus {\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus\\:ring-1:focus {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-2:focus {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-primary:focus {\n  --tw-ring-color: hsl(var(--primary));\n}\n.focus\\:ring-red-500:focus {\n  --tw-ring-opacity: 1;\n  --tw-ring-color: rgb(239 68 68 / var(--tw-ring-opacity, 1));\n}\n.focus\\:ring-ring:focus {\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus\\:ring-offset-2:focus {\n  --tw-ring-offset-width: 2px;\n}\n.focus-visible\\:outline-none:focus-visible {\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus-visible\\:ring-2:focus-visible {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus-visible\\:ring-primary:focus-visible {\n  --tw-ring-color: hsl(var(--primary));\n}\n.focus-visible\\:ring-ring:focus-visible {\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus-visible\\:ring-offset-1:focus-visible {\n  --tw-ring-offset-width: 1px;\n}\n.focus-visible\\:ring-offset-2:focus-visible {\n  --tw-ring-offset-width: 2px;\n}\n.active\\:bg-accent:active {\n  background-color: hsl(var(--accent));\n}\n.active\\:bg-destructive:active {\n  background-color: hsl(var(--destructive));\n}\n.active\\:bg-primary:active {\n  background-color: hsl(var(--primary));\n}\n.active\\:bg-secondary:active {\n  background-color: hsl(var(--secondary));\n}\n.disabled\\:pointer-events-none:disabled {\n  pointer-events: none;\n}\n.disabled\\:cursor-not-allowed:disabled {\n  cursor: not-allowed;\n}\n.disabled\\:bg-muted:disabled {\n  background-color: hsl(var(--muted));\n}\n.disabled\\:opacity-50:disabled {\n  opacity: 0.5;\n}\n.group:hover .group-hover\\:opacity-100 {\n  opacity: 1;\n}\n.data-\\[disabled\\]\\:pointer-events-none[data-disabled] {\n  pointer-events: none;\n}\n.data-\\[side\\=bottom\\]\\:translate-y-1[data-side="bottom"] {\n  --tw-translate-y: 0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[side\\=top\\]\\:-translate-y-1[data-side="top"] {\n  --tw-translate-y: -0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:translate-x-4[data-state="checked"] {\n  --tw-translate-x: 1rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=unchecked\\]\\:translate-x-0[data-state="unchecked"] {\n  --tw-translate-x: 0px;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:bg-primary[data-state="checked"] {\n  background-color: hsl(var(--primary));\n}\n.data-\\[state\\=unchecked\\]\\:bg-input[data-state="unchecked"] {\n  background-color: hsl(var(--input));\n}\n.data-\\[disabled\\]\\:opacity-50[data-disabled] {\n  opacity: 0.5;\n}\n.data-\\[state\\=open\\]\\:animate-in[data-state="open"] {\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:animate-out[data-state="closed"] {\n  animation-name: exit;\n  animation-duration: 150ms;\n  --tw-exit-opacity: initial;\n  --tw-exit-scale: initial;\n  --tw-exit-rotate: initial;\n  --tw-exit-translate-x: initial;\n  --tw-exit-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:fade-out-0[data-state="closed"] {\n  --tw-exit-opacity: 0;\n}\n.data-\\[state\\=open\\]\\:fade-in-0[data-state="open"] {\n  --tw-enter-opacity: 0;\n}\n.data-\\[state\\=closed\\]\\:zoom-out-95[data-state="closed"] {\n  --tw-exit-scale: .95;\n}\n.data-\\[state\\=open\\]\\:zoom-in-95[data-state="open"] {\n  --tw-enter-scale: .95;\n}\n@supports (backdrop-filter: var(--tw)) {\n  .supports-\\[backdrop-filter\\]\\:bg-background\\/60 {\n    background-color: hsl(var(--background) / 0.6);\n  }\n}\n.dark\\:border-amber-800:is(.dark *) {\n  --tw-border-opacity: 1;\n  border-color: rgb(146 64 14 / var(--tw-border-opacity, 1));\n}\n.dark\\:border-green-800:is(.dark *) {\n  --tw-border-opacity: 1;\n  border-color: rgb(22 101 52 / var(--tw-border-opacity, 1));\n}\n.dark\\:border-red-900:is(.dark *) {\n  --tw-border-opacity: 1;\n  border-color: rgb(127 29 29 / var(--tw-border-opacity, 1));\n}\n.dark\\:bg-amber-900\\/30:is(.dark *) {\n  background-color: rgb(120 53 15 / 0.3);\n}\n.dark\\:bg-amber-950\\/20:is(.dark *) {\n  background-color: rgb(69 26 3 / 0.2);\n}\n.dark\\:bg-blue-900\\/30:is(.dark *) {\n  background-color: rgb(30 58 138 / 0.3);\n}\n.dark\\:bg-blue-950\\/20:is(.dark *) {\n  background-color: rgb(23 37 84 / 0.2);\n}\n.dark\\:bg-green-950\\/20:is(.dark *) {\n  background-color: rgb(5 46 22 / 0.2);\n}\n.dark\\:bg-red-950\\/20:is(.dark *) {\n  background-color: rgb(69 10 10 / 0.2);\n}\n.dark\\:bg-yellow-950\\/30:is(.dark *) {\n  background-color: rgb(66 32 6 / 0.3);\n}\n.dark\\:text-amber-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(252 211 77 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-blue-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(147 197 253 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-green-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(134 239 172 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-red-200:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(254 202 202 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-red-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(252 165 165 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-yellow-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(253 224 71 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-yellow-400:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(250 204 21 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-yellow-500:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(234 179 8 / var(--tw-text-opacity, 1));\n}\n@media (min-width: 640px) {\n  .sm\\:grid-cols-3 {\n    grid-template-columns: repeat(3, minmax(0, 1fr));\n  }\n}\n@media (min-width: 768px) {\n  .md\\:grid-cols-2 {\n    grid-template-columns: repeat(2, minmax(0, 1fr));\n  }\n  .md\\:grid-cols-4 {\n    grid-template-columns: repeat(4, minmax(0, 1fr));\n  }\n  .md\\:text-left {\n    text-align: left;\n  }\n}\n@media (min-width: 1024px) {\n  .lg\\:grid-cols-3 {\n    grid-template-columns: repeat(3, minmax(0, 1fr));\n  }\n}\n.\\[\\&\\>span\\]\\:line-clamp-1>span {\n  overflow: hidden;\n  display: -webkit-box;\n  -webkit-box-orient: vertical;\n  -webkit-line-clamp: 1;\n}\n.\\[\\&\\>span\\]\\:h-3>span {\n  height: 0.75rem;\n}\n.\\[\\&\\>span\\]\\:w-3>span {\n  width: 0.75rem;\n}\n.data-\\[state\\=checked\\]\\:\\[\\&\\>span\\]\\:translate-x-3>span[data-state="checked"] {\n  --tw-translate-x: 0.75rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.\\[\\&_svg\\]\\:pointer-events-none svg {\n  pointer-events: none;\n}\n.\\[\\&_svg\\]\\:size-5 svg {\n  width: 1.25rem;\n  height: 1.25rem;\n}\n.\\[\\&_svg\\]\\:shrink-0 svg {\n  flex-shrink: 0;\n}\n'
+          : '';
+        css0 = css0.replace(/@import[^;]+;/g, '');
+        if (css0 && 'adoptedStyleSheets' in sr && 'CSSStyleSheet' in window) {
+          try {
+            const sheet = new window.CSSStyleSheet();
+            sheet.replaceSync(css0);
+            sr.adoptedStyleSheets = [...sr.adoptedStyleSheets, sheet];
+          } catch {
+            const ss2 = document.createElement('style');
+            ss2.textContent = css0;
+            sr.appendChild(ss2);
+          }
+        } else if (css0) {
+          const ss2 = document.createElement('style');
+          ss2.textContent = css0;
+          sr.appendChild(ss2);
+        }
+      } catch {}
+      return sr;
+    };
+    const shadowRoot = getShadow();
+    const cssRaw = true
+      ? '/* shadow-dom base */\n*, ::before, ::after {\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n::backdrop {\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n/* ! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com *//*\n1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)\n*/\n\n*,\n::before,\n::after {\n  box-sizing: border-box; /* 1 */\n  border-width: 0; /* 2 */\n  border-style: solid; /* 2 */\n  border-color: #e5e7eb; /* 2 */\n}\n\n::before,\n::after {\n  --tw-content: \'\';\n}\n\n/*\n1. Use a consistent sensible line-height in all browsers.\n2. Prevent adjustments of font size after orientation changes in iOS.\n3. Use a more readable tab size.\n4. Use the user\'s configured `sans` font-family by default.\n5. Use the user\'s configured `sans` font-feature-settings by default.\n6. Use the user\'s configured `sans` font-variation-settings by default.\n7. Disable tap highlights on iOS\n*/\n\nhtml,\n:host {\n  line-height: 1.5; /* 1 */\n  -webkit-text-size-adjust: 100%; /* 2 */\n  -moz-tab-size: 4; /* 3 */\n  -o-tab-size: 4;\n     tab-size: 4; /* 3 */\n  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; /* 4 */\n  font-feature-settings: normal; /* 5 */\n  font-variation-settings: normal; /* 6 */\n  -webkit-tap-highlight-color: transparent; /* 7 */\n}\n\n/*\n1. Remove the margin in all browsers.\n2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.\n*/\n\nbody {\n  margin: 0; /* 1 */\n  line-height: inherit; /* 2 */\n}\n\n/*\n1. Add the correct height in Firefox.\n2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n3. Ensure horizontal rules are visible by default.\n*/\n\nhr {\n  height: 0; /* 1 */\n  color: inherit; /* 2 */\n  border-top-width: 1px; /* 3 */\n}\n\n/*\nAdd the correct text decoration in Chrome, Edge, and Safari.\n*/\n\nabbr:where([title]) {\n  -webkit-text-decoration: underline dotted;\n          text-decoration: underline dotted;\n}\n\n/*\nRemove the default font size and weight for headings.\n*/\n\nh1,\nh2,\nh3,\nh4,\nh5,\nh6 {\n  font-size: inherit;\n  font-weight: inherit;\n}\n\n/*\nReset links to optimize for opt-in styling instead of opt-out.\n*/\n\na {\n  color: inherit;\n  text-decoration: inherit;\n}\n\n/*\nAdd the correct font weight in Edge and Safari.\n*/\n\nb,\nstrong {\n  font-weight: bolder;\n}\n\n/*\n1. Use the user\'s configured `mono` font-family by default.\n2. Use the user\'s configured `mono` font-feature-settings by default.\n3. Use the user\'s configured `mono` font-variation-settings by default.\n4. Correct the odd `em` font sizing in all browsers.\n*/\n\ncode,\nkbd,\nsamp,\npre {\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace; /* 1 */\n  font-feature-settings: normal; /* 2 */\n  font-variation-settings: normal; /* 3 */\n  font-size: 1em; /* 4 */\n}\n\n/*\nAdd the correct font size in all browsers.\n*/\n\nsmall {\n  font-size: 80%;\n}\n\n/*\nPrevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\nsub,\nsup {\n  font-size: 75%;\n  line-height: 0;\n  position: relative;\n  vertical-align: baseline;\n}\n\nsub {\n  bottom: -0.25em;\n}\n\nsup {\n  top: -0.5em;\n}\n\n/*\n1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n3. Remove gaps between table borders by default.\n*/\n\ntable {\n  text-indent: 0; /* 1 */\n  border-color: inherit; /* 2 */\n  border-collapse: collapse; /* 3 */\n}\n\n/*\n1. Change the font styles in all browsers.\n2. Remove the margin in Firefox and Safari.\n3. Remove default padding in all browsers.\n*/\n\nbutton,\ninput,\noptgroup,\nselect,\ntextarea {\n  font-family: inherit; /* 1 */\n  font-feature-settings: inherit; /* 1 */\n  font-variation-settings: inherit; /* 1 */\n  font-size: 100%; /* 1 */\n  font-weight: inherit; /* 1 */\n  line-height: inherit; /* 1 */\n  letter-spacing: inherit; /* 1 */\n  color: inherit; /* 1 */\n  margin: 0; /* 2 */\n  padding: 0; /* 3 */\n}\n\n/*\nRemove the inheritance of text transform in Edge and Firefox.\n*/\n\nbutton,\nselect {\n  text-transform: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Remove default button styles.\n*/\n\nbutton,\ninput:where([type=\'button\']),\ninput:where([type=\'reset\']),\ninput:where([type=\'submit\']) {\n  -webkit-appearance: button; /* 1 */\n  background-color: transparent; /* 2 */\n  background-image: none; /* 2 */\n}\n\n/*\nUse the modern Firefox focus style for all focusable elements.\n*/\n\n:-moz-focusring {\n  outline: auto;\n}\n\n/*\nRemove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n:-moz-ui-invalid {\n  box-shadow: none;\n}\n\n/*\nAdd the correct vertical alignment in Chrome and Firefox.\n*/\n\nprogress {\n  vertical-align: baseline;\n}\n\n/*\nCorrect the cursor style of increment and decrement buttons in Safari.\n*/\n\n::-webkit-inner-spin-button,\n::-webkit-outer-spin-button {\n  height: auto;\n}\n\n/*\n1. Correct the odd appearance in Chrome and Safari.\n2. Correct the outline style in Safari.\n*/\n\n[type=\'search\'] {\n  -webkit-appearance: textfield; /* 1 */\n  outline-offset: -2px; /* 2 */\n}\n\n/*\nRemove the inner padding in Chrome and Safari on macOS.\n*/\n\n::-webkit-search-decoration {\n  -webkit-appearance: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Change font properties to `inherit` in Safari.\n*/\n\n::-webkit-file-upload-button {\n  -webkit-appearance: button; /* 1 */\n  font: inherit; /* 2 */\n}\n\n/*\nAdd the correct display in Chrome and Safari.\n*/\n\nsummary {\n  display: list-item;\n}\n\n/*\nRemoves the default spacing and border for appropriate elements.\n*/\n\nblockquote,\ndl,\ndd,\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\nhr,\nfigure,\np,\npre {\n  margin: 0;\n}\n\nfieldset {\n  margin: 0;\n  padding: 0;\n}\n\nlegend {\n  padding: 0;\n}\n\nol,\nul,\nmenu {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n}\n\n/*\nReset default styling for dialogs.\n*/\ndialog {\n  padding: 0;\n}\n\n/*\nPrevent resizing textareas horizontally by default.\n*/\n\ntextarea {\n  resize: vertical;\n}\n\n/*\n1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n2. Set the default placeholder color to the user\'s configured gray 400 color.\n*/\n\ninput::-moz-placeholder, textarea::-moz-placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\ninput::placeholder,\ntextarea::placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\n/*\nSet the default cursor for buttons.\n*/\n\nbutton,\n[role="button"] {\n  cursor: pointer;\n}\n\n/*\nMake sure disabled buttons don\'t get the pointer cursor.\n*/\n:disabled {\n  cursor: default;\n}\n\n/*\n1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n   This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\nimg,\nsvg,\nvideo,\ncanvas,\naudio,\niframe,\nembed,\nobject {\n  display: block; /* 1 */\n  vertical-align: middle; /* 2 */\n}\n\n/*\nConstrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\nimg,\nvideo {\n  max-width: 100%;\n  height: auto;\n}\n\n/* Make elements with the HTML hidden attribute stay hidden by default */\n[hidden]:where(:not([hidden="until-found"])) {\n  display: none;\n}\n  *,\n  *::before,\n  *::after {\n    box-sizing: border-box;\n  }\n\n  html {\n    font-family:\n      \'Inter\',\n      -apple-system,\n      BlinkMacSystemFont,\n      \'Segoe UI\',\n      sans-serif;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale;\n  }\n\n  /* ponytail: senior preset \u2014 :root for popup/sidepanel, :host+#app for Shadow DOM (resume modals).\n     Keep in sync: edit :root. */\n  :root,\n  :host,\n  #app {\n    --background: 0 0% 100%;\n    --foreground: 222.2 47% 11%;\n    --card: 0 0% 100%;\n    --card-foreground: 222.2 47% 11%;\n    --popover: 0 0% 100%;\n    --popover-foreground: 222.2 47% 11%;\n    --primary: 221.2 83% 53%;\n    --primary-foreground: 210 40% 98%;\n    --secondary: 210 40% 96%;\n    --secondary-foreground: 222.2 47% 11%;\n    --muted: 210 40% 96%;\n    --muted-foreground: 215 20% 35%;\n    --accent: 210 40% 96%;\n    --accent-foreground: 222.2 47% 11%;\n    --destructive: 0 84% 60%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 214 32% 85%;\n    --input: 214 32% 85%;\n    --ring: 221 83% 53%;\n    --radius: 0.75rem;\n    --warning: 38 92% 50%;\n    --warning-foreground: 48 96% 12%;\n  }\n\n  /* ponytail: Shadow DOM needs its own color-scheme + base reset; :host isolates from page CSS */\n  :host {\n    all: initial;\n  }\n  #app {\n    color-scheme: light;\n    isolation: isolate;\n    font-family:\n      \'Inter\',\n      -apple-system,\n      BlinkMacSystemFont,\n      \'Segoe UI\',\n      sans-serif;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale;\n    box-sizing: border-box;\n  }\n  #app *,\n  #app *::before,\n  #app *::after {\n    box-sizing: border-box;\n  }\n\n  @theme inline {\n    --color-warning: var(--warning);\n    --color-warning-foreground: var(--warning-foreground);\n  }\n\n  .dark {\n    --background: 222.2 84% 4.9%;\n    --foreground: 210 40% 98%;\n    --card: 222.2 84% 4.9%;\n    --card-foreground: 210 40% 98%;\n    --popover: 222.2 84% 4.9%;\n    --popover-foreground: 210 40% 98%;\n    --primary: 217.2 91.2% 59.8%;\n    --primary-foreground: 222.2 47.4% 11.2%;\n    --secondary: 217.2 32.6% 17.5%;\n    --secondary-foreground: 210 40% 98%;\n    --muted: 217.2 32.6% 17.5%;\n    --muted-foreground: 215 20.2% 65.1%;\n    --accent: 217.2 32.6% 17.5%;\n    --accent-foreground: 210 40% 98%;\n    --destructive: 0 62.8% 30.6%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 217.2 32.6% 17.5%;\n    --input: 217.2 32.6% 17.5%;\n    --ring: 224.3 76.3% 48%;\n    --md-scrollbar: #484d54;\n  }\n\n  ::-moz-selection {\n    background: #2469f0;\n    color: white;\n  }\n\n  ::selection {\n    background: #2469f0;\n    color: white;\n  }\n\n  * {\n    scrollbar-width: thin;\n    scrollbar-color: #c9cdd4 transparent;\n  }\n\n  .dark * {\n    scrollbar-color: var(--md-scrollbar) transparent;\n  }\n\n  *::-webkit-scrollbar {\n    width: 6px;\n    height: 6px;\n  }\n\n  *::-webkit-scrollbar-track {\n    background: transparent;\n  }\n\n  *::-webkit-scrollbar-thumb {\n    background: #c9cdd4;\n    border-radius: 3px;\n  }\n\n  .dark *::-webkit-scrollbar-thumb {\n    background: var(--md-scrollbar);\n  }\n\n  *::-webkit-scrollbar-thumb:hover {\n    background: #a4a9b3;\n  }\n\n  .dark *::-webkit-scrollbar-thumb:hover {\n    background: #636971;\n  }\n.\\!container {\n  width: 100% !important;\n}\n.container {\n  width: 100%;\n}\n@media (min-width: 640px) {\n  .\\!container {\n    max-width: 640px !important;\n  }\n  .container {\n    max-width: 640px;\n  }\n}\n@media (min-width: 768px) {\n  .\\!container {\n    max-width: 768px !important;\n  }\n  .container {\n    max-width: 768px;\n  }\n}\n@media (min-width: 1024px) {\n  .\\!container {\n    max-width: 1024px !important;\n  }\n  .container {\n    max-width: 1024px;\n  }\n}\n@media (min-width: 1280px) {\n  .\\!container {\n    max-width: 1280px !important;\n  }\n  .container {\n    max-width: 1280px;\n  }\n}\n@media (min-width: 1536px) {\n  .\\!container {\n    max-width: 1536px !important;\n  }\n  .container {\n    max-width: 1536px;\n  }\n}\n.sr-only {\n  position: absolute;\n  width: 1px;\n  height: 1px;\n  padding: 0;\n  margin: -1px;\n  overflow: hidden;\n  clip: rect(0, 0, 0, 0);\n  white-space: nowrap;\n  border-width: 0;\n}\n.pointer-events-none {\n  pointer-events: none;\n}\n.visible {\n  visibility: visible;\n}\n.invisible {\n  visibility: hidden;\n}\n.static {\n  position: static;\n}\n.fixed {\n  position: fixed;\n}\n.absolute {\n  position: absolute;\n}\n.relative {\n  position: relative;\n}\n.sticky {\n  position: sticky;\n}\n.bottom-0 {\n  bottom: 0px;\n}\n.bottom-4 {\n  bottom: 1rem;\n}\n.left-1\\/2 {\n  left: 50%;\n}\n.right-4 {\n  right: 1rem;\n}\n.top-1\\/2 {\n  top: 50%;\n}\n.z-10 {\n  z-index: 10;\n}\n.z-50 {\n  z-index: 50;\n}\n.z-\\[1050\\] {\n  z-index: 1050;\n}\n.z-\\[1\\] {\n  z-index: 1;\n}\n.z-\\[2147483647\\] {\n  z-index: 2147483647;\n}\n.col-span-full {\n  grid-column: 1 / -1;\n}\n.mx-auto {\n  margin-left: auto;\n  margin-right: auto;\n}\n.-mb-\\[1px\\] {\n  margin-bottom: -1px;\n}\n.mb-1 {\n  margin-bottom: 0.25rem;\n}\n.mb-1\\.5 {\n  margin-bottom: 0.375rem;\n}\n.mb-2 {\n  margin-bottom: 0.5rem;\n}\n.mb-3 {\n  margin-bottom: 0.75rem;\n}\n.mb-4 {\n  margin-bottom: 1rem;\n}\n.ml-1 {\n  margin-left: 0.25rem;\n}\n.ml-auto {\n  margin-left: auto;\n}\n.mr-1 {\n  margin-right: 0.25rem;\n}\n.mr-2 {\n  margin-right: 0.5rem;\n}\n.mr-3 {\n  margin-right: 0.75rem;\n}\n.mr-auto {\n  margin-right: auto;\n}\n.mt-0\\.5 {\n  margin-top: 0.125rem;\n}\n.mt-1 {\n  margin-top: 0.25rem;\n}\n.mt-3 {\n  margin-top: 0.75rem;\n}\n.block {\n  display: block;\n}\n.inline-block {\n  display: inline-block;\n}\n.inline {\n  display: inline;\n}\n.flex {\n  display: flex;\n}\n.inline-flex {\n  display: inline-flex;\n}\n.\\!table {\n  display: table !important;\n}\n.table {\n  display: table;\n}\n.grid {\n  display: grid;\n}\n.\\!contents {\n  display: contents !important;\n}\n.contents {\n  display: contents;\n}\n.hidden {\n  display: none;\n}\n.size-1\\.5 {\n  width: 0.375rem;\n  height: 0.375rem;\n}\n.size-10 {\n  width: 2.5rem;\n  height: 2.5rem;\n}\n.size-3 {\n  width: 0.75rem;\n  height: 0.75rem;\n}\n.size-3\\.5 {\n  width: 0.875rem;\n  height: 0.875rem;\n}\n.size-4 {\n  width: 1rem;\n  height: 1rem;\n}\n.size-5 {\n  width: 1.25rem;\n  height: 1.25rem;\n}\n.size-6 {\n  width: 1.5rem;\n  height: 1.5rem;\n}\n.h-1 {\n  height: 0.25rem;\n}\n.h-10 {\n  height: 2.5rem;\n}\n.h-11 {\n  height: 2.75rem;\n}\n.h-12 {\n  height: 3rem;\n}\n.h-2 {\n  height: 0.5rem;\n}\n.h-24 {\n  height: 6rem;\n}\n.h-4 {\n  height: 1rem;\n}\n.h-5 {\n  height: 1.25rem;\n}\n.h-6 {\n  height: 1.5rem;\n}\n.h-7 {\n  height: 1.75rem;\n}\n.h-8 {\n  height: 2rem;\n}\n.h-9 {\n  height: 2.25rem;\n}\n.h-\\[300px\\] {\n  height: 300px;\n}\n.h-\\[var\\(--radix-select-trigger-height\\)\\] {\n  height: var(--radix-select-trigger-height);\n}\n.h-full {\n  height: 100%;\n}\n.max-h-60 {\n  max-height: 15rem;\n}\n.max-h-\\[220px\\] {\n  max-height: 220px;\n}\n.max-h-\\[280px\\] {\n  max-height: 280px;\n}\n.max-h-\\[360px\\] {\n  max-height: 360px;\n}\n.max-h-\\[600px\\] {\n  max-height: 600px;\n}\n.min-h-11 {\n  min-height: 2.75rem;\n}\n.min-h-\\[200px\\] {\n  min-height: 200px;\n}\n.min-h-\\[80px\\] {\n  min-height: 80px;\n}\n.w-10 {\n  width: 2.5rem;\n}\n.w-11 {\n  width: 2.75rem;\n}\n.w-12 {\n  width: 3rem;\n}\n.w-2 {\n  width: 0.5rem;\n}\n.w-4 {\n  width: 1rem;\n}\n.w-5 {\n  width: 1.25rem;\n}\n.w-6 {\n  width: 1.5rem;\n}\n.w-7 {\n  width: 1.75rem;\n}\n.w-9 {\n  width: 2.25rem;\n}\n.w-\\[100px\\] {\n  width: 100px;\n}\n.w-\\[120px\\] {\n  width: 120px;\n}\n.w-\\[32\\%\\] {\n  width: 32%;\n}\n.w-\\[340px\\] {\n  width: 340px;\n}\n.w-\\[90px\\] {\n  width: 90px;\n}\n.w-full {\n  width: 100%;\n}\n.w-px {\n  width: 1px;\n}\n.min-w-0 {\n  min-width: 0px;\n}\n.min-w-\\[100px\\] {\n  min-width: 100px;\n}\n.min-w-\\[110px\\] {\n  min-width: 110px;\n}\n.min-w-\\[12rem\\] {\n  min-width: 12rem;\n}\n.min-w-\\[80px\\] {\n  min-width: 80px;\n}\n.min-w-\\[90px\\] {\n  min-width: 90px;\n}\n.min-w-\\[var\\(--radix-select-trigger-width\\)\\] {\n  min-width: var(--radix-select-trigger-width);\n}\n.max-w-\\[120px\\] {\n  max-width: 120px;\n}\n.max-w-\\[140px\\] {\n  max-width: 140px;\n}\n.max-w-\\[200px\\] {\n  max-width: 200px;\n}\n.flex-1 {\n  flex: 1 1 0%;\n}\n.flex-shrink {\n  flex-shrink: 1;\n}\n.flex-shrink-0 {\n  flex-shrink: 0;\n}\n.shrink-0 {\n  flex-shrink: 0;\n}\n.-translate-x-1\\/2 {\n  --tw-translate-x: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.-translate-y-1\\/2 {\n  --tw-translate-y: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.scale-90 {\n  --tw-scale-x: .9;\n  --tw-scale-y: .9;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.transform {\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n@keyframes pulse {\n  50% {\n    opacity: .5;\n  }\n}\n.animate-pulse {\n  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;\n}\n@keyframes slide-up {\n  0% {\n    opacity: 0;\n    transform: translateY(8px);\n  }\n  100% {\n    opacity: 1;\n    transform: translateY(0);\n  }\n}\n.animate-slide-up {\n  animation: slide-up 0.15s ease-out;\n}\n.cursor-default {\n  cursor: default;\n}\n.cursor-not-allowed {\n  cursor: not-allowed;\n}\n.cursor-pointer {\n  cursor: pointer;\n}\n.select-none {\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.resize-none {\n  resize: none;\n}\n.resize-y {\n  resize: vertical;\n}\n.resize {\n  resize: both;\n}\n.grid-cols-1 {\n  grid-template-columns: repeat(1, minmax(0, 1fr));\n}\n.grid-cols-2 {\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n}\n.grid-cols-\\[1fr_140px_120px_50px\\] {\n  grid-template-columns: 1fr 140px 120px 50px;\n}\n.grid-cols-\\[1fr_1fr\\] {\n  grid-template-columns: 1fr 1fr;\n}\n.grid-cols-\\[repeat\\(auto-fill\\2c minmax\\(90px\\2c 1fr\\)\\)\\] {\n  grid-template-columns: repeat(auto-fill,minmax(90px,1fr));\n}\n.flex-col {\n  flex-direction: column;\n}\n.flex-wrap {\n  flex-wrap: wrap;\n}\n.items-start {\n  align-items: flex-start;\n}\n.items-end {\n  align-items: flex-end;\n}\n.items-center {\n  align-items: center;\n}\n.justify-end {\n  justify-content: flex-end;\n}\n.justify-center {\n  justify-content: center;\n}\n.justify-between {\n  justify-content: space-between;\n}\n.gap-0 {\n  gap: 0px;\n}\n.gap-1 {\n  gap: 0.25rem;\n}\n.gap-1\\.5 {\n  gap: 0.375rem;\n}\n.gap-2 {\n  gap: 0.5rem;\n}\n.gap-2\\.5 {\n  gap: 0.625rem;\n}\n.gap-3 {\n  gap: 0.75rem;\n}\n.gap-4 {\n  gap: 1rem;\n}\n.gap-x-8 {\n  -moz-column-gap: 2rem;\n       column-gap: 2rem;\n}\n.gap-y-3 {\n  row-gap: 0.75rem;\n}\n.space-y-0\\.5 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.125rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.125rem * var(--tw-space-y-reverse));\n}\n.space-y-1 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));\n}\n.space-y-1\\.5 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.375rem * var(--tw-space-y-reverse));\n}\n.space-y-2 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));\n}\n.space-y-2\\.5 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.625rem * var(--tw-space-y-reverse));\n}\n.space-y-3 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));\n}\n.space-y-4 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1rem * var(--tw-space-y-reverse));\n}\n.space-y-5 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1.25rem * var(--tw-space-y-reverse));\n}\n.divide-y > :not([hidden]) ~ :not([hidden]) {\n  --tw-divide-y-reverse: 0;\n  border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));\n  border-bottom-width: calc(1px * var(--tw-divide-y-reverse));\n}\n.divide-border > :not([hidden]) ~ :not([hidden]) {\n  border-color: hsl(var(--border));\n}\n.overflow-auto {\n  overflow: auto;\n}\n.overflow-hidden {\n  overflow: hidden;\n}\n.overflow-y-auto {\n  overflow-y: auto;\n}\n.truncate {\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n.whitespace-nowrap {\n  white-space: nowrap;\n}\n.whitespace-pre-wrap {\n  white-space: pre-wrap;\n}\n.break-words {\n  overflow-wrap: break-word;\n}\n.rounded {\n  border-radius: 0.25rem;\n}\n.rounded-full {\n  border-radius: 9999px;\n}\n.rounded-lg {\n  border-radius: 0.5rem;\n}\n.rounded-md {\n  border-radius: 6px;\n}\n.rounded-xl {\n  border-radius: 0.75rem;\n}\n.rounded-b-2xl {\n  border-bottom-right-radius: 1rem;\n  border-bottom-left-radius: 1rem;\n}\n.border {\n  border-width: 1px;\n}\n.border-2 {\n  border-width: 2px;\n}\n.border-b {\n  border-bottom-width: 1px;\n}\n.border-b-2 {\n  border-bottom-width: 2px;\n}\n.border-l-2 {\n  border-left-width: 2px;\n}\n.border-t {\n  border-top-width: 1px;\n}\n.border-t-2 {\n  border-top-width: 2px;\n}\n.border-dashed {\n  border-style: dashed;\n}\n.border-none {\n  border-style: none;\n}\n.border-\\[\\#2469f0\\] {\n  --tw-border-opacity: 1;\n  border-color: rgb(36 105 240 / var(--tw-border-opacity, 1));\n}\n.border-amber-200 {\n  --tw-border-opacity: 1;\n  border-color: rgb(253 230 138 / var(--tw-border-opacity, 1));\n}\n.border-border {\n  border-color: hsl(var(--border));\n}\n.border-destructive {\n  border-color: hsl(var(--destructive));\n}\n.border-destructive\\/20 {\n  border-color: hsl(var(--destructive) / 0.2);\n}\n.border-destructive\\/30 {\n  border-color: hsl(var(--destructive) / 0.3);\n}\n.border-foreground {\n  border-color: hsl(var(--foreground));\n}\n.border-green-200 {\n  --tw-border-opacity: 1;\n  border-color: rgb(187 247 208 / var(--tw-border-opacity, 1));\n}\n.border-input {\n  border-color: hsl(var(--input));\n}\n.border-primary {\n  border-color: hsl(var(--primary));\n}\n.border-primary\\/20 {\n  border-color: hsl(var(--primary) / 0.2);\n}\n.border-primary\\/50 {\n  border-color: hsl(var(--primary) / 0.5);\n}\n.border-red-200 {\n  --tw-border-opacity: 1;\n  border-color: rgb(254 202 202 / var(--tw-border-opacity, 1));\n}\n.border-red-500 {\n  --tw-border-opacity: 1;\n  border-color: rgb(239 68 68 / var(--tw-border-opacity, 1));\n}\n.border-transparent {\n  border-color: transparent;\n}\n.bg-\\[\\#2469f0\\] {\n  --tw-bg-opacity: 1;\n  background-color: rgb(36 105 240 / var(--tw-bg-opacity, 1));\n}\n.bg-accent {\n  background-color: hsl(var(--accent));\n}\n.bg-accent\\/20 {\n  background-color: hsl(var(--accent) / 0.2);\n}\n.bg-accent\\/40 {\n  background-color: hsl(var(--accent) / 0.4);\n}\n.bg-accent\\/50 {\n  background-color: hsl(var(--accent) / 0.5);\n}\n.bg-amber-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(255 251 235 / var(--tw-bg-opacity, 1));\n}\n.bg-amber-50\\/50 {\n  background-color: rgb(255 251 235 / 0.5);\n}\n.bg-background {\n  background-color: hsl(var(--background));\n}\n.bg-background\\/60 {\n  background-color: hsl(var(--background) / 0.6);\n}\n.bg-blue-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1));\n}\n.bg-blue-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(239 246 255 / var(--tw-bg-opacity, 1));\n}\n.bg-border {\n  background-color: hsl(var(--border));\n}\n.bg-card {\n  background-color: hsl(var(--card));\n}\n.bg-destructive {\n  background-color: hsl(var(--destructive));\n}\n.bg-destructive\\/10 {\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.bg-destructive\\/5 {\n  background-color: hsl(var(--destructive) / 0.05);\n}\n.bg-foreground {\n  background-color: hsl(var(--foreground));\n}\n.bg-gray-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));\n}\n.bg-green-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(220 252 231 / var(--tw-bg-opacity, 1));\n}\n.bg-green-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(240 253 244 / var(--tw-bg-opacity, 1));\n}\n.bg-green-500 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(34 197 94 / var(--tw-bg-opacity, 1));\n}\n.bg-green-600 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(22 163 74 / var(--tw-bg-opacity, 1));\n}\n.bg-muted {\n  background-color: hsl(var(--muted));\n}\n.bg-muted-foreground {\n  background-color: hsl(var(--muted-foreground));\n}\n.bg-muted\\/20 {\n  background-color: hsl(var(--muted) / 0.2);\n}\n.bg-muted\\/40 {\n  background-color: hsl(var(--muted) / 0.4);\n}\n.bg-popover {\n  background-color: hsl(var(--popover));\n}\n.bg-primary {\n  background-color: hsl(var(--primary));\n}\n.bg-primary\\/10 {\n  background-color: hsl(var(--primary) / 0.1);\n}\n.bg-primary\\/5 {\n  background-color: hsl(var(--primary) / 0.05);\n}\n.bg-red-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 226 226 / var(--tw-bg-opacity, 1));\n}\n.bg-red-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 242 242 / var(--tw-bg-opacity, 1));\n}\n.bg-red-500\\/5 {\n  background-color: rgb(239 68 68 / 0.05);\n}\n.bg-red-600 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(220 38 38 / var(--tw-bg-opacity, 1));\n}\n.bg-secondary {\n  background-color: hsl(var(--secondary));\n}\n.bg-white\\/15 {\n  background-color: rgb(255 255 255 / 0.15);\n}\n.bg-yellow-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 252 232 / var(--tw-bg-opacity, 1));\n}\n.bg-gradient-to-br {\n  background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));\n}\n.from-muted {\n  --tw-gradient-from: hsl(var(--muted)) var(--tw-gradient-from-position);\n  --tw-gradient-to: hsl(var(--muted) / 0) var(--tw-gradient-to-position);\n  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);\n}\n.to-muted\\/50 {\n  --tw-gradient-to: hsl(var(--muted) / 0.5) var(--tw-gradient-to-position);\n}\n.p-0\\.5 {\n  padding: 0.125rem;\n}\n.p-1 {\n  padding: 0.25rem;\n}\n.p-1\\.5 {\n  padding: 0.375rem;\n}\n.p-2 {\n  padding: 0.5rem;\n}\n.p-2\\.5 {\n  padding: 0.625rem;\n}\n.p-3 {\n  padding: 0.75rem;\n}\n.p-4 {\n  padding: 1rem;\n}\n.p-5 {\n  padding: 1.25rem;\n}\n.p-8 {\n  padding: 2rem;\n}\n.px-1 {\n  padding-left: 0.25rem;\n  padding-right: 0.25rem;\n}\n.px-1\\.5 {\n  padding-left: 0.375rem;\n  padding-right: 0.375rem;\n}\n.px-2 {\n  padding-left: 0.5rem;\n  padding-right: 0.5rem;\n}\n.px-2\\.5 {\n  padding-left: 0.625rem;\n  padding-right: 0.625rem;\n}\n.px-3 {\n  padding-left: 0.75rem;\n  padding-right: 0.75rem;\n}\n.px-3\\.5 {\n  padding-left: 0.875rem;\n  padding-right: 0.875rem;\n}\n.px-4 {\n  padding-left: 1rem;\n  padding-right: 1rem;\n}\n.px-5 {\n  padding-left: 1.25rem;\n  padding-right: 1.25rem;\n}\n.px-6 {\n  padding-left: 1.5rem;\n  padding-right: 1.5rem;\n}\n.px-7 {\n  padding-left: 1.75rem;\n  padding-right: 1.75rem;\n}\n.py-0 {\n  padding-top: 0px;\n  padding-bottom: 0px;\n}\n.py-0\\.5 {\n  padding-top: 0.125rem;\n  padding-bottom: 0.125rem;\n}\n.py-1 {\n  padding-top: 0.25rem;\n  padding-bottom: 0.25rem;\n}\n.py-1\\.5 {\n  padding-top: 0.375rem;\n  padding-bottom: 0.375rem;\n}\n.py-12 {\n  padding-top: 3rem;\n  padding-bottom: 3rem;\n}\n.py-2 {\n  padding-top: 0.5rem;\n  padding-bottom: 0.5rem;\n}\n.py-2\\.5 {\n  padding-top: 0.625rem;\n  padding-bottom: 0.625rem;\n}\n.py-3 {\n  padding-top: 0.75rem;\n  padding-bottom: 0.75rem;\n}\n.py-3\\.5 {\n  padding-top: 0.875rem;\n  padding-bottom: 0.875rem;\n}\n.py-4 {\n  padding-top: 1rem;\n  padding-bottom: 1rem;\n}\n.py-8 {\n  padding-top: 2rem;\n  padding-bottom: 2rem;\n}\n.pb-1\\.5 {\n  padding-bottom: 0.375rem;\n}\n.pb-2 {\n  padding-bottom: 0.5rem;\n}\n.pr-12 {\n  padding-right: 3rem;\n}\n.pr-20 {\n  padding-right: 5rem;\n}\n.pt-3 {\n  padding-top: 0.75rem;\n}\n.text-center {\n  text-align: center;\n}\n.font-\\[\\\'Inter\\\'\\2c system-ui\\2c sans-serif\\] {\n  font-family: \'Inter\',system-ui,sans-serif;\n}\n.font-mono {\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace;\n}\n.text-\\[10px\\] {\n  font-size: 10px;\n}\n.text-\\[11px\\] {\n  font-size: 11px;\n}\n.text-\\[14px\\] {\n  font-size: 14px;\n}\n.text-\\[15px\\] {\n  font-size: 15px;\n}\n.text-\\[18px\\] {\n  font-size: 18px;\n}\n.text-\\[8px\\] {\n  font-size: 8px;\n}\n.text-\\[9px\\] {\n  font-size: 9px;\n}\n.text-base {\n  font-size: 1rem;\n  line-height: 1.5rem;\n}\n.text-lg {\n  font-size: 1.125rem;\n  line-height: 1.75rem;\n}\n.text-md-sm {\n  font-size: 12px;\n  line-height: 18px;\n}\n.text-md-xs {\n  font-size: 11px;\n  line-height: 16px;\n}\n.text-sm {\n  font-size: 0.875rem;\n  line-height: 1.25rem;\n}\n.text-xl {\n  font-size: 1.25rem;\n  line-height: 1.75rem;\n}\n.text-xs {\n  font-size: 0.75rem;\n  line-height: 1rem;\n}\n.font-bold {\n  font-weight: 700;\n}\n.font-medium {\n  font-weight: 500;\n}\n.font-semibold {\n  font-weight: 600;\n}\n.uppercase {\n  text-transform: uppercase;\n}\n.leading-normal {\n  line-height: 1.5;\n}\n.leading-relaxed {\n  line-height: 1.625;\n}\n.leading-snug {\n  line-height: 1.375;\n}\n.tracking-tight {\n  letter-spacing: -0.025em;\n}\n.tracking-wide {\n  letter-spacing: 0.025em;\n}\n.tracking-wider {\n  letter-spacing: 0.05em;\n}\n.text-\\[\\#2469f0\\] {\n  --tw-text-opacity: 1;\n  color: rgb(36 105 240 / var(--tw-text-opacity, 1));\n}\n.text-amber-700 {\n  --tw-text-opacity: 1;\n  color: rgb(180 83 9 / var(--tw-text-opacity, 1));\n}\n.text-background {\n  color: hsl(var(--background));\n}\n.text-blue-700 {\n  --tw-text-opacity: 1;\n  color: rgb(29 78 216 / var(--tw-text-opacity, 1));\n}\n.text-card-foreground {\n  color: hsl(var(--card-foreground));\n}\n.text-destructive {\n  color: hsl(var(--destructive));\n}\n.text-destructive-foreground {\n  color: hsl(var(--destructive-foreground));\n}\n.text-destructive\\/80 {\n  color: hsl(var(--destructive) / 0.8);\n}\n.text-foreground {\n  color: hsl(var(--foreground));\n}\n.text-gray-700 {\n  --tw-text-opacity: 1;\n  color: rgb(55 65 81 / var(--tw-text-opacity, 1));\n}\n.text-green-500 {\n  --tw-text-opacity: 1;\n  color: rgb(34 197 94 / var(--tw-text-opacity, 1));\n}\n.text-green-700 {\n  --tw-text-opacity: 1;\n  color: rgb(21 128 61 / var(--tw-text-opacity, 1));\n}\n.text-muted-foreground {\n  color: hsl(var(--muted-foreground));\n}\n.text-popover-foreground {\n  color: hsl(var(--popover-foreground));\n}\n.text-primary {\n  color: hsl(var(--primary));\n}\n.text-primary-foreground {\n  color: hsl(var(--primary-foreground));\n}\n.text-red-500 {\n  --tw-text-opacity: 1;\n  color: rgb(239 68 68 / var(--tw-text-opacity, 1));\n}\n.text-red-600 {\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.text-red-700 {\n  --tw-text-opacity: 1;\n  color: rgb(185 28 28 / var(--tw-text-opacity, 1));\n}\n.text-red-800 {\n  --tw-text-opacity: 1;\n  color: rgb(153 27 27 / var(--tw-text-opacity, 1));\n}\n.text-red-900 {\n  --tw-text-opacity: 1;\n  color: rgb(127 29 29 / var(--tw-text-opacity, 1));\n}\n.text-secondary-foreground {\n  color: hsl(var(--secondary-foreground));\n}\n.text-white {\n  --tw-text-opacity: 1;\n  color: rgb(255 255 255 / var(--tw-text-opacity, 1));\n}\n.text-white\\/70 {\n  color: rgb(255 255 255 / 0.7);\n}\n.text-white\\/80 {\n  color: rgb(255 255 255 / 0.8);\n}\n.text-yellow-600 {\n  --tw-text-opacity: 1;\n  color: rgb(202 138 4 / var(--tw-text-opacity, 1));\n}\n.text-yellow-700 {\n  --tw-text-opacity: 1;\n  color: rgb(161 98 7 / var(--tw-text-opacity, 1));\n}\n.text-yellow-800 {\n  --tw-text-opacity: 1;\n  color: rgb(133 77 14 / var(--tw-text-opacity, 1));\n}\n.underline-offset-4 {\n  text-underline-offset: 4px;\n}\n.antialiased {\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n}\n.opacity-0 {\n  opacity: 0;\n}\n.opacity-30 {\n  opacity: 0.3;\n}\n.opacity-50 {\n  opacity: 0.5;\n}\n.opacity-60 {\n  opacity: 0.6;\n}\n.opacity-85 {\n  opacity: 0.85;\n}\n.opacity-90 {\n  opacity: 0.9;\n}\n.shadow {\n  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-lg {\n  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-sm {\n  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);\n  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-xl {\n  --tw-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.outline-none {\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.outline {\n  outline-style: solid;\n}\n.ring {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.ring-0 {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.blur {\n  --tw-blur: blur(8px);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.grayscale {\n  --tw-grayscale: grayscale(100%);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.filter {\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.backdrop-blur {\n  --tw-backdrop-blur: blur(8px);\n  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);\n}\n.backdrop-filter {\n  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);\n}\n.transition {\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-all {\n  transition-property: all;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-colors {\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-transform {\n  transition-property: transform;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.duration-200 {\n  transition-duration: 200ms;\n}\n.duration-300 {\n  transition-duration: 300ms;\n}\n.ease-in-out {\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.ease-out {\n  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);\n}\n@keyframes enter {\n  from {\n    opacity: var(--tw-enter-opacity, 1);\n    transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0) scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1)) rotate(var(--tw-enter-rotate, 0));\n  }\n}\n@keyframes exit {\n  to {\n    opacity: var(--tw-exit-opacity, 1);\n    transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0) scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1)) rotate(var(--tw-exit-rotate, 0));\n  }\n}\n.animate-in {\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.fade-in {\n  --tw-enter-opacity: 0;\n}\n.fade-out {\n  --tw-exit-opacity: 0;\n}\n.duration-200 {\n  animation-duration: 200ms;\n}\n.duration-300 {\n  animation-duration: 300ms;\n}\n.ease-in-out {\n  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.ease-out {\n  animation-timing-function: cubic-bezier(0, 0, 0.2, 1);\n}\n.running {\n  animation-play-state: running;\n}\n.placeholder\\:text-muted-foreground::-moz-placeholder {\n  color: hsl(var(--muted-foreground));\n}\n.placeholder\\:text-muted-foreground::placeholder {\n  color: hsl(var(--muted-foreground));\n}\n.last\\:border-b-0:last-child {\n  border-bottom-width: 0px;\n}\n.hover\\:bg-accent:hover {\n  background-color: hsl(var(--accent));\n}\n.hover\\:bg-amber-100\\/50:hover {\n  background-color: rgb(254 243 199 / 0.5);\n}\n.hover\\:bg-destructive:hover {\n  background-color: hsl(var(--destructive));\n}\n.hover\\:bg-destructive\\/10:hover {\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.hover\\:bg-destructive\\/20:hover {\n  background-color: hsl(var(--destructive) / 0.2);\n}\n.hover\\:bg-destructive\\/90:hover {\n  background-color: hsl(var(--destructive) / 0.9);\n}\n.hover\\:bg-green-700:hover {\n  --tw-bg-opacity: 1;\n  background-color: rgb(21 128 61 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-primary\\/5:hover {\n  background-color: hsl(var(--primary) / 0.05);\n}\n.hover\\:bg-primary\\/90:hover {\n  background-color: hsl(var(--primary) / 0.9);\n}\n.hover\\:bg-red-500\\/10:hover {\n  background-color: rgb(239 68 68 / 0.1);\n}\n.hover\\:bg-red-700:hover {\n  --tw-bg-opacity: 1;\n  background-color: rgb(185 28 28 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-secondary\\/80:hover {\n  background-color: hsl(var(--secondary) / 0.8);\n}\n.hover\\:bg-white\\/25:hover {\n  background-color: rgb(255 255 255 / 0.25);\n}\n.hover\\:text-accent-foreground:hover {\n  color: hsl(var(--accent-foreground));\n}\n.hover\\:text-destructive:hover {\n  color: hsl(var(--destructive));\n}\n.hover\\:text-destructive-foreground:hover {\n  color: hsl(var(--destructive-foreground));\n}\n.hover\\:text-foreground:hover {\n  color: hsl(var(--foreground));\n}\n.hover\\:text-red-600:hover {\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.hover\\:underline:hover {\n  text-decoration-line: underline;\n}\n.hover\\:opacity-70:hover {\n  opacity: 0.7;\n}\n.focus\\:bg-accent:focus {\n  background-color: hsl(var(--accent));\n}\n.focus\\:text-accent-foreground:focus {\n  color: hsl(var(--accent-foreground));\n}\n.focus\\:outline-none:focus {\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus\\:ring-1:focus {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-2:focus {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-primary:focus {\n  --tw-ring-color: hsl(var(--primary));\n}\n.focus\\:ring-red-500:focus {\n  --tw-ring-opacity: 1;\n  --tw-ring-color: rgb(239 68 68 / var(--tw-ring-opacity, 1));\n}\n.focus\\:ring-ring:focus {\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus\\:ring-offset-2:focus {\n  --tw-ring-offset-width: 2px;\n}\n.focus-visible\\:outline-none:focus-visible {\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus-visible\\:ring-2:focus-visible {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus-visible\\:ring-primary:focus-visible {\n  --tw-ring-color: hsl(var(--primary));\n}\n.focus-visible\\:ring-ring:focus-visible {\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus-visible\\:ring-offset-1:focus-visible {\n  --tw-ring-offset-width: 1px;\n}\n.focus-visible\\:ring-offset-2:focus-visible {\n  --tw-ring-offset-width: 2px;\n}\n.active\\:bg-accent:active {\n  background-color: hsl(var(--accent));\n}\n.active\\:bg-destructive:active {\n  background-color: hsl(var(--destructive));\n}\n.active\\:bg-primary:active {\n  background-color: hsl(var(--primary));\n}\n.active\\:bg-secondary:active {\n  background-color: hsl(var(--secondary));\n}\n.disabled\\:pointer-events-none:disabled {\n  pointer-events: none;\n}\n.disabled\\:cursor-not-allowed:disabled {\n  cursor: not-allowed;\n}\n.disabled\\:bg-muted:disabled {\n  background-color: hsl(var(--muted));\n}\n.disabled\\:opacity-50:disabled {\n  opacity: 0.5;\n}\n.group:hover .group-hover\\:opacity-100 {\n  opacity: 1;\n}\n.data-\\[disabled\\]\\:pointer-events-none[data-disabled] {\n  pointer-events: none;\n}\n.data-\\[side\\=bottom\\]\\:translate-y-1[data-side="bottom"] {\n  --tw-translate-y: 0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[side\\=top\\]\\:-translate-y-1[data-side="top"] {\n  --tw-translate-y: -0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:translate-x-4[data-state="checked"] {\n  --tw-translate-x: 1rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=unchecked\\]\\:translate-x-0[data-state="unchecked"] {\n  --tw-translate-x: 0px;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:bg-primary[data-state="checked"] {\n  background-color: hsl(var(--primary));\n}\n.data-\\[state\\=unchecked\\]\\:bg-input[data-state="unchecked"] {\n  background-color: hsl(var(--input));\n}\n.data-\\[disabled\\]\\:opacity-50[data-disabled] {\n  opacity: 0.5;\n}\n.data-\\[state\\=open\\]\\:animate-in[data-state="open"] {\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:animate-out[data-state="closed"] {\n  animation-name: exit;\n  animation-duration: 150ms;\n  --tw-exit-opacity: initial;\n  --tw-exit-scale: initial;\n  --tw-exit-rotate: initial;\n  --tw-exit-translate-x: initial;\n  --tw-exit-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:fade-out-0[data-state="closed"] {\n  --tw-exit-opacity: 0;\n}\n.data-\\[state\\=open\\]\\:fade-in-0[data-state="open"] {\n  --tw-enter-opacity: 0;\n}\n.data-\\[state\\=closed\\]\\:zoom-out-95[data-state="closed"] {\n  --tw-exit-scale: .95;\n}\n.data-\\[state\\=open\\]\\:zoom-in-95[data-state="open"] {\n  --tw-enter-scale: .95;\n}\n@supports (backdrop-filter: var(--tw)) {\n  .supports-\\[backdrop-filter\\]\\:bg-background\\/60 {\n    background-color: hsl(var(--background) / 0.6);\n  }\n}\n.dark\\:border-amber-800:is(.dark *) {\n  --tw-border-opacity: 1;\n  border-color: rgb(146 64 14 / var(--tw-border-opacity, 1));\n}\n.dark\\:border-green-800:is(.dark *) {\n  --tw-border-opacity: 1;\n  border-color: rgb(22 101 52 / var(--tw-border-opacity, 1));\n}\n.dark\\:border-red-900:is(.dark *) {\n  --tw-border-opacity: 1;\n  border-color: rgb(127 29 29 / var(--tw-border-opacity, 1));\n}\n.dark\\:bg-amber-900\\/30:is(.dark *) {\n  background-color: rgb(120 53 15 / 0.3);\n}\n.dark\\:bg-amber-950\\/20:is(.dark *) {\n  background-color: rgb(69 26 3 / 0.2);\n}\n.dark\\:bg-blue-900\\/30:is(.dark *) {\n  background-color: rgb(30 58 138 / 0.3);\n}\n.dark\\:bg-blue-950\\/20:is(.dark *) {\n  background-color: rgb(23 37 84 / 0.2);\n}\n.dark\\:bg-green-950\\/20:is(.dark *) {\n  background-color: rgb(5 46 22 / 0.2);\n}\n.dark\\:bg-red-950\\/20:is(.dark *) {\n  background-color: rgb(69 10 10 / 0.2);\n}\n.dark\\:bg-yellow-950\\/30:is(.dark *) {\n  background-color: rgb(66 32 6 / 0.3);\n}\n.dark\\:text-amber-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(252 211 77 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-blue-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(147 197 253 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-green-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(134 239 172 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-red-200:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(254 202 202 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-red-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(252 165 165 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-yellow-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(253 224 71 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-yellow-400:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(250 204 21 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-yellow-500:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(234 179 8 / var(--tw-text-opacity, 1));\n}\n@media (min-width: 640px) {\n  .sm\\:grid-cols-3 {\n    grid-template-columns: repeat(3, minmax(0, 1fr));\n  }\n}\n@media (min-width: 768px) {\n  .md\\:grid-cols-2 {\n    grid-template-columns: repeat(2, minmax(0, 1fr));\n  }\n  .md\\:grid-cols-4 {\n    grid-template-columns: repeat(4, minmax(0, 1fr));\n  }\n  .md\\:text-left {\n    text-align: left;\n  }\n}\n@media (min-width: 1024px) {\n  .lg\\:grid-cols-3 {\n    grid-template-columns: repeat(3, minmax(0, 1fr));\n  }\n}\n.\\[\\&\\>span\\]\\:line-clamp-1>span {\n  overflow: hidden;\n  display: -webkit-box;\n  -webkit-box-orient: vertical;\n  -webkit-line-clamp: 1;\n}\n.\\[\\&\\>span\\]\\:h-3>span {\n  height: 0.75rem;\n}\n.\\[\\&\\>span\\]\\:w-3>span {\n  width: 0.75rem;\n}\n.data-\\[state\\=checked\\]\\:\\[\\&\\>span\\]\\:translate-x-3>span[data-state="checked"] {\n  --tw-translate-x: 0.75rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.\\[\\&_svg\\]\\:pointer-events-none svg {\n  pointer-events: none;\n}\n.\\[\\&_svg\\]\\:size-5 svg {\n  width: 1.25rem;\n  height: 1.25rem;\n}\n.\\[\\&_svg\\]\\:shrink-0 svg {\n  flex-shrink: 0;\n}\n'
+      : '';
+    const css = cssRaw.replace(/@import[^;]+;/g, '');
+    const resumeModalCss = `
+      .resume-modal {
+        background: #f8f6f3;
+        border-radius: 20px;
+        box-shadow: 0 25px 60px rgba(0,0,0,.3);
+        width: 94%;
+        max-width: 900px;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        animation: resume-slideup .3s ease;
+        font-size: 16px;
+        line-height: 1.6;
+        color: #1a1d23;
+        font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+      }
+      .resume-modal *,
+      .resume-modal *::before,
+      .resume-modal *::after {
+        box-sizing: border-box;
+      }
+      .resume-modal input,
+      .resume-modal select,
+      .resume-modal textarea {
+        all: unset;
+        box-sizing: border-box;
+        font-family: inherit;
+        font-size: inherit;
+        color: inherit;
+        cursor: default;
+        height: auto;
+        min-height: 32px;
+        width: 100%;
+        border: 1px solid hsl(214.3 31.8% 91.4%);
+        border-radius: 6px;
+        background: white;
+        padding: 4px 10px;
+        outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      .resume-modal input:focus,
+      .resume-modal select:focus,
+      .resume-modal textarea:focus {
+        border-color: hsl(221.2 83.2% 53.3%);
+        box-shadow: 0 0 0 2px hsl(221.2 83.2% 53.3% / 0.15);
+      }
+      .resume-modal textarea {
+        resize: vertical;
+        min-height: 80px;
+        padding: 8px 10px;
+      }
+      .resume-modal select {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        padding-right: 28px;
+      }
+      .resume-modal h1,
+      .resume-modal h2,
+      .resume-modal h3 {
+        font-family: 'Lexend', system-ui, sans-serif;
+      }
+    `;
+    if (shadowRoot && !shadowRoot.getElementById('morbis-resume-shadow-css')) {
+      const ss = document.createElement('style');
+      ss.id = 'morbis-resume-shadow-css';
+      ss.textContent = css + resumeModalCss;
+      shadowRoot.appendChild(ss);
+    }
     if (!document.getElementById('morbis-resume-css')) {
       const s = document.createElement('style');
       s.id = 'morbis-resume-css';
       s.textContent =
-        (true
-          ? '@import url(\'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\');\n\n*, ::before, ::after{\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n\n::backdrop{\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n\n/*\n! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com\n*//*\n1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)\n*/\n\n*,\n::before,\n::after {\n  box-sizing: border-box; /* 1 */\n  border-width: 0; /* 2 */\n  border-style: solid; /* 2 */\n  border-color: #e5e7eb; /* 2 */\n}\n\n::before,\n::after {\n  --tw-content: \'\';\n}\n\n/*\n1. Use a consistent sensible line-height in all browsers.\n2. Prevent adjustments of font size after orientation changes in iOS.\n3. Use a more readable tab size.\n4. Use the user\'s configured `sans` font-family by default.\n5. Use the user\'s configured `sans` font-feature-settings by default.\n6. Use the user\'s configured `sans` font-variation-settings by default.\n7. Disable tap highlights on iOS\n*/\n\nhtml,\n:host {\n  line-height: 1.5; /* 1 */\n  -webkit-text-size-adjust: 100%; /* 2 */\n  -moz-tab-size: 4; /* 3 */\n  -o-tab-size: 4;\n     tab-size: 4; /* 3 */\n  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; /* 4 */\n  font-feature-settings: normal; /* 5 */\n  font-variation-settings: normal; /* 6 */\n  -webkit-tap-highlight-color: transparent; /* 7 */\n}\n\n/*\n1. Remove the margin in all browsers.\n2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.\n*/\n\nbody {\n  margin: 0; /* 1 */\n  line-height: inherit; /* 2 */\n}\n\n/*\n1. Add the correct height in Firefox.\n2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n3. Ensure horizontal rules are visible by default.\n*/\n\nhr {\n  height: 0; /* 1 */\n  color: inherit; /* 2 */\n  border-top-width: 1px; /* 3 */\n}\n\n/*\nAdd the correct text decoration in Chrome, Edge, and Safari.\n*/\n\nabbr:where([title]) {\n  -webkit-text-decoration: underline dotted;\n          text-decoration: underline dotted;\n}\n\n/*\nRemove the default font size and weight for headings.\n*/\n\nh1,\nh2,\nh3,\nh4,\nh5,\nh6 {\n  font-size: inherit;\n  font-weight: inherit;\n}\n\n/*\nReset links to optimize for opt-in styling instead of opt-out.\n*/\n\na {\n  color: inherit;\n  text-decoration: inherit;\n}\n\n/*\nAdd the correct font weight in Edge and Safari.\n*/\n\nb,\nstrong {\n  font-weight: bolder;\n}\n\n/*\n1. Use the user\'s configured `mono` font-family by default.\n2. Use the user\'s configured `mono` font-feature-settings by default.\n3. Use the user\'s configured `mono` font-variation-settings by default.\n4. Correct the odd `em` font sizing in all browsers.\n*/\n\ncode,\nkbd,\nsamp,\npre {\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace; /* 1 */\n  font-feature-settings: normal; /* 2 */\n  font-variation-settings: normal; /* 3 */\n  font-size: 1em; /* 4 */\n}\n\n/*\nAdd the correct font size in all browsers.\n*/\n\nsmall {\n  font-size: 80%;\n}\n\n/*\nPrevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\nsub,\nsup {\n  font-size: 75%;\n  line-height: 0;\n  position: relative;\n  vertical-align: baseline;\n}\n\nsub {\n  bottom: -0.25em;\n}\n\nsup {\n  top: -0.5em;\n}\n\n/*\n1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n3. Remove gaps between table borders by default.\n*/\n\ntable {\n  text-indent: 0; /* 1 */\n  border-color: inherit; /* 2 */\n  border-collapse: collapse; /* 3 */\n}\n\n/*\n1. Change the font styles in all browsers.\n2. Remove the margin in Firefox and Safari.\n3. Remove default padding in all browsers.\n*/\n\nbutton,\ninput,\noptgroup,\nselect,\ntextarea {\n  font-family: inherit; /* 1 */\n  font-feature-settings: inherit; /* 1 */\n  font-variation-settings: inherit; /* 1 */\n  font-size: 100%; /* 1 */\n  font-weight: inherit; /* 1 */\n  line-height: inherit; /* 1 */\n  letter-spacing: inherit; /* 1 */\n  color: inherit; /* 1 */\n  margin: 0; /* 2 */\n  padding: 0; /* 3 */\n}\n\n/*\nRemove the inheritance of text transform in Edge and Firefox.\n*/\n\nbutton,\nselect {\n  text-transform: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Remove default button styles.\n*/\n\nbutton,\ninput:where([type=\'button\']),\ninput:where([type=\'reset\']),\ninput:where([type=\'submit\']) {\n  -webkit-appearance: button; /* 1 */\n  background-color: transparent; /* 2 */\n  background-image: none; /* 2 */\n}\n\n/*\nUse the modern Firefox focus style for all focusable elements.\n*/\n\n:-moz-focusring {\n  outline: auto;\n}\n\n/*\nRemove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n:-moz-ui-invalid {\n  box-shadow: none;\n}\n\n/*\nAdd the correct vertical alignment in Chrome and Firefox.\n*/\n\nprogress {\n  vertical-align: baseline;\n}\n\n/*\nCorrect the cursor style of increment and decrement buttons in Safari.\n*/\n\n::-webkit-inner-spin-button,\n::-webkit-outer-spin-button {\n  height: auto;\n}\n\n/*\n1. Correct the odd appearance in Chrome and Safari.\n2. Correct the outline style in Safari.\n*/\n\n[type=\'search\'] {\n  -webkit-appearance: textfield; /* 1 */\n  outline-offset: -2px; /* 2 */\n}\n\n/*\nRemove the inner padding in Chrome and Safari on macOS.\n*/\n\n::-webkit-search-decoration {\n  -webkit-appearance: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Change font properties to `inherit` in Safari.\n*/\n\n::-webkit-file-upload-button {\n  -webkit-appearance: button; /* 1 */\n  font: inherit; /* 2 */\n}\n\n/*\nAdd the correct display in Chrome and Safari.\n*/\n\nsummary {\n  display: list-item;\n}\n\n/*\nRemoves the default spacing and border for appropriate elements.\n*/\n\nblockquote,\ndl,\ndd,\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\nhr,\nfigure,\np,\npre {\n  margin: 0;\n}\n\nfieldset {\n  margin: 0;\n  padding: 0;\n}\n\nlegend {\n  padding: 0;\n}\n\nol,\nul,\nmenu {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n}\n\n/*\nReset default styling for dialogs.\n*/\ndialog {\n  padding: 0;\n}\n\n/*\nPrevent resizing textareas horizontally by default.\n*/\n\ntextarea {\n  resize: vertical;\n}\n\n/*\n1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n2. Set the default placeholder color to the user\'s configured gray 400 color.\n*/\n\ninput::-moz-placeholder, textarea::-moz-placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\ninput::placeholder,\ntextarea::placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\n/*\nSet the default cursor for buttons.\n*/\n\nbutton,\n[role="button"] {\n  cursor: pointer;\n}\n\n/*\nMake sure disabled buttons don\'t get the pointer cursor.\n*/\n:disabled {\n  cursor: default;\n}\n\n/*\n1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n   This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\nimg,\nsvg,\nvideo,\ncanvas,\naudio,\niframe,\nembed,\nobject {\n  display: block; /* 1 */\n  vertical-align: middle; /* 2 */\n}\n\n/*\nConstrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\nimg,\nvideo {\n  max-width: 100%;\n  height: auto;\n}\n\n/* Make elements with the HTML hidden attribute stay hidden by default */\n[hidden]:where(:not([hidden="until-found"])) {\n  display: none;\n}\n  *,\n  *::before,\n  *::after {\n    box-sizing: border-box;\n  }\n\n  html {\n    font-family:\n      \'Inter\',\n      -apple-system,\n      BlinkMacSystemFont,\n      \'Segoe UI\',\n      sans-serif;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale;\n  }\n\n  :root {\n    --background: 0 0% 100%;\n    --foreground: 222.2 84% 4.9%;\n    --card: 0 0% 100%;\n    --card-foreground: 222.2 84% 4.9%;\n    --popover: 0 0% 100%;\n    --popover-foreground: 222.2 84% 4.9%;\n    --primary: 221.2 83.2% 53.3%;\n    --primary-foreground: 210 40% 98%;\n    --secondary: 210 40% 96.1%;\n    --secondary-foreground: 222.2 47.4% 11.2%;\n    --muted: 210 40% 96.1%;\n    --muted-foreground: 215.4 16.3% 46.9%;\n    --accent: 210 40% 96.1%;\n    --accent-foreground: 222.2 47.4% 11.2%;\n    --destructive: 0 84.2% 60.2%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 214.3 31.8% 91.4%;\n    --input: 214.3 31.8% 91.4%;\n    --ring: 221.2 83.2% 53.3%;\n    --radius: 0.375rem;\n  }\n\n  .dark {\n    --background: 222.2 84% 4.9%;\n    --foreground: 210 40% 98%;\n    --card: 222.2 84% 4.9%;\n    --card-foreground: 210 40% 98%;\n    --popover: 222.2 84% 4.9%;\n    --popover-foreground: 210 40% 98%;\n    --primary: 217.2 91.2% 59.8%;\n    --primary-foreground: 222.2 47.4% 11.2%;\n    --secondary: 217.2 32.6% 17.5%;\n    --secondary-foreground: 210 40% 98%;\n    --muted: 217.2 32.6% 17.5%;\n    --muted-foreground: 215 20.2% 65.1%;\n    --accent: 217.2 32.6% 17.5%;\n    --accent-foreground: 210 40% 98%;\n    --destructive: 0 62.8% 30.6%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 217.2 32.6% 17.5%;\n    --input: 217.2 32.6% 17.5%;\n    --ring: 224.3 76.3% 48%;\n    --md-scrollbar: #484d54;\n  }\n\n  ::-moz-selection {\n    background: #2469f0;\n    color: white;\n  }\n\n  ::selection {\n    background: #2469f0;\n    color: white;\n  }\n\n  * {\n    scrollbar-width: thin;\n    scrollbar-color: #c9cdd4 transparent;\n  }\n\n  .dark * {\n    scrollbar-color: var(--md-scrollbar) transparent;\n  }\n\n  *::-webkit-scrollbar {\n    width: 6px;\n    height: 6px;\n  }\n\n  *::-webkit-scrollbar-track {\n    background: transparent;\n  }\n\n  *::-webkit-scrollbar-thumb {\n    background: #c9cdd4;\n    border-radius: 3px;\n  }\n\n  .dark *::-webkit-scrollbar-thumb {\n    background: var(--md-scrollbar);\n  }\n\n  *::-webkit-scrollbar-thumb:hover {\n    background: #a4a9b3;\n  }\n\n  .dark *::-webkit-scrollbar-thumb:hover {\n    background: #636971;\n  }\n.\\!container{\n  width: 100% !important;\n}\n.container{\n  width: 100%;\n}\n@media (min-width: 640px){\n\n  .\\!container{\n    max-width: 640px !important;\n  }\n\n  .container{\n    max-width: 640px;\n  }\n}\n@media (min-width: 768px){\n\n  .\\!container{\n    max-width: 768px !important;\n  }\n\n  .container{\n    max-width: 768px;\n  }\n}\n@media (min-width: 1024px){\n\n  .\\!container{\n    max-width: 1024px !important;\n  }\n\n  .container{\n    max-width: 1024px;\n  }\n}\n@media (min-width: 1280px){\n\n  .\\!container{\n    max-width: 1280px !important;\n  }\n\n  .container{\n    max-width: 1280px;\n  }\n}\n@media (min-width: 1536px){\n\n  .\\!container{\n    max-width: 1536px !important;\n  }\n\n  .container{\n    max-width: 1536px;\n  }\n}\n.pointer-events-none{\n  pointer-events: none;\n}\n.visible{\n  visibility: visible;\n}\n.static{\n  position: static;\n}\n.fixed{\n  position: fixed;\n}\n.absolute{\n  position: absolute;\n}\n.relative{\n  position: relative;\n}\n.sticky{\n  position: sticky;\n}\n.bottom-4{\n  bottom: 1rem;\n}\n.left-0{\n  left: 0px;\n}\n.left-1\\/2{\n  left: 50%;\n}\n.right-0{\n  right: 0px;\n}\n.right-3{\n  right: 0.75rem;\n}\n.top-1\\/2{\n  top: 50%;\n}\n.top-full{\n  top: 100%;\n}\n.z-50{\n  z-index: 50;\n}\n.z-\\[1050\\]{\n  z-index: 1050;\n}\n.z-\\[2147483647\\]{\n  z-index: 2147483647;\n}\n.col-span-full{\n  grid-column: 1 / -1;\n}\n.mx-auto{\n  margin-left: auto;\n  margin-right: auto;\n}\n.-mb-\\[1px\\]{\n  margin-bottom: -1px;\n}\n.mb-1{\n  margin-bottom: 0.25rem;\n}\n.mb-1\\.5{\n  margin-bottom: 0.375rem;\n}\n.mb-2{\n  margin-bottom: 0.5rem;\n}\n.mb-2\\.5{\n  margin-bottom: 0.625rem;\n}\n.mb-3{\n  margin-bottom: 0.75rem;\n}\n.mb-3\\.5{\n  margin-bottom: 0.875rem;\n}\n.ml-0\\.5{\n  margin-left: 0.125rem;\n}\n.mr-1{\n  margin-right: 0.25rem;\n}\n.mr-2{\n  margin-right: 0.5rem;\n}\n.mr-3{\n  margin-right: 0.75rem;\n}\n.mr-auto{\n  margin-right: auto;\n}\n.mt-0\\.5{\n  margin-top: 0.125rem;\n}\n.mt-1{\n  margin-top: 0.25rem;\n}\n.mt-px{\n  margin-top: 1px;\n}\n.block{\n  display: block;\n}\n.inline-block{\n  display: inline-block;\n}\n.inline{\n  display: inline;\n}\n.flex{\n  display: flex;\n}\n.inline-flex{\n  display: inline-flex;\n}\n.\\!table{\n  display: table !important;\n}\n.table{\n  display: table;\n}\n.grid{\n  display: grid;\n}\n.\\!contents{\n  display: contents !important;\n}\n.contents{\n  display: contents;\n}\n.hidden{\n  display: none;\n}\n.size-1\\.5{\n  width: 0.375rem;\n  height: 0.375rem;\n}\n.size-10{\n  width: 2.5rem;\n  height: 2.5rem;\n}\n.size-2\\.5{\n  width: 0.625rem;\n  height: 0.625rem;\n}\n.size-3{\n  width: 0.75rem;\n  height: 0.75rem;\n}\n.size-3\\.5{\n  width: 0.875rem;\n  height: 0.875rem;\n}\n.size-4{\n  width: 1rem;\n  height: 1rem;\n}\n.size-5{\n  width: 1.25rem;\n  height: 1.25rem;\n}\n.h-1{\n  height: 0.25rem;\n}\n.h-10{\n  height: 2.5rem;\n}\n.h-11{\n  height: 2.75rem;\n}\n.h-2{\n  height: 0.5rem;\n}\n.h-24{\n  height: 6rem;\n}\n.h-4{\n  height: 1rem;\n}\n.h-5{\n  height: 1.25rem;\n}\n.h-6{\n  height: 1.5rem;\n}\n.h-7{\n  height: 1.75rem;\n}\n.h-8{\n  height: 2rem;\n}\n.h-9{\n  height: 2.25rem;\n}\n.h-\\[28px\\]{\n  height: 28px;\n}\n.h-\\[300px\\]{\n  height: 300px;\n}\n.h-\\[30px\\]{\n  height: 30px;\n}\n.h-\\[32px\\]{\n  height: 32px;\n}\n.h-\\[var\\(--radix-select-trigger-height\\)\\]{\n  height: var(--radix-select-trigger-height);\n}\n.h-full{\n  height: 100%;\n}\n.max-h-60{\n  max-height: 15rem;\n}\n.max-h-96{\n  max-height: 24rem;\n}\n.max-h-\\[220px\\]{\n  max-height: 220px;\n}\n.max-h-\\[240px\\]{\n  max-height: 240px;\n}\n.max-h-\\[600px\\]{\n  max-height: 600px;\n}\n.min-h-\\[200px\\]{\n  min-height: 200px;\n}\n.min-h-\\[50px\\]{\n  min-height: 50px;\n}\n.w-10{\n  width: 2.5rem;\n}\n.w-2{\n  width: 0.5rem;\n}\n.w-4{\n  width: 1rem;\n}\n.w-5{\n  width: 1.25rem;\n}\n.w-6{\n  width: 1.5rem;\n}\n.w-7{\n  width: 1.75rem;\n}\n.w-8{\n  width: 2rem;\n}\n.w-9{\n  width: 2.25rem;\n}\n.w-\\[100px\\]{\n  width: 100px;\n}\n.w-\\[120px\\]{\n  width: 120px;\n}\n.w-\\[28px\\]{\n  width: 28px;\n}\n.w-\\[30px\\]{\n  width: 30px;\n}\n.w-\\[340px\\]{\n  width: 340px;\n}\n.w-\\[35\\%\\]{\n  width: 35%;\n}\n.w-\\[90px\\]{\n  width: 90px;\n}\n.w-full{\n  width: 100%;\n}\n.w-px{\n  width: 1px;\n}\n.min-w-0{\n  min-width: 0px;\n}\n.min-w-\\[8rem\\]{\n  min-width: 8rem;\n}\n.min-w-\\[var\\(--radix-select-trigger-width\\)\\]{\n  min-width: var(--radix-select-trigger-width);\n}\n.max-w-\\[120px\\]{\n  max-width: 120px;\n}\n.max-w-\\[140px\\]{\n  max-width: 140px;\n}\n.max-w-\\[200px\\]{\n  max-width: 200px;\n}\n.flex-1{\n  flex: 1 1 0%;\n}\n.flex-shrink{\n  flex-shrink: 1;\n}\n.shrink-0{\n  flex-shrink: 0;\n}\n.-translate-x-1\\/2{\n  --tw-translate-x: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.-translate-y-1\\/2{\n  --tw-translate-y: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.scale-90{\n  --tw-scale-x: .9;\n  --tw-scale-y: .9;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.transform{\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n@keyframes pulse{\n\n  50%{\n    opacity: .5;\n  }\n}\n.animate-pulse{\n  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;\n}\n@keyframes slide-up{\n\n  0%{\n    opacity: 0;\n    transform: translateY(8px);\n  }\n\n  100%{\n    opacity: 1;\n    transform: translateY(0);\n  }\n}\n.animate-slide-up{\n  animation: slide-up 0.15s ease-out;\n}\n.cursor-default{\n  cursor: default;\n}\n.cursor-not-allowed{\n  cursor: not-allowed;\n}\n.cursor-pointer{\n  cursor: pointer;\n}\n.select-none{\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.resize-none{\n  resize: none;\n}\n.resize-y{\n  resize: vertical;\n}\n.resize{\n  resize: both;\n}\n.grid-cols-2{\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n}\n.grid-cols-3{\n  grid-template-columns: repeat(3, minmax(0, 1fr));\n}\n.grid-cols-\\[1fr_120px_100px_36px\\]{\n  grid-template-columns: 1fr 120px 100px 36px;\n}\n.grid-cols-\\[1fr_140px_180px_36px\\]{\n  grid-template-columns: 1fr 140px 180px 36px;\n}\n.grid-cols-\\[repeat\\(auto-fill\\2c minmax\\(100px\\2c 1fr\\)\\)\\]{\n  grid-template-columns: repeat(auto-fill,minmax(100px,1fr));\n}\n.grid-cols-\\[repeat\\(auto-fill\\2c minmax\\(90px\\2c 1fr\\)\\)\\]{\n  grid-template-columns: repeat(auto-fill,minmax(90px,1fr));\n}\n.flex-col{\n  flex-direction: column;\n}\n.flex-wrap{\n  flex-wrap: wrap;\n}\n.items-start{\n  align-items: flex-start;\n}\n.items-end{\n  align-items: flex-end;\n}\n.items-center{\n  align-items: center;\n}\n.justify-end{\n  justify-content: flex-end;\n}\n.justify-center{\n  justify-content: center;\n}\n.justify-between{\n  justify-content: space-between;\n}\n.gap-0{\n  gap: 0px;\n}\n.gap-1{\n  gap: 0.25rem;\n}\n.gap-1\\.5{\n  gap: 0.375rem;\n}\n.gap-2{\n  gap: 0.5rem;\n}\n.gap-2\\.5{\n  gap: 0.625rem;\n}\n.gap-3{\n  gap: 0.75rem;\n}\n.gap-4{\n  gap: 1rem;\n}\n.gap-x-8{\n  -moz-column-gap: 2rem;\n       column-gap: 2rem;\n}\n.gap-y-3{\n  row-gap: 0.75rem;\n}\n.space-y-0\\.5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.125rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.125rem * var(--tw-space-y-reverse));\n}\n.space-y-1 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));\n}\n.space-y-1\\.5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.375rem * var(--tw-space-y-reverse));\n}\n.space-y-2 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));\n}\n.space-y-2\\.5 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.625rem * var(--tw-space-y-reverse));\n}\n.space-y-3 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));\n}\n.space-y-4 > :not([hidden]) ~ :not([hidden]){\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1rem * var(--tw-space-y-reverse));\n}\n.divide-y > :not([hidden]) ~ :not([hidden]){\n  --tw-divide-y-reverse: 0;\n  border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));\n  border-bottom-width: calc(1px * var(--tw-divide-y-reverse));\n}\n.divide-border > :not([hidden]) ~ :not([hidden]){\n  border-color: hsl(var(--border));\n}\n.overflow-auto{\n  overflow: auto;\n}\n.overflow-hidden{\n  overflow: hidden;\n}\n.overflow-y-auto{\n  overflow-y: auto;\n}\n.truncate{\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n.whitespace-nowrap{\n  white-space: nowrap;\n}\n.whitespace-pre-wrap{\n  white-space: pre-wrap;\n}\n.break-words{\n  overflow-wrap: break-word;\n}\n.rounded{\n  border-radius: 0.25rem;\n}\n.rounded-full{\n  border-radius: 9999px;\n}\n.rounded-lg{\n  border-radius: 0.5rem;\n}\n.rounded-md{\n  border-radius: 6px;\n}\n.rounded-sm{\n  border-radius: 0.125rem;\n}\n.rounded-xl{\n  border-radius: 0.75rem;\n}\n.border{\n  border-width: 1px;\n}\n.border-2{\n  border-width: 2px;\n}\n.border-b{\n  border-bottom-width: 1px;\n}\n.border-b-2{\n  border-bottom-width: 2px;\n}\n.border-l-2{\n  border-left-width: 2px;\n}\n.border-t{\n  border-top-width: 1px;\n}\n.border-t-2{\n  border-top-width: 2px;\n}\n.border-dashed{\n  border-style: dashed;\n}\n.border-none{\n  border-style: none;\n}\n.border-\\[\\#2469f0\\]{\n  --tw-border-opacity: 1;\n  border-color: rgb(36 105 240 / var(--tw-border-opacity, 1));\n}\n.border-amber-200{\n  --tw-border-opacity: 1;\n  border-color: rgb(253 230 138 / var(--tw-border-opacity, 1));\n}\n.border-border{\n  border-color: hsl(var(--border));\n}\n.border-destructive{\n  border-color: hsl(var(--destructive));\n}\n.border-destructive\\/20{\n  border-color: hsl(var(--destructive) / 0.2);\n}\n.border-destructive\\/50{\n  border-color: hsl(var(--destructive) / 0.5);\n}\n.border-foreground{\n  border-color: hsl(var(--foreground));\n}\n.border-green-200{\n  --tw-border-opacity: 1;\n  border-color: rgb(187 247 208 / var(--tw-border-opacity, 1));\n}\n.border-input{\n  border-color: hsl(var(--input));\n}\n.border-primary{\n  border-color: hsl(var(--primary));\n}\n.border-primary\\/15{\n  border-color: hsl(var(--primary) / 0.15);\n}\n.border-primary\\/20{\n  border-color: hsl(var(--primary) / 0.2);\n}\n.border-red-200{\n  --tw-border-opacity: 1;\n  border-color: rgb(254 202 202 / var(--tw-border-opacity, 1));\n}\n.border-red-500{\n  --tw-border-opacity: 1;\n  border-color: rgb(239 68 68 / var(--tw-border-opacity, 1));\n}\n.border-transparent{\n  border-color: transparent;\n}\n.bg-\\[\\#2469f0\\]{\n  --tw-bg-opacity: 1;\n  background-color: rgb(36 105 240 / var(--tw-bg-opacity, 1));\n}\n.bg-accent{\n  background-color: hsl(var(--accent));\n}\n.bg-accent\\/20{\n  background-color: hsl(var(--accent) / 0.2);\n}\n.bg-accent\\/40{\n  background-color: hsl(var(--accent) / 0.4);\n}\n.bg-accent\\/50{\n  background-color: hsl(var(--accent) / 0.5);\n}\n.bg-amber-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(255 251 235 / var(--tw-bg-opacity, 1));\n}\n.bg-amber-50\\/50{\n  background-color: rgb(255 251 235 / 0.5);\n}\n.bg-background{\n  background-color: hsl(var(--background));\n}\n.bg-blue-100{\n  --tw-bg-opacity: 1;\n  background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1));\n}\n.bg-blue-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(239 246 255 / var(--tw-bg-opacity, 1));\n}\n.bg-border{\n  background-color: hsl(var(--border));\n}\n.bg-card{\n  background-color: hsl(var(--card));\n}\n.bg-destructive{\n  background-color: hsl(var(--destructive));\n}\n.bg-destructive\\/10{\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.bg-destructive\\/5{\n  background-color: hsl(var(--destructive) / 0.05);\n}\n.bg-foreground{\n  background-color: hsl(var(--foreground));\n}\n.bg-gray-100{\n  --tw-bg-opacity: 1;\n  background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));\n}\n.bg-green-100{\n  --tw-bg-opacity: 1;\n  background-color: rgb(220 252 231 / var(--tw-bg-opacity, 1));\n}\n.bg-green-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(240 253 244 / var(--tw-bg-opacity, 1));\n}\n.bg-green-500{\n  --tw-bg-opacity: 1;\n  background-color: rgb(34 197 94 / var(--tw-bg-opacity, 1));\n}\n.bg-green-600{\n  --tw-bg-opacity: 1;\n  background-color: rgb(22 163 74 / var(--tw-bg-opacity, 1));\n}\n.bg-muted{\n  background-color: hsl(var(--muted));\n}\n.bg-muted-foreground{\n  background-color: hsl(var(--muted-foreground));\n}\n.bg-muted\\/40{\n  background-color: hsl(var(--muted) / 0.4);\n}\n.bg-popover{\n  background-color: hsl(var(--popover));\n}\n.bg-primary{\n  background-color: hsl(var(--primary));\n}\n.bg-primary\\/10{\n  background-color: hsl(var(--primary) / 0.1);\n}\n.bg-primary\\/5{\n  background-color: hsl(var(--primary) / 0.05);\n}\n.bg-red-100{\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 226 226 / var(--tw-bg-opacity, 1));\n}\n.bg-red-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 242 242 / var(--tw-bg-opacity, 1));\n}\n.bg-red-500\\/5{\n  background-color: rgb(239 68 68 / 0.05);\n}\n.bg-red-600{\n  --tw-bg-opacity: 1;\n  background-color: rgb(220 38 38 / var(--tw-bg-opacity, 1));\n}\n.bg-secondary{\n  background-color: hsl(var(--secondary));\n}\n.bg-white\\/15{\n  background-color: rgb(255 255 255 / 0.15);\n}\n.bg-yellow-50{\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 252 232 / var(--tw-bg-opacity, 1));\n}\n.bg-gradient-to-br{\n  background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));\n}\n.from-muted{\n  --tw-gradient-from: hsl(var(--muted)) var(--tw-gradient-from-position);\n  --tw-gradient-to: hsl(var(--muted) / 0) var(--tw-gradient-to-position);\n  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);\n}\n.from-primary{\n  --tw-gradient-from: hsl(var(--primary)) var(--tw-gradient-from-position);\n  --tw-gradient-to: hsl(var(--primary) / 0) var(--tw-gradient-to-position);\n  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);\n}\n.to-muted\\/50{\n  --tw-gradient-to: hsl(var(--muted) / 0.5) var(--tw-gradient-to-position);\n}\n.to-primary\\/80{\n  --tw-gradient-to: hsl(var(--primary) / 0.8) var(--tw-gradient-to-position);\n}\n.p-0\\.5{\n  padding: 0.125rem;\n}\n.p-1{\n  padding: 0.25rem;\n}\n.p-1\\.5{\n  padding: 0.375rem;\n}\n.p-2{\n  padding: 0.5rem;\n}\n.p-2\\.5{\n  padding: 0.625rem;\n}\n.p-3{\n  padding: 0.75rem;\n}\n.p-3\\.5{\n  padding: 0.875rem;\n}\n.p-4{\n  padding: 1rem;\n}\n.p-5{\n  padding: 1.25rem;\n}\n.p-8{\n  padding: 2rem;\n}\n.px-1{\n  padding-left: 0.25rem;\n  padding-right: 0.25rem;\n}\n.px-1\\.5{\n  padding-left: 0.375rem;\n  padding-right: 0.375rem;\n}\n.px-2{\n  padding-left: 0.5rem;\n  padding-right: 0.5rem;\n}\n.px-2\\.5{\n  padding-left: 0.625rem;\n  padding-right: 0.625rem;\n}\n.px-3{\n  padding-left: 0.75rem;\n  padding-right: 0.75rem;\n}\n.px-3\\.5{\n  padding-left: 0.875rem;\n  padding-right: 0.875rem;\n}\n.px-4{\n  padding-left: 1rem;\n  padding-right: 1rem;\n}\n.px-5{\n  padding-left: 1.25rem;\n  padding-right: 1.25rem;\n}\n.px-6{\n  padding-left: 1.5rem;\n  padding-right: 1.5rem;\n}\n.py-0{\n  padding-top: 0px;\n  padding-bottom: 0px;\n}\n.py-0\\.5{\n  padding-top: 0.125rem;\n  padding-bottom: 0.125rem;\n}\n.py-1{\n  padding-top: 0.25rem;\n  padding-bottom: 0.25rem;\n}\n.py-1\\.5{\n  padding-top: 0.375rem;\n  padding-bottom: 0.375rem;\n}\n.py-12{\n  padding-top: 3rem;\n  padding-bottom: 3rem;\n}\n.py-2{\n  padding-top: 0.5rem;\n  padding-bottom: 0.5rem;\n}\n.py-2\\.5{\n  padding-top: 0.625rem;\n  padding-bottom: 0.625rem;\n}\n.py-3{\n  padding-top: 0.75rem;\n  padding-bottom: 0.75rem;\n}\n.py-4{\n  padding-top: 1rem;\n  padding-bottom: 1rem;\n}\n.py-8{\n  padding-top: 2rem;\n  padding-bottom: 2rem;\n}\n.pb-1\\.5{\n  padding-bottom: 0.375rem;\n}\n.pb-2{\n  padding-bottom: 0.5rem;\n}\n.pl-2{\n  padding-left: 0.5rem;\n}\n.pr-14{\n  padding-right: 3.5rem;\n}\n.pr-8{\n  padding-right: 2rem;\n}\n.pt-3{\n  padding-top: 0.75rem;\n}\n.text-center{\n  text-align: center;\n}\n.font-\\[\\\'Inter\\\'\\2c system-ui\\2c sans-serif\\]{\n  font-family: \'Inter\',system-ui,sans-serif;\n}\n.font-mono{\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace;\n}\n.text-\\[10px\\]{\n  font-size: 10px;\n}\n.text-\\[11px\\]{\n  font-size: 11px;\n}\n.text-\\[13px\\]{\n  font-size: 13px;\n}\n.text-\\[14px\\]{\n  font-size: 14px;\n}\n.text-\\[15px\\]{\n  font-size: 15px;\n}\n.text-\\[16px\\]{\n  font-size: 16px;\n}\n.text-\\[18px\\]{\n  font-size: 18px;\n}\n.text-\\[8px\\]{\n  font-size: 8px;\n}\n.text-\\[9px\\]{\n  font-size: 9px;\n}\n.text-base{\n  font-size: 1rem;\n  line-height: 1.5rem;\n}\n.text-md-sm{\n  font-size: 12px;\n  line-height: 18px;\n}\n.text-md-xs{\n  font-size: 11px;\n  line-height: 16px;\n}\n.text-sm{\n  font-size: 0.875rem;\n  line-height: 1.25rem;\n}\n.text-xs{\n  font-size: 0.75rem;\n  line-height: 1rem;\n}\n.font-bold{\n  font-weight: 700;\n}\n.font-medium{\n  font-weight: 500;\n}\n.font-semibold{\n  font-weight: 600;\n}\n.uppercase{\n  text-transform: uppercase;\n}\n.leading-relaxed{\n  line-height: 1.625;\n}\n.leading-snug{\n  line-height: 1.375;\n}\n.tracking-tight{\n  letter-spacing: -0.025em;\n}\n.tracking-wide{\n  letter-spacing: 0.025em;\n}\n.tracking-wider{\n  letter-spacing: 0.05em;\n}\n.text-\\[\\#2469f0\\]{\n  --tw-text-opacity: 1;\n  color: rgb(36 105 240 / var(--tw-text-opacity, 1));\n}\n.text-amber-700{\n  --tw-text-opacity: 1;\n  color: rgb(180 83 9 / var(--tw-text-opacity, 1));\n}\n.text-background{\n  color: hsl(var(--background));\n}\n.text-blue-700{\n  --tw-text-opacity: 1;\n  color: rgb(29 78 216 / var(--tw-text-opacity, 1));\n}\n.text-card-foreground{\n  color: hsl(var(--card-foreground));\n}\n.text-destructive{\n  color: hsl(var(--destructive));\n}\n.text-destructive-foreground{\n  color: hsl(var(--destructive-foreground));\n}\n.text-destructive\\/80{\n  color: hsl(var(--destructive) / 0.8);\n}\n.text-foreground{\n  color: hsl(var(--foreground));\n}\n.text-gray-700{\n  --tw-text-opacity: 1;\n  color: rgb(55 65 81 / var(--tw-text-opacity, 1));\n}\n.text-green-500{\n  --tw-text-opacity: 1;\n  color: rgb(34 197 94 / var(--tw-text-opacity, 1));\n}\n.text-green-700{\n  --tw-text-opacity: 1;\n  color: rgb(21 128 61 / var(--tw-text-opacity, 1));\n}\n.text-muted-foreground{\n  color: hsl(var(--muted-foreground));\n}\n.text-popover-foreground{\n  color: hsl(var(--popover-foreground));\n}\n.text-primary{\n  color: hsl(var(--primary));\n}\n.text-primary-foreground{\n  color: hsl(var(--primary-foreground));\n}\n.text-red-500{\n  --tw-text-opacity: 1;\n  color: rgb(239 68 68 / var(--tw-text-opacity, 1));\n}\n.text-red-600{\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.text-red-700{\n  --tw-text-opacity: 1;\n  color: rgb(185 28 28 / var(--tw-text-opacity, 1));\n}\n.text-red-800{\n  --tw-text-opacity: 1;\n  color: rgb(153 27 27 / var(--tw-text-opacity, 1));\n}\n.text-red-900{\n  --tw-text-opacity: 1;\n  color: rgb(127 29 29 / var(--tw-text-opacity, 1));\n}\n.text-secondary-foreground{\n  color: hsl(var(--secondary-foreground));\n}\n.text-white{\n  --tw-text-opacity: 1;\n  color: rgb(255 255 255 / var(--tw-text-opacity, 1));\n}\n.text-white\\/70{\n  color: rgb(255 255 255 / 0.7);\n}\n.text-yellow-600{\n  --tw-text-opacity: 1;\n  color: rgb(202 138 4 / var(--tw-text-opacity, 1));\n}\n.text-yellow-700{\n  --tw-text-opacity: 1;\n  color: rgb(161 98 7 / var(--tw-text-opacity, 1));\n}\n.text-yellow-800{\n  --tw-text-opacity: 1;\n  color: rgb(133 77 14 / var(--tw-text-opacity, 1));\n}\n.underline-offset-4{\n  text-underline-offset: 4px;\n}\n.antialiased{\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n}\n.opacity-0{\n  opacity: 0;\n}\n.opacity-30{\n  opacity: 0.3;\n}\n.opacity-50{\n  opacity: 0.5;\n}\n.opacity-60{\n  opacity: 0.6;\n}\n.opacity-85{\n  opacity: 0.85;\n}\n.opacity-90{\n  opacity: 0.9;\n}\n.shadow{\n  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-lg{\n  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-md{\n  --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-sm{\n  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);\n  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.outline-none{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.outline{\n  outline-style: solid;\n}\n.ring{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.ring-0{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.blur{\n  --tw-blur: blur(8px);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.grayscale{\n  --tw-grayscale: grayscale(100%);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.filter{\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.backdrop-filter{\n  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);\n}\n.transition{\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-all{\n  transition-property: all;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-colors{\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-transform{\n  transition-property: transform;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.duration-150{\n  transition-duration: 150ms;\n}\n.duration-200{\n  transition-duration: 200ms;\n}\n.duration-300{\n  transition-duration: 300ms;\n}\n.ease-in-out{\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.ease-out{\n  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);\n}\n@keyframes enter{\n\n  from{\n    opacity: var(--tw-enter-opacity, 1);\n    transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0) scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1)) rotate(var(--tw-enter-rotate, 0));\n  }\n}\n@keyframes exit{\n\n  to{\n    opacity: var(--tw-exit-opacity, 1);\n    transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0) scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1)) rotate(var(--tw-exit-rotate, 0));\n  }\n}\n.animate-in{\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.fade-in{\n  --tw-enter-opacity: 0;\n}\n.fade-out{\n  --tw-exit-opacity: 0;\n}\n.duration-150{\n  animation-duration: 150ms;\n}\n.duration-200{\n  animation-duration: 200ms;\n}\n.duration-300{\n  animation-duration: 300ms;\n}\n.ease-in-out{\n  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.ease-out{\n  animation-timing-function: cubic-bezier(0, 0, 0.2, 1);\n}\n.running{\n  animation-play-state: running;\n}\n.placeholder\\:text-muted-foreground::-moz-placeholder{\n  color: hsl(var(--muted-foreground));\n}\n.placeholder\\:text-muted-foreground::placeholder{\n  color: hsl(var(--muted-foreground));\n}\n.last\\:border-b-0:last-child{\n  border-bottom-width: 0px;\n}\n.hover\\:bg-accent:hover{\n  background-color: hsl(var(--accent));\n}\n.hover\\:bg-amber-100\\/50:hover{\n  background-color: rgb(254 243 199 / 0.5);\n}\n.hover\\:bg-destructive:hover{\n  background-color: hsl(var(--destructive));\n}\n.hover\\:bg-destructive\\/10:hover{\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.hover\\:bg-destructive\\/20:hover{\n  background-color: hsl(var(--destructive) / 0.2);\n}\n.hover\\:bg-destructive\\/90:hover{\n  background-color: hsl(var(--destructive) / 0.9);\n}\n.hover\\:bg-green-700:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(21 128 61 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-muted\\/50:hover{\n  background-color: hsl(var(--muted) / 0.5);\n}\n.hover\\:bg-primary\\/15:hover{\n  background-color: hsl(var(--primary) / 0.15);\n}\n.hover\\:bg-primary\\/5:hover{\n  background-color: hsl(var(--primary) / 0.05);\n}\n.hover\\:bg-primary\\/90:hover{\n  background-color: hsl(var(--primary) / 0.9);\n}\n.hover\\:bg-red-500\\/10:hover{\n  background-color: rgb(239 68 68 / 0.1);\n}\n.hover\\:bg-red-700:hover{\n  --tw-bg-opacity: 1;\n  background-color: rgb(185 28 28 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-secondary\\/80:hover{\n  background-color: hsl(var(--secondary) / 0.8);\n}\n.hover\\:bg-white\\/25:hover{\n  background-color: rgb(255 255 255 / 0.25);\n}\n.hover\\:text-accent-foreground:hover{\n  color: hsl(var(--accent-foreground));\n}\n.hover\\:text-destructive:hover{\n  color: hsl(var(--destructive));\n}\n.hover\\:text-destructive-foreground:hover{\n  color: hsl(var(--destructive-foreground));\n}\n.hover\\:text-foreground:hover{\n  color: hsl(var(--foreground));\n}\n.hover\\:text-red-600:hover{\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.hover\\:underline:hover{\n  text-decoration-line: underline;\n}\n.hover\\:opacity-70:hover{\n  opacity: 0.7;\n}\n.focus\\:bg-accent:focus{\n  background-color: hsl(var(--accent));\n}\n.focus\\:text-accent-foreground:focus{\n  color: hsl(var(--accent-foreground));\n}\n.focus\\:outline-none:focus{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus\\:ring-1:focus{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-2:focus{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-primary:focus{\n  --tw-ring-color: hsl(var(--primary));\n}\n.focus\\:ring-red-500:focus{\n  --tw-ring-opacity: 1;\n  --tw-ring-color: rgb(239 68 68 / var(--tw-ring-opacity, 1));\n}\n.focus\\:ring-ring:focus{\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus\\:ring-offset-1:focus{\n  --tw-ring-offset-width: 1px;\n}\n.focus-visible\\:outline-none:focus-visible{\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus-visible\\:ring-2:focus-visible{\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus-visible\\:ring-ring:focus-visible{\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus-visible\\:ring-offset-1:focus-visible{\n  --tw-ring-offset-width: 1px;\n}\n.disabled\\:pointer-events-none:disabled{\n  pointer-events: none;\n}\n.disabled\\:cursor-not-allowed:disabled{\n  cursor: not-allowed;\n}\n.disabled\\:opacity-50:disabled{\n  opacity: 0.5;\n}\n.group:hover .group-hover\\:opacity-100{\n  opacity: 1;\n}\n.data-\\[disabled\\]\\:pointer-events-none[data-disabled]{\n  pointer-events: none;\n}\n.data-\\[side\\=bottom\\]\\:translate-y-1[data-side="bottom"]{\n  --tw-translate-y: 0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[side\\=top\\]\\:-translate-y-1[data-side="top"]{\n  --tw-translate-y: -0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:translate-x-4[data-state="checked"]{\n  --tw-translate-x: 1rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=unchecked\\]\\:translate-x-0[data-state="unchecked"]{\n  --tw-translate-x: 0px;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:bg-primary[data-state="checked"]{\n  background-color: hsl(var(--primary));\n}\n.data-\\[state\\=unchecked\\]\\:bg-input[data-state="unchecked"]{\n  background-color: hsl(var(--input));\n}\n.data-\\[disabled\\]\\:opacity-50[data-disabled]{\n  opacity: 0.5;\n}\n.data-\\[state\\=open\\]\\:animate-in[data-state="open"]{\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:animate-out[data-state="closed"]{\n  animation-name: exit;\n  animation-duration: 150ms;\n  --tw-exit-opacity: initial;\n  --tw-exit-scale: initial;\n  --tw-exit-rotate: initial;\n  --tw-exit-translate-x: initial;\n  --tw-exit-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:fade-out-0[data-state="closed"]{\n  --tw-exit-opacity: 0;\n}\n.data-\\[state\\=open\\]\\:fade-in-0[data-state="open"]{\n  --tw-enter-opacity: 0;\n}\n.data-\\[state\\=closed\\]\\:zoom-out-95[data-state="closed"]{\n  --tw-exit-scale: .95;\n}\n.data-\\[state\\=open\\]\\:zoom-in-95[data-state="open"]{\n  --tw-enter-scale: .95;\n}\n.dark\\:border-amber-800:is(.dark *){\n  --tw-border-opacity: 1;\n  border-color: rgb(146 64 14 / var(--tw-border-opacity, 1));\n}\n.dark\\:border-green-800:is(.dark *){\n  --tw-border-opacity: 1;\n  border-color: rgb(22 101 52 / var(--tw-border-opacity, 1));\n}\n.dark\\:border-red-900:is(.dark *){\n  --tw-border-opacity: 1;\n  border-color: rgb(127 29 29 / var(--tw-border-opacity, 1));\n}\n.dark\\:bg-amber-900\\/30:is(.dark *){\n  background-color: rgb(120 53 15 / 0.3);\n}\n.dark\\:bg-amber-950\\/20:is(.dark *){\n  background-color: rgb(69 26 3 / 0.2);\n}\n.dark\\:bg-blue-900\\/30:is(.dark *){\n  background-color: rgb(30 58 138 / 0.3);\n}\n.dark\\:bg-blue-950\\/20:is(.dark *){\n  background-color: rgb(23 37 84 / 0.2);\n}\n.dark\\:bg-green-950\\/20:is(.dark *){\n  background-color: rgb(5 46 22 / 0.2);\n}\n.dark\\:bg-red-950\\/20:is(.dark *){\n  background-color: rgb(69 10 10 / 0.2);\n}\n.dark\\:bg-yellow-950\\/30:is(.dark *){\n  background-color: rgb(66 32 6 / 0.3);\n}\n.dark\\:text-amber-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(252 211 77 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-blue-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(147 197 253 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-green-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(134 239 172 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-red-200:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(254 202 202 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-red-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(252 165 165 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-yellow-300:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(253 224 71 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-yellow-400:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(250 204 21 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-yellow-500:is(.dark *){\n  --tw-text-opacity: 1;\n  color: rgb(234 179 8 / var(--tw-text-opacity, 1));\n}\n@media (min-width: 640px){\n\n  .sm\\:grid-cols-3{\n    grid-template-columns: repeat(3, minmax(0, 1fr));\n  }\n}\n.\\[\\&\\>span\\]\\:line-clamp-1>span{\n  overflow: hidden;\n  display: -webkit-box;\n  -webkit-box-orient: vertical;\n  -webkit-line-clamp: 1;\n}\n.\\[\\&\\>span\\]\\:h-3>span{\n  height: 0.75rem;\n}\n.\\[\\&\\>span\\]\\:w-3>span{\n  width: 0.75rem;\n}\n.data-\\[state\\=checked\\]\\:\\[\\&\\>span\\]\\:translate-x-3>span[data-state="checked"]{\n  --tw-translate-x: 0.75rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.\\[\\&_svg\\]\\:pointer-events-none svg{\n  pointer-events: none;\n}\n.\\[\\&_svg\\]\\:size-4 svg{\n  width: 1rem;\n  height: 1rem;\n}\n.\\[\\&_svg\\]\\:shrink-0 svg{\n  flex-shrink: 0;\n}\n'
-          : '') +
+        css +
         `
       /* \u2500\u2500 Reset host-page overrides inside the modal \u2500\u2500 */
       /* ponytail: specificity 0-2-0 beats most host styles without !important */
@@ -41066,7 +44784,25 @@ var __morbis_feature = (() => {
     `;
       document.head.appendChild(s);
     }
-    reactRoot = (0, import_client.createRoot)(container);
+    const mountTarget = (() => {
+      if (!shadowRoot) return container;
+      container.style.display = 'none';
+      const app = shadowRoot.getElementById('app');
+      let sc = shadowRoot.getElementById('ext-resume-shadow-container');
+      if (!sc) {
+        sc = document.createElement('div');
+        sc.id = 'ext-resume-shadow-container';
+        sc.style.cssText =
+          'position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;pointer-events:auto';
+        (app ?? shadowRoot).appendChild(sc);
+      }
+      sc.style.display = 'flex';
+      if (overlayBtn) overlayBtn.style.display = 'none';
+      const sb = document.querySelector('[data-scroll-buttons]');
+      if (sb) sb.style.display = 'none';
+      return sc;
+    })();
+    reactRoot = (0, import_client.createRoot)(mountTarget);
     const handleSave = async (resumeData) => {
       const body = serializeFormData(resumeData);
       const response = await fetch(ENDPOINT, {
@@ -41114,9 +44850,9 @@ var __morbis_feature = (() => {
       });
     };
     reactRoot.render(
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(ErrorBoundary, {
+      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(ErrorBoundary, {
         onError: () => setTimeout(() => closeOverlay(container), 0),
-        children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(App, {
+        children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(App, {
           data,
           onSave: handleSave,
           onClose: () => closeOverlay(container),
@@ -41125,13 +44861,14 @@ var __morbis_feature = (() => {
     );
     document.body.classList.add('ext-resume-open');
     setTimeout(() => {
-      container.querySelectorAll('textarea').forEach((tx) => {
-        tx.style.height = 'auto';
-        tx.style.height = tx.scrollHeight + 'px';
+      const scope = shadowRoot?.getElementById('ext-resume-shadow-container') ?? container;
+      scope.querySelectorAll('textarea').forEach((tx0) => {
+        const tx = tx0;
         tx.addEventListener('input', () => {
           tx.style.height = 'auto';
           tx.style.height = tx.scrollHeight + 'px';
         });
+        tx.dispatchEvent(new Event('input'));
       });
     }, 50);
   }
@@ -41261,7 +44998,7 @@ var __morbis_feature = (() => {
     container.id = 'ext-resume-container';
     container.className = 'resume-modal';
     container.style.cssText =
-      'position: fixed; inset: 0; z-index: 1000; display: none; background: rgba(0,0,0,.4); align-items: center; justify-content: center;';
+      'position: fixed; inset: 0; z-index: 2147483647; display: none; background: rgba(0,0,0,.4); align-items: center; justify-content: center;';
     document.body.appendChild(container);
     const btn = document.createElement('button');
     overlayBtn = btn;
@@ -41408,11 +45145,14 @@ react/cjs/react-jsx-runtime.development.js:
    * LICENSE file in the root directory of this source tree.
    *)
 
-lucide-react/dist/esm/shared/src/utils/mergeClasses.mjs:
 lucide-react/dist/esm/shared/src/utils/toKebabCase.mjs:
+lucide-react/dist/esm/shared/src/utils/toLucideIconData.mjs:
 lucide-react/dist/esm/shared/src/utils/toCamelCase.mjs:
 lucide-react/dist/esm/shared/src/utils/toPascalCase.mjs:
-lucide-react/dist/esm/defaultAttributes.mjs:
+lucide-react/dist/esm/shared/src/utils/mergeClasses.mjs:
+lucide-react/dist/esm/shared/src/build/defaultAttributes.mjs:
+lucide-react/dist/esm/shared/src/build/buildLucideIconNode.mjs:
+lucide-react/dist/esm/shared/src/build/buildLucideIconForReact.mjs:
 lucide-react/dist/esm/shared/src/utils/hasA11yProp.mjs:
 lucide-react/dist/esm/context.mjs:
 lucide-react/dist/esm/Icon.mjs:
@@ -41421,12 +45161,13 @@ lucide-react/dist/esm/icons/check.mjs:
 lucide-react/dist/esm/icons/chevron-down.mjs:
 lucide-react/dist/esm/icons/info.mjs:
 lucide-react/dist/esm/icons/plus.mjs:
-lucide-react/dist/esm/icons/trash-2.mjs:
+lucide-react/dist/esm/icons/search.mjs:
+lucide-react/dist/esm/icons/trash.mjs:
 lucide-react/dist/esm/icons/triangle-alert.mjs:
 lucide-react/dist/esm/icons/x.mjs:
 lucide-react/dist/esm/lucide-react.mjs:
   (**
-   * @license lucide-react v1.38.0 - ISC
+   * @license lucide-react v1.46.0 - ISC
    *
    * This source code is licensed under the ISC license.
    * See the LICENSE file in the root directory of this source tree.
