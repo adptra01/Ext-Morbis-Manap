@@ -765,7 +765,7 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
     host = document.createElement('div');
     host.id = 'morbis-manap-root';
     host.style.cssText =
-      'position:fixed;inset:0;z-index:2147483646;pointer-events:none;display:contents';
+      'position:fixed;inset:0;z-index:2147483647;pointer-events:none;display:block';
     document.body.appendChild(host);
     const sr = host.attachShadow({ mode: 'open' });
     const app = document.createElement('div');
@@ -773,7 +773,7 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
     sr.appendChild(app);
     const ms = document.createElement('style');
     ms.id = 'morbis-shadow-reset';
-    ms.textContent = `:host{display:contents}#app{isolation:isolate;color-scheme:light}`;
+    ms.textContent = `:host{display:block}#app{isolation:isolate;color-scheme:light}`;
     sr.appendChild(ms);
     // adoptedStyleSheets — strip @import (Constructable Stylesheets reject it) + fallback to <style>
     try {
@@ -920,13 +920,15 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
 
   const mountTarget = (() => {
     if (!shadowRoot) return container;
+    // shadow aktif → light fallback container jangan sampai tampil (overlay ganda)
+    container.style.display = 'none';
     const app = shadowRoot.getElementById('app');
     let sc = shadowRoot.getElementById('ext-resume-shadow-container') as HTMLElement | null;
     if (!sc) {
       sc = document.createElement('div');
       sc.id = 'ext-resume-shadow-container';
       sc.style.cssText =
-        'position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;pointer-events:auto';
+        'position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;pointer-events:auto';
       // mount di dalam #app supaya warisi :host/#app vars + color-scheme
       (app ?? shadowRoot).appendChild(sc);
     }
@@ -1150,7 +1152,7 @@ function setupFloatingButton() {
   container.id = 'ext-resume-container';
   container.className = 'resume-modal';
   container.style.cssText =
-    'position: fixed; inset: 0; z-index: 1000; display: none; background: rgba(0,0,0,.4); align-items: center; justify-content: center;';
+    'position: fixed; inset: 0; z-index: 2147483647; display: none; background: rgba(0,0,0,.4); align-items: center; justify-content: center;';
   document.body.appendChild(container);
 
   const btn = document.createElement('button');

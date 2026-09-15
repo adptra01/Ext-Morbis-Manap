@@ -243,7 +243,7 @@ function mountReactApp(data: RanapFormData) {
     container.id = 'ext-ri-container';
     container.className = 'ri-modal';
     container.style.cssText =
-      'position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center';
+      'position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center';
     document.body.appendChild(container);
   }
 
@@ -254,7 +254,7 @@ function mountReactApp(data: RanapFormData) {
     host = document.createElement('div');
     host.id = 'morbis-manap-root';
     host.style.cssText =
-      'position:fixed;inset:0;z-index:2147483646;pointer-events:none;display:contents';
+      'position:fixed;inset:0;z-index:2147483647;pointer-events:none;display:block';
     document.body.appendChild(host);
     const sr = host.attachShadow({ mode: 'open' });
     const app = document.createElement('div');
@@ -262,7 +262,7 @@ function mountReactApp(data: RanapFormData) {
     sr.appendChild(app);
     const ms = document.createElement('style');
     ms.id = 'morbis-shadow-reset';
-    ms.textContent = `:host{display:contents}#app{isolation:isolate;color-scheme:light}`;
+    ms.textContent = `:host{display:block}#app{isolation:isolate;color-scheme:light}`;
     sr.appendChild(ms);
     try {
       let css0: string = typeof SHADOW_CSS !== 'undefined' ? (SHADOW_CSS as string) : '';
@@ -424,13 +424,15 @@ function mountReactApp(data: RanapFormData) {
   const mountTarget = (() => {
     const sr = shadowRoot ?? getShadow();
     if (!sr) return container;
+    // shadow aktif → legacy ext-ri-container jangan tampil (overlay ganda)
+    container.style.display = 'none';
     const app = sr.getElementById('app');
     let sc = sr.getElementById('ext-ri-shadow-container') as HTMLElement | null;
     if (!sc) {
       sc = document.createElement('div');
       sc.id = 'ext-ri-shadow-container';
       sc.style.cssText =
-        'position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;pointer-events:auto';
+        'position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;pointer-events:auto';
       (app ?? sr).appendChild(sc);
     }
     sc.style.display = 'flex';
