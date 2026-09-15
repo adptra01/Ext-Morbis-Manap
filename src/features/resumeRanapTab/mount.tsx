@@ -226,15 +226,40 @@ function mountReactApp(data: RanapFormData) {
   document.body.appendChild(container);
   document.body.classList.add('ext-ri-open');
 
+  const __ensureShadowForRI = (): ShadowRoot | null => {
+    let host = document.getElementById('morbis-manap-root') as HTMLElement | null;
+    if (host && !host.shadowRoot) return null;
+    if (!host) {
+      host = document.createElement('div');
+      host.id = 'morbis-manap-root';
+      host.style.cssText =
+        'position:fixed;inset:0;z-index:2147483645;pointer-events:none;display:contents';
+      document.body.appendChild(host);
+      host.attachShadow({ mode: 'open' });
+      const sw = document.createElement('div');
+      sw.id = 'app';
+      host.shadowRoot!.appendChild(sw);
+      const ms = document.createElement('style');
+      ms.id = 'morbis-shadow-reset';
+      ms.textContent = `:host{display:contents}#app{isolation:isolate}`;
+      host.shadowRoot!.appendChild(ms);
+    }
+    return host.shadowRoot!;
+  };
   if (!document.getElementById('ext-ri-css')) {
     const s = document.createElement('style');
     s.id = 'ext-ri-css';
+    const css = typeof SHADOW_CSS !== 'undefined' ? SHADOW_CSS : '';
+    const sr = __ensureShadowForRI();
+    if (sr && !sr.getElementById('morbis-ri-shadow-css')) {
+      const ss = document.createElement('style');
+      ss.id = 'morbis-ri-shadow-css';
+      ss.textContent = css;
+      sr.appendChild(ss);
+    }
     s.textContent =
-      (typeof SHADOW_CSS !== 'undefined' ? SHADOW_CSS : '') +
+      css +
       `
-      /* ── Reset host-page overrides inside the modal ── */
-      /* ponytail: specificity 0-2-0 beats most host styles without !important */
-      .ri-modal .ri-modal {
         background: #fff;
         border-radius: 16px;
         box-shadow: 0 25px 60px rgba(0,0,0,.25);

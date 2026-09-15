@@ -22,8 +22,12 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* ponytail: senior healthcare preset — high contrast, radius 12px, warning seam */
-  :root {
+  /* ponytail: senior healthcare preset — high contrast + radius 12px.
+     * Defined on :root for light DOM (popup/sidepanel) AND on :host + #app
+     * for extension Shadow DOM (resume modals). Keep them in sync: edit :root. */
+  :root,
+  :host,
+  #app {
     --background: 0 0% 100%;
     --foreground: 222.2 47% 11%;
     --card: 0 0% 100%;
