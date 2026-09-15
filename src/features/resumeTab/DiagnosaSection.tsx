@@ -136,7 +136,7 @@ export function DiagnosaSection({ rows, onChange }: Props) {
                 className="bg-background border-2 border-border rounded-xl p-4 space-y-4 shadow-sm"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-primary">Diagnosa #{no}</span>
+                  <span className="text-base font-semibold text-primary">Diagnosa #{no}</span>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -185,7 +185,7 @@ export function DiagnosaSection({ rows, onChange }: Props) {
                             className="px-4 py-3 cursor-pointer text-base border-b border-border hover:bg-accent transition-colors"
                           >
                             <div className="font-medium text-foreground">{item.NAMA}</div>
-                            <div className="text-muted-foreground text-sm font-mono">
+                            <div className="text-muted-foreground text-base font-mono">
                               {item.KODE}
                             </div>
                           </div>
@@ -194,7 +194,7 @@ export function DiagnosaSection({ rows, onChange }: Props) {
                     )}
                     {errMsg && (
                       <div
-                        className="fixed z-[2147483647] bg-destructive/10 border-2 border-destructive rounded-xl px-3 py-2.5 text-sm text-destructive"
+                        className="fixed z-[2147483647] bg-destructive/10 border-2 border-destructive rounded-xl px-3 py-2.5 text-base text-destructive"
                         style={{ top: hitPos.top, left: hitPos.left }}
                         role="alert"
                       >

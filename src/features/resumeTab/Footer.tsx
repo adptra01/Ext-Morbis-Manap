@@ -34,7 +34,7 @@ export function Footer({
           </Badge>
         )}
         {lastSaved && (
-          <span className="text-sm text-muted-foreground truncate">Tersimpan {lastSaved}</span>
+          <span className="text-base text-muted-foreground truncate">Tersimpan {lastSaved}</span>
         )}
         {saving && (
           <Badge variant="default" icon>

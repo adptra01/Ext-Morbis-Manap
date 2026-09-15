@@ -23,7 +23,7 @@ export function ClinicalNotesSection({
           rows={5}
           aria-describedby="anamnesa-help"
         />
-        <p id="anamnesa-help" className="text-sm text-muted-foreground mt-1">
+        <p id="anamnesa-help" className="text-base text-muted-foreground mt-1">
           Tuliskan keluhan utama, riwayat penyakit sekarang, dan riwayat penyakit dahulu
         </p>
       </div>
@@ -36,7 +36,7 @@ export function ClinicalNotesSection({
           rows={5}
           aria-describedby="pemeriksaan-help"
         />
-        <p id="pemeriksaan-help" className="text-sm text-muted-foreground mt-1">
+        <p id="pemeriksaan-help" className="text-base text-muted-foreground mt-1">
           Catat hasil pemeriksaan umum dan sistemik
         </p>
       </div>

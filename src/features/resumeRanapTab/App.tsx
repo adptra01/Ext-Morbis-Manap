@@ -208,7 +208,7 @@ function IcdAutocomplete({
             onChange={(e) => handleKodeChange(e.target.value)}
             onKeyDown={handleKey}
             placeholder="Kode"
-            className="text-sm font-mono font-semibold"
+            className="text-base font-mono font-semibold"
             aria-label="Kode ICD"
           />
         </div>
@@ -218,7 +218,7 @@ function IcdAutocomplete({
             onChange={(e) => setNamaInput(e.target.value)}
             onKeyDown={handleKey}
             placeholder="Nama diagnosis"
-            className="text-sm font-medium"
+            className="text-base font-medium"
             aria-label="Nama diagnosis"
           />
         </div>
@@ -235,13 +235,13 @@ function IcdAutocomplete({
                 onMouseEnter={() => setActiveIdx(i)}
                 role="option"
                 aria-selected={active}
-                className={`px-4 py-3 text-sm cursor-pointer border-b last:border-b-0 border-border transition-colors ${
+                className={`px-4 py-3 text-base cursor-pointer border-b last:border-b-0 border-border transition-colors ${
                   active ? 'bg-primary text-primary-foreground' : 'bg-popover hover:bg-accent'
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <span
-                    className={`font-mono text-sm font-bold ${active ? 'text-primary-foreground' : 'text-primary'}`}
+                    className={`font-mono text-base font-bold ${active ? 'text-primary-foreground' : 'text-primary'}`}
                   >
                     {hit.KODE}
                   </span>
@@ -252,7 +252,7 @@ function IcdAutocomplete({
                   )}
                 </div>
                 <div
-                  className={`${active ? 'text-primary-foreground' : 'text-foreground'} text-sm font-medium leading-snug mt-1`}
+                  className={`${active ? 'text-primary-foreground' : 'text-foreground'} text-base font-medium leading-snug mt-1`}
                 >
                   {hit.NAMA}
                 </div>
@@ -285,7 +285,7 @@ function IcdList({
   return (
     <div className={items.length ? 'mb-3' : ''}>
       <div className="flex items-center gap-2.5 mb-2">
-        <span className="text-sm font-bold text-foreground tracking-tight">{label}</span>
+        <span className="text-base font-bold text-foreground tracking-tight">{label}</span>
         <span className="text-xs text-muted-foreground">({items.length} item)</span>
         <Button variant="default" size="sm" type="button" onClick={onAdd} className="ml-auto">
           + Tambah{' '}
@@ -325,7 +325,7 @@ function IcdList({
           ))}
         </div>
       ) : (
-        <span className="text-sm text-muted-foreground">{emptyText}</span>
+        <span className="text-base text-muted-foreground">{emptyText}</span>
       )}
     </div>
   );
@@ -416,7 +416,7 @@ export function App({ data, onSave, onClose }: Props) {
           </svg>
           <div>
             <span className="text-xl font-bold tracking-tight">Resume Rawat Inap</span>
-            <p className="text-sm text-white/80">Lengkapi ringkasan dan ICD rawat inap</p>
+            <p className="text-base text-white/80">Lengkapi ringkasan dan ICD rawat inap</p>
           </div>
         </div>
         <button
@@ -432,8 +432,8 @@ export function App({ data, onSave, onClose }: Props) {
       {/* CONTENT */}
       <div className="overflow-auto p-5 flex-1 bg-muted">
         {/* Patient banner */}
-        <div className="flex gap-4 flex-wrap items-center mb-4 p-3 px-4 bg-card border border-border rounded-lg text-sm shadow-sm">
-          <span className="text-sm text-muted-foreground">Field bertanda (*) wajib diisi.</span>
+        <div className="flex gap-4 flex-wrap items-center mb-4 p-3 px-4 bg-card border border-border rounded-lg text-base shadow-sm">
+          <span className="text-base text-muted-foreground">Field bertanda (*) wajib diisi.</span>
           {[
             { label: 'RM', value: d.norm },
             { label: 'Pasien', value: d.pasien },
@@ -441,14 +441,14 @@ export function App({ data, onSave, onClose }: Props) {
             { label: 'Unit', value: d.unit },
           ].map((item) => (
             <span key={item.label} className="flex items-center gap-1.5">
-              <span className="font-bold text-primary text-xs uppercase tracking-wide">
+              <span className="font-bold text-primary text-base uppercase tracking-wide">
                 {item.label}
               </span>
-              <span className="text-foreground text-sm">{item.value || '—'}</span>
+              <span className="text-foreground text-base">{item.value || '—'}</span>
             </span>
           ))}
         </div>
-        <p className="text-sm text-muted-foreground mb-4 text-center md:text-left">
+        <p className="text-base text-muted-foreground mb-4 text-center md:text-left">
           Diagnosa utama dan ICD menunjukkan ringkasan utama. Gunakan Riwayat jika ingin memulihkan
           log terakhir.
         </p>
@@ -659,7 +659,7 @@ export function App({ data, onSave, onClose }: Props) {
                 <Input
                   value={d[k]}
                   onChange={(e) => p({ [k]: e.target.value })}
-                  className="text-sm"
+                  className="text-base"
                 />
               </div>
             ))}
