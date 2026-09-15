@@ -226,7 +226,12 @@ function closeOverlay() {
     sc.remove();
   }
   document.body.classList.remove('ext-ri-open');
-  if (overlayBtn) overlayBtn.disabled = false;
+  if (overlayBtn) {
+    overlayBtn.disabled = false;
+    overlayBtn.style.display = '';
+  }
+  const sbClose = document.querySelector('[data-scroll-buttons]') as HTMLElement | null;
+  if (sbClose) sbClose.style.display = '';
 }
 
 function mountReactApp(data: RanapFormData) {
@@ -249,7 +254,7 @@ function mountReactApp(data: RanapFormData) {
     host = document.createElement('div');
     host.id = 'morbis-manap-root';
     host.style.cssText =
-      'position:fixed;inset:0;z-index:2147483645;pointer-events:none;display:contents';
+      'position:fixed;inset:0;z-index:2147483646;pointer-events:none;display:contents';
     document.body.appendChild(host);
     const sr = host.attachShadow({ mode: 'open' });
     const app = document.createElement('div');
@@ -260,22 +265,34 @@ function mountReactApp(data: RanapFormData) {
     ms.textContent = `:host{display:contents}#app{isolation:isolate;color-scheme:light}`;
     sr.appendChild(ms);
     try {
-      const css0 = typeof SHADOW_CSS !== 'undefined' ? SHADOW_CSS : '';
+      let css0: string = typeof SHADOW_CSS !== 'undefined' ? (SHADOW_CSS as string) : '';
+      css0 = css0.replace(/@import[^;]+;/g, '');
       if (css0 && 'adoptedStyleSheets' in sr && 'CSSStyleSheet' in window) {
-        const sheet = new (
-          window as unknown as { CSSStyleSheet: new () => CSSStyleSheet }
-        ).CSSStyleSheet();
-        (sheet as unknown as { replaceSync: (s: string) => void }).replaceSync(css0);
-        (sr as unknown as { adoptedStyleSheets: CSSStyleSheet[] }).adoptedStyleSheets = [
-          ...(sr as unknown as { adoptedStyleSheets: CSSStyleSheet[] }).adoptedStyleSheets,
-          sheet as unknown as CSSStyleSheet,
-        ];
+        try {
+          const sheet = new (
+            window as unknown as { CSSStyleSheet: new () => CSSStyleSheet }
+          ).CSSStyleSheet();
+          (sheet as unknown as { replaceSync: (s: string) => void }).replaceSync(css0);
+          (sr as unknown as { adoptedStyleSheets: CSSStyleSheet[] }).adoptedStyleSheets = [
+            ...(sr as unknown as { adoptedStyleSheets: CSSStyleSheet[] }).adoptedStyleSheets,
+            sheet as unknown as CSSStyleSheet,
+          ];
+        } catch {
+          const ss2 = document.createElement('style');
+          ss2.textContent = css0;
+          sr.appendChild(ss2);
+        }
+      } else if (css0) {
+        const ss2 = document.createElement('style');
+        ss2.textContent = css0;
+        sr.appendChild(ss2);
       }
     } catch {}
     return sr;
   };
   const shadowRoot = getShadow();
-  const css = typeof SHADOW_CSS !== 'undefined' ? SHADOW_CSS : '';
+  const cssRaw: string = typeof SHADOW_CSS !== 'undefined' ? (SHADOW_CSS as string) : '';
+  const css = cssRaw.replace(/@import[^;]+;/g, '');
   if (shadowRoot && !shadowRoot.getElementById('morbis-ri-shadow-css')) {
     const ss = document.createElement('style');
     ss.id = 'morbis-ri-shadow-css';
@@ -417,6 +434,9 @@ function mountReactApp(data: RanapFormData) {
       (app ?? sr).appendChild(sc);
     }
     sc.style.display = 'flex';
+    if (overlayBtn) overlayBtn.style.display = 'none';
+    const sb = document.querySelector('[data-scroll-buttons]') as HTMLElement | null;
+    if (sb) sb.style.display = 'none';
     return sc;
   })();
 

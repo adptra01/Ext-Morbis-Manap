@@ -201,14 +201,15 @@ function IcdAutocomplete({
 
   return (
     <div ref={containerRef} className="relative">
-      <div className="flex gap-1">
-        <div className="w-[35%]">
+      <div className="flex gap-2">
+        <div className="w-[32%]">
           <Input
             value={kodeInput}
             onChange={(e) => handleKodeChange(e.target.value)}
             onKeyDown={handleKey}
             placeholder="Kode"
-            className="text-xs font-mono"
+            className="text-sm font-mono font-semibold"
+            aria-label="Kode ICD"
           />
         </div>
         <div className="flex-1">
@@ -217,12 +218,13 @@ function IcdAutocomplete({
             onChange={(e) => setNamaInput(e.target.value)}
             onKeyDown={handleKey}
             placeholder="Nama diagnosis"
-            className="text-xs"
+            className="text-sm font-medium"
+            aria-label="Nama diagnosis"
           />
         </div>
       </div>
       {show && suggestions.length > 0 && (
-        <div className="absolute top-full left-0 right-0 z-50 bg-card border border-border rounded-lg max-h-[220px] overflow-auto shadow-lg mt-1">
+        <div className="absolute top-full left-0 right-0 z-50 bg-popover border-2 border-border rounded-xl max-h-[280px] overflow-auto shadow-xl mt-2">
           {suggestions.map((hit, i) => {
             const active = i === activeIdx;
             return (
@@ -231,20 +233,26 @@ function IcdAutocomplete({
                 ref={active ? activeRef : undefined}
                 onClick={() => pick(hit)}
                 onMouseEnter={() => setActiveIdx(i)}
-                className={`px-3 py-2 text-sm cursor-pointer border-b last:border-b-0 border-border transition-colors ${
-                  active ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-primary/15'
+                role="option"
+                aria-selected={active}
+                className={`px-4 py-3 text-sm cursor-pointer border-b last:border-b-0 border-border transition-colors ${
+                  active ? 'bg-primary text-primary-foreground' : 'bg-popover hover:bg-accent'
                 }`}
               >
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <span
-                    className={`font-mono text-[13px] font-bold ${active ? 'text-primary-foreground' : 'text-primary'}`}
+                    className={`font-mono text-sm font-bold ${active ? 'text-primary-foreground' : 'text-primary'}`}
                   >
                     {hit.KODE}
                   </span>
-                  {active && <span className="text-primary-foreground font-bold">&#10003;</span>}
+                  {active && (
+                    <span className="text-primary-foreground font-bold" aria-hidden="true">
+                      ✓
+                    </span>
+                  )}
                 </div>
                 <div
-                  className={`${active ? 'text-primary-foreground' : 'text-foreground'} leading-snug mt-0.5`}
+                  className={`${active ? 'text-primary-foreground' : 'text-foreground'} text-sm font-medium leading-snug mt-1`}
                 >
                   {hit.NAMA}
                 </div>
@@ -275,20 +283,27 @@ function IcdList({
   emptyText: string;
 }) {
   return (
-    <div className={items.length ? 'mb-2.5' : ''}>
-      <div className="flex items-center gap-2 mb-1.5">
-        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-          {label}
-        </span>
-        <Button variant="outline" size="sm" type="button" onClick={onAdd}>
-          + Tambah
+    <div className={items.length ? 'mb-3' : ''}>
+      <div className="flex items-center gap-2.5 mb-2">
+        <span className="text-sm font-bold text-foreground tracking-tight">{label}</span>
+        <span className="text-xs text-muted-foreground">({items.length} item)</span>
+        <Button variant="default" size="sm" type="button" onClick={onAdd} className="ml-auto">
+          + Tambah{' '}
+          {label.includes('Sekunder')
+            ? 'Diagnosa'
+            : label.includes('Tindakan')
+              ? 'Tindakan'
+              : 'Item'}
         </Button>
       </div>
       {items.length > 0 ? (
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-2">
           {items.map((item, i) => (
-            <div key={i} className="flex gap-1.5 items-start">
-              <div className="flex-1">
+            <div
+              key={i}
+              className="flex gap-2 items-center bg-muted/20 border border-border rounded-lg px-2 py-2"
+            >
+              <div className="flex-1 min-w-0">
                 <IcdAutocomplete
                   kode={item.kode}
                   nama={item.nama}
@@ -297,11 +312,12 @@ function IcdList({
                 />
               </div>
               <Button
-                variant="destructive"
+                variant="ghost"
                 size="sm"
                 type="button"
                 onClick={() => onRemove(i)}
-                className="mt-px"
+                className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                aria-label={`Hapus ${label} ${i + 1}`}
               >
                 Hapus
               </Button>
@@ -309,7 +325,7 @@ function IcdList({
           ))}
         </div>
       ) : (
-        <span className="text-xs text-muted-foreground">{emptyText}</span>
+        <span className="text-sm text-muted-foreground">{emptyText}</span>
       )}
     </div>
   );
@@ -624,9 +640,9 @@ export function App({ data, onSave, onClose }: Props) {
           />
         </Card>
 
-        {/* Kondisi Pulang */}
+        {/* Kondisi Pulang — 7 value → 2 baris + catatan (hindari scroll panjang) */}
         <Card title="Kondisi Pulang">
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-2.5">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {(
               [
                 'ku',
@@ -640,17 +656,21 @@ export function App({ data, onSave, onClose }: Props) {
             ).map((k) => (
               <div key={k}>
                 <Label>{k.replace('_', ' ').toUpperCase()}</Label>
-                <Input value={d[k]} onChange={(e) => p({ [k]: e.target.value })} />
+                <Input
+                  value={d[k]}
+                  onChange={(e) => p({ [k]: e.target.value })}
+                  className="text-sm"
+                />
               </div>
             ))}
-            <Full>
-              <Label>Catatan Kondisi Pulang</Label>
-              <Textarea
-                value={d.catatan_keluar}
-                onChange={(v) => p({ catatan_keluar: v.target.value })}
-                rows={2}
-              />
-            </Full>
+          </div>
+          <div className="mt-3">
+            <Label>Catatan Kondisi Pulang</Label>
+            <Textarea
+              value={d.catatan_keluar}
+              onChange={(v) => p({ catatan_keluar: v.target.value })}
+              rows={2}
+            />
           </div>
         </Card>
 
