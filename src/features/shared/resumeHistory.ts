@@ -223,7 +223,7 @@ export function postToReports(
     };
     fetcher(resolveReportsBase() + REPORTS_API_PATH, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(payload),
       keepalive: true,
       credentials: 'omit',

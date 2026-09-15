@@ -467,7 +467,7 @@ var __morbis_feature = (() => {
   function defaultStore() {
     try {
       if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
-    } catch (_e) {}
+    } catch {}
     return null;
   }
   var HIST_PREFIX = 'ext_rv_history_';
@@ -486,7 +486,7 @@ var __morbis_feature = (() => {
       const raw = store.getItem(key);
       if (!raw) return null;
       return JSON.parse(raw);
-    } catch (_e) {
+    } catch {
       return null;
     }
   }
@@ -494,7 +494,7 @@ var __morbis_feature = (() => {
     if (!store) return;
     try {
       store.setItem(key, JSON.stringify(value));
-    } catch (_e) {}
+    } catch {}
   }
   function sameSnapVal(a, b) {
     return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
@@ -560,7 +560,7 @@ var __morbis_feature = (() => {
       if (dokter) return dokter.slice(0, 80);
       const idUser = document.querySelector('input[name="id_user"], #id_user')?.value?.trim();
       if (idUser) return `User #${idUser}`;
-    } catch (_e) {}
+    } catch {}
     return 'petugas';
   }
   var REPORTS_API_PATH = '/api/reports/resume-history';
@@ -569,7 +569,7 @@ var __morbis_feature = (() => {
     try {
       const ov = localStorage.getItem('ext-farmasi-app-base');
       if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
-    } catch (_e) {}
+    } catch {}
     return REPORTS_BASE_FALLBACK;
   }
   function postToReports(entry, idVisit, fetcher = fetch) {
@@ -586,12 +586,12 @@ var __morbis_feature = (() => {
       };
       fetcher(resolveReportsBase() + REPORTS_API_PATH, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(payload),
         keepalive: true,
         credentials: 'omit',
       }).catch(function () {});
-    } catch (_e) {}
+    } catch {}
   }
   var _lastLogHash = null;
   var _lastLogAt = 0;
@@ -627,12 +627,12 @@ var __morbis_feature = (() => {
         'position:fixed;top:20px;right:20px;z-index:2147483647;padding:14px 18px;border-radius:8px;background:#dcfce7;color:#065f46;border-left:5px solid #16a34a;font-weight:600;font-size:14px;box-shadow:0 4px 16px rgba(0,0,0,.15);max-width:420px;line-height:1.5;';
       document.body.appendChild(t);
       setTimeout(() => t.remove(), 4e3);
-    } catch (_e) {}
+    } catch {}
   }
   function openHistoryModal(opts) {
     try {
       document.querySelector('#ext-rv-history-overlay')?.remove();
-    } catch (_e) {}
+    } catch {}
     const list = loadHistory(opts.idVisit, opts.tipe, opts.store ?? defaultStore())
       .slice()
       .reverse();
@@ -713,7 +713,7 @@ var __morbis_feature = (() => {
         try {
           opts.onApply(entry.after);
           ov.remove();
-        } catch (_e) {}
+        } catch {}
       };
       bar.appendChild(btnSalin);
       row.appendChild(bar);
@@ -721,7 +721,7 @@ var __morbis_feature = (() => {
     });
     try {
       document.body.appendChild(ov);
-    } catch (_e) {}
+    } catch {}
   }
 
   // src/features/resumeValidator.ts
