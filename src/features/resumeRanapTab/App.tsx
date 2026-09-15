@@ -101,6 +101,7 @@ interface Hitt {
   NAMA: string;
 }
 
+// ponytail: ICD autocomplete stays local to Ranap App — shared extraction would force a new seam across the Rajal/Ranap mounts for little gain. Deduplicate only when a third consumer appears.
 function IcdAutocomplete({
   kode,
   nama,
@@ -382,47 +383,59 @@ export function App({ data, onSave, onClose }: Props) {
       onClick={(e) => e.stopPropagation()}
     >
       {/* HEADER */}
-      <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-br from-primary to-primary/80 text-white shrink-0">
-        <div className="flex items-center gap-2.5">
+      <div className="flex items-center justify-between px-5 py-4 bg-primary text-white shrink-0">
+        <div className="flex items-center gap-3 min-w-0">
           <svg
-            width="20"
-            height="20"
+            width="22"
+            height="22"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
+            aria-hidden="true"
           >
             <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
           </svg>
-          <span className="text-[15px] font-bold tracking-tight">Resume Rawat Inap</span>
+          <div>
+            <span className="text-xl font-bold tracking-tight">Resume Rawat Inap</span>
+            <p className="text-sm text-white/80">Lengkapi ringkasan dan ICD rawat inap</p>
+          </div>
         </div>
         <button
           type="button"
           onClick={onClose}
-          className="bg-white/15 hover:bg-white/25 border-none text-white w-[30px] h-[30px] rounded-md text-base flex items-center justify-center cursor-pointer transition-colors"
+          className="bg-white/15 hover:bg-white/25 border-none text-white w-12 h-12 rounded-lg text-xl flex items-center justify-center cursor-pointer transition-colors flex-shrink-0"
+          aria-label="Tutup modal"
         >
           ✕
         </button>
       </div>
 
       {/* CONTENT */}
-      <div className="overflow-auto p-3.5 flex-1 bg-background">
+      <div className="overflow-auto p-5 flex-1 bg-muted">
         {/* Patient banner */}
-        <div className="flex gap-4 flex-wrap items-center mb-3.5 p-2.5 px-3.5 bg-card border border-border rounded-lg text-xs shadow-sm">
+        <div className="flex gap-4 flex-wrap items-center mb-4 p-3 px-4 bg-card border border-border rounded-lg text-sm shadow-sm">
+          <span className="text-sm text-muted-foreground">Field bertanda (*) wajib diisi.</span>
           {[
             { label: 'RM', value: d.norm },
             { label: 'Pasien', value: d.pasien },
             { label: 'Reg', value: d.noreg },
             { label: 'Unit', value: d.unit },
           ].map((item) => (
-            <span key={item.label} className="flex items-center gap-1">
-              <span className="font-bold text-primary text-[11px] uppercase">{item.label}</span>
-              <span className="text-foreground">{item.value}</span>
+            <span key={item.label} className="flex items-center gap-1.5">
+              <span className="font-bold text-primary text-xs uppercase tracking-wide">
+                {item.label}
+              </span>
+              <span className="text-foreground text-sm">{item.value || '—'}</span>
             </span>
           ))}
         </div>
+        <p className="text-sm text-muted-foreground mb-4 text-center md:text-left">
+          Diagnosa utama dan ICD menunjukkan ringkasan utama. Gunakan Riwayat jika ingin memulihkan
+          log terakhir.
+        </p>
 
         {/* Ringkasan */}
         <Card title="Ringkasan">
@@ -703,21 +716,28 @@ export function App({ data, onSave, onClose }: Props) {
         </Card>
       </div>
 
-      {/* FOOTER */}
-      <div className="flex justify-end gap-2 py-2.5 px-4 border-t border-border items-center shrink-0 bg-card">
+      {/* FOOTER — sticky, thumb-reachable; Simpan is primary; Riwayat/Reset/Batal secondary */}
+      <div className="flex justify-end gap-2.5 py-3.5 px-5 border-t-2 border-border items-center shrink-0 bg-card sticky bottom-0 z-10 rounded-b-2xl">
         {error && (
-          <Badge variant="danger" icon className="mr-auto">
+          <Badge variant="danger" icon className="mr-auto text-sm">
             {error}
           </Badge>
         )}
-        <Button type="button" variant="outline" onClick={openHistory} disabled={saving}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={openHistory}
+          disabled={saving}
+          size="default"
+        >
           Riwayat
         </Button>
-        <Button type="button" variant="outline" onClick={onClose} disabled={saving}>
+        <Button type="button" variant="outline" onClick={onClose} disabled={saving} size="default">
           Batal
         </Button>
-        <Button type="submit" variant="default" disabled={saving}>
-          {saving ? 'Menyimpan...' : 'Simpan'}
+        <Button type="submit" variant="default" disabled={saving} size="lg" className="px-7">
+          {' '}
+          {saving ? 'Menyimpan...' : 'Simpan'}{' '}
         </Button>
       </div>
     </form>

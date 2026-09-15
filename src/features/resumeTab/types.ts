@@ -42,6 +42,7 @@ export interface TindakanRow {
   idicdTindakan: string;
   kode9: string;
   namaTindakan: string;
+  jenis?: string;
   komorbid: string;
   kategoriProsedur: string;
   snomedProsedur: string;

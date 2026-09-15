@@ -96,6 +96,44 @@ export function App({ data: initialData, onSave, onClose }: AppProps) {
   const updateNotes = (field: string, value: string) =>
     setData({ ...data, clinicalNotes: { ...data.clinicalNotes, [field]: value } });
 
+  const confirmReset = async () => {
+    const { confirmExt } = await import('../../ui/web/confirm.js');
+    return confirmExt({
+      title: 'Reset semua data?',
+      message:
+        'Semua data yang sudah dimasukkan akan dihapus. Tindakan ini tidak dapat dibatalkan.',
+      variant: 'danger',
+      cancelLabel: 'Kembali',
+      okLabel: 'Reset',
+    });
+  };
+
+  const confirmSave = async () => {
+    const { confirmExt } = await import('../../ui/web/confirm.js');
+    return confirmExt({
+      title: 'Simpan resume medis?',
+      message: 'Pastikan diagnosis dan tindakan sudah sesuai.',
+      variant: 'info',
+      cancelLabel: 'Kembali',
+      okLabel: 'Simpan Resume',
+    });
+  };
+
+  const handleRefresh = async () => {
+    const ok = await confirmReset();
+    if (ok) location.reload();
+  };
+
+  const handleSaveWrapped = async () => {
+    if (validationErrors.length > 0) {
+      setSaveAttempted(true);
+      return;
+    }
+    const ok = await confirmSave();
+    if (!ok) return;
+    await handleSave();
+  };
+
   const openHistory = () => {
     openHistoryModal({
       idVisit:
@@ -189,9 +227,9 @@ export function App({ data: initialData, onSave, onClose }: AppProps) {
         saving={saving}
         hasErrors={hasBlocking}
         lastSaved={lastSaved}
-        onSave={handleSave}
+        onSave={handleSaveWrapped}
         onCancel={onClose}
-        onRefresh={() => location.reload()}
+        onRefresh={handleRefresh}
         onHistory={openHistory}
       />
     </div>

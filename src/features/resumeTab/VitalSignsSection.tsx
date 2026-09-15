@@ -15,27 +15,28 @@ interface VitalSignsSectionProps {
 
 export function VitalSignsSection({ vitals, onChange }: VitalSignsSectionProps) {
   const fields = [
-    { key: 'tensi', label: 'Tensi', unit: 'mmHg', placeholder: '120/80' },
-    { key: 'nadi', label: 'Nadi', unit: 'x/mnt', placeholder: '80' },
-    { key: 'suhu', label: 'Suhu', unit: '°C', placeholder: '36.5' },
-    { key: 'nafas', label: 'Nafas', unit: 'x/mnt', placeholder: '20' },
-    { key: 'berat', label: 'Berat', unit: 'kg', placeholder: '60' },
-    { key: 'tinggi', label: 'Tinggi', unit: 'cm', placeholder: '165' },
+    { key: 'tensi', label: 'Tekanan Darah', unit: 'mmHg', placeholder: '120/80' },
+    { key: 'nadi', label: 'Nadi', unit: 'x/menit', placeholder: '80' },
+    { key: 'suhu', label: 'Suhu Tubuh', unit: '°C', placeholder: '36.5' },
+    { key: 'nafas', label: 'Respirasi', unit: 'x/menit', placeholder: '20' },
+    { key: 'berat', label: 'Berat Badan', unit: 'kg', placeholder: '60' },
+    { key: 'tinggi', label: 'Tinggi Badan', unit: 'cm', placeholder: '165' },
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
       {fields.map((f) => (
-        <div key={f.key}>
+        <div key={f.key} className="space-y-1.5">
           <Label>{f.label}</Label>
           <div className="relative">
             <Input
               value={vitals[f.key as keyof typeof vitals]}
               onChange={(e) => onChange(f.key, e.target.value)}
               placeholder={f.placeholder}
-              className="pr-14"
+              className="pr-20 font-mono text-base"
+              aria-label={f.label}
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[13px] font-semibold text-muted-foreground pointer-events-none">
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground pointer-events-none">
               {f.unit}
             </span>
           </div>

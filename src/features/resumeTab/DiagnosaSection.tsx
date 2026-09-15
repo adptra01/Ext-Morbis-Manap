@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Search } from 'lucide-react';
 import { Button } from '../../ui/components/button';
 import { Input } from '../../ui/components/input';
 import { Label } from '../../ui/components/Label';
@@ -46,7 +46,7 @@ export function DiagnosaSection({ rows, onChange }: Props) {
       return;
     }
     const r = el.getBoundingClientRect();
-    setHitPos({ top: r.bottom + 2, left: r.left, width: r.width });
+    setHitPos({ top: r.bottom + 4, left: r.left, width: r.width });
     t.current = setTimeout(async () => {
       const ac = new AbortController();
       abortRef.current = ac;
@@ -102,11 +102,12 @@ export function DiagnosaSection({ rows, onChange }: Props) {
   };
 
   return (
-    <div>
-      <div className="flex justify-end mb-3">
+    <div className="space-y-4">
+      <div className="flex justify-end">
         <Button
           variant="default"
-          size="sm"
+          size="lg"
+          className="gap-2 px-5 py-3"
           onClick={() =>
             onChange([
               ...rows,
@@ -114,57 +115,88 @@ export function DiagnosaSection({ rows, onChange }: Props) {
             ])
           }
         >
-          <Plus className="size-4" /> Tambah Diagnosa
+          <Plus className="size-5" /> Tambah Diagnosa
         </Button>
       </div>
 
       {rows.length === 0 ? (
-        <div className="border-2 border-dashed border-border rounded-xl py-8 text-center bg-card">
-          <p className="text-[16px] text-muted-foreground">Belum ada diagnosa</p>
-          <p className="text-[14px] text-muted-foreground mt-1">
-            Klik &quot;Tambah Diagnosa&quot; untuk menambahkan
+        <div className="border-2 border-dashed border-border rounded-xl py-12 text-center bg-background">
+          <p className="text-lg text-muted-foreground mb-2">Belum ada diagnosa</p>
+          <p className="text-base text-muted-foreground">
+            Klik "Tambah Diagnosa" untuk menambahkan
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {rows.map((row, i) => {
             const no = i + 1;
             return (
-              <div key={i} className="bg-card rounded-xl border-2 border-border p-3">
+              <div
+                key={i}
+                className="bg-background border-2 border-border rounded-xl p-4 space-y-4 shadow-sm"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-primary">Diagnosa #{no}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeRow(i)}
+                    className="h-11 w-11 text-destructive border-destructive/30 hover:bg-destructive hover:text-destructive-foreground"
+                    aria-label={`Hapus diagnosa #{no}`}
+                  >
+                    <Trash2 className="size-5" />
+                  </Button>
+                </div>
+
                 {/* Nama Diagnosa — full width */}
-                <div className="mb-2">
+                <div className="space-y-2">
                   <Label>Nama Diagnosa</Label>
                   <div className="relative">
                     <Input
                       id={`rj-nama${no}`}
                       name="nama[]"
                       value={row.namaDiagnosa}
-                      placeholder="Cari diagnosa..."
+                      placeholder="Cari diagnosa atau ketik nama..."
                       autoComplete="off"
                       onChange={makeSearch(i)}
+                      className="pr-12"
+                      aria-describedby={`rj-nama-help-${no}`}
                     />
+                    <Search
+                      className="absolute right-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none"
+                      aria-hidden="true"
+                    />
+                    <p id={`rj-nama-help-${no}`} className="sr-only">
+                      Ketik minimal 3 karakter untuk mencari diagnosis ICD-10
+                    </p>
                     <input type="hidden" id={`rj-idicd${no}`} name="idicd[]" value={row.idicd} />
                     {hits.length > 0 && hitRow === i && (
                       <div
-                        className="fixed z-[2147483647] bg-card border-2 border-border rounded-xl shadow-lg max-h-[240px] overflow-auto"
+                        className="fixed z-[2147483647] bg-background border-2 border-border rounded-xl shadow-lg max-h-[280px] overflow-auto"
                         style={{ top: hitPos.top, left: hitPos.left, width: hitPos.width }}
+                        role="listbox"
+                        aria-label="Hasil pencarian ICD-10"
                       >
                         {hits.map((item, ri) => (
                           <div
                             key={item.ID || ri}
                             onClick={() => pick(i, item)}
-                            className="px-3.5 py-2.5 cursor-pointer text-sm border-b border-border hover:bg-muted/50 transition-colors"
+                            role="option"
+                            className="px-4 py-3 cursor-pointer text-base border-b border-border hover:bg-accent transition-colors"
                           >
                             <div className="font-medium text-foreground">{item.NAMA}</div>
-                            <div className="text-muted-foreground text-xs">{item.KODE}</div>
+                            <div className="text-muted-foreground text-sm font-mono">
+                              {item.KODE}
+                            </div>
                           </div>
                         ))}
                       </div>
                     )}
                     {errMsg && (
                       <div
-                        className="fixed z-[2147483647] bg-destructive/10 border-2 border-destructive rounded-xl px-2.5 py-2 text-sm text-destructive"
+                        className="fixed z-[2147483647] bg-destructive/10 border-2 border-destructive rounded-xl px-3 py-2.5 text-sm text-destructive"
                         style={{ top: hitPos.top, left: hitPos.left }}
+                        role="alert"
                       >
                         {errMsg}
                       </div>
@@ -173,8 +205,8 @@ export function DiagnosaSection({ rows, onChange }: Props) {
                 </div>
 
                 {/* Kode + Kasus + Komplikasi — one row */}
-                <div className="grid grid-cols-[1fr_120px_100px_36px] gap-2 items-end">
-                  <div>
+                <div className="grid grid-cols-[1fr_140px_120px_50px] gap-4 items-end">
+                  <div className="space-y-1.5">
                     <Label>Kode ICD-10</Label>
                     <Input
                       id={`rj-kode${no}`}
@@ -182,13 +214,17 @@ export function DiagnosaSection({ rows, onChange }: Props) {
                       value={row.kode10}
                       placeholder="Kode"
                       onChange={makeKodeChange(i)}
-                      className="font-mono"
+                      className="font-mono text-base"
+                      aria-describedby={`rj-kode-help-${no}`}
                     />
+                    <p id={`rj-kode-help-${no}`} className="sr-only">
+                      Kode ICD-10 otomatis terisi saat memilih diagnosa, atau ketik manual
+                    </p>
                   </div>
-                  <div>
+                  <div className="space-y-1.5">
                     <Label>Kasus</Label>
                     <Select value={row.kasus} onValueChange={(v) => updateRow(i, { kasus: v })}>
-                      <SelectTrigger className="h-[32px] text-xs">
+                      <SelectTrigger className="h-11 text-base">
                         <SelectValue placeholder="Pilih" />
                       </SelectTrigger>
                       <SelectContent className="z-[1050]">
@@ -197,13 +233,13 @@ export function DiagnosaSection({ rows, onChange }: Props) {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div>
+                  <div className="space-y-1.5">
                     <Label>Komplikasi</Label>
                     <Select
                       value={row.komplikasi}
                       onValueChange={(v) => updateRow(i, { komplikasi: v })}
                     >
-                      <SelectTrigger className="h-[32px] text-xs">
+                      <SelectTrigger className="h-11 text-base">
                         <SelectValue placeholder="Pilih" />
                       </SelectTrigger>
                       <SelectContent className="z-[1050]">
@@ -212,14 +248,9 @@ export function DiagnosaSection({ rows, onChange }: Props) {
                       </SelectContent>
                     </Select>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeRow(i)}
-                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
+                  <div className="space-y-1.5">
+                    <Label className="invisible">Hapus</Label>
+                  </div>
                 </div>
               </div>
             );

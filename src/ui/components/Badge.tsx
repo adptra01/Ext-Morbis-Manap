@@ -31,16 +31,16 @@ export function Badge({ variant = 'default', icon, children, className, onDismis
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold',
+        'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-semibold',
         variants[variant],
         className,
       )}
     >
-      {icon && <Icon className="size-3" />}
+      {icon && <Icon className="size-3.5" />}
       {children}
       {onDismiss && (
-        <button onClick={onDismiss} className="ml-0.5 hover:opacity-70" aria-label="Dismiss">
-          <X className="size-2.5" />
+        <button onClick={onDismiss} className="ml-1 hover:opacity-70 p-0.5" aria-label="Dismiss">
+          <X className="size-3.5" />
         </button>
       )}
     </span>
