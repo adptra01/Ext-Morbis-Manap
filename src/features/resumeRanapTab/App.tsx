@@ -180,11 +180,29 @@ function IcdAutocomplete({
   };
 
   useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setShow(false);
+    // Shadow DOM retargets e.target to the host for document-level listeners,
+    // so containerRef.contains() is always false inside the modal → list closes
+    // on mousedown before the option's click. Listen on the shadow root instead
+    // (real targets, no retargeting); keep document listener for outside clicks.
+    const root = containerRef.current?.getRootNode?.() ?? document;
+    const handleInside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setShow(false);
+      }
     };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
+    // ponytail: getRootNode may be Document when modal falls back to light DOM —
+    // fine, same behavior, no retargeting there.
+    root.addEventListener('mousedown', handleInside as EventListener);
+    const handleOutside = (e: MouseEvent) => {
+      const host = document.getElementById('morbis-manap-root');
+      if (host && (e.target === host || host.contains(e.target as Node))) return;
+      setShow(false);
+    };
+    document.addEventListener('mousedown', handleOutside);
+    return () => {
+      root.removeEventListener('mousedown', handleInside as EventListener);
+      document.removeEventListener('mousedown', handleOutside);
+    };
   }, []);
 
   const handleKey = (e: React.KeyboardEvent) => {
