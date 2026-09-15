@@ -208,59 +208,86 @@ function serializeFormData(data: RanapFormData): string {
 
 function closeOverlay() {
   if (reactRoot) {
-    reactRoot.unmount();
+    try {
+      reactRoot.unmount();
+    } catch {}
     reactRoot = null;
   }
   const c = document.getElementById('ext-ri-container');
   if (c) c.remove();
+  const sh = (document.getElementById('morbis-manap-root') as HTMLElement | null)?.shadowRoot;
+  const sc = sh?.getElementById('ext-ri-shadow-container') as HTMLElement | null;
+  if (sc) {
+    try {
+      const r = (sc as unknown as { _reactRoot?: unknown })._reactRoot as
+        { unmount?: () => void } | undefined;
+      r?.unmount?.();
+    } catch {}
+    sc.remove();
+  }
   document.body.classList.remove('ext-ri-open');
   if (overlayBtn) overlayBtn.disabled = false;
 }
 
 function mountReactApp(data: RanapFormData) {
-  const container = document.createElement('div');
-  container.id = 'ext-ri-container';
-  container.className = 'ri-modal';
-  container.style.cssText =
-    'position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center';
-  document.body.appendChild(container);
   document.body.classList.add('ext-ri-open');
+  // keep legacy ext-ri-container creation for fallback
+  let container = document.getElementById('ext-ri-container') as HTMLDivElement | null;
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'ext-ri-container';
+    container.className = 'ri-modal';
+    container.style.cssText =
+      'position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center';
+    document.body.appendChild(container);
+  }
 
-  const __ensureShadowForRI = (): ShadowRoot | null => {
+  const getShadow = (): ShadowRoot | null => {
     let host = document.getElementById('morbis-manap-root') as HTMLElement | null;
+    if (host?.shadowRoot) return host.shadowRoot;
     if (host && !host.shadowRoot) return null;
-    if (!host) {
-      host = document.createElement('div');
-      host.id = 'morbis-manap-root';
-      host.style.cssText =
-        'position:fixed;inset:0;z-index:2147483645;pointer-events:none;display:contents';
-      document.body.appendChild(host);
-      host.attachShadow({ mode: 'open' });
-      const sw = document.createElement('div');
-      sw.id = 'app';
-      host.shadowRoot!.appendChild(sw);
-      const ms = document.createElement('style');
-      ms.id = 'morbis-shadow-reset';
-      ms.textContent = `:host{display:contents}#app{isolation:isolate}`;
-      host.shadowRoot!.appendChild(ms);
-    }
-    return host.shadowRoot!;
+    host = document.createElement('div');
+    host.id = 'morbis-manap-root';
+    host.style.cssText =
+      'position:fixed;inset:0;z-index:2147483645;pointer-events:none;display:contents';
+    document.body.appendChild(host);
+    const sr = host.attachShadow({ mode: 'open' });
+    const app = document.createElement('div');
+    app.id = 'app';
+    sr.appendChild(app);
+    const ms = document.createElement('style');
+    ms.id = 'morbis-shadow-reset';
+    ms.textContent = `:host{display:contents}#app{isolation:isolate;color-scheme:light}`;
+    sr.appendChild(ms);
+    try {
+      const css0 = typeof SHADOW_CSS !== 'undefined' ? SHADOW_CSS : '';
+      if (css0 && 'adoptedStyleSheets' in sr && 'CSSStyleSheet' in window) {
+        const sheet = new (
+          window as unknown as { CSSStyleSheet: new () => CSSStyleSheet }
+        ).CSSStyleSheet();
+        (sheet as unknown as { replaceSync: (s: string) => void }).replaceSync(css0);
+        (sr as unknown as { adoptedStyleSheets: CSSStyleSheet[] }).adoptedStyleSheets = [
+          ...(sr as unknown as { adoptedStyleSheets: CSSStyleSheet[] }).adoptedStyleSheets,
+          sheet as unknown as CSSStyleSheet,
+        ];
+      }
+    } catch {}
+    return sr;
   };
+  const shadowRoot = getShadow();
+  const css = typeof SHADOW_CSS !== 'undefined' ? SHADOW_CSS : '';
+  if (shadowRoot && !shadowRoot.getElementById('morbis-ri-shadow-css')) {
+    const ss = document.createElement('style');
+    ss.id = 'morbis-ri-shadow-css';
+    ss.textContent = css;
+    shadowRoot.appendChild(ss);
+  }
   if (!document.getElementById('ext-ri-css')) {
     const s = document.createElement('style');
     s.id = 'ext-ri-css';
-    const css = typeof SHADOW_CSS !== 'undefined' ? SHADOW_CSS : '';
-    const sr = __ensureShadowForRI();
-    if (sr && !sr.getElementById('morbis-ri-shadow-css')) {
-      const ss = document.createElement('style');
-      ss.id = 'morbis-ri-shadow-css';
-      ss.textContent = css;
-      sr.appendChild(ss);
-    }
     s.textContent =
       css +
       `
-        background: #fff;
         border-radius: 16px;
         box-shadow: 0 25px 60px rgba(0,0,0,.25);
         width: 94%;
@@ -377,7 +404,23 @@ function mountReactApp(data: RanapFormData) {
     document.head.appendChild(s);
   }
 
-  reactRoot = createRoot(container);
+  const mountTarget = (() => {
+    const sr = shadowRoot ?? getShadow();
+    if (!sr) return container;
+    const app = sr.getElementById('app');
+    let sc = sr.getElementById('ext-ri-shadow-container') as HTMLElement | null;
+    if (!sc) {
+      sc = document.createElement('div');
+      sc.id = 'ext-ri-shadow-container';
+      sc.style.cssText =
+        'position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;pointer-events:auto';
+      (app ?? sr).appendChild(sc);
+    }
+    sc.style.display = 'flex';
+    return sc;
+  })();
+
+  reactRoot = createRoot(mountTarget);
 
   const handleSave = async (formData: RanapFormData): Promise<void> => {
     const body = serializeFormData(formData);
@@ -411,12 +454,15 @@ function mountReactApp(data: RanapFormData) {
   );
 
   setTimeout(() => {
-    container.querySelectorAll('textarea').forEach((tx) => {
-      tx.addEventListener('input', () => {
-        tx.style.height = 'auto';
-        tx.style.height = tx.scrollHeight + 'px';
+    const scope: ParentNode =
+      (shadowRoot?.getElementById('ext-ri-shadow-container') as ParentNode) ?? container;
+    scope.querySelectorAll('textarea').forEach((tx) => {
+      const t = tx as HTMLTextAreaElement;
+      t.addEventListener('input', () => {
+        t.style.height = 'auto';
+        t.style.height = t.scrollHeight + 'px';
       });
-      tx.dispatchEvent(new Event('input'));
+      t.dispatchEvent(new Event('input'));
     });
   }, 0);
 }

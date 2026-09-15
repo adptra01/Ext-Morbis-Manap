@@ -715,18 +715,34 @@ function closeOverlay(container: HTMLElement) {
     reactRoot.unmount();
     reactRoot = null;
   }
-  container.innerHTML = '';
-  container.style.display = 'none';
+  try {
+    container.innerHTML = '';
+    container.style.display = 'none';
+  } catch {}
+  const sh = (document.getElementById('morbis-manap-root') as HTMLElement | null)?.shadowRoot;
+  const sc = sh?.getElementById('ext-resume-shadow-container') as HTMLElement | null;
+  if (sc) {
+    try {
+      const r = (sc as unknown as { _reactRoot?: unknown })._reactRoot as
+        { unmount?: () => void } | undefined;
+      r?.unmount?.();
+    } catch {}
+    sc.remove();
+  }
   document.body.classList.remove('ext-resume-open');
   if (overlayBtn) overlayBtn.disabled = false;
 }
 
 function mountReactApp(container: HTMLElement, data: ResumeData) {
   if (reactRoot) {
-    reactRoot.unmount();
+    try {
+      reactRoot.unmount();
+    } catch {}
     reactRoot = null;
   }
-  container.innerHTML = '';
+  try {
+    container.innerHTML = '';
+  } catch {}
 
   if (!document.getElementById('morbis-resume-fonts')) {
     const link = document.createElement('link');
@@ -737,41 +753,50 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
     document.head.appendChild(link);
   }
 
-  // ── Shadow DOM isolation: shadcn/tailwind CSS must live inside ShadowRoot,
-  // otherwise host-page CSS bleeds in and global :root vars are ignored.
-  // ponytail: keep document.head injection too — Radix Select portal renders
-  // outside the shadow (in <body>) so it still needs globals there.
-  const __ensureShadowForResume = (): ShadowRoot | null => {
+  const getShadow = (): ShadowRoot | null => {
     let host = document.getElementById('morbis-manap-root') as HTMLElement | null;
+    if (host?.shadowRoot) return host.shadowRoot;
     if (host && !host.shadowRoot) return null;
-    if (!host) {
-      host = document.createElement('div');
-      host.id = 'morbis-manap-root';
-      host.style.cssText =
-        'position:fixed;inset:0;z-index:2147483645;pointer-events:none;display:contents';
-      document.body.appendChild(host);
-      host.attachShadow({ mode: 'open' });
-      const sw = document.createElement('div');
-      sw.id = 'app';
-      host.shadowRoot!.appendChild(sw);
-      const ms = document.createElement('style');
-      ms.id = 'morbis-shadow-reset';
-      ms.textContent = `:host{display:contents}#app{isolation:isolate}`;
-      host.shadowRoot!.appendChild(ms);
-    }
-    return host.shadowRoot!;
+    host = document.createElement('div');
+    host.id = 'morbis-manap-root';
+    host.style.cssText =
+      'position:fixed;inset:0;z-index:2147483645;pointer-events:none;display:contents';
+    document.body.appendChild(host);
+    const sr = host.attachShadow({ mode: 'open' });
+    const app = document.createElement('div');
+    app.id = 'app';
+    sr.appendChild(app);
+    const ms = document.createElement('style');
+    ms.id = 'morbis-shadow-reset';
+    ms.textContent = `:host{display:contents}#app{isolation:isolate;color-scheme:light}`;
+    sr.appendChild(ms);
+    // adoptedStyleSheets fallback — ponytail: try constructable, else <style>
+    try {
+      const css0 = typeof SHADOW_CSS !== 'undefined' ? SHADOW_CSS : '';
+      if (css0 && 'adoptedStyleSheets' in sr && 'CSSStyleSheet' in window) {
+        const sheet = new (
+          window as unknown as { CSSStyleSheet: new () => CSSStyleSheet }
+        ).CSSStyleSheet();
+        (sheet as unknown as { replaceSync: (s: string) => void }).replaceSync(css0);
+        (sr as unknown as { adoptedStyleSheets: CSSStyleSheet[] }).adoptedStyleSheets = [
+          ...(sr as unknown as { adoptedStyleSheets: CSSStyleSheet[] }).adoptedStyleSheets,
+          sheet as unknown as CSSStyleSheet,
+        ];
+      }
+    } catch {}
+    return sr;
   };
+  const shadowRoot = getShadow();
+  const css = typeof SHADOW_CSS !== 'undefined' ? SHADOW_CSS : '';
+  if (shadowRoot && !shadowRoot.getElementById('morbis-resume-shadow-css')) {
+    const ss = document.createElement('style');
+    ss.id = 'morbis-resume-shadow-css';
+    ss.textContent = css;
+    shadowRoot.appendChild(ss);
+  }
   if (!document.getElementById('morbis-resume-css')) {
     const s = document.createElement('style');
     s.id = 'morbis-resume-css';
-    const css = typeof SHADOW_CSS !== 'undefined' ? SHADOW_CSS : '';
-    const sr = __ensureShadowForResume();
-    if (sr && !sr.getElementById('morbis-resume-shadow-css')) {
-      const ss = document.createElement('style');
-      ss.id = 'morbis-resume-shadow-css';
-      ss.textContent = css;
-      sr.appendChild(ss);
-    }
     s.textContent =
       css +
       `
@@ -876,7 +901,23 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
     document.head.appendChild(s);
   }
 
-  reactRoot = createRoot(container);
+  const mountTarget = (() => {
+    if (!shadowRoot) return container;
+    const app = shadowRoot.getElementById('app');
+    let sc = shadowRoot.getElementById('ext-resume-shadow-container') as HTMLElement | null;
+    if (!sc) {
+      sc = document.createElement('div');
+      sc.id = 'ext-resume-shadow-container';
+      sc.style.cssText =
+        'position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;pointer-events:auto';
+      // mount di dalam #app supaya warisi :host/#app vars + color-scheme
+      (app ?? shadowRoot).appendChild(sc);
+    }
+    sc.style.display = 'flex';
+    return sc;
+  })();
+
+  reactRoot = createRoot(mountTarget);
 
   const handleSave = async (resumeData: ResumeData): Promise<void> => {
     const body = serializeFormData(resumeData);
@@ -932,13 +973,15 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
   document.body.classList.add('ext-resume-open');
 
   setTimeout(() => {
-    container.querySelectorAll('textarea').forEach((tx) => {
-      tx.style.height = 'auto';
-      tx.style.height = tx.scrollHeight + 'px';
+    const scope: ParentNode =
+      (shadowRoot?.getElementById('ext-resume-shadow-container') as ParentNode) ?? container;
+    scope.querySelectorAll('textarea').forEach((tx0) => {
+      const tx = tx0 as HTMLTextAreaElement;
       tx.addEventListener('input', () => {
         tx.style.height = 'auto';
         tx.style.height = tx.scrollHeight + 'px';
       });
+      tx.dispatchEvent(new Event('input'));
     });
   }, 50);
 }
