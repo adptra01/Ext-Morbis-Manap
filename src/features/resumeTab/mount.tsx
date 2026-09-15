@@ -805,10 +805,78 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
   const shadowRoot = getShadow();
   const cssRaw: string = typeof SHADOW_CSS !== 'undefined' ? (SHADOW_CSS as string) : '';
   const css = cssRaw.replace(/@import[^;]+;/g, '');
+  // Modal container rules — single class, must live INSIDE the shadow root
+  // (document.head styles can't pierce shadow DOM) and match the shadow form.
+  const resumeModalCss = `
+      .resume-modal {
+        background: #f8f6f3;
+        border-radius: 20px;
+        box-shadow: 0 25px 60px rgba(0,0,0,.3);
+        width: 94%;
+        max-width: 900px;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        animation: resume-slideup .3s ease;
+        font-size: 16px;
+        line-height: 1.6;
+        color: #1a1d23;
+        font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+      }
+      .resume-modal *,
+      .resume-modal *::before,
+      .resume-modal *::after {
+        box-sizing: border-box;
+      }
+      .resume-modal input,
+      .resume-modal select,
+      .resume-modal textarea {
+        all: unset;
+        box-sizing: border-box;
+        font-family: inherit;
+        font-size: inherit;
+        color: inherit;
+        cursor: default;
+        height: auto;
+        min-height: 32px;
+        width: 100%;
+        border: 1px solid hsl(214.3 31.8% 91.4%);
+        border-radius: 6px;
+        background: white;
+        padding: 4px 10px;
+        outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      .resume-modal input:focus,
+      .resume-modal select:focus,
+      .resume-modal textarea:focus {
+        border-color: hsl(221.2 83.2% 53.3%);
+        box-shadow: 0 0 0 2px hsl(221.2 83.2% 53.3% / 0.15);
+      }
+      .resume-modal textarea {
+        resize: vertical;
+        min-height: 80px;
+        padding: 8px 10px;
+      }
+      .resume-modal select {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        padding-right: 28px;
+      }
+      .resume-modal h1,
+      .resume-modal h2,
+      .resume-modal h3 {
+        font-family: 'Lexend', system-ui, sans-serif;
+      }
+    `;
   if (shadowRoot && !shadowRoot.getElementById('morbis-resume-shadow-css')) {
     const ss = document.createElement('style');
     ss.id = 'morbis-resume-shadow-css';
-    ss.textContent = css;
+    ss.textContent = css + resumeModalCss;
     shadowRoot.appendChild(ss);
   }
   if (!document.getElementById('morbis-resume-css')) {

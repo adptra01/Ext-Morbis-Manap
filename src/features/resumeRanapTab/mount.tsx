@@ -296,15 +296,13 @@ function mountReactApp(data: RanapFormData) {
   if (shadowRoot && !shadowRoot.getElementById('morbis-ri-shadow-css')) {
     const ss = document.createElement('style');
     ss.id = 'morbis-ri-shadow-css';
-    ss.textContent = css;
-    shadowRoot.appendChild(ss);
-  }
-  if (!document.getElementById('ext-ri-css')) {
-    const s = document.createElement('style');
-    s.id = 'ext-ri-css';
-    s.textContent =
+    // Modal container rules — single class, must live INSIDE the shadow root
+    // (document.head styles can't pierce shadow DOM) and match the shadow form.
+    ss.textContent =
       css +
       `
+      .ri-modal {
+        background: #f8f6f3;
         border-radius: 16px;
         box-shadow: 0 25px 60px rgba(0,0,0,.25);
         width: 94%;
@@ -319,7 +317,79 @@ function mountReactApp(data: RanapFormData) {
         line-height: 1.6;
         color: #1a1d23;
       }
-      .ri-modal .ri-modal *,
+      .ri-modal *,
+      .ri-modal *::before,
+      .ri-modal *::after {
+        box-sizing: border-box;
+      }
+      .ri-modal input,
+      .ri-modal select,
+      .ri-modal textarea {
+        all: unset;
+        box-sizing: border-box;
+        font-family: inherit;
+        font-size: inherit;
+        color: inherit;
+        cursor: default;
+        height: auto;
+        min-height: 32px;
+        width: 100%;
+        border: 1px solid hsl(214.3 31.8% 91.4%);
+        border-radius: 6px;
+        background: white;
+        padding: 4px 10px;
+        outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      .ri-modal input:focus,
+      .ri-modal select:focus,
+      .ri-modal textarea:focus {
+        border-color: hsl(221.2 83.2% 53.3%);
+        box-shadow: 0 0 0 2px hsl(221.2 83.2% 53.3% / 0.15);
+      }
+      .ri-modal textarea {
+        resize: vertical;
+        min-height: 80px;
+        padding: 8px 10px;
+      }
+      .ri-modal select {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        padding-right: 28px;
+      }
+      .ri-modal h1,
+      .ri-modal h2,
+      .ri-modal h3 {
+        font-family: 'Lexend', system-ui, sans-serif;
+      }
+    `;
+    shadowRoot.appendChild(ss);
+  }
+  if (!document.getElementById('ext-ri-css')) {
+    const s = document.createElement('style');
+    s.id = 'ext-ri-css';
+    s.textContent =
+      css +
+      `
+        .ri-modal {
+        border-radius: 16px;
+        box-shadow: 0 25px 60px rgba(0,0,0,.25);
+        width: 94%;
+        max-width: 900px;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        animation: ri-up .25s ease;
+        font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+        font-size: 16px;
+        line-height: 1.6;
+        color: #1a1d23;
+      }
+      .ri-modal *,
       .ri-modal .ri-modal *::before,
       .ri-modal .ri-modal *::after {
         box-sizing: border-box;
