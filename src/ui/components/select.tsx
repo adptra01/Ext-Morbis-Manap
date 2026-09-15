@@ -30,33 +30,53 @@ const SelectTrigger = forwardRef<
 ));
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
 
+// Resolve Radix portal to the Shadow DOM's #app so Select/Popover/Dialog
+// are not painted onto document.body (where host-page CSS bleeds in/zIndex hides).
+function getShadowApp(): HTMLElement | undefined {
+  try {
+    return (
+      document.getElementById('morbis-manap-root') as HTMLElement | null
+    )?.shadowRoot?.getElementById('app') as HTMLElement | undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 const SelectContent = forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
->(({ className, children, position = 'item-aligned', ...props }, ref) => (
-  <SelectPrimitive.Content
-    ref={ref}
-    className={cn(
-      'relative z-50 max-h-[360px] min-w-[12rem] overflow-hidden rounded-lg border bg-popover text-popover-foreground shadow-lg',
-      'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
-      'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
-      position === 'popper' && 'data-[side=bottom]:translate-y-1 data-[side=top]:-translate-y-1',
-      className,
-    )}
-    position={position}
-    {...props}
-  >
-    <SelectPrimitive.Viewport
-      className={cn(
-        'p-1.5',
-        position === 'popper' &&
-          'h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]',
-      )}
-    >
-      {children}
-    </SelectPrimitive.Viewport>
-  </SelectPrimitive.Content>
-));
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content> & {
+    container?: HTMLElement | null;
+  }
+>(({ className, children, position = 'item-aligned', container, ...props }, ref) => {
+  const resolved = container ?? getShadowApp();
+  return (
+    <SelectPrimitive.Portal container={resolved}>
+      <SelectPrimitive.Content
+        ref={ref}
+        className={cn(
+          'relative z-50 max-h-[360px] min-w-[12rem] overflow-hidden rounded-lg border bg-popover text-popover-foreground shadow-lg',
+          'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
+          'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
+          position === 'popper' &&
+            'data-[side=bottom]:translate-y-1 data-[side=top]:-translate-y-1',
+          className,
+        )}
+        position={position}
+        {...props}
+      >
+        <SelectPrimitive.Viewport
+          className={cn(
+            'p-1.5',
+            position === 'popper' &&
+              'h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]',
+          )}
+        >
+          {children}
+        </SelectPrimitive.Viewport>
+      </SelectPrimitive.Content>
+    </SelectPrimitive.Portal>
+  );
+});
 SelectContent.displayName = SelectPrimitive.Content.displayName;
 
 const SelectItem = forwardRef<
