@@ -121,6 +121,7 @@ function IcdAutocomplete({
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef<HTMLDivElement>(null);
+  const [hitPos, setHitPos] = useState({ top: 0, left: 0, width: 0 });
 
   // Keep the highlighted option in view while navigating with arrow keys.
   useEffect(() => {
@@ -154,6 +155,10 @@ function IcdAutocomplete({
         setSuggestions(hits);
         setShow(hits.length > 0);
         setActiveIdx(-1);
+        if (containerRef.current) {
+          const r = containerRef.current.getBoundingClientRect();
+          setHitPos({ top: r.top, left: r.left, width: r.width });
+        }
       } catch {
         /* ignore */
       }
@@ -224,7 +229,11 @@ function IcdAutocomplete({
         </div>
       </div>
       {show && suggestions.length > 0 && (
-        <div className="absolute top-full left-0 right-0 z-50 bg-popover border-2 border-border rounded-xl max-h-[280px] overflow-auto shadow-xl mt-2">
+        <div
+          className="fixed z-[2147483647] bg-popover border-2 border-border rounded-xl max-h-[280px] overflow-auto shadow-xl"
+          style={{ top: hitPos.top, left: hitPos.left, width: hitPos.width }}
+          role="listbox"
+        >
           {suggestions.map((hit, i) => {
             const active = i === activeIdx;
             return (
