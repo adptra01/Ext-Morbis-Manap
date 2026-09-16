@@ -46,7 +46,7 @@ export function Footer({
         {onHistory && (
           <Button
             type="button"
-            variant="outline"
+            variant="success"
             size="default"
             onClick={onHistory}
             className="gap-2"
@@ -65,7 +65,7 @@ export function Footer({
             Reset Formulir
           </Button>
         )}
-        <Button type="button" variant="secondary" size="default" onClick={onCancel}>
+        <Button type="button" variant="dark" size="default" onClick={onCancel}>
           Batal
         </Button>
         <Button

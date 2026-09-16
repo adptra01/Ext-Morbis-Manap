@@ -1,13 +1,3 @@
 {
-  "servers": {
-    "sequential-thinking": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
-    },
-    "browser-bridge": {
-      "command": "python3",
-      "args": ["/mnt/DiskD/Projects/IDEextension/mcp_server.py"],
-      "env": {}
-    }
-  }
+  "servers": {}
 }

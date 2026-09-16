@@ -1,15 +1,8 @@
 import { useState, useRef } from 'react';
-import { Plus, Trash2, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Button } from '../../ui/components/button';
 import { Input } from '../../ui/components/input';
 import { Label } from '../../ui/components/Label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../../ui/components/select';
 import type { TindakanRow } from './types';
 
 interface Props {
@@ -18,23 +11,6 @@ interface Props {
 }
 
 const ICD9_URL = '/rekam-medik/search?opsi=clauseDiagnose_icd9&q=';
-
-const JENIS_OPTIONS = [
-  { value: 'Primer', label: 'Utama (Primer)' },
-  { value: 'Sekunder', label: 'Tambahan (Sekunder)' },
-];
-
-const KATEGORI_OPTIONS = [
-  { value: '', label: 'Pilih Kategori Prosedur' },
-  { value: '24642003', label: 'Layanan Psikiatri' },
-  { value: '409063005', label: 'Konseling' },
-  { value: '409073007', label: 'Edukasi' },
-  { value: '387713003', label: 'Tindakan Bedah' },
-  { value: '103693007', label: 'Pemeriksaan Diagnostik' },
-  { value: '46947000', label: 'Manipulasi Terapi' },
-  { value: '410606002', label: 'Pelayanan Sosial' },
-  { value: '277132007', label: 'Tindakan Terapeutik' },
-];
 
 interface Hit {
   ID: string;
@@ -132,15 +108,16 @@ export function TindakanSection({ rows, onChange }: Props) {
                 idicdTindakan: '',
                 kode9: '',
                 namaTindakan: '',
+                jenis: rows.length === 0 ? 'Primer' : 'Sekunder',
                 komorbid: '',
-                kategoriProsedur: '',
+                kategoriProsedur: '410606002',
                 snomedProsedur: '',
                 codeProsedur: '',
               } as TindakanRow,
             ])
           }
         >
-          <Plus className="size-5" /> Tambah Tindakan
+          Tambah Tindakan
         </Button>
       </div>
 
@@ -163,12 +140,13 @@ export function TindakanSection({ rows, onChange }: Props) {
                 <div className="flex items-center justify-between">
                   <span className="text-base font-semibold text-primary">Tindakan #{no}</span>
                   <Button
-                    variant="ghost"
+                    variant="destructive"
+                    size="default"
                     onClick={() => removeRow(i)}
-                    className="h-11 px-4 text-destructive border-destructive/30 hover:bg-destructive hover:text-destructive-foreground gap-2"
+                    className="gap-2"
                     aria-label={`Hapus tindakan #${no}`}
                   >
-                    <Trash2 className="size-5" /> Hapus
+                    Hapus
                   </Button>
                 </div>
 
@@ -234,61 +212,23 @@ export function TindakanSection({ rows, onChange }: Props) {
                   </div>
                 </div>
 
-                {/* Kode ICD-9 + Jenis */}
-                <div className="grid grid-cols-[1fr_1fr] gap-4">
-                  <div className="space-y-1.5">
-                    <Label>Kode ICD-9</Label>
-                    <Input
-                      id={`rj-kode9${no}`}
-                      name="kode9[]"
-                      value={row.kode9}
-                      placeholder="Kode"
-                      onChange={makeKodeChange(i)}
-                      className="font-mono text-base"
-                      aria-describedby={`rj-kode9-help-${no}`}
-                    />
-                    <p id={`rj-kode9-help-${no}`} className="sr-only">
-                      Kode ICD-9 otomatis terisi saat memilih tindakan, atau ketik manual
-                    </p>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Jenis</Label>
-                    <Select
-                      value={row.jenis || 'Primer'}
-                      onValueChange={(v) => updateRow(i, { jenis: v })}
-                    >
-                      <SelectTrigger className="h-11 text-base">
-                        <SelectValue placeholder="Pilih" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {JENIS_OPTIONS.map((opt) => (
-                          <SelectItem key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {/* Kategori Prosedur */}
+                {/* Kode ICD-9 — hidden jenis default */}
                 <div className="space-y-1.5">
-                  <Label>Kategori Prosedur</Label>
-                  <Select
-                    value={row.kategoriProsedur || ''}
-                    onValueChange={(v) => updateRow(i, { kategoriProsedur: v })}
-                  >
-                    <SelectTrigger className="h-11 text-base">
-                      <SelectValue placeholder="Pilih Kategori Prosedur" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {KATEGORI_OPTIONS.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label>Kode ICD-9</Label>
+                  <Input
+                    id={`rj-kode9${no}`}
+                    name="kode9[]"
+                    value={row.kode9}
+                    placeholder="Kode"
+                    onChange={makeKodeChange(i)}
+                    className="font-mono text-base"
+                    aria-describedby={`rj-kode9-help-${no}`}
+                  />
+                  <p id={`rj-kode9-help-${no}`} className="sr-only">
+                    Kode ICD-9 otomatis terisi saat memilih tindakan, atau ketik manual
+                  </p>
+                  <input type="hidden" name="jenis[]" value={row.jenis || 'Primer'} />
+                  <input type="hidden" name="kategoriProsedur[]" value={row.kategoriProsedur} />
                 </div>
               </div>
             );

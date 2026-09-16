@@ -6,9 +6,6 @@ var __morbis_feature = (() => {
   var __getOwnPropNames = Object.getOwnPropertyNames;
   var __getProtoOf = Object.getPrototypeOf;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
-  var __typeError = (msg) => {
-    throw TypeError(msg);
-  };
   var __esm = (fn, res, err) =>
     function __init() {
       if (err) throw err[0];
@@ -57,22 +54,6 @@ var __morbis_feature = (() => {
     )
   );
   var __toCommonJS = (mod) => __copyProps(__defProp({}, '__esModule', { value: true }), mod);
-  var __accessCheck = (obj, member, msg) => member.has(obj) || __typeError('Cannot ' + msg);
-  var __privateGet = (obj, member, getter) => (
-    __accessCheck(obj, member, 'read from private field'),
-    getter ? getter.call(obj) : member.get(obj)
-  );
-  var __privateAdd = (obj, member, value) =>
-    member.has(obj)
-      ? __typeError('Cannot add the same private member more than once')
-      : member instanceof WeakSet
-        ? member.add(obj)
-        : member.set(obj, value);
-  var __privateSet = (obj, member, value, setter) => (
-    __accessCheck(obj, member, 'write to private field'),
-    setter ? setter.call(obj, value) : member.set(obj, value),
-    value
-  );
 
   // node_modules/scheduler/cjs/scheduler.development.js
   var require_scheduler_development = __commonJS({
@@ -143,13 +124,13 @@ var __morbis_feature = (() => {
           }
         }
         function push(heap, node) {
-          var index2 = heap.length;
+          var index = heap.length;
           heap.push(node);
-          a: for (; 0 < index2;) {
-            var parentIndex = (index2 - 1) >>> 1,
+          a: for (; 0 < index;) {
+            var parentIndex = (index - 1) >>> 1,
               parent = heap[parentIndex];
             if (0 < compare(parent, node))
-              ((heap[parentIndex] = node), (heap[index2] = parent), (index2 = parentIndex));
+              ((heap[parentIndex] = node), (heap[index] = parent), (index = parentIndex));
             else break a;
           }
         }
@@ -163,19 +144,19 @@ var __morbis_feature = (() => {
           if (last !== first) {
             heap[0] = last;
             a: for (
-              var index2 = 0, length = heap.length, halfLength = length >>> 1;
-              index2 < halfLength;
+              var index = 0, length = heap.length, halfLength = length >>> 1;
+              index < halfLength;
             ) {
-              var leftIndex = 2 * (index2 + 1) - 1,
+              var leftIndex = 2 * (index + 1) - 1,
                 left = heap[leftIndex],
                 rightIndex = leftIndex + 1,
                 right = heap[rightIndex];
               if (0 > compare(left, last))
                 rightIndex < length && 0 > compare(right, left)
-                  ? ((heap[index2] = right), (heap[rightIndex] = last), (index2 = rightIndex))
-                  : ((heap[index2] = left), (heap[leftIndex] = last), (index2 = leftIndex));
+                  ? ((heap[index] = right), (heap[rightIndex] = last), (index = rightIndex))
+                  : ((heap[index] = left), (heap[leftIndex] = last), (index = leftIndex));
               else if (rightIndex < length && 0 > compare(right, last))
-                ((heap[index2] = right), (heap[rightIndex] = last), (index2 = rightIndex));
+                ((heap[index] = right), (heap[rightIndex] = last), (index = rightIndex));
               else break a;
             }
           }
@@ -326,15 +307,13 @@ var __morbis_feature = (() => {
             currentPriorityLevel = previousPriorityLevel;
           }
         };
-        exports.unstable_scheduleCallback = function (priorityLevel, callback, options2) {
+        exports.unstable_scheduleCallback = function (priorityLevel, callback, options) {
           var currentTime = exports.unstable_now();
-          'object' === typeof options2 && null !== options2
-            ? ((options2 = options2.delay),
-              (options2 =
-                'number' === typeof options2 && 0 < options2
-                  ? currentTime + options2
-                  : currentTime))
-            : (options2 = currentTime);
+          'object' === typeof options && null !== options
+            ? ((options = options.delay),
+              (options =
+                'number' === typeof options && 0 < options ? currentTime + options : currentTime))
+            : (options = currentTime);
           switch (priorityLevel) {
             case 1:
               var timeout = -1;
@@ -351,24 +330,24 @@ var __morbis_feature = (() => {
             default:
               timeout = 5e3;
           }
-          timeout = options2 + timeout;
+          timeout = options + timeout;
           priorityLevel = {
             id: taskIdCounter++,
             callback,
             priorityLevel,
-            startTime: options2,
+            startTime: options,
             expirationTime: timeout,
             sortIndex: -1,
           };
-          options2 > currentTime
-            ? ((priorityLevel.sortIndex = options2),
+          options > currentTime
+            ? ((priorityLevel.sortIndex = options),
               push(timerQueue, priorityLevel),
               null === peek(taskQueue) &&
                 priorityLevel === peek(timerQueue) &&
                 (isHostTimeoutScheduled
                   ? (localClearTimeout(taskTimeoutID), (taskTimeoutID = -1))
                   : (isHostTimeoutScheduled = true),
-                requestHostTimeout(handleTimeout, options2 - currentTime)))
+                requestHostTimeout(handleTimeout, options - currentTime)))
             : ((priorityLevel.sortIndex = timeout),
               push(taskQueue, priorityLevel),
               isHostCallbackScheduled ||
@@ -460,7 +439,7 @@ var __morbis_feature = (() => {
           this.refs = emptyObject;
           this.updater = updater || ReactNoopUpdateQueue;
         }
-        function noop3() {}
+        function noop() {}
         function testStringCoercion(value) {
           return '' + value;
         }
@@ -535,7 +514,7 @@ var __morbis_feature = (() => {
                   (innerType = type.displayName || null),
                   null !== innerType ? innerType : getComponentNameFromType(type.type) || 'Memo'
                 );
-              case REACT_LAZY_TYPE2:
+              case REACT_LAZY_TYPE:
                 innerType = type._payload;
                 type = type._init;
                 try {
@@ -546,7 +525,7 @@ var __morbis_feature = (() => {
         }
         function getTaskName(type) {
           if (type === REACT_FRAGMENT_TYPE) return '<>';
-          if ('object' === typeof type && null !== type && type.$$typeof === REACT_LAZY_TYPE2)
+          if ('object' === typeof type && null !== type && type.$$typeof === REACT_LAZY_TYPE)
             return '<...>';
           try {
             var name = getComponentNameFromType(type);
@@ -650,18 +629,18 @@ var __morbis_feature = (() => {
           return newKey;
         }
         function validateChildKeys(node) {
-          isValidElement2(node)
+          isValidElement(node)
             ? node._store && (node._store.validated = 1)
             : 'object' === typeof node &&
               null !== node &&
-              node.$$typeof === REACT_LAZY_TYPE2 &&
+              node.$$typeof === REACT_LAZY_TYPE &&
               ('fulfilled' === node._payload.status
-                ? isValidElement2(node._payload.value) &&
+                ? isValidElement(node._payload.value) &&
                   node._payload.value._store &&
                   (node._payload.value._store.validated = 1)
                 : node._store && (node._store.validated = 1));
         }
-        function isValidElement2(object) {
+        function isValidElement(object) {
           return (
             'object' === typeof object && null !== object && object.$$typeof === REACT_ELEMENT_TYPE
           );
@@ -675,10 +654,10 @@ var __morbis_feature = (() => {
             })
           );
         }
-        function getElementKey(element, index2) {
+        function getElementKey(element, index) {
           return 'object' === typeof element && null !== element && null != element.key
             ? (checkKeyStringCoercion(element.key), escape('' + element.key))
-            : index2.toString(36);
+            : index.toString(36);
         }
         function resolveThenable(thenable) {
           switch (thenable.status) {
@@ -689,7 +668,7 @@ var __morbis_feature = (() => {
             default:
               switch (
                 ('string' === typeof thenable.status
-                  ? thenable.then(noop3, noop3)
+                  ? thenable.then(noop, noop)
                   : ((thenable.status = 'pending'),
                     thenable.then(
                       function (fulfilledValue) {
@@ -729,7 +708,7 @@ var __morbis_feature = (() => {
                   case REACT_PORTAL_TYPE:
                     invokeCallback = true;
                     break;
-                  case REACT_LAZY_TYPE2:
+                  case REACT_LAZY_TYPE:
                     return (
                       (invokeCallback = children._init),
                       mapIntoArray(
@@ -754,7 +733,7 @@ var __morbis_feature = (() => {
                   return c;
                 }))
               : null != callback &&
-                (isValidElement2(callback) &&
+                (isValidElement(callback) &&
                   (null != callback.key &&
                     ((invokeCallback && invokeCallback.key === callback.key) ||
                       checkKeyStringCoercion(callback.key)),
@@ -769,7 +748,7 @@ var __morbis_feature = (() => {
                   )),
                   '' !== nameSoFar &&
                     null != invokeCallback &&
-                    isValidElement2(invokeCallback) &&
+                    isValidElement(invokeCallback) &&
                     null == invokeCallback.key &&
                     invokeCallback._store &&
                     !invokeCallback._store.validated &&
@@ -823,9 +802,9 @@ var __morbis_feature = (() => {
         function mapChildren(children, func, context) {
           if (null == children) return children;
           var result = [],
-            count3 = 0;
+            count = 0;
           mapIntoArray(children, result, '', '', function (child) {
-            return func.call(context, child, count3++);
+            return func.call(context, child, count++);
           });
           return result;
         }
@@ -866,7 +845,7 @@ var __morbis_feature = (() => {
                   var _ioInfo2 = payload._ioInfo;
                   null != _ioInfo2 &&
                     ((_ioInfo2.end = performance.now()),
-                    _ioInfo2.value.then(noop3, noop3),
+                    _ioInfo2.value.then(noop, noop),
                     rejectDebugValue(error),
                     (_ioInfo2.value.status = 'rejected'),
                     (_ioInfo2.value.reason = error));
@@ -926,7 +905,7 @@ var __morbis_feature = (() => {
               'function' === typeof returnValue.then &&
               (ReactSharedInternals.asyncTransitions++,
               returnValue.then(releaseAsyncTransition, releaseAsyncTransition),
-              returnValue.then(noop3, reportGlobalError));
+              returnValue.then(noop, reportGlobalError));
           } catch (error) {
             reportGlobalError(error);
           } finally {
@@ -1060,7 +1039,7 @@ var __morbis_feature = (() => {
           REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for('react.suspense'),
           REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for('react.suspense_list'),
           REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for('react.memo'),
-          REACT_LAZY_TYPE2 = /* @__PURE__ */ Symbol.for('react.lazy'),
+          REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for('react.lazy'),
           REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for('react.activity'),
           REACT_VIEW_TRANSITION_TYPE = /* @__PURE__ */ Symbol.for('react.view_transition'),
           MAYBE_ITERATOR_SYMBOL = Symbol.iterator,
@@ -1189,8 +1168,8 @@ var __morbis_feature = (() => {
               : enqueueTask;
         deprecatedAPIs = Object.freeze({
           __proto__: null,
-          c: function (size4) {
-            return resolveDispatcher().useMemoCache(size4);
+          c: function (size) {
+            return resolveDispatcher().useMemoCache(size);
           },
         });
         var fnName = {
@@ -1219,7 +1198,7 @@ var __morbis_feature = (() => {
             );
           },
           only: function (children) {
-            if (!isValidElement2(children))
+            if (!isValidElement(children))
               throw Error('React.Children.only expected to receive a single React element child.');
             return children;
           },
@@ -1505,11 +1484,11 @@ var __morbis_feature = (() => {
           });
           return elementType;
         };
-        exports.isValidElement = isValidElement2;
+        exports.isValidElement = isValidElement;
         exports.lazy = function (ctor) {
           ctor = { _status: -1, _result: ctor };
           var lazyType = {
-              $$typeof: REACT_LAZY_TYPE2,
+              $$typeof: REACT_LAZY_TYPE,
               _payload: ctor,
               _init: lazyInitializer,
             },
@@ -1660,7 +1639,7 @@ var __morbis_feature = (() => {
     'node_modules/react-dom/cjs/react-dom.development.js'(exports) {
       'use strict';
       (function () {
-        function noop3() {}
+        function noop() {}
         function testStringCoercion(value) {
           return '' + value;
         }
@@ -1730,22 +1709,22 @@ var __morbis_feature = (() => {
         'undefined' !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ &&
           'function' === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart &&
           __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
-        var React33 = require_react(),
+        var React = require_react(),
           Internals = {
             d: {
-              f: noop3,
+              f: noop,
               r: function () {
                 throw Error(
                   'Invalid form element. requestFormReset must be passed a form that was rendered by React.',
                 );
               },
-              D: noop3,
-              C: noop3,
-              L: noop3,
-              m: noop3,
-              X: noop3,
-              S: noop3,
-              M: noop3,
+              D: noop,
+              C: noop,
+              L: noop,
+              m: noop,
+              X: noop,
+              S: noop,
+              M: noop,
             },
             p: 0,
             findDOMNode: null,
@@ -1754,7 +1733,7 @@ var __morbis_feature = (() => {
           REACT_RECOVERABLE_TYPE = /* @__PURE__ */ Symbol.for('react.recoverable'),
           REACT_OPTIMISTIC_KEY = /* @__PURE__ */ Symbol.for('react.optimistic_key'),
           ReactSharedInternals =
-            React33.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
+            React.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
         ('function' === typeof Map &&
           null != Map.prototype &&
           'function' === typeof Map.prototype.forEach &&
@@ -1792,34 +1771,34 @@ var __morbis_feature = (() => {
                 ));
           }
         };
-        exports.preconnect = function (href, options2) {
+        exports.preconnect = function (href, options) {
           'string' === typeof href && href
-            ? null != options2 && 'object' !== typeof options2
+            ? null != options && 'object' !== typeof options
               ? console.error(
                   'ReactDOM.preconnect(): Expected the `options` argument (second) to be an object but encountered %s instead. The only supported option at this time is `crossOrigin` which accepts a string.',
-                  getValueDescriptorExpectingEnumForWarning(options2),
+                  getValueDescriptorExpectingEnumForWarning(options),
                 )
-              : null != options2 &&
-                'string' !== typeof options2.crossOrigin &&
+              : null != options &&
+                'string' !== typeof options.crossOrigin &&
                 console.error(
                   'ReactDOM.preconnect(): Expected the `crossOrigin` option (second argument) to be a string but encountered %s instead. Try removing this option or passing a string value instead.',
-                  getValueDescriptorExpectingObjectForWarning(options2.crossOrigin),
+                  getValueDescriptorExpectingObjectForWarning(options.crossOrigin),
                 )
             : console.error(
                 'ReactDOM.preconnect(): Expected the `href` argument (first) to be a non-empty string but encountered %s instead.',
                 getValueDescriptorExpectingObjectForWarning(href),
               );
           'string' === typeof href &&
-            (options2
-              ? ((options2 = options2.crossOrigin),
-                (options2 =
-                  'string' === typeof options2
-                    ? 'use-credentials' === options2
-                      ? options2
+            (options
+              ? ((options = options.crossOrigin),
+                (options =
+                  'string' === typeof options
+                    ? 'use-credentials' === options
+                      ? options
                       : ''
                     : void 0))
-              : (options2 = null),
-            Internals.d.C(href, options2));
+              : (options = null),
+            Internals.d.C(href, options));
         };
         exports.prefetchDNS = function (href) {
           if ('string' !== typeof href || !href)
@@ -1828,46 +1807,46 @@ var __morbis_feature = (() => {
               getValueDescriptorExpectingObjectForWarning(href),
             );
           else if (1 < arguments.length) {
-            var options2 = arguments[1];
-            'object' === typeof options2 && options2.hasOwnProperty('crossOrigin')
+            var options = arguments[1];
+            'object' === typeof options && options.hasOwnProperty('crossOrigin')
               ? console.error(
                   'ReactDOM.prefetchDNS(): Expected only one argument, `href`, but encountered %s as a second argument instead. This argument is reserved for future options and is currently disallowed. It looks like the you are attempting to set a crossOrigin property for this DNS lookup hint. Browsers do not perform DNS queries using CORS and setting this attribute on the resource hint has no effect. Try calling ReactDOM.prefetchDNS() with just a single string argument, `href`.',
-                  getValueDescriptorExpectingEnumForWarning(options2),
+                  getValueDescriptorExpectingEnumForWarning(options),
                 )
               : console.error(
                   'ReactDOM.prefetchDNS(): Expected only one argument, `href`, but encountered %s as a second argument instead. This argument is reserved for future options and is currently disallowed. Try calling ReactDOM.prefetchDNS() with just a single string argument, `href`.',
-                  getValueDescriptorExpectingEnumForWarning(options2),
+                  getValueDescriptorExpectingEnumForWarning(options),
                 );
           }
           'string' === typeof href && Internals.d.D(href);
         };
-        exports.preinit = function (href, options2) {
+        exports.preinit = function (href, options) {
           'string' === typeof href && href
-            ? null == options2 || 'object' !== typeof options2
+            ? null == options || 'object' !== typeof options
               ? console.error(
                   'ReactDOM.preinit(): Expected the `options` argument (second) to be an object with an `as` property describing the type of resource to be preinitialized but encountered %s instead.',
-                  getValueDescriptorExpectingEnumForWarning(options2),
+                  getValueDescriptorExpectingEnumForWarning(options),
                 )
-              : 'style' !== options2.as &&
-                'script' !== options2.as &&
+              : 'style' !== options.as &&
+                'script' !== options.as &&
                 console.error(
                   'ReactDOM.preinit(): Expected the `as` property in the `options` argument (second) to contain a valid value describing the type of resource to be preinitialized but encountered %s instead. Valid values for `as` are "style" and "script".',
-                  getValueDescriptorExpectingEnumForWarning(options2.as),
+                  getValueDescriptorExpectingEnumForWarning(options.as),
                 )
             : console.error(
                 'ReactDOM.preinit(): Expected the `href` argument (first) to be a non-empty string but encountered %s instead.',
                 getValueDescriptorExpectingObjectForWarning(href),
               );
-          if ('string' === typeof href && options2 && 'string' === typeof options2.as) {
-            var as = options2.as,
-              crossOrigin = getCrossOriginStringAs(as, options2.crossOrigin),
-              integrity = 'string' === typeof options2.integrity ? options2.integrity : void 0,
+          if ('string' === typeof href && options && 'string' === typeof options.as) {
+            var as = options.as,
+              crossOrigin = getCrossOriginStringAs(as, options.crossOrigin),
+              integrity = 'string' === typeof options.integrity ? options.integrity : void 0,
               fetchPriority =
-                'string' === typeof options2.fetchPriority ? options2.fetchPriority : void 0;
+                'string' === typeof options.fetchPriority ? options.fetchPriority : void 0;
             'style' === as
               ? Internals.d.S(
                   href,
-                  'string' === typeof options2.precedence ? options2.precedence : void 0,
+                  'string' === typeof options.precedence ? options.precedence : void 0,
                   {
                     crossOrigin,
                     integrity,
@@ -1879,28 +1858,28 @@ var __morbis_feature = (() => {
                   crossOrigin,
                   integrity,
                   fetchPriority,
-                  nonce: 'string' === typeof options2.nonce ? options2.nonce : void 0,
+                  nonce: 'string' === typeof options.nonce ? options.nonce : void 0,
                 });
           }
         };
-        exports.preinitModule = function (href, options2) {
+        exports.preinitModule = function (href, options) {
           var encountered = '';
           ('string' === typeof href && href) ||
             (encountered +=
               ' The `href` argument encountered was ' +
               getValueDescriptorExpectingObjectForWarning(href) +
               '.');
-          void 0 !== options2 && 'object' !== typeof options2
+          void 0 !== options && 'object' !== typeof options
             ? (encountered +=
                 ' The `options` argument encountered was ' +
-                getValueDescriptorExpectingObjectForWarning(options2) +
+                getValueDescriptorExpectingObjectForWarning(options) +
                 '.')
-            : options2 &&
-              'as' in options2 &&
-              'script' !== options2.as &&
+            : options &&
+              'as' in options &&
+              'script' !== options.as &&
               (encountered +=
                 ' The `as` option encountered was ' +
-                getValueDescriptorExpectingEnumForWarning(options2.as) +
+                getValueDescriptorExpectingEnumForWarning(options.as) +
                 '.');
           if (encountered)
             console.error(
@@ -1909,7 +1888,7 @@ var __morbis_feature = (() => {
             );
           else
             switch (
-              ((encountered = options2 && 'string' === typeof options2.as ? options2.as : 'script'),
+              ((encountered = options && 'string' === typeof options.as ? options.as : 'script'),
               encountered)
             ) {
               case 'script':
@@ -1923,34 +1902,34 @@ var __morbis_feature = (() => {
                   ));
             }
           if ('string' === typeof href)
-            if ('object' === typeof options2 && null !== options2) {
-              if (null == options2.as || 'script' === options2.as)
-                ((encountered = getCrossOriginStringAs(options2.as, options2.crossOrigin)),
+            if ('object' === typeof options && null !== options) {
+              if (null == options.as || 'script' === options.as)
+                ((encountered = getCrossOriginStringAs(options.as, options.crossOrigin)),
                   Internals.d.M(href, {
                     crossOrigin: encountered,
-                    integrity: 'string' === typeof options2.integrity ? options2.integrity : void 0,
-                    nonce: 'string' === typeof options2.nonce ? options2.nonce : void 0,
+                    integrity: 'string' === typeof options.integrity ? options.integrity : void 0,
+                    nonce: 'string' === typeof options.nonce ? options.nonce : void 0,
                     fetchPriority:
-                      'string' === typeof options2.fetchPriority ? options2.fetchPriority : void 0,
+                      'string' === typeof options.fetchPriority ? options.fetchPriority : void 0,
                   }));
-            } else null == options2 && Internals.d.M(href);
+            } else null == options && Internals.d.M(href);
         };
-        exports.preload = function (href, options2) {
+        exports.preload = function (href, options) {
           var encountered = '';
           ('string' === typeof href && href) ||
             (encountered +=
               ' The `href` argument encountered was ' +
               getValueDescriptorExpectingObjectForWarning(href) +
               '.');
-          null == options2 || 'object' !== typeof options2
+          null == options || 'object' !== typeof options
             ? (encountered +=
                 ' The `options` argument encountered was ' +
-                getValueDescriptorExpectingObjectForWarning(options2) +
+                getValueDescriptorExpectingObjectForWarning(options) +
                 '.')
-            : ('string' === typeof options2.as && options2.as) ||
+            : ('string' === typeof options.as && options.as) ||
               (encountered +=
                 ' The `as` option encountered was ' +
-                getValueDescriptorExpectingObjectForWarning(options2.as) +
+                getValueDescriptorExpectingObjectForWarning(options.as) +
                 '.');
           encountered &&
             console.error(
@@ -1959,45 +1938,45 @@ var __morbis_feature = (() => {
             );
           if (
             'string' === typeof href &&
-            'object' === typeof options2 &&
-            null !== options2 &&
-            'string' === typeof options2.as
+            'object' === typeof options &&
+            null !== options &&
+            'string' === typeof options.as
           ) {
-            encountered = options2.as;
-            var crossOrigin = getCrossOriginStringAs(encountered, options2.crossOrigin);
+            encountered = options.as;
+            var crossOrigin = getCrossOriginStringAs(encountered, options.crossOrigin);
             Internals.d.L(href, encountered, {
               crossOrigin,
-              integrity: 'string' === typeof options2.integrity ? options2.integrity : void 0,
-              nonce: 'string' === typeof options2.nonce ? options2.nonce : void 0,
-              type: 'string' === typeof options2.type ? options2.type : void 0,
+              integrity: 'string' === typeof options.integrity ? options.integrity : void 0,
+              nonce: 'string' === typeof options.nonce ? options.nonce : void 0,
+              type: 'string' === typeof options.type ? options.type : void 0,
               fetchPriority:
-                'string' === typeof options2.fetchPriority ? options2.fetchPriority : void 0,
+                'string' === typeof options.fetchPriority ? options.fetchPriority : void 0,
               referrerPolicy:
-                'string' === typeof options2.referrerPolicy ? options2.referrerPolicy : void 0,
-              imageSrcSet: 'string' === typeof options2.imageSrcSet ? options2.imageSrcSet : void 0,
-              imageSizes: 'string' === typeof options2.imageSizes ? options2.imageSizes : void 0,
-              media: 'string' === typeof options2.media ? options2.media : void 0,
+                'string' === typeof options.referrerPolicy ? options.referrerPolicy : void 0,
+              imageSrcSet: 'string' === typeof options.imageSrcSet ? options.imageSrcSet : void 0,
+              imageSizes: 'string' === typeof options.imageSizes ? options.imageSizes : void 0,
+              media: 'string' === typeof options.media ? options.media : void 0,
             });
           }
         };
-        exports.preloadModule = function (href, options2) {
+        exports.preloadModule = function (href, options) {
           var encountered = '';
           ('string' === typeof href && href) ||
             (encountered +=
               ' The `href` argument encountered was ' +
               getValueDescriptorExpectingObjectForWarning(href) +
               '.');
-          void 0 !== options2 && 'object' !== typeof options2
+          void 0 !== options && 'object' !== typeof options
             ? (encountered +=
                 ' The `options` argument encountered was ' +
-                getValueDescriptorExpectingObjectForWarning(options2) +
+                getValueDescriptorExpectingObjectForWarning(options) +
                 '.')
-            : options2 &&
-              'as' in options2 &&
-              'string' !== typeof options2.as &&
+            : options &&
+              'as' in options &&
+              'string' !== typeof options.as &&
               (encountered +=
                 ' The `as` option encountered was ' +
-                getValueDescriptorExpectingObjectForWarning(options2.as) +
+                getValueDescriptorExpectingObjectForWarning(options.as) +
                 '.');
           encountered &&
             console.error(
@@ -2005,18 +1984,16 @@ var __morbis_feature = (() => {
               encountered,
             );
           'string' === typeof href &&
-            (options2
-              ? ((encountered = getCrossOriginStringAs(options2.as, options2.crossOrigin)),
+            (options
+              ? ((encountered = getCrossOriginStringAs(options.as, options.crossOrigin)),
                 Internals.d.m(href, {
                   as:
-                    'string' === typeof options2.as && 'script' !== options2.as
-                      ? options2.as
-                      : void 0,
+                    'string' === typeof options.as && 'script' !== options.as ? options.as : void 0,
                   crossOrigin: encountered,
-                  integrity: 'string' === typeof options2.integrity ? options2.integrity : void 0,
-                  nonce: 'string' === typeof options2.nonce ? options2.nonce : void 0,
+                  integrity: 'string' === typeof options.integrity ? options.integrity : void 0,
+                  nonce: 'string' === typeof options.nonce ? options.nonce : void 0,
                   fetchPriority:
-                    'string' === typeof options2.fetchPriority ? options2.fetchPriority : void 0,
+                    'string' === typeof options.fetchPriority ? options.fetchPriority : void 0,
                 }))
               : Internals.d.m(href));
         };
@@ -2062,11 +2039,11 @@ var __morbis_feature = (() => {
           for (fiber = fiber.memoizedState; null !== fiber && 0 < id;) ((fiber = fiber.next), id--);
           return fiber;
         }
-        function copyWithSetImpl(obj, path, index2, value) {
-          if (index2 >= path.length) return value;
-          var key = path[index2],
+        function copyWithSetImpl(obj, path, index, value) {
+          if (index >= path.length) return value;
+          var key = path[index],
             updated = isArrayImpl(obj) ? obj.slice() : assign({}, obj);
-          updated[key] = copyWithSetImpl(obj[key], path, index2 + 1, value);
+          updated[key] = copyWithSetImpl(obj[key], path, index + 1, value);
           return updated;
         }
         function copyWithRename(obj, oldPath, newPath) {
@@ -2083,21 +2060,21 @@ var __morbis_feature = (() => {
             return copyWithRenameImpl(obj, oldPath, newPath, 0);
           }
         }
-        function copyWithRenameImpl(obj, oldPath, newPath, index2) {
-          var oldKey = oldPath[index2],
+        function copyWithRenameImpl(obj, oldPath, newPath, index) {
+          var oldKey = oldPath[index],
             updated = isArrayImpl(obj) ? obj.slice() : assign({}, obj);
-          index2 + 1 === oldPath.length
-            ? ((updated[newPath[index2]] = updated[oldKey]),
+          index + 1 === oldPath.length
+            ? ((updated[newPath[index]] = updated[oldKey]),
               isArrayImpl(updated) ? updated.splice(oldKey, 1) : delete updated[oldKey])
-            : (updated[oldKey] = copyWithRenameImpl(obj[oldKey], oldPath, newPath, index2 + 1));
+            : (updated[oldKey] = copyWithRenameImpl(obj[oldKey], oldPath, newPath, index + 1));
           return updated;
         }
-        function copyWithDeleteImpl(obj, path, index2) {
-          var key = path[index2],
+        function copyWithDeleteImpl(obj, path, index) {
+          var key = path[index],
             updated = isArrayImpl(obj) ? obj.slice() : assign({}, obj);
-          if (index2 + 1 === path.length)
+          if (index + 1 === path.length)
             return (isArrayImpl(updated) ? updated.splice(key, 1) : delete updated[key], updated);
-          updated[key] = copyWithDeleteImpl(obj[key], path, index2 + 1);
+          updated[key] = copyWithDeleteImpl(obj[key], path, index + 1);
           return updated;
         }
         function shouldSuspendImpl() {
@@ -2116,7 +2093,7 @@ var __morbis_feature = (() => {
             'Context can only be read while React is rendering. In classes, you can read it in the render method or getDerivedStateFromProps. In function components, you can read it directly in the function body, but not inside Hooks like useReducer() or useMemo().',
           );
         }
-        function noop3() {}
+        function noop() {}
         function warnForMissingKey() {}
         function setToSortedString(set) {
           var array = [];
@@ -2425,7 +2402,7 @@ var __morbis_feature = (() => {
                   (innerType = type.displayName || null),
                   null !== innerType ? innerType : getComponentNameFromType(type.type) || 'Memo'
                 );
-              case REACT_LAZY_TYPE2:
+              case REACT_LAZY_TYPE:
                 innerType = type._payload;
                 type = type._init;
                 try {
@@ -3182,9 +3159,9 @@ var __morbis_feature = (() => {
               root2 = root2.entanglements, allEntangledLanes &= renderLanes2;
               0 < allEntangledLanes;
             ) {
-              var index2 = 31 - clz32(allEntangledLanes),
-                lane = 1 << index2;
-              renderLanes2 |= root2[index2];
+              var index = 31 - clz32(allEntangledLanes),
+                lane = 1 << index;
+              renderLanes2 |= root2[index];
               allEntangledLanes &= ~lane;
             }
           return renderLanes2;
@@ -3269,18 +3246,18 @@ var __morbis_feature = (() => {
             expirationTimes = root2.expirationTimes,
             hiddenUpdates = root2.hiddenUpdates;
           for (remainingLanes = previouslyPendingLanes & ~remainingLanes; 0 < remainingLanes;) {
-            var index2 = 31 - clz32(remainingLanes),
-              lane = 1 << index2;
-            entanglements[index2] = 0;
-            expirationTimes[index2] = -1;
-            var hiddenUpdatesForLane = hiddenUpdates[index2];
+            var index = 31 - clz32(remainingLanes),
+              lane = 1 << index;
+            entanglements[index] = 0;
+            expirationTimes[index] = -1;
+            var hiddenUpdatesForLane = hiddenUpdates[index];
             if (null !== hiddenUpdatesForLane)
               for (
-                hiddenUpdates[index2] = null, index2 = 0;
-                index2 < hiddenUpdatesForLane.length;
-                index2++
+                hiddenUpdates[index] = null, index = 0;
+                index < hiddenUpdatesForLane.length;
+                index++
               ) {
-                var update = hiddenUpdatesForLane[index2];
+                var update = hiddenUpdatesForLane[index];
                 null !== update && (update.lane &= -536870913);
               }
             remainingLanes &= ~lane;
@@ -3303,10 +3280,10 @@ var __morbis_feature = (() => {
         function markRootEntangled(root2, entangledLanes) {
           var rootEntangledLanes = (root2.entangledLanes |= entangledLanes);
           for (root2 = root2.entanglements; rootEntangledLanes;) {
-            var index2 = 31 - clz32(rootEntangledLanes),
-              lane = 1 << index2;
-            (lane & entangledLanes) | (root2[index2] & entangledLanes) &&
-              (root2[index2] |= entangledLanes);
+            var index = 31 - clz32(rootEntangledLanes),
+              lane = 1 << index;
+            (lane & entangledLanes) | (root2[index] & entangledLanes) &&
+              (root2[index] |= entangledLanes);
             rootEntangledLanes &= ~lane;
           }
         }
@@ -3357,9 +3334,9 @@ var __morbis_feature = (() => {
         function addFiberToLanesMap(root2, fiber, lanes) {
           if (isDevToolsPresent)
             for (root2 = root2.pendingUpdatersLaneMap; 0 < lanes;) {
-              var index2 = 31 - clz32(lanes),
-                lane = 1 << index2;
-              root2[index2].add(fiber);
+              var index = 31 - clz32(lanes),
+                lane = 1 << index;
+              root2[index].add(fiber);
               lanes &= ~lane;
             }
         }
@@ -3370,16 +3347,16 @@ var __morbis_feature = (() => {
                 memoizedUpdaters = root2.memoizedUpdaters;
               0 < lanes;
             ) {
-              var index2 = 31 - clz32(lanes);
-              root2 = 1 << index2;
-              index2 = pendingUpdatersLaneMap[index2];
-              0 < index2.size &&
-                (index2.forEach(function (fiber) {
+              var index = 31 - clz32(lanes);
+              root2 = 1 << index;
+              index = pendingUpdatersLaneMap[index];
+              0 < index.size &&
+                (index.forEach(function (fiber) {
                   var alternate = fiber.alternate;
                   (null !== alternate && memoizedUpdaters.has(alternate)) ||
                     memoizedUpdaters.add(fiber);
                 }),
-                index2.clear());
+                index.clear());
               lanes &= ~root2;
             }
         }
@@ -3789,7 +3766,7 @@ var __morbis_feature = (() => {
         function validateOptionProps(element, props) {
           null == props.value &&
             ('object' === typeof props.children && null !== props.children
-              ? React33.Children.forEach(props.children, function (child) {
+              ? React.Children.forEach(props.children, function (child) {
                   null == child ||
                     'string' === typeof child ||
                     'number' === typeof child ||
@@ -5372,7 +5349,7 @@ var __morbis_feature = (() => {
               : false;
         }
         function isEventSupported(eventNameSuffix) {
-          if (!canUseDOM2) return false;
+          if (!canUseDOM) return false;
           eventNameSuffix = 'on' + eventNameSuffix;
           var isSupported = eventNameSuffix in document;
           isSupported ||
@@ -5445,7 +5422,7 @@ var __morbis_feature = (() => {
         function is(x, y) {
           return (x === y && (0 !== x || 1 / x === 1 / y)) || (x !== x && y !== y);
         }
-        function shallowEqual2(objA, objB) {
+        function shallowEqual(objA, objB) {
           if (objectIs(objA, objB)) return true;
           if (
             'object' !== typeof objA ||
@@ -5467,7 +5444,7 @@ var __morbis_feature = (() => {
           }
           return true;
         }
-        function getActiveElement2(doc) {
+        function getActiveElement(doc) {
           doc = doc || ('undefined' !== typeof document ? document : void 0);
           if ('undefined' === typeof doc) return null;
           try {
@@ -5480,13 +5457,13 @@ var __morbis_feature = (() => {
           for (; node && node.firstChild;) node = node.firstChild;
           return node;
         }
-        function getNodeForCharacterOffset(root2, offset4) {
+        function getNodeForCharacterOffset(root2, offset) {
           var node = getLeafNode(root2);
           root2 = 0;
           for (var nodeEnd; node;) {
             if (3 === node.nodeType) {
               nodeEnd = root2 + node.textContent.length;
-              if (root2 <= offset4 && nodeEnd >= offset4) return { node, offset: offset4 - root2 };
+              if (root2 <= offset && nodeEnd >= offset) return { node, offset: offset - root2 };
               root2 = nodeEnd;
             }
             a: {
@@ -5525,7 +5502,7 @@ var __morbis_feature = (() => {
               ? containerInfo.ownerDocument.defaultView
               : window;
           for (
-            var element = getActiveElement2(containerInfo.document);
+            var element = getActiveElement(containerInfo.document);
             element instanceof containerInfo.HTMLIFrameElement;
           ) {
             try {
@@ -5536,7 +5513,7 @@ var __morbis_feature = (() => {
             }
             if (JSCompiler_inline_result) containerInfo = element.contentWindow;
             else break;
-            element = getActiveElement2(containerInfo.document);
+            element = getActiveElement(containerInfo.document);
           }
           return element;
         }
@@ -5563,7 +5540,7 @@ var __morbis_feature = (() => {
                 : nativeEventTarget.ownerDocument;
           mouseDown ||
             null == activeElement ||
-            activeElement !== getActiveElement2(doc) ||
+            activeElement !== getActiveElement(doc) ||
             ((doc = activeElement),
             'selectionStart' in doc && hasSelectionCapabilities(doc)
               ? (doc = { start: doc.selectionStart, end: doc.selectionEnd })
@@ -5577,7 +5554,7 @@ var __morbis_feature = (() => {
                   focusNode: doc.focusNode,
                   focusOffset: doc.focusOffset,
                 })),
-            (lastSelection && shallowEqual2(lastSelection, doc)) ||
+            (lastSelection && shallowEqual(lastSelection, doc)) ||
               ((lastSelection = doc),
               (doc = accumulateTwoPhaseListeners(activeElementInst, 'onSelect')),
               0 < doc.length &&
@@ -6404,7 +6381,7 @@ var __morbis_feature = (() => {
           sourceFiber.lanes |= lane;
           var alternate = sourceFiber.alternate;
           null !== alternate && (alternate.lanes |= lane);
-          for (var isHidden2 = false, parent = sourceFiber.return; null !== parent;)
+          for (var isHidden = false, parent = sourceFiber.return; null !== parent;)
             ((parent.childLanes |= lane),
               (alternate = parent.alternate),
               null !== alternate && (alternate.childLanes |= lane),
@@ -6412,17 +6389,17 @@ var __morbis_feature = (() => {
                 ((sourceFiber = parent.stateNode),
                 null === sourceFiber ||
                   sourceFiber._visibility & OffscreenVisible ||
-                  (isHidden2 = true)),
+                  (isHidden = true)),
               (sourceFiber = parent),
               (parent = parent.return));
           return 3 === sourceFiber.tag
             ? ((parent = sourceFiber.stateNode),
-              isHidden2 &&
+              isHidden &&
                 null !== update &&
-                ((isHidden2 = 31 - clz32(lane)),
+                ((isHidden = 31 - clz32(lane)),
                 (sourceFiber = parent.hiddenUpdates),
-                (alternate = sourceFiber[isHidden2]),
-                null === alternate ? (sourceFiber[isHidden2] = [update]) : alternate.push(update),
+                (alternate = sourceFiber[isHidden]),
+                null === alternate ? (sourceFiber[isHidden] = [update]) : alternate.push(update),
                 (update.lane = lane | 536870912)),
               parent)
             : null;
@@ -6473,18 +6450,18 @@ var __morbis_feature = (() => {
             case 0:
               'function' === typeof element
                 ? (needsCompareFamilies = true)
-                : $$typeofNextType === REACT_LAZY_TYPE2 && (needsCompareFamilies = true);
+                : $$typeofNextType === REACT_LAZY_TYPE && (needsCompareFamilies = true);
               break;
             case 11:
               $$typeofNextType === REACT_FORWARD_REF_TYPE
                 ? (needsCompareFamilies = true)
-                : $$typeofNextType === REACT_LAZY_TYPE2 && (needsCompareFamilies = true);
+                : $$typeofNextType === REACT_LAZY_TYPE && (needsCompareFamilies = true);
               break;
             case 14:
             case 15:
               $$typeofNextType === REACT_MEMO_TYPE
                 ? (needsCompareFamilies = true)
-                : $$typeofNextType === REACT_LAZY_TYPE2 && (needsCompareFamilies = true);
+                : $$typeofNextType === REACT_LAZY_TYPE && (needsCompareFamilies = true);
               break;
             default:
               return false;
@@ -6543,7 +6520,7 @@ var __morbis_feature = (() => {
               void 0 !== tag && staleFamilies.has(tag)
                 ? (type = true)
                 : 'object' === typeof _fiber &&
-                  _fiber.$$typeof === REACT_LAZY_TYPE2 &&
+                  _fiber.$$typeof === REACT_LAZY_TYPE &&
                   ((tag = _fiber._payload),
                   1 === tag._status &&
                     ((tag = resolve(tag._result.default)),
@@ -6778,7 +6755,7 @@ var __morbis_feature = (() => {
                     case REACT_MEMO_TYPE:
                       fiberTag = 14;
                       break a;
-                    case REACT_LAZY_TYPE2:
+                    case REACT_LAZY_TYPE:
                       fiberTag = 16;
                       resolvedType = null;
                       break a;
@@ -6880,7 +6857,7 @@ var __morbis_feature = (() => {
           treeForkProvider = workInProgress2;
           treeForkCount = totalChildren;
         }
-        function pushTreeId(workInProgress2, totalChildren, index2) {
+        function pushTreeId(workInProgress2, totalChildren, index) {
           warnIfNotHydrating();
           idStack[idStackIndex++] = treeContextId;
           idStack[idStackIndex++] = treeContextOverflow;
@@ -6890,7 +6867,7 @@ var __morbis_feature = (() => {
           workInProgress2 = treeContextOverflow;
           var baseLength = 32 - clz32(baseIdWithLeadingBit) - 1;
           baseIdWithLeadingBit &= ~(1 << baseLength);
-          index2 += 1;
+          index += 1;
           var length = 32 - clz32(totalChildren) + baseLength;
           if (30 < length) {
             var numberOfOverflowBits = baseLength - (baseLength % 5);
@@ -6899,11 +6876,11 @@ var __morbis_feature = (() => {
             baseLength -= numberOfOverflowBits;
             treeContextId =
               (1 << (32 - clz32(totalChildren) + baseLength)) |
-              (index2 << baseLength) |
+              (index << baseLength) |
               baseIdWithLeadingBit;
             treeContextOverflow = length + workInProgress2;
           } else
-            ((treeContextId = (1 << length) | (index2 << baseLength) | baseIdWithLeadingBit),
+            ((treeContextId = (1 << length) | (index << baseLength) | baseIdWithLeadingBit),
               (treeContextOverflow = workInProgress2));
         }
         function pushMaterializedTreeId(workInProgress2) {
@@ -7667,20 +7644,20 @@ var __morbis_feature = (() => {
           thenable = thenable.status;
           return 'fulfilled' === thenable || 'rejected' === thenable;
         }
-        function trackUsedThenable(thenableState2, thenable, index2, fiber) {
+        function trackUsedThenable(thenableState2, thenable, index, fiber) {
           null !== ReactSharedInternals.actQueue && (ReactSharedInternals.didUsePromise = true);
           var trackedThenables = thenableState2.thenables;
-          index2 = trackedThenables[index2];
-          void 0 === index2
+          index = trackedThenables[index];
+          void 0 === index
             ? trackedThenables.push(thenable)
-            : index2 !== thenable &&
+            : index !== thenable &&
               (thenableState2.didWarnAboutUncachedPromise ||
                 ((thenableState2.didWarnAboutUncachedPromise = true),
                 console.error(
                   'A component was suspended by an uncached promise. Creating promises inside a Client Component or hook is not yet supported, except via a Suspense-compatible library or framework.',
                 )),
               thenable.then(noop$1, noop$1),
-              (thenable = index2));
+              (thenable = index));
           if (void 0 === thenable._debugInfo) {
             thenableState2 = performance.now();
             trackedThenables = thenable.displayName;
@@ -7837,10 +7814,10 @@ var __morbis_feature = (() => {
           }
         }
         function unwrapThenable(thenable) {
-          var index2 = thenableIndexCounter$1;
+          var index = thenableIndexCounter$1;
           thenableIndexCounter$1 += 1;
           null === thenableState$1 && (thenableState$1 = createThenableState());
-          return trackUsedThenable(thenableState$1, thenable, index2, null);
+          return trackUsedThenable(thenableState$1, thenable, index, null);
         }
         function coerceRef(workInProgress2, element) {
           element = element.props.ref;
@@ -7998,7 +7975,7 @@ var __morbis_feature = (() => {
                 isCompatibleFamilyForHotReloading(current2, element) ||
                 ('object' === typeof elementType &&
                   null !== elementType &&
-                  elementType.$$typeof === REACT_LAZY_TYPE2 &&
+                  elementType.$$typeof === REACT_LAZY_TYPE &&
                   resolveLazy(elementType) === current2.type))
             )
               return (
@@ -8081,7 +8058,7 @@ var __morbis_feature = (() => {
                     (newChild._debugInfo = currentDebugInfo),
                     newChild
                   );
-                case REACT_LAZY_TYPE2:
+                case REACT_LAZY_TYPE:
                   var _prevDebugInfo = pushDebugInfo(newChild._debugInfo);
                   newChild = resolveLazy(newChild);
                   returnFiber = createChild(returnFiber, newChild, lanes);
@@ -8141,7 +8118,7 @@ var __morbis_feature = (() => {
                   return newChild.key === key
                     ? updatePortal(returnFiber, oldFiber, newChild, lanes)
                     : null;
-                case REACT_LAZY_TYPE2:
+                case REACT_LAZY_TYPE:
                   return (
                     (key = pushDebugInfo(newChild._debugInfo)),
                     (newChild = resolveLazy(newChild)),
@@ -8209,7 +8186,7 @@ var __morbis_feature = (() => {
                       existingChildren.get(null === newChild.key ? newIdx : newChild.key) || null),
                     updatePortal(returnFiber, existingChildren, newChild, lanes)
                   );
-                case REACT_LAZY_TYPE2:
+                case REACT_LAZY_TYPE:
                   var _prevDebugInfo7 = pushDebugInfo(newChild._debugInfo);
                   newChild = resolveLazy(newChild);
                   returnFiber = updateFromMap(
@@ -8281,7 +8258,7 @@ var __morbis_feature = (() => {
                   );
                 });
                 break;
-              case REACT_LAZY_TYPE2:
+              case REACT_LAZY_TYPE:
                 ((child = resolveLazy(child)),
                   warnOnInvalidKey(returnFiber, workInProgress2, child, knownKeys));
             }
@@ -8481,7 +8458,7 @@ var __morbis_feature = (() => {
                           isCompatibleFamilyForHotReloading(currentFirstChild, newChild) ||
                           ('object' === typeof key &&
                             null !== key &&
-                            key.$$typeof === REACT_LAZY_TYPE2 &&
+                            key.$$typeof === REACT_LAZY_TYPE &&
                             resolveLazy(key) === currentFirstChild.type)
                         ) {
                           deleteRemainingChildren(returnFiber, currentFirstChild.sibling);
@@ -8550,7 +8527,7 @@ var __morbis_feature = (() => {
                     returnFiber = lanes;
                   }
                   return placeSingleChild(returnFiber);
-                case REACT_LAZY_TYPE2:
+                case REACT_LAZY_TYPE:
                   return (
                     (prevDebugInfo = pushDebugInfo(newChild._debugInfo)),
                     (newChild = resolveLazy(newChild)),
@@ -8676,7 +8653,7 @@ var __morbis_feature = (() => {
             }
           };
         }
-        function validateSuspenseListNestedChild(childSlot, index2) {
+        function validateSuspenseListNestedChild(childSlot, index) {
           var isAnArray = isArrayImpl(childSlot);
           childSlot = !isAnArray && 'function' === typeof getIteratorFn(childSlot);
           return isAnArray || childSlot
@@ -8684,7 +8661,7 @@ var __morbis_feature = (() => {
               console.error(
                 'A nested %s was passed to row #%s in <SuspenseList />. Wrap it in an additional SuspenseList to configure its revealOrder: <SuspenseList revealOrder=...> ... <SuspenseList revealOrder=...>{%s}</SuspenseList> ... </SuspenseList>',
                 isAnArray,
-                index2,
+                index,
                 isAnArray,
               ),
               false)
@@ -9357,20 +9334,20 @@ var __morbis_feature = (() => {
           return { lastEffect: null, events: null, stores: null, memoCache: null };
         }
         function useThenable(thenable) {
-          var index2 = thenableIndexCounter;
+          var index = thenableIndexCounter;
           thenableIndexCounter += 1;
           null === thenableState && (thenableState = createThenableState());
-          thenable = trackUsedThenable(thenableState, thenable, index2, currentlyRenderingFiber);
-          index2 = currentlyRenderingFiber;
-          null === (null === workInProgressHook ? index2.memoizedState : workInProgressHook.next) &&
-            ((index2 = index2.alternate),
+          thenable = trackUsedThenable(thenableState, thenable, index, currentlyRenderingFiber);
+          index = currentlyRenderingFiber;
+          null === (null === workInProgressHook ? index.memoizedState : workInProgressHook.next) &&
+            ((index = index.alternate),
             (ReactSharedInternals.H =
-              null !== index2 && null !== index2.memoizedState
+              null !== index && null !== index.memoizedState
                 ? HooksDispatcherOnUpdateInDEV
                 : HooksDispatcherOnMountInDEV));
           return thenable;
         }
-        function use2(usable) {
+        function use(usable) {
           if (null !== usable && 'object' === typeof usable) {
             if ('function' === typeof usable.then) return useThenable(usable);
             if (usable.$$typeof === REACT_RECOVERABLE_TYPE) return;
@@ -9378,7 +9355,7 @@ var __morbis_feature = (() => {
           }
           throw Error('An unsupported type was passed to use(): ' + String(usable));
         }
-        function useMemoCache(size4) {
+        function useMemoCache(size) {
           var memoCache = null,
             updateQueue = currentlyRenderingFiber.updateQueue;
           null !== updateQueue && (memoCache = updateQueue.memoCache);
@@ -9404,17 +9381,17 @@ var __morbis_feature = (() => {
           updateQueue = memoCache.data[memoCache.index];
           if (void 0 === updateQueue || ignorePreviousDependencies)
             for (
-              updateQueue = memoCache.data[memoCache.index] = Array(size4), current2 = 0;
-              current2 < size4;
+              updateQueue = memoCache.data[memoCache.index] = Array(size), current2 = 0;
+              current2 < size;
               current2++
             )
               updateQueue[current2] = REACT_MEMO_CACHE_SENTINEL;
           else
-            updateQueue.length !== size4 &&
+            updateQueue.length !== size &&
               console.error(
                 'Expected a constant size argument for each invocation of useMemoCache. The previous cache was allocated with size %s but size %s was requested.',
                 updateQueue.length,
-                size4,
+                size,
               );
           memoCache.index++;
           return updateQueue;
@@ -10336,7 +10313,7 @@ var __morbis_feature = (() => {
             pendingState,
             NotPendingTransition,
             null === action
-              ? noop3
+              ? noop
               : function () {
                   requestFormReset$1(formFiber);
                   return action(formData);
@@ -10671,7 +10648,7 @@ var __morbis_feature = (() => {
             return oldProps;
           }
           return ctor.prototype && ctor.prototype.isPureReactComponent
-            ? !shallowEqual2(oldProps, newProps) || !shallowEqual2(oldState, newState)
+            ? !shallowEqual(oldProps, newProps) || !shallowEqual(oldState, newState)
             : true;
         }
         function callComponentWillReceiveProps(workInProgress2, instance, newProps, nextContext) {
@@ -11075,7 +11052,7 @@ var __morbis_feature = (() => {
           if (!checkScheduledUpdateOrContext(current2, renderLanes2)) {
             var prevProps = type.memoizedProps;
             Component2 = Component2.compare;
-            Component2 = null !== Component2 ? Component2 : shallowEqual2;
+            Component2 = null !== Component2 ? Component2 : shallowEqual;
             if (Component2(prevProps, nextProps) && current2.ref === workInProgress2.ref)
               return bailoutOnAlreadyFinishedWork(current2, workInProgress2, renderLanes2);
           }
@@ -11095,7 +11072,7 @@ var __morbis_feature = (() => {
           if (null !== current2) {
             var prevProps = current2.memoizedProps;
             if (
-              shallowEqual2(prevProps, nextProps) &&
+              shallowEqual(prevProps, nextProps) &&
               current2.ref === workInProgress2.ref &&
               workInProgress2.type === current2.type
             )
@@ -12818,7 +12795,7 @@ var __morbis_feature = (() => {
                 workInProgress2 = '';
                 null !== current2 &&
                   'object' === typeof current2 &&
-                  current2.$$typeof === REACT_LAZY_TYPE2 &&
+                  current2.$$typeof === REACT_LAZY_TYPE &&
                   (workInProgress2 = ' Did you wrap a component in React.lazy() more than once?');
                 renderLanes2 = getComponentNameFromType(current2) || current2;
                 throw Error(
@@ -15538,29 +15515,29 @@ var __morbis_feature = (() => {
           componentEffectErrors = prevEffectErrors;
           componentEffectSpawnedUpdate = prevEffectDidSpawnUpdate;
         }
-        function hideOrUnhideAllChildren(parentFiber, isHidden2) {
+        function hideOrUnhideAllChildren(parentFiber, isHidden) {
           for (parentFiber = parentFiber.child; null !== parentFiber;)
-            (hideOrUnhideAllChildrenOnFiber(parentFiber, isHidden2),
+            (hideOrUnhideAllChildrenOnFiber(parentFiber, isHidden),
               (parentFiber = parentFiber.sibling));
         }
-        function hideOrUnhideAllChildrenOnFiber(fiber, isHidden2) {
+        function hideOrUnhideAllChildrenOnFiber(fiber, isHidden) {
           switch (fiber.tag) {
             case 5:
             case 26:
               try {
                 var instance = fiber.stateNode;
-                isHidden2
+                isHidden
                   ? runWithFiberInDEV(fiber, hideInstance, instance)
                   : runWithFiberInDEV(fiber, unhideInstance, fiber.stateNode, fiber.memoizedProps);
               } catch (error) {
                 captureCommitPhaseError(fiber, fiber.return, error);
               }
-              hideOrUnhideNearestPortals(fiber, isHidden2);
+              hideOrUnhideNearestPortals(fiber, isHidden);
               break;
             case 6:
               try {
                 var instance$jscomp$0 = fiber.stateNode;
-                isHidden2
+                isHidden
                   ? runWithFiberInDEV(fiber, hideTextInstance, instance$jscomp$0)
                   : runWithFiberInDEV(
                       fiber,
@@ -15576,7 +15553,7 @@ var __morbis_feature = (() => {
             case 18:
               try {
                 var instance$jscomp$1 = fiber.stateNode;
-                isHidden2
+                isHidden
                   ? runWithFiberInDEV(fiber, hideDehydratedBoundary, instance$jscomp$1)
                   : runWithFiberInDEV(fiber, unhideDehydratedBoundary, fiber.stateNode);
               } catch (error) {
@@ -15585,10 +15562,10 @@ var __morbis_feature = (() => {
               break;
             case 22:
             case 23:
-              null === fiber.memoizedState && hideOrUnhideAllChildren(fiber, isHidden2);
+              null === fiber.memoizedState && hideOrUnhideAllChildren(fiber, isHidden);
               break;
             default:
-              hideOrUnhideAllChildren(fiber, isHidden2);
+              hideOrUnhideAllChildren(fiber, isHidden);
           }
         }
         function hideOrUnhideNearestPortals(parentFiber, isHidden$jscomp$0) {
@@ -15596,16 +15573,16 @@ var __morbis_feature = (() => {
             for (parentFiber = parentFiber.child; null !== parentFiber;) {
               a: {
                 var fiber = parentFiber,
-                  isHidden2 = isHidden$jscomp$0;
+                  isHidden = isHidden$jscomp$0;
                 switch (fiber.tag) {
                   case 4:
-                    hideOrUnhideAllChildrenOnFiber(fiber, isHidden2);
+                    hideOrUnhideAllChildrenOnFiber(fiber, isHidden);
                     break a;
                   case 22:
-                    null === fiber.memoizedState && hideOrUnhideNearestPortals(fiber, isHidden2);
+                    null === fiber.memoizedState && hideOrUnhideNearestPortals(fiber, isHidden);
                     break a;
                   default:
-                    hideOrUnhideNearestPortals(fiber, isHidden2);
+                    hideOrUnhideNearestPortals(fiber, isHidden);
                 }
               }
               parentFiber = parentFiber.sibling;
@@ -18337,9 +18314,9 @@ var __morbis_feature = (() => {
           didAttemptEntireTree && (root2.warmLanes |= suspendedLanes);
           didAttemptEntireTree = root2.expirationTimes;
           for (var lanes = suspendedLanes; 0 < lanes;) {
-            var index2 = 31 - clz32(lanes),
-              lane = 1 << index2;
-            didAttemptEntireTree[index2] = -1;
+            var index = 31 - clz32(lanes),
+              lane = 1 << index;
+            didAttemptEntireTree[index] = -1;
             lanes &= ~lane;
           }
           0 !== spawnedLane && markSpawnedDeferredLane(root2, spawnedLane, suspendedLanes);
@@ -20265,12 +20242,12 @@ var __morbis_feature = (() => {
               lanes = root2.pendingLanes & -62914561;
             0 < lanes;
           ) {
-            var index2 = 31 - clz32(lanes),
-              lane = 1 << index2,
-              expirationTime = expirationTimes[index2];
+            var index = 31 - clz32(lanes),
+              lane = 1 << index,
+              expirationTime = expirationTimes[index];
             if (-1 === expirationTime) {
               if (0 === (lane & suspendedLanes) || 0 !== (lane & pingedLanes))
-                expirationTimes[index2] = computeExpirationTime(lane, currentTime);
+                expirationTimes[index] = computeExpirationTime(lane, currentTime);
             } else expirationTime <= currentTime && (root2.expiredLanes |= lane);
             lanes &= ~lane;
           }
@@ -23029,7 +23006,7 @@ var __morbis_feature = (() => {
         function estimateBandwidth() {
           if ('function' === typeof performance.getEntriesByType) {
             for (
-              var count3 = 0,
+              var count = 0,
                 bits = 0,
                 resourceEntries = performance.getEntriesByType('resource'),
                 i = 0;
@@ -23060,15 +23037,15 @@ var __morbis_feature = (() => {
                 }
                 --i;
                 bits += (8 * (transferSize + initiatorType)) / (entry.duration / 1e3);
-                count3++;
-                if (10 < count3) break;
+                count++;
+                if (10 < count) break;
               }
             }
-            if (0 < count3) return bits / count3 / 1e6;
+            if (0 < count) return bits / count / 1e6;
           }
           return navigator.connection &&
-            ((count3 = navigator.connection.downlink), 'number' === typeof count3)
-            ? count3
+            ((count = navigator.connection.downlink), 'number' === typeof count)
+            ? count
             : 5;
         }
         function getOwnerDocumentFromRootContainer(rootContainerElement) {
@@ -23284,18 +23261,18 @@ var __morbis_feature = (() => {
           } while (node);
           retryIfBlockedOn(hydrationInstance);
         }
-        function hideOrUnhideDehydratedBoundary(suspenseInstance, isHidden2) {
+        function hideOrUnhideDehydratedBoundary(suspenseInstance, isHidden) {
           var node = suspenseInstance;
           suspenseInstance = 0;
           do {
             var nextNode = node.nextSibling;
             1 === node.nodeType
-              ? isHidden2
+              ? isHidden
                 ? ((node._stashedDisplay = node.style.display), (node.style.display = 'none'))
                 : ((node.style.display = node._stashedDisplay || ''),
                   '' === node.getAttribute('style') && node.removeAttribute('style'))
               : 3 === node.nodeType &&
-                (isHidden2
+                (isHidden
                   ? ((node._stashedText = node.nodeValue), (node.nodeValue = ''))
                   : (node.nodeValue = node._stashedText || ''));
             if (nextNode && 8 === nextNode.nodeType)
@@ -25746,8 +25723,8 @@ var __morbis_feature = (() => {
           'function' === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart &&
           __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(Error());
         var Scheduler = require_scheduler(),
-          React33 = require_react(),
-          ReactDOM5 = require_react_dom(),
+          React = require_react(),
+          ReactDOM = require_react_dom(),
           searchTarget = null,
           searchBoundary = null,
           assign = Object.assign,
@@ -25763,7 +25740,7 @@ var __morbis_feature = (() => {
           REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for('react.suspense'),
           REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for('react.suspense_list'),
           REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for('react.memo'),
-          REACT_LAZY_TYPE2 = /* @__PURE__ */ Symbol.for('react.lazy');
+          REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for('react.lazy');
         /* @__PURE__ */ Symbol.for('react.scope');
         var REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for('react.activity'),
           REACT_LEGACY_HIDDEN_TYPE = /* @__PURE__ */ Symbol.for('react.legacy_hidden');
@@ -25775,9 +25752,9 @@ var __morbis_feature = (() => {
           REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for('react.client.reference'),
           isArrayImpl = Array.isArray,
           ReactSharedInternals =
-            React33.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
+            React.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
           ReactDOMSharedInternals =
-            ReactDOM5.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
+            ReactDOM.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
           NotPending = Object.freeze({
             pending: false,
             data: null,
@@ -26743,13 +26720,13 @@ var __morbis_feature = (() => {
           restoreTarget = null,
           restoreQueue = null,
           isInsideEventHandler = false,
-          canUseDOM2 = !(
+          canUseDOM = !(
             'undefined' === typeof window ||
             'undefined' === typeof window.document ||
             'undefined' === typeof window.document.createElement
           ),
           passiveBrowserEventsSupported = false;
-        if (canUseDOM2)
+        if (canUseDOM)
           try {
             var options$jscomp$0 = {};
             Object.defineProperty(options$jscomp$0, 'passive', {
@@ -26992,12 +26969,12 @@ var __morbis_feature = (() => {
           SyntheticToggleEvent = createSyntheticEvent(ToggleEventInterface),
           END_KEYCODES = [9, 13, 27, 32],
           START_KEYCODE = 229,
-          canUseCompositionEvent = canUseDOM2 && 'CompositionEvent' in window,
+          canUseCompositionEvent = canUseDOM && 'CompositionEvent' in window,
           documentMode = null;
-        canUseDOM2 && 'documentMode' in document && (documentMode = document.documentMode);
-        var canUseTextInputEvent = canUseDOM2 && 'TextEvent' in window && !documentMode,
+        canUseDOM && 'documentMode' in document && (documentMode = document.documentMode);
+        var canUseTextInputEvent = canUseDOM && 'TextEvent' in window && !documentMode,
           useFallbackCompositionData =
-            canUseDOM2 &&
+            canUseDOM &&
             (!canUseCompositionEvent || (documentMode && 8 < documentMode && 11 >= documentMode)),
           SPACEBAR_CODE = 32,
           SPACEBAR_CHAR = String.fromCharCode(SPACEBAR_CODE),
@@ -27023,12 +27000,12 @@ var __morbis_feature = (() => {
           activeElement$1 = null,
           activeElementInst$1 = null,
           isInputEventSupported = false;
-        canUseDOM2 &&
+        canUseDOM &&
           (isInputEventSupported =
             isEventSupported('input') && (!document.documentMode || 9 < document.documentMode));
         var objectIs = 'function' === typeof Object.is ? Object.is : is,
           skipSelectionChangeEvent =
-            canUseDOM2 && 'documentMode' in document && 11 >= document.documentMode,
+            canUseDOM && 'documentMode' in document && 11 >= document.documentMode,
           activeElement = null,
           activeElementInst = null,
           lastSelection = null,
@@ -27044,7 +27021,7 @@ var __morbis_feature = (() => {
           },
           prefixedEventNames = {},
           style = {};
-        canUseDOM2 &&
+        canUseDOM &&
           ((style = document.createElement('div').style),
           'AnimationEvent' in window ||
             (delete vendorPrefixes.animationend.animation,
@@ -27701,7 +27678,7 @@ var __morbis_feature = (() => {
           ignorePreviousDependencies = false,
           ContextOnlyDispatcher = {
             readContext,
-            use: use2,
+            use,
             useCallback: throwInvalidHookError,
             useContext: throwInvalidHookError,
             useEffect: throwInvalidHookError,
@@ -27736,7 +27713,7 @@ var __morbis_feature = (() => {
           readContext: function (context) {
             return readContext(context);
           },
-          use: use2,
+          use,
           useCallback: function (callback, deps) {
             currentHookNameInDev = 'useCallback';
             mountHookTypesDev();
@@ -27868,7 +27845,7 @@ var __morbis_feature = (() => {
           readContext: function (context) {
             return readContext(context);
           },
-          use: use2,
+          use,
           useCallback: function (callback, deps) {
             currentHookNameInDev = 'useCallback';
             updateHookTypesDev();
@@ -27994,7 +27971,7 @@ var __morbis_feature = (() => {
           readContext: function (context) {
             return readContext(context);
           },
-          use: use2,
+          use,
           useCallback: function (callback, deps) {
             currentHookNameInDev = 'useCallback';
             updateHookTypesDev();
@@ -28120,7 +28097,7 @@ var __morbis_feature = (() => {
           readContext: function (context) {
             return readContext(context);
           },
-          use: use2,
+          use,
           useCallback: function (callback, deps) {
             currentHookNameInDev = 'useCallback';
             updateHookTypesDev();
@@ -28249,7 +28226,7 @@ var __morbis_feature = (() => {
           },
           use: function (usable) {
             warnInvalidHookAccess();
-            return use2(usable);
+            return use(usable);
           },
           useCallback: function (callback, deps) {
             currentHookNameInDev = 'useCallback';
@@ -28376,9 +28353,9 @@ var __morbis_feature = (() => {
             mountHookTypesDev();
             return mountOptimistic(passthrough);
           },
-          useMemoCache: function (size4) {
+          useMemoCache: function (size) {
             warnInvalidHookAccess();
-            return useMemoCache(size4);
+            return useMemoCache(size);
           },
           useHostTransitionStatus,
           useCacheRefresh: function () {
@@ -28400,7 +28377,7 @@ var __morbis_feature = (() => {
           },
           use: function (usable) {
             warnInvalidHookAccess();
-            return use2(usable);
+            return use(usable);
           },
           useCallback: function (callback, deps) {
             currentHookNameInDev = 'useCallback';
@@ -28527,9 +28504,9 @@ var __morbis_feature = (() => {
             updateHookTypesDev();
             return updateOptimistic(passthrough, reducer);
           },
-          useMemoCache: function (size4) {
+          useMemoCache: function (size) {
             warnInvalidHookAccess();
-            return useMemoCache(size4);
+            return useMemoCache(size);
           },
           useHostTransitionStatus,
           useCacheRefresh: function () {
@@ -28551,7 +28528,7 @@ var __morbis_feature = (() => {
           },
           use: function (usable) {
             warnInvalidHookAccess();
-            return use2(usable);
+            return use(usable);
           },
           useCallback: function (callback, deps) {
             currentHookNameInDev = 'useCallback';
@@ -28678,9 +28655,9 @@ var __morbis_feature = (() => {
             updateHookTypesDev();
             return rerenderOptimistic(passthrough, reducer);
           },
-          useMemoCache: function (size4) {
+          useMemoCache: function (size) {
             warnInvalidHookAccess();
-            return useMemoCache(size4);
+            return useMemoCache(size);
           },
           useHostTransitionStatus,
           useCacheRefresh: function () {
@@ -29033,10 +29010,10 @@ var __morbis_feature = (() => {
                   }
                 : scheduleTimeout,
           SUSPENSEY_FONT_AND_IMAGE_TIMEOUT = 500;
-        ViewTransitionPseudoElement.prototype.animate = function (keyframes, options2) {
-          options2 = 'number' === typeof options2 ? { duration: options2 } : assign({}, options2);
-          options2.pseudoElement = this._selector;
-          return this._scope.animate(keyframes, options2);
+        ViewTransitionPseudoElement.prototype.animate = function (keyframes, options) {
+          options = 'number' === typeof options ? { duration: options } : assign({}, options);
+          options.pseudoElement = this._selector;
+          return this._scope.animate(keyframes, options);
         };
         ViewTransitionPseudoElement.prototype.getAnimations = function () {
           for (
@@ -29420,8 +29397,8 @@ var __morbis_feature = (() => {
             previousDispatcher.C(href, crossOrigin);
             preconnectAs('preconnect', href, crossOrigin);
           },
-          L: function (href, as, options2) {
-            previousDispatcher.L(href, as, options2);
+          L: function (href, as, options) {
+            previousDispatcher.L(href, as, options);
             var ownerDocument = globalDocument;
             if (ownerDocument && href && as) {
               var preloadSelector =
@@ -29429,15 +29406,15 @@ var __morbis_feature = (() => {
                 escapeSelectorAttributeValueInsideDoubleQuotes(as) +
                 '"]';
               'image' === as
-                ? options2 && options2.imageSrcSet
+                ? options && options.imageSrcSet
                   ? ((preloadSelector +=
                       '[imagesrcset="' +
-                      escapeSelectorAttributeValueInsideDoubleQuotes(options2.imageSrcSet) +
+                      escapeSelectorAttributeValueInsideDoubleQuotes(options.imageSrcSet) +
                       '"]'),
-                    'string' === typeof options2.imageSizes &&
+                    'string' === typeof options.imageSizes &&
                       (preloadSelector +=
                         '[imagesizes="' +
-                        escapeSelectorAttributeValueInsideDoubleQuotes(options2.imageSizes) +
+                        escapeSelectorAttributeValueInsideDoubleQuotes(options.imageSizes) +
                         '"]'))
                   : (preloadSelector +=
                       '[href="' + escapeSelectorAttributeValueInsideDoubleQuotes(href) + '"]')
@@ -29456,10 +29433,10 @@ var __morbis_feature = (() => {
                 ((href = assign(
                   {
                     rel: 'preload',
-                    href: 'image' === as && options2 && options2.imageSrcSet ? void 0 : href,
+                    href: 'image' === as && options && options.imageSrcSet ? void 0 : href,
                     as,
                   },
-                  options2,
+                  options,
                 )),
                 preloadPropsMap.set(key, href),
                 null !== ownerDocument.querySelector(preloadSelector) ||
@@ -29480,11 +29457,11 @@ var __morbis_feature = (() => {
               }
             }
           },
-          m: function (href, options2) {
-            previousDispatcher.m(href, options2);
+          m: function (href, options) {
+            previousDispatcher.m(href, options);
             var ownerDocument = globalDocument;
             if (ownerDocument && href) {
-              var as = options2 && 'string' === typeof options2.as ? options2.as : 'script',
+              var as = options && 'string' === typeof options.as ? options.as : 'script',
                 preloadSelector =
                   'link[rel="modulepreload"][as="' +
                   escapeSelectorAttributeValueInsideDoubleQuotes(as) +
@@ -29503,7 +29480,7 @@ var __morbis_feature = (() => {
               }
               if (
                 !preloadPropsMap.has(key) &&
-                ((href = assign({ rel: 'modulepreload', href }, options2)),
+                ((href = assign({ rel: 'modulepreload', href }, options)),
                 preloadPropsMap.set(key, href),
                 null === ownerDocument.querySelector(preloadSelector))
               ) {
@@ -29523,8 +29500,8 @@ var __morbis_feature = (() => {
               }
             }
           },
-          X: function (src, options2) {
-            previousDispatcher.X(src, options2);
+          X: function (src, options) {
+            previousDispatcher.X(src, options);
             var ownerDocument = globalDocument;
             if (ownerDocument && src) {
               var scripts = getResourcesFromRoot(ownerDocument).hoistableScripts,
@@ -29533,9 +29510,8 @@ var __morbis_feature = (() => {
               resource ||
                 ((resource = ownerDocument.querySelector(getScriptSelectorFromKey(key))),
                 resource ||
-                  ((src = assign({ src, async: true }, options2)),
-                  (options2 = preloadPropsMap.get(key)) &&
-                    adoptPreloadPropsForScript(src, options2),
+                  ((src = assign({ src, async: true }, options)),
+                  (options = preloadPropsMap.get(key)) && adoptPreloadPropsForScript(src, options),
                   (resource = ownerDocument.createElement('script')),
                   markNodeAsHoistable(resource),
                   setInitialProperties(resource, 'link', src),
@@ -29549,8 +29525,8 @@ var __morbis_feature = (() => {
                 scripts.set(key, resource));
             }
           },
-          S: function (href, precedence, options2) {
-            previousDispatcher.S(href, precedence, options2);
+          S: function (href, precedence, options) {
+            previousDispatcher.S(href, precedence, options);
             var ownerDocument = globalDocument;
             if (ownerDocument && href) {
               var styles = getResourcesFromRoot(ownerDocument).hoistableStyles,
@@ -29568,10 +29544,10 @@ var __morbis_feature = (() => {
                       href,
                       'data-precedence': precedence,
                     },
-                    options2,
+                    options,
                   );
-                  (options2 = preloadPropsMap.get(key)) &&
-                    adoptPreloadPropsForStylesheet(href, options2);
+                  (options = preloadPropsMap.get(key)) &&
+                    adoptPreloadPropsForStylesheet(href, options);
                   var link = (resource = ownerDocument.createElement('link'));
                   markNodeAsHoistable(link);
                   setInitialProperties(link, 'link', href);
@@ -29598,8 +29574,8 @@ var __morbis_feature = (() => {
               }
             }
           },
-          M: function (src, options2) {
-            previousDispatcher.M(src, options2);
+          M: function (src, options) {
+            previousDispatcher.M(src, options);
             var ownerDocument = globalDocument;
             if (ownerDocument && src) {
               var scripts = getResourcesFromRoot(ownerDocument).hoistableScripts,
@@ -29608,9 +29584,8 @@ var __morbis_feature = (() => {
               resource ||
                 ((resource = ownerDocument.querySelector(getScriptSelectorFromKey(key))),
                 resource ||
-                  ((src = assign({ src, async: true, type: 'module' }, options2)),
-                  (options2 = preloadPropsMap.get(key)) &&
-                    adoptPreloadPropsForScript(src, options2),
+                  ((src = assign({ src, async: true, type: 'module' }, options)),
+                  (options = preloadPropsMap.get(key)) && adoptPreloadPropsForScript(src, options),
                   (resource = ownerDocument.createElement('script')),
                   markNodeAsHoistable(resource),
                   setInitialProperties(resource, 'link', src),
@@ -29794,7 +29769,7 @@ var __morbis_feature = (() => {
           }
         };
         (function () {
-          var isomorphicReactPackageVersion = React33.version;
+          var isomorphicReactPackageVersion = React.version;
           if ('19.3.0' !== isomorphicReactPackageVersion)
             throw Error(
               'Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ' +
@@ -29851,7 +29826,7 @@ var __morbis_feature = (() => {
             internals.getCurrentFiber = getCurrentFiberForDevTools;
             return injectInternals(internals);
           })() &&
-          canUseDOM2 &&
+          canUseDOM &&
           window.top === window.self &&
           ((-1 < navigator.userAgent.indexOf('Chrome') &&
             -1 === navigator.userAgent.indexOf('Edge')) ||
@@ -29867,7 +29842,7 @@ var __morbis_feature = (() => {
               'font-weight:bold',
             );
         }
-        exports.createRoot = function (container, options2) {
+        exports.createRoot = function (container, options) {
           if (!isValidContainer(container)) throw Error('Target container is not a DOM element.');
           warnIfReactDOMContainerInDEV(container);
           var isStrictMode = false,
@@ -29875,25 +29850,25 @@ var __morbis_feature = (() => {
             onUncaughtError = defaultOnUncaughtError,
             onCaughtError = defaultOnCaughtError,
             onRecoverableError = defaultOnRecoverableError;
-          null !== options2 &&
-            void 0 !== options2 &&
-            (options2.hydrate
+          null !== options &&
+            void 0 !== options &&
+            (options.hydrate
               ? console.warn(
                   'hydrate through createRoot is deprecated. Use ReactDOMClient.hydrateRoot(container, <App />) instead.',
                 )
-              : 'object' === typeof options2 &&
-                null !== options2 &&
-                options2.$$typeof === REACT_ELEMENT_TYPE &&
+              : 'object' === typeof options &&
+                null !== options &&
+                options.$$typeof === REACT_ELEMENT_TYPE &&
                 console.error(
                   'You passed a JSX element to createRoot. You probably meant to call root.render instead. Example usage:\n\n  let root = createRoot(domContainer);\n  root.render(<App />);',
                 ),
-            true === options2.unstable_strictMode && (isStrictMode = true),
-            void 0 !== options2.identifierPrefix && (identifierPrefix = options2.identifierPrefix),
-            void 0 !== options2.onUncaughtError && (onUncaughtError = options2.onUncaughtError),
-            void 0 !== options2.onCaughtError && (onCaughtError = options2.onCaughtError),
-            void 0 !== options2.onRecoverableError &&
-              (onRecoverableError = options2.onRecoverableError));
-          options2 = createFiberRoot(
+            true === options.unstable_strictMode && (isStrictMode = true),
+            void 0 !== options.identifierPrefix && (identifierPrefix = options.identifierPrefix),
+            void 0 !== options.onUncaughtError && (onUncaughtError = options.onUncaughtError),
+            void 0 !== options.onCaughtError && (onCaughtError = options.onCaughtError),
+            void 0 !== options.onRecoverableError &&
+              (onRecoverableError = options.onRecoverableError));
+          options = createFiberRoot(
             container,
             1,
             false,
@@ -29907,11 +29882,11 @@ var __morbis_feature = (() => {
             onRecoverableError,
             defaultOnDefaultTransitionIndicator,
           );
-          container[internalContainerInstanceKey] = options2.current;
+          container[internalContainerInstanceKey] = options.current;
           listenToAllSupportedEvents(container);
-          return new ReactDOMRoot(options2);
+          return new ReactDOMRoot(options);
         };
-        exports.hydrateRoot = function (container, initialChildren, options2) {
+        exports.hydrateRoot = function (container, initialChildren, options) {
           if (!isValidContainer(container)) throw Error('Target container is not a DOM element.');
           warnIfReactDOMContainerInDEV(container);
           void 0 === initialChildren &&
@@ -29924,21 +29899,21 @@ var __morbis_feature = (() => {
             onCaughtError = defaultOnCaughtError,
             onRecoverableError = defaultOnRecoverableError,
             formState = null;
-          null !== options2 &&
-            void 0 !== options2 &&
-            (true === options2.unstable_strictMode && (isStrictMode = true),
-            void 0 !== options2.identifierPrefix && (identifierPrefix = options2.identifierPrefix),
-            void 0 !== options2.onUncaughtError && (onUncaughtError = options2.onUncaughtError),
-            void 0 !== options2.onCaughtError && (onCaughtError = options2.onCaughtError),
-            void 0 !== options2.onRecoverableError &&
-              (onRecoverableError = options2.onRecoverableError),
-            void 0 !== options2.formState && (formState = options2.formState));
+          null !== options &&
+            void 0 !== options &&
+            (true === options.unstable_strictMode && (isStrictMode = true),
+            void 0 !== options.identifierPrefix && (identifierPrefix = options.identifierPrefix),
+            void 0 !== options.onUncaughtError && (onUncaughtError = options.onUncaughtError),
+            void 0 !== options.onCaughtError && (onCaughtError = options.onCaughtError),
+            void 0 !== options.onRecoverableError &&
+              (onRecoverableError = options.onRecoverableError),
+            void 0 !== options.formState && (formState = options.formState));
           initialChildren = createFiberRoot(
             container,
             1,
             true,
             initialChildren,
-            null != options2 ? options2 : null,
+            null != options ? options : null,
             isStrictMode,
             identifierPrefix,
             formState,
@@ -29948,16 +29923,16 @@ var __morbis_feature = (() => {
             defaultOnDefaultTransitionIndicator,
           );
           initialChildren.context = getContextForSubtree(null);
-          options2 = initialChildren.current;
-          isStrictMode = requestUpdateLane(options2);
+          options = initialChildren.current;
+          isStrictMode = requestUpdateLane(options);
           isStrictMode = getBumpedLaneForHydrationByLane(isStrictMode);
           identifierPrefix = createUpdate(isStrictMode);
           identifierPrefix.callback = null;
-          enqueueUpdate(options2, identifierPrefix, isStrictMode);
+          enqueueUpdate(options, identifierPrefix, isStrictMode);
           startUpdateTimerByLane(isStrictMode, 'hydrateRoot()', null);
-          options2 = isStrictMode;
-          initialChildren.current.lanes = options2;
-          markRootUpdated$1(initialChildren, options2);
+          options = isStrictMode;
+          initialChildren.current.lanes = options;
+          markRootUpdated$1(initialChildren, options);
           ensureRootIsScheduled(initialChildren);
           container[internalContainerInstanceKey] = initialChildren.current;
           listenToAllSupportedEvents(container);
@@ -30038,7 +30013,7 @@ var __morbis_feature = (() => {
                   (innerType = type.displayName || null),
                   null !== innerType ? innerType : getComponentNameFromType(type.type) || 'Memo'
                 );
-              case REACT_LAZY_TYPE2:
+              case REACT_LAZY_TYPE:
                 innerType = type._payload;
                 type = type._init;
                 try {
@@ -30074,7 +30049,7 @@ var __morbis_feature = (() => {
         }
         function getTaskName(type) {
           if (type === REACT_FRAGMENT_TYPE) return '<>';
-          if ('object' === typeof type && null !== type && type.$$typeof === REACT_LAZY_TYPE2)
+          if ('object' === typeof type && null !== type && type.$$typeof === REACT_LAZY_TYPE)
             return '<...>';
           try {
             var name = getComponentNameFromType(type);
@@ -30214,23 +30189,23 @@ var __morbis_feature = (() => {
           return ReactElement(type, children, maybeKey, getOwner(), debugStack, debugTask);
         }
         function validateChildKeys(node) {
-          isValidElement2(node)
+          isValidElement(node)
             ? node._store && (node._store.validated = 1)
             : 'object' === typeof node &&
               null !== node &&
-              node.$$typeof === REACT_LAZY_TYPE2 &&
+              node.$$typeof === REACT_LAZY_TYPE &&
               ('fulfilled' === node._payload.status
-                ? isValidElement2(node._payload.value) &&
+                ? isValidElement(node._payload.value) &&
                   node._payload.value._store &&
                   (node._payload.value._store.validated = 1)
                 : node._store && (node._store.validated = 1));
         }
-        function isValidElement2(object) {
+        function isValidElement(object) {
           return (
             'object' === typeof object && null !== object && object.$$typeof === REACT_ELEMENT_TYPE
           );
         }
-        var React33 = require_react(),
+        var React = require_react(),
           REACT_ELEMENT_TYPE = /* @__PURE__ */ Symbol.for('react.transitional.element'),
           REACT_PORTAL_TYPE = /* @__PURE__ */ Symbol.for('react.portal'),
           REACT_FRAGMENT_TYPE = /* @__PURE__ */ Symbol.for('react.fragment'),
@@ -30242,12 +30217,12 @@ var __morbis_feature = (() => {
           REACT_SUSPENSE_TYPE = /* @__PURE__ */ Symbol.for('react.suspense'),
           REACT_SUSPENSE_LIST_TYPE = /* @__PURE__ */ Symbol.for('react.suspense_list'),
           REACT_MEMO_TYPE = /* @__PURE__ */ Symbol.for('react.memo'),
-          REACT_LAZY_TYPE2 = /* @__PURE__ */ Symbol.for('react.lazy'),
+          REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for('react.lazy'),
           REACT_ACTIVITY_TYPE = /* @__PURE__ */ Symbol.for('react.activity'),
           REACT_VIEW_TRANSITION_TYPE = /* @__PURE__ */ Symbol.for('react.view_transition'),
           REACT_CLIENT_REFERENCE = /* @__PURE__ */ Symbol.for('react.client.reference'),
           ReactSharedInternals =
-            React33.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
+            React.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,
           hasOwnProperty = Object.prototype.hasOwnProperty,
           isArrayImpl = Array.isArray,
           createTask = console.createTask
@@ -30255,14 +30230,14 @@ var __morbis_feature = (() => {
             : function () {
                 return null;
               };
-        React33 = {
+        React = {
           react_stack_bottom_frame: function (callStackForError) {
             return callStackForError();
           },
         };
         var specialPropKeyWarningShown;
         var didWarnAboutElementRef = {};
-        var unknownOwnerDebugStack = React33.react_stack_bottom_frame.bind(React33, UnknownOwner)();
+        var unknownOwnerDebugStack = React.react_stack_bottom_frame.bind(React, UnknownOwner)();
         var unknownOwnerDebugTask = createTask(getTaskName(UnknownOwner));
         var didWarnAboutKeySpread = {};
         exports.Fragment = REACT_FRAGMENT_TYPE;
@@ -30731,7 +30706,7 @@ var __morbis_feature = (() => {
   var import_client = __toESM(require_client(), 1);
 
   // src/features/resumeTab/App.tsx
-  var import_react12 = __toESM(require_react(), 1);
+  var import_react9 = __toESM(require_react(), 1);
 
   // src/features/shared/resumeHistory.ts
   function defaultStore() {
@@ -31343,16 +31318,16 @@ var __morbis_feature = (() => {
       let modifierStart = 0;
       let postfixModifierPosition;
       const len = className.length;
-      for (let index2 = 0; index2 < len; index2++) {
-        const currentCharacter = className[index2];
+      for (let index = 0; index < len; index++) {
+        const currentCharacter = className[index];
         if (bracketDepth === 0 && parenDepth === 0) {
           if (currentCharacter === MODIFIER_SEPARATOR) {
-            modifiers.push(className.slice(modifierStart, index2));
-            modifierStart = index2 + 1;
+            modifiers.push(className.slice(modifierStart, index));
+            modifierStart = index + 1;
             continue;
           }
           if (currentCharacter === '/') {
-            postfixModifierPosition = index2;
+            postfixModifierPosition = index;
             continue;
           }
         }
@@ -31409,8 +31384,8 @@ var __morbis_feature = (() => {
   };
   var createSortModifiers = (config) => {
     const modifierWeights = /* @__PURE__ */ new Map();
-    config.orderSensitiveModifiers.forEach((mod, index2) => {
-      modifierWeights.set(mod, 1e6 + index2);
+    config.orderSensitiveModifiers.forEach((mod, index) => {
+      modifierWeights.set(mod, 1e6 + index);
     });
     return (modifiers) => {
       const result = [];
@@ -31466,8 +31441,8 @@ var __morbis_feature = (() => {
     const classGroupsInConflict = [];
     const classNames = classList.trim().split(SPLIT_CLASSES_REGEX);
     let result = '';
-    for (let index2 = classNames.length - 1; index2 >= 0; index2 -= 1) {
-      const originalClassName = classNames[index2];
+    for (let index = classNames.length - 1; index >= 0; index -= 1) {
+      const originalClassName = classNames[index];
       const {
         isExternal,
         modifiers,
@@ -31534,12 +31509,12 @@ var __morbis_feature = (() => {
     return result;
   };
   var twJoin = (...classLists) => {
-    let index2 = 0;
+    let index = 0;
     let argument;
     let resolvedValue;
     let string = '';
-    while (index2 < classLists.length) {
-      if ((argument = classLists[index2++])) {
+    while (index < classLists.length) {
+      if ((argument = classLists[index++])) {
         if ((resolvedValue = toValue(argument))) {
           string && (string += ' ');
           string += resolvedValue;
@@ -35633,8 +35608,8 @@ var __morbis_feature = (() => {
   // node_modules/lucide-react/dist/esm/shared/src/utils/mergeClasses.mjs
   var mergeClasses = (...classes) =>
     classes
-      .filter((className, index2, array) => {
-        return Boolean(className) && className.trim() !== '' && array.indexOf(className) === index2;
+      .filter((className, index, array) => {
+        return Boolean(className) && className.trim() !== '' && array.indexOf(className) === index;
       })
       .join(' ')
       .trim();
@@ -35758,7 +35733,7 @@ var __morbis_feature = (() => {
     (
       {
         color,
-        size: size4,
+        size,
         width,
         height,
         strokeWidth,
@@ -35787,8 +35762,8 @@ var __morbis_feature = (() => {
       const hasAccessibleProp = Boolean(children) || hasA11yProp(rest);
       const [name, svgAttributes, builtIconNode = []] = buildLucideIconForReact(icon, {
         color: color ?? contextColor,
-        width: width ?? size4 ?? contextSize,
-        height: height ?? size4 ?? contextSize,
+        width: width ?? size ?? contextSize,
+        height: height ?? size ?? contextSize,
         strokeWidth: strokeWidth ?? contextStrokeWidth,
         absoluteStrokeWidth: absoluteStrokeWidth ?? contextAbsoluteStrokeWidth,
         nonScalingStroke: nonScalingStroke ?? contextNonScalingStroke,
@@ -35839,17 +35814,8 @@ var __morbis_feature = (() => {
   __iconData.node;
   var Check = createLucideIcon(__iconData);
 
-  // node_modules/lucide-react/dist/esm/icons/chevron-down.mjs
-  var __iconData2 = {
-    name: 'chevron-down',
-    size: 24,
-    node: [['path', { d: 'm6 9 6 6 6-6', key: 'qrunsl' }]],
-  };
-  __iconData2.node;
-  var ChevronDown = createLucideIcon(__iconData2);
-
   // node_modules/lucide-react/dist/esm/icons/info.mjs
-  var __iconData3 = {
+  var __iconData2 = {
     name: 'info',
     size: 24,
     node: [
@@ -35858,23 +35824,11 @@ var __morbis_feature = (() => {
       ['path', { d: 'M12 8h.01', key: 'e9boi3' }],
     ],
   };
-  __iconData3.node;
-  var Info = createLucideIcon(__iconData3);
-
-  // node_modules/lucide-react/dist/esm/icons/plus.mjs
-  var __iconData4 = {
-    name: 'plus',
-    size: 24,
-    node: [
-      ['path', { d: 'M5 12h14', key: '1ays0h' }],
-      ['path', { d: 'M12 5v14', key: 's699le' }],
-    ],
-  };
-  __iconData4.node;
-  var Plus = createLucideIcon(__iconData4);
+  __iconData2.node;
+  var Info = createLucideIcon(__iconData2);
 
   // node_modules/lucide-react/dist/esm/icons/search.mjs
-  var __iconData5 = {
+  var __iconData3 = {
     name: 'search',
     size: 24,
     node: [
@@ -35882,27 +35836,11 @@ var __morbis_feature = (() => {
       ['circle', { cx: '11', cy: '11', r: '8', key: '4ej97u' }],
     ],
   };
-  __iconData5.node;
-  var Search = createLucideIcon(__iconData5);
-
-  // node_modules/lucide-react/dist/esm/icons/trash.mjs
-  var __iconData6 = {
-    name: 'trash',
-    size: 24,
-    node: [
-      ['path', { d: 'M10 11v6', key: 'nco0om' }],
-      ['path', { d: 'M14 11v6', key: 'outv1u' }],
-      ['path', { d: 'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6', key: 'miytrc' }],
-      ['path', { d: 'M3 6h18', key: 'd0wm0j' }],
-      ['path', { d: 'M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2', key: 'e791ji' }],
-    ],
-    aliases: ['trash-2'],
-  };
-  __iconData6.node;
-  var Trash = createLucideIcon(__iconData6);
+  __iconData3.node;
+  var Search = createLucideIcon(__iconData3);
 
   // node_modules/lucide-react/dist/esm/icons/triangle-alert.mjs
-  var __iconData7 = {
+  var __iconData4 = {
     name: 'triangle-alert',
     size: 24,
     node: [
@@ -35918,11 +35856,11 @@ var __morbis_feature = (() => {
     ],
     aliases: ['alert-triangle'],
   };
-  __iconData7.node;
-  var TriangleAlert = createLucideIcon(__iconData7);
+  __iconData4.node;
+  var TriangleAlert = createLucideIcon(__iconData4);
 
   // node_modules/lucide-react/dist/esm/icons/x.mjs
-  var __iconData8 = {
+  var __iconData5 = {
     name: 'x',
     size: 24,
     node: [
@@ -35930,8 +35868,8 @@ var __morbis_feature = (() => {
       ['path', { d: 'm6 6 12 12', key: 'd8bk6v' }],
     ],
   };
-  __iconData8.node;
-  var X = createLucideIcon(__iconData8);
+  __iconData5.node;
+  var X = createLucideIcon(__iconData5);
 
   // src/features/resumeTab/Header.tsx
   var import_jsx_runtime4 = __toESM(require_jsx_runtime(), 1);
@@ -36133,7 +36071,7 @@ var __morbis_feature = (() => {
   }
 
   // src/features/resumeTab/DiagnosaSection.tsx
-  var import_react10 = __toESM(require_react(), 1);
+  var import_react7 = __toESM(require_react(), 1);
 
   // src/ui/components/button.tsx
   var import_react6 = __toESM(require_react(), 1);
@@ -36218,6 +36156,8 @@ var __morbis_feature = (() => {
             'border-2 border-border bg-background shadow-sm hover:bg-accent hover:text-accent-foreground active:bg-accent',
           secondary:
             'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 active:bg-secondary',
+          success: 'bg-green-600 text-green-50 shadow-sm hover:bg-green-600/90 active:bg-green-600',
+          dark: 'bg-neutral-950 text-white shadow-sm hover:bg-neutral-900 active:bg-neutral-950',
           ghost: 'hover:bg-accent hover:text-accent-foreground active:bg-accent',
           link: 'text-primary underline-offset-4 hover:underline',
         },
@@ -36235,6631 +36175,25 @@ var __morbis_feature = (() => {
       },
     },
   );
-  var Button = (0, import_react6.forwardRef)(
-    ({ className, variant, size: size4, ...props }, ref) => {
-      return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)('button', {
-        className: cn(buttonVariants({ variant, size: size4, className })),
-        ref,
-        ...props,
-      });
-    },
-  );
+  var Button = (0, import_react6.forwardRef)(({ className, variant, size, ...props }, ref) => {
+    return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)('button', {
+      className: cn(buttonVariants({ variant, size, className })),
+      ref,
+      ...props,
+    });
+  });
   Button.displayName = 'Button';
 
-  // src/ui/components/select.tsx
-  var import_react9 = __toESM(require_react(), 1);
-
-  // node_modules/@radix-ui/react-select/dist/index.mjs
-  var React32 = __toESM(require_react(), 1);
-  var ReactDOM4 = __toESM(require_react_dom(), 1);
-
-  // node_modules/@radix-ui/number/dist/index.mjs
-  var __defProp2 = Object.defineProperty;
-  var __name = (target, value) => __defProp2(target, 'name', { value, configurable: true });
-  function clamp(value, [min2, max2]) {
-    return Math.min(max2, Math.max(min2, value));
-  }
-  __name(clamp, 'clamp');
-
-  // node_modules/@radix-ui/primitive/dist/index.mjs
-  var __defProp3 = Object.defineProperty;
-  var __name2 = (target, value) => __defProp3(target, 'name', { value, configurable: true });
-  var canUseDOM = !!(
-    typeof window !== 'undefined' &&
-    window.document &&
-    window.document.createElement
-  );
-  function composeEventHandlers(
-    originalEventHandler,
-    ourEventHandler,
-    { checkForDefaultPrevented = true } = {},
-  ) {
-    return /* @__PURE__ */ __name2(function handleEvent(event) {
-      originalEventHandler?.(event);
-      if (checkForDefaultPrevented === false || !event || !event.defaultPrevented) {
-        return ourEventHandler?.(event);
-      }
-    }, 'handleEvent');
-  }
-  __name2(composeEventHandlers, 'composeEventHandlers');
-  function getOwnerWindow(element) {
-    if (!canUseDOM) {
-      throw new Error('Cannot access window outside of the DOM');
-    }
-    return element?.ownerDocument?.defaultView ?? window;
-  }
-  __name2(getOwnerWindow, 'getOwnerWindow');
-  function getOwnerDocument(element) {
-    if (!canUseDOM) {
-      throw new Error('Cannot access document outside of the DOM');
-    }
-    return element?.ownerDocument ?? document;
-  }
-  __name2(getOwnerDocument, 'getOwnerDocument');
-  function getActiveElement(node, activeDescendant = false) {
-    const { activeElement } = getOwnerDocument(node);
-    if (!activeElement?.nodeName) {
-      return null;
-    }
-    if (isFrame(activeElement) && activeElement.contentDocument) {
-      return getActiveElement(activeElement.contentDocument.body, activeDescendant);
-    }
-    if (activeDescendant) {
-      const id = activeElement.getAttribute('aria-activedescendant');
-      if (id) {
-        const element = getOwnerDocument(activeElement).getElementById(id);
-        if (element) {
-          return element;
-        }
-      }
-    }
-    return activeElement;
-  }
-  __name2(getActiveElement, 'getActiveElement');
-  function isFrame(element) {
-    return element.tagName === 'IFRAME';
-  }
-  __name2(isFrame, 'isFrame');
-
-  // node_modules/@radix-ui/react-collection/dist/index.mjs
-  var React4 = __toESM(require_react(), 1);
-
-  // node_modules/@radix-ui/react-context/dist/index.mjs
-  var React = __toESM(require_react(), 1);
-  var import_jsx_runtime9 = __toESM(require_jsx_runtime(), 1);
-  var __defProp4 = Object.defineProperty;
-  var __name3 = (target, value) => __defProp4(target, 'name', { value, configurable: true });
-  // @__NO_SIDE_EFFECTS__
-  function createContext22(rootComponentName, defaultContext) {
-    const Context = React.createContext(defaultContext);
-    Context.displayName = rootComponentName + 'Context';
-    const Provider = /* @__PURE__ */ __name3((props) => {
-      const { children, ...context } = props;
-      const value = React.useMemo(() => context, Object.values(context));
-      return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Context.Provider, { value, children });
-    }, 'Provider');
-    Provider.displayName = rootComponentName + 'Provider';
-    function useContext22(consumerName, options2 = {}) {
-      const { optional = false } = options2;
-      const context = React.useContext(Context);
-      if (context) return context;
-      if (defaultContext !== void 0) return defaultContext;
-      if (optional) return void 0;
-      throw new Error(`\`${consumerName}\` must be used within \`${rootComponentName}\``);
-    }
-    __name3(useContext22, 'useContext');
-    return [Provider, useContext22];
-  }
-  __name3(createContext22, 'createContext');
-  // @__NO_SIDE_EFFECTS__
-  function createContextScope(scopeName, createContextScopeDeps = []) {
-    let defaultContexts = [];
-    function createContext32(rootComponentName, defaultContext) {
-      const BaseContext = React.createContext(defaultContext);
-      BaseContext.displayName = rootComponentName + 'Context';
-      const index2 = defaultContexts.length;
-      defaultContexts = [...defaultContexts, defaultContext];
-      const Provider = /* @__PURE__ */ __name3((props) => {
-        const { scope, children, ...context } = props;
-        const Context = scope?.[scopeName]?.[index2] || BaseContext;
-        const value = React.useMemo(() => context, Object.values(context));
-        return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Context.Provider, { value, children });
-      }, 'Provider');
-      Provider.displayName = rootComponentName + 'Provider';
-      function useContext22(consumerName, scope, options2 = {}) {
-        const { optional = false } = options2;
-        const Context = scope?.[scopeName]?.[index2] || BaseContext;
-        const context = React.useContext(Context);
-        if (context) return context;
-        if (defaultContext !== void 0) return defaultContext;
-        if (optional) return void 0;
-        throw new Error(`\`${consumerName}\` must be used within \`${rootComponentName}\``);
-      }
-      __name3(useContext22, 'useContext');
-      return [Provider, useContext22];
-    }
-    __name3(createContext32, 'createContext');
-    const createScope = /* @__PURE__ */ __name3(() => {
-      const scopeContexts = defaultContexts.map((defaultContext) => {
-        return React.createContext(defaultContext);
-      });
-      return /* @__PURE__ */ __name3(function useScope(scope) {
-        const contexts = scope?.[scopeName] || scopeContexts;
-        return React.useMemo(
-          () => ({ [`__scope${scopeName}`]: { ...scope, [scopeName]: contexts } }),
-          [scope, contexts],
-        );
-      }, 'useScope');
-    }, 'createScope');
-    createScope.scopeName = scopeName;
-    return [createContext32, composeContextScopes(createScope, ...createContextScopeDeps)];
-  }
-  __name3(createContextScope, 'createContextScope');
-  function composeContextScopes(...scopes) {
-    const baseScope = scopes[0];
-    if (scopes.length === 1) return baseScope;
-    const createScope = /* @__PURE__ */ __name3(() => {
-      const scopeHooks = scopes.map((createScope2) => ({
-        useScope: createScope2(),
-        scopeName: createScope2.scopeName,
-      }));
-      return /* @__PURE__ */ __name3(function useComposedScopes(overrideScopes) {
-        const nextScopes = scopeHooks.reduce((nextScopes2, { useScope, scopeName }) => {
-          const scopeProps = useScope(overrideScopes);
-          const currentScope = scopeProps[`__scope${scopeName}`];
-          return { ...nextScopes2, ...currentScope };
-        }, {});
-        return React.useMemo(
-          () => ({ [`__scope${baseScope.scopeName}`]: nextScopes }),
-          [nextScopes],
-        );
-      }, 'useComposedScopes');
-    }, 'createScope');
-    createScope.scopeName = baseScope.scopeName;
-    return createScope;
-  }
-  __name3(composeContextScopes, 'composeContextScopes');
-
-  // node_modules/@radix-ui/react-compose-refs/dist/index.mjs
-  var React2 = __toESM(require_react(), 1);
-  var __defProp5 = Object.defineProperty;
-  var __name4 = (target, value) => __defProp5(target, 'name', { value, configurable: true });
-  function setRef(ref, value) {
-    if (typeof ref === 'function') {
-      return ref(value);
-    } else if (ref !== null && ref !== void 0) {
-      ref.current = value;
-    }
-  }
-  __name4(setRef, 'setRef');
-  function composeRefs(...refs) {
-    return (node) => {
-      let hasCleanup = false;
-      const cleanups = refs.map((ref) => {
-        const cleanup = setRef(ref, node);
-        if (!hasCleanup && typeof cleanup == 'function') {
-          hasCleanup = true;
-        }
-        return cleanup;
-      });
-      if (hasCleanup) {
-        return () => {
-          for (let i = 0; i < cleanups.length; i++) {
-            const cleanup = cleanups[i];
-            if (typeof cleanup == 'function') {
-              cleanup();
-            } else {
-              setRef(refs[i], null);
-            }
-          }
-        };
-      }
-    };
-  }
-  __name4(composeRefs, 'composeRefs');
-  function useComposedRefs(...refs) {
-    return React2.useCallback(composeRefs(...refs), refs);
-  }
-  __name4(useComposedRefs, 'useComposedRefs');
-
-  // node_modules/@radix-ui/react-slot/dist/index.mjs
-  var React3 = __toESM(require_react(), 1);
-  var __defProp6 = Object.defineProperty;
-  var __name5 = (target, value) => __defProp6(target, 'name', { value, configurable: true });
-  // @__NO_SIDE_EFFECTS__
-  function createSlot(ownerName) {
-    const Slot2 = React3.forwardRef((props, forwardedRef) => {
-      let { children, ...slotProps } = props;
-      let slottableElement = null;
-      let hasSlottable = false;
-      const newChildren = [];
-      if (isLazyComponent(children) && typeof use === 'function') {
-        children = use(children._payload);
-      }
-      React3.Children.forEach(children, (maybeSlottable) => {
-        if (isSlottable(maybeSlottable)) {
-          hasSlottable = true;
-          const slottable = maybeSlottable;
-          let child = 'child' in slottable.props ? slottable.props.child : slottable.props.children;
-          if (isLazyComponent(child) && typeof use === 'function') {
-            child = use(child._payload);
-          }
-          slottableElement = getSlottableElementFromSlottable(slottable, child);
-          newChildren.push(slottableElement?.props?.children);
-        } else {
-          newChildren.push(maybeSlottable);
-        }
-      });
-      if (slottableElement) {
-        slottableElement = React3.cloneElement(slottableElement, void 0, newChildren);
-      } else if (
-        // A `Slottable` was found but it didn't resolve to a single element (e.g.
-        // it wrapped multiple elements, text, or a render-prop `child` that
-        // wasn't an element). Don't fall back to treating the `Slottable` wrapper
-        // itself as the slot target — throw a descriptive error below instead.
-        !hasSlottable &&
-        React3.Children.count(children) === 1 &&
-        React3.isValidElement(children)
-      ) {
-        slottableElement = children;
-      }
-      const slottableElementRef = slottableElement ? getElementRef(slottableElement) : void 0;
-      const composedRef = useComposedRefs(forwardedRef, slottableElementRef);
-      if (!slottableElement) {
-        if (children || children === 0) {
-          throw new Error(
-            hasSlottable ? createSlottableError(ownerName) : createSlotError(ownerName),
-          );
-        }
-        return children;
-      }
-      const mergedProps = mergeProps(slotProps, slottableElement.props ?? {});
-      if (slottableElement.type !== React3.Fragment) {
-        mergedProps.ref = forwardedRef ? composedRef : slottableElementRef;
-      }
-      return React3.cloneElement(slottableElement, mergedProps);
-    });
-    Slot2.displayName = `${ownerName}.Slot`;
-    return Slot2;
-  }
-  __name5(createSlot, 'createSlot');
-  var SLOTTABLE_IDENTIFIER = /* @__PURE__ */ Symbol.for('radix.slottable');
-  // @__NO_SIDE_EFFECTS__
-  function createSlottable(ownerName) {
-    const Slottable2 = /* @__PURE__ */ __name5(
-      (props) => ('child' in props ? props.children(props.child) : props.children),
-      'Slottable',
-    );
-    Slottable2.displayName = `${ownerName}.Slottable`;
-    Slottable2.__radixId = SLOTTABLE_IDENTIFIER;
-    return Slottable2;
-  }
-  __name5(createSlottable, 'createSlottable');
-  var getSlottableElementFromSlottable = /* @__PURE__ */ __name5((slottable, child) => {
-    if ('child' in slottable.props) {
-      const child2 = slottable.props.child;
-      if (!React3.isValidElement(child2)) return null;
-      return React3.cloneElement(child2, void 0, slottable.props.children(child2.props.children));
-    }
-    return React3.isValidElement(child) ? child : null;
-  }, 'getSlottableElementFromSlottable');
-  function mergeProps(slotProps, childProps) {
-    const overrideProps = { ...childProps };
-    for (const propName in childProps) {
-      const slotPropValue = slotProps[propName];
-      const childPropValue = childProps[propName];
-      const isHandler = /^on[A-Z]/.test(propName);
-      if (isHandler) {
-        if (slotPropValue && childPropValue) {
-          overrideProps[propName] = (...args) => {
-            const result = childPropValue(...args);
-            slotPropValue(...args);
-            return result;
-          };
-        } else if (slotPropValue) {
-          overrideProps[propName] = slotPropValue;
-        }
-      } else if (propName === 'style') {
-        overrideProps[propName] = { ...slotPropValue, ...childPropValue };
-      } else if (propName === 'className') {
-        overrideProps[propName] = [slotPropValue, childPropValue].filter(Boolean).join(' ');
-      }
-    }
-    return { ...slotProps, ...overrideProps };
-  }
-  __name5(mergeProps, 'mergeProps');
-  function getElementRef(element) {
-    let getter = Object.getOwnPropertyDescriptor(element.props, 'ref')?.get;
-    let mayWarn = getter && 'isReactWarning' in getter && getter.isReactWarning;
-    if (mayWarn) {
-      return element.ref;
-    }
-    getter = Object.getOwnPropertyDescriptor(element, 'ref')?.get;
-    mayWarn = getter && 'isReactWarning' in getter && getter.isReactWarning;
-    if (mayWarn) {
-      return element.props.ref;
-    }
-    return element.props.ref || element.ref;
-  }
-  __name5(getElementRef, 'getElementRef');
-  function isSlottable(child) {
-    return (
-      React3.isValidElement(child) &&
-      typeof child.type === 'function' &&
-      '__radixId' in child.type &&
-      child.type.__radixId === SLOTTABLE_IDENTIFIER
-    );
-  }
-  __name5(isSlottable, 'isSlottable');
-  var REACT_LAZY_TYPE = /* @__PURE__ */ Symbol.for('react.lazy');
-  function isLazyComponent(element) {
-    return (
-      element != null &&
-      typeof element === 'object' &&
-      '$$typeof' in element &&
-      element.$$typeof === REACT_LAZY_TYPE &&
-      '_payload' in element &&
-      isPromiseLike(element._payload)
-    );
-  }
-  __name5(isLazyComponent, 'isLazyComponent');
-  function isPromiseLike(value) {
-    return typeof value === 'object' && value !== null && 'then' in value;
-  }
-  __name5(isPromiseLike, 'isPromiseLike');
-  var createSlotError = /* @__PURE__ */ __name5((ownerName) => {
-    return `${ownerName} failed to slot onto its children. Expected a single React element child or \`Slottable\`.`;
-  }, 'createSlotError');
-  var createSlottableError = /* @__PURE__ */ __name5((ownerName) => {
-    return `${ownerName} failed to slot onto its \`Slottable\`. Expected \`Slottable\` to receive a single React element child.`;
-  }, 'createSlottableError');
-  var use = React3[' use '.trim().toString()];
-
-  // node_modules/@radix-ui/react-collection/dist/index.mjs
-  var import_jsx_runtime10 = __toESM(require_jsx_runtime(), 1);
-  var React22 = __toESM(require_react(), 1);
-  var import_jsx_runtime11 = __toESM(require_jsx_runtime(), 1);
-  var __defProp7 = Object.defineProperty;
-  var __name6 = (target, value) => __defProp7(target, 'name', { value, configurable: true });
-  // @__NO_SIDE_EFFECTS__
-  function createCollection(name) {
-    const PROVIDER_NAME = name + 'CollectionProvider';
-    const [createCollectionContext, createCollectionScope2] = createContextScope(PROVIDER_NAME);
-    const [CollectionProviderImpl, useCollectionContext] = createCollectionContext(PROVIDER_NAME, {
-      collectionRef: { current: null },
-      itemMap: /* @__PURE__ */ new Map(),
-    });
-    const CollectionProvider = /* @__PURE__ */ __name6((props) => {
-      const { scope, children } = props;
-      const ref = React4.useRef(null);
-      const itemMap = React4.useRef(/* @__PURE__ */ new Map()).current;
-      return /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(CollectionProviderImpl, {
-        scope,
-        itemMap,
-        collectionRef: ref,
-        children,
-      });
-    }, 'CollectionProvider');
-    CollectionProvider.displayName = PROVIDER_NAME;
-    const COLLECTION_SLOT_NAME = name + 'CollectionSlot';
-    const CollectionSlotImpl = createSlot(COLLECTION_SLOT_NAME);
-    const CollectionSlot = React4.forwardRef((props, forwardedRef) => {
-      const { scope, children } = props;
-      const context = useCollectionContext(COLLECTION_SLOT_NAME, scope);
-      const composedRefs = useComposedRefs(forwardedRef, context.collectionRef);
-      return /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(CollectionSlotImpl, {
-        ref: composedRefs,
-        children,
-      });
-    });
-    CollectionSlot.displayName = COLLECTION_SLOT_NAME;
-    const ITEM_SLOT_NAME = name + 'CollectionItemSlot';
-    const ITEM_DATA_ATTR = 'data-radix-collection-item';
-    const CollectionItemSlotImpl = createSlot(ITEM_SLOT_NAME);
-    const CollectionItemSlot = React4.forwardRef((props, forwardedRef) => {
-      const { scope, children, ...itemData } = props;
-      const ref = React4.useRef(null);
-      const composedRefs = useComposedRefs(forwardedRef, ref);
-      const context = useCollectionContext(ITEM_SLOT_NAME, scope);
-      React4.useEffect(() => {
-        context.itemMap.set(ref, { ref, ...itemData });
-        return () => void context.itemMap.delete(ref);
-      });
-      return /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(CollectionItemSlotImpl, {
-        ...{ [ITEM_DATA_ATTR]: '' },
-        ref: composedRefs,
-        children,
-      });
-    });
-    CollectionItemSlot.displayName = ITEM_SLOT_NAME;
-    function useCollection2(scope) {
-      const context = useCollectionContext(name + 'CollectionConsumer', scope);
-      const getItems = React4.useCallback(() => {
-        const collectionNode = context.collectionRef.current;
-        if (!collectionNode) return [];
-        const orderedNodes = Array.from(collectionNode.querySelectorAll(`[${ITEM_DATA_ATTR}]`));
-        const items = Array.from(context.itemMap.values());
-        const orderedItems = items.sort(
-          (a, b) => orderedNodes.indexOf(a.ref.current) - orderedNodes.indexOf(b.ref.current),
-        );
-        return orderedItems;
-      }, [context.collectionRef, context.itemMap]);
-      return getItems;
-    }
-    __name6(useCollection2, 'useCollection');
-    return [
-      { Provider: CollectionProvider, Slot: CollectionSlot, ItemSlot: CollectionItemSlot },
-      useCollection2,
-      createCollectionScope2,
-    ];
-  }
-  __name6(createCollection, 'createCollection');
-  var __instanciated = /* @__PURE__ */ new WeakMap();
-  var _keys, _a;
-  var OrderedDict =
-    ((_a = class extends Map {
-      constructor(entries) {
-        super(entries);
-        __privateAdd(this, _keys);
-        __privateSet(this, _keys, [...super.keys()]);
-        __instanciated.set(this, true);
-      }
-      set(key, value) {
-        if (__instanciated.get(this)) {
-          if (this.has(key)) {
-            __privateGet(this, _keys)[__privateGet(this, _keys).indexOf(key)] = key;
-          } else {
-            __privateGet(this, _keys).push(key);
-          }
-        }
-        super.set(key, value);
-        return this;
-      }
-      insert(index2, key, value) {
-        const has = this.has(key);
-        const length = __privateGet(this, _keys).length;
-        const relativeIndex = toSafeInteger(index2);
-        let actualIndex = relativeIndex >= 0 ? relativeIndex : length + relativeIndex;
-        const safeIndex = actualIndex < 0 || actualIndex >= length ? -1 : actualIndex;
-        if (safeIndex === this.size || (has && safeIndex === this.size - 1) || safeIndex === -1) {
-          this.set(key, value);
-          return this;
-        }
-        const size4 = this.size + (has ? 0 : 1);
-        if (relativeIndex < 0) {
-          actualIndex++;
-        }
-        const keys = [...__privateGet(this, _keys)];
-        let nextValue;
-        let shouldSkip = false;
-        for (let i = actualIndex; i < size4; i++) {
-          if (actualIndex === i) {
-            let nextKey = keys[i];
-            if (keys[i] === key) {
-              nextKey = keys[i + 1];
-            }
-            if (has) {
-              this.delete(key);
-            }
-            nextValue = this.get(nextKey);
-            this.set(key, value);
-          } else {
-            if (!shouldSkip && keys[i - 1] === key) {
-              shouldSkip = true;
-            }
-            const currentKey = keys[shouldSkip ? i : i - 1];
-            const currentValue = nextValue;
-            nextValue = this.get(currentKey);
-            this.delete(currentKey);
-            this.set(currentKey, currentValue);
-          }
-        }
-        return this;
-      }
-      with(index2, key, value) {
-        const copy = new _a(this);
-        copy.insert(index2, key, value);
-        return copy;
-      }
-      before(key) {
-        const index2 = __privateGet(this, _keys).indexOf(key) - 1;
-        if (index2 < 0) {
-          return void 0;
-        }
-        return this.entryAt(index2);
-      }
-      /**
-       * Sets a new key-value pair at the position before the given key.
-       */
-      setBefore(key, newKey, value) {
-        const index2 = __privateGet(this, _keys).indexOf(key);
-        if (index2 === -1) {
-          return this;
-        }
-        return this.insert(index2, newKey, value);
-      }
-      after(key) {
-        let index2 = __privateGet(this, _keys).indexOf(key);
-        index2 = index2 === -1 || index2 === this.size - 1 ? -1 : index2 + 1;
-        if (index2 === -1) {
-          return void 0;
-        }
-        return this.entryAt(index2);
-      }
-      /**
-       * Sets a new key-value pair at the position after the given key.
-       */
-      setAfter(key, newKey, value) {
-        const index2 = __privateGet(this, _keys).indexOf(key);
-        if (index2 === -1) {
-          return this;
-        }
-        return this.insert(index2 + 1, newKey, value);
-      }
-      first() {
-        return this.entryAt(0);
-      }
-      last() {
-        return this.entryAt(-1);
-      }
-      clear() {
-        __privateSet(this, _keys, []);
-        return super.clear();
-      }
-      delete(key) {
-        const deleted = super.delete(key);
-        if (deleted) {
-          __privateGet(this, _keys).splice(__privateGet(this, _keys).indexOf(key), 1);
-        }
-        return deleted;
-      }
-      deleteAt(index2) {
-        const key = this.keyAt(index2);
-        if (key !== void 0) {
-          return this.delete(key);
-        }
-        return false;
-      }
-      at(index2) {
-        const key = at(__privateGet(this, _keys), index2);
-        if (key !== void 0) {
-          return this.get(key);
-        }
-      }
-      entryAt(index2) {
-        const key = at(__privateGet(this, _keys), index2);
-        if (key !== void 0) {
-          return [key, this.get(key)];
-        }
-      }
-      indexOf(key) {
-        return __privateGet(this, _keys).indexOf(key);
-      }
-      keyAt(index2) {
-        return at(__privateGet(this, _keys), index2);
-      }
-      from(key, offset4) {
-        const index2 = this.indexOf(key);
-        if (index2 === -1) {
-          return void 0;
-        }
-        let dest = index2 + offset4;
-        if (dest < 0) dest = 0;
-        if (dest >= this.size) dest = this.size - 1;
-        return this.at(dest);
-      }
-      keyFrom(key, offset4) {
-        const index2 = this.indexOf(key);
-        if (index2 === -1) {
-          return void 0;
-        }
-        let dest = index2 + offset4;
-        if (dest < 0) dest = 0;
-        if (dest >= this.size) dest = this.size - 1;
-        return this.keyAt(dest);
-      }
-      find(predicate, thisArg) {
-        let index2 = 0;
-        for (const entry of this) {
-          if (Reflect.apply(predicate, thisArg, [entry, index2, this])) {
-            return entry;
-          }
-          index2++;
-        }
-        return void 0;
-      }
-      findIndex(predicate, thisArg) {
-        let index2 = 0;
-        for (const entry of this) {
-          if (Reflect.apply(predicate, thisArg, [entry, index2, this])) {
-            return index2;
-          }
-          index2++;
-        }
-        return -1;
-      }
-      filter(predicate, thisArg) {
-        const entries = [];
-        let index2 = 0;
-        for (const entry of this) {
-          if (Reflect.apply(predicate, thisArg, [entry, index2, this])) {
-            entries.push(entry);
-          }
-          index2++;
-        }
-        return new _a(entries);
-      }
-      map(callbackfn, thisArg) {
-        const entries = [];
-        let index2 = 0;
-        for (const entry of this) {
-          entries.push([entry[0], Reflect.apply(callbackfn, thisArg, [entry, index2, this])]);
-          index2++;
-        }
-        return new _a(entries);
-      }
-      reduce(...args) {
-        const [callbackfn, initialValue] = args;
-        let index2 = 0;
-        let accumulator = initialValue ?? this.at(0);
-        for (const entry of this) {
-          if (index2 === 0 && args.length === 1) {
-            accumulator = entry;
-          } else {
-            accumulator = Reflect.apply(callbackfn, this, [accumulator, entry, index2, this]);
-          }
-          index2++;
-        }
-        return accumulator;
-      }
-      reduceRight(...args) {
-        const [callbackfn, initialValue] = args;
-        let accumulator = initialValue ?? this.at(-1);
-        for (let index2 = this.size - 1; index2 >= 0; index2--) {
-          const entry = this.at(index2);
-          if (index2 === this.size - 1 && args.length === 1) {
-            accumulator = entry;
-          } else {
-            accumulator = Reflect.apply(callbackfn, this, [accumulator, entry, index2, this]);
-          }
-        }
-        return accumulator;
-      }
-      toSorted(compareFn) {
-        const entries = [...this.entries()].sort(compareFn);
-        return new _a(entries);
-      }
-      toReversed() {
-        const reversed = new _a();
-        for (let index2 = this.size - 1; index2 >= 0; index2--) {
-          const key = this.keyAt(index2);
-          const element = this.get(key);
-          reversed.set(key, element);
-        }
-        return reversed;
-      }
-      toSpliced(...args) {
-        const entries = [...this.entries()];
-        entries.splice(...args);
-        return new _a(entries);
-      }
-      slice(start, end) {
-        const result = new _a();
-        let stop = this.size - 1;
-        if (start === void 0) {
-          return result;
-        }
-        if (start < 0) {
-          start = start + this.size;
-        }
-        if (end !== void 0 && end > 0) {
-          stop = end - 1;
-        }
-        for (let index2 = start; index2 <= stop; index2++) {
-          const key = this.keyAt(index2);
-          const element = this.get(key);
-          result.set(key, element);
-        }
-        return result;
-      }
-      every(predicate, thisArg) {
-        let index2 = 0;
-        for (const entry of this) {
-          if (!Reflect.apply(predicate, thisArg, [entry, index2, this])) {
-            return false;
-          }
-          index2++;
-        }
-        return true;
-      }
-      some(predicate, thisArg) {
-        let index2 = 0;
-        for (const entry of this) {
-          if (Reflect.apply(predicate, thisArg, [entry, index2, this])) {
-            return true;
-          }
-          index2++;
-        }
-        return false;
-      }
-    }),
-    (_keys = new WeakMap()),
-    __name6(_a, 'OrderedDict'),
-    _a);
-  function at(array, index2) {
-    if ('at' in Array.prototype) {
-      return Array.prototype.at.call(array, index2);
-    }
-    const actualIndex = toSafeIndex(array, index2);
-    return actualIndex === -1 ? void 0 : array[actualIndex];
-  }
-  __name6(at, 'at');
-  function toSafeIndex(array, index2) {
-    const length = array.length;
-    const relativeIndex = toSafeInteger(index2);
-    const actualIndex = relativeIndex >= 0 ? relativeIndex : length + relativeIndex;
-    return actualIndex < 0 || actualIndex >= length ? -1 : actualIndex;
-  }
-  __name6(toSafeIndex, 'toSafeIndex');
-  function toSafeInteger(number) {
-    return number !== number || number === 0 ? 0 : Math.trunc(number);
-  }
-  __name6(toSafeInteger, 'toSafeInteger');
-  // @__NO_SIDE_EFFECTS__
-  function createCollection2(name) {
-    const PROVIDER_NAME = name + 'CollectionProvider';
-    const [createCollectionContext, createCollectionScope2] = createContextScope(PROVIDER_NAME);
-    const [CollectionContextProvider, useCollectionContext] = createCollectionContext(
-      PROVIDER_NAME,
-      {
-        collectionElement: null,
-        collectionRef: { current: null },
-        collectionRefObject: { current: null },
-        itemMap: new OrderedDict(),
-        setItemMap: /* @__PURE__ */ __name6(() => void 0, 'setItemMap'),
-      },
-    );
-    const CollectionProvider = /* @__PURE__ */ __name6(({ state, ...props }) => {
-      return state
-        ? /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(CollectionProviderImpl, { ...props, state })
-        : /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(CollectionInit, { ...props });
-    }, 'CollectionProvider');
-    CollectionProvider.displayName = PROVIDER_NAME;
-    const CollectionInit = /* @__PURE__ */ __name6((props) => {
-      const state = useInitCollection();
-      return /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(CollectionProviderImpl, {
-        ...props,
-        state,
-      });
-    }, 'CollectionInit');
-    CollectionInit.displayName = PROVIDER_NAME + 'Init';
-    const CollectionProviderImpl = /* @__PURE__ */ __name6((props) => {
-      const { scope, children, state } = props;
-      const ref = React22.useRef(null);
-      const [collectionElement, setCollectionElement] = React22.useState(null);
-      const composeRefs2 = useComposedRefs(ref, setCollectionElement);
-      const [itemMap, setItemMap] = state;
-      React22.useEffect(() => {
-        if (!collectionElement) return;
-        const observer = getChildListObserver(() => {});
-        observer.observe(collectionElement, {
-          childList: true,
-          subtree: true,
-        });
-        return () => {
-          observer.disconnect();
-        };
-      }, [collectionElement]);
-      return /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(CollectionContextProvider, {
-        scope,
-        itemMap,
-        setItemMap,
-        collectionRef: composeRefs2,
-        collectionRefObject: ref,
-        collectionElement,
-        children,
-      });
-    }, 'CollectionProviderImpl');
-    CollectionProviderImpl.displayName = PROVIDER_NAME + 'Impl';
-    const COLLECTION_SLOT_NAME = name + 'CollectionSlot';
-    const CollectionSlotImpl = createSlot(COLLECTION_SLOT_NAME);
-    const CollectionSlot = React22.forwardRef((props, forwardedRef) => {
-      const { scope, children } = props;
-      const context = useCollectionContext(COLLECTION_SLOT_NAME, scope);
-      const composedRefs = useComposedRefs(forwardedRef, context.collectionRef);
-      return /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(CollectionSlotImpl, {
-        ref: composedRefs,
-        children,
-      });
-    });
-    CollectionSlot.displayName = COLLECTION_SLOT_NAME;
-    const ITEM_SLOT_NAME = name + 'CollectionItemSlot';
-    const ITEM_DATA_ATTR = 'data-radix-collection-item';
-    const CollectionItemSlotImpl = createSlot(ITEM_SLOT_NAME);
-    const CollectionItemSlot = React22.forwardRef((props, forwardedRef) => {
-      const { scope, children, ...itemData } = props;
-      const ref = React22.useRef(null);
-      const [element, setElement] = React22.useState(null);
-      const composedRefs = useComposedRefs(forwardedRef, ref, setElement);
-      const context = useCollectionContext(ITEM_SLOT_NAME, scope);
-      const { setItemMap } = context;
-      const itemDataRef = React22.useRef(itemData);
-      if (!shallowEqual(itemDataRef.current, itemData)) {
-        itemDataRef.current = itemData;
-      }
-      const memoizedItemData = itemDataRef.current;
-      React22.useEffect(() => {
-        const itemData2 = memoizedItemData;
-        setItemMap((map) => {
-          if (!element) {
-            return map;
-          }
-          if (!map.has(element)) {
-            map.set(element, { ...itemData2, element });
-            return map.toSorted(sortByDocumentPosition);
-          }
-          return map.set(element, { ...itemData2, element }).toSorted(sortByDocumentPosition);
-        });
-        return () => {
-          setItemMap((map) => {
-            if (!element || !map.has(element)) {
-              return map;
-            }
-            map.delete(element);
-            return new OrderedDict(map);
-          });
-        };
-      }, [element, memoizedItemData, setItemMap]);
-      return /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(CollectionItemSlotImpl, {
-        ...{ [ITEM_DATA_ATTR]: '' },
-        ref: composedRefs,
-        children,
-      });
-    });
-    CollectionItemSlot.displayName = ITEM_SLOT_NAME;
-    function useInitCollection() {
-      return React22.useState(new OrderedDict());
-    }
-    __name6(useInitCollection, 'useInitCollection');
-    function useCollection2(scope) {
-      const { itemMap } = useCollectionContext(name + 'CollectionConsumer', scope);
-      return itemMap;
-    }
-    __name6(useCollection2, 'useCollection');
-    const functions = {
-      createCollectionScope: createCollectionScope2,
-      useCollection: useCollection2,
-      useInitCollection,
-    };
-    return [
-      { Provider: CollectionProvider, Slot: CollectionSlot, ItemSlot: CollectionItemSlot },
-      functions,
-    ];
-  }
-  __name6(createCollection2, 'createCollection');
-  function shallowEqual(a, b) {
-    if (a === b) return true;
-    if (typeof a !== 'object' || typeof b !== 'object') return false;
-    if (a == null || b == null) return false;
-    const keysA = Object.keys(a);
-    const keysB = Object.keys(b);
-    if (keysA.length !== keysB.length) return false;
-    for (const key of keysA) {
-      if (!Object.prototype.hasOwnProperty.call(b, key)) return false;
-      if (a[key] !== b[key]) return false;
-    }
-    return true;
-  }
-  __name6(shallowEqual, 'shallowEqual');
-  function isElementPreceding(a, b) {
-    return !!(b.compareDocumentPosition(a) & Node.DOCUMENT_POSITION_PRECEDING);
-  }
-  __name6(isElementPreceding, 'isElementPreceding');
-  function sortByDocumentPosition(a, b) {
-    return !a[1].element || !b[1].element
-      ? 0
-      : isElementPreceding(a[1].element, b[1].element)
-        ? -1
-        : 1;
-  }
-  __name6(sortByDocumentPosition, 'sortByDocumentPosition');
-  function getChildListObserver(callback) {
-    const observer = new MutationObserver((mutationsList) => {
-      for (const mutation of mutationsList) {
-        if (mutation.type === 'childList') {
-          callback();
-          return;
-        }
-      }
-    });
-    return observer;
-  }
-  __name6(getChildListObserver, 'getChildListObserver');
-
-  // node_modules/@radix-ui/react-direction/dist/index.mjs
-  var React5 = __toESM(require_react(), 1);
-  var import_jsx_runtime12 = __toESM(require_jsx_runtime(), 1);
-  var __defProp8 = Object.defineProperty;
-  var __name7 = (target, value) => __defProp8(target, 'name', { value, configurable: true });
-  var DirectionContext = React5.createContext(void 0);
-  function useDirection(localDir) {
-    const globalDir = React5.useContext(DirectionContext);
-    return localDir || globalDir || 'ltr';
-  }
-  __name7(useDirection, 'useDirection');
-
-  // node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs
-  var React8 = __toESM(require_react(), 1);
-
-  // node_modules/@radix-ui/react-primitive/dist/index.mjs
-  var React6 = __toESM(require_react(), 1);
-  var ReactDOM = __toESM(require_react_dom(), 1);
-  var import_jsx_runtime13 = __toESM(require_jsx_runtime(), 1);
-  var __defProp9 = Object.defineProperty;
-  var __name8 = (target, value) => __defProp9(target, 'name', { value, configurable: true });
-  var NODES = [
-    'a',
-    'button',
-    'div',
-    'form',
-    'h2',
-    'h3',
-    'img',
-    'input',
-    'label',
-    'li',
-    'nav',
-    'ol',
-    'p',
-    'select',
-    'span',
-    'svg',
-    'ul',
-  ];
-  var Primitive = NODES.reduce((primitive, node) => {
-    const Slot2 = createSlot(`Primitive.${node}`);
-    const Node2 = React6.forwardRef((props, forwardedRef) => {
-      const { asChild, ...primitiveProps } = props;
-      const Comp = asChild ? Slot2 : node;
-      if (typeof window !== 'undefined') {
-        window[/* @__PURE__ */ Symbol.for('radix-ui')] = true;
-      }
-      return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Comp, {
-        ...primitiveProps,
-        ref: forwardedRef,
-      });
-    });
-    Node2.displayName = `Primitive.${node}`;
-    return { ...primitive, [node]: Node2 };
-  }, {});
-  function dispatchDiscreteCustomEvent(target, event) {
-    if (target) ReactDOM.flushSync(() => target.dispatchEvent(event));
-  }
-  __name8(dispatchDiscreteCustomEvent, 'dispatchDiscreteCustomEvent');
-
-  // node_modules/@radix-ui/react-use-callback-ref/dist/index.mjs
-  var React7 = __toESM(require_react(), 1);
-  var __defProp10 = Object.defineProperty;
-  var __name9 = (target, value) => __defProp10(target, 'name', { value, configurable: true });
-  function useCallbackRef(callback) {
-    const callbackRef = React7.useRef(callback);
-    React7.useEffect(() => {
-      callbackRef.current = callback;
-    });
-    return React7.useMemo(
-      () =>
-        (...args) =>
-          callbackRef.current?.(...args),
-      [],
-    );
-  }
-  __name9(useCallbackRef, 'useCallbackRef');
-
-  // node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs
-  var import_jsx_runtime14 = __toESM(require_jsx_runtime(), 1);
-  var __defProp11 = Object.defineProperty;
-  var __name10 = (target, value) => __defProp11(target, 'name', { value, configurable: true });
-  var CONTEXT_UPDATE = 'dismissableLayer.update';
-  var POINTER_DOWN_OUTSIDE = 'dismissableLayer.pointerDownOutside';
-  var FOCUS_OUTSIDE = 'dismissableLayer.focusOutside';
-  var originalBodyPointerEvents;
-  var DismissableLayerContext = React8.createContext({
-    layers: /* @__PURE__ */ new Set(),
-    layersWithOutsidePointerEventsDisabled: /* @__PURE__ */ new Set(),
-    branches: /* @__PURE__ */ new Set(),
-    // Outside elements that belong to a layer's own dismiss affordance (eg, a
-    // dialog overlay). Pressing them should dismiss the layer regardless of
-    // whether or not they stop propagation.
-    //
-    // See https://github.com/radix-ui/primitives/issues/3346
-    dismissableSurfaces: /* @__PURE__ */ new Set(),
-  });
-  var DismissableLayer = /* @__PURE__ */ React8.forwardRef(
-    // blank line to reduce diff noise
-    /* @__PURE__ */ __name10(function DismissableLayer2(props, forwardedRef) {
-      const {
-        disableOutsidePointerEvents = false,
-        deferPointerDownOutside = false,
-        onEscapeKeyDown,
-        onPointerDownOutside,
-        onFocusOutside,
-        onInteractOutside,
-        onDismiss,
-        ...layerProps
-      } = props;
-      const context = React8.useContext(DismissableLayerContext);
-      const [node, setNode] = React8.useState(null);
-      const ownerDocument = node?.ownerDocument ?? globalThis?.document;
-      const [, force] = React8.useState({});
-      const composedRefs = useComposedRefs(forwardedRef, setNode);
-      const layers = Array.from(context.layers);
-      const [highestLayerWithOutsidePointerEventsDisabled] = [
-        ...context.layersWithOutsidePointerEventsDisabled,
-      ].slice(-1);
-      const highestLayerWithOutsidePointerEventsDisabledIndex =
-        highestLayerWithOutsidePointerEventsDisabled
-          ? layers.indexOf(highestLayerWithOutsidePointerEventsDisabled)
-          : -1;
-      const index2 = node ? layers.indexOf(node) : -1;
-      const isBodyPointerEventsDisabled = context.layersWithOutsidePointerEventsDisabled.size > 0;
-      const isPointerEventsEnabled = index2 >= highestLayerWithOutsidePointerEventsDisabledIndex;
-      const isDeferredPointerDownOutsideRef = React8.useRef(false);
-      const pointerDownOutside = usePointerDownOutside(
-        (event) => {
-          onPointerDownOutside?.(event);
-          onInteractOutside?.(event);
-          if (!event.defaultPrevented) onDismiss?.();
-        },
-        {
-          ownerDocument,
-          deferPointerDownOutside,
-          isDeferredPointerDownOutsideRef,
-          dismissableSurfaces: context.dismissableSurfaces,
-          shouldHandlePointerDownOutside: React8.useCallback(
-            (target) => {
-              if (!(target instanceof Node)) {
-                return false;
-              }
-              const isPointerDownOnBranch = [...context.branches].some((branch) =>
-                branch.contains(target),
-              );
-              return isPointerEventsEnabled && !isPointerDownOnBranch;
-            },
-            [context.branches, isPointerEventsEnabled],
-          ),
-        },
-      );
-      const focusOutside = useFocusOutside((event) => {
-        if (deferPointerDownOutside && isDeferredPointerDownOutsideRef.current) {
-          return;
-        }
-        const target = event.target;
-        const isFocusInBranch = [...context.branches].some((branch) => branch.contains(target));
-        if (isFocusInBranch) return;
-        onFocusOutside?.(event);
-        onInteractOutside?.(event);
-        if (!event.defaultPrevented) onDismiss?.();
-      }, ownerDocument);
-      const isHighestLayer = node ? index2 === layers.length - 1 : false;
-      const handleKeyDown = useCallbackRef((event) => {
-        if (event.key !== 'Escape') {
-          return;
-        }
-        onEscapeKeyDown?.(event);
-        if (!event.defaultPrevented && onDismiss) {
-          event.preventDefault();
-          onDismiss();
-        }
-      });
-      React8.useEffect(() => {
-        if (!isHighestLayer) {
-          return;
-        }
-        ownerDocument.addEventListener('keydown', handleKeyDown, { capture: true });
-        return () => ownerDocument.removeEventListener('keydown', handleKeyDown, { capture: true });
-      }, [ownerDocument, isHighestLayer, handleKeyDown]);
-      React8.useEffect(() => {
-        if (!node) return;
-        if (disableOutsidePointerEvents) {
-          if (context.layersWithOutsidePointerEventsDisabled.size === 0) {
-            originalBodyPointerEvents = ownerDocument.body.style.pointerEvents;
-            ownerDocument.body.style.pointerEvents = 'none';
-          }
-          context.layersWithOutsidePointerEventsDisabled.add(node);
-        }
-        context.layers.add(node);
-        dispatchUpdate();
-        return () => {
-          if (disableOutsidePointerEvents) {
-            context.layersWithOutsidePointerEventsDisabled.delete(node);
-            if (context.layersWithOutsidePointerEventsDisabled.size === 0) {
-              ownerDocument.body.style.pointerEvents = originalBodyPointerEvents;
-            }
-          }
-        };
-      }, [node, ownerDocument, disableOutsidePointerEvents, context]);
-      React8.useEffect(() => {
-        return () => {
-          if (!node) return;
-          context.layers.delete(node);
-          context.layersWithOutsidePointerEventsDisabled.delete(node);
-          dispatchUpdate();
-        };
-      }, [node, context]);
-      React8.useEffect(() => {
-        const handleUpdate = /* @__PURE__ */ __name10(() => force({}), 'handleUpdate');
-        document.addEventListener(CONTEXT_UPDATE, handleUpdate);
-        return () => document.removeEventListener(CONTEXT_UPDATE, handleUpdate);
-      }, []);
-      return /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Primitive.div, {
-        ...layerProps,
-        ref: composedRefs,
-        style: {
-          pointerEvents: isBodyPointerEventsDisabled
-            ? isPointerEventsEnabled
-              ? 'auto'
-              : 'none'
-            : void 0,
-          ...props.style,
-        },
-        onFocusCapture: composeEventHandlers(props.onFocusCapture, focusOutside.onFocusCapture),
-        onBlurCapture: composeEventHandlers(props.onBlurCapture, focusOutside.onBlurCapture),
-        onPointerDownCapture: composeEventHandlers(
-          props.onPointerDownCapture,
-          pointerDownOutside.onPointerDownCapture,
-        ),
-      });
-    }, 'DismissableLayer'),
-  );
-  function useDismissableLayerSurface() {
-    const context = React8.useContext(DismissableLayerContext);
-    const [node, setNode] = React8.useState(null);
-    React8.useEffect(() => {
-      if (!node) {
-        return;
-      }
-      context.dismissableSurfaces.add(node);
-      return () => {
-        context.dismissableSurfaces.delete(node);
-      };
-    }, [node, context.dismissableSurfaces]);
-    return setNode;
-  }
-  __name10(useDismissableLayerSurface, 'useDismissableLayerSurface');
-  var IS_TRUE = /* @__PURE__ */ __name10(() => true, 'IS_TRUE');
-  function usePointerDownOutside(onPointerDownOutside, args) {
-    const {
-      ownerDocument = globalThis?.document,
-      deferPointerDownOutside = false,
-      isDeferredPointerDownOutsideRef,
-      dismissableSurfaces,
-      shouldHandlePointerDownOutside = IS_TRUE,
-    } = args;
-    const handlePointerDownOutside = useCallbackRef(onPointerDownOutside);
-    const isPointerInsideReactTreeRef = React8.useRef(false);
-    const isPointerDownOutsideRef = React8.useRef(false);
-    const interceptedOutsideInteractionEventsRef = React8.useRef(/* @__PURE__ */ new Map());
-    const handleClickRef = React8.useRef(() => {});
-    React8.useEffect(() => {
-      function resetOutsideInteraction() {
-        isPointerDownOutsideRef.current = false;
-        isDeferredPointerDownOutsideRef.current = false;
-        interceptedOutsideInteractionEventsRef.current.clear();
-      }
-      __name10(resetOutsideInteraction, 'resetOutsideInteraction');
-      function isOutsideInteractionIntercepted() {
-        return Array.from(interceptedOutsideInteractionEventsRef.current.values()).some(Boolean);
-      }
-      __name10(isOutsideInteractionIntercepted, 'isOutsideInteractionIntercepted');
-      function handleInteractionCapture(event) {
-        if (!isPointerDownOutsideRef.current) {
-          return;
-        }
-        const target = event.target;
-        const isDismissableSurface =
-          target instanceof Node &&
-          [...dismissableSurfaces].some((surface) => surface.contains(target));
-        if (!isDismissableSurface) {
-          interceptedOutsideInteractionEventsRef.current.set(event.type, true);
-        }
-        if (event.type === 'click') {
-          window.setTimeout(() => {
-            if (isPointerDownOutsideRef.current) {
-              handleClickRef.current();
-            }
-          }, 0);
-        }
-      }
-      __name10(handleInteractionCapture, 'handleInteractionCapture');
-      function handleInteractionBubble(event) {
-        if (isPointerDownOutsideRef.current) {
-          interceptedOutsideInteractionEventsRef.current.set(event.type, false);
-        }
-      }
-      __name10(handleInteractionBubble, 'handleInteractionBubble');
-      const handlePointerDown = /* @__PURE__ */ __name10((event) => {
-        if (event.target && !isPointerInsideReactTreeRef.current) {
-          let handleAndDispatchPointerDownOutsideEvent2 = function () {
-            ownerDocument.removeEventListener('click', handleClickRef.current);
-            const wasOutsideInteractionIntercepted = isOutsideInteractionIntercepted();
-            resetOutsideInteraction();
-            if (!wasOutsideInteractionIntercepted) {
-              handleAndDispatchCustomEvent(
-                POINTER_DOWN_OUTSIDE,
-                handlePointerDownOutside,
-                eventDetail,
-                { discrete: true },
-              );
-            }
-          };
-          var handleAndDispatchPointerDownOutsideEvent = handleAndDispatchPointerDownOutsideEvent2;
-          __name10(
-            handleAndDispatchPointerDownOutsideEvent2,
-            'handleAndDispatchPointerDownOutsideEvent',
-          );
-          if (!shouldHandlePointerDownOutside(event.target)) {
-            ownerDocument.removeEventListener('click', handleClickRef.current);
-            resetOutsideInteraction();
-            isPointerInsideReactTreeRef.current = false;
-            return;
-          }
-          const eventDetail = { originalEvent: event };
-          isPointerDownOutsideRef.current = true;
-          isDeferredPointerDownOutsideRef.current = deferPointerDownOutside && event.button === 0;
-          interceptedOutsideInteractionEventsRef.current.clear();
-          if (!deferPointerDownOutside || event.button !== 0) {
-            handleAndDispatchPointerDownOutsideEvent2();
-          } else {
-            ownerDocument.removeEventListener('click', handleClickRef.current);
-            handleClickRef.current = handleAndDispatchPointerDownOutsideEvent2;
-            ownerDocument.addEventListener('click', handleClickRef.current, { once: true });
-          }
-        } else {
-          ownerDocument.removeEventListener('click', handleClickRef.current);
-          resetOutsideInteraction();
-        }
-        isPointerInsideReactTreeRef.current = false;
-      }, 'handlePointerDown');
-      const outsideInteractionEvents = [
-        'pointerup',
-        'mousedown',
-        'mouseup',
-        'touchstart',
-        'touchend',
-        'click',
-      ];
-      for (const eventName of outsideInteractionEvents) {
-        ownerDocument.addEventListener(eventName, handleInteractionCapture, true);
-        ownerDocument.addEventListener(eventName, handleInteractionBubble);
-      }
-      const timerId = window.setTimeout(() => {
-        ownerDocument.addEventListener('pointerdown', handlePointerDown);
-      }, 0);
-      return () => {
-        window.clearTimeout(timerId);
-        ownerDocument.removeEventListener('pointerdown', handlePointerDown);
-        ownerDocument.removeEventListener('click', handleClickRef.current);
-        for (const eventName of outsideInteractionEvents) {
-          ownerDocument.removeEventListener(eventName, handleInteractionCapture, true);
-          ownerDocument.removeEventListener(eventName, handleInteractionBubble);
-        }
-      };
-    }, [
-      ownerDocument,
-      handlePointerDownOutside,
-      deferPointerDownOutside,
-      isDeferredPointerDownOutsideRef,
-      dismissableSurfaces,
-      shouldHandlePointerDownOutside,
-    ]);
-    return {
-      // ensures we check React component tree (not just DOM tree)
-      onPointerDownCapture: /* @__PURE__ */ __name10(
-        () => (isPointerInsideReactTreeRef.current = true),
-        'onPointerDownCapture',
-      ),
-    };
-  }
-  __name10(usePointerDownOutside, 'usePointerDownOutside');
-  function useFocusOutside(onFocusOutside, ownerDocument = globalThis?.document) {
-    const handleFocusOutside = useCallbackRef(onFocusOutside);
-    const isFocusInsideReactTreeRef = React8.useRef(false);
-    React8.useEffect(() => {
-      const handleFocus = /* @__PURE__ */ __name10((event) => {
-        if (event.target && !isFocusInsideReactTreeRef.current) {
-          const eventDetail = { originalEvent: event };
-          handleAndDispatchCustomEvent(FOCUS_OUTSIDE, handleFocusOutside, eventDetail, {
-            discrete: false,
-          });
-        }
-      }, 'handleFocus');
-      ownerDocument.addEventListener('focusin', handleFocus);
-      return () => ownerDocument.removeEventListener('focusin', handleFocus);
-    }, [ownerDocument, handleFocusOutside]);
-    return {
-      onFocusCapture: /* @__PURE__ */ __name10(
-        () => (isFocusInsideReactTreeRef.current = true),
-        'onFocusCapture',
-      ),
-      onBlurCapture: /* @__PURE__ */ __name10(
-        () => (isFocusInsideReactTreeRef.current = false),
-        'onBlurCapture',
-      ),
-    };
-  }
-  __name10(useFocusOutside, 'useFocusOutside');
-  function dispatchUpdate() {
-    const event = new CustomEvent(CONTEXT_UPDATE);
-    document.dispatchEvent(event);
-  }
-  __name10(dispatchUpdate, 'dispatchUpdate');
-  function handleAndDispatchCustomEvent(name, handler, detail, { discrete }) {
-    const target = detail.originalEvent.target;
-    const event = new CustomEvent(name, { bubbles: false, cancelable: true, detail });
-    if (handler) target.addEventListener(name, handler, { once: true });
-    if (discrete) {
-      dispatchDiscreteCustomEvent(target, event);
-    } else {
-      target.dispatchEvent(event);
-    }
-  }
-  __name10(handleAndDispatchCustomEvent, 'handleAndDispatchCustomEvent');
-
-  // node_modules/@radix-ui/react-focus-guards/dist/index.mjs
-  var React9 = __toESM(require_react(), 1);
-  var __defProp12 = Object.defineProperty;
-  var __name11 = (target, value) => __defProp12(target, 'name', { value, configurable: true });
-  var count = 0;
-  var guards = null;
-  function FocusGuards(props) {
-    useFocusGuards();
-    return props.children;
-  }
-  __name11(FocusGuards, 'FocusGuards');
-  function useFocusGuards() {
-    React9.useEffect(() => {
-      if (!guards) {
-        guards = { start: createFocusGuard(), end: createFocusGuard() };
-      }
-      const { start, end } = guards;
-      if (document.body.firstElementChild !== start) {
-        document.body.insertAdjacentElement('afterbegin', start);
-      }
-      if (document.body.lastElementChild !== end) {
-        document.body.insertAdjacentElement('beforeend', end);
-      }
-      count++;
-      return () => {
-        if (count === 1) {
-          guards?.start.remove();
-          guards?.end.remove();
-          guards = null;
-        }
-        count = Math.max(0, count - 1);
-      };
-    }, []);
-  }
-  __name11(useFocusGuards, 'useFocusGuards');
-  function createFocusGuard() {
-    const element = document.createElement('span');
-    element.setAttribute('data-radix-focus-guard', '');
-    element.tabIndex = 0;
-    element.style.outline = 'none';
-    element.style.opacity = '0';
-    element.style.position = 'fixed';
-    element.style.pointerEvents = 'none';
-    return element;
-  }
-  __name11(createFocusGuard, 'createFocusGuard');
-
-  // node_modules/@radix-ui/react-focus-scope/dist/index.mjs
-  var React10 = __toESM(require_react(), 1);
-  var import_jsx_runtime15 = __toESM(require_jsx_runtime(), 1);
-  var __defProp13 = Object.defineProperty;
-  var __name12 = (target, value) => __defProp13(target, 'name', { value, configurable: true });
-  var AUTOFOCUS_ON_MOUNT = 'focusScope.autoFocusOnMount';
-  var AUTOFOCUS_ON_UNMOUNT = 'focusScope.autoFocusOnUnmount';
-  var EVENT_OPTIONS = { bubbles: false, cancelable: true };
-  var FocusScope = /* @__PURE__ */ React10.forwardRef(
-    /* @__PURE__ */ __name12(function FocusScope2(props, forwardedRef) {
-      const {
-        loop = false,
-        trapped = false,
-        onMountAutoFocus: onMountAutoFocusProp,
-        onUnmountAutoFocus: onUnmountAutoFocusProp,
-        ...scopeProps
-      } = props;
-      const [container, setContainer] = React10.useState(null);
-      const onMountAutoFocus = useCallbackRef(onMountAutoFocusProp);
-      const onUnmountAutoFocus = useCallbackRef(onUnmountAutoFocusProp);
-      const lastFocusedElementRef = React10.useRef(null);
-      const composedRefs = useComposedRefs(forwardedRef, setContainer);
-      const focusScope = React10.useRef({
-        paused: false,
-        pause() {
-          this.paused = true;
-        },
-        resume() {
-          this.paused = false;
-        },
-      }).current;
-      React10.useEffect(() => {
-        if (trapped) {
-          let handleFocusIn2 = function (event) {
-              if (focusScope.paused || !container) return;
-              const target = event.target;
-              if (container.contains(target)) {
-                lastFocusedElementRef.current = target;
-              } else {
-                focus(lastFocusedElementRef.current, { select: true });
-              }
-            },
-            handleFocusOut2 = function (event) {
-              if (focusScope.paused || !container) return;
-              const relatedTarget = event.relatedTarget;
-              if (relatedTarget === null) return;
-              if (!container.contains(relatedTarget)) {
-                focus(lastFocusedElementRef.current, { select: true });
-              }
-            },
-            handleMutations2 = function (mutations) {
-              const focusedElement = document.activeElement;
-              if (focusedElement !== document.body) return;
-              for (const mutation of mutations) {
-                if (mutation.removedNodes.length > 0) focus(container);
-              }
-            };
-          var handleFocusIn = handleFocusIn2,
-            handleFocusOut = handleFocusOut2,
-            handleMutations = handleMutations2;
-          __name12(handleFocusIn2, 'handleFocusIn');
-          __name12(handleFocusOut2, 'handleFocusOut');
-          __name12(handleMutations2, 'handleMutations');
-          document.addEventListener('focusin', handleFocusIn2);
-          document.addEventListener('focusout', handleFocusOut2);
-          const mutationObserver = new MutationObserver(handleMutations2);
-          if (container) mutationObserver.observe(container, { childList: true, subtree: true });
-          return () => {
-            document.removeEventListener('focusin', handleFocusIn2);
-            document.removeEventListener('focusout', handleFocusOut2);
-            mutationObserver.disconnect();
-          };
-        }
-      }, [trapped, container, focusScope.paused]);
-      React10.useEffect(() => {
-        if (container) {
-          focusScopesStack.add(focusScope);
-          const previouslyFocusedElement = document.activeElement;
-          const hasFocusedCandidate = container.contains(previouslyFocusedElement);
-          if (!hasFocusedCandidate) {
-            const mountEvent = new CustomEvent(AUTOFOCUS_ON_MOUNT, EVENT_OPTIONS);
-            container.addEventListener(AUTOFOCUS_ON_MOUNT, onMountAutoFocus);
-            container.dispatchEvent(mountEvent);
-            if (!mountEvent.defaultPrevented) {
-              focusFirst(removeLinks(getTabbableCandidates(container)), { select: true });
-              if (document.activeElement === previouslyFocusedElement) {
-                focus(container);
-              }
-            }
-          }
-          return () => {
-            container.removeEventListener(AUTOFOCUS_ON_MOUNT, onMountAutoFocus);
-            setTimeout(() => {
-              const unmountEvent = new CustomEvent(AUTOFOCUS_ON_UNMOUNT, EVENT_OPTIONS);
-              container.addEventListener(AUTOFOCUS_ON_UNMOUNT, onUnmountAutoFocus);
-              container.dispatchEvent(unmountEvent);
-              if (!unmountEvent.defaultPrevented) {
-                focus(previouslyFocusedElement ?? document.body, { select: true });
-              }
-              container.removeEventListener(AUTOFOCUS_ON_UNMOUNT, onUnmountAutoFocus);
-              focusScopesStack.remove(focusScope);
-            }, 0);
-          };
-        }
-      }, [container, onMountAutoFocus, onUnmountAutoFocus, focusScope]);
-      const handleKeyDown = React10.useCallback(
-        (event) => {
-          if (!loop && !trapped) return;
-          if (focusScope.paused) return;
-          const isTabKey = event.key === 'Tab' && !event.altKey && !event.ctrlKey && !event.metaKey;
-          const focusedElement = document.activeElement;
-          if (isTabKey && focusedElement) {
-            const container2 = event.currentTarget;
-            const [first, last] = getTabbableEdges(container2);
-            const hasTabbableElementsInside = first && last;
-            if (!hasTabbableElementsInside) {
-              if (focusedElement === container2) event.preventDefault();
-            } else {
-              if (!event.shiftKey && focusedElement === last) {
-                event.preventDefault();
-                if (loop) focus(first, { select: true });
-              } else if (event.shiftKey && focusedElement === first) {
-                event.preventDefault();
-                if (loop) focus(last, { select: true });
-              }
-            }
-          }
-        },
-        [loop, trapped, focusScope.paused],
-      );
-      return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Primitive.div, {
-        tabIndex: -1,
-        ...scopeProps,
-        ref: composedRefs,
-        onKeyDown: handleKeyDown,
-      });
-    }, 'FocusScope'),
-  );
-  function focusFirst(candidates, { select = false } = {}) {
-    const previouslyFocusedElement = document.activeElement;
-    for (const candidate of candidates) {
-      focus(candidate, { select });
-      if (document.activeElement !== previouslyFocusedElement) return;
-    }
-  }
-  __name12(focusFirst, 'focusFirst');
-  function getTabbableEdges(container) {
-    const candidates = getTabbableCandidates(container);
-    const first = findVisible(candidates, container);
-    const last = findVisible(candidates.reverse(), container);
-    return [first, last];
-  }
-  __name12(getTabbableEdges, 'getTabbableEdges');
-  function getTabbableCandidates(container) {
-    const nodes = [];
-    const walker = document.createTreeWalker(container, NodeFilter.SHOW_ELEMENT, {
-      acceptNode: /* @__PURE__ */ __name12((node) => {
-        const isHiddenInput = node.tagName === 'INPUT' && node.type === 'hidden';
-        if (node.disabled || node.hidden || isHiddenInput) return NodeFilter.FILTER_SKIP;
-        return node.tabIndex >= 0 ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
-      }, 'acceptNode'),
-    });
-    while (walker.nextNode()) nodes.push(walker.currentNode);
-    return nodes;
-  }
-  __name12(getTabbableCandidates, 'getTabbableCandidates');
-  function findVisible(elements, container) {
-    const canUseCheckVisibility =
-      typeof container.checkVisibility === 'function' &&
-      container.checkVisibility({ checkVisibilityCSS: true });
-    for (const element of elements) {
-      const hidden = canUseCheckVisibility
-        ? !element.checkVisibility({ checkVisibilityCSS: true })
-        : isHidden(element, { upTo: container });
-      if (!hidden) {
-        return element;
-      }
-    }
-  }
-  __name12(findVisible, 'findVisible');
-  function isHidden(node, { upTo }) {
-    if (getComputedStyle(node).visibility === 'hidden') return true;
-    while (node) {
-      if (upTo !== void 0 && node === upTo) return false;
-      if (getComputedStyle(node).display === 'none') return true;
-      node = node.parentElement;
-    }
-    return false;
-  }
-  __name12(isHidden, 'isHidden');
-  function isSelectableInput(element) {
-    return element instanceof HTMLInputElement && 'select' in element;
-  }
-  __name12(isSelectableInput, 'isSelectableInput');
-  function focus(element, { select = false } = {}) {
-    if (element && element.focus) {
-      const previouslyFocusedElement = document.activeElement;
-      element.focus({ preventScroll: true });
-      if (element !== previouslyFocusedElement && isSelectableInput(element) && select)
-        element.select();
-    }
-  }
-  __name12(focus, 'focus');
-  var focusScopesStack = createFocusScopesStack();
-  function createFocusScopesStack() {
-    let stack = [];
-    return {
-      add(focusScope) {
-        const activeFocusScope = stack[0];
-        if (focusScope !== activeFocusScope) {
-          activeFocusScope?.pause();
-        }
-        stack = arrayRemove(stack, focusScope);
-        stack.unshift(focusScope);
-      },
-      remove(focusScope) {
-        stack = arrayRemove(stack, focusScope);
-        stack[0]?.resume();
-      },
-    };
-  }
-  __name12(createFocusScopesStack, 'createFocusScopesStack');
-  function arrayRemove(array, item) {
-    const updatedArray = [...array];
-    const index2 = updatedArray.indexOf(item);
-    if (index2 !== -1) {
-      updatedArray.splice(index2, 1);
-    }
-    return updatedArray;
-  }
-  __name12(arrayRemove, 'arrayRemove');
-  function removeLinks(items) {
-    return items.filter((item) => item.tagName !== 'A');
-  }
-  __name12(removeLinks, 'removeLinks');
-
-  // node_modules/@radix-ui/react-id/dist/index.mjs
-  var React12 = __toESM(require_react(), 1);
-
-  // node_modules/@radix-ui/react-use-layout-effect/dist/index.mjs
-  var React11 = __toESM(require_react(), 1);
-  var useLayoutEffect2 = globalThis?.document ? React11.useLayoutEffect : () => {};
-
-  // node_modules/@radix-ui/react-id/dist/index.mjs
-  var __defProp14 = Object.defineProperty;
-  var __name13 = (target, value) => __defProp14(target, 'name', { value, configurable: true });
-  var useReactId = React12[' useId '.trim().toString()] || (() => void 0);
-  var count2 = 0;
-  function useId(deterministicId) {
-    const [id, setId] = React12.useState(useReactId());
-    useLayoutEffect2(() => {
-      if (!deterministicId) setId((reactId) => reactId ?? String(count2++));
-    }, [deterministicId]);
-    return deterministicId || (id ? `radix-${id}` : '');
-  }
-  __name13(useId, 'useId');
-
-  // node_modules/@radix-ui/react-popper/dist/index.mjs
-  var React15 = __toESM(require_react(), 1);
-
-  // node_modules/@floating-ui/utils/dist/floating-ui.utils.mjs
-  var sides = ['top', 'right', 'bottom', 'left'];
-  var min = Math.min;
-  var max = Math.max;
-  var round = Math.round;
-  var floor = Math.floor;
-  var createCoords = (v) => ({
-    x: v,
-    y: v,
-  });
-  var oppositeSideMap = {
-    left: 'right',
-    right: 'left',
-    bottom: 'top',
-    top: 'bottom',
-  };
-  function clamp2(start, value, end) {
-    return max(start, min(value, end));
-  }
-  function evaluate(value, param) {
-    return typeof value === 'function' ? value(param) : value;
-  }
-  function getSide(placement) {
-    return placement.split('-')[0];
-  }
-  function getAlignment(placement) {
-    return placement.split('-')[1];
-  }
-  function getOppositeAxis(axis) {
-    return axis === 'x' ? 'y' : 'x';
-  }
-  function getAxisLength(axis) {
-    return axis === 'y' ? 'height' : 'width';
-  }
-  function getSideAxis(placement) {
-    const firstChar = placement[0];
-    return firstChar === 't' || firstChar === 'b' ? 'y' : 'x';
-  }
-  function getAlignmentAxis(placement) {
-    return getOppositeAxis(getSideAxis(placement));
-  }
-  function getAlignmentSides(placement, rects, rtl) {
-    if (rtl === void 0) {
-      rtl = false;
-    }
-    const alignment = getAlignment(placement);
-    const alignmentAxis = getAlignmentAxis(placement);
-    const length = getAxisLength(alignmentAxis);
-    let mainAlignmentSide =
-      alignmentAxis === 'x'
-        ? alignment === (rtl ? 'end' : 'start')
-          ? 'right'
-          : 'left'
-        : alignment === 'start'
-          ? 'bottom'
-          : 'top';
-    if (rects.reference[length] > rects.floating[length]) {
-      mainAlignmentSide = getOppositePlacement(mainAlignmentSide);
-    }
-    return [mainAlignmentSide, getOppositePlacement(mainAlignmentSide)];
-  }
-  function getExpandedPlacements(placement) {
-    const oppositePlacement = getOppositePlacement(placement);
-    return [
-      getOppositeAlignmentPlacement(placement),
-      oppositePlacement,
-      getOppositeAlignmentPlacement(oppositePlacement),
-    ];
-  }
-  function getOppositeAlignmentPlacement(placement) {
-    return placement.includes('start')
-      ? placement.replace('start', 'end')
-      : placement.replace('end', 'start');
-  }
-  var lrPlacement = ['left', 'right'];
-  var rlPlacement = ['right', 'left'];
-  var tbPlacement = ['top', 'bottom'];
-  var btPlacement = ['bottom', 'top'];
-  function getSideList(side, isStart, rtl) {
-    switch (side) {
-      case 'top':
-      case 'bottom':
-        if (rtl) return isStart ? rlPlacement : lrPlacement;
-        return isStart ? lrPlacement : rlPlacement;
-      case 'left':
-      case 'right':
-        return isStart ? tbPlacement : btPlacement;
-      default:
-        return [];
-    }
-  }
-  function getOppositeAxisPlacements(placement, flipAlignment, direction, rtl) {
-    const alignment = getAlignment(placement);
-    let list = getSideList(getSide(placement), direction === 'start', rtl);
-    if (alignment) {
-      list = list.map((side) => side + '-' + alignment);
-      if (flipAlignment) {
-        list = list.concat(list.map(getOppositeAlignmentPlacement));
-      }
-    }
-    return list;
-  }
-  function getOppositePlacement(placement) {
-    const side = getSide(placement);
-    return oppositeSideMap[side] + placement.slice(side.length);
-  }
-  function expandPaddingObject(padding) {
-    var _padding$top, _padding$right, _padding$bottom, _padding$left;
-    return {
-      top: (_padding$top = padding.top) != null ? _padding$top : 0,
-      right: (_padding$right = padding.right) != null ? _padding$right : 0,
-      bottom: (_padding$bottom = padding.bottom) != null ? _padding$bottom : 0,
-      left: (_padding$left = padding.left) != null ? _padding$left : 0,
-    };
-  }
-  function getPaddingObject(padding) {
-    return typeof padding !== 'number'
-      ? expandPaddingObject(padding)
-      : {
-          top: padding,
-          right: padding,
-          bottom: padding,
-          left: padding,
-        };
-  }
-  function rectToClientRect(rect) {
-    const { x, y, width, height } = rect;
-    return {
-      width,
-      height,
-      top: y,
-      left: x,
-      right: x + width,
-      bottom: y + height,
-      x,
-      y,
-    };
-  }
-
-  // node_modules/@floating-ui/core/dist/floating-ui.core.mjs
-  function computeCoordsFromPlacement(_ref, placement, rtl) {
-    let { reference, floating } = _ref;
-    const sideAxis = getSideAxis(placement);
-    const alignmentAxis = getAlignmentAxis(placement);
-    const alignLength = getAxisLength(alignmentAxis);
-    const side = getSide(placement);
-    const isVertical = sideAxis === 'y';
-    const commonX = reference.x + reference.width / 2 - floating.width / 2;
-    const commonY = reference.y + reference.height / 2 - floating.height / 2;
-    const commonAlign = reference[alignLength] / 2 - floating[alignLength] / 2;
-    let coords;
-    switch (side) {
-      case 'top':
-        coords = {
-          x: commonX,
-          y: reference.y - floating.height,
-        };
-        break;
-      case 'bottom':
-        coords = {
-          x: commonX,
-          y: reference.y + reference.height,
-        };
-        break;
-      case 'right':
-        coords = {
-          x: reference.x + reference.width,
-          y: commonY,
-        };
-        break;
-      case 'left':
-        coords = {
-          x: reference.x - floating.width,
-          y: commonY,
-        };
-        break;
-      default:
-        coords = {
-          x: reference.x,
-          y: reference.y,
-        };
-    }
-    const alignment = getAlignment(placement);
-    if (alignment) {
-      coords[alignmentAxis] +=
-        commonAlign * (alignment === 'end' ? 1 : -1) * (rtl && isVertical ? -1 : 1);
-    }
-    return coords;
-  }
-  async function detectOverflow(state, options2) {
-    var _await$platform$isEle;
-    if (options2 === void 0) {
-      options2 = {};
-    }
-    const { x, y, platform: platform2, rects, elements, strategy } = state;
-    const {
-      boundary = 'clippingAncestors',
-      rootBoundary = 'viewport',
-      elementContext = 'floating',
-      altBoundary = false,
-      padding = 0,
-    } = evaluate(options2, state);
-    const paddingObject = getPaddingObject(padding);
-    const altContext = elementContext === 'floating' ? 'reference' : 'floating';
-    const element = elements[altBoundary ? altContext : elementContext];
-    const clippingClientRect = rectToClientRect(
-      await platform2.getClippingRect({
-        element: (
-          (_await$platform$isEle = await (platform2.isElement == null
-            ? void 0
-            : platform2.isElement(element))) != null
-            ? _await$platform$isEle
-            : true
-        )
-          ? element
-          : element.contextElement ||
-            (await (platform2.getDocumentElement == null
-              ? void 0
-              : platform2.getDocumentElement(elements.floating))),
-        boundary,
-        rootBoundary,
-        strategy,
-      }),
-    );
-    const rect =
-      elementContext === 'floating'
-        ? {
-            x,
-            y,
-            width: rects.floating.width,
-            height: rects.floating.height,
-          }
-        : rects.reference;
-    const offsetParent = await (platform2.getOffsetParent == null
-      ? void 0
-      : platform2.getOffsetParent(elements.floating));
-    const offsetScale = ((await (platform2.isElement == null
-      ? void 0
-      : platform2.isElement(offsetParent))) &&
-      (await (platform2.getScale == null ? void 0 : platform2.getScale(offsetParent)))) || {
-      x: 1,
-      y: 1,
-    };
-    const elementClientRect = rectToClientRect(
-      platform2.convertOffsetParentRelativeRectToViewportRelativeRect
-        ? await platform2.convertOffsetParentRelativeRectToViewportRelativeRect({
-            elements,
-            rect,
-            offsetParent,
-            strategy,
-          })
-        : rect,
-    );
-    return {
-      top: (clippingClientRect.top - elementClientRect.top + paddingObject.top) / offsetScale.y,
-      bottom:
-        (elementClientRect.bottom - clippingClientRect.bottom + paddingObject.bottom) /
-        offsetScale.y,
-      left: (clippingClientRect.left - elementClientRect.left + paddingObject.left) / offsetScale.x,
-      right:
-        (elementClientRect.right - clippingClientRect.right + paddingObject.right) / offsetScale.x,
-    };
-  }
-  var MAX_RESET_COUNT = 50;
-  var computePosition = async (reference, floating, config) => {
-    const {
-      placement = 'bottom',
-      strategy = 'absolute',
-      middleware = [],
-      platform: platform2,
-    } = config;
-    const platformWithDetectOverflow = platform2.detectOverflow
-      ? platform2
-      : {
-          ...platform2,
-          detectOverflow,
-        };
-    const rtl = await (platform2.isRTL == null ? void 0 : platform2.isRTL(floating));
-    let rects = await platform2.getElementRects({
-      reference,
-      floating,
-      strategy,
-    });
-    let { x, y } = computeCoordsFromPlacement(rects, placement, rtl);
-    let statefulPlacement = placement;
-    let resetCount = 0;
-    const middlewareData = {};
-    for (let i = 0; i < middleware.length; i++) {
-      const currentMiddleware = middleware[i];
-      if (!currentMiddleware) {
-        continue;
-      }
-      const { name, fn } = currentMiddleware;
-      const {
-        x: nextX,
-        y: nextY,
-        data,
-        reset,
-      } = await fn({
-        x,
-        y,
-        initialPlacement: placement,
-        placement: statefulPlacement,
-        strategy,
-        middlewareData,
-        rects,
-        platform: platformWithDetectOverflow,
-        elements: {
-          reference,
-          floating,
-        },
-      });
-      x = nextX != null ? nextX : x;
-      y = nextY != null ? nextY : y;
-      middlewareData[name] = {
-        ...middlewareData[name],
-        ...data,
-      };
-      if (reset && resetCount < MAX_RESET_COUNT) {
-        resetCount++;
-        if (typeof reset === 'object') {
-          if (reset.placement) {
-            statefulPlacement = reset.placement;
-          }
-          if (reset.rects) {
-            rects =
-              reset.rects === true
-                ? await platform2.getElementRects({
-                    reference,
-                    floating,
-                    strategy,
-                  })
-                : reset.rects;
-          }
-          ({ x, y } = computeCoordsFromPlacement(rects, statefulPlacement, rtl));
-        }
-        i = -1;
-      }
-    }
-    return {
-      x,
-      y,
-      placement: statefulPlacement,
-      strategy,
-      middlewareData,
-    };
-  };
-  var arrow = (options2) => ({
-    name: 'arrow',
-    options: options2,
-    async fn(state) {
-      const { x, y, placement, rects, platform: platform2, elements, middlewareData } = state;
-      const { element, padding = 0 } = evaluate(options2, state) || {};
-      if (element == null) {
-        return {};
-      }
-      const paddingObject = getPaddingObject(padding);
-      const coords = {
-        x,
-        y,
-      };
-      const axis = getAlignmentAxis(placement);
-      const length = getAxisLength(axis);
-      const arrowDimensions = await platform2.getDimensions(element);
-      const isYAxis = axis === 'y';
-      const minProp = isYAxis ? 'top' : 'left';
-      const maxProp = isYAxis ? 'bottom' : 'right';
-      const clientProp = isYAxis ? 'clientHeight' : 'clientWidth';
-      const endDiff =
-        rects.reference[length] + rects.reference[axis] - coords[axis] - rects.floating[length];
-      const startDiff = coords[axis] - rects.reference[axis];
-      const arrowOffsetParent = await (platform2.getOffsetParent == null
-        ? void 0
-        : platform2.getOffsetParent(element));
-      let clientSize = arrowOffsetParent ? arrowOffsetParent[clientProp] : 0;
-      if (
-        !clientSize ||
-        !(await (platform2.isElement == null ? void 0 : platform2.isElement(arrowOffsetParent)))
-      ) {
-        clientSize = elements.floating[clientProp] || rects.floating[length];
-      }
-      const centerToReference = endDiff / 2 - startDiff / 2;
-      const largestPossiblePadding = clientSize / 2 - arrowDimensions[length] / 2 - 1;
-      const minPadding = min(paddingObject[minProp], largestPossiblePadding);
-      const maxPadding = min(paddingObject[maxProp], largestPossiblePadding);
-      const max2 = clientSize - arrowDimensions[length] - maxPadding;
-      const center = clientSize / 2 - arrowDimensions[length] / 2 + centerToReference;
-      const offset4 = clamp2(minPadding, center, max2);
-      const shouldAddOffset =
-        !middlewareData.arrow &&
-        getAlignment(placement) != null &&
-        center !== offset4 &&
-        rects.reference[length] / 2 -
-          (center < minPadding ? minPadding : maxPadding) -
-          arrowDimensions[length] / 2 <
-          0;
-      const alignmentOffset = shouldAddOffset
-        ? center < minPadding
-          ? center - minPadding
-          : center - max2
-        : 0;
-      return {
-        [axis]: coords[axis] + alignmentOffset,
-        data: {
-          [axis]: offset4,
-          centerOffset: center - offset4 - alignmentOffset,
-          ...(shouldAddOffset && {
-            alignmentOffset,
-          }),
-        },
-        reset: shouldAddOffset,
-      };
-    },
-  });
-  var flip = function (options2) {
-    if (options2 === void 0) {
-      options2 = {};
-    }
-    return {
-      name: 'flip',
-      options: options2,
-      async fn(state) {
-        var _middlewareData$arrow, _middlewareData$flip;
-        const {
-          placement,
-          middlewareData,
-          rects,
-          initialPlacement,
-          platform: platform2,
-          elements,
-        } = state;
-        const {
-          mainAxis: checkMainAxis = true,
-          crossAxis: checkCrossAxis = true,
-          fallbackPlacements: specifiedFallbackPlacements,
-          fallbackStrategy = 'bestFit',
-          fallbackAxisSideDirection = 'none',
-          flipAlignment = true,
-          ...detectOverflowOptions
-        } = evaluate(options2, state);
-        if (
-          (_middlewareData$arrow = middlewareData.arrow) != null &&
-          _middlewareData$arrow.alignmentOffset
-        ) {
-          return {};
-        }
-        const side = getSide(placement);
-        const initialSideAxis = getSideAxis(initialPlacement);
-        const isBasePlacement = getSide(initialPlacement) === initialPlacement;
-        const rtl = await (platform2.isRTL == null ? void 0 : platform2.isRTL(elements.floating));
-        const fallbackPlacements =
-          specifiedFallbackPlacements ||
-          (isBasePlacement || !flipAlignment
-            ? [getOppositePlacement(initialPlacement)]
-            : getExpandedPlacements(initialPlacement));
-        const hasFallbackAxisSideDirection = fallbackAxisSideDirection !== 'none';
-        if (!specifiedFallbackPlacements && hasFallbackAxisSideDirection) {
-          fallbackPlacements.push(
-            ...getOppositeAxisPlacements(
-              initialPlacement,
-              flipAlignment,
-              fallbackAxisSideDirection,
-              rtl,
-            ),
-          );
-        }
-        const placements2 = [initialPlacement, ...fallbackPlacements];
-        const overflow = await platform2.detectOverflow(state, detectOverflowOptions);
-        const overflows = [];
-        let overflowsData =
-          ((_middlewareData$flip = middlewareData.flip) == null
-            ? void 0
-            : _middlewareData$flip.overflows) || [];
-        if (checkMainAxis) {
-          overflows.push(overflow[side]);
-        }
-        if (checkCrossAxis) {
-          const sides2 = getAlignmentSides(placement, rects, rtl);
-          overflows.push(overflow[sides2[0]], overflow[sides2[1]]);
-        }
-        overflowsData = [
-          ...overflowsData,
-          {
-            placement,
-            overflows,
-          },
-        ];
-        if (!overflows.every((side2) => side2 <= 0)) {
-          var _middlewareData$flip2, _overflowsData$filter;
-          const nextIndex =
-            (((_middlewareData$flip2 = middlewareData.flip) == null
-              ? void 0
-              : _middlewareData$flip2.index) || 0) + 1;
-          const nextPlacement = placements2[nextIndex];
-          if (nextPlacement) {
-            const ignoreCrossAxisOverflow =
-              checkCrossAxis === 'alignment'
-                ? initialSideAxis !== getSideAxis(nextPlacement)
-                : false;
-            if (
-              !ignoreCrossAxisOverflow || // We leave the current main axis only if every placement on that axis
-              // overflows the main axis.
-              overflowsData.every((d) =>
-                getSideAxis(d.placement) === initialSideAxis ? d.overflows[0] > 0 : true,
-              )
-            ) {
-              return {
-                data: {
-                  index: nextIndex,
-                  overflows: overflowsData,
-                },
-                reset: {
-                  placement: nextPlacement,
-                },
-              };
-            }
-          }
-          let resetPlacement =
-            (_overflowsData$filter = overflowsData
-              .filter((d) => d.overflows[0] <= 0)
-              .sort((a, b) => a.overflows[1] - b.overflows[1])[0]) == null
-              ? void 0
-              : _overflowsData$filter.placement;
-          if (!resetPlacement) {
-            switch (fallbackStrategy) {
-              case 'bestFit': {
-                var _overflowsData$filter2;
-                const placement2 =
-                  (_overflowsData$filter2 = overflowsData
-                    .filter((d) => {
-                      if (hasFallbackAxisSideDirection) {
-                        const currentSideAxis = getSideAxis(d.placement);
-                        return (
-                          currentSideAxis === initialSideAxis || // Create a bias to the `y` side axis due to horizontal
-                          // reading directions favoring greater width.
-                          currentSideAxis === 'y'
-                        );
-                      }
-                      return true;
-                    })
-                    .map((d) => [
-                      d.placement,
-                      d.overflows
-                        .filter((overflow2) => overflow2 > 0)
-                        .reduce((acc, overflow2) => acc + overflow2, 0),
-                    ])
-                    .sort((a, b) => a[1] - b[1])[0]) == null
-                    ? void 0
-                    : _overflowsData$filter2[0];
-                if (placement2) {
-                  resetPlacement = placement2;
-                }
-                break;
-              }
-              case 'initialPlacement':
-                resetPlacement = initialPlacement;
-                break;
-            }
-          }
-          if (placement !== resetPlacement) {
-            return {
-              reset: {
-                placement: resetPlacement,
-              },
-            };
-          }
-        }
-        return {};
-      },
-    };
-  };
-  function getSideOffsets(overflow, rect) {
-    return {
-      top: overflow.top - rect.height,
-      right: overflow.right - rect.width,
-      bottom: overflow.bottom - rect.height,
-      left: overflow.left - rect.width,
-    };
-  }
-  function isAnySideFullyClipped(overflow) {
-    return sides.some((side) => overflow[side] >= 0);
-  }
-  var hide = function (options2) {
-    if (options2 === void 0) {
-      options2 = {};
-    }
-    return {
-      name: 'hide',
-      options: options2,
-      async fn(state) {
-        const { rects, platform: platform2 } = state;
-        const { strategy = 'referenceHidden', ...detectOverflowOptions } = evaluate(
-          options2,
-          state,
-        );
-        switch (strategy) {
-          case 'referenceHidden': {
-            const overflow = await platform2.detectOverflow(state, {
-              ...detectOverflowOptions,
-              elementContext: 'reference',
-            });
-            const offsets = getSideOffsets(overflow, rects.reference);
-            return {
-              data: {
-                referenceHiddenOffsets: offsets,
-                referenceHidden: isAnySideFullyClipped(offsets),
-              },
-            };
-          }
-          case 'escaped': {
-            const overflow = await platform2.detectOverflow(state, {
-              ...detectOverflowOptions,
-              altBoundary: true,
-            });
-            const offsets = getSideOffsets(overflow, rects.floating);
-            return {
-              data: {
-                escapedOffsets: offsets,
-                escaped: isAnySideFullyClipped(offsets),
-              },
-            };
-          }
-          default: {
-            return {};
-          }
-        }
-      },
-    };
-  };
-  var originSides = /* @__PURE__ */ new Set(['left', 'top']);
-  async function convertValueToCoords(state, options2) {
-    const { placement, platform: platform2, elements } = state;
-    const rtl = await (platform2.isRTL == null ? void 0 : platform2.isRTL(elements.floating));
-    const side = getSide(placement);
-    const alignment = getAlignment(placement);
-    const isVertical = getSideAxis(placement) === 'y';
-    const mainAxisMulti = originSides.has(side) ? -1 : 1;
-    const crossAxisMulti = rtl && isVertical ? -1 : 1;
-    const rawValue = evaluate(options2, state);
-    let { mainAxis, crossAxis, alignmentAxis } =
-      typeof rawValue === 'number'
-        ? {
-            mainAxis: rawValue,
-            crossAxis: 0,
-            alignmentAxis: null,
-          }
-        : {
-            mainAxis: rawValue.mainAxis || 0,
-            crossAxis: rawValue.crossAxis || 0,
-            alignmentAxis: rawValue.alignmentAxis,
-          };
-    if (alignment && typeof alignmentAxis === 'number') {
-      crossAxis = alignment === 'end' ? alignmentAxis * -1 : alignmentAxis;
-    }
-    return isVertical
-      ? {
-          x: crossAxis * crossAxisMulti,
-          y: mainAxis * mainAxisMulti,
-        }
-      : {
-          x: mainAxis * mainAxisMulti,
-          y: crossAxis * crossAxisMulti,
-        };
-  }
-  var offset = function (options2) {
-    if (options2 === void 0) {
-      options2 = 0;
-    }
-    return {
-      name: 'offset',
-      options: options2,
-      async fn(state) {
-        var _middlewareData$offse, _middlewareData$arrow;
-        const { x, y, placement, middlewareData } = state;
-        const diffCoords = await convertValueToCoords(state, options2);
-        if (
-          placement ===
-            ((_middlewareData$offse = middlewareData.offset) == null
-              ? void 0
-              : _middlewareData$offse.placement) &&
-          (_middlewareData$arrow = middlewareData.arrow) != null &&
-          _middlewareData$arrow.alignmentOffset
-        ) {
-          return {};
-        }
-        return {
-          x: x + diffCoords.x,
-          y: y + diffCoords.y,
-          data: {
-            ...diffCoords,
-            placement,
-          },
-        };
-      },
-    };
-  };
-  var shift = function (options2) {
-    if (options2 === void 0) {
-      options2 = {};
-    }
-    return {
-      name: 'shift',
-      options: options2,
-      async fn(state) {
-        const { x, y, placement, platform: platform2 } = state;
-        const {
-          mainAxis: checkMainAxis = true,
-          crossAxis: checkCrossAxis = false,
-          limiter = {
-            fn: (_ref) => {
-              let { x: x2, y: y2 } = _ref;
-              return {
-                x: x2,
-                y: y2,
-              };
-            },
-          },
-          ...detectOverflowOptions
-        } = evaluate(options2, state);
-        const coords = {
-          x,
-          y,
-        };
-        const overflow = await platform2.detectOverflow(state, detectOverflowOptions);
-        const crossAxis = getSideAxis(placement);
-        const mainAxis = getOppositeAxis(crossAxis);
-        let mainAxisCoord = coords[mainAxis];
-        let crossAxisCoord = coords[crossAxis];
-        const clampCoord = (axis, coord) =>
-          clamp2(
-            coord + overflow[axis === 'y' ? 'top' : 'left'],
-            coord,
-            coord - overflow[axis === 'y' ? 'bottom' : 'right'],
-          );
-        if (checkMainAxis) {
-          mainAxisCoord = clampCoord(mainAxis, mainAxisCoord);
-        }
-        if (checkCrossAxis) {
-          crossAxisCoord = clampCoord(crossAxis, crossAxisCoord);
-        }
-        const limitedCoords = limiter.fn({
-          ...state,
-          [mainAxis]: mainAxisCoord,
-          [crossAxis]: crossAxisCoord,
-        });
-        return {
-          ...limitedCoords,
-          data: {
-            x: limitedCoords.x - x,
-            y: limitedCoords.y - y,
-            enabled: {
-              [mainAxis]: checkMainAxis,
-              [crossAxis]: checkCrossAxis,
-            },
-          },
-        };
-      },
-    };
-  };
-  var limitShift = function (options2) {
-    if (options2 === void 0) {
-      options2 = {};
-    }
-    return {
-      options: options2,
-      fn(state) {
-        var _rawOffset$mainAxis, _rawOffset$crossAxis;
-        const { x, y, placement, rects, middlewareData } = state;
-        const {
-          offset: offset4 = 0,
-          mainAxis: checkMainAxis = true,
-          crossAxis: checkCrossAxis = true,
-        } = evaluate(options2, state);
-        const coords = {
-          x,
-          y,
-        };
-        const crossAxis = getSideAxis(placement);
-        const mainAxis = getOppositeAxis(crossAxis);
-        let mainAxisCoord = coords[mainAxis];
-        let crossAxisCoord = coords[crossAxis];
-        const rawOffset = evaluate(offset4, state);
-        const computedOffset =
-          typeof rawOffset === 'number'
-            ? {
-                mainAxis: rawOffset,
-                crossAxis: 0,
-              }
-            : {
-                mainAxis:
-                  (_rawOffset$mainAxis = rawOffset.mainAxis) != null ? _rawOffset$mainAxis : 0,
-                crossAxis:
-                  (_rawOffset$crossAxis = rawOffset.crossAxis) != null ? _rawOffset$crossAxis : 0,
-              };
-        if (checkMainAxis) {
-          const len = mainAxis === 'y' ? 'height' : 'width';
-          const limitMin =
-            rects.reference[mainAxis] - rects.floating[len] + computedOffset.mainAxis;
-          const limitMax =
-            rects.reference[mainAxis] + rects.reference[len] - computedOffset.mainAxis;
-          if (mainAxisCoord < limitMin) {
-            mainAxisCoord = limitMin;
-          } else if (mainAxisCoord > limitMax) {
-            mainAxisCoord = limitMax;
-          }
-        }
-        if (checkCrossAxis) {
-          var _middlewareData$offse, _middlewareData$offse2;
-          const len = mainAxis === 'y' ? 'width' : 'height';
-          const isOriginSide = originSides.has(getSide(placement));
-          const limitMin =
-            rects.reference[crossAxis] -
-            rects.floating[len] +
-            (isOriginSide
-              ? ((_middlewareData$offse = middlewareData.offset) == null
-                  ? void 0
-                  : _middlewareData$offse[crossAxis]) || 0
-              : 0) +
-            (isOriginSide ? 0 : computedOffset.crossAxis);
-          const limitMax =
-            rects.reference[crossAxis] +
-            rects.reference[len] +
-            (isOriginSide
-              ? 0
-              : ((_middlewareData$offse2 = middlewareData.offset) == null
-                  ? void 0
-                  : _middlewareData$offse2[crossAxis]) || 0) -
-            (isOriginSide ? computedOffset.crossAxis : 0);
-          if (crossAxisCoord < limitMin) {
-            crossAxisCoord = limitMin;
-          } else if (crossAxisCoord > limitMax) {
-            crossAxisCoord = limitMax;
-          }
-        }
-        return {
-          [mainAxis]: mainAxisCoord,
-          [crossAxis]: crossAxisCoord,
-        };
-      },
-    };
-  };
-  var size = function (options2) {
-    if (options2 === void 0) {
-      options2 = {};
-    }
-    return {
-      name: 'size',
-      options: options2,
-      async fn(state) {
-        const { placement, rects, platform: platform2, elements } = state;
-        const { apply = () => {}, ...detectOverflowOptions } = evaluate(options2, state);
-        const overflow = await platform2.detectOverflow(state, detectOverflowOptions);
-        const side = getSide(placement);
-        const alignment = getAlignment(placement);
-        const isYAxis = getSideAxis(placement) === 'y';
-        const { width, height } = rects.floating;
-        let heightSide;
-        let widthSide;
-        if (side === 'top' || side === 'bottom') {
-          heightSide = side;
-          widthSide =
-            alignment ===
-            ((await (platform2.isRTL == null ? void 0 : platform2.isRTL(elements.floating)))
-              ? 'start'
-              : 'end')
-              ? 'left'
-              : 'right';
-        } else {
-          widthSide = side;
-          heightSide = alignment === 'end' ? 'top' : 'bottom';
-        }
-        const maximumClippingHeight = height - overflow.top - overflow.bottom;
-        const maximumClippingWidth = width - overflow.left - overflow.right;
-        const overflowAvailableHeight = min(height - overflow[heightSide], maximumClippingHeight);
-        const overflowAvailableWidth = min(width - overflow[widthSide], maximumClippingWidth);
-        const shiftData = state.middlewareData.shift;
-        const noShift = !shiftData;
-        let availableHeight = overflowAvailableHeight;
-        let availableWidth = overflowAvailableWidth;
-        if (shiftData != null && shiftData.enabled.x) {
-          availableWidth = maximumClippingWidth;
-        }
-        if (shiftData != null && shiftData.enabled.y) {
-          availableHeight = maximumClippingHeight;
-        }
-        if (noShift && !alignment) {
-          if (isYAxis) {
-            availableWidth = width - 2 * max(overflow.left, overflow.right);
-          } else {
-            availableHeight = height - 2 * max(overflow.top, overflow.bottom);
-          }
-        }
-        await apply({
-          ...state,
-          availableWidth,
-          availableHeight,
-        });
-        const nextDimensions = await platform2.getDimensions(elements.floating);
-        if (width !== nextDimensions.width || height !== nextDimensions.height) {
-          return {
-            reset: {
-              rects: true,
-            },
-          };
-        }
-        return {};
-      },
-    };
-  };
-
-  // node_modules/@floating-ui/utils/dist/floating-ui.utils.dom.mjs
-  function hasWindow() {
-    return typeof window !== 'undefined';
-  }
-  function getNodeName(node) {
-    if (isNode(node)) {
-      return (node.nodeName || '').toLowerCase();
-    }
-    return '#document';
-  }
-  function getWindow(node) {
-    var _node$ownerDocument;
-    return (
-      (node == null || (_node$ownerDocument = node.ownerDocument) == null
-        ? void 0
-        : _node$ownerDocument.defaultView) || window
-    );
-  }
-  function getDocumentElement(node) {
-    var _ref;
-    return (_ref = (isNode(node) ? node.ownerDocument : node.document) || window.document) == null
-      ? void 0
-      : _ref.documentElement;
-  }
-  function isNode(value) {
-    if (!hasWindow()) {
-      return false;
-    }
-    return value instanceof Node || value instanceof getWindow(value).Node;
-  }
-  function isElement(value) {
-    if (!hasWindow()) {
-      return false;
-    }
-    return value instanceof Element || value instanceof getWindow(value).Element;
-  }
-  function isHTMLElement(value) {
-    if (!hasWindow()) {
-      return false;
-    }
-    return value instanceof HTMLElement || value instanceof getWindow(value).HTMLElement;
-  }
-  function isShadowRoot(value) {
-    if (!hasWindow() || typeof ShadowRoot === 'undefined') {
-      return false;
-    }
-    return value instanceof ShadowRoot || value instanceof getWindow(value).ShadowRoot;
-  }
-  function isOverflowElement(element) {
-    const { overflow, overflowX, overflowY, display } = getComputedStyle2(element);
-    return (
-      /auto|scroll|overlay|hidden|clip/.test(overflow + overflowY + overflowX) &&
-      display !== 'inline' &&
-      display !== 'contents'
-    );
-  }
-  function isTableElement(element) {
-    return /^(table|td|th)$/.test(getNodeName(element));
-  }
-  function isTopLayer(element) {
-    try {
-      if (element.matches(':popover-open')) {
-        return true;
-      }
-    } catch (_e) {}
-    try {
-      return element.matches(':modal');
-    } catch (_e) {
-      return false;
-    }
-  }
-  var willChangeRe = /transform|translate|scale|rotate|perspective|filter/;
-  var containRe = /paint|layout|strict|content/;
-  var isNotNone = (value) => !!value && value !== 'none';
-  var isWebKitValue;
-  function isContainingBlock(elementOrCss) {
-    const css = isElement(elementOrCss) ? getComputedStyle2(elementOrCss) : elementOrCss;
-    return (
-      isNotNone(css.transform) ||
-      isNotNone(css.translate) ||
-      isNotNone(css.scale) ||
-      isNotNone(css.rotate) ||
-      isNotNone(css.perspective) ||
-      (!isWebKit() && (isNotNone(css.backdropFilter) || isNotNone(css.filter))) ||
-      willChangeRe.test(css.willChange || '') ||
-      containRe.test(css.contain || '')
-    );
-  }
-  function getContainingBlock(element) {
-    let currentNode = getParentNode(element);
-    while (isHTMLElement(currentNode) && !isLastTraversableNode(currentNode)) {
-      if (isContainingBlock(currentNode)) {
-        return currentNode;
-      } else if (isTopLayer(currentNode)) {
-        return null;
-      }
-      currentNode = getParentNode(currentNode);
-    }
-    return null;
-  }
-  function isWebKit() {
-    if (isWebKitValue == null) {
-      isWebKitValue =
-        typeof CSS !== 'undefined' &&
-        CSS.supports &&
-        CSS.supports('-webkit-backdrop-filter', 'none');
-    }
-    return isWebKitValue;
-  }
-  function isLastTraversableNode(node) {
-    return /^(html|body|#document)$/.test(getNodeName(node));
-  }
-  function getComputedStyle2(element) {
-    return getWindow(element).getComputedStyle(element);
-  }
-  function getNodeScroll(element) {
-    if (isElement(element)) {
-      return {
-        scrollLeft: element.scrollLeft,
-        scrollTop: element.scrollTop,
-      };
-    }
-    return {
-      scrollLeft: element.scrollX,
-      scrollTop: element.scrollY,
-    };
-  }
-  function getParentNode(node) {
-    if (getNodeName(node) === 'html') {
-      return node;
-    }
-    const result =
-      // Step into the shadow DOM of the parent of a slotted node.
-      node.assignedSlot || // DOM Element detected.
-      node.parentNode || // ShadowRoot detected.
-      (isShadowRoot(node) && node.host) || // Fallback.
-      getDocumentElement(node);
-    return isShadowRoot(result) ? result.host : result;
-  }
-  function getNearestOverflowAncestor(node) {
-    const parentNode = getParentNode(node);
-    if (isLastTraversableNode(parentNode)) {
-      return (node.ownerDocument || node).body;
-    }
-    if (isHTMLElement(parentNode) && isOverflowElement(parentNode)) {
-      return parentNode;
-    }
-    return getNearestOverflowAncestor(parentNode);
-  }
-  function getOverflowAncestors(node, list, traverseIframes) {
-    var _node$ownerDocument2;
-    if (list === void 0) {
-      list = [];
-    }
-    if (traverseIframes === void 0) {
-      traverseIframes = true;
-    }
-    const scrollableAncestor = getNearestOverflowAncestor(node);
-    const isBody =
-      scrollableAncestor ===
-      ((_node$ownerDocument2 = node.ownerDocument) == null ? void 0 : _node$ownerDocument2.body);
-    const win = getWindow(scrollableAncestor);
-    if (isBody) {
-      const frameElement = getFrameElement(win);
-      return list.concat(
-        win,
-        win.visualViewport || [],
-        isOverflowElement(scrollableAncestor) ? scrollableAncestor : [],
-        frameElement && traverseIframes ? getOverflowAncestors(frameElement) : [],
-      );
-    } else {
-      return list.concat(
-        scrollableAncestor,
-        getOverflowAncestors(scrollableAncestor, [], traverseIframes),
-      );
-    }
-  }
-  function getFrameElement(win) {
-    return win.parent && Object.getPrototypeOf(win.parent) ? win.frameElement : null;
-  }
-
-  // node_modules/@floating-ui/dom/dist/floating-ui.dom.mjs
-  function getCssDimensions(element) {
-    const css = getComputedStyle2(element);
-    let width = parseFloat(css.width) || 0;
-    let height = parseFloat(css.height) || 0;
-    const hasOffset = isHTMLElement(element);
-    const offsetWidth = hasOffset ? element.offsetWidth : width;
-    const offsetHeight = hasOffset ? element.offsetHeight : height;
-    const shouldFallback = round(width) !== offsetWidth || round(height) !== offsetHeight;
-    if (shouldFallback) {
-      width = offsetWidth;
-      height = offsetHeight;
-    }
-    return {
-      width,
-      height,
-      $: shouldFallback,
-    };
-  }
-  function unwrapElement(element) {
-    return !isElement(element) ? element.contextElement : element;
-  }
-  function getScale(element) {
-    const domElement = unwrapElement(element);
-    if (!isHTMLElement(domElement)) {
-      return createCoords(1);
-    }
-    const rect = domElement.getBoundingClientRect();
-    const { width, height, $ } = getCssDimensions(domElement);
-    let x = ($ ? round(rect.width) : rect.width) / width;
-    let y = ($ ? round(rect.height) : rect.height) / height;
-    if (!x || !Number.isFinite(x)) {
-      x = 1;
-    }
-    if (!y || !Number.isFinite(y)) {
-      y = 1;
-    }
-    return {
-      x,
-      y,
-    };
-  }
-  var noOffsets = /* @__PURE__ */ createCoords(0);
-  function getVisualOffsets(element) {
-    const win = getWindow(element);
-    if (!isWebKit() || !win.visualViewport) {
-      return noOffsets;
-    }
-    return {
-      x: win.visualViewport.offsetLeft,
-      y: win.visualViewport.offsetTop,
-    };
-  }
-  function shouldAddVisualOffsets(element, isFixed, floatingOffsetParent) {
-    if (isFixed === void 0) {
-      isFixed = false;
-    }
-    return !!floatingOffsetParent && isFixed && floatingOffsetParent === getWindow(element);
-  }
-  function getBoundingClientRect(element, includeScale, isFixedStrategy, offsetParent) {
-    if (includeScale === void 0) {
-      includeScale = false;
-    }
-    if (isFixedStrategy === void 0) {
-      isFixedStrategy = false;
-    }
-    const clientRect = element.getBoundingClientRect();
-    const domElement = unwrapElement(element);
-    let scale = createCoords(1);
-    if (includeScale) {
-      if (offsetParent) {
-        if (isElement(offsetParent)) {
-          scale = getScale(offsetParent);
-        }
-      } else {
-        scale = getScale(element);
-      }
-    }
-    const visualOffsets = shouldAddVisualOffsets(domElement, isFixedStrategy, offsetParent)
-      ? getVisualOffsets(domElement)
-      : createCoords(0);
-    let x = (clientRect.left + visualOffsets.x) / scale.x;
-    let y = (clientRect.top + visualOffsets.y) / scale.y;
-    let width = clientRect.width / scale.x;
-    let height = clientRect.height / scale.y;
-    if (domElement && offsetParent) {
-      const win = getWindow(domElement);
-      const offsetWin = isElement(offsetParent) ? getWindow(offsetParent) : offsetParent;
-      let currentWin = win;
-      let currentIFrame = getFrameElement(currentWin);
-      while (currentIFrame && offsetWin !== currentWin) {
-        const iframeScale = getScale(currentIFrame);
-        const iframeRect = currentIFrame.getBoundingClientRect();
-        const css = getComputedStyle2(currentIFrame);
-        const left =
-          iframeRect.left +
-          (currentIFrame.clientLeft + parseFloat(css.paddingLeft)) * iframeScale.x;
-        const top =
-          iframeRect.top + (currentIFrame.clientTop + parseFloat(css.paddingTop)) * iframeScale.y;
-        x *= iframeScale.x;
-        y *= iframeScale.y;
-        width *= iframeScale.x;
-        height *= iframeScale.y;
-        x += left;
-        y += top;
-        currentWin = getWindow(currentIFrame);
-        currentIFrame = getFrameElement(currentWin);
-      }
-    }
-    return rectToClientRect({
-      width,
-      height,
-      x,
-      y,
-    });
-  }
-  function getWindowScrollBarX(element, rect) {
-    const leftScroll = getNodeScroll(element).scrollLeft;
-    if (!rect) {
-      return getBoundingClientRect(getDocumentElement(element)).left + leftScroll;
-    }
-    return rect.left + leftScroll;
-  }
-  function getHTMLOffset(documentElement, scroll) {
-    const htmlRect = documentElement.getBoundingClientRect();
-    const x = htmlRect.left + scroll.scrollLeft - getWindowScrollBarX(documentElement, htmlRect);
-    const y = htmlRect.top + scroll.scrollTop;
-    return {
-      x,
-      y,
-    };
-  }
-  function convertOffsetParentRelativeRectToViewportRelativeRect(_ref) {
-    let { elements, rect, offsetParent, strategy } = _ref;
-    const isFixed = strategy === 'fixed';
-    const documentElement = getDocumentElement(offsetParent);
-    const topLayer = elements ? isTopLayer(elements.floating) : false;
-    if (offsetParent === documentElement || (topLayer && isFixed)) {
-      return rect;
-    }
-    let scroll = {
-      scrollLeft: 0,
-      scrollTop: 0,
-    };
-    let scale = createCoords(1);
-    const offsets = createCoords(0);
-    const isOffsetParentAnElement = isHTMLElement(offsetParent);
-    if (isOffsetParentAnElement || !isFixed) {
-      if (getNodeName(offsetParent) !== 'body' || isOverflowElement(documentElement)) {
-        scroll = getNodeScroll(offsetParent);
-      }
-      if (isOffsetParentAnElement) {
-        const offsetRect = getBoundingClientRect(offsetParent);
-        scale = getScale(offsetParent);
-        offsets.x = offsetRect.x + offsetParent.clientLeft;
-        offsets.y = offsetRect.y + offsetParent.clientTop;
-      }
-    }
-    const htmlOffset =
-      documentElement && !isOffsetParentAnElement && !isFixed
-        ? getHTMLOffset(documentElement, scroll)
-        : createCoords(0);
-    return {
-      width: rect.width * scale.x,
-      height: rect.height * scale.y,
-      x: rect.x * scale.x - scroll.scrollLeft * scale.x + offsets.x + htmlOffset.x,
-      y: rect.y * scale.y - scroll.scrollTop * scale.y + offsets.y + htmlOffset.y,
-    };
-  }
-  function getClientRects(element) {
-    return element.getClientRects ? Array.from(element.getClientRects()) : [];
-  }
-  function getDocumentRect(html) {
-    const scroll = getNodeScroll(html);
-    const body = html.ownerDocument.body;
-    const width = max(html.scrollWidth, html.clientWidth, body.scrollWidth, body.clientWidth);
-    const height = max(html.scrollHeight, html.clientHeight, body.scrollHeight, body.clientHeight);
-    let x = -scroll.scrollLeft + getWindowScrollBarX(html);
-    const y = -scroll.scrollTop;
-    if (getComputedStyle2(body).direction === 'rtl') {
-      x += max(html.clientWidth, body.clientWidth) - width;
-    }
-    return {
-      width,
-      height,
-      x,
-      y,
-    };
-  }
-  var SCROLLBAR_MAX = 25;
-  function getViewportRect(element, strategy, rootBoundary) {
-    if (rootBoundary === void 0) {
-      rootBoundary = 'viewport';
-    }
-    const isLayoutViewport = rootBoundary === 'layoutViewport';
-    const win = getWindow(element);
-    const html = getDocumentElement(element);
-    const visualViewport = win.visualViewport;
-    let width = html.clientWidth;
-    let height = html.clientHeight;
-    let x = 0;
-    let y = 0;
-    if (visualViewport) {
-      const layoutRelativeClientCoords = !isWebKit() || strategy === 'fixed';
-      if (isLayoutViewport) {
-        if (!layoutRelativeClientCoords) {
-          x = -visualViewport.offsetLeft;
-          y = -visualViewport.offsetTop;
-        }
-      } else {
-        width = visualViewport.width;
-        height = visualViewport.height;
-        if (layoutRelativeClientCoords) {
-          x = visualViewport.offsetLeft;
-          y = visualViewport.offsetTop;
-        }
-      }
-    }
-    const windowScrollbarX = getWindowScrollBarX(html);
-    if (windowScrollbarX <= 0) {
-      const doc = html.ownerDocument;
-      const body = doc.body;
-      const bodyStyles = getComputedStyle(body);
-      const bodyMarginInline =
-        doc.compatMode === 'CSS1Compat'
-          ? parseFloat(bodyStyles.marginLeft) + parseFloat(bodyStyles.marginRight) || 0
-          : 0;
-      const reservedWidth = Math.abs(html.clientWidth - body.clientWidth - bodyMarginInline);
-      const gutter =
-        getComputedStyle(html).scrollbarGutter === 'stable both-edges'
-          ? reservedWidth / 2
-          : reservedWidth;
-      if (gutter <= SCROLLBAR_MAX) {
-        width -= gutter;
-      }
-    }
-    return {
-      width,
-      height,
-      x,
-      y,
-    };
-  }
-  function getInnerBoundingClientRect(element, strategy) {
-    const clientRect = getBoundingClientRect(element, true, strategy === 'fixed');
-    const top = clientRect.top + element.clientTop;
-    const left = clientRect.left + element.clientLeft;
-    const scale = getScale(element);
-    const width = element.clientWidth * scale.x;
-    const height = element.clientHeight * scale.y;
-    const x = left * scale.x;
-    const y = top * scale.y;
-    return {
-      width,
-      height,
-      x,
-      y,
-    };
-  }
-  function getClientRectFromClippingAncestor(element, clippingAncestor, strategy) {
-    let rect;
-    if (clippingAncestor === 'viewport' || clippingAncestor === 'layoutViewport') {
-      rect = getViewportRect(element, strategy, clippingAncestor);
-    } else if (clippingAncestor === 'document') {
-      rect = getDocumentRect(getDocumentElement(element));
-    } else if (isElement(clippingAncestor)) {
-      rect = getInnerBoundingClientRect(clippingAncestor, strategy);
-    } else {
-      const visualOffsets = getVisualOffsets(element);
-      rect = {
-        x: clippingAncestor.x - visualOffsets.x,
-        y: clippingAncestor.y - visualOffsets.y,
-        width: clippingAncestor.width,
-        height: clippingAncestor.height,
-      };
-    }
-    return rectToClientRect(rect);
-  }
-  function getClippingElementAncestors(element, cache) {
-    const cachedResult = cache.get(element);
-    if (cachedResult) {
-      return cachedResult;
-    }
-    let result = getOverflowAncestors(element, [], false).filter(
-      (el) => isElement(el) && getNodeName(el) !== 'body',
-    );
-    let lastKeptComputedStyle = null;
-    const elementIsFixed = getComputedStyle2(element).position === 'fixed';
-    let currentNode = elementIsFixed ? getParentNode(element) : element;
-    while (isElement(currentNode) && !isLastTraversableNode(currentNode)) {
-      const computedStyle = getComputedStyle2(currentNode);
-      const currentNodeIsContaining = isContainingBlock(currentNode);
-      const lastPosition = lastKeptComputedStyle
-        ? lastKeptComputedStyle.position
-        : elementIsFixed
-          ? 'fixed'
-          : '';
-      const shouldDropCurrentNode =
-        !currentNodeIsContaining &&
-        (lastPosition === 'fixed' ||
-          (lastPosition === 'absolute' && computedStyle.position === 'static'));
-      if (shouldDropCurrentNode) {
-        result = result.filter((ancestor) => ancestor !== currentNode);
-      } else {
-        lastKeptComputedStyle = computedStyle;
-      }
-      currentNode = getParentNode(currentNode);
-    }
-    cache.set(element, result);
-    return result;
-  }
-  function getClippingRect(_ref) {
-    let { element, boundary, rootBoundary, strategy } = _ref;
-    const elementClippingAncestors =
-      boundary === 'clippingAncestors'
-        ? isTopLayer(element)
-          ? []
-          : getClippingElementAncestors(element, this._c)
-        : [].concat(boundary);
-    const clippingAncestors = [...elementClippingAncestors, rootBoundary];
-    const firstRect = getClientRectFromClippingAncestor(element, clippingAncestors[0], strategy);
-    let top = firstRect.top;
-    let right = firstRect.right;
-    let bottom = firstRect.bottom;
-    let left = firstRect.left;
-    for (let i = 1; i < clippingAncestors.length; i++) {
-      const rect = getClientRectFromClippingAncestor(element, clippingAncestors[i], strategy);
-      top = max(rect.top, top);
-      right = min(rect.right, right);
-      bottom = min(rect.bottom, bottom);
-      left = max(rect.left, left);
-    }
-    return {
-      width: right - left,
-      height: bottom - top,
-      x: left,
-      y: top,
-    };
-  }
-  function getDimensions(element) {
-    const { width, height } = getCssDimensions(element);
-    return {
-      width,
-      height,
-    };
-  }
-  function getRectRelativeToOffsetParent(element, offsetParent, strategy) {
-    const isOffsetParentAnElement = isHTMLElement(offsetParent);
-    const documentElement = getDocumentElement(offsetParent);
-    const isFixed = strategy === 'fixed';
-    const rect = getBoundingClientRect(element, true, isFixed, offsetParent);
-    let scroll = {
-      scrollLeft: 0,
-      scrollTop: 0,
-    };
-    const offsets = createCoords(0);
-    if (isOffsetParentAnElement || !isFixed) {
-      if (getNodeName(offsetParent) !== 'body' || isOverflowElement(documentElement)) {
-        scroll = getNodeScroll(offsetParent);
-      }
-      if (isOffsetParentAnElement) {
-        const offsetRect = getBoundingClientRect(offsetParent, true, isFixed, offsetParent);
-        offsets.x = offsetRect.x + offsetParent.clientLeft;
-        offsets.y = offsetRect.y + offsetParent.clientTop;
-      }
-    }
-    if (!isOffsetParentAnElement && documentElement) {
-      offsets.x = getWindowScrollBarX(documentElement);
-    }
-    const htmlOffset =
-      documentElement && !isOffsetParentAnElement && !isFixed
-        ? getHTMLOffset(documentElement, scroll)
-        : createCoords(0);
-    const x = rect.left + scroll.scrollLeft - offsets.x - htmlOffset.x;
-    const y = rect.top + scroll.scrollTop - offsets.y - htmlOffset.y;
-    return {
-      x,
-      y,
-      width: rect.width,
-      height: rect.height,
-    };
-  }
-  function isStaticPositioned(element) {
-    return getComputedStyle2(element).position === 'static';
-  }
-  function getTrueOffsetParent(element, polyfill) {
-    if (!isHTMLElement(element) || getComputedStyle2(element).position === 'fixed') {
-      return null;
-    }
-    if (polyfill) {
-      return polyfill(element);
-    }
-    let rawOffsetParent = element.offsetParent;
-    if (getDocumentElement(element) === rawOffsetParent) {
-      rawOffsetParent = rawOffsetParent.ownerDocument.body;
-    }
-    return rawOffsetParent;
-  }
-  function getOffsetParent(element, polyfill) {
-    const win = getWindow(element);
-    if (isTopLayer(element)) {
-      return win;
-    }
-    if (!isHTMLElement(element)) {
-      let svgOffsetParent = getParentNode(element);
-      while (svgOffsetParent && !isLastTraversableNode(svgOffsetParent)) {
-        if (isElement(svgOffsetParent) && !isStaticPositioned(svgOffsetParent)) {
-          return svgOffsetParent;
-        }
-        svgOffsetParent = getParentNode(svgOffsetParent);
-      }
-      return win;
-    }
-    let offsetParent = getTrueOffsetParent(element, polyfill);
-    while (offsetParent && isTableElement(offsetParent) && isStaticPositioned(offsetParent)) {
-      offsetParent = getTrueOffsetParent(offsetParent, polyfill);
-    }
-    if (
-      offsetParent &&
-      isLastTraversableNode(offsetParent) &&
-      isStaticPositioned(offsetParent) &&
-      !isContainingBlock(offsetParent)
-    ) {
-      return win;
-    }
-    return offsetParent || getContainingBlock(element) || win;
-  }
-  var getElementRects = async function (data) {
-    const getOffsetParentFn = this.getOffsetParent || getOffsetParent;
-    const getDimensionsFn = this.getDimensions;
-    const floatingDimensions = await getDimensionsFn(data.floating);
-    return {
-      reference: getRectRelativeToOffsetParent(
-        data.reference,
-        await getOffsetParentFn(data.floating),
-        data.strategy,
-      ),
-      floating: {
-        x: 0,
-        y: 0,
-        width: floatingDimensions.width,
-        height: floatingDimensions.height,
-      },
-    };
-  };
-  function isRTL(element) {
-    return getComputedStyle2(element).direction === 'rtl';
-  }
-  var platform = {
-    convertOffsetParentRelativeRectToViewportRelativeRect,
-    getDocumentElement,
-    getClippingRect,
-    getOffsetParent,
-    getElementRects,
-    getClientRects,
-    getDimensions,
-    getScale,
-    isElement,
-    isRTL,
-  };
-  function rectsAreEqual(a, b) {
-    return a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height;
-  }
-  function observeMove(element, onMove, ancestorResize) {
-    let io = null;
-    let timeoutId;
-    const root = getDocumentElement(element);
-    function cleanup() {
-      var _io;
-      clearTimeout(timeoutId);
-      (_io = io) == null || _io.disconnect();
-      io = null;
-    }
-    function refresh(skip, threshold) {
-      if (skip === void 0) {
-        skip = false;
-      }
-      if (threshold === void 0) {
-        threshold = 1;
-      }
-      cleanup();
-      const elementRectForRootMargin = element.getBoundingClientRect();
-      const { left, top, width, height } = elementRectForRootMargin;
-      if (!skip) {
-        onMove();
-      }
-      if (!width || !height) {
-        return;
-      }
-      const insetTop = floor(top);
-      const insetRight = floor(root.clientWidth - (left + width));
-      const insetBottom = floor(root.clientHeight - (top + height));
-      const insetLeft = floor(left);
-      const rootMargin =
-        -insetTop + 'px ' + -insetRight + 'px ' + -insetBottom + 'px ' + -insetLeft + 'px';
-      const options2 = {
-        rootMargin,
-        threshold: max(0, min(1, threshold)) || 1,
-      };
-      let isFirstUpdate = true;
-      function handleObserve(entries) {
-        const ratio = entries[0].intersectionRatio;
-        if (!rectsAreEqual(elementRectForRootMargin, element.getBoundingClientRect())) {
-          return refresh();
-        }
-        if (ratio !== threshold) {
-          if (!isFirstUpdate) {
-            return refresh();
-          }
-          if (!ratio) {
-            timeoutId = setTimeout(() => {
-              refresh(false, 1e-7);
-            }, 1e3);
-          } else {
-            refresh(false, ratio);
-          }
-        }
-        isFirstUpdate = false;
-      }
-      try {
-        io = new IntersectionObserver(handleObserve, {
-          ...options2,
-          // Handle <iframe>s
-          root: root.ownerDocument,
-        });
-      } catch (_e) {
-        io = new IntersectionObserver(handleObserve, options2);
-      }
-      io.observe(element);
-    }
-    const win = getWindow(element);
-    const handleResize = () => refresh(ancestorResize);
-    win.addEventListener('resize', handleResize);
-    refresh(true);
-    return () => {
-      win.removeEventListener('resize', handleResize);
-      cleanup();
-    };
-  }
-  function autoUpdate(reference, floating, update, options2) {
-    if (options2 === void 0) {
-      options2 = {};
-    }
-    const {
-      ancestorScroll = true,
-      ancestorResize = true,
-      elementResize = typeof ResizeObserver === 'function',
-      layoutShift = typeof IntersectionObserver === 'function',
-      animationFrame = false,
-    } = options2;
-    const referenceEl = unwrapElement(reference);
-    const ancestors =
-      ancestorScroll || ancestorResize
-        ? [
-            ...(referenceEl ? getOverflowAncestors(referenceEl) : []),
-            ...(floating ? getOverflowAncestors(floating) : []),
-          ]
-        : [];
-    ancestors.forEach((ancestor) => {
-      ancestorScroll && ancestor.addEventListener('scroll', update);
-      ancestorResize && ancestor.addEventListener('resize', update);
-    });
-    const cleanupIo =
-      referenceEl && layoutShift ? observeMove(referenceEl, update, ancestorResize) : null;
-    let reobserveFrame = -1;
-    let resizeObserver = null;
-    if (elementResize) {
-      resizeObserver = new ResizeObserver((_ref) => {
-        let [firstEntry] = _ref;
-        if (firstEntry && firstEntry.target === referenceEl && resizeObserver && floating) {
-          resizeObserver.unobserve(floating);
-          cancelAnimationFrame(reobserveFrame);
-          reobserveFrame = requestAnimationFrame(() => {
-            var _resizeObserver;
-            (_resizeObserver = resizeObserver) == null || _resizeObserver.observe(floating);
-          });
-        }
-        update();
-      });
-      if (referenceEl && !animationFrame) {
-        resizeObserver.observe(referenceEl);
-      }
-      if (floating) {
-        resizeObserver.observe(floating);
-      }
-    }
-    let frameId;
-    let prevRefRect = animationFrame ? getBoundingClientRect(reference) : null;
-    if (animationFrame) {
-      frameLoop();
-    }
-    function frameLoop() {
-      const nextRefRect = getBoundingClientRect(reference);
-      if (prevRefRect && !rectsAreEqual(prevRefRect, nextRefRect)) {
-        update();
-      }
-      prevRefRect = nextRefRect;
-      frameId = requestAnimationFrame(frameLoop);
-    }
-    update();
-    return () => {
-      var _resizeObserver2;
-      ancestors.forEach((ancestor) => {
-        ancestorScroll && ancestor.removeEventListener('scroll', update);
-        ancestorResize && ancestor.removeEventListener('resize', update);
-      });
-      cleanupIo == null || cleanupIo();
-      (_resizeObserver2 = resizeObserver) == null || _resizeObserver2.disconnect();
-      resizeObserver = null;
-      if (animationFrame) {
-        cancelAnimationFrame(frameId);
-      }
-    };
-  }
-  var offset2 = offset;
-  var shift2 = shift;
-  var flip2 = flip;
-  var size2 = size;
-  var hide2 = hide;
-  var arrow2 = arrow;
-  var limitShift2 = limitShift;
-  var computePosition2 = (reference, floating, options2) => {
-    const cache = /* @__PURE__ */ new Map();
-    const mergedOptions = options2 != null ? options2 : {};
-    const platformWithCache = {
-      ...platform,
-      ...mergedOptions.platform,
-      _c: cache,
-    };
-    return computePosition(reference, floating, {
-      ...mergedOptions,
-      platform: platformWithCache,
-    });
-  };
-
-  // node_modules/@floating-ui/react-dom/dist/floating-ui.react-dom.mjs
-  var React13 = __toESM(require_react(), 1);
-  var import_react7 = __toESM(require_react(), 1);
-  var ReactDOM2 = __toESM(require_react_dom(), 1);
-  var isClient = typeof document !== 'undefined';
-  var noop = function noop2() {};
-  var index = isClient ? import_react7.useLayoutEffect : noop;
-  function deepEqual(a, b) {
-    if (a === b) {
-      return true;
-    }
-    if (typeof a !== typeof b) {
-      return false;
-    }
-    if (typeof a === 'function' && a.toString() === b.toString()) {
-      return true;
-    }
-    let length;
-    let i;
-    let keys;
-    if (a && b && typeof a === 'object') {
-      if (Array.isArray(a)) {
-        length = a.length;
-        if (length !== b.length) return false;
-        for (i = length; i-- !== 0;) {
-          if (!deepEqual(a[i], b[i])) {
-            return false;
-          }
-        }
-        return true;
-      }
-      keys = Object.keys(a);
-      length = keys.length;
-      if (length !== Object.keys(b).length) {
-        return false;
-      }
-      for (i = length; i-- !== 0;) {
-        if (!{}.hasOwnProperty.call(b, keys[i])) {
-          return false;
-        }
-      }
-      for (i = length; i-- !== 0;) {
-        const key = keys[i];
-        if (key === '_owner' && a.$$typeof) {
-          continue;
-        }
-        if (!deepEqual(a[key], b[key])) {
-          return false;
-        }
-      }
-      return true;
-    }
-    return a !== a && b !== b;
-  }
-  function getDPR(element) {
-    if (typeof window === 'undefined') {
-      return 1;
-    }
-    const win = element.ownerDocument.defaultView || window;
-    return win.devicePixelRatio || 1;
-  }
-  function roundByDPR(element, value) {
-    const dpr = getDPR(element);
-    return Math.round(value * dpr) / dpr;
-  }
-  function useLatestRef(value) {
-    const ref = React13.useRef(value);
-    index(() => {
-      ref.current = value;
-    });
-    return ref;
-  }
-  function useFloating(options2) {
-    if (options2 === void 0) {
-      options2 = {};
-    }
-    const {
-      placement = 'bottom',
-      strategy = 'absolute',
-      middleware = [],
-      platform: platform2,
-      elements: { reference: externalReference, floating: externalFloating } = {},
-      transform = true,
-      whileElementsMounted,
-      open,
-    } = options2;
-    const [data, setData] = React13.useState({
-      x: 0,
-      y: 0,
-      strategy,
-      placement,
-      middlewareData: {},
-      isPositioned: false,
-    });
-    const [latestMiddleware, setLatestMiddleware] = React13.useState(middleware);
-    if (!deepEqual(latestMiddleware, middleware)) {
-      setLatestMiddleware(middleware);
-    }
-    const [_reference, _setReference] = React13.useState(null);
-    const [_floating, _setFloating] = React13.useState(null);
-    const setReference = React13.useCallback((node) => {
-      if (node !== referenceRef.current) {
-        referenceRef.current = node;
-        _setReference(node);
-      }
-    }, []);
-    const setFloating = React13.useCallback((node) => {
-      if (node !== floatingRef.current) {
-        floatingRef.current = node;
-        _setFloating(node);
-      }
-    }, []);
-    const referenceEl = externalReference || _reference;
-    const floatingEl = externalFloating || _floating;
-    const referenceRef = React13.useRef(null);
-    const floatingRef = React13.useRef(null);
-    const dataRef = React13.useRef(data);
-    const hasWhileElementsMounted = whileElementsMounted != null;
-    const whileElementsMountedRef = useLatestRef(whileElementsMounted);
-    const platformRef = useLatestRef(platform2);
-    const openRef = useLatestRef(open);
-    const update = React13.useCallback(() => {
-      if (!referenceRef.current || !floatingRef.current) {
-        return;
-      }
-      const config = {
-        placement,
-        strategy,
-        middleware: latestMiddleware,
-      };
-      if (platformRef.current) {
-        config.platform = platformRef.current;
-      }
-      computePosition2(referenceRef.current, floatingRef.current, config).then((data2) => {
-        const fullData = {
-          ...data2,
-          // The floating element's position may be recomputed while it's closed
-          // but still mounted (such as when transitioning out). To ensure
-          // `isPositioned` will be `false` initially on the next open, avoid
-          // setting it to `true` when `open === false` (must be specified).
-          isPositioned: openRef.current !== false,
-        };
-        if (isMountedRef.current && !deepEqual(dataRef.current, fullData)) {
-          dataRef.current = fullData;
-          ReactDOM2.flushSync(() => {
-            setData(fullData);
-          });
-        }
-      });
-    }, [latestMiddleware, placement, strategy, platformRef, openRef]);
-    index(() => {
-      if (open === false && dataRef.current.isPositioned) {
-        dataRef.current.isPositioned = false;
-        setData((data2) => ({
-          ...data2,
-          isPositioned: false,
-        }));
-      }
-    }, [open]);
-    const isMountedRef = React13.useRef(false);
-    index(() => {
-      isMountedRef.current = true;
-      return () => {
-        isMountedRef.current = false;
-      };
-    }, []);
-    index(() => {
-      if (referenceEl) referenceRef.current = referenceEl;
-      if (floatingEl) floatingRef.current = floatingEl;
-      if (referenceEl && floatingEl) {
-        if (whileElementsMountedRef.current) {
-          return whileElementsMountedRef.current(referenceEl, floatingEl, update);
-        }
-        update();
-      }
-    }, [referenceEl, floatingEl, update, whileElementsMountedRef, hasWhileElementsMounted]);
-    const refs = React13.useMemo(
-      () => ({
-        reference: referenceRef,
-        floating: floatingRef,
-        setReference,
-        setFloating,
-      }),
-      [setReference, setFloating],
-    );
-    const elements = React13.useMemo(
-      () => ({
-        reference: referenceEl,
-        floating: floatingEl,
-      }),
-      [referenceEl, floatingEl],
-    );
-    const floatingStyles = React13.useMemo(() => {
-      const initialStyles = {
-        position: strategy,
-        left: 0,
-        top: 0,
-      };
-      if (!elements.floating) {
-        return initialStyles;
-      }
-      const x = roundByDPR(elements.floating, data.x);
-      const y = roundByDPR(elements.floating, data.y);
-      if (transform) {
-        return {
-          ...initialStyles,
-          transform: 'translate(' + x + 'px, ' + y + 'px)',
-          ...(getDPR(elements.floating) >= 1.5 && {
-            willChange: 'transform',
-          }),
-        };
-      }
-      return {
-        position: strategy,
-        left: x,
-        top: y,
-      };
-    }, [strategy, transform, elements.floating, data.x, data.y]);
-    return React13.useMemo(
-      () => ({
-        ...data,
-        update,
-        refs,
-        elements,
-        floatingStyles,
-      }),
-      [data, update, refs, elements, floatingStyles],
-    );
-  }
-  var arrow$1 = (options2) => {
-    function isRef(value) {
-      return {}.hasOwnProperty.call(value, 'current');
-    }
-    return {
-      name: 'arrow',
-      options: options2,
-      fn(state) {
-        const { element, padding } = typeof options2 === 'function' ? options2(state) : options2;
-        if (element && isRef(element)) {
-          if (element.current != null) {
-            return arrow2({
-              element: element.current,
-              padding,
-            }).fn(state);
-          }
-          return {};
-        }
-        if (element) {
-          return arrow2({
-            element,
-            padding,
-          }).fn(state);
-        }
-        return {};
-      },
-    };
-  };
-  var offset3 = (options2, deps) => {
-    const result = offset2(options2);
-    return {
-      name: result.name,
-      fn: result.fn,
-      options: [options2, deps],
-    };
-  };
-  var shift3 = (options2, deps) => {
-    const result = shift2(options2);
-    return {
-      name: result.name,
-      fn: result.fn,
-      options: [options2, deps],
-    };
-  };
-  var limitShift3 = (options2, deps) => {
-    const result = limitShift2(options2);
-    return {
-      fn: result.fn,
-      options: [options2, deps],
-    };
-  };
-  var flip3 = (options2, deps) => {
-    const result = flip2(options2);
-    return {
-      name: result.name,
-      fn: result.fn,
-      options: [options2, deps],
-    };
-  };
-  var size3 = (options2, deps) => {
-    const result = size2(options2);
-    return {
-      name: result.name,
-      fn: result.fn,
-      options: [options2, deps],
-    };
-  };
-  var hide3 = (options2, deps) => {
-    const result = hide2(options2);
-    return {
-      name: result.name,
-      fn: result.fn,
-      options: [options2, deps],
-    };
-  };
-  var arrow3 = (options2, deps) => {
-    const result = arrow$1(options2);
-    return {
-      name: result.name,
-      fn: result.fn,
-      options: [options2, deps],
-    };
-  };
-
-  // node_modules/@radix-ui/react-use-size/dist/index.mjs
-  var React14 = __toESM(require_react(), 1);
-  var __defProp15 = Object.defineProperty;
-  var __name14 = (target, value) => __defProp15(target, 'name', { value, configurable: true });
-  function useSize(element) {
-    const [size4, setSize] = React14.useState(void 0);
-    useLayoutEffect2(() => {
-      if (element) {
-        setSize({ width: element.offsetWidth, height: element.offsetHeight });
-        const resizeObserver = new ResizeObserver((entries) => {
-          if (!Array.isArray(entries)) {
-            return;
-          }
-          if (!entries.length) {
-            return;
-          }
-          const entry = entries[0];
-          let width;
-          let height;
-          if ('borderBoxSize' in entry) {
-            const borderSizeEntry = entry['borderBoxSize'];
-            const borderSize = Array.isArray(borderSizeEntry)
-              ? borderSizeEntry[0]
-              : borderSizeEntry;
-            width = borderSize['inlineSize'];
-            height = borderSize['blockSize'];
-          } else {
-            width = element.offsetWidth;
-            height = element.offsetHeight;
-          }
-          setSize({ width, height });
-        });
-        resizeObserver.observe(element, { box: 'border-box' });
-        return () => resizeObserver.unobserve(element);
-      } else {
-        setSize(void 0);
-      }
-    }, [element]);
-    return size4;
-  }
-  __name14(useSize, 'useSize');
-
-  // node_modules/@radix-ui/react-popper/dist/index.mjs
-  var import_jsx_runtime16 = __toESM(require_jsx_runtime(), 1);
-  var __defProp16 = Object.defineProperty;
-  var __name15 = (target, value) => __defProp16(target, 'name', { value, configurable: true });
-  var POPPER_NAME = 'Popper';
-  var [createPopperContext, createPopperScope] = createContextScope(POPPER_NAME);
-  var [PopperProvider, usePopperContext] = createPopperContext(POPPER_NAME);
-  var Popper = /* @__PURE__ */ __name15((props) => {
-    const { __scopePopper, children } = props;
-    const [anchor, setAnchor] = React15.useState(null);
-    const [placementState, setPlacementState] = React15.useState(void 0);
-    return /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(PopperProvider, {
-      scope: __scopePopper,
-      anchor,
-      onAnchorChange: setAnchor,
-      placementState,
-      setPlacementState,
-      children,
-    });
-  }, 'Popper');
-  var ANCHOR_NAME = 'PopperAnchor';
-  var PopperAnchor = /* @__PURE__ */ React15.forwardRef(
-    /* @__PURE__ */ __name15(function PopperAnchor2(props, forwardedRef) {
-      const { __scopePopper, virtualRef, ...anchorProps } = props;
-      const context = usePopperContext(ANCHOR_NAME, __scopePopper);
-      const ref = React15.useRef(null);
-      const onAnchorChange = context.onAnchorChange;
-      const callbackRef = React15.useCallback(
-        (node) => {
-          ref.current = node;
-          if (node) {
-            onAnchorChange(node);
-          }
-        },
-        [onAnchorChange],
-      );
-      const composedRefs = useComposedRefs(forwardedRef, callbackRef);
-      const anchorRef = React15.useRef(null);
-      React15.useEffect(() => {
-        if (!virtualRef) {
-          return;
-        }
-        const previousAnchor = anchorRef.current;
-        anchorRef.current = virtualRef.current;
-        if (previousAnchor !== anchorRef.current) {
-          onAnchorChange(anchorRef.current);
-        }
-      });
-      const sideAndAlign =
-        context.placementState && getSideAndAlignFromPlacement(context.placementState);
-      const placedSide = sideAndAlign?.[0];
-      const placedAlign = sideAndAlign?.[1];
-      return virtualRef
-        ? null
-        : /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Primitive.div, {
-            'data-radix-popper-side': placedSide,
-            'data-radix-popper-align': placedAlign,
-            ...anchorProps,
-            ref: composedRefs,
-          });
-    }, 'PopperAnchor'),
-  );
-  var CONTENT_NAME = 'PopperContent';
-  var [PopperContentProvider, useContentContext] = createPopperContext(CONTENT_NAME);
-  var PopperContent = /* @__PURE__ */ React15.forwardRef(
-    /* @__PURE__ */ __name15(function PopperContent2(props, forwardedRef) {
-      const {
-        __scopePopper,
-        side = 'bottom',
-        sideOffset = 0,
-        align = 'center',
-        alignOffset = 0,
-        arrowPadding = 0,
-        avoidCollisions = true,
-        collisionBoundary = [],
-        collisionPadding: collisionPaddingProp = 0,
-        sticky = 'partial',
-        hideWhenDetached = false,
-        updatePositionStrategy = 'optimized',
-        onPlaced,
-        ...contentProps
-      } = props;
-      const context = usePopperContext(CONTENT_NAME, __scopePopper);
-      const [content, setContent] = React15.useState(null);
-      const composedRefs = useComposedRefs(forwardedRef, setContent);
-      const [arrow4, setArrow] = React15.useState(null);
-      const arrowSize = useSize(arrow4);
-      const arrowWidth = arrowSize?.width ?? 0;
-      const arrowHeight = arrowSize?.height ?? 0;
-      const desiredPlacement = side + (align !== 'center' ? '-' + align : '');
-      const collisionPadding =
-        typeof collisionPaddingProp === 'number'
-          ? collisionPaddingProp
-          : { top: 0, right: 0, bottom: 0, left: 0, ...collisionPaddingProp };
-      const boundary = Array.isArray(collisionBoundary) ? collisionBoundary : [collisionBoundary];
-      const hasExplicitBoundaries = boundary.length > 0;
-      const detectOverflowOptions = {
-        padding: collisionPadding,
-        boundary: boundary.filter(isNotNull),
-        // with `strategy: 'fixed'`, this is the only way to get it to respect boundaries
-        altBoundary: hasExplicitBoundaries,
-      };
-      const { refs, floatingStyles, placement, isPositioned, middlewareData } = useFloating({
-        // default to `fixed` strategy so users don't have to pick and we also avoid focus scroll issues
-        strategy: 'fixed',
-        placement: desiredPlacement,
-        whileElementsMounted: /* @__PURE__ */ __name15((...args) => {
-          const cleanup = autoUpdate(...args, {
-            animationFrame: updatePositionStrategy === 'always',
-          });
-          return cleanup;
-        }, 'whileElementsMounted'),
-        elements: {
-          reference: context.anchor,
-        },
-        middleware: [
-          offset3({ mainAxis: sideOffset + arrowHeight, alignmentAxis: alignOffset }),
-          avoidCollisions &&
-            shift3({
-              mainAxis: true,
-              crossAxis: false,
-              limiter: sticky === 'partial' ? limitShift3() : void 0,
-              ...detectOverflowOptions,
-            }),
-          avoidCollisions && flip3({ ...detectOverflowOptions }),
-          size3({
-            ...detectOverflowOptions,
-            apply: /* @__PURE__ */ __name15(
-              ({ elements, rects, availableWidth, availableHeight }) => {
-                const { width: anchorWidth, height: anchorHeight } = rects.reference;
-                const contentStyle = elements.floating.style;
-                contentStyle.setProperty('--radix-popper-available-width', `${availableWidth}px`);
-                contentStyle.setProperty('--radix-popper-available-height', `${availableHeight}px`);
-                contentStyle.setProperty('--radix-popper-anchor-width', `${anchorWidth}px`);
-                contentStyle.setProperty('--radix-popper-anchor-height', `${anchorHeight}px`);
-              },
-              'apply',
-            ),
-          }),
-          arrow4 && arrow3({ element: arrow4, padding: arrowPadding }),
-          transformOrigin({ arrowWidth, arrowHeight }),
-          hideWhenDetached &&
-            hide3({
-              strategy: 'referenceHidden',
-              ...detectOverflowOptions,
-              // `hide` detects whether the anchor (reference) is clipped, so when
-              // no explicit `collisionBoundary` is set we fall back to Floating
-              // UI's default clipping ancestors (e.g. a scrollable menu). This
-              // lets an occluded submenu hide once its anchor scrolls out of view
-              // (#3237). The collision/size middlewares deliberately keep the
-              // viewport-based default to avoid clamping content rendered inside
-              // transformed or overflow-clipping portal containers.
-              boundary: hasExplicitBoundaries ? detectOverflowOptions.boundary : void 0,
-            }),
-        ],
-      });
-      const setPlacementState = context.setPlacementState;
-      useLayoutEffect2(() => {
-        setPlacementState(placement);
-        return () => {
-          setPlacementState(void 0);
-        };
-      }, [placement, setPlacementState]);
-      const [placedSide, placedAlign] = getSideAndAlignFromPlacement(placement);
-      const handlePlaced = useCallbackRef(onPlaced);
-      useLayoutEffect2(() => {
-        if (isPositioned) {
-          handlePlaced?.();
-        }
-      }, [isPositioned, handlePlaced]);
-      const arrowX = middlewareData.arrow?.x;
-      const arrowY = middlewareData.arrow?.y;
-      const cannotCenterArrow = middlewareData.arrow?.centerOffset !== 0;
-      const [contentZIndex, setContentZIndex] = React15.useState();
-      useLayoutEffect2(() => {
-        if (content) setContentZIndex(window.getComputedStyle(content).zIndex);
-      }, [content]);
-      return /* @__PURE__ */ (0, import_jsx_runtime16.jsx)('div', {
-        ref: refs.setFloating,
-        'data-radix-popper-content-wrapper': '',
-        style: {
-          ...floatingStyles,
-          transform: isPositioned ? floatingStyles.transform : 'translate(0, -200%)',
-          // keep off the page when measuring
-          minWidth: 'max-content',
-          zIndex: contentZIndex,
-          '--radix-popper-transform-origin': [
-            middlewareData.transformOrigin?.x,
-            middlewareData.transformOrigin?.y,
-          ].join(' '),
-          // hide the content if using the hide middleware and should be hidden
-          // set visibility to hidden and disable pointer events so the UI behaves
-          // as if the PopperContent isn't there at all
-          ...(middlewareData.hide?.referenceHidden && {
-            visibility: 'hidden',
-            pointerEvents: 'none',
-          }),
-        },
-        dir: props.dir,
-        children: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(PopperContentProvider, {
-          scope: __scopePopper,
-          placedSide,
-          placedAlign,
-          onArrowChange: setArrow,
-          arrowX,
-          arrowY,
-          shouldHideArrow: cannotCenterArrow,
-          children: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Primitive.div, {
-            'data-side': placedSide,
-            'data-align': placedAlign,
-            ...contentProps,
-            ref: composedRefs,
-            style: {
-              ...contentProps.style,
-              // if the PopperContent hasn't been placed yet (not all
-              // measurements done) we prevent animations so that users'
-              // animations don't kick in too early from the wrong sides.
-              animation: !isPositioned ? 'none' : contentProps.style?.animation,
-            },
-          }),
-        }),
-      });
-    }, 'PopperContent'),
-  );
-  function isNotNull(value) {
-    return value !== null;
-  }
-  __name15(isNotNull, 'isNotNull');
-  var transformOrigin = /* @__PURE__ */ __name15(
-    (options2) => ({
-      name: 'transformOrigin',
-      options: options2,
-      fn(data) {
-        const { placement, rects, middlewareData } = data;
-        const cannotCenterArrow = middlewareData.arrow?.centerOffset !== 0;
-        const isArrowHidden = cannotCenterArrow;
-        const arrowWidth = isArrowHidden ? 0 : options2.arrowWidth;
-        const arrowHeight = isArrowHidden ? 0 : options2.arrowHeight;
-        const [placedSide, placedAlign] = getSideAndAlignFromPlacement(placement);
-        const noArrowAlign = { start: '0%', center: '50%', end: '100%' }[placedAlign];
-        const arrowXCenter = (middlewareData.arrow?.x ?? 0) + arrowWidth / 2;
-        const arrowYCenter = (middlewareData.arrow?.y ?? 0) + arrowHeight / 2;
-        let x = '';
-        let y = '';
-        if (placedSide === 'bottom') {
-          x = isArrowHidden ? noArrowAlign : `${arrowXCenter}px`;
-          y = `${-arrowHeight}px`;
-        } else if (placedSide === 'top') {
-          x = isArrowHidden ? noArrowAlign : `${arrowXCenter}px`;
-          y = `${rects.floating.height + arrowHeight}px`;
-        } else if (placedSide === 'right') {
-          x = `${-arrowHeight}px`;
-          y = isArrowHidden ? noArrowAlign : `${arrowYCenter}px`;
-        } else if (placedSide === 'left') {
-          x = `${rects.floating.width + arrowHeight}px`;
-          y = isArrowHidden ? noArrowAlign : `${arrowYCenter}px`;
-        }
-        return { data: { x, y } };
-      },
-    }),
-    'transformOrigin',
-  );
-  function getSideAndAlignFromPlacement(placement) {
-    const [side, align = 'center'] = placement.split('-');
-    return [side, align];
-  }
-  __name15(getSideAndAlignFromPlacement, 'getSideAndAlignFromPlacement');
-  var Root2 = Popper;
-  var Anchor = PopperAnchor;
-  var Content = PopperContent;
-
-  // node_modules/@radix-ui/react-portal/dist/index.mjs
-  var React16 = __toESM(require_react(), 1);
-  var ReactDOM3 = __toESM(require_react_dom(), 1);
-  var import_jsx_runtime17 = __toESM(require_jsx_runtime(), 1);
-  var __defProp17 = Object.defineProperty;
-  var __name16 = (target, value) => __defProp17(target, 'name', { value, configurable: true });
-  var Portal = /* @__PURE__ */ React16.forwardRef(
-    /* @__PURE__ */ __name16(function Portal2(props, forwardedRef) {
-      const { container: containerProp, ...portalProps } = props;
-      const [mounted, setMounted] = React16.useState(false);
-      useLayoutEffect2(() => setMounted(true), []);
-      const container = containerProp || (mounted && globalThis?.document?.body);
-      return container
-        ? ReactDOM3.createPortal(
-            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Primitive.div, {
-              ...portalProps,
-              ref: forwardedRef,
-            }),
-            container,
-          )
-        : null;
-    }, 'Portal'),
-  );
-
-  // node_modules/@radix-ui/react-presence/dist/index.mjs
-  var React23 = __toESM(require_react(), 1);
-  var React17 = __toESM(require_react(), 1);
-  var __defProp18 = Object.defineProperty;
-  var __name17 = (target, value) => __defProp18(target, 'name', { value, configurable: true });
-  function useStateMachine(initialState, machine) {
-    return React17.useReducer((state, event) => {
-      const nextState = machine[state][event];
-      return nextState ?? state;
-    }, initialState);
-  }
-  __name17(useStateMachine, 'useStateMachine');
-  var Presence = /* @__PURE__ */ __name17((props) => {
-    const { present, children } = props;
-    const presence = usePresence(present);
-    const child =
-      typeof children === 'function'
-        ? children({ present: presence.isPresent })
-        : React23.Children.only(children);
-    const ref = useStableComposedRefs(presence.ref, getElementRef2(child));
-    const forceMount = typeof children === 'function';
-    return forceMount || presence.isPresent ? React23.cloneElement(child, { ref }) : null;
-  }, 'Presence');
-  function usePresence(present) {
-    const [node, setNode] = React23.useState();
-    const stylesRef = React23.useRef(null);
-    const prevPresentRef = React23.useRef(present);
-    const prevAnimationNameRef = React23.useRef('none');
-    const mountAnimationNameRef = React23.useRef(void 0);
-    const initialState = present ? 'mounted' : 'unmounted';
-    const [state, send] = useStateMachine(initialState, {
-      mounted: {
-        UNMOUNT: 'unmounted',
-        ANIMATION_OUT: 'unmountSuspended',
-      },
-      unmountSuspended: {
-        MOUNT: 'mounted',
-        ANIMATION_END: 'unmounted',
-      },
-      unmounted: {
-        MOUNT: 'mounted',
-      },
-    });
-    React23.useEffect(() => {
-      if (state === 'mounted') {
-        prevAnimationNameRef.current =
-          mountAnimationNameRef.current ?? getAnimationName(stylesRef.current);
-        mountAnimationNameRef.current = void 0;
-      } else {
-        prevAnimationNameRef.current = 'none';
-      }
-    }, [state]);
-    useLayoutEffect2(() => {
-      const styles = stylesRef.current;
-      const wasPresent = prevPresentRef.current;
-      const hasPresentChanged = wasPresent !== present;
-      if (hasPresentChanged) {
-        const prevAnimationName = prevAnimationNameRef.current;
-        const currentAnimationName = getAnimationName(styles);
-        if (present) {
-          mountAnimationNameRef.current = currentAnimationName;
-          send('MOUNT');
-        } else if (currentAnimationName === 'none' || styles?.display === 'none') {
-          send('UNMOUNT');
-        } else {
-          const isAnimating = prevAnimationName !== currentAnimationName;
-          if (wasPresent && isAnimating) {
-            send('ANIMATION_OUT');
-          } else {
-            send('UNMOUNT');
-          }
-        }
-        prevPresentRef.current = present;
-      }
-    }, [present, send]);
-    useLayoutEffect2(() => {
-      if (node) {
-        let timeoutId;
-        const ownerWindow = node.ownerDocument.defaultView ?? window;
-        const handleAnimationEnd = /* @__PURE__ */ __name17((event) => {
-          const currentAnimationName = getAnimationName(stylesRef.current);
-          const isCurrentAnimation = currentAnimationName.includes(CSS.escape(event.animationName));
-          if (event.target === node && isCurrentAnimation) {
-            send('ANIMATION_END');
-            if (!prevPresentRef.current) {
-              const currentFillMode = node.style.animationFillMode;
-              node.style.animationFillMode = 'forwards';
-              timeoutId = ownerWindow.setTimeout(() => {
-                if (node.style.animationFillMode === 'forwards') {
-                  node.style.animationFillMode = currentFillMode;
-                }
-              });
-            }
-          }
-        }, 'handleAnimationEnd');
-        const handleAnimationStart = /* @__PURE__ */ __name17((event) => {
-          if (event.target === node) {
-            prevAnimationNameRef.current = getAnimationName(stylesRef.current);
-          }
-        }, 'handleAnimationStart');
-        node.addEventListener('animationstart', handleAnimationStart);
-        node.addEventListener('animationcancel', handleAnimationEnd);
-        node.addEventListener('animationend', handleAnimationEnd);
-        return () => {
-          ownerWindow.clearTimeout(timeoutId);
-          node.removeEventListener('animationstart', handleAnimationStart);
-          node.removeEventListener('animationcancel', handleAnimationEnd);
-          node.removeEventListener('animationend', handleAnimationEnd);
-        };
-      } else {
-        send('ANIMATION_END');
-      }
-    }, [node, send]);
-    return {
-      isPresent: ['mounted', 'unmountSuspended'].includes(state),
-      ref: React23.useCallback((node2) => {
-        if (node2) {
-          const styles = getComputedStyle(node2);
-          stylesRef.current = styles;
-          mountAnimationNameRef.current = getAnimationName(styles);
-        } else {
-          stylesRef.current = null;
-        }
-        setNode(node2);
-      }, []),
-    };
-  }
-  __name17(usePresence, 'usePresence');
-  function setRef2(ref, value) {
-    if (typeof ref === 'function') {
-      return ref(value);
-    } else if (ref !== null && ref !== void 0) {
-      ref.current = value;
-    }
-  }
-  __name17(setRef2, 'setRef');
-  function useStableComposedRefs(...refs) {
-    const refsRef = React23.useRef(refs);
-    refsRef.current = refs;
-    return React23.useCallback((node) => {
-      const currentRefs = refsRef.current;
-      let hasCleanup = false;
-      const cleanups = currentRefs.map((ref) => {
-        const cleanup = setRef2(ref, node);
-        if (!hasCleanup && typeof cleanup === 'function') {
-          hasCleanup = true;
-        }
-        return cleanup;
-      });
-      if (hasCleanup) {
-        return () => {
-          for (let i = 0; i < cleanups.length; i++) {
-            const cleanup = cleanups[i];
-            if (typeof cleanup === 'function') {
-              cleanup();
-            } else {
-              setRef2(currentRefs[i], null);
-            }
-          }
-        };
-      }
-    }, []);
-  }
-  __name17(useStableComposedRefs, 'useStableComposedRefs');
-  function getAnimationName(styles) {
-    return styles?.animationName || 'none';
-  }
-  __name17(getAnimationName, 'getAnimationName');
-  function getElementRef2(element) {
-    let getter = Object.getOwnPropertyDescriptor(element.props, 'ref')?.get;
-    let mayWarn = getter && 'isReactWarning' in getter && getter.isReactWarning;
-    if (mayWarn) {
-      return element.ref;
-    }
-    getter = Object.getOwnPropertyDescriptor(element, 'ref')?.get;
-    mayWarn = getter && 'isReactWarning' in getter && getter.isReactWarning;
-    if (mayWarn) {
-      return element.props.ref;
-    }
-    return element.props.ref || element.ref;
-  }
-  __name17(getElementRef2, 'getElementRef');
-
-  // node_modules/@radix-ui/react-use-controllable-state/dist/index.mjs
-  var React19 = __toESM(require_react(), 1);
-
-  // node_modules/@radix-ui/primitive/dist/internal/is-development.false.mjs
-  var IS_DEVELOPMENT = false;
-
-  // node_modules/@radix-ui/react-use-controllable-state/dist/index.mjs
-  var React24 = __toESM(require_react(), 1);
-
-  // node_modules/@radix-ui/react-use-effect-event/dist/index.mjs
-  var React18 = __toESM(require_react(), 1);
-  var __defProp19 = Object.defineProperty;
-  var __name18 = (target, value) => __defProp19(target, 'name', { value, configurable: true });
-  var useReactEffectEvent = React18[' useEffectEvent '.trim().toString()];
-  var useReactInsertionEffect = React18[' useInsertionEffect '.trim().toString()];
-  function useEffectEvent(callback) {
-    if (typeof useReactEffectEvent === 'function') {
-      return useReactEffectEvent(callback);
-    }
-    const ref = React18.useRef(() => {
-      throw new Error('Cannot call an event handler while rendering.');
-    });
-    if (typeof useReactInsertionEffect === 'function') {
-      useReactInsertionEffect(() => {
-        ref.current = callback;
-      });
-    } else {
-      useLayoutEffect2(() => {
-        ref.current = callback;
-      });
-    }
-    return React18.useMemo(
-      () =>
-        (...args) =>
-          ref.current?.(...args),
-      [],
-    );
-  }
-  __name18(useEffectEvent, 'useEffectEvent');
-
-  // node_modules/@radix-ui/react-use-controllable-state/dist/index.mjs
-  var __defProp20 = Object.defineProperty;
-  var __name19 = (target, value) => __defProp20(target, 'name', { value, configurable: true });
-  var useInsertionEffect = React19[' useInsertionEffect '.trim().toString()] || useLayoutEffect2;
-  function useControllableState({
-    prop,
-    defaultProp,
-    onChange = /* @__PURE__ */ __name19(() => {}, 'onChange'),
-    caller,
-  }) {
-    const [uncontrolledProp, setUncontrolledProp, onChangeRef] = useUncontrolledState({
-      defaultProp,
-      onChange,
-    });
-    const isControlled = prop !== void 0;
-    const value = isControlled ? prop : uncontrolledProp;
-    if (IS_DEVELOPMENT) {
-      const isControlledRef = React19.useRef(prop !== void 0);
-      React19.useEffect(() => {
-        const wasControlled = isControlledRef.current;
-        if (wasControlled !== isControlled) {
-          const from = wasControlled ? 'controlled' : 'uncontrolled';
-          const to = isControlled ? 'controlled' : 'uncontrolled';
-          console.warn(
-            `${caller} is changing from ${from} to ${to}. Components should not switch from controlled to uncontrolled (or vice versa). Decide between using a controlled or uncontrolled value for the lifetime of the component.`,
-          );
-        }
-        isControlledRef.current = isControlled;
-      }, [isControlled, caller]);
-    }
-    const setValue = React19.useCallback(
-      (nextValue) => {
-        if (isControlled) {
-          const value2 = isFunction(nextValue) ? nextValue(prop) : nextValue;
-          if (value2 !== prop) {
-            onChangeRef.current?.(value2);
-          }
-        } else {
-          setUncontrolledProp(nextValue);
-        }
-      },
-      [isControlled, prop, setUncontrolledProp, onChangeRef],
-    );
-    return [value, setValue];
-  }
-  __name19(useControllableState, 'useControllableState');
-  function useUncontrolledState({ defaultProp, onChange }) {
-    const [value, setValue] = React19.useState(defaultProp);
-    const prevValueRef = React19.useRef(value);
-    const onChangeRef = React19.useRef(onChange);
-    useInsertionEffect(() => {
-      onChangeRef.current = onChange;
-    }, [onChange]);
-    React19.useEffect(() => {
-      if (prevValueRef.current !== value) {
-        onChangeRef.current?.(value);
-        prevValueRef.current = value;
-      }
-    }, [value, prevValueRef]);
-    return [value, setValue, onChangeRef];
-  }
-  __name19(useUncontrolledState, 'useUncontrolledState');
-  function isFunction(value) {
-    return typeof value === 'function';
-  }
-  __name19(isFunction, 'isFunction');
-  var SYNC_STATE = /* @__PURE__ */ Symbol('RADIX:SYNC_STATE');
-  function useControllableStateReducer(reducer, userArgs, initialArg, init) {
-    const { prop: controlledState, defaultProp, onChange: onChangeProp, caller } = userArgs;
-    const isControlled = controlledState !== void 0;
-    const onChange = useEffectEvent(onChangeProp);
-    if (IS_DEVELOPMENT) {
-      const isControlledRef = React24.useRef(controlledState !== void 0);
-      React24.useEffect(() => {
-        const wasControlled = isControlledRef.current;
-        if (wasControlled !== isControlled) {
-          const from = wasControlled ? 'controlled' : 'uncontrolled';
-          const to = isControlled ? 'controlled' : 'uncontrolled';
-          console.warn(
-            `${caller} is changing from ${from} to ${to}. Components should not switch from controlled to uncontrolled (or vice versa). Decide between using a controlled or uncontrolled value for the lifetime of the component.`,
-          );
-        }
-        isControlledRef.current = isControlled;
-      }, [isControlled, caller]);
-    }
-    const args = [{ ...initialArg, state: defaultProp }];
-    if (init) {
-      args.push(init);
-    }
-    const [internalState, dispatch] = React24.useReducer(
-      (state2, action) => {
-        if (action.type === SYNC_STATE) {
-          return { ...state2, state: action.state };
-        }
-        const next = reducer(state2, action);
-        if (isControlled && !Object.is(next.state, state2.state)) {
-          onChange(next.state);
-        }
-        return next;
-      },
-      ...args,
-    );
-    const uncontrolledState = internalState.state;
-    const prevValueRef = React24.useRef(uncontrolledState);
-    React24.useEffect(() => {
-      if (prevValueRef.current !== uncontrolledState) {
-        prevValueRef.current = uncontrolledState;
-        if (!isControlled) {
-          onChange(uncontrolledState);
-        }
-      }
-    }, [uncontrolledState, prevValueRef, isControlled]);
-    const state = React24.useMemo(() => {
-      const isControlled2 = controlledState !== void 0;
-      if (isControlled2) {
-        return { ...internalState, state: controlledState };
-      }
-      return internalState;
-    }, [internalState, controlledState]);
-    React24.useEffect(() => {
-      if (isControlled && !Object.is(controlledState, internalState.state)) {
-        dispatch({ type: SYNC_STATE, state: controlledState });
-      }
-    }, [controlledState, internalState.state, isControlled]);
-    return [state, dispatch];
-  }
-  __name19(useControllableStateReducer, 'useControllableStateReducer');
-
-  // node_modules/@radix-ui/react-use-previous/dist/index.mjs
-  var React20 = __toESM(require_react(), 1);
-  var __defProp21 = Object.defineProperty;
-  var __name20 = (target, value) => __defProp21(target, 'name', { value, configurable: true });
-  function usePrevious(value) {
-    const ref = React20.useRef({ value, previous: value });
-    return React20.useMemo(() => {
-      if (ref.current.value !== value) {
-        ref.current.previous = ref.current.value;
-        ref.current.value = value;
-      }
-      return ref.current.previous;
-    }, [value]);
-  }
-  __name20(usePrevious, 'usePrevious');
-
-  // node_modules/@radix-ui/react-visually-hidden/dist/index.mjs
-  var React21 = __toESM(require_react(), 1);
-  var import_jsx_runtime18 = __toESM(require_jsx_runtime(), 1);
-  var VISUALLY_HIDDEN_STYLES = Object.freeze({
-    // See: https://github.com/twbs/bootstrap/blob/main/scss/mixins/_visually-hidden.scss
-    position: 'absolute',
-    border: 0,
-    width: 1,
-    height: 1,
-    padding: 0,
-    margin: -1,
-    overflow: 'hidden',
-    clip: 'rect(0, 0, 0, 0)',
-    whiteSpace: 'nowrap',
-    wordWrap: 'normal',
-  });
-
-  // node_modules/aria-hidden/dist/es2015/index.js
-  var getDefaultParent = function (originalTarget) {
-    if (typeof document === 'undefined') {
-      return null;
-    }
-    var sampleTarget = Array.isArray(originalTarget) ? originalTarget[0] : originalTarget;
-    return sampleTarget.ownerDocument.body;
-  };
-  var counterMap = /* @__PURE__ */ new WeakMap();
-  var uncontrolledNodes = /* @__PURE__ */ new WeakMap();
-  var markerMap = {};
-  var lockCount = 0;
-  var unwrapHost = function (node) {
-    return node && (node.host || unwrapHost(node.parentNode));
-  };
-  var correctTargets = function (parent, targets) {
-    return targets
-      .map(function (target) {
-        if (parent.contains(target)) {
-          return target;
-        }
-        var correctedTarget = unwrapHost(target);
-        if (correctedTarget && parent.contains(correctedTarget)) {
-          return correctedTarget;
-        }
-        console.error('aria-hidden', target, 'in not contained inside', parent, '. Doing nothing');
-        return null;
-      })
-      .filter(function (x) {
-        return Boolean(x);
-      });
-  };
-  var applyAttributeToOthers = function (originalTarget, parentNode, markerName, controlAttribute) {
-    var targets = correctTargets(
-      parentNode,
-      Array.isArray(originalTarget) ? originalTarget : [originalTarget],
-    );
-    if (!markerMap[markerName]) {
-      markerMap[markerName] = /* @__PURE__ */ new WeakMap();
-    }
-    var markerCounter = markerMap[markerName];
-    var hiddenNodes = [];
-    var elementsToKeep = /* @__PURE__ */ new Set();
-    var elementsToStop = new Set(targets);
-    var keep = function (el) {
-      if (!el || elementsToKeep.has(el)) {
-        return;
-      }
-      elementsToKeep.add(el);
-      keep(el.parentNode);
-    };
-    targets.forEach(keep);
-    var deep = function (parent) {
-      if (!parent || elementsToStop.has(parent)) {
-        return;
-      }
-      Array.prototype.forEach.call(parent.children, function (node) {
-        if (elementsToKeep.has(node)) {
-          deep(node);
-        } else {
-          try {
-            var attr = node.getAttribute(controlAttribute);
-            var alreadyHidden = attr !== null && attr !== 'false';
-            var counterValue = (counterMap.get(node) || 0) + 1;
-            var markerValue = (markerCounter.get(node) || 0) + 1;
-            counterMap.set(node, counterValue);
-            markerCounter.set(node, markerValue);
-            hiddenNodes.push(node);
-            if (counterValue === 1 && alreadyHidden) {
-              uncontrolledNodes.set(node, true);
-            }
-            if (markerValue === 1) {
-              node.setAttribute(markerName, 'true');
-            }
-            if (!alreadyHidden) {
-              node.setAttribute(controlAttribute, 'true');
-            }
-          } catch (e) {
-            console.error('aria-hidden: cannot operate on ', node, e);
-          }
-        }
-      });
-    };
-    deep(parentNode);
-    elementsToKeep.clear();
-    lockCount++;
-    return function () {
-      hiddenNodes.forEach(function (node) {
-        var counterValue = counterMap.get(node) - 1;
-        var markerValue = markerCounter.get(node) - 1;
-        counterMap.set(node, counterValue);
-        markerCounter.set(node, markerValue);
-        if (!counterValue) {
-          if (!uncontrolledNodes.has(node)) {
-            node.removeAttribute(controlAttribute);
-          }
-          uncontrolledNodes.delete(node);
-        }
-        if (!markerValue) {
-          node.removeAttribute(markerName);
-        }
-      });
-      lockCount--;
-      if (!lockCount) {
-        counterMap = /* @__PURE__ */ new WeakMap();
-        counterMap = /* @__PURE__ */ new WeakMap();
-        uncontrolledNodes = /* @__PURE__ */ new WeakMap();
-        markerMap = {};
-      }
-    };
-  };
-  var hideOthers = function (originalTarget, parentNode, markerName) {
-    if (markerName === void 0) {
-      markerName = 'data-aria-hidden';
-    }
-    var targets = Array.from(Array.isArray(originalTarget) ? originalTarget : [originalTarget]);
-    var activeParentNode = parentNode || getDefaultParent(originalTarget);
-    if (!activeParentNode) {
-      return function () {
-        return null;
-      };
-    }
-    targets.push.apply(
-      targets,
-      Array.from(activeParentNode.querySelectorAll('[aria-live], script')),
-    );
-    return applyAttributeToOthers(targets, activeParentNode, markerName, 'aria-hidden');
-  };
-
-  // node_modules/tslib/tslib.es6.mjs
-  var __assign = function () {
-    __assign =
-      Object.assign ||
-      function __assign2(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-          s = arguments[i];
-          for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
-        }
-        return t;
-      };
-    return __assign.apply(this, arguments);
-  };
-  function __rest(s, e) {
-    var t = {};
-    for (var p in s)
-      if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0) t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === 'function')
-      for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-        if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-          t[p[i]] = s[p[i]];
-      }
-    return t;
-  }
-  function __spreadArray(to, from, pack) {
-    if (pack || arguments.length === 2)
-      for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-          if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-          ar[i] = from[i];
-        }
-      }
-    return to.concat(ar || Array.prototype.slice.call(from));
-  }
-
-  // node_modules/react-remove-scroll/dist/es2015/Combination.js
-  var React31 = __toESM(require_react());
-
-  // node_modules/react-remove-scroll/dist/es2015/UI.js
-  var React27 = __toESM(require_react());
-
-  // node_modules/react-remove-scroll-bar/dist/es2015/constants.js
-  var zeroRightClassName = 'right-scroll-bar-position';
-  var fullWidthClassName = 'width-before-scroll-bar';
-  var noScrollbarsClassName = 'with-scroll-bars-hidden';
-  var removedBarSizeVariable = '--removed-body-scroll-bar-size';
-
-  // node_modules/use-callback-ref/dist/es2015/assignRef.js
-  function assignRef(ref, value) {
-    if (typeof ref === 'function') {
-      ref(value);
-    } else if (ref) {
-      ref.current = value;
-    }
-    return ref;
-  }
-
-  // node_modules/use-callback-ref/dist/es2015/useRef.js
-  var import_react8 = __toESM(require_react());
-  function useCallbackRef2(initialValue, callback) {
-    var ref = (0, import_react8.useState)(function () {
-      return {
-        // value
-        value: initialValue,
-        // last callback
-        callback,
-        // "memoized" public interface
-        facade: {
-          get current() {
-            return ref.value;
-          },
-          set current(value) {
-            var last = ref.value;
-            if (last !== value) {
-              ref.value = value;
-              ref.callback(value, last);
-            }
-          },
-        },
-      };
-    })[0];
-    ref.callback = callback;
-    return ref.facade;
-  }
-
-  // node_modules/use-callback-ref/dist/es2015/useMergeRef.js
-  var React25 = __toESM(require_react());
-  var useIsomorphicLayoutEffect =
-    typeof window !== 'undefined' ? React25.useLayoutEffect : React25.useEffect;
-  var currentValues = /* @__PURE__ */ new WeakMap();
-  function useMergeRefs(refs, defaultValue) {
-    var callbackRef = useCallbackRef2(defaultValue || null, function (newValue) {
-      return refs.forEach(function (ref) {
-        return assignRef(ref, newValue);
-      });
-    });
-    useIsomorphicLayoutEffect(
-      function () {
-        var oldValue = currentValues.get(callbackRef);
-        if (oldValue) {
-          var prevRefs_1 = new Set(oldValue);
-          var nextRefs_1 = new Set(refs);
-          var current_1 = callbackRef.current;
-          prevRefs_1.forEach(function (ref) {
-            if (!nextRefs_1.has(ref)) {
-              assignRef(ref, null);
-            }
-          });
-          nextRefs_1.forEach(function (ref) {
-            if (!prevRefs_1.has(ref)) {
-              assignRef(ref, current_1);
-            }
-          });
-        }
-        currentValues.set(callbackRef, refs);
-      },
-      [refs],
-    );
-    return callbackRef;
-  }
-
-  // node_modules/use-sidecar/dist/es2015/medium.js
-  function ItoI(a) {
-    return a;
-  }
-  function innerCreateMedium(defaults, middleware) {
-    if (middleware === void 0) {
-      middleware = ItoI;
-    }
-    var buffer = [];
-    var assigned = false;
-    var medium = {
-      read: function () {
-        if (assigned) {
-          throw new Error(
-            'Sidecar: could not `read` from an `assigned` medium. `read` could be used only with `useMedium`.',
-          );
-        }
-        if (buffer.length) {
-          return buffer[buffer.length - 1];
-        }
-        return defaults;
-      },
-      useMedium: function (data) {
-        var item = middleware(data, assigned);
-        buffer.push(item);
-        return function () {
-          buffer = buffer.filter(function (x) {
-            return x !== item;
-          });
-        };
-      },
-      assignSyncMedium: function (cb) {
-        assigned = true;
-        while (buffer.length) {
-          var cbs = buffer;
-          buffer = [];
-          cbs.forEach(cb);
-        }
-        buffer = {
-          push: function (x) {
-            return cb(x);
-          },
-          filter: function () {
-            return buffer;
-          },
-        };
-      },
-      assignMedium: function (cb) {
-        assigned = true;
-        var pendingQueue = [];
-        if (buffer.length) {
-          var cbs = buffer;
-          buffer = [];
-          cbs.forEach(cb);
-          pendingQueue = buffer;
-        }
-        var executeQueue = function () {
-          var cbs2 = pendingQueue;
-          pendingQueue = [];
-          cbs2.forEach(cb);
-        };
-        var cycle = function () {
-          return Promise.resolve().then(executeQueue);
-        };
-        cycle();
-        buffer = {
-          push: function (x) {
-            pendingQueue.push(x);
-            cycle();
-          },
-          filter: function (filter) {
-            pendingQueue = pendingQueue.filter(filter);
-            return buffer;
-          },
-        };
-      },
-    };
-    return medium;
-  }
-  function createSidecarMedium(options2) {
-    if (options2 === void 0) {
-      options2 = {};
-    }
-    var medium = innerCreateMedium(null);
-    medium.options = __assign({ async: true, ssr: false }, options2);
-    return medium;
-  }
-
-  // node_modules/use-sidecar/dist/es2015/exports.js
-  var React26 = __toESM(require_react());
-  var SideCar = function (_a2) {
-    var sideCar = _a2.sideCar,
-      rest = __rest(_a2, ['sideCar']);
-    if (!sideCar) {
-      throw new Error('Sidecar: please provide `sideCar` property to import the right car');
-    }
-    var Target = sideCar.read();
-    if (!Target) {
-      throw new Error('Sidecar medium not found');
-    }
-    return React26.createElement(Target, __assign({}, rest));
-  };
-  SideCar.isSideCarExport = true;
-  function exportSidecar(medium, exported) {
-    medium.useMedium(exported);
-    return SideCar;
-  }
-
-  // node_modules/react-remove-scroll/dist/es2015/medium.js
-  var effectCar = createSidecarMedium();
-
-  // node_modules/react-remove-scroll/dist/es2015/UI.js
-  var nothing = function () {
-    return;
-  };
-  var RemoveScroll = React27.forwardRef(function (props, parentRef) {
-    var ref = React27.useRef(null);
-    var _a2 = React27.useState({
-        onScrollCapture: nothing,
-        onWheelCapture: nothing,
-        onTouchMoveCapture: nothing,
-      }),
-      callbacks = _a2[0],
-      setCallbacks = _a2[1];
-    var forwardProps = props.forwardProps,
-      children = props.children,
-      className = props.className,
-      removeScrollBar = props.removeScrollBar,
-      enabled = props.enabled,
-      shards = props.shards,
-      sideCar = props.sideCar,
-      noRelative = props.noRelative,
-      noIsolation = props.noIsolation,
-      inert = props.inert,
-      allowPinchZoom = props.allowPinchZoom,
-      _b = props.as,
-      Container = _b === void 0 ? 'div' : _b,
-      gapMode = props.gapMode,
-      rest = __rest(props, [
-        'forwardProps',
-        'children',
-        'className',
-        'removeScrollBar',
-        'enabled',
-        'shards',
-        'sideCar',
-        'noRelative',
-        'noIsolation',
-        'inert',
-        'allowPinchZoom',
-        'as',
-        'gapMode',
-      ]);
-    var SideCar2 = sideCar;
-    var containerRef = useMergeRefs([ref, parentRef]);
-    var containerProps = __assign(__assign({}, rest), callbacks);
-    return React27.createElement(
-      React27.Fragment,
-      null,
-      enabled &&
-        React27.createElement(SideCar2, {
-          sideCar: effectCar,
-          removeScrollBar,
-          shards,
-          noRelative,
-          noIsolation,
-          inert,
-          setCallbacks,
-          allowPinchZoom: !!allowPinchZoom,
-          lockRef: ref,
-          gapMode,
-        }),
-      forwardProps
-        ? React27.cloneElement(
-            React27.Children.only(children),
-            __assign(__assign({}, containerProps), { ref: containerRef }),
-          )
-        : React27.createElement(
-            Container,
-            __assign({}, containerProps, { className, ref: containerRef }),
-            children,
-          ),
-    );
-  });
-  RemoveScroll.defaultProps = {
-    enabled: true,
-    removeScrollBar: true,
-    inert: false,
-  };
-  RemoveScroll.classNames = {
-    fullWidth: fullWidthClassName,
-    zeroRight: zeroRightClassName,
-  };
-
-  // node_modules/react-remove-scroll/dist/es2015/SideEffect.js
-  var React30 = __toESM(require_react());
-
-  // node_modules/react-remove-scroll-bar/dist/es2015/component.js
-  var React29 = __toESM(require_react());
-
-  // node_modules/react-style-singleton/dist/es2015/hook.js
-  var React28 = __toESM(require_react());
-
-  // node_modules/get-nonce/dist/es2015/index.js
-  var currentNonce;
-  var getNonce = function () {
-    if (currentNonce) {
-      return currentNonce;
-    }
-    if (typeof __webpack_nonce__ !== 'undefined') {
-      return __webpack_nonce__;
-    }
-    return void 0;
-  };
-
-  // node_modules/react-style-singleton/dist/es2015/singleton.js
-  function makeStyleTag() {
-    if (!document) return null;
-    var tag = document.createElement('style');
-    tag.type = 'text/css';
-    var nonce = getNonce();
-    if (nonce) {
-      tag.setAttribute('nonce', nonce);
-    }
-    return tag;
-  }
-  function injectStyles(tag, css) {
-    if (tag.styleSheet) {
-      tag.styleSheet.cssText = css;
-    } else {
-      tag.appendChild(document.createTextNode(css));
-    }
-  }
-  function insertStyleTag(tag) {
-    var head = document.head || document.getElementsByTagName('head')[0];
-    head.appendChild(tag);
-  }
-  var stylesheetSingleton = function () {
-    var counter = 0;
-    var stylesheet = null;
-    return {
-      add: function (style) {
-        if (counter == 0) {
-          if ((stylesheet = makeStyleTag())) {
-            injectStyles(stylesheet, style);
-            insertStyleTag(stylesheet);
-          }
-        }
-        counter++;
-      },
-      remove: function () {
-        counter--;
-        if (!counter && stylesheet) {
-          stylesheet.parentNode && stylesheet.parentNode.removeChild(stylesheet);
-          stylesheet = null;
-        }
-      },
-    };
-  };
-
-  // node_modules/react-style-singleton/dist/es2015/hook.js
-  var styleHookSingleton = function () {
-    var sheet = stylesheetSingleton();
-    return function (styles, isDynamic) {
-      React28.useEffect(
-        function () {
-          sheet.add(styles);
-          return function () {
-            sheet.remove();
-          };
-        },
-        [styles && isDynamic],
-      );
-    };
-  };
-
-  // node_modules/react-style-singleton/dist/es2015/component.js
-  var styleSingleton = function () {
-    var useStyle = styleHookSingleton();
-    var Sheet = function (_a2) {
-      var styles = _a2.styles,
-        dynamic = _a2.dynamic;
-      useStyle(styles, dynamic);
-      return null;
-    };
-    return Sheet;
-  };
-
-  // node_modules/react-remove-scroll-bar/dist/es2015/utils.js
-  var zeroGap = {
-    left: 0,
-    top: 0,
-    right: 0,
-    gap: 0,
-  };
-  var parse = function (x) {
-    return parseInt(x || '', 10) || 0;
-  };
-  var getOffset = function (gapMode) {
-    var cs = window.getComputedStyle(document.body);
-    var left = cs[gapMode === 'padding' ? 'paddingLeft' : 'marginLeft'];
-    var top = cs[gapMode === 'padding' ? 'paddingTop' : 'marginTop'];
-    var right = cs[gapMode === 'padding' ? 'paddingRight' : 'marginRight'];
-    return [parse(left), parse(top), parse(right)];
-  };
-  var getGapWidth = function (gapMode) {
-    if (gapMode === void 0) {
-      gapMode = 'margin';
-    }
-    if (typeof window === 'undefined') {
-      return zeroGap;
-    }
-    var offsets = getOffset(gapMode);
-    var documentWidth = document.documentElement.clientWidth;
-    var windowWidth = window.innerWidth;
-    return {
-      left: offsets[0],
-      top: offsets[1],
-      right: offsets[2],
-      gap: Math.max(0, windowWidth - documentWidth + offsets[2] - offsets[0]),
-    };
-  };
-
-  // node_modules/react-remove-scroll-bar/dist/es2015/component.js
-  var Style = styleSingleton();
-  var lockAttribute = 'data-scroll-locked';
-  var getStyles = function (_a2, allowRelative, gapMode, important) {
-    var left = _a2.left,
-      top = _a2.top,
-      right = _a2.right,
-      gap = _a2.gap;
-    if (gapMode === void 0) {
-      gapMode = 'margin';
-    }
-    return '\n  .'
-      .concat(noScrollbarsClassName, ' {\n   overflow: hidden ')
-      .concat(important, ';\n   padding-right: ')
-      .concat(gap, 'px ')
-      .concat(important, ';\n  }\n  body[')
-      .concat(lockAttribute, '] {\n    overflow: hidden ')
-      .concat(important, ';\n    overscroll-behavior: contain;\n    ')
-      .concat(
-        [
-          allowRelative && 'position: relative '.concat(important, ';'),
-          gapMode === 'margin' &&
-            '\n    padding-left: '
-              .concat(left, 'px;\n    padding-top: ')
-              .concat(top, 'px;\n    padding-right: ')
-              .concat(right, 'px;\n    margin-left:0;\n    margin-top:0;\n    margin-right: ')
-              .concat(gap, 'px ')
-              .concat(important, ';\n    '),
-          gapMode === 'padding' && 'padding-right: '.concat(gap, 'px ').concat(important, ';'),
-        ]
-          .filter(Boolean)
-          .join(''),
-        '\n  }\n  \n  .',
-      )
-      .concat(zeroRightClassName, ' {\n    right: ')
-      .concat(gap, 'px ')
-      .concat(important, ';\n  }\n  \n  .')
-      .concat(fullWidthClassName, ' {\n    margin-right: ')
-      .concat(gap, 'px ')
-      .concat(important, ';\n  }\n  \n  .')
-      .concat(zeroRightClassName, ' .')
-      .concat(zeroRightClassName, ' {\n    right: 0 ')
-      .concat(important, ';\n  }\n  \n  .')
-      .concat(fullWidthClassName, ' .')
-      .concat(fullWidthClassName, ' {\n    margin-right: 0 ')
-      .concat(important, ';\n  }\n  \n  body[')
-      .concat(lockAttribute, '] {\n    ')
-      .concat(removedBarSizeVariable, ': ')
-      .concat(gap, 'px;\n  }\n');
-  };
-  var getCurrentUseCounter = function () {
-    var counter = parseInt(document.body.getAttribute(lockAttribute) || '0', 10);
-    return isFinite(counter) ? counter : 0;
-  };
-  var useLockAttribute = function () {
-    React29.useEffect(function () {
-      document.body.setAttribute(lockAttribute, (getCurrentUseCounter() + 1).toString());
-      return function () {
-        var newCounter = getCurrentUseCounter() - 1;
-        if (newCounter <= 0) {
-          document.body.removeAttribute(lockAttribute);
-        } else {
-          document.body.setAttribute(lockAttribute, newCounter.toString());
-        }
-      };
-    }, []);
-  };
-  var RemoveScrollBar = function (_a2) {
-    var noRelative = _a2.noRelative,
-      noImportant = _a2.noImportant,
-      _b = _a2.gapMode,
-      gapMode = _b === void 0 ? 'margin' : _b;
-    useLockAttribute();
-    var gap = React29.useMemo(
-      function () {
-        return getGapWidth(gapMode);
-      },
-      [gapMode],
-    );
-    return React29.createElement(Style, {
-      styles: getStyles(gap, !noRelative, gapMode, !noImportant ? '!important' : ''),
-    });
-  };
-
-  // node_modules/react-remove-scroll/dist/es2015/aggresiveCapture.js
-  var passiveSupported = false;
-  if (typeof window !== 'undefined') {
-    try {
-      options = Object.defineProperty({}, 'passive', {
-        get: function () {
-          passiveSupported = true;
-          return true;
-        },
-      });
-      window.addEventListener('test', options, options);
-      window.removeEventListener('test', options, options);
-    } catch (err) {
-      passiveSupported = false;
-    }
-  }
-  var options;
-  var nonPassive = passiveSupported ? { passive: false } : false;
-
-  // node_modules/react-remove-scroll/dist/es2015/handleScroll.js
-  var alwaysContainsScroll = function (node) {
-    return node.tagName === 'TEXTAREA';
-  };
-  var elementCanBeScrolled = function (node, overflow) {
-    if (!(node instanceof Element)) {
-      return false;
-    }
-    var styles = window.getComputedStyle(node);
-    return (
-      // not-not-scrollable
-      styles[overflow] !== 'hidden' && // contains scroll inside self
-      !(
-        styles.overflowY === styles.overflowX &&
-        !alwaysContainsScroll(node) &&
-        styles[overflow] === 'visible'
-      )
-    );
-  };
-  var elementCouldBeVScrolled = function (node) {
-    return elementCanBeScrolled(node, 'overflowY');
-  };
-  var elementCouldBeHScrolled = function (node) {
-    return elementCanBeScrolled(node, 'overflowX');
-  };
-  var locationCouldBeScrolled = function (axis, node) {
-    var ownerDocument = node.ownerDocument;
-    var current = node;
-    do {
-      if (typeof ShadowRoot !== 'undefined' && current instanceof ShadowRoot) {
-        current = current.host;
-      }
-      var isScrollable = elementCouldBeScrolled(axis, current);
-      if (isScrollable) {
-        var _a2 = getScrollVariables(axis, current),
-          scrollHeight = _a2[1],
-          clientHeight = _a2[2];
-        if (scrollHeight > clientHeight) {
-          return true;
-        }
-      }
-      current = current.parentNode;
-    } while (current && current !== ownerDocument.body);
-    return false;
-  };
-  var getVScrollVariables = function (_a2) {
-    var scrollTop = _a2.scrollTop,
-      scrollHeight = _a2.scrollHeight,
-      clientHeight = _a2.clientHeight;
-    return [scrollTop, scrollHeight, clientHeight];
-  };
-  var getHScrollVariables = function (_a2) {
-    var scrollLeft = _a2.scrollLeft,
-      scrollWidth = _a2.scrollWidth,
-      clientWidth = _a2.clientWidth;
-    return [scrollLeft, scrollWidth, clientWidth];
-  };
-  var elementCouldBeScrolled = function (axis, node) {
-    return axis === 'v' ? elementCouldBeVScrolled(node) : elementCouldBeHScrolled(node);
-  };
-  var getScrollVariables = function (axis, node) {
-    return axis === 'v' ? getVScrollVariables(node) : getHScrollVariables(node);
-  };
-  var getDirectionFactor = function (axis, direction) {
-    return axis === 'h' && direction === 'rtl' ? -1 : 1;
-  };
-  var handleScroll = function (axis, endTarget, event, sourceDelta, noOverscroll) {
-    var directionFactor = getDirectionFactor(axis, window.getComputedStyle(endTarget).direction);
-    var delta = directionFactor * sourceDelta;
-    var target = event.target;
-    var targetInLock = endTarget.contains(target);
-    var shouldCancelScroll = false;
-    var isDeltaPositive = delta > 0;
-    var availableScroll = 0;
-    var availableScrollTop = 0;
-    do {
-      if (!target) {
-        break;
-      }
-      var _a2 = getScrollVariables(axis, target),
-        position = _a2[0],
-        scroll_1 = _a2[1],
-        capacity = _a2[2];
-      var elementScroll = scroll_1 - capacity - directionFactor * position;
-      if (position || elementScroll) {
-        if (elementCouldBeScrolled(axis, target)) {
-          availableScroll += elementScroll;
-          availableScrollTop += position;
-        }
-      }
-      var parent_1 = target.parentNode;
-      target =
-        parent_1 && parent_1.nodeType === Node.DOCUMENT_FRAGMENT_NODE ? parent_1.host : parent_1;
-    } while (
-      // portaled content
-      (!targetInLock && target !== document.body) || // self content
-      (targetInLock && (endTarget.contains(target) || endTarget === target))
-    );
-    if (
-      isDeltaPositive &&
-      ((noOverscroll && Math.abs(availableScroll) < 1) ||
-        (!noOverscroll && delta > availableScroll))
-    ) {
-      shouldCancelScroll = true;
-    } else if (
-      !isDeltaPositive &&
-      ((noOverscroll && Math.abs(availableScrollTop) < 1) ||
-        (!noOverscroll && -delta > availableScrollTop))
-    ) {
-      shouldCancelScroll = true;
-    }
-    return shouldCancelScroll;
-  };
-
-  // node_modules/react-remove-scroll/dist/es2015/SideEffect.js
-  var getTouchXY = function (event) {
-    return 'changedTouches' in event
-      ? [event.changedTouches[0].clientX, event.changedTouches[0].clientY]
-      : [0, 0];
-  };
-  var getDeltaXY = function (event) {
-    return [event.deltaX, event.deltaY];
-  };
-  var extractRef = function (ref) {
-    return ref && 'current' in ref ? ref.current : ref;
-  };
-  var deltaCompare = function (x, y) {
-    return x[0] === y[0] && x[1] === y[1];
-  };
-  var generateStyle = function (id) {
-    return '\n  .block-interactivity-'
-      .concat(id, ' {pointer-events: none;}\n  .allow-interactivity-')
-      .concat(id, ' {pointer-events: all;}\n');
-  };
-  var idCounter = 0;
-  var lockStack = [];
-  function RemoveScrollSideCar(props) {
-    var shouldPreventQueue = React30.useRef([]);
-    var touchStartRef = React30.useRef([0, 0]);
-    var activeAxis = React30.useRef();
-    var id = React30.useState(idCounter++)[0];
-    var Style2 = React30.useState(styleSingleton)[0];
-    var lastProps = React30.useRef(props);
-    React30.useEffect(
-      function () {
-        lastProps.current = props;
-      },
-      [props],
-    );
-    React30.useEffect(
-      function () {
-        if (props.inert) {
-          document.body.classList.add('block-interactivity-'.concat(id));
-          var allow_1 = __spreadArray(
-            [props.lockRef.current],
-            (props.shards || []).map(extractRef),
-            true,
-          ).filter(Boolean);
-          allow_1.forEach(function (el) {
-            return el.classList.add('allow-interactivity-'.concat(id));
-          });
-          return function () {
-            document.body.classList.remove('block-interactivity-'.concat(id));
-            allow_1.forEach(function (el) {
-              return el.classList.remove('allow-interactivity-'.concat(id));
-            });
-          };
-        }
-        return;
-      },
-      [props.inert, props.lockRef.current, props.shards],
-    );
-    var shouldCancelEvent = React30.useCallback(function (event, parent) {
-      if (
-        ('touches' in event && event.touches.length === 2) ||
-        (event.type === 'wheel' && event.ctrlKey)
-      ) {
-        return !lastProps.current.allowPinchZoom;
-      }
-      var touch = getTouchXY(event);
-      var touchStart = touchStartRef.current;
-      var deltaX = 'deltaX' in event ? event.deltaX : touchStart[0] - touch[0];
-      var deltaY = 'deltaY' in event ? event.deltaY : touchStart[1] - touch[1];
-      var currentAxis;
-      var target = event.target;
-      var moveDirection = Math.abs(deltaX) > Math.abs(deltaY) ? 'h' : 'v';
-      if ('touches' in event && moveDirection === 'h' && target.type === 'range') {
-        return false;
-      }
-      var selection = window.getSelection();
-      var anchorNode = selection && selection.anchorNode;
-      var isTouchingSelection = anchorNode
-        ? anchorNode === target || anchorNode.contains(target)
-        : false;
-      if (isTouchingSelection) {
-        return false;
-      }
-      var canBeScrolledInMainDirection = locationCouldBeScrolled(moveDirection, target);
-      if (!canBeScrolledInMainDirection) {
-        return true;
-      }
-      if (canBeScrolledInMainDirection) {
-        currentAxis = moveDirection;
-      } else {
-        currentAxis = moveDirection === 'v' ? 'h' : 'v';
-        canBeScrolledInMainDirection = locationCouldBeScrolled(moveDirection, target);
-      }
-      if (!canBeScrolledInMainDirection) {
-        return false;
-      }
-      if (!activeAxis.current && 'changedTouches' in event && (deltaX || deltaY)) {
-        activeAxis.current = currentAxis;
-      }
-      if (!currentAxis) {
-        return true;
-      }
-      var cancelingAxis = activeAxis.current || currentAxis;
-      return handleScroll(
-        cancelingAxis,
-        parent,
-        event,
-        cancelingAxis === 'h' ? deltaX : deltaY,
-        true,
-      );
-    }, []);
-    var shouldPrevent = React30.useCallback(function (_event) {
-      var event = _event;
-      if (!lockStack.length || lockStack[lockStack.length - 1] !== Style2) {
-        return;
-      }
-      var delta = 'deltaY' in event ? getDeltaXY(event) : getTouchXY(event);
-      var sourceEvent = shouldPreventQueue.current.filter(function (e) {
-        return (
-          e.name === event.type &&
-          (e.target === event.target || event.target === e.shadowParent) &&
-          deltaCompare(e.delta, delta)
-        );
-      })[0];
-      if (sourceEvent && sourceEvent.should) {
-        if (event.cancelable) {
-          event.preventDefault();
-        }
-        return;
-      }
-      if (!sourceEvent) {
-        var shardNodes = (lastProps.current.shards || [])
-          .map(extractRef)
-          .filter(Boolean)
-          .filter(function (node) {
-            return node.contains(event.target);
-          });
-        var shouldStop =
-          shardNodes.length > 0
-            ? shouldCancelEvent(event, shardNodes[0])
-            : !lastProps.current.noIsolation;
-        if (shouldStop) {
-          if (event.cancelable) {
-            event.preventDefault();
-          }
-        }
-      }
-    }, []);
-    var shouldCancel = React30.useCallback(function (name, delta, target, should) {
-      var event = { name, delta, target, should, shadowParent: getOutermostShadowParent(target) };
-      shouldPreventQueue.current.push(event);
-      setTimeout(function () {
-        shouldPreventQueue.current = shouldPreventQueue.current.filter(function (e) {
-          return e !== event;
-        });
-      }, 1);
-    }, []);
-    var scrollTouchStart = React30.useCallback(function (event) {
-      touchStartRef.current = getTouchXY(event);
-      activeAxis.current = void 0;
-    }, []);
-    var scrollWheel = React30.useCallback(function (event) {
-      shouldCancel(
-        event.type,
-        getDeltaXY(event),
-        event.target,
-        shouldCancelEvent(event, props.lockRef.current),
-      );
-    }, []);
-    var scrollTouchMove = React30.useCallback(function (event) {
-      shouldCancel(
-        event.type,
-        getTouchXY(event),
-        event.target,
-        shouldCancelEvent(event, props.lockRef.current),
-      );
-    }, []);
-    React30.useEffect(function () {
-      lockStack.push(Style2);
-      props.setCallbacks({
-        onScrollCapture: scrollWheel,
-        onWheelCapture: scrollWheel,
-        onTouchMoveCapture: scrollTouchMove,
-      });
-      document.addEventListener('wheel', shouldPrevent, nonPassive);
-      document.addEventListener('touchmove', shouldPrevent, nonPassive);
-      document.addEventListener('touchstart', scrollTouchStart, nonPassive);
-      return function () {
-        lockStack = lockStack.filter(function (inst) {
-          return inst !== Style2;
-        });
-        document.removeEventListener('wheel', shouldPrevent, nonPassive);
-        document.removeEventListener('touchmove', shouldPrevent, nonPassive);
-        document.removeEventListener('touchstart', scrollTouchStart, nonPassive);
-      };
-    }, []);
-    var removeScrollBar = props.removeScrollBar,
-      inert = props.inert;
-    return React30.createElement(
-      React30.Fragment,
-      null,
-      inert ? React30.createElement(Style2, { styles: generateStyle(id) }) : null,
-      removeScrollBar
-        ? React30.createElement(RemoveScrollBar, {
-            noRelative: props.noRelative,
-            gapMode: props.gapMode,
-          })
-        : null,
-    );
-  }
-  function getOutermostShadowParent(node) {
-    var shadowParent = null;
-    while (node !== null) {
-      if (node instanceof ShadowRoot) {
-        shadowParent = node.host;
-        node = node.host;
-      }
-      node = node.parentNode;
-    }
-    return shadowParent;
-  }
-
-  // node_modules/react-remove-scroll/dist/es2015/sidecar.js
-  var sidecar_default = exportSidecar(effectCar, RemoveScrollSideCar);
-
-  // node_modules/react-remove-scroll/dist/es2015/Combination.js
-  var ReactRemoveScroll = React31.forwardRef(function (props, ref) {
-    return React31.createElement(
-      RemoveScroll,
-      __assign({}, props, { ref, sideCar: sidecar_default }),
-    );
-  });
-  ReactRemoveScroll.classNames = RemoveScroll.classNames;
-  var Combination_default = ReactRemoveScroll;
-
-  // node_modules/@radix-ui/react-select/dist/index.mjs
-  var import_jsx_runtime19 = __toESM(require_jsx_runtime(), 1);
-  var __defProp22 = Object.defineProperty;
-  var __name21 = (target, value) => __defProp22(target, 'name', { value, configurable: true });
-  var OPEN_KEYS = [' ', 'Enter', 'ArrowUp', 'ArrowDown'];
-  var SELECTION_KEYS = [' ', 'Enter'];
-  var SELECT_NAME = 'Select';
-  var [Collection, useCollection, createCollectionScope] = createCollection(SELECT_NAME);
-  var [createSelectContext, createSelectScope] = createContextScope(SELECT_NAME, [
-    createCollectionScope,
-    createPopperScope,
-  ]);
-  var usePopperScope = createPopperScope();
-  var [SelectProviderImpl, useSelectContext] = createSelectContext(SELECT_NAME);
-  var [SelectNativeOptionsProvider, useSelectNativeOptionsContext] =
-    createSelectContext(SELECT_NAME);
-  function SelectProvider(props) {
-    const {
-      __scopeSelect,
-      children,
-      open: openProp,
-      defaultOpen,
-      onOpenChange,
-      value: valueProp,
-      defaultValue,
-      onValueChange,
-      dir,
-      name,
-      autoComplete,
-      disabled,
-      required,
-      form,
-      // @ts-expect-error internal render prop used by `Select` to compose its default parts
-      internal_do_not_use_render,
-    } = props;
-    const popperScope = usePopperScope(__scopeSelect);
-    const [trigger, setTrigger] = React32.useState(null);
-    const [valueNode, setValueNode] = React32.useState(null);
-    const [valueNodeHasChildren, setValueNodeHasChildren] = React32.useState(false);
-    const direction = useDirection(dir);
-    const [open, setOpen] = useControllableState({
-      prop: openProp,
-      defaultProp: defaultOpen ?? false,
-      onChange: onOpenChange,
-      caller: SELECT_NAME,
-    });
-    const [value, setValue] = useControllableState({
-      prop: valueProp,
-      defaultProp: defaultValue,
-      onChange: onValueChange,
-      caller: SELECT_NAME,
-    });
-    const triggerPointerDownPosRef = React32.useRef(null);
-    const initialValueRef = React32.useRef(value);
-    React32.useEffect(() => {
-      const associatedForm = form ? trigger?.ownerDocument.getElementById(form) : trigger?.form;
-      if (associatedForm instanceof HTMLFormElement) {
-        const reset = /* @__PURE__ */ __name21(() => setValue(initialValueRef.current), 'reset');
-        associatedForm.addEventListener('reset', reset);
-        return () => associatedForm.removeEventListener('reset', reset);
-      }
-    }, [form, trigger, setValue]);
-    const isFormControl = trigger ? !!form || !!trigger.closest('form') : true;
-    const [nativeOptionsSet, setNativeOptionsSet] = React32.useState(/* @__PURE__ */ new Set());
-    const contentId = useId();
-    const nativeSelectKey = Array.from(nativeOptionsSet)
-      .map((option) => option.props.value)
-      .join(';');
-    const handleNativeOptionAdd = React32.useCallback((option) => {
-      setNativeOptionsSet((prev) => new Set(prev).add(option));
-    }, []);
-    const handleNativeOptionRemove = React32.useCallback((option) => {
-      setNativeOptionsSet((prev) => {
-        const optionsSet = new Set(prev);
-        optionsSet.delete(option);
-        return optionsSet;
-      });
-    }, []);
-    const context = {
-      required,
-      trigger,
-      onTriggerChange: setTrigger,
-      valueNode,
-      onValueNodeChange: setValueNode,
-      valueNodeHasChildren,
-      onValueNodeHasChildrenChange: setValueNodeHasChildren,
-      contentId,
-      value,
-      onValueChange: setValue,
-      open,
-      onOpenChange: setOpen,
-      dir: direction,
-      triggerPointerDownPosRef,
-      disabled,
-      name,
-      autoComplete,
-      form,
-      nativeOptions: nativeOptionsSet,
-      nativeSelectKey,
-      isFormControl,
-    };
-    return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Root2, {
-      ...popperScope,
-      children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectProviderImpl, {
-        scope: __scopeSelect,
-        ...context,
-        children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Collection.Provider, {
-          scope: __scopeSelect,
-          children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectNativeOptionsProvider, {
-            scope: __scopeSelect,
-            onNativeOptionAdd: handleNativeOptionAdd,
-            onNativeOptionRemove: handleNativeOptionRemove,
-            children: isFunction2(internal_do_not_use_render)
-              ? internal_do_not_use_render(context)
-              : children,
-          }),
-        }),
-      }),
-    });
-  }
-  __name21(SelectProvider, 'SelectProvider');
-  var Select = /* @__PURE__ */ __name21((props) => {
-    const { __scopeSelect, children, ...providerProps } = props;
-    return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectProvider, {
-      __scopeSelect,
-      ...providerProps,
-      internal_do_not_use_render: ({ isFormControl }) =>
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, {
-          children: [
-            children,
-            isFormControl
-              ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectBubbleInput, {
-                  __scopeSelect,
-                })
-              : null,
-          ],
-        }),
-    });
-  }, 'Select');
-  var TRIGGER_NAME = 'SelectTrigger';
-  var SelectTrigger = /* @__PURE__ */ React32.forwardRef(
-    /* @__PURE__ */ __name21(function SelectTrigger2(props, forwardedRef) {
-      const { __scopeSelect, disabled = false, ...triggerProps } = props;
-      const popperScope = usePopperScope(__scopeSelect);
-      const context = useSelectContext(TRIGGER_NAME, __scopeSelect);
-      const isDisabled = context.disabled || disabled;
-      const composedRefs = useComposedRefs(forwardedRef, context.onTriggerChange);
-      const getItems = useCollection(__scopeSelect);
-      const pointerTypeRef = React32.useRef('touch');
-      const [searchRef, handleTypeaheadSearch, resetTypeahead] = useTypeaheadSearch((search) => {
-        const enabledItems = getItems().filter((item) => !item.disabled);
-        const currentItem = enabledItems.find((item) => item.value === context.value);
-        const nextItem = findNextItem(enabledItems, search, currentItem);
-        if (nextItem !== void 0) {
-          context.onValueChange(nextItem.value);
-        }
-      });
-      const handleOpen = /* @__PURE__ */ __name21((pointerEvent) => {
-        if (!isDisabled) {
-          context.onOpenChange(true);
-          resetTypeahead();
-        }
-        if (pointerEvent) {
-          context.triggerPointerDownPosRef.current = {
-            x: Math.round(pointerEvent.pageX),
-            y: Math.round(pointerEvent.pageY),
-          };
-        }
-      }, 'handleOpen');
-      return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Anchor, {
-        asChild: true,
-        ...popperScope,
-        children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Primitive.button, {
-          type: 'button',
-          role: 'combobox',
-          'aria-controls': context.open ? context.contentId : void 0,
-          'aria-expanded': context.open,
-          'aria-required': context.required,
-          'aria-autocomplete': 'none',
-          dir: context.dir,
-          'data-state': context.open ? 'open' : 'closed',
-          disabled: isDisabled,
-          'data-disabled': isDisabled ? '' : void 0,
-          'data-placeholder': shouldShowPlaceholder(context.value) ? '' : void 0,
-          ...triggerProps,
-          ref: composedRefs,
-          onClick: composeEventHandlers(triggerProps.onClick, (event) => {
-            event.currentTarget.focus();
-            if (pointerTypeRef.current !== 'mouse') {
-              handleOpen(event);
-            }
-          }),
-          onPointerDown: composeEventHandlers(triggerProps.onPointerDown, (event) => {
-            pointerTypeRef.current = event.pointerType;
-            const target = event.target;
-            if (target.hasPointerCapture(event.pointerId)) {
-              target.releasePointerCapture(event.pointerId);
-            }
-            if (event.button === 0 && event.ctrlKey === false && event.pointerType === 'mouse') {
-              handleOpen(event);
-              event.preventDefault();
-            }
-          }),
-          onKeyDown: composeEventHandlers(triggerProps.onKeyDown, (event) => {
-            const isTypingAhead = searchRef.current !== '';
-            const isModifierKey = event.ctrlKey || event.altKey || event.metaKey;
-            if (!isModifierKey && event.key.length === 1) handleTypeaheadSearch(event.key);
-            if (isTypingAhead && event.key === ' ') return;
-            if (OPEN_KEYS.includes(event.key)) {
-              handleOpen();
-              event.preventDefault();
-            }
-          }),
-        }),
-      });
-    }, 'SelectTrigger'),
-  );
-  var VALUE_NAME = 'SelectValue';
-  var SelectValue = /* @__PURE__ */ React32.forwardRef(
-    /* @__PURE__ */ __name21(function SelectValue2(props, forwardedRef) {
-      const { __scopeSelect, className, style, children, placeholder = '', ...valueProps } = props;
-      const context = useSelectContext(VALUE_NAME, __scopeSelect);
-      const { onValueNodeHasChildrenChange } = context;
-      const hasChildren = children !== void 0;
-      const composedRefs = useComposedRefs(forwardedRef, context.onValueNodeChange);
-      useLayoutEffect2(() => {
-        onValueNodeHasChildrenChange(hasChildren);
-      }, [onValueNodeHasChildrenChange, hasChildren]);
-      const showPlaceholder = shouldShowPlaceholder(context.value);
-      return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Primitive.span, {
-        ...valueProps,
-        asChild: showPlaceholder ? false : valueProps.asChild,
-        ref: composedRefs,
-        style: { pointerEvents: 'none' },
-        children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
-          React32.Fragment,
-          { children: showPlaceholder ? placeholder : children },
-          showPlaceholder ? 'placeholder' : 'value',
-        ),
-      });
-    }, 'SelectValue'),
-  );
-  var SelectIcon = /* @__PURE__ */ React32.forwardRef(
-    /* @__PURE__ */ __name21(function SelectIcon2(props, forwardedRef) {
-      const { __scopeSelect, children, ...iconProps } = props;
-      return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Primitive.span, {
-        'aria-hidden': true,
-        ...iconProps,
-        ref: forwardedRef,
-        children: children || '\u25BC',
-      });
-    }, 'SelectIcon'),
-  );
-  var PORTAL_NAME = 'SelectPortal';
-  var [PortalProvider, usePortalContext] = createSelectContext(PORTAL_NAME, {
-    forceMount: void 0,
-  });
-  var SelectPortal = /* @__PURE__ */ __name21((props) => {
-    const { __scopeSelect, forceMount, ...portalProps } = props;
-    return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(PortalProvider, {
-      scope: props.__scopeSelect,
-      forceMount,
-      children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Portal, {
-        asChild: true,
-        ...portalProps,
-      }),
-    });
-  }, 'SelectPortal');
-  var CONTENT_NAME2 = 'SelectContent';
-  var SelectContent = /* @__PURE__ */ React32.forwardRef(
-    /* @__PURE__ */ __name21(function SelectContent2(props, forwardedRef) {
-      const portalContext = usePortalContext(CONTENT_NAME2, props.__scopeSelect);
-      const { forceMount = portalContext.forceMount, ...contentProps } = props;
-      const context = useSelectContext(CONTENT_NAME2, props.__scopeSelect);
-      const [fragment, setFragment] = React32.useState();
-      useLayoutEffect2(() => {
-        setFragment(new DocumentFragment());
-      }, []);
-      return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Presence, {
-        present: forceMount || context.open,
-        children: ({ present }) =>
-          present
-            ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectContentImpl, {
-                ...contentProps,
-                ref: forwardedRef,
-              })
-            : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectContentFragment, {
-                ...contentProps,
-                fragment,
-              }),
-      });
-    }, 'SelectContent'),
-  );
-  var SelectContentFragment = /* @__PURE__ */ React32.forwardRef(
-    /* @__PURE__ */ __name21(function SelectContentFragment2(props, forwardedRef) {
-      const { __scopeSelect, children, fragment } = props;
-      if (!fragment) return null;
-      return ReactDOM4.createPortal(
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectContentProvider, {
-          scope: __scopeSelect,
-          children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Collection.Slot, {
-            scope: __scopeSelect,
-            children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)('div', {
-              ref: forwardedRef,
-              children,
-            }),
-          }),
-        }),
-        fragment,
-      );
-    }, 'SelectContentFragment'),
-  );
-  var CONTENT_MARGIN = 10;
-  var [SelectContentProvider, useSelectContentContext] = createSelectContext(CONTENT_NAME2);
-  var Slot = createSlot('SelectContent.RemoveScroll');
-  var SelectContentImpl = /* @__PURE__ */ React32.forwardRef(
-    // blank line to reduce diff noise
-    /* @__PURE__ */ __name21(function SelectContentImpl2(props, forwardedRef) {
-      const { __scopeSelect } = props;
-      const {
-        position = 'item-aligned',
-        onCloseAutoFocus,
-        onEscapeKeyDown,
-        onPointerDownOutside,
-        //
-        // PopperContent props
-        side,
-        sideOffset,
-        align,
-        alignOffset,
-        arrowPadding,
-        collisionBoundary,
-        collisionPadding,
-        sticky,
-        hideWhenDetached,
-        avoidCollisions,
-        //
-        ...contentProps
-      } = props;
-      const context = useSelectContext(CONTENT_NAME2, __scopeSelect);
-      const [content, setContent] = React32.useState(null);
-      const [viewport, setViewport] = React32.useState(null);
-      const composedRefs = useComposedRefs(forwardedRef, setContent);
-      const [selectedItem, setSelectedItem] = React32.useState(null);
-      const [selectedItemText, setSelectedItemText] = React32.useState(null);
-      const getItems = useCollection(__scopeSelect);
-      const [isPositioned, setIsPositioned] = React32.useState(false);
-      const firstValidItemFoundRef = React32.useRef(false);
-      React32.useEffect(() => {
-        if (content) return hideOthers(content);
-      }, [content]);
-      useFocusGuards();
-      const focusFirst2 = React32.useCallback(
-        (candidates) => {
-          const [firstItem, ...restItems] = getItems().map((item) => item.ref.current);
-          const [lastItem] = restItems.slice(-1);
-          const PREVIOUSLY_FOCUSED_ELEMENT = document.activeElement;
-          for (const candidate of candidates) {
-            if (candidate === PREVIOUSLY_FOCUSED_ELEMENT) return;
-            candidate?.scrollIntoView({ block: 'nearest' });
-            if (candidate === firstItem && viewport) viewport.scrollTop = 0;
-            if (candidate === lastItem && viewport) viewport.scrollTop = viewport.scrollHeight;
-            candidate?.focus();
-            if (document.activeElement !== PREVIOUSLY_FOCUSED_ELEMENT) return;
-          }
-        },
-        [getItems, viewport],
-      );
-      const focusSelectedItem = React32.useCallback(
-        () => focusFirst2([selectedItem, content]),
-        [focusFirst2, selectedItem, content],
-      );
-      React32.useEffect(() => {
-        if (isPositioned) {
-          focusSelectedItem();
-        }
-      }, [isPositioned, focusSelectedItem]);
-      const { onOpenChange, triggerPointerDownPosRef } = context;
-      React32.useEffect(() => {
-        if (content) {
-          let pointerMoveDelta = { x: 0, y: 0 };
-          const handlePointerMove = /* @__PURE__ */ __name21((event) => {
-            pointerMoveDelta = {
-              x: Math.abs(Math.round(event.pageX) - (triggerPointerDownPosRef.current?.x ?? 0)),
-              y: Math.abs(Math.round(event.pageY) - (triggerPointerDownPosRef.current?.y ?? 0)),
-            };
-          }, 'handlePointerMove');
-          const handlePointerUp = /* @__PURE__ */ __name21((event) => {
-            if (pointerMoveDelta.x <= 10 && pointerMoveDelta.y <= 10) {
-              event.preventDefault();
-            } else {
-              if (!event.composedPath().includes(content)) {
-                onOpenChange(false);
-              }
-            }
-            document.removeEventListener('pointermove', handlePointerMove);
-            triggerPointerDownPosRef.current = null;
-          }, 'handlePointerUp');
-          if (triggerPointerDownPosRef.current !== null) {
-            document.addEventListener('pointermove', handlePointerMove);
-            document.addEventListener('pointerup', handlePointerUp, { capture: true, once: true });
-          }
-          return () => {
-            document.removeEventListener('pointermove', handlePointerMove);
-            document.removeEventListener('pointerup', handlePointerUp, { capture: true });
-          };
-        }
-      }, [content, onOpenChange, triggerPointerDownPosRef]);
-      React32.useEffect(() => {
-        const close = /* @__PURE__ */ __name21(() => onOpenChange(false), 'close');
-        window.addEventListener('blur', close);
-        window.addEventListener('resize', close);
-        return () => {
-          window.removeEventListener('blur', close);
-          window.removeEventListener('resize', close);
-        };
-      }, [onOpenChange]);
-      const [searchRef, handleTypeaheadSearch] = useTypeaheadSearch((search) => {
-        const enabledItems = getItems().filter((item) => !item.disabled);
-        const currentItem = enabledItems.find(
-          (item) => item.ref.current === document.activeElement,
-        );
-        const nextItem = findNextItem(enabledItems, search, currentItem);
-        if (nextItem) {
-          setTimeout(() => nextItem.ref.current?.focus());
-        }
-      });
-      const itemRefCallback = React32.useCallback(
-        (node, value, disabled) => {
-          const isFirstValidItem = !firstValidItemFoundRef.current && !disabled;
-          const isSelectedItem = context.value !== void 0 && context.value === value;
-          if (isSelectedItem || isFirstValidItem) {
-            setSelectedItem(node);
-            if (isFirstValidItem) firstValidItemFoundRef.current = true;
-          }
-        },
-        [context.value],
-      );
-      const handleItemLeave = React32.useCallback(() => content?.focus(), [content]);
-      const itemTextRefCallback = React32.useCallback(
-        (node, value, disabled) => {
-          const isFirstValidItem = !firstValidItemFoundRef.current && !disabled;
-          const isSelectedItem = context.value !== void 0 && context.value === value;
-          if (isSelectedItem || isFirstValidItem) {
-            setSelectedItemText(node);
-          }
-        },
-        [context.value],
-      );
-      const SelectPosition =
-        position === 'popper' ? SelectPopperPosition : SelectItemAlignedPosition;
-      const popperContentProps =
-        SelectPosition === SelectPopperPosition
-          ? {
-              side,
-              sideOffset,
-              align,
-              alignOffset,
-              arrowPadding,
-              collisionBoundary,
-              collisionPadding,
-              sticky,
-              hideWhenDetached,
-              avoidCollisions,
-            }
-          : {};
-      return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectContentProvider, {
-        scope: __scopeSelect,
-        content,
-        viewport,
-        onViewportChange: setViewport,
-        itemRefCallback,
-        selectedItem,
-        onItemLeave: handleItemLeave,
-        itemTextRefCallback,
-        focusSelectedItem,
-        selectedItemText,
-        position,
-        isPositioned,
-        searchRef,
-        children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Combination_default, {
-          as: Slot,
-          allowPinchZoom: true,
-          children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(FocusScope, {
-            asChild: true,
-            trapped: context.open,
-            onMountAutoFocus: (event) => {
-              event.preventDefault();
-            },
-            onUnmountAutoFocus: composeEventHandlers(onCloseAutoFocus, (event) => {
-              context.trigger?.focus({ preventScroll: true });
-              event.preventDefault();
-            }),
-            children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(DismissableLayer, {
-              asChild: true,
-              disableOutsidePointerEvents: true,
-              onEscapeKeyDown,
-              onPointerDownOutside,
-              onFocusOutside: (event) => event.preventDefault(),
-              onDismiss: () => context.onOpenChange(false),
-              children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectPosition, {
-                role: 'listbox',
-                id: context.contentId,
-                'data-state': context.open ? 'open' : 'closed',
-                dir: context.dir,
-                onContextMenu: (event) => event.preventDefault(),
-                ...contentProps,
-                ...popperContentProps,
-                onPlaced: () => setIsPositioned(true),
-                ref: composedRefs,
-                style: {
-                  // flex layout so we can place the scroll buttons properly
-                  display: 'flex',
-                  flexDirection: 'column',
-                  // reset the outline by default as the content MAY get focused
-                  outline: 'none',
-                  ...contentProps.style,
-                },
-                onKeyDown: composeEventHandlers(contentProps.onKeyDown, (event) => {
-                  const isModifierKey = event.ctrlKey || event.altKey || event.metaKey;
-                  if (event.key === 'Tab') event.preventDefault();
-                  if (!isModifierKey && event.key.length === 1) handleTypeaheadSearch(event.key);
-                  if (['ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) {
-                    const items = getItems().filter((item) => !item.disabled);
-                    let candidateNodes = items.map((item) => item.ref.current);
-                    if (['ArrowUp', 'End'].includes(event.key)) {
-                      candidateNodes = candidateNodes.slice().reverse();
-                    }
-                    if (['ArrowUp', 'ArrowDown'].includes(event.key)) {
-                      const currentElement = event.target;
-                      const currentIndex = candidateNodes.indexOf(currentElement);
-                      candidateNodes = candidateNodes.slice(currentIndex + 1);
-                    }
-                    setTimeout(() => focusFirst2(candidateNodes));
-                    event.preventDefault();
-                  }
-                }),
-              }),
-            }),
-          }),
-        }),
-      });
-    }, 'SelectContentImpl'),
-  );
-  var SelectItemAlignedPosition = /* @__PURE__ */ React32.forwardRef(
-    /* @__PURE__ */ __name21(function SelectItemAlignedPosition2(props, forwardedRef) {
-      const { __scopeSelect, onPlaced, ...popperProps } = props;
-      const context = useSelectContext(CONTENT_NAME2, __scopeSelect);
-      const contentContext = useSelectContentContext(CONTENT_NAME2, __scopeSelect);
-      const [contentWrapper, setContentWrapper] = React32.useState(null);
-      const [content, setContent] = React32.useState(null);
-      const composedRefs = useComposedRefs(forwardedRef, setContent);
-      const getItems = useCollection(__scopeSelect);
-      const shouldExpandOnScrollRef = React32.useRef(false);
-      const shouldRepositionRef = React32.useRef(true);
-      const { viewport, selectedItem, selectedItemText, focusSelectedItem } = contentContext;
-      const position = React32.useCallback(() => {
-        if (
-          context.trigger &&
-          context.valueNode &&
-          contentWrapper &&
-          content &&
-          viewport &&
-          selectedItem &&
-          selectedItemText
-        ) {
-          const triggerRect = context.trigger.getBoundingClientRect();
-          const contentRect = content.getBoundingClientRect();
-          const valueNodeRect = context.valueNode.getBoundingClientRect();
-          const itemTextRect = selectedItemText.getBoundingClientRect();
-          if (context.dir !== 'rtl') {
-            const itemTextOffset = itemTextRect.left - contentRect.left;
-            const left = valueNodeRect.left - itemTextOffset;
-            const leftDelta = triggerRect.left - left;
-            const minContentWidth = triggerRect.width + leftDelta;
-            const contentWidth = Math.max(minContentWidth, contentRect.width);
-            const rightEdge = window.innerWidth - CONTENT_MARGIN;
-            const clampedLeft = clamp(left, [
-              CONTENT_MARGIN,
-              // Prevents the content from going off the starting edge of the
-              // viewport. It may still go off the ending edge, but this can be
-              // controlled by the user since they may want to manage overflow in a
-              // specific way.
-              // https://github.com/radix-ui/primitives/issues/2049
-              Math.max(CONTENT_MARGIN, rightEdge - contentWidth),
-            ]);
-            contentWrapper.style.minWidth = minContentWidth + 'px';
-            contentWrapper.style.left = clampedLeft + 'px';
-          } else {
-            const itemTextOffset = contentRect.right - itemTextRect.right;
-            const right = window.innerWidth - valueNodeRect.right - itemTextOffset;
-            const rightDelta = window.innerWidth - triggerRect.right - right;
-            const minContentWidth = triggerRect.width + rightDelta;
-            const contentWidth = Math.max(minContentWidth, contentRect.width);
-            const leftEdge = window.innerWidth - CONTENT_MARGIN;
-            const clampedRight = clamp(right, [
-              CONTENT_MARGIN,
-              Math.max(CONTENT_MARGIN, leftEdge - contentWidth),
-            ]);
-            contentWrapper.style.minWidth = minContentWidth + 'px';
-            contentWrapper.style.right = clampedRight + 'px';
-          }
-          const items = getItems();
-          const availableHeight = window.innerHeight - CONTENT_MARGIN * 2;
-          const itemsHeight = viewport.scrollHeight;
-          const contentStyles = window.getComputedStyle(content);
-          const contentBorderTopWidth = parseInt(contentStyles.borderTopWidth, 10);
-          const contentPaddingTop = parseInt(contentStyles.paddingTop, 10);
-          const contentBorderBottomWidth = parseInt(contentStyles.borderBottomWidth, 10);
-          const contentPaddingBottom = parseInt(contentStyles.paddingBottom, 10);
-          const fullContentHeight =
-            contentBorderTopWidth +
-            contentPaddingTop +
-            itemsHeight +
-            contentPaddingBottom +
-            contentBorderBottomWidth;
-          const minContentHeight = Math.min(selectedItem.offsetHeight * 5, fullContentHeight);
-          const viewportStyles = window.getComputedStyle(viewport);
-          const viewportPaddingTop = parseInt(viewportStyles.paddingTop, 10);
-          const viewportPaddingBottom = parseInt(viewportStyles.paddingBottom, 10);
-          const topEdgeToTriggerMiddle = triggerRect.top + triggerRect.height / 2 - CONTENT_MARGIN;
-          const triggerMiddleToBottomEdge = availableHeight - topEdgeToTriggerMiddle;
-          const selectedItemHalfHeight = selectedItem.offsetHeight / 2;
-          const itemOffsetMiddle = selectedItem.offsetTop + selectedItemHalfHeight;
-          const contentTopToItemMiddle =
-            contentBorderTopWidth + contentPaddingTop + itemOffsetMiddle;
-          const itemMiddleToContentBottom = fullContentHeight - contentTopToItemMiddle;
-          const willAlignWithoutTopOverflow = contentTopToItemMiddle <= topEdgeToTriggerMiddle;
-          if (willAlignWithoutTopOverflow) {
-            const isLastItem =
-              items.length > 0 && selectedItem === items[items.length - 1].ref.current;
-            contentWrapper.style.bottom = '0px';
-            const viewportOffsetBottom =
-              content.clientHeight - viewport.offsetTop - viewport.offsetHeight;
-            const clampedTriggerMiddleToBottomEdge = Math.max(
-              triggerMiddleToBottomEdge,
-              selectedItemHalfHeight + // viewport might have padding bottom, include it to avoid a scrollable viewport
-                (isLastItem ? viewportPaddingBottom : 0) +
-                viewportOffsetBottom +
-                contentBorderBottomWidth,
-            );
-            const height = contentTopToItemMiddle + clampedTriggerMiddleToBottomEdge;
-            contentWrapper.style.height = height + 'px';
-          } else {
-            const isFirstItem = items.length > 0 && selectedItem === items[0].ref.current;
-            contentWrapper.style.top = '0px';
-            const clampedTopEdgeToTriggerMiddle = Math.max(
-              topEdgeToTriggerMiddle,
-              contentBorderTopWidth +
-                viewport.offsetTop + // viewport might have padding top, include it to avoid a scrollable viewport
-                (isFirstItem ? viewportPaddingTop : 0) +
-                selectedItemHalfHeight,
-            );
-            const height = clampedTopEdgeToTriggerMiddle + itemMiddleToContentBottom;
-            contentWrapper.style.height = height + 'px';
-            viewport.scrollTop =
-              contentTopToItemMiddle - topEdgeToTriggerMiddle + viewport.offsetTop;
-          }
-          contentWrapper.style.margin = `${CONTENT_MARGIN}px 0`;
-          contentWrapper.style.minHeight = minContentHeight + 'px';
-          contentWrapper.style.maxHeight = availableHeight + 'px';
-          onPlaced?.();
-          requestAnimationFrame(() => (shouldExpandOnScrollRef.current = true));
-        }
-      }, [
-        getItems,
-        context.trigger,
-        context.valueNode,
-        contentWrapper,
-        content,
-        viewport,
-        selectedItem,
-        selectedItemText,
-        context.dir,
-        onPlaced,
-      ]);
-      useLayoutEffect2(() => position(), [position]);
-      const [contentZIndex, setContentZIndex] = React32.useState();
-      useLayoutEffect2(() => {
-        if (content) setContentZIndex(window.getComputedStyle(content).zIndex);
-      }, [content]);
-      const handleScrollButtonChange = React32.useCallback(
-        (node) => {
-          if (node && shouldRepositionRef.current === true) {
-            position();
-            focusSelectedItem?.();
-            shouldRepositionRef.current = false;
-          }
-        },
-        [position, focusSelectedItem],
-      );
-      return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectViewportProvider, {
-        scope: __scopeSelect,
-        contentWrapper,
-        shouldExpandOnScrollRef,
-        onScrollButtonChange: handleScrollButtonChange,
-        children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)('div', {
-          ref: setContentWrapper,
-          style: {
-            display: 'flex',
-            flexDirection: 'column',
-            position: 'fixed',
-            zIndex: contentZIndex,
-          },
-          children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Primitive.div, {
-            ...popperProps,
-            ref: composedRefs,
-            style: {
-              // When we get the height of the content, it includes borders. If we were to set
-              // the height without having `boxSizing: 'border-box'` it would be too big.
-              boxSizing: 'border-box',
-              // We need to ensure the content doesn't get taller than the wrapper
-              maxHeight: '100%',
-              ...popperProps.style,
-            },
-          }),
-        }),
-      });
-    }, 'SelectItemAlignedPosition'),
-  );
-  var SelectPopperPosition = /* @__PURE__ */ React32.forwardRef(
-    /* @__PURE__ */ __name21(function SelectPopperPosition2(props, forwardedRef) {
-      const {
-        __scopeSelect,
-        align = 'start',
-        collisionPadding = CONTENT_MARGIN,
-        ...popperProps
-      } = props;
-      const popperScope = usePopperScope(__scopeSelect);
-      return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Content, {
-        ...popperScope,
-        ...popperProps,
-        ref: forwardedRef,
-        align,
-        collisionPadding,
-        style: {
-          // Ensure border-box for floating-ui calculations
-          boxSizing: 'border-box',
-          ...popperProps.style,
-          // re-namespace exposed content custom properties
-          ...{
-            '--radix-select-content-transform-origin': 'var(--radix-popper-transform-origin)',
-            '--radix-select-content-available-width': 'var(--radix-popper-available-width)',
-            '--radix-select-content-available-height': 'var(--radix-popper-available-height)',
-            '--radix-select-trigger-width': 'var(--radix-popper-anchor-width)',
-            '--radix-select-trigger-height': 'var(--radix-popper-anchor-height)',
-          },
-        },
-      });
-    }, 'SelectPopperPosition'),
-  );
-  var [SelectViewportProvider, useSelectViewportContext] = createSelectContext(CONTENT_NAME2, {});
-  var VIEWPORT_NAME = 'SelectViewport';
-  var SelectViewport = /* @__PURE__ */ React32.forwardRef(
-    /* @__PURE__ */ __name21(function SelectViewport2(props, forwardedRef) {
-      const { __scopeSelect, nonce, ...viewportProps } = props;
-      const contentContext = useSelectContentContext(VIEWPORT_NAME, __scopeSelect);
-      const viewportContext = useSelectViewportContext(VIEWPORT_NAME, __scopeSelect);
-      const composedRefs = useComposedRefs(forwardedRef, contentContext.onViewportChange);
-      const prevScrollTopRef = React32.useRef(0);
-      return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, {
-        children: [
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)('style', {
-            dangerouslySetInnerHTML: {
-              __html: `[data-radix-select-viewport]{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;}[data-radix-select-viewport]::-webkit-scrollbar{display:none}`,
-            },
-            nonce,
-          }),
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Collection.Slot, {
-            scope: __scopeSelect,
-            children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Primitive.div, {
-              'data-radix-select-viewport': '',
-              role: 'presentation',
-              ...viewportProps,
-              ref: composedRefs,
-              style: {
-                // we use position: 'relative' here on the `viewport` so that when we call
-                // `selectedItem.offsetTop` in calculations, the offset is relative to the viewport
-                // (independent of the scrollUpButton).
-                position: 'relative',
-                flex: 1,
-                // Viewport should only be scrollable in the vertical direction.
-                // This won't work in vertical writing modes, so we'll need to
-                // revisit this if/when that is supported
-                // https://developer.chrome.com/blog/vertical-form-controls
-                overflow: 'hidden auto',
-                ...viewportProps.style,
-              },
-              onScroll: composeEventHandlers(viewportProps.onScroll, (event) => {
-                const viewport = event.currentTarget;
-                const { contentWrapper, shouldExpandOnScrollRef } = viewportContext;
-                if (shouldExpandOnScrollRef?.current && contentWrapper) {
-                  const scrolledBy = Math.abs(prevScrollTopRef.current - viewport.scrollTop);
-                  if (scrolledBy > 0) {
-                    const availableHeight = window.innerHeight - CONTENT_MARGIN * 2;
-                    const cssMinHeight = parseFloat(contentWrapper.style.minHeight);
-                    const cssHeight = parseFloat(contentWrapper.style.height);
-                    const prevHeight = Math.max(cssMinHeight, cssHeight);
-                    if (prevHeight < availableHeight) {
-                      const nextHeight = prevHeight + scrolledBy;
-                      const clampedNextHeight = Math.min(availableHeight, nextHeight);
-                      const heightDiff = nextHeight - clampedNextHeight;
-                      contentWrapper.style.height = clampedNextHeight + 'px';
-                      if (contentWrapper.style.bottom === '0px') {
-                        viewport.scrollTop = heightDiff > 0 ? heightDiff : 0;
-                        contentWrapper.style.justifyContent = 'flex-end';
-                      }
-                    }
-                  }
-                }
-                prevScrollTopRef.current = viewport.scrollTop;
-              }),
-            }),
-          }),
-        ],
-      });
-    }, 'SelectViewport'),
-  );
-  var GROUP_NAME = 'SelectGroup';
-  var [SelectGroupContextProvider, useSelectGroupContext] = createSelectContext(GROUP_NAME);
-  var ITEM_NAME = 'SelectItem';
-  var [SelectItemContextProvider, useSelectItemContext] = createSelectContext(ITEM_NAME);
-  var SelectItem = /* @__PURE__ */ React32.forwardRef(
-    /* @__PURE__ */ __name21(function SelectItem2(props, forwardedRef) {
-      const {
-        __scopeSelect,
-        value,
-        disabled = false,
-        textValue: textValueProp,
-        ...itemProps
-      } = props;
-      const context = useSelectContext(ITEM_NAME, __scopeSelect);
-      const contentContext = useSelectContentContext(ITEM_NAME, __scopeSelect);
-      const isSelected = context.value === value;
-      const [textValue, setTextValue] = React32.useState(textValueProp ?? '');
-      const [isFocused, setIsFocused] = React32.useState(false);
-      const handleItemRefCallback = useCallbackRef((node) =>
-        contentContext.itemRefCallback?.(node, value, disabled),
-      );
-      const composedRefs = useComposedRefs(forwardedRef, handleItemRefCallback);
-      const textId = useId();
-      const pointerTypeRef = React32.useRef('touch');
-      const handleSelect = /* @__PURE__ */ __name21(() => {
-        if (!disabled) {
-          context.onValueChange(value);
-          context.onOpenChange(false);
-        }
-      }, 'handleSelect');
-      return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(SelectItemContextProvider, {
-        scope: __scopeSelect,
-        value,
-        disabled,
-        textId,
-        isSelected,
-        onItemTextChange: React32.useCallback((node) => {
-          setTextValue((prevTextValue) => prevTextValue || (node?.textContent ?? '').trim());
-        }, []),
-        children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Collection.ItemSlot, {
-          scope: __scopeSelect,
-          value,
-          disabled,
-          textValue,
-          children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Primitive.div, {
-            role: 'option',
-            'aria-labelledby': textId,
-            'data-highlighted': isFocused ? '' : void 0,
-            'aria-selected': isSelected && isFocused,
-            'data-state': isSelected ? 'checked' : 'unchecked',
-            'aria-disabled': disabled || void 0,
-            'data-disabled': disabled ? '' : void 0,
-            tabIndex: disabled ? void 0 : -1,
-            ...itemProps,
-            ref: composedRefs,
-            onFocus: composeEventHandlers(itemProps.onFocus, () => setIsFocused(true)),
-            onBlur: composeEventHandlers(itemProps.onBlur, () => setIsFocused(false)),
-            onClick: composeEventHandlers(itemProps.onClick, () => {
-              if (pointerTypeRef.current !== 'mouse') handleSelect();
-            }),
-            onPointerUp: composeEventHandlers(itemProps.onPointerUp, () => {
-              if (pointerTypeRef.current === 'mouse') handleSelect();
-            }),
-            onPointerDown: composeEventHandlers(itemProps.onPointerDown, (event) => {
-              pointerTypeRef.current = event.pointerType;
-            }),
-            onPointerMove: composeEventHandlers(itemProps.onPointerMove, (event) => {
-              pointerTypeRef.current = event.pointerType;
-              if (disabled) {
-                contentContext.onItemLeave?.();
-              } else if (pointerTypeRef.current === 'mouse') {
-                event.currentTarget.focus({ preventScroll: true });
-              }
-            }),
-            onPointerLeave: composeEventHandlers(itemProps.onPointerLeave, (event) => {
-              if (event.currentTarget === document.activeElement) {
-                contentContext.onItemLeave?.();
-              }
-            }),
-            onKeyDown: composeEventHandlers(itemProps.onKeyDown, (event) => {
-              if (disabled || event.target !== event.currentTarget) {
-                return;
-              }
-              const isTypingAhead = contentContext.searchRef?.current !== '';
-              if (isTypingAhead && event.key === ' ') {
-                return;
-              }
-              if (SELECTION_KEYS.includes(event.key)) {
-                handleSelect();
-              }
-              if (event.key === ' ') {
-                event.preventDefault();
-              }
-            }),
-          }),
-        }),
-      });
-    }, 'SelectItem'),
-  );
-  var ITEM_TEXT_NAME = 'SelectItemText';
-  var SelectItemText = /* @__PURE__ */ React32.forwardRef(
-    /* @__PURE__ */ __name21(function SelectItemText2(props, forwardedRef) {
-      const { __scopeSelect, className, style, ...itemTextProps } = props;
-      const context = useSelectContext(ITEM_TEXT_NAME, __scopeSelect);
-      const contentContext = useSelectContentContext(ITEM_TEXT_NAME, __scopeSelect);
-      const itemContext = useSelectItemContext(ITEM_TEXT_NAME, __scopeSelect);
-      const nativeOptionsContext = useSelectNativeOptionsContext(ITEM_TEXT_NAME, __scopeSelect);
-      const [itemTextNode, setItemTextNode] = React32.useState(null);
-      const handleItemTextRefCallback = useCallbackRef((node) =>
-        contentContext.itemTextRefCallback?.(node, itemContext.value, itemContext.disabled),
-      );
-      const composedRefs = useComposedRefs(
-        forwardedRef,
-        setItemTextNode,
-        itemContext.onItemTextChange,
-        handleItemTextRefCallback,
-      );
-      const textContent = itemTextNode?.textContent;
-      const nativeOption = React32.useMemo(
-        () =>
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
-            'option',
-            { value: itemContext.value, disabled: itemContext.disabled, children: textContent },
-            itemContext.value,
-          ),
-        [itemContext.disabled, itemContext.value, textContent],
-      );
-      const { onNativeOptionAdd, onNativeOptionRemove } = nativeOptionsContext;
-      useLayoutEffect2(() => {
-        onNativeOptionAdd(nativeOption);
-        return () => onNativeOptionRemove(nativeOption);
-      }, [onNativeOptionAdd, onNativeOptionRemove, nativeOption]);
-      return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, {
-        children: [
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Primitive.span, {
-            id: itemContext.textId,
-            ...itemTextProps,
-            ref: composedRefs,
-          }),
-          itemContext.isSelected &&
-          context.valueNode &&
-          !context.valueNodeHasChildren &&
-          !shouldShowPlaceholder(context.value)
-            ? ReactDOM4.createPortal(itemTextProps.children, context.valueNode)
-            : null,
-        ],
-      });
-    }, 'SelectItemText'),
-  );
-  var BUBBLE_INPUT_NAME = 'SelectBubbleInput';
-  var SelectBubbleInput = /* @__PURE__ */ React32.forwardRef(
-    // blank line to reduce diff noise
-    /* @__PURE__ */ __name21(function SelectBubbleInput2(
-      { __scopeSelect, ...props },
-      forwardedRef,
-    ) {
-      const context = useSelectContext(BUBBLE_INPUT_NAME, __scopeSelect);
-      const { value, onValueChange, required, disabled, name, autoComplete, form } = context;
-      const { nativeOptions, nativeSelectKey } = context;
-      const ref = React32.useRef(null);
-      const composedRefs = useComposedRefs(forwardedRef, ref);
-      const selectValue = value ?? '';
-      const prevValue = usePrevious(selectValue);
-      const hasEmptyValueOption = Array.from(nativeOptions).some(
-        (option) => (option.props.value ?? '') === '',
-      );
-      React32.useEffect(() => {
-        const select = ref.current;
-        if (!select) return;
-        const selectProto = window.HTMLSelectElement.prototype;
-        const descriptor = Object.getOwnPropertyDescriptor(selectProto, 'value');
-        const setValue = descriptor.set;
-        if (prevValue !== selectValue && setValue) {
-          const event = new Event('change', { bubbles: true });
-          setValue.call(select, selectValue);
-          select.dispatchEvent(event);
-        }
-      }, [prevValue, selectValue]);
-      return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(
-        Primitive.select,
-        {
-          'aria-hidden': true,
-          required,
-          tabIndex: -1,
-          name,
-          autoComplete,
-          disabled,
-          form,
-          onChange: (event) => onValueChange(event.target.value),
-          ...props,
-          style: { ...VISUALLY_HIDDEN_STYLES, ...props.style },
-          ref: composedRefs,
-          defaultValue: selectValue,
-          children: [
-            shouldShowPlaceholder(value) && !hasEmptyValueOption
-              ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)('option', { value: '' })
-              : null,
-            Array.from(nativeOptions),
-          ],
-        },
-        nativeSelectKey,
-      );
-    }, 'SelectBubbleInput'),
-  );
-  function isFunction2(value) {
-    return typeof value === 'function';
-  }
-  __name21(isFunction2, 'isFunction');
-  function shouldShowPlaceholder(value) {
-    return value === '' || value === void 0;
-  }
-  __name21(shouldShowPlaceholder, 'shouldShowPlaceholder');
-  function useTypeaheadSearch(onSearchChange) {
-    const handleSearchChange = useCallbackRef(onSearchChange);
-    const searchRef = React32.useRef('');
-    const timerRef = React32.useRef(0);
-    const handleTypeaheadSearch = React32.useCallback(
-      (key) => {
-        const search = searchRef.current + key;
-        handleSearchChange(search);
-        /* @__PURE__ */ __name21(function updateSearch(value) {
-          searchRef.current = value;
-          window.clearTimeout(timerRef.current);
-          if (value !== '') timerRef.current = window.setTimeout(() => updateSearch(''), 1e3);
-        }, 'updateSearch')(search);
-      },
-      [handleSearchChange],
-    );
-    const resetTypeahead = React32.useCallback(() => {
-      searchRef.current = '';
-      window.clearTimeout(timerRef.current);
-    }, []);
-    React32.useEffect(() => {
-      return () => window.clearTimeout(timerRef.current);
-    }, []);
-    return [searchRef, handleTypeaheadSearch, resetTypeahead];
-  }
-  __name21(useTypeaheadSearch, 'useTypeaheadSearch');
-  function findNextItem(items, search, currentItem) {
-    const isRepeated = search.length > 1 && Array.from(search).every((char) => char === search[0]);
-    const normalizedSearch = isRepeated ? search[0] : search;
-    const currentItemIndex = currentItem ? items.indexOf(currentItem) : -1;
-    let wrappedItems = wrapArray(items, Math.max(currentItemIndex, 0));
-    const excludeCurrentItem = normalizedSearch.length === 1;
-    if (excludeCurrentItem) wrappedItems = wrappedItems.filter((v) => v !== currentItem);
-    const nextItem = wrappedItems.find((item) =>
-      item.textValue.toLowerCase().startsWith(normalizedSearch.toLowerCase()),
-    );
-    return nextItem !== currentItem ? nextItem : void 0;
-  }
-  __name21(findNextItem, 'findNextItem');
-  function wrapArray(array, startIndex) {
-    return array.map((_, index2) => array[(startIndex + index2) % array.length]);
-  }
-  __name21(wrapArray, 'wrapArray');
-
-  // src/ui/components/select.tsx
-  var import_jsx_runtime20 = __toESM(require_jsx_runtime(), 1);
-  var Select2 = Select;
-  var SelectValue3 = SelectValue;
-  var SelectTrigger3 = (0, import_react9.forwardRef)(({ className, children, ...props }, ref) =>
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(SelectTrigger, {
-      ref,
-      className: cn(
-        'flex h-11 w-full items-center justify-between gap-2 rounded-lg border-2 border-input bg-background px-3.5 py-2.5 text-base text-foreground',
-        'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 border-primary/50',
-        'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-muted',
-        '[&>span]:line-clamp-1',
-        className,
-      ),
-      ...props,
-      children: [
-        children,
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectIcon, {
-          asChild: true,
-          children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(ChevronDown, {
-            className: 'h-5 w-5 opacity-60 flex-shrink-0',
-          }),
-        }),
-      ],
-    }),
-  );
-  SelectTrigger3.displayName = SelectTrigger.displayName;
-  function getShadowApp() {
-    try {
-      return document.getElementById('morbis-manap-root')?.shadowRoot?.getElementById('app');
-    } catch {
-      return void 0;
-    }
-  }
-  var SelectContent3 = (0, import_react9.forwardRef)(
-    ({ className, children, position = 'item-aligned', container, ...props }, ref) => {
-      const resolved = container ?? getShadowApp();
-      return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectPortal, {
-        container: resolved,
-        children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectContent, {
-          ref,
-          className: cn(
-            'relative z-[2147483647] max-h-[360px] min-w-[12rem] overflow-hidden rounded-lg border bg-popover text-popover-foreground shadow-lg',
-            'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
-            'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
-            position === 'popper' &&
-              'data-[side=bottom]:translate-y-1 data-[side=top]:-translate-y-1',
-            className,
-          ),
-          position,
-          ...props,
-          children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectViewport, {
-            className: cn(
-              'p-1.5',
-              position === 'popper' &&
-                'h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]',
-            ),
-            children,
-          }),
-        }),
-      });
-    },
-  );
-  SelectContent3.displayName = SelectContent.displayName;
-  var SelectItem3 = (0, import_react9.forwardRef)(({ className, children, ...props }, ref) =>
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectItem, {
-      ref,
-      className: cn(
-        'relative flex w-full cursor-default select-none items-center rounded-md px-3 py-2.5 text-base outline-none',
-        'focus:bg-accent focus:text-accent-foreground',
-        'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
-        className,
-      ),
-      ...props,
-      children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(SelectItemText, { children }),
-    }),
-  );
-  SelectItem3.displayName = SelectItem.displayName;
-
   // src/features/resumeTab/DiagnosaSection.tsx
-  var import_jsx_runtime21 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime9 = __toESM(require_jsx_runtime(), 1);
   var ICD10_URL = '/rekam-medik/search?opsi=kodeicd10&q=';
   function DiagnosaSection({ rows, onChange }) {
-    const [hits, setHits] = (0, import_react10.useState)([]);
-    const [hitRow, setHitRow] = (0, import_react10.useState)(-1);
-    const [hitPos, setHitPos] = (0, import_react10.useState)({ top: 0, left: 0, width: 0 });
-    const [errMsg, setErrMsg] = (0, import_react10.useState)('');
-    const t = (0, import_react10.useRef)(null);
-    const abortRef = (0, import_react10.useRef)(null);
+    const [hits, setHits] = (0, import_react7.useState)([]);
+    const [hitRow, setHitRow] = (0, import_react7.useState)(-1);
+    const [hitPos, setHitPos] = (0, import_react7.useState)({ top: 0, left: 0, width: 0 });
+    const [errMsg, setErrMsg] = (0, import_react7.useState)('');
+    const t = (0, import_react7.useRef)(null);
+    const abortRef = (0, import_react7.useRef)(null);
     const updateRow = (i, p) => onChange(rows.map((r2, idx) => (idx === i ? { ...r2, ...p } : r2)));
     const removeRow = (i) => onChange(rows.filter((_, idx) => idx !== i));
     const search = (q, rowIdx, el) => {
@@ -42922,81 +36256,75 @@ var __morbis_feature = (() => {
     const makeKodeChange = (i) => (e) => {
       updateRow(i, { kode10: e.target.value });
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
+    return /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)('div', {
       className: 'space-y-4',
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
+        /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('div', {
           className: 'flex justify-end',
-          children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(Button, {
+          children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Button, {
             variant: 'default',
             size: 'lg',
             className: 'gap-2 px-5 py-3',
             onClick: () =>
               onChange([
                 ...rows,
-                { idicd: '', kode10: '', namaDiagnosa: '', kasus: '', komplikasi: '' },
+                { idicd: '', kode10: '', namaDiagnosa: '', kasus: 'LAMA', komplikasi: 'TIDAK' },
               ]),
-            children: [
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Plus, { className: 'size-5' }),
-              ' Tambah Diagnosa',
-            ],
+            children: 'Tambah Diagnosa',
           }),
         }),
         rows.length === 0
-          ? /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
+          ? /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)('div', {
               className:
                 'border-2 border-dashed border-border rounded-xl py-12 text-center bg-background',
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('p', {
+                /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('p', {
                   className: 'text-base text-muted-foreground mb-2',
                   children: 'Belum ada diagnosa',
                 }),
-                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('p', {
+                /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('p', {
                   className: 'text-base text-muted-foreground',
                   children: 'Klik "Tambah Diagnosa" untuk menambahkan',
                 }),
               ],
             })
-          : /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
+          : /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('div', {
               className: 'space-y-4',
               children: rows.map((row, i) => {
                 const no = i + 1;
-                return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
+                return /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(
                   'div',
                   {
                     className:
                       'bg-background border-2 border-border rounded-xl p-4 space-y-4 shadow-sm',
                     children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
+                      /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)('div', {
                         className: 'flex items-center justify-between',
                         children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('span', {
+                          /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)('span', {
                             className: 'text-base font-semibold text-primary',
                             children: ['Diagnosa #', no],
                           }),
-                          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Button, {
-                            variant: 'ghost',
-                            size: 'icon',
+                          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Button, {
+                            variant: 'destructive',
+                            size: 'default',
                             onClick: () => removeRow(i),
-                            className:
-                              'h-11 w-11 text-destructive border-destructive/30 hover:bg-destructive hover:text-destructive-foreground',
+                            className: 'gap-2',
                             'aria-label': `Hapus diagnosa #{no}`,
-                            children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Trash, {
-                              className: 'size-5',
-                            }),
+                            children: 'Hapus',
                           }),
                         ],
                       }),
-                      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
+                      /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)('div', {
                         className: 'space-y-2',
                         children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Label, {
+                          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Label, {
                             children: 'Nama Diagnosa',
                           }),
-                          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
+                          /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)('div', {
                             className: 'relative',
                             children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Input, {
+                              /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Input, {
                                 id: `rj-nama${no}`,
                                 name: 'nama[]',
                                 value: row.namaDiagnosa,
@@ -43006,17 +36334,17 @@ var __morbis_feature = (() => {
                                 className: 'pr-12',
                                 'aria-describedby': `rj-nama-help-${no}`,
                               }),
-                              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Search, {
+                              /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Search, {
                                 className:
                                   'absolute right-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none',
                                 'aria-hidden': 'true',
                               }),
-                              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('p', {
+                              /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('p', {
                                 id: `rj-nama-help-${no}`,
                                 className: 'sr-only',
                                 children: 'Ketik minimal 3 karakter untuk mencari diagnosis ICD-10',
                               }),
-                              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('input', {
+                              /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('input', {
                                 type: 'hidden',
                                 id: `rj-idicd${no}`,
                                 name: 'idicd[]',
@@ -43024,7 +36352,7 @@ var __morbis_feature = (() => {
                               }),
                               hits.length > 0 &&
                                 hitRow === i &&
-                                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
+                                /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('div', {
                                   className:
                                     'fixed z-[2147483647] bg-background border-2 border-border rounded-xl shadow-lg max-h-[280px] overflow-auto',
                                   style: {
@@ -43035,7 +36363,7 @@ var __morbis_feature = (() => {
                                   role: 'listbox',
                                   'aria-label': 'Hasil pencarian ICD-10',
                                   children: hits.map((item, ri) =>
-                                    /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
+                                    /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(
                                       'div',
                                       {
                                         onClick: () => pick(i, item),
@@ -43043,11 +36371,11 @@ var __morbis_feature = (() => {
                                         className:
                                           'px-4 py-3 cursor-pointer text-base border-b border-border hover:bg-accent transition-colors',
                                         children: [
-                                          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
+                                          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('div', {
                                             className: 'font-medium text-foreground',
                                             children: item.NAMA,
                                           }),
-                                          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
+                                          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('div', {
                                             className: 'text-muted-foreground text-base font-mono',
                                             children: item.KODE,
                                           }),
@@ -43058,7 +36386,7 @@ var __morbis_feature = (() => {
                                   ),
                                 }),
                               errMsg &&
-                                /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
+                                /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('div', {
                                   className:
                                     'fixed z-[2147483647] bg-destructive/10 border-2 border-destructive rounded-xl px-3 py-2.5 text-base text-destructive',
                                   style: { top: hitPos.top, left: hitPos.left },
@@ -43069,16 +36397,16 @@ var __morbis_feature = (() => {
                           }),
                         ],
                       }),
-                      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
-                        className: 'grid grid-cols-[1fr_140px_120px_50px] gap-4 items-end',
+                      /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)('div', {
+                        className: 'grid grid-cols-[1fr_50px] gap-4 items-end',
                         children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
+                          /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)('div', {
                             className: 'space-y-1.5',
                             children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Label, {
+                              /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Label, {
                                 children: 'Kode ICD-10',
                               }),
-                              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Input, {
+                              /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Input, {
                                 id: `rj-kode${no}`,
                                 name: 'kode10[]',
                                 value: row.kode10,
@@ -43087,83 +36415,27 @@ var __morbis_feature = (() => {
                                 className: 'font-mono text-base',
                                 'aria-describedby': `rj-kode-help-${no}`,
                               }),
-                              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('p', {
+                              /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('p', {
                                 id: `rj-kode-help-${no}`,
                                 className: 'sr-only',
                                 children:
                                   'Kode ICD-10 otomatis terisi saat memilih diagnosa, atau ketik manual',
                               }),
-                            ],
-                          }),
-                          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
-                            className: 'space-y-1.5',
-                            children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Label, {
-                                children: 'Kasus',
-                              }),
-                              /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(Select2, {
+                              /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('input', {
+                                type: 'hidden',
+                                name: 'kasus[]',
                                 value: row.kasus,
-                                onValueChange: (v) => updateRow(i, { kasus: v }),
-                                children: [
-                                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SelectTrigger3, {
-                                    className: 'h-11 text-base',
-                                    children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
-                                      SelectValue3,
-                                      { placeholder: 'Pilih' },
-                                    ),
-                                  }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(SelectContent3, {
-                                    children: [
-                                      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SelectItem3, {
-                                        value: 'BARU',
-                                        children: 'Baru',
-                                      }),
-                                      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SelectItem3, {
-                                        value: 'LAMA',
-                                        children: 'Lama',
-                                      }),
-                                    ],
-                                  }),
-                                ],
                               }),
-                            ],
-                          }),
-                          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)('div', {
-                            className: 'space-y-1.5',
-                            children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Label, {
-                                children: 'Komplikasi',
-                              }),
-                              /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(Select2, {
+                              /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('input', {
+                                type: 'hidden',
+                                name: 'komplikasi[]',
                                 value: row.komplikasi,
-                                onValueChange: (v) => updateRow(i, { komplikasi: v }),
-                                children: [
-                                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SelectTrigger3, {
-                                    className: 'h-11 text-base',
-                                    children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
-                                      SelectValue3,
-                                      { placeholder: 'Pilih' },
-                                    ),
-                                  }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(SelectContent3, {
-                                    children: [
-                                      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SelectItem3, {
-                                        value: 'YA',
-                                        children: 'Ya',
-                                      }),
-                                      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SelectItem3, {
-                                        value: 'TIDAK',
-                                        children: 'Tidak',
-                                      }),
-                                    ],
-                                  }),
-                                ],
                               }),
                             ],
                           }),
-                          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)('div', {
+                          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('div', {
                             className: 'space-y-1.5',
-                            children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(Label, {
+                            children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Label, {
                               className: 'invisible',
                               children: 'Hapus',
                             }),
@@ -43181,31 +36453,16 @@ var __morbis_feature = (() => {
   }
 
   // src/features/resumeTab/TindakanSection.tsx
-  var import_react11 = __toESM(require_react(), 1);
-  var import_jsx_runtime22 = __toESM(require_jsx_runtime(), 1);
+  var import_react8 = __toESM(require_react(), 1);
+  var import_jsx_runtime10 = __toESM(require_jsx_runtime(), 1);
   var ICD9_URL = '/rekam-medik/search?opsi=clauseDiagnose_icd9&q=';
-  var JENIS_OPTIONS = [
-    { value: 'Primer', label: 'Utama (Primer)' },
-    { value: 'Sekunder', label: 'Tambahan (Sekunder)' },
-  ];
-  var KATEGORI_OPTIONS = [
-    { value: '', label: 'Pilih Kategori Prosedur' },
-    { value: '24642003', label: 'Layanan Psikiatri' },
-    { value: '409063005', label: 'Konseling' },
-    { value: '409073007', label: 'Edukasi' },
-    { value: '387713003', label: 'Tindakan Bedah' },
-    { value: '103693007', label: 'Pemeriksaan Diagnostik' },
-    { value: '46947000', label: 'Manipulasi Terapi' },
-    { value: '410606002', label: 'Pelayanan Sosial' },
-    { value: '277132007', label: 'Tindakan Terapeutik' },
-  ];
   function TindakanSection({ rows, onChange }) {
-    const [hits, setHits] = (0, import_react11.useState)([]);
-    const [hitRow, setHitRow] = (0, import_react11.useState)(-1);
-    const [hitPos, setHitPos] = (0, import_react11.useState)({ top: 0, left: 0, width: 0 });
-    const [errMsg, setErrMsg] = (0, import_react11.useState)('');
-    const t = (0, import_react11.useRef)(null);
-    const abortRef = (0, import_react11.useRef)(null);
+    const [hits, setHits] = (0, import_react8.useState)([]);
+    const [hitRow, setHitRow] = (0, import_react8.useState)(-1);
+    const [hitPos, setHitPos] = (0, import_react8.useState)({ top: 0, left: 0, width: 0 });
+    const [errMsg, setErrMsg] = (0, import_react8.useState)('');
+    const t = (0, import_react8.useRef)(null);
+    const abortRef = (0, import_react8.useRef)(null);
     const updateRow = (i, p) => onChange(rows.map((r2, idx) => (idx === i ? { ...r2, ...p } : r2)));
     const removeRow = (i) => onChange(rows.filter((_, idx) => idx !== i));
     const search = (q, rowIdx, el) => {
@@ -43268,12 +36525,12 @@ var __morbis_feature = (() => {
     const makeKodeChange = (i) => (e) => {
       updateRow(i, { kode9: e.target.value });
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
+    return /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)('div', {
       className: 'space-y-4',
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('div', {
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)('div', {
           className: 'flex justify-end',
-          children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(Button, {
+          children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(Button, {
             variant: 'default',
             size: 'lg',
             className: 'gap-2 px-5 py-3',
@@ -43284,75 +36541,68 @@ var __morbis_feature = (() => {
                   idicdTindakan: '',
                   kode9: '',
                   namaTindakan: '',
+                  jenis: rows.length === 0 ? 'Primer' : 'Sekunder',
                   komorbid: '',
-                  kategoriProsedur: '',
+                  kategoriProsedur: '410606002',
                   snomedProsedur: '',
                   codeProsedur: '',
                 },
               ]),
-            children: [
-              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Plus, { className: 'size-5' }),
-              ' Tambah Tindakan',
-            ],
+            children: 'Tambah Tindakan',
           }),
         }),
         rows.length === 0
-          ? /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
+          ? /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)('div', {
               className:
                 'border-2 border-dashed border-border rounded-xl py-12 text-center bg-background',
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('p', {
+                /* @__PURE__ */ (0, import_jsx_runtime10.jsx)('p', {
                   className: 'text-base text-muted-foreground mb-2',
                   children: 'Belum ada tindakan',
                 }),
-                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('p', {
+                /* @__PURE__ */ (0, import_jsx_runtime10.jsx)('p', {
                   className: 'text-base text-muted-foreground',
                   children: 'Klik "Tambah Tindakan" untuk menambahkan',
                 }),
               ],
             })
-          : /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('div', {
+          : /* @__PURE__ */ (0, import_jsx_runtime10.jsx)('div', {
               className: 'space-y-4',
               children: rows.map((row, i) => {
                 const no = i + 1;
-                return /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
+                return /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(
                   'div',
                   {
                     className:
                       'bg-background border-2 border-border rounded-xl p-4 space-y-4 shadow-sm',
                     children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
+                      /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)('div', {
                         className: 'flex items-center justify-between',
                         children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('span', {
+                          /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)('span', {
                             className: 'text-base font-semibold text-primary',
                             children: ['Tindakan #', no],
                           }),
-                          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(Button, {
-                            variant: 'ghost',
+                          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(Button, {
+                            variant: 'destructive',
+                            size: 'default',
                             onClick: () => removeRow(i),
-                            className:
-                              'h-11 px-4 text-destructive border-destructive/30 hover:bg-destructive hover:text-destructive-foreground gap-2',
+                            className: 'gap-2',
                             'aria-label': `Hapus tindakan #${no}`,
-                            children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Trash, {
-                                className: 'size-5',
-                              }),
-                              ' Hapus',
-                            ],
+                            children: 'Hapus',
                           }),
                         ],
                       }),
-                      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
+                      /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)('div', {
                         className: 'space-y-2',
                         children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Label, {
+                          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(Label, {
                             children: 'Nama Tindakan',
                           }),
-                          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
+                          /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)('div', {
                             className: 'relative',
                             children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Input, {
+                              /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(Input, {
                                 id: `rj-nama-tindakan${no}`,
                                 name: 'nama_tindakan[]',
                                 value: row.namaTindakan,
@@ -43362,17 +36612,17 @@ var __morbis_feature = (() => {
                                 className: 'pr-12',
                                 'aria-describedby': `rj-tindakan-help-${no}`,
                               }),
-                              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Search, {
+                              /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(Search, {
                                 className:
                                   'absolute right-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none',
                                 'aria-hidden': 'true',
                               }),
-                              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('p', {
+                              /* @__PURE__ */ (0, import_jsx_runtime10.jsx)('p', {
                                 id: `rj-tindakan-help-${no}`,
                                 className: 'sr-only',
                                 children: 'Ketik minimal 3 karakter untuk mencari tindakan ICD-9',
                               }),
-                              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('input', {
+                              /* @__PURE__ */ (0, import_jsx_runtime10.jsx)('input', {
                                 type: 'hidden',
                                 id: `rj-idicd-tindakan${no}`,
                                 name: 'idicd_tindakan[]',
@@ -43381,7 +36631,7 @@ var __morbis_feature = (() => {
                               }),
                               hits.length > 0 &&
                                 hitRow === i &&
-                                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('div', {
+                                /* @__PURE__ */ (0, import_jsx_runtime10.jsx)('div', {
                                   className:
                                     'fixed z-[2147483647] bg-background border-2 border-border rounded-xl shadow-lg max-h-[280px] overflow-auto',
                                   style: {
@@ -43392,7 +36642,7 @@ var __morbis_feature = (() => {
                                   role: 'listbox',
                                   'aria-label': 'Hasil pencarian ICD-9',
                                   children: hits.map((item, ri) =>
-                                    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(
+                                    /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(
                                       'div',
                                       {
                                         onClick: () => pick(i, item),
@@ -43400,11 +36650,11 @@ var __morbis_feature = (() => {
                                         className:
                                           'px-4 py-3 cursor-pointer text-base border-b border-border hover:bg-accent transition-colors',
                                         children: [
-                                          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('div', {
+                                          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)('div', {
                                             className: 'font-medium text-foreground',
                                             children: item.NAMA,
                                           }),
-                                          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('div', {
+                                          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)('div', {
                                             className: 'text-muted-foreground text-base font-mono',
                                             children: item.KODE,
                                           }),
@@ -43415,7 +36665,7 @@ var __morbis_feature = (() => {
                                   ),
                                 }),
                               errMsg &&
-                                /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('div', {
+                                /* @__PURE__ */ (0, import_jsx_runtime10.jsx)('div', {
                                   className:
                                     'fixed z-[2147483647] bg-destructive/10 border-2 border-destructive rounded-xl px-3 py-2.5 text-base text-destructive',
                                   style: { top: hitPos.top, left: hitPos.left },
@@ -43426,91 +36676,36 @@ var __morbis_feature = (() => {
                           }),
                         ],
                       }),
-                      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
-                        className: 'grid grid-cols-[1fr_1fr] gap-4',
-                        children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
-                            className: 'space-y-1.5',
-                            children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Label, {
-                                children: 'Kode ICD-9',
-                              }),
-                              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Input, {
-                                id: `rj-kode9${no}`,
-                                name: 'kode9[]',
-                                value: row.kode9,
-                                placeholder: 'Kode',
-                                onChange: makeKodeChange(i),
-                                className: 'font-mono text-base',
-                                'aria-describedby': `rj-kode9-help-${no}`,
-                              }),
-                              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)('p', {
-                                id: `rj-kode9-help-${no}`,
-                                className: 'sr-only',
-                                children:
-                                  'Kode ICD-9 otomatis terisi saat memilih tindakan, atau ketik manual',
-                              }),
-                            ],
-                          }),
-                          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
-                            className: 'space-y-1.5',
-                            children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Label, {
-                                children: 'Jenis',
-                              }),
-                              /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(Select2, {
-                                value: row.jenis || 'Primer',
-                                onValueChange: (v) => updateRow(i, { jenis: v }),
-                                children: [
-                                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(SelectTrigger3, {
-                                    className: 'h-11 text-base',
-                                    children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
-                                      SelectValue3,
-                                      { placeholder: 'Pilih' },
-                                    ),
-                                  }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(SelectContent3, {
-                                    children: JENIS_OPTIONS.map((opt) =>
-                                      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
-                                        SelectItem3,
-                                        { value: opt.value, children: opt.label },
-                                        opt.value,
-                                      ),
-                                    ),
-                                  }),
-                                ],
-                              }),
-                            ],
-                          }),
-                        ],
-                      }),
-                      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)('div', {
+                      /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)('div', {
                         className: 'space-y-1.5',
                         children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Label, {
-                            children: 'Kategori Prosedur',
+                          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(Label, {
+                            children: 'Kode ICD-9',
                           }),
-                          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(Select2, {
-                            value: row.kategoriProsedur || '',
-                            onValueChange: (v) => updateRow(i, { kategoriProsedur: v }),
-                            children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(SelectTrigger3, {
-                                className: 'h-11 text-base',
-                                children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
-                                  SelectValue3,
-                                  { placeholder: 'Pilih Kategori Prosedur' },
-                                ),
-                              }),
-                              /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(SelectContent3, {
-                                children: KATEGORI_OPTIONS.map((opt) =>
-                                  /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
-                                    SelectItem3,
-                                    { value: opt.value, children: opt.label },
-                                    opt.value,
-                                  ),
-                                ),
-                              }),
-                            ],
+                          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(Input, {
+                            id: `rj-kode9${no}`,
+                            name: 'kode9[]',
+                            value: row.kode9,
+                            placeholder: 'Kode',
+                            onChange: makeKodeChange(i),
+                            className: 'font-mono text-base',
+                            'aria-describedby': `rj-kode9-help-${no}`,
+                          }),
+                          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)('p', {
+                            id: `rj-kode9-help-${no}`,
+                            className: 'sr-only',
+                            children:
+                              'Kode ICD-9 otomatis terisi saat memilih tindakan, atau ketik manual',
+                          }),
+                          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)('input', {
+                            type: 'hidden',
+                            name: 'jenis[]',
+                            value: row.jenis || 'Primer',
+                          }),
+                          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)('input', {
+                            type: 'hidden',
+                            name: 'kategoriProsedur[]',
+                            value: row.kategoriProsedur,
                           }),
                         ],
                       }),
@@ -43525,32 +36720,32 @@ var __morbis_feature = (() => {
   }
 
   // src/features/resumeTab/ValidationPanel.tsx
-  var import_jsx_runtime23 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime11 = __toESM(require_jsx_runtime(), 1);
   function ValidationPanel({ errors, warnings = [] }) {
     const hasAny = errors.length > 0 || warnings.length > 0;
     if (!hasAny) return null;
-    return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(import_jsx_runtime23.Fragment, {
+    return /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(import_jsx_runtime11.Fragment, {
       children: [
         warnings.length > 0 &&
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('div', {
+          /* @__PURE__ */ (0, import_jsx_runtime11.jsx)('div', {
             className: 'px-6 py-4 border-t-2 border-border bg-yellow-50 dark:bg-yellow-950/30',
             role: 'alert',
-            children: /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('div', {
+            children: /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)('div', {
               className: 'flex items-start gap-3',
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(TriangleAlert, {
+                /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(TriangleAlert, {
                   className: 'size-5 text-yellow-600 dark:text-yellow-500 shrink-0 mt-0.5',
                 }),
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('div', {
+                /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)('div', {
                   children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('p', {
+                    /* @__PURE__ */ (0, import_jsx_runtime11.jsx)('p', {
                       className: 'text-base font-bold text-yellow-800 dark:text-yellow-300 mb-1',
                       children: 'Perhatian',
                     }),
-                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('ul', {
+                    /* @__PURE__ */ (0, import_jsx_runtime11.jsx)('ul', {
                       className: 'space-y-1',
                       children: warnings.map((w, i) =>
-                        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
+                        /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(
                           'li',
                           {
                             className: 'text-base text-yellow-700 dark:text-yellow-400',
@@ -43566,25 +36761,25 @@ var __morbis_feature = (() => {
             }),
           }),
         errors.length > 0 &&
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('div', {
+          /* @__PURE__ */ (0, import_jsx_runtime11.jsx)('div', {
             className: 'px-6 py-4 border-t-2 border-border bg-destructive/5',
             role: 'alert',
-            children: /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('div', {
+            children: /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)('div', {
               className: 'flex items-start gap-3',
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(TriangleAlert, {
+                /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(TriangleAlert, {
                   className: 'size-5 text-destructive shrink-0 mt-0.5',
                 }),
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('div', {
+                /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)('div', {
                   children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)('p', {
+                    /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)('p', {
                       className: 'text-base font-bold text-destructive mb-1',
                       children: ['Terdapat ', errors.length, ' kesalahan'],
                     }),
-                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)('ul', {
+                    /* @__PURE__ */ (0, import_jsx_runtime11.jsx)('ul', {
                       className: 'space-y-1',
                       children: errors.map((err, i) =>
-                        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
+                        /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(
                           'li',
                           {
                             className: 'text-base text-destructive/80',
@@ -43604,7 +36799,7 @@ var __morbis_feature = (() => {
   }
 
   // src/ui/components/Badge.tsx
-  var import_jsx_runtime24 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime12 = __toESM(require_jsx_runtime(), 1);
   var variants = {
     default: 'bg-primary/10 text-primary border-primary/20',
     success:
@@ -43621,28 +36816,28 @@ var __morbis_feature = (() => {
   };
   function Badge({ variant = 'default', icon, children, className, onDismiss }) {
     const Icon2 = icons[variant];
-    return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)('span', {
+    return /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)('span', {
       className: cn(
-        'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-semibold',
+        'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-base font-semibold',
         variants[variant],
         className,
       ),
       children: [
-        icon && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Icon2, { className: 'size-3.5' }),
+        icon && /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Icon2, { className: 'size-3.5' }),
         children,
         onDismiss &&
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)('button', {
+          /* @__PURE__ */ (0, import_jsx_runtime12.jsx)('button', {
             onClick: onDismiss,
             className: 'ml-1 hover:opacity-70 p-0.5',
             'aria-label': 'Dismiss',
-            children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(X, { className: 'size-3.5' }),
+            children: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(X, { className: 'size-3.5' }),
           }),
       ],
     });
   }
 
   // src/features/resumeTab/Footer.tsx
-  var import_jsx_runtime25 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime13 = __toESM(require_jsx_runtime(), 1);
   function Footer({
     onCancel,
     onSave,
@@ -43654,46 +36849,46 @@ var __morbis_feature = (() => {
     lastSaved,
   }) {
     const handleReset = onReset ?? onRefresh;
-    return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)('div', {
+    return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)('div', {
       className:
         'flex items-center justify-between px-6 py-4 border-t-2 border-border bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/60 shrink-0 sticky bottom-0 z-[1]',
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)('div', {
+        /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)('div', {
           className: 'flex items-center gap-3 min-w-0',
           children: [
             hasErrors &&
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Badge, {
+              /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Badge, {
                 variant: 'danger',
                 icon: true,
                 children: 'Validasi gagal',
               }),
             lastSaved &&
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)('span', {
+              /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)('span', {
                 className: 'text-base text-muted-foreground truncate',
                 children: ['Tersimpan ', lastSaved],
               }),
             saving &&
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Badge, {
+              /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Badge, {
                 variant: 'default',
                 icon: true,
                 children: 'Menyimpan...',
               }),
           ],
         }),
-        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)('div', {
+        /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)('div', {
           className: 'flex items-center gap-3',
           children: [
             onHistory &&
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Button, {
+              /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Button, {
                 type: 'button',
-                variant: 'outline',
+                variant: 'success',
                 size: 'default',
                 onClick: onHistory,
                 className: 'gap-2',
                 children: 'Riwayat',
               }),
             handleReset &&
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Button, {
+              /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Button, {
                 type: 'button',
                 variant: 'outline',
                 size: 'default',
@@ -43701,14 +36896,14 @@ var __morbis_feature = (() => {
                 className: 'gap-2',
                 children: 'Reset Formulir',
               }),
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Button, {
+            /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Button, {
               type: 'button',
-              variant: 'secondary',
+              variant: 'dark',
               size: 'default',
               onClick: onCancel,
               children: 'Batal',
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Button, {
+            /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Button, {
               type: 'button',
               variant: 'default',
               size: 'lg',
@@ -43725,7 +36920,7 @@ var __morbis_feature = (() => {
   }
 
   // src/features/resumeTab/App.tsx
-  var import_jsx_runtime26 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime14 = __toESM(require_jsx_runtime(), 1);
   function validate(data) {
     const errors = [];
     data.diagnosa.forEach((d, i) => {
@@ -43753,19 +36948,19 @@ var __morbis_feature = (() => {
     return errors;
   }
   function App({ data: initialData, onSave, onClose }) {
-    const [data, setData] = (0, import_react12.useState)(initialData);
-    const [saving, setSaving] = (0, import_react12.useState)(false);
-    const [lastSaved, setLastSaved] = (0, import_react12.useState)(null);
-    const [saveAttempted, setSaveAttempted] = (0, import_react12.useState)(false);
-    const [warnings, setWarnings] = (0, import_react12.useState)([]);
-    const [extraErrors, setExtraErrors] = (0, import_react12.useState)([]);
-    const hadDiagnosaInitially = (0, import_react12.useRef)(
+    const [data, setData] = (0, import_react9.useState)(initialData);
+    const [saving, setSaving] = (0, import_react9.useState)(false);
+    const [lastSaved, setLastSaved] = (0, import_react9.useState)(null);
+    const [saveAttempted, setSaveAttempted] = (0, import_react9.useState)(false);
+    const [warnings, setWarnings] = (0, import_react9.useState)([]);
+    const [extraErrors, setExtraErrors] = (0, import_react9.useState)([]);
+    const hadDiagnosaInitially = (0, import_react9.useRef)(
       data.diagnosa.some((d) => d.idicd?.trim()),
     );
     const validationErrors = saveAttempted ? validate(data) : [];
     const allErrors = [...validationErrors, ...extraErrors];
     const hasBlocking = validationErrors.length > 0;
-    const handleSave = (0, import_react12.useCallback)(async () => {
+    const handleSave = (0, import_react9.useCallback)(async () => {
       setSaveAttempted(true);
       setWarnings([]);
       setExtraErrors([]);
@@ -43845,45 +37040,45 @@ var __morbis_feature = (() => {
         onApply: (snap) => setData(snapToResumeData(snap, data)),
       });
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)('div', {
+    return /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)('div', {
       className: 'resume-modal',
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Header, {
+        /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Header, {
           title: 'Resume Rawat Jalan',
           onClose,
           patientInfo: data.patientInfo,
         }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)('div', {
+        /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)('div', {
           className: 'flex-1 overflow-y-auto px-5 py-4 space-y-3',
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Card, {
+            /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Card, {
               title: 'Data Klinis',
-              children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(ClinicalNotesSection, {
+              children: /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(ClinicalNotesSection, {
                 anamnesa: data.clinicalNotes.anamnesa,
                 pemeriksaan: data.clinicalNotes.pemeriksaan_fisik,
                 onChange: (field, value) =>
                   updateNotes(field === 'pemeriksaan' ? 'pemeriksaan_fisik' : field, value),
               }),
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Card, {
+            /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Card, {
               title: 'Tanda Vital',
-              children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(VitalSignsSection, {
+              children: /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(VitalSignsSection, {
                 vitals: data.vitalSigns,
                 onChange: (key, value) =>
                   setData({ ...data, vitalSigns: { ...data.vitalSigns, [key]: value } }),
               }),
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Card, {
+            /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Card, {
               title: 'Catatan Medis',
-              children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)('div', {
+              children: /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)('div', {
                 className: 'space-y-3',
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)('div', {
+                  /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)('div', {
                     children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Label, {
+                      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Label, {
                         children: 'Catatan Diagnosis',
                       }),
-                      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Textarea, {
+                      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Textarea, {
                         value: data.clinicalNotes.catatan,
                         onChange: (e) => updateNotes('catatan', e.target.value),
                         placeholder: 'Catatan diagnosa...',
@@ -43891,12 +37086,12 @@ var __morbis_feature = (() => {
                       }),
                     ],
                   }),
-                  /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)('div', {
+                  /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)('div', {
                     children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Label, {
+                      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Label, {
                         children: 'Tindakan',
                       }),
-                      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Textarea, {
+                      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Textarea, {
                         value: data.clinicalNotes.tindakan,
                         onChange: (e) => updateNotes('tindakan', e.target.value),
                         placeholder: 'Tindakan...',
@@ -43904,12 +37099,12 @@ var __morbis_feature = (() => {
                       }),
                     ],
                   }),
-                  /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)('div', {
+                  /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)('div', {
                     children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Label, {
+                      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Label, {
                         children: 'Terapi Pengobatan',
                       }),
-                      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Textarea, {
+                      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Textarea, {
                         value: data.clinicalNotes.terapi_pengobatan,
                         onChange: (e) => updateNotes('terapi_pengobatan', e.target.value),
                         placeholder: 'Terapi pengobatan...',
@@ -43920,27 +37115,27 @@ var __morbis_feature = (() => {
                 ],
               }),
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Card, {
+            /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Card, {
               title: `Diagnosis (ICD-10)${data.diagnosa.length > 0 ? ` (${data.diagnosa.length})` : ''}`,
-              children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(DiagnosaSection, {
+              children: /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(DiagnosaSection, {
                 rows: data.diagnosa,
                 onChange: (diagnosa) => setData({ ...data, diagnosa }),
               }),
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Card, {
+            /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Card, {
               title: `Tindakan (ICD-9)${data.tindakan.length > 0 ? ` (${data.tindakan.length})` : ''}`,
-              children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(TindakanSection, {
+              children: /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(TindakanSection, {
                 rows: data.tindakan,
                 onChange: (tindakan) => setData({ ...data, tindakan }),
               }),
             }),
           ],
         }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(ValidationPanel, {
+        /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(ValidationPanel, {
           errors: allErrors,
           warnings,
         }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Footer, {
+        /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Footer, {
           saving,
           hasErrors: hasBlocking,
           lastSaved,
@@ -43954,8 +37149,8 @@ var __morbis_feature = (() => {
   }
 
   // src/features/resumeTab/ErrorBoundary.tsx
-  var import_react13 = __toESM(require_react(), 1);
-  var ErrorBoundary = class extends import_react13.Component {
+  var import_react10 = __toESM(require_react(), 1);
+  var ErrorBoundary = class extends import_react10.Component {
     constructor() {
       super(...arguments);
       this.state = { hasError: false };
@@ -43973,7 +37168,7 @@ var __morbis_feature = (() => {
   };
 
   // src/features/resumeTab/mount.tsx
-  var import_jsx_runtime27 = __toESM(require_jsx_runtime(), 1);
+  var import_jsx_runtime15 = __toESM(require_jsx_runtime(), 1);
   var ITEM_PRIORITIES = [
     { pattern: 'periksa.*dokter', weight: 1 },
     { pattern: 'konsultasi', weight: 2 },
@@ -44576,7 +37771,7 @@ var __morbis_feature = (() => {
       sr.appendChild(ms);
       try {
         let css0 = true
-          ? '/* shadow-dom base */\n*, ::before, ::after {\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n::backdrop {\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n/* ! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com *//*\n1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)\n*/\n\n*,\n::before,\n::after {\n  box-sizing: border-box; /* 1 */\n  border-width: 0; /* 2 */\n  border-style: solid; /* 2 */\n  border-color: #e5e7eb; /* 2 */\n}\n\n::before,\n::after {\n  --tw-content: \'\';\n}\n\n/*\n1. Use a consistent sensible line-height in all browsers.\n2. Prevent adjustments of font size after orientation changes in iOS.\n3. Use a more readable tab size.\n4. Use the user\'s configured `sans` font-family by default.\n5. Use the user\'s configured `sans` font-feature-settings by default.\n6. Use the user\'s configured `sans` font-variation-settings by default.\n7. Disable tap highlights on iOS\n*/\n\nhtml,\n:host {\n  line-height: 1.5; /* 1 */\n  -webkit-text-size-adjust: 100%; /* 2 */\n  -moz-tab-size: 4; /* 3 */\n  -o-tab-size: 4;\n     tab-size: 4; /* 3 */\n  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; /* 4 */\n  font-feature-settings: normal; /* 5 */\n  font-variation-settings: normal; /* 6 */\n  -webkit-tap-highlight-color: transparent; /* 7 */\n}\n\n/*\n1. Remove the margin in all browsers.\n2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.\n*/\n\nbody {\n  margin: 0; /* 1 */\n  line-height: inherit; /* 2 */\n}\n\n/*\n1. Add the correct height in Firefox.\n2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n3. Ensure horizontal rules are visible by default.\n*/\n\nhr {\n  height: 0; /* 1 */\n  color: inherit; /* 2 */\n  border-top-width: 1px; /* 3 */\n}\n\n/*\nAdd the correct text decoration in Chrome, Edge, and Safari.\n*/\n\nabbr:where([title]) {\n  -webkit-text-decoration: underline dotted;\n          text-decoration: underline dotted;\n}\n\n/*\nRemove the default font size and weight for headings.\n*/\n\nh1,\nh2,\nh3,\nh4,\nh5,\nh6 {\n  font-size: inherit;\n  font-weight: inherit;\n}\n\n/*\nReset links to optimize for opt-in styling instead of opt-out.\n*/\n\na {\n  color: inherit;\n  text-decoration: inherit;\n}\n\n/*\nAdd the correct font weight in Edge and Safari.\n*/\n\nb,\nstrong {\n  font-weight: bolder;\n}\n\n/*\n1. Use the user\'s configured `mono` font-family by default.\n2. Use the user\'s configured `mono` font-feature-settings by default.\n3. Use the user\'s configured `mono` font-variation-settings by default.\n4. Correct the odd `em` font sizing in all browsers.\n*/\n\ncode,\nkbd,\nsamp,\npre {\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace; /* 1 */\n  font-feature-settings: normal; /* 2 */\n  font-variation-settings: normal; /* 3 */\n  font-size: 1em; /* 4 */\n}\n\n/*\nAdd the correct font size in all browsers.\n*/\n\nsmall {\n  font-size: 80%;\n}\n\n/*\nPrevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\nsub,\nsup {\n  font-size: 75%;\n  line-height: 0;\n  position: relative;\n  vertical-align: baseline;\n}\n\nsub {\n  bottom: -0.25em;\n}\n\nsup {\n  top: -0.5em;\n}\n\n/*\n1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n3. Remove gaps between table borders by default.\n*/\n\ntable {\n  text-indent: 0; /* 1 */\n  border-color: inherit; /* 2 */\n  border-collapse: collapse; /* 3 */\n}\n\n/*\n1. Change the font styles in all browsers.\n2. Remove the margin in Firefox and Safari.\n3. Remove default padding in all browsers.\n*/\n\nbutton,\ninput,\noptgroup,\nselect,\ntextarea {\n  font-family: inherit; /* 1 */\n  font-feature-settings: inherit; /* 1 */\n  font-variation-settings: inherit; /* 1 */\n  font-size: 100%; /* 1 */\n  font-weight: inherit; /* 1 */\n  line-height: inherit; /* 1 */\n  letter-spacing: inherit; /* 1 */\n  color: inherit; /* 1 */\n  margin: 0; /* 2 */\n  padding: 0; /* 3 */\n}\n\n/*\nRemove the inheritance of text transform in Edge and Firefox.\n*/\n\nbutton,\nselect {\n  text-transform: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Remove default button styles.\n*/\n\nbutton,\ninput:where([type=\'button\']),\ninput:where([type=\'reset\']),\ninput:where([type=\'submit\']) {\n  -webkit-appearance: button; /* 1 */\n  background-color: transparent; /* 2 */\n  background-image: none; /* 2 */\n}\n\n/*\nUse the modern Firefox focus style for all focusable elements.\n*/\n\n:-moz-focusring {\n  outline: auto;\n}\n\n/*\nRemove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n:-moz-ui-invalid {\n  box-shadow: none;\n}\n\n/*\nAdd the correct vertical alignment in Chrome and Firefox.\n*/\n\nprogress {\n  vertical-align: baseline;\n}\n\n/*\nCorrect the cursor style of increment and decrement buttons in Safari.\n*/\n\n::-webkit-inner-spin-button,\n::-webkit-outer-spin-button {\n  height: auto;\n}\n\n/*\n1. Correct the odd appearance in Chrome and Safari.\n2. Correct the outline style in Safari.\n*/\n\n[type=\'search\'] {\n  -webkit-appearance: textfield; /* 1 */\n  outline-offset: -2px; /* 2 */\n}\n\n/*\nRemove the inner padding in Chrome and Safari on macOS.\n*/\n\n::-webkit-search-decoration {\n  -webkit-appearance: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Change font properties to `inherit` in Safari.\n*/\n\n::-webkit-file-upload-button {\n  -webkit-appearance: button; /* 1 */\n  font: inherit; /* 2 */\n}\n\n/*\nAdd the correct display in Chrome and Safari.\n*/\n\nsummary {\n  display: list-item;\n}\n\n/*\nRemoves the default spacing and border for appropriate elements.\n*/\n\nblockquote,\ndl,\ndd,\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\nhr,\nfigure,\np,\npre {\n  margin: 0;\n}\n\nfieldset {\n  margin: 0;\n  padding: 0;\n}\n\nlegend {\n  padding: 0;\n}\n\nol,\nul,\nmenu {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n}\n\n/*\nReset default styling for dialogs.\n*/\ndialog {\n  padding: 0;\n}\n\n/*\nPrevent resizing textareas horizontally by default.\n*/\n\ntextarea {\n  resize: vertical;\n}\n\n/*\n1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n2. Set the default placeholder color to the user\'s configured gray 400 color.\n*/\n\ninput::-moz-placeholder, textarea::-moz-placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\ninput::placeholder,\ntextarea::placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\n/*\nSet the default cursor for buttons.\n*/\n\nbutton,\n[role="button"] {\n  cursor: pointer;\n}\n\n/*\nMake sure disabled buttons don\'t get the pointer cursor.\n*/\n:disabled {\n  cursor: default;\n}\n\n/*\n1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n   This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\nimg,\nsvg,\nvideo,\ncanvas,\naudio,\niframe,\nembed,\nobject {\n  display: block; /* 1 */\n  vertical-align: middle; /* 2 */\n}\n\n/*\nConstrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\nimg,\nvideo {\n  max-width: 100%;\n  height: auto;\n}\n\n/* Make elements with the HTML hidden attribute stay hidden by default */\n[hidden]:where(:not([hidden="until-found"])) {\n  display: none;\n}\n  *,\n  *::before,\n  *::after {\n    box-sizing: border-box;\n  }\n\n  html {\n    font-family:\n      \'Inter\',\n      -apple-system,\n      BlinkMacSystemFont,\n      \'Segoe UI\',\n      sans-serif;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale;\n  }\n\n  /* ponytail: senior preset \u2014 :root for popup/sidepanel, :host+#app for Shadow DOM (resume modals).\n     Keep in sync: edit :root. */\n  :root,\n  :host,\n  #app {\n    --background: 0 0% 100%;\n    --foreground: 222.2 47% 11%;\n    --card: 0 0% 100%;\n    --card-foreground: 222.2 47% 11%;\n    --popover: 0 0% 100%;\n    --popover-foreground: 222.2 47% 11%;\n    --primary: 221.2 83% 53%;\n    --primary-foreground: 210 40% 98%;\n    --secondary: 210 40% 96%;\n    --secondary-foreground: 222.2 47% 11%;\n    --muted: 210 40% 96%;\n    --muted-foreground: 215 20% 35%;\n    --accent: 210 40% 96%;\n    --accent-foreground: 222.2 47% 11%;\n    --destructive: 0 84% 60%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 214 32% 85%;\n    --input: 214 32% 85%;\n    --ring: 221 83% 53%;\n    --radius: 0.75rem;\n    --warning: 38 92% 50%;\n    --warning-foreground: 48 96% 12%;\n  }\n\n  /* ponytail: Shadow DOM needs its own color-scheme + base reset; :host isolates from page CSS */\n  :host {\n    all: initial;\n  }\n  #app {\n    color-scheme: light;\n    isolation: isolate;\n    font-family:\n      \'Inter\',\n      -apple-system,\n      BlinkMacSystemFont,\n      \'Segoe UI\',\n      sans-serif;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale;\n    box-sizing: border-box;\n  }\n  #app *,\n  #app *::before,\n  #app *::after {\n    box-sizing: border-box;\n  }\n\n  @theme inline {\n    --color-warning: var(--warning);\n    --color-warning-foreground: var(--warning-foreground);\n  }\n\n  .dark {\n    --background: 222.2 84% 4.9%;\n    --foreground: 210 40% 98%;\n    --card: 222.2 84% 4.9%;\n    --card-foreground: 210 40% 98%;\n    --popover: 222.2 84% 4.9%;\n    --popover-foreground: 210 40% 98%;\n    --primary: 217.2 91.2% 59.8%;\n    --primary-foreground: 222.2 47.4% 11.2%;\n    --secondary: 217.2 32.6% 17.5%;\n    --secondary-foreground: 210 40% 98%;\n    --muted: 217.2 32.6% 17.5%;\n    --muted-foreground: 215 20.2% 65.1%;\n    --accent: 217.2 32.6% 17.5%;\n    --accent-foreground: 210 40% 98%;\n    --destructive: 0 62.8% 30.6%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 217.2 32.6% 17.5%;\n    --input: 217.2 32.6% 17.5%;\n    --ring: 224.3 76.3% 48%;\n    --md-scrollbar: #484d54;\n  }\n\n  ::-moz-selection {\n    background: #2469f0;\n    color: white;\n  }\n\n  ::selection {\n    background: #2469f0;\n    color: white;\n  }\n\n  * {\n    scrollbar-width: thin;\n    scrollbar-color: #c9cdd4 transparent;\n  }\n\n  .dark * {\n    scrollbar-color: var(--md-scrollbar) transparent;\n  }\n\n  *::-webkit-scrollbar {\n    width: 6px;\n    height: 6px;\n  }\n\n  *::-webkit-scrollbar-track {\n    background: transparent;\n  }\n\n  *::-webkit-scrollbar-thumb {\n    background: #c9cdd4;\n    border-radius: 3px;\n  }\n\n  .dark *::-webkit-scrollbar-thumb {\n    background: var(--md-scrollbar);\n  }\n\n  *::-webkit-scrollbar-thumb:hover {\n    background: #a4a9b3;\n  }\n\n  .dark *::-webkit-scrollbar-thumb:hover {\n    background: #636971;\n  }\n.\\!container {\n  width: 100% !important;\n}\n.container {\n  width: 100%;\n}\n@media (min-width: 640px) {\n  .\\!container {\n    max-width: 640px !important;\n  }\n  .container {\n    max-width: 640px;\n  }\n}\n@media (min-width: 768px) {\n  .\\!container {\n    max-width: 768px !important;\n  }\n  .container {\n    max-width: 768px;\n  }\n}\n@media (min-width: 1024px) {\n  .\\!container {\n    max-width: 1024px !important;\n  }\n  .container {\n    max-width: 1024px;\n  }\n}\n@media (min-width: 1280px) {\n  .\\!container {\n    max-width: 1280px !important;\n  }\n  .container {\n    max-width: 1280px;\n  }\n}\n@media (min-width: 1536px) {\n  .\\!container {\n    max-width: 1536px !important;\n  }\n  .container {\n    max-width: 1536px;\n  }\n}\n.sr-only {\n  position: absolute;\n  width: 1px;\n  height: 1px;\n  padding: 0;\n  margin: -1px;\n  overflow: hidden;\n  clip: rect(0, 0, 0, 0);\n  white-space: nowrap;\n  border-width: 0;\n}\n.pointer-events-none {\n  pointer-events: none;\n}\n.visible {\n  visibility: visible;\n}\n.invisible {\n  visibility: hidden;\n}\n.static {\n  position: static;\n}\n.fixed {\n  position: fixed;\n}\n.absolute {\n  position: absolute;\n}\n.relative {\n  position: relative;\n}\n.sticky {\n  position: sticky;\n}\n.bottom-0 {\n  bottom: 0px;\n}\n.bottom-4 {\n  bottom: 1rem;\n}\n.left-1\\/2 {\n  left: 50%;\n}\n.right-4 {\n  right: 1rem;\n}\n.top-1\\/2 {\n  top: 50%;\n}\n.z-10 {\n  z-index: 10;\n}\n.z-50 {\n  z-index: 50;\n}\n.z-\\[1\\] {\n  z-index: 1;\n}\n.z-\\[2147483647\\] {\n  z-index: 2147483647;\n}\n.col-span-full {\n  grid-column: 1 / -1;\n}\n.mx-auto {\n  margin-left: auto;\n  margin-right: auto;\n}\n.-mb-\\[1px\\] {\n  margin-bottom: -1px;\n}\n.mb-1 {\n  margin-bottom: 0.25rem;\n}\n.mb-1\\.5 {\n  margin-bottom: 0.375rem;\n}\n.mb-2 {\n  margin-bottom: 0.5rem;\n}\n.mb-3 {\n  margin-bottom: 0.75rem;\n}\n.mb-4 {\n  margin-bottom: 1rem;\n}\n.ml-1 {\n  margin-left: 0.25rem;\n}\n.ml-auto {\n  margin-left: auto;\n}\n.mr-1 {\n  margin-right: 0.25rem;\n}\n.mr-2 {\n  margin-right: 0.5rem;\n}\n.mr-3 {\n  margin-right: 0.75rem;\n}\n.mr-auto {\n  margin-right: auto;\n}\n.mt-0\\.5 {\n  margin-top: 0.125rem;\n}\n.mt-1 {\n  margin-top: 0.25rem;\n}\n.mt-3 {\n  margin-top: 0.75rem;\n}\n.block {\n  display: block;\n}\n.inline-block {\n  display: inline-block;\n}\n.inline {\n  display: inline;\n}\n.flex {\n  display: flex;\n}\n.inline-flex {\n  display: inline-flex;\n}\n.\\!table {\n  display: table !important;\n}\n.table {\n  display: table;\n}\n.grid {\n  display: grid;\n}\n.\\!contents {\n  display: contents !important;\n}\n.contents {\n  display: contents;\n}\n.hidden {\n  display: none;\n}\n.size-1\\.5 {\n  width: 0.375rem;\n  height: 0.375rem;\n}\n.size-10 {\n  width: 2.5rem;\n  height: 2.5rem;\n}\n.size-3 {\n  width: 0.75rem;\n  height: 0.75rem;\n}\n.size-3\\.5 {\n  width: 0.875rem;\n  height: 0.875rem;\n}\n.size-4 {\n  width: 1rem;\n  height: 1rem;\n}\n.size-5 {\n  width: 1.25rem;\n  height: 1.25rem;\n}\n.size-6 {\n  width: 1.5rem;\n  height: 1.5rem;\n}\n.h-1 {\n  height: 0.25rem;\n}\n.h-10 {\n  height: 2.5rem;\n}\n.h-11 {\n  height: 2.75rem;\n}\n.h-12 {\n  height: 3rem;\n}\n.h-2 {\n  height: 0.5rem;\n}\n.h-24 {\n  height: 6rem;\n}\n.h-4 {\n  height: 1rem;\n}\n.h-5 {\n  height: 1.25rem;\n}\n.h-6 {\n  height: 1.5rem;\n}\n.h-7 {\n  height: 1.75rem;\n}\n.h-8 {\n  height: 2rem;\n}\n.h-9 {\n  height: 2.25rem;\n}\n.h-\\[300px\\] {\n  height: 300px;\n}\n.h-\\[var\\(--radix-select-trigger-height\\)\\] {\n  height: var(--radix-select-trigger-height);\n}\n.h-full {\n  height: 100%;\n}\n.max-h-60 {\n  max-height: 15rem;\n}\n.max-h-\\[220px\\] {\n  max-height: 220px;\n}\n.max-h-\\[280px\\] {\n  max-height: 280px;\n}\n.max-h-\\[360px\\] {\n  max-height: 360px;\n}\n.max-h-\\[600px\\] {\n  max-height: 600px;\n}\n.min-h-11 {\n  min-height: 2.75rem;\n}\n.min-h-\\[200px\\] {\n  min-height: 200px;\n}\n.min-h-\\[80px\\] {\n  min-height: 80px;\n}\n.w-10 {\n  width: 2.5rem;\n}\n.w-11 {\n  width: 2.75rem;\n}\n.w-12 {\n  width: 3rem;\n}\n.w-2 {\n  width: 0.5rem;\n}\n.w-4 {\n  width: 1rem;\n}\n.w-5 {\n  width: 1.25rem;\n}\n.w-6 {\n  width: 1.5rem;\n}\n.w-7 {\n  width: 1.75rem;\n}\n.w-9 {\n  width: 2.25rem;\n}\n.w-\\[100px\\] {\n  width: 100px;\n}\n.w-\\[120px\\] {\n  width: 120px;\n}\n.w-\\[32\\%\\] {\n  width: 32%;\n}\n.w-\\[340px\\] {\n  width: 340px;\n}\n.w-\\[90px\\] {\n  width: 90px;\n}\n.w-full {\n  width: 100%;\n}\n.w-px {\n  width: 1px;\n}\n.min-w-0 {\n  min-width: 0px;\n}\n.min-w-\\[100px\\] {\n  min-width: 100px;\n}\n.min-w-\\[110px\\] {\n  min-width: 110px;\n}\n.min-w-\\[12rem\\] {\n  min-width: 12rem;\n}\n.min-w-\\[80px\\] {\n  min-width: 80px;\n}\n.min-w-\\[90px\\] {\n  min-width: 90px;\n}\n.min-w-\\[var\\(--radix-select-trigger-width\\)\\] {\n  min-width: var(--radix-select-trigger-width);\n}\n.max-w-\\[120px\\] {\n  max-width: 120px;\n}\n.max-w-\\[140px\\] {\n  max-width: 140px;\n}\n.max-w-\\[200px\\] {\n  max-width: 200px;\n}\n.flex-1 {\n  flex: 1 1 0%;\n}\n.flex-shrink {\n  flex-shrink: 1;\n}\n.flex-shrink-0 {\n  flex-shrink: 0;\n}\n.shrink-0 {\n  flex-shrink: 0;\n}\n.-translate-x-1\\/2 {\n  --tw-translate-x: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.-translate-y-1\\/2 {\n  --tw-translate-y: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.scale-90 {\n  --tw-scale-x: .9;\n  --tw-scale-y: .9;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.transform {\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n@keyframes pulse {\n  50% {\n    opacity: .5;\n  }\n}\n.animate-pulse {\n  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;\n}\n@keyframes slide-up {\n  0% {\n    opacity: 0;\n    transform: translateY(8px);\n  }\n  100% {\n    opacity: 1;\n    transform: translateY(0);\n  }\n}\n.animate-slide-up {\n  animation: slide-up 0.15s ease-out;\n}\n.cursor-default {\n  cursor: default;\n}\n.cursor-not-allowed {\n  cursor: not-allowed;\n}\n.cursor-pointer {\n  cursor: pointer;\n}\n.select-none {\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.resize-none {\n  resize: none;\n}\n.resize-y {\n  resize: vertical;\n}\n.resize {\n  resize: both;\n}\n.grid-cols-1 {\n  grid-template-columns: repeat(1, minmax(0, 1fr));\n}\n.grid-cols-2 {\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n}\n.grid-cols-\\[1fr_140px_120px_50px\\] {\n  grid-template-columns: 1fr 140px 120px 50px;\n}\n.grid-cols-\\[1fr_1fr\\] {\n  grid-template-columns: 1fr 1fr;\n}\n.grid-cols-\\[repeat\\(auto-fill\\2c minmax\\(90px\\2c 1fr\\)\\)\\] {\n  grid-template-columns: repeat(auto-fill,minmax(90px,1fr));\n}\n.flex-col {\n  flex-direction: column;\n}\n.flex-wrap {\n  flex-wrap: wrap;\n}\n.items-start {\n  align-items: flex-start;\n}\n.items-end {\n  align-items: flex-end;\n}\n.items-center {\n  align-items: center;\n}\n.justify-end {\n  justify-content: flex-end;\n}\n.justify-center {\n  justify-content: center;\n}\n.justify-between {\n  justify-content: space-between;\n}\n.gap-0 {\n  gap: 0px;\n}\n.gap-1 {\n  gap: 0.25rem;\n}\n.gap-1\\.5 {\n  gap: 0.375rem;\n}\n.gap-2 {\n  gap: 0.5rem;\n}\n.gap-2\\.5 {\n  gap: 0.625rem;\n}\n.gap-3 {\n  gap: 0.75rem;\n}\n.gap-4 {\n  gap: 1rem;\n}\n.gap-x-8 {\n  -moz-column-gap: 2rem;\n       column-gap: 2rem;\n}\n.gap-y-3 {\n  row-gap: 0.75rem;\n}\n.space-y-0\\.5 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.125rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.125rem * var(--tw-space-y-reverse));\n}\n.space-y-1 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));\n}\n.space-y-1\\.5 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.375rem * var(--tw-space-y-reverse));\n}\n.space-y-2 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));\n}\n.space-y-2\\.5 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.625rem * var(--tw-space-y-reverse));\n}\n.space-y-3 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));\n}\n.space-y-4 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1rem * var(--tw-space-y-reverse));\n}\n.space-y-5 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1.25rem * var(--tw-space-y-reverse));\n}\n.divide-y > :not([hidden]) ~ :not([hidden]) {\n  --tw-divide-y-reverse: 0;\n  border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));\n  border-bottom-width: calc(1px * var(--tw-divide-y-reverse));\n}\n.divide-border > :not([hidden]) ~ :not([hidden]) {\n  border-color: hsl(var(--border));\n}\n.overflow-auto {\n  overflow: auto;\n}\n.overflow-hidden {\n  overflow: hidden;\n}\n.overflow-y-auto {\n  overflow-y: auto;\n}\n.truncate {\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n.whitespace-nowrap {\n  white-space: nowrap;\n}\n.whitespace-pre-wrap {\n  white-space: pre-wrap;\n}\n.break-words {\n  overflow-wrap: break-word;\n}\n.rounded {\n  border-radius: 0.25rem;\n}\n.rounded-full {\n  border-radius: 9999px;\n}\n.rounded-lg {\n  border-radius: 0.5rem;\n}\n.rounded-md {\n  border-radius: 6px;\n}\n.rounded-xl {\n  border-radius: 0.75rem;\n}\n.rounded-b-2xl {\n  border-bottom-right-radius: 1rem;\n  border-bottom-left-radius: 1rem;\n}\n.border {\n  border-width: 1px;\n}\n.border-2 {\n  border-width: 2px;\n}\n.border-b {\n  border-bottom-width: 1px;\n}\n.border-b-2 {\n  border-bottom-width: 2px;\n}\n.border-l-2 {\n  border-left-width: 2px;\n}\n.border-t {\n  border-top-width: 1px;\n}\n.border-t-2 {\n  border-top-width: 2px;\n}\n.border-dashed {\n  border-style: dashed;\n}\n.border-none {\n  border-style: none;\n}\n.border-\\[\\#2469f0\\] {\n  --tw-border-opacity: 1;\n  border-color: rgb(36 105 240 / var(--tw-border-opacity, 1));\n}\n.border-amber-200 {\n  --tw-border-opacity: 1;\n  border-color: rgb(253 230 138 / var(--tw-border-opacity, 1));\n}\n.border-border {\n  border-color: hsl(var(--border));\n}\n.border-destructive {\n  border-color: hsl(var(--destructive));\n}\n.border-destructive\\/20 {\n  border-color: hsl(var(--destructive) / 0.2);\n}\n.border-destructive\\/30 {\n  border-color: hsl(var(--destructive) / 0.3);\n}\n.border-foreground {\n  border-color: hsl(var(--foreground));\n}\n.border-green-200 {\n  --tw-border-opacity: 1;\n  border-color: rgb(187 247 208 / var(--tw-border-opacity, 1));\n}\n.border-input {\n  border-color: hsl(var(--input));\n}\n.border-primary {\n  border-color: hsl(var(--primary));\n}\n.border-primary\\/20 {\n  border-color: hsl(var(--primary) / 0.2);\n}\n.border-primary\\/50 {\n  border-color: hsl(var(--primary) / 0.5);\n}\n.border-red-200 {\n  --tw-border-opacity: 1;\n  border-color: rgb(254 202 202 / var(--tw-border-opacity, 1));\n}\n.border-red-500 {\n  --tw-border-opacity: 1;\n  border-color: rgb(239 68 68 / var(--tw-border-opacity, 1));\n}\n.border-transparent {\n  border-color: transparent;\n}\n.bg-\\[\\#2469f0\\] {\n  --tw-bg-opacity: 1;\n  background-color: rgb(36 105 240 / var(--tw-bg-opacity, 1));\n}\n.bg-accent {\n  background-color: hsl(var(--accent));\n}\n.bg-accent\\/20 {\n  background-color: hsl(var(--accent) / 0.2);\n}\n.bg-accent\\/40 {\n  background-color: hsl(var(--accent) / 0.4);\n}\n.bg-accent\\/50 {\n  background-color: hsl(var(--accent) / 0.5);\n}\n.bg-amber-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(255 251 235 / var(--tw-bg-opacity, 1));\n}\n.bg-amber-50\\/50 {\n  background-color: rgb(255 251 235 / 0.5);\n}\n.bg-background {\n  background-color: hsl(var(--background));\n}\n.bg-background\\/60 {\n  background-color: hsl(var(--background) / 0.6);\n}\n.bg-blue-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1));\n}\n.bg-blue-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(239 246 255 / var(--tw-bg-opacity, 1));\n}\n.bg-border {\n  background-color: hsl(var(--border));\n}\n.bg-card {\n  background-color: hsl(var(--card));\n}\n.bg-destructive {\n  background-color: hsl(var(--destructive));\n}\n.bg-destructive\\/10 {\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.bg-destructive\\/5 {\n  background-color: hsl(var(--destructive) / 0.05);\n}\n.bg-foreground {\n  background-color: hsl(var(--foreground));\n}\n.bg-gray-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));\n}\n.bg-green-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(220 252 231 / var(--tw-bg-opacity, 1));\n}\n.bg-green-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(240 253 244 / var(--tw-bg-opacity, 1));\n}\n.bg-green-500 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(34 197 94 / var(--tw-bg-opacity, 1));\n}\n.bg-green-600 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(22 163 74 / var(--tw-bg-opacity, 1));\n}\n.bg-muted {\n  background-color: hsl(var(--muted));\n}\n.bg-muted-foreground {\n  background-color: hsl(var(--muted-foreground));\n}\n.bg-muted\\/20 {\n  background-color: hsl(var(--muted) / 0.2);\n}\n.bg-muted\\/40 {\n  background-color: hsl(var(--muted) / 0.4);\n}\n.bg-popover {\n  background-color: hsl(var(--popover));\n}\n.bg-primary {\n  background-color: hsl(var(--primary));\n}\n.bg-primary\\/10 {\n  background-color: hsl(var(--primary) / 0.1);\n}\n.bg-primary\\/5 {\n  background-color: hsl(var(--primary) / 0.05);\n}\n.bg-red-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 226 226 / var(--tw-bg-opacity, 1));\n}\n.bg-red-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 242 242 / var(--tw-bg-opacity, 1));\n}\n.bg-red-500\\/5 {\n  background-color: rgb(239 68 68 / 0.05);\n}\n.bg-red-600 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(220 38 38 / var(--tw-bg-opacity, 1));\n}\n.bg-secondary {\n  background-color: hsl(var(--secondary));\n}\n.bg-white\\/15 {\n  background-color: rgb(255 255 255 / 0.15);\n}\n.bg-yellow-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 252 232 / var(--tw-bg-opacity, 1));\n}\n.bg-gradient-to-br {\n  background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));\n}\n.from-muted {\n  --tw-gradient-from: hsl(var(--muted)) var(--tw-gradient-from-position);\n  --tw-gradient-to: hsl(var(--muted) / 0) var(--tw-gradient-to-position);\n  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);\n}\n.to-muted\\/50 {\n  --tw-gradient-to: hsl(var(--muted) / 0.5) var(--tw-gradient-to-position);\n}\n.p-0\\.5 {\n  padding: 0.125rem;\n}\n.p-1 {\n  padding: 0.25rem;\n}\n.p-1\\.5 {\n  padding: 0.375rem;\n}\n.p-2 {\n  padding: 0.5rem;\n}\n.p-2\\.5 {\n  padding: 0.625rem;\n}\n.p-3 {\n  padding: 0.75rem;\n}\n.p-4 {\n  padding: 1rem;\n}\n.p-5 {\n  padding: 1.25rem;\n}\n.p-8 {\n  padding: 2rem;\n}\n.px-1 {\n  padding-left: 0.25rem;\n  padding-right: 0.25rem;\n}\n.px-1\\.5 {\n  padding-left: 0.375rem;\n  padding-right: 0.375rem;\n}\n.px-2 {\n  padding-left: 0.5rem;\n  padding-right: 0.5rem;\n}\n.px-2\\.5 {\n  padding-left: 0.625rem;\n  padding-right: 0.625rem;\n}\n.px-3 {\n  padding-left: 0.75rem;\n  padding-right: 0.75rem;\n}\n.px-3\\.5 {\n  padding-left: 0.875rem;\n  padding-right: 0.875rem;\n}\n.px-4 {\n  padding-left: 1rem;\n  padding-right: 1rem;\n}\n.px-5 {\n  padding-left: 1.25rem;\n  padding-right: 1.25rem;\n}\n.px-6 {\n  padding-left: 1.5rem;\n  padding-right: 1.5rem;\n}\n.px-7 {\n  padding-left: 1.75rem;\n  padding-right: 1.75rem;\n}\n.py-0 {\n  padding-top: 0px;\n  padding-bottom: 0px;\n}\n.py-0\\.5 {\n  padding-top: 0.125rem;\n  padding-bottom: 0.125rem;\n}\n.py-1 {\n  padding-top: 0.25rem;\n  padding-bottom: 0.25rem;\n}\n.py-1\\.5 {\n  padding-top: 0.375rem;\n  padding-bottom: 0.375rem;\n}\n.py-12 {\n  padding-top: 3rem;\n  padding-bottom: 3rem;\n}\n.py-2 {\n  padding-top: 0.5rem;\n  padding-bottom: 0.5rem;\n}\n.py-2\\.5 {\n  padding-top: 0.625rem;\n  padding-bottom: 0.625rem;\n}\n.py-3 {\n  padding-top: 0.75rem;\n  padding-bottom: 0.75rem;\n}\n.py-3\\.5 {\n  padding-top: 0.875rem;\n  padding-bottom: 0.875rem;\n}\n.py-4 {\n  padding-top: 1rem;\n  padding-bottom: 1rem;\n}\n.py-8 {\n  padding-top: 2rem;\n  padding-bottom: 2rem;\n}\n.pb-1\\.5 {\n  padding-bottom: 0.375rem;\n}\n.pb-2 {\n  padding-bottom: 0.5rem;\n}\n.pr-12 {\n  padding-right: 3rem;\n}\n.pr-20 {\n  padding-right: 5rem;\n}\n.pt-3 {\n  padding-top: 0.75rem;\n}\n.text-center {\n  text-align: center;\n}\n.font-\\[\\\'Inter\\\'\\2c system-ui\\2c sans-serif\\] {\n  font-family: \'Inter\',system-ui,sans-serif;\n}\n.font-mono {\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace;\n}\n.text-\\[10px\\] {\n  font-size: 10px;\n}\n.text-\\[11px\\] {\n  font-size: 11px;\n}\n.text-\\[8px\\] {\n  font-size: 8px;\n}\n.text-\\[9px\\] {\n  font-size: 9px;\n}\n.text-base {\n  font-size: 1rem;\n  line-height: 1.5rem;\n}\n.text-lg {\n  font-size: 1.125rem;\n  line-height: 1.75rem;\n}\n.text-md-sm {\n  font-size: 12px;\n  line-height: 18px;\n}\n.text-md-xs {\n  font-size: 11px;\n  line-height: 16px;\n}\n.text-sm {\n  font-size: 0.875rem;\n  line-height: 1.25rem;\n}\n.text-xl {\n  font-size: 1.25rem;\n  line-height: 1.75rem;\n}\n.font-bold {\n  font-weight: 700;\n}\n.font-medium {\n  font-weight: 500;\n}\n.font-semibold {\n  font-weight: 600;\n}\n.uppercase {\n  text-transform: uppercase;\n}\n.leading-normal {\n  line-height: 1.5;\n}\n.leading-relaxed {\n  line-height: 1.625;\n}\n.leading-snug {\n  line-height: 1.375;\n}\n.tracking-tight {\n  letter-spacing: -0.025em;\n}\n.tracking-wide {\n  letter-spacing: 0.025em;\n}\n.tracking-wider {\n  letter-spacing: 0.05em;\n}\n.text-\\[\\#2469f0\\] {\n  --tw-text-opacity: 1;\n  color: rgb(36 105 240 / var(--tw-text-opacity, 1));\n}\n.text-amber-700 {\n  --tw-text-opacity: 1;\n  color: rgb(180 83 9 / var(--tw-text-opacity, 1));\n}\n.text-background {\n  color: hsl(var(--background));\n}\n.text-blue-700 {\n  --tw-text-opacity: 1;\n  color: rgb(29 78 216 / var(--tw-text-opacity, 1));\n}\n.text-card-foreground {\n  color: hsl(var(--card-foreground));\n}\n.text-destructive {\n  color: hsl(var(--destructive));\n}\n.text-destructive-foreground {\n  color: hsl(var(--destructive-foreground));\n}\n.text-destructive\\/80 {\n  color: hsl(var(--destructive) / 0.8);\n}\n.text-foreground {\n  color: hsl(var(--foreground));\n}\n.text-gray-700 {\n  --tw-text-opacity: 1;\n  color: rgb(55 65 81 / var(--tw-text-opacity, 1));\n}\n.text-green-500 {\n  --tw-text-opacity: 1;\n  color: rgb(34 197 94 / var(--tw-text-opacity, 1));\n}\n.text-green-700 {\n  --tw-text-opacity: 1;\n  color: rgb(21 128 61 / var(--tw-text-opacity, 1));\n}\n.text-muted-foreground {\n  color: hsl(var(--muted-foreground));\n}\n.text-popover-foreground {\n  color: hsl(var(--popover-foreground));\n}\n.text-primary {\n  color: hsl(var(--primary));\n}\n.text-primary-foreground {\n  color: hsl(var(--primary-foreground));\n}\n.text-red-500 {\n  --tw-text-opacity: 1;\n  color: rgb(239 68 68 / var(--tw-text-opacity, 1));\n}\n.text-red-600 {\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.text-red-700 {\n  --tw-text-opacity: 1;\n  color: rgb(185 28 28 / var(--tw-text-opacity, 1));\n}\n.text-red-800 {\n  --tw-text-opacity: 1;\n  color: rgb(153 27 27 / var(--tw-text-opacity, 1));\n}\n.text-red-900 {\n  --tw-text-opacity: 1;\n  color: rgb(127 29 29 / var(--tw-text-opacity, 1));\n}\n.text-secondary-foreground {\n  color: hsl(var(--secondary-foreground));\n}\n.text-white {\n  --tw-text-opacity: 1;\n  color: rgb(255 255 255 / var(--tw-text-opacity, 1));\n}\n.text-white\\/70 {\n  color: rgb(255 255 255 / 0.7);\n}\n.text-white\\/80 {\n  color: rgb(255 255 255 / 0.8);\n}\n.text-yellow-600 {\n  --tw-text-opacity: 1;\n  color: rgb(202 138 4 / var(--tw-text-opacity, 1));\n}\n.text-yellow-700 {\n  --tw-text-opacity: 1;\n  color: rgb(161 98 7 / var(--tw-text-opacity, 1));\n}\n.text-yellow-800 {\n  --tw-text-opacity: 1;\n  color: rgb(133 77 14 / var(--tw-text-opacity, 1));\n}\n.underline-offset-4 {\n  text-underline-offset: 4px;\n}\n.antialiased {\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n}\n.opacity-0 {\n  opacity: 0;\n}\n.opacity-30 {\n  opacity: 0.3;\n}\n.opacity-50 {\n  opacity: 0.5;\n}\n.opacity-60 {\n  opacity: 0.6;\n}\n.opacity-85 {\n  opacity: 0.85;\n}\n.opacity-90 {\n  opacity: 0.9;\n}\n.shadow {\n  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-lg {\n  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-sm {\n  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);\n  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-xl {\n  --tw-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.outline-none {\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.outline {\n  outline-style: solid;\n}\n.ring {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.ring-0 {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.blur {\n  --tw-blur: blur(8px);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.grayscale {\n  --tw-grayscale: grayscale(100%);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.filter {\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.backdrop-blur {\n  --tw-backdrop-blur: blur(8px);\n  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);\n}\n.backdrop-filter {\n  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);\n}\n.transition {\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-all {\n  transition-property: all;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-colors {\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-transform {\n  transition-property: transform;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.duration-200 {\n  transition-duration: 200ms;\n}\n.duration-300 {\n  transition-duration: 300ms;\n}\n.ease-in-out {\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.ease-out {\n  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);\n}\n@keyframes enter {\n  from {\n    opacity: var(--tw-enter-opacity, 1);\n    transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0) scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1)) rotate(var(--tw-enter-rotate, 0));\n  }\n}\n@keyframes exit {\n  to {\n    opacity: var(--tw-exit-opacity, 1);\n    transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0) scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1)) rotate(var(--tw-exit-rotate, 0));\n  }\n}\n.animate-in {\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.fade-in {\n  --tw-enter-opacity: 0;\n}\n.fade-out {\n  --tw-exit-opacity: 0;\n}\n.duration-200 {\n  animation-duration: 200ms;\n}\n.duration-300 {\n  animation-duration: 300ms;\n}\n.ease-in-out {\n  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.ease-out {\n  animation-timing-function: cubic-bezier(0, 0, 0.2, 1);\n}\n.running {\n  animation-play-state: running;\n}\n.placeholder\\:text-muted-foreground::-moz-placeholder {\n  color: hsl(var(--muted-foreground));\n}\n.placeholder\\:text-muted-foreground::placeholder {\n  color: hsl(var(--muted-foreground));\n}\n.last\\:border-b-0:last-child {\n  border-bottom-width: 0px;\n}\n.hover\\:bg-accent:hover {\n  background-color: hsl(var(--accent));\n}\n.hover\\:bg-amber-100\\/50:hover {\n  background-color: rgb(254 243 199 / 0.5);\n}\n.hover\\:bg-destructive:hover {\n  background-color: hsl(var(--destructive));\n}\n.hover\\:bg-destructive\\/10:hover {\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.hover\\:bg-destructive\\/20:hover {\n  background-color: hsl(var(--destructive) / 0.2);\n}\n.hover\\:bg-destructive\\/90:hover {\n  background-color: hsl(var(--destructive) / 0.9);\n}\n.hover\\:bg-green-700:hover {\n  --tw-bg-opacity: 1;\n  background-color: rgb(21 128 61 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-primary\\/5:hover {\n  background-color: hsl(var(--primary) / 0.05);\n}\n.hover\\:bg-primary\\/90:hover {\n  background-color: hsl(var(--primary) / 0.9);\n}\n.hover\\:bg-red-500\\/10:hover {\n  background-color: rgb(239 68 68 / 0.1);\n}\n.hover\\:bg-red-700:hover {\n  --tw-bg-opacity: 1;\n  background-color: rgb(185 28 28 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-secondary\\/80:hover {\n  background-color: hsl(var(--secondary) / 0.8);\n}\n.hover\\:bg-white\\/25:hover {\n  background-color: rgb(255 255 255 / 0.25);\n}\n.hover\\:text-accent-foreground:hover {\n  color: hsl(var(--accent-foreground));\n}\n.hover\\:text-destructive:hover {\n  color: hsl(var(--destructive));\n}\n.hover\\:text-destructive-foreground:hover {\n  color: hsl(var(--destructive-foreground));\n}\n.hover\\:text-foreground:hover {\n  color: hsl(var(--foreground));\n}\n.hover\\:text-red-600:hover {\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.hover\\:underline:hover {\n  text-decoration-line: underline;\n}\n.hover\\:opacity-70:hover {\n  opacity: 0.7;\n}\n.focus\\:bg-accent:focus {\n  background-color: hsl(var(--accent));\n}\n.focus\\:text-accent-foreground:focus {\n  color: hsl(var(--accent-foreground));\n}\n.focus\\:outline-none:focus {\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus\\:ring-1:focus {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-2:focus {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-primary:focus {\n  --tw-ring-color: hsl(var(--primary));\n}\n.focus\\:ring-red-500:focus {\n  --tw-ring-opacity: 1;\n  --tw-ring-color: rgb(239 68 68 / var(--tw-ring-opacity, 1));\n}\n.focus\\:ring-ring:focus {\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus\\:ring-offset-2:focus {\n  --tw-ring-offset-width: 2px;\n}\n.focus-visible\\:outline-none:focus-visible {\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus-visible\\:ring-2:focus-visible {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus-visible\\:ring-primary:focus-visible {\n  --tw-ring-color: hsl(var(--primary));\n}\n.focus-visible\\:ring-ring:focus-visible {\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus-visible\\:ring-offset-1:focus-visible {\n  --tw-ring-offset-width: 1px;\n}\n.focus-visible\\:ring-offset-2:focus-visible {\n  --tw-ring-offset-width: 2px;\n}\n.active\\:bg-accent:active {\n  background-color: hsl(var(--accent));\n}\n.active\\:bg-destructive:active {\n  background-color: hsl(var(--destructive));\n}\n.active\\:bg-primary:active {\n  background-color: hsl(var(--primary));\n}\n.active\\:bg-secondary:active {\n  background-color: hsl(var(--secondary));\n}\n.disabled\\:pointer-events-none:disabled {\n  pointer-events: none;\n}\n.disabled\\:cursor-not-allowed:disabled {\n  cursor: not-allowed;\n}\n.disabled\\:bg-muted:disabled {\n  background-color: hsl(var(--muted));\n}\n.disabled\\:opacity-50:disabled {\n  opacity: 0.5;\n}\n.group:hover .group-hover\\:opacity-100 {\n  opacity: 1;\n}\n.data-\\[disabled\\]\\:pointer-events-none[data-disabled] {\n  pointer-events: none;\n}\n.data-\\[side\\=bottom\\]\\:translate-y-1[data-side="bottom"] {\n  --tw-translate-y: 0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[side\\=top\\]\\:-translate-y-1[data-side="top"] {\n  --tw-translate-y: -0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:translate-x-4[data-state="checked"] {\n  --tw-translate-x: 1rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=unchecked\\]\\:translate-x-0[data-state="unchecked"] {\n  --tw-translate-x: 0px;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:bg-primary[data-state="checked"] {\n  background-color: hsl(var(--primary));\n}\n.data-\\[state\\=unchecked\\]\\:bg-input[data-state="unchecked"] {\n  background-color: hsl(var(--input));\n}\n.data-\\[disabled\\]\\:opacity-50[data-disabled] {\n  opacity: 0.5;\n}\n.data-\\[state\\=open\\]\\:animate-in[data-state="open"] {\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:animate-out[data-state="closed"] {\n  animation-name: exit;\n  animation-duration: 150ms;\n  --tw-exit-opacity: initial;\n  --tw-exit-scale: initial;\n  --tw-exit-rotate: initial;\n  --tw-exit-translate-x: initial;\n  --tw-exit-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:fade-out-0[data-state="closed"] {\n  --tw-exit-opacity: 0;\n}\n.data-\\[state\\=open\\]\\:fade-in-0[data-state="open"] {\n  --tw-enter-opacity: 0;\n}\n.data-\\[state\\=closed\\]\\:zoom-out-95[data-state="closed"] {\n  --tw-exit-scale: .95;\n}\n.data-\\[state\\=open\\]\\:zoom-in-95[data-state="open"] {\n  --tw-enter-scale: .95;\n}\n@supports (backdrop-filter: var(--tw)) {\n  .supports-\\[backdrop-filter\\]\\:bg-background\\/60 {\n    background-color: hsl(var(--background) / 0.6);\n  }\n}\n.dark\\:border-amber-800:is(.dark *) {\n  --tw-border-opacity: 1;\n  border-color: rgb(146 64 14 / var(--tw-border-opacity, 1));\n}\n.dark\\:border-green-800:is(.dark *) {\n  --tw-border-opacity: 1;\n  border-color: rgb(22 101 52 / var(--tw-border-opacity, 1));\n}\n.dark\\:border-red-900:is(.dark *) {\n  --tw-border-opacity: 1;\n  border-color: rgb(127 29 29 / var(--tw-border-opacity, 1));\n}\n.dark\\:bg-amber-900\\/30:is(.dark *) {\n  background-color: rgb(120 53 15 / 0.3);\n}\n.dark\\:bg-amber-950\\/20:is(.dark *) {\n  background-color: rgb(69 26 3 / 0.2);\n}\n.dark\\:bg-blue-900\\/30:is(.dark *) {\n  background-color: rgb(30 58 138 / 0.3);\n}\n.dark\\:bg-blue-950\\/20:is(.dark *) {\n  background-color: rgb(23 37 84 / 0.2);\n}\n.dark\\:bg-green-950\\/20:is(.dark *) {\n  background-color: rgb(5 46 22 / 0.2);\n}\n.dark\\:bg-red-950\\/20:is(.dark *) {\n  background-color: rgb(69 10 10 / 0.2);\n}\n.dark\\:bg-yellow-950\\/30:is(.dark *) {\n  background-color: rgb(66 32 6 / 0.3);\n}\n.dark\\:text-amber-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(252 211 77 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-blue-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(147 197 253 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-green-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(134 239 172 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-red-200:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(254 202 202 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-red-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(252 165 165 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-yellow-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(253 224 71 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-yellow-400:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(250 204 21 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-yellow-500:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(234 179 8 / var(--tw-text-opacity, 1));\n}\n@media (min-width: 640px) {\n  .sm\\:grid-cols-3 {\n    grid-template-columns: repeat(3, minmax(0, 1fr));\n  }\n}\n@media (min-width: 768px) {\n  .md\\:grid-cols-2 {\n    grid-template-columns: repeat(2, minmax(0, 1fr));\n  }\n  .md\\:grid-cols-4 {\n    grid-template-columns: repeat(4, minmax(0, 1fr));\n  }\n  .md\\:text-left {\n    text-align: left;\n  }\n}\n@media (min-width: 1024px) {\n  .lg\\:grid-cols-3 {\n    grid-template-columns: repeat(3, minmax(0, 1fr));\n  }\n}\n.\\[\\&\\>span\\]\\:line-clamp-1>span {\n  overflow: hidden;\n  display: -webkit-box;\n  -webkit-box-orient: vertical;\n  -webkit-line-clamp: 1;\n}\n.\\[\\&\\>span\\]\\:h-3>span {\n  height: 0.75rem;\n}\n.\\[\\&\\>span\\]\\:w-3>span {\n  width: 0.75rem;\n}\n.data-\\[state\\=checked\\]\\:\\[\\&\\>span\\]\\:translate-x-3>span[data-state="checked"] {\n  --tw-translate-x: 0.75rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.\\[\\&_svg\\]\\:pointer-events-none svg {\n  pointer-events: none;\n}\n.\\[\\&_svg\\]\\:size-5 svg {\n  width: 1.25rem;\n  height: 1.25rem;\n}\n.\\[\\&_svg\\]\\:shrink-0 svg {\n  flex-shrink: 0;\n}\n'
+          ? '/* shadow-dom base */\n*, ::before, ::after {\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n::backdrop {\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n/* ! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com *//*\n1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)\n*/\n\n*,\n::before,\n::after {\n  box-sizing: border-box; /* 1 */\n  border-width: 0; /* 2 */\n  border-style: solid; /* 2 */\n  border-color: #e5e7eb; /* 2 */\n}\n\n::before,\n::after {\n  --tw-content: \'\';\n}\n\n/*\n1. Use a consistent sensible line-height in all browsers.\n2. Prevent adjustments of font size after orientation changes in iOS.\n3. Use a more readable tab size.\n4. Use the user\'s configured `sans` font-family by default.\n5. Use the user\'s configured `sans` font-feature-settings by default.\n6. Use the user\'s configured `sans` font-variation-settings by default.\n7. Disable tap highlights on iOS\n*/\n\nhtml,\n:host {\n  line-height: 1.5; /* 1 */\n  -webkit-text-size-adjust: 100%; /* 2 */\n  -moz-tab-size: 4; /* 3 */\n  -o-tab-size: 4;\n     tab-size: 4; /* 3 */\n  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; /* 4 */\n  font-feature-settings: normal; /* 5 */\n  font-variation-settings: normal; /* 6 */\n  -webkit-tap-highlight-color: transparent; /* 7 */\n}\n\n/*\n1. Remove the margin in all browsers.\n2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.\n*/\n\nbody {\n  margin: 0; /* 1 */\n  line-height: inherit; /* 2 */\n}\n\n/*\n1. Add the correct height in Firefox.\n2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n3. Ensure horizontal rules are visible by default.\n*/\n\nhr {\n  height: 0; /* 1 */\n  color: inherit; /* 2 */\n  border-top-width: 1px; /* 3 */\n}\n\n/*\nAdd the correct text decoration in Chrome, Edge, and Safari.\n*/\n\nabbr:where([title]) {\n  -webkit-text-decoration: underline dotted;\n          text-decoration: underline dotted;\n}\n\n/*\nRemove the default font size and weight for headings.\n*/\n\nh1,\nh2,\nh3,\nh4,\nh5,\nh6 {\n  font-size: inherit;\n  font-weight: inherit;\n}\n\n/*\nReset links to optimize for opt-in styling instead of opt-out.\n*/\n\na {\n  color: inherit;\n  text-decoration: inherit;\n}\n\n/*\nAdd the correct font weight in Edge and Safari.\n*/\n\nb,\nstrong {\n  font-weight: bolder;\n}\n\n/*\n1. Use the user\'s configured `mono` font-family by default.\n2. Use the user\'s configured `mono` font-feature-settings by default.\n3. Use the user\'s configured `mono` font-variation-settings by default.\n4. Correct the odd `em` font sizing in all browsers.\n*/\n\ncode,\nkbd,\nsamp,\npre {\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace; /* 1 */\n  font-feature-settings: normal; /* 2 */\n  font-variation-settings: normal; /* 3 */\n  font-size: 1em; /* 4 */\n}\n\n/*\nAdd the correct font size in all browsers.\n*/\n\nsmall {\n  font-size: 80%;\n}\n\n/*\nPrevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\nsub,\nsup {\n  font-size: 75%;\n  line-height: 0;\n  position: relative;\n  vertical-align: baseline;\n}\n\nsub {\n  bottom: -0.25em;\n}\n\nsup {\n  top: -0.5em;\n}\n\n/*\n1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n3. Remove gaps between table borders by default.\n*/\n\ntable {\n  text-indent: 0; /* 1 */\n  border-color: inherit; /* 2 */\n  border-collapse: collapse; /* 3 */\n}\n\n/*\n1. Change the font styles in all browsers.\n2. Remove the margin in Firefox and Safari.\n3. Remove default padding in all browsers.\n*/\n\nbutton,\ninput,\noptgroup,\nselect,\ntextarea {\n  font-family: inherit; /* 1 */\n  font-feature-settings: inherit; /* 1 */\n  font-variation-settings: inherit; /* 1 */\n  font-size: 100%; /* 1 */\n  font-weight: inherit; /* 1 */\n  line-height: inherit; /* 1 */\n  letter-spacing: inherit; /* 1 */\n  color: inherit; /* 1 */\n  margin: 0; /* 2 */\n  padding: 0; /* 3 */\n}\n\n/*\nRemove the inheritance of text transform in Edge and Firefox.\n*/\n\nbutton,\nselect {\n  text-transform: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Remove default button styles.\n*/\n\nbutton,\ninput:where([type=\'button\']),\ninput:where([type=\'reset\']),\ninput:where([type=\'submit\']) {\n  -webkit-appearance: button; /* 1 */\n  background-color: transparent; /* 2 */\n  background-image: none; /* 2 */\n}\n\n/*\nUse the modern Firefox focus style for all focusable elements.\n*/\n\n:-moz-focusring {\n  outline: auto;\n}\n\n/*\nRemove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n:-moz-ui-invalid {\n  box-shadow: none;\n}\n\n/*\nAdd the correct vertical alignment in Chrome and Firefox.\n*/\n\nprogress {\n  vertical-align: baseline;\n}\n\n/*\nCorrect the cursor style of increment and decrement buttons in Safari.\n*/\n\n::-webkit-inner-spin-button,\n::-webkit-outer-spin-button {\n  height: auto;\n}\n\n/*\n1. Correct the odd appearance in Chrome and Safari.\n2. Correct the outline style in Safari.\n*/\n\n[type=\'search\'] {\n  -webkit-appearance: textfield; /* 1 */\n  outline-offset: -2px; /* 2 */\n}\n\n/*\nRemove the inner padding in Chrome and Safari on macOS.\n*/\n\n::-webkit-search-decoration {\n  -webkit-appearance: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Change font properties to `inherit` in Safari.\n*/\n\n::-webkit-file-upload-button {\n  -webkit-appearance: button; /* 1 */\n  font: inherit; /* 2 */\n}\n\n/*\nAdd the correct display in Chrome and Safari.\n*/\n\nsummary {\n  display: list-item;\n}\n\n/*\nRemoves the default spacing and border for appropriate elements.\n*/\n\nblockquote,\ndl,\ndd,\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\nhr,\nfigure,\np,\npre {\n  margin: 0;\n}\n\nfieldset {\n  margin: 0;\n  padding: 0;\n}\n\nlegend {\n  padding: 0;\n}\n\nol,\nul,\nmenu {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n}\n\n/*\nReset default styling for dialogs.\n*/\ndialog {\n  padding: 0;\n}\n\n/*\nPrevent resizing textareas horizontally by default.\n*/\n\ntextarea {\n  resize: vertical;\n}\n\n/*\n1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n2. Set the default placeholder color to the user\'s configured gray 400 color.\n*/\n\ninput::-moz-placeholder, textarea::-moz-placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\ninput::placeholder,\ntextarea::placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\n/*\nSet the default cursor for buttons.\n*/\n\nbutton,\n[role="button"] {\n  cursor: pointer;\n}\n\n/*\nMake sure disabled buttons don\'t get the pointer cursor.\n*/\n:disabled {\n  cursor: default;\n}\n\n/*\n1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n   This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\nimg,\nsvg,\nvideo,\ncanvas,\naudio,\niframe,\nembed,\nobject {\n  display: block; /* 1 */\n  vertical-align: middle; /* 2 */\n}\n\n/*\nConstrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\nimg,\nvideo {\n  max-width: 100%;\n  height: auto;\n}\n\n/* Make elements with the HTML hidden attribute stay hidden by default */\n[hidden]:where(:not([hidden="until-found"])) {\n  display: none;\n}\n  *,\n  *::before,\n  *::after {\n    box-sizing: border-box;\n  }\n\n  html {\n    font-family:\n      \'Inter\',\n      -apple-system,\n      BlinkMacSystemFont,\n      \'Segoe UI\',\n      sans-serif;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale;\n  }\n\n  /* ponytail: senior preset \u2014 :root for popup/sidepanel, :host+#app for Shadow DOM (resume modals).\n     Keep in sync: edit :root. */\n  :root,\n  :host,\n  #app {\n    --background: 0 0% 100%;\n    --foreground: 222.2 47% 11%;\n    --card: 0 0% 100%;\n    --card-foreground: 222.2 47% 11%;\n    --popover: 0 0% 100%;\n    --popover-foreground: 222.2 47% 11%;\n    --primary: 221.2 83% 53%;\n    --primary-foreground: 210 40% 98%;\n    --secondary: 210 40% 96%;\n    --secondary-foreground: 222.2 47% 11%;\n    --muted: 210 40% 96%;\n    --muted-foreground: 215 20% 35%;\n    --accent: 210 40% 96%;\n    --accent-foreground: 222.2 47% 11%;\n    --destructive: 0 84% 60%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 214 32% 85%;\n    --input: 214 32% 85%;\n    --ring: 221 83% 53%;\n    --radius: 0.75rem;\n    --warning: 38 92% 50%;\n    --warning-foreground: 48 96% 12%;\n  }\n\n  /* ponytail: Shadow DOM needs its own color-scheme + base reset; :host isolates from page CSS */\n  :host {\n    all: initial;\n  }\n  #app {\n    color-scheme: light;\n    isolation: isolate;\n    font-family:\n      \'Inter\',\n      -apple-system,\n      BlinkMacSystemFont,\n      \'Segoe UI\',\n      sans-serif;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale;\n    box-sizing: border-box;\n  }\n  #app *,\n  #app *::before,\n  #app *::after {\n    box-sizing: border-box;\n  }\n\n  @theme inline {\n    --color-warning: var(--warning);\n    --color-warning-foreground: var(--warning-foreground);\n  }\n\n  .dark {\n    --background: 222.2 84% 4.9%;\n    --foreground: 210 40% 98%;\n    --card: 222.2 84% 4.9%;\n    --card-foreground: 210 40% 98%;\n    --popover: 222.2 84% 4.9%;\n    --popover-foreground: 210 40% 98%;\n    --primary: 217.2 91.2% 59.8%;\n    --primary-foreground: 222.2 47.4% 11.2%;\n    --secondary: 217.2 32.6% 17.5%;\n    --secondary-foreground: 210 40% 98%;\n    --muted: 217.2 32.6% 17.5%;\n    --muted-foreground: 215 20.2% 65.1%;\n    --accent: 217.2 32.6% 17.5%;\n    --accent-foreground: 210 40% 98%;\n    --destructive: 0 62.8% 30.6%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 217.2 32.6% 17.5%;\n    --input: 217.2 32.6% 17.5%;\n    --ring: 224.3 76.3% 48%;\n    --md-scrollbar: #484d54;\n  }\n\n  ::-moz-selection {\n    background: #2469f0;\n    color: white;\n  }\n\n  ::selection {\n    background: #2469f0;\n    color: white;\n  }\n\n  * {\n    scrollbar-width: thin;\n    scrollbar-color: #c9cdd4 transparent;\n  }\n\n  .dark * {\n    scrollbar-color: var(--md-scrollbar) transparent;\n  }\n\n  *::-webkit-scrollbar {\n    width: 6px;\n    height: 6px;\n  }\n\n  *::-webkit-scrollbar-track {\n    background: transparent;\n  }\n\n  *::-webkit-scrollbar-thumb {\n    background: #c9cdd4;\n    border-radius: 3px;\n  }\n\n  .dark *::-webkit-scrollbar-thumb {\n    background: var(--md-scrollbar);\n  }\n\n  *::-webkit-scrollbar-thumb:hover {\n    background: #a4a9b3;\n  }\n\n  .dark *::-webkit-scrollbar-thumb:hover {\n    background: #636971;\n  }\n.\\!container {\n  width: 100% !important;\n}\n.container {\n  width: 100%;\n}\n@media (min-width: 640px) {\n  .\\!container {\n    max-width: 640px !important;\n  }\n  .container {\n    max-width: 640px;\n  }\n}\n@media (min-width: 768px) {\n  .\\!container {\n    max-width: 768px !important;\n  }\n  .container {\n    max-width: 768px;\n  }\n}\n@media (min-width: 1024px) {\n  .\\!container {\n    max-width: 1024px !important;\n  }\n  .container {\n    max-width: 1024px;\n  }\n}\n@media (min-width: 1280px) {\n  .\\!container {\n    max-width: 1280px !important;\n  }\n  .container {\n    max-width: 1280px;\n  }\n}\n@media (min-width: 1536px) {\n  .\\!container {\n    max-width: 1536px !important;\n  }\n  .container {\n    max-width: 1536px;\n  }\n}\n.sr-only {\n  position: absolute;\n  width: 1px;\n  height: 1px;\n  padding: 0;\n  margin: -1px;\n  overflow: hidden;\n  clip: rect(0, 0, 0, 0);\n  white-space: nowrap;\n  border-width: 0;\n}\n.pointer-events-none {\n  pointer-events: none;\n}\n.visible {\n  visibility: visible;\n}\n.invisible {\n  visibility: hidden;\n}\n.static {\n  position: static;\n}\n.fixed {\n  position: fixed;\n}\n.absolute {\n  position: absolute;\n}\n.relative {\n  position: relative;\n}\n.sticky {\n  position: sticky;\n}\n.bottom-0 {\n  bottom: 0px;\n}\n.bottom-4 {\n  bottom: 1rem;\n}\n.left-1\\/2 {\n  left: 50%;\n}\n.right-4 {\n  right: 1rem;\n}\n.top-1\\/2 {\n  top: 50%;\n}\n.z-10 {\n  z-index: 10;\n}\n.z-50 {\n  z-index: 50;\n}\n.z-\\[1\\] {\n  z-index: 1;\n}\n.z-\\[2147483647\\] {\n  z-index: 2147483647;\n}\n.col-span-full {\n  grid-column: 1 / -1;\n}\n.mx-auto {\n  margin-left: auto;\n  margin-right: auto;\n}\n.-mb-\\[1px\\] {\n  margin-bottom: -1px;\n}\n.mb-1 {\n  margin-bottom: 0.25rem;\n}\n.mb-1\\.5 {\n  margin-bottom: 0.375rem;\n}\n.mb-2 {\n  margin-bottom: 0.5rem;\n}\n.mb-3 {\n  margin-bottom: 0.75rem;\n}\n.mb-4 {\n  margin-bottom: 1rem;\n}\n.ml-1 {\n  margin-left: 0.25rem;\n}\n.ml-auto {\n  margin-left: auto;\n}\n.mr-1 {\n  margin-right: 0.25rem;\n}\n.mr-2 {\n  margin-right: 0.5rem;\n}\n.mr-3 {\n  margin-right: 0.75rem;\n}\n.mr-auto {\n  margin-right: auto;\n}\n.mt-0\\.5 {\n  margin-top: 0.125rem;\n}\n.mt-1 {\n  margin-top: 0.25rem;\n}\n.mt-3 {\n  margin-top: 0.75rem;\n}\n.block {\n  display: block;\n}\n.inline-block {\n  display: inline-block;\n}\n.inline {\n  display: inline;\n}\n.flex {\n  display: flex;\n}\n.inline-flex {\n  display: inline-flex;\n}\n.\\!table {\n  display: table !important;\n}\n.table {\n  display: table;\n}\n.grid {\n  display: grid;\n}\n.\\!contents {\n  display: contents !important;\n}\n.contents {\n  display: contents;\n}\n.hidden {\n  display: none;\n}\n.size-1\\.5 {\n  width: 0.375rem;\n  height: 0.375rem;\n}\n.size-10 {\n  width: 2.5rem;\n  height: 2.5rem;\n}\n.size-3 {\n  width: 0.75rem;\n  height: 0.75rem;\n}\n.size-3\\.5 {\n  width: 0.875rem;\n  height: 0.875rem;\n}\n.size-4 {\n  width: 1rem;\n  height: 1rem;\n}\n.size-5 {\n  width: 1.25rem;\n  height: 1.25rem;\n}\n.size-6 {\n  width: 1.5rem;\n  height: 1.5rem;\n}\n.h-1 {\n  height: 0.25rem;\n}\n.h-10 {\n  height: 2.5rem;\n}\n.h-11 {\n  height: 2.75rem;\n}\n.h-12 {\n  height: 3rem;\n}\n.h-2 {\n  height: 0.5rem;\n}\n.h-24 {\n  height: 6rem;\n}\n.h-4 {\n  height: 1rem;\n}\n.h-5 {\n  height: 1.25rem;\n}\n.h-6 {\n  height: 1.5rem;\n}\n.h-7 {\n  height: 1.75rem;\n}\n.h-8 {\n  height: 2rem;\n}\n.h-9 {\n  height: 2.25rem;\n}\n.h-\\[300px\\] {\n  height: 300px;\n}\n.h-\\[var\\(--radix-select-trigger-height\\)\\] {\n  height: var(--radix-select-trigger-height);\n}\n.h-full {\n  height: 100%;\n}\n.max-h-60 {\n  max-height: 15rem;\n}\n.max-h-\\[220px\\] {\n  max-height: 220px;\n}\n.max-h-\\[280px\\] {\n  max-height: 280px;\n}\n.max-h-\\[360px\\] {\n  max-height: 360px;\n}\n.max-h-\\[600px\\] {\n  max-height: 600px;\n}\n.min-h-11 {\n  min-height: 2.75rem;\n}\n.min-h-\\[200px\\] {\n  min-height: 200px;\n}\n.min-h-\\[80px\\] {\n  min-height: 80px;\n}\n.w-10 {\n  width: 2.5rem;\n}\n.w-11 {\n  width: 2.75rem;\n}\n.w-12 {\n  width: 3rem;\n}\n.w-2 {\n  width: 0.5rem;\n}\n.w-4 {\n  width: 1rem;\n}\n.w-5 {\n  width: 1.25rem;\n}\n.w-6 {\n  width: 1.5rem;\n}\n.w-7 {\n  width: 1.75rem;\n}\n.w-9 {\n  width: 2.25rem;\n}\n.w-\\[100px\\] {\n  width: 100px;\n}\n.w-\\[120px\\] {\n  width: 120px;\n}\n.w-\\[32\\%\\] {\n  width: 32%;\n}\n.w-\\[340px\\] {\n  width: 340px;\n}\n.w-\\[90px\\] {\n  width: 90px;\n}\n.w-full {\n  width: 100%;\n}\n.w-px {\n  width: 1px;\n}\n.min-w-0 {\n  min-width: 0px;\n}\n.min-w-\\[100px\\] {\n  min-width: 100px;\n}\n.min-w-\\[110px\\] {\n  min-width: 110px;\n}\n.min-w-\\[12rem\\] {\n  min-width: 12rem;\n}\n.min-w-\\[80px\\] {\n  min-width: 80px;\n}\n.min-w-\\[90px\\] {\n  min-width: 90px;\n}\n.min-w-\\[var\\(--radix-select-trigger-width\\)\\] {\n  min-width: var(--radix-select-trigger-width);\n}\n.max-w-\\[120px\\] {\n  max-width: 120px;\n}\n.max-w-\\[140px\\] {\n  max-width: 140px;\n}\n.max-w-\\[200px\\] {\n  max-width: 200px;\n}\n.flex-1 {\n  flex: 1 1 0%;\n}\n.flex-shrink {\n  flex-shrink: 1;\n}\n.flex-shrink-0 {\n  flex-shrink: 0;\n}\n.shrink-0 {\n  flex-shrink: 0;\n}\n.-translate-x-1\\/2 {\n  --tw-translate-x: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.-translate-y-1\\/2 {\n  --tw-translate-y: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.scale-90 {\n  --tw-scale-x: .9;\n  --tw-scale-y: .9;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.transform {\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n@keyframes pulse {\n  50% {\n    opacity: .5;\n  }\n}\n.animate-pulse {\n  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;\n}\n@keyframes slide-up {\n  0% {\n    opacity: 0;\n    transform: translateY(8px);\n  }\n  100% {\n    opacity: 1;\n    transform: translateY(0);\n  }\n}\n.animate-slide-up {\n  animation: slide-up 0.15s ease-out;\n}\n.cursor-default {\n  cursor: default;\n}\n.cursor-not-allowed {\n  cursor: not-allowed;\n}\n.cursor-pointer {\n  cursor: pointer;\n}\n.select-none {\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.resize-none {\n  resize: none;\n}\n.resize-y {\n  resize: vertical;\n}\n.resize {\n  resize: both;\n}\n.grid-cols-1 {\n  grid-template-columns: repeat(1, minmax(0, 1fr));\n}\n.grid-cols-2 {\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n}\n.grid-cols-\\[1fr_50px\\] {\n  grid-template-columns: 1fr 50px;\n}\n.grid-cols-\\[repeat\\(auto-fill\\2c minmax\\(90px\\2c 1fr\\)\\)\\] {\n  grid-template-columns: repeat(auto-fill,minmax(90px,1fr));\n}\n.flex-col {\n  flex-direction: column;\n}\n.flex-wrap {\n  flex-wrap: wrap;\n}\n.items-start {\n  align-items: flex-start;\n}\n.items-end {\n  align-items: flex-end;\n}\n.items-center {\n  align-items: center;\n}\n.justify-end {\n  justify-content: flex-end;\n}\n.justify-center {\n  justify-content: center;\n}\n.justify-between {\n  justify-content: space-between;\n}\n.gap-0 {\n  gap: 0px;\n}\n.gap-1 {\n  gap: 0.25rem;\n}\n.gap-1\\.5 {\n  gap: 0.375rem;\n}\n.gap-2 {\n  gap: 0.5rem;\n}\n.gap-2\\.5 {\n  gap: 0.625rem;\n}\n.gap-3 {\n  gap: 0.75rem;\n}\n.gap-4 {\n  gap: 1rem;\n}\n.gap-x-8 {\n  -moz-column-gap: 2rem;\n       column-gap: 2rem;\n}\n.gap-y-3 {\n  row-gap: 0.75rem;\n}\n.space-y-0\\.5 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.125rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.125rem * var(--tw-space-y-reverse));\n}\n.space-y-1 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));\n}\n.space-y-1\\.5 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.375rem * var(--tw-space-y-reverse));\n}\n.space-y-2 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));\n}\n.space-y-2\\.5 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.625rem * var(--tw-space-y-reverse));\n}\n.space-y-3 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));\n}\n.space-y-4 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1rem * var(--tw-space-y-reverse));\n}\n.space-y-5 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1.25rem * var(--tw-space-y-reverse));\n}\n.divide-y > :not([hidden]) ~ :not([hidden]) {\n  --tw-divide-y-reverse: 0;\n  border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));\n  border-bottom-width: calc(1px * var(--tw-divide-y-reverse));\n}\n.divide-border > :not([hidden]) ~ :not([hidden]) {\n  border-color: hsl(var(--border));\n}\n.overflow-auto {\n  overflow: auto;\n}\n.overflow-hidden {\n  overflow: hidden;\n}\n.overflow-y-auto {\n  overflow-y: auto;\n}\n.truncate {\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n.whitespace-nowrap {\n  white-space: nowrap;\n}\n.whitespace-pre-wrap {\n  white-space: pre-wrap;\n}\n.break-words {\n  overflow-wrap: break-word;\n}\n.rounded {\n  border-radius: 0.25rem;\n}\n.rounded-full {\n  border-radius: 9999px;\n}\n.rounded-lg {\n  border-radius: 0.5rem;\n}\n.rounded-md {\n  border-radius: 6px;\n}\n.rounded-xl {\n  border-radius: 0.75rem;\n}\n.rounded-b-2xl {\n  border-bottom-right-radius: 1rem;\n  border-bottom-left-radius: 1rem;\n}\n.border {\n  border-width: 1px;\n}\n.border-2 {\n  border-width: 2px;\n}\n.border-b {\n  border-bottom-width: 1px;\n}\n.border-b-2 {\n  border-bottom-width: 2px;\n}\n.border-l-2 {\n  border-left-width: 2px;\n}\n.border-t {\n  border-top-width: 1px;\n}\n.border-t-2 {\n  border-top-width: 2px;\n}\n.border-dashed {\n  border-style: dashed;\n}\n.border-none {\n  border-style: none;\n}\n.border-\\[\\#2469f0\\] {\n  --tw-border-opacity: 1;\n  border-color: rgb(36 105 240 / var(--tw-border-opacity, 1));\n}\n.border-amber-200 {\n  --tw-border-opacity: 1;\n  border-color: rgb(253 230 138 / var(--tw-border-opacity, 1));\n}\n.border-border {\n  border-color: hsl(var(--border));\n}\n.border-destructive {\n  border-color: hsl(var(--destructive));\n}\n.border-destructive\\/20 {\n  border-color: hsl(var(--destructive) / 0.2);\n}\n.border-foreground {\n  border-color: hsl(var(--foreground));\n}\n.border-green-200 {\n  --tw-border-opacity: 1;\n  border-color: rgb(187 247 208 / var(--tw-border-opacity, 1));\n}\n.border-input {\n  border-color: hsl(var(--input));\n}\n.border-primary {\n  border-color: hsl(var(--primary));\n}\n.border-primary\\/20 {\n  border-color: hsl(var(--primary) / 0.2);\n}\n.border-primary\\/50 {\n  border-color: hsl(var(--primary) / 0.5);\n}\n.border-red-200 {\n  --tw-border-opacity: 1;\n  border-color: rgb(254 202 202 / var(--tw-border-opacity, 1));\n}\n.border-red-500 {\n  --tw-border-opacity: 1;\n  border-color: rgb(239 68 68 / var(--tw-border-opacity, 1));\n}\n.border-transparent {\n  border-color: transparent;\n}\n.bg-\\[\\#2469f0\\] {\n  --tw-bg-opacity: 1;\n  background-color: rgb(36 105 240 / var(--tw-bg-opacity, 1));\n}\n.bg-accent {\n  background-color: hsl(var(--accent));\n}\n.bg-accent\\/20 {\n  background-color: hsl(var(--accent) / 0.2);\n}\n.bg-accent\\/40 {\n  background-color: hsl(var(--accent) / 0.4);\n}\n.bg-accent\\/50 {\n  background-color: hsl(var(--accent) / 0.5);\n}\n.bg-amber-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(255 251 235 / var(--tw-bg-opacity, 1));\n}\n.bg-amber-50\\/50 {\n  background-color: rgb(255 251 235 / 0.5);\n}\n.bg-background {\n  background-color: hsl(var(--background));\n}\n.bg-background\\/60 {\n  background-color: hsl(var(--background) / 0.6);\n}\n.bg-blue-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1));\n}\n.bg-blue-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(239 246 255 / var(--tw-bg-opacity, 1));\n}\n.bg-border {\n  background-color: hsl(var(--border));\n}\n.bg-card {\n  background-color: hsl(var(--card));\n}\n.bg-destructive {\n  background-color: hsl(var(--destructive));\n}\n.bg-destructive\\/10 {\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.bg-destructive\\/5 {\n  background-color: hsl(var(--destructive) / 0.05);\n}\n.bg-foreground {\n  background-color: hsl(var(--foreground));\n}\n.bg-gray-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));\n}\n.bg-green-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(220 252 231 / var(--tw-bg-opacity, 1));\n}\n.bg-green-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(240 253 244 / var(--tw-bg-opacity, 1));\n}\n.bg-green-500 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(34 197 94 / var(--tw-bg-opacity, 1));\n}\n.bg-green-600 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(22 163 74 / var(--tw-bg-opacity, 1));\n}\n.bg-muted {\n  background-color: hsl(var(--muted));\n}\n.bg-muted-foreground {\n  background-color: hsl(var(--muted-foreground));\n}\n.bg-muted\\/20 {\n  background-color: hsl(var(--muted) / 0.2);\n}\n.bg-muted\\/40 {\n  background-color: hsl(var(--muted) / 0.4);\n}\n.bg-neutral-950 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(10 10 10 / var(--tw-bg-opacity, 1));\n}\n.bg-popover {\n  background-color: hsl(var(--popover));\n}\n.bg-primary {\n  background-color: hsl(var(--primary));\n}\n.bg-primary\\/10 {\n  background-color: hsl(var(--primary) / 0.1);\n}\n.bg-primary\\/5 {\n  background-color: hsl(var(--primary) / 0.05);\n}\n.bg-red-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 226 226 / var(--tw-bg-opacity, 1));\n}\n.bg-red-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 242 242 / var(--tw-bg-opacity, 1));\n}\n.bg-red-500\\/5 {\n  background-color: rgb(239 68 68 / 0.05);\n}\n.bg-red-600 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(220 38 38 / var(--tw-bg-opacity, 1));\n}\n.bg-secondary {\n  background-color: hsl(var(--secondary));\n}\n.bg-white\\/15 {\n  background-color: rgb(255 255 255 / 0.15);\n}\n.bg-yellow-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 252 232 / var(--tw-bg-opacity, 1));\n}\n.bg-gradient-to-br {\n  background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));\n}\n.from-muted {\n  --tw-gradient-from: hsl(var(--muted)) var(--tw-gradient-from-position);\n  --tw-gradient-to: hsl(var(--muted) / 0) var(--tw-gradient-to-position);\n  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);\n}\n.to-muted\\/50 {\n  --tw-gradient-to: hsl(var(--muted) / 0.5) var(--tw-gradient-to-position);\n}\n.p-0\\.5 {\n  padding: 0.125rem;\n}\n.p-1 {\n  padding: 0.25rem;\n}\n.p-1\\.5 {\n  padding: 0.375rem;\n}\n.p-2 {\n  padding: 0.5rem;\n}\n.p-2\\.5 {\n  padding: 0.625rem;\n}\n.p-3 {\n  padding: 0.75rem;\n}\n.p-4 {\n  padding: 1rem;\n}\n.p-5 {\n  padding: 1.25rem;\n}\n.p-8 {\n  padding: 2rem;\n}\n.px-1 {\n  padding-left: 0.25rem;\n  padding-right: 0.25rem;\n}\n.px-1\\.5 {\n  padding-left: 0.375rem;\n  padding-right: 0.375rem;\n}\n.px-2 {\n  padding-left: 0.5rem;\n  padding-right: 0.5rem;\n}\n.px-2\\.5 {\n  padding-left: 0.625rem;\n  padding-right: 0.625rem;\n}\n.px-3 {\n  padding-left: 0.75rem;\n  padding-right: 0.75rem;\n}\n.px-3\\.5 {\n  padding-left: 0.875rem;\n  padding-right: 0.875rem;\n}\n.px-4 {\n  padding-left: 1rem;\n  padding-right: 1rem;\n}\n.px-5 {\n  padding-left: 1.25rem;\n  padding-right: 1.25rem;\n}\n.px-6 {\n  padding-left: 1.5rem;\n  padding-right: 1.5rem;\n}\n.px-7 {\n  padding-left: 1.75rem;\n  padding-right: 1.75rem;\n}\n.py-0 {\n  padding-top: 0px;\n  padding-bottom: 0px;\n}\n.py-0\\.5 {\n  padding-top: 0.125rem;\n  padding-bottom: 0.125rem;\n}\n.py-1 {\n  padding-top: 0.25rem;\n  padding-bottom: 0.25rem;\n}\n.py-1\\.5 {\n  padding-top: 0.375rem;\n  padding-bottom: 0.375rem;\n}\n.py-12 {\n  padding-top: 3rem;\n  padding-bottom: 3rem;\n}\n.py-2 {\n  padding-top: 0.5rem;\n  padding-bottom: 0.5rem;\n}\n.py-2\\.5 {\n  padding-top: 0.625rem;\n  padding-bottom: 0.625rem;\n}\n.py-3 {\n  padding-top: 0.75rem;\n  padding-bottom: 0.75rem;\n}\n.py-3\\.5 {\n  padding-top: 0.875rem;\n  padding-bottom: 0.875rem;\n}\n.py-4 {\n  padding-top: 1rem;\n  padding-bottom: 1rem;\n}\n.py-8 {\n  padding-top: 2rem;\n  padding-bottom: 2rem;\n}\n.pb-1\\.5 {\n  padding-bottom: 0.375rem;\n}\n.pb-2 {\n  padding-bottom: 0.5rem;\n}\n.pr-12 {\n  padding-right: 3rem;\n}\n.pr-20 {\n  padding-right: 5rem;\n}\n.pt-3 {\n  padding-top: 0.75rem;\n}\n.text-center {\n  text-align: center;\n}\n.font-\\[\\\'Inter\\\'\\2c system-ui\\2c sans-serif\\] {\n  font-family: \'Inter\',system-ui,sans-serif;\n}\n.font-mono {\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace;\n}\n.text-\\[10px\\] {\n  font-size: 10px;\n}\n.text-\\[11px\\] {\n  font-size: 11px;\n}\n.text-\\[8px\\] {\n  font-size: 8px;\n}\n.text-\\[9px\\] {\n  font-size: 9px;\n}\n.text-base {\n  font-size: 1rem;\n  line-height: 1.5rem;\n}\n.text-lg {\n  font-size: 1.125rem;\n  line-height: 1.75rem;\n}\n.text-md-sm {\n  font-size: 12px;\n  line-height: 18px;\n}\n.text-md-xs {\n  font-size: 11px;\n  line-height: 16px;\n}\n.text-xl {\n  font-size: 1.25rem;\n  line-height: 1.75rem;\n}\n.font-bold {\n  font-weight: 700;\n}\n.font-medium {\n  font-weight: 500;\n}\n.font-semibold {\n  font-weight: 600;\n}\n.uppercase {\n  text-transform: uppercase;\n}\n.leading-normal {\n  line-height: 1.5;\n}\n.leading-relaxed {\n  line-height: 1.625;\n}\n.leading-snug {\n  line-height: 1.375;\n}\n.tracking-tight {\n  letter-spacing: -0.025em;\n}\n.tracking-wide {\n  letter-spacing: 0.025em;\n}\n.tracking-wider {\n  letter-spacing: 0.05em;\n}\n.text-\\[\\#2469f0\\] {\n  --tw-text-opacity: 1;\n  color: rgb(36 105 240 / var(--tw-text-opacity, 1));\n}\n.text-amber-700 {\n  --tw-text-opacity: 1;\n  color: rgb(180 83 9 / var(--tw-text-opacity, 1));\n}\n.text-background {\n  color: hsl(var(--background));\n}\n.text-blue-700 {\n  --tw-text-opacity: 1;\n  color: rgb(29 78 216 / var(--tw-text-opacity, 1));\n}\n.text-card-foreground {\n  color: hsl(var(--card-foreground));\n}\n.text-destructive {\n  color: hsl(var(--destructive));\n}\n.text-destructive-foreground {\n  color: hsl(var(--destructive-foreground));\n}\n.text-destructive\\/80 {\n  color: hsl(var(--destructive) / 0.8);\n}\n.text-foreground {\n  color: hsl(var(--foreground));\n}\n.text-gray-700 {\n  --tw-text-opacity: 1;\n  color: rgb(55 65 81 / var(--tw-text-opacity, 1));\n}\n.text-green-50 {\n  --tw-text-opacity: 1;\n  color: rgb(240 253 244 / var(--tw-text-opacity, 1));\n}\n.text-green-500 {\n  --tw-text-opacity: 1;\n  color: rgb(34 197 94 / var(--tw-text-opacity, 1));\n}\n.text-green-700 {\n  --tw-text-opacity: 1;\n  color: rgb(21 128 61 / var(--tw-text-opacity, 1));\n}\n.text-muted-foreground {\n  color: hsl(var(--muted-foreground));\n}\n.text-popover-foreground {\n  color: hsl(var(--popover-foreground));\n}\n.text-primary {\n  color: hsl(var(--primary));\n}\n.text-primary-foreground {\n  color: hsl(var(--primary-foreground));\n}\n.text-red-500 {\n  --tw-text-opacity: 1;\n  color: rgb(239 68 68 / var(--tw-text-opacity, 1));\n}\n.text-red-600 {\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.text-red-700 {\n  --tw-text-opacity: 1;\n  color: rgb(185 28 28 / var(--tw-text-opacity, 1));\n}\n.text-red-800 {\n  --tw-text-opacity: 1;\n  color: rgb(153 27 27 / var(--tw-text-opacity, 1));\n}\n.text-red-900 {\n  --tw-text-opacity: 1;\n  color: rgb(127 29 29 / var(--tw-text-opacity, 1));\n}\n.text-secondary-foreground {\n  color: hsl(var(--secondary-foreground));\n}\n.text-white {\n  --tw-text-opacity: 1;\n  color: rgb(255 255 255 / var(--tw-text-opacity, 1));\n}\n.text-white\\/70 {\n  color: rgb(255 255 255 / 0.7);\n}\n.text-white\\/80 {\n  color: rgb(255 255 255 / 0.8);\n}\n.text-yellow-600 {\n  --tw-text-opacity: 1;\n  color: rgb(202 138 4 / var(--tw-text-opacity, 1));\n}\n.text-yellow-700 {\n  --tw-text-opacity: 1;\n  color: rgb(161 98 7 / var(--tw-text-opacity, 1));\n}\n.text-yellow-800 {\n  --tw-text-opacity: 1;\n  color: rgb(133 77 14 / var(--tw-text-opacity, 1));\n}\n.underline-offset-4 {\n  text-underline-offset: 4px;\n}\n.antialiased {\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n}\n.opacity-0 {\n  opacity: 0;\n}\n.opacity-30 {\n  opacity: 0.3;\n}\n.opacity-50 {\n  opacity: 0.5;\n}\n.opacity-60 {\n  opacity: 0.6;\n}\n.opacity-85 {\n  opacity: 0.85;\n}\n.opacity-90 {\n  opacity: 0.9;\n}\n.shadow {\n  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-lg {\n  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-sm {\n  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);\n  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-xl {\n  --tw-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.outline-none {\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.outline {\n  outline-style: solid;\n}\n.ring {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.ring-0 {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.blur {\n  --tw-blur: blur(8px);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.grayscale {\n  --tw-grayscale: grayscale(100%);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.filter {\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.backdrop-blur {\n  --tw-backdrop-blur: blur(8px);\n  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);\n}\n.backdrop-filter {\n  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);\n}\n.transition {\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-all {\n  transition-property: all;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-colors {\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-transform {\n  transition-property: transform;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.duration-200 {\n  transition-duration: 200ms;\n}\n.duration-300 {\n  transition-duration: 300ms;\n}\n.ease-in-out {\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.ease-out {\n  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);\n}\n@keyframes enter {\n  from {\n    opacity: var(--tw-enter-opacity, 1);\n    transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0) scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1)) rotate(var(--tw-enter-rotate, 0));\n  }\n}\n@keyframes exit {\n  to {\n    opacity: var(--tw-exit-opacity, 1);\n    transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0) scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1)) rotate(var(--tw-exit-rotate, 0));\n  }\n}\n.animate-in {\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.fade-in {\n  --tw-enter-opacity: 0;\n}\n.fade-out {\n  --tw-exit-opacity: 0;\n}\n.duration-200 {\n  animation-duration: 200ms;\n}\n.duration-300 {\n  animation-duration: 300ms;\n}\n.ease-in-out {\n  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.ease-out {\n  animation-timing-function: cubic-bezier(0, 0, 0.2, 1);\n}\n.running {\n  animation-play-state: running;\n}\n.placeholder\\:text-muted-foreground::-moz-placeholder {\n  color: hsl(var(--muted-foreground));\n}\n.placeholder\\:text-muted-foreground::placeholder {\n  color: hsl(var(--muted-foreground));\n}\n.last\\:border-b-0:last-child {\n  border-bottom-width: 0px;\n}\n.hover\\:bg-accent:hover {\n  background-color: hsl(var(--accent));\n}\n.hover\\:bg-amber-100\\/50:hover {\n  background-color: rgb(254 243 199 / 0.5);\n}\n.hover\\:bg-destructive\\/10:hover {\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.hover\\:bg-destructive\\/20:hover {\n  background-color: hsl(var(--destructive) / 0.2);\n}\n.hover\\:bg-destructive\\/90:hover {\n  background-color: hsl(var(--destructive) / 0.9);\n}\n.hover\\:bg-green-600\\/90:hover {\n  background-color: rgb(22 163 74 / 0.9);\n}\n.hover\\:bg-green-700:hover {\n  --tw-bg-opacity: 1;\n  background-color: rgb(21 128 61 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-neutral-900:hover {\n  --tw-bg-opacity: 1;\n  background-color: rgb(23 23 23 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-primary\\/5:hover {\n  background-color: hsl(var(--primary) / 0.05);\n}\n.hover\\:bg-primary\\/90:hover {\n  background-color: hsl(var(--primary) / 0.9);\n}\n.hover\\:bg-red-500\\/10:hover {\n  background-color: rgb(239 68 68 / 0.1);\n}\n.hover\\:bg-red-700:hover {\n  --tw-bg-opacity: 1;\n  background-color: rgb(185 28 28 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-secondary\\/80:hover {\n  background-color: hsl(var(--secondary) / 0.8);\n}\n.hover\\:bg-white\\/25:hover {\n  background-color: rgb(255 255 255 / 0.25);\n}\n.hover\\:text-accent-foreground:hover {\n  color: hsl(var(--accent-foreground));\n}\n.hover\\:text-destructive:hover {\n  color: hsl(var(--destructive));\n}\n.hover\\:text-foreground:hover {\n  color: hsl(var(--foreground));\n}\n.hover\\:text-red-600:hover {\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.hover\\:underline:hover {\n  text-decoration-line: underline;\n}\n.hover\\:opacity-70:hover {\n  opacity: 0.7;\n}\n.focus\\:bg-accent:focus {\n  background-color: hsl(var(--accent));\n}\n.focus\\:text-accent-foreground:focus {\n  color: hsl(var(--accent-foreground));\n}\n.focus\\:outline-none:focus {\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus\\:ring-1:focus {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-2:focus {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-primary:focus {\n  --tw-ring-color: hsl(var(--primary));\n}\n.focus\\:ring-red-500:focus {\n  --tw-ring-opacity: 1;\n  --tw-ring-color: rgb(239 68 68 / var(--tw-ring-opacity, 1));\n}\n.focus\\:ring-ring:focus {\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus\\:ring-offset-2:focus {\n  --tw-ring-offset-width: 2px;\n}\n.focus-visible\\:outline-none:focus-visible {\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus-visible\\:ring-2:focus-visible {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus-visible\\:ring-primary:focus-visible {\n  --tw-ring-color: hsl(var(--primary));\n}\n.focus-visible\\:ring-ring:focus-visible {\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus-visible\\:ring-offset-1:focus-visible {\n  --tw-ring-offset-width: 1px;\n}\n.focus-visible\\:ring-offset-2:focus-visible {\n  --tw-ring-offset-width: 2px;\n}\n.active\\:bg-accent:active {\n  background-color: hsl(var(--accent));\n}\n.active\\:bg-destructive:active {\n  background-color: hsl(var(--destructive));\n}\n.active\\:bg-green-600:active {\n  --tw-bg-opacity: 1;\n  background-color: rgb(22 163 74 / var(--tw-bg-opacity, 1));\n}\n.active\\:bg-neutral-950:active {\n  --tw-bg-opacity: 1;\n  background-color: rgb(10 10 10 / var(--tw-bg-opacity, 1));\n}\n.active\\:bg-primary:active {\n  background-color: hsl(var(--primary));\n}\n.active\\:bg-secondary:active {\n  background-color: hsl(var(--secondary));\n}\n.disabled\\:pointer-events-none:disabled {\n  pointer-events: none;\n}\n.disabled\\:cursor-not-allowed:disabled {\n  cursor: not-allowed;\n}\n.disabled\\:bg-muted:disabled {\n  background-color: hsl(var(--muted));\n}\n.disabled\\:opacity-50:disabled {\n  opacity: 0.5;\n}\n.group:hover .group-hover\\:opacity-100 {\n  opacity: 1;\n}\n.data-\\[disabled\\]\\:pointer-events-none[data-disabled] {\n  pointer-events: none;\n}\n.data-\\[side\\=bottom\\]\\:translate-y-1[data-side="bottom"] {\n  --tw-translate-y: 0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[side\\=top\\]\\:-translate-y-1[data-side="top"] {\n  --tw-translate-y: -0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:translate-x-4[data-state="checked"] {\n  --tw-translate-x: 1rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=unchecked\\]\\:translate-x-0[data-state="unchecked"] {\n  --tw-translate-x: 0px;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:bg-primary[data-state="checked"] {\n  background-color: hsl(var(--primary));\n}\n.data-\\[state\\=unchecked\\]\\:bg-input[data-state="unchecked"] {\n  background-color: hsl(var(--input));\n}\n.data-\\[disabled\\]\\:opacity-50[data-disabled] {\n  opacity: 0.5;\n}\n.data-\\[state\\=open\\]\\:animate-in[data-state="open"] {\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:animate-out[data-state="closed"] {\n  animation-name: exit;\n  animation-duration: 150ms;\n  --tw-exit-opacity: initial;\n  --tw-exit-scale: initial;\n  --tw-exit-rotate: initial;\n  --tw-exit-translate-x: initial;\n  --tw-exit-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:fade-out-0[data-state="closed"] {\n  --tw-exit-opacity: 0;\n}\n.data-\\[state\\=open\\]\\:fade-in-0[data-state="open"] {\n  --tw-enter-opacity: 0;\n}\n.data-\\[state\\=closed\\]\\:zoom-out-95[data-state="closed"] {\n  --tw-exit-scale: .95;\n}\n.data-\\[state\\=open\\]\\:zoom-in-95[data-state="open"] {\n  --tw-enter-scale: .95;\n}\n@supports (backdrop-filter: var(--tw)) {\n  .supports-\\[backdrop-filter\\]\\:bg-background\\/60 {\n    background-color: hsl(var(--background) / 0.6);\n  }\n}\n.dark\\:border-amber-800:is(.dark *) {\n  --tw-border-opacity: 1;\n  border-color: rgb(146 64 14 / var(--tw-border-opacity, 1));\n}\n.dark\\:border-green-800:is(.dark *) {\n  --tw-border-opacity: 1;\n  border-color: rgb(22 101 52 / var(--tw-border-opacity, 1));\n}\n.dark\\:border-red-900:is(.dark *) {\n  --tw-border-opacity: 1;\n  border-color: rgb(127 29 29 / var(--tw-border-opacity, 1));\n}\n.dark\\:bg-amber-900\\/30:is(.dark *) {\n  background-color: rgb(120 53 15 / 0.3);\n}\n.dark\\:bg-amber-950\\/20:is(.dark *) {\n  background-color: rgb(69 26 3 / 0.2);\n}\n.dark\\:bg-blue-900\\/30:is(.dark *) {\n  background-color: rgb(30 58 138 / 0.3);\n}\n.dark\\:bg-blue-950\\/20:is(.dark *) {\n  background-color: rgb(23 37 84 / 0.2);\n}\n.dark\\:bg-green-950\\/20:is(.dark *) {\n  background-color: rgb(5 46 22 / 0.2);\n}\n.dark\\:bg-red-950\\/20:is(.dark *) {\n  background-color: rgb(69 10 10 / 0.2);\n}\n.dark\\:bg-yellow-950\\/30:is(.dark *) {\n  background-color: rgb(66 32 6 / 0.3);\n}\n.dark\\:text-amber-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(252 211 77 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-blue-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(147 197 253 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-green-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(134 239 172 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-red-200:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(254 202 202 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-red-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(252 165 165 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-yellow-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(253 224 71 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-yellow-400:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(250 204 21 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-yellow-500:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(234 179 8 / var(--tw-text-opacity, 1));\n}\n@media (min-width: 640px) {\n  .sm\\:grid-cols-3 {\n    grid-template-columns: repeat(3, minmax(0, 1fr));\n  }\n}\n@media (min-width: 768px) {\n  .md\\:grid-cols-2 {\n    grid-template-columns: repeat(2, minmax(0, 1fr));\n  }\n  .md\\:grid-cols-4 {\n    grid-template-columns: repeat(4, minmax(0, 1fr));\n  }\n  .md\\:text-left {\n    text-align: left;\n  }\n}\n@media (min-width: 1024px) {\n  .lg\\:grid-cols-3 {\n    grid-template-columns: repeat(3, minmax(0, 1fr));\n  }\n}\n.\\[\\&\\>span\\]\\:line-clamp-1>span {\n  overflow: hidden;\n  display: -webkit-box;\n  -webkit-box-orient: vertical;\n  -webkit-line-clamp: 1;\n}\n.\\[\\&\\>span\\]\\:h-3>span {\n  height: 0.75rem;\n}\n.\\[\\&\\>span\\]\\:w-3>span {\n  width: 0.75rem;\n}\n.data-\\[state\\=checked\\]\\:\\[\\&\\>span\\]\\:translate-x-3>span[data-state="checked"] {\n  --tw-translate-x: 0.75rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.\\[\\&_svg\\]\\:pointer-events-none svg {\n  pointer-events: none;\n}\n.\\[\\&_svg\\]\\:size-5 svg {\n  width: 1.25rem;\n  height: 1.25rem;\n}\n.\\[\\&_svg\\]\\:shrink-0 svg {\n  flex-shrink: 0;\n}\n'
           : '';
         css0 = css0.replace(/@import[^;]+;/g, '');
         if (css0 && 'adoptedStyleSheets' in sr && 'CSSStyleSheet' in window) {
@@ -44599,7 +37794,7 @@ var __morbis_feature = (() => {
     };
     const shadowRoot = getShadow();
     const cssRaw = true
-      ? '/* shadow-dom base */\n*, ::before, ::after {\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n::backdrop {\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n/* ! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com *//*\n1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)\n*/\n\n*,\n::before,\n::after {\n  box-sizing: border-box; /* 1 */\n  border-width: 0; /* 2 */\n  border-style: solid; /* 2 */\n  border-color: #e5e7eb; /* 2 */\n}\n\n::before,\n::after {\n  --tw-content: \'\';\n}\n\n/*\n1. Use a consistent sensible line-height in all browsers.\n2. Prevent adjustments of font size after orientation changes in iOS.\n3. Use a more readable tab size.\n4. Use the user\'s configured `sans` font-family by default.\n5. Use the user\'s configured `sans` font-feature-settings by default.\n6. Use the user\'s configured `sans` font-variation-settings by default.\n7. Disable tap highlights on iOS\n*/\n\nhtml,\n:host {\n  line-height: 1.5; /* 1 */\n  -webkit-text-size-adjust: 100%; /* 2 */\n  -moz-tab-size: 4; /* 3 */\n  -o-tab-size: 4;\n     tab-size: 4; /* 3 */\n  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; /* 4 */\n  font-feature-settings: normal; /* 5 */\n  font-variation-settings: normal; /* 6 */\n  -webkit-tap-highlight-color: transparent; /* 7 */\n}\n\n/*\n1. Remove the margin in all browsers.\n2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.\n*/\n\nbody {\n  margin: 0; /* 1 */\n  line-height: inherit; /* 2 */\n}\n\n/*\n1. Add the correct height in Firefox.\n2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n3. Ensure horizontal rules are visible by default.\n*/\n\nhr {\n  height: 0; /* 1 */\n  color: inherit; /* 2 */\n  border-top-width: 1px; /* 3 */\n}\n\n/*\nAdd the correct text decoration in Chrome, Edge, and Safari.\n*/\n\nabbr:where([title]) {\n  -webkit-text-decoration: underline dotted;\n          text-decoration: underline dotted;\n}\n\n/*\nRemove the default font size and weight for headings.\n*/\n\nh1,\nh2,\nh3,\nh4,\nh5,\nh6 {\n  font-size: inherit;\n  font-weight: inherit;\n}\n\n/*\nReset links to optimize for opt-in styling instead of opt-out.\n*/\n\na {\n  color: inherit;\n  text-decoration: inherit;\n}\n\n/*\nAdd the correct font weight in Edge and Safari.\n*/\n\nb,\nstrong {\n  font-weight: bolder;\n}\n\n/*\n1. Use the user\'s configured `mono` font-family by default.\n2. Use the user\'s configured `mono` font-feature-settings by default.\n3. Use the user\'s configured `mono` font-variation-settings by default.\n4. Correct the odd `em` font sizing in all browsers.\n*/\n\ncode,\nkbd,\nsamp,\npre {\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace; /* 1 */\n  font-feature-settings: normal; /* 2 */\n  font-variation-settings: normal; /* 3 */\n  font-size: 1em; /* 4 */\n}\n\n/*\nAdd the correct font size in all browsers.\n*/\n\nsmall {\n  font-size: 80%;\n}\n\n/*\nPrevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\nsub,\nsup {\n  font-size: 75%;\n  line-height: 0;\n  position: relative;\n  vertical-align: baseline;\n}\n\nsub {\n  bottom: -0.25em;\n}\n\nsup {\n  top: -0.5em;\n}\n\n/*\n1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n3. Remove gaps between table borders by default.\n*/\n\ntable {\n  text-indent: 0; /* 1 */\n  border-color: inherit; /* 2 */\n  border-collapse: collapse; /* 3 */\n}\n\n/*\n1. Change the font styles in all browsers.\n2. Remove the margin in Firefox and Safari.\n3. Remove default padding in all browsers.\n*/\n\nbutton,\ninput,\noptgroup,\nselect,\ntextarea {\n  font-family: inherit; /* 1 */\n  font-feature-settings: inherit; /* 1 */\n  font-variation-settings: inherit; /* 1 */\n  font-size: 100%; /* 1 */\n  font-weight: inherit; /* 1 */\n  line-height: inherit; /* 1 */\n  letter-spacing: inherit; /* 1 */\n  color: inherit; /* 1 */\n  margin: 0; /* 2 */\n  padding: 0; /* 3 */\n}\n\n/*\nRemove the inheritance of text transform in Edge and Firefox.\n*/\n\nbutton,\nselect {\n  text-transform: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Remove default button styles.\n*/\n\nbutton,\ninput:where([type=\'button\']),\ninput:where([type=\'reset\']),\ninput:where([type=\'submit\']) {\n  -webkit-appearance: button; /* 1 */\n  background-color: transparent; /* 2 */\n  background-image: none; /* 2 */\n}\n\n/*\nUse the modern Firefox focus style for all focusable elements.\n*/\n\n:-moz-focusring {\n  outline: auto;\n}\n\n/*\nRemove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n:-moz-ui-invalid {\n  box-shadow: none;\n}\n\n/*\nAdd the correct vertical alignment in Chrome and Firefox.\n*/\n\nprogress {\n  vertical-align: baseline;\n}\n\n/*\nCorrect the cursor style of increment and decrement buttons in Safari.\n*/\n\n::-webkit-inner-spin-button,\n::-webkit-outer-spin-button {\n  height: auto;\n}\n\n/*\n1. Correct the odd appearance in Chrome and Safari.\n2. Correct the outline style in Safari.\n*/\n\n[type=\'search\'] {\n  -webkit-appearance: textfield; /* 1 */\n  outline-offset: -2px; /* 2 */\n}\n\n/*\nRemove the inner padding in Chrome and Safari on macOS.\n*/\n\n::-webkit-search-decoration {\n  -webkit-appearance: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Change font properties to `inherit` in Safari.\n*/\n\n::-webkit-file-upload-button {\n  -webkit-appearance: button; /* 1 */\n  font: inherit; /* 2 */\n}\n\n/*\nAdd the correct display in Chrome and Safari.\n*/\n\nsummary {\n  display: list-item;\n}\n\n/*\nRemoves the default spacing and border for appropriate elements.\n*/\n\nblockquote,\ndl,\ndd,\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\nhr,\nfigure,\np,\npre {\n  margin: 0;\n}\n\nfieldset {\n  margin: 0;\n  padding: 0;\n}\n\nlegend {\n  padding: 0;\n}\n\nol,\nul,\nmenu {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n}\n\n/*\nReset default styling for dialogs.\n*/\ndialog {\n  padding: 0;\n}\n\n/*\nPrevent resizing textareas horizontally by default.\n*/\n\ntextarea {\n  resize: vertical;\n}\n\n/*\n1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n2. Set the default placeholder color to the user\'s configured gray 400 color.\n*/\n\ninput::-moz-placeholder, textarea::-moz-placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\ninput::placeholder,\ntextarea::placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\n/*\nSet the default cursor for buttons.\n*/\n\nbutton,\n[role="button"] {\n  cursor: pointer;\n}\n\n/*\nMake sure disabled buttons don\'t get the pointer cursor.\n*/\n:disabled {\n  cursor: default;\n}\n\n/*\n1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n   This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\nimg,\nsvg,\nvideo,\ncanvas,\naudio,\niframe,\nembed,\nobject {\n  display: block; /* 1 */\n  vertical-align: middle; /* 2 */\n}\n\n/*\nConstrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\nimg,\nvideo {\n  max-width: 100%;\n  height: auto;\n}\n\n/* Make elements with the HTML hidden attribute stay hidden by default */\n[hidden]:where(:not([hidden="until-found"])) {\n  display: none;\n}\n  *,\n  *::before,\n  *::after {\n    box-sizing: border-box;\n  }\n\n  html {\n    font-family:\n      \'Inter\',\n      -apple-system,\n      BlinkMacSystemFont,\n      \'Segoe UI\',\n      sans-serif;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale;\n  }\n\n  /* ponytail: senior preset \u2014 :root for popup/sidepanel, :host+#app for Shadow DOM (resume modals).\n     Keep in sync: edit :root. */\n  :root,\n  :host,\n  #app {\n    --background: 0 0% 100%;\n    --foreground: 222.2 47% 11%;\n    --card: 0 0% 100%;\n    --card-foreground: 222.2 47% 11%;\n    --popover: 0 0% 100%;\n    --popover-foreground: 222.2 47% 11%;\n    --primary: 221.2 83% 53%;\n    --primary-foreground: 210 40% 98%;\n    --secondary: 210 40% 96%;\n    --secondary-foreground: 222.2 47% 11%;\n    --muted: 210 40% 96%;\n    --muted-foreground: 215 20% 35%;\n    --accent: 210 40% 96%;\n    --accent-foreground: 222.2 47% 11%;\n    --destructive: 0 84% 60%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 214 32% 85%;\n    --input: 214 32% 85%;\n    --ring: 221 83% 53%;\n    --radius: 0.75rem;\n    --warning: 38 92% 50%;\n    --warning-foreground: 48 96% 12%;\n  }\n\n  /* ponytail: Shadow DOM needs its own color-scheme + base reset; :host isolates from page CSS */\n  :host {\n    all: initial;\n  }\n  #app {\n    color-scheme: light;\n    isolation: isolate;\n    font-family:\n      \'Inter\',\n      -apple-system,\n      BlinkMacSystemFont,\n      \'Segoe UI\',\n      sans-serif;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale;\n    box-sizing: border-box;\n  }\n  #app *,\n  #app *::before,\n  #app *::after {\n    box-sizing: border-box;\n  }\n\n  @theme inline {\n    --color-warning: var(--warning);\n    --color-warning-foreground: var(--warning-foreground);\n  }\n\n  .dark {\n    --background: 222.2 84% 4.9%;\n    --foreground: 210 40% 98%;\n    --card: 222.2 84% 4.9%;\n    --card-foreground: 210 40% 98%;\n    --popover: 222.2 84% 4.9%;\n    --popover-foreground: 210 40% 98%;\n    --primary: 217.2 91.2% 59.8%;\n    --primary-foreground: 222.2 47.4% 11.2%;\n    --secondary: 217.2 32.6% 17.5%;\n    --secondary-foreground: 210 40% 98%;\n    --muted: 217.2 32.6% 17.5%;\n    --muted-foreground: 215 20.2% 65.1%;\n    --accent: 217.2 32.6% 17.5%;\n    --accent-foreground: 210 40% 98%;\n    --destructive: 0 62.8% 30.6%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 217.2 32.6% 17.5%;\n    --input: 217.2 32.6% 17.5%;\n    --ring: 224.3 76.3% 48%;\n    --md-scrollbar: #484d54;\n  }\n\n  ::-moz-selection {\n    background: #2469f0;\n    color: white;\n  }\n\n  ::selection {\n    background: #2469f0;\n    color: white;\n  }\n\n  * {\n    scrollbar-width: thin;\n    scrollbar-color: #c9cdd4 transparent;\n  }\n\n  .dark * {\n    scrollbar-color: var(--md-scrollbar) transparent;\n  }\n\n  *::-webkit-scrollbar {\n    width: 6px;\n    height: 6px;\n  }\n\n  *::-webkit-scrollbar-track {\n    background: transparent;\n  }\n\n  *::-webkit-scrollbar-thumb {\n    background: #c9cdd4;\n    border-radius: 3px;\n  }\n\n  .dark *::-webkit-scrollbar-thumb {\n    background: var(--md-scrollbar);\n  }\n\n  *::-webkit-scrollbar-thumb:hover {\n    background: #a4a9b3;\n  }\n\n  .dark *::-webkit-scrollbar-thumb:hover {\n    background: #636971;\n  }\n.\\!container {\n  width: 100% !important;\n}\n.container {\n  width: 100%;\n}\n@media (min-width: 640px) {\n  .\\!container {\n    max-width: 640px !important;\n  }\n  .container {\n    max-width: 640px;\n  }\n}\n@media (min-width: 768px) {\n  .\\!container {\n    max-width: 768px !important;\n  }\n  .container {\n    max-width: 768px;\n  }\n}\n@media (min-width: 1024px) {\n  .\\!container {\n    max-width: 1024px !important;\n  }\n  .container {\n    max-width: 1024px;\n  }\n}\n@media (min-width: 1280px) {\n  .\\!container {\n    max-width: 1280px !important;\n  }\n  .container {\n    max-width: 1280px;\n  }\n}\n@media (min-width: 1536px) {\n  .\\!container {\n    max-width: 1536px !important;\n  }\n  .container {\n    max-width: 1536px;\n  }\n}\n.sr-only {\n  position: absolute;\n  width: 1px;\n  height: 1px;\n  padding: 0;\n  margin: -1px;\n  overflow: hidden;\n  clip: rect(0, 0, 0, 0);\n  white-space: nowrap;\n  border-width: 0;\n}\n.pointer-events-none {\n  pointer-events: none;\n}\n.visible {\n  visibility: visible;\n}\n.invisible {\n  visibility: hidden;\n}\n.static {\n  position: static;\n}\n.fixed {\n  position: fixed;\n}\n.absolute {\n  position: absolute;\n}\n.relative {\n  position: relative;\n}\n.sticky {\n  position: sticky;\n}\n.bottom-0 {\n  bottom: 0px;\n}\n.bottom-4 {\n  bottom: 1rem;\n}\n.left-1\\/2 {\n  left: 50%;\n}\n.right-4 {\n  right: 1rem;\n}\n.top-1\\/2 {\n  top: 50%;\n}\n.z-10 {\n  z-index: 10;\n}\n.z-50 {\n  z-index: 50;\n}\n.z-\\[1\\] {\n  z-index: 1;\n}\n.z-\\[2147483647\\] {\n  z-index: 2147483647;\n}\n.col-span-full {\n  grid-column: 1 / -1;\n}\n.mx-auto {\n  margin-left: auto;\n  margin-right: auto;\n}\n.-mb-\\[1px\\] {\n  margin-bottom: -1px;\n}\n.mb-1 {\n  margin-bottom: 0.25rem;\n}\n.mb-1\\.5 {\n  margin-bottom: 0.375rem;\n}\n.mb-2 {\n  margin-bottom: 0.5rem;\n}\n.mb-3 {\n  margin-bottom: 0.75rem;\n}\n.mb-4 {\n  margin-bottom: 1rem;\n}\n.ml-1 {\n  margin-left: 0.25rem;\n}\n.ml-auto {\n  margin-left: auto;\n}\n.mr-1 {\n  margin-right: 0.25rem;\n}\n.mr-2 {\n  margin-right: 0.5rem;\n}\n.mr-3 {\n  margin-right: 0.75rem;\n}\n.mr-auto {\n  margin-right: auto;\n}\n.mt-0\\.5 {\n  margin-top: 0.125rem;\n}\n.mt-1 {\n  margin-top: 0.25rem;\n}\n.mt-3 {\n  margin-top: 0.75rem;\n}\n.block {\n  display: block;\n}\n.inline-block {\n  display: inline-block;\n}\n.inline {\n  display: inline;\n}\n.flex {\n  display: flex;\n}\n.inline-flex {\n  display: inline-flex;\n}\n.\\!table {\n  display: table !important;\n}\n.table {\n  display: table;\n}\n.grid {\n  display: grid;\n}\n.\\!contents {\n  display: contents !important;\n}\n.contents {\n  display: contents;\n}\n.hidden {\n  display: none;\n}\n.size-1\\.5 {\n  width: 0.375rem;\n  height: 0.375rem;\n}\n.size-10 {\n  width: 2.5rem;\n  height: 2.5rem;\n}\n.size-3 {\n  width: 0.75rem;\n  height: 0.75rem;\n}\n.size-3\\.5 {\n  width: 0.875rem;\n  height: 0.875rem;\n}\n.size-4 {\n  width: 1rem;\n  height: 1rem;\n}\n.size-5 {\n  width: 1.25rem;\n  height: 1.25rem;\n}\n.size-6 {\n  width: 1.5rem;\n  height: 1.5rem;\n}\n.h-1 {\n  height: 0.25rem;\n}\n.h-10 {\n  height: 2.5rem;\n}\n.h-11 {\n  height: 2.75rem;\n}\n.h-12 {\n  height: 3rem;\n}\n.h-2 {\n  height: 0.5rem;\n}\n.h-24 {\n  height: 6rem;\n}\n.h-4 {\n  height: 1rem;\n}\n.h-5 {\n  height: 1.25rem;\n}\n.h-6 {\n  height: 1.5rem;\n}\n.h-7 {\n  height: 1.75rem;\n}\n.h-8 {\n  height: 2rem;\n}\n.h-9 {\n  height: 2.25rem;\n}\n.h-\\[300px\\] {\n  height: 300px;\n}\n.h-\\[var\\(--radix-select-trigger-height\\)\\] {\n  height: var(--radix-select-trigger-height);\n}\n.h-full {\n  height: 100%;\n}\n.max-h-60 {\n  max-height: 15rem;\n}\n.max-h-\\[220px\\] {\n  max-height: 220px;\n}\n.max-h-\\[280px\\] {\n  max-height: 280px;\n}\n.max-h-\\[360px\\] {\n  max-height: 360px;\n}\n.max-h-\\[600px\\] {\n  max-height: 600px;\n}\n.min-h-11 {\n  min-height: 2.75rem;\n}\n.min-h-\\[200px\\] {\n  min-height: 200px;\n}\n.min-h-\\[80px\\] {\n  min-height: 80px;\n}\n.w-10 {\n  width: 2.5rem;\n}\n.w-11 {\n  width: 2.75rem;\n}\n.w-12 {\n  width: 3rem;\n}\n.w-2 {\n  width: 0.5rem;\n}\n.w-4 {\n  width: 1rem;\n}\n.w-5 {\n  width: 1.25rem;\n}\n.w-6 {\n  width: 1.5rem;\n}\n.w-7 {\n  width: 1.75rem;\n}\n.w-9 {\n  width: 2.25rem;\n}\n.w-\\[100px\\] {\n  width: 100px;\n}\n.w-\\[120px\\] {\n  width: 120px;\n}\n.w-\\[32\\%\\] {\n  width: 32%;\n}\n.w-\\[340px\\] {\n  width: 340px;\n}\n.w-\\[90px\\] {\n  width: 90px;\n}\n.w-full {\n  width: 100%;\n}\n.w-px {\n  width: 1px;\n}\n.min-w-0 {\n  min-width: 0px;\n}\n.min-w-\\[100px\\] {\n  min-width: 100px;\n}\n.min-w-\\[110px\\] {\n  min-width: 110px;\n}\n.min-w-\\[12rem\\] {\n  min-width: 12rem;\n}\n.min-w-\\[80px\\] {\n  min-width: 80px;\n}\n.min-w-\\[90px\\] {\n  min-width: 90px;\n}\n.min-w-\\[var\\(--radix-select-trigger-width\\)\\] {\n  min-width: var(--radix-select-trigger-width);\n}\n.max-w-\\[120px\\] {\n  max-width: 120px;\n}\n.max-w-\\[140px\\] {\n  max-width: 140px;\n}\n.max-w-\\[200px\\] {\n  max-width: 200px;\n}\n.flex-1 {\n  flex: 1 1 0%;\n}\n.flex-shrink {\n  flex-shrink: 1;\n}\n.flex-shrink-0 {\n  flex-shrink: 0;\n}\n.shrink-0 {\n  flex-shrink: 0;\n}\n.-translate-x-1\\/2 {\n  --tw-translate-x: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.-translate-y-1\\/2 {\n  --tw-translate-y: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.scale-90 {\n  --tw-scale-x: .9;\n  --tw-scale-y: .9;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.transform {\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n@keyframes pulse {\n  50% {\n    opacity: .5;\n  }\n}\n.animate-pulse {\n  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;\n}\n@keyframes slide-up {\n  0% {\n    opacity: 0;\n    transform: translateY(8px);\n  }\n  100% {\n    opacity: 1;\n    transform: translateY(0);\n  }\n}\n.animate-slide-up {\n  animation: slide-up 0.15s ease-out;\n}\n.cursor-default {\n  cursor: default;\n}\n.cursor-not-allowed {\n  cursor: not-allowed;\n}\n.cursor-pointer {\n  cursor: pointer;\n}\n.select-none {\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.resize-none {\n  resize: none;\n}\n.resize-y {\n  resize: vertical;\n}\n.resize {\n  resize: both;\n}\n.grid-cols-1 {\n  grid-template-columns: repeat(1, minmax(0, 1fr));\n}\n.grid-cols-2 {\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n}\n.grid-cols-\\[1fr_140px_120px_50px\\] {\n  grid-template-columns: 1fr 140px 120px 50px;\n}\n.grid-cols-\\[1fr_1fr\\] {\n  grid-template-columns: 1fr 1fr;\n}\n.grid-cols-\\[repeat\\(auto-fill\\2c minmax\\(90px\\2c 1fr\\)\\)\\] {\n  grid-template-columns: repeat(auto-fill,minmax(90px,1fr));\n}\n.flex-col {\n  flex-direction: column;\n}\n.flex-wrap {\n  flex-wrap: wrap;\n}\n.items-start {\n  align-items: flex-start;\n}\n.items-end {\n  align-items: flex-end;\n}\n.items-center {\n  align-items: center;\n}\n.justify-end {\n  justify-content: flex-end;\n}\n.justify-center {\n  justify-content: center;\n}\n.justify-between {\n  justify-content: space-between;\n}\n.gap-0 {\n  gap: 0px;\n}\n.gap-1 {\n  gap: 0.25rem;\n}\n.gap-1\\.5 {\n  gap: 0.375rem;\n}\n.gap-2 {\n  gap: 0.5rem;\n}\n.gap-2\\.5 {\n  gap: 0.625rem;\n}\n.gap-3 {\n  gap: 0.75rem;\n}\n.gap-4 {\n  gap: 1rem;\n}\n.gap-x-8 {\n  -moz-column-gap: 2rem;\n       column-gap: 2rem;\n}\n.gap-y-3 {\n  row-gap: 0.75rem;\n}\n.space-y-0\\.5 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.125rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.125rem * var(--tw-space-y-reverse));\n}\n.space-y-1 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));\n}\n.space-y-1\\.5 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.375rem * var(--tw-space-y-reverse));\n}\n.space-y-2 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));\n}\n.space-y-2\\.5 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.625rem * var(--tw-space-y-reverse));\n}\n.space-y-3 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));\n}\n.space-y-4 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1rem * var(--tw-space-y-reverse));\n}\n.space-y-5 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1.25rem * var(--tw-space-y-reverse));\n}\n.divide-y > :not([hidden]) ~ :not([hidden]) {\n  --tw-divide-y-reverse: 0;\n  border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));\n  border-bottom-width: calc(1px * var(--tw-divide-y-reverse));\n}\n.divide-border > :not([hidden]) ~ :not([hidden]) {\n  border-color: hsl(var(--border));\n}\n.overflow-auto {\n  overflow: auto;\n}\n.overflow-hidden {\n  overflow: hidden;\n}\n.overflow-y-auto {\n  overflow-y: auto;\n}\n.truncate {\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n.whitespace-nowrap {\n  white-space: nowrap;\n}\n.whitespace-pre-wrap {\n  white-space: pre-wrap;\n}\n.break-words {\n  overflow-wrap: break-word;\n}\n.rounded {\n  border-radius: 0.25rem;\n}\n.rounded-full {\n  border-radius: 9999px;\n}\n.rounded-lg {\n  border-radius: 0.5rem;\n}\n.rounded-md {\n  border-radius: 6px;\n}\n.rounded-xl {\n  border-radius: 0.75rem;\n}\n.rounded-b-2xl {\n  border-bottom-right-radius: 1rem;\n  border-bottom-left-radius: 1rem;\n}\n.border {\n  border-width: 1px;\n}\n.border-2 {\n  border-width: 2px;\n}\n.border-b {\n  border-bottom-width: 1px;\n}\n.border-b-2 {\n  border-bottom-width: 2px;\n}\n.border-l-2 {\n  border-left-width: 2px;\n}\n.border-t {\n  border-top-width: 1px;\n}\n.border-t-2 {\n  border-top-width: 2px;\n}\n.border-dashed {\n  border-style: dashed;\n}\n.border-none {\n  border-style: none;\n}\n.border-\\[\\#2469f0\\] {\n  --tw-border-opacity: 1;\n  border-color: rgb(36 105 240 / var(--tw-border-opacity, 1));\n}\n.border-amber-200 {\n  --tw-border-opacity: 1;\n  border-color: rgb(253 230 138 / var(--tw-border-opacity, 1));\n}\n.border-border {\n  border-color: hsl(var(--border));\n}\n.border-destructive {\n  border-color: hsl(var(--destructive));\n}\n.border-destructive\\/20 {\n  border-color: hsl(var(--destructive) / 0.2);\n}\n.border-destructive\\/30 {\n  border-color: hsl(var(--destructive) / 0.3);\n}\n.border-foreground {\n  border-color: hsl(var(--foreground));\n}\n.border-green-200 {\n  --tw-border-opacity: 1;\n  border-color: rgb(187 247 208 / var(--tw-border-opacity, 1));\n}\n.border-input {\n  border-color: hsl(var(--input));\n}\n.border-primary {\n  border-color: hsl(var(--primary));\n}\n.border-primary\\/20 {\n  border-color: hsl(var(--primary) / 0.2);\n}\n.border-primary\\/50 {\n  border-color: hsl(var(--primary) / 0.5);\n}\n.border-red-200 {\n  --tw-border-opacity: 1;\n  border-color: rgb(254 202 202 / var(--tw-border-opacity, 1));\n}\n.border-red-500 {\n  --tw-border-opacity: 1;\n  border-color: rgb(239 68 68 / var(--tw-border-opacity, 1));\n}\n.border-transparent {\n  border-color: transparent;\n}\n.bg-\\[\\#2469f0\\] {\n  --tw-bg-opacity: 1;\n  background-color: rgb(36 105 240 / var(--tw-bg-opacity, 1));\n}\n.bg-accent {\n  background-color: hsl(var(--accent));\n}\n.bg-accent\\/20 {\n  background-color: hsl(var(--accent) / 0.2);\n}\n.bg-accent\\/40 {\n  background-color: hsl(var(--accent) / 0.4);\n}\n.bg-accent\\/50 {\n  background-color: hsl(var(--accent) / 0.5);\n}\n.bg-amber-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(255 251 235 / var(--tw-bg-opacity, 1));\n}\n.bg-amber-50\\/50 {\n  background-color: rgb(255 251 235 / 0.5);\n}\n.bg-background {\n  background-color: hsl(var(--background));\n}\n.bg-background\\/60 {\n  background-color: hsl(var(--background) / 0.6);\n}\n.bg-blue-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1));\n}\n.bg-blue-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(239 246 255 / var(--tw-bg-opacity, 1));\n}\n.bg-border {\n  background-color: hsl(var(--border));\n}\n.bg-card {\n  background-color: hsl(var(--card));\n}\n.bg-destructive {\n  background-color: hsl(var(--destructive));\n}\n.bg-destructive\\/10 {\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.bg-destructive\\/5 {\n  background-color: hsl(var(--destructive) / 0.05);\n}\n.bg-foreground {\n  background-color: hsl(var(--foreground));\n}\n.bg-gray-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));\n}\n.bg-green-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(220 252 231 / var(--tw-bg-opacity, 1));\n}\n.bg-green-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(240 253 244 / var(--tw-bg-opacity, 1));\n}\n.bg-green-500 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(34 197 94 / var(--tw-bg-opacity, 1));\n}\n.bg-green-600 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(22 163 74 / var(--tw-bg-opacity, 1));\n}\n.bg-muted {\n  background-color: hsl(var(--muted));\n}\n.bg-muted-foreground {\n  background-color: hsl(var(--muted-foreground));\n}\n.bg-muted\\/20 {\n  background-color: hsl(var(--muted) / 0.2);\n}\n.bg-muted\\/40 {\n  background-color: hsl(var(--muted) / 0.4);\n}\n.bg-popover {\n  background-color: hsl(var(--popover));\n}\n.bg-primary {\n  background-color: hsl(var(--primary));\n}\n.bg-primary\\/10 {\n  background-color: hsl(var(--primary) / 0.1);\n}\n.bg-primary\\/5 {\n  background-color: hsl(var(--primary) / 0.05);\n}\n.bg-red-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 226 226 / var(--tw-bg-opacity, 1));\n}\n.bg-red-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 242 242 / var(--tw-bg-opacity, 1));\n}\n.bg-red-500\\/5 {\n  background-color: rgb(239 68 68 / 0.05);\n}\n.bg-red-600 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(220 38 38 / var(--tw-bg-opacity, 1));\n}\n.bg-secondary {\n  background-color: hsl(var(--secondary));\n}\n.bg-white\\/15 {\n  background-color: rgb(255 255 255 / 0.15);\n}\n.bg-yellow-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 252 232 / var(--tw-bg-opacity, 1));\n}\n.bg-gradient-to-br {\n  background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));\n}\n.from-muted {\n  --tw-gradient-from: hsl(var(--muted)) var(--tw-gradient-from-position);\n  --tw-gradient-to: hsl(var(--muted) / 0) var(--tw-gradient-to-position);\n  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);\n}\n.to-muted\\/50 {\n  --tw-gradient-to: hsl(var(--muted) / 0.5) var(--tw-gradient-to-position);\n}\n.p-0\\.5 {\n  padding: 0.125rem;\n}\n.p-1 {\n  padding: 0.25rem;\n}\n.p-1\\.5 {\n  padding: 0.375rem;\n}\n.p-2 {\n  padding: 0.5rem;\n}\n.p-2\\.5 {\n  padding: 0.625rem;\n}\n.p-3 {\n  padding: 0.75rem;\n}\n.p-4 {\n  padding: 1rem;\n}\n.p-5 {\n  padding: 1.25rem;\n}\n.p-8 {\n  padding: 2rem;\n}\n.px-1 {\n  padding-left: 0.25rem;\n  padding-right: 0.25rem;\n}\n.px-1\\.5 {\n  padding-left: 0.375rem;\n  padding-right: 0.375rem;\n}\n.px-2 {\n  padding-left: 0.5rem;\n  padding-right: 0.5rem;\n}\n.px-2\\.5 {\n  padding-left: 0.625rem;\n  padding-right: 0.625rem;\n}\n.px-3 {\n  padding-left: 0.75rem;\n  padding-right: 0.75rem;\n}\n.px-3\\.5 {\n  padding-left: 0.875rem;\n  padding-right: 0.875rem;\n}\n.px-4 {\n  padding-left: 1rem;\n  padding-right: 1rem;\n}\n.px-5 {\n  padding-left: 1.25rem;\n  padding-right: 1.25rem;\n}\n.px-6 {\n  padding-left: 1.5rem;\n  padding-right: 1.5rem;\n}\n.px-7 {\n  padding-left: 1.75rem;\n  padding-right: 1.75rem;\n}\n.py-0 {\n  padding-top: 0px;\n  padding-bottom: 0px;\n}\n.py-0\\.5 {\n  padding-top: 0.125rem;\n  padding-bottom: 0.125rem;\n}\n.py-1 {\n  padding-top: 0.25rem;\n  padding-bottom: 0.25rem;\n}\n.py-1\\.5 {\n  padding-top: 0.375rem;\n  padding-bottom: 0.375rem;\n}\n.py-12 {\n  padding-top: 3rem;\n  padding-bottom: 3rem;\n}\n.py-2 {\n  padding-top: 0.5rem;\n  padding-bottom: 0.5rem;\n}\n.py-2\\.5 {\n  padding-top: 0.625rem;\n  padding-bottom: 0.625rem;\n}\n.py-3 {\n  padding-top: 0.75rem;\n  padding-bottom: 0.75rem;\n}\n.py-3\\.5 {\n  padding-top: 0.875rem;\n  padding-bottom: 0.875rem;\n}\n.py-4 {\n  padding-top: 1rem;\n  padding-bottom: 1rem;\n}\n.py-8 {\n  padding-top: 2rem;\n  padding-bottom: 2rem;\n}\n.pb-1\\.5 {\n  padding-bottom: 0.375rem;\n}\n.pb-2 {\n  padding-bottom: 0.5rem;\n}\n.pr-12 {\n  padding-right: 3rem;\n}\n.pr-20 {\n  padding-right: 5rem;\n}\n.pt-3 {\n  padding-top: 0.75rem;\n}\n.text-center {\n  text-align: center;\n}\n.font-\\[\\\'Inter\\\'\\2c system-ui\\2c sans-serif\\] {\n  font-family: \'Inter\',system-ui,sans-serif;\n}\n.font-mono {\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace;\n}\n.text-\\[10px\\] {\n  font-size: 10px;\n}\n.text-\\[11px\\] {\n  font-size: 11px;\n}\n.text-\\[8px\\] {\n  font-size: 8px;\n}\n.text-\\[9px\\] {\n  font-size: 9px;\n}\n.text-base {\n  font-size: 1rem;\n  line-height: 1.5rem;\n}\n.text-lg {\n  font-size: 1.125rem;\n  line-height: 1.75rem;\n}\n.text-md-sm {\n  font-size: 12px;\n  line-height: 18px;\n}\n.text-md-xs {\n  font-size: 11px;\n  line-height: 16px;\n}\n.text-sm {\n  font-size: 0.875rem;\n  line-height: 1.25rem;\n}\n.text-xl {\n  font-size: 1.25rem;\n  line-height: 1.75rem;\n}\n.font-bold {\n  font-weight: 700;\n}\n.font-medium {\n  font-weight: 500;\n}\n.font-semibold {\n  font-weight: 600;\n}\n.uppercase {\n  text-transform: uppercase;\n}\n.leading-normal {\n  line-height: 1.5;\n}\n.leading-relaxed {\n  line-height: 1.625;\n}\n.leading-snug {\n  line-height: 1.375;\n}\n.tracking-tight {\n  letter-spacing: -0.025em;\n}\n.tracking-wide {\n  letter-spacing: 0.025em;\n}\n.tracking-wider {\n  letter-spacing: 0.05em;\n}\n.text-\\[\\#2469f0\\] {\n  --tw-text-opacity: 1;\n  color: rgb(36 105 240 / var(--tw-text-opacity, 1));\n}\n.text-amber-700 {\n  --tw-text-opacity: 1;\n  color: rgb(180 83 9 / var(--tw-text-opacity, 1));\n}\n.text-background {\n  color: hsl(var(--background));\n}\n.text-blue-700 {\n  --tw-text-opacity: 1;\n  color: rgb(29 78 216 / var(--tw-text-opacity, 1));\n}\n.text-card-foreground {\n  color: hsl(var(--card-foreground));\n}\n.text-destructive {\n  color: hsl(var(--destructive));\n}\n.text-destructive-foreground {\n  color: hsl(var(--destructive-foreground));\n}\n.text-destructive\\/80 {\n  color: hsl(var(--destructive) / 0.8);\n}\n.text-foreground {\n  color: hsl(var(--foreground));\n}\n.text-gray-700 {\n  --tw-text-opacity: 1;\n  color: rgb(55 65 81 / var(--tw-text-opacity, 1));\n}\n.text-green-500 {\n  --tw-text-opacity: 1;\n  color: rgb(34 197 94 / var(--tw-text-opacity, 1));\n}\n.text-green-700 {\n  --tw-text-opacity: 1;\n  color: rgb(21 128 61 / var(--tw-text-opacity, 1));\n}\n.text-muted-foreground {\n  color: hsl(var(--muted-foreground));\n}\n.text-popover-foreground {\n  color: hsl(var(--popover-foreground));\n}\n.text-primary {\n  color: hsl(var(--primary));\n}\n.text-primary-foreground {\n  color: hsl(var(--primary-foreground));\n}\n.text-red-500 {\n  --tw-text-opacity: 1;\n  color: rgb(239 68 68 / var(--tw-text-opacity, 1));\n}\n.text-red-600 {\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.text-red-700 {\n  --tw-text-opacity: 1;\n  color: rgb(185 28 28 / var(--tw-text-opacity, 1));\n}\n.text-red-800 {\n  --tw-text-opacity: 1;\n  color: rgb(153 27 27 / var(--tw-text-opacity, 1));\n}\n.text-red-900 {\n  --tw-text-opacity: 1;\n  color: rgb(127 29 29 / var(--tw-text-opacity, 1));\n}\n.text-secondary-foreground {\n  color: hsl(var(--secondary-foreground));\n}\n.text-white {\n  --tw-text-opacity: 1;\n  color: rgb(255 255 255 / var(--tw-text-opacity, 1));\n}\n.text-white\\/70 {\n  color: rgb(255 255 255 / 0.7);\n}\n.text-white\\/80 {\n  color: rgb(255 255 255 / 0.8);\n}\n.text-yellow-600 {\n  --tw-text-opacity: 1;\n  color: rgb(202 138 4 / var(--tw-text-opacity, 1));\n}\n.text-yellow-700 {\n  --tw-text-opacity: 1;\n  color: rgb(161 98 7 / var(--tw-text-opacity, 1));\n}\n.text-yellow-800 {\n  --tw-text-opacity: 1;\n  color: rgb(133 77 14 / var(--tw-text-opacity, 1));\n}\n.underline-offset-4 {\n  text-underline-offset: 4px;\n}\n.antialiased {\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n}\n.opacity-0 {\n  opacity: 0;\n}\n.opacity-30 {\n  opacity: 0.3;\n}\n.opacity-50 {\n  opacity: 0.5;\n}\n.opacity-60 {\n  opacity: 0.6;\n}\n.opacity-85 {\n  opacity: 0.85;\n}\n.opacity-90 {\n  opacity: 0.9;\n}\n.shadow {\n  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-lg {\n  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-sm {\n  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);\n  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-xl {\n  --tw-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.outline-none {\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.outline {\n  outline-style: solid;\n}\n.ring {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.ring-0 {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.blur {\n  --tw-blur: blur(8px);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.grayscale {\n  --tw-grayscale: grayscale(100%);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.filter {\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.backdrop-blur {\n  --tw-backdrop-blur: blur(8px);\n  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);\n}\n.backdrop-filter {\n  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);\n}\n.transition {\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-all {\n  transition-property: all;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-colors {\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-transform {\n  transition-property: transform;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.duration-200 {\n  transition-duration: 200ms;\n}\n.duration-300 {\n  transition-duration: 300ms;\n}\n.ease-in-out {\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.ease-out {\n  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);\n}\n@keyframes enter {\n  from {\n    opacity: var(--tw-enter-opacity, 1);\n    transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0) scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1)) rotate(var(--tw-enter-rotate, 0));\n  }\n}\n@keyframes exit {\n  to {\n    opacity: var(--tw-exit-opacity, 1);\n    transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0) scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1)) rotate(var(--tw-exit-rotate, 0));\n  }\n}\n.animate-in {\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.fade-in {\n  --tw-enter-opacity: 0;\n}\n.fade-out {\n  --tw-exit-opacity: 0;\n}\n.duration-200 {\n  animation-duration: 200ms;\n}\n.duration-300 {\n  animation-duration: 300ms;\n}\n.ease-in-out {\n  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.ease-out {\n  animation-timing-function: cubic-bezier(0, 0, 0.2, 1);\n}\n.running {\n  animation-play-state: running;\n}\n.placeholder\\:text-muted-foreground::-moz-placeholder {\n  color: hsl(var(--muted-foreground));\n}\n.placeholder\\:text-muted-foreground::placeholder {\n  color: hsl(var(--muted-foreground));\n}\n.last\\:border-b-0:last-child {\n  border-bottom-width: 0px;\n}\n.hover\\:bg-accent:hover {\n  background-color: hsl(var(--accent));\n}\n.hover\\:bg-amber-100\\/50:hover {\n  background-color: rgb(254 243 199 / 0.5);\n}\n.hover\\:bg-destructive:hover {\n  background-color: hsl(var(--destructive));\n}\n.hover\\:bg-destructive\\/10:hover {\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.hover\\:bg-destructive\\/20:hover {\n  background-color: hsl(var(--destructive) / 0.2);\n}\n.hover\\:bg-destructive\\/90:hover {\n  background-color: hsl(var(--destructive) / 0.9);\n}\n.hover\\:bg-green-700:hover {\n  --tw-bg-opacity: 1;\n  background-color: rgb(21 128 61 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-primary\\/5:hover {\n  background-color: hsl(var(--primary) / 0.05);\n}\n.hover\\:bg-primary\\/90:hover {\n  background-color: hsl(var(--primary) / 0.9);\n}\n.hover\\:bg-red-500\\/10:hover {\n  background-color: rgb(239 68 68 / 0.1);\n}\n.hover\\:bg-red-700:hover {\n  --tw-bg-opacity: 1;\n  background-color: rgb(185 28 28 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-secondary\\/80:hover {\n  background-color: hsl(var(--secondary) / 0.8);\n}\n.hover\\:bg-white\\/25:hover {\n  background-color: rgb(255 255 255 / 0.25);\n}\n.hover\\:text-accent-foreground:hover {\n  color: hsl(var(--accent-foreground));\n}\n.hover\\:text-destructive:hover {\n  color: hsl(var(--destructive));\n}\n.hover\\:text-destructive-foreground:hover {\n  color: hsl(var(--destructive-foreground));\n}\n.hover\\:text-foreground:hover {\n  color: hsl(var(--foreground));\n}\n.hover\\:text-red-600:hover {\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.hover\\:underline:hover {\n  text-decoration-line: underline;\n}\n.hover\\:opacity-70:hover {\n  opacity: 0.7;\n}\n.focus\\:bg-accent:focus {\n  background-color: hsl(var(--accent));\n}\n.focus\\:text-accent-foreground:focus {\n  color: hsl(var(--accent-foreground));\n}\n.focus\\:outline-none:focus {\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus\\:ring-1:focus {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-2:focus {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-primary:focus {\n  --tw-ring-color: hsl(var(--primary));\n}\n.focus\\:ring-red-500:focus {\n  --tw-ring-opacity: 1;\n  --tw-ring-color: rgb(239 68 68 / var(--tw-ring-opacity, 1));\n}\n.focus\\:ring-ring:focus {\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus\\:ring-offset-2:focus {\n  --tw-ring-offset-width: 2px;\n}\n.focus-visible\\:outline-none:focus-visible {\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus-visible\\:ring-2:focus-visible {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus-visible\\:ring-primary:focus-visible {\n  --tw-ring-color: hsl(var(--primary));\n}\n.focus-visible\\:ring-ring:focus-visible {\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus-visible\\:ring-offset-1:focus-visible {\n  --tw-ring-offset-width: 1px;\n}\n.focus-visible\\:ring-offset-2:focus-visible {\n  --tw-ring-offset-width: 2px;\n}\n.active\\:bg-accent:active {\n  background-color: hsl(var(--accent));\n}\n.active\\:bg-destructive:active {\n  background-color: hsl(var(--destructive));\n}\n.active\\:bg-primary:active {\n  background-color: hsl(var(--primary));\n}\n.active\\:bg-secondary:active {\n  background-color: hsl(var(--secondary));\n}\n.disabled\\:pointer-events-none:disabled {\n  pointer-events: none;\n}\n.disabled\\:cursor-not-allowed:disabled {\n  cursor: not-allowed;\n}\n.disabled\\:bg-muted:disabled {\n  background-color: hsl(var(--muted));\n}\n.disabled\\:opacity-50:disabled {\n  opacity: 0.5;\n}\n.group:hover .group-hover\\:opacity-100 {\n  opacity: 1;\n}\n.data-\\[disabled\\]\\:pointer-events-none[data-disabled] {\n  pointer-events: none;\n}\n.data-\\[side\\=bottom\\]\\:translate-y-1[data-side="bottom"] {\n  --tw-translate-y: 0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[side\\=top\\]\\:-translate-y-1[data-side="top"] {\n  --tw-translate-y: -0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:translate-x-4[data-state="checked"] {\n  --tw-translate-x: 1rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=unchecked\\]\\:translate-x-0[data-state="unchecked"] {\n  --tw-translate-x: 0px;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:bg-primary[data-state="checked"] {\n  background-color: hsl(var(--primary));\n}\n.data-\\[state\\=unchecked\\]\\:bg-input[data-state="unchecked"] {\n  background-color: hsl(var(--input));\n}\n.data-\\[disabled\\]\\:opacity-50[data-disabled] {\n  opacity: 0.5;\n}\n.data-\\[state\\=open\\]\\:animate-in[data-state="open"] {\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:animate-out[data-state="closed"] {\n  animation-name: exit;\n  animation-duration: 150ms;\n  --tw-exit-opacity: initial;\n  --tw-exit-scale: initial;\n  --tw-exit-rotate: initial;\n  --tw-exit-translate-x: initial;\n  --tw-exit-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:fade-out-0[data-state="closed"] {\n  --tw-exit-opacity: 0;\n}\n.data-\\[state\\=open\\]\\:fade-in-0[data-state="open"] {\n  --tw-enter-opacity: 0;\n}\n.data-\\[state\\=closed\\]\\:zoom-out-95[data-state="closed"] {\n  --tw-exit-scale: .95;\n}\n.data-\\[state\\=open\\]\\:zoom-in-95[data-state="open"] {\n  --tw-enter-scale: .95;\n}\n@supports (backdrop-filter: var(--tw)) {\n  .supports-\\[backdrop-filter\\]\\:bg-background\\/60 {\n    background-color: hsl(var(--background) / 0.6);\n  }\n}\n.dark\\:border-amber-800:is(.dark *) {\n  --tw-border-opacity: 1;\n  border-color: rgb(146 64 14 / var(--tw-border-opacity, 1));\n}\n.dark\\:border-green-800:is(.dark *) {\n  --tw-border-opacity: 1;\n  border-color: rgb(22 101 52 / var(--tw-border-opacity, 1));\n}\n.dark\\:border-red-900:is(.dark *) {\n  --tw-border-opacity: 1;\n  border-color: rgb(127 29 29 / var(--tw-border-opacity, 1));\n}\n.dark\\:bg-amber-900\\/30:is(.dark *) {\n  background-color: rgb(120 53 15 / 0.3);\n}\n.dark\\:bg-amber-950\\/20:is(.dark *) {\n  background-color: rgb(69 26 3 / 0.2);\n}\n.dark\\:bg-blue-900\\/30:is(.dark *) {\n  background-color: rgb(30 58 138 / 0.3);\n}\n.dark\\:bg-blue-950\\/20:is(.dark *) {\n  background-color: rgb(23 37 84 / 0.2);\n}\n.dark\\:bg-green-950\\/20:is(.dark *) {\n  background-color: rgb(5 46 22 / 0.2);\n}\n.dark\\:bg-red-950\\/20:is(.dark *) {\n  background-color: rgb(69 10 10 / 0.2);\n}\n.dark\\:bg-yellow-950\\/30:is(.dark *) {\n  background-color: rgb(66 32 6 / 0.3);\n}\n.dark\\:text-amber-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(252 211 77 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-blue-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(147 197 253 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-green-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(134 239 172 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-red-200:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(254 202 202 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-red-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(252 165 165 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-yellow-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(253 224 71 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-yellow-400:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(250 204 21 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-yellow-500:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(234 179 8 / var(--tw-text-opacity, 1));\n}\n@media (min-width: 640px) {\n  .sm\\:grid-cols-3 {\n    grid-template-columns: repeat(3, minmax(0, 1fr));\n  }\n}\n@media (min-width: 768px) {\n  .md\\:grid-cols-2 {\n    grid-template-columns: repeat(2, minmax(0, 1fr));\n  }\n  .md\\:grid-cols-4 {\n    grid-template-columns: repeat(4, minmax(0, 1fr));\n  }\n  .md\\:text-left {\n    text-align: left;\n  }\n}\n@media (min-width: 1024px) {\n  .lg\\:grid-cols-3 {\n    grid-template-columns: repeat(3, minmax(0, 1fr));\n  }\n}\n.\\[\\&\\>span\\]\\:line-clamp-1>span {\n  overflow: hidden;\n  display: -webkit-box;\n  -webkit-box-orient: vertical;\n  -webkit-line-clamp: 1;\n}\n.\\[\\&\\>span\\]\\:h-3>span {\n  height: 0.75rem;\n}\n.\\[\\&\\>span\\]\\:w-3>span {\n  width: 0.75rem;\n}\n.data-\\[state\\=checked\\]\\:\\[\\&\\>span\\]\\:translate-x-3>span[data-state="checked"] {\n  --tw-translate-x: 0.75rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.\\[\\&_svg\\]\\:pointer-events-none svg {\n  pointer-events: none;\n}\n.\\[\\&_svg\\]\\:size-5 svg {\n  width: 1.25rem;\n  height: 1.25rem;\n}\n.\\[\\&_svg\\]\\:shrink-0 svg {\n  flex-shrink: 0;\n}\n'
+      ? '/* shadow-dom base */\n*, ::before, ::after {\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n::backdrop {\n  --tw-border-spacing-x: 0;\n  --tw-border-spacing-y: 0;\n  --tw-translate-x: 0;\n  --tw-translate-y: 0;\n  --tw-rotate: 0;\n  --tw-skew-x: 0;\n  --tw-skew-y: 0;\n  --tw-scale-x: 1;\n  --tw-scale-y: 1;\n  --tw-pan-x:  ;\n  --tw-pan-y:  ;\n  --tw-pinch-zoom:  ;\n  --tw-scroll-snap-strictness: proximity;\n  --tw-gradient-from-position:  ;\n  --tw-gradient-via-position:  ;\n  --tw-gradient-to-position:  ;\n  --tw-ordinal:  ;\n  --tw-slashed-zero:  ;\n  --tw-numeric-figure:  ;\n  --tw-numeric-spacing:  ;\n  --tw-numeric-fraction:  ;\n  --tw-ring-inset:  ;\n  --tw-ring-offset-width: 0px;\n  --tw-ring-offset-color: #fff;\n  --tw-ring-color: rgb(59 130 246 / 0.5);\n  --tw-ring-offset-shadow: 0 0 #0000;\n  --tw-ring-shadow: 0 0 #0000;\n  --tw-shadow: 0 0 #0000;\n  --tw-shadow-colored: 0 0 #0000;\n  --tw-blur:  ;\n  --tw-brightness:  ;\n  --tw-contrast:  ;\n  --tw-grayscale:  ;\n  --tw-hue-rotate:  ;\n  --tw-invert:  ;\n  --tw-saturate:  ;\n  --tw-sepia:  ;\n  --tw-drop-shadow:  ;\n  --tw-backdrop-blur:  ;\n  --tw-backdrop-brightness:  ;\n  --tw-backdrop-contrast:  ;\n  --tw-backdrop-grayscale:  ;\n  --tw-backdrop-hue-rotate:  ;\n  --tw-backdrop-invert:  ;\n  --tw-backdrop-opacity:  ;\n  --tw-backdrop-saturate:  ;\n  --tw-backdrop-sepia:  ;\n  --tw-contain-size:  ;\n  --tw-contain-layout:  ;\n  --tw-contain-paint:  ;\n  --tw-contain-style:  ;\n}\n/* ! tailwindcss v3.4.19 | MIT License | https://tailwindcss.com *//*\n1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)\n2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)\n*/\n\n*,\n::before,\n::after {\n  box-sizing: border-box; /* 1 */\n  border-width: 0; /* 2 */\n  border-style: solid; /* 2 */\n  border-color: #e5e7eb; /* 2 */\n}\n\n::before,\n::after {\n  --tw-content: \'\';\n}\n\n/*\n1. Use a consistent sensible line-height in all browsers.\n2. Prevent adjustments of font size after orientation changes in iOS.\n3. Use a more readable tab size.\n4. Use the user\'s configured `sans` font-family by default.\n5. Use the user\'s configured `sans` font-feature-settings by default.\n6. Use the user\'s configured `sans` font-variation-settings by default.\n7. Disable tap highlights on iOS\n*/\n\nhtml,\n:host {\n  line-height: 1.5; /* 1 */\n  -webkit-text-size-adjust: 100%; /* 2 */\n  -moz-tab-size: 4; /* 3 */\n  -o-tab-size: 4;\n     tab-size: 4; /* 3 */\n  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; /* 4 */\n  font-feature-settings: normal; /* 5 */\n  font-variation-settings: normal; /* 6 */\n  -webkit-tap-highlight-color: transparent; /* 7 */\n}\n\n/*\n1. Remove the margin in all browsers.\n2. Inherit line-height from `html` so users can set them as a class directly on the `html` element.\n*/\n\nbody {\n  margin: 0; /* 1 */\n  line-height: inherit; /* 2 */\n}\n\n/*\n1. Add the correct height in Firefox.\n2. Correct the inheritance of border color in Firefox. (https://bugzilla.mozilla.org/show_bug.cgi?id=190655)\n3. Ensure horizontal rules are visible by default.\n*/\n\nhr {\n  height: 0; /* 1 */\n  color: inherit; /* 2 */\n  border-top-width: 1px; /* 3 */\n}\n\n/*\nAdd the correct text decoration in Chrome, Edge, and Safari.\n*/\n\nabbr:where([title]) {\n  -webkit-text-decoration: underline dotted;\n          text-decoration: underline dotted;\n}\n\n/*\nRemove the default font size and weight for headings.\n*/\n\nh1,\nh2,\nh3,\nh4,\nh5,\nh6 {\n  font-size: inherit;\n  font-weight: inherit;\n}\n\n/*\nReset links to optimize for opt-in styling instead of opt-out.\n*/\n\na {\n  color: inherit;\n  text-decoration: inherit;\n}\n\n/*\nAdd the correct font weight in Edge and Safari.\n*/\n\nb,\nstrong {\n  font-weight: bolder;\n}\n\n/*\n1. Use the user\'s configured `mono` font-family by default.\n2. Use the user\'s configured `mono` font-feature-settings by default.\n3. Use the user\'s configured `mono` font-variation-settings by default.\n4. Correct the odd `em` font sizing in all browsers.\n*/\n\ncode,\nkbd,\nsamp,\npre {\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace; /* 1 */\n  font-feature-settings: normal; /* 2 */\n  font-variation-settings: normal; /* 3 */\n  font-size: 1em; /* 4 */\n}\n\n/*\nAdd the correct font size in all browsers.\n*/\n\nsmall {\n  font-size: 80%;\n}\n\n/*\nPrevent `sub` and `sup` elements from affecting the line height in all browsers.\n*/\n\nsub,\nsup {\n  font-size: 75%;\n  line-height: 0;\n  position: relative;\n  vertical-align: baseline;\n}\n\nsub {\n  bottom: -0.25em;\n}\n\nsup {\n  top: -0.5em;\n}\n\n/*\n1. Remove text indentation from table contents in Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=999088, https://bugs.webkit.org/show_bug.cgi?id=201297)\n2. Correct table border color inheritance in all Chrome and Safari. (https://bugs.chromium.org/p/chromium/issues/detail?id=935729, https://bugs.webkit.org/show_bug.cgi?id=195016)\n3. Remove gaps between table borders by default.\n*/\n\ntable {\n  text-indent: 0; /* 1 */\n  border-color: inherit; /* 2 */\n  border-collapse: collapse; /* 3 */\n}\n\n/*\n1. Change the font styles in all browsers.\n2. Remove the margin in Firefox and Safari.\n3. Remove default padding in all browsers.\n*/\n\nbutton,\ninput,\noptgroup,\nselect,\ntextarea {\n  font-family: inherit; /* 1 */\n  font-feature-settings: inherit; /* 1 */\n  font-variation-settings: inherit; /* 1 */\n  font-size: 100%; /* 1 */\n  font-weight: inherit; /* 1 */\n  line-height: inherit; /* 1 */\n  letter-spacing: inherit; /* 1 */\n  color: inherit; /* 1 */\n  margin: 0; /* 2 */\n  padding: 0; /* 3 */\n}\n\n/*\nRemove the inheritance of text transform in Edge and Firefox.\n*/\n\nbutton,\nselect {\n  text-transform: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Remove default button styles.\n*/\n\nbutton,\ninput:where([type=\'button\']),\ninput:where([type=\'reset\']),\ninput:where([type=\'submit\']) {\n  -webkit-appearance: button; /* 1 */\n  background-color: transparent; /* 2 */\n  background-image: none; /* 2 */\n}\n\n/*\nUse the modern Firefox focus style for all focusable elements.\n*/\n\n:-moz-focusring {\n  outline: auto;\n}\n\n/*\nRemove the additional `:invalid` styles in Firefox. (https://github.com/mozilla/gecko-dev/blob/2f9eacd9d3d995c937b4251a5557d95d494c9be1/layout/style/res/forms.css#L728-L737)\n*/\n\n:-moz-ui-invalid {\n  box-shadow: none;\n}\n\n/*\nAdd the correct vertical alignment in Chrome and Firefox.\n*/\n\nprogress {\n  vertical-align: baseline;\n}\n\n/*\nCorrect the cursor style of increment and decrement buttons in Safari.\n*/\n\n::-webkit-inner-spin-button,\n::-webkit-outer-spin-button {\n  height: auto;\n}\n\n/*\n1. Correct the odd appearance in Chrome and Safari.\n2. Correct the outline style in Safari.\n*/\n\n[type=\'search\'] {\n  -webkit-appearance: textfield; /* 1 */\n  outline-offset: -2px; /* 2 */\n}\n\n/*\nRemove the inner padding in Chrome and Safari on macOS.\n*/\n\n::-webkit-search-decoration {\n  -webkit-appearance: none;\n}\n\n/*\n1. Correct the inability to style clickable types in iOS and Safari.\n2. Change font properties to `inherit` in Safari.\n*/\n\n::-webkit-file-upload-button {\n  -webkit-appearance: button; /* 1 */\n  font: inherit; /* 2 */\n}\n\n/*\nAdd the correct display in Chrome and Safari.\n*/\n\nsummary {\n  display: list-item;\n}\n\n/*\nRemoves the default spacing and border for appropriate elements.\n*/\n\nblockquote,\ndl,\ndd,\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\nhr,\nfigure,\np,\npre {\n  margin: 0;\n}\n\nfieldset {\n  margin: 0;\n  padding: 0;\n}\n\nlegend {\n  padding: 0;\n}\n\nol,\nul,\nmenu {\n  list-style: none;\n  margin: 0;\n  padding: 0;\n}\n\n/*\nReset default styling for dialogs.\n*/\ndialog {\n  padding: 0;\n}\n\n/*\nPrevent resizing textareas horizontally by default.\n*/\n\ntextarea {\n  resize: vertical;\n}\n\n/*\n1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)\n2. Set the default placeholder color to the user\'s configured gray 400 color.\n*/\n\ninput::-moz-placeholder, textarea::-moz-placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\ninput::placeholder,\ntextarea::placeholder {\n  opacity: 1; /* 1 */\n  color: #9ca3af; /* 2 */\n}\n\n/*\nSet the default cursor for buttons.\n*/\n\nbutton,\n[role="button"] {\n  cursor: pointer;\n}\n\n/*\nMake sure disabled buttons don\'t get the pointer cursor.\n*/\n:disabled {\n  cursor: default;\n}\n\n/*\n1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)\n2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)\n   This can trigger a poorly considered lint error in some tools but is included by design.\n*/\n\nimg,\nsvg,\nvideo,\ncanvas,\naudio,\niframe,\nembed,\nobject {\n  display: block; /* 1 */\n  vertical-align: middle; /* 2 */\n}\n\n/*\nConstrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)\n*/\n\nimg,\nvideo {\n  max-width: 100%;\n  height: auto;\n}\n\n/* Make elements with the HTML hidden attribute stay hidden by default */\n[hidden]:where(:not([hidden="until-found"])) {\n  display: none;\n}\n  *,\n  *::before,\n  *::after {\n    box-sizing: border-box;\n  }\n\n  html {\n    font-family:\n      \'Inter\',\n      -apple-system,\n      BlinkMacSystemFont,\n      \'Segoe UI\',\n      sans-serif;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale;\n  }\n\n  /* ponytail: senior preset \u2014 :root for popup/sidepanel, :host+#app for Shadow DOM (resume modals).\n     Keep in sync: edit :root. */\n  :root,\n  :host,\n  #app {\n    --background: 0 0% 100%;\n    --foreground: 222.2 47% 11%;\n    --card: 0 0% 100%;\n    --card-foreground: 222.2 47% 11%;\n    --popover: 0 0% 100%;\n    --popover-foreground: 222.2 47% 11%;\n    --primary: 221.2 83% 53%;\n    --primary-foreground: 210 40% 98%;\n    --secondary: 210 40% 96%;\n    --secondary-foreground: 222.2 47% 11%;\n    --muted: 210 40% 96%;\n    --muted-foreground: 215 20% 35%;\n    --accent: 210 40% 96%;\n    --accent-foreground: 222.2 47% 11%;\n    --destructive: 0 84% 60%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 214 32% 85%;\n    --input: 214 32% 85%;\n    --ring: 221 83% 53%;\n    --radius: 0.75rem;\n    --warning: 38 92% 50%;\n    --warning-foreground: 48 96% 12%;\n  }\n\n  /* ponytail: Shadow DOM needs its own color-scheme + base reset; :host isolates from page CSS */\n  :host {\n    all: initial;\n  }\n  #app {\n    color-scheme: light;\n    isolation: isolate;\n    font-family:\n      \'Inter\',\n      -apple-system,\n      BlinkMacSystemFont,\n      \'Segoe UI\',\n      sans-serif;\n    -webkit-font-smoothing: antialiased;\n    -moz-osx-font-smoothing: grayscale;\n    box-sizing: border-box;\n  }\n  #app *,\n  #app *::before,\n  #app *::after {\n    box-sizing: border-box;\n  }\n\n  @theme inline {\n    --color-warning: var(--warning);\n    --color-warning-foreground: var(--warning-foreground);\n  }\n\n  .dark {\n    --background: 222.2 84% 4.9%;\n    --foreground: 210 40% 98%;\n    --card: 222.2 84% 4.9%;\n    --card-foreground: 210 40% 98%;\n    --popover: 222.2 84% 4.9%;\n    --popover-foreground: 210 40% 98%;\n    --primary: 217.2 91.2% 59.8%;\n    --primary-foreground: 222.2 47.4% 11.2%;\n    --secondary: 217.2 32.6% 17.5%;\n    --secondary-foreground: 210 40% 98%;\n    --muted: 217.2 32.6% 17.5%;\n    --muted-foreground: 215 20.2% 65.1%;\n    --accent: 217.2 32.6% 17.5%;\n    --accent-foreground: 210 40% 98%;\n    --destructive: 0 62.8% 30.6%;\n    --destructive-foreground: 210 40% 98%;\n    --border: 217.2 32.6% 17.5%;\n    --input: 217.2 32.6% 17.5%;\n    --ring: 224.3 76.3% 48%;\n    --md-scrollbar: #484d54;\n  }\n\n  ::-moz-selection {\n    background: #2469f0;\n    color: white;\n  }\n\n  ::selection {\n    background: #2469f0;\n    color: white;\n  }\n\n  * {\n    scrollbar-width: thin;\n    scrollbar-color: #c9cdd4 transparent;\n  }\n\n  .dark * {\n    scrollbar-color: var(--md-scrollbar) transparent;\n  }\n\n  *::-webkit-scrollbar {\n    width: 6px;\n    height: 6px;\n  }\n\n  *::-webkit-scrollbar-track {\n    background: transparent;\n  }\n\n  *::-webkit-scrollbar-thumb {\n    background: #c9cdd4;\n    border-radius: 3px;\n  }\n\n  .dark *::-webkit-scrollbar-thumb {\n    background: var(--md-scrollbar);\n  }\n\n  *::-webkit-scrollbar-thumb:hover {\n    background: #a4a9b3;\n  }\n\n  .dark *::-webkit-scrollbar-thumb:hover {\n    background: #636971;\n  }\n.\\!container {\n  width: 100% !important;\n}\n.container {\n  width: 100%;\n}\n@media (min-width: 640px) {\n  .\\!container {\n    max-width: 640px !important;\n  }\n  .container {\n    max-width: 640px;\n  }\n}\n@media (min-width: 768px) {\n  .\\!container {\n    max-width: 768px !important;\n  }\n  .container {\n    max-width: 768px;\n  }\n}\n@media (min-width: 1024px) {\n  .\\!container {\n    max-width: 1024px !important;\n  }\n  .container {\n    max-width: 1024px;\n  }\n}\n@media (min-width: 1280px) {\n  .\\!container {\n    max-width: 1280px !important;\n  }\n  .container {\n    max-width: 1280px;\n  }\n}\n@media (min-width: 1536px) {\n  .\\!container {\n    max-width: 1536px !important;\n  }\n  .container {\n    max-width: 1536px;\n  }\n}\n.sr-only {\n  position: absolute;\n  width: 1px;\n  height: 1px;\n  padding: 0;\n  margin: -1px;\n  overflow: hidden;\n  clip: rect(0, 0, 0, 0);\n  white-space: nowrap;\n  border-width: 0;\n}\n.pointer-events-none {\n  pointer-events: none;\n}\n.visible {\n  visibility: visible;\n}\n.invisible {\n  visibility: hidden;\n}\n.static {\n  position: static;\n}\n.fixed {\n  position: fixed;\n}\n.absolute {\n  position: absolute;\n}\n.relative {\n  position: relative;\n}\n.sticky {\n  position: sticky;\n}\n.bottom-0 {\n  bottom: 0px;\n}\n.bottom-4 {\n  bottom: 1rem;\n}\n.left-1\\/2 {\n  left: 50%;\n}\n.right-4 {\n  right: 1rem;\n}\n.top-1\\/2 {\n  top: 50%;\n}\n.z-10 {\n  z-index: 10;\n}\n.z-50 {\n  z-index: 50;\n}\n.z-\\[1\\] {\n  z-index: 1;\n}\n.z-\\[2147483647\\] {\n  z-index: 2147483647;\n}\n.col-span-full {\n  grid-column: 1 / -1;\n}\n.mx-auto {\n  margin-left: auto;\n  margin-right: auto;\n}\n.-mb-\\[1px\\] {\n  margin-bottom: -1px;\n}\n.mb-1 {\n  margin-bottom: 0.25rem;\n}\n.mb-1\\.5 {\n  margin-bottom: 0.375rem;\n}\n.mb-2 {\n  margin-bottom: 0.5rem;\n}\n.mb-3 {\n  margin-bottom: 0.75rem;\n}\n.mb-4 {\n  margin-bottom: 1rem;\n}\n.ml-1 {\n  margin-left: 0.25rem;\n}\n.ml-auto {\n  margin-left: auto;\n}\n.mr-1 {\n  margin-right: 0.25rem;\n}\n.mr-2 {\n  margin-right: 0.5rem;\n}\n.mr-3 {\n  margin-right: 0.75rem;\n}\n.mr-auto {\n  margin-right: auto;\n}\n.mt-0\\.5 {\n  margin-top: 0.125rem;\n}\n.mt-1 {\n  margin-top: 0.25rem;\n}\n.mt-3 {\n  margin-top: 0.75rem;\n}\n.block {\n  display: block;\n}\n.inline-block {\n  display: inline-block;\n}\n.inline {\n  display: inline;\n}\n.flex {\n  display: flex;\n}\n.inline-flex {\n  display: inline-flex;\n}\n.\\!table {\n  display: table !important;\n}\n.table {\n  display: table;\n}\n.grid {\n  display: grid;\n}\n.\\!contents {\n  display: contents !important;\n}\n.contents {\n  display: contents;\n}\n.hidden {\n  display: none;\n}\n.size-1\\.5 {\n  width: 0.375rem;\n  height: 0.375rem;\n}\n.size-10 {\n  width: 2.5rem;\n  height: 2.5rem;\n}\n.size-3 {\n  width: 0.75rem;\n  height: 0.75rem;\n}\n.size-3\\.5 {\n  width: 0.875rem;\n  height: 0.875rem;\n}\n.size-4 {\n  width: 1rem;\n  height: 1rem;\n}\n.size-5 {\n  width: 1.25rem;\n  height: 1.25rem;\n}\n.size-6 {\n  width: 1.5rem;\n  height: 1.5rem;\n}\n.h-1 {\n  height: 0.25rem;\n}\n.h-10 {\n  height: 2.5rem;\n}\n.h-11 {\n  height: 2.75rem;\n}\n.h-12 {\n  height: 3rem;\n}\n.h-2 {\n  height: 0.5rem;\n}\n.h-24 {\n  height: 6rem;\n}\n.h-4 {\n  height: 1rem;\n}\n.h-5 {\n  height: 1.25rem;\n}\n.h-6 {\n  height: 1.5rem;\n}\n.h-7 {\n  height: 1.75rem;\n}\n.h-8 {\n  height: 2rem;\n}\n.h-9 {\n  height: 2.25rem;\n}\n.h-\\[300px\\] {\n  height: 300px;\n}\n.h-\\[var\\(--radix-select-trigger-height\\)\\] {\n  height: var(--radix-select-trigger-height);\n}\n.h-full {\n  height: 100%;\n}\n.max-h-60 {\n  max-height: 15rem;\n}\n.max-h-\\[220px\\] {\n  max-height: 220px;\n}\n.max-h-\\[280px\\] {\n  max-height: 280px;\n}\n.max-h-\\[360px\\] {\n  max-height: 360px;\n}\n.max-h-\\[600px\\] {\n  max-height: 600px;\n}\n.min-h-11 {\n  min-height: 2.75rem;\n}\n.min-h-\\[200px\\] {\n  min-height: 200px;\n}\n.min-h-\\[80px\\] {\n  min-height: 80px;\n}\n.w-10 {\n  width: 2.5rem;\n}\n.w-11 {\n  width: 2.75rem;\n}\n.w-12 {\n  width: 3rem;\n}\n.w-2 {\n  width: 0.5rem;\n}\n.w-4 {\n  width: 1rem;\n}\n.w-5 {\n  width: 1.25rem;\n}\n.w-6 {\n  width: 1.5rem;\n}\n.w-7 {\n  width: 1.75rem;\n}\n.w-9 {\n  width: 2.25rem;\n}\n.w-\\[100px\\] {\n  width: 100px;\n}\n.w-\\[120px\\] {\n  width: 120px;\n}\n.w-\\[32\\%\\] {\n  width: 32%;\n}\n.w-\\[340px\\] {\n  width: 340px;\n}\n.w-\\[90px\\] {\n  width: 90px;\n}\n.w-full {\n  width: 100%;\n}\n.w-px {\n  width: 1px;\n}\n.min-w-0 {\n  min-width: 0px;\n}\n.min-w-\\[100px\\] {\n  min-width: 100px;\n}\n.min-w-\\[110px\\] {\n  min-width: 110px;\n}\n.min-w-\\[12rem\\] {\n  min-width: 12rem;\n}\n.min-w-\\[80px\\] {\n  min-width: 80px;\n}\n.min-w-\\[90px\\] {\n  min-width: 90px;\n}\n.min-w-\\[var\\(--radix-select-trigger-width\\)\\] {\n  min-width: var(--radix-select-trigger-width);\n}\n.max-w-\\[120px\\] {\n  max-width: 120px;\n}\n.max-w-\\[140px\\] {\n  max-width: 140px;\n}\n.max-w-\\[200px\\] {\n  max-width: 200px;\n}\n.flex-1 {\n  flex: 1 1 0%;\n}\n.flex-shrink {\n  flex-shrink: 1;\n}\n.flex-shrink-0 {\n  flex-shrink: 0;\n}\n.shrink-0 {\n  flex-shrink: 0;\n}\n.-translate-x-1\\/2 {\n  --tw-translate-x: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.-translate-y-1\\/2 {\n  --tw-translate-y: -50%;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.scale-90 {\n  --tw-scale-x: .9;\n  --tw-scale-y: .9;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.transform {\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n@keyframes pulse {\n  50% {\n    opacity: .5;\n  }\n}\n.animate-pulse {\n  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;\n}\n@keyframes slide-up {\n  0% {\n    opacity: 0;\n    transform: translateY(8px);\n  }\n  100% {\n    opacity: 1;\n    transform: translateY(0);\n  }\n}\n.animate-slide-up {\n  animation: slide-up 0.15s ease-out;\n}\n.cursor-default {\n  cursor: default;\n}\n.cursor-not-allowed {\n  cursor: not-allowed;\n}\n.cursor-pointer {\n  cursor: pointer;\n}\n.select-none {\n  -webkit-user-select: none;\n     -moz-user-select: none;\n          user-select: none;\n}\n.resize-none {\n  resize: none;\n}\n.resize-y {\n  resize: vertical;\n}\n.resize {\n  resize: both;\n}\n.grid-cols-1 {\n  grid-template-columns: repeat(1, minmax(0, 1fr));\n}\n.grid-cols-2 {\n  grid-template-columns: repeat(2, minmax(0, 1fr));\n}\n.grid-cols-\\[1fr_50px\\] {\n  grid-template-columns: 1fr 50px;\n}\n.grid-cols-\\[repeat\\(auto-fill\\2c minmax\\(90px\\2c 1fr\\)\\)\\] {\n  grid-template-columns: repeat(auto-fill,minmax(90px,1fr));\n}\n.flex-col {\n  flex-direction: column;\n}\n.flex-wrap {\n  flex-wrap: wrap;\n}\n.items-start {\n  align-items: flex-start;\n}\n.items-end {\n  align-items: flex-end;\n}\n.items-center {\n  align-items: center;\n}\n.justify-end {\n  justify-content: flex-end;\n}\n.justify-center {\n  justify-content: center;\n}\n.justify-between {\n  justify-content: space-between;\n}\n.gap-0 {\n  gap: 0px;\n}\n.gap-1 {\n  gap: 0.25rem;\n}\n.gap-1\\.5 {\n  gap: 0.375rem;\n}\n.gap-2 {\n  gap: 0.5rem;\n}\n.gap-2\\.5 {\n  gap: 0.625rem;\n}\n.gap-3 {\n  gap: 0.75rem;\n}\n.gap-4 {\n  gap: 1rem;\n}\n.gap-x-8 {\n  -moz-column-gap: 2rem;\n       column-gap: 2rem;\n}\n.gap-y-3 {\n  row-gap: 0.75rem;\n}\n.space-y-0\\.5 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.125rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.125rem * var(--tw-space-y-reverse));\n}\n.space-y-1 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));\n}\n.space-y-1\\.5 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.375rem * var(--tw-space-y-reverse));\n}\n.space-y-2 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));\n}\n.space-y-2\\.5 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.625rem * var(--tw-space-y-reverse));\n}\n.space-y-3 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));\n}\n.space-y-4 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1rem * var(--tw-space-y-reverse));\n}\n.space-y-5 > :not([hidden]) ~ :not([hidden]) {\n  --tw-space-y-reverse: 0;\n  margin-top: calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));\n  margin-bottom: calc(1.25rem * var(--tw-space-y-reverse));\n}\n.divide-y > :not([hidden]) ~ :not([hidden]) {\n  --tw-divide-y-reverse: 0;\n  border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));\n  border-bottom-width: calc(1px * var(--tw-divide-y-reverse));\n}\n.divide-border > :not([hidden]) ~ :not([hidden]) {\n  border-color: hsl(var(--border));\n}\n.overflow-auto {\n  overflow: auto;\n}\n.overflow-hidden {\n  overflow: hidden;\n}\n.overflow-y-auto {\n  overflow-y: auto;\n}\n.truncate {\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n.whitespace-nowrap {\n  white-space: nowrap;\n}\n.whitespace-pre-wrap {\n  white-space: pre-wrap;\n}\n.break-words {\n  overflow-wrap: break-word;\n}\n.rounded {\n  border-radius: 0.25rem;\n}\n.rounded-full {\n  border-radius: 9999px;\n}\n.rounded-lg {\n  border-radius: 0.5rem;\n}\n.rounded-md {\n  border-radius: 6px;\n}\n.rounded-xl {\n  border-radius: 0.75rem;\n}\n.rounded-b-2xl {\n  border-bottom-right-radius: 1rem;\n  border-bottom-left-radius: 1rem;\n}\n.border {\n  border-width: 1px;\n}\n.border-2 {\n  border-width: 2px;\n}\n.border-b {\n  border-bottom-width: 1px;\n}\n.border-b-2 {\n  border-bottom-width: 2px;\n}\n.border-l-2 {\n  border-left-width: 2px;\n}\n.border-t {\n  border-top-width: 1px;\n}\n.border-t-2 {\n  border-top-width: 2px;\n}\n.border-dashed {\n  border-style: dashed;\n}\n.border-none {\n  border-style: none;\n}\n.border-\\[\\#2469f0\\] {\n  --tw-border-opacity: 1;\n  border-color: rgb(36 105 240 / var(--tw-border-opacity, 1));\n}\n.border-amber-200 {\n  --tw-border-opacity: 1;\n  border-color: rgb(253 230 138 / var(--tw-border-opacity, 1));\n}\n.border-border {\n  border-color: hsl(var(--border));\n}\n.border-destructive {\n  border-color: hsl(var(--destructive));\n}\n.border-destructive\\/20 {\n  border-color: hsl(var(--destructive) / 0.2);\n}\n.border-foreground {\n  border-color: hsl(var(--foreground));\n}\n.border-green-200 {\n  --tw-border-opacity: 1;\n  border-color: rgb(187 247 208 / var(--tw-border-opacity, 1));\n}\n.border-input {\n  border-color: hsl(var(--input));\n}\n.border-primary {\n  border-color: hsl(var(--primary));\n}\n.border-primary\\/20 {\n  border-color: hsl(var(--primary) / 0.2);\n}\n.border-primary\\/50 {\n  border-color: hsl(var(--primary) / 0.5);\n}\n.border-red-200 {\n  --tw-border-opacity: 1;\n  border-color: rgb(254 202 202 / var(--tw-border-opacity, 1));\n}\n.border-red-500 {\n  --tw-border-opacity: 1;\n  border-color: rgb(239 68 68 / var(--tw-border-opacity, 1));\n}\n.border-transparent {\n  border-color: transparent;\n}\n.bg-\\[\\#2469f0\\] {\n  --tw-bg-opacity: 1;\n  background-color: rgb(36 105 240 / var(--tw-bg-opacity, 1));\n}\n.bg-accent {\n  background-color: hsl(var(--accent));\n}\n.bg-accent\\/20 {\n  background-color: hsl(var(--accent) / 0.2);\n}\n.bg-accent\\/40 {\n  background-color: hsl(var(--accent) / 0.4);\n}\n.bg-accent\\/50 {\n  background-color: hsl(var(--accent) / 0.5);\n}\n.bg-amber-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(255 251 235 / var(--tw-bg-opacity, 1));\n}\n.bg-amber-50\\/50 {\n  background-color: rgb(255 251 235 / 0.5);\n}\n.bg-background {\n  background-color: hsl(var(--background));\n}\n.bg-background\\/60 {\n  background-color: hsl(var(--background) / 0.6);\n}\n.bg-blue-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(219 234 254 / var(--tw-bg-opacity, 1));\n}\n.bg-blue-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(239 246 255 / var(--tw-bg-opacity, 1));\n}\n.bg-border {\n  background-color: hsl(var(--border));\n}\n.bg-card {\n  background-color: hsl(var(--card));\n}\n.bg-destructive {\n  background-color: hsl(var(--destructive));\n}\n.bg-destructive\\/10 {\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.bg-destructive\\/5 {\n  background-color: hsl(var(--destructive) / 0.05);\n}\n.bg-foreground {\n  background-color: hsl(var(--foreground));\n}\n.bg-gray-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));\n}\n.bg-green-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(220 252 231 / var(--tw-bg-opacity, 1));\n}\n.bg-green-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(240 253 244 / var(--tw-bg-opacity, 1));\n}\n.bg-green-500 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(34 197 94 / var(--tw-bg-opacity, 1));\n}\n.bg-green-600 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(22 163 74 / var(--tw-bg-opacity, 1));\n}\n.bg-muted {\n  background-color: hsl(var(--muted));\n}\n.bg-muted-foreground {\n  background-color: hsl(var(--muted-foreground));\n}\n.bg-muted\\/20 {\n  background-color: hsl(var(--muted) / 0.2);\n}\n.bg-muted\\/40 {\n  background-color: hsl(var(--muted) / 0.4);\n}\n.bg-neutral-950 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(10 10 10 / var(--tw-bg-opacity, 1));\n}\n.bg-popover {\n  background-color: hsl(var(--popover));\n}\n.bg-primary {\n  background-color: hsl(var(--primary));\n}\n.bg-primary\\/10 {\n  background-color: hsl(var(--primary) / 0.1);\n}\n.bg-primary\\/5 {\n  background-color: hsl(var(--primary) / 0.05);\n}\n.bg-red-100 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 226 226 / var(--tw-bg-opacity, 1));\n}\n.bg-red-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 242 242 / var(--tw-bg-opacity, 1));\n}\n.bg-red-500\\/5 {\n  background-color: rgb(239 68 68 / 0.05);\n}\n.bg-red-600 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(220 38 38 / var(--tw-bg-opacity, 1));\n}\n.bg-secondary {\n  background-color: hsl(var(--secondary));\n}\n.bg-white\\/15 {\n  background-color: rgb(255 255 255 / 0.15);\n}\n.bg-yellow-50 {\n  --tw-bg-opacity: 1;\n  background-color: rgb(254 252 232 / var(--tw-bg-opacity, 1));\n}\n.bg-gradient-to-br {\n  background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));\n}\n.from-muted {\n  --tw-gradient-from: hsl(var(--muted)) var(--tw-gradient-from-position);\n  --tw-gradient-to: hsl(var(--muted) / 0) var(--tw-gradient-to-position);\n  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);\n}\n.to-muted\\/50 {\n  --tw-gradient-to: hsl(var(--muted) / 0.5) var(--tw-gradient-to-position);\n}\n.p-0\\.5 {\n  padding: 0.125rem;\n}\n.p-1 {\n  padding: 0.25rem;\n}\n.p-1\\.5 {\n  padding: 0.375rem;\n}\n.p-2 {\n  padding: 0.5rem;\n}\n.p-2\\.5 {\n  padding: 0.625rem;\n}\n.p-3 {\n  padding: 0.75rem;\n}\n.p-4 {\n  padding: 1rem;\n}\n.p-5 {\n  padding: 1.25rem;\n}\n.p-8 {\n  padding: 2rem;\n}\n.px-1 {\n  padding-left: 0.25rem;\n  padding-right: 0.25rem;\n}\n.px-1\\.5 {\n  padding-left: 0.375rem;\n  padding-right: 0.375rem;\n}\n.px-2 {\n  padding-left: 0.5rem;\n  padding-right: 0.5rem;\n}\n.px-2\\.5 {\n  padding-left: 0.625rem;\n  padding-right: 0.625rem;\n}\n.px-3 {\n  padding-left: 0.75rem;\n  padding-right: 0.75rem;\n}\n.px-3\\.5 {\n  padding-left: 0.875rem;\n  padding-right: 0.875rem;\n}\n.px-4 {\n  padding-left: 1rem;\n  padding-right: 1rem;\n}\n.px-5 {\n  padding-left: 1.25rem;\n  padding-right: 1.25rem;\n}\n.px-6 {\n  padding-left: 1.5rem;\n  padding-right: 1.5rem;\n}\n.px-7 {\n  padding-left: 1.75rem;\n  padding-right: 1.75rem;\n}\n.py-0 {\n  padding-top: 0px;\n  padding-bottom: 0px;\n}\n.py-0\\.5 {\n  padding-top: 0.125rem;\n  padding-bottom: 0.125rem;\n}\n.py-1 {\n  padding-top: 0.25rem;\n  padding-bottom: 0.25rem;\n}\n.py-1\\.5 {\n  padding-top: 0.375rem;\n  padding-bottom: 0.375rem;\n}\n.py-12 {\n  padding-top: 3rem;\n  padding-bottom: 3rem;\n}\n.py-2 {\n  padding-top: 0.5rem;\n  padding-bottom: 0.5rem;\n}\n.py-2\\.5 {\n  padding-top: 0.625rem;\n  padding-bottom: 0.625rem;\n}\n.py-3 {\n  padding-top: 0.75rem;\n  padding-bottom: 0.75rem;\n}\n.py-3\\.5 {\n  padding-top: 0.875rem;\n  padding-bottom: 0.875rem;\n}\n.py-4 {\n  padding-top: 1rem;\n  padding-bottom: 1rem;\n}\n.py-8 {\n  padding-top: 2rem;\n  padding-bottom: 2rem;\n}\n.pb-1\\.5 {\n  padding-bottom: 0.375rem;\n}\n.pb-2 {\n  padding-bottom: 0.5rem;\n}\n.pr-12 {\n  padding-right: 3rem;\n}\n.pr-20 {\n  padding-right: 5rem;\n}\n.pt-3 {\n  padding-top: 0.75rem;\n}\n.text-center {\n  text-align: center;\n}\n.font-\\[\\\'Inter\\\'\\2c system-ui\\2c sans-serif\\] {\n  font-family: \'Inter\',system-ui,sans-serif;\n}\n.font-mono {\n  font-family: JetBrains Mono, Fira Code, Consolas, monospace;\n}\n.text-\\[10px\\] {\n  font-size: 10px;\n}\n.text-\\[11px\\] {\n  font-size: 11px;\n}\n.text-\\[8px\\] {\n  font-size: 8px;\n}\n.text-\\[9px\\] {\n  font-size: 9px;\n}\n.text-base {\n  font-size: 1rem;\n  line-height: 1.5rem;\n}\n.text-lg {\n  font-size: 1.125rem;\n  line-height: 1.75rem;\n}\n.text-md-sm {\n  font-size: 12px;\n  line-height: 18px;\n}\n.text-md-xs {\n  font-size: 11px;\n  line-height: 16px;\n}\n.text-xl {\n  font-size: 1.25rem;\n  line-height: 1.75rem;\n}\n.font-bold {\n  font-weight: 700;\n}\n.font-medium {\n  font-weight: 500;\n}\n.font-semibold {\n  font-weight: 600;\n}\n.uppercase {\n  text-transform: uppercase;\n}\n.leading-normal {\n  line-height: 1.5;\n}\n.leading-relaxed {\n  line-height: 1.625;\n}\n.leading-snug {\n  line-height: 1.375;\n}\n.tracking-tight {\n  letter-spacing: -0.025em;\n}\n.tracking-wide {\n  letter-spacing: 0.025em;\n}\n.tracking-wider {\n  letter-spacing: 0.05em;\n}\n.text-\\[\\#2469f0\\] {\n  --tw-text-opacity: 1;\n  color: rgb(36 105 240 / var(--tw-text-opacity, 1));\n}\n.text-amber-700 {\n  --tw-text-opacity: 1;\n  color: rgb(180 83 9 / var(--tw-text-opacity, 1));\n}\n.text-background {\n  color: hsl(var(--background));\n}\n.text-blue-700 {\n  --tw-text-opacity: 1;\n  color: rgb(29 78 216 / var(--tw-text-opacity, 1));\n}\n.text-card-foreground {\n  color: hsl(var(--card-foreground));\n}\n.text-destructive {\n  color: hsl(var(--destructive));\n}\n.text-destructive-foreground {\n  color: hsl(var(--destructive-foreground));\n}\n.text-destructive\\/80 {\n  color: hsl(var(--destructive) / 0.8);\n}\n.text-foreground {\n  color: hsl(var(--foreground));\n}\n.text-gray-700 {\n  --tw-text-opacity: 1;\n  color: rgb(55 65 81 / var(--tw-text-opacity, 1));\n}\n.text-green-50 {\n  --tw-text-opacity: 1;\n  color: rgb(240 253 244 / var(--tw-text-opacity, 1));\n}\n.text-green-500 {\n  --tw-text-opacity: 1;\n  color: rgb(34 197 94 / var(--tw-text-opacity, 1));\n}\n.text-green-700 {\n  --tw-text-opacity: 1;\n  color: rgb(21 128 61 / var(--tw-text-opacity, 1));\n}\n.text-muted-foreground {\n  color: hsl(var(--muted-foreground));\n}\n.text-popover-foreground {\n  color: hsl(var(--popover-foreground));\n}\n.text-primary {\n  color: hsl(var(--primary));\n}\n.text-primary-foreground {\n  color: hsl(var(--primary-foreground));\n}\n.text-red-500 {\n  --tw-text-opacity: 1;\n  color: rgb(239 68 68 / var(--tw-text-opacity, 1));\n}\n.text-red-600 {\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.text-red-700 {\n  --tw-text-opacity: 1;\n  color: rgb(185 28 28 / var(--tw-text-opacity, 1));\n}\n.text-red-800 {\n  --tw-text-opacity: 1;\n  color: rgb(153 27 27 / var(--tw-text-opacity, 1));\n}\n.text-red-900 {\n  --tw-text-opacity: 1;\n  color: rgb(127 29 29 / var(--tw-text-opacity, 1));\n}\n.text-secondary-foreground {\n  color: hsl(var(--secondary-foreground));\n}\n.text-white {\n  --tw-text-opacity: 1;\n  color: rgb(255 255 255 / var(--tw-text-opacity, 1));\n}\n.text-white\\/70 {\n  color: rgb(255 255 255 / 0.7);\n}\n.text-white\\/80 {\n  color: rgb(255 255 255 / 0.8);\n}\n.text-yellow-600 {\n  --tw-text-opacity: 1;\n  color: rgb(202 138 4 / var(--tw-text-opacity, 1));\n}\n.text-yellow-700 {\n  --tw-text-opacity: 1;\n  color: rgb(161 98 7 / var(--tw-text-opacity, 1));\n}\n.text-yellow-800 {\n  --tw-text-opacity: 1;\n  color: rgb(133 77 14 / var(--tw-text-opacity, 1));\n}\n.underline-offset-4 {\n  text-underline-offset: 4px;\n}\n.antialiased {\n  -webkit-font-smoothing: antialiased;\n  -moz-osx-font-smoothing: grayscale;\n}\n.opacity-0 {\n  opacity: 0;\n}\n.opacity-30 {\n  opacity: 0.3;\n}\n.opacity-50 {\n  opacity: 0.5;\n}\n.opacity-60 {\n  opacity: 0.6;\n}\n.opacity-85 {\n  opacity: 0.85;\n}\n.opacity-90 {\n  opacity: 0.9;\n}\n.shadow {\n  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-lg {\n  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-sm {\n  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);\n  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.shadow-xl {\n  --tw-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);\n  --tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);\n  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);\n}\n.outline-none {\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.outline {\n  outline-style: solid;\n}\n.ring {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.ring-0 {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.blur {\n  --tw-blur: blur(8px);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.grayscale {\n  --tw-grayscale: grayscale(100%);\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.filter {\n  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);\n}\n.backdrop-blur {\n  --tw-backdrop-blur: blur(8px);\n  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);\n}\n.backdrop-filter {\n  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);\n}\n.transition {\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-all {\n  transition-property: all;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-colors {\n  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.transition-transform {\n  transition-property: transform;\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n  transition-duration: 150ms;\n}\n.duration-200 {\n  transition-duration: 200ms;\n}\n.duration-300 {\n  transition-duration: 300ms;\n}\n.ease-in-out {\n  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.ease-out {\n  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);\n}\n@keyframes enter {\n  from {\n    opacity: var(--tw-enter-opacity, 1);\n    transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0) scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1)) rotate(var(--tw-enter-rotate, 0));\n  }\n}\n@keyframes exit {\n  to {\n    opacity: var(--tw-exit-opacity, 1);\n    transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0) scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1)) rotate(var(--tw-exit-rotate, 0));\n  }\n}\n.animate-in {\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.fade-in {\n  --tw-enter-opacity: 0;\n}\n.fade-out {\n  --tw-exit-opacity: 0;\n}\n.duration-200 {\n  animation-duration: 200ms;\n}\n.duration-300 {\n  animation-duration: 300ms;\n}\n.ease-in-out {\n  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n}\n.ease-out {\n  animation-timing-function: cubic-bezier(0, 0, 0.2, 1);\n}\n.running {\n  animation-play-state: running;\n}\n.placeholder\\:text-muted-foreground::-moz-placeholder {\n  color: hsl(var(--muted-foreground));\n}\n.placeholder\\:text-muted-foreground::placeholder {\n  color: hsl(var(--muted-foreground));\n}\n.last\\:border-b-0:last-child {\n  border-bottom-width: 0px;\n}\n.hover\\:bg-accent:hover {\n  background-color: hsl(var(--accent));\n}\n.hover\\:bg-amber-100\\/50:hover {\n  background-color: rgb(254 243 199 / 0.5);\n}\n.hover\\:bg-destructive\\/10:hover {\n  background-color: hsl(var(--destructive) / 0.1);\n}\n.hover\\:bg-destructive\\/20:hover {\n  background-color: hsl(var(--destructive) / 0.2);\n}\n.hover\\:bg-destructive\\/90:hover {\n  background-color: hsl(var(--destructive) / 0.9);\n}\n.hover\\:bg-green-600\\/90:hover {\n  background-color: rgb(22 163 74 / 0.9);\n}\n.hover\\:bg-green-700:hover {\n  --tw-bg-opacity: 1;\n  background-color: rgb(21 128 61 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-neutral-900:hover {\n  --tw-bg-opacity: 1;\n  background-color: rgb(23 23 23 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-primary\\/5:hover {\n  background-color: hsl(var(--primary) / 0.05);\n}\n.hover\\:bg-primary\\/90:hover {\n  background-color: hsl(var(--primary) / 0.9);\n}\n.hover\\:bg-red-500\\/10:hover {\n  background-color: rgb(239 68 68 / 0.1);\n}\n.hover\\:bg-red-700:hover {\n  --tw-bg-opacity: 1;\n  background-color: rgb(185 28 28 / var(--tw-bg-opacity, 1));\n}\n.hover\\:bg-secondary\\/80:hover {\n  background-color: hsl(var(--secondary) / 0.8);\n}\n.hover\\:bg-white\\/25:hover {\n  background-color: rgb(255 255 255 / 0.25);\n}\n.hover\\:text-accent-foreground:hover {\n  color: hsl(var(--accent-foreground));\n}\n.hover\\:text-destructive:hover {\n  color: hsl(var(--destructive));\n}\n.hover\\:text-foreground:hover {\n  color: hsl(var(--foreground));\n}\n.hover\\:text-red-600:hover {\n  --tw-text-opacity: 1;\n  color: rgb(220 38 38 / var(--tw-text-opacity, 1));\n}\n.hover\\:underline:hover {\n  text-decoration-line: underline;\n}\n.hover\\:opacity-70:hover {\n  opacity: 0.7;\n}\n.focus\\:bg-accent:focus {\n  background-color: hsl(var(--accent));\n}\n.focus\\:text-accent-foreground:focus {\n  color: hsl(var(--accent-foreground));\n}\n.focus\\:outline-none:focus {\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus\\:ring-1:focus {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-2:focus {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus\\:ring-primary:focus {\n  --tw-ring-color: hsl(var(--primary));\n}\n.focus\\:ring-red-500:focus {\n  --tw-ring-opacity: 1;\n  --tw-ring-color: rgb(239 68 68 / var(--tw-ring-opacity, 1));\n}\n.focus\\:ring-ring:focus {\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus\\:ring-offset-2:focus {\n  --tw-ring-offset-width: 2px;\n}\n.focus-visible\\:outline-none:focus-visible {\n  outline: 2px solid transparent;\n  outline-offset: 2px;\n}\n.focus-visible\\:ring-2:focus-visible {\n  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);\n  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);\n  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);\n}\n.focus-visible\\:ring-primary:focus-visible {\n  --tw-ring-color: hsl(var(--primary));\n}\n.focus-visible\\:ring-ring:focus-visible {\n  --tw-ring-color: hsl(var(--ring));\n}\n.focus-visible\\:ring-offset-1:focus-visible {\n  --tw-ring-offset-width: 1px;\n}\n.focus-visible\\:ring-offset-2:focus-visible {\n  --tw-ring-offset-width: 2px;\n}\n.active\\:bg-accent:active {\n  background-color: hsl(var(--accent));\n}\n.active\\:bg-destructive:active {\n  background-color: hsl(var(--destructive));\n}\n.active\\:bg-green-600:active {\n  --tw-bg-opacity: 1;\n  background-color: rgb(22 163 74 / var(--tw-bg-opacity, 1));\n}\n.active\\:bg-neutral-950:active {\n  --tw-bg-opacity: 1;\n  background-color: rgb(10 10 10 / var(--tw-bg-opacity, 1));\n}\n.active\\:bg-primary:active {\n  background-color: hsl(var(--primary));\n}\n.active\\:bg-secondary:active {\n  background-color: hsl(var(--secondary));\n}\n.disabled\\:pointer-events-none:disabled {\n  pointer-events: none;\n}\n.disabled\\:cursor-not-allowed:disabled {\n  cursor: not-allowed;\n}\n.disabled\\:bg-muted:disabled {\n  background-color: hsl(var(--muted));\n}\n.disabled\\:opacity-50:disabled {\n  opacity: 0.5;\n}\n.group:hover .group-hover\\:opacity-100 {\n  opacity: 1;\n}\n.data-\\[disabled\\]\\:pointer-events-none[data-disabled] {\n  pointer-events: none;\n}\n.data-\\[side\\=bottom\\]\\:translate-y-1[data-side="bottom"] {\n  --tw-translate-y: 0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[side\\=top\\]\\:-translate-y-1[data-side="top"] {\n  --tw-translate-y: -0.25rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:translate-x-4[data-state="checked"] {\n  --tw-translate-x: 1rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=unchecked\\]\\:translate-x-0[data-state="unchecked"] {\n  --tw-translate-x: 0px;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.data-\\[state\\=checked\\]\\:bg-primary[data-state="checked"] {\n  background-color: hsl(var(--primary));\n}\n.data-\\[state\\=unchecked\\]\\:bg-input[data-state="unchecked"] {\n  background-color: hsl(var(--input));\n}\n.data-\\[disabled\\]\\:opacity-50[data-disabled] {\n  opacity: 0.5;\n}\n.data-\\[state\\=open\\]\\:animate-in[data-state="open"] {\n  animation-name: enter;\n  animation-duration: 150ms;\n  --tw-enter-opacity: initial;\n  --tw-enter-scale: initial;\n  --tw-enter-rotate: initial;\n  --tw-enter-translate-x: initial;\n  --tw-enter-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:animate-out[data-state="closed"] {\n  animation-name: exit;\n  animation-duration: 150ms;\n  --tw-exit-opacity: initial;\n  --tw-exit-scale: initial;\n  --tw-exit-rotate: initial;\n  --tw-exit-translate-x: initial;\n  --tw-exit-translate-y: initial;\n}\n.data-\\[state\\=closed\\]\\:fade-out-0[data-state="closed"] {\n  --tw-exit-opacity: 0;\n}\n.data-\\[state\\=open\\]\\:fade-in-0[data-state="open"] {\n  --tw-enter-opacity: 0;\n}\n.data-\\[state\\=closed\\]\\:zoom-out-95[data-state="closed"] {\n  --tw-exit-scale: .95;\n}\n.data-\\[state\\=open\\]\\:zoom-in-95[data-state="open"] {\n  --tw-enter-scale: .95;\n}\n@supports (backdrop-filter: var(--tw)) {\n  .supports-\\[backdrop-filter\\]\\:bg-background\\/60 {\n    background-color: hsl(var(--background) / 0.6);\n  }\n}\n.dark\\:border-amber-800:is(.dark *) {\n  --tw-border-opacity: 1;\n  border-color: rgb(146 64 14 / var(--tw-border-opacity, 1));\n}\n.dark\\:border-green-800:is(.dark *) {\n  --tw-border-opacity: 1;\n  border-color: rgb(22 101 52 / var(--tw-border-opacity, 1));\n}\n.dark\\:border-red-900:is(.dark *) {\n  --tw-border-opacity: 1;\n  border-color: rgb(127 29 29 / var(--tw-border-opacity, 1));\n}\n.dark\\:bg-amber-900\\/30:is(.dark *) {\n  background-color: rgb(120 53 15 / 0.3);\n}\n.dark\\:bg-amber-950\\/20:is(.dark *) {\n  background-color: rgb(69 26 3 / 0.2);\n}\n.dark\\:bg-blue-900\\/30:is(.dark *) {\n  background-color: rgb(30 58 138 / 0.3);\n}\n.dark\\:bg-blue-950\\/20:is(.dark *) {\n  background-color: rgb(23 37 84 / 0.2);\n}\n.dark\\:bg-green-950\\/20:is(.dark *) {\n  background-color: rgb(5 46 22 / 0.2);\n}\n.dark\\:bg-red-950\\/20:is(.dark *) {\n  background-color: rgb(69 10 10 / 0.2);\n}\n.dark\\:bg-yellow-950\\/30:is(.dark *) {\n  background-color: rgb(66 32 6 / 0.3);\n}\n.dark\\:text-amber-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(252 211 77 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-blue-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(147 197 253 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-green-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(134 239 172 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-red-200:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(254 202 202 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-red-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(252 165 165 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-yellow-300:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(253 224 71 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-yellow-400:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(250 204 21 / var(--tw-text-opacity, 1));\n}\n.dark\\:text-yellow-500:is(.dark *) {\n  --tw-text-opacity: 1;\n  color: rgb(234 179 8 / var(--tw-text-opacity, 1));\n}\n@media (min-width: 640px) {\n  .sm\\:grid-cols-3 {\n    grid-template-columns: repeat(3, minmax(0, 1fr));\n  }\n}\n@media (min-width: 768px) {\n  .md\\:grid-cols-2 {\n    grid-template-columns: repeat(2, minmax(0, 1fr));\n  }\n  .md\\:grid-cols-4 {\n    grid-template-columns: repeat(4, minmax(0, 1fr));\n  }\n  .md\\:text-left {\n    text-align: left;\n  }\n}\n@media (min-width: 1024px) {\n  .lg\\:grid-cols-3 {\n    grid-template-columns: repeat(3, minmax(0, 1fr));\n  }\n}\n.\\[\\&\\>span\\]\\:line-clamp-1>span {\n  overflow: hidden;\n  display: -webkit-box;\n  -webkit-box-orient: vertical;\n  -webkit-line-clamp: 1;\n}\n.\\[\\&\\>span\\]\\:h-3>span {\n  height: 0.75rem;\n}\n.\\[\\&\\>span\\]\\:w-3>span {\n  width: 0.75rem;\n}\n.data-\\[state\\=checked\\]\\:\\[\\&\\>span\\]\\:translate-x-3>span[data-state="checked"] {\n  --tw-translate-x: 0.75rem;\n  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));\n}\n.\\[\\&_svg\\]\\:pointer-events-none svg {\n  pointer-events: none;\n}\n.\\[\\&_svg\\]\\:size-5 svg {\n  width: 1.25rem;\n  height: 1.25rem;\n}\n.\\[\\&_svg\\]\\:shrink-0 svg {\n  flex-shrink: 0;\n}\n'
       : '';
     const css = cssRaw.replace(/@import[^;]+;/g, '');
     const resumeModalCss = `
@@ -44846,9 +38041,9 @@ var __morbis_feature = (() => {
       });
     };
     reactRoot.render(
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(ErrorBoundary, {
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(ErrorBoundary, {
         onError: () => setTimeout(() => closeOverlay(container), 0),
-        children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(App, {
+        children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(App, {
           data,
           onSave: handleSave,
           onClose: () => closeOverlay(container),
@@ -45154,11 +38349,8 @@ lucide-react/dist/esm/context.mjs:
 lucide-react/dist/esm/Icon.mjs:
 lucide-react/dist/esm/createLucideIcon.mjs:
 lucide-react/dist/esm/icons/check.mjs:
-lucide-react/dist/esm/icons/chevron-down.mjs:
 lucide-react/dist/esm/icons/info.mjs:
-lucide-react/dist/esm/icons/plus.mjs:
 lucide-react/dist/esm/icons/search.mjs:
-lucide-react/dist/esm/icons/trash.mjs:
 lucide-react/dist/esm/icons/triangle-alert.mjs:
 lucide-react/dist/esm/icons/x.mjs:
 lucide-react/dist/esm/lucide-react.mjs:

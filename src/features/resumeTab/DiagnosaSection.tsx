@@ -1,15 +1,8 @@
 import { useState, useRef } from 'react';
-import { Plus, Trash2, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Button } from '../../ui/components/button';
 import { Input } from '../../ui/components/input';
 import { Label } from '../../ui/components/Label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../../ui/components/select';
 import type { DiagnosaRow } from './types';
 
 interface Props {
@@ -111,11 +104,11 @@ export function DiagnosaSection({ rows, onChange }: Props) {
           onClick={() =>
             onChange([
               ...rows,
-              { idicd: '', kode10: '', namaDiagnosa: '', kasus: '', komplikasi: '' },
+              { idicd: '', kode10: '', namaDiagnosa: '', kasus: 'LAMA', komplikasi: 'TIDAK' },
             ])
           }
         >
-          <Plus className="size-5" /> Tambah Diagnosa
+          Tambah Diagnosa
         </Button>
       </div>
 
@@ -138,13 +131,13 @@ export function DiagnosaSection({ rows, onChange }: Props) {
                 <div className="flex items-center justify-between">
                   <span className="text-base font-semibold text-primary">Diagnosa #{no}</span>
                   <Button
-                    variant="ghost"
-                    size="icon"
+                    variant="destructive"
+                    size="default"
                     onClick={() => removeRow(i)}
-                    className="h-11 w-11 text-destructive border-destructive/30 hover:bg-destructive hover:text-destructive-foreground"
+                    className="gap-2"
                     aria-label={`Hapus diagnosa #{no}`}
                   >
-                    <Trash2 className="size-5" />
+                    Hapus
                   </Button>
                 </div>
 
@@ -204,8 +197,8 @@ export function DiagnosaSection({ rows, onChange }: Props) {
                   </div>
                 </div>
 
-                {/* Kode + Kasus + Komplikasi — one row */}
-                <div className="grid grid-cols-[1fr_140px_120px_50px] gap-4 items-end">
+                {/* Kode ICD-10 — hidden kasus/komplikasi defaults */}
+                <div className="grid grid-cols-[1fr_50px] gap-4 items-end">
                   <div className="space-y-1.5">
                     <Label>Kode ICD-10</Label>
                     <Input
@@ -220,33 +213,8 @@ export function DiagnosaSection({ rows, onChange }: Props) {
                     <p id={`rj-kode-help-${no}`} className="sr-only">
                       Kode ICD-10 otomatis terisi saat memilih diagnosa, atau ketik manual
                     </p>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Kasus</Label>
-                    <Select value={row.kasus} onValueChange={(v) => updateRow(i, { kasus: v })}>
-                      <SelectTrigger className="h-11 text-base">
-                        <SelectValue placeholder="Pilih" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="BARU">Baru</SelectItem>
-                        <SelectItem value="LAMA">Lama</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Komplikasi</Label>
-                    <Select
-                      value={row.komplikasi}
-                      onValueChange={(v) => updateRow(i, { komplikasi: v })}
-                    >
-                      <SelectTrigger className="h-11 text-base">
-                        <SelectValue placeholder="Pilih" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="YA">Ya</SelectItem>
-                        <SelectItem value="TIDAK">Tidak</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <input type="hidden" name="kasus[]" value={row.kasus} />
+                    <input type="hidden" name="komplikasi[]" value={row.komplikasi} />
                   </div>
                   <div className="space-y-1.5">
                     <Label className="invisible">Hapus</Label>

@@ -314,8 +314,8 @@ function IcdList({
       <div className="flex items-center gap-2.5 mb-2">
         <span className="text-base font-bold text-foreground tracking-tight">{label}</span>
         <span className="text-base text-muted-foreground">({items.length} item)</span>
-        <Button variant="default" size="sm" type="button" onClick={onAdd} className="ml-auto">
-          + Tambah{' '}
+        <Button variant="default" size="default" type="button" onClick={onAdd} className="ml-auto">
+          Tambah{' '}
           {label.includes('Sekunder')
             ? 'Diagnosa'
             : label.includes('Tindakan')
@@ -339,11 +339,10 @@ function IcdList({
                 />
               </div>
               <Button
-                variant="ghost"
-                size="sm"
+                variant="destructive"
+                size="default"
                 type="button"
                 onClick={() => onRemove(i)}
-                className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                 aria-label={`Hapus ${label} ${i + 1}`}
               >
                 Hapus
@@ -772,14 +771,14 @@ export function App({ data, onSave, onClose }: Props) {
         )}
         <Button
           type="button"
-          variant="outline"
+          variant="success"
           onClick={openHistory}
           disabled={saving}
           size="default"
         >
           Riwayat
         </Button>
-        <Button type="button" variant="outline" onClick={onClose} disabled={saving} size="default">
+        <Button type="button" variant="dark" onClick={onClose} disabled={saving} size="default">
           Batal
         </Button>
         <Button type="submit" variant="default" disabled={saving} size="lg" className="px-7">

@@ -20,7 +20,7 @@ import {
   v as sendMessage,
   x as __toESM,
   y as require_client,
-} from './chunks/button-fIMIliOt.js';
+} from './chunks/button-Cs_JNVxt.js';
 //#region node_modules/lucide-react/dist/esm/icons/check.mjs
 /**
  * @license lucide-react v1.46.0 - ISC
@@ -387,7 +387,7 @@ function Badge({ variant = 'default', icon, children, className, onDismiss }) {
   const Icon = icons[variant];
   return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)('span', {
     className: cn(
-      'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-semibold',
+      'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-base font-semibold',
       variants[variant],
       className,
     ),

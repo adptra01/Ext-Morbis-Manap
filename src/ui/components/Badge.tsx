@@ -31,7 +31,7 @@ export function Badge({ variant = 'default', icon, children, className, onDismis
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-semibold',
+        'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-base font-semibold',
         variants[variant],
         className,
       )}

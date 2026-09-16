@@ -1102,8 +1102,11 @@ html {
 .grid-cols-2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-.grid-cols-\[1fr_50px\] {
-  grid-template-columns: 1fr 50px;
+.grid-cols-\[1fr_140px_120px_50px\] {
+  grid-template-columns: 1fr 140px 120px 50px;
+}
+.grid-cols-\[1fr_1fr\] {
+  grid-template-columns: 1fr 1fr;
 }
 .grid-cols-\[repeat\(auto-fill\2c minmax\(90px\2c 1fr\)\)\] {
   grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
