@@ -12,6 +12,17 @@ const ICD9_RE = /^[0-9]{2}(\.[0-9]{1,2})?$/;
 const BP_RE = /^(\d{1,3})\/(\d{1,3})$/;
 const NUM_RE = /^\d+(\.\d+)?$/;
 
+/**
+ * Nilai dianggap "kosong" untuk keperluan validasi: string kosong,
+ * whitespace-only, atau hanya tanda hubung/data lama (`-`, `–`, `—`).
+ * Data lama SIMRS sering mengisi field yang tidak terisi dengan `-`;
+ * validator harus melewatinya, bukan menolak simpan.
+ */
+export function isEmptyish(v: string): boolean {
+  const s = v.trim();
+  return s === '' || /^[-–—]+$/.test(s);
+}
+
 export function isICD10(v: string): boolean {
   return ICD10_RE.test(v.trim().toUpperCase());
 }

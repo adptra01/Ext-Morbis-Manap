@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import type { ResumeData, ValidationError } from './types';
+import { isEmptyish } from '../shared/resumeValidation.js';
 import { openHistoryModal } from '../shared/resumeHistory.js';
 import { snapToResumeData } from './snap.js';
 import { Textarea } from '../../ui/components/Textarea';
@@ -23,24 +24,24 @@ function validate(data: ResumeData): ValidationError[] {
   const errors: ValidationError[] = [];
 
   data.diagnosa.forEach((d, i) => {
-    if (!d.kode10 && !d.namaDiagnosa) return;
-    if (d.kode10 && !d.namaDiagnosa) {
+    if (isEmptyish(d.kode10) && isEmptyish(d.namaDiagnosa)) return;
+    if (!isEmptyish(d.kode10) && isEmptyish(d.namaDiagnosa)) {
       errors.push({ section: `Diagnosa #${i + 1}`, message: 'Nama diagnosa kosong' });
     }
-    if (d.namaDiagnosa && !d.kode10) {
+    if (!isEmptyish(d.namaDiagnosa) && isEmptyish(d.kode10)) {
       errors.push({ section: `Diagnosa #${i + 1}`, message: 'Kode ICD-10 kosong' });
     }
   });
 
   data.tindakan.forEach((t, i) => {
-    if (!t.kode9) return;
-    if (!t.namaTindakan)
+    if (isEmptyish(t.kode9)) return;
+    if (isEmptyish(t.namaTindakan))
       errors.push({ section: `Tindakan #${i + 1}`, message: 'Nama tindakan kosong' });
     if (
-      t.idicdTindakan?.trim() &&
-      t.kode9?.trim() &&
-      t.namaTindakan?.trim() &&
-      !t.kategoriProsedur?.trim()
+      !isEmptyish(t.idicdTindakan) &&
+      !isEmptyish(t.kode9) &&
+      !isEmptyish(t.namaTindakan) &&
+      isEmptyish(t.kategoriProsedur)
     ) {
       errors.push({ section: `Tindakan #${i + 1}`, message: 'Kategori Prosedur belum dipilih' });
     }

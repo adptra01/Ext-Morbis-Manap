@@ -5,6 +5,7 @@ import {
   isNormalBP,
   isValidVital,
   isUsableText,
+  isEmptyish,
 } from './shared/resumeValidation.js';
 import { confirmExt } from '../ui/web/confirm';
 import {
@@ -857,8 +858,8 @@ import {
 
     function failText(id: string, label: string): void {
       const v = val(id);
-      if (!v) fail(false, label + ' harus diisi', id);
-      else if (!isUsableText(v))
+      if (isEmptyish(v)) return;
+      if (!isUsableText(v))
         fail(false, label + ' tidak boleh hanya berisi simbol atau karakter khusus', id);
     }
 
@@ -893,7 +894,7 @@ import {
       'Kode ICD-10 Diagnosa Utama harus diisi',
       'kode_diagnosa_utama',
     );
-    if (val('kode_diagnosa_utama'))
+    if (val('kode_diagnosa_utama') && !isEmptyish(val('kode_diagnosa_utama')))
       fail(
         isICD10(val('kode_diagnosa_utama')),
         'Format kode ICD-10 Diagnosa Utama tidak valid (contoh: A00, B20.9)',
@@ -910,13 +911,13 @@ import {
       var kDS = val('kode_diagnosa_sekunder' + si);
       var nDS = val('diagnosa_sekunder' + si);
       var iDS = val('id_diagnosa_sekunder' + si);
-      if (kDS)
+      if (kDS && !isEmptyish(kDS))
         fail(
           isICD10(kDS),
           'Format kode ICD-10 Diagnosa Sekunder ' + si + ' tidak valid',
           'kode_diagnosa_sekunder' + si,
         );
-      if (nDS)
+      if (nDS && !isEmptyish(nDS))
         fail(
           !!iDS,
           'Diagnosa Sekunder ' + si + ' harus dipilih dari hasil pencarian',
@@ -928,13 +929,13 @@ import {
       var kTK = val('kode_tindakan' + ti);
       var nTK = val('tindakan' + ti);
       var iTK = val('id_tindakan' + ti);
-      if (kTK)
+      if (kTK && !isEmptyish(kTK))
         fail(
           isICD9(kTK),
           'Format kode ICD-9 Tindakan ' + ti + ' tidak valid (contoh: 45.16)',
           'kode_tindakan' + ti,
         );
-      if (nTK)
+      if (nTK && !isEmptyish(nTK))
         fail(
           !!iTK,
           'Tindakan ' + ti + ' harus dipilih dari hasil pencarian (autocomplete)',
@@ -943,7 +944,7 @@ import {
     }
 
     var td = val('td_pulang') || val('tensi');
-    if (td)
+    if (td && !isEmptyish(td))
       fail(
         isNormalBP(td),
         'Tekanan darah pulang tidak valid (contoh: 120/80)',
@@ -951,29 +952,32 @@ import {
       );
 
     var nadi = val('nadi_pulang');
-    if (nadi) fail(isValidVital(nadi, 20, 250), 'Nadi pulang harus 20-250', 'nadi_pulang');
+    if (nadi && !isEmptyish(nadi))
+      fail(isValidVital(nadi, 20, 250), 'Nadi pulang harus 20-250', 'nadi_pulang');
 
     var suhu = val('suhu_pulang');
-    if (suhu) fail(isValidVital(suhu, 30, 45), 'Suhu pulang harus 30-45°C', 'suhu_pulang');
+    if (suhu && !isEmptyish(suhu))
+      fail(isValidVital(suhu, 30, 45), 'Suhu pulang harus 30-45°C', 'suhu_pulang');
 
     var rr = val('rr_pulang');
-    if (rr) fail(isValidVital(rr, 4, 80), 'RR pulang harus 4-80', 'rr_pulang');
+    if (rr && !isEmptyish(rr)) fail(isValidVital(rr, 4, 80), 'RR pulang harus 4-80', 'rr_pulang');
 
     var spo2 = val('spo2_pulang');
-    if (spo2) fail(isValidVital(spo2, 50, 100), 'SpO2 pulang harus 50-100%', 'spo2_pulang');
+    if (spo2 && !isEmptyish(spo2))
+      fail(isValidVital(spo2, 50, 100), 'SpO2 pulang harus 50-100%', 'spo2_pulang');
 
     fail(!!val('jenis_kasus'), 'Jenis kasus harus dipilih', 'jenis_kasus');
     fail(!!val('keadaan_keluar'), 'Keadaan keluar harus dipilih', 'keadaan_keluar');
     fail(!!val('cara_keluar'), 'Cara keluar harus dipilih', 'cara_keluar');
     fail(!!val('tgl_keluar2'), 'Tanggal keluar harus diisi', 'tgl_keluar2');
-
     var gcsE = val('gcs_e');
-    if (gcsE) fail(isValidVital(gcsE, 1, 4), 'GCS Eye harus 1-4', 'gcs_e');
-    var gcsM = val('gcs_m');
-    if (gcsM) fail(isValidVital(gcsM, 1, 6), 'GCS Motor harus 1-6', 'gcs_m');
-    var gcsV = val('gcs_v');
-    if (gcsV) fail(isValidVital(gcsV, 1, 5), 'GCS Verbal harus 1-5', 'gcs_v');
+    if (gcsE && !isEmptyish(gcsE)) fail(isValidVital(gcsE, 1, 4), 'GCS Eye harus 1-4', 'gcs_e');
 
+    var gcsM = val('gcs_m');
+    if (gcsM && !isEmptyish(gcsM)) fail(isValidVital(gcsM, 1, 6), 'GCS Motor harus 1-6', 'gcs_m');
+
+    var gcsV = val('gcs_v');
+    if (gcsV && !isEmptyish(gcsV)) fail(isValidVital(gcsV, 1, 5), 'GCS Verbal harus 1-5', 'gcs_v');
     var opsiA = radioVal('pasien_rujuk_masuk_opsi').toLowerCase();
     if (opsiA === 'ya')
       fail(
@@ -1039,7 +1043,7 @@ import {
     const optText = ['pemeriksaan_fisik', 'tindakan', 'planning'];
     optText.forEach(function (id) {
       const v = val(id);
-      if (v && !isUsableText(v))
+      if (v && !isEmptyish(v) && !isUsableText(v))
         fail(
           false,
           (id === 'pemeriksaan_fisik'
@@ -1064,13 +1068,13 @@ import {
           row?.querySelector<HTMLInputElement>('input[name="nama[]"]')?.value || ''
         ).trim();
         const errId = inp.id || `kode10-${i}`;
-        if (kode && !isICD10(kode))
+        if (kode && !isEmptyish(kode) && !isICD10(kode))
           fail(
             false,
             'Format kode ICD-10 baris ' + (i + 1) + ' tidak valid (contoh: A00, B20.9)',
             errId,
           );
-        if ((kode || nama) && !idicd)
+        if ((!isEmptyish(kode) || !isEmptyish(nama)) && !idicd)
           fail(
             false,
             'Diagnosa baris ' + (i + 1) + ' harus dipilih dari hasil pencarian (autocomplete)',
@@ -1089,13 +1093,13 @@ import {
         row?.querySelector<HTMLInputElement>('input[name="namaTindakan[]"]')?.value || ''
       ).trim();
       const errId = inp.id || `kode9-${i}`;
-      if (kode && !isICD9(kode))
+      if (kode && !isEmptyish(kode) && !isICD9(kode))
         fail(
           false,
           'Format kode ICD-9 Tindakan baris ' + (i + 1) + ' tidak valid (contoh: 45.16)',
           errId,
         );
-      if ((kode || nama) && !idicd)
+      if ((!isEmptyish(kode) || !isEmptyish(nama)) && !idicd)
         fail(
           false,
           'Tindakan baris ' + (i + 1) + ' harus dipilih dari hasil pencarian (autocomplete)',
@@ -1104,25 +1108,28 @@ import {
     });
 
     const tensi = val('tensi');
-    if (tensi) fail(isNormalBP(tensi), 'Tekanan darah tidak valid (contoh: 120/80)', 'tensi');
+    if (tensi && !isEmptyish(tensi))
+      fail(isNormalBP(tensi), 'Tekanan darah tidak valid (contoh: 120/80)', 'tensi');
 
     const nadi = val('nadi');
-    if (nadi) fail(isValidVital(nadi, 20, 250), 'Nadi harus 20-250', 'nadi');
+    if (nadi && !isEmptyish(nadi)) fail(isValidVital(nadi, 20, 250), 'Nadi harus 20-250', 'nadi');
 
     const suhu = val('suhu');
-    if (suhu) fail(isValidVital(suhu, 30, 45), 'Suhu harus 30-45°C', 'suhu');
+    if (suhu && !isEmptyish(suhu)) fail(isValidVital(suhu, 30, 45), 'Suhu harus 30-45°C', 'suhu');
 
     const nafas = val('nafas');
-    if (nafas) fail(isValidVital(nafas, 4, 80), 'Nafas harus 4-80', 'nafas');
+    if (nafas && !isEmptyish(nafas)) fail(isValidVital(nafas, 4, 80), 'Nafas harus 4-80', 'nafas');
 
     const spo2 = val('spo2');
-    if (spo2) fail(isValidVital(spo2, 50, 100), 'SpO2 harus 50-100%', 'spo2');
+    if (spo2 && !isEmptyish(spo2)) fail(isValidVital(spo2, 50, 100), 'SpO2 harus 50-100%', 'spo2');
 
     const tinggi = val('tinggi');
-    if (tinggi) fail(isValidVital(tinggi, 30, 250), 'Tinggi badan harus 30-250 cm', 'tinggi');
+    if (tinggi && !isEmptyish(tinggi))
+      fail(isValidVital(tinggi, 30, 250), 'Tinggi badan harus 30-250 cm', 'tinggi');
 
     const berat = val('berat');
-    if (berat) fail(isValidVital(berat, 1, 500), 'Berat badan harus 1-500 kg', 'berat');
+    if (berat && !isEmptyish(berat))
+      fail(isValidVital(berat, 1, 500), 'Berat badan harus 1-500 kg', 'berat');
 
     fail(!!val('jenis_kasus'), 'Jenis kasus harus dipilih', 'jenis_kasus');
     fail(!!val('tindak_lanjut'), 'Tindak lanjut harus dipilih', 'tindak_lanjut');
