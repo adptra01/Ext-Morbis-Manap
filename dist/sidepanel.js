@@ -1880,6 +1880,18 @@ var FALLBACK_FEATURES = [
     desc: 'Tombol Batal pada tab Sudah Diinput Lab/Radiologi',
     roles: ['admin'],
   },
+  {
+    key: 'preOpMarker',
+    name: 'Pre-op Marker',
+    desc: 'Tandai pasien Pre-op di tabel M-KLAIM',
+    roles: ['casemix', 'admin'],
+  },
+  {
+    key: 'mKlaimVerifLog',
+    name: 'Verifikasi Klaim Log',
+    desc: 'Catat log resume saat klik verif berkas',
+    roles: ['casemix', 'admin'],
+  },
 ];
 var DEFAULT_URLS = [
   {

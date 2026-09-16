@@ -84,6 +84,8 @@ async function compileFeatureFiles() {
     'resumeRanapTab/mount.tsx',
     'pindahOperasi/main.ts',
     'billingAdjustment.ts',
+    'mKlaimPreOp.ts',
+    'mKlaimVerifLog.ts',
   ];
 
   for (const relativePath of tsFiles) {

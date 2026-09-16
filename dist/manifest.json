@@ -45,6 +45,8 @@
         "features/scrollButtons.js",
         "features/batchUploadUrl.js",
         "features/batchDeleteFiles.js",
+        "features/mKlaimPreOp.js",
+        "features/mKlaimVerifLog.js",
         "init.js"
       ],
       "run_at": "document_end",

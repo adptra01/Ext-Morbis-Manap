@@ -6,12 +6,14 @@ REM  MORBIS Ext — UPDATE SATU KLIK (Windows)
 REM  Bisa ditaruh di mana saja (Desktop/Downloads). File ini mandiri:
 REM   - Install Git + Node kalau PC belum punya (via winget, otomatis)
 REM   - Clone repo ke %USERPROFILE%\morbis-ext kalau belum ada
-REM   - git pull + npm ci + build dist
+REM   - Pilih branch: main (dist siap pakai, tanpa build) atau dev (source + dist)
 REM   - Buka chrome://extensions → tinggal klik tombol refresh
 REM =====================================================================
 
 set "REPO_DIR=%USERPROFILE%\morbis-ext"
 set "REPO_URL=https://github.com/adptra01/Ext-Morbis-Manap.git"
+set "BRANCH=%1"
+if "%BRANCH%"=="" set "BRANCH=main"
 
 REM ---------- 1/4 Tool: Git ----------
 git --version >nul 2>&1
@@ -43,14 +45,21 @@ if not exist "%REPO_DIR%\.git" (
 )
 cd /d "%REPO_DIR%"
 
-REM ---------- 4/4 Pull + build ----------
-echo [4/4] Pull + build...
-git pull origin dev
+REM ---------- 4/4 Pull ----------
+echo [4/4] Pull branch %BRANCH%...
+git pull origin %BRANCH%
 if errorlevel 1 goto :fail
-call npm ci
-if errorlevel 1 goto :fail
-call npm run build
-if errorlevel 1 goto :fail
+
+REM Deteksi branch: main = dist siap pakai (tanpa build), dev = butuh build
+echo [4/4] Cek branch...
+git show-ref --verify --quiet refs/heads/%BRANCH% 2>nul
+if "%BRANCH%"=="dev" (
+    echo Build extension...
+    call npm ci
+    if errorlevel 1 goto :fail
+    call npm run build
+    if errorlevel 1 goto :fail
+)
 
 echo.
 echo ===== SELESAI =====

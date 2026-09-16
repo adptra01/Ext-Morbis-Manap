@@ -298,6 +298,19 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       name: 'Billing Adjustment',
       description: 'Edit manual total billing & pembulatan, recalculate otomatis',
     },
+    preOpMarker: {
+      enabled: true,
+      allowedRoles: ['casemix', 'admin'],
+      name: 'Pre-op Marker (M-KLAIM)',
+      description: 'Tandai pasien Pre-op di kolom aksi tabel M-KLAIM (tersimpan 1 bulan)',
+    },
+    mKlaimVerifLog: {
+      enabled: true,
+      allowedRoles: ['casemix', 'admin'],
+      name: 'Verifikasi Klaim & Log Resume',
+      description:
+        'Simpan snapshot resume & catat ke riwayat log / Reports SIMRS saat klik verif berkas',
+    },
   },
 };
 

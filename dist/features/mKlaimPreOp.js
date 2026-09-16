@@ -1,0 +1,383 @@
+'use strict';
+var __morbis_feature = (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __export = (target, all) => {
+    for (var name in all) __defProp(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if ((from && typeof from === 'object') || typeof from === 'function') {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, {
+            get: () => from[key],
+            enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable,
+          });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, '__esModule', { value: true }), mod);
+
+  // src/features/mKlaimPreOp.ts
+  var mKlaimPreOp_exports = {};
+  __export(mKlaimPreOp_exports, {
+    initPreOpMarker: () => initPreOpMarker,
+  });
+
+  // src/features/shared/types.ts
+  function getMorbisGlobals() {
+    return window;
+  }
+
+  // src/shared/ui/index.ts
+  var injectedSheets = /* @__PURE__ */ new Set();
+  function injectCSS(id, css) {
+    if (injectedSheets.has(id)) {
+      const existing = document.getElementById(id);
+      if (existing) return existing;
+    }
+    const style = document.createElement('style');
+    style.id = id;
+    style.textContent = css;
+    document.head.appendChild(style);
+    injectedSheets.add(id);
+    return style;
+  }
+  injectCSS(
+    'ext-shared-animations',
+    `
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+`,
+  );
+
+  // src/features/shared/preOpStorage.ts
+  var PRE_OP_STORAGE_KEY = 'morbis_preop_markers';
+  var PRE_OP_TTL_MS = 30 * 24 * 60 * 60 * 1e3;
+  function defaultStore() {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+    } catch {}
+    return null;
+  }
+  function purgeExpiredPreOp(map, now = Date.now()) {
+    const result = {};
+    let count = 0;
+    for (const [id, item] of Object.entries(map)) {
+      if (item && item.markedAt && now - item.markedAt <= PRE_OP_TTL_MS) {
+        result[id] = item;
+      } else {
+        count++;
+      }
+    }
+    return { purged: result, count };
+  }
+  function loadPreOpMap(store = defaultStore(), now = Date.now()) {
+    if (!store) return {};
+    try {
+      const raw = store.getItem(PRE_OP_STORAGE_KEY);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw);
+      if (typeof parsed !== 'object' || parsed === null) return {};
+      const { purged, count } = purgeExpiredPreOp(parsed, now);
+      if (count > 0) {
+        savePreOpMap(purged, store);
+      }
+      return purged;
+    } catch {
+      return {};
+    }
+  }
+  function savePreOpMap(map, store = defaultStore()) {
+    if (!store) return;
+    try {
+      store.setItem(PRE_OP_STORAGE_KEY, JSON.stringify(map));
+    } catch {}
+  }
+  function isPreOp(idVisit, store = defaultStore(), now = Date.now()) {
+    if (!idVisit) return false;
+    const map = loadPreOpMap(store, now);
+    const item = map[idVisit];
+    if (!item) return false;
+    return now - item.markedAt <= PRE_OP_TTL_MS;
+  }
+  function setPreOp(idVisit, info = {}, store = defaultStore(), now = Date.now()) {
+    if (!idVisit) return;
+    const map = loadPreOpMap(store, now);
+    map[idVisit] = {
+      idVisit,
+      markedAt: now,
+      norm: info.norm,
+      nama: info.nama,
+      noReg: info.noReg,
+    };
+    savePreOpMap(map, store);
+  }
+  function removePreOp(idVisit, store = defaultStore()) {
+    if (!idVisit) return;
+    const map = loadPreOpMap(store);
+    if (map[idVisit]) {
+      delete map[idVisit];
+      savePreOpMap(map, store);
+    }
+  }
+  function togglePreOp(idVisit, info = {}, store = defaultStore(), now = Date.now()) {
+    if (isPreOp(idVisit, store, now)) {
+      removePreOp(idVisit, store);
+      return false;
+    } else {
+      setPreOp(idVisit, info, store, now);
+      return true;
+    }
+  }
+
+  // src/features/shared/usageLog.ts
+  var KEY = 'extUsageLog';
+  var MAX_AGE_MS = 7 * 24 * 60 * 60 * 1e3;
+  var MAX_ENTRIES = 2e3;
+  async function logUsage(feature, event, ok, detail) {
+    try {
+      const { [KEY]: existing } = await chrome.storage.local.get(KEY);
+      const now = Date.now();
+      const entry = {
+        ts: now,
+        feature,
+        event,
+        ok,
+        detail:
+          detail instanceof Error
+            ? `${detail.name}: ${detail.message}`
+            : detail !== void 0
+              ? String(detail)
+              : void 0,
+        url: typeof location !== 'undefined' ? location.href : void 0,
+      };
+      const kept = (existing ?? []).filter((e) => now - e.ts < MAX_AGE_MS).concat(entry);
+      const trimmed = kept.slice(-MAX_ENTRIES);
+      await chrome.storage.local.set({ [KEY]: trimmed });
+    } catch {}
+  }
+
+  // src/features/mKlaimPreOp.ts
+  var g = getMorbisGlobals();
+  injectCSS(
+    'ext-preop-styles',
+    `@media print { .ext-preop-btn, .ext-preop-badge { display: none !important; } }
+  .ext-preop-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    margin-left: 4px;
+    vertical-align: middle;
+    user-select: none;
+    text-decoration: none !important;
+  }
+  .ext-preop-btn:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+    color: #1e293b;
+    transform: translateY(-1px);
+  }
+  .ext-preop-btn.active {
+    background: #7c3aed !important;
+    border-color: #6d28d9 !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(124, 58, 237, 0.35);
+  }
+  .ext-preop-btn.active:hover {
+    background: #6d28d9 !important;
+    border-color: #5b21b6 !important;
+  }
+  tr[data-ext-preop-marked="true"] {
+    background-color: rgba(124, 58, 237, 0.07) !important;
+  }
+  .ext-preop-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.2;
+    border-radius: 4px;
+    background: #ede9fe;
+    color: #6b21a8;
+    border: 1px solid #c4b5fd;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+`,
+  );
+  var _observer = null;
+  var _scanIntervalId = null;
+  var _debounceTimer = null;
+  function extractIdVisitFromRow(row) {
+    const buttons = row.querySelectorAll('button, a, [onclick], [data-id-visit], [data-id]');
+    for (const el of buttons) {
+      const idAttr = el.dataset.idVisit || el.dataset.idvisit || el.dataset.id;
+      if (idAttr && /^\d+$/.test(idAttr)) return idAttr;
+      const oc = el.getAttribute('onclick') || '';
+      const m = oc.match(/detail\(['"]?(\d+)['"]?\)/) || oc.match(/id_visit=(\d+)/);
+      if (m) return m[1];
+      const href = el.getAttribute('href') || '';
+      const mHref = href.match(/id_visit=(\d+)/) || href.match(/detail\(['"]?(\d+)['"]?\)/);
+      if (mHref) return mHref[1];
+    }
+    const anyLink = row.querySelector('a[href*="id_visit="]');
+    if (anyLink) {
+      const m = anyLink.href.match(/id_visit=(\d+)/);
+      if (m) return m[1];
+    }
+    return null;
+  }
+  function extractPatientInfo(row) {
+    const cells = Array.from(row.querySelectorAll('td'));
+    let norm;
+    let nama;
+    let noReg;
+    cells.forEach((td) => {
+      const t = td.textContent?.trim() || '';
+      if (!norm && /^\d{6}$/.test(t)) {
+        norm = t;
+      }
+      if (!noReg && /^(REG|RJ|RI|IGD|\d{8,})/i.test(t)) {
+        noReg = t;
+      }
+      if (
+        !nama &&
+        /^[A-Z\s.,']{3,}$/i.test(t) &&
+        !/^(RAWAT|JALAN|INAP|BPJS|UMUM|SELESAI|BELUM|VERIF)/i.test(t)
+      ) {
+        nama = t;
+      }
+    });
+    return { norm, nama, noReg };
+  }
+  function updateRowVisual(row, idVisit, marked) {
+    row.setAttribute('data-ext-preop-marked', marked ? 'true' : 'false');
+    const btn = row.querySelector(`button[data-ext-preop-btn="${idVisit}"]`);
+    if (btn) {
+      if (marked) {
+        btn.classList.add('active');
+        btn.textContent = '\u2713 Pre-op';
+        btn.title = 'Ditandai sebagai Pre-op (klik untuk batalkan)';
+      } else {
+        btn.classList.remove('active');
+        btn.textContent = 'Pre-op';
+        btn.title = 'Tandai pasien sebagai Pre-op (tersimpan 1 bulan)';
+      }
+    }
+    let badge = row.querySelector('.ext-preop-badge');
+    if (marked) {
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'ext-preop-badge';
+        badge.textContent = 'PRE-OP';
+        const targetCell = row.cells[2] || row.cells[1] || row.cells[0];
+        if (targetCell) targetCell.appendChild(badge);
+      }
+    } else if (badge) {
+      badge.remove();
+    }
+  }
+  function scanAndInjectPreOpButtons() {
+    const tables = document.querySelectorAll('table');
+    if (tables.length === 0) return;
+    const preOpMap = loadPreOpMap();
+    tables.forEach((table) => {
+      const rows = table.querySelectorAll('tbody tr');
+      rows.forEach((row) => {
+        if (row.classList.contains('dataTables_empty')) return;
+        const idVisit = extractIdVisitFromRow(row);
+        if (!idVisit) return;
+        const isMarked = !!preOpMap[idVisit];
+        let actionCell = Array.from(row.querySelectorAll('td')).find((td) => {
+          return td.querySelector('button, a, [onclick*="detail"]') !== null;
+        });
+        if (!actionCell) {
+          actionCell = row.cells[row.cells.length - 1];
+        }
+        if (!actionCell) return;
+        let btn = row.querySelector(`button[data-ext-preop-btn="${idVisit}"]`);
+        if (!btn) {
+          btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'ext-preop-btn';
+          btn.setAttribute('data-ext-preop-btn', idVisit);
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const info = extractPatientInfo(row);
+            const nextState = togglePreOp(idVisit, info);
+            updateRowVisual(row, idVisit, nextState);
+            void logUsage('mKlaimPreOp', nextState ? 'mark_preop' : 'unmark_preop', true, {
+              idVisit,
+              norm: info.norm,
+              nama: info.nama,
+            });
+          });
+          actionCell.appendChild(btn);
+        }
+        updateRowVisual(row, idVisit, isMarked);
+      });
+    });
+  }
+  function debouncedScan() {
+    if (_debounceTimer !== null) clearTimeout(_debounceTimer);
+    _debounceTimer = window.setTimeout(() => {
+      scanAndInjectPreOpButtons();
+    }, 100);
+  }
+  function initPreOpMarker() {
+    if (window.location.pathname.includes('/detail')) return;
+    scanAndInjectPreOpButtons();
+    if (_observer) _observer.disconnect();
+    _observer = new MutationObserver(() => {
+      debouncedScan();
+    });
+    _observer.observe(document.body, { childList: true, subtree: true });
+    if (_scanIntervalId !== null) clearInterval(_scanIntervalId);
+    _scanIntervalId = window.setInterval(scanAndInjectPreOpButtons, 1500);
+  }
+  if (typeof g.featureModules !== 'undefined') {
+    g.featureModules.preOpMarker = {
+      id: 'preOpMarker',
+      name: 'Pre-op Marker (M-KLAIM)',
+      description: 'Tandai pasien Pre-op pada kolom aksi tabel M-KLAIM (tersimpan 1 bulan)',
+      match: {
+        oneOf: [
+          { pathname: '/v2/m-klaim' },
+          { pathname: '/v2/m-klaim/' },
+          { pathname: '/v2/m-klaim/index' },
+        ],
+        exclude: [{ prefix: '/v2/m-klaim/detail' }],
+      },
+      run: initPreOpMarker,
+    };
+  }
+  if (
+    window.location.pathname.startsWith('/v2/m-klaim') &&
+    !window.location.pathname.includes('/detail')
+  ) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initPreOpMarker);
+    } else {
+      initPreOpMarker();
+    }
+  }
+  return __toCommonJS(mKlaimPreOp_exports);
+})();
+//# sourceMappingURL=mKlaimPreOp.js.map
