@@ -146,7 +146,7 @@ export function TindakanSection({ rows, onChange }: Props) {
 
       {rows.length === 0 ? (
         <div className="border-2 border-dashed border-border rounded-xl py-12 text-center bg-background">
-          <p className="text-lg text-muted-foreground mb-2">Belum ada tindakan</p>
+          <p className="text-base text-muted-foreground mb-2">Belum ada tindakan</p>
           <p className="text-base text-muted-foreground">
             Klik "Tambah Tindakan" untuk menambahkan
           </p>
@@ -260,7 +260,7 @@ export function TindakanSection({ rows, onChange }: Props) {
                       <SelectTrigger className="h-11 text-base">
                         <SelectValue placeholder="Pilih" />
                       </SelectTrigger>
-                      <SelectContent className="z-[1050]">
+                      <SelectContent>
                         {JENIS_OPTIONS.map((opt) => (
                           <SelectItem key={opt.value} value={opt.value}>
                             {opt.label}
@@ -281,7 +281,7 @@ export function TindakanSection({ rows, onChange }: Props) {
                     <SelectTrigger className="h-11 text-base">
                       <SelectValue placeholder="Pilih Kategori Prosedur" />
                     </SelectTrigger>
-                    <SelectContent className="z-[1050]">
+                    <SelectContent>
                       {KATEGORI_OPTIONS.map((opt) => (
                         <SelectItem key={opt.value} value={opt.value}>
                           {opt.label}

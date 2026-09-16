@@ -27,25 +27,25 @@ export function InfoBanner({ data }: InfoBannerProps) {
           </svg>
         </div>
         <div>
-          <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+          <div className="text-base font-bold text-muted-foreground uppercase tracking-wider">
             RM
           </div>
-          <div className="text-[18px] font-bold text-foreground font-mono">{data.norm || '—'}</div>
+          <div className="text-base font-bold text-foreground font-mono">{data.norm || '—'}</div>
         </div>
       </div>
       <div className="w-px h-10 bg-border" />
       <div>
-        <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+        <div className="text-base font-bold text-muted-foreground uppercase tracking-wider">
           Pasien
         </div>
-        <div className="text-[18px] font-bold text-foreground">{data.pasien || '—'}</div>
+        <div className="text-base font-bold text-foreground">{data.pasien || '—'}</div>
       </div>
       <div className="w-px h-10 bg-border" />
       <div>
-        <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+        <div className="text-base font-bold text-muted-foreground uppercase tracking-wider">
           Dokter
         </div>
-        <div className="text-[18px] font-bold text-foreground">{data.nama_dokter || '—'}</div>
+        <div className="text-base font-bold text-foreground">{data.nama_dokter || '—'}</div>
       </div>
     </div>
   );

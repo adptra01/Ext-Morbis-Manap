@@ -121,7 +121,7 @@ export function DiagnosaSection({ rows, onChange }: Props) {
 
       {rows.length === 0 ? (
         <div className="border-2 border-dashed border-border rounded-xl py-12 text-center bg-background">
-          <p className="text-lg text-muted-foreground mb-2">Belum ada diagnosa</p>
+          <p className="text-base text-muted-foreground mb-2">Belum ada diagnosa</p>
           <p className="text-base text-muted-foreground">
             Klik "Tambah Diagnosa" untuk menambahkan
           </p>
@@ -227,7 +227,7 @@ export function DiagnosaSection({ rows, onChange }: Props) {
                       <SelectTrigger className="h-11 text-base">
                         <SelectValue placeholder="Pilih" />
                       </SelectTrigger>
-                      <SelectContent className="z-[1050]">
+                      <SelectContent>
                         <SelectItem value="BARU">Baru</SelectItem>
                         <SelectItem value="LAMA">Lama</SelectItem>
                       </SelectContent>
@@ -242,7 +242,7 @@ export function DiagnosaSection({ rows, onChange }: Props) {
                       <SelectTrigger className="h-11 text-base">
                         <SelectValue placeholder="Pilih" />
                       </SelectTrigger>
-                      <SelectContent className="z-[1050]">
+                      <SelectContent>
                         <SelectItem value="YA">Ya</SelectItem>
                         <SelectItem value="TIDAK">Tidak</SelectItem>
                       </SelectContent>

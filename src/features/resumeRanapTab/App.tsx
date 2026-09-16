@@ -313,7 +313,7 @@ function IcdList({
     <div className={items.length ? 'mb-3' : ''}>
       <div className="flex items-center gap-2.5 mb-2">
         <span className="text-base font-bold text-foreground tracking-tight">{label}</span>
-        <span className="text-xs text-muted-foreground">({items.length} item)</span>
+        <span className="text-base text-muted-foreground">({items.length} item)</span>
         <Button variant="default" size="sm" type="button" onClick={onAdd} className="ml-auto">
           + Tambah{' '}
           {label.includes('Sekunder')
@@ -766,7 +766,7 @@ export function App({ data, onSave, onClose }: Props) {
       {/* FOOTER — sticky, thumb-reachable; Simpan is primary; Riwayat/Reset/Batal secondary */}
       <div className="flex justify-end gap-2.5 py-3.5 px-5 border-t-2 border-border items-center shrink-0 bg-card sticky bottom-0 z-10 rounded-b-2xl">
         {error && (
-          <Badge variant="danger" icon className="mr-auto text-sm">
+          <Badge variant="danger" icon className="mr-auto text-base">
             {error}
           </Badge>
         )}

@@ -36,7 +36,7 @@ export function VitalSignsSection({ vitals, onChange }: VitalSignsSectionProps) 
               className="pr-20 font-mono text-base"
               aria-label={f.label}
             />
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground pointer-events-none">
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-base font-semibold text-muted-foreground pointer-events-none">
               {f.unit}
             </span>
           </div>
