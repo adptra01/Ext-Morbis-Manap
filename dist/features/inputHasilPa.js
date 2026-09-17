@@ -2,198 +2,133 @@
 var __morbis_feature = (() => {
   // src/features/inputHasilPa.ts
   (function () {
-    const ACTIONS = [
-      {
-        label: 'Edit Tanggal Pengajuan',
-        fn: 'edit_tgl_pengajuan',
-        storeKey: 'lab_tgl_pengajuan',
-        urlPath: '/admisi/pelaksanaan_pelayanan/laboratorium-data',
-      },
-      {
-        label: 'Cetak',
-        fn: 'cetak',
-        storeKey: 'lab_cetak',
-        urlPath: '/admisi/pelaksanaan_pelayanan/laboratorium-data',
-      },
-      {
-        label: 'Cetak Form Permintaan Lab',
-        fn: 'cetak_form_permintaan_lab',
-        storeKey: 'lab_cetak_form',
-        urlPath: '/admisi/pelaksanaan_pelayanan/laboratorium-data',
-      },
-      {
-        label: 'Edit Form Permintaan Lab',
-        fn: 'edit_form_permintaan_lab',
-        storeKey: 'lab_edit_form',
-        urlPath: '/admisi/pelaksanaan_pelayanan/laboratorium-data',
-      },
-    ];
-    const LIST_BASES = [
-      '/admisi/pelaksanaan_pelayanan/riwayat-penunjang-medis-v2',
-      '/admisi/pelaksanaan_pelayanan/laboratorium-data',
-    ];
-    let injectedLab = null;
-    function getLabId() {
-      const urlLab = new URLSearchParams(window.location.search).get('id_lab');
-      if (urlLab) return urlLab;
-      try {
-        const keys = Object.keys(localStorage);
-        const labKey = keys.find((k) => k.startsWith('lab_permintaan_'));
-        if (labKey) return labKey.replace('lab_permintaan_', '');
-      } catch {}
-      return null;
+    const $ = (sel) => document.querySelector(sel);
+    const val = (sel) => $(sel)?.value?.trim() || '';
+    function readIds() {
+      return {
+        idLab:
+          new URLSearchParams(window.location.search).get('id_lab') || val('input[name="id_lab"]'),
+        idVisit: val('input[name="id_visit"]'),
+        idHasilLab: val('input[name="hasil[1][id]"]'),
+      };
     }
-    function readStored(idLab) {
-      try {
-        const visit = localStorage.getItem(`lab_visit_${idLab}`);
-        const permintaan = localStorage.getItem(`lab_permintaan_${idLab}`);
-        if (visit && permintaan) return { visit, permintaan };
-      } catch {}
-      return null;
+    function openUrl(path) {
+      window.open(path, '_blank', 'width=1000px, height=500px, scrollbars=1');
     }
-    function parsePage(doc, idLab) {
-      const map = /* @__PURE__ */ new Map();
-      let visit = '';
-      for (const el of Array.from(doc.querySelectorAll('[onclick]'))) {
-        const oc = el.getAttribute('onclick') || '';
-        for (const { fn } of ACTIONS) {
-          const m = oc.match(new RegExp(`${fn}\\(${idLab},\\s*(\\d+),\\s*(\\d+)\\)`));
-          if (m) {
-            map.set(fn, m[2]);
-            if (!visit) visit = m[1];
-          }
+    function showEditTanggalModal(idLab, idVisit) {
+      const overlay = document.createElement('div');
+      overlay.style.cssText =
+        'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999999;display:flex;align-items:center;justify-content:center;';
+      const box = document.createElement('div');
+      box.style.cssText =
+        'background:#fff;border-radius:8px;padding:16px 18px;min-width:340px;box-shadow:0 8px 30px rgba(0,0,0,.25);font-family:Arial,sans-serif;';
+      const title = document.createElement('div');
+      title.textContent = 'Edit Tanggal Pengajuan';
+      title.style.cssText = 'font-weight:700;font-size:14px;margin-bottom:10px;color:#1e293b;';
+      const dateInput = document.createElement('input');
+      dateInput.type = 'text';
+      dateInput.placeholder = 'dd/mm/yyyy hh:mm:ss';
+      dateInput.style.cssText =
+        'width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;';
+      const hint = document.createElement('div');
+      hint.textContent = 'Format: 16/09/2026 17:43:55';
+      hint.style.cssText = 'font-size:11px;color:#64748b;margin:4px 0 12px;';
+      const btnRow = document.createElement('div');
+      btnRow.style.cssText = 'display:flex;gap:8px;justify-content:flex-end;';
+      const save = document.createElement('button');
+      save.type = 'button';
+      save.textContent = 'Edit Tanggal';
+      save.style.cssText =
+        'padding:5px 14px;border:none;border-radius:6px;font-size:12px;font-weight:600;color:#fff;background:#2563eb;cursor:pointer;';
+      const cancel = document.createElement('button');
+      cancel.type = 'button';
+      cancel.textContent = 'Batal';
+      cancel.style.cssText =
+        'padding:5px 14px;border:none;border-radius:6px;font-size:12px;font-weight:600;color:#fff;background:#dc2626;cursor:pointer;';
+      save.addEventListener('click', async () => {
+        const date = dateInput.value.trim();
+        if (!date) {
+          alert('Isi tanggal pengajuan baru dulu.');
+          return;
         }
-      }
-      return map.size && visit ? { map, visit } : null;
-    }
-    async function fetchActions(idLab, idVisit) {
-      for (const base of LIST_BASES) {
-        for (let page = 1; page <= 25; page++) {
-          let html = '';
-          try {
-            const url = `${location.origin}${base}?id_visit=${idVisit}&page=${page}&status_periksa=belum`;
-            const res = await fetch(url, { credentials: 'same-origin' });
-            if (!res.ok) continue;
-            html = await res.text();
-          } catch {
-            break;
-          }
-          const doc = new DOMParser().parseFromString(html, 'text/html');
-          const found = parsePage(doc, idLab);
-          if (found) {
-            try {
-              localStorage.setItem(`lab_visit_${idLab}`, found.visit);
-              let permintaanFallback = '';
-              for (const { fn, storeKey } of ACTIONS) {
-                const perm = found.map.get(fn);
-                if (perm) {
-                  localStorage.setItem(`${storeKey}_${idLab}`, perm);
-                  if (!permintaanFallback) permintaanFallback = perm;
-                }
-              }
-              if (permintaanFallback)
-                localStorage.setItem(`lab_permintaan_${idLab}`, permintaanFallback);
-            } catch {}
-            return found;
-          }
-          if (!doc.querySelector('[onclick*="_pengajuan"], [onclick*="cetak"]')) break;
-        }
-      }
-      return null;
-    }
-    function renderActions(anchor, idLab, visit, map) {
-      const old = anchor.parentElement?.querySelector('[data-ext-lab-actions]');
-      if (old) old.remove();
-      const container = document.createElement('div');
-      container.dataset.extLabActions = 'true';
-      container.style.cssText = 'display:flex;gap:6px;margin:8px 0;flex-wrap:wrap;';
-      for (const { label, fn, storeKey, urlPath } of ACTIONS) {
-        let perm = map.get(fn) ?? '';
-        if (!perm) {
-          try {
-            perm = localStorage.getItem(`${storeKey}_${idLab}`) ?? '';
-          } catch {}
-        }
-        const searchParams = new URLSearchParams({ id_lab: idLab, id_visit: visit });
-        if (perm) searchParams.set('id_permintaan', perm);
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.textContent = label;
-        btn.style.cssText =
-          'padding:4px 10px;border:1px solid #2563eb;border-radius:6px;font-size:11px;font-weight:600;background:#2563eb;color:#fff;cursor:pointer;transition:all .15s;';
-        if (!perm) {
-          btn.style.opacity = '0.55';
-          btn.style.cursor = 'not-allowed';
-          btn.title = 'Data aksi belum ditemukan \u2014 buka halaman riwayat penunjang medis dulu';
-          btn.addEventListener('click', () => {
-            alert(
-              'Data permintaan belum tersimpan. Silakan buka halaman riwayat penunjang medis / laboratorium-data terlebih dahulu.',
-            );
+        save.disabled = true;
+        save.textContent = 'Menyimpan\u2026';
+        let ok = false;
+        try {
+          const res = await fetch('/laboratorium/control/edit_tanggal', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: new URLSearchParams({
+              lab: idLab,
+              id_visit: idVisit,
+              date,
+              action: 'edit',
+            }).toString(),
           });
-        } else {
-          btn.addEventListener('click', () => {
-            const hash = `#ext-lab-action=${fn}`;
-            window.open(`${location.origin}${urlPath}?${searchParams.toString()}${hash}`, '_blank');
-          });
+          ok = (await res.json()).status == 1;
+        } catch {
+          ok = false;
         }
-        container.appendChild(btn);
-      }
-      anchor.after(container);
+        overlay.remove();
+        alert(ok ? 'Edit Tanggal Pengajuan berhasil diubah.' : 'Gagal menyimpan tanggal baru.');
+        if (ok) window.location.reload();
+      });
+      cancel.addEventListener('click', () => overlay.remove());
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) overlay.remove();
+      });
+      btnRow.append(save, cancel);
+      box.append(title, dateInput, hint, btnRow);
+      overlay.appendChild(box);
+      document.body.appendChild(overlay);
+      dateInput.focus();
     }
-    async function injectUi() {
-      if (!document.documentElement.getAttribute('data-ext-lab-history')) return;
-      const idLab = getLabId();
-      if (!idLab) return;
-      const idVisitInput = document.querySelector('input[name="id_visit"]');
-      const id_visit = idVisitInput?.value.trim() || '';
-      if (!id_visit && !readStored(idLab)) return;
+    function renderActions() {
       const fieldset = Array.from(document.querySelectorAll('fieldset')).find((fs) =>
         fs.textContent?.includes('Data Pasien'),
       );
       if (!fieldset) return;
-      if (injectedLab === idLab) return;
-      injectedLab = idLab;
-      const old = fieldset.querySelector('[data-ext-lab-history]');
+      const old = fieldset.querySelector('[data-ext-lab-actions]');
       if (old) old.remove();
-      const origin = window.location.origin;
-      const historyBtn = document.createElement('ext-btn');
-      historyBtn.dataset.extLabHistory = 'true';
-      historyBtn.setAttribute('variant', 'primary');
-      historyBtn.setAttribute('size', 'sm');
-      historyBtn.textContent = 'Lihat Riwayat Permintaan Lab';
-      historyBtn.style.margin = '8px 0';
-      historyBtn.addEventListener('click', () => {
-        if (id_visit)
-          window.open(
-            `${origin}/admisi/pelaksanaan_pelayanan/laboratorium-data?id_visit=${id_visit}&status_periksa=belum`,
-            '_blank',
-          );
-      });
-      const legend = fieldset.querySelector('legend');
-      if (legend) legend.after(historyBtn);
-      else fieldset.prepend(historyBtn);
-      const cached = readStored(idLab);
-      if (cached) {
-        renderActions(historyBtn, idLab, cached.visit, /* @__PURE__ */ new Map());
+      const { idLab, idVisit, idHasilLab } = readIds();
+      if (!idLab || !idVisit || !idHasilLab) {
+        console.warn('[inputHasilPa] Missing ids', { idLab, idVisit, idHasilLab });
         return;
       }
-      if (!id_visit) return;
-      const loading = document.createElement('div');
-      loading.dataset.extLabActions = 'true';
-      loading.textContent = 'Memuat aksi lab\u2026';
-      loading.style.cssText = 'margin:6px 0;font-size:12px;color:#64748b;';
-      historyBtn.after(loading);
-      const found = await fetchActions(idLab, id_visit);
-      loading.remove();
-      if (found) renderActions(historyBtn, idLab, found.visit, found.map);
-      else {
-        const err = document.createElement('div');
-        err.dataset.extLabActions = 'true';
-        err.textContent =
-          'Aksi lab tidak ditemukan untuk id_lab ini (coba buka halaman riwayat penunjang medis).';
-        err.style.cssText = 'margin:6px 0;font-size:12px;color:#dc2626;';
-        historyBtn.after(err);
-      }
+      const container = document.createElement('div');
+      container.setAttribute('data-ext-lab-actions', 'true');
+      container.style.cssText = 'display:flex;gap:6px;margin:8px 0;flex-wrap:wrap;';
+      const mk = (label, bg, onClick) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = label;
+        b.style.cssText = `padding:4px 10px;border:none;border-radius:6px;font-size:11px;font-weight:600;background:${bg};color:#fff;cursor:pointer;`;
+        b.addEventListener('click', onClick);
+        return b;
+      };
+      container.append(
+        mk('Edit Tanggal Pengajuan', '#f59e0b', () => showEditTanggalModal(idLab, idVisit)),
+        mk('Cetak', '#0891b2', () => openUrl(`/admisi/print/nota-lab?id=${idLab}`)),
+        mk('Cetak Form Permintaan Lab', '#2563eb', () =>
+          openUrl(
+            `/laboratorium/formulir-permintaan-labor/cetak?id=${idHasilLab}&id_visit=${idVisit}&jenis=cetak`,
+          ),
+        ),
+        mk('Edit Form Permintaan Lab', '#7c3aed', () =>
+          openUrl(
+            `/laboratorium/formulir-permintaan-labor/form?id=${idHasilLab}&id_visit=${idVisit}&jenis=edit`,
+          ),
+        ),
+      );
+      fieldset.appendChild(container);
+    }
+    function injectUi() {
+      if (!document.documentElement.getAttribute('data-ext-lab-history')) return;
+      renderActions();
     }
     const start = performance.now();
     (function poll() {
