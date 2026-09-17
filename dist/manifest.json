@@ -200,6 +200,16 @@
       "all_frames": false
     },
     {
+      "matches": [
+        "http://*/admisi/pelaksanaan_pelayanan/laboratorium-data*",
+        "http://*/admisi/pelaksanaan_pelayanan/riwayat-penunjang-medis-v2*"
+      ],
+      "js": ["features/labPermintaanBridge.js"],
+      "run_at": "document_idle",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
       "matches": ["http://*/laboratorium/input-hasil/input-hasil-pa*"],
       "js": ["features/inputHasilPa.js"],
       "run_at": "document_idle",
