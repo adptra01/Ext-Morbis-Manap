@@ -5,6 +5,7 @@ import {
   Icons,
   confirmLegacy,
 } from './shared/batchUtils.js';
+import { rewriteUploadFilename } from './shared/uploadName.js';
 
 const g = getMorbisGlobals();
 
@@ -13,7 +14,7 @@ const BATCH_UPLOAD_URL_CONFIG = {
   uploadEndpoint: '/v2/m-klaim/uploda-dokumen/control?sub=simpan',
   maxConcurrent: 3,
   maxBatchSize: 50,
-  supportedExtensions: ['.pdf', '.jpg', '.jpeg', '.png'],
+  supportedExtensions: ['.pdf', '.jpg', '.jpeg', '.png', '.gif'],
   modalId: 'ext-batch-url-modal',
   textareaId: 'ext-url-input',
   previewId: 'ext-preview-list',
@@ -258,6 +259,11 @@ function showBatchUploadModal(): void {
     document.body.appendChild(modal);
   }
 
+  // One batch modal at a time: hide the other (shared class) or its invisible
+  // overlay blocks clicks on the page / the freshly opened modal.
+  document.querySelectorAll('.ext-batch-delete-modal.show').forEach((m) => {
+    if (m !== modal) m.classList.remove('show');
+  });
   modal.classList.add('show');
   const textarea = document.getElementById(
     BATCH_UPLOAD_URL_CONFIG.textareaId,
@@ -280,7 +286,9 @@ function closeBatchModal(): void {
     if (searchInput) searchInput.value = '';
     const searchWrap = document.getElementById('ext-upload-search-wrap');
     if (searchWrap) searchWrap.style.display = 'none';
-    const buttonsContainer = document.querySelector('.ext-modal-buttons');
+    const buttonsContainer = document.querySelector(
+      '#' + BATCH_UPLOAD_URL_CONFIG.modalId + ' .ext-modal-buttons',
+    );
     if (buttonsContainer) {
       buttonsContainer.innerHTML =
         '<button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Batal</button><button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 URL</button><button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>' +
@@ -650,13 +658,35 @@ async function fetchFileFromUrl(url: string, filename: string): Promise<File> {
   });
 }
 
+/**
+ * Rewrite nama file sebelum upload (lihat shared/uploadName.ts).
+ *
+ * Jangan pernah upload nama asli mentah: nama ber-spasi/karakter khusus bisa
+ * membuat penyimpanan file di server gagal, atau baris dokumen tidak tampil di
+ * halaman dokumen-pasien (row di-render server-side dari record file).
+ * Prefix NORM+tanggal juga mencegah tabrakan nama file (file kedua menimpa
+ * yang pertama → yang lama jadi "gak tampil").
+ */
+function getKeteranganPrefix(): string {
+  // RI/RJ marker from the page's "Jenis Kunjungan" field, e.g.
+  // `<input id="jenis" value="RAWAT JALAN">` → `RJ-`. Reg number appended
+  // when the URL carries `?reg=`.
+  const jenisEl = document.getElementById('jenis') as HTMLInputElement | null;
+  const jenis = (jenisEl?.value || '').toUpperCase();
+  const marker = jenis.includes('INAP') ? 'RI' : jenis.includes('JALAN') ? 'RJ' : '';
+  if (!marker) return '';
+  const reg = new URLSearchParams(window.location.search).get('reg') || '';
+  return reg ? `${marker}-${reg} ` : `${marker}- `;
+}
+
 async function processAndUploadSingleUrl(
   metadata: BatchItem,
   idVisitStr: string,
 ): Promise<{ success: boolean; result?: string; error?: string }> {
   try {
+    const uploadName = rewriteUploadFilename(metadata, metadata.keterangan);
     updateStatus(`Download: ${escHtml(metadata.filename)}...`);
-    const file = await fetchFileFromUrl(metadata.url, metadata.filename);
+    const file = await fetchFileFromUrl(metadata.url, uploadName);
 
     const formData = new FormData();
     formData.append('id_visit', idVisitStr);
@@ -664,9 +694,19 @@ async function processAndUploadSingleUrl(
     formData.append('tgl_file', metadata.tanggal);
     formData.append('jenis_dokumen', metadata.jenis_dokumen || 'Lain-lain');
     formData.append('dok', file);
-    formData.append('keterangan', metadata.keterangan || '');
+    // ponytail: cap keterangan di 150 char — kolom varchar di DB bisa overflow
+    // dan record gagal di-insert (file "hilang" walau HTTP 200). Server juga
+    // menolak keterangan kosong ("Keterangan Wajib Diisi") → fallback wajib ada.
+    // Prefix RI-/RJ- (dari #jenis + ?reg=) ditambahkan sebagai penanda rawat
+    // inap/jalan, tanpa dobel kalau keterangan sudah mengandung marker.
+    const ketPrefix = getKeteranganPrefix();
+    const keteranganRaw = metadata.keterangan || metadata.filename || '-';
+    const keterangan = keteranganRaw.startsWith(ketPrefix.trim())
+      ? keteranganRaw
+      : `${ketPrefix}${keteranganRaw}`;
+    formData.append('keterangan', keterangan.slice(0, 150));
 
-    updateStatus(`Upload: ${escHtml(metadata.filename)} (${(file.size / 1024).toFixed(0)} KB)...`);
+    updateStatus(`Upload: ${escHtml(uploadName)} (${(file.size / 1024).toFixed(0)} KB)...`);
 
     const uploadResponse = await fetchWithRetry(
       BATCH_UPLOAD_URL_CONFIG.uploadEndpoint,
@@ -679,13 +719,22 @@ async function processAndUploadSingleUrl(
     );
 
     if (!uploadResponse.ok) {
-      const errorText = await uploadResponse.text().catch(() => '');
+      // Deteksi redirect ke halaman login (sesi kadaluarsa)
+      if (uploadResponse.redirected) {
+        throw new Error('Sesi login kadaluarsa — login ulang di tab ini lalu coba lagi');
+      }
       // ponytail: extract meaningful error from server response
+      const errorText = await uploadResponse.text().catch(() => '');
       const snippet = errorText
         .replace(/<[^>]+>/g, '')
         .trim()
         .slice(0, 200);
-      throw new Error(`Server ${uploadResponse.status}: ${snippet || uploadResponse.statusText}`);
+      // Coba parsing JSON error dari server
+      const jsonMsg = errorText.match(/"message"\s*:\s*"([^"]+)"/);
+      const throwMsg = jsonMsg
+        ? `Server ${uploadResponse.status}: ${jsonMsg[1]}`
+        : `Server ${uploadResponse.status}: ${snippet || uploadResponse.statusText}`;
+      throw new Error(throwMsg);
     }
 
     const result = await uploadResponse.text();
@@ -800,7 +849,9 @@ async function runBatchQueue(): Promise<void> {
   }
 
   // Replace buttons: Reload + Retry Failed (if any)
-  const buttonsContainer = document.querySelector('.ext-modal-buttons');
+  const buttonsContainer = document.querySelector(
+    '#' + BATCH_UPLOAD_URL_CONFIG.modalId + ' .ext-modal-buttons',
+  );
   if (buttonsContainer) {
     const reloadBtn = `<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">${Icons.refresh} Reload Halaman</span></button>`;
     const retryBtn =

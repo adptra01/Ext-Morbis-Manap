@@ -41,14 +41,6 @@ function injectBatchDeleteCSS(): void {
   const style = document.createElement('style');
   style.id = 'ext-batch-delete-style';
   style.textContent = `
-    .ext-batch-delete-modal {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(15,23,42,0.45); display: none; z-index: 10000;
-      align-items: center; justify-content: center;
-      backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
-    }
-    .ext-batch-delete-modal.show { display: flex; }
-
     #ext-batch-delete-btn {
       display: inline-flex; align-items: center; gap: 8px;
       background: #ef4444; color: white; border: none; border-radius: 10px; cursor: pointer;
@@ -127,7 +119,9 @@ function toggleDeleteUIProcessingState(isDeleting: boolean): void {
 }
 
 function replaceButtonsWithReload(): void {
-  const buttonsContainer = document.querySelector('.ext-modal-buttons');
+  const buttonsContainer = document.querySelector(
+    '#' + BATCH_DELETE_CONFIG.modalId + ' .ext-modal-buttons',
+  );
   if (buttonsContainer) {
     buttonsContainer.innerHTML =
       '<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">' +
@@ -190,7 +184,7 @@ function showBatchDeleteModal(): void {
         <div id="${BATCH_DELETE_CONFIG.statusId}" style="margin: 8px 0; font-size: 11px; color: #9ca3af; font-weight: 500; letter-spacing: 0.3px;"></div>
         <div class="ext-modal-buttons">
           <button id="ext-delete-cancel-btn" class="ext-btn ext-btn-secondary">Batal</button>
-          <button id="ext-start-delete-btn" class="ext-btn ext-btn-danger disabled"><span style="display:inline-flex;align-items:center;gap:6px;">${Icons.trash}</span> Hapus Terpilih</button>
+          <button id="ext-start-delete-btn" class="ext-btn ext-btn-danger" disabled><span style="display:inline-flex;align-items:center;gap:6px;">${Icons.trash}</span> Hapus Terpilih</button>
         </div>
       </div>
     `;
@@ -218,7 +212,22 @@ function showBatchDeleteModal(): void {
     }, 50);
   }
 
+  // One batch modal at a time: hide the other (shared class) or its invisible
+  // overlay blocks clicks on the page / the freshly opened modal.
+  document.querySelectorAll('.ext-batch-delete-modal.show').forEach((m) => {
+    if (m !== modal) m.classList.remove('show');
+  });
+
   modal.classList.add('show');
+}
+
+// Single source of truth for the footer action button. Native `disabled` only —
+// the shared CSS (.ext-btn-danger:disabled) handles the visuals.
+function updateDeleteActionButton(selectedCount: number): void {
+  const startBtn = document.getElementById('ext-start-delete-btn') as HTMLButtonElement | null;
+  if (!startBtn) return;
+  startBtn.disabled = selectedCount === 0 || isDeletingProcess;
+  startBtn.textContent = `Hapus ${selectedCount} Dokumen`;
 }
 
 function closeBatchDeleteModal(): void {
@@ -239,10 +248,12 @@ function closeBatchDeleteModal(): void {
   if (progressEl) progressEl.style.display = 'none';
   if (statusEl) statusEl.textContent = '';
 
-  const buttonsContainer = document.querySelector('.ext-modal-buttons');
+  const buttonsContainer = document.querySelector(
+    '#' + BATCH_DELETE_CONFIG.modalId + ' .ext-modal-buttons',
+  );
   if (buttonsContainer) {
     buttonsContainer.innerHTML =
-      '<button id="ext-delete-cancel-btn" class="ext-btn ext-btn-secondary">Batal</button><button id="ext-start-delete-btn" class="ext-btn ext-btn-danger disabled"><span style="display:inline-flex;align-items:center;gap:6px;">' +
+      '<button id="ext-delete-cancel-btn" class="ext-btn ext-btn-secondary">Batal</button><button id="ext-start-delete-btn" class="ext-btn ext-btn-danger" disabled><span style="display:inline-flex;align-items:center;gap:6px;">' +
       Icons.trash +
       '</span> Hapus Terpilih</button>';
     document
@@ -388,7 +399,6 @@ async function deleteSingleFromQueue(index: number): Promise<void> {
 
 function updateDeletePreview(): void {
   const previewEl = document.getElementById(BATCH_DELETE_CONFIG.previewId) as HTMLElement | null;
-  const startBtn = document.getElementById('ext-start-delete-btn') as HTMLButtonElement | null;
   const statusEl = document.getElementById(BATCH_DELETE_CONFIG.statusId);
   const searchWrap = document.getElementById('ext-delete-search-wrap');
   const searchInput = document.getElementById('ext-delete-search-input') as HTMLInputElement | null;
@@ -401,7 +411,7 @@ function updateDeletePreview(): void {
     }
     if (searchWrap) searchWrap.style.display = 'none';
     if (searchInput) searchInput.value = '';
-    if (startBtn) startBtn.disabled = true;
+    updateDeleteActionButton(0);
     if (statusEl) {
       statusEl.textContent = '';
       statusEl.style.color = '#4b5563';
@@ -426,12 +436,24 @@ function updateDeletePreview(): void {
   } else {
     return;
   }
-  previewEl.innerHTML =
-    '<div style="padding:10px 16px;background:#f8fafc;border-bottom:1px solid #f1f5f9;font-size:11px;font-weight:700;color:#1e293b;text-transform:uppercase;letter-spacing:0.5px;">Dokumen Pasien <span style="color:#64748b;font-weight:400;">(' +
-    deleteQueue.length +
-    ' dokumen, <span style="color:#dc2626;">' +
-    deleteQueue.filter((i) => i.selected).length +
-    '</span> dipilih)</span></div>';
+
+  // Header is a real element so checkbox toggles can update it in place
+  // without re-rendering the whole list (a full re-render mid-click drops
+  // change events and leaves the footer button permanently disabled).
+  const header = document.createElement('div');
+  header.style.cssText =
+    'padding:10px 16px;background:#f8fafc;border-bottom:1px solid #f1f5f9;font-size:11px;font-weight:700;color:#1e293b;text-transform:uppercase;letter-spacing:0.5px;';
+  const updateHeader = (): void => {
+    header.innerHTML =
+      'Dokumen Pasien <span style="color:#64748b;font-weight:400;">(' +
+      deleteQueue.length +
+      ' dokumen, <span style="color:#dc2626;">' +
+      deleteQueue.filter((i) => i.selected).length +
+      '</span> dipilih)</span>';
+  };
+  updateHeader();
+  previewEl.innerHTML = '';
+  previewEl.appendChild(header);
 
   if (filtered.length === 0) {
     const empty = document.createElement('div');
@@ -473,7 +495,9 @@ function updateDeletePreview(): void {
     if (!isDeletingProcess && checkbox) {
       checkbox.addEventListener('change', (e) => {
         deleteQueue[idx].selected = (e.target as HTMLInputElement).checked;
-        updateDeletePreview();
+        itemEl.classList.toggle('selected', deleteQueue[idx].selected);
+        updateHeader();
+        updateDeleteActionButton(deleteQueue.filter((i) => i.selected).length);
       });
     }
 
@@ -494,16 +518,7 @@ function updateDeletePreview(): void {
     previewEl?.appendChild(itemEl);
   });
 
-  const selectedCount = deleteQueue.filter((i) => i.selected).length;
-  if (startBtn) {
-    startBtn.disabled = selectedCount === 0 || isDeletingProcess;
-    startBtn.textContent = `Hapus ${selectedCount} Dokumen`;
-    if (selectedCount > 0 && !isDeletingProcess) {
-      startBtn.classList.remove('disabled');
-    } else {
-      startBtn.classList.add('disabled');
-    }
-  }
+  updateDeleteActionButton(deleteQueue.filter((i) => i.selected).length);
 }
 
 async function startBatchDelete(): Promise<void> {

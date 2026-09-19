@@ -39,6 +39,18 @@ var __morbis_feature = (() => {
     .ext-modal-close:hover { background: #fef2f2; color: #dc2626; border-color: #fecaca; transform: scale(1.05); }
     .ext-modal-close:active { transform: scale(0.95); }
 
+    /* Base styles for batch modals (upload + delete). Same class is used by
+       both features so opening one closes the other; CSS must live here in
+       shared utils or a role-gated feature (delete off, upload on) renders
+       an unstyled, non-fixed modal. */
+    .ext-batch-delete-modal {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15,23,42,0.45); display: none; z-index: 10000;
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+    }
+    .ext-batch-delete-modal.show { display: flex; }
+
     .ext-modal-buttons {
       margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;
     }
@@ -290,6 +302,44 @@ var __morbis_feature = (() => {
     });
   }
 
+  // src/features/shared/uploadName.ts
+  function rewriteUploadFilename(item, customBase) {
+    const filename = item.filename || '';
+    if (customBase) {
+      const sBase = customBase
+        .replace(/[^\w\s.-]/g, '_')
+        .replace(/\s+/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^[._]+|[._]+$/g, '')
+        .slice(0, 60);
+      const extMatch2 = filename.match(/\.([A-Za-z0-9]+)$/);
+      const ext2 = extMatch2 ? '.' + extMatch2[1].toLowerCase() : '';
+      const norm2 = (item.norm || '').replace(/\D/g, '').slice(0, 20);
+      const tgl2 = (item.tanggal || '').replace(/\D/g, '').slice(0, 8);
+      const prefix2 = [norm2, tgl2].filter(Boolean).join('_');
+      return prefix2 ? `${prefix2}_${sBase}${ext2}` : `${sBase}${ext2}`;
+    }
+    const extMatch = filename.match(/\.([A-Za-z0-9]+)$/);
+    const base0 = extMatch ? filename.slice(0, -extMatch[0].length) : filename;
+    const knownExts = ['pdf', 'jpg', 'jpeg', 'png', 'gif'];
+    const token = (extMatch?.[1] || '').toLowerCase();
+    const doubled = knownExts.find((k) => token.endsWith(k) && token.length > k.length);
+    const ext = doubled ? '.' + doubled : extMatch ? '.' + token : '';
+    const base = doubled ? base0 : base0.replace(/\.(pdf|jpe?g|png|gif)$/i, '');
+    const cleaned = base.replace(/\d{1,9}-\d{10}-/g, '').replace(/^(\d+)_\d{8}_/, '');
+    const cleanBase =
+      cleaned
+        .replace(/[^\w\s.-]/g, '_')
+        .replace(/\s+/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^[._]+|[._]+$/g, '')
+        .slice(0, 60) || 'dokumen';
+    const norm = (item.norm || '').replace(/\D/g, '').slice(0, 20);
+    const tgl = (item.tanggal || '').replace(/\D/g, '').slice(0, 8);
+    const prefix = [norm, tgl].filter(Boolean).join('_');
+    return prefix ? `${prefix}_${cleanBase}${ext}` : `${cleanBase}${ext}`;
+  }
+
   // src/features/batchUploadUrl.ts
   var g = getMorbisGlobals();
   var BATCH_UPLOAD_URL_CONFIG = {
@@ -297,7 +347,7 @@ var __morbis_feature = (() => {
     uploadEndpoint: '/v2/m-klaim/uploda-dokumen/control?sub=simpan',
     maxConcurrent: 3,
     maxBatchSize: 50,
-    supportedExtensions: ['.pdf', '.jpg', '.jpeg', '.png'],
+    supportedExtensions: ['.pdf', '.jpg', '.jpeg', '.png', '.gif'],
     modalId: 'ext-batch-url-modal',
     textareaId: 'ext-url-input',
     previewId: 'ext-preview-list',
@@ -498,6 +548,9 @@ var __morbis_feature = (() => {
       }, 0);
       document.body.appendChild(modal);
     }
+    document.querySelectorAll('.ext-batch-delete-modal.show').forEach((m) => {
+      if (m !== modal) m.classList.remove('show');
+    });
     modal.classList.add('show');
     const textarea = document.getElementById(BATCH_UPLOAD_URL_CONFIG.textareaId);
     textarea?.focus();
@@ -515,7 +568,9 @@ var __morbis_feature = (() => {
       if (searchInput) searchInput.value = '';
       const searchWrap = document.getElementById('ext-upload-search-wrap');
       if (searchWrap) searchWrap.style.display = 'none';
-      const buttonsContainer = document.querySelector('.ext-modal-buttons');
+      const buttonsContainer = document.querySelector(
+        '#' + BATCH_UPLOAD_URL_CONFIG.modalId + ' .ext-modal-buttons',
+      );
       if (buttonsContainer) {
         buttonsContainer.innerHTML =
           '<button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Batal</button><button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 URL</button><button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>' +
@@ -830,20 +885,32 @@ var __morbis_feature = (() => {
       type: blob.type || `application/${ext.slice(1) || 'octet-stream'}`,
     });
   }
+  function getKeteranganPrefix() {
+    const jenisEl = document.getElementById('jenis');
+    const jenis = (jenisEl?.value || '').toUpperCase();
+    const marker = jenis.includes('INAP') ? 'RI' : jenis.includes('JALAN') ? 'RJ' : '';
+    if (!marker) return '';
+    const reg = new URLSearchParams(window.location.search).get('reg') || '';
+    return reg ? `${marker}-${reg} ` : `${marker}- `;
+  }
   async function processAndUploadSingleUrl(metadata, idVisitStr) {
     try {
+      const uploadName = rewriteUploadFilename(metadata, metadata.keterangan);
       updateStatus(`Download: ${escHtml(metadata.filename)}...`);
-      const file = await fetchFileFromUrl(metadata.url, metadata.filename);
+      const file = await fetchFileFromUrl(metadata.url, uploadName);
       const formData = new FormData();
       formData.append('id_visit', idVisitStr);
       formData.append('norm', metadata.norm);
       formData.append('tgl_file', metadata.tanggal);
       formData.append('jenis_dokumen', metadata.jenis_dokumen || 'Lain-lain');
       formData.append('dok', file);
-      formData.append('keterangan', metadata.keterangan || '');
-      updateStatus(
-        `Upload: ${escHtml(metadata.filename)} (${(file.size / 1024).toFixed(0)} KB)...`,
-      );
+      const ketPrefix = getKeteranganPrefix();
+      const keteranganRaw = metadata.keterangan || metadata.filename || '-';
+      const keterangan = keteranganRaw.startsWith(ketPrefix.trim())
+        ? keteranganRaw
+        : `${ketPrefix}${keteranganRaw}`;
+      formData.append('keterangan', keterangan.slice(0, 150));
+      updateStatus(`Upload: ${escHtml(uploadName)} (${(file.size / 1024).toFixed(0)} KB)...`);
       const uploadResponse = await fetchWithRetry(
         BATCH_UPLOAD_URL_CONFIG.uploadEndpoint,
         {
@@ -854,12 +921,19 @@ var __morbis_feature = (() => {
         2,
       );
       if (!uploadResponse.ok) {
+        if (uploadResponse.redirected) {
+          throw new Error('Sesi login kadaluarsa \u2014 login ulang di tab ini lalu coba lagi');
+        }
         const errorText = await uploadResponse.text().catch(() => '');
         const snippet = errorText
           .replace(/<[^>]+>/g, '')
           .trim()
           .slice(0, 200);
-        throw new Error(`Server ${uploadResponse.status}: ${snippet || uploadResponse.statusText}`);
+        const jsonMsg = errorText.match(/"message"\s*:\s*"([^"]+)"/);
+        const throwMsg = jsonMsg
+          ? `Server ${uploadResponse.status}: ${jsonMsg[1]}`
+          : `Server ${uploadResponse.status}: ${snippet || uploadResponse.statusText}`;
+        throw new Error(throwMsg);
       }
       const result = await uploadResponse.text();
       if (result.includes('error') || result.includes('gagal')) {
@@ -955,7 +1029,9 @@ var __morbis_feature = (() => {
           .map((item) => `${item.filename}: ${item.error}`),
       );
     }
-    const buttonsContainer = document.querySelector('.ext-modal-buttons');
+    const buttonsContainer = document.querySelector(
+      '#' + BATCH_UPLOAD_URL_CONFIG.modalId + ' .ext-modal-buttons',
+    );
     if (buttonsContainer) {
       const reloadBtn = `<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">${Icons.refresh} Reload Halaman</span></button>`;
       const retryBtn =

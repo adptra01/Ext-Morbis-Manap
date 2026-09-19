@@ -17,7 +17,7 @@ Fitur **Upload Dokumen Ulang** memungkinkan pengguna untuk mengunggah dokumen se
 ### 1. Deteksi dan Parsing URL
 
 - Input teks dari textarea diparsing menggunakan regex untuk menemukan URL valid
-- Hanya URL dengan ekstensi `.pdf`, `.jpg`, `.jpeg`, `.png` yang diterima
+- Hanya URL dengan ekstensi `.pdf`, `.jpg`, `.jpeg`, `.png`, `.gif` yang diterima
 - Metadata diekstrak dari URL menggunakan pattern matching:
   - **NORM**: Angka 6+ digit dalam URL
   - **Tanggal**: Format DD-MM-YYYY atau YYYYMMDD
@@ -102,10 +102,37 @@ Fitur **Upload Dokumen Ulang** memungkinkan pengguna untuk mengunggah dokumen se
 - Dapat diaktifkan melalui popup extension
 - Pengaturan disimpan di Chrome storage
 
+### Aturan Server MORBIS (diverifikasi 2026-09-18 dari form & halaman live)
+
+Cek langsung ke `http://103.147.236.140` (login admin, `id_visit=198915`):
+
+1. **Jenis file yang diterima server** — form `/v2/m-klaim/uploda-dokumen/form`:
+   `<input type="file" name="dok" accept="image/png, image/gif, image/jpeg, application/pdf">`
+   → **PNG, GIF, JPEG, PDF**. GIF diterima server tapi selama ini TIDAK ada di
+   `supportedExtensions` extension (sudah ditambahkan `.gif`).
+2. **`jenis_dokumen`** — whitelist form: `Laporan Tindakan HD`, `Laporan Intubasi Extubasi`,
+   `Lain-lain`. Tabel list ternyata juga berisi nilai lain (mis. `hasil_lab`) dari sumber
+   otomatis lab — server tidak menolak string bebas.
+3. **`keterangan` WAJIB diisi** — validasi client `toastr['error']("Keterangan Wajib Diisi")`.
+   Extension harus selalu mengirim fallback non-kosong (`metadata.filename || '-'`).
+4. **Server me-rename file sendiri** menjadi `{norm}-{unix_ts}-{nama_upload}`. Karena itu
+   upload ulang file yang sudah di-rename di-prefix lagi → nama menggelembung
+   (`00005288-...-00005288-...-nama_asli.pdf`, teramati sampai 129 char). Kalau dibiarkan
+   re-upload berulang akhirnya menembus batas varchar/filesystem → baris tidak pernah
+   tersimpan → "file gak tampil". Solusi extension: `rewriteUploadFilename()` memangkas
+   menjadi `NORM_tgl_basename.ext` (base ≤ 60 char) supaya gelembung tetap pendek.
+5. **Halaman detail hanya menampilkan 1 file terbaru** — `div-file-upload` merender
+   `var url = '/assets/dokumen-pasien/<nama>.pdf'` secara inline (PDF.js) **tanpa escaping
+   HTML/JS**. Nama file berisi `'`, `\`, `<`, `&`, atau `</script>` → JS string pecah →
+   preview blank ("diblokir"). Nama dengan spasi aman (fetch auto-encode, HTTP 200).
+   Sanitasi nama upload = kewajiban, bukan pilihan.
+6. **Semua file di halaman dokumen-pasien mengembalikan HTTP 200** (cek 70/70 file,
+   2026-09-18) — file di disk aman; masalahnya data entry/penamaan, bukan file hilang.
+
 ### Batasan Teknis
 
 - **Maksimal URL per batch**: 50 URL
-- **Format file didukung**: PDF, JPG, JPEG, PNG
+- **Format file didukung**: PDF, JPG, JPEG, PNG, GIF (GIF = temuan server 2026-09-18)
 - **Concurrent upload**: Maksimal 3 upload bersamaan
 - **Timeout download**: 30 detik per file
 
