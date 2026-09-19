@@ -77,24 +77,47 @@ var __morbis_feature = (() => {
         }
       });
       const sections = [];
-      document.querySelectorAll('.contentlab .section-title').forEach((st) => {
+      document.querySelectorAll('.contentlab td').forEach((td) => {
+        const st = td.querySelector('.section-title');
+        if (!st) return;
         const title = txt(st);
-        let p = st.nextElementSibling;
-        while (p && p.tagName !== 'P') p = p.nextElementSibling;
+        const tmp = document.createElement('div');
+        tmp.innerHTML = td.innerHTML;
+        tmp.querySelector('.section-title')?.remove();
+        const paras = tmp.innerHTML
+          .replace(/\r\n?/g, '\n')
+          .replace(/<br\s*\/?>[ \t]*\n?/gi, '\n')
+          .replace(/\n(?:[ \t]*\n)+/g, '\u2028')
+          .split('\u2028')
+          .map((block) =>
+            block
+              .split(/<br\s*\/?>|\n/)
+              .map((l) =>
+                l
+                  .replace(/<[^>]+>/g, ' ')
+                  .replace(/\s+/g, ' ')
+                  .trim(),
+              )
+              .filter(Boolean),
+          )
+          .filter((b) => b.length);
         const items = [];
-        if (p) {
-          (p.innerHTML || '')
-            .split(/<br\s*\/?>/gi)
-            .map((l) =>
-              l
-                .replace(/<[^>]+>/g, ' ')
-                .replace(/\s+/g, ' ')
-                .trim(),
-            )
-            .filter(Boolean)
-            .forEach((l) => items.push(l));
+        const paraIdx = [];
+        paras.forEach((block, bi) => {
+          block.forEach((it, ii) => {
+            if (bi > 0 && ii === 0 && items.length) paraIdx.push(items.length);
+            items.push(it);
+          });
+        });
+        const finalItems = items;
+        if (
+          finalItems.length > 1 &&
+          !/^[IVXLC]+\.\s/.test(finalItems[0]) &&
+          finalItems.slice(1).some((it) => /^II\.\s/.test(it))
+        ) {
+          finalItems[0] = 'I. ' + finalItems[0];
         }
-        if (title) sections.push({ title, items });
+        if (title) sections.push({ title, items: finalItems, para: paraIdx });
       });
       const sigTds = Array.from(document.querySelectorAll('.contentlab ~ div table td'));
       const sigTexts = sigTds.map((td) => txt(td)).filter(Boolean);
@@ -109,9 +132,12 @@ var __morbis_feature = (() => {
         window.location.href + '&export=word';
       const bodyScripts = Array.from(document.body.querySelectorAll('script'));
       document.documentElement.setAttribute(PAGE_GUARD, '1');
-      const infoClean = infoItems.map(([l, v]) =>
-        /^ruang/i.test(l) ? [l, v.replace(/^poli\s+.+?-\s*(?=klinik)/i, '').trim() || v] : [l, v],
-      );
+      const infoClean = infoItems.map(([l, v]) => {
+        if (!/^ruang/i.test(l)) return [l, v];
+        const dedup = v.replace(/^poli\s+.+?-\s*(?=klinik)/i, '').trim() || v;
+        const segDup = dedup.replace(/^(\S+)\s+-\s*(?=\1\b)/i, '').trim();
+        return [l, segDup || dedup];
+      });
       const infoHtml = infoClean
         .map(
           ([l, v]) =>
@@ -122,13 +148,25 @@ var __morbis_feature = (() => {
             '</div></div>',
         )
         .join('');
+      const fmtItem = (it) =>
+        // Baris ICD-O tampil bold seperti prototype (ICD-0: 8210/0 …).
+        /^icd-?o\s*:/i.test(it) ? '<strong>' + esc(it) + '</strong>' : esc(it);
       const hasilHtml = sections
         .map(
           (s) =>
             '<div class="section-judul">' +
             esc(s.title) +
             '</div><div class="section-isi">' +
-            s.items.map((it) => '<div class="item-list">' + esc(it) + '</div>').join('') +
+            s.items
+              .map(
+                (it, i) =>
+                  '<div class="item-list' +
+                  (s.para.includes(i) ? ' item-para' : '') +
+                  '">' +
+                  fmtItem(it) +
+                  '</div>',
+              )
+              .join('') +
             '</div>',
         )
         .join('');
@@ -432,6 +470,10 @@ var __morbis_feature = (() => {
             .patient-info-container {
                 grid-template-columns: 1fr 1fr !important;
             }
+
+            .section-judul {
+                break-after: avoid;
+            }
         }
 
         .section-judul {
@@ -445,6 +487,11 @@ var __morbis_feature = (() => {
 
         .item-list {
             margin-bottom: 6px;
+        }
+
+        /* Awal paragraf baru (baris kosong di input): gap ekstra. */
+        .item-list.item-para {
+            margin-top: 14px;
         }
       `;
         document.head.appendChild(s);

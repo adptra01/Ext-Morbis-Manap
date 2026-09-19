@@ -15,7 +15,7 @@
    *   #logo img + 3×h1.kop-atas + teks alamat → .head-cetak/.kop-text/.kop-alamat
    *   .head-cetak-instansi                    → judul (teks sama)
    *   .table-outer (6 baris × label:val|label:val) → 12× .info-item
-   *   .contentlab .section-title + p          → .section-judul + .section-isi(.item-list)
+   *   .contentlab td (seluruh isi, multi-p/bare-text) → .section-judul + .section-isi
    *   2 tabel signature (terima kasih/tgl/QR/nama/NIP) → .ttd-box
    *   #SCETAK(input onclick=cetak()) + a export word → .btn-print + .btn-back
    *
@@ -120,26 +120,58 @@
       }
     });
 
-    // Hasil: tiap .section-title + <p> sesudahnya (<br> → .item-list).
-    const sections: Array<{ title: string; items: string[] }> = [];
-    document.querySelectorAll('.contentlab .section-title').forEach((st) => {
+    // Hasil: tiap <td> contentlab = 1 section. Ambil SELURUH isi <td>
+    // (buang div section-title). Run 2+ break berurutan (<br>/<br>/newline,
+    // mis. baris kosong antar "I. …" dan "II. …" di textarea) = PARAGRAF
+    // baru (gap ekstra); break tunggal = pemisah item biasa.
+    // Hanya ambil <p> pertama = ICD-O/SARAN hilang — jangan diulangi.
+    const sections: Array<{ title: string; items: string[]; para: number[] }> = [];
+    document.querySelectorAll('.contentlab td').forEach((td) => {
+      const st = td.querySelector('.section-title');
+      if (!st) return;
       const title = txt(st);
-      let p: Element | null = st.nextElementSibling;
-      while (p && p.tagName !== 'P') p = p.nextElementSibling;
+      const tmp = document.createElement('div');
+      tmp.innerHTML = td.innerHTML;
+      tmp.querySelector('.section-title')?.remove();
+      const paras: string[][] = tmp.innerHTML
+        .replace(/\r\n?/g, '\n')
+        .replace(/<br\s*\/?>[ \t]*\n?/gi, '\n')
+        .replace(/\n(?:[ \t]*\n)+/g, '\u2028')
+        .split('\u2028')
+        .map((block) =>
+          block
+            .split(/<br\s*\/?>|\n/)
+            .map((l) =>
+              l
+                .replace(/<[^>]+>/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim(),
+            )
+            .filter(Boolean),
+        )
+        .filter((b) => b.length);
       const items: string[] = [];
-      if (p) {
-        (p.innerHTML || '')
-          .split(/<br\s*\/?>/gi)
-          .map((l) =>
-            l
-              .replace(/<[^>]+>/g, ' ')
-              .replace(/\s+/g, ' ')
-              .trim(),
-          )
-          .filter(Boolean)
-          .forEach((l) => items.push(l));
+      const paraIdx: number[] = [];
+      paras.forEach((block, bi) => {
+        block.forEach((it, ii) => {
+          if (bi > 0 && ii === 0 && items.length) paraIdx.push(items.length);
+          items.push(it);
+        });
+      });
+      // Tampilkan SEMUA baris apa adanya seperti halaman asli —
+      // termasuk "Tidak ada" berulang (server render per-spesimen).
+      const finalItems = items;
+      // Server cetak menghilangkan "I." di awal section multi-spesimen
+      // (input "I. … II. …" → cetak "… II. …"). Pulihkan: bila item pertama
+      // tanpa penomoran romawi tapi item berikut ada "II.", tambahkan "I. ".
+      if (
+        finalItems.length > 1 &&
+        !/^[IVXLC]+\.\s/.test(finalItems[0]) &&
+        finalItems.slice(1).some((it) => /^II\.\s/.test(it))
+      ) {
+        finalItems[0] = 'I. ' + finalItems[0];
       }
-      if (title) sections.push({ title, items });
+      if (title) sections.push({ title, items: finalItems, para: paraIdx });
     });
 
     // Signature: "Terima kasih…", "Kota, tgl", QR img, nama dokter, NIP.
@@ -163,12 +195,16 @@
 
     document.documentElement.setAttribute(PAGE_GUARD, '1'); // set awal agar tidak double-fire
 
-    // Ruangan: "POLI DALAM - KLINIK PENYAKIT DALAM - Tanpa Kelas" →
-    // buang prefix "POLI … - " yang dobel → "KLINIK PENYAKIT DALAM - Tanpa Kelas".
-    // Hanya bila diikuti KLINIK; tanpa itu (mis. "POLI DALAM - Tanpa Kelas") dibiarkan.
-    const infoClean: Array<[string, string]> = infoItems.map(([l, v]) =>
-      /^ruang/i.test(l) ? [l, v.replace(/^poli\s+.+?-\s*(?=klinik)/i, '').trim() || v] : [l, v],
-    );
+    // Ruangan: buang segmen pertama yang dobel:
+    //   "POLI DALAM - KLINIK PENYAKIT DALAM - Tanpa Kelas" → "KLINIK … - …"
+    //   "Laboratorium - LABORATORIUM - Tanpa Kelas" → "LABORATORIUM - …"
+    // Tanpa pola dobel (mis. "POLI DALAM - Tanpa Kelas") dibiarkan utuh.
+    const infoClean: Array<[string, string]> = infoItems.map(([l, v]) => {
+      if (!/^ruang/i.test(l)) return [l, v];
+      const dedup = v.replace(/^poli\s+.+?-\s*(?=klinik)/i, '').trim() || v;
+      const segDup = dedup.replace(/^(\S+)\s+-\s*(?=\1\b)/i, '').trim();
+      return [l, segDup || dedup];
+    });
 
     /** --- REBUILD (struktur prioritas, data asli) --- */
     const infoHtml = infoClean
@@ -186,6 +222,10 @@
       )
       .join('');
 
+    const fmtItem = (it: string): string =>
+      // Baris ICD-O tampil bold seperti prototype (ICD-0: 8210/0 …).
+      /^icd-?o\s*:/i.test(it) ? '<strong>' + esc(it) + '</strong>' : esc(it);
+
     const hasilHtml = sections
       .map(
         (s) =>
@@ -193,7 +233,16 @@
           esc(s.title) +
           '</div>' +
           '<div class="section-isi">' +
-          s.items.map((it) => '<div class="item-list">' + esc(it) + '</div>').join('') +
+          s.items
+            .map(
+              (it, i) =>
+                '<div class="item-list' +
+                (s.para.includes(i) ? ' item-para' : '') +
+                '">' +
+                fmtItem(it) +
+                '</div>',
+            )
+            .join('') +
           '</div>',
       )
       .join('');
@@ -523,6 +572,10 @@
             .patient-info-container {
                 grid-template-columns: 1fr 1fr !important;
             }
+
+            .section-judul {
+                break-after: avoid;
+            }
         }
 
         .section-judul {
@@ -536,6 +589,11 @@
 
         .item-list {
             margin-bottom: 6px;
+        }
+
+        /* Awal paragraf baru (baris kosong di input): gap ekstra. */
+        .item-list.item-para {
+            margin-top: 14px;
         }
       `;
       document.head.appendChild(s);
