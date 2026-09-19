@@ -225,6 +225,7 @@ var __morbis_feature = (() => {
   var g = getMorbisGlobals();
   var _initialized = false;
   var _observer = null;
+  var _observerTimer = null;
   function extractIdVisit() {
     return new URLSearchParams(window.location.search).get('id_visit');
   }
@@ -367,7 +368,11 @@ var __morbis_feature = (() => {
     attachVerifListeners();
     if (_observer) _observer.disconnect();
     _observer = new MutationObserver(() => {
-      attachVerifListeners();
+      if (_observerTimer !== null) return;
+      _observerTimer = window.setTimeout(() => {
+        _observerTimer = null;
+        attachVerifListeners();
+      }, 250);
     });
     _observer.observe(document.body, { childList: true, subtree: true });
   }

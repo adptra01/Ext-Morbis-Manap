@@ -13,6 +13,7 @@ const g = getMorbisGlobals();
 let _scanIntervalId: number | null = null;
 let _textScanTimeoutId: number | null = null;
 let _observer: MutationObserver | null = null;
+let _observerTimer: number | null = null;
 
 const OPEN_DETAIL_CONFIG = {
   urlPatterns: [
@@ -257,6 +258,10 @@ function _cleanupOpenDetail(): void {
     clearTimeout(_textScanTimeoutId);
     _textScanTimeoutId = null;
   }
+  if (_observerTimer !== null) {
+    clearTimeout(_observerTimer);
+    _observerTimer = null;
+  }
   // Disconnect observer
   if (_observer) {
     _observer.disconnect();
@@ -284,13 +289,16 @@ function runOpenDetailInNewTabFeature(): void {
 
     // FIX: simpan observer ref agar bisa disconnect
     _observer = new MutationObserver(() => {
-      try {
-        if (isEnabled) {
-          overrideDetailButtons();
+      if (_observerTimer !== null) clearTimeout(_observerTimer);
+      // debounce: partial injection memicu banyak mutasi sekaligus
+      _observerTimer = window.setTimeout(() => {
+        _observerTimer = null;
+        try {
+          if (isEnabled) overrideDetailButtons();
+        } catch (e) {
+          console.warn('[OpenDetail] MutationObserver error:', e);
         }
-      } catch (e) {
-        console.warn('[OpenDetail] MutationObserver error:', e);
-      }
+      }, 200);
     });
 
     _observer.observe(document.body, { childList: true, subtree: true });

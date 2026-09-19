@@ -13,6 +13,7 @@ const g = getMorbisGlobals();
 
 let _initialized = false;
 let _observer: MutationObserver | null = null;
+let _observerTimer: number | null = null;
 
 function extractIdVisit(): string | null {
   return new URLSearchParams(window.location.search).get('id_visit');
@@ -191,8 +192,14 @@ export function initMklaimVerifLog(): void {
   attachVerifListeners();
 
   if (_observer) _observer.disconnect();
+  // debounce: attachVerifListeners menscan semua button/a/input tiap mutasi —
+  // saat partial di-inject (banyak mutasi sekaligus) cukup 1x scan per burst.
   _observer = new MutationObserver(() => {
-    attachVerifListeners();
+    if (_observerTimer !== null) return;
+    _observerTimer = window.setTimeout(() => {
+      _observerTimer = null;
+      attachVerifListeners();
+    }, 250);
   });
 
   _observer.observe(document.body, { childList: true, subtree: true });

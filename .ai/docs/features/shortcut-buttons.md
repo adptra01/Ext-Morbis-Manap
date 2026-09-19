@@ -94,6 +94,14 @@ Fitur ini mendeteksi jenis halaman saat ini (detail atau eksekusi) dan merender 
 - **Styling**: CSS-in-JS dengan transisi dan desain responsif
 - **Penyembunyian Cetak**: Query media CSS menyembunyikan tombol saat mencetak
 
+## Riwayat Revisi BPJS
+
+Di halaman detail, toolbar menampilkan panel readonly `Riwayat Revisi BPJS` tepat di bawah tombol shortcut.
+
+- Panel membaca nilai aktual `#poli`, `#id_poli`, dan `#keterangan` ketika `#form-add` dikirim.
+- Entri berstatus `mengirim...` sampai toast sukses revisi terdeteksi, lalu berubah menjadi `tersimpan`.
+- Semua revisi yang dikirim pada tab yang sama ditampilkan, termasuk revisi sebelum reload halaman; tidak ada data yang diambil dari localStorage.
+
 ## Opsi Konfigurasi
 
 ```javascript

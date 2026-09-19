@@ -60,8 +60,333 @@ var __morbis_feature = (() => {
 `,
   );
 
-  // src/features/toolbar.ts
+  // src/features/shortcutButtons.ts
   var g = getMorbisGlobals();
+  var BACK_DETAIL_BTN = { text: 'Kembali ke Detail Klaim', bg: '#6366f1', hover: '#4f46e5' };
+  injectCSS(
+    'ext-shortcut-styles',
+    `@media print{[data-shortcut-buttons],[data-back-to-detail-klaim],[data-bpjs-revision-history],[data-bpjs-revision-history] textarea,.no-print,.hilang-saat-print{display:none!important;height:0!important;width:0!important;margin:0!important;padding:0!important;overflow:hidden!important;visibility:hidden!important;position:absolute!important;top:-9999px!important;left:-9999px!important;opacity:0!important}[data-shortcut-buttons] a,[data-shortcut-buttons] button,[data-back-to-detail-klaim] a,[data-back-to-detail-klaim] button{display:none!important}}
+  [data-bpjs-revision-history] {
+    display:flex; flex-direction:column; gap:8px; margin:0 0 12px; padding:12px 16px;
+    background:${colors.card}; border:1px solid ${colors.border}; border-radius:8px;
+    font-size:13px; color:${colors.foreground};
+  }
+  [data-bpjs-revision-history] .ext-bpjs-revision-head {
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    font-weight:600;
+  }
+  [data-bpjs-revision-history] .ext-bpjs-revision-count {
+    font-weight:500; color:${colors.mutedForeground}; font-size:12px;
+  }
+  [data-bpjs-revision-history] textarea {
+    width:100%; min-height:84px; resize:vertical; padding:10px 12px;
+    border:1px solid ${colors.input}; border-radius:6px; background:${colors.secondary};
+    color:${colors.foreground}; font:inherit; line-height:1.5;
+  }
+  [data-bpjs-revision-history] .ext-bpjs-revision-hint {
+    color:${colors.mutedForeground}; font-size:12px;
+  }
+  [data-back-to-detail-klaim] {
+    display:inline-flex; align-items:center; padding:10px 14px; margin:12px;
+    background:${colors.secondary}; border:1px solid ${colors.border}; border-radius:8px;
+    position:fixed; top:100px; right:20px; z-index:9999;
+  }
+  [data-back-to-detail-klaim] a {
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:8px 16px; background:${BACK_DETAIL_BTN.bg}; color:#fff; border:none;
+    border-radius:6px; text-decoration:none; font-size:13px; font-weight:600;
+    cursor:pointer; transition:all 0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.2);
+  }
+  [data-back-to-detail-klaim] a:hover { background:${BACK_DETAIL_BTN.hover}; transform:translateY(-2px); box-shadow:0 4px 8px rgba(0,0,0,0.3); }
+  [data-back-to-detail-klaim] a:active { transform:translateY(0); }
+`,
+  );
+  function extractParam(name) {
+    return new URLSearchParams(window.location.search).get(name);
+  }
+  function isExecutionPage() {
+    return (
+      window.location.pathname.includes('/admisi/pelaksanaan_pelayanan/') ||
+      window.location.pathname.includes('/admisi/detail-rawat-inap/')
+    );
+  }
+  function formatDate(d) {
+    return [
+      String(d.getDate()).padStart(2, '0'),
+      String(d.getMonth() + 1).padStart(2, '0'),
+      d.getFullYear(),
+    ].join('-');
+  }
+  function generateDetailUrl(idVisit) {
+    const ta =
+      document.getElementById('tanggalAwal')?.value || formatDate(/* @__PURE__ */ new Date());
+    const tAkhir =
+      document.getElementById('tanggalAkhir')?.value || formatDate(/* @__PURE__ */ new Date());
+    return `${window.location.origin}/v2/m-klaim/detail-v2-refaktor?id_visit=${idVisit}&tanggalAwal=${encodeURIComponent(ta)}&tanggalAkhir=${encodeURIComponent(tAkhir)}&norm=&nama=&reg=&billing=all&status=all&id_poli_cari=&poli_cari=`;
+  }
+  var BPJS_REVISION_PANEL_SELECTOR = '[data-bpjs-revision-history]';
+  var BPJS_REVISION_TEXTAREA_ID = 'ext-bpjs-revision-history';
+  var BPJS_REVISION_COUNT_ID = 'ext-bpjs-revision-count';
+  var BPJS_REVISION_HISTORY_KEY = 'extBpjsRevisions';
+  var BPJS_REVISION_SUBMIT_PATH = '/v2/m-klaim/control/revisi';
+  var BPJS_REVISION_SUCCESS_WINDOW_MS = 18e4;
+  var bpjsRevisions = [];
+  var pendingBpjsRevisions = [];
+  var bpjsRevisionObserver = null;
+  var bpjsRevisionListenersInstalled = false;
+  function bpjsRevisionKey(revision) {
+    return [
+      revision.idVisit,
+      revision.poli,
+      revision.idPoli,
+      revision.keterangan,
+      String(revision.submittedAt),
+    ].join('|');
+  }
+  function isBpjsRevision(value) {
+    if (!value || typeof value !== 'object') return false;
+    const revision = value;
+    return (
+      typeof revision.idVisit === 'string' &&
+      typeof revision.poli === 'string' &&
+      typeof revision.idPoli === 'string' &&
+      typeof revision.keterangan === 'string' &&
+      typeof revision.submittedAt === 'number' &&
+      Number.isFinite(revision.submittedAt) &&
+      (revision.status === 'pending' || revision.status === 'saved')
+    );
+  }
+  function mergeRevisionHistory(current, incoming) {
+    const seen = new Set(current.map((revision) => bpjsRevisionKey(revision)));
+    const merged = [...current];
+    for (const revision of incoming) {
+      const key = bpjsRevisionKey(revision);
+      if (!seen.has(key)) {
+        seen.add(key);
+        merged.push(revision);
+      }
+    }
+    return merged;
+  }
+  function readRevisionHistoryState(state) {
+    if (!state || typeof state !== 'object' || Array.isArray(state)) return [];
+    const revisions = state[BPJS_REVISION_HISTORY_KEY];
+    if (!Array.isArray(revisions)) return [];
+    return revisions.filter(isBpjsRevision);
+  }
+  function withRevisionHistoryState(currentState, revisions) {
+    const base =
+      currentState && typeof currentState === 'object' && !Array.isArray(currentState)
+        ? currentState
+        : {};
+    return {
+      ...base,
+      [BPJS_REVISION_HISTORY_KEY]: revisions.filter((revision) => revision.status === 'saved'),
+    };
+  }
+  function formatRevisionTimestamp(timestamp) {
+    const date = new Date(timestamp);
+    const pad = (value) => String(value).padStart(2, '0');
+    return `${pad(date.getDate())}-${pad(date.getMonth() + 1)}-${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  }
+  function formatBpjsRevisions(revisions) {
+    return revisions
+      .map((revision, index) => {
+        const state = revision.status === 'saved' ? 'tersimpan' : 'mengirim...';
+        return [
+          `Revisi ${index + 1} \u2014 ${formatRevisionTimestamp(revision.submittedAt)} (${state})`,
+          `ID Visit: ${revision.idVisit || '-'}`,
+          `Poli Tujuan: ${revision.poli || '-'}${revision.idPoli ? ` (ID ${revision.idPoli})` : ''}`,
+          `Keterangan: ${revision.keterangan || '-'}`,
+        ].join('\n');
+      })
+      .join('\n\n---\n\n');
+  }
+  function readRevisionHistory() {
+    try {
+      return readRevisionHistoryState(history.state);
+    } catch {
+      return [];
+    }
+  }
+  function persistRevisionHistory() {
+    try {
+      history.replaceState(withRevisionHistoryState(history.state, bpjsRevisions), '');
+    } catch {}
+  }
+  function queryRevisionPanel() {
+    const panel = document.querySelector(BPJS_REVISION_PANEL_SELECTOR);
+    const textarea = panel?.querySelector(`#${BPJS_REVISION_TEXTAREA_ID}`) ?? null;
+    const count = panel?.querySelector(`#${BPJS_REVISION_COUNT_ID}`) ?? null;
+    if (!panel || !textarea || !count) return null;
+    return { panel, textarea, count };
+  }
+  function ensureRevisionPanel(toolbar) {
+    const parent = toolbar.parentElement;
+    if (!parent) return null;
+    let found = queryRevisionPanel();
+    if (found) return found.textarea;
+    const panel = document.createElement('div');
+    panel.setAttribute('data-bpjs-revision-history', 'true');
+    const head = document.createElement('div');
+    head.className = 'ext-bpjs-revision-head';
+    const title = document.createElement('span');
+    title.textContent = 'Riwayat Revisi BPJS';
+    const count = document.createElement('span');
+    count.id = BPJS_REVISION_COUNT_ID;
+    count.className = 'ext-bpjs-revision-count';
+    count.textContent = '0 revisi';
+    const textarea = document.createElement('textarea');
+    textarea.id = BPJS_REVISION_TEXTAREA_ID;
+    textarea.readOnly = true;
+    textarea.spellcheck = false;
+    textarea.rows = 3;
+    textarea.setAttribute('aria-label', 'Riwayat revisi BPJS');
+    textarea.placeholder = 'Belum ada revisi BPJS yang dikirim pada tab ini.';
+    const hint = document.createElement('div');
+    hint.className = 'ext-bpjs-revision-hint';
+    hint.textContent = 'Diambil dari poli dan keterangan yang dikirim lewat Revisi.';
+    head.append(title, count);
+    panel.append(head, textarea, hint);
+    parent.insertBefore(panel, toolbar.nextSibling);
+    found = queryRevisionPanel();
+    return found?.textarea ?? null;
+  }
+  function renderRevisionHistory() {
+    const found = queryRevisionPanel();
+    if (!found) return;
+    const value = formatBpjsRevisions(bpjsRevisions);
+    found.textarea.value = value;
+    found.textarea.rows = value ? Math.min(12, Math.max(5, value.split('\n').length + 1)) : 3;
+    found.count.textContent = `${bpjsRevisions.length} revisi`;
+  }
+  function isRevisionForm(form) {
+    if (form.id === 'form-add') return true;
+    const action = form.getAttribute('action') || form.action || '';
+    if (!action.includes(BPJS_REVISION_SUBMIT_PATH)) return false;
+    try {
+      return new URL(action, window.location.href).searchParams.get('sub') === 'simpan';
+    } catch {
+      return true;
+    }
+  }
+  function readRevisionFromForm(form) {
+    const poli = form.querySelector('#poli, input[name="poli"]')?.value.trim() ?? '';
+    const idPoli = form.querySelector('#id_poli, input[name="id_poli"]')?.value.trim() ?? '';
+    const keterangan =
+      form.querySelector('#keterangan, textarea[name="keterangan"]')?.value.trim() ?? '';
+    const idVisit =
+      form.querySelector('input[name="id_visit"]')?.value.trim() ?? extractParam('id_visit') ?? '';
+    if (!idPoli || !keterangan) return null;
+    return { idVisit, poli, idPoli, keterangan, submittedAt: Date.now(), status: 'pending' };
+  }
+  function onRevisionSubmit(event) {
+    const target = event.target;
+    const form = target?.closest?.('form');
+    if (!(form instanceof HTMLFormElement) || !isRevisionForm(form)) return;
+    const revision = readRevisionFromForm(form);
+    if (!revision) {
+      pendingBpjsRevisions = [];
+      return;
+    }
+    pendingBpjsRevisions = [revision];
+    bpjsRevisions = mergeRevisionHistory(bpjsRevisions, pendingBpjsRevisions);
+    renderRevisionHistory();
+  }
+  var bpjsRevisionObserverTimer = null;
+  function scheduleBpjsRevisionCheck() {
+    if (bpjsRevisionObserverTimer !== null) return;
+    bpjsRevisionObserverTimer = window.setTimeout(() => {
+      bpjsRevisionObserverTimer = null;
+      onRevisionMutations();
+    }, 200);
+  }
+  function onRevisionMutations() {
+    if (pendingBpjsRevisions.length === 0) {
+      const toolbar = document.querySelector('[data-toolbar]');
+      if (toolbar && !queryRevisionPanel()) ensureRevisionPanel(toolbar);
+      return;
+    }
+    const now = Date.now();
+    pendingBpjsRevisions = pendingBpjsRevisions.filter(
+      (revision) => now - revision.submittedAt <= BPJS_REVISION_SUCCESS_WINDOW_MS,
+    );
+    if (pendingBpjsRevisions.length === 0) return;
+    const failed = document.querySelector('.toast-error, .toast-warning');
+    if (failed) {
+      pendingBpjsRevisions = [];
+      renderRevisionHistory();
+      return;
+    }
+    if (!document.querySelector('.toast-success')) return;
+    for (const revision of pendingBpjsRevisions) revision.status = 'saved';
+    pendingBpjsRevisions = [];
+    persistRevisionHistory();
+    renderRevisionHistory();
+  }
+  function initBpjsRevisionHistory(toolbar) {
+    if (!toolbar) return;
+    const restored = readRevisionHistory();
+    bpjsRevisions = mergeRevisionHistory(bpjsRevisions, restored);
+    ensureRevisionPanel(toolbar);
+    renderRevisionHistory();
+    if (bpjsRevisionListenersInstalled) return;
+    document.addEventListener('submit', onRevisionSubmit, true);
+    bpjsRevisionObserver = new MutationObserver(scheduleBpjsRevisionCheck);
+    bpjsRevisionObserver.observe(document.body, { childList: true, subtree: true });
+    bpjsRevisionListenersInstalled = true;
+  }
+  function renderBackToDetailButton() {
+    if (!g.currentConfig?.features?.shortcutButtons?.enabled) return;
+    if (!isExecutionPage() || document.querySelector('[data-back-to-detail-klaim]')) return;
+    const idVisit = extractParam('id_visit') || extractParam('idVisit');
+    if (!idVisit) return;
+    const detailUrl = generateDetailUrl(idVisit);
+    const container = document.createElement('div');
+    container.dataset.backToDetailKlaim = 'true';
+    const btn = document.createElement('a');
+    btn.href = detailUrl;
+    btn.textContent = BACK_DETAIL_BTN.text;
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.close();
+      setTimeout(() => {
+        window.location.href = detailUrl;
+      }, 300);
+    });
+    container.appendChild(btn);
+    document.body.appendChild(container);
+  }
+  function runWithObserver(fn, checkExist) {
+    if (document.readyState === 'complete') setTimeout(fn, 500);
+    else window.addEventListener('load', () => setTimeout(fn, 500));
+    const obs = new MutationObserver(() => {
+      if (g.currentConfig?.features?.shortcutButtons?.enabled !== false && !checkExist()) fn();
+    });
+    obs.observe(document.body, { childList: true, subtree: true });
+  }
+  if (typeof g.featureModules !== 'undefined') {
+    g.featureModules.shortcutButtons = {
+      id: 'shortcutButtons',
+      name: 'Kembali ke Detail Klaim',
+      description: 'Tombol floating kembali ke halaman detail klaim dari halaman pelaksanaan',
+      match: {
+        oneOf: [
+          { prefix: '/admisi/pelaksanaan_pelayanan/' },
+          { prefix: '/admisi/detail-rawat-inap/' },
+        ],
+      },
+      run: () => {
+        runWithObserver(
+          renderBackToDetailButton,
+          () => !!document.querySelector('[data-back-to-detail-klaim]'),
+        );
+      },
+    };
+  }
+
+  // src/features/toolbar.ts
+  var g2 = getMorbisGlobals();
   injectCSS(
     'ext-toolbar-styles',
     `@media print{[data-toolbar]{display:none!important}}
@@ -109,7 +434,7 @@ var __morbis_feature = (() => {
     pengkajianIgd: { text: 'Pengkajian Awal IGD', bg: '#d946ef', hover: '#c026d3' },
     backMklaim: { text: 'Kembali ke M-KLAIM', bg: colors.error, hover: '#dc2626' },
   };
-  function extractParam(name) {
+  function extractParam2(name) {
     return new URLSearchParams(window.location.search).get(name);
   }
   function getJenisKunjungan() {
@@ -128,7 +453,7 @@ var __morbis_feature = (() => {
     return !!j && (j.includes('INAP') || j === 'RAWAT INAP');
   }
   function extractIdVisit() {
-    return extractParam('id_visit');
+    return extractParam2('id_visit');
   }
   function extractIdRawatJalan() {
     return document.getElementById('id_rawat_jalan')?.value || null;
@@ -182,7 +507,7 @@ var __morbis_feature = (() => {
     const url = window.location.href;
     if (!url.includes('/v2/m-klaim/detail-v2-refaktor')) return false;
     for (const p of ['id_visit', 'tanggalAwal', 'tanggalAkhir']) {
-      if (!extractParam(p)) return false;
+      if (!extractParam2(p)) return false;
     }
     return true;
   }
@@ -200,7 +525,7 @@ var __morbis_feature = (() => {
     });
     a.addEventListener('click', (e) => {
       e.preventDefault();
-      const mode = g.currentConfig?.features?.openDetailInNewTab?.mode || 'new-tab';
+      const mode = g2.currentConfig?.features?.openDetailInNewTab?.mode || 'new-tab';
       if (sameTab || mode === 'same-tab') {
         window.location.href = url;
       } else {
@@ -225,9 +550,9 @@ var __morbis_feature = (() => {
     return btn;
   }
   function anyFeatureEnabled() {
-    const cfg = g.currentConfig;
+    const cfg = g2.currentConfig;
     if (!cfg?.extensionEnabled) return false;
-    const ok = (key) => cfg.features?.[key]?.enabled && g.ExtensionCore.isFeatureAllowed(key);
+    const ok = (key) => cfg.features?.[key]?.enabled && g2.ExtensionCore.isFeatureAllowed(key);
     return ok('shortcutButtons') || ok('batchDelete') || ok('batchUpload');
   }
   function renderToolbar() {
@@ -247,10 +572,10 @@ var __morbis_feature = (() => {
     label.className = 'ext-toolbar-label';
     bar.appendChild(label);
     const shortcutOk =
-      g.currentConfig?.features?.shortcutButtons?.enabled &&
-      g.ExtensionCore.isFeatureAllowed('shortcutButtons');
+      g2.currentConfig?.features?.shortcutButtons?.enabled &&
+      g2.ExtensionCore.isFeatureAllowed('shortcutButtons');
     if (shortcutOk) {
-      if (g.currentConfig?.extensionEnabled)
+      if (g2.currentConfig?.extensionEnabled)
         bar.appendChild(createLink(mklaimBaseUrl(), BTN_STYLES.backMklaim, true));
       const eResume = editResumeUrl();
       if (eResume) bar.appendChild(createLink(eResume, BTN_STYLES.editResume));
@@ -272,29 +597,29 @@ var __morbis_feature = (() => {
       if (tId) bar.appendChild(createLink(tId, BTN_STYLES.triageIgd));
     }
     if (
-      g.currentConfig?.features?.batchDelete?.enabled &&
-      g.ExtensionCore.isFeatureAllowed('batchDelete')
+      g2.currentConfig?.features?.batchDelete?.enabled &&
+      g2.ExtensionCore.isFeatureAllowed('batchDelete')
     ) {
       bar.appendChild(
         createBtn(
           'Hapus Dokumen',
           '#ef4444',
           '#dc2626',
-          () => g.batchDeleteShowModal?.(),
+          () => g2.batchDeleteShowModal?.(),
           'ext-toolbar-batch',
         ),
       );
     }
     if (
-      g.currentConfig?.features?.batchUpload?.enabled &&
-      g.ExtensionCore.isFeatureAllowed('batchUpload')
+      g2.currentConfig?.features?.batchUpload?.enabled &&
+      g2.ExtensionCore.isFeatureAllowed('batchUpload')
     ) {
       bar.appendChild(
         createBtn(
           'Upload Dokumen Ulang',
           '#2563eb',
           '#1d4ed8',
-          () => g.batchUploadShowModal?.(),
+          () => g2.batchUploadShowModal?.(),
           'ext-toolbar-upload',
         ),
       );
@@ -317,6 +642,7 @@ var __morbis_feature = (() => {
     if (!target) target = document.body;
     if (target.firstChild) target.insertBefore(bar, target.firstChild);
     else target.appendChild(bar);
+    if (shortcutOk) initBpjsRevisionHistory(bar);
   }
   if (document.readyState === 'complete') setTimeout(renderToolbar, 500);
   else window.addEventListener('load', () => setTimeout(renderToolbar, 500));

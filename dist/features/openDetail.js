@@ -10,6 +10,7 @@ var __morbis_feature = (() => {
   var _scanIntervalId = null;
   var _textScanTimeoutId = null;
   var _observer = null;
+  var _observerTimer = null;
   var OPEN_DETAIL_CONFIG = {
     urlPatterns: [
       '/v2/m-klaim/detail-v2-refaktor?id_visit={id}&tanggalAwal={tanggalAwal}&tanggalAkhir={tanggalAkhir}&norm=&nama=&reg=&billing=all&status=all&id_poli_cari=&poli_cari=',
@@ -211,6 +212,10 @@ var __morbis_feature = (() => {
       clearTimeout(_textScanTimeoutId);
       _textScanTimeoutId = null;
     }
+    if (_observerTimer !== null) {
+      clearTimeout(_observerTimer);
+      _observerTimer = null;
+    }
     if (_observer) {
       _observer.disconnect();
       _observer = null;
@@ -230,13 +235,15 @@ var __morbis_feature = (() => {
         restoreDetailButtons();
       }
       _observer = new MutationObserver(() => {
-        try {
-          if (isEnabled) {
-            overrideDetailButtons();
+        if (_observerTimer !== null) clearTimeout(_observerTimer);
+        _observerTimer = window.setTimeout(() => {
+          _observerTimer = null;
+          try {
+            if (isEnabled) overrideDetailButtons();
+          } catch (e) {
+            console.warn('[OpenDetail] MutationObserver error:', e);
           }
-        } catch (e) {
-          console.warn('[OpenDetail] MutationObserver error:', e);
-        }
+        }, 200);
       });
       _observer.observe(document.body, { childList: true, subtree: true });
     } catch (e) {

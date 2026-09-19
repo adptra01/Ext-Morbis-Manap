@@ -243,6 +243,34 @@ var __morbis_init = (() => {
       }
     }
     window.log('Extension initialized successfully');
+    watchStuckLoadingModal();
+  }
+  function watchStuckLoadingModal() {
+    const STUCK_MS = 2e4;
+    const SELECTOR = '.sweet-overlay, .sweet-alert, .swal-overlay, .swal2-container';
+    let firstSeenTs = 0;
+    const timer = window.setInterval(() => {
+      const modal = document.querySelector(SELECTOR);
+      if (!modal) {
+        firstSeenTs = 0;
+        return;
+      }
+      const text = modal.textContent || '';
+      if (!/mohon tunggu|menyiapkan data|sedang memuat/i.test(text)) {
+        firstSeenTs = 0;
+        return;
+      }
+      const now = Date.now();
+      if (!firstSeenTs) firstSeenTs = now;
+      if (now - firstSeenTs < STUCK_MS) return;
+      clearInterval(timer);
+      document.querySelectorAll(SELECTOR).forEach((el) => {
+        el.style.display = 'none';
+      });
+      const loadingModal = document.getElementById('loading-baru');
+      if (loadingModal) loadingModal.style.display = 'none';
+      document.body.style.overflow = '';
+    }, 2e3);
   }
   window.addEventListener('message', (event) => {
     const data = event.data;

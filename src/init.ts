@@ -224,6 +224,43 @@ async function initExtension(): Promise<void> {
   }
 
   window.log('Extension initialized successfully');
+
+  watchStuckLoadingModal();
+}
+
+// Watchdog: modal loading MORBIS (swalloading -> swal "Mohon Tunggu") ditutup APP
+// via swal.close() setelah SEMUA partial selesai (Promise.all di loadFiles()).
+// Kalau satu fetch partial hang (tanpa timeout), modal tak pernah hilang dan
+// menutupi halaman -> "gak bisa klik". Tutup dari sisi DOM saja (isolated world
+// tak punya akses window.swal milik halaman).
+function watchStuckLoadingModal(): void {
+  const STUCK_MS = 20000;
+  const SELECTOR = '.sweet-overlay, .sweet-alert, .swal-overlay, .swal2-container';
+  let firstSeenTs = 0;
+
+  const timer = window.setInterval(() => {
+    const modal = document.querySelector<HTMLElement>(SELECTOR);
+    if (!modal) {
+      firstSeenTs = 0;
+      return;
+    }
+    const text = modal.textContent || '';
+    if (!/mohon tunggu|menyiapkan data|sedang memuat/i.test(text)) {
+      firstSeenTs = 0;
+      return;
+    }
+    const now = Date.now();
+    if (!firstSeenTs) firstSeenTs = now;
+    if (now - firstSeenTs < STUCK_MS) return;
+    // ponytail: ambang 20s, cukup untuk load normal; naikkan jika APP sah > 20s
+    clearInterval(timer);
+    document.querySelectorAll<HTMLElement>(SELECTOR).forEach((el) => {
+      el.style.display = 'none';
+    });
+    const loadingModal = document.getElementById('loading-baru');
+    if (loadingModal) loadingModal.style.display = 'none';
+    document.body.style.overflow = '';
+  }, 2000);
 }
 
 // Global error handler: tangkap error tak terduga di halaman + bridge log dari
