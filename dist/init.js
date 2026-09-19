@@ -183,6 +183,12 @@ var __morbis_init = (() => {
     } else {
       document.documentElement.removeAttribute('data-ext-billing-adj');
     }
+    const paCfg = cfg?.features?.paLabPrint;
+    if (paCfg?.enabled && window.ExtensionCore.isFeatureAllowed('paLabPrint')) {
+      document.documentElement.setAttribute('data-ext-pa-print', '1');
+    } else {
+      document.documentElement.removeAttribute('data-ext-pa-print');
+    }
     const ctx = {
       pathname: normalizePath(window.location.pathname),
       url: new URL(window.location.href),
@@ -201,6 +207,13 @@ var __morbis_init = (() => {
   margin:0!important;padding:0!important;overflow:hidden!important;
   visibility:hidden!important;position:absolute!important;
   top:-9999px!important;left:-9999px!important;opacity:0!important;
+}
+/* APP men-set pointer-events: none (inline, via JS) pada input .autocomplete.
+   Klik di form modal tembus ke wrapper -> fokus tak masuk input -> "gak bisa
+   input". Fix via CSS <style> tak cukup: APP menghapus style tag ekstensi.
+   Inline style + !important menang atas inline APP & stylesheet apa pun. */
+#data-modal.in input, #data-modal.in textarea, #data-modal.in select {
+  pointer-events: auto !important;
 }
 }`;
       document.head.appendChild(s);
@@ -244,6 +257,8 @@ var __morbis_init = (() => {
     }
     window.log('Extension initialized successfully');
     watchStuckLoadingModal();
+    injectFetchWatchdogToMainWorld();
+    watchDataModalUnblock();
   }
   function watchStuckLoadingModal() {
     const STUCK_MS = 2e4;
@@ -264,16 +279,53 @@ var __morbis_init = (() => {
       if (!firstSeenTs) firstSeenTs = now;
       if (now - firstSeenTs < STUCK_MS) return;
       clearInterval(timer);
-      document.querySelectorAll(SELECTOR).forEach((el) => {
-        el.style.display = 'none';
-      });
-      const loadingModal = document.getElementById('loading-baru');
-      if (loadingModal) loadingModal.style.display = 'none';
-      document.body.style.overflow = '';
+      hideStuckLoadingModal();
     }, 2e3);
+  }
+  function hideStuckLoadingModal() {
+    const SELECTOR = '.sweet-overlay, .sweet-alert, .swal-overlay, .swal2-container';
+    document.querySelectorAll(SELECTOR).forEach((el) => {
+      el.remove();
+    });
+    const loadingModal = document.getElementById('loading-baru');
+    if (loadingModal) loadingModal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+  function watchDataModalUnblock() {
+    if (!window.location.pathname.includes('/detail-v2-refaktor')) return;
+    const LOADING_RE = /mohon tunggu|menyiapkan data|sedang memuat/i;
+    window.setInterval(() => {
+      const modal = document.getElementById('data-modal');
+      if (!modal || !modal.classList.contains('in')) return;
+      if (modal.getAttribute('aria-hidden') === 'true') modal.removeAttribute('aria-hidden');
+      modal.querySelectorAll('input, textarea, select').forEach((el) => {
+        if (getComputedStyle(el).pointerEvents === 'none') {
+          el.style.setProperty('pointer-events', 'auto', 'important');
+        }
+      });
+      document.querySelectorAll('.sweet-overlay, .swal-overlay, .swal2-container').forEach((el) => {
+        if (LOADING_RE.test(el.textContent || '')) el.remove();
+      });
+    }, 500);
+  }
+  function injectFetchWatchdogToMainWorld() {
+    if (!window.location.pathname.includes('/detail-v2-refaktor')) return;
+    const script = document.createElement('script');
+    script.src = chrome.runtime.getURL('features/fetchWatchdog.js');
+    script.onload = () => {
+      console.log('[init] fetchWatchdog.js injected to MAIN world');
+    };
+    script.onerror = (err) => {
+      console.error('[init] fetchWatchdog.js injection failed:', err);
+    };
+    (document.head || document.documentElement).appendChild(script);
   }
   window.addEventListener('message', (event) => {
     const data = event.data;
+    if (data?.__extPartialSettled) {
+      hideStuckLoadingModal();
+      return;
+    }
     const entry = data?.__extUsageLog;
     if (!entry || !entry.feature) return;
     logUsage(entry.feature, entry.event ?? 'event', entry.ok ?? true, entry.detail);

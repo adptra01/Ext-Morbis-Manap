@@ -1,4 +1,5 @@
 import { getMorbisGlobals } from './shared/types.js';
+import { initBpjsRevisionHistory } from './shortcutButtons.js';
 import { colors, injectCSS } from '../shared/ui/index.js';
 
 const g = getMorbisGlobals();
@@ -300,6 +301,7 @@ function renderToolbar(): void {
   if (!target) target = document.body;
   if (target.firstChild) target.insertBefore(bar, target.firstChild);
   else target.appendChild(bar);
+  if (shortcutOk) initBpjsRevisionHistory(bar);
 }
 
 if (document.readyState === 'complete') setTimeout(renderToolbar, 500);

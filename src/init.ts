@@ -155,6 +155,13 @@ async function initExtension(): Promise<void> {
     document.documentElement.removeAttribute('data-ext-billing-adj');
   }
 
+  const paCfg = cfg?.features?.paLabPrint;
+  if (paCfg?.enabled && window.ExtensionCore.isFeatureAllowed('paLabPrint')) {
+    document.documentElement.setAttribute('data-ext-pa-print', '1');
+  } else {
+    document.documentElement.removeAttribute('data-ext-pa-print');
+  }
+
   const ctx: FeatureContext = {
     pathname: normalizePath(window.location.pathname),
     url: new URL(window.location.href),
@@ -176,6 +183,13 @@ async function initExtension(): Promise<void> {
   margin:0!important;padding:0!important;overflow:hidden!important;
   visibility:hidden!important;position:absolute!important;
   top:-9999px!important;left:-9999px!important;opacity:0!important;
+}
+/* APP men-set pointer-events: none (inline, via JS) pada input .autocomplete.
+   Klik di form modal tembus ke wrapper -> fokus tak masuk input -> "gak bisa
+   input". Fix via CSS <style> tak cukup: APP menghapus style tag ekstensi.
+   Inline style + !important menang atas inline APP & stylesheet apa pun. */
+#data-modal.in input, #data-modal.in textarea, #data-modal.in select {
+  pointer-events: auto !important;
 }
 }`;
     document.head.appendChild(s);
@@ -226,6 +240,8 @@ async function initExtension(): Promise<void> {
   window.log('Extension initialized successfully');
 
   watchStuckLoadingModal();
+  injectFetchWatchdogToMainWorld();
+  watchDataModalUnblock();
 }
 
 // Watchdog: modal loading MORBIS (swalloading -> swal "Mohon Tunggu") ditutup APP
@@ -254,13 +270,67 @@ function watchStuckLoadingModal(): void {
     if (now - firstSeenTs < STUCK_MS) return;
     // ponytail: ambang 20s, cukup untuk load normal; naikkan jika APP sah > 20s
     clearInterval(timer);
-    document.querySelectorAll<HTMLElement>(SELECTOR).forEach((el) => {
-      el.style.display = 'none';
-    });
-    const loadingModal = document.getElementById('loading-baru');
-    if (loadingModal) loadingModal.style.display = 'none';
-    document.body.style.overflow = '';
+    hideStuckLoadingModal();
   }, 2000);
+}
+
+function hideStuckLoadingModal(): void {
+  const SELECTOR = '.sweet-overlay, .sweet-alert, .swal-overlay, .swal2-container';
+  // HAPUS total (bukan display:none): elemen swal macet yang cuma disembunyikan
+  // masih ketemu document.querySelector → modalVisible() fetchWatchdog salah true
+  // → semua GET berikutnya (mis. .load() form revisi) ikut di-wrap/di-abort.
+  document.querySelectorAll<HTMLElement>(SELECTOR).forEach((el) => {
+    el.remove();
+  });
+  const loadingModal = document.getElementById('loading-baru');
+  if (loadingModal) loadingModal.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+// Halaman detail m-klaim: selama modal #data-modal terbuka (revisi/upload), partial
+// script APP bisa memanggil swalloading() lagi → overlay sweetalert (z-index 10000,
+// sama dengan modal, tapi lebih belakangan di DOM → selalu di atas) menutupi modal
+// → klik/kursor nyangkut di overlay → "gak bisa input form modal". Interval kecil:
+// buang overlay yang teksnya pola loading, dan reset aria-hidden di modal (bootstrap
+// 3.3.6 APP hardcode aria-hidden=true permanen → warning console + bingung SR).
+function watchDataModalUnblock(): void {
+  if (!window.location.pathname.includes('/detail-v2-refaktor')) return;
+  const LOADING_RE = /mohon tunggu|menyiapkan data|sedang memuat/i;
+  window.setInterval(() => {
+    const modal = document.getElementById('data-modal');
+    if (!modal || !modal.classList.contains('in')) return;
+    if (modal.getAttribute('aria-hidden') === 'true') modal.removeAttribute('aria-hidden');
+    // APP set pointer-events:none inline (via JS) pada input .autocomplete →
+    // klik tembus ke wrapper, fokus tak masuk → "gak bisa input". Inline
+    // + !important mengalahkan inline APP. getComputedStyle → idempoten.
+    modal.querySelectorAll<HTMLElement>('input, textarea, select').forEach((el) => {
+      if (getComputedStyle(el).pointerEvents === 'none') {
+        el.style.setProperty('pointer-events', 'auto', 'important');
+      }
+    });
+    document
+      .querySelectorAll<HTMLElement>('.sweet-overlay, .swal-overlay, .swal2-container')
+      .forEach((el) => {
+        if (LOADING_RE.test(el.textContent || '')) el.remove();
+      });
+  }, 500);
+}
+
+// Inject fetchWatchdog.js ke MAIN world di halaman detail m-klaim: membatasi
+// durasi tiap GET partial (abort 15s) + kabari isolated world saat seluruh
+// request selesai (__extPartialSettled) agar modal ditutup seketika, bukan
+// nunggu ambang 20s watchdog.
+function injectFetchWatchdogToMainWorld(): void {
+  if (!window.location.pathname.includes('/detail-v2-refaktor')) return;
+  const script = document.createElement('script');
+  script.src = chrome.runtime.getURL('features/fetchWatchdog.js');
+  script.onload = () => {
+    console.log('[init] fetchWatchdog.js injected to MAIN world');
+  };
+  script.onerror = (err) => {
+    console.error('[init] fetchWatchdog.js injection failed:', err);
+  };
+  (document.head || document.documentElement).appendChild(script);
 }
 
 // Global error handler: tangkap error tak terduga di halaman + bridge log dari
@@ -269,7 +339,14 @@ function watchStuckLoadingModal(): void {
 window.addEventListener('message', (event: MessageEvent) => {
   const data = event.data as {
     __extUsageLog?: { feature?: string; event?: string; ok?: boolean; detail?: unknown };
+    __extPartialSettled?: boolean;
   } | null;
+  // MAIN world (fetchWatchdog): semua GET partial selesai (abort/error/ok) tapi
+  // modal masih tampil → tutup seketika, bukan nunggu ambang watchdog.
+  if (data?.__extPartialSettled) {
+    hideStuckLoadingModal();
+    return;
+  }
   const entry = data?.__extUsageLog;
   if (!entry || !entry.feature) return;
   logUsage(entry.feature, entry.event ?? 'event', entry.ok ?? true, entry.detail);

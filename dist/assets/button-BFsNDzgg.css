@@ -1649,9 +1649,6 @@ html {
 .uppercase {
   text-transform: uppercase;
 }
-.italic {
-  font-style: italic;
-}
 .leading-normal {
   line-height: 1.5;
 }

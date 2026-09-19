@@ -245,6 +245,18 @@ var __morbis_feature = (() => {
     .ext-modal-close:hover { background: #fef2f2; color: #dc2626; border-color: #fecaca; transform: scale(1.05); }
     .ext-modal-close:active { transform: scale(0.95); }
 
+    /* Base styles for batch modals (upload + delete). Same class is used by
+       both features so opening one closes the other; CSS must live here in
+       shared utils or a role-gated feature (delete off, upload on) renders
+       an unstyled, non-fixed modal. */
+    .ext-batch-delete-modal {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15,23,42,0.45); display: none; z-index: 10000;
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+    }
+    .ext-batch-delete-modal.show { display: flex; }
+
     .ext-modal-buttons {
       margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;
     }

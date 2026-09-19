@@ -80,12 +80,14 @@ async function compileFeatureFiles() {
     'cancelButton.ts',
     'penjualanResepAntrian.ts',
     'telaahResepPrint.ts',
+    'paLabPrint.ts',
     'resumeTab/mount.tsx',
     'resumeRanapTab/mount.tsx',
     'pindahOperasi/main.ts',
     'billingAdjustment.ts',
     'mKlaimPreOp.ts',
     'mKlaimVerifLog.ts',
+    'fetchWatchdog.ts',
   ];
 
   for (const relativePath of tsFiles) {

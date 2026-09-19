@@ -311,6 +311,13 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       description:
         'Simpan snapshot resume & catat ke riwayat log / Reports SIMRS saat klik verif berkas',
     },
+    paLabPrint: {
+      enabled: true,
+      allowedRoles: ['labor', 'admin'],
+      name: 'Cetak Hasil Lab PA (Redesign)',
+      description:
+        'Redesign format cetak Laporan Hasil Pemeriksaan PA (kop instansi, info pasien, hasil) agar rapi saat tampil & dicetak A4',
+    },
   },
 };
 

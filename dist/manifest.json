@@ -285,6 +285,19 @@
       "all_frames": false
     },
     {
+      "matches": ["http://*/laboratorium/print/hasil-lab-patologi-manap*"],
+      "js": ["core.js", "init.js"],
+      "run_at": "document_end",
+      "all_frames": false
+    },
+    {
+      "matches": ["http://*/laboratorium/print/hasil-lab-patologi-manap*"],
+      "js": ["features/paLabPrint.js"],
+      "run_at": "document_idle",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
       "matches": ["http://*/antrian-farmasi/v2*"],
       "js": ["core.js", "features/antrianFarmasiOperator.js", "init.js"],
       "run_at": "document_idle"
@@ -294,7 +307,12 @@
   "host_permissions": ["http://*/*", "https://morbis-antrian-relay.testingbae66.workers.dev/*"],
   "web_accessible_resources": [
     {
-      "resources": ["ui/shadow.css", "features/antrianTools.js", "features/farmasiRecallDeleg.js"],
+      "resources": [
+        "ui/shadow.css",
+        "features/antrianTools.js",
+        "features/farmasiRecallDeleg.js",
+        "features/fetchWatchdog.js"
+      ],
       "matches": ["http://*/*"]
     }
   ],
