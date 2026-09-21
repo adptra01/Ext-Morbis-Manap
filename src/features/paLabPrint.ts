@@ -923,7 +923,6 @@
             font-weight: bold;
             font-size: 11pt;
             text-transform: uppercase;
-            text-decoration: underline;
         }
 
         .catatan-list {
