@@ -603,7 +603,7 @@
 
         /* Signature Section */
         .ttd-container {
-            margin-top: 50px;
+            margin-top: 15px;
         }
 
         .ttd-box {
