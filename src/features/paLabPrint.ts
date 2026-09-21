@@ -352,17 +352,32 @@
           credentials: 'same-origin',
           signal: ctrl.signal,
         });
-        if (!res.ok) return;
-        const doc2 = new DOMParser().parseFromString(await res.text(), 'text/html');
+        if (!res.ok) {
+          window.console.info('[paPrint] override: fetch input status ' + res.status);
+          return;
+        }
+        const html = await res.text();
+        const doc2 = new DOMParser().parseFromString(html, 'text/html');
+        window.console.info(
+          '[paPrint] override: input title="' +
+            (doc2.title || '').slice(0, 60) +
+            '" len=' +
+            html.length +
+            ' fields=' +
+            doc2.querySelectorAll('input, textarea, select').length,
+        );
         for (const t of targets) {
           const ctxRe = /^dokter/i.test(t.label)
             ? /dokter|pengirim|luar|dalam|rujuk/i
             : /rs\b|rumah\s*sakit|faskes|asal/i;
           const orig = originalValue(doc2, t.value, ctxRe);
+          window.console.info(
+            '[paPrint] override: ' + t.label + ' cetak="' + t.value + '" input="' + orig + '"',
+          );
           if (orig && orig !== t.value) info[t.idx][1] = orig;
         }
       } catch {
-        // abaikan: cetakan tetap memakai nilai server
+        window.console.info('[paPrint] override: fetch gagal, pakai nilai server');
       } finally {
         window.clearTimeout(timer);
       }
