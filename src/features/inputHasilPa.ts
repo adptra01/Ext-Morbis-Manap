@@ -71,31 +71,74 @@ import '../ui/web/ext-btn';
   }
 
   /** Keep-case Dokter Luar + RS (PA): handler form memaksa camelcase
-   *  ("dr. Suhair,Sp.OG(K)-Urogin" → "Dr. Suhair,sp.og(k)-urogin") pada
-   *  POST control/pemeriksaan-pa. Snapshot nilai asli pada capture-phase
-   *  document (selalu jalan sebelum handler halaman) lalu tulis balik ke
-   *  payload XHR. Aman: hanya menyentuh POST pemeriksaan-pa yang memuat
-   *  dok_luar, dan hanya bila snapshot berbeda. Gagal → kirim apa adanya.
+   *  ala ucwords(strtolower) ("dr. Suhair,Sp.OG(K)-Urogin" →
+   *  "Dr. Suhair,sp.og(k)-urogin") pada POST control/pemeriksaan-pa.
+   *  Model mangler diketahui persis sehingga tulisan user vs rewrite
+   *  mangler bisa dibedakan: baseline (keepBest) hanya maju bila isi
+   *  berubah isi (lower beda) atau vBaru BUKAN camel(baseline) [= edit
+   *  user, dipercaya]; bila vBaru === camel(baseline) berarti rewrite
+   *  mangler → baseline dipertahankan, field dikembalikan poller, dan
+   *  payload XHR diganti baseline. Tak menyentuh request lain; gagal →
+   *  kirim apa adanya.
    */
   const KEEP_FIELDS = ['dok_luar', 'nama_rs'];
-  let keepSnap: Record<string, string> | null = null;
+  const keepBest: Record<string, string> = {};
 
-  function readKeepFields(): Record<string, string> {
-    const out: Record<string, string> = {};
-    for (const name of KEEP_FIELDS) {
-      const el = document.querySelector<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
-        `[name="${name}"]`,
-      );
-      const v = (el?.value ?? '').trim();
-      if (v) out[name] = v;
-    }
-    return out;
+  function camelWords(s: string): string {
+    return s
+      .toLowerCase()
+      .split(' ')
+      .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1) : w))
+      .join(' ');
   }
 
-  function snapKeep(): void {
+  function readKeepField(
+    name: string,
+  ): HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null {
+    return document.querySelector(`[name="${name}"]`);
+  }
+
+  // Catat nilai field; kembalikan true bila field harus di-restore ke baseline.
+  function noteValue(name: string, v: string): boolean {
+    const cur = keepBest[name];
+    if (cur === undefined) {
+      if (v) keepBest[name] = v;
+      return false;
+    }
+    if (v === cur) return false;
+    if (v.toLowerCase() !== cur.toLowerCase()) {
+      keepBest[name] = v; // genuine content change → trust
+      return false;
+    }
+    if (v === camelWords(cur)) return true; // mangler signature → restore
+    keepBest[name] = v; // user case-edit → trust
+    return false;
+  }
+
+  function snapEvent(): void {
     try {
-      const got = readKeepFields();
-      if (Object.keys(got).length) keepSnap = got;
+      for (const name of KEEP_FIELDS) {
+        const el = readKeepField(name);
+        if (el) noteValue(name, (el.value ?? '').trim());
+      }
+    } catch {
+      // abaikan
+    }
+  }
+
+  // Poller: kembalikan field yang di-rewrite mangler (tak peduli urutan
+  // listener — deteksi berbasis isi, bukan event). Set programmatic
+  // tidak memicu event → tidak ada loop.
+  function pollKeep(): void {
+    try {
+      for (const name of KEEP_FIELDS) {
+        const el = readKeepField(name);
+        if (!el) continue;
+        if (noteValue(name, (el.value ?? '').trim())) {
+          el.value = keepBest[name];
+          window.console.info('[paKeepCase] ' + name + ' dikembalikan ke ejaan asli');
+        }
+      }
     } catch {
       // abaikan
     }
@@ -125,7 +168,7 @@ import '../ui/web/ext-btn';
         const body = args[0];
         const url = self.__extUrl;
         if (
-          keepSnap &&
+          Object.keys(keepBest).length &&
           typeof url === 'string' &&
           url.includes('pemeriksaan-pa') &&
           typeof body === 'string' &&
@@ -134,9 +177,10 @@ import '../ui/web/ext-btn';
           const params = new URLSearchParams(body);
           let changed = false;
           for (const name of KEEP_FIELDS) {
-            const orig = keepSnap[name];
-            if (orig && params.get(name) !== orig) {
-              params.set(name, orig);
+            const base = keepBest[name];
+            const curP = params.get(name);
+            if (base && curP !== null && curP !== base && curP === camelWords(base)) {
+              params.set(name, base);
               changed = true;
             }
           }
@@ -145,7 +189,7 @@ import '../ui/web/ext-btn';
             return (origSend as (...a: never[]) => unknown).call(this, params.toString());
           }
         } else if (
-          keepSnap &&
+          Object.keys(keepBest).length &&
           typeof url === 'string' &&
           url.includes('pemeriksaan-pa') &&
           typeof FormData !== 'undefined' &&
@@ -153,11 +197,11 @@ import '../ui/web/ext-btn';
           (body.has('dok_luar') || body.has('nama_rs'))
         ) {
           for (const name of KEEP_FIELDS) {
-            const orig = keepSnap[name];
+            const base = keepBest[name];
             const cur = body.get(name);
-            if (orig && cur !== orig) {
+            if (base && typeof cur === 'string' && cur !== base && cur === camelWords(base)) {
               window.console.info('[paKeepCase] payload FormData ' + name + ' dikembalikan');
-              body.set(name, orig);
+              body.set(name, base);
             }
           }
         }
@@ -172,20 +216,21 @@ import '../ui/web/ext-btn';
     const w = window as unknown as Record<string, unknown>;
     if (w.__paKeepCase) return;
     w.__paKeepCase = true;
-    snapKeep();
+    snapEvent();
     document.addEventListener(
       'input',
       (e) => {
         const t = e.target as HTMLElement | null;
         if (t && typeof t.matches === 'function' && t.matches('input, textarea, select')) {
-          snapKeep();
+          snapEvent();
         }
       },
       true,
     );
-    document.addEventListener('focusout', () => snapKeep(), true);
-    document.addEventListener('submit', () => snapKeep(), true);
+    document.addEventListener('focusout', () => snapEvent(), true);
+    document.addEventListener('submit', () => snapEvent(), true);
     patchXhrKeepCase();
+    window.setInterval(pollKeep, 300);
     window.console.info('[paKeepCase] aktif di input-hasil-pa');
   }
 

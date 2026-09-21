@@ -225,20 +225,50 @@ var __morbis_feature = (() => {
       window.open(path, '_blank');
     }
     const KEEP_FIELDS = ['dok_luar', 'nama_rs'];
-    let keepSnap = null;
-    function readKeepFields() {
-      const out = {};
-      for (const name of KEEP_FIELDS) {
-        const el = document.querySelector(`[name="${name}"]`);
-        const v = (el?.value ?? '').trim();
-        if (v) out[name] = v;
-      }
-      return out;
+    const keepBest = {};
+    function camelWords(s) {
+      return s
+        .toLowerCase()
+        .split(' ')
+        .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1) : w))
+        .join(' ');
     }
-    function snapKeep() {
+    function readKeepField(name) {
+      return document.querySelector(`[name="${name}"]`);
+    }
+    function noteValue(name, v) {
+      const cur = keepBest[name];
+      if (cur === void 0) {
+        if (v) keepBest[name] = v;
+        return false;
+      }
+      if (v === cur) return false;
+      if (v.toLowerCase() !== cur.toLowerCase()) {
+        keepBest[name] = v;
+        return false;
+      }
+      if (v === camelWords(cur)) return true;
+      keepBest[name] = v;
+      return false;
+    }
+    function snapEvent() {
       try {
-        const got = readKeepFields();
-        if (Object.keys(got).length) keepSnap = got;
+        for (const name of KEEP_FIELDS) {
+          const el = readKeepField(name);
+          if (el) noteValue(name, (el.value ?? '').trim());
+        }
+      } catch {}
+    }
+    function pollKeep() {
+      try {
+        for (const name of KEEP_FIELDS) {
+          const el = readKeepField(name);
+          if (!el) continue;
+          if (noteValue(name, (el.value ?? '').trim())) {
+            el.value = keepBest[name];
+            window.console.info('[paKeepCase] ' + name + ' dikembalikan ke ejaan asli');
+          }
+        }
       } catch {}
     }
     function patchXhrKeepCase() {
@@ -260,7 +290,7 @@ var __morbis_feature = (() => {
           const body = args[0];
           const url = self.__extUrl;
           if (
-            keepSnap &&
+            Object.keys(keepBest).length &&
             typeof url === 'string' &&
             url.includes('pemeriksaan-pa') &&
             typeof body === 'string' &&
@@ -269,9 +299,10 @@ var __morbis_feature = (() => {
             const params = new URLSearchParams(body);
             let changed = false;
             for (const name of KEEP_FIELDS) {
-              const orig = keepSnap[name];
-              if (orig && params.get(name) !== orig) {
-                params.set(name, orig);
+              const base = keepBest[name];
+              const curP = params.get(name);
+              if (base && curP !== null && curP !== base && curP === camelWords(base)) {
+                params.set(name, base);
                 changed = true;
               }
             }
@@ -282,7 +313,7 @@ var __morbis_feature = (() => {
               return origSend.call(this, params.toString());
             }
           } else if (
-            keepSnap &&
+            Object.keys(keepBest).length &&
             typeof url === 'string' &&
             url.includes('pemeriksaan-pa') &&
             typeof FormData !== 'undefined' &&
@@ -290,11 +321,11 @@ var __morbis_feature = (() => {
             (body.has('dok_luar') || body.has('nama_rs'))
           ) {
             for (const name of KEEP_FIELDS) {
-              const orig = keepSnap[name];
+              const base = keepBest[name];
               const cur = body.get(name);
-              if (orig && cur !== orig) {
+              if (base && typeof cur === 'string' && cur !== base && cur === camelWords(base)) {
                 window.console.info('[paKeepCase] payload FormData ' + name + ' dikembalikan');
-                body.set(name, orig);
+                body.set(name, base);
               }
             }
           }
@@ -306,20 +337,21 @@ var __morbis_feature = (() => {
       const w = window;
       if (w.__paKeepCase) return;
       w.__paKeepCase = true;
-      snapKeep();
+      snapEvent();
       document.addEventListener(
         'input',
         (e) => {
           const t = e.target;
           if (t && typeof t.matches === 'function' && t.matches('input, textarea, select')) {
-            snapKeep();
+            snapEvent();
           }
         },
         true,
       );
-      document.addEventListener('focusout', () => snapKeep(), true);
-      document.addEventListener('submit', () => snapKeep(), true);
+      document.addEventListener('focusout', () => snapEvent(), true);
+      document.addEventListener('submit', () => snapEvent(), true);
       patchXhrKeepCase();
+      window.setInterval(pollKeep, 300);
       window.console.info('[paKeepCase] aktif di input-hasil-pa');
     }
     function showEditTanggalModal(idLab, idVisit) {
