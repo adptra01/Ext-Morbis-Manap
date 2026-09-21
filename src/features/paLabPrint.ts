@@ -125,11 +125,48 @@
     // mis. baris kosong antar "I. …" dan "II. …" di textarea) = PARAGRAF
     // baru (gap ekstra); break tunggal = pemisah item biasa.
     // Hanya ambil <p> pertama = ICD-O/SARAN hilang — jangan diulangi.
-    const sections: Array<{ title: string; items: string[]; para: number[] }> = [];
+    //
+    // Urutan cetak baku (id=154696 dst. punya field "Catatan" baru):
+    //   Makroskopik → Mikroskopik → Kesimpulan → ICD-O → Catatan → Saran.
+    // Judul dinormalisasi (lower + alnum saja, 0→O) agar "ICD-0"/"ICD-O"/
+    // "ICD - O :" dianggap sama. Section tak dikenal tetap di akhir
+    // dengan urutan relatif aslinya.
+    const ORDER = ['makroskopik', 'mikroskopik', 'kesimpulan', 'icdo', 'catatan', 'saran'];
+    const normTitle = (t: string): string =>
+      t
+        .toLowerCase()
+        .replace(/0/g, 'o')
+        .replace(/[^a-z]/g, '');
+    const sections: Array<{ title: string; items: string[]; para: number[]; bare?: boolean }> = [];
     document.querySelectorAll('.contentlab td').forEach((td) => {
+      // Judul = .section-title bila ada. Server baru kadang merender
+      // heading tanpa class itu (mis. <p><b>Catatan:</b></p>) — fallback:
+      // cocokkan teks heading/baris pertama ke nama section yang dikenal.
+      let title = '';
+      let hasSt = false;
       const st = td.querySelector('.section-title');
-      if (!st) return;
-      const title = txt(st);
+      if (st) {
+        title = txt(st);
+        hasSt = true;
+      } else {
+        const head = (t: string): string => t.split(':')[0].trim();
+        for (const el of Array.from(td.children).slice(0, 3)) {
+          const t = txt(el);
+          if (t && t.length <= 24 && ORDER.includes(normTitle(head(t)))) {
+            title = head(t);
+            break;
+          }
+        }
+        if (!title) {
+          const firstLine =
+            (td.textContent || '')
+              .split('\n')
+              .map((l) => l.trim())
+              .find(Boolean) || '';
+          if (firstLine && ORDER.includes(normTitle(head(firstLine)))) title = head(firstLine);
+        }
+        if (!title) return;
+      }
       const tmp = document.createElement('div');
       tmp.innerHTML = td.innerHTML;
       tmp.querySelector('.section-title')?.remove();
@@ -161,6 +198,13 @@
       // Tampilkan SEMUA baris apa adanya seperti halaman asli —
       // termasuk "Tidak ada" berulang (server render per-spesimen).
       const finalItems = items;
+      // Judul dari fallback (tanpa .section-title) ikut terparse sebagai
+      // item pertama — buang agar tidak dobel dengan judul section.
+      if (!hasSt && finalItems.length && normTitle(finalItems[0]) === normTitle(title)) {
+        finalItems.shift();
+        for (let k = 0; k < paraIdx.length; k++) paraIdx[k] -= 1;
+        while (paraIdx.length && paraIdx[0] <= 0) paraIdx.shift();
+      }
       // Server cetak menghilangkan "I." di awal section multi-spesimen
       // (input "I. … II. …" → cetak "… II. …"). Pulihkan: bila item pertama
       // tanpa penomoran romawi tapi item berikut ada "II.", tambahkan "I. ".
@@ -174,17 +218,64 @@
       if (title) sections.push({ title, items: finalItems, para: paraIdx });
     });
 
-    // Urutan cetak baku (id=154696 dst. punya section "Catatan" baru):
-    //   Makroskopik → Mikroskopik → Kesimpulan → ICD-O → Catatan → Saran.
-    // Judul dinormalisasi (lower + alnum saja, 0→O) agar "ICD-0"/"ICD-O"/
-    // "ICD - O :" dianggap sama. Section tak dikenal tetap di akhir
-    // dengan urutan relatif aslinya.
-    const ORDER = ['makroskopik', 'mikroskopik', 'kesimpulan', 'icdo', 'catatan', 'saran'];
-    const normTitle = (t: string): string =>
-      t
-        .toLowerCase()
-        .replace(/0/g, 'o')
-        .replace(/[^a-z]/g, '');
+    // Server merender "CATATAN:" dan "ICD-O" DI DALAM <td> section lain
+    // (id=154696: keduanya di dalam KESIMPULAN) tanpa .section-title.
+    // Pecah marker tersebut jadi section sendiri ("Catatan", "ICD-0")
+    // agar urutan cetak baku di atas berlaku. Label "CATATAN:" yang
+    // berdiri sendiri dibuang; sisanya ("- …", "ICD-O: …") jadi item baru.
+    // "ICD-0" virtual tampil tanpa judul (bare) agar tidak dobel dengan
+    // "ICD-O: …" — cukup baris "ICD-O : 8070/3" saja.
+    const MARK_CATATAN = /^catatan\s*:?/i;
+    const MARK_ICDO = /^icd[\s-]*o\b\s*:?/i;
+    const splitSections: Array<{
+      title: string;
+      items: string[];
+      para: number[];
+      bare?: boolean;
+    }> = [];
+    for (const s of sections) {
+      const parts: Array<{ title: string; items: string[]; para: number[]; bare?: boolean }> = [
+        { title: s.title, items: [], para: [] },
+      ];
+      let cur = parts[0];
+      let openedVirtual = false;
+      const open = (t: string, bare?: boolean): void => {
+        cur = { title: t, items: [], para: [], bare };
+        parts.push(cur);
+        openedVirtual = true;
+      };
+      s.items.forEach((it, i) => {
+        const mCat = it.match(MARK_CATATAN);
+        const mIc = mCat ? null : it.match(MARK_ICDO);
+        if (mCat) {
+          if (normTitle(cur.title) !== 'catatan') open('Catatan');
+          const rest = it.slice(mCat[0].length).trim();
+          if (rest) {
+            if (s.para.includes(i)) cur.para.push(cur.items.length);
+            cur.items.push(rest);
+          }
+          return;
+        }
+        if (mIc) {
+          // Virtual ICD-O tampil tanpa judul (bare): judul "ICD-0" +
+          // isi "ICD-O: …" dobel — cukup baris "ICD-O : …" saja.
+          if (normTitle(cur.title) !== 'icdo') open('ICD-0', true);
+          if (s.para.includes(i)) cur.para.push(cur.items.length);
+          cur.items.push(it);
+          return;
+        }
+        if (s.para.includes(i)) cur.para.push(cur.items.length);
+        cur.items.push(it);
+      });
+      if (openedVirtual) {
+        for (const p of parts) if (p.items.length) splitSections.push(p);
+      } else {
+        splitSections.push(parts[0]);
+      }
+    }
+    sections.length = 0;
+    sections.push(...splitSections);
+
     sections.forEach((s, i) => ((s as { _i?: number })._i = i));
     sections.sort((a, b) => {
       const ai = (a as { _i?: number })._i ?? 0;
@@ -280,11 +371,13 @@
             '</div>'
           );
         }
-        return (
-          '<div class="section-judul">' +
-          esc(s.title) +
-          '</div>' +
-          '<div class="section-isi">' +
+        // Section virtual ICD-O tampil tanpa judul (bare): cukup baris
+        // "ICD-O : …" tanpa dobel judul "ICD-0" — tipografi disamakan
+        // dengan section-judul (11pt bold kapital) via .section-isi-bare.
+        const isi =
+          '<div class="' +
+          (s.bare ? 'section-isi section-isi-bare' : 'section-isi') +
+          '">' +
           s.items
             .map(
               (it, i) =>
@@ -295,8 +388,9 @@
                 '</div>',
             )
             .join('') +
-          '</div>'
-        );
+          '</div>';
+        if (s.bare) return isi;
+        return '<div class="section-judul">' + esc(s.title) + '</div>' + isi;
       })
       .join('');
 
@@ -650,6 +744,15 @@
             margin-top: 14px;
         }
 
+        /* ICD-O tanpa judul (bare, id=154696): "ICD-O : …" saja tanpa
+           dobel judul "ICD-0" — tipografi sama seperti section-judul
+           (11pt bold kapital semua). */
+        .section-isi-bare {
+            font-size: 11pt;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
         /* CATATAN: label + list gantung — baris lanjutan rata di bawah
            dash pertama ("Catatan: - …" lalu "- …" sejajar di bawahnya). */
         .section-catatan {
@@ -665,6 +768,9 @@
         .catatan-label {
             flex-shrink: 0;
             font-weight: bold;
+            font-size: 11pt;
+            text-transform: uppercase;
+            text-decoration: underline;
         }
 
         .catatan-list {
