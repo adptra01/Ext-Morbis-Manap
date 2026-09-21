@@ -3,9 +3,10 @@ var __morbis_feature = (() => {
   // src/features/paLabPrint.ts
   (function () {
     'use strict';
-    function apply() {
+    async function apply() {
       const PAGE_GUARD = 'ext-pa-print-proc';
       if (document.documentElement.getAttribute(PAGE_GUARD)) return;
+      document.documentElement.setAttribute(PAGE_GUARD, '1');
       const txt = (el) => (el?.textContent || '').replace(/\s+/g, ' ').trim();
       function esc(s) {
         return String(s ?? '').replace(
@@ -203,6 +204,79 @@ var __morbis_feature = (() => {
         const rb = bo === -1 ? ORDER.length : bo;
         return ra !== rb ? ra - rb : ai - bi;
       });
+      function fieldText(el) {
+        let val = '';
+        if (el instanceof HTMLSelectElement) {
+          const opt = el.selectedIndex >= 0 ? el.options[el.selectedIndex] : void 0;
+          val = (opt?.textContent || el.value || '').trim();
+        } else if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
+          val = (el.value || '').trim();
+        }
+        const ids = (el.getAttribute('name') || '') + ' ' + (el.getAttribute('id') || '');
+        const ph = el.getAttribute('placeholder') || '';
+        const row = el.closest('tr, .form-group, .form-row, div')?.textContent || '';
+        return { val, ctx: (ids + ' ' + ph + ' ' + row).slice(0, 300) };
+      }
+      function originalValue(doc2, printVal, ctxRe) {
+        const toks = printVal
+          .toLowerCase()
+          .split(/[^a-z0-9]+/)
+          .filter(
+            (t) =>
+              t.length >= 4 &&
+              !/^(dokter|pengirim|rumah|sakit|klinik|tanpa|kelas|rsud|rs|sp|dr|dalam|luar)$/.test(
+                t,
+              ),
+          );
+        if (!toks.length) return '';
+        const anchor = toks.sort((a, b) => b.length - a.length)[0];
+        let best = '';
+        let bestScore = -1;
+        doc2.querySelectorAll('input, textarea, select').forEach((el) => {
+          const { val, ctx } = fieldText(el);
+          if (!val || val === printVal) return;
+          if (!val.toLowerCase().includes(anchor)) return;
+          const score = ctxRe.test(ctx) ? 2 : 0;
+          if (score > bestScore) {
+            bestScore = score;
+            best = val;
+          }
+        });
+        return best;
+      }
+      async function overrideFromInput(info) {
+        const id = new URLSearchParams(window.location.search).get('id');
+        if (!id) return;
+        const targets = info
+          .map(([l, v], i) => ({ label: l, value: v, idx: i }))
+          .filter((t) => t.value && (/^dokter/i.test(t.label) || /^rs\b/i.test(t.label)));
+        if (!targets.length) return;
+        const ctrl = new AbortController();
+        const timer = window.setTimeout(() => ctrl.abort(), 6e3);
+        try {
+          const url = new URL(
+            '/laboratorium/input-hasil/input-hasil-pa?id_lab=' + encodeURIComponent(id),
+            window.location.href,
+          );
+          const res = await fetch(url.toString(), {
+            credentials: 'same-origin',
+            signal: ctrl.signal,
+          });
+          if (!res.ok) return;
+          const doc2 = new DOMParser().parseFromString(await res.text(), 'text/html');
+          for (const t of targets) {
+            const ctxRe = /^dokter/i.test(t.label)
+              ? /dokter|pengirim|luar|dalam|rujuk/i
+              : /rs\b|rumah\s*sakit|faskes|asal/i;
+            const orig = originalValue(doc2, t.value, ctxRe);
+            if (orig && orig !== t.value) info[t.idx][1] = orig;
+          }
+        } catch {
+        } finally {
+          window.clearTimeout(timer);
+        }
+      }
+      await overrideFromInput(infoItems).catch(() => {});
       const sigTds = Array.from(document.querySelectorAll('.contentlab ~ div table td'));
       const sigTexts = sigTds.map((td) => txt(td)).filter(Boolean);
       const thanks = sigTexts[0] || '';
@@ -215,7 +289,6 @@ var __morbis_feature = (() => {
         document.querySelector('a.tombol[href*="export"]')?.getAttribute('href') ||
         window.location.href + '&export=word';
       const bodyScripts = Array.from(document.body.querySelectorAll('script'));
-      document.documentElement.setAttribute(PAGE_GUARD, '1');
       const infoClean = infoItems.map(([l, v]) => {
         if (!/^ruang/i.test(l)) return [l, v];
         const dedup = v.replace(/^poli\s+.+?-\s*(?=klinik)/i, '').trim() || v;
@@ -787,7 +860,7 @@ var __morbis_feature = (() => {
     const iv = window.setInterval(() => {
       if (document.documentElement.getAttribute('data-ext-pa-print') === '1') {
         window.clearInterval(iv);
-        apply();
+        apply().catch(() => {});
       } else if (Date.now() - t0 > 5e3) {
         window.clearInterval(iv);
       }

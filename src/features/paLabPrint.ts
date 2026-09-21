@@ -27,9 +27,10 @@
    * ISOLATED) dari config fitur 'paLabPrint'. Content script ini world:MAIN
    * (tanpa chrome.*), jadi polling atribut.
    */
-  function apply() {
+  async function apply() {
     const PAGE_GUARD = 'ext-pa-print-proc';
     if (document.documentElement.getAttribute(PAGE_GUARD)) return;
+    document.documentElement.setAttribute(PAGE_GUARD, '1'); // kunci awal (ada fetch async)
 
     const txt = (el: Element | null | undefined): string =>
       (el?.textContent || '').replace(/\s+/g, ' ').trim();
@@ -287,6 +288,88 @@
       return ra !== rb ? ra - rb : ai - bi;
     });
 
+    // Override Dokter Pengirim (Luar) + RS dari halaman input-hasil:
+    // server meng-camel-case-kan teks bebas form saat render cetak
+    // ("dr. Suhair,Sp.OG(K)-Urogin" → "Dr. Suhair, Sp.og(k)-urogin"),
+    // sedangkan form input menyimpan ejaan asli. Fetch halaman input
+    // (id_lab = id cetak, sesi login sama), cocokkan berdasar token
+    // nama, ganti nilai info. Gagal/timeout → biarkan nilai server.
+    function fieldText(el: Element): { val: string; ctx: string } {
+      let val = '';
+      if (el instanceof HTMLSelectElement) {
+        const opt = el.selectedIndex >= 0 ? el.options[el.selectedIndex] : undefined;
+        val = (opt?.textContent || el.value || '').trim();
+      } else if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
+        val = (el.value || '').trim();
+      }
+      const ids = (el.getAttribute('name') || '') + ' ' + (el.getAttribute('id') || '');
+      const ph = el.getAttribute('placeholder') || '';
+      const row = el.closest('tr, .form-group, .form-row, div')?.textContent || '';
+      return { val, ctx: (ids + ' ' + ph + ' ' + row).slice(0, 300) };
+    }
+
+    function originalValue(doc2: Document, printVal: string, ctxRe: RegExp): string {
+      const toks = printVal
+        .toLowerCase()
+        .split(/[^a-z0-9]+/)
+        .filter(
+          (t) =>
+            t.length >= 4 &&
+            !/^(dokter|pengirim|rumah|sakit|klinik|tanpa|kelas|rsud|rs|sp|dr|dalam|luar)$/.test(t),
+        );
+      if (!toks.length) return '';
+      const anchor = toks.sort((a, b) => b.length - a.length)[0];
+      let best = '';
+      let bestScore = -1;
+      doc2.querySelectorAll('input, textarea, select').forEach((el) => {
+        const { val, ctx } = fieldText(el);
+        if (!val || val === printVal) return;
+        if (!val.toLowerCase().includes(anchor)) return;
+        const score = ctxRe.test(ctx) ? 2 : 0;
+        if (score > bestScore) {
+          bestScore = score;
+          best = val;
+        }
+      });
+      return best;
+    }
+
+    async function overrideFromInput(info: Array<[string, string]>): Promise<void> {
+      const id = new URLSearchParams(window.location.search).get('id');
+      if (!id) return;
+      const targets = info
+        .map(([l, v], i) => ({ label: l, value: v, idx: i }))
+        .filter((t) => t.value && (/^dokter/i.test(t.label) || /^rs\b/i.test(t.label)));
+      if (!targets.length) return;
+      const ctrl = new AbortController();
+      const timer = window.setTimeout(() => ctrl.abort(), 6000);
+      try {
+        const url = new URL(
+          '/laboratorium/input-hasil/input-hasil-pa?id_lab=' + encodeURIComponent(id),
+          window.location.href,
+        );
+        const res = await fetch(url.toString(), {
+          credentials: 'same-origin',
+          signal: ctrl.signal,
+        });
+        if (!res.ok) return;
+        const doc2 = new DOMParser().parseFromString(await res.text(), 'text/html');
+        for (const t of targets) {
+          const ctxRe = /^dokter/i.test(t.label)
+            ? /dokter|pengirim|luar|dalam|rujuk/i
+            : /rs\b|rumah\s*sakit|faskes|asal/i;
+          const orig = originalValue(doc2, t.value, ctxRe);
+          if (orig && orig !== t.value) info[t.idx][1] = orig;
+        }
+      } catch {
+        // abaikan: cetakan tetap memakai nilai server
+      } finally {
+        window.clearTimeout(timer);
+      }
+    }
+
+    await overrideFromInput(infoItems).catch(() => {});
+
     // Signature: "Terima kasih…", "Kota, tgl", QR img, nama dokter, NIP.
     const sigTds = Array.from(document.querySelectorAll('.contentlab ~ div table td'));
     const sigTexts = sigTds.map((td) => txt(td)).filter(Boolean);
@@ -305,8 +388,6 @@
     const bodyScripts: HTMLScriptElement[] = Array.from(
       document.body.querySelectorAll('script'),
     ) as HTMLScriptElement[];
-
-    document.documentElement.setAttribute(PAGE_GUARD, '1'); // set awal agar tidak double-fire
 
     // Ruangan: buang segmen pertama yang dobel:
     //   "POLI DALAM - KLINIK PENYAKIT DALAM - Tanpa Kelas" → "KLINIK … - …"
@@ -951,7 +1032,7 @@
   const iv = window.setInterval(() => {
     if (document.documentElement.getAttribute('data-ext-pa-print') === '1') {
       window.clearInterval(iv);
-      apply();
+      apply().catch(() => {});
     } else if (Date.now() - t0 > 5000) {
       window.clearInterval(iv); // fitur tidak aktif -> biarkan halaman default
     }
