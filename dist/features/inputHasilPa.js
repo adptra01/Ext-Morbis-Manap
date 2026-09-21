@@ -224,6 +224,104 @@ var __morbis_feature = (() => {
     function openUrl(path) {
       window.open(path, '_blank');
     }
+    const KEEP_FIELDS = ['dok_luar', 'nama_rs'];
+    let keepSnap = null;
+    function readKeepFields() {
+      const out = {};
+      for (const name of KEEP_FIELDS) {
+        const el = document.querySelector(`[name="${name}"]`);
+        const v = (el?.value ?? '').trim();
+        if (v) out[name] = v;
+      }
+      return out;
+    }
+    function snapKeep() {
+      try {
+        const got = readKeepFields();
+        if (Object.keys(got).length) keepSnap = got;
+      } catch {}
+    }
+    function patchXhrKeepCase() {
+      const proto = window.XMLHttpRequest.prototype;
+      if (proto.__extKeepPatched) return;
+      proto.__extKeepPatched = true;
+      const origOpen = proto.open;
+      const origSend = proto.send;
+      proto.open = function (...args) {
+        try {
+          const u = args[1];
+          this.__extUrl = typeof u === 'string' ? u : String(u);
+        } catch {}
+        return origOpen.apply(this, args);
+      };
+      proto.send = function (...args) {
+        try {
+          const self = this;
+          const body = args[0];
+          const url = self.__extUrl;
+          if (
+            keepSnap &&
+            typeof url === 'string' &&
+            url.includes('pemeriksaan-pa') &&
+            typeof body === 'string' &&
+            body.includes('dok_luar=')
+          ) {
+            const params = new URLSearchParams(body);
+            let changed = false;
+            for (const name of KEEP_FIELDS) {
+              const orig = keepSnap[name];
+              if (orig && params.get(name) !== orig) {
+                params.set(name, orig);
+                changed = true;
+              }
+            }
+            if (changed) {
+              window.console.info(
+                '[paKeepCase] payload dok_luar/nama_rs dikembalikan ke ejaan asli',
+              );
+              return origSend.call(this, params.toString());
+            }
+          } else if (
+            keepSnap &&
+            typeof url === 'string' &&
+            url.includes('pemeriksaan-pa') &&
+            typeof FormData !== 'undefined' &&
+            body instanceof FormData &&
+            (body.has('dok_luar') || body.has('nama_rs'))
+          ) {
+            for (const name of KEEP_FIELDS) {
+              const orig = keepSnap[name];
+              const cur = body.get(name);
+              if (orig && cur !== orig) {
+                window.console.info('[paKeepCase] payload FormData ' + name + ' dikembalikan');
+                body.set(name, orig);
+              }
+            }
+          }
+        } catch {}
+        return origSend.apply(this, args);
+      };
+    }
+    function startKeepCase() {
+      const w = window;
+      if (w.__paKeepCase) return;
+      w.__paKeepCase = true;
+      snapKeep();
+      document.addEventListener(
+        'input',
+        (e) => {
+          const t = e.target;
+          if (t && typeof t.matches === 'function' && t.matches('input, textarea, select')) {
+            snapKeep();
+          }
+        },
+        true,
+      );
+      document.addEventListener('focusout', () => snapKeep(), true);
+      document.addEventListener('submit', () => snapKeep(), true);
+      patchXhrKeepCase();
+      window.console.info('[paKeepCase] aktif di input-hasil-pa');
+    }
     function showEditTanggalModal(idLab, idVisit) {
       const overlay = document.createElement('div');
       overlay.style.cssText =
@@ -374,6 +472,7 @@ var __morbis_feature = (() => {
     }
     function injectUi() {
       if (!document.documentElement.getAttribute('data-ext-lab-history')) return;
+      startKeepCase();
       renderActions();
     }
     const start = performance.now();
