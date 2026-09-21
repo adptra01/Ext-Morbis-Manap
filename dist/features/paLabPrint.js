@@ -411,7 +411,7 @@ var __morbis_feature = (() => {
         esc(judul) +
         '</div><div class="patient-info-container">' +
         infoHtml +
-        '</div><hr style="border: 0; border-top: 1px dashed #cbd5e1; margin-bottom: 25px;"><div class="hasil-pa">' +
+        '</div><div class="hasil-pa">' +
         hasilHtml +
         '</div><div class="ttd-container clearfix"><div class="ttd-box"><p>' +
         esc(thanks) +
@@ -696,6 +696,8 @@ var __morbis_feature = (() => {
             font-size: 10pt;
             line-height: 1;
             gap: 4px 40px;
+            border: 1px solid #000;
+            padding: 10px 12px;
         }
 
         @media print {

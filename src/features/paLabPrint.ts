@@ -557,7 +557,6 @@
       '<div class="patient-info-container">' +
       infoHtml +
       '</div>' +
-      '<hr style="border: 0; border-top: 1px dashed #cbd5e1; margin-bottom: 25px;">' +
       '<div class="hasil-pa">' +
       hasilHtml +
       '</div>' +
@@ -859,6 +858,8 @@
             font-size: 10pt;
             line-height: 1;
             gap: 4px 40px;
+            border: 1px solid #000;
+            padding: 10px 12px;
         }
 
         @media print {
