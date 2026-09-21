@@ -347,6 +347,142 @@
         .replace(/^[-•–—*]+\s*/, '')
         .trim();
 
+    // Export Word (format BARU, client-side): susun dokumen Word-HTML
+    // berbasis tabel dari data yang sama — Word tidak mendukung
+    // flex/grid layout hasil rebuild. Tombol Export Word di-intercept
+    // untuk mengunduh .doc ini; href server asli jadi fallback.
+    const noPA =
+      infoClean.find(([l]) => /^no\.?pa/i.test(l))?.[1].replace(/[^a-zA-Z0-9]+/g, '-') ||
+      'tanpa-no';
+
+    function dataUrl(src: string): Promise<string> {
+      if (/^data:/i.test(src)) return Promise.resolve(src);
+      const abs = new URL(src, window.location.href).href;
+      return fetch(abs)
+        .then((res) => {
+          if (!res.ok) throw new Error('img ' + res.status);
+          return res.blob();
+        })
+        .then(
+          (blob) =>
+            new Promise<string>((resolve, reject) => {
+              const fr = new FileReader();
+              fr.onload = () => resolve(String(fr.result));
+              fr.onerror = () => reject(fr.error);
+              fr.readAsDataURL(blob);
+            }),
+        )
+        .catch(() => abs);
+    }
+
+    async function exportWord(): Promise<void> {
+      const [logo, qr] = await Promise.all([
+        dataUrl(logoSrc),
+        qrSrc ? dataUrl(qrSrc) : Promise.resolve(''),
+      ]);
+      let infoTbl = '';
+      for (let r = 0; r < infoClean.length; r += 2) {
+        const a = infoClean[r];
+        const b = infoClean[r + 1];
+        infoTbl +=
+          '<tr><td>' +
+          esc(a[0]) +
+          '</td><td>:</td><td>' +
+          esc(a[1]) +
+          '</td>' +
+          (b
+            ? '<td>' + esc(b[0]) + '</td><td>:</td><td>' + esc(b[1]) + '</td>'
+            : '<td></td><td></td><td></td>') +
+          '</tr>';
+      }
+      let hasilDoc = '';
+      for (const s of sections) {
+        if (isCatatan(s.title)) {
+          const rows = s.items.length ? s.items : ['Tidak ada'];
+          hasilDoc +=
+            '<table border="0" cellspacing="0" cellpadding="2"><tr>' +
+            '<td valign="top"><b><u>CATATAN:</u></b></td><td>' +
+            rows.map((it) => '- ' + esc(stripBullet(it) || 'Tidak ada')).join('<br>') +
+            '</td></tr></table>';
+          continue;
+        }
+        if (s.bare) {
+          s.items.forEach((it, i) => {
+            hasilDoc +=
+              '<p style="margin:' +
+              (i === 0 ? '12pt' : '0') +
+              ' 0 6pt 0;font-size:11pt;"><b>' +
+              esc(it.toUpperCase()) +
+              '</b></p>';
+          });
+          continue;
+        }
+        hasilDoc +=
+          '<p style="margin:12pt 0 0 0;font-size:11pt;"><b><u>' +
+          esc(s.title.toUpperCase()) +
+          '</u></b></p>';
+        s.items.forEach((it, i) => {
+          hasilDoc +=
+            '<p style="margin:' +
+            (s.para.includes(i) ? '14pt' : '0') +
+            ' 0 6pt 0;text-align:justify;">' +
+            fmtItem(it) +
+            '</p>';
+        });
+      }
+      const doc =
+        '<html xmlns:o="urn:schemas-microsoft-com:office:office" ' +
+        'xmlns:w="urn:schemas-microsoft-com:office:word" ' +
+        'xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8">' +
+        '<title>' +
+        esc(judul) +
+        '</title></head>' +
+        '<body style="font-family:Arial,sans-serif;font-size:11pt;">' +
+        '<table border="0" width="100%" cellspacing="0" cellpadding="4"><tr>' +
+        '<td width="110" valign="middle"><img src="' +
+        logo +
+        '" width="90"></td><td align="center">' +
+        kopLines
+          .slice(0, 3)
+          .map((l) => '<b style="font-size:16pt;">' + esc(l) + '</b>')
+          .join('<br>') +
+        '<br><span style="font-size:9pt;">' +
+        addrLines.map((l) => esc(l)).join('<br>') +
+        '</span></td></tr></table><hr>' +
+        '<p align="center"><b><u>' +
+        esc(judul.toUpperCase()) +
+        '</u></b></p>' +
+        '<table border="0" cellspacing="0" cellpadding="2">' +
+        infoTbl +
+        '</table>' +
+        hasilDoc +
+        '<table border="0" width="100%" cellspacing="0" cellpadding="0"><tr>' +
+        '<td width="60%"></td><td align="center">' +
+        '<p style="margin:0 0 6pt 0;">' +
+        esc(thanks) +
+        '</p><p style="margin:0 0 6pt 0;">' +
+        esc(dateLine) +
+        '</p>' +
+        (qr
+          ? '<p style="margin:0 0 6pt 0;"><img src="' + qr + '" width="80" height="80"></p>'
+          : '') +
+        '<p style="margin:0 0 6pt 0;"><b>' +
+        esc(docName) +
+        '</b></p><p style="margin:0 0 6pt 0;">' +
+        esc(nip) +
+        '</p></td></tr></table></body></html>';
+      const blob = new Blob(['﻿' + doc], { type: 'application/msword' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'Hasil-PA-' + noPA + '.doc';
+      document.body.appendChild(a);
+      a.click();
+      window.setTimeout(() => {
+        URL.revokeObjectURL(a.href);
+        a.remove();
+      }, 4000);
+    }
+
     const hasilHtml = sections
       .map((s) => {
         // CATATAN: render "Catatan: - …" dengan baris lanjutan rata
@@ -397,7 +533,7 @@
     document.body.innerHTML =
       '<a href="' +
       esc(exportHref) +
-      '" class="btn-back">Export Word</a>' +
+      '" class="btn-back" id="btn-word">Export Word</a>' +
       '<span id="SCETAK"><button onclick="cetak()" class="btn-print">Cetak Dokumen</button></span>' +
       '<div class="page-a4">' +
       '<div class="head-cetak">' +
@@ -444,6 +580,15 @@
       '</div>' +
       '</div>';
     bodyScripts.forEach((s) => document.body.appendChild(s));
+
+    // Tombol Export Word → unduh format BARU (client-side .doc);
+    // fallback ke file server asli bila generate gagal.
+    document.querySelector('#btn-word')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      exportWord().catch(() => {
+        window.location.href = exportHref;
+      });
+    });
 
     // Buang <style>/<link> asli di-head agar tidak melawan CSS prioritas.
     // (JS/telemetri di-head dibiarkan; cetak() ikut di-re-append di body.)
