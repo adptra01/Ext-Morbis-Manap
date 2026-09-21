@@ -70,6 +70,14 @@ export function confirmExt(opts: ConfirmOptions): Promise<boolean> {
         opts.cancelLabel ?? 'Batal';
     }
 
+    // Tambah handler klik agar tombol OK/Batal benar-benar memanggil modal.ok()/cancel()
+    // (ExtBtn hanya mencegah klik saat disabled/loading, tidak memancarkan event).
+    okBtn.addEventListener('click', () => modal.ok());
+    if (!opts.hideCancel) {
+      const cancelBtn = modal.querySelector<HTMLElement>('[data-ext-confirm-cancel]')!;
+      cancelBtn.addEventListener('click', () => modal.cancel());
+    }
+
     const done = (result: boolean) => {
       modal.remove();
       resolve(result);
