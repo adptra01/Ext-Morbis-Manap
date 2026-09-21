@@ -564,7 +564,8 @@
         }
 
         .patient-info-container {
-            font-size: 9pt;
+            font-size: 10pt;
+            line-height: 1;
             gap: 4px 40px;
         }
 
@@ -583,8 +584,8 @@
         }
 
         .section-isi {
-            font-size: 11pt;
-            line-height: 1.7;
+            font-size: 10pt;
+            line-height: 1.5;
         }
 
         .item-list {
