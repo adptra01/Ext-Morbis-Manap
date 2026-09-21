@@ -603,11 +603,13 @@ var __morbis_feature = (() => {
         }
 
         /* ICD-O tanpa judul (bare, id=154696): "ICD-O : \u2026" saja tanpa
-           dobel judul "ICD-0" \u2014 tipografi sama seperti section-judul
-           (11pt bold kapital semua). */
+           dobel judul "ICD-0" \u2014 font sama persis seperti section-judul
+           (11pt bold kapital, line-height & margin sama), minus garis bawah. */
         .section-isi-bare {
+            margin-top: 12px;
             font-size: 11pt;
             font-weight: bold;
+            line-height: 1.4;
             text-transform: uppercase;
         }
 
