@@ -38,11 +38,11 @@ jobs:
           git config --global user.name github-actions
           git config --global user.email github-actions@github.com
           ORPHAN=$(mktemp -d)
-           cp -r dist/* "$ORPHAN/"
-           cp README.md "$ORPHAN/README.md"
-           cp -r docs "$ORPHAN/docs"
-           # Script update satu-klik ikut ke main (branch main = dist siap pakai)
-           cp scripts/morbis-update-main.bat "$ORPHAN/morbis-update-main.bat"
+          cp -r dist/* "$ORPHAN/"
+          cp README.md "$ORPHAN/README.md"
+          cp -r docs "$ORPHAN/docs"
+          # Script update satu-klik ikut ke main (branch main = dist siap pakai)
+          cp scripts/morbis-update-main.bat "$ORPHAN/morbis-update-main.bat"
 
           cat > "$ORPHAN/.gitignore" << 'EOF'
           # main branch — extension files at root + docs for GitHub Pages
@@ -70,10 +70,10 @@ jobs:
           !rules/**
           !ui/
           !ui/**
-           !docs/
-           !docs/**
-           !morbis-update-main.bat
-           EOF
+          !docs/
+          !docs/**
+          !morbis-update-main.bat
+          EOF
 
           cd "$ORPHAN"
           git init
