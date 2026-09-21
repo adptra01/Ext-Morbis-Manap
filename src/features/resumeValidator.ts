@@ -960,7 +960,7 @@ import {
       fail(isValidVital(suhu, 30, 45), 'Suhu pulang harus 30-45°C', 'suhu_pulang');
 
     var rr = val('rr_pulang');
-    if (rr && !isEmptyish(rr)) fail(isValidVital(rr, 4, 80), 'RR pulang harus 4-80', 'rr_pulang');
+    if (rr && !isEmptyish(rr)) fail(isValidVital(rr, 4, 120), 'RR pulang harus 4-120', 'rr_pulang');
 
     var spo2 = val('spo2_pulang');
     if (spo2 && !isEmptyish(spo2))
@@ -969,7 +969,7 @@ import {
     fail(!!val('jenis_kasus'), 'Jenis kasus harus dipilih', 'jenis_kasus');
     fail(!!val('keadaan_keluar'), 'Keadaan keluar harus dipilih', 'keadaan_keluar');
     fail(!!val('cara_keluar'), 'Cara keluar harus dipilih', 'cara_keluar');
-    fail(!!val('tgl_keluar2'), 'Tanggal keluar harus diisi', 'tgl_keluar2');
+    fail(!!(val('tgl_keluar2') || val('tgl_keluar')), 'Tanggal keluar harus diisi', 'tgl_keluar2');
     var gcsE = val('gcs_e');
     if (gcsE && !isEmptyish(gcsE)) fail(isValidVital(gcsE, 1, 4), 'GCS Eye harus 1-4', 'gcs_e');
 
@@ -1018,10 +1018,19 @@ import {
       fail(!!val('status_covid'), 'Status COVID: pilih jenis COVID', 'status_covid');
 
     var tglMasuk = val('tgl_masuk') || val('tgl_masuk2');
-    var tglKeluar = val('tgl_keluar2');
+    var tglKeluar = val('tgl_keluar2') || val('tgl_keluar');
     if (tglMasuk && tglKeluar) {
+      // Parse date aman: "DD/MM/YYYY HH:mm:ss" atau "YYYY-MM-DD" → timestamp
+      function parseDMY(s: string): number {
+        // Coba format "DD/MM/YYYY HH:mm:ss" atau "DD/MM/YYYY"
+        const m = s.match(/^(\d{1,2})[/\-](\d{1,2})[/\-](\d{4})(?:\s+(\d{1,2}):(\d{2}):(\d{2}))?/);
+        if (m) return new Date(+m[3], +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0)).getTime();
+        // Fallback: ISO/standard
+        const t = Date.parse(s);
+        return isNaN(t) ? 0 : t;
+      }
       fail(
-        new Date(tglKeluar) >= new Date(tglMasuk),
+        parseDMY(tglKeluar) >= parseDMY(tglMasuk),
         'Tanggal keluar tidak boleh sebelum tanggal masuk',
         'tgl_keluar2',
       );
