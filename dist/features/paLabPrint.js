@@ -1,72 +1,49 @@
-'use strict';
+"use strict";
 var __morbis_feature = (() => {
   // src/features/paLabPrint.ts
-  (function () {
-    'use strict';
+  (function() {
+    "use strict";
     function apply() {
-      const PAGE_GUARD = 'ext-pa-print-proc';
+      const PAGE_GUARD = "ext-pa-print-proc";
       if (document.documentElement.getAttribute(PAGE_GUARD)) return;
-      const txt = (el) => (el?.textContent || '').replace(/\s+/g, ' ').trim();
+      const txt = (el) => (el?.textContent || "").replace(/\s+/g, " ").trim();
       function esc(s) {
-        return String(s ?? '').replace(
+        return String(s ?? "").replace(
           /[&<>"']/g,
-          (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
+          (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]
         );
       }
-      const logoSrc =
-        document.querySelector('#logo img')?.getAttribute('src') ||
-        '/assets/images/logo/Kota Jambi.png';
-      const kopLines = Array.from(document.querySelectorAll('h1.kop-atas'))
-        .map((h) => txt(h))
-        .filter(Boolean);
-      while (kopLines.length < 3) kopLines.push('');
+      const logoSrc = document.querySelector("#logo img")?.getAttribute("src") || "/assets/images/logo/Kota Jambi.png";
+      const kopLines = Array.from(document.querySelectorAll("h1.kop-atas")).map((h) => txt(h)).filter(Boolean);
+      while (kopLines.length < 3) kopLines.push("");
       let addrLines = [];
-      const headLogo = document.querySelector('#head-cetak-logo center, #head-cetak-logo');
+      const headLogo = document.querySelector("#head-cetak-logo center, #head-cetak-logo");
       if (headLogo) {
-        const tmp = document.createElement('div');
+        const tmp = document.createElement("div");
         tmp.innerHTML = headLogo.innerHTML;
-        tmp.querySelectorAll('h1').forEach((h) => h.remove());
-        addrLines = (tmp.innerHTML || '')
-          .split(/<br\s*\/?>/gi)
-          .map((l) => tmp.textContent && l.replace(/<[^>]+>/g, '').trim())
-          .map((l) => String(l || '').trim())
-          .filter(Boolean);
+        tmp.querySelectorAll("h1").forEach((h) => h.remove());
+        addrLines = (tmp.innerHTML || "").split(/<br\s*\/?>/gi).map((l) => tmp.textContent && l.replace(/<[^>]+>/g, "").trim()).map((l) => String(l || "").trim()).filter(Boolean);
       }
-      const addrText = addrLines.join(' ');
+      const addrText = addrLines.join(" ");
       const pickPhone = (label) => {
-        const m = addrText.match(new RegExp(label + '\\s*:([\\d\\s().+-]+)', 'i'));
-        return m ? m[1].trim() : '';
+        const m = addrText.match(new RegExp(label + "\\s*:([\\d\\s().+-]+)", "i"));
+        return m ? m[1].trim() : "";
       };
-      const telp = pickPhone('telp');
-      const fax = pickPhone('fax');
-      const email = (addrText.match(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/) || [''])[0];
-      const website = (addrText.match(/https?:\/\/[^\s;,]+/) || [''])[0];
-      let street = addrText
-        .replace(/telp\s*:[\d\s().+-]+/gi, '')
-        .replace(/fax\s*:[\d\s().+-]+/gi, '')
-        .replace(/website\s*:?/gi, '')
-        .replace(/email\s*:?/gi, '');
-      if (email) street = street.split(email).join('');
-      if (website) street = street.split(website).join('');
-      street = street
-        .split(/[;]+/)
-        .map((s) => s.replace(/\s+/g, ' ').trim())
-        .filter(Boolean)
-        .join(', ')
-        .replace(/,\s*,+/g, ',')
-        .replace(/^[,;\s]+|[,;\s]+$/g, '');
-      const addrLine1 = ['Alamat: ' + street, telp ? 'Telp: ' + telp : '', fax ? 'Fax: ' + fax : '']
-        .filter(Boolean)
-        .join(', ');
-      const addrLine2 = [email ? 'Email: ' + email : '', website ? 'Website: ' + website : '']
-        .filter(Boolean)
-        .join(', ');
+      const telp = pickPhone("telp");
+      const fax = pickPhone("fax");
+      const email = (addrText.match(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/) || [""])[0];
+      const website = (addrText.match(/https?:\/\/[^\s;,]+/) || [""])[0];
+      let street = addrText.replace(/telp\s*:[\d\s().+-]+/gi, "").replace(/fax\s*:[\d\s().+-]+/gi, "").replace(/website\s*:?/gi, "").replace(/email\s*:?/gi, "");
+      if (email) street = street.split(email).join("");
+      if (website) street = street.split(website).join("");
+      street = street.split(/[;]+/).map((s) => s.replace(/\s+/g, " ").trim()).filter(Boolean).join(", ").replace(/,\s*,+/g, ",").replace(/^[,;\s]+|[,;\s]+$/g, "");
+      const addrLine1 = ["Alamat: " + street, telp ? "Telp: " + telp : "", fax ? "Fax: " + fax : ""].filter(Boolean).join(", ");
+      const addrLine2 = [email ? "Email: " + email : "", website ? "Website: " + website : ""].filter(Boolean).join(", ");
       addrLines = [addrLine1, addrLine2].filter(Boolean);
-      const judul =
-        txt(document.querySelector('.head-cetak-instansi')) || 'LAPORAN HASIL PEMERIKSAAN';
+      const judul = txt(document.querySelector(".head-cetak-instansi")) || "LAPORAN HASIL PEMERIKSAAN";
       const infoItems = [];
-      document.querySelectorAll('.table-outer tr').forEach((tr) => {
-        const tds = tr.querySelectorAll('td');
+      document.querySelectorAll(".table-outer tr").forEach((tr) => {
+        const tds = tr.querySelectorAll("td");
         if (tds.length >= 6) {
           const l1 = txt(tds[0]);
           const v1 = txt(tds[2]);
@@ -77,30 +54,18 @@ var __morbis_feature = (() => {
         }
       });
       const sections = [];
-      document.querySelectorAll('.contentlab td').forEach((td) => {
-        const st = td.querySelector('.section-title');
+      document.querySelectorAll(".contentlab td").forEach((td) => {
+        const st = td.querySelector(".section-title");
         if (!st) return;
         const title = txt(st);
-        const tmp = document.createElement('div');
+        const tmp = document.createElement("div");
         tmp.innerHTML = td.innerHTML;
-        tmp.querySelector('.section-title')?.remove();
-        const paras = tmp.innerHTML
-          .replace(/\r\n?/g, '\n')
-          .replace(/<br\s*\/?>[ \t]*\n?/gi, '\n')
-          .replace(/\n(?:[ \t]*\n)+/g, '\u2028')
-          .split('\u2028')
-          .map((block) =>
-            block
-              .split(/<br\s*\/?>|\n/)
-              .map((l) =>
-                l
-                  .replace(/<[^>]+>/g, ' ')
-                  .replace(/\s+/g, ' ')
-                  .trim(),
-              )
-              .filter(Boolean),
-          )
-          .filter((b) => b.length);
+        tmp.querySelector(".section-title")?.remove();
+        const paras = tmp.innerHTML.replace(/\r\n?/g, "\n").replace(/<br\s*\/?>[ \t]*\n?/gi, "\n").replace(/\n(?:[ \t]*\n)+/g, "\u2028").split("\u2028").map(
+          (block) => block.split(/<br\s*\/?>|\n/).map(
+            (l) => l.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
+          ).filter(Boolean)
+        ).filter((b) => b.length);
         const items = [];
         const paraIdx = [];
         paras.forEach((block, bi) => {
@@ -110,100 +75,67 @@ var __morbis_feature = (() => {
           });
         });
         const finalItems = items;
-        if (
-          finalItems.length > 1 &&
-          !/^[IVXLC]+\.\s/.test(finalItems[0]) &&
-          finalItems.slice(1).some((it) => /^II\.\s/.test(it))
-        ) {
-          finalItems[0] = 'I. ' + finalItems[0];
+        if (finalItems.length > 1 && !/^[IVXLC]+\.\s/.test(finalItems[0]) && finalItems.slice(1).some((it) => /^II\.\s/.test(it))) {
+          finalItems[0] = "I. " + finalItems[0];
         }
         if (title) sections.push({ title, items: finalItems, para: paraIdx });
       });
-      const sigTds = Array.from(document.querySelectorAll('.contentlab ~ div table td'));
+      const ORDER = ["makroskopik", "mikroskopik", "kesimpulan", "icdo", "catatan", "saran"];
+      const normTitle = (t) => t.toLowerCase().replace(/0/g, "o").replace(/[^a-z]/g, "");
+      sections.forEach((s, i) => s._i = i);
+      sections.sort((a, b) => {
+        const ai = a._i ?? 0;
+        const bi = b._i ?? 0;
+        const ao = ORDER.indexOf(normTitle(a.title));
+        const bo = ORDER.indexOf(normTitle(b.title));
+        const ra = ao === -1 ? ORDER.length : ao;
+        const rb = bo === -1 ? ORDER.length : bo;
+        return ra !== rb ? ra - rb : ai - bi;
+      });
+      const sigTds = Array.from(document.querySelectorAll(".contentlab ~ div table td"));
       const sigTexts = sigTds.map((td) => txt(td)).filter(Boolean);
-      const thanks = sigTexts[0] || '';
-      const dateLine = sigTexts[1] || '';
-      const qrSrc =
-        document.querySelector('.contentlab ~ div table img')?.getAttribute('src') || '';
-      const docName = sigTexts.find((t) => /^\(.*\)$/.test(t)) || sigTexts[2] || '';
-      const nip = sigTexts.find((t) => /^nip\.?/i.test(t)) || sigTexts[3] || '';
-      const exportHref =
-        document.querySelector('a.tombol[href*="export"]')?.getAttribute('href') ||
-        window.location.href + '&export=word';
-      const bodyScripts = Array.from(document.body.querySelectorAll('script'));
-      document.documentElement.setAttribute(PAGE_GUARD, '1');
+      const thanks = sigTexts[0] || "";
+      const dateLine = sigTexts[1] || "";
+      const qrSrc = document.querySelector(".contentlab ~ div table img")?.getAttribute("src") || "";
+      const docName = sigTexts.find((t) => /^\(.*\)$/.test(t)) || sigTexts[2] || "";
+      const nip = sigTexts.find((t) => /^nip\.?/i.test(t)) || sigTexts[3] || "";
+      const exportHref = document.querySelector('a.tombol[href*="export"]')?.getAttribute("href") || window.location.href + "&export=word";
+      const bodyScripts = Array.from(
+        document.body.querySelectorAll("script")
+      );
+      document.documentElement.setAttribute(PAGE_GUARD, "1");
       const infoClean = infoItems.map(([l, v]) => {
         if (!/^ruang/i.test(l)) return [l, v];
-        const dedup = v.replace(/^poli\s+.+?-\s*(?=klinik)/i, '').trim() || v;
-        const segDup = dedup.replace(/^(\S+)\s+-\s*(?=\1\b)/i, '').trim();
+        const dedup = v.replace(/^poli\s+.+?-\s*(?=klinik)/i, "").trim() || v;
+        const segDup = dedup.replace(/^(\S+)\s+-\s*(?=\1\b)/i, "").trim();
         return [l, segDup || dedup];
       });
-      const infoHtml = infoClean
-        .map(
-          ([l, v]) =>
-            '<div class="info-item"><div class="info-label">' +
-            esc(l) +
-            '</div><div class="info-colon">:</div><div class="info-value">' +
-            esc(v) +
-            '</div></div>',
-        )
-        .join('');
-      const fmtItem = (it) =>
+      const infoHtml = infoClean.map(
+        ([l, v]) => '<div class="info-item"><div class="info-label">' + esc(l) + '</div><div class="info-colon">:</div><div class="info-value">' + esc(v) + "</div></div>"
+      ).join("");
+      const fmtItem = (it) => (
         // Baris ICD-O tampil bold seperti prototype (ICD-0: 8210/0 …).
-        /^icd-?o\s*:/i.test(it) ? '<strong>' + esc(it) + '</strong>' : esc(it);
-      const hasilHtml = sections
-        .map(
-          (s) =>
-            '<div class="section-judul">' +
-            esc(s.title) +
-            '</div><div class="section-isi">' +
-            s.items
-              .map(
-                (it, i) =>
-                  '<div class="item-list' +
-                  (s.para.includes(i) ? ' item-para' : '') +
-                  '">' +
-                  fmtItem(it) +
-                  '</div>',
-              )
-              .join('') +
-            '</div>',
-        )
-        .join('');
-      document.body.innerHTML =
-        '<a href="' +
-        esc(exportHref) +
-        '" class="btn-back">Export Word</a><span id="SCETAK"><button onclick="cetak()" class="btn-print">Cetak Dokumen</button></span><div class="page-a4"><div class="head-cetak"><div id="logo"><img src="' +
-        esc(logoSrc) +
-        '" alt="Logo"></div><div class="kop-text">' +
-        kopLines
-          .slice(0, 3)
-          .map((l) => '<h1 class="kop-atas">' + esc(l) + '</h1>')
-          .join('') +
-        '<div class="kop-alamat">' +
-        addrLines.map((l) => esc(l)).join('<br>') +
-        '</div></div></div><hr class="kop-hr"><div class="head-cetak-instansi">' +
-        esc(judul) +
-        '</div><div class="patient-info-container">' +
-        infoHtml +
-        '</div><hr style="border: 0; border-top: 1px dashed #cbd5e1; margin-bottom: 25px;"><div class="hasil-pa">' +
-        hasilHtml +
-        '</div><div class="ttd-container clearfix"><div class="ttd-box"><p>' +
-        esc(thanks) +
-        '</p><p>' +
-        esc(dateLine) +
-        '</p>' +
-        (qrSrc ? '<img src="' + esc(qrSrc) + '" alt="QR Code TTD">' : '') +
-        '<p style="font-weight: bold; margin-bottom: 0;">' +
-        esc(docName) +
-        '</p><p style="margin-top: 2px;">' +
-        esc(nip) +
-        '</p></div></div></div>';
+        /^icd-?o\s*:/i.test(it) ? "<strong>" + esc(it) + "</strong>" : esc(it)
+      );
+      const isCatatan = (t) => /^catatan/i.test(t.trim());
+      const stripBullet = (it) => it.replace(/^catatan\s*:?\s*/i, "").replace(/^[-•–—*]+\s*/, "").trim();
+      const hasilHtml = sections.map((s) => {
+        if (isCatatan(s.title)) {
+          const rows = s.items.length ? s.items : ["Tidak ada"];
+          return '<div class="section-catatan"><span class="catatan-label">Catatan:</span><div class="catatan-list">' + rows.map(
+            (it) => '<div class="catatan-item"><span class="catatan-dash">-</span><span>' + esc(stripBullet(it) || "Tidak ada") + "</span></div>"
+          ).join("") + "</div></div>";
+        }
+        return '<div class="section-judul">' + esc(s.title) + '</div><div class="section-isi">' + s.items.map(
+          (it, i) => '<div class="item-list' + (s.para.includes(i) ? " item-para" : "") + '">' + fmtItem(it) + "</div>"
+        ).join("") + "</div>";
+      }).join("");
+      document.body.innerHTML = '<a href="' + esc(exportHref) + '" class="btn-back">Export Word</a><span id="SCETAK"><button onclick="cetak()" class="btn-print">Cetak Dokumen</button></span><div class="page-a4"><div class="head-cetak"><div id="logo"><img src="' + esc(logoSrc) + '" alt="Logo"></div><div class="kop-text">' + kopLines.slice(0, 3).map((l) => '<h1 class="kop-atas">' + esc(l) + "</h1>").join("") + '<div class="kop-alamat">' + addrLines.map((l) => esc(l)).join("<br>") + '</div></div></div><hr class="kop-hr"><div class="head-cetak-instansi">' + esc(judul) + '</div><div class="patient-info-container">' + infoHtml + '</div><hr style="border: 0; border-top: 1px dashed #cbd5e1; margin-bottom: 25px;"><div class="hasil-pa">' + hasilHtml + '</div><div class="ttd-container clearfix"><div class="ttd-box"><p>' + esc(thanks) + "</p><p>" + esc(dateLine) + "</p>" + (qrSrc ? '<img src="' + esc(qrSrc) + '" alt="QR Code TTD">' : "") + '<p style="font-weight: bold; margin-bottom: 0;">' + esc(docName) + '</p><p style="margin-top: 2px;">' + esc(nip) + "</p></div></div></div>";
       bodyScripts.forEach((s) => document.body.appendChild(s));
       document.head.querySelectorAll('style, link[rel="stylesheet"]').forEach((el) => el.remove());
-      const STYLE_ID = 'ext-pa-print-style';
+      const STYLE_ID = "ext-pa-print-style";
       if (!document.getElementById(STYLE_ID)) {
-        const s = document.createElement('style');
+        const s = document.createElement("style");
         s.id = STYLE_ID;
         s.textContent = `
         @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
@@ -494,13 +426,46 @@ var __morbis_feature = (() => {
         .item-list.item-para {
             margin-top: 14px;
         }
+
+        /* CATATAN: label + list gantung \u2014 baris lanjutan rata di bawah
+           dash pertama ("Catatan: - \u2026" lalu "- \u2026" sejajar di bawahnya). */
+        .section-catatan {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-top: 12px;
+            font-size: 10pt;
+            line-height: 1.5;
+            text-align: justify;
+        }
+
+        .catatan-label {
+            flex-shrink: 0;
+            font-weight: bold;
+        }
+
+        .catatan-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        .catatan-item {
+            display: flex;
+            gap: 6px;
+        }
+
+        .catatan-dash {
+            flex-shrink: 0;
+        }
       `;
         document.head.appendChild(s);
       }
     }
     const t0 = Date.now();
     const iv = window.setInterval(() => {
-      if (document.documentElement.getAttribute('data-ext-pa-print') === '1') {
+      if (document.documentElement.getAttribute("data-ext-pa-print") === "1") {
         window.clearInterval(iv);
         apply();
       } else if (Date.now() - t0 > 5e3) {

@@ -174,6 +174,28 @@
       if (title) sections.push({ title, items: finalItems, para: paraIdx });
     });
 
+    // Urutan cetak baku (id=154696 dst. punya section "Catatan" baru):
+    //   Makroskopik → Mikroskopik → Kesimpulan → ICD-O → Catatan → Saran.
+    // Judul dinormalisasi (lower + alnum saja, 0→O) agar "ICD-0"/"ICD-O"/
+    // "ICD - O :" dianggap sama. Section tak dikenal tetap di akhir
+    // dengan urutan relatif aslinya.
+    const ORDER = ['makroskopik', 'mikroskopik', 'kesimpulan', 'icdo', 'catatan', 'saran'];
+    const normTitle = (t: string): string =>
+      t
+        .toLowerCase()
+        .replace(/0/g, 'o')
+        .replace(/[^a-z]/g, '');
+    sections.forEach((s, i) => ((s as { _i?: number })._i = i));
+    sections.sort((a, b) => {
+      const ai = (a as { _i?: number })._i ?? 0;
+      const bi = (b as { _i?: number })._i ?? 0;
+      const ao = ORDER.indexOf(normTitle(a.title));
+      const bo = ORDER.indexOf(normTitle(b.title));
+      const ra = ao === -1 ? ORDER.length : ao;
+      const rb = bo === -1 ? ORDER.length : bo;
+      return ra !== rb ? ra - rb : ai - bi;
+    });
+
     // Signature: "Terima kasih…", "Kota, tgl", QR img, nama dokter, NIP.
     const sigTds = Array.from(document.querySelectorAll('.contentlab ~ div table td'));
     const sigTexts = sigTds.map((td) => txt(td)).filter(Boolean);
@@ -226,9 +248,39 @@
       // Baris ICD-O tampil bold seperti prototype (ICD-0: 8210/0 …).
       /^icd-?o\s*:/i.test(it) ? '<strong>' + esc(it) + '</strong>' : esc(it);
 
+    const isCatatan = (t: string): boolean => /^catatan/i.test(t.trim());
+
+    const stripBullet = (it: string): string =>
+      it
+        .replace(/^catatan\s*:?\s*/i, '')
+        .replace(/^[-•–—*]+\s*/, '')
+        .trim();
+
     const hasilHtml = sections
-      .map(
-        (s) =>
+      .map((s) => {
+        // CATATAN: render "Catatan: - …" dengan baris lanjutan rata
+        // di bawah dash pertama (hanging list via flex, bukan tab
+        // karena tab collapse di HTML). Bullet dinormalisasi ke "- ".
+        if (isCatatan(s.title)) {
+          const rows = s.items.length ? s.items : ['Tidak ada'];
+          return (
+            '<div class="section-catatan">' +
+            '<span class="catatan-label">Catatan:</span>' +
+            '<div class="catatan-list">' +
+            rows
+              .map(
+                (it) =>
+                  '<div class="catatan-item"><span class="catatan-dash">-</span>' +
+                  '<span>' +
+                  esc(stripBullet(it) || 'Tidak ada') +
+                  '</span></div>',
+              )
+              .join('') +
+            '</div>' +
+            '</div>'
+          );
+        }
+        return (
           '<div class="section-judul">' +
           esc(s.title) +
           '</div>' +
@@ -243,8 +295,9 @@
                 '</div>',
             )
             .join('') +
-          '</div>',
-      )
+          '</div>'
+        );
+      })
       .join('');
 
     document.body.innerHTML =
@@ -595,6 +648,39 @@
         /* Awal paragraf baru (baris kosong di input): gap ekstra. */
         .item-list.item-para {
             margin-top: 14px;
+        }
+
+        /* CATATAN: label + list gantung — baris lanjutan rata di bawah
+           dash pertama ("Catatan: - …" lalu "- …" sejajar di bawahnya). */
+        .section-catatan {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-top: 12px;
+            font-size: 10pt;
+            line-height: 1.5;
+            text-align: justify;
+        }
+
+        .catatan-label {
+            flex-shrink: 0;
+            font-weight: bold;
+        }
+
+        .catatan-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        .catatan-item {
+            display: flex;
+            gap: 6px;
+        }
+
+        .catatan-dash {
+            flex-shrink: 0;
         }
       `;
       document.head.appendChild(s);
