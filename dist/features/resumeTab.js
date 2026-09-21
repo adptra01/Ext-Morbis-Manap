@@ -27926,6 +27926,11 @@ var __morbis_feature = (() => {
       } else {
         modal.querySelector('[data-ext-confirm-cancel]').textContent = opts.cancelLabel ?? 'Batal';
       }
+      okBtn.addEventListener('click', () => modal.ok());
+      if (!opts.hideCancel) {
+        const cancelBtn = modal.querySelector('[data-ext-confirm-cancel]');
+        cancelBtn.addEventListener('click', () => modal.cancel());
+      }
       const done = (result) => {
         modal.remove();
         resolve(result);
