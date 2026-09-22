@@ -33584,8 +33584,8 @@ var __morbis_feature = (() => {
       ],
     });
   }
-  var GCS_MAX = { gcs_e: 4, gcs_m: 6, gcs_v: 10 };
-  var GCS_HINT = { gcs_e: '1-4', gcs_m: '1-6', gcs_v: '1-10' };
+  var GCS_MAX = { gcs_e: 4, gcs_m: 6, gcs_v: 5 };
+  var GCS_HINT = { gcs_e: '1-4', gcs_m: '1-6', gcs_v: '1-5' };
   var VITAL_LABELS = {
     tensi: 'Tekanan Darah (TD)',
     nadi: 'Nadi (N)',
