@@ -6,8 +6,10 @@ REM  MORBIS Ext — UPDATE MAIN SATU KLIK (Windows)
 REM  Untuk PC pemakai (branch main = dist siap pakai, tanpa build/Node):
 REM   - Install Git kalau PC belum punya (via winget, otomatis)
 REM   - Clone branch main ke %USERPROFILE%\morbis-ext kalau belum ada
-REM   - Checkout main + pull terbaru
-REM   - Buka chrome://extensions → tinggal klik tombol refresh
+REM   - RESET PAKSA ke main terbaru (tanpa merge — server rewrite history
+REM     tiap deploy, jadi "git pull" biasa macet/conflict & file setengah lama)
+REM   - Tampilkan versi terpasang untuk verifikasi
+REM   - Buka chrome://extensions → WAJIB klik tombol refresh + hard-reload
 REM =====================================================================
 
 set "REPO_DIR=%USERPROFILE%\morbis-ext"
@@ -33,17 +35,28 @@ if not exist "%REPO_DIR%\.git" (
 )
 cd /d "%REPO_DIR%"
 
-REM ---------- 3/3 Checkout + pull main ----------
-echo [3/3] Update branch main...
-git checkout main
+REM ---------- 3/3 Fetch + RESET PAKSA ke main terbaru ----------
+echo [3/3] Update branch main (reset paksa, tanpa merge)...
+git fetch origin main
 if errorlevel 1 goto :fail
-git pull origin main
+git checkout main 2>nul
+git reset --hard origin/main
 if errorlevel 1 goto :fail
 
 echo.
+echo ===== VERSI TERPASANG =====
+git log --oneline -1
+echo Lokasi: %REPO_DIR%
+echo.
 echo ===== SELESAI =====
-echo Buka chrome://extensions lalu klik tombol refresh di kartu extension,
-echo dan refresh halaman MORBIS.
+echo WAJIB lakukan 2 langkah ini agar file baru dipakai Chrome:
+echo   1. Di chrome://extensions, klik tombol REFRESH (panah melingkar)
+echo      pada kartu MORBIS Ext.
+echo   2. Di halaman MORBIS tekan Ctrl+Shift+R (hard reload).
+echo.
+echo PASTIKAN extension yang aktif di Chrome dimuat (Load unpacked) dari:
+echo   %REPO_DIR%
+echo Kalau dimuat dari folder lain, update di atas tidak berpengaruh.
 echo.
 start "" "%ProgramFiles%\Google\Chrome\Application\chrome.exe" "chrome://extensions" 2>nul
 start "" "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe" "chrome://extensions" 2>nul
