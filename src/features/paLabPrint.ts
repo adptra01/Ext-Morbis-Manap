@@ -32,8 +32,24 @@
     if (document.documentElement.getAttribute(PAGE_GUARD)) return;
     document.documentElement.setAttribute(PAGE_GUARD, '1'); // kunci awal (ada fetch async)
 
-    const txt = (el: Element | null | undefined): string =>
-      (el?.textContent || '').replace(/\s+/g, ' ').trim();
+    const txt = (el: Element | null | undefined): string => cleanPhpNoise(el?.textContent || '');
+
+    // Server kadang membocorkan PHP notice/warning ke HTML cetak, mis.
+    // "Notice: Undefined index: ID_DETAIL_BILING in .../table-manap.php
+    //  on line 202". Sampah ini harus dibuang saat ekstraksi agar tidak
+    // tercetak maupun ter-export ke Word. Pola dibatasi ke signature
+    // PHP (keyword + "Undefined …"/".php on line N") agar teks medis
+    // asli tidak tersentuh.
+    function cleanPhpNoise(s: string): string {
+      return s
+        .replace(
+          /\b(?:Notice|Warning|Fatal error|Parse error|Deprecated)\s*:[\s\S]*?\.php\s*on\s*line\s*\d+/gi,
+          ' ',
+        )
+        .replace(/\b(?:Notice|Warning)\s*:\s*Undefined\s+(?:index|variable)\s*:.*$/gi, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
 
     function esc(s: unknown): string {
       return String(s ?? '').replace(
@@ -179,12 +195,7 @@
         .map((block) =>
           block
             .split(/<br\s*\/?>|\n/)
-            .map((l) =>
-              l
-                .replace(/<[^>]+>/g, ' ')
-                .replace(/\s+/g, ' ')
-                .trim(),
-            )
+            .map((l) => cleanPhpNoise(l.replace(/<[^>]+>/g, ' ')))
             .filter(Boolean),
         )
         .filter((b) => b.length);

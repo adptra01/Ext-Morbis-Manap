@@ -7,7 +7,17 @@ var __morbis_feature = (() => {
       const PAGE_GUARD = 'ext-pa-print-proc';
       if (document.documentElement.getAttribute(PAGE_GUARD)) return;
       document.documentElement.setAttribute(PAGE_GUARD, '1');
-      const txt = (el) => (el?.textContent || '').replace(/\s+/g, ' ').trim();
+      const txt = (el) => cleanPhpNoise(el?.textContent || '');
+      function cleanPhpNoise(s) {
+        return s
+          .replace(
+            /\b(?:Notice|Warning|Fatal error|Parse error|Deprecated)\s*:[\s\S]*?\.php\s*on\s*line\s*\d+/gi,
+            ' ',
+          )
+          .replace(/\b(?:Notice|Warning)\s*:\s*Undefined\s+(?:index|variable)\s*:.*$/gi, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
       function esc(s) {
         return String(s ?? '').replace(
           /[&<>"']/g,
@@ -121,12 +131,7 @@ var __morbis_feature = (() => {
           .map((block) =>
             block
               .split(/<br\s*\/?>|\n/)
-              .map((l) =>
-                l
-                  .replace(/<[^>]+>/g, ' ')
-                  .replace(/\s+/g, ' ')
-                  .trim(),
-              )
+              .map((l) => cleanPhpNoise(l.replace(/<[^>]+>/g, ' ')))
               .filter(Boolean),
           )
           .filter((b) => b.length);

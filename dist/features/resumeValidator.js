@@ -1439,9 +1439,7 @@ var __morbis_feature = (() => {
       var tglKeluar = val('tgl_keluar2') || val('tgl_keluar');
       if (tglMasuk && tglKeluar) {
         let parseDMY2 = function (s) {
-          const m = s.match(
-            /^(\d{1,2})[/\-](\d{1,2})[/\-](\d{4})(?:\s+(\d{1,2}):(\d{2}):(\d{2}))?/,
-          );
+          const m = s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})(?:\s+(\d{1,2}):(\d{2}):(\d{2}))?/);
           if (m)
             return new Date(
               +m[3],
