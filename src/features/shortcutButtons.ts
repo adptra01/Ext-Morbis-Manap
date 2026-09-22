@@ -223,9 +223,9 @@ function queryRevisionPanel(): {
   return { panel, textarea, count };
 }
 
-function ensureRevisionPanel(toolbar: HTMLElement): HTMLTextAreaElement | null {
-  const parent = toolbar.parentElement;
-  if (!parent) return null;
+function ensureRevisionPanel(anchor: HTMLElement | null): HTMLTextAreaElement | null {
+  const parent = anchor?.parentElement ?? null;
+  if (anchor && !parent) return null;
   let found = queryRevisionPanel();
   if (found) return found.textarea;
 
@@ -257,7 +257,16 @@ function ensureRevisionPanel(toolbar: HTMLElement): HTMLTextAreaElement | null {
 
   head.append(title, count);
   panel.append(head, textarea, hint);
-  parent.insertBefore(panel, toolbar.nextSibling);
+  if (parent && anchor) {
+    parent.insertBefore(panel, anchor.nextSibling);
+  } else {
+    // Fallback: tanpa toolbar — selipkan sebelum form revisi / di atas konten.
+    const host =
+      document.querySelector<HTMLElement>('#form-add')?.parentElement ??
+      document.querySelector<HTMLElement>('form')?.parentElement ??
+      document.body;
+    host.insertBefore(panel, host.firstChild);
+  }
   found = queryRevisionPanel();
   return found?.textarea ?? null;
 }
@@ -274,12 +283,24 @@ function renderRevisionHistory(): void {
 function isRevisionForm(form: HTMLFormElement): boolean {
   if (form.id === 'form-add') return true;
   const action = form.getAttribute('action') || form.action || '';
-  if (!action.includes(BPJS_REVISION_SUBMIT_PATH)) return false;
+  if (action.includes(BPJS_REVISION_SUBMIT_PATH)) return false;
   try {
-    return new URL(action, window.location.href).searchParams.get('sub') === 'simpan';
+    if (new URL(action, window.location.href).searchParams.get('sub') === 'simpan') return true;
   } catch {
     return true;
   }
+  // Fallback: form revisi MORBIS varian lain — kenali dari field + tombol.
+  const hasKet = !!form.querySelector('#keterangan, textarea[name="keterangan"]');
+  const hasPoli = !!form.querySelector(
+    '#poli, input[name="poli"], #id_poli, input[name="id_poli"]',
+  );
+  if (hasKet && hasPoli) {
+    if (/revisi/i.test(action)) return true;
+    const btn = form.querySelector('button, input[type="submit"], input[type="button"]');
+    const t = ((btn as HTMLInputElement)?.value || btn?.textContent || '').trim();
+    if (/revisi/i.test(t)) return true;
+  }
+  return false;
 }
 
 function readRevisionFromForm(form: HTMLFormElement): BpjsRevision | null {
@@ -327,8 +348,9 @@ function onRevisionMutations(): void {
   // Tanpa submit in-flight, tidak ada yang perlu dikonfirmasi/dirender ulang:
   // init/submit handler sudah render awal. Mutasi lain (partial, toast lain) = skip.
   if (pendingBpjsRevisions.length === 0) {
-    const toolbar = document.querySelector<HTMLElement>('[data-toolbar]');
-    if (toolbar && !queryRevisionPanel()) ensureRevisionPanel(toolbar);
+    if (!queryRevisionPanel()) {
+      ensureRevisionPanel(document.querySelector<HTMLElement>('[data-toolbar]'));
+    }
     return;
   }
 
@@ -338,13 +360,23 @@ function onRevisionMutations(): void {
   );
   if (pendingBpjsRevisions.length === 0) return;
 
-  const failed = document.querySelector('.toast-error, .toast-warning');
+  const failed = document.querySelector(
+    '.toast-error, .toast-warning, .swal2-error, .alert-danger, .alert-warning',
+  );
   if (failed) {
     pendingBpjsRevisions = [];
     renderRevisionHistory();
     return;
   }
-  if (!document.querySelector('.toast-success')) return;
+  // Sukses: toast sukses MORBIS (varian) ATAU form revisi ter-reset (field dikosongkan server).
+  const okToast = document.querySelector(
+    '.toast-success, .swal2-success, .alert-success, .toast[data-type="success"]',
+  );
+  const ket = document.querySelector<HTMLTextAreaElement>(
+    '#form-add #keterangan, #form-add textarea[name="keterangan"]',
+  );
+  const formReset = !!ket && ket.value.trim() === '';
+  if (!okToast && !formReset) return;
 
   for (const revision of pendingBpjsRevisions) revision.status = 'saved';
   // Tulis paralel ke DB pusat (fire-and-forget; panel lokal tetap sumber tampil).
@@ -361,11 +393,10 @@ function onRevisionMutations(): void {
   renderRevisionHistory();
 }
 
-export function initBpjsRevisionHistory(toolbar: HTMLElement | null): void {
-  if (!toolbar) return;
+export function initBpjsRevisionHistory(anchor: HTMLElement | null): void {
   const restored = readRevisionHistory();
   bpjsRevisions = mergeRevisionHistory(bpjsRevisions, restored);
-  ensureRevisionPanel(toolbar);
+  ensureRevisionPanel(anchor);
   renderRevisionHistory();
   // Read-through DB pusat: riwayat dari PC lain ikut tampil (diam bila offline).
   try {
@@ -393,6 +424,33 @@ export function initBpjsRevisionHistory(toolbar: HTMLElement | null): void {
   bpjsRevisionObserver = new MutationObserver(scheduleBpjsRevisionCheck);
   bpjsRevisionObserver.observe(document.body, { childList: true, subtree: true });
   bpjsRevisionListenersInstalled = true;
+}
+
+/** Auto-run mandiri di halaman detail klaim — tidak tergantung toolbar/flag,
+ *  agar panel Riwayat Revisi selalu ada walau toolbar dimatikan. */
+function autoInitRevisionPanel(): void {
+  try {
+    if (!window.location.href.includes('/v2/m-klaim/detail-v2-refaktor')) return;
+    const start = () => {
+      const bar = document.querySelector<HTMLElement>('[data-toolbar]');
+      initBpjsRevisionHistory(bar);
+      // Bila panel belum ada (render parsial), coba lagi 2 dtk.
+      if (!queryRevisionPanel()) window.setTimeout(start, 2000);
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => window.setTimeout(start, 800));
+    } else {
+      window.setTimeout(start, 800);
+    }
+  } catch {
+    /* non-DOM */
+  }
+}
+
+try {
+  autoInitRevisionPanel();
+} catch {
+  /* ignore */
 }
 
 function renderBackToDetailButton(): void {

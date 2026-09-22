@@ -332,9 +332,9 @@ var __morbis_feature = (() => {
     if (!panel || !textarea || !count) return null;
     return { panel, textarea, count };
   }
-  function ensureRevisionPanel(toolbar) {
-    const parent = toolbar.parentElement;
-    if (!parent) return null;
+  function ensureRevisionPanel(anchor) {
+    const parent = anchor?.parentElement ?? null;
+    if (anchor && !parent) return null;
     let found = queryRevisionPanel();
     if (found) return found.textarea;
     const panel = document.createElement('div');
@@ -359,7 +359,15 @@ var __morbis_feature = (() => {
     hint.textContent = 'Diambil dari poli dan keterangan yang dikirim lewat Revisi.';
     head.append(title, count);
     panel.append(head, textarea, hint);
-    parent.insertBefore(panel, toolbar.nextSibling);
+    if (parent && anchor) {
+      parent.insertBefore(panel, anchor.nextSibling);
+    } else {
+      const host =
+        document.querySelector('#form-add')?.parentElement ??
+        document.querySelector('form')?.parentElement ??
+        document.body;
+      host.insertBefore(panel, host.firstChild);
+    }
     found = queryRevisionPanel();
     return found?.textarea ?? null;
   }
@@ -374,12 +382,23 @@ var __morbis_feature = (() => {
   function isRevisionForm(form) {
     if (form.id === 'form-add') return true;
     const action = form.getAttribute('action') || form.action || '';
-    if (!action.includes(BPJS_REVISION_SUBMIT_PATH)) return false;
+    if (action.includes(BPJS_REVISION_SUBMIT_PATH)) return false;
     try {
-      return new URL(action, window.location.href).searchParams.get('sub') === 'simpan';
+      if (new URL(action, window.location.href).searchParams.get('sub') === 'simpan') return true;
     } catch {
       return true;
     }
+    const hasKet = !!form.querySelector('#keterangan, textarea[name="keterangan"]');
+    const hasPoli = !!form.querySelector(
+      '#poli, input[name="poli"], #id_poli, input[name="id_poli"]',
+    );
+    if (hasKet && hasPoli) {
+      if (/revisi/i.test(action)) return true;
+      const btn = form.querySelector('button, input[type="submit"], input[type="button"]');
+      const t = (btn?.value || btn?.textContent || '').trim();
+      if (/revisi/i.test(t)) return true;
+    }
+    return false;
   }
   function readRevisionFromForm(form) {
     const poli = form.querySelector('#poli, input[name="poli"]')?.value.trim() ?? '';
@@ -414,8 +433,9 @@ var __morbis_feature = (() => {
   }
   function onRevisionMutations() {
     if (pendingBpjsRevisions.length === 0) {
-      const toolbar = document.querySelector('[data-toolbar]');
-      if (toolbar && !queryRevisionPanel()) ensureRevisionPanel(toolbar);
+      if (!queryRevisionPanel()) {
+        ensureRevisionPanel(document.querySelector('[data-toolbar]'));
+      }
       return;
     }
     const now = Date.now();
@@ -423,13 +443,22 @@ var __morbis_feature = (() => {
       (revision) => now - revision.submittedAt <= BPJS_REVISION_SUCCESS_WINDOW_MS,
     );
     if (pendingBpjsRevisions.length === 0) return;
-    const failed = document.querySelector('.toast-error, .toast-warning');
+    const failed = document.querySelector(
+      '.toast-error, .toast-warning, .swal2-error, .alert-danger, .alert-warning',
+    );
     if (failed) {
       pendingBpjsRevisions = [];
       renderRevisionHistory();
       return;
     }
-    if (!document.querySelector('.toast-success')) return;
+    const okToast = document.querySelector(
+      '.toast-success, .swal2-success, .alert-success, .toast[data-type="success"]',
+    );
+    const ket = document.querySelector(
+      '#form-add #keterangan, #form-add textarea[name="keterangan"]',
+    );
+    const formReset = !!ket && ket.value.trim() === '';
+    if (!okToast && !formReset) return;
     for (const revision of pendingBpjsRevisions) revision.status = 'saved';
     try {
       const user = readPetugas();
@@ -441,11 +470,10 @@ var __morbis_feature = (() => {
     persistRevisionHistory();
     renderRevisionHistory();
   }
-  function initBpjsRevisionHistory(toolbar) {
-    if (!toolbar) return;
+  function initBpjsRevisionHistory(anchor) {
     const restored = readRevisionHistory();
     bpjsRevisions = mergeRevisionHistory(bpjsRevisions, restored);
-    ensureRevisionPanel(toolbar);
+    ensureRevisionPanel(anchor);
     renderRevisionHistory();
     try {
       const idVisit = extractParam('id_visit') || extractParam('idVisit') || '';
@@ -471,6 +499,24 @@ var __morbis_feature = (() => {
     bpjsRevisionObserver.observe(document.body, { childList: true, subtree: true });
     bpjsRevisionListenersInstalled = true;
   }
+  function autoInitRevisionPanel() {
+    try {
+      if (!window.location.href.includes('/v2/m-klaim/detail-v2-refaktor')) return;
+      const start = () => {
+        const bar = document.querySelector('[data-toolbar]');
+        initBpjsRevisionHistory(bar);
+        if (!queryRevisionPanel()) window.setTimeout(start, 2e3);
+      };
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => window.setTimeout(start, 800));
+      } else {
+        window.setTimeout(start, 800);
+      }
+    } catch {}
+  }
+  try {
+    autoInitRevisionPanel();
+  } catch {}
   function renderBackToDetailButton() {
     if (!g.currentConfig?.features?.shortcutButtons?.enabled) return;
     if (!isExecutionPage() || document.querySelector('[data-back-to-detail-klaim]')) return;
