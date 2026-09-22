@@ -86,10 +86,9 @@ import {
     setupColorIndicators(tipe);
     setupAutoFormatICD(tipe);
     setupUnsavedWarning(form);
-    if (tipe === 'ranap') checkAndLockForm(form, saveBtn, tipe);
-    if (tipe === 'ranap' && !hasIdResume('ranap')) {
-      setupUnifiedSaveHandler(saveBtn, form, tipe);
-    }
+    // Alur native: form selalu bisa diedit langsung — tanpa kunci/buka-kunci,
+    // tanpa cek koneksi. Submit lewat jalur asli (cekForm/onsubmit) yang
+    // sudah di-intercept validasi + log riwayat.
     setupHistory(form, saveBtn, tipe);
   }
 
@@ -101,8 +100,6 @@ import {
         `.ext-rv-toast { position: fixed; top: 20px; right: 20px; z-index: 99999; padding: 16px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,0.15); max-width: 420px; line-height: 1.5; }`,
         `.ext-rv-toast-error { background: ${colors.errorBg}; color: #991b1b; border-left: 5px solid ${colors.error}; }`,
         `.ext-rv-toast-success { background: ${colors.successBg}; color: #065f46; border-left: 5px solid ${colors.success}; }`,
-        `.ext-rv-locked { background: ${colors.muted} !important; cursor: not-allowed; opacity: 0.8; }`,
-        '.ext-rv-save-disabled { opacity: 0.5; pointer-events: none; }',
         `.ext-rv-icd-valid { border: 2px solid ${colors.success} !important; background: ${colors.successBg} !important; }`,
         `.ext-rv-icd-invalid { border: 2px solid ${colors.error} !important; background: ${colors.errorBg} !important; }`,
       ].join('\n'),
@@ -300,126 +297,10 @@ import {
     }
   }
 
-  // ===================== AUTO-LOCK (EDIT MODE, ranap) =====================
-
   function hasIdResume(tipe: TipeResume): boolean {
     const id = tipe === 'rajal' ? 'id_rawat_jalan' : 'id_resume_inap';
     const el = document.getElementById(id) as HTMLInputElement | null;
     return !!el && !!el.value;
-  }
-
-  function checkAndLockForm(form: HTMLFormElement, saveBtn: HTMLElement, tipe: TipeResume): void {
-    if (!hasIdResume(tipe)) return;
-
-    const fields = form.querySelectorAll<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >('input, textarea, select');
-    fields.forEach(function (el) {
-      if (el.id === 'save' || el.type === 'button' || el.type === 'submit') return;
-      if (el.tagName === 'SELECT') {
-        el.disabled = true;
-      } else {
-        (el as HTMLInputElement | HTMLTextAreaElement).readOnly = true;
-      }
-      el.classList.add('ext-rv-locked');
-    });
-
-    saveBtn.textContent = 'Data Terkunci (Sudah Tersimpan)';
-    (saveBtn as HTMLInputElement).value = 'Data Terkunci (Sudah Tersimpan)';
-
-    const unlock = function () {
-      fields.forEach(function (el) {
-        if (el.id === 'save' || el.type === 'button' || el.type === 'submit') return;
-        el.disabled = false;
-        (el as HTMLInputElement | HTMLTextAreaElement).readOnly = false;
-        el.classList.remove('ext-rv-locked');
-      });
-      saveBtn.textContent = 'Simpan Perubahan';
-      (saveBtn as HTMLInputElement).value = 'Simpan Perubahan';
-
-      attachSaveHandler(saveBtn, form, tipe);
-      refreshBeforeSnapshot(form, tipe);
-    };
-
-    saveBtn.onclick = function (e: Event) {
-      e.preventDefault();
-      const ask = async function (): Promise<void> {
-        const yes = await confirmExt({
-          title: 'Buka Kunci?',
-          message: 'Data sudah tersimpan. Buka kunci untuk mengedit?',
-          variant: 'warning',
-          okLabel: 'Ya, Buka',
-          cancelLabel: 'Batal',
-        });
-        if (yes) {
-          unlock();
-          await confirmExt({
-            title: 'Siap Edit',
-            message: 'Field sudah bisa diedit. Klik Simpan Perubahan jika selesai.',
-            variant: 'success',
-            okLabel: 'OK',
-            hideCancel: true,
-          });
-        }
-      };
-      ask();
-    };
-  }
-
-  // ===================== SAVE HANDLER (ranap tambah) =====================
-
-  function setupUnifiedSaveHandler(
-    saveBtn: HTMLElement,
-    form: HTMLFormElement,
-    tipe: TipeResume,
-  ): void {
-    if (hasIdResume(tipe)) return;
-    attachSaveHandler(saveBtn, form, tipe);
-  }
-
-  function attachSaveHandler(saveBtn: HTMLElement, form: HTMLFormElement, tipe: TipeResume): void {
-    saveBtn.onclick = function (e: Event) {
-      if (!runValidation(tipe)) {
-        e.preventDefault();
-        return false;
-      }
-
-      saveBtn.classList.add('ext-rv-save-disabled');
-      saveBtn.textContent = 'Mengecek Koneksi...';
-      (saveBtn as HTMLInputElement).value = 'Mengecek Koneksi...';
-
-      checkSession().then(function (active) {
-        if (!active) {
-          saveBtn.classList.remove('ext-rv-save-disabled');
-          saveBtn.textContent = 'Simpan (Login Ulang Dulu)';
-          (saveBtn as HTMLInputElement).value = 'Simpan (Login Ulang Dulu)';
-
-          confirmExt({
-            title: 'Sesi Habis',
-            message:
-              'Jangan tutup halaman ini! Buka tab baru, login kembali, lalu klik Simpan lagi.',
-            variant: 'danger',
-            okLabel: 'OK, Saya Login Dulu',
-            hideCancel: true,
-          });
-          return;
-        }
-
-        try {
-          localStorage.removeItem(getDraftKey());
-        } catch (_e) {
-          /* ignore */
-        }
-
-        saveBtn.textContent = 'Menyimpan...';
-        (saveBtn as HTMLInputElement).value = 'Menyimpan...';
-
-        form.submit();
-      });
-
-      e.preventDefault();
-      return true;
-    };
   }
 
   // ===================== RIWAYAT RESUME (HISTORY LOG) =====================
@@ -450,11 +331,6 @@ import {
     refreshHistoryBtn(idVisit, tipe);
   }
 
-  /** Baseline "sebelum": saat form dibuka (baru) / saat unlock (edit). */
-  function refreshBeforeSnapshot(form: HTMLFormElement, tipe: TipeResume): void {
-    storeLast(takeSnapshot(form), getVisitId(), tipe);
-  }
-
   function setupHistory(form: HTMLFormElement, saveBtn: HTMLElement, tipe: TipeResume): void {
     const idVisit = getVisitId();
     storeLast(takeSnapshot(form), idVisit, tipe);
@@ -474,7 +350,7 @@ import {
         title: tipe === 'rajal' ? 'Riwayat Resume Rajal' : 'Riwayat Resume Rawat Inap',
         zIndex: 99998,
         onApply: function (snap) {
-          applySnapshot(form, saveBtn, snap, tipe);
+          applySnapshot(form, snap);
         },
       });
     };
@@ -530,33 +406,7 @@ import {
   }
 
   /** Isi SEMUA field form dari snapshot (termasuk hidden), lalu user tinggal Simpan. */
-  function applySnapshot(
-    form: HTMLFormElement,
-    saveBtn: HTMLElement,
-    snap: FormSnap,
-    tipe: TipeResume,
-  ): void {
-    // Buka kunci dulu bila form terkunci agar semua field ikut ke-submit.
-    if (tipe === 'ranap' && hasIdResume('ranap')) {
-      const locked = form.querySelector('.ext-rv-locked');
-      if (locked) {
-        const fields = form.querySelectorAll<
-          HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-        >('input, textarea, select');
-        fields.forEach(function (el) {
-          if (el.id === 'save' || el.type === 'button' || el.type === 'submit') return;
-          el.disabled = false;
-          if (el.tagName !== 'SELECT') {
-            (el as HTMLInputElement | HTMLTextAreaElement).readOnly = false;
-          }
-          el.classList.remove('ext-rv-locked');
-        });
-        saveBtn.textContent = 'Simpan Perubahan';
-        (saveBtn as HTMLInputElement).value = 'Simpan Perubahan';
-        attachSaveHandler(saveBtn, form, tipe);
-      }
-    }
-
+  function applySnapshot(form: HTMLFormElement, snap: FormSnap): void {
     let filled = 0;
     let missing = 0;
     Object.keys(snap).forEach(function (name) {
@@ -603,19 +453,6 @@ import {
         (missing > 0 ? ', ' + missing + ' nama tak ditemukan' : '') +
         '. Periksa lalu klik Simpan.',
     );
-  }
-
-  async function checkSession(): Promise<boolean> {
-    try {
-      const resp = await fetch('/admisi/search?opsi=norm_rekam_medik&q=1', {
-        method: 'HEAD',
-        cache: 'no-store',
-      });
-      if (resp.redirected || resp.status === 401 || resp.status === 403) return false;
-      return true;
-    } catch (_e) {
-      return false;
-    }
   }
 
   // ===================== UNSAVED CHANGES WARNING =====================
@@ -978,6 +815,18 @@ import {
 
     var gcsV = val('gcs_v');
     if (gcsV && !isEmptyish(gcsV)) fail(isValidVital(gcsV, 1, 5), 'GCS Verbal harus 1-5', 'gcs_v');
+
+    // Inti GCS: total E+M+V tidak boleh lebih dari 15.
+    var gcsE2 = val('gcs_e');
+    var gcsM2 = val('gcs_m');
+    if (gcsE2 && gcsM2 && gcsV && !isEmptyish(gcsE2) && !isEmptyish(gcsM2) && !isEmptyish(gcsV)) {
+      var gcsTotal = Number(gcsE2) + Number(gcsM2) + Number(gcsV);
+      fail(
+        isValidVital(String(gcsTotal), 3, 15),
+        'Total GCS (E+M+V) harus 3-15, saat ini ' + gcsTotal,
+        'gcs_v',
+      );
+    }
     var opsiA = radioVal('pasien_rujuk_masuk_opsi').toLowerCase();
     if (opsiA === 'ya')
       fail(
@@ -1023,8 +872,16 @@ import {
       // Parse date aman: "DD/MM/YYYY HH:mm:ss" atau "YYYY-MM-DD" → timestamp
       function parseDMY(s: string): number {
         // Coba format "DD/MM/YYYY HH:mm:ss" atau "DD/MM/YYYY"
-        const m = s.match(/^(\d{1,2})[/\-](\d{1,2})[/\-](\d{4})(?:\s+(\d{1,2}):(\d{2}):(\d{2}))?/);
-        if (m) return new Date(+m[3], +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0)).getTime();
+        const m = s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})(?:\s+(\d{1,2}):(\d{2}):(\d{2}))?/);
+        if (m)
+          return new Date(
+            +m[3],
+            +m[2] - 1,
+            +m[1],
+            +(m[4] || 0),
+            +(m[5] || 0),
+            +(m[6] || 0),
+          ).getTime();
         // Fallback: ISO/standard
         const t = Date.parse(s);
         return isNaN(t) ? 0 : t;

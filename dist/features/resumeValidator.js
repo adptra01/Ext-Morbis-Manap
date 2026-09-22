@@ -794,10 +794,6 @@ var __morbis_feature = (() => {
       setupColorIndicators(tipe);
       setupAutoFormatICD(tipe);
       setupUnsavedWarning(form);
-      if (tipe === 'ranap') checkAndLockForm(form, saveBtn, tipe);
-      if (tipe === 'ranap' && !hasIdResume('ranap')) {
-        setupUnifiedSaveHandler(saveBtn, form, tipe);
-      }
       setupHistory(form, saveBtn, tipe);
     }
     function injectStyle() {
@@ -808,8 +804,6 @@ var __morbis_feature = (() => {
           `.ext-rv-toast { position: fixed; top: 20px; right: 20px; z-index: 99999; padding: 16px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,0.15); max-width: 420px; line-height: 1.5; }`,
           `.ext-rv-toast-error { background: ${colors.errorBg}; color: #991b1b; border-left: 5px solid ${colors.error}; }`,
           `.ext-rv-toast-success { background: ${colors.successBg}; color: #065f46; border-left: 5px solid ${colors.success}; }`,
-          `.ext-rv-locked { background: ${colors.muted} !important; cursor: not-allowed; opacity: 0.8; }`,
-          '.ext-rv-save-disabled { opacity: 0.5; pointer-events: none; }',
           `.ext-rv-icd-valid { border: 2px solid ${colors.success} !important; background: ${colors.successBg} !important; }`,
           `.ext-rv-icd-invalid { border: 2px solid ${colors.error} !important; background: ${colors.errorBg} !important; }`,
         ].join('\n'),
@@ -959,95 +953,6 @@ var __morbis_feature = (() => {
       const el = document.getElementById(id);
       return !!el && !!el.value;
     }
-    function checkAndLockForm(form, saveBtn, tipe) {
-      if (!hasIdResume(tipe)) return;
-      const fields = form.querySelectorAll('input, textarea, select');
-      fields.forEach(function (el) {
-        if (el.id === 'save' || el.type === 'button' || el.type === 'submit') return;
-        if (el.tagName === 'SELECT') {
-          el.disabled = true;
-        } else {
-          el.readOnly = true;
-        }
-        el.classList.add('ext-rv-locked');
-      });
-      saveBtn.textContent = 'Data Terkunci (Sudah Tersimpan)';
-      saveBtn.value = 'Data Terkunci (Sudah Tersimpan)';
-      const unlock = function () {
-        fields.forEach(function (el) {
-          if (el.id === 'save' || el.type === 'button' || el.type === 'submit') return;
-          el.disabled = false;
-          el.readOnly = false;
-          el.classList.remove('ext-rv-locked');
-        });
-        saveBtn.textContent = 'Simpan Perubahan';
-        saveBtn.value = 'Simpan Perubahan';
-        attachSaveHandler(saveBtn, form, tipe);
-        refreshBeforeSnapshot(form, tipe);
-      };
-      saveBtn.onclick = function (e) {
-        e.preventDefault();
-        const ask = async function () {
-          const yes = await confirmExt({
-            title: 'Buka Kunci?',
-            message: 'Data sudah tersimpan. Buka kunci untuk mengedit?',
-            variant: 'warning',
-            okLabel: 'Ya, Buka',
-            cancelLabel: 'Batal',
-          });
-          if (yes) {
-            unlock();
-            await confirmExt({
-              title: 'Siap Edit',
-              message: 'Field sudah bisa diedit. Klik Simpan Perubahan jika selesai.',
-              variant: 'success',
-              okLabel: 'OK',
-              hideCancel: true,
-            });
-          }
-        };
-        ask();
-      };
-    }
-    function setupUnifiedSaveHandler(saveBtn, form, tipe) {
-      if (hasIdResume(tipe)) return;
-      attachSaveHandler(saveBtn, form, tipe);
-    }
-    function attachSaveHandler(saveBtn, form, tipe) {
-      saveBtn.onclick = function (e) {
-        if (!runValidation(tipe)) {
-          e.preventDefault();
-          return false;
-        }
-        saveBtn.classList.add('ext-rv-save-disabled');
-        saveBtn.textContent = 'Mengecek Koneksi...';
-        saveBtn.value = 'Mengecek Koneksi...';
-        checkSession().then(function (active) {
-          if (!active) {
-            saveBtn.classList.remove('ext-rv-save-disabled');
-            saveBtn.textContent = 'Simpan (Login Ulang Dulu)';
-            saveBtn.value = 'Simpan (Login Ulang Dulu)';
-            confirmExt({
-              title: 'Sesi Habis',
-              message:
-                'Jangan tutup halaman ini! Buka tab baru, login kembali, lalu klik Simpan lagi.',
-              variant: 'danger',
-              okLabel: 'OK, Saya Login Dulu',
-              hideCancel: true,
-            });
-            return;
-          }
-          try {
-            localStorage.removeItem(getDraftKey());
-          } catch (_e) {}
-          saveBtn.textContent = 'Menyimpan...';
-          saveBtn.value = 'Menyimpan...';
-          form.submit();
-        });
-        e.preventDefault();
-        return true;
-      };
-    }
     var _historyBtn = null;
     function getVisitId() {
       return val('id_visit');
@@ -1068,9 +973,6 @@ var __morbis_feature = (() => {
       });
       refreshHistoryBtn(idVisit, tipe);
     }
-    function refreshBeforeSnapshot(form, tipe) {
-      storeLast(takeSnapshot(form), getVisitId(), tipe);
-    }
     function setupHistory(form, saveBtn, tipe) {
       const idVisit = getVisitId();
       storeLast(takeSnapshot(form), idVisit, tipe);
@@ -1089,7 +991,7 @@ var __morbis_feature = (() => {
           title: tipe === 'rajal' ? 'Riwayat Resume Rajal' : 'Riwayat Resume Rawat Inap',
           zIndex: 99998,
           onApply: function (snap) {
-            applySnapshot(form, saveBtn, snap, tipe);
+            applySnapshot(form, snap);
           },
         });
       };
@@ -1137,24 +1039,7 @@ var __morbis_feature = (() => {
       });
       return snap;
     }
-    function applySnapshot(form, saveBtn, snap, tipe) {
-      if (tipe === 'ranap' && hasIdResume('ranap')) {
-        const locked = form.querySelector('.ext-rv-locked');
-        if (locked) {
-          const fields = form.querySelectorAll('input, textarea, select');
-          fields.forEach(function (el) {
-            if (el.id === 'save' || el.type === 'button' || el.type === 'submit') return;
-            el.disabled = false;
-            if (el.tagName !== 'SELECT') {
-              el.readOnly = false;
-            }
-            el.classList.remove('ext-rv-locked');
-          });
-          saveBtn.textContent = 'Simpan Perubahan';
-          saveBtn.value = 'Simpan Perubahan';
-          attachSaveHandler(saveBtn, form, tipe);
-        }
-      }
+    function applySnapshot(form, snap) {
       let filled = 0;
       let missing = 0;
       Object.keys(snap).forEach(function (name) {
@@ -1192,18 +1077,6 @@ var __morbis_feature = (() => {
           (missing > 0 ? ', ' + missing + ' nama tak ditemukan' : '') +
           '. Periksa lalu klik Simpan.',
       );
-    }
-    async function checkSession() {
-      try {
-        const resp = await fetch('/admisi/search?opsi=norm_rekam_medik&q=1', {
-          method: 'HEAD',
-          cache: 'no-store',
-        });
-        if (resp.redirected || resp.status === 401 || resp.status === 403) return false;
-        return true;
-      } catch (_e) {
-        return false;
-      }
     }
     let _dirty = false;
     function setupUnsavedWarning(form) {
@@ -1518,6 +1391,16 @@ var __morbis_feature = (() => {
       var gcsV = val('gcs_v');
       if (gcsV && !isEmptyish(gcsV))
         fail(isValidVital(gcsV, 1, 5), 'GCS Verbal harus 1-5', 'gcs_v');
+      var gcsE2 = val('gcs_e');
+      var gcsM2 = val('gcs_m');
+      if (gcsE2 && gcsM2 && gcsV && !isEmptyish(gcsE2) && !isEmptyish(gcsM2) && !isEmptyish(gcsV)) {
+        var gcsTotal = Number(gcsE2) + Number(gcsM2) + Number(gcsV);
+        fail(
+          isValidVital(String(gcsTotal), 3, 15),
+          'Total GCS (E+M+V) harus 3-15, saat ini ' + gcsTotal,
+          'gcs_v',
+        );
+      }
       var opsiA = radioVal('pasien_rujuk_masuk_opsi').toLowerCase();
       if (opsiA === 'ya')
         fail(
