@@ -360,6 +360,30 @@ function IcdList({
   );
 }
 
+// Label lengkap tanda vital + kondisi pulang (aksesibilitas lansia:
+// singkatan medis seperti TD/N/RR/KU membingungkan — tampilkan nama
+// lengkap dengan singkatan dalam kurung).
+const VITAL_LABELS: Record<string, string> = {
+  tensi: 'Tekanan Darah (TD)',
+  nadi: 'Nadi (N)',
+  suhu: 'Suhu Tubuh (S)',
+  spo2: 'Saturasi Oksigen (SpO2)',
+  nafas: 'Laju Napas (RR)',
+  gcs_e: 'GCS Mata (E)',
+  gcs_m: 'GCS Motorik (M)',
+  gcs_v: 'GCS Verbal (V)',
+};
+
+const PULANG_LABELS: Record<string, string> = {
+  ku: 'Keadaan Umum (KU)',
+  kes: 'Kesadaran',
+  td_pulang: 'Tekanan Darah (TD)',
+  nadi_pulang: 'Nadi (N)',
+  suhu_pulang: 'Suhu Tubuh (S)',
+  rr_pulang: 'Laju Napas (RR)',
+  spo2_pulang: 'Saturasi Oksigen (SpO2)',
+};
+
 export function App({ data, onSave, onClose }: Props) {
   const [d, setD] = useState(() => structuredClone(data));
   const [saving, setSaving] = useState(false);
@@ -529,13 +553,13 @@ export function App({ data, onSave, onClose }: Props) {
           <div className="grid grid-cols-[repeat(auto-fill,minmax(90px,1fr))] gap-2.5">
             {(['tensi', 'nadi', 'suhu', 'spo2', 'nafas'] as const).map((k) => (
               <div key={k}>
-                <Label>{k.toUpperCase()}</Label>
+                <Label>{VITAL_LABELS[k]}</Label>
                 <Input value={d[k]} onChange={(e) => p({ [k]: e.target.value })} />
               </div>
             ))}
             {(['gcs_e', 'gcs_m', 'gcs_v'] as const).map((k) => (
               <div key={k}>
-                <Label>{k.replace('_', ' ').toUpperCase()}</Label>
+                <Label>{VITAL_LABELS[k]}</Label>
                 <Input value={d[k]} onChange={(e) => p({ [k]: e.target.value })} />
               </div>
             ))}
@@ -688,7 +712,7 @@ export function App({ data, onSave, onClose }: Props) {
               ] as const
             ).map((k) => (
               <div key={k}>
-                <Label>{k.replace('_', ' ').toUpperCase()}</Label>
+                <Label>{PULANG_LABELS[k]}</Label>
                 <Input
                   value={d[k]}
                   onChange={(e) => p({ [k]: e.target.value })}
