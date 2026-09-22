@@ -324,16 +324,8 @@ function IcdList({
       <div className="flex items-center gap-2.5 mb-2">
         <span className="text-base font-bold text-foreground tracking-tight">{label}</span>
         <span className="text-base text-muted-foreground">({items.length} item)</span>
-        <Button variant="default" size="default" type="button" onClick={onAdd} className="ml-auto">
-          ＋{' '}
-          {label.includes('Sekunder')
-            ? 'Diagnosa'
-            : label.includes('Tindakan')
-              ? 'Tindakan'
-              : 'Item'}
-        </Button>
       </div>
-      {items.length > 0 ? (
+      {items.length > 0 && (
         <>
           <div className="flex gap-2 text-base font-bold text-muted-foreground px-1 mb-1">
             <span className="flex-1">Nama</span>
@@ -363,9 +355,29 @@ function IcdList({
             ))}
           </div>
         </>
-      ) : (
-        <span className="text-base text-muted-foreground">{emptyText}</span>
       )}
+      {items.length === 0 && (
+        <div className="border-2 border-dashed border-border rounded-xl py-6 text-center bg-background mb-2">
+          <p className="text-base text-muted-foreground">{emptyText}</p>
+        </div>
+      )}
+      {/* Tambah full-width di bawah — sama pola modal RJ */}
+      <Button
+        variant="default"
+        size="default"
+        type="button"
+        onClick={onAdd}
+        className="gap-2 w-full mt-2"
+      >
+        ＋ Tambah{' '}
+        {label.includes('Sekunder')
+          ? 'Diagnosa'
+          : label.includes('Tindakan')
+            ? 'Tindakan'
+            : label.includes('Nosokomial')
+              ? 'Nosokomial'
+              : 'Item'}
+      </Button>
     </div>
   );
 }
@@ -560,27 +572,20 @@ export function App({ data, onSave, onClose }: Props) {
 
         {/* Vital Sign */}
         <Card title="Vital Sign">
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-2.5">
-            {(['tensi', 'nadi', 'suhu', 'spo2', 'nafas'] as const).map((k) => (
-              <div key={k}>
-                <Label>{VITAL_LABELS[k]}</Label>
-                <Input
-                  value={d[k]}
-                  onChange={(e) => p({ [k]: e.target.value })}
-                  className="font-semibold"
-                />
-              </div>
-            ))}
-            {(['gcs_e', 'gcs_m', 'gcs_v'] as const).map((k) => (
-              <div key={k}>
-                <Label>{VITAL_LABELS[k]}</Label>
-                <Input
-                  value={d[k]}
-                  onChange={(e) => p({ [k]: e.target.value })}
-                  className="font-semibold"
-                />
-              </div>
-            ))}
+          {/* Vital Sign: 8 field → 2 baris × 4 kolom */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            {(['tensi', 'nadi', 'suhu', 'spo2', 'nafas', 'gcs_e', 'gcs_m', 'gcs_v'] as const).map(
+              (k) => (
+                <div key={k}>
+                  <Label>{VITAL_LABELS[k]}</Label>
+                  <Input
+                    value={d[k]}
+                    onChange={(e) => p({ [k]: e.target.value })}
+                    className="font-semibold"
+                  />
+                </div>
+              ),
+            )}
           </div>
         </Card>
 
@@ -670,8 +675,8 @@ export function App({ data, onSave, onClose }: Props) {
           </Grid>
         </Card>
 
-        {/* ICD */}
-        <Card title="ICD">
+        {/* ICD kontainer 1: Diagnosa Utama + Sekunder (ICD-10) */}
+        <Card title="Diagnosa (ICD-10)">
           <div className="mb-3">
             <Label required>Diagnosa Utama</Label>
             <IcdAutocomplete
@@ -693,7 +698,10 @@ export function App({ data, onSave, onClose }: Props) {
             label="Diagnosa Sekunder"
             emptyText="Belum ada diagnosa sekunder"
           />
+        </Card>
 
+        {/* ICD kontainer 2: Tindakan (ICD-9) + Infeksi Nosokomial */}
+        <Card title="Tindakan & Infeksi Nosokomial">
           <IcdList
             items={d.icd_tindakan}
             icdType="icd9"

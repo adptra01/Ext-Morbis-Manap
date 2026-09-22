@@ -313,8 +313,8 @@ function mountReactApp(data: RanapFormData) {
         background: #f8f6f3;
         border-radius: 16px;
         box-shadow: 0 25px 60px rgba(0,0,0,.25);
-        width: 94%;
-        max-width: 900px;
+        width: 96%;
+        max-width: 1140px;
         max-height: 90vh;
         display: flex;
         flex-direction: column;
@@ -400,8 +400,8 @@ function mountReactApp(data: RanapFormData) {
         .ri-modal {
         border-radius: 16px;
         box-shadow: 0 25px 60px rgba(0,0,0,.25);
-        width: 94%;
-        max-width: 900px;
+        width: 96%;
+        max-width: 1140px;
         max-height: 90vh;
         display: flex;
         flex-direction: column;

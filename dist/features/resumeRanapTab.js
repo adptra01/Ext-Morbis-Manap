@@ -33501,79 +33501,86 @@ var __morbis_feature = (() => {
               className: 'text-base text-muted-foreground',
               children: ['(', items.length, ' item)'],
             }),
-            /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(Button, {
-              variant: 'default',
-              size: 'default',
-              type: 'button',
-              onClick: onAdd,
-              className: 'ml-auto',
-              children: [
-                '\uFF0B',
-                ' ',
-                label.includes('Sekunder')
-                  ? 'Diagnosa'
-                  : label.includes('Tindakan')
-                    ? 'Tindakan'
-                    : 'Item',
-              ],
-            }),
           ],
         }),
-        items.length > 0
-          ? /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(import_jsx_runtime9.Fragment, {
-              children: [
-                /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)('div', {
-                  className: 'flex gap-2 text-base font-bold text-muted-foreground px-1 mb-1',
-                  children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('span', {
-                      className: 'flex-1',
-                      children: 'Nama',
-                    }),
-                    /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('span', {
-                      className: 'w-28',
-                      children: 'Kode ICD',
-                    }),
-                    /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('span', {
-                      className: 'w-[76px] text-right',
-                      children: 'Aksi',
-                    }),
-                  ],
-                }),
-                /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('div', {
-                  className: 'flex flex-col gap-2',
-                  children: items.map((item, i) =>
-                    /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(
-                      'div',
-                      {
-                        className: 'flex gap-2 items-center',
-                        children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(IcdAutocomplete, {
-                            kode: item.kode,
-                            nama: item.nama,
-                            icdType,
-                            onPick: (kode, nama, id) => onChange(i, { ...item, kode, nama, id }),
-                          }),
-                          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Button, {
-                            variant: 'destructive',
-                            size: 'default',
-                            type: 'button',
-                            onClick: () => onRemove(i),
-                            'aria-label': `Hapus ${label} ${i + 1}`,
-                            className: 'w-[76px] shrink-0',
-                            children: 'Hapus',
-                          }),
-                        ],
-                      },
-                      i,
-                    ),
+        items.length > 0 &&
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(import_jsx_runtime9.Fragment, {
+            children: [
+              /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)('div', {
+                className: 'flex gap-2 text-base font-bold text-muted-foreground px-1 mb-1',
+                children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('span', {
+                    className: 'flex-1',
+                    children: 'Nama',
+                  }),
+                  /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('span', {
+                    className: 'w-28',
+                    children: 'Kode ICD',
+                  }),
+                  /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('span', {
+                    className: 'w-[76px] text-right',
+                    children: 'Aksi',
+                  }),
+                ],
+              }),
+              /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('div', {
+                className: 'flex flex-col gap-2',
+                children: items.map((item, i) =>
+                  /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(
+                    'div',
+                    {
+                      className: 'flex gap-2 items-center',
+                      children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(IcdAutocomplete, {
+                          kode: item.kode,
+                          nama: item.nama,
+                          icdType,
+                          onPick: (kode, nama, id) => onChange(i, { ...item, kode, nama, id }),
+                        }),
+                        /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Button, {
+                          variant: 'destructive',
+                          size: 'default',
+                          type: 'button',
+                          onClick: () => onRemove(i),
+                          'aria-label': `Hapus ${label} ${i + 1}`,
+                          className: 'w-[76px] shrink-0',
+                          children: 'Hapus',
+                        }),
+                      ],
+                    },
+                    i,
                   ),
-                }),
-              ],
-            })
-          : /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('span', {
+                ),
+              }),
+            ],
+          }),
+        items.length === 0 &&
+          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('div', {
+            className:
+              'border-2 border-dashed border-border rounded-xl py-6 text-center bg-background mb-2',
+            children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('p', {
               className: 'text-base text-muted-foreground',
               children: emptyText,
             }),
+          }),
+        /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(Button, {
+          variant: 'default',
+          size: 'default',
+          type: 'button',
+          onClick: onAdd,
+          className: 'gap-2 w-full mt-2',
+          children: [
+            '\uFF0B Tambah',
+            ' ',
+            label.includes('Sekunder')
+              ? 'Diagnosa'
+              : label.includes('Tindakan')
+                ? 'Tindakan'
+                : label.includes('Nosokomial')
+                  ? 'Nosokomial'
+                  : 'Item',
+          ],
+        }),
       ],
     });
   }
@@ -33798,10 +33805,10 @@ var __morbis_feature = (() => {
             }),
             /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Card, {
               title: 'Vital Sign',
-              children: /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)('div', {
-                className: 'grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-2.5',
-                children: [
-                  ['tensi', 'nadi', 'suhu', 'spo2', 'nafas'].map((k) =>
+              children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)('div', {
+                className: 'grid grid-cols-2 md:grid-cols-4 gap-2.5',
+                children: ['tensi', 'nadi', 'suhu', 'spo2', 'nafas', 'gcs_e', 'gcs_m', 'gcs_v'].map(
+                  (k) =>
                     /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(
                       'div',
                       {
@@ -33818,26 +33825,7 @@ var __morbis_feature = (() => {
                       },
                       k,
                     ),
-                  ),
-                  ['gcs_e', 'gcs_m', 'gcs_v'].map((k) =>
-                    /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(
-                      'div',
-                      {
-                        children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Label, {
-                            children: VITAL_LABELS[k],
-                          }),
-                          /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Input, {
-                            value: d[k],
-                            onChange: (e) => p({ [k]: e.target.value }),
-                            className: 'font-semibold',
-                          }),
-                        ],
-                      },
-                      k,
-                    ),
-                  ),
-                ],
+                ),
               }),
             }),
             /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Card, {
@@ -33968,7 +33956,7 @@ var __morbis_feature = (() => {
               }),
             }),
             /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(Card, {
-              title: 'ICD',
+              title: 'Diagnosa (ICD-10)',
               children: [
                 /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)('div', {
                   className: 'mb-3',
@@ -33999,6 +33987,11 @@ var __morbis_feature = (() => {
                   label: 'Diagnosa Sekunder',
                   emptyText: 'Belum ada diagnosa sekunder',
                 }),
+              ],
+            }),
+            /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(Card, {
+              title: 'Tindakan & Infeksi Nosokomial',
+              children: [
                 /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(IcdList, {
                   items: d.icd_tindakan,
                   icdType: 'icd9',
@@ -35264,9 +35257,6 @@ video {
 .ml-1 {
   margin-left: 0.25rem;
 }
-.ml-auto {
-  margin-left: auto;
-}
 .mr-1 {
   margin-right: 0.25rem;
 }
@@ -35284,6 +35274,9 @@ video {
 }
 .mt-1 {
   margin-top: 0.25rem;
+}
+.mt-2 {
+  margin-top: 0.5rem;
 }
 .mt-3 {
   margin-top: 0.75rem;
@@ -35576,9 +35569,6 @@ video {
 }
 .grid-cols-2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-.grid-cols-\\[repeat\\(auto-fill\\2c minmax\\(100px\\2c 1fr\\)\\)\\] {
-  grid-template-columns: repeat(auto-fill,minmax(100px,1fr));
 }
 .flex-col {
   flex-direction: column;
@@ -37539,9 +37529,6 @@ video {
 .ml-1 {
   margin-left: 0.25rem;
 }
-.ml-auto {
-  margin-left: auto;
-}
 .mr-1 {
   margin-right: 0.25rem;
 }
@@ -37559,6 +37546,9 @@ video {
 }
 .mt-1 {
   margin-top: 0.25rem;
+}
+.mt-2 {
+  margin-top: 0.5rem;
 }
 .mt-3 {
   margin-top: 0.75rem;
@@ -37851,9 +37841,6 @@ video {
 }
 .grid-cols-2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-.grid-cols-\\[repeat\\(auto-fill\\2c minmax\\(100px\\2c 1fr\\)\\)\\] {
-  grid-template-columns: repeat(auto-fill,minmax(100px,1fr));
 }
 .flex-col {
   flex-direction: column;
@@ -39024,8 +39011,8 @@ video {
         background: #f8f6f3;
         border-radius: 16px;
         box-shadow: 0 25px 60px rgba(0,0,0,.25);
-        width: 94%;
-        max-width: 900px;
+        width: 96%;
+        max-width: 1140px;
         max-height: 90vh;
         display: flex;
         flex-direction: column;
@@ -39111,8 +39098,8 @@ video {
         .ri-modal {
         border-radius: 16px;
         box-shadow: 0 25px 60px rgba(0,0,0,.25);
-        width: 94%;
-        max-width: 900px;
+        width: 96%;
+        max-width: 1140px;
         max-height: 90vh;
         display: flex;
         flex-direction: column;
