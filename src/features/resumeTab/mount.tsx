@@ -824,6 +824,15 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
         color: #1a1d23;
         font-family: 'Roboto', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
       }
+      /* Paksa Roboto 16px/1.6 di atas CSS host (termasuk yang !important):
+         menang di light-DOM fallback & elemen yang tidak inherit font
+         (button native). Kode ICD (.font-mono) dikecualikan. */
+      .resume-modal,
+      .resume-modal *:not(.font-mono) {
+        font-family: 'Roboto', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif !important;
+        font-size: 16px !important;
+        line-height: 1.6 !important;
+      }
       .resume-modal *,
       .resume-modal *::before,
       .resume-modal *::after {
@@ -902,6 +911,15 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
         line-height: 1.6;
         color: #1a1d23;
         font-family: 'Roboto', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+      }
+      /* Paksa Roboto 16px/1.6 di atas CSS host (termasuk yang !important):
+         menang di light-DOM fallback & elemen yang tidak inherit font
+         (button native). Kode ICD (.font-mono) dikecualikan. */
+      .resume-modal,
+      .resume-modal *:not(.font-mono) {
+        font-family: 'Roboto', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif !important;
+        font-size: 16px !important;
+        line-height: 1.6 !important;
       }
       .resume-modal .resume-modal *,
       .resume-modal .resume-modal *::before,

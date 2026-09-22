@@ -188,9 +188,9 @@ var __morbis_feature = (() => {
       const t = document.createElement('div');
       t.textContent = msg;
       t.style.cssText =
-        'position:fixed;top:20px;right:20px;z-index:2147483647;padding:14px 18px;border-radius:8px;background:#dcfce7;color:#065f46;border-left:5px solid #16a34a;font-weight:600;font-size:16px;line-height:1.6;font-family:' +
+        'position:fixed;top:20px;right:20px;z-index:2147483647;padding:14px 18px;border-radius:8px;background:#dcfce7;color:#065f46;border-left:5px solid #16a34a;font-weight:600;font-size:16px!important;line-height:1.6!important;font-family:' +
         HIST_FONT +
-        ';box-shadow:0 4px 16px rgba(0,0,0,.15);max-width:420px;';
+        '!important;box-shadow:0 4px 16px rgba(0,0,0,.15);max-width:420px;';
       document.body.appendChild(t);
       setTimeout(() => t.remove(), 4e3);
     } catch {}

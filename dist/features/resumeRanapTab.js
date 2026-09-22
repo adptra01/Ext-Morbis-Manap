@@ -28194,9 +28194,9 @@ var __morbis_feature = (() => {
     });
     const box = document.createElement('div');
     box.style.cssText =
-      'background:#fff;border-radius:12px;max-width:680px;width:100%;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;font-size:16px;line-height:1.6;color:#1c2530;font-family:' +
+      'background:#fff;border-radius:12px;max-width:680px;width:100%;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;font-size:16px!important;line-height:1.6!important;color:#1c2530;font-family:' +
       HIST_FONT +
-      ';';
+      '!important;';
     ov.appendChild(box);
     const head = document.createElement('div');
     head.style.cssText =
@@ -28206,7 +28206,7 @@ var __morbis_feature = (() => {
     x.type = 'button';
     x.textContent = '\xD7';
     x.style.cssText =
-      'border:none;background:#f8fafc;width:32px;height:32px;border-radius:50%;font-family:inherit;font-size:16px;line-height:1;cursor:pointer;';
+      'border:none;background:#f8fafc;width:32px;height:32px;border-radius:50%;font-family:inherit!important;font-size:16px!important;line-height:1!important;cursor:pointer;';
     x.onclick = function () {
       ov.remove();
     };
@@ -28250,7 +28250,7 @@ var __morbis_feature = (() => {
       btnLihat.type = 'button';
       btnLihat.textContent = 'Lihat';
       btnLihat.style.cssText =
-        'border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:inherit;font-size:inherit;line-height:inherit;';
+        'border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;';
       btnLihat.onclick = function () {
         detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
       };
@@ -28259,7 +28259,7 @@ var __morbis_feature = (() => {
       btnSalin.type = 'button';
       btnSalin.textContent = 'Salin ke Form';
       btnSalin.style.cssText =
-        'background:#00875a;color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:inherit;font-size:inherit;line-height:inherit;';
+        'background:#00875a;color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;';
       btnSalin.onclick = function () {
         try {
           opts.onApply(entry.after);
@@ -39030,6 +39030,15 @@ video {
         line-height: 1.6;
         color: #1a1d23;
       }
+      /* Paksa Roboto 16px/1.6 di atas CSS host (termasuk yang !important):
+         menang di light-DOM fallback & elemen yang tidak inherit font
+         (button native). Kode ICD (.font-mono) dikecualikan. */
+      .ri-modal,
+      .ri-modal *:not(.font-mono) {
+        font-family: 'Roboto', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif !important;
+        font-size: 16px !important;
+        line-height: 1.6 !important;
+      }
       .ri-modal *,
       .ri-modal *::before,
       .ri-modal *::after {
@@ -39101,6 +39110,15 @@ video {
         font-size: 16px;
         line-height: 1.6;
         color: #1a1d23;
+      }
+      /* Paksa Roboto 16px/1.6 di atas CSS host (termasuk yang !important):
+         menang di light-DOM fallback & elemen yang tidak inherit font
+         (button native). Kode ICD (.font-mono) dikecualikan. */
+      .ri-modal,
+      .ri-modal *:not(.font-mono) {
+        font-family: 'Roboto', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif !important;
+        font-size: 16px !important;
+        line-height: 1.6 !important;
       }
       .ri-modal *,
       .ri-modal .ri-modal *::before,

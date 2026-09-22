@@ -325,6 +325,15 @@ function mountReactApp(data: RanapFormData) {
         line-height: 1.6;
         color: #1a1d23;
       }
+      /* Paksa Roboto 16px/1.6 di atas CSS host (termasuk yang !important):
+         menang di light-DOM fallback & elemen yang tidak inherit font
+         (button native). Kode ICD (.font-mono) dikecualikan. */
+      .ri-modal,
+      .ri-modal *:not(.font-mono) {
+        font-family: 'Roboto', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif !important;
+        font-size: 16px !important;
+        line-height: 1.6 !important;
+      }
       .ri-modal *,
       .ri-modal *::before,
       .ri-modal *::after {
@@ -396,6 +405,15 @@ function mountReactApp(data: RanapFormData) {
         font-size: 16px;
         line-height: 1.6;
         color: #1a1d23;
+      }
+      /* Paksa Roboto 16px/1.6 di atas CSS host (termasuk yang !important):
+         menang di light-DOM fallback & elemen yang tidak inherit font
+         (button native). Kode ICD (.font-mono) dikecualikan. */
+      .ri-modal,
+      .ri-modal *:not(.font-mono) {
+        font-family: 'Roboto', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif !important;
+        font-size: 16px !important;
+        line-height: 1.6 !important;
       }
       .ri-modal *,
       .ri-modal .ri-modal *::before,

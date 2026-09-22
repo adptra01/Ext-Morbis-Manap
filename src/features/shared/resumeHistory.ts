@@ -288,9 +288,9 @@ export function showHistToast(msg: string): void {
     t.style.cssText =
       'position:fixed;top:20px;right:20px;z-index:2147483647;padding:14px 18px;border-radius:8px;' +
       'background:#dcfce7;color:#065f46;border-left:5px solid #16a34a;font-weight:600;' +
-      'font-size:16px;line-height:1.6;font-family:' +
+      'font-size:16px!important;line-height:1.6!important;font-family:' +
       HIST_FONT +
-      ';box-shadow:0 4px 16px rgba(0,0,0,.15);max-width:420px;';
+      '!important;box-shadow:0 4px 16px rgba(0,0,0,.15);max-width:420px;';
     document.body.appendChild(t);
     setTimeout(() => t.remove(), 4000);
   } catch {
@@ -339,10 +339,10 @@ export function openHistoryModal(opts: OpenHistoryOpts): void {
   const box = document.createElement('div');
   box.style.cssText =
     'background:#fff;border-radius:12px;max-width:680px;width:100%;max-height:82vh;' +
-    'display:flex;flex-direction:column;overflow:hidden;font-size:16px;line-height:1.6;' +
+    'display:flex;flex-direction:column;overflow:hidden;font-size:16px!important;line-height:1.6!important;' +
     'color:#1c2530;font-family:' +
     HIST_FONT +
-    ';';
+    '!important;';
   ov.appendChild(box);
 
   const head = document.createElement('div');
@@ -355,7 +355,7 @@ export function openHistoryModal(opts: OpenHistoryOpts): void {
   x.textContent = '×';
   x.style.cssText =
     'border:none;background:#f8fafc;width:32px;height:32px;border-radius:50%;' +
-    'font-family:inherit;font-size:16px;line-height:1;cursor:pointer;';
+    'font-family:inherit!important;font-size:16px!important;line-height:1!important;cursor:pointer;';
   x.onclick = function () {
     ov.remove();
   };
@@ -409,7 +409,7 @@ export function openHistoryModal(opts: OpenHistoryOpts): void {
     btnLihat.textContent = 'Lihat';
     btnLihat.style.cssText =
       'border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;' +
-      'font-family:inherit;font-size:inherit;line-height:inherit;';
+      'font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;';
     btnLihat.onclick = function () {
       detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
     };
@@ -420,7 +420,7 @@ export function openHistoryModal(opts: OpenHistoryOpts): void {
     btnSalin.textContent = 'Salin ke Form';
     btnSalin.style.cssText =
       'background:#00875a;color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;' +
-      'font-family:inherit;font-size:inherit;line-height:inherit;';
+      'font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;';
     btnSalin.onclick = function () {
       try {
         opts.onApply(entry.after);
