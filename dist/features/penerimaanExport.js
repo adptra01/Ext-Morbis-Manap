@@ -299,7 +299,12 @@ var __morbis_feature = (() => {
         }
         if (!href && !EXPORT_RE.test(clickable.textContent || '')) return;
         if (href && !EXPORT_RE.test(href) && !EXPORT_RE.test(clickable.textContent || '')) return;
-        if (!href) return;
+        if (!href) {
+          window.console.warn(
+            '[penerimaanExport] tombol tanpa URL: ' + (clickable.outerHTML || '').slice(0, 300),
+          );
+          return;
+        }
         e.preventDefault();
         e.stopPropagation();
         const url = new URL(href, location.href).href;
@@ -347,6 +352,10 @@ var __morbis_feature = (() => {
     });
   }
   void waitForFeature().then((ok) => {
+    window.console.info(
+      '[penerimaanExport] gate=' +
+        (ok ? 'AKTIF' : document.documentElement.getAttribute('data-ext-penerimaan-export')),
+    );
     if (!ok) return;
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', init, { once: true });

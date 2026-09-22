@@ -266,7 +266,7 @@
       "all_frames": false
     },
     {
-      "matches": ["http://*/inventory/resep/penerimaan"],
+      "matches": ["http://*/inventory/resep/penerimaan*"],
       "js": ["features/penerimaanExport.js"],
       "run_at": "document_idle",
       "world": "MAIN",
