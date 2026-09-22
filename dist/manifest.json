@@ -267,6 +267,13 @@
     },
     {
       "matches": ["http://*/inventory/resep/penerimaan"],
+      "js": ["features/penerimaanExport.js"],
+      "run_at": "document_idle",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
+      "matches": ["http://*/inventory/resep/penerimaan"],
       "js": ["features/penerimaanAntrolCetak.js"],
       "run_at": "document_idle",
       "world": "MAIN",

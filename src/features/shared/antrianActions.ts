@@ -51,6 +51,38 @@ export async function lookupAntrian(
   }
 }
 
+/** Timestamp antrian per resep — created_at = Waktu Verif/Antrikan
+ *  (klik Antrikan), done_at = Waktu Klik Selesai (klik SELESAI operator). */
+export interface AntrianTimes {
+  queue_number: string;
+  status: string;
+  created_at: string;
+  done_at: string;
+}
+
+/** Batch lookup utk export penerimaan: 1 request utk N resep (maks 500).
+ *  Return map resep_id → timestamp. Id tak dikenal diabaikan. */
+export async function lookupAntrianBatch(
+  resepIds: string[],
+): Promise<Record<string, AntrianTimes>> {
+  const ids = [...new Set(resepIds.map((s) => String(s).trim()).filter(Boolean))].slice(0, 500);
+  if (!ids.length) return {};
+  try {
+    const res = await fetch(
+      (await probeFarmasiAppBase()) +
+        '/api/queue/lookup-batch?resep_ids=' +
+        encodeURIComponent(ids.join(',')),
+      { cache: 'no-store', credentials: 'omit' },
+    );
+    if (!res.ok) return {};
+    const j = (await res.json()) as { ok?: boolean; queues?: Record<string, AntrianTimes> };
+    if (!j.ok || !j.queues) return {};
+    return j.queues;
+  } catch {
+    return {}; // app tidak terjangkau — export jalan tanpa kolom waktu
+  }
+}
+
 /** Coba SEMUA kandidat id resep — id bisa beda antar halaman utk resep sama. */
 export async function lookupAntrianAny(
   reader: AntrianFieldReader,
