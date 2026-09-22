@@ -117,6 +117,16 @@ function IcdAutocomplete({
   const [show, setShow] = useState(false);
   const [kodeInput, setKodeInput] = useState(kode);
   const [namaInput, setNamaInput] = useState(nama);
+  // Sinkron saat data parent berubah (mis. habis "Salin ke Form" dari
+  // Riwayat): tanpa ini field tetap menampilkan nilai lama/kosong
+  // sehingga kode ICD terlihat "hilang". Aman saat mengetik karena
+  // ketikan hanya mengubah state lokal, bukan prop parent.
+  useEffect(() => {
+    setKodeInput(kode);
+  }, [kode]);
+  useEffect(() => {
+    setNamaInput(nama);
+  }, [nama]);
   const [activeIdx, setActiveIdx] = useState(-1);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -256,7 +266,7 @@ function IcdAutocomplete({
             const active = i === activeIdx;
             return (
               <div
-                key={hit.ID}
+                key={hit.ID || `${hit.KODE}-${ri}`}
                 ref={active ? activeRef : undefined}
                 onClick={() => pick(hit)}
                 onMouseEnter={() => setActiveIdx(i)}

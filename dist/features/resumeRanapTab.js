@@ -33313,6 +33313,12 @@ var __morbis_feature = (() => {
     const [show, setShow] = (0, import_react8.useState)(false);
     const [kodeInput, setKodeInput] = (0, import_react8.useState)(kode);
     const [namaInput, setNamaInput] = (0, import_react8.useState)(nama);
+    (0, import_react8.useEffect)(() => {
+      setKodeInput(kode);
+    }, [kode]);
+    (0, import_react8.useEffect)(() => {
+      setNamaInput(nama);
+    }, [nama]);
     const [activeIdx, setActiveIdx] = (0, import_react8.useState)(-1);
     const timer = (0, import_react8.useRef)(void 0);
     const containerRef = (0, import_react8.useRef)(null);
@@ -33473,7 +33479,7 @@ var __morbis_feature = (() => {
                     }),
                   ],
                 },
-                hit.ID,
+                hit.ID || `${hit.KODE}-${ri}`,
               );
             }),
           }),
