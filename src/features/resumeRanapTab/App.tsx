@@ -385,6 +385,9 @@ function IcdList({
 // Label lengkap tanda vital + kondisi pulang (aksesibilitas lansia:
 // singkatan medis seperti TD/N/RR/KU membingungkan — tampilkan nama
 // lengkap dengan singkatan dalam kurung).
+// Batas klinis GCS: Mata (E) 1-4, Motorik (M) 1-6, Verbal (V) 1-5.
+const GCS_MAX: Partial<Record<string, number>> = { gcs_e: 4, gcs_m: 6, gcs_v: 5 };
+const GCS_HINT: Partial<Record<string, string>> = { gcs_e: '1-4', gcs_m: '1-6', gcs_v: '1-5' };
 const VITAL_LABELS: Record<string, string> = {
   tensi: 'Tekanan Darah (TD)',
   nadi: 'Nadi (N)',
@@ -580,7 +583,24 @@ export function App({ data, onSave, onClose }: Props) {
                   <Label>{VITAL_LABELS[k]}</Label>
                   <Input
                     value={d[k]}
-                    onChange={(e) => p({ [k]: e.target.value })}
+                    onChange={(e) => {
+                      const max = GCS_MAX[k];
+                      if (max === undefined) {
+                        p({ [k]: e.target.value });
+                        return;
+                      }
+                      // Kolom GCS: hanya digit, jepit ke rentang 1..maks
+                      // (V tidak bisa lolos 10+ lagi).
+                      const digits = e.target.value.replace(/\D/g, '').slice(0, 1);
+                      if (!digits) {
+                        p({ [k]: '' });
+                        return;
+                      }
+                      const n = Math.min(Math.max(parseInt(digits, 10), 1), max);
+                      p({ [k]: String(n) });
+                    }}
+                    inputMode={GCS_MAX[k] === undefined ? undefined : 'numeric'}
+                    placeholder={GCS_HINT[k]}
                     className="font-semibold"
                   />
                 </div>

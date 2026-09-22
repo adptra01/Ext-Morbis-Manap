@@ -33584,6 +33584,8 @@ var __morbis_feature = (() => {
       ],
     });
   }
+  var GCS_MAX = { gcs_e: 4, gcs_m: 6, gcs_v: 5 };
+  var GCS_HINT = { gcs_e: '1-4', gcs_m: '1-6', gcs_v: '1-5' };
   var VITAL_LABELS = {
     tensi: 'Tekanan Darah (TD)',
     nadi: 'Nadi (N)',
@@ -33818,7 +33820,22 @@ var __morbis_feature = (() => {
                           }),
                           /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Input, {
                             value: d[k],
-                            onChange: (e) => p({ [k]: e.target.value }),
+                            onChange: (e) => {
+                              const max = GCS_MAX[k];
+                              if (max === void 0) {
+                                p({ [k]: e.target.value });
+                                return;
+                              }
+                              const digits = e.target.value.replace(/\D/g, '').slice(0, 1);
+                              if (!digits) {
+                                p({ [k]: '' });
+                                return;
+                              }
+                              const n = Math.min(Math.max(parseInt(digits, 10), 1), max);
+                              p({ [k]: String(n) });
+                            },
+                            inputMode: GCS_MAX[k] === void 0 ? void 0 : 'numeric',
+                            placeholder: GCS_HINT[k],
                             className: 'font-semibold',
                           }),
                         ],
