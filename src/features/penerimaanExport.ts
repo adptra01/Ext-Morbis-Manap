@@ -167,16 +167,16 @@ function buildExportUrl(): string | null {
 }
 
 /** Bungkus loadTableExcel() bawaan halaman: cegah unduhan asli, proses
- *  via rewrite; gagal → fallback panggil fungsi asli. */
+ *  via rewrite; gagal → fallback panggil fungsi asli. Penjaga permanen
+ *  (cek tiap 2 detik) karena halaman bisa menimpa ulang fungsi ini
+ *  belakangan — wrapper sekali-saja kalah balapan. */
 function wrapLoadTableExcel(): void {
   const w = window as unknown as Record<string, unknown>;
-  if (w.__extLoadWrapped) return;
-  const poll = (n: number): void => {
+  const poll = (): void => {
     const fn = w.loadTableExcel;
-    if (typeof fn === 'function') {
-      w.__extLoadWrapped = true;
+    if (typeof fn === 'function' && fn !== w.__extLoadWrapper) {
       const orig = fn as (...a: unknown[]) => unknown;
-      w.loadTableExcel = function (...args: unknown[]): unknown {
+      const wrapper = function (...args: unknown[]): unknown {
         let url: string | null = null;
         try {
           url = buildExportUrl();
@@ -194,12 +194,13 @@ function wrapLoadTableExcel(): void {
         });
         return false;
       };
+      w.__extLoadWrapper = wrapper;
+      w.loadTableExcel = wrapper;
       window.console.info('[penerimaanExport] loadTableExcel dibungkus');
-      return;
     }
-    if (n < 50) window.setTimeout(() => poll(n + 1), 200);
   };
-  poll(0);
+  poll();
+  window.setInterval(poll, 2000);
 }
 
 function init(): void {
@@ -224,6 +225,10 @@ function init(): void {
       if (!href && !EXPORT_RE.test(clickable.textContent || '')) return;
       if (href && !EXPORT_RE.test(href) && !EXPORT_RE.test(clickable.textContent || '')) return;
       if (!href) {
+        const w = window as unknown as Record<string, unknown>;
+        // Bila wrapper loadTableExcel aktif, onclick akan ditangani di sana —
+        // jangan spam warn.
+        if (w.__extLoadWrapper) return;
         // Tombol export tanpa URL (JS murni) — catat HTML-nya agar bisa
         // ditangani; user tetap dapat export asli.
         window.console.warn(

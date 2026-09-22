@@ -304,13 +304,11 @@ var __morbis_feature = (() => {
   }
   function wrapLoadTableExcel() {
     const w = window;
-    if (w.__extLoadWrapped) return;
-    const poll = (n) => {
+    const poll = () => {
       const fn = w.loadTableExcel;
-      if (typeof fn === 'function') {
-        w.__extLoadWrapped = true;
+      if (typeof fn === 'function' && fn !== w.__extLoadWrapper) {
         const orig = fn;
-        w.loadTableExcel = function (...args) {
+        const wrapper = function (...args) {
           let url = null;
           try {
             url = buildExportUrl();
@@ -326,12 +324,13 @@ var __morbis_feature = (() => {
           });
           return false;
         };
+        w.__extLoadWrapper = wrapper;
+        w.loadTableExcel = wrapper;
         window.console.info('[penerimaanExport] loadTableExcel dibungkus');
-        return;
       }
-      if (n < 50) window.setTimeout(() => poll(n + 1), 200);
     };
-    poll(0);
+    poll();
+    window.setInterval(poll, 2e3);
   }
   function init() {
     if (location.pathname.includes('/detail')) return;
@@ -353,6 +352,8 @@ var __morbis_feature = (() => {
         if (!href && !EXPORT_RE.test(clickable.textContent || '')) return;
         if (href && !EXPORT_RE.test(href) && !EXPORT_RE.test(clickable.textContent || '')) return;
         if (!href) {
+          const w = window;
+          if (w.__extLoadWrapper) return;
           window.console.warn(
             '[penerimaanExport] tombol tanpa URL: ' + (clickable.outerHTML || '').slice(0, 300),
           );
