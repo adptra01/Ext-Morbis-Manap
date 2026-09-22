@@ -150,28 +150,52 @@ function cleanFilterValue(v: unknown): string {
   return t;
 }
 
-/** URL export dari nilai filter search[...] di halaman (meniru loadTableExcel
- *  bawaan: GET .../penerimaan/cetak/cetak-excel?search[...]&...). */
-function buildExportUrl(): string | null {
+/** URL export dari nilai filter di halaman (meniru loadTableExcel bawaan:
+ *  GET .../penerimaan/cetak/cetak-excel?search[...]&...). MORBIS form filter
+ *  utama = #searchTable dengan field: date_start, date_end, unit_tujuan,
+ *  status_pasien, norm, pasien, no_registrasi, no_resep, dll. */
+function buildExportUrl(): string {
   const params = new URLSearchParams();
   const seen = new Set<string>();
-  for (const el of Array.from(
-    document.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
-      'input[name^="search"], select[name^="search"], textarea[name^="search"]',
+
+  // Form filter MORBIS = #searchTable (lihat halaman penerimaan resep).
+  // Fallback: form pertama di halaman bila tidak ada #searchTable.
+  const form = document.querySelector<HTMLFormElement>(
+    'form#searchTable, form#filter, form#search, form#form_filter',
+  );
+  const container: ParentNode = form || document;
+
+  // Ambil SEMUA input/select/textarea di dalam form filter.
+  const els = Array.from(
+    container.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
+      'input, select, textarea',
     ),
-  )) {
+  ).filter((el) => {
+    const t = (el.type || '').toLowerCase();
+    // Skip tombol/submit/reset/image/hidden
+    if (['submit', 'button', 'reset', 'image'].includes(t)) return false;
+    // Hidden field seperti idUnit — skip (bukan filter export)
+    if (t === 'hidden') return false;
+    const name = el.getAttribute('name') || '';
+    if (!name) return false;
+    return true;
+  });
+
+  for (const el of els) {
     const name = el.getAttribute('name') || '';
     if (!name || seen.has(name)) continue;
     const input = el as HTMLInputElement;
     if ((input.type === 'checkbox' || input.type === 'radio') && !input.checked) continue;
     seen.add(name);
-    params.append(name, cleanFilterValue(input.value));
+    const val = cleanFilterValue(input.value);
+    // Hanya kirim param yang tidak kosong (tiru perilaku loadTableExcel)
+    if (val) params.append(name, val);
   }
-  if (!seen.size) return null;
-  return new URL(
-    '/inventory/resep/penerimaan/cetak/cetak-excel?' + params.toString(),
-    location.href,
-  ).href;
+
+  // loadTableExcel tidak butuh filter wajib — export semua bila kosong.
+  const base = '/inventory/resep/penerimaan/cetak/cetak-excel';
+  const qs = params.toString();
+  return new URL(qs ? base + '?' + qs : base, location.href).href;
 }
 
 /** Bungkus loadTableExcel() bawaan halaman: cegah unduhan asli, proses
@@ -183,13 +207,13 @@ const WRAP_FLAG = '__extPenerimaanWrapped';
 
 function makeLoadWrapper(orig: (...a: unknown[]) => unknown): (...a: unknown[]) => unknown {
   const wrapper = function (this: unknown, ...args: unknown[]): unknown {
-    let url: string | null = null;
+    let url: string;
     try {
       url = buildExportUrl();
-    } catch {
-      url = null;
+    } catch (e) {
+      window.console.warn('[penerimaanExport] buildExportUrl error, fallback:', e);
+      return orig.apply(this, args);
     }
-    if (!url) return orig.apply(this, args);
     window.console.info('[penerimaanExport] loadTableExcel → ' + url);
     void processExport(url).catch((err) => {
       window.console.warn('[penerimaanExport] rewrite gagal, fallback:', err);
@@ -265,9 +289,74 @@ function wrapLoadTableExcel(): void {
   trapLoadTableExcel();
 }
 
+function injectCustomButton(): void {
+  // Anti double-inject
+  if (document.getElementById('ext-export-custom-btn')) return;
+
+  const extExportBtn = document.createElement('button');
+  extExportBtn.id = 'ext-export-custom-btn';
+  extExportBtn.type = 'button';
+  extExportBtn.style.cssText =
+    'margin:8px;padding:10px 20px;font-size:14px;' +
+    'background:#175cd3;color:#fff;border:none;border-radius:6px;' +
+    'font-weight:600;cursor:pointer;min-width:180px;';
+  extExportBtn.title = 'Export resep dengan kolom Waktu Verif/Antrikan + Selesai';
+  extExportBtn.textContent = 'Export (dengan waktu antrian)';
+  const btnTooltip = document.createElement('span');
+  btnTooltip.style.cssText = 'margin-left:8px;font-size:12px;opacity:0.9;';
+  btnTooltip.textContent = '(Kolom: Verif/Antrikan + Klik Selesai)';
+  extExportBtn.appendChild(btnTooltip);
+
+  // Cari tombol export MORBIS (onclick loadTableExcel atau teks "Export")
+  const existingExport = Array.from(document.querySelectorAll('button[onclick], a[href]')).find(
+    (b) => {
+      const oc = b.getAttribute('onclick') || '';
+      const tx = (b.textContent || '').trim();
+      return /loadTableExcel|export/i.test(oc) || /export/i.test(tx);
+    },
+  ) as HTMLElement | undefined;
+
+  if (existingExport && existingExport.parentNode) {
+    existingExport.parentNode.insertBefore(extExportBtn, existingExport.nextSibling);
+  } else {
+    // Fallback: letakkan di atas tabel pertama
+    const table = document.querySelector('table');
+    if (table && table.parentNode) {
+      table.parentNode.insertBefore(extExportBtn, table);
+    }
+  }
+
+  // Sembunyikan tombol MORBIS asli agar tidak duplikat
+  const morbisBtn = document.querySelector('button[onclick*="loadTableExcel"]');
+  if (morbisBtn) {
+    (morbisBtn as HTMLElement).style.display = 'none';
+  }
+
+  // Event handler untuk tombol kustom export
+  extExportBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const url = buildExportUrl();
+    window.console.info('[penerimaanExport] custom btn → ' + url);
+    void processExport(url).catch((err) => {
+      window.console.warn('[penerimaanExport] rewrite gagal, fallback:', err);
+      toast('Export server (tanpa kolom waktu antrian).', 6000);
+      window.open(url, '_blank');
+    });
+  });
+}
+
 function init(): void {
   // Hanya halaman list; detail punya fitur sendiri.
   if (location.pathname.includes('/detail')) return;
+
+  // Gate: flag khusus penerimaanExport (admin + apotek)
+  if (!isEnabled()) return;
+
+  // Inject tombol kustom (re-inject bila SPA render ulang)
+  injectCustomButton();
+  window.setInterval(injectCustomButton, 3000);
+
   wrapLoadTableExcel();
   document.addEventListener(
     'click',
@@ -287,15 +376,25 @@ function init(): void {
       if (!href && !EXPORT_RE.test(clickable.textContent || '')) return;
       if (href && !EXPORT_RE.test(href) && !EXPORT_RE.test(clickable.textContent || '')) return;
       if (!href) {
-        const w = window as unknown as Record<string, unknown>;
-        // Bila wrapper loadTableExcel aktif, onclick akan ditangani di sana —
-        // jangan spam warn.
-        if (w.__extLoadTrap) return;
-        // Tombol export tanpa URL (JS murni) — catat HTML-nya agar bisa
-        // ditangani; user tetap dapat export asli.
-        window.console.warn(
-          '[penerimaanExport] tombol tanpa URL: ' + (clickable.outerHTML || '').slice(0, 300),
-        );
+        // --- Tombol JS: onclick="loadTableExcel()" / "exportExcel()" dst ---
+        const oc = clickable.getAttribute?.('onclick') || '';
+        // Deteksi panggilan fungsi JS yang terkait export
+        if (!/loadTableExcel|exportExcel|excel|export/i.test(oc)) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation(); // hapus tangan inline onclick
+
+        const url = buildExportUrl();
+        window.console.info('[penerimaanExport] intercept onclick → ' + url);
+        void processExport(url).catch((err) => {
+          window.console.warn('[penerimaanExport] rewrite gagal, fallback:', err);
+          toast('Export server (tanpa kolom waktu antrian).', 6000);
+          const fn = (window as unknown as Record<string, unknown>).loadTableExcel;
+          if (typeof fn === 'function') {
+            (fn as (...a: unknown[]) => unknown).call(window);
+          }
+        });
         return;
       }
       e.preventDefault();

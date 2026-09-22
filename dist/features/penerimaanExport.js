@@ -289,34 +289,41 @@ var __morbis_feature = (() => {
   function buildExportUrl() {
     const params = new URLSearchParams();
     const seen = /* @__PURE__ */ new Set();
-    for (const el of Array.from(
-      document.querySelectorAll(
-        'input[name^="search"], select[name^="search"], textarea[name^="search"]',
-      ),
-    )) {
+    const form = document.querySelector(
+      'form#searchTable, form#filter, form#search, form#form_filter',
+    );
+    const container = form || document;
+    const els = Array.from(container.querySelectorAll('input, select, textarea')).filter((el) => {
+      const t = (el.type || '').toLowerCase();
+      if (['submit', 'button', 'reset', 'image'].includes(t)) return false;
+      if (t === 'hidden') return false;
+      const name = el.getAttribute('name') || '';
+      if (!name) return false;
+      return true;
+    });
+    for (const el of els) {
       const name = el.getAttribute('name') || '';
       if (!name || seen.has(name)) continue;
       const input = el;
       if ((input.type === 'checkbox' || input.type === 'radio') && !input.checked) continue;
       seen.add(name);
-      params.append(name, cleanFilterValue(input.value));
+      const val = cleanFilterValue(input.value);
+      if (val) params.append(name, val);
     }
-    if (!seen.size) return null;
-    return new URL(
-      '/inventory/resep/penerimaan/cetak/cetak-excel?' + params.toString(),
-      location.href,
-    ).href;
+    const base = '/inventory/resep/penerimaan/cetak/cetak-excel';
+    const qs = params.toString();
+    return new URL(qs ? base + '?' + qs : base, location.href).href;
   }
   var WRAP_FLAG = '__extPenerimaanWrapped';
   function makeLoadWrapper(orig) {
     const wrapper = function (...args) {
-      let url = null;
+      let url;
       try {
         url = buildExportUrl();
-      } catch {
-        url = null;
+      } catch (e) {
+        window.console.warn('[penerimaanExport] buildExportUrl error, fallback:', e);
+        return orig.apply(this, args);
       }
-      if (!url) return orig.apply(this, args);
       window.console.info('[penerimaanExport] loadTableExcel \u2192 ' + url);
       void processExport(url).catch((err) => {
         window.console.warn('[penerimaanExport] rewrite gagal, fallback:', err);
@@ -379,8 +386,55 @@ var __morbis_feature = (() => {
   function wrapLoadTableExcel() {
     trapLoadTableExcel();
   }
+  function injectCustomButton() {
+    if (document.getElementById('ext-export-custom-btn')) return;
+    const extExportBtn = document.createElement('button');
+    extExportBtn.id = 'ext-export-custom-btn';
+    extExportBtn.type = 'button';
+    extExportBtn.style.cssText =
+      'margin:8px;padding:10px 20px;font-size:14px;background:#175cd3;color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;min-width:180px;';
+    extExportBtn.title = 'Export resep dengan kolom Waktu Verif/Antrikan + Selesai';
+    extExportBtn.textContent = 'Export (dengan waktu antrian)';
+    const btnTooltip = document.createElement('span');
+    btnTooltip.style.cssText = 'margin-left:8px;font-size:12px;opacity:0.9;';
+    btnTooltip.textContent = '(Kolom: Verif/Antrikan + Klik Selesai)';
+    extExportBtn.appendChild(btnTooltip);
+    const existingExport = Array.from(document.querySelectorAll('button[onclick], a[href]')).find(
+      (b) => {
+        const oc = b.getAttribute('onclick') || '';
+        const tx = (b.textContent || '').trim();
+        return /loadTableExcel|export/i.test(oc) || /export/i.test(tx);
+      },
+    );
+    if (existingExport && existingExport.parentNode) {
+      existingExport.parentNode.insertBefore(extExportBtn, existingExport.nextSibling);
+    } else {
+      const table = document.querySelector('table');
+      if (table && table.parentNode) {
+        table.parentNode.insertBefore(extExportBtn, table);
+      }
+    }
+    const morbisBtn = document.querySelector('button[onclick*="loadTableExcel"]');
+    if (morbisBtn) {
+      morbisBtn.style.display = 'none';
+    }
+    extExportBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const url = buildExportUrl();
+      window.console.info('[penerimaanExport] custom btn \u2192 ' + url);
+      void processExport(url).catch((err) => {
+        window.console.warn('[penerimaanExport] rewrite gagal, fallback:', err);
+        toast('Export server (tanpa kolom waktu antrian).', 6e3);
+        window.open(url, '_blank');
+      });
+    });
+  }
   function init() {
     if (location.pathname.includes('/detail')) return;
+    if (!isEnabled()) return;
+    injectCustomButton();
+    window.setInterval(injectCustomButton, 3e3);
     wrapLoadTableExcel();
     document.addEventListener(
       'click',
@@ -399,11 +453,21 @@ var __morbis_feature = (() => {
         if (!href && !EXPORT_RE.test(clickable.textContent || '')) return;
         if (href && !EXPORT_RE.test(href) && !EXPORT_RE.test(clickable.textContent || '')) return;
         if (!href) {
-          const w = window;
-          if (w.__extLoadTrap) return;
-          window.console.warn(
-            '[penerimaanExport] tombol tanpa URL: ' + (clickable.outerHTML || '').slice(0, 300),
-          );
+          const oc = clickable.getAttribute?.('onclick') || '';
+          if (!/loadTableExcel|exportExcel|excel|export/i.test(oc)) return;
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          const url2 = buildExportUrl();
+          window.console.info('[penerimaanExport] intercept onclick \u2192 ' + url2);
+          void processExport(url2).catch((err) => {
+            window.console.warn('[penerimaanExport] rewrite gagal, fallback:', err);
+            toast('Export server (tanpa kolom waktu antrian).', 6e3);
+            const fn = window.loadTableExcel;
+            if (typeof fn === 'function') {
+              fn.call(window);
+            }
+          });
           return;
         }
         e.preventDefault();
