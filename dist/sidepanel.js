@@ -1797,6 +1797,12 @@ var FALLBACK_FEATURES = [
     roles: ['apotek'],
   },
   {
+    key: 'penerimaanExport',
+    name: 'Export Penerimaan + Waktu',
+    desc: 'Export xls dgn Waktu Verif/Antrikan + Waktu Klik Selesai',
+    roles: ['admin', 'apotek'],
+  },
+  {
     key: 'labHistory',
     name: 'Riwayat Permintaan Lab',
     desc: 'Tombol lihat riwayat permintaan lab',

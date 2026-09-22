@@ -12,7 +12,6 @@
  * fallback buka export asli di tab baru.
  */
 import { lookupAntrianBatch } from './shared/antrianActions';
-import { whenAntrianFarmasiActive } from './shared/farmasiQueueSync';
 
 // Guard anti double-inject (SPA MORBIS bisa inject content script >1×).
 if ((window as unknown as { __extPenerimaanExport?: boolean }).__extPenerimaanExport) {
@@ -149,10 +148,21 @@ function init(): void {
   document.addEventListener(
     'click',
     (e) => {
-      const a = (e.target as HTMLElement).closest?.('a[href]') as HTMLAnchorElement | null;
-      if (!a) return;
-      const href = a.getAttribute('href') || '';
-      if (!EXPORT_RE.test(href) && !EXPORT_RE.test(a.textContent || '')) return;
+      const el = e.target as HTMLElement;
+      const clickable = el.closest?.(
+        'a[href], button, input[type="button"], input[type="submit"], [onclick]',
+      ) as HTMLElement | null;
+      if (!clickable) return;
+      let href = (clickable as HTMLAnchorElement).getAttribute?.('href') || '';
+      // Tombol JS: gali URL export dari atribut onclick.
+      if (!href) {
+        const oc = clickable.getAttribute?.('onclick') || '';
+        const m = oc.match(/['"]([^'"]*(?:export|xls|excel|informasi-resep)[^'"]*)['"]/i);
+        if (m) href = m[1];
+      }
+      if (!href && !EXPORT_RE.test(clickable.textContent || '')) return;
+      if (href && !EXPORT_RE.test(href) && !EXPORT_RE.test(clickable.textContent || '')) return;
+      if (!href) return; // tombol tanpa URL — tidak bisa diproses
       e.preventDefault();
       e.stopPropagation();
       const url = new URL(href, location.href).href;
@@ -182,8 +192,30 @@ function init(): void {
   });
 }
 
-// Gate: hanya jalan bila fitur antrianFarmasi aktif di config + role.
-whenAntrianFarmasiActive(() => {
+// Gate: flag khusus penerimaanExport (admin + apotek) — pola yang sama
+// dipakai fitur tab (polling karena init.js ISOLATED bisa lebih lambat).
+function isEnabled(): boolean {
+  return document.documentElement.getAttribute('data-ext-penerimaan-export') === '1';
+}
+
+function waitForFeature(timeoutMs = 5000): Promise<boolean> {
+  if (isEnabled()) return Promise.resolve(true);
+  return new Promise((resolve) => {
+    const t0 = Date.now();
+    const iv = window.setInterval(() => {
+      if (isEnabled()) {
+        window.clearInterval(iv);
+        resolve(true);
+      } else if (Date.now() - t0 > timeoutMs) {
+        window.clearInterval(iv);
+        resolve(false);
+      }
+    }, 200);
+  });
+}
+
+void waitForFeature().then((ok) => {
+  if (!ok) return;
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init, { once: true });
   } else {

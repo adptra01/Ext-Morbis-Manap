@@ -249,6 +249,13 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       description:
         'Display farmasi: fallback polling saat WS mati + TTS panggil pasien (nomor + nama + depo, 2×)',
     },
+    penerimaanExport: {
+      enabled: true,
+      allowedRoles: ['admin', 'apotek'],
+      name: 'Export Penerimaan + Waktu Antrian',
+      description:
+        'Export xls penerimaan: kolom Waktu Penjualan diganti Waktu Verif/Antrikan + Waktu Klik Selesai',
+    },
     ttvEditor: {
       enabled: true,
       allowedRoles: ['casemix', 'dokter'],

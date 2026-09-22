@@ -127,6 +127,12 @@ var __morbis_init = (() => {
     } else {
       document.documentElement.removeAttribute('data-ext-antrian-farmasi');
     }
+    const peCfg = cfg?.features?.penerimaanExport;
+    if (peCfg?.enabled && window.ExtensionCore.isFeatureAllowed('penerimaanExport')) {
+      document.documentElement.setAttribute('data-ext-penerimaan-export', '1');
+    } else {
+      document.documentElement.removeAttribute('data-ext-penerimaan-export');
+    }
     const ttvCfg = cfg?.features?.ttvEditor;
     if (ttvCfg?.enabled && window.ExtensionCore.isFeatureAllowed('ttvEditor')) {
       document.documentElement.setAttribute('data-ext-ttv-editor', '1');

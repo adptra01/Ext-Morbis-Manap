@@ -153,30 +153,6 @@ var __morbis_feature = (() => {
     return { ok: !!j.ok, queue_number: j.queue?.queue_number };
   }
   setInterval(() => void flushRetryQueue(), 1e4);
-  function whenAntrianFarmasiActive(cb, timeoutMs = 5e3) {
-    const el = document.documentElement;
-    const t0 = Date.now();
-    const iv = window.setInterval(() => {
-      if (el.getAttribute('data-ext-antrian-farmasi') === '1') {
-        window.clearInterval(iv);
-        cb();
-      } else if (Date.now() - t0 > timeoutMs) {
-        window.clearInterval(iv);
-        showFeatureGateNotif();
-      }
-    }, 200);
-  }
-  function showFeatureGateNotif() {
-    if (!document.body) return;
-    if (document.getElementById('ext-feature-gate-notif')) return;
-    const banner = document.createElement('div');
-    banner.id = 'ext-feature-gate-notif';
-    banner.textContent = '\u26A0\uFE0F Fitur antrian tidak aktif \u2014 muat ulang halaman (F5)';
-    banner.style.cssText =
-      'position:fixed;top:8px;right:8px;z-index:999999;background:#dc3545;color:#fff;padding:8px 16px;border-radius:6px;font:13px system-ui,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.2);';
-    document.body.appendChild(banner);
-    setTimeout(() => banner.remove(), 1e4);
-  }
 
   // src/features/shared/antrianActions.ts
   async function lookupAntrianBatch(resepIds) {
@@ -310,10 +286,20 @@ var __morbis_feature = (() => {
     document.addEventListener(
       'click',
       (e) => {
-        const a = e.target.closest?.('a[href]');
-        if (!a) return;
-        const href = a.getAttribute('href') || '';
-        if (!EXPORT_RE.test(href) && !EXPORT_RE.test(a.textContent || '')) return;
+        const el = e.target;
+        const clickable = el.closest?.(
+          'a[href], button, input[type="button"], input[type="submit"], [onclick]',
+        );
+        if (!clickable) return;
+        let href = clickable.getAttribute?.('href') || '';
+        if (!href) {
+          const oc = clickable.getAttribute?.('onclick') || '';
+          const m = oc.match(/['"]([^'"]*(?:export|xls|excel|informasi-resep)[^'"]*)['"]/i);
+          if (m) href = m[1];
+        }
+        if (!href && !EXPORT_RE.test(clickable.textContent || '')) return;
+        if (href && !EXPORT_RE.test(href) && !EXPORT_RE.test(clickable.textContent || '')) return;
+        if (!href) return;
         e.preventDefault();
         e.stopPropagation();
         const url = new URL(href, location.href).href;
@@ -342,7 +328,26 @@ var __morbis_feature = (() => {
       });
     });
   }
-  whenAntrianFarmasiActive(() => {
+  function isEnabled() {
+    return document.documentElement.getAttribute('data-ext-penerimaan-export') === '1';
+  }
+  function waitForFeature(timeoutMs = 5e3) {
+    if (isEnabled()) return Promise.resolve(true);
+    return new Promise((resolve) => {
+      const t0 = Date.now();
+      const iv = window.setInterval(() => {
+        if (isEnabled()) {
+          window.clearInterval(iv);
+          resolve(true);
+        } else if (Date.now() - t0 > timeoutMs) {
+          window.clearInterval(iv);
+          resolve(false);
+        }
+      }, 200);
+    });
+  }
+  void waitForFeature().then((ok) => {
+    if (!ok) return;
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', init, { once: true });
     } else {
