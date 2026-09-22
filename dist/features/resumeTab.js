@@ -33487,7 +33487,7 @@ var __morbis_feature = (() => {
               }),
             }),
         /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Button, {
-          variant: 'outline',
+          variant: 'default',
           size: 'default',
           className: 'gap-2 w-full',
           onClick: () =>
@@ -33719,7 +33719,7 @@ var __morbis_feature = (() => {
               }),
             }),
         /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(Button, {
-          variant: 'outline',
+          variant: 'default',
           size: 'default',
           className: 'gap-2 w-full',
           onClick: () =>

@@ -33493,7 +33493,7 @@ var __morbis_feature = (() => {
               children: ['(', items.length, ' item)'],
             }),
             /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(Button, {
-              variant: 'outline',
+              variant: 'default',
               size: 'default',
               type: 'button',
               onClick: onAdd,

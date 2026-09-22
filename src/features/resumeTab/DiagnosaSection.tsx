@@ -190,7 +190,7 @@ export function DiagnosaSection({ rows, onChange }: Props) {
       )}
 
       <Button
-        variant="outline"
+        variant="default"
         size="default"
         className="gap-2 w-full"
         onClick={() =>

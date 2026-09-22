@@ -314,7 +314,7 @@ function IcdList({
       <div className="flex items-center gap-2.5 mb-2">
         <span className="text-base font-bold text-foreground tracking-tight">{label}</span>
         <span className="text-base text-muted-foreground">({items.length} item)</span>
-        <Button variant="outline" size="default" type="button" onClick={onAdd} className="ml-auto">
+        <Button variant="default" size="default" type="button" onClick={onAdd} className="ml-auto">
           ＋{' '}
           {label.includes('Sekunder')
             ? 'Diagnosa'
