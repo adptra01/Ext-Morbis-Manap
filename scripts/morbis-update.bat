@@ -45,13 +45,17 @@ if not exist "%REPO_DIR%\.git" (
 )
 cd /d "%REPO_DIR%"
 
-REM ---------- 4/4 Pull ----------
-echo [4/4] Pull branch %BRANCH%...
-git pull origin %BRANCH%
+REM ---------- 4/4 Fetch + RESET PAKSA (tanpa merge) ----------
+echo [4/4] Reset paksa ke %BRANCH% terbaru (tanpa merge)...
+git fetch origin %BRANCH%
+if errorlevel 1 goto :fail
+git checkout %BRANCH% 2>nul
+git merge --abort 2>nul
+git reset --hard origin/%BRANCH%
 if errorlevel 1 goto :fail
 
 REM Deteksi branch: main = dist siap pakai (tanpa build), dev = butuh build
-echo [4/4] Cek branch...
+echo [5/5] Cek branch...
 git show-ref --verify --quiet refs/heads/%BRANCH% 2>nul
 if "%BRANCH%"=="dev" (
     echo Build extension...
@@ -62,9 +66,19 @@ if "%BRANCH%"=="dev" (
 )
 
 echo.
+echo ===== VERSI TERPASANG =====
+git log --oneline -1
+echo Lokasi: %REPO_DIR%
+echo.
 echo ===== SELESAI =====
-echo Buka chrome://extensions lalu klik tombol refresh di kartu extension,
-echo dan refresh halaman MORBIS.
+echo WAJIB lakukan 2 langkah ini agar file baru dipakai Chrome:
+echo   1. Di chrome://extensions, klik tombol REFRESH (panah melingkar)
+echo      pada kartu MORBIS Ext.
+echo   2. Di halaman MORBIS tekan Ctrl+Shift+R (hard reload).
+echo.
+echo PASTIKAN extension yang aktif di Chrome dimuat (Load unpacked) dari:
+echo   %REPO_DIR%
+echo Kalau dimuat dari folder lain, update di atas tidak berpengaruh.
 echo.
 start "" "%ProgramFiles%\Google\Chrome\Application\chrome.exe" "chrome://extensions" 2>nul
 start "" "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe" "chrome://extensions" 2>nul
