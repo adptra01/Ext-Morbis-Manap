@@ -281,8 +281,61 @@ var __morbis_feature = (() => {
     }, 4e3);
     toast('Export selesai \u2014 kolom Waktu Verif/Antrikan + Waktu Klik Selesai terisi.');
   }
+  function buildExportUrl() {
+    const params = new URLSearchParams();
+    const seen = /* @__PURE__ */ new Set();
+    for (const el of Array.from(
+      document.querySelectorAll(
+        'input[name^="search"], select[name^="search"], textarea[name^="search"]',
+      ),
+    )) {
+      const name = el.getAttribute('name') || '';
+      if (!name || seen.has(name)) continue;
+      const input = el;
+      if ((input.type === 'checkbox' || input.type === 'radio') && !input.checked) continue;
+      seen.add(name);
+      params.append(name, input.value ?? '');
+    }
+    if (!seen.size) return null;
+    return new URL(
+      '/inventory/resep/penerimaan/cetak/cetak-excel?' + params.toString(),
+      location.href,
+    ).href;
+  }
+  function wrapLoadTableExcel() {
+    const w = window;
+    if (w.__extLoadWrapped) return;
+    const poll = (n) => {
+      const fn = w.loadTableExcel;
+      if (typeof fn === 'function') {
+        w.__extLoadWrapped = true;
+        const orig = fn;
+        w.loadTableExcel = function (...args) {
+          let url = null;
+          try {
+            url = buildExportUrl();
+          } catch {
+            url = null;
+          }
+          if (!url) return orig.apply(this, args);
+          window.console.info('[penerimaanExport] loadTableExcel \u2192 ' + url);
+          void processExport(url).catch(() => {
+            try {
+              orig.apply(this, args);
+            } catch {}
+          });
+          return false;
+        };
+        window.console.info('[penerimaanExport] loadTableExcel dibungkus');
+        return;
+      }
+      if (n < 50) window.setTimeout(() => poll(n + 1), 200);
+    };
+    poll(0);
+  }
   function init() {
     if (location.pathname.includes('/detail')) return;
+    wrapLoadTableExcel();
     document.addEventListener(
       'click',
       (e) => {

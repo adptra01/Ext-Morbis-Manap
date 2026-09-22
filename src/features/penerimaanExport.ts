@@ -142,9 +142,70 @@ async function processExport(url: string): Promise<void> {
   toast('Export selesai — kolom Waktu Verif/Antrikan + Waktu Klik Selesai terisi.');
 }
 
+/** URL export dari nilai filter search[...] di halaman (meniru loadTableExcel
+ *  bawaan: GET .../penerimaan/cetak/cetak-excel?search[...]&...). */
+function buildExportUrl(): string | null {
+  const params = new URLSearchParams();
+  const seen = new Set<string>();
+  for (const el of Array.from(
+    document.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
+      'input[name^="search"], select[name^="search"], textarea[name^="search"]',
+    ),
+  )) {
+    const name = el.getAttribute('name') || '';
+    if (!name || seen.has(name)) continue;
+    const input = el as HTMLInputElement;
+    if ((input.type === 'checkbox' || input.type === 'radio') && !input.checked) continue;
+    seen.add(name);
+    params.append(name, input.value ?? '');
+  }
+  if (!seen.size) return null;
+  return new URL(
+    '/inventory/resep/penerimaan/cetak/cetak-excel?' + params.toString(),
+    location.href,
+  ).href;
+}
+
+/** Bungkus loadTableExcel() bawaan halaman: cegah unduhan asli, proses
+ *  via rewrite; gagal → fallback panggil fungsi asli. */
+function wrapLoadTableExcel(): void {
+  const w = window as unknown as Record<string, unknown>;
+  if (w.__extLoadWrapped) return;
+  const poll = (n: number): void => {
+    const fn = w.loadTableExcel;
+    if (typeof fn === 'function') {
+      w.__extLoadWrapped = true;
+      const orig = fn as (...a: unknown[]) => unknown;
+      w.loadTableExcel = function (...args: unknown[]): unknown {
+        let url: string | null = null;
+        try {
+          url = buildExportUrl();
+        } catch {
+          url = null;
+        }
+        if (!url) return orig.apply(this, args);
+        window.console.info('[penerimaanExport] loadTableExcel → ' + url);
+        void processExport(url).catch(() => {
+          try {
+            orig.apply(this, args);
+          } catch {
+            /* ignore */
+          }
+        });
+        return false;
+      };
+      window.console.info('[penerimaanExport] loadTableExcel dibungkus');
+      return;
+    }
+    if (n < 50) window.setTimeout(() => poll(n + 1), 200);
+  };
+  poll(0);
+}
+
 function init(): void {
   // Hanya halaman list; detail punya fitur sendiri.
   if (location.pathname.includes('/detail')) return;
+  wrapLoadTableExcel();
   document.addEventListener(
     'click',
     (e) => {
