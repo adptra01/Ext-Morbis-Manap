@@ -1103,6 +1103,26 @@
         .catatan-dash {
             flex-shrink: 0;
         }
+
+        /* Cetak 16px khusus fitur PA (ramah lansia): blok ini SENGAJA
+           paling akhir — rule dasar (10/11pt) di atasnya berspesifisitas
+           sama sehingga hanya menang bila muncul belakangan. HANYA
+           @media print: tampilan layar tidak berubah, fitur lain tak
+           tersentuh (<style> ini hanya ada di halaman cetak PA). */
+        @media print {
+            .section-isi,
+            .section-isi-bare,
+            .section-catatan,
+            .patient-info-container,
+            .ttd-box {
+                font-size: 16px;
+            }
+
+            .section-judul,
+            .catatan-label {
+                font-size: 13pt;
+            }
+        }
       `;
       document.head.appendChild(s);
     }
