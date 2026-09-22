@@ -58,7 +58,7 @@ export function DomainPanel({ urls, onAdd, onRemove, onToggle }: DomainPanelProp
           placeholder="http://example.com"
           className="flex-1"
         />
-        <Button variant="default" size="sm" onClick={handleAdd}>
+        <Button variant="default" size="xs" onClick={handleAdd}>
           <Plus className="size-3.5" />
           Tambah
         </Button>

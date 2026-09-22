@@ -23,6 +23,8 @@ const buttonVariants = cva(
       size: {
         default: 'h-11 px-5 min-w-[90px]',
         sm: 'h-9 px-3.5 min-w-[80px]',
+        // Kompak khusus popup 340px (sidepanel + halaman web tetap pakai sm).
+        xs: 'h-7 px-2.5 min-w-0 gap-1.5 text-xs font-medium [&_svg]:size-3.5',
         lg: 'h-12 px-6 text-base min-w-[100px]',
         xl: 'h-13 px-7 text-lg min-w-[110px]',
         icon: 'h-11 w-11',
