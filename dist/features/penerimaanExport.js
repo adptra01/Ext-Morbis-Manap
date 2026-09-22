@@ -200,7 +200,26 @@ var __morbis_feature = (() => {
       toast._t = window.setTimeout(() => t?.remove(), ms);
     } catch {}
   }
+  function setExportButtonsDisabled(disabled) {
+    const btns = document.querySelectorAll(
+      '#ext-export-custom-btn, button[onclick*="loadTableExcel"]',
+    );
+    btns.forEach((btn) => {
+      if (disabled) {
+        btn.setAttribute('disabled', 'true');
+        btn.style.pointerEvents = 'none';
+        btn.style.opacity = '0.65';
+        btn.style.cursor = 'not-allowed';
+      } else {
+        btn.removeAttribute('disabled');
+        btn.style.pointerEvents = '';
+        btn.style.opacity = '';
+        btn.style.cursor = '';
+      }
+    });
+  }
   function showLoading(msg) {
+    setExportButtonsDisabled(true);
     hideLoading();
     const overlay = document.createElement('div');
     overlay.id = 'ext-export-loading';
@@ -233,6 +252,7 @@ var __morbis_feature = (() => {
     if (el) el.textContent = msg;
   }
   function hideLoading() {
+    setExportButtonsDisabled(false);
     document.getElementById('ext-export-loading')?.remove();
   }
   function buildLiveMap() {
@@ -301,36 +321,27 @@ var __morbis_feature = (() => {
   }
   async function processExport(url) {
     showLoading('Mengunduh data export dari server\u2026');
-    let html;
     try {
       const res = await fetch(url, { credentials: 'include', cache: 'no-store' });
       if (!res.ok) throw new Error('export server HTTP ' + res.status);
-      html = await res.text();
-    } catch (err) {
+      const html = await res.text();
+      updateLoading('Menggabungkan data waktu antrian\u2026');
+      const out = await rewriteExport(html, buildLiveMap());
+      updateLoading('Menyiapkan file unduhan\u2026');
+      const blob = new Blob([out], { type: 'application/vnd.ms-excel' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = FILENAME;
+      document.body.appendChild(a);
+      a.click();
+      window.setTimeout(() => {
+        URL.revokeObjectURL(a.href);
+        a.remove();
+      }, 4e3);
+      toast('Export selesai \u2014 kolom Waktu Verif/Antrikan + Waktu Klik Selesai terisi.');
+    } finally {
       hideLoading();
-      throw err;
     }
-    updateLoading('Menggabungkan data waktu antrian\u2026');
-    let out;
-    try {
-      out = await rewriteExport(html, buildLiveMap());
-    } catch (err) {
-      hideLoading();
-      throw err;
-    }
-    updateLoading('Menyiapkan file unduhan\u2026');
-    const blob = new Blob([out], { type: 'application/vnd.ms-excel' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = FILENAME;
-    document.body.appendChild(a);
-    a.click();
-    window.setTimeout(() => {
-      URL.revokeObjectURL(a.href);
-      a.remove();
-    }, 4e3);
-    hideLoading();
-    toast('Export selesai \u2014 kolom Waktu Verif/Antrikan + Waktu Klik Selesai terisi.');
   }
   function cleanFilterValue(v) {
     const t = String(v ?? '').trim();

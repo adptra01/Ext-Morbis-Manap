@@ -49,9 +49,30 @@ function toast(msg: string, ms = 4000): void {
   }
 }
 
+/** Nonaktifkan / aktifkan tombol export agar tidak bisa diklik berulang kali. */
+function setExportButtonsDisabled(disabled: boolean): void {
+  const btns = document.querySelectorAll<HTMLButtonElement | HTMLAnchorElement>(
+    '#ext-export-custom-btn, button[onclick*="loadTableExcel"]',
+  );
+  btns.forEach((btn) => {
+    if (disabled) {
+      btn.setAttribute('disabled', 'true');
+      btn.style.pointerEvents = 'none';
+      btn.style.opacity = '0.65';
+      btn.style.cursor = 'not-allowed';
+    } else {
+      btn.removeAttribute('disabled');
+      btn.style.pointerEvents = '';
+      btn.style.opacity = '';
+      btn.style.cursor = '';
+    }
+  });
+}
+
 /** Tampilkan overlay loading dengan spinner lingkaran selama proses export.
  *  Muat: pesan + spinner CSS animation. Hilangkan via hideLoading(). */
 function showLoading(msg: string): void {
+  setExportButtonsDisabled(true);
   hideLoading(); // bersihkan overlay sebelumnya
   const overlay = document.createElement('div');
   overlay.id = 'ext-export-loading';
@@ -92,8 +113,9 @@ function updateLoading(msg: string): void {
   if (el) el.textContent = msg;
 }
 
-/** Hilangkan overlay loading. */
+/** Hilangkan overlay loading dan aktifkan kembali tombol export. */
 function hideLoading(): void {
+  setExportButtonsDisabled(false);
   document.getElementById('ext-export-loading')?.remove();
 }
 
@@ -181,36 +203,29 @@ async function rewriteExport(html: string, liveMap: Map<string, string>): Promis
 
 async function processExport(url: string): Promise<void> {
   showLoading('Mengunduh data export dari server…');
-  let html: string;
   try {
     const res = await fetch(url, { credentials: 'include', cache: 'no-store' });
     if (!res.ok) throw new Error('export server HTTP ' + res.status);
-    html = await res.text();
-  } catch (err) {
+    const html = await res.text();
+
+    updateLoading('Menggabungkan data waktu antrian…');
+    const out = await rewriteExport(html, buildLiveMap());
+
+    updateLoading('Menyiapkan file unduhan…');
+    const blob = new Blob([out], { type: 'application/vnd.ms-excel' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = FILENAME;
+    document.body.appendChild(a);
+    a.click();
+    window.setTimeout(() => {
+      URL.revokeObjectURL(a.href);
+      a.remove();
+    }, 4000);
+    toast('Export selesai — kolom Waktu Verif/Antrikan + Waktu Klik Selesai terisi.');
+  } finally {
     hideLoading();
-    throw err;
   }
-  updateLoading('Menggabungkan data waktu antrian…');
-  let out: string;
-  try {
-    out = await rewriteExport(html, buildLiveMap());
-  } catch (err) {
-    hideLoading();
-    throw err;
-  }
-  updateLoading('Menyiapkan file unduhan…');
-  const blob = new Blob([out], { type: 'application/vnd.ms-excel' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = FILENAME;
-  document.body.appendChild(a);
-  a.click();
-  window.setTimeout(() => {
-    URL.revokeObjectURL(a.href);
-    a.remove();
-  }, 4000);
-  hideLoading();
-  toast('Export selesai — kolom Waktu Verif/Antrikan + Waktu Klik Selesai terisi.');
 }
 
 /** Nilai filter aman: DOM selalu string — literal "undefined"/"null"/"NaN"
