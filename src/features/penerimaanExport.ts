@@ -379,43 +379,53 @@ function injectCustomButton(): void {
   // Anti double-inject
   if (document.getElementById('ext-export-custom-btn')) return;
 
+  // Cari tombol export MORBIS asli (onclick loadTableExcel atau teks "Export resep")
+  const morbisBtn = (document.querySelector('button[onclick*="loadTableExcel"]') ||
+    Array.from(document.querySelectorAll('button[onclick], a[href]')).find((b) => {
+      const oc = b.getAttribute('onclick') || '';
+      const tx = (b.textContent || '').trim();
+      return /loadTableExcel/i.test(oc) || /export\s*resep/i.test(tx);
+    })) as HTMLElement | undefined;
+
   const extExportBtn = document.createElement('button');
   extExportBtn.id = 'ext-export-custom-btn';
   extExportBtn.type = 'button';
-  extExportBtn.style.cssText =
-    'margin:8px;padding:10px 20px;font-size:14px;' +
-    'background:#175cd3;color:#fff;border:none;border-radius:6px;' +
-    'font-weight:600;cursor:pointer;min-width:180px;';
-  extExportBtn.title = 'Export resep dengan kolom Waktu Verif/Antrikan + Selesai';
-  extExportBtn.textContent = 'Export (dengan waktu antrian)';
-  const btnTooltip = document.createElement('span');
-  btnTooltip.style.cssText = 'margin-left:8px;font-size:12px;opacity:0.9;';
-  btnTooltip.textContent = '(Kolom: Verif/Antrikan + Klik Selesai)';
-  extExportBtn.appendChild(btnTooltip);
 
-  // Cari tombol export MORBIS (onclick loadTableExcel atau teks "Export")
-  const existingExport = Array.from(document.querySelectorAll('button[onclick], a[href]')).find(
-    (b) => {
-      const oc = b.getAttribute('onclick') || '';
-      const tx = (b.textContent || '').trim();
-      return /loadTableExcel|export/i.test(oc) || /export/i.test(tx);
-    },
-  ) as HTMLElement | undefined;
+  // Salin class & style tombol asli agar tampilan 100% persis dengan tema MORBIS (mis. "btn btn-success")
+  extExportBtn.className = morbisBtn?.className || 'btn btn-success';
+  if (morbisBtn?.getAttribute('style')) {
+    extExportBtn.setAttribute('style', morbisBtn.getAttribute('style') || '');
+  }
+  extExportBtn.style.display = 'inline-block'; // pastikan tombol kita tampil
 
-  if (existingExport && existingExport.parentNode) {
-    existingExport.parentNode.insertBefore(extExportBtn, existingExport.nextSibling);
+  // Ambil icon asli bila ada (mis. <i class="fa fa-print"></i>) atau buat icon default
+  const origIcon = morbisBtn?.querySelector('i');
+  if (origIcon) {
+    extExportBtn.appendChild(origIcon.cloneNode(true));
+    extExportBtn.appendChild(document.createTextNode(' '));
+  } else {
+    const icon = document.createElement('i');
+    icon.className = 'fa fa-print';
+    extExportBtn.appendChild(icon);
+    extExportBtn.appendChild(document.createTextNode(' '));
+  }
+
+  // Gunakan label teks yang identik dengan tombol MORBIS asli
+  const textSpan = document.createElement('span');
+  textSpan.textContent = morbisBtn?.textContent?.trim() || 'Export resep sudah diterima';
+  extExportBtn.appendChild(textSpan);
+
+  extExportBtn.title = 'Export resep dengan kolom Waktu Verif/Antrikan + Waktu Klik Selesai';
+
+  if (morbisBtn && morbisBtn.parentNode) {
+    morbisBtn.parentNode.insertBefore(extExportBtn, morbisBtn.nextSibling);
+    morbisBtn.style.display = 'none'; // sembunyikan tombol asli
   } else {
     // Fallback: letakkan di atas tabel pertama
     const table = document.querySelector('table');
     if (table && table.parentNode) {
       table.parentNode.insertBefore(extExportBtn, table);
     }
-  }
-
-  // Sembunyikan tombol MORBIS asli agar tidak duplikat
-  const morbisBtn = document.querySelector('button[onclick*="loadTableExcel"]');
-  if (morbisBtn) {
-    (morbisBtn as HTMLElement).style.display = 'none';
   }
 
   // Event handler untuk tombol kustom export
