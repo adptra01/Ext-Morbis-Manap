@@ -562,6 +562,9 @@ var __morbis_feature = (() => {
     const now = Date.now();
     if (now - _centralAt < CENTRAL_TTL_MS) return;
     _centralAt = now;
+    try {
+      if (document.hidden) return;
+    } catch {}
     const ids = collectVisibleIds();
     if (!ids.length) return;
     void fetchPreOpBatch(ids).then((marks) => {
@@ -652,7 +655,19 @@ var __morbis_feature = (() => {
       badge.remove();
     }
   }
+  var _scanning = false;
   function scanAndInjectPreOpButtons() {
+    try {
+      if (document.hidden || _scanning) return;
+    } catch {}
+    _scanning = true;
+    try {
+      scanInner();
+    } finally {
+      _scanning = false;
+    }
+  }
+  function scanInner() {
     const tables = document.querySelectorAll('table');
     if (tables.length === 0) return;
     const preOpMap = loadPreOpMap();
@@ -663,6 +678,9 @@ var __morbis_feature = (() => {
         const idVisit = extractIdVisitFromRow(row);
         if (!idVisit) return;
         const isMarked = _centralMap ? !!_centralMap[idVisit] : !!preOpMap[idVisit];
+        const done = row.getAttribute('data-ext-preop-marked') === String(isMarked);
+        const hasBtn = !!row.querySelector(`button[data-ext-preop-btn="${idVisit}"]`);
+        if (done && hasBtn) return;
         let actionCell = Array.from(row.querySelectorAll('td')).find((td) => {
           return td.querySelector('button, a, [onclick*="detail"]') !== null;
         });
@@ -721,6 +739,15 @@ var __morbis_feature = (() => {
       scanAndInjectPreOpButtons();
       refreshCentral();
     }, 1500);
+    window.addEventListener('pagehide', () => {
+      try {
+        _observer?.disconnect();
+        if (_scanIntervalId !== null) {
+          window.clearInterval(_scanIntervalId);
+          _scanIntervalId = null;
+        }
+      } catch {}
+    });
   }
   if (typeof g.featureModules !== 'undefined') {
     g.featureModules.preOpMarker = {

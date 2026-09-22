@@ -343,7 +343,14 @@ function injectExportButton(): void {
 export function initCasemixExport(): void {
   if (window.location.pathname.includes('/detail')) return;
   injectExportButton();
-  window.setInterval(injectExportButton, 3000);
+  window.setInterval(() => {
+    try {
+      if (document.hidden) return; // tab tak terlihat → lewati
+    } catch {
+      /* ignore */
+    }
+    injectExportButton();
+  }, 3000);
 }
 
 if (typeof g.featureModules !== 'undefined') {

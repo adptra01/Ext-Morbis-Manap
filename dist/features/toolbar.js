@@ -654,7 +654,12 @@ var __morbis_feature = (() => {
     const textarea = panel?.querySelector(`#${BPJS_REVISION_TEXTAREA_ID}`) ?? null;
     const count = panel?.querySelector(`#${BPJS_REVISION_COUNT_ID}`) ?? null;
     if (!panel || !textarea || !count) return null;
-    return { panel, textarea, count, hint: panel.querySelector('.ext-bpjs-revision-hint') };
+    return {
+      panel,
+      textarea,
+      count,
+      hint: panel.querySelector('.ext-bpjs-revision-hint'),
+    };
   }
   function setSyncHint(online, centralCount) {
     try {
@@ -773,6 +778,9 @@ var __morbis_feature = (() => {
     }, 200);
   }
   function onRevisionMutations() {
+    try {
+      if (document.hidden) return;
+    } catch {}
     if (pendingBpjsRevisions.length === 0) {
       if (!queryRevisionPanel()) {
         ensureRevisionPanel(document.querySelector('[data-toolbar]'));
@@ -857,11 +865,12 @@ var __morbis_feature = (() => {
   function autoInitRevisionPanel() {
     try {
       if (!window.location.href.includes('/v2/m-klaim/detail-v2-refaktor')) return;
+      let tries = 0;
       const start = () => {
         const bar = document.querySelector('[data-toolbar]');
         initBpjsRevisionHistory(bar);
         initCasemixBackfill();
-        if (!queryRevisionPanel()) window.setTimeout(start, 2e3);
+        if (!queryRevisionPanel() && ++tries < 15) window.setTimeout(start, 2e3);
       };
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => window.setTimeout(start, 800));

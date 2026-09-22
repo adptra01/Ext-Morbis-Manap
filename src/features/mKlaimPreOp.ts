@@ -94,6 +94,11 @@ function refreshCentral(): void {
   const now = Date.now();
   if (now - _centralAt < CENTRAL_TTL_MS) return;
   _centralAt = now;
+  try {
+    if (document.hidden) return; // tab tak terlihat → tunda, hemat baterai/CPU
+  } catch {
+    /* ignore */
+  }
   const ids = collectVisibleIds();
   if (!ids.length) return;
   void fetchPreOpBatch(ids).then((marks) => {
@@ -210,7 +215,24 @@ function updateRowVisual(row: HTMLTableRowElement, idVisit: string, marked: bool
   }
 }
 
+let _scanning = false;
+
 function scanAndInjectPreOpButtons(): void {
+  // Hemat CPU: tab tak terlihat / siklus sebelumnya belum selesai → lewati.
+  try {
+    if (document.hidden || _scanning) return;
+  } catch {
+    /* ignore */
+  }
+  _scanning = true;
+  try {
+    scanInner();
+  } finally {
+    _scanning = false;
+  }
+}
+
+function scanInner(): void {
   // Hanya jalankan di tabel m-klaim
   const tables = document.querySelectorAll<HTMLTableElement>('table');
   if (tables.length === 0) return;
@@ -228,6 +250,11 @@ function scanAndInjectPreOpButtons(): void {
 
       // Efektif: cache pusat (bila ada) menang atas lokal — mark dari PC lain ikut tampil.
       const isMarked = _centralMap ? !!_centralMap[idVisit] : !!preOpMap[idVisit];
+
+      // Jalur cepat: tombol sudah ada & status visual sudah benar → tanpa tulis DOM.
+      const done = row.getAttribute('data-ext-preop-marked') === String(isMarked);
+      const hasBtn = !!row.querySelector(`button[data-ext-preop-btn="${idVisit}"]`);
+      if (done && hasBtn) return;
 
       // Cari cell aksi: cell yang berisi tombol detail/verif atau cell terakhir
       let actionCell = Array.from(row.querySelectorAll('td')).find((td) => {
@@ -301,6 +328,19 @@ export function initPreOpMarker(): void {
     scanAndInjectPreOpButtons();
     refreshCentral();
   }, 1500);
+
+  // Berhenti total saat halaman dibongkar (hemat CPU + cegah kerja hantu di bfcache).
+  window.addEventListener('pagehide', () => {
+    try {
+      _observer?.disconnect();
+      if (_scanIntervalId !== null) {
+        window.clearInterval(_scanIntervalId);
+        _scanIntervalId = null;
+      }
+    } catch {
+      /* ignore */
+    }
+  });
 }
 
 // Feature module registration for modular architecture

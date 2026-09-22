@@ -452,6 +452,11 @@ function scheduleBpjsRevisionCheck(): void {
 }
 
 function onRevisionMutations(): void {
+  try {
+    if (document.hidden) return; // tab tak terlihat → lewati, hemat CPU
+  } catch {
+    /* ignore */
+  }
   // Tanpa submit in-flight, tidak ada yang perlu dikonfirmasi/dirender ulang:
   // init/submit handler sudah render awal. Mutasi lain (partial, toast lain) = skip.
   if (pendingBpjsRevisions.length === 0) {
@@ -557,12 +562,13 @@ export function initBpjsRevisionHistory(anchor: HTMLElement | null): void {
 function autoInitRevisionPanel(): void {
   try {
     if (!window.location.href.includes('/v2/m-klaim/detail-v2-refaktor')) return;
+    let tries = 0;
     const start = () => {
       const bar = document.querySelector<HTMLElement>('[data-toolbar]');
       initBpjsRevisionHistory(bar);
       initCasemixBackfill(); // sapu log lokal (resume) juga dari halaman detail
-      // Bila panel belum ada (render parsial), coba lagi 2 dtk.
-      if (!queryRevisionPanel()) window.setTimeout(start, 2000);
+      // Bila panel belum ada (render parsial), coba lagi 2 dtk — maks 15x (±30 dtk).
+      if (!queryRevisionPanel() && ++tries < 15) window.setTimeout(start, 2000);
     };
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => window.setTimeout(start, 800));

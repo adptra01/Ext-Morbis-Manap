@@ -386,7 +386,12 @@ var __morbis_feature = (() => {
   function initCasemixExport() {
     if (window.location.pathname.includes('/detail')) return;
     injectExportButton();
-    window.setInterval(injectExportButton, 3e3);
+    window.setInterval(() => {
+      try {
+        if (document.hidden) return;
+      } catch {}
+      injectExportButton();
+    }, 3e3);
   }
   if (typeof g.featureModules !== 'undefined') {
     g.featureModules.casemixExport = {
