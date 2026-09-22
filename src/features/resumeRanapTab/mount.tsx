@@ -334,6 +334,12 @@ function mountReactApp(data: RanapFormData) {
         font-size: 16px !important;
         line-height: 1.6 !important;
       }
+      /* Dropdown bawaan browser (option/optgroup): render native, paksa eksplisit. */
+      .ri-modal option,
+      .ri-modal optgroup {
+        font-family: 'Roboto', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif !important;
+        font-size: 16px !important;
+      }
       .ri-modal *,
       .ri-modal *::before,
       .ri-modal *::after {
@@ -414,6 +420,12 @@ function mountReactApp(data: RanapFormData) {
         font-family: 'Roboto', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif !important;
         font-size: 16px !important;
         line-height: 1.6 !important;
+      }
+      /* Dropdown bawaan browser (option/optgroup): render native, paksa eksplisit. */
+      .ri-modal option,
+      .ri-modal optgroup {
+        font-family: 'Roboto', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif !important;
+        font-size: 16px !important;
       }
       .ri-modal *,
       .ri-modal .ri-modal *::before,

@@ -833,6 +833,12 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
         font-size: 16px !important;
         line-height: 1.6 !important;
       }
+      /* Dropdown bawaan browser (option/optgroup): render native, paksa eksplisit. */
+      .resume-modal option,
+      .resume-modal optgroup {
+        font-family: 'Roboto', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif !important;
+        font-size: 16px !important;
+      }
       .resume-modal *,
       .resume-modal *::before,
       .resume-modal *::after {
@@ -920,6 +926,12 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
         font-family: 'Roboto', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif !important;
         font-size: 16px !important;
         line-height: 1.6 !important;
+      }
+      /* Dropdown bawaan browser (option/optgroup): render native, paksa eksplisit. */
+      .resume-modal option,
+      .resume-modal optgroup {
+        font-family: 'Roboto', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif !important;
+        font-size: 16px !important;
       }
       .resume-modal .resume-modal *,
       .resume-modal .resume-modal *::before,
