@@ -303,12 +303,17 @@
       return ra !== rb ? ra - rb : ai - bi;
     });
 
-    // Override Dokter Pengirim (Luar) + RS dari halaman input-hasil:
-    // server meng-camel-case-kan teks bebas form saat render cetak
-    // ("dr. Suhair,Sp.OG(K)-Urogin" → "Dr. Suhair, Sp.og(k)-urogin"),
-    // sedangkan form input menyimpan ejaan asli. Fetch halaman input
-    // (id_lab = id cetak, sesi login sama), cocokkan berdasar token
-    // nama, ganti nilai info. Gagal/timeout → biarkan nilai server.
+    // Override Dokter Pengirim (Luar) + RS + Keterangan Klinis dari
+    // halaman input-hasil:
+    //  - server meng-camel-case-kan teks bebas form saat render cetak
+    //    ("dr. Suhair,Sp.OG(K)-Urogin" → "Dr. Suhair, Sp.og(k)-urogin"),
+    //    sedangkan form input menyimpan ejaan asli → cocokkan berdasar
+    //    token nama;
+    //  - Keterangan Klinis di cetakan berasal dari Formulir Permintaan
+    //    Labor, sedangkan user ingin dari Input/Edit Hasil → ambil
+    //    langsung field #keterangan_klinis (exact, bukan fuzzy).
+    // Fetch halaman input (id_lab = id cetak, sesi login sama).
+    // Gagal/timeout/kosong → biarkan nilai server.
     function fieldText(el: Element): { val: string; ctx: string } {
       let val = '';
       if (el instanceof HTMLSelectElement) {
@@ -349,12 +354,21 @@
       return best;
     }
 
+    function inputFieldValue(doc2: Document, sel: string): string {
+      const el = doc2.querySelector<HTMLInputElement | HTMLTextAreaElement>(sel);
+      return (el?.value || '').trim();
+    }
+
     async function overrideFromInput(info: Array<[string, string]>): Promise<void> {
       const id = new URLSearchParams(window.location.search).get('id');
       if (!id) return;
+      const isKlinis = (l: string): boolean => /ket\w*\s*klinis/i.test(l);
+      const isDokRs = (l: string): boolean => /^dokter/i.test(l) || /^rs\b/i.test(l);
       const targets = info
         .map(([l, v], i) => ({ label: l, value: v, idx: i }))
-        .filter((t) => t.value && (/^dokter/i.test(t.label) || /^rs\b/i.test(t.label)));
+        // Dokter/RS butuh nilai cetak pembanding; Keterangan Klinis boleh
+        // kosong di cetakan (diisi dari input bila ada).
+        .filter((t) => (isDokRs(t.label) ? !!t.value : isKlinis(t.label)));
       if (!targets.length) return;
       const ctrl = new AbortController();
       const timer = window.setTimeout(() => ctrl.abort(), 6000);
@@ -382,6 +396,20 @@
             doc2.querySelectorAll('input, textarea, select').length,
         );
         for (const t of targets) {
+          // Keterangan Klinis: ambil langsung field input (exact),
+          // bukan fuzzy — sumbernya beda form (Input Hasil vs Permintaan).
+          if (isKlinis(t.label)) {
+            const rawK = inputFieldValue(
+              doc2,
+              '#keterangan_klinis, textarea[name="keterangan_klinis"], input[name="keterangan_klinis"]',
+            );
+            const klinis = cleanPhpNoise(stripTags(rawK));
+            window.console.info(
+              '[paPrint] override: ' + t.label + ' cetak="' + t.value + '" input="' + klinis + '"',
+            );
+            if (klinis && klinis !== t.value) info[t.idx][1] = klinis;
+            continue;
+          }
           const ctxRe = /^dokter/i.test(t.label)
             ? /dokter|pengirim|luar|dalam|rujuk/i
             : /rs\b|rumah\s*sakit|faskes|asal/i;

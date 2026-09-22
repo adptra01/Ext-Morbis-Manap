@@ -252,12 +252,18 @@ var __morbis_feature = (() => {
         });
         return best;
       }
+      function inputFieldValue(doc2, sel) {
+        const el = doc2.querySelector(sel);
+        return (el?.value || '').trim();
+      }
       async function overrideFromInput(info) {
         const id = new URLSearchParams(window.location.search).get('id');
         if (!id) return;
+        const isKlinis = (l) => /ket\w*\s*klinis/i.test(l);
+        const isDokRs = (l) => /^dokter/i.test(l) || /^rs\b/i.test(l);
         const targets = info
           .map(([l, v], i) => ({ label: l, value: v, idx: i }))
-          .filter((t) => t.value && (/^dokter/i.test(t.label) || /^rs\b/i.test(t.label)));
+          .filter((t) => (isDokRs(t.label) ? !!t.value : isKlinis(t.label)));
         if (!targets.length) return;
         const ctrl = new AbortController();
         const timer = window.setTimeout(() => ctrl.abort(), 6e3);
@@ -285,6 +291,24 @@ var __morbis_feature = (() => {
               doc2.querySelectorAll('input, textarea, select').length,
           );
           for (const t of targets) {
+            if (isKlinis(t.label)) {
+              const rawK = inputFieldValue(
+                doc2,
+                '#keterangan_klinis, textarea[name="keterangan_klinis"], input[name="keterangan_klinis"]',
+              );
+              const klinis = cleanPhpNoise(stripTags(rawK));
+              window.console.info(
+                '[paPrint] override: ' +
+                  t.label +
+                  ' cetak="' +
+                  t.value +
+                  '" input="' +
+                  klinis +
+                  '"',
+              );
+              if (klinis && klinis !== t.value) info[t.idx][1] = klinis;
+              continue;
+            }
             const ctxRe = /^dokter/i.test(t.label)
               ? /dokter|pengirim|luar|dalam|rujuk/i
               : /rs\b|rumah\s*sakit|faskes|asal/i;
