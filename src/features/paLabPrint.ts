@@ -428,12 +428,29 @@
     // Ruangan: buang segmen pertama yang dobel:
     //   "POLI DALAM - KLINIK PENYAKIT DALAM - Tanpa Kelas" → "KLINIK … - …"
     //   "Laboratorium - LABORATORIUM - Tanpa Kelas" → "LABORATORIUM - …"
+    //   "Rawat Gabung 3.5 - RAWAT INAP GABUNG - III" → "Rawat Inap Gabung - III"
+    //   (buang segmen spesifik pertama, segmen umum di-title-case +
+    //   segmen kelas terakhir dipertahankan).
     // Tanpa pola dobel (mis. "POLI DALAM - Tanpa Kelas") dibiarkan utuh.
+    const titleCase = (s: string): string =>
+      s
+        .toLowerCase()
+        .split(/\s+/)
+        .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1) : w))
+        .join(' ');
     const infoClean: Array<[string, string]> = infoItems.map(([l, v]) => {
       if (!/^ruang/i.test(l)) return [l, v];
       const dedup = v.replace(/^poli\s+.+?-\s*(?=klinik)/i, '').trim() || v;
       const segDup = dedup.replace(/^(\S+)\s+-\s*(?=\1\b)/i, '').trim();
-      return [l, segDup || dedup];
+      const base = segDup || dedup;
+      const segs = base.split(/\s+-\s*/);
+      if (segs.length >= 3 && /rawat\s+inap/i.test(segs[1])) {
+        const mid = titleCase(segs[1].trim());
+        const rest = segs.slice(2).join(' - ').trim();
+        const out = rest ? mid + ' - ' + rest : mid;
+        if (out) return [l, out];
+      }
+      return [l, base];
     });
 
     /** --- REBUILD (struktur prioritas, data asli) --- */

@@ -314,11 +314,25 @@ var __morbis_feature = (() => {
         document.querySelector('a.tombol[href*="export"]')?.getAttribute('href') ||
         window.location.href + '&export=word';
       const bodyScripts = Array.from(document.body.querySelectorAll('script'));
+      const titleCase = (s) =>
+        s
+          .toLowerCase()
+          .split(/\s+/)
+          .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1) : w))
+          .join(' ');
       const infoClean = infoItems.map(([l, v]) => {
         if (!/^ruang/i.test(l)) return [l, v];
         const dedup = v.replace(/^poli\s+.+?-\s*(?=klinik)/i, '').trim() || v;
         const segDup = dedup.replace(/^(\S+)\s+-\s*(?=\1\b)/i, '').trim();
-        return [l, segDup || dedup];
+        const base = segDup || dedup;
+        const segs = base.split(/\s+-\s*/);
+        if (segs.length >= 3 && /rawat\s+inap/i.test(segs[1])) {
+          const mid = titleCase(segs[1].trim());
+          const rest = segs.slice(2).join(' - ').trim();
+          const out = rest ? mid + ' - ' + rest : mid;
+          if (out) return [l, out];
+        }
+        return [l, base];
       });
       const infoHtml = infoClean
         .map(
