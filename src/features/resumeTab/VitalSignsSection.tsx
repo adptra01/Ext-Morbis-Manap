@@ -33,7 +33,7 @@ export function VitalSignsSection({ vitals, onChange }: VitalSignsSectionProps) 
               value={vitals[f.key as keyof typeof vitals]}
               onChange={(e) => onChange(f.key, e.target.value)}
               placeholder={f.placeholder}
-              className="pr-20 font-mono text-base"
+              className="pr-20 font-mono text-lg font-semibold"
               aria-label={f.label}
             />
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-base font-semibold text-muted-foreground pointer-events-none">

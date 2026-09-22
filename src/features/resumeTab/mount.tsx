@@ -822,7 +822,7 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
         font-size: 16px;
         line-height: 1.6;
         color: #1a1d23;
-        font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+        font-family: 'Atkinson Hyperlegible', 'Inter', 'Segoe UI', system-ui, sans-serif;
       }
       .resume-modal *,
       .resume-modal *::before,
@@ -901,7 +901,7 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
         font-size: 16px;
         line-height: 1.6;
         color: #1a1d23;
-        font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+        font-family: 'Atkinson Hyperlegible', 'Inter', 'Segoe UI', system-ui, sans-serif;
       }
       .resume-modal .resume-modal *,
       .resume-modal .resume-modal *::before,
@@ -970,7 +970,7 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
         cursor: pointer;
         font-size: 12px;
         line-height: 18px;
-        font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+        font-family: 'Atkinson Hyperlegible', 'Inter', 'Segoe UI', system-ui, sans-serif;
         color: #1a1d23;
       }
       [data-radix-select-viewport] [role="option"]:focus,

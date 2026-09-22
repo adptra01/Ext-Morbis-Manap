@@ -545,8 +545,8 @@ html {
   --accent-foreground: 222.2 47% 11%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 210 40% 98%;
-  --border: 214 32% 72%;
-  --input: 214 32% 72%;
+  --border: 214 32% 85%;
+  --input: 214 32% 85%;
   --ring: 221 83% 53%;
   --radius: 0.75rem;
   --warning: 38 92% 50%;
@@ -1108,8 +1108,8 @@ html {
 .grid-cols-2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-.grid-cols-\[repeat\(auto-fill\2c minmax\(100px\2c 1fr\)\)\] {
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+.grid-cols-\[repeat\(auto-fill\2c minmax\(90px\2c 1fr\)\)\] {
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
 }
 .flex-col {
   flex-direction: column;
@@ -1603,10 +1603,6 @@ html {
     Consolas,
     monospace;
 }
-.text-2xl {
-  font-size: 1.5rem;
-  line-height: 2rem;
-}
 .text-\[10px\] {
   font-size: 10px;
 }
@@ -1654,9 +1650,6 @@ html {
 .italic {
   font-style: italic;
 }
-.leading-\[1\.7\] {
-  line-height: 1.7;
-}
 .leading-normal {
   line-height: 1.5;
 }
@@ -1665,12 +1658,6 @@ html {
 }
 .leading-snug {
   line-height: 1.375;
-}
-.leading-tight {
-  line-height: 1.25;
-}
-.tracking-\[0\.03em\] {
-  letter-spacing: 0.03em;
 }
 .tracking-tight {
   letter-spacing: -0.025em;

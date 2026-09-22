@@ -312,7 +312,7 @@ function mountReactApp(data: RanapFormData) {
         flex-direction: column;
         overflow: hidden;
         animation: ri-up .25s ease;
-        font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+        font-family: 'Atkinson Hyperlegible', 'Inter', 'Segoe UI', system-ui, sans-serif;
         font-size: 16px;
         line-height: 1.6;
         color: #1a1d23;
@@ -384,7 +384,7 @@ function mountReactApp(data: RanapFormData) {
         flex-direction: column;
         overflow: hidden;
         animation: ri-up .25s ease;
-        font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+        font-family: 'Atkinson Hyperlegible', 'Inter', 'Segoe UI', system-ui, sans-serif;
         font-size: 16px;
         line-height: 1.6;
         color: #1a1d23;
@@ -475,7 +475,7 @@ function mountReactApp(data: RanapFormData) {
         cursor: pointer;
         font-size: 12px;
         line-height: 18px;
-        font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+        font-family: 'Atkinson Hyperlegible', 'Inter', 'Segoe UI', system-ui, sans-serif;
         color: #1a1d23;
       }
       [data-radix-select-viewport] [role="option"]:focus,

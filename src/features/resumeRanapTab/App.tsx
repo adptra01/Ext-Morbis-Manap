@@ -472,7 +472,7 @@ export function App({ data, onSave, onClose }: Props) {
             <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
           </svg>
           <div>
-            <span className="text-xl font-bold tracking-tight">Resume Rawat Inap</span>
+            <span className="text-2xl font-bold leading-tight">Resume Rawat Inap</span>
             <p className="text-base text-white/80">Lengkapi ringkasan dan ICD rawat inap</p>
           </div>
         </div>
@@ -550,17 +550,25 @@ export function App({ data, onSave, onClose }: Props) {
 
         {/* Vital Sign */}
         <Card title="Vital Sign">
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(90px,1fr))] gap-2.5">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-2.5">
             {(['tensi', 'nadi', 'suhu', 'spo2', 'nafas'] as const).map((k) => (
               <div key={k}>
                 <Label>{VITAL_LABELS[k]}</Label>
-                <Input value={d[k]} onChange={(e) => p({ [k]: e.target.value })} />
+                <Input
+                  value={d[k]}
+                  onChange={(e) => p({ [k]: e.target.value })}
+                  className="text-lg font-semibold"
+                />
               </div>
             ))}
             {(['gcs_e', 'gcs_m', 'gcs_v'] as const).map((k) => (
               <div key={k}>
                 <Label>{VITAL_LABELS[k]}</Label>
-                <Input value={d[k]} onChange={(e) => p({ [k]: e.target.value })} />
+                <Input
+                  value={d[k]}
+                  onChange={(e) => p({ [k]: e.target.value })}
+                  className="text-lg font-semibold"
+                />
               </div>
             ))}
           </div>
@@ -716,7 +724,7 @@ export function App({ data, onSave, onClose }: Props) {
                 <Input
                   value={d[k]}
                   onChange={(e) => p({ [k]: e.target.value })}
-                  className="text-base"
+                  className="text-lg font-semibold"
                 />
               </div>
             ))}

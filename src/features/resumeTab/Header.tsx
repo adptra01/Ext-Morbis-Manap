@@ -35,7 +35,7 @@ export function Header({ title, subtitle, onClose, patientInfo }: HeaderProps) {
           </svg>
         </div>
         <div className="min-w-0">
-          <h2 className="text-xl font-bold tracking-tight">{title}</h2>
+          <h2 className="text-2xl font-bold leading-tight">{title}</h2>
           {subtitle ? <p className="text-base text-white/80 mt-0.5">{subtitle}</p> : null}
           {patientInfo && (patientInfo.norm || patientInfo.pasien || patientInfo.nama_dokter) && (
             <div className="text-base text-white/70 mt-1">
