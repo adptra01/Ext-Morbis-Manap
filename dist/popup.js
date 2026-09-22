@@ -18,7 +18,7 @@ import {
   v as sendMessage,
   x as __toESM,
   y as require_client,
-} from './chunks/button-Bf9cogGb.js';
+} from './chunks/button-DXY1BYXl.js';
 //#region src/popup/StatusCard.tsx
 var import_react = /* @__PURE__ */ __toESM(require_react(), 1);
 var import_client = require_client();
@@ -271,7 +271,7 @@ function DomainPanel({ urls, onAdd, onRemove, onToggle }) {
           }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
             variant: 'default',
-            size: 'sm',
+            size: 'xs',
             onClick: handleAdd,
             children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, { className: 'size-3.5' }),
@@ -340,7 +340,7 @@ function Footer({ onReload, onReset }) {
     children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
         variant: 'default',
-        size: 'sm',
+        size: 'xs',
         className: 'flex-1',
         onClick: onReload,
         children: [
@@ -350,7 +350,7 @@ function Footer({ onReload, onReset }) {
       }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
         variant: 'secondary',
-        size: 'sm',
+        size: 'xs',
         className: 'flex-1',
         onClick: onReset,
         children: [
