@@ -386,8 +386,8 @@ function IcdList({
 // singkatan medis seperti TD/N/RR/KU membingungkan — tampilkan nama
 // lengkap dengan singkatan dalam kurung).
 // Batas klinis GCS: Mata (E) 1-4, Motorik (M) 1-6, Verbal (V) 1-5.
-const GCS_MAX: Partial<Record<string, number>> = { gcs_e: 4, gcs_m: 6, gcs_v: 5 };
-const GCS_HINT: Partial<Record<string, string>> = { gcs_e: '1-4', gcs_m: '1-6', gcs_v: '1-5' };
+const GCS_MAX: Partial<Record<string, number>> = { gcs_e: 4, gcs_m: 6, gcs_v: 10 };
+const GCS_HINT: Partial<Record<string, string>> = { gcs_e: '1-4', gcs_m: '1-6', gcs_v: '1-10' };
 const VITAL_LABELS: Record<string, string> = {
   tensi: 'Tekanan Darah (TD)',
   nadi: 'Nadi (N)',
@@ -589,9 +589,8 @@ export function App({ data, onSave, onClose }: Props) {
                         p({ [k]: e.target.value });
                         return;
                       }
-                      // Kolom GCS: hanya digit, jepit ke rentang 1..maks
-                      // (V tidak bisa lolos 10+ lagi).
-                      const digits = e.target.value.replace(/\D/g, '').slice(0, 1);
+                      // Kolom GCS: hanya digit, jepit ke rentang 1..maks.
+                      const digits = e.target.value.replace(/\D/g, '').slice(0, String(max).length);
                       if (!digits) {
                         p({ [k]: '' });
                         return;
