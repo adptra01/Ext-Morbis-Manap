@@ -47,6 +47,7 @@
         "features/batchDeleteFiles.js",
         "features/mKlaimPreOp.js",
         "features/mKlaimVerifLog.js",
+        "features/mKlaimCasemixExport.js",
         "init.js"
       ],
       "run_at": "document_end",

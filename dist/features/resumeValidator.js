@@ -587,6 +587,7 @@ var __morbis_feature = (() => {
         id_visit: idVisit,
         id_resume: entry.id_resume,
         aksi: entry.aksi,
+        tipe: entry.tipe,
         waktu: new Date(entry.at).toISOString(),
         user: entry.user,
         before: entry.before,

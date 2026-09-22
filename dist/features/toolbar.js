@@ -60,6 +60,105 @@ var __morbis_feature = (() => {
 `,
   );
 
+  // src/features/shared/resumeHistory.ts
+  function readPetugas() {
+    try {
+      const panel = document.getElementById('userpanel');
+      if (panel) {
+        let username = '';
+        let role = '';
+        panel.querySelectorAll('.subgroup').forEach((sg) => {
+          const title = (sg.querySelector('.subtitle')?.textContent || '').trim().toLowerCase();
+          const content = (sg.querySelector('.subcontent')?.textContent || '').trim();
+          if (title === 'username' && content) username = content;
+          if (title === 'role' && content) role = content;
+        });
+        if (username) return `${username}${role ? ` (${role})` : ''}`;
+        const a = panel.querySelector('a');
+        const t2 = (a?.textContent || '').trim();
+        if (t2 && t2 !== 'Petugas Rumah Sakit') return t2;
+      }
+      const el = document.querySelector('#petugas, .petugas, .username, #username, .user-name');
+      const t = (el?.textContent || '').trim();
+      if (t) return t.slice(0, 80);
+      const dokter = document
+        .querySelector('input[name="dokter"], #dokter, input[name="nama_dokter"]')
+        ?.value?.trim();
+      if (dokter) return dokter.slice(0, 80);
+      const idUser = document.querySelector('input[name="id_user"], #id_user')?.value?.trim();
+      if (idUser) return `User #${idUser}`;
+    } catch {}
+    return 'petugas';
+  }
+
+  // src/features/shared/casemixApi.ts
+  var CASEMIX_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
+  var BASE_OVERRIDE_KEY = 'ext-farmasi-app-base';
+  var BATCH_MAX = 500;
+  function resolveCasemixBase() {
+    try {
+      const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
+      if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
+    } catch {}
+    return CASEMIX_BASE_FALLBACK;
+  }
+  function normalizeIds(ids) {
+    return [...new Set(ids.map((s) => String(s).trim()).filter(Boolean))].slice(0, BATCH_MAX);
+  }
+  async function getJson(path, fetcher = fetch) {
+    try {
+      const res = await fetcher(resolveCasemixBase() + path, {
+        cache: 'no-store',
+        credentials: 'omit',
+        headers: { Accept: 'application/json' },
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+  function postFireForget(path, payload, fetcher = fetch) {
+    try {
+      fetcher(resolveCasemixBase() + path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true,
+        credentials: 'omit',
+      }).catch(() => {});
+    } catch {}
+  }
+  function postRevisionCentral(rev, fetcher = fetch) {
+    if (!rev.idVisit || !rev.keterangan) return;
+    postFireForget(
+      '/api/casemix/revisions',
+      {
+        id_visit: rev.idVisit,
+        poli: rev.poli ?? null,
+        id_poli: rev.idPoli ?? null,
+        keterangan: rev.keterangan,
+        status: rev.status ?? 'saved',
+        user: rev.user ?? null,
+        submitted_at: rev.submittedAt
+          ? new Date(rev.submittedAt).toISOString()
+          : /* @__PURE__ */ new Date().toISOString(),
+      },
+      fetcher,
+    );
+  }
+  async function fetchRevisionsBatch(ids, fetcher = fetch) {
+    const list = normalizeIds(ids);
+    if (!list.length) return {};
+    const j = await getJson(
+      '/api/casemix/revisions/list?ids=' + encodeURIComponent(list.join(',')),
+      fetcher,
+    );
+    if (j === null) return null;
+    if (!j.ok || !j.revisions) return {};
+    return j.revisions;
+  }
+
   // src/features/shortcutButtons.ts
   var g = getMorbisGlobals();
   var BACK_DETAIL_BTN = { text: 'Kembali ke Detail Klaim', bg: '#6366f1', hover: '#4f46e5' };
@@ -182,6 +281,18 @@ var __morbis_feature = (() => {
     return {
       ...base,
       [BPJS_REVISION_HISTORY_KEY]: revisions.filter((revision) => revision.status === 'saved'),
+    };
+  }
+  function centralToBpjsRevision(r, idVisit) {
+    if (!r.keterangan) return null;
+    const ts = r.submitted_at ? Date.parse(r.submitted_at.replace(' ', 'T')) : NaN;
+    return {
+      idVisit,
+      poli: r.poli ?? '',
+      idPoli: r.id_poli ?? '',
+      keterangan: r.keterangan,
+      submittedAt: Number.isFinite(ts) ? ts : Date.now(),
+      status: 'saved',
     };
   }
   function formatRevisionTimestamp(timestamp) {
@@ -320,6 +431,12 @@ var __morbis_feature = (() => {
     }
     if (!document.querySelector('.toast-success')) return;
     for (const revision of pendingBpjsRevisions) revision.status = 'saved';
+    try {
+      const user = readPetugas();
+      for (const revision of pendingBpjsRevisions) {
+        postRevisionCentral({ ...revision, user });
+      }
+    } catch {}
     pendingBpjsRevisions = [];
     persistRevisionHistory();
     renderRevisionHistory();
@@ -330,6 +447,24 @@ var __morbis_feature = (() => {
     bpjsRevisions = mergeRevisionHistory(bpjsRevisions, restored);
     ensureRevisionPanel(toolbar);
     renderRevisionHistory();
+    try {
+      const idVisit = extractParam('id_visit') || extractParam('idVisit') || '';
+      if (idVisit) {
+        void fetchRevisionsBatch([idVisit]).then((map) => {
+          if (!map) return;
+          const incoming = [];
+          for (const r of map[idVisit] ?? []) {
+            const rev = centralToBpjsRevision(r, idVisit);
+            if (rev) incoming.push(rev);
+          }
+          if (incoming.length) {
+            bpjsRevisions = mergeRevisionHistory(bpjsRevisions, incoming);
+            persistRevisionHistory();
+            renderRevisionHistory();
+          }
+        });
+      }
+    } catch {}
     if (bpjsRevisionListenersInstalled) return;
     document.addEventListener('submit', onRevisionSubmit, true);
     bpjsRevisionObserver = new MutationObserver(scheduleBpjsRevisionCheck);

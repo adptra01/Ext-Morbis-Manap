@@ -135,10 +135,315 @@ var __morbis_feature = (() => {
     }
   }
 
+  // src/features/shared/resumeHistory.ts
+  function defaultStore2() {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+    } catch {}
+    return null;
+  }
+  var HIST_PREFIX = 'ext_rv_history_';
+  var LEGACY_HIST_PREFIX = HIST_PREFIX;
+  var MAX_ENTRIES = 50;
+  function getHistoryKey(idVisit, tipe) {
+    return `${HIST_PREFIX}${tipe === 'ranap' ? 'ri' : 'rj'}_${idVisit || 'unknown'}`;
+  }
+  function readJson(store, key) {
+    if (!store) return null;
+    try {
+      const raw = store.getItem(key);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+  function writeJson(store, key, value) {
+    if (!store) return;
+    try {
+      store.setItem(key, JSON.stringify(value));
+    } catch {}
+  }
+  function loadHistory(idVisit, tipe, store = defaultStore2()) {
+    const arr = readJson(store, getHistoryKey(idVisit, tipe));
+    const list = Array.isArray(arr) ? arr : [];
+    if (tipe === 'ranap') {
+      const legacy = readJson(store, LEGACY_HIST_PREFIX + idVisit);
+      if (Array.isArray(legacy) && legacy.length > 0 && list.length === 0) {
+        const migrated = legacy.map((e) => ({ ...e, tipe: 'ranap' }));
+        saveHistory(migrated, idVisit, 'ranap', store);
+        return migrated;
+      }
+    }
+    return list;
+  }
+  function saveHistory(list, idVisit, tipe, store = defaultStore2()) {
+    writeJson(store, getHistoryKey(idVisit, tipe), list.slice(-MAX_ENTRIES));
+  }
+  function readPetugas() {
+    try {
+      const panel = document.getElementById('userpanel');
+      if (panel) {
+        let username = '';
+        let role = '';
+        panel.querySelectorAll('.subgroup').forEach((sg) => {
+          const title = (sg.querySelector('.subtitle')?.textContent || '').trim().toLowerCase();
+          const content = (sg.querySelector('.subcontent')?.textContent || '').trim();
+          if (title === 'username' && content) username = content;
+          if (title === 'role' && content) role = content;
+        });
+        if (username) return `${username}${role ? ` (${role})` : ''}`;
+        const a = panel.querySelector('a');
+        const t2 = (a?.textContent || '').trim();
+        if (t2 && t2 !== 'Petugas Rumah Sakit') return t2;
+      }
+      const el = document.querySelector('#petugas, .petugas, .username, #username, .user-name');
+      const t = (el?.textContent || '').trim();
+      if (t) return t.slice(0, 80);
+      const dokter = document
+        .querySelector('input[name="dokter"], #dokter, input[name="nama_dokter"]')
+        ?.value?.trim();
+      if (dokter) return dokter.slice(0, 80);
+      const idUser = document.querySelector('input[name="id_user"], #id_user')?.value?.trim();
+      if (idUser) return `User #${idUser}`;
+    } catch {}
+    return 'petugas';
+  }
+
+  // src/features/shared/casemixApi.ts
+  var CASEMIX_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
+  var BASE_OVERRIDE_KEY = 'ext-farmasi-app-base';
+  var BATCH_MAX = 500;
+  function resolveCasemixBase() {
+    try {
+      const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
+      if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
+    } catch {}
+    return CASEMIX_BASE_FALLBACK;
+  }
+  function normalizeIds(ids) {
+    return [...new Set(ids.map((s) => String(s).trim()).filter(Boolean))].slice(0, BATCH_MAX);
+  }
+  async function getJson(path, fetcher = fetch) {
+    try {
+      const res = await fetcher(resolveCasemixBase() + path, {
+        cache: 'no-store',
+        credentials: 'omit',
+        headers: { Accept: 'application/json' },
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+  function postFireForget(path, payload, fetcher = fetch) {
+    try {
+      fetcher(resolveCasemixBase() + path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true,
+        credentials: 'omit',
+      }).catch(() => {});
+    } catch {}
+  }
+  function togglePreOpCentral(idVisit, marked, info = {}, fetcher = fetch) {
+    if (!idVisit) return;
+    postFireForget(
+      '/api/casemix/pre-op/toggle',
+      {
+        id_visit: idVisit,
+        marked,
+        norm: info.norm ?? null,
+        nama: info.nama ?? null,
+        no_reg: info.noReg ?? null,
+        user: info.user ?? null,
+      },
+      fetcher,
+    );
+  }
+  async function fetchPreOpBatch(ids, fetcher = fetch) {
+    const list = normalizeIds(ids);
+    if (!list.length) return {};
+    const j = await getJson(
+      '/api/casemix/pre-op/list?ids=' + encodeURIComponent(list.join(',')),
+      fetcher,
+    );
+    if (j === null) return null;
+    if (!j.ok || !j.marks) return {};
+    return j.marks;
+  }
+
+  // src/features/shared/casemixBackfill.ts
+  var MIGRATED_PREOP_KEY = 'ext_migrated_preop_ids';
+  var MIGRATED_RV_PREFIX = 'ext_migrated_rv_';
+  var BACKFILL_BATCH = 20;
+  function readJson2(store, key) {
+    if (!store) return null;
+    try {
+      const raw = store.getItem(key);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+  function writeJson2(store, key, value) {
+    if (!store) return;
+    try {
+      store.setItem(key, JSON.stringify(value));
+    } catch {}
+  }
+  function defaultStore3() {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+    } catch {}
+    return null;
+  }
+  async function postCentral(path, payload, fetcher = fetch) {
+    try {
+      const res = await fetcher(resolveCasemixBase() + path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload),
+        credentials: 'omit',
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
+  function collectPreOpPending(map, migratedIds) {
+    const done = new Set(migratedIds);
+    return Object.keys(map)
+      .filter((id) => !done.has(id))
+      .slice(0, BACKFILL_BATCH);
+  }
+  function collectResumePending(list, sinceAt) {
+    return list.filter((e) => e.at > sinceAt).slice(0, BACKFILL_BATCH);
+  }
+  function discoverResumeKeys(store) {
+    const out = [];
+    if (!store) return out;
+    try {
+      const keys = [];
+      const ls = store;
+      if (typeof ls.length === 'number' && ls.key) {
+        for (let i = 0; i < ls.length; i++) {
+          const k = ls.key(i);
+          if (k) keys.push(k);
+        }
+      }
+      for (const k of keys) {
+        let m = k.match(/^ext_rv_history_(ri|rj)_(.+)$/);
+        if (m) {
+          out.push({ key: k, idVisit: m[2], tipe: m[1] === 'ri' ? 'ranap' : 'rajal' });
+          continue;
+        }
+        m = k.match(/^ext_rv_history_(.+)$/);
+        if (m && !m[1].startsWith('ri_') && !m[1].startsWith('rj_')) {
+          out.push({ key: k, idVisit: m[1], tipe: 'ranap' });
+        }
+      }
+    } catch {}
+    return out;
+  }
+  async function runCasemixBackfill(store = defaultStore3(), fetcher = fetch) {
+    const res = { preopUploaded: 0, resumeUploaded: 0, offline: false };
+    if (!store) return res;
+    try {
+      const map = loadPreOpMap(store);
+      const migrated = readJson2(store, MIGRATED_PREOP_KEY) ?? [];
+      const pending = collectPreOpPending(map, migrated);
+      for (const id of pending) {
+        const item = map[id];
+        if (!item) continue;
+        const ok = await postCentral(
+          '/api/casemix/pre-op/toggle',
+          {
+            id_visit: id,
+            marked: true,
+            norm: item.norm ?? null,
+            nama: item.nama ?? null,
+            no_reg: item.noReg ?? null,
+            user: null,
+          },
+          fetcher,
+        );
+        if (!ok) {
+          res.offline = true;
+          break;
+        }
+        migrated.push(id);
+        res.preopUploaded++;
+      }
+      if (res.preopUploaded) writeJson2(store, MIGRATED_PREOP_KEY, migrated);
+    } catch {
+      res.offline = true;
+    }
+    try {
+      for (const { key, idVisit, tipe } of discoverResumeKeys(store)) {
+        if (res.resumeUploaded >= BACKFILL_BATCH) break;
+        const sinceAt = readJson2(store, MIGRATED_RV_PREFIX + key) ?? 0;
+        const list = loadHistory(idVisit, tipe, store);
+        const pending = collectResumePending(list, sinceAt);
+        let maxAt = sinceAt;
+        for (const e of pending) {
+          const ok = await postCentral(
+            '/api/reports/resume-history',
+            {
+              id_visit: idVisit,
+              id_resume: e.id_resume,
+              aksi: e.aksi,
+              tipe: e.tipe ?? tipe,
+              waktu: new Date(e.at).toISOString(),
+              user: e.user,
+              before: e.before,
+              after: e.after,
+              changed: e.changed,
+            },
+            fetcher,
+          );
+          if (!ok) {
+            res.offline = true;
+            break;
+          }
+          maxAt = Math.max(maxAt, e.at);
+          res.resumeUploaded++;
+        }
+        if (maxAt > sinceAt) writeJson2(store, MIGRATED_RV_PREFIX + key, maxAt);
+        if (res.offline) break;
+      }
+    } catch {
+      res.offline = true;
+    }
+    try {
+      if (res.preopUploaded || res.resumeUploaded) {
+        window.console.debug(
+          `[casemixBackfill] diunggah: ${res.preopUploaded} pre-op, ${res.resumeUploaded} resume`,
+        );
+      }
+    } catch {}
+    return res;
+  }
+  var _backfillTimer = null;
+  function initCasemixBackfill() {
+    if (_backfillTimer !== null) return;
+    const tick = () => {
+      try {
+        if (document.hidden) return;
+      } catch {}
+      void runCasemixBackfill().catch(() => {});
+    };
+    window.setTimeout(tick, 5e3);
+    _backfillTimer = window.setInterval(tick, 3e4);
+  }
+
   // src/features/shared/usageLog.ts
   var KEY = 'extUsageLog';
   var MAX_AGE_MS = 7 * 24 * 60 * 60 * 1e3;
-  var MAX_ENTRIES = 2e3;
+  var MAX_ENTRIES2 = 2e3;
   async function logUsage(feature, event, ok, detail) {
     try {
       const { [KEY]: existing } = await chrome.storage.local.get(KEY);
@@ -157,7 +462,7 @@ var __morbis_feature = (() => {
         url: typeof location !== 'undefined' ? location.href : void 0,
       };
       const kept = (existing ?? []).filter((e) => now - e.ts < MAX_AGE_MS).concat(entry);
-      const trimmed = kept.slice(-MAX_ENTRIES);
+      const trimmed = kept.slice(-MAX_ENTRIES2);
       await chrome.storage.local.set({ [KEY]: trimmed });
     } catch {}
   }
@@ -224,6 +529,44 @@ var __morbis_feature = (() => {
   var _observer = null;
   var _scanIntervalId = null;
   var _debounceTimer = null;
+  var _centralMap = null;
+  var _centralAt = 0;
+  var CENTRAL_TTL_MS = 3e4;
+  function collectVisibleIds() {
+    const ids = [];
+    for (const table of document.querySelectorAll('table')) {
+      for (const row of table.querySelectorAll('tbody tr')) {
+        if (row.classList.contains('dataTables_empty')) continue;
+        const id = extractIdVisitFromRow(row);
+        if (id) ids.push(id);
+      }
+    }
+    return ids;
+  }
+  function refreshCentral() {
+    const now = Date.now();
+    if (now - _centralAt < CENTRAL_TTL_MS) return;
+    _centralAt = now;
+    const ids = collectVisibleIds();
+    if (!ids.length) return;
+    void fetchPreOpBatch(ids).then((marks) => {
+      if (marks === null) return;
+      _centralMap = marks;
+      for (const table of document.querySelectorAll('table')) {
+        for (const row of table.querySelectorAll('tbody tr')) {
+          const id = extractIdVisitFromRow(row);
+          if (!id) continue;
+          const marked = !!marks[id];
+          if (row.getAttribute('data-ext-preop-marked') !== String(marked)) {
+            if (marked && !loadPreOpMap()[id]) {
+              setPreOp(id, extractPatientInfo(row));
+            }
+            updateRowVisual(row, id, marked);
+          }
+        }
+      }
+    });
+  }
   function extractIdVisitFromRow(row) {
     const buttons = row.querySelectorAll('button, a, [onclick], [data-id-visit], [data-id]');
     for (const el of buttons) {
@@ -303,7 +646,7 @@ var __morbis_feature = (() => {
         if (row.classList.contains('dataTables_empty')) return;
         const idVisit = extractIdVisitFromRow(row);
         if (!idVisit) return;
-        const isMarked = !!preOpMap[idVisit];
+        const isMarked = _centralMap ? !!_centralMap[idVisit] : !!preOpMap[idVisit];
         let actionCell = Array.from(row.querySelectorAll('td')).find((td) => {
           return td.querySelector('button, a, [onclick*="detail"]') !== null;
         });
@@ -322,6 +665,12 @@ var __morbis_feature = (() => {
             e.stopPropagation();
             const info = extractPatientInfo(row);
             const nextState = togglePreOp(idVisit, info);
+            togglePreOpCentral(idVisit, nextState, {
+              norm: info.norm,
+              nama: info.nama,
+              noReg: info.noReg,
+              user: readPetugas(),
+            });
             updateRowVisual(row, idVisit, nextState);
             void logUsage('mKlaimPreOp', nextState ? 'mark_preop' : 'unmark_preop', true, {
               idVisit,
@@ -344,13 +693,18 @@ var __morbis_feature = (() => {
   function initPreOpMarker() {
     if (window.location.pathname.includes('/detail')) return;
     scanAndInjectPreOpButtons();
+    refreshCentral();
+    initCasemixBackfill();
     if (_observer) _observer.disconnect();
     _observer = new MutationObserver(() => {
       debouncedScan();
     });
     _observer.observe(document.body, { childList: true, subtree: true });
     if (_scanIntervalId !== null) clearInterval(_scanIntervalId);
-    _scanIntervalId = window.setInterval(scanAndInjectPreOpButtons, 1500);
+    _scanIntervalId = window.setInterval(() => {
+      scanAndInjectPreOpButtons();
+      refreshCentral();
+    }, 1500);
   }
   if (typeof g.featureModules !== 'undefined') {
     g.featureModules.preOpMarker = {

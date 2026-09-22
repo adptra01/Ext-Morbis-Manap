@@ -1,5 +1,11 @@
 import { getMorbisGlobals } from './shared/types.js';
 import { colors, injectCSS } from '../shared/ui/index.js';
+import { readPetugas } from './shared/resumeHistory.js';
+import {
+  fetchRevisionsBatch,
+  postRevisionCentral,
+  type CentralRevision,
+} from './shared/casemixApi.js';
 
 const g = getMorbisGlobals();
 
@@ -155,6 +161,19 @@ export function withRevisionHistoryState(
   };
 }
 
+/** Ubah entri pusat → BpjsRevision lokal (abaikan baris tak valid). */
+export function centralToBpjsRevision(r: CentralRevision, idVisit: string): BpjsRevision | null {
+  if (!r.keterangan) return null;
+  const ts = r.submitted_at ? Date.parse(r.submitted_at.replace(' ', 'T')) : NaN;
+  return {
+    idVisit,
+    poli: r.poli ?? '',
+    idPoli: r.id_poli ?? '',
+    keterangan: r.keterangan,
+    submittedAt: Number.isFinite(ts) ? ts : Date.now(),
+    status: 'saved',
+  };
+}
 export function formatRevisionTimestamp(timestamp: number): string {
   const date = new Date(timestamp);
   const pad = (value: number): string => String(value).padStart(2, '0');
@@ -328,6 +347,15 @@ function onRevisionMutations(): void {
   if (!document.querySelector('.toast-success')) return;
 
   for (const revision of pendingBpjsRevisions) revision.status = 'saved';
+  // Tulis paralel ke DB pusat (fire-and-forget; panel lokal tetap sumber tampil).
+  try {
+    const user = readPetugas();
+    for (const revision of pendingBpjsRevisions) {
+      postRevisionCentral({ ...revision, user });
+    }
+  } catch {
+    /* ignore */
+  }
   pendingBpjsRevisions = [];
   persistRevisionHistory();
   renderRevisionHistory();
@@ -339,6 +367,27 @@ export function initBpjsRevisionHistory(toolbar: HTMLElement | null): void {
   bpjsRevisions = mergeRevisionHistory(bpjsRevisions, restored);
   ensureRevisionPanel(toolbar);
   renderRevisionHistory();
+  // Read-through DB pusat: riwayat dari PC lain ikut tampil (diam bila offline).
+  try {
+    const idVisit = extractParam('id_visit') || extractParam('idVisit') || '';
+    if (idVisit) {
+      void fetchRevisionsBatch([idVisit]).then((map) => {
+        if (!map) return;
+        const incoming: BpjsRevision[] = [];
+        for (const r of map[idVisit] ?? []) {
+          const rev = centralToBpjsRevision(r, idVisit);
+          if (rev) incoming.push(rev);
+        }
+        if (incoming.length) {
+          bpjsRevisions = mergeRevisionHistory(bpjsRevisions, incoming);
+          persistRevisionHistory();
+          renderRevisionHistory();
+        }
+      });
+    }
+  } catch {
+    /* ignore */
+  }
   if (bpjsRevisionListenersInstalled) return;
   document.addEventListener('submit', onRevisionSubmit, true);
   bpjsRevisionObserver = new MutationObserver(scheduleBpjsRevisionCheck);

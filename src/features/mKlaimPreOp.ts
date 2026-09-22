@@ -1,6 +1,9 @@
 import { getMorbisGlobals } from './shared/types.js';
 import { injectCSS } from '../shared/ui/index.js';
-import { togglePreOp, loadPreOpMap } from './shared/preOpStorage.js';
+import { togglePreOp, loadPreOpMap, setPreOp } from './shared/preOpStorage.js';
+import { readPetugas } from './shared/resumeHistory.js';
+import { fetchPreOpBatch, togglePreOpCentral, type CentralPreOpMark } from './shared/casemixApi.js';
+import { initCasemixBackfill } from './shared/casemixBackfill.js';
 import { logUsage } from './shared/usageLog.js';
 
 const g = getMorbisGlobals();
@@ -66,6 +69,52 @@ injectCSS(
 let _observer: MutationObserver | null = null;
 let _scanIntervalId: number | null = null;
 let _debounceTimer: number | null = null;
+
+/** Cache read-through DB pusat: hanya dipakai bila fetch terakhir sukses
+ *  (null = offline/belum ada data → fallback penuh ke localStorage). */
+let _centralMap: Record<string, CentralPreOpMark> | null = null;
+let _centralAt = 0;
+const CENTRAL_TTL_MS = 30000;
+
+/** Ambil semua id_visit yang terlihat di tabel halaman ini. */
+function collectVisibleIds(): string[] {
+  const ids: string[] = [];
+  for (const table of document.querySelectorAll<HTMLTableElement>('table')) {
+    for (const row of table.querySelectorAll<HTMLTableRowElement>('tbody tr')) {
+      if (row.classList.contains('dataTables_empty')) continue;
+      const id = extractIdVisitFromRow(row);
+      if (id) ids.push(id);
+    }
+  }
+  return ids;
+}
+
+/** Refresh cache pusat maksimal tiap 30 dtk; pusat menang atas lokal. */
+function refreshCentral(): void {
+  const now = Date.now();
+  if (now - _centralAt < CENTRAL_TTL_MS) return;
+  _centralAt = now;
+  const ids = collectVisibleIds();
+  if (!ids.length) return;
+  void fetchPreOpBatch(ids).then((marks) => {
+    if (marks === null) return; // offline — jangan timpa state lokal
+    _centralMap = marks;
+    // Terapkan visual pusat (termasuk mark dari PC lain) tanpa menunggu scan berikut.
+    for (const table of document.querySelectorAll<HTMLTableElement>('table')) {
+      for (const row of table.querySelectorAll<HTMLTableRowElement>('tbody tr')) {
+        const id = extractIdVisitFromRow(row);
+        if (!id) continue;
+        const marked = !!marks[id];
+        if (row.getAttribute('data-ext-preop-marked') !== String(marked)) {
+          if (marked && !loadPreOpMap()[id]) {
+            setPreOp(id, extractPatientInfo(row));
+          }
+          updateRowVisual(row, id, marked);
+        }
+      }
+    }
+  });
+}
 
 function extractIdVisitFromRow(row: HTMLTableRowElement): string | null {
   // 1. Cek tombol/link dengan onclick="detail(12345)"
@@ -176,7 +225,8 @@ function scanAndInjectPreOpButtons(): void {
       const idVisit = extractIdVisitFromRow(row);
       if (!idVisit) return;
 
-      const isMarked = !!preOpMap[idVisit];
+      // Efektif: cache pusat (bila ada) menang atas lokal — mark dari PC lain ikut tampil.
+      const isMarked = _centralMap ? !!_centralMap[idVisit] : !!preOpMap[idVisit];
 
       // Cari cell aksi: cell yang berisi tombol detail/verif atau cell terakhir
       let actionCell = Array.from(row.querySelectorAll('td')).find((td) => {
@@ -201,6 +251,13 @@ function scanAndInjectPreOpButtons(): void {
 
           const info = extractPatientInfo(row);
           const nextState = togglePreOp(idVisit, info);
+          // Tulis paralel ke DB pusat (fire-and-forget; lokal tetap sumber fallback).
+          togglePreOpCentral(idVisit, nextState, {
+            norm: info.norm,
+            nama: info.nama,
+            noReg: info.noReg,
+            user: readPetugas(),
+          });
           updateRowVisual(row, idVisit, nextState);
           void logUsage('mKlaimPreOp', nextState ? 'mark_preop' : 'unmark_preop', true, {
             idVisit,
@@ -228,6 +285,8 @@ export function initPreOpMarker(): void {
   if (window.location.pathname.includes('/detail')) return; // Jangan inject di halaman detail
 
   scanAndInjectPreOpButtons();
+  refreshCentral();
+  initCasemixBackfill(); // migrasi diam-diam log lokal lama → DB pusat
 
   if (_observer) _observer.disconnect();
   _observer = new MutationObserver(() => {
@@ -237,7 +296,10 @@ export function initPreOpMarker(): void {
   _observer.observe(document.body, { childList: true, subtree: true });
 
   if (_scanIntervalId !== null) clearInterval(_scanIntervalId);
-  _scanIntervalId = window.setInterval(scanAndInjectPreOpButtons, 1500);
+  _scanIntervalId = window.setInterval(() => {
+    scanAndInjectPreOpButtons();
+    refreshCentral();
+  }, 1500);
 }
 
 // Feature module registration for modular architecture
