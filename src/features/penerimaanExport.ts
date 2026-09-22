@@ -49,7 +49,57 @@ function toast(msg: string, ms = 4000): void {
   }
 }
 
-/** Peta No Resep (teks) → tr[id] dari tabel live halaman ini. */
+/** Tampilkan overlay loading dengan spinner lingkaran selama proses export.
+ *  Muat: pesan + spinner CSS animation. Hilangkan via hideLoading(). */
+function showLoading(msg: string): void {
+  hideLoading(); // bersihkan overlay sebelumnya
+  const overlay = document.createElement('div');
+  overlay.id = 'ext-export-loading';
+  overlay.style.cssText =
+    'position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;' +
+    'justify-content:center;background:rgba(0,0,0,0.35);';
+  const card = document.createElement('div');
+  card.style.cssText =
+    'display:flex;align-items:center;gap:16px;padding:24px 32px;' +
+    'background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.2);' +
+    "font-family:'Roboto','Segoe UI',system-ui,sans-serif;";
+  // Spinner lingkaran via CSS animation
+  const spinner = document.createElement('div');
+  spinner.id = 'ext-export-spinner';
+  spinner.style.cssText =
+    'width:40px;height:40px;border:4px solid #e0e7ff;border-top-color:#175cd3;' +
+    'border-radius:50%;animation:ext-spin 0.8s linear infinite;';
+  const text = document.createElement('span');
+  text.id = 'ext-export-loading-text';
+  text.style.cssText = 'font-size:16px;font-weight:600;color:#175cd3;';
+  text.textContent = msg;
+  card.appendChild(spinner);
+  card.appendChild(text);
+  overlay.appendChild(card);
+  // Inject keyframes sekali
+  if (!document.getElementById('ext-export-spinner-style')) {
+    const style = document.createElement('style');
+    style.id = 'ext-export-spinner-style';
+    style.textContent = '@keyframes ext-spin{to{transform:rotate(360deg)}}';
+    document.head.appendChild(style);
+  }
+  document.body.appendChild(overlay);
+}
+
+/** Perbarui teks loading (spinner tetap berputar). */
+function updateLoading(msg: string): void {
+  const el = document.getElementById('ext-export-loading-text');
+  if (el) el.textContent = msg;
+}
+
+/** Hilangkan overlay loading. */
+function hideLoading(): void {
+  document.getElementById('ext-export-loading')?.remove();
+}
+
+/** Peta No Resep (teks) → id resep dari tabel live halaman ini.
+ *  tr[id] = id_resep MORBIS (dipakai lookupAntrianBatch). Bila tr tidak
+ *  punya id, fallback: No Resep teks = id_resep (banyak kasus MORBIS). */
 function buildLiveMap(): Map<string, string> {
   const map = new Map<string, string>();
   for (const table of Array.from(document.querySelectorAll('table'))) {
@@ -58,18 +108,23 @@ function buildLiveMap(): Map<string, string> {
     const idx = head.findIndex((th) => /no\s*resep/i.test(th.textContent || ''));
     if (idx < 0) continue;
     for (const tr of Array.from(table.querySelectorAll('tbody tr'))) {
-      const id = (tr as HTMLTableRowElement).id?.trim();
-      if (!id) continue;
+      const trId = (tr as HTMLTableRowElement).id?.trim();
       const tds = tr.querySelectorAll('td');
       if (idx >= tds.length) continue;
       const no = (tds[idx].textContent || '').trim();
-      if (no) map.set(no, id);
+      if (!no) continue;
+      // Prioritas: tr[id] (id_resep MORBIS); fallback: No Resep teks itu sendiri.
+      const resepId = trId || no;
+      if (resepId) map.set(no, resepId);
     }
   }
   return map;
 }
 
-/** Tulis ulang HTML xls: ganti kolom Waktu Penjualan → 2 kolom waktu antrian. */
+/** Tulis ulang HTML xls: ganti kolom Waktu Penjualan → 2 kolom waktu antrian.
+ *  No Resep dari export HTML dijoin ke liveMap → resep_id → lookupAntrianBatch
+ *  → created_at (Waktu Verif/Antrikan) + done_at (Waktu Klik Selesai).
+ *  Bila liveMap kosong, fallback: No Resep teks = resep_id langsung. */
 async function rewriteExport(html: string, liveMap: Map<string, string>): Promise<string> {
   const doc = new DOMParser().parseFromString(html, 'text/html');
   let target: HTMLTableElement | null = null;
@@ -94,11 +149,12 @@ async function rewriteExport(html: string, liveMap: Map<string, string>): Promis
     const tds = tr.querySelectorAll('td');
     if (Math.max(wpIdx, noIdx) >= tds.length) continue;
     const no = noIdx >= 0 ? (tds[noIdx].textContent || '').trim() : '';
-    const id = liveMap.get(no) || '';
     // Baris tanpa No Resep (mis. subtotal) dilewati — jangan rusak.
     if (!no) continue;
+    // Prioritas: liveMap (tr[id] = id_resep); fallback: No Resep teks = resep_id.
+    const id = liveMap.get(no) || no;
     rows.push({ tds, id });
-    if (id) ids.push(id);
+    ids.push(id);
   }
 
   const times = await lookupAntrianBatch(ids);
@@ -124,11 +180,25 @@ async function rewriteExport(html: string, liveMap: Map<string, string>): Promis
 }
 
 async function processExport(url: string): Promise<void> {
-  toast('Menyiapkan export + waktu antrian…', 8000);
-  const res = await fetch(url, { credentials: 'include', cache: 'no-store' });
-  if (!res.ok) throw new Error('export server HTTP ' + res.status);
-  const html = await res.text();
-  const out = await rewriteExport(html, buildLiveMap());
+  showLoading('Mengunduh data export dari server…');
+  let html: string;
+  try {
+    const res = await fetch(url, { credentials: 'include', cache: 'no-store' });
+    if (!res.ok) throw new Error('export server HTTP ' + res.status);
+    html = await res.text();
+  } catch (err) {
+    hideLoading();
+    throw err;
+  }
+  updateLoading('Menggabungkan data waktu antrian…');
+  let out: string;
+  try {
+    out = await rewriteExport(html, buildLiveMap());
+  } catch (err) {
+    hideLoading();
+    throw err;
+  }
+  updateLoading('Menyiapkan file unduhan…');
   const blob = new Blob([out], { type: 'application/vnd.ms-excel' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -139,6 +209,7 @@ async function processExport(url: string): Promise<void> {
     URL.revokeObjectURL(a.href);
     a.remove();
   }, 4000);
+  hideLoading();
   toast('Export selesai — kolom Waktu Verif/Antrikan + Waktu Klik Selesai terisi.');
 }
 
