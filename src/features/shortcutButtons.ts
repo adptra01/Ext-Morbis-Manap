@@ -2,6 +2,7 @@ import { getMorbisGlobals } from './shared/types.js';
 import { colors, injectCSS } from '../shared/ui/index.js';
 import { readPetugas } from './shared/resumeHistory.js';
 import { initCasemixBackfill } from './shared/casemixBackfill.js';
+import { runWhenIdle } from './shared/whenIdle.js';
 import {
   fetchRevisionsBatch,
   postRevisionCentral,
@@ -570,10 +571,13 @@ function autoInitRevisionPanel(): void {
       // Bila panel belum ada (render parsial), coba lagi 2 dtk — maks 15x (±30 dtk).
       if (!queryRevisionPanel() && ++tries < 15) window.setTimeout(start, 2000);
     };
+    // Tunda sampai browser idle agar tak memberatkan loading awal detail klaim.
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => window.setTimeout(start, 800));
+      document.addEventListener('DOMContentLoaded', () =>
+        runWhenIdle(() => window.setTimeout(start, 300)),
+      );
     } else {
-      window.setTimeout(start, 800);
+      runWhenIdle(() => window.setTimeout(start, 300));
     }
   } catch {
     /* non-DOM */

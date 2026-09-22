@@ -11,6 +11,7 @@
 import { getMorbisGlobals } from './shared/types.js';
 import { fetchPreOpBatch, fetchRevisionsBatch, resolveCasemixBase } from './shared/casemixApi.js';
 import { loadPreOpMap } from './shared/preOpStorage.js';
+import { runWhenIdle } from './shared/whenIdle.js';
 
 const g = getMorbisGlobals();
 
@@ -342,7 +343,8 @@ function injectExportButton(): void {
 
 export function initCasemixExport(): void {
   if (window.location.pathname.includes('/detail')) return;
-  injectExportButton();
+  // Tombol ringan tapi tetap tunggu idle agar tak berebut loading awal.
+  runWhenIdle(injectExportButton);
   window.setInterval(() => {
     try {
       if (document.hidden) return; // tab tak terlihat → lewati

@@ -455,6 +455,18 @@ var __morbis_feature = (() => {
     _backfillTimer = window.setInterval(tick, 3e4);
   }
 
+  // src/features/shared/whenIdle.ts
+  function runWhenIdle(cb, timeoutMs = 8e3) {
+    try {
+      const ric = window.requestIdleCallback;
+      if (typeof ric === 'function') {
+        ric.call(window, cb, { timeout: timeoutMs });
+        return;
+      }
+    } catch {}
+    window.setTimeout(cb, Math.min(timeoutMs, 1500));
+  }
+
   // src/features/shared/usageLog.ts
   var KEY = 'extUsageLog';
   var MAX_AGE_MS = 7 * 24 * 60 * 60 * 1e3;
@@ -656,6 +668,7 @@ var __morbis_feature = (() => {
     }
   }
   var _scanning = false;
+  var _booted = false;
   function scanAndInjectPreOpButtons() {
     try {
       if (document.hidden || _scanning) return;
@@ -721,24 +734,28 @@ var __morbis_feature = (() => {
   function debouncedScan() {
     if (_debounceTimer !== null) clearTimeout(_debounceTimer);
     _debounceTimer = window.setTimeout(() => {
+      if (!_booted) return;
       scanAndInjectPreOpButtons();
     }, 100);
   }
   function initPreOpMarker() {
     if (window.location.pathname.includes('/detail')) return;
-    scanAndInjectPreOpButtons();
-    refreshCentral();
-    initCasemixBackfill();
     if (_observer) _observer.disconnect();
     _observer = new MutationObserver(() => {
       debouncedScan();
     });
     _observer.observe(document.body, { childList: true, subtree: true });
-    if (_scanIntervalId !== null) clearInterval(_scanIntervalId);
-    _scanIntervalId = window.setInterval(() => {
+    runWhenIdle(() => {
+      _booted = true;
       scanAndInjectPreOpButtons();
       refreshCentral();
-    }, 1500);
+      initCasemixBackfill();
+      if (_scanIntervalId !== null) clearInterval(_scanIntervalId);
+      _scanIntervalId = window.setInterval(() => {
+        scanAndInjectPreOpButtons();
+        refreshCentral();
+      }, 1500);
+    });
     window.addEventListener('pagehide', () => {
       try {
         _observer?.disconnect();

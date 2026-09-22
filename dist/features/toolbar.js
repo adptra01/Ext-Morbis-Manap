@@ -427,6 +427,18 @@ var __morbis_feature = (() => {
     _backfillTimer = window.setInterval(tick, 3e4);
   }
 
+  // src/features/shared/whenIdle.ts
+  function runWhenIdle(cb, timeoutMs = 8e3) {
+    try {
+      const ric = window.requestIdleCallback;
+      if (typeof ric === 'function') {
+        ric.call(window, cb, { timeout: timeoutMs });
+        return;
+      }
+    } catch {}
+    window.setTimeout(cb, Math.min(timeoutMs, 1500));
+  }
+
   // src/features/shortcutButtons.ts
   var g = getMorbisGlobals();
   var BACK_DETAIL_BTN = { text: 'Kembali ke Detail Klaim', bg: '#6366f1', hover: '#4f46e5' };
@@ -873,9 +885,11 @@ var __morbis_feature = (() => {
         if (!queryRevisionPanel() && ++tries < 15) window.setTimeout(start, 2e3);
       };
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => window.setTimeout(start, 800));
+        document.addEventListener('DOMContentLoaded', () =>
+          runWhenIdle(() => window.setTimeout(start, 300)),
+        );
       } else {
-        window.setTimeout(start, 800);
+        runWhenIdle(() => window.setTimeout(start, 300));
       }
     } catch {}
   }

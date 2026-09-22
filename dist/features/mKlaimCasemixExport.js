@@ -138,6 +138,18 @@ var __morbis_feature = (() => {
     } catch {}
   }
 
+  // src/features/shared/whenIdle.ts
+  function runWhenIdle(cb, timeoutMs = 8e3) {
+    try {
+      const ric = window.requestIdleCallback;
+      if (typeof ric === 'function') {
+        ric.call(window, cb, { timeout: timeoutMs });
+        return;
+      }
+    } catch {}
+    window.setTimeout(cb, Math.min(timeoutMs, 1500));
+  }
+
   // src/features/mKlaimCasemixExport.ts
   var g = getMorbisGlobals();
   var FILTER_KEYS = [
@@ -385,7 +397,7 @@ var __morbis_feature = (() => {
   }
   function initCasemixExport() {
     if (window.location.pathname.includes('/detail')) return;
-    injectExportButton();
+    runWhenIdle(injectExportButton);
     window.setInterval(() => {
       try {
         if (document.hidden) return;

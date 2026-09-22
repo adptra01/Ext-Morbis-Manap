@@ -4,6 +4,7 @@ import { togglePreOp, loadPreOpMap, setPreOp } from './shared/preOpStorage.js';
 import { readPetugas } from './shared/resumeHistory.js';
 import { fetchPreOpBatch, togglePreOpCentral, type CentralPreOpMark } from './shared/casemixApi.js';
 import { initCasemixBackfill } from './shared/casemixBackfill.js';
+import { runWhenIdle } from './shared/whenIdle.js';
 import { logUsage } from './shared/usageLog.js';
 
 const g = getMorbisGlobals();
@@ -216,6 +217,8 @@ function updateRowVisual(row: HTMLTableRowElement, idVisit: string, marked: bool
 }
 
 let _scanning = false;
+/** true setelah sapuan idle pertama — sebelum itu observer hanya mencatat. */
+let _booted = false;
 
 function scanAndInjectPreOpButtons(): void {
   // Hemat CPU: tab tak terlihat / siklus sebelumnya belum selesai → lewati.
@@ -305,6 +308,7 @@ function scanInner(): void {
 function debouncedScan(): void {
   if (_debounceTimer !== null) clearTimeout(_debounceTimer);
   _debounceTimer = window.setTimeout(() => {
+    if (!_booted) return; // loading awal: tunggu sapuan idle, jangan berebut
     scanAndInjectPreOpButtons();
   }, 100);
 }
@@ -312,22 +316,26 @@ function debouncedScan(): void {
 export function initPreOpMarker(): void {
   if (window.location.pathname.includes('/detail')) return; // Jangan inject di halaman detail
 
-  scanAndInjectPreOpButtons();
-  refreshCentral();
-  initCasemixBackfill(); // migrasi diam-diam log lokal lama → DB pusat
-
+  // Observer murah dipasang segera (menangkap render susulan via debounce);
+  // kerja berat (scan awal + interval + fetch pusat + backfill) ditunda
+  // sampai browser idle agar tidak memberatkan loading awal MORBIS.
   if (_observer) _observer.disconnect();
   _observer = new MutationObserver(() => {
     debouncedScan();
   });
-
   _observer.observe(document.body, { childList: true, subtree: true });
 
-  if (_scanIntervalId !== null) clearInterval(_scanIntervalId);
-  _scanIntervalId = window.setInterval(() => {
+  runWhenIdle(() => {
+    _booted = true;
     scanAndInjectPreOpButtons();
     refreshCentral();
-  }, 1500);
+    initCasemixBackfill(); // migrasi diam-diam log lokal lama → DB pusat
+    if (_scanIntervalId !== null) clearInterval(_scanIntervalId);
+    _scanIntervalId = window.setInterval(() => {
+      scanAndInjectPreOpButtons();
+      refreshCentral();
+    }, 1500);
+  });
 
   // Berhenti total saat halaman dibongkar (hemat CPU + cegah kerja hantu di bfcache).
   window.addEventListener('pagehide', () => {
