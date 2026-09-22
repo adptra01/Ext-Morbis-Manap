@@ -1,6 +1,7 @@
 import { getMorbisGlobals } from './shared/types.js';
 import { colors, injectCSS } from '../shared/ui/index.js';
 import { readPetugas } from './shared/resumeHistory.js';
+import { initCasemixBackfill } from './shared/casemixBackfill.js';
 import {
   fetchRevisionsBatch,
   postRevisionCentral,
@@ -174,6 +175,83 @@ export function centralToBpjsRevision(r: CentralRevision, idVisit: string): Bpjs
     status: 'saved',
   };
 }
+/** Kunci isi (tanpa waktu) — submitted_at pusat presisi detik, lokal ms,
+ *  jadi dedup lintas-PC memakai kunci ini, bukan bpjsRevisionKey. */
+export function revisionContentKey(
+  r: Pick<BpjsRevision, 'idVisit' | 'poli' | 'idPoli' | 'keterangan'>,
+): string {
+  return [r.idVisit, r.poli, r.idPoli, r.keterangan].join('|');
+}
+
+/** Gabung riwayat pusat tanpa menduplikasi isi yang sudah ada lokal. */
+export function mergeCentralRevisions(
+  current: BpjsRevision[],
+  incoming: BpjsRevision[],
+): BpjsRevision[] {
+  const seen = new Set(current.map((r) => revisionContentKey(r)));
+  const merged = [...current];
+  for (const r of incoming) {
+    const k = revisionContentKey(r);
+    if (!seen.has(k)) {
+      seen.add(k);
+      merged.push(r);
+    }
+  }
+  return merged;
+}
+
+/** Revisi saved lokal yang isinya belum ada di pusat → wajib diunggah ulang
+ *  (pulih dari mati lampu antara konfirmasi simpan dan POST). */
+export function partitionUnsynced(
+  localSaved: BpjsRevision[],
+  central: BpjsRevision[],
+): BpjsRevision[] {
+  const have = new Set(central.map((r) => revisionContentKey(r)));
+  return localSaved.filter((r) => r.status === 'saved' && !have.has(revisionContentKey(r)));
+}
+
+const LOCAL_REV_KEY = 'extBpjsRevisionsLocal';
+const MAX_LOCAL_REV_PER_VISIT = 50;
+
+function readLocalRevMap(): Record<string, BpjsRevision[]> {
+  try {
+    const raw = localStorage.getItem(LOCAL_REV_KEY);
+    const map = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+    const out: Record<string, BpjsRevision[]> = {};
+    for (const [k, v] of Object.entries(map)) {
+      if (Array.isArray(v)) {
+        const valid = v.filter(isBpjsRevision).slice(-MAX_LOCAL_REV_PER_VISIT);
+        if (valid.length) out[k] = valid;
+      }
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+/** Persist revisi saved per kunjungan — tahan tutup tab / mati lampu. */
+function persistLocalRevisions(): void {
+  try {
+    const map = readLocalRevMap();
+    for (const r of bpjsRevisions) {
+      if (r.status !== 'saved' || !r.idVisit) continue;
+      const list = map[r.idVisit] ?? [];
+      if (!list.some((x) => revisionContentKey(x) === revisionContentKey(r))) {
+        list.push(r);
+      }
+      map[r.idVisit] = list.slice(-MAX_LOCAL_REV_PER_VISIT);
+    }
+    localStorage.setItem(LOCAL_REV_KEY, JSON.stringify(map));
+  } catch {
+    /* storage penuh/private — riwayat sesi tetap ada */
+  }
+}
+
+function loadLocalRevisions(idVisit: string): BpjsRevision[] {
+  if (!idVisit) return [];
+  return readLocalRevMap()[idVisit] ?? [];
+}
 export function formatRevisionTimestamp(timestamp: number): string {
   const date = new Date(timestamp);
   const pad = (value: number): string => String(value).padStart(2, '0');
@@ -208,19 +286,48 @@ function persistRevisionHistory(): void {
   } catch {
     // History state is best-effort session continuity; the panel still shows new submissions.
   }
+  persistLocalRevisions(); // tahan tutup tab / mati lampu
 }
 
 function queryRevisionPanel(): {
   panel: HTMLElement;
   textarea: HTMLTextAreaElement;
   count: HTMLElement;
+  hint: HTMLElement | null;
 } | null {
   const panel = document.querySelector<HTMLElement>(BPJS_REVISION_PANEL_SELECTOR);
   const textarea =
     panel?.querySelector<HTMLTextAreaElement>(`#${BPJS_REVISION_TEXTAREA_ID}`) ?? null;
   const count = panel?.querySelector<HTMLElement>(`#${BPJS_REVISION_COUNT_ID}`) ?? null;
   if (!panel || !textarea || !count) return null;
-  return { panel, textarea, count };
+  return {
+    panel,
+    textarea,
+    count,
+    hint: panel.querySelector<HTMLElement>('.ext-bpjs-revision-hint'),
+  };
+}
+
+/** Status sinkron di hint panel: hijau tersambung, kuning offline-cache. */
+function setSyncHint(online: boolean, centralCount: number): void {
+  try {
+    const hint = queryRevisionPanel()?.hint;
+    if (!hint) return;
+    if (online) {
+      hint.textContent =
+        `Tersambung ke DB pusat` +
+        (centralCount ? ` (${centralCount} riwayat pusat)` : '') +
+        ` — Diambil dari poli dan keterangan yang dikirim lewat Revisi.`;
+      hint.style.color = '';
+    } else {
+      hint.textContent =
+        'Pusat tak terjangkau (offline/sinyal lambat) — menampilkan cache lokal, ' +
+        'data aman dan akan tersinkron otomatis.';
+      hint.style.color = '#b45309';
+    }
+  } catch {
+    /* ignore */
+  }
 }
 
 function ensureRevisionPanel(anchor: HTMLElement | null): HTMLTextAreaElement | null {
@@ -396,21 +503,40 @@ function onRevisionMutations(): void {
 export function initBpjsRevisionHistory(anchor: HTMLElement | null): void {
   const restored = readRevisionHistory();
   bpjsRevisions = mergeRevisionHistory(bpjsRevisions, restored);
+  const idVisitBoot = extractParam('id_visit') || extractParam('idVisit') || '';
+  // Pulihkan tab yang tertutup / PC setelah mati lampu: riwayat saved lokal.
+  if (idVisitBoot) {
+    bpjsRevisions = mergeCentralRevisions(bpjsRevisions, loadLocalRevisions(idVisitBoot));
+  }
   ensureRevisionPanel(anchor);
   renderRevisionHistory();
   // Read-through DB pusat: riwayat dari PC lain ikut tampil (diam bila offline).
   try {
-    const idVisit = extractParam('id_visit') || extractParam('idVisit') || '';
+    const idVisit = idVisitBoot;
     if (idVisit) {
       void fetchRevisionsBatch([idVisit]).then((map) => {
-        if (!map) return;
+        setSyncHint(map !== null, map?.[idVisit]?.length ?? 0);
+        if (!map) return; // offline — cache lokal tetap tampil
         const incoming: BpjsRevision[] = [];
         for (const r of map[idVisit] ?? []) {
           const rev = centralToBpjsRevision(r, idVisit);
           if (rev) incoming.push(rev);
         }
+        // Rekonsiliasi: unggah ulang saved lokal yang belum ada di pusat
+        // (pulih dari mati lampu antara konfirmasi dan POST).
+        try {
+          const user = readPetugas();
+          for (const m of partitionUnsynced(
+            bpjsRevisions.filter((x) => x.idVisit === idVisit),
+            incoming,
+          )) {
+            postRevisionCentral({ ...m, user });
+          }
+        } catch {
+          /* ignore */
+        }
         if (incoming.length) {
-          bpjsRevisions = mergeRevisionHistory(bpjsRevisions, incoming);
+          bpjsRevisions = mergeCentralRevisions(bpjsRevisions, incoming);
           persistRevisionHistory();
           renderRevisionHistory();
         }
@@ -434,6 +560,7 @@ function autoInitRevisionPanel(): void {
     const start = () => {
       const bar = document.querySelector<HTMLElement>('[data-toolbar]');
       initBpjsRevisionHistory(bar);
+      initCasemixBackfill(); // sapu log lokal (resume) juga dari halaman detail
       // Bila panel belum ada (render parsial), coba lagi 2 dtk.
       if (!queryRevisionPanel()) window.setTimeout(start, 2000);
     };

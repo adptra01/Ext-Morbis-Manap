@@ -192,17 +192,12 @@ export function readPetugas(): string {
 
 /* ── Sinkronisasi Reports SIMRS ── */
 
+import { resolveCasemixBase } from './casemixApi.js';
+
 const REPORTS_API_PATH = '/api/reports/resume-history';
-const REPORTS_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
 
 export function resolveReportsBase(): string {
-  try {
-    const ov = localStorage.getItem('ext-farmasi-app-base');
-    if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
-  } catch {
-    /* ignore */
-  }
-  return REPORTS_BASE_FALLBACK;
+  return resolveCasemixBase();
 }
 
 export function postToReports(

@@ -100,13 +100,14 @@ function refreshCentral(): void {
     if (marks === null) return; // offline — jangan timpa state lokal
     _centralMap = marks;
     // Terapkan visual pusat (termasuk mark dari PC lain) tanpa menunggu scan berikut.
+    const localMap = loadPreOpMap();
     for (const table of document.querySelectorAll<HTMLTableElement>('table')) {
       for (const row of table.querySelectorAll<HTMLTableRowElement>('tbody tr')) {
         const id = extractIdVisitFromRow(row);
         if (!id) continue;
         const marked = !!marks[id];
         if (row.getAttribute('data-ext-preop-marked') !== String(marked)) {
-          if (marked && !loadPreOpMap()[id]) {
+          if (marked && !localMap[id]) {
             setPreOp(id, extractPatientInfo(row));
           }
           updateRowVisual(row, id, marked);

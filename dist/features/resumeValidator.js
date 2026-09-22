@@ -472,6 +472,17 @@ var __morbis_feature = (() => {
     });
   }
 
+  // src/features/shared/casemixApi.ts
+  var CASEMIX_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
+  var BASE_OVERRIDE_KEY = 'ext-farmasi-app-base';
+  function resolveCasemixBase() {
+    try {
+      const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
+      if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
+    } catch {}
+    return CASEMIX_BASE_FALLBACK;
+  }
+
   // src/features/shared/resumeHistory.ts
   function defaultStore() {
     try {
@@ -573,13 +584,8 @@ var __morbis_feature = (() => {
     return 'petugas';
   }
   var REPORTS_API_PATH = '/api/reports/resume-history';
-  var REPORTS_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
   function resolveReportsBase() {
-    try {
-      const ov = localStorage.getItem('ext-farmasi-app-base');
-      if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
-    } catch {}
-    return REPORTS_BASE_FALLBACK;
+    return resolveCasemixBase();
   }
   function postToReports(entry, idVisit, fetcher = fetch) {
     try {

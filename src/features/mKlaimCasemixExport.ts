@@ -138,7 +138,8 @@ function esc(s: string | null | undefined): string {
     .replace(/>/g, '&gt;');
 }
 
-/** Susun HTML dokumen cetak (murni, unit-tested). */
+/** Susun HTML dokumen cetak (murni, unit-tested).
+ *  centralOk=false → spanduk offline: kolom pusat dari cache lokal. */
 export function buildExportHtml(
   filter: KlaimFilter,
   rows: KlaimRow[],
@@ -147,6 +148,7 @@ export function buildExportHtml(
     string,
     Array<{ keterangan?: string | null; user?: string | null; submitted_at?: string | null }>
   >,
+  centralOk = true,
 ): string {
   const trs = rows
     .map((r, i) => {
@@ -178,6 +180,10 @@ export function buildExportHtml(
     `<table><thead><tr><th>No</th><th>No RM</th><th>Nama</th><th>No Reg</th><th>Poli</th>` +
     `<th>Pre-op</th><th>Waktu Tandai</th><th>Penanda</th>` +
     `<th>Jml Revisi</th><th>Revisi Terakhir</th></tr></thead><tbody>${trs}</tbody></table>` +
+    (centralOk
+      ? ''
+      : `<p style="color:#b45309"><b>Catatan:</b> DB pusat tak terjangkau saat export ` +
+        `(offline/sinyal lambat) — kolom Pre-op/Revisi dari cache lokal PC ini.</p>`) +
     `<script>window.onload=function(){window.print()}</script></body></html>`
   );
 }
@@ -272,7 +278,11 @@ async function processExport(): Promise<void> {
       }
     }
     updateLoading('Menyusun dokumen cetak…');
-    const html = buildExportHtml(filter, rows, marks, centralRevs ?? {});
+    const centralOk = centralMarks !== null && centralRevs !== null;
+    if (!centralOk) {
+      updateLoading('Pusat offline — memakai cache lokal…');
+    }
+    const html = buildExportHtml(filter, rows, marks, centralRevs ?? {}, centralOk);
     const w = window.open('', '_blank');
     if (!w) {
       window.alert('Popup diblokir — izinkan popup untuk halaman ini lalu ulangi.');

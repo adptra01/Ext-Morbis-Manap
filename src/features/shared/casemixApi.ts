@@ -15,6 +15,8 @@
 export const CASEMIX_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
 const BASE_OVERRIDE_KEY = 'ext-farmasi-app-base';
 const BATCH_MAX = 500;
+/** Batas tiap request pusat — sinyal lambat tak menggantung UI selamanya. */
+export const CENTRAL_TIMEOUT_MS = 25000;
 
 export function resolveCasemixBase(): string {
   try {
@@ -31,17 +33,31 @@ export function normalizeIds(ids: Array<string | number>): string[] {
   return [...new Set(ids.map((s) => String(s).trim()).filter(Boolean))].slice(0, BATCH_MAX);
 }
 
+async function fetchTimeout(
+  url: string,
+  init: RequestInit,
+  fetcher: typeof fetch = fetch,
+): Promise<Response> {
+  const ctrl = new AbortController();
+  const t = globalThis.setTimeout(() => ctrl.abort(), CENTRAL_TIMEOUT_MS);
+  try {
+    return await fetcher(url, { ...init, signal: ctrl.signal });
+  } finally {
+    globalThis.clearTimeout(t);
+  }
+}
+
 async function getJson<T>(path: string, fetcher: typeof fetch = fetch): Promise<T | null> {
   try {
-    const res = await fetcher(resolveCasemixBase() + path, {
-      cache: 'no-store',
-      credentials: 'omit',
-      headers: { Accept: 'application/json' },
-    });
+    const res = await fetchTimeout(
+      resolveCasemixBase() + path,
+      { cache: 'no-store', credentials: 'omit', headers: { Accept: 'application/json' } },
+      fetcher,
+    );
     if (!res.ok) return null;
     return (await res.json()) as T;
   } catch {
-    return null;
+    return null; // offline / timeout / abort — pemanggil fallback ke lokal
   }
 }
 
@@ -51,15 +67,20 @@ function postFireForget(
   fetcher: typeof fetch = fetch,
 ): void {
   try {
+    const ctrl = new AbortController();
+    const t = globalThis.setTimeout(() => ctrl.abort(), CENTRAL_TIMEOUT_MS);
     fetcher(resolveCasemixBase() + path, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(payload),
       keepalive: true,
       credentials: 'omit',
-    }).catch(() => {
-      /* pusat tak terjangkau — data lokal tetap aman, antrean migrasi mengunggah nanti */
-    });
+      signal: ctrl.signal,
+    })
+      .catch(() => {
+        /* pusat tak terjangkau — data lokal tetap aman, antrean migrasi mengunggah nanti */
+      })
+      .finally(() => globalThis.clearTimeout(t));
   } catch {
     /* ignore */
   }

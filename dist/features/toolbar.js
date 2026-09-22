@@ -60,41 +60,11 @@ var __morbis_feature = (() => {
 `,
   );
 
-  // src/features/shared/resumeHistory.ts
-  function readPetugas() {
-    try {
-      const panel = document.getElementById('userpanel');
-      if (panel) {
-        let username = '';
-        let role = '';
-        panel.querySelectorAll('.subgroup').forEach((sg) => {
-          const title = (sg.querySelector('.subtitle')?.textContent || '').trim().toLowerCase();
-          const content = (sg.querySelector('.subcontent')?.textContent || '').trim();
-          if (title === 'username' && content) username = content;
-          if (title === 'role' && content) role = content;
-        });
-        if (username) return `${username}${role ? ` (${role})` : ''}`;
-        const a = panel.querySelector('a');
-        const t2 = (a?.textContent || '').trim();
-        if (t2 && t2 !== 'Petugas Rumah Sakit') return t2;
-      }
-      const el = document.querySelector('#petugas, .petugas, .username, #username, .user-name');
-      const t = (el?.textContent || '').trim();
-      if (t) return t.slice(0, 80);
-      const dokter = document
-        .querySelector('input[name="dokter"], #dokter, input[name="nama_dokter"]')
-        ?.value?.trim();
-      if (dokter) return dokter.slice(0, 80);
-      const idUser = document.querySelector('input[name="id_user"], #id_user')?.value?.trim();
-      if (idUser) return `User #${idUser}`;
-    } catch {}
-    return 'petugas';
-  }
-
   // src/features/shared/casemixApi.ts
   var CASEMIX_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
   var BASE_OVERRIDE_KEY = 'ext-farmasi-app-base';
   var BATCH_MAX = 500;
+  var CENTRAL_TIMEOUT_MS = 25e3;
   function resolveCasemixBase() {
     try {
       const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
@@ -105,13 +75,22 @@ var __morbis_feature = (() => {
   function normalizeIds(ids) {
     return [...new Set(ids.map((s) => String(s).trim()).filter(Boolean))].slice(0, BATCH_MAX);
   }
+  async function fetchTimeout(url, init, fetcher = fetch) {
+    const ctrl = new AbortController();
+    const t = globalThis.setTimeout(() => ctrl.abort(), CENTRAL_TIMEOUT_MS);
+    try {
+      return await fetcher(url, { ...init, signal: ctrl.signal });
+    } finally {
+      globalThis.clearTimeout(t);
+    }
+  }
   async function getJson(path, fetcher = fetch) {
     try {
-      const res = await fetcher(resolveCasemixBase() + path, {
-        cache: 'no-store',
-        credentials: 'omit',
-        headers: { Accept: 'application/json' },
-      });
+      const res = await fetchTimeout(
+        resolveCasemixBase() + path,
+        { cache: 'no-store', credentials: 'omit', headers: { Accept: 'application/json' } },
+        fetcher,
+      );
       if (!res.ok) return null;
       return await res.json();
     } catch {
@@ -120,13 +99,18 @@ var __morbis_feature = (() => {
   }
   function postFireForget(path, payload, fetcher = fetch) {
     try {
+      const ctrl = new AbortController();
+      const t = globalThis.setTimeout(() => ctrl.abort(), CENTRAL_TIMEOUT_MS);
       fetcher(resolveCasemixBase() + path, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(payload),
         keepalive: true,
         credentials: 'omit',
-      }).catch(() => {});
+        signal: ctrl.signal,
+      })
+        .catch(() => {})
+        .finally(() => globalThis.clearTimeout(t));
     } catch {}
   }
   function postRevisionCentral(rev, fetcher = fetch) {
@@ -157,6 +141,290 @@ var __morbis_feature = (() => {
     if (j === null) return null;
     if (!j.ok || !j.revisions) return {};
     return j.revisions;
+  }
+
+  // src/features/shared/resumeHistory.ts
+  function defaultStore() {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+    } catch {}
+    return null;
+  }
+  var HIST_PREFIX = 'ext_rv_history_';
+  var LEGACY_HIST_PREFIX = HIST_PREFIX;
+  var MAX_ENTRIES = 50;
+  function getHistoryKey(idVisit, tipe) {
+    return `${HIST_PREFIX}${tipe === 'ranap' ? 'ri' : 'rj'}_${idVisit || 'unknown'}`;
+  }
+  function readJson(store, key) {
+    if (!store) return null;
+    try {
+      const raw = store.getItem(key);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+  function writeJson(store, key, value) {
+    if (!store) return;
+    try {
+      store.setItem(key, JSON.stringify(value));
+    } catch {}
+  }
+  function loadHistory(idVisit, tipe, store = defaultStore()) {
+    const arr = readJson(store, getHistoryKey(idVisit, tipe));
+    const list = Array.isArray(arr) ? arr : [];
+    if (tipe === 'ranap') {
+      const legacy = readJson(store, LEGACY_HIST_PREFIX + idVisit);
+      if (Array.isArray(legacy) && legacy.length > 0 && list.length === 0) {
+        const migrated = legacy.map((e) => ({ ...e, tipe: 'ranap' }));
+        saveHistory(migrated, idVisit, 'ranap', store);
+        return migrated;
+      }
+    }
+    return list;
+  }
+  function saveHistory(list, idVisit, tipe, store = defaultStore()) {
+    writeJson(store, getHistoryKey(idVisit, tipe), list.slice(-MAX_ENTRIES));
+  }
+  function readPetugas() {
+    try {
+      const panel = document.getElementById('userpanel');
+      if (panel) {
+        let username = '';
+        let role = '';
+        panel.querySelectorAll('.subgroup').forEach((sg) => {
+          const title = (sg.querySelector('.subtitle')?.textContent || '').trim().toLowerCase();
+          const content = (sg.querySelector('.subcontent')?.textContent || '').trim();
+          if (title === 'username' && content) username = content;
+          if (title === 'role' && content) role = content;
+        });
+        if (username) return `${username}${role ? ` (${role})` : ''}`;
+        const a = panel.querySelector('a');
+        const t2 = (a?.textContent || '').trim();
+        if (t2 && t2 !== 'Petugas Rumah Sakit') return t2;
+      }
+      const el = document.querySelector('#petugas, .petugas, .username, #username, .user-name');
+      const t = (el?.textContent || '').trim();
+      if (t) return t.slice(0, 80);
+      const dokter = document
+        .querySelector('input[name="dokter"], #dokter, input[name="nama_dokter"]')
+        ?.value?.trim();
+      if (dokter) return dokter.slice(0, 80);
+      const idUser = document.querySelector('input[name="id_user"], #id_user')?.value?.trim();
+      if (idUser) return `User #${idUser}`;
+    } catch {}
+    return 'petugas';
+  }
+
+  // src/features/shared/preOpStorage.ts
+  var PRE_OP_STORAGE_KEY = 'morbis_preop_markers';
+  var PRE_OP_TTL_MS = 30 * 24 * 60 * 60 * 1e3;
+  function defaultStore2() {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+    } catch {}
+    return null;
+  }
+  function purgeExpiredPreOp(map, now = Date.now()) {
+    const result = {};
+    let count = 0;
+    for (const [id, item] of Object.entries(map)) {
+      if (item && item.markedAt && now - item.markedAt <= PRE_OP_TTL_MS) {
+        result[id] = item;
+      } else {
+        count++;
+      }
+    }
+    return { purged: result, count };
+  }
+  function loadPreOpMap(store = defaultStore2(), now = Date.now()) {
+    if (!store) return {};
+    try {
+      const raw = store.getItem(PRE_OP_STORAGE_KEY);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw);
+      if (typeof parsed !== 'object' || parsed === null) return {};
+      const { purged, count } = purgeExpiredPreOp(parsed, now);
+      if (count > 0) {
+        savePreOpMap(purged, store);
+      }
+      return purged;
+    } catch {
+      return {};
+    }
+  }
+  function savePreOpMap(map, store = defaultStore2()) {
+    if (!store) return;
+    try {
+      store.setItem(PRE_OP_STORAGE_KEY, JSON.stringify(map));
+    } catch {}
+  }
+
+  // src/features/shared/casemixBackfill.ts
+  var MIGRATED_PREOP_KEY = 'ext_migrated_preop_ids';
+  var MIGRATED_RV_PREFIX = 'ext_migrated_rv_';
+  var BACKFILL_BATCH = 20;
+  function readJson2(store, key) {
+    if (!store) return null;
+    try {
+      const raw = store.getItem(key);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+  function writeJson2(store, key, value) {
+    if (!store) return;
+    try {
+      store.setItem(key, JSON.stringify(value));
+    } catch {}
+  }
+  function defaultStore3() {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+    } catch {}
+    return null;
+  }
+  async function postCentral(path, payload, fetcher = fetch) {
+    try {
+      const res = await fetcher(resolveCasemixBase() + path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload),
+        credentials: 'omit',
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
+  function collectPreOpPending(map, migratedIds) {
+    const done = new Set(migratedIds);
+    return Object.keys(map)
+      .filter((id) => !done.has(id))
+      .slice(0, BACKFILL_BATCH);
+  }
+  function collectResumePending(list, sinceAt) {
+    return list.filter((e) => e.at > sinceAt).slice(0, BACKFILL_BATCH);
+  }
+  function discoverResumeKeys(store) {
+    const out = [];
+    if (!store) return out;
+    try {
+      const keys = [];
+      const ls = store;
+      if (typeof ls.length === 'number' && ls.key) {
+        for (let i = 0; i < ls.length; i++) {
+          const k = ls.key(i);
+          if (k) keys.push(k);
+        }
+      }
+      for (const k of keys) {
+        let m = k.match(/^ext_rv_history_(ri|rj)_(.+)$/);
+        if (m) {
+          out.push({ key: k, idVisit: m[2], tipe: m[1] === 'ri' ? 'ranap' : 'rajal' });
+          continue;
+        }
+        m = k.match(/^ext_rv_history_(.+)$/);
+        if (m && !m[1].startsWith('ri_') && !m[1].startsWith('rj_')) {
+          out.push({ key: k, idVisit: m[1], tipe: 'ranap' });
+        }
+      }
+    } catch {}
+    return out;
+  }
+  async function runCasemixBackfill(store = defaultStore3(), fetcher = fetch) {
+    const res = { preopUploaded: 0, resumeUploaded: 0, offline: false };
+    if (!store) return res;
+    try {
+      const map = loadPreOpMap(store);
+      const migrated = readJson2(store, MIGRATED_PREOP_KEY) ?? [];
+      const pending = collectPreOpPending(map, migrated);
+      for (const id of pending) {
+        const item = map[id];
+        if (!item) continue;
+        const ok = await postCentral(
+          '/api/casemix/pre-op/toggle',
+          {
+            id_visit: id,
+            marked: true,
+            norm: item.norm ?? null,
+            nama: item.nama ?? null,
+            no_reg: item.noReg ?? null,
+            user: null,
+          },
+          fetcher,
+        );
+        if (!ok) {
+          res.offline = true;
+          break;
+        }
+        migrated.push(id);
+        res.preopUploaded++;
+      }
+      if (res.preopUploaded) writeJson2(store, MIGRATED_PREOP_KEY, migrated);
+    } catch {
+      res.offline = true;
+    }
+    try {
+      for (const { key, idVisit, tipe } of discoverResumeKeys(store)) {
+        if (res.resumeUploaded >= BACKFILL_BATCH) break;
+        const sinceAt = readJson2(store, MIGRATED_RV_PREFIX + key) ?? 0;
+        const list = loadHistory(idVisit, tipe, store);
+        const pending = collectResumePending(list, sinceAt);
+        let maxAt = sinceAt;
+        for (const e of pending) {
+          const ok = await postCentral(
+            '/api/reports/resume-history',
+            {
+              id_visit: idVisit,
+              id_resume: e.id_resume,
+              aksi: e.aksi,
+              tipe: e.tipe ?? tipe,
+              waktu: new Date(e.at).toISOString(),
+              user: e.user,
+              before: e.before,
+              after: e.after,
+              changed: e.changed,
+            },
+            fetcher,
+          );
+          if (!ok) {
+            res.offline = true;
+            break;
+          }
+          maxAt = Math.max(maxAt, e.at);
+          res.resumeUploaded++;
+        }
+        if (maxAt > sinceAt) writeJson2(store, MIGRATED_RV_PREFIX + key, maxAt);
+        if (res.offline) break;
+      }
+    } catch {
+      res.offline = true;
+    }
+    try {
+      if (res.preopUploaded || res.resumeUploaded) {
+        window.console.debug(
+          `[casemixBackfill] diunggah: ${res.preopUploaded} pre-op, ${res.resumeUploaded} resume`,
+        );
+      }
+    } catch {}
+    return res;
+  }
+  var _backfillTimer = null;
+  function initCasemixBackfill() {
+    if (_backfillTimer !== null) return;
+    const tick = () => {
+      try {
+        if (document.hidden) return;
+      } catch {}
+      void runCasemixBackfill().catch(() => {});
+    };
+    window.setTimeout(tick, 5e3);
+    _backfillTimer = window.setInterval(tick, 3e4);
   }
 
   // src/features/shortcutButtons.ts
@@ -295,6 +563,61 @@ var __morbis_feature = (() => {
       status: 'saved',
     };
   }
+  function revisionContentKey(r) {
+    return [r.idVisit, r.poli, r.idPoli, r.keterangan].join('|');
+  }
+  function mergeCentralRevisions(current, incoming) {
+    const seen = new Set(current.map((r) => revisionContentKey(r)));
+    const merged = [...current];
+    for (const r of incoming) {
+      const k = revisionContentKey(r);
+      if (!seen.has(k)) {
+        seen.add(k);
+        merged.push(r);
+      }
+    }
+    return merged;
+  }
+  function partitionUnsynced(localSaved, central) {
+    const have = new Set(central.map((r) => revisionContentKey(r)));
+    return localSaved.filter((r) => r.status === 'saved' && !have.has(revisionContentKey(r)));
+  }
+  var LOCAL_REV_KEY = 'extBpjsRevisionsLocal';
+  var MAX_LOCAL_REV_PER_VISIT = 50;
+  function readLocalRevMap() {
+    try {
+      const raw = localStorage.getItem(LOCAL_REV_KEY);
+      const map = raw ? JSON.parse(raw) : {};
+      const out = {};
+      for (const [k, v] of Object.entries(map)) {
+        if (Array.isArray(v)) {
+          const valid = v.filter(isBpjsRevision).slice(-MAX_LOCAL_REV_PER_VISIT);
+          if (valid.length) out[k] = valid;
+        }
+      }
+      return out;
+    } catch {
+      return {};
+    }
+  }
+  function persistLocalRevisions() {
+    try {
+      const map = readLocalRevMap();
+      for (const r of bpjsRevisions) {
+        if (r.status !== 'saved' || !r.idVisit) continue;
+        const list = map[r.idVisit] ?? [];
+        if (!list.some((x) => revisionContentKey(x) === revisionContentKey(r))) {
+          list.push(r);
+        }
+        map[r.idVisit] = list.slice(-MAX_LOCAL_REV_PER_VISIT);
+      }
+      localStorage.setItem(LOCAL_REV_KEY, JSON.stringify(map));
+    } catch {}
+  }
+  function loadLocalRevisions(idVisit) {
+    if (!idVisit) return [];
+    return readLocalRevMap()[idVisit] ?? [];
+  }
   function formatRevisionTimestamp(timestamp) {
     const date = new Date(timestamp);
     const pad = (value) => String(value).padStart(2, '0');
@@ -324,13 +647,31 @@ var __morbis_feature = (() => {
     try {
       history.replaceState(withRevisionHistoryState(history.state, bpjsRevisions), '');
     } catch {}
+    persistLocalRevisions();
   }
   function queryRevisionPanel() {
     const panel = document.querySelector(BPJS_REVISION_PANEL_SELECTOR);
     const textarea = panel?.querySelector(`#${BPJS_REVISION_TEXTAREA_ID}`) ?? null;
     const count = panel?.querySelector(`#${BPJS_REVISION_COUNT_ID}`) ?? null;
     if (!panel || !textarea || !count) return null;
-    return { panel, textarea, count };
+    return { panel, textarea, count, hint: panel.querySelector('.ext-bpjs-revision-hint') };
+  }
+  function setSyncHint(online, centralCount) {
+    try {
+      const hint = queryRevisionPanel()?.hint;
+      if (!hint) return;
+      if (online) {
+        hint.textContent =
+          `Tersambung ke DB pusat` +
+          (centralCount ? ` (${centralCount} riwayat pusat)` : '') +
+          ` \u2014 Diambil dari poli dan keterangan yang dikirim lewat Revisi.`;
+        hint.style.color = '';
+      } else {
+        hint.textContent =
+          'Pusat tak terjangkau (offline/sinyal lambat) \u2014 menampilkan cache lokal, data aman dan akan tersinkron otomatis.';
+        hint.style.color = '#b45309';
+      }
+    } catch {}
   }
   function ensureRevisionPanel(anchor) {
     const parent = anchor?.parentElement ?? null;
@@ -473,20 +814,34 @@ var __morbis_feature = (() => {
   function initBpjsRevisionHistory(anchor) {
     const restored = readRevisionHistory();
     bpjsRevisions = mergeRevisionHistory(bpjsRevisions, restored);
+    const idVisitBoot = extractParam('id_visit') || extractParam('idVisit') || '';
+    if (idVisitBoot) {
+      bpjsRevisions = mergeCentralRevisions(bpjsRevisions, loadLocalRevisions(idVisitBoot));
+    }
     ensureRevisionPanel(anchor);
     renderRevisionHistory();
     try {
-      const idVisit = extractParam('id_visit') || extractParam('idVisit') || '';
+      const idVisit = idVisitBoot;
       if (idVisit) {
         void fetchRevisionsBatch([idVisit]).then((map) => {
+          setSyncHint(map !== null, map?.[idVisit]?.length ?? 0);
           if (!map) return;
           const incoming = [];
           for (const r of map[idVisit] ?? []) {
             const rev = centralToBpjsRevision(r, idVisit);
             if (rev) incoming.push(rev);
           }
+          try {
+            const user = readPetugas();
+            for (const m of partitionUnsynced(
+              bpjsRevisions.filter((x) => x.idVisit === idVisit),
+              incoming,
+            )) {
+              postRevisionCentral({ ...m, user });
+            }
+          } catch {}
           if (incoming.length) {
-            bpjsRevisions = mergeRevisionHistory(bpjsRevisions, incoming);
+            bpjsRevisions = mergeCentralRevisions(bpjsRevisions, incoming);
             persistRevisionHistory();
             renderRevisionHistory();
           }
@@ -505,6 +860,7 @@ var __morbis_feature = (() => {
       const start = () => {
         const bar = document.querySelector('[data-toolbar]');
         initBpjsRevisionHistory(bar);
+        initCasemixBackfill();
         if (!queryRevisionPanel()) window.setTimeout(start, 2e3);
       };
       if (document.readyState === 'loading') {

@@ -38,6 +38,7 @@ var __morbis_feature = (() => {
   var CASEMIX_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
   var BASE_OVERRIDE_KEY = 'ext-farmasi-app-base';
   var BATCH_MAX = 500;
+  var CENTRAL_TIMEOUT_MS = 25e3;
   function resolveCasemixBase() {
     try {
       const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
@@ -48,13 +49,22 @@ var __morbis_feature = (() => {
   function normalizeIds(ids) {
     return [...new Set(ids.map((s) => String(s).trim()).filter(Boolean))].slice(0, BATCH_MAX);
   }
+  async function fetchTimeout(url, init, fetcher = fetch) {
+    const ctrl = new AbortController();
+    const t = globalThis.setTimeout(() => ctrl.abort(), CENTRAL_TIMEOUT_MS);
+    try {
+      return await fetcher(url, { ...init, signal: ctrl.signal });
+    } finally {
+      globalThis.clearTimeout(t);
+    }
+  }
   async function getJson(path, fetcher = fetch) {
     try {
-      const res = await fetcher(resolveCasemixBase() + path, {
-        cache: 'no-store',
-        credentials: 'omit',
-        headers: { Accept: 'application/json' },
-      });
+      const res = await fetchTimeout(
+        resolveCasemixBase() + path,
+        { cache: 'no-store', credentials: 'omit', headers: { Accept: 'application/json' } },
+        fetcher,
+      );
       if (!res.ok) return null;
       return await res.json();
     } catch {
@@ -225,7 +235,7 @@ var __morbis_feature = (() => {
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
   }
-  function buildExportHtml(filter, rows, marks, revs) {
+  function buildExportHtml(filter, rows, marks, revs, centralOk = true) {
     const trs = rows
       .map((r, i) => {
         const m = marks[r.idVisit];
@@ -235,7 +245,13 @@ var __morbis_feature = (() => {
       })
       .join('');
     const f = (l, v) => (v ? `<span style="margin-right:18px"><b>${l}:</b> ${esc(v)}</span>` : '');
-    return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Pre-op &amp; Revisi Klaim</title><style>body{font-family:Arial,sans-serif;font-size:12px;color:#111}h2{margin:0 0 4px}p{margin:0 0 12px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #555;padding:4px 6px;text-align:left;vertical-align:top}th{background:#eee}@media print{.no-print{display:none}}</style></head><body><h2>Laporan Pre-op &amp; Revisi Klaim BPJS</h2><p>${f('Periode', [filter.tanggalAwal, filter.tanggalAkhir].filter(Boolean).join(' s.d. '))}${f('NORM', filter.norm)}${f('Nama', filter.nama)}${f('Reg', filter.reg)}${f('Billing', filter.billing)}${f('Status', filter.status)}${f('Poli', filter.poli || filter.idPoli)}<br>Sumber: DB pusat ${esc(resolveCasemixBaseSafe())} \u2014 ${esc(/* @__PURE__ */ new Date().toLocaleString('id-ID'))}</p><table><thead><tr><th>No</th><th>No RM</th><th>Nama</th><th>No Reg</th><th>Poli</th><th>Pre-op</th><th>Waktu Tandai</th><th>Penanda</th><th>Jml Revisi</th><th>Revisi Terakhir</th></tr></thead><tbody>${trs}</tbody></table><script>window.onload=function(){window.print()}<\/script></body></html>`;
+    return (
+      `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Pre-op &amp; Revisi Klaim</title><style>body{font-family:Arial,sans-serif;font-size:12px;color:#111}h2{margin:0 0 4px}p{margin:0 0 12px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #555;padding:4px 6px;text-align:left;vertical-align:top}th{background:#eee}@media print{.no-print{display:none}}</style></head><body><h2>Laporan Pre-op &amp; Revisi Klaim BPJS</h2><p>${f('Periode', [filter.tanggalAwal, filter.tanggalAkhir].filter(Boolean).join(' s.d. '))}${f('NORM', filter.norm)}${f('Nama', filter.nama)}${f('Reg', filter.reg)}${f('Billing', filter.billing)}${f('Status', filter.status)}${f('Poli', filter.poli || filter.idPoli)}<br>Sumber: DB pusat ${esc(resolveCasemixBaseSafe())} \u2014 ${esc(/* @__PURE__ */ new Date().toLocaleString('id-ID'))}</p><table><thead><tr><th>No</th><th>No RM</th><th>Nama</th><th>No Reg</th><th>Poli</th><th>Pre-op</th><th>Waktu Tandai</th><th>Penanda</th><th>Jml Revisi</th><th>Revisi Terakhir</th></tr></thead><tbody>${trs}</tbody></table>` +
+      (centralOk
+        ? ''
+        : `<p style="color:#b45309"><b>Catatan:</b> DB pusat tak terjangkau saat export (offline/sinyal lambat) \u2014 kolom Pre-op/Revisi dari cache lokal PC ini.</p>`) +
+      `<script>window.onload=function(){window.print()}<\/script></body></html>`
+    );
   }
   function resolveCasemixBaseSafe() {
     try {
@@ -313,7 +329,11 @@ var __morbis_feature = (() => {
         }
       }
       updateLoading('Menyusun dokumen cetak\u2026');
-      const html = buildExportHtml(filter, rows, marks, centralRevs ?? {});
+      const centralOk = centralMarks !== null && centralRevs !== null;
+      if (!centralOk) {
+        updateLoading('Pusat offline \u2014 memakai cache lokal\u2026');
+      }
+      const html = buildExportHtml(filter, rows, marks, centralRevs ?? {}, centralOk);
       const w = window.open('', '_blank');
       if (!w) {
         window.alert('Popup diblokir \u2014 izinkan popup untuk halaman ini lalu ulangi.');

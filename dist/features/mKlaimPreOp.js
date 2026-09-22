@@ -135,6 +135,86 @@ var __morbis_feature = (() => {
     }
   }
 
+  // src/features/shared/casemixApi.ts
+  var CASEMIX_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
+  var BASE_OVERRIDE_KEY = 'ext-farmasi-app-base';
+  var BATCH_MAX = 500;
+  var CENTRAL_TIMEOUT_MS = 25e3;
+  function resolveCasemixBase() {
+    try {
+      const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
+      if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
+    } catch {}
+    return CASEMIX_BASE_FALLBACK;
+  }
+  function normalizeIds(ids) {
+    return [...new Set(ids.map((s) => String(s).trim()).filter(Boolean))].slice(0, BATCH_MAX);
+  }
+  async function fetchTimeout(url, init, fetcher = fetch) {
+    const ctrl = new AbortController();
+    const t = globalThis.setTimeout(() => ctrl.abort(), CENTRAL_TIMEOUT_MS);
+    try {
+      return await fetcher(url, { ...init, signal: ctrl.signal });
+    } finally {
+      globalThis.clearTimeout(t);
+    }
+  }
+  async function getJson(path, fetcher = fetch) {
+    try {
+      const res = await fetchTimeout(
+        resolveCasemixBase() + path,
+        { cache: 'no-store', credentials: 'omit', headers: { Accept: 'application/json' } },
+        fetcher,
+      );
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+  function postFireForget(path, payload, fetcher = fetch) {
+    try {
+      const ctrl = new AbortController();
+      const t = globalThis.setTimeout(() => ctrl.abort(), CENTRAL_TIMEOUT_MS);
+      fetcher(resolveCasemixBase() + path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true,
+        credentials: 'omit',
+        signal: ctrl.signal,
+      })
+        .catch(() => {})
+        .finally(() => globalThis.clearTimeout(t));
+    } catch {}
+  }
+  function togglePreOpCentral(idVisit, marked, info = {}, fetcher = fetch) {
+    if (!idVisit) return;
+    postFireForget(
+      '/api/casemix/pre-op/toggle',
+      {
+        id_visit: idVisit,
+        marked,
+        norm: info.norm ?? null,
+        nama: info.nama ?? null,
+        no_reg: info.noReg ?? null,
+        user: info.user ?? null,
+      },
+      fetcher,
+    );
+  }
+  async function fetchPreOpBatch(ids, fetcher = fetch) {
+    const list = normalizeIds(ids);
+    if (!list.length) return {};
+    const j = await getJson(
+      '/api/casemix/pre-op/list?ids=' + encodeURIComponent(list.join(',')),
+      fetcher,
+    );
+    if (j === null) return null;
+    if (!j.ok || !j.marks) return {};
+    return j.marks;
+  }
+
   // src/features/shared/resumeHistory.ts
   function defaultStore2() {
     try {
@@ -208,71 +288,6 @@ var __morbis_feature = (() => {
       if (idUser) return `User #${idUser}`;
     } catch {}
     return 'petugas';
-  }
-
-  // src/features/shared/casemixApi.ts
-  var CASEMIX_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
-  var BASE_OVERRIDE_KEY = 'ext-farmasi-app-base';
-  var BATCH_MAX = 500;
-  function resolveCasemixBase() {
-    try {
-      const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
-      if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
-    } catch {}
-    return CASEMIX_BASE_FALLBACK;
-  }
-  function normalizeIds(ids) {
-    return [...new Set(ids.map((s) => String(s).trim()).filter(Boolean))].slice(0, BATCH_MAX);
-  }
-  async function getJson(path, fetcher = fetch) {
-    try {
-      const res = await fetcher(resolveCasemixBase() + path, {
-        cache: 'no-store',
-        credentials: 'omit',
-        headers: { Accept: 'application/json' },
-      });
-      if (!res.ok) return null;
-      return await res.json();
-    } catch {
-      return null;
-    }
-  }
-  function postFireForget(path, payload, fetcher = fetch) {
-    try {
-      fetcher(resolveCasemixBase() + path, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(payload),
-        keepalive: true,
-        credentials: 'omit',
-      }).catch(() => {});
-    } catch {}
-  }
-  function togglePreOpCentral(idVisit, marked, info = {}, fetcher = fetch) {
-    if (!idVisit) return;
-    postFireForget(
-      '/api/casemix/pre-op/toggle',
-      {
-        id_visit: idVisit,
-        marked,
-        norm: info.norm ?? null,
-        nama: info.nama ?? null,
-        no_reg: info.noReg ?? null,
-        user: info.user ?? null,
-      },
-      fetcher,
-    );
-  }
-  async function fetchPreOpBatch(ids, fetcher = fetch) {
-    const list = normalizeIds(ids);
-    if (!list.length) return {};
-    const j = await getJson(
-      '/api/casemix/pre-op/list?ids=' + encodeURIComponent(list.join(',')),
-      fetcher,
-    );
-    if (j === null) return null;
-    if (!j.ok || !j.marks) return {};
-    return j.marks;
   }
 
   // src/features/shared/casemixBackfill.ts
@@ -552,13 +567,14 @@ var __morbis_feature = (() => {
     void fetchPreOpBatch(ids).then((marks) => {
       if (marks === null) return;
       _centralMap = marks;
+      const localMap = loadPreOpMap();
       for (const table of document.querySelectorAll('table')) {
         for (const row of table.querySelectorAll('tbody tr')) {
           const id = extractIdVisitFromRow(row);
           if (!id) continue;
           const marked = !!marks[id];
           if (row.getAttribute('data-ext-preop-marked') !== String(marked)) {
-            if (marked && !loadPreOpMap()[id]) {
+            if (marked && !localMap[id]) {
               setPreOp(id, extractPatientInfo(row));
             }
             updateRowVisual(row, id, marked);
