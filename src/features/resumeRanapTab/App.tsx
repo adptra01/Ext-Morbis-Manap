@@ -279,7 +279,7 @@ function IcdAutocomplete({
                   )}
                 </div>
                 <div
-                  className={`${active ? 'text-primary-foreground' : 'text-foreground'} text-base font-medium leading-snug mt-1`}
+                  className={`${active ? 'text-primary-foreground' : 'text-foreground'} text-base font-medium leading-[1.6] mt-1`}
                 >
                   {hit.NAMA}
                 </div>
@@ -452,7 +452,7 @@ export function App({ data, onSave, onClose }: Props) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="ri-modal font-['Inter',system-ui,sans-serif]"
+      className="ri-modal font-['Roboto','Segoe_UI',system-ui,sans-serif]"
       onClick={(e) => e.stopPropagation()}
     >
       {/* HEADER */}
@@ -472,14 +472,14 @@ export function App({ data, onSave, onClose }: Props) {
             <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
           </svg>
           <div>
-            <span className="text-2xl font-bold leading-tight">Resume Rawat Inap</span>
-            <p className="text-base text-white/80">Lengkapi ringkasan dan ICD rawat inap</p>
+            <span className="text-base font-bold">Resume Rawat Inap</span>
+            <p className="text-base text-white/90">Lengkapi ringkasan dan ICD rawat inap</p>
           </div>
         </div>
         <button
           type="button"
           onClick={onClose}
-          className="bg-white/15 hover:bg-white/25 border-none text-white w-12 h-12 rounded-lg text-xl flex items-center justify-center cursor-pointer transition-colors flex-shrink-0"
+          className="bg-white/15 hover:bg-white/25 border-none text-white w-12 h-12 rounded-lg text-base flex items-center justify-center cursor-pointer transition-colors flex-shrink-0"
           aria-label="Tutup modal"
         >
           ✕
@@ -557,7 +557,7 @@ export function App({ data, onSave, onClose }: Props) {
                 <Input
                   value={d[k]}
                   onChange={(e) => p({ [k]: e.target.value })}
-                  className="text-lg font-semibold"
+                  className="font-semibold"
                 />
               </div>
             ))}
@@ -567,7 +567,7 @@ export function App({ data, onSave, onClose }: Props) {
                 <Input
                   value={d[k]}
                   onChange={(e) => p({ [k]: e.target.value })}
-                  className="text-lg font-semibold"
+                  className="font-semibold"
                 />
               </div>
             ))}
@@ -724,7 +724,7 @@ export function App({ data, onSave, onClose }: Props) {
                 <Input
                   value={d[k]}
                   onChange={(e) => p({ [k]: e.target.value })}
-                  className="text-lg font-semibold"
+                  className="font-semibold"
                 />
               </div>
             ))}

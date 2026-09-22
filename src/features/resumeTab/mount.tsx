@@ -754,7 +754,7 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
     link.id = 'morbis-resume-fonts';
     link.rel = 'stylesheet';
     link.href =
-      'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Lexend:wght@400;500;600;700&display=swap';
+      'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Lexend:wght@400;500;600;700&family=Roboto:wght@400;500;600;700&display=swap';
     document.head.appendChild(link);
   }
 
@@ -822,7 +822,7 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
         font-size: 16px;
         line-height: 1.6;
         color: #1a1d23;
-        font-family: 'Atkinson Hyperlegible', 'Inter', 'Segoe UI', system-ui, sans-serif;
+        font-family: 'Roboto', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
       }
       .resume-modal *,
       .resume-modal *::before,
@@ -901,7 +901,7 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
         font-size: 16px;
         line-height: 1.6;
         color: #1a1d23;
-        font-family: 'Atkinson Hyperlegible', 'Inter', 'Segoe UI', system-ui, sans-serif;
+        font-family: 'Roboto', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
       }
       .resume-modal .resume-modal *,
       .resume-modal .resume-modal *::before,
@@ -970,7 +970,7 @@ function mountReactApp(container: HTMLElement, data: ResumeData) {
         cursor: pointer;
         font-size: 12px;
         line-height: 18px;
-        font-family: 'Atkinson Hyperlegible', 'Inter', 'Segoe UI', system-ui, sans-serif;
+        font-family: 'Roboto', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
         color: #1a1d23;
       }
       [data-radix-select-viewport] [role="option"]:focus,

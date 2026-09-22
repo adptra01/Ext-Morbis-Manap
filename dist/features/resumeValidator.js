@@ -633,11 +633,14 @@ var __morbis_feature = (() => {
       const t = document.createElement('div');
       t.textContent = msg;
       t.style.cssText =
-        'position:fixed;top:20px;right:20px;z-index:2147483647;padding:14px 18px;border-radius:8px;background:#dcfce7;color:#065f46;border-left:5px solid #16a34a;font-weight:600;font-size:14px;box-shadow:0 4px 16px rgba(0,0,0,.15);max-width:420px;line-height:1.5;';
+        'position:fixed;top:20px;right:20px;z-index:2147483647;padding:14px 18px;border-radius:8px;background:#dcfce7;color:#065f46;border-left:5px solid #16a34a;font-weight:600;font-size:16px;line-height:1.6;font-family:' +
+        HIST_FONT +
+        ';box-shadow:0 4px 16px rgba(0,0,0,.15);max-width:420px;';
       document.body.appendChild(t);
       setTimeout(() => t.remove(), 4e3);
     } catch {}
   }
+  var HIST_FONT = `'Roboto','Segoe UI',system-ui,-apple-system,Arial,sans-serif`;
   function openHistoryModal(opts) {
     try {
       document.querySelector('#ext-rv-history-overlay')?.remove();
@@ -654,7 +657,9 @@ var __morbis_feature = (() => {
     });
     const box = document.createElement('div');
     box.style.cssText =
-      'background:#fff;border-radius:12px;max-width:680px;width:100%;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;font-size:14px;color:#1c2530;font-family:system-ui,sans-serif;';
+      'background:#fff;border-radius:12px;max-width:680px;width:100%;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;font-size:16px;line-height:1.6;color:#1c2530;font-family:' +
+      HIST_FONT +
+      ';';
     ov.appendChild(box);
     const head = document.createElement('div');
     head.style.cssText =
@@ -664,7 +669,7 @@ var __morbis_feature = (() => {
     x.type = 'button';
     x.textContent = '\xD7';
     x.style.cssText =
-      'border:none;background:#f8fafc;width:32px;height:32px;border-radius:50%;font-size:20px;cursor:pointer;';
+      'border:none;background:#f8fafc;width:32px;height:32px;border-radius:50%;font-family:inherit;font-size:16px;line-height:1;cursor:pointer;';
     x.onclick = function () {
       ov.remove();
     };
@@ -689,7 +694,7 @@ var __morbis_feature = (() => {
       row.appendChild(title);
       const detail = document.createElement('div');
       detail.style.cssText =
-        'display:none;margin-top:8px;background:#f8fafc;border-radius:6px;padding:8px 10px;font-size:12px;max-height:180px;overflow-y:auto;white-space:pre-wrap;';
+        'display:none;margin-top:8px;background:#f8fafc;border-radius:6px;padding:8px 10px;font-size:13px;line-height:1.6;max-height:180px;overflow-y:auto;white-space:pre-wrap;';
       if (!entry.changed.length) {
         detail.textContent = 'Tidak ada perbedaan field.';
       } else {
@@ -708,7 +713,7 @@ var __morbis_feature = (() => {
       btnLihat.type = 'button';
       btnLihat.textContent = 'Lihat';
       btnLihat.style.cssText =
-        'border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;';
+        'border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:inherit;font-size:inherit;line-height:inherit;';
       btnLihat.onclick = function () {
         detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
       };
@@ -717,7 +722,7 @@ var __morbis_feature = (() => {
       btnSalin.type = 'button';
       btnSalin.textContent = 'Salin ke Form';
       btnSalin.style.cssText =
-        'background:#00875a;color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;';
+        'background:#00875a;color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:inherit;font-size:inherit;line-height:inherit;';
       btnSalin.onclick = function () {
         try {
           opts.onApply(entry.after);

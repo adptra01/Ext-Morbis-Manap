@@ -236,6 +236,14 @@ function closeOverlay() {
 
 function mountReactApp(data: RanapFormData) {
   document.body.classList.add('ext-ri-open');
+  if (!document.getElementById('morbis-resume-fonts')) {
+    const link = document.createElement('link');
+    link.id = 'morbis-resume-fonts';
+    link.rel = 'stylesheet';
+    link.href =
+      'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Lexend:wght@400;500;600;700&family=Roboto:wght@400;500;600;700&display=swap';
+    document.head.appendChild(link);
+  }
   // keep legacy ext-ri-container creation for fallback
   let container = document.getElementById('ext-ri-container') as HTMLDivElement | null;
   if (!container) {
@@ -312,7 +320,7 @@ function mountReactApp(data: RanapFormData) {
         flex-direction: column;
         overflow: hidden;
         animation: ri-up .25s ease;
-        font-family: 'Atkinson Hyperlegible', 'Inter', 'Segoe UI', system-ui, sans-serif;
+        font-family: 'Roboto', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
         font-size: 16px;
         line-height: 1.6;
         color: #1a1d23;
@@ -384,7 +392,7 @@ function mountReactApp(data: RanapFormData) {
         flex-direction: column;
         overflow: hidden;
         animation: ri-up .25s ease;
-        font-family: 'Atkinson Hyperlegible', 'Inter', 'Segoe UI', system-ui, sans-serif;
+        font-family: 'Roboto', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
         font-size: 16px;
         line-height: 1.6;
         color: #1a1d23;
@@ -475,7 +483,7 @@ function mountReactApp(data: RanapFormData) {
         cursor: pointer;
         font-size: 12px;
         line-height: 18px;
-        font-family: 'Atkinson Hyperlegible', 'Inter', 'Segoe UI', system-ui, sans-serif;
+        font-family: 'Roboto', 'Atkinson Hyperlegible', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
         color: #1a1d23;
       }
       [data-radix-select-viewport] [role="option"]:focus,
