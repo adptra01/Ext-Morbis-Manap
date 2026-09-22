@@ -1,8 +1,6 @@
 import { useState, useRef } from 'react';
-import { Search } from 'lucide-react';
 import { Button } from '../../ui/components/button';
 import { Input } from '../../ui/components/input';
-import { Label } from '../../ui/components/Label';
 import type { DiagnosaRow } from './types';
 
 interface Props {
@@ -95,136 +93,115 @@ export function DiagnosaSection({ rows, onChange }: Props) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button
-          variant="default"
-          size="lg"
-          className="gap-2 px-5 py-3"
-          onClick={() =>
-            onChange([
-              ...rows,
-              { idicd: '', kode10: '', namaDiagnosa: '', kasus: 'LAMA', komplikasi: 'TIDAK' },
-            ])
-          }
-        >
-          Tambah Diagnosa
-        </Button>
-      </div>
+    <div className="space-y-2">
+      {rows.length > 0 && (
+        <div className="flex gap-2 text-base font-bold text-muted-foreground px-1">
+          <span className="flex-1">Nama Diagnosa</span>
+          <span className="w-28">Kode ICD</span>
+          <span className="w-[76px] text-right">Aksi</span>
+        </div>
+      )}
 
       {rows.length === 0 ? (
-        <div className="border-2 border-dashed border-border rounded-xl py-12 text-center bg-background">
-          <p className="text-base text-muted-foreground mb-2">Belum ada diagnosa</p>
-          <p className="text-base text-muted-foreground">
-            Klik "Tambah Diagnosa" untuk menambahkan
-          </p>
+        <div className="border-2 border-dashed border-border rounded-xl py-6 text-center bg-background">
+          <p className="text-base text-muted-foreground">Belum ada diagnosa</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-2">
           {rows.map((row, i) => {
             const no = i + 1;
             return (
-              <div
-                key={i}
-                className="bg-background border-2 border-border rounded-xl p-4 space-y-4 shadow-sm"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-base font-semibold text-primary">Diagnosa #{no}</span>
-                  <Button
-                    variant="destructive"
-                    size="default"
-                    onClick={() => removeRow(i)}
-                    className="gap-2"
-                    aria-label={`Hapus diagnosa #{no}`}
-                  >
-                    Hapus
-                  </Button>
-                </div>
-
-                {/* Nama Diagnosa — full width */}
-                <div className="space-y-2">
-                  <Label>Nama Diagnosa</Label>
-                  <div className="relative">
-                    <Input
-                      id={`rj-nama${no}`}
-                      name="nama[]"
-                      value={row.namaDiagnosa}
-                      placeholder="Cari diagnosa atau ketik nama..."
-                      autoComplete="off"
-                      onChange={makeSearch(i)}
-                      className="pr-12"
-                      aria-describedby={`rj-nama-help-${no}`}
-                    />
-                    <Search
-                      className="absolute right-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none"
-                      aria-hidden="true"
-                    />
-                    <p id={`rj-nama-help-${no}`} className="sr-only">
-                      Ketik minimal 3 karakter untuk mencari diagnosis ICD-10
-                    </p>
-                    <input type="hidden" id={`rj-idicd${no}`} name="idicd[]" value={row.idicd} />
-                    {hits.length > 0 && hitRow === i && (
-                      <div
-                        className="fixed z-[2147483647] bg-background border-2 border-border rounded-xl shadow-lg max-h-[280px] overflow-auto"
-                        style={{ top: hitPos.top, left: hitPos.left, width: hitPos.width }}
-                        role="listbox"
-                        aria-label="Hasil pencarian ICD-10"
-                      >
-                        {hits.map((item, ri) => (
-                          <div
-                            key={item.ID || ri}
-                            onClick={() => pick(i, item)}
-                            role="option"
-                            className="px-4 py-3 cursor-pointer text-base border-b border-border hover:bg-accent transition-colors"
-                          >
-                            <div className="font-medium text-foreground">{item.NAMA}</div>
-                            <div className="text-muted-foreground text-base font-mono">
-                              {item.KODE}
-                            </div>
+              <div key={i} className="flex gap-2 items-center">
+                <div className="flex-1 min-w-0 relative">
+                  <Input
+                    id={`rj-nama${no}`}
+                    name="nama[]"
+                    value={row.namaDiagnosa}
+                    placeholder="Cari diagnosa..."
+                    autoComplete="off"
+                    onChange={makeSearch(i)}
+                    aria-label={`Nama diagnosa ${no}`}
+                    aria-describedby={`rj-nama-help-${no}`}
+                  />
+                  <p id={`rj-nama-help-${no}`} className="sr-only">
+                    Ketik minimal 3 karakter untuk mencari diagnosis ICD-10
+                  </p>
+                  <input type="hidden" id={`rj-idicd${no}`} name="idicd[]" value={row.idicd} />
+                  {hits.length > 0 && hitRow === i && (
+                    <div
+                      className="fixed z-[2147483647] bg-background border-2 border-border rounded-xl shadow-lg max-h-[280px] overflow-auto"
+                      style={{ top: hitPos.top, left: hitPos.left, width: hitPos.width }}
+                      role="listbox"
+                      aria-label="Hasil pencarian ICD-10"
+                    >
+                      {hits.map((item, ri) => (
+                        <div
+                          key={item.ID || ri}
+                          onClick={() => pick(i, item)}
+                          role="option"
+                          className="px-4 py-3 cursor-pointer text-base border-b border-border hover:bg-accent transition-colors"
+                        >
+                          <div className="font-medium text-foreground">{item.NAMA}</div>
+                          <div className="text-muted-foreground text-base font-mono">
+                            {item.KODE}
                           </div>
-                        ))}
-                      </div>
-                    )}
-                    {errMsg && (
-                      <div
-                        className="fixed z-[2147483647] bg-destructive/10 border-2 border-destructive rounded-xl px-3 py-2.5 text-base text-destructive"
-                        style={{ top: hitPos.top, left: hitPos.left }}
-                        role="alert"
-                      >
-                        {errMsg}
-                      </div>
-                    )}
-                  </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {errMsg && hitRow === i && (
+                    <div
+                      className="fixed z-[2147483647] bg-destructive/10 border-2 border-destructive rounded-xl px-3 py-2.5 text-base text-destructive"
+                      style={{ top: hitPos.top, left: hitPos.left }}
+                      role="alert"
+                    >
+                      {errMsg}
+                    </div>
+                  )}
                 </div>
 
-                {/* Kode ICD-10 — hidden kasus/komplikasi defaults */}
-                <div className="grid grid-cols-[1fr_50px] gap-4 items-end">
-                  <div className="space-y-1.5">
-                    <Label>Kode ICD-10</Label>
-                    <Input
-                      id={`rj-kode${no}`}
-                      name="kode10[]"
-                      value={row.kode10}
-                      placeholder="Kode"
-                      onChange={makeKodeChange(i)}
-                      className="font-mono text-base"
-                      aria-describedby={`rj-kode-help-${no}`}
-                    />
-                    <p id={`rj-kode-help-${no}`} className="sr-only">
-                      Kode ICD-10 otomatis terisi saat memilih diagnosa, atau ketik manual
-                    </p>
-                    <input type="hidden" name="kasus[]" value={row.kasus} />
-                    <input type="hidden" name="komplikasi[]" value={row.komplikasi} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="invisible">Hapus</Label>
-                  </div>
+                <div className="w-28 shrink-0">
+                  <Input
+                    id={`rj-kode${no}`}
+                    name="kode10[]"
+                    value={row.kode10}
+                    placeholder="Kode"
+                    onChange={makeKodeChange(i)}
+                    className="font-mono text-base"
+                    aria-label={`Kode ICD-10 ${no}`}
+                  />
+                  <input type="hidden" name="kasus[]" value={row.kasus} />
+                  <input type="hidden" name="komplikasi[]" value={row.komplikasi} />
                 </div>
+
+                <Button
+                  variant="destructive"
+                  size="default"
+                  onClick={() => removeRow(i)}
+                  className="w-[76px] shrink-0"
+                  aria-label={`Hapus diagnosa ${no}`}
+                >
+                  Hapus
+                </Button>
               </div>
             );
           })}
         </div>
       )}
+
+      <Button
+        variant="outline"
+        size="default"
+        className="gap-2 w-full"
+        onClick={() =>
+          onChange([
+            ...rows,
+            { idicd: '', kode10: '', namaDiagnosa: '', kasus: 'LAMA', komplikasi: 'TIDAK' },
+          ])
+        }
+      >
+        ＋ Tambah Diagnosa
+      </Button>
     </div>
   );
 }

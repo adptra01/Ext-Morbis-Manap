@@ -223,9 +223,19 @@ function IcdAutocomplete({
   };
 
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={containerRef} className="relative flex-1 min-w-0">
       <div className="flex gap-2">
-        <div className="w-[32%]">
+        <div className="flex-1 min-w-0">
+          <Input
+            value={namaInput}
+            onChange={(e) => setNamaInput(e.target.value)}
+            onKeyDown={handleKey}
+            placeholder="Nama"
+            className="text-base font-medium"
+            aria-label="Nama diagnosis"
+          />
+        </div>
+        <div className="w-28 shrink-0">
           <Input
             value={kodeInput}
             onChange={(e) => handleKodeChange(e.target.value)}
@@ -233,16 +243,6 @@ function IcdAutocomplete({
             placeholder="Kode"
             className="text-base font-mono font-semibold"
             aria-label="Kode ICD"
-          />
-        </div>
-        <div className="flex-1">
-          <Input
-            value={namaInput}
-            onChange={(e) => setNamaInput(e.target.value)}
-            onKeyDown={handleKey}
-            placeholder="Nama diagnosis"
-            className="text-base font-medium"
-            aria-label="Nama diagnosis"
           />
         </div>
       </div>
@@ -314,8 +314,8 @@ function IcdList({
       <div className="flex items-center gap-2.5 mb-2">
         <span className="text-base font-bold text-foreground tracking-tight">{label}</span>
         <span className="text-base text-muted-foreground">({items.length} item)</span>
-        <Button variant="default" size="default" type="button" onClick={onAdd} className="ml-auto">
-          Tambah{' '}
+        <Button variant="outline" size="default" type="button" onClick={onAdd} className="ml-auto">
+          ＋{' '}
           {label.includes('Sekunder')
             ? 'Diagnosa'
             : label.includes('Tindakan')
@@ -324,32 +324,35 @@ function IcdList({
         </Button>
       </div>
       {items.length > 0 ? (
-        <div className="flex flex-col gap-2">
-          {items.map((item, i) => (
-            <div
-              key={i}
-              className="flex gap-2 items-center bg-muted/20 border border-border rounded-lg px-2 py-2"
-            >
-              <div className="flex-1 min-w-0">
+        <>
+          <div className="flex gap-2 text-base font-bold text-muted-foreground px-1 mb-1">
+            <span className="flex-1">Nama</span>
+            <span className="w-28">Kode ICD</span>
+            <span className="w-[76px] text-right">Aksi</span>
+          </div>
+          <div className="flex flex-col gap-2">
+            {items.map((item, i) => (
+              <div key={i} className="flex gap-2 items-center">
                 <IcdAutocomplete
                   kode={item.kode}
                   nama={item.nama}
                   icdType={icdType}
                   onPick={(kode, nama, id) => onChange(i, { ...item, kode, nama, id })}
                 />
+                <Button
+                  variant="destructive"
+                  size="default"
+                  type="button"
+                  onClick={() => onRemove(i)}
+                  aria-label={`Hapus ${label} ${i + 1}`}
+                  className="w-[76px] shrink-0"
+                >
+                  Hapus
+                </Button>
               </div>
-              <Button
-                variant="destructive"
-                size="default"
-                type="button"
-                onClick={() => onRemove(i)}
-                aria-label={`Hapus ${label} ${i + 1}`}
-              >
-                Hapus
-              </Button>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </>
       ) : (
         <span className="text-base text-muted-foreground">{emptyText}</span>
       )}

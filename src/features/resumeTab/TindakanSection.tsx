@@ -1,8 +1,6 @@
 import { useState, useRef } from 'react';
-import { Search } from 'lucide-react';
 import { Button } from '../../ui/components/button';
 import { Input } from '../../ui/components/input';
-import { Label } from '../../ui/components/Label';
 import type { TindakanRow } from './types';
 
 interface Props {
@@ -95,126 +93,80 @@ export function TindakanSection({ rows, onChange }: Props) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button
-          variant="default"
-          size="lg"
-          className="gap-2 px-5 py-3"
-          onClick={() =>
-            onChange([
-              ...rows,
-              {
-                idicdTindakan: '',
-                kode9: '',
-                namaTindakan: '',
-                jenis: rows.length === 0 ? 'Primer' : 'Sekunder',
-                komorbid: '',
-                kategoriProsedur: '410606002',
-                snomedProsedur: '',
-                codeProsedur: '',
-              } as TindakanRow,
-            ])
-          }
-        >
-          Tambah Tindakan
-        </Button>
-      </div>
+    <div className="space-y-2">
+      {rows.length > 0 && (
+        <div className="flex gap-2 text-base font-bold text-muted-foreground px-1">
+          <span className="flex-1">Nama Tindakan</span>
+          <span className="w-28">Kode ICD</span>
+          <span className="w-[76px] text-right">Aksi</span>
+        </div>
+      )}
 
       {rows.length === 0 ? (
-        <div className="border-2 border-dashed border-border rounded-xl py-12 text-center bg-background">
-          <p className="text-base text-muted-foreground mb-2">Belum ada tindakan</p>
-          <p className="text-base text-muted-foreground">
-            Klik "Tambah Tindakan" untuk menambahkan
-          </p>
+        <div className="border-2 border-dashed border-border rounded-xl py-6 text-center bg-background">
+          <p className="text-base text-muted-foreground">Belum ada tindakan</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-2">
           {rows.map((row, i) => {
             const no = i + 1;
             return (
-              <div
-                key={i}
-                className="bg-background border-2 border-border rounded-xl p-4 space-y-4 shadow-sm"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-base font-semibold text-primary">Tindakan #{no}</span>
-                  <Button
-                    variant="destructive"
-                    size="default"
-                    onClick={() => removeRow(i)}
-                    className="gap-2"
-                    aria-label={`Hapus tindakan #${no}`}
-                  >
-                    Hapus
-                  </Button>
-                </div>
-
-                {/* Nama Tindakan */}
-                <div className="space-y-2">
-                  <Label>Nama Tindakan</Label>
-                  <div className="relative">
-                    <Input
-                      id={`rj-nama-tindakan${no}`}
-                      name="nama_tindakan[]"
-                      value={row.namaTindakan}
-                      placeholder="Cari tindakan atau ketik nama..."
-                      autoComplete="off"
-                      onChange={makeSearch(i)}
-                      className="pr-12"
-                      aria-describedby={`rj-tindakan-help-${no}`}
-                    />
-                    <Search
-                      className="absolute right-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none"
-                      aria-hidden="true"
-                    />
-                    <p id={`rj-tindakan-help-${no}`} className="sr-only">
-                      Ketik minimal 3 karakter untuk mencari tindakan ICD-9
-                    </p>
-                    <input
-                      type="hidden"
-                      id={`rj-idicd-tindakan${no}`}
-                      name="idicd_tindakan[]"
-                      value={row.idicdTindakan}
-                      autoComplete="off"
-                    />
-                    {hits.length > 0 && hitRow === i && (
-                      <div
-                        className="fixed z-[2147483647] bg-background border-2 border-border rounded-xl shadow-lg max-h-[280px] overflow-auto"
-                        style={{ top: hitPos.top, left: hitPos.left, width: hitPos.width }}
-                        role="listbox"
-                        aria-label="Hasil pencarian ICD-9"
-                      >
-                        {hits.map((item, ri) => (
-                          <div
-                            key={item.ID || ri}
-                            onClick={() => pick(i, item)}
-                            role="option"
-                            className="px-4 py-3 cursor-pointer text-base border-b border-border hover:bg-accent transition-colors"
-                          >
-                            <div className="font-medium text-foreground">{item.NAMA}</div>
-                            <div className="text-muted-foreground text-base font-mono">
-                              {item.KODE}
-                            </div>
+              <div key={i} className="flex gap-2 items-center">
+                <div className="flex-1 min-w-0 relative">
+                  <Input
+                    id={`rj-nama-tindakan${no}`}
+                    name="nama_tindakan[]"
+                    value={row.namaTindakan}
+                    placeholder="Cari tindakan..."
+                    autoComplete="off"
+                    onChange={makeSearch(i)}
+                    aria-label={`Nama tindakan ${no}`}
+                    aria-describedby={`rj-tindakan-help-${no}`}
+                  />
+                  <p id={`rj-tindakan-help-${no}`} className="sr-only">
+                    Ketik minimal 3 karakter untuk mencari tindakan ICD-9
+                  </p>
+                  <input
+                    type="hidden"
+                    id={`rj-idicd-tindakan${no}`}
+                    name="idicd_tindakan[]"
+                    value={row.idicdTindakan}
+                    autoComplete="off"
+                  />
+                  {hits.length > 0 && hitRow === i && (
+                    <div
+                      className="fixed z-[2147483647] bg-background border-2 border-border rounded-xl shadow-lg max-h-[280px] overflow-auto"
+                      style={{ top: hitPos.top, left: hitPos.left, width: hitPos.width }}
+                      role="listbox"
+                      aria-label="Hasil pencarian ICD-9"
+                    >
+                      {hits.map((item, ri) => (
+                        <div
+                          key={item.ID || ri}
+                          onClick={() => pick(i, item)}
+                          role="option"
+                          className="px-4 py-3 cursor-pointer text-base border-b border-border hover:bg-accent transition-colors"
+                        >
+                          <div className="font-medium text-foreground">{item.NAMA}</div>
+                          <div className="text-muted-foreground text-base font-mono">
+                            {item.KODE}
                           </div>
-                        ))}
-                      </div>
-                    )}
-                    {errMsg && (
-                      <div
-                        className="fixed z-[2147483647] bg-destructive/10 border-2 border-destructive rounded-xl px-3 py-2.5 text-base text-destructive"
-                        style={{ top: hitPos.top, left: hitPos.left }}
-                        role="alert"
-                      >
-                        {errMsg}
-                      </div>
-                    )}
-                  </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {errMsg && hitRow === i && (
+                    <div
+                      className="fixed z-[2147483647] bg-destructive/10 border-2 border-destructive rounded-xl px-3 py-2.5 text-base text-destructive"
+                      style={{ top: hitPos.top, left: hitPos.left }}
+                      role="alert"
+                    >
+                      {errMsg}
+                    </div>
+                  )}
                 </div>
 
-                {/* Kode ICD-9 — hidden jenis default */}
-                <div className="space-y-1.5">
-                  <Label>Kode ICD-9</Label>
+                <div className="w-28 shrink-0">
                   <Input
                     id={`rj-kode9${no}`}
                     name="kode9[]"
@@ -222,19 +174,49 @@ export function TindakanSection({ rows, onChange }: Props) {
                     placeholder="Kode"
                     onChange={makeKodeChange(i)}
                     className="font-mono text-base"
-                    aria-describedby={`rj-kode9-help-${no}`}
+                    aria-label={`Kode ICD-9 ${no}`}
                   />
-                  <p id={`rj-kode9-help-${no}`} className="sr-only">
-                    Kode ICD-9 otomatis terisi saat memilih tindakan, atau ketik manual
-                  </p>
                   <input type="hidden" name="jenis[]" value={row.jenis || 'Primer'} />
                   <input type="hidden" name="kategoriProsedur[]" value={row.kategoriProsedur} />
                 </div>
+
+                <Button
+                  variant="destructive"
+                  size="default"
+                  onClick={() => removeRow(i)}
+                  className="w-[76px] shrink-0"
+                  aria-label={`Hapus tindakan ${no}`}
+                >
+                  Hapus
+                </Button>
               </div>
             );
           })}
         </div>
       )}
+
+      <Button
+        variant="outline"
+        size="default"
+        className="gap-2 w-full"
+        onClick={() =>
+          onChange([
+            ...rows,
+            {
+              idicdTindakan: '',
+              kode9: '',
+              namaTindakan: '',
+              jenis: rows.length === 0 ? 'Primer' : 'Sekunder',
+              komorbid: '',
+              kategoriProsedur: '410606002',
+              snomedProsedur: '',
+              codeProsedur: '',
+            } as TindakanRow,
+          ])
+        }
+      >
+        ＋ Tambah Tindakan
+      </Button>
     </div>
   );
 }
