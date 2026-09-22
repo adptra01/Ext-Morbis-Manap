@@ -281,6 +281,11 @@ var __morbis_feature = (() => {
     }, 4e3);
     toast('Export selesai \u2014 kolom Waktu Verif/Antrikan + Waktu Klik Selesai terisi.');
   }
+  function cleanFilterValue(v) {
+    const t = String(v ?? '').trim();
+    if (t === 'undefined' || t === 'null' || t === 'NaN') return '';
+    return t;
+  }
   function buildExportUrl() {
     const params = new URLSearchParams();
     const seen = /* @__PURE__ */ new Set();
@@ -294,7 +299,7 @@ var __morbis_feature = (() => {
       const input = el;
       if ((input.type === 'checkbox' || input.type === 'radio') && !input.checked) continue;
       seen.add(name);
-      params.append(name, input.value ?? '');
+      params.append(name, cleanFilterValue(input.value));
     }
     if (!seen.size) return null;
     return new URL(
@@ -302,35 +307,77 @@ var __morbis_feature = (() => {
       location.href,
     ).href;
   }
-  function wrapLoadTableExcel() {
+  var WRAP_FLAG = '__extPenerimaanWrapped';
+  function makeLoadWrapper(orig) {
+    const wrapper = function (...args) {
+      let url = null;
+      try {
+        url = buildExportUrl();
+      } catch {
+        url = null;
+      }
+      if (!url) return orig.apply(this, args);
+      window.console.info('[penerimaanExport] loadTableExcel \u2192 ' + url);
+      void processExport(url).catch((err) => {
+        window.console.warn('[penerimaanExport] rewrite gagal, fallback:', err);
+        toast('Export server (tanpa kolom waktu antrian).', 6e3);
+        try {
+          orig.apply(this, args);
+        } catch {}
+      });
+      return false;
+    };
+    wrapper[WRAP_FLAG] = true;
+    return wrapper;
+  }
+  function trapLoadTableExcel() {
     const w = window;
-    const poll = () => {
-      const fn = w.loadTableExcel;
-      if (typeof fn === 'function' && fn !== w.__extLoadWrapper) {
-        const orig = fn;
-        const wrapper = function (...args) {
-          let url = null;
-          try {
-            url = buildExportUrl();
-          } catch {
-            url = null;
-          }
-          if (!url) return orig.apply(this, args);
-          window.console.info('[penerimaanExport] loadTableExcel \u2192 ' + url);
-          void processExport(url).catch(() => {
-            try {
-              orig.apply(this, args);
-            } catch {}
-          });
-          return false;
-        };
-        w.__extLoadWrapper = wrapper;
-        w.loadTableExcel = wrapper;
+    const isWrapped = (fn) => typeof fn === 'function' && fn[WRAP_FLAG] === true;
+    const arm = () => {
+      let current = w.loadTableExcel;
+      const setter = (newFn) => {
+        if (typeof newFn !== 'function' || isWrapped(newFn)) {
+          current = newFn;
+          return;
+        }
+        current = makeLoadWrapper(newFn);
+        window.console.info('[penerimaanExport] loadTableExcel dibungkus (trap)');
+      };
+      try {
+        Object.defineProperty(w, 'loadTableExcel', {
+          configurable: true,
+          enumerable: true,
+          get() {
+            return current;
+          },
+          set: setter,
+        });
+        w.__extTrapSetter = setter;
+        w.__extLoadTrap = true;
+      } catch {
+        if (!w.__extTrapFailed) {
+          w.__extTrapFailed = true;
+          window.console.warn('[penerimaanExport] trap ditolak, hanya polling');
+        }
+        return;
+      }
+      if (typeof current === 'function' && !isWrapped(current)) {
+        current = makeLoadWrapper(current);
         window.console.info('[penerimaanExport] loadTableExcel dibungkus');
       }
     };
-    poll();
-    window.setInterval(poll, 2e3);
+    arm();
+    window.setInterval(() => {
+      try {
+        const d = Object.getOwnPropertyDescriptor(w, 'loadTableExcel');
+        if (d && d.set === w.__extTrapSetter) return;
+        w.__extLoadTrap = false;
+        arm();
+      } catch {}
+    }, 5e3);
+  }
+  function wrapLoadTableExcel() {
+    trapLoadTableExcel();
   }
   function init() {
     if (location.pathname.includes('/detail')) return;
@@ -353,7 +400,7 @@ var __morbis_feature = (() => {
         if (href && !EXPORT_RE.test(href) && !EXPORT_RE.test(clickable.textContent || '')) return;
         if (!href) {
           const w = window;
-          if (w.__extLoadWrapper) return;
+          if (w.__extLoadTrap) return;
           window.console.warn(
             '[penerimaanExport] tombol tanpa URL: ' + (clickable.outerHTML || '').slice(0, 300),
           );

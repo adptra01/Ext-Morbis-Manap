@@ -142,6 +142,14 @@ async function processExport(url: string): Promise<void> {
   toast('Export selesai — kolom Waktu Verif/Antrikan + Waktu Klik Selesai terisi.');
 }
 
+/** Nilai filter aman: DOM selalu string — literal "undefined"/"null"/"NaN"
+ *  (bug JS halaman) dibersihkan jadi kosong agar tak terkirim verbatim. */
+function cleanFilterValue(v: unknown): string {
+  const t = String(v ?? '').trim();
+  if (t === 'undefined' || t === 'null' || t === 'NaN') return '';
+  return t;
+}
+
 /** URL export dari nilai filter search[...] di halaman (meniru loadTableExcel
  *  bawaan: GET .../penerimaan/cetak/cetak-excel?search[...]&...). */
 function buildExportUrl(): string | null {
@@ -157,7 +165,7 @@ function buildExportUrl(): string | null {
     const input = el as HTMLInputElement;
     if ((input.type === 'checkbox' || input.type === 'radio') && !input.checked) continue;
     seen.add(name);
-    params.append(name, input.value ?? '');
+    params.append(name, cleanFilterValue(input.value));
   }
   if (!seen.size) return null;
   return new URL(
@@ -167,40 +175,94 @@ function buildExportUrl(): string | null {
 }
 
 /** Bungkus loadTableExcel() bawaan halaman: cegah unduhan asli, proses
- *  via rewrite; gagal → fallback panggil fungsi asli. Penjaga permanen
- *  (cek tiap 2 detik) karena halaman bisa menimpa ulang fungsi ini
- *  belakangan — wrapper sekali-saja kalah balapan. */
-function wrapLoadTableExcel(): void {
-  const w = window as unknown as Record<string, unknown>;
-  const poll = (): void => {
-    const fn = w.loadTableExcel;
-    if (typeof fn === 'function' && fn !== w.__extLoadWrapper) {
-      const orig = fn as (...a: unknown[]) => unknown;
-      const wrapper = function (...args: unknown[]): unknown {
-        let url: string | null = null;
-        try {
-          url = buildExportUrl();
-        } catch {
-          url = null;
-        }
-        if (!url) return orig.apply(this, args);
-        window.console.info('[penerimaanExport] loadTableExcel → ' + url);
-        void processExport(url).catch(() => {
-          try {
-            orig.apply(this, args);
-          } catch {
-            /* ignore */
-          }
-        });
-        return false;
-      };
-      w.__extLoadWrapper = wrapper;
-      w.loadTableExcel = wrapper;
+ *  via rewrite; gagal → toast + fallback panggil fungsi asli.
+ *  Mekanisme utama = TRAP defineProperty (setiap assignment ulang halaman
+ *  dibungkus sinkron, tanpa window rentan); polling 5 detik hanya jaring
+ *  pengaman bila trap digusur paksa. */
+const WRAP_FLAG = '__extPenerimaanWrapped';
+
+function makeLoadWrapper(orig: (...a: unknown[]) => unknown): (...a: unknown[]) => unknown {
+  const wrapper = function (this: unknown, ...args: unknown[]): unknown {
+    let url: string | null = null;
+    try {
+      url = buildExportUrl();
+    } catch {
+      url = null;
+    }
+    if (!url) return orig.apply(this, args);
+    window.console.info('[penerimaanExport] loadTableExcel → ' + url);
+    void processExport(url).catch((err) => {
+      window.console.warn('[penerimaanExport] rewrite gagal, fallback:', err);
+      toast('Export server (tanpa kolom waktu antrian).', 6000);
+      try {
+        orig.apply(this, args);
+      } catch {
+        /* ignore */
+      }
+    });
+    return false;
+  };
+  (wrapper as unknown as Record<string, unknown>)[WRAP_FLAG] = true;
+  return wrapper;
+}
+
+function trapLoadTableExcel(): void {
+  const w = window as unknown as Record<string, unknown> & {
+    __extLoadTrap?: boolean;
+    __extTrapSetter?: (v: unknown) => void;
+    __extTrapFailed?: boolean;
+  };
+  const isWrapped = (fn: unknown): boolean =>
+    typeof fn === 'function' && (fn as unknown as Record<string, unknown>)[WRAP_FLAG] === true;
+  const arm = (): void => {
+    let current: unknown = w.loadTableExcel;
+    const setter = (newFn: unknown): void => {
+      if (typeof newFn !== 'function' || isWrapped(newFn)) {
+        current = newFn;
+        return;
+      }
+      current = makeLoadWrapper(newFn as (...a: unknown[]) => unknown);
+      window.console.info('[penerimaanExport] loadTableExcel dibungkus (trap)');
+    };
+    try {
+      Object.defineProperty(w, 'loadTableExcel', {
+        configurable: true,
+        enumerable: true,
+        get() {
+          return current;
+        },
+        set: setter,
+      });
+      w.__extTrapSetter = setter;
+      w.__extLoadTrap = true;
+    } catch {
+      if (!w.__extTrapFailed) {
+        w.__extTrapFailed = true;
+        window.console.warn('[penerimaanExport] trap ditolak, hanya polling');
+      }
+      return;
+    }
+    if (typeof current === 'function' && !isWrapped(current)) {
+      current = makeLoadWrapper(current as (...a: unknown[]) => unknown);
       window.console.info('[penerimaanExport] loadTableExcel dibungkus');
     }
   };
-  poll();
-  window.setInterval(poll, 2000);
+  arm();
+  // Jaring pengaman: pasang ulang trap bila digusur paksa.
+  window.setInterval(() => {
+    try {
+      const d = Object.getOwnPropertyDescriptor(w, 'loadTableExcel');
+      if (d && d.set === w.__extTrapSetter) return;
+      w.__extLoadTrap = false;
+      arm();
+    } catch {
+      /* ignore */
+    }
+  }, 5000);
+}
+
+function wrapLoadTableExcel(): void {
+  trapLoadTableExcel();
 }
 
 function init(): void {
@@ -228,7 +290,7 @@ function init(): void {
         const w = window as unknown as Record<string, unknown>;
         // Bila wrapper loadTableExcel aktif, onclick akan ditangani di sana —
         // jangan spam warn.
-        if (w.__extLoadWrapper) return;
+        if (w.__extLoadTrap) return;
         // Tombol export tanpa URL (JS murni) — catat HTML-nya agar bisa
         // ditangani; user tetap dapat export asli.
         window.console.warn(
