@@ -34076,6 +34076,7 @@ var __morbis_feature = (() => {
       try {
         await onSave(data);
         setLastSaved(/* @__PURE__ */ new Date().toLocaleTimeString());
+        window.setTimeout(() => window.location.reload(), 900);
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         setExtraErrors([{ section: 'Server', message: msg }]);
@@ -34098,18 +34099,6 @@ var __morbis_feature = (() => {
         okLabel: 'Reset',
       });
     };
-    const confirmSave = async () => {
-      const { confirmExt: confirmExt2 } = await Promise.resolve().then(
-        () => (init_confirm(), confirm_exports),
-      );
-      return confirmExt2({
-        title: 'Simpan resume medis?',
-        message: 'Pastikan diagnosis dan tindakan sudah sesuai.',
-        variant: 'info',
-        cancelLabel: 'Kembali',
-        okLabel: 'Simpan Resume',
-      });
-    };
     const handleRefresh = async () => {
       const ok = await confirmReset();
       if (ok) location.reload();
@@ -34119,8 +34108,6 @@ var __morbis_feature = (() => {
         setSaveAttempted(true);
         return;
       }
-      const ok = await confirmSave();
-      if (!ok) return;
       await handleSave();
     };
     const openHistory = () => {

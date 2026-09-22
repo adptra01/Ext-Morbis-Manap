@@ -86,6 +86,9 @@ export function App({ data: initialData, onSave, onClose }: AppProps) {
     try {
       await onSave(data);
       setLastSaved(new Date().toLocaleTimeString());
+      // Langsung reload supaya data server tampil; delay singkat agar
+      // teks "Tersimpan ..." sempat terbaca sebelum halaman dimuat ulang.
+      window.setTimeout(() => window.location.reload(), 900);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setExtraErrors([{ section: 'Server', message: msg }]);
@@ -109,17 +112,6 @@ export function App({ data: initialData, onSave, onClose }: AppProps) {
     });
   };
 
-  const confirmSave = async () => {
-    const { confirmExt } = await import('../../ui/web/confirm.js');
-    return confirmExt({
-      title: 'Simpan resume medis?',
-      message: 'Pastikan diagnosis dan tindakan sudah sesuai.',
-      variant: 'info',
-      cancelLabel: 'Kembali',
-      okLabel: 'Simpan Resume',
-    });
-  };
-
   const handleRefresh = async () => {
     const ok = await confirmReset();
     if (ok) location.reload();
@@ -130,8 +122,8 @@ export function App({ data: initialData, onSave, onClose }: AppProps) {
       setSaveAttempted(true);
       return;
     }
-    const ok = await confirmSave();
-    if (!ok) return;
+    // Tanpa modal konfirmasi — langsung simpan, tampilkan teks
+    // "Tersimpan ..." di footer, lalu reload otomatis (di handleSave).
     await handleSave();
   };
 

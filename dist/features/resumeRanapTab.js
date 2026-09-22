@@ -33554,6 +33554,7 @@ var __morbis_feature = (() => {
     const [d, setD] = (0, import_react8.useState)(() => structuredClone(data));
     const [saving, setSaving] = (0, import_react8.useState)(false);
     const [error, setError] = (0, import_react8.useState)('');
+    const [savedAt, setSavedAt] = (0, import_react8.useState)(null);
     const p = (part) => setD((prev) => ({ ...prev, ...part }));
     const handleSubmit = async (e) => {
       e.preventDefault();
@@ -33561,7 +33562,8 @@ var __morbis_feature = (() => {
       setError('');
       try {
         await onSave(d);
-        onClose();
+        setSavedAt(/* @__PURE__ */ new Date().toLocaleTimeString());
+        window.setTimeout(() => window.location.reload(), 900);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Gagal menyimpan');
       } finally {
@@ -34127,6 +34129,14 @@ var __morbis_feature = (() => {
                 icon: true,
                 className: 'mr-auto text-base',
                 children: error,
+              }),
+            savedAt &&
+              !error &&
+              /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(Badge, {
+                variant: 'success',
+                icon: true,
+                className: 'mr-auto text-base',
+                children: ['Berhasil tersimpan ', savedAt],
               }),
             /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Button, {
               type: 'button',

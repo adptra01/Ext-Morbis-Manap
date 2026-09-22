@@ -361,6 +361,7 @@ export function App({ data, onSave, onClose }: Props) {
   const [d, setD] = useState(() => structuredClone(data));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [savedAt, setSavedAt] = useState<string | null>(null);
 
   const p = (part: Partial<RanapFormData>) => setD((prev) => ({ ...prev, ...part }));
 
@@ -370,7 +371,10 @@ export function App({ data, onSave, onClose }: Props) {
     setError('');
     try {
       await onSave(d);
-      onClose();
+      // Tanpa modal konfirmasi — langsung tampilkan teks berhasil,
+      // lalu reload supaya data server tampil.
+      setSavedAt(new Date().toLocaleTimeString());
+      window.setTimeout(() => window.location.reload(), 900);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Gagal menyimpan');
     } finally {
@@ -767,6 +771,11 @@ export function App({ data, onSave, onClose }: Props) {
         {error && (
           <Badge variant="danger" icon className="mr-auto text-base">
             {error}
+          </Badge>
+        )}
+        {savedAt && !error && (
+          <Badge variant="success" icon className="mr-auto text-base">
+            Berhasil tersimpan {savedAt}
           </Badge>
         )}
         <Button
