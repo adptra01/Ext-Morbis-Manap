@@ -8,6 +8,9 @@ var __morbis_feature = (() => {
       if (document.documentElement.getAttribute(PAGE_GUARD)) return;
       document.documentElement.setAttribute(PAGE_GUARD, '1');
       const txt = (el) => cleanPhpNoise(el?.textContent || '');
+      function stripTags(s) {
+        return s.replace(/<[^>]+>/g, ' ');
+      }
       function cleanPhpNoise(s) {
         return s
           .replace(
@@ -285,7 +288,8 @@ var __morbis_feature = (() => {
             const ctxRe = /^dokter/i.test(t.label)
               ? /dokter|pengirim|luar|dalam|rujuk/i
               : /rs\b|rumah\s*sakit|faskes|asal/i;
-            const orig = originalValue(doc2, t.value, ctxRe);
+            const raw = originalValue(doc2, t.value, ctxRe);
+            const orig = cleanPhpNoise(stripTags(raw || ''));
             window.console.info(
               '[paPrint] override: ' + t.label + ' cetak="' + t.value + '" input="' + orig + '"',
             );

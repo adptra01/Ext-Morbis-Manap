@@ -40,6 +40,10 @@
     // tercetak maupun ter-export ke Word. Pola dibatasi ke signature
     // PHP (keyword + "Undefined …"/".php on line N") agar teks medis
     // asli tidak tersentuh.
+    function stripTags(s: string): string {
+      return s.replace(/<[^>]+>/g, ' ');
+    }
+
     function cleanPhpNoise(s: string): string {
       return s
         .replace(
@@ -381,7 +385,13 @@
           const ctxRe = /^dokter/i.test(t.label)
             ? /dokter|pengirim|luar|dalam|rujuk/i
             : /rs\b|rumah\s*sakit|faskes|asal/i;
-          const orig = originalValue(doc2, t.value, ctxRe);
+          // Kandidat dari form input bisa berisi sampah notice PHP
+          // (server merender notice ke dalam value, mis. nama_rs =
+          // "<b>Notice</b>: Undefined index: ID_DETAIL_BILING ...").
+          // Bersihkan dulu; bila habis dibersihkan kosong → tolak
+          // (pertahankan nilai cetak server yang sudah benar).
+          const raw = originalValue(doc2, t.value, ctxRe);
+          const orig = cleanPhpNoise(stripTags(raw || ''));
           window.console.info(
             '[paPrint] override: ' + t.label + ' cetak="' + t.value + '" input="' + orig + '"',
           );
