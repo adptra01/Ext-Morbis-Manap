@@ -1,10 +1,10 @@
 name: Deploy GitHub Pages
 
+# Tayang dari bit main (SESUDAH deploy-to-main selesai) agar Pages selalu
+# mencerminkan hasil deploy — bukan dev yang belum tentu sama.
 on:
   push:
-    branches: [dev]
-    paths:
-      - 'docs/**'
+    branches: [main]
   workflow_dispatch:
 
 permissions:
