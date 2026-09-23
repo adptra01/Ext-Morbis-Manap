@@ -12,13 +12,8 @@ permissions:
 
 jobs:
   publish:
-    # Manual selalu jalan (untuk validasi, termasuk deteksi secrets hilang).
-    # Dipanggil dari deploy-to-main (selalu diizinkan); event lain ditolak
-    # dengan sopan. (Catatan: konteks `secrets` TIDAK boleh di job-if —
-    # parser menolak; cek secrets di step preflight.)
-    if: >
-      github.event_name == 'workflow_dispatch' ||
-      github.event_name == 'workflow_call'
+    # Tanpa job-if: dipanggil dari deploy-to-main (event push) atau manual
+    # (dispatch). Gerbang skip ada di step preflight (secrets) + guard (versi).
     runs-on: ubuntu-latest
     env:
       EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
