@@ -57,6 +57,13 @@ var __morbis_feature = (() => {
   }
 
   // src/features/shared/resumeHistory.ts
+  function newClientId() {
+    try {
+      const c = globalThis.crypto;
+      if (c && typeof c.randomUUID === 'function') return c.randomUUID();
+    } catch {}
+    return `${Date.now().toString(36)}-${Math.floor(Math.random() * 1e9).toString(36)}`;
+  }
   function defaultStore() {
     try {
       if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
@@ -66,6 +73,7 @@ var __morbis_feature = (() => {
   var HIST_PREFIX = 'ext_rv_history_';
   var LEGACY_HIST_PREFIX = HIST_PREFIX;
   var LAST_PREFIX = 'ext_rv_lastform_';
+  var RV_MIGRATED_PREFIX = 'ext_migrated_rv_';
   var MAX_ENTRIES = 50;
   function getHistoryKey(idVisit, tipe) {
     return `${HIST_PREFIX}${tipe === 'ranap' ? 'ri' : 'rj'}_${idVisit || 'unknown'}`;
@@ -156,7 +164,6 @@ var __morbis_feature = (() => {
   function resolveReportsBase() {
     return resolveCasemixBase();
   }
-  var RV_MIGRATED_PREFIX = 'ext_migrated_rv_';
   function getMigratedKey(historyKey) {
     return RV_MIGRATED_PREFIX + historyKey;
   }
@@ -178,14 +185,7 @@ var __morbis_feature = (() => {
       if (at > readMarker(store, key)) writeJson(store, key, at);
     } catch {}
   }
-  function newClientId() {
-    try {
-      const c = globalThis.crypto;
-      if (c && typeof c.randomUUID === 'function') return c.randomUUID();
-    } catch {}
-    return Date.now().toString(36) + '-' + Math.floor(Math.random() * 1e9).toString(36);
-  }
-  async function postToReports(
+  function postToReports(
     entry,
     idVisit,
     fetcher = fetch,
@@ -204,19 +204,26 @@ var __morbis_feature = (() => {
       after: entry.after,
       changed: entry.changed,
     };
+    const send = async () => {
+      try {
+        const res = await fetcher(resolveReportsBase() + REPORTS_API_PATH, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(payload),
+          keepalive: true,
+          credentials: 'omit',
+        });
+        if (!res.ok) return false;
+        advanceMigratedMarker(store, idVisit, tipe, entry.at);
+        return true;
+      } catch {
+        return false;
+      }
+    };
     try {
-      const res = await fetcher(resolveReportsBase() + REPORTS_API_PATH, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(payload),
-        keepalive: true,
-        credentials: 'omit',
-      });
-      if (!res.ok) return false;
-      advanceMigratedMarker(store, idVisit, tipe, entry.at);
-      return true;
+      return send();
     } catch {
-      return false;
+      return Promise.resolve(false);
     }
   }
   var _lastLogHash = null;

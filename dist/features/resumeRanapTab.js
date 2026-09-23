@@ -28024,6 +28024,7 @@ var __morbis_feature = (() => {
   // src/features/shared/casemixApi.ts
   var CASEMIX_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
   var BASE_OVERRIDE_KEY = 'ext-farmasi-app-base';
+  var CENTRAL_TIMEOUT_MS = 25e3;
   var CASEMIX_ALLOWED_HOSTS = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'];
   var CASEMIX_ALLOWED_SUFFIX = '.rsudkotajambi.id';
   function isAllowedCasemixBase(url) {
@@ -28044,8 +28045,47 @@ var __morbis_feature = (() => {
     } catch {}
     return CASEMIX_BASE_FALLBACK;
   }
+  async function fetchTimeout(url, init2, fetcher = fetch) {
+    const ctrl = new AbortController();
+    const t = globalThis.setTimeout(() => ctrl.abort(), CENTRAL_TIMEOUT_MS);
+    try {
+      return await fetcher(url, { ...init2, signal: ctrl.signal });
+    } finally {
+      globalThis.clearTimeout(t);
+    }
+  }
+  async function getJson(path, fetcher = fetch) {
+    try {
+      const res = await fetchTimeout(
+        resolveCasemixBase() + path,
+        { cache: 'no-store', credentials: 'omit', headers: { Accept: 'application/json' } },
+        fetcher,
+      );
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+  async function fetchResumeCentral(idVisit, tipe, fetcher = fetch) {
+    if (!idVisit) return [];
+    const q =
+      '/api/reports/resume-history?id_visit=' +
+      encodeURIComponent(idVisit) +
+      (tipe ? '&tipe=' + tipe : '');
+    const j = await getJson(q, fetcher);
+    if (!j?.ok || !Array.isArray(j.data)) return [];
+    return j.data;
+  }
 
   // src/features/shared/resumeHistory.ts
+  function newClientId() {
+    try {
+      const c = globalThis.crypto;
+      if (c && typeof c.randomUUID === 'function') return c.randomUUID();
+    } catch {}
+    return `${Date.now().toString(36)}-${Math.floor(Math.random() * 1e9).toString(36)}`;
+  }
   function defaultStore() {
     try {
       if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
@@ -28055,6 +28095,7 @@ var __morbis_feature = (() => {
   var HIST_PREFIX = 'ext_rv_history_';
   var LEGACY_HIST_PREFIX = HIST_PREFIX;
   var LAST_PREFIX = 'ext_rv_lastform_';
+  var RV_MIGRATED_PREFIX = 'ext_migrated_rv_';
   var MAX_ENTRIES = 50;
   function getHistoryKey(idVisit, tipe) {
     return `${HIST_PREFIX}${tipe === 'ranap' ? 'ri' : 'rj'}_${idVisit || 'unknown'}`;
@@ -28149,7 +28190,6 @@ var __morbis_feature = (() => {
   function resolveReportsBase() {
     return resolveCasemixBase();
   }
-  var RV_MIGRATED_PREFIX = 'ext_migrated_rv_';
   function getMigratedKey(historyKey) {
     return RV_MIGRATED_PREFIX + historyKey;
   }
@@ -28171,14 +28211,7 @@ var __morbis_feature = (() => {
       if (at > readMarker(store, key)) writeJson(store, key, at);
     } catch {}
   }
-  function newClientId() {
-    try {
-      const c = globalThis.crypto;
-      if (c && typeof c.randomUUID === 'function') return c.randomUUID();
-    } catch {}
-    return Date.now().toString(36) + '-' + Math.floor(Math.random() * 1e9).toString(36);
-  }
-  async function postToReports(
+  function postToReports(
     entry,
     idVisit,
     fetcher = fetch,
@@ -28197,19 +28230,26 @@ var __morbis_feature = (() => {
       after: entry.after,
       changed: entry.changed,
     };
+    const send = async () => {
+      try {
+        const res = await fetcher(resolveReportsBase() + REPORTS_API_PATH, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(payload),
+          keepalive: true,
+          credentials: 'omit',
+        });
+        if (!res.ok) return false;
+        advanceMigratedMarker(store, idVisit, tipe, entry.at);
+        return true;
+      } catch {
+        return false;
+      }
+    };
     try {
-      const res = await fetcher(resolveReportsBase() + REPORTS_API_PATH, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(payload),
-        keepalive: true,
-        credentials: 'omit',
-      });
-      if (!res.ok) return false;
-      advanceMigratedMarker(store, idVisit, tipe, entry.at);
-      return true;
+      return send();
     } catch {
-      return false;
+      return Promise.resolve(false);
     }
   }
   var _lastLogHash = null;
@@ -28243,7 +28283,6 @@ var __morbis_feature = (() => {
     } catch {}
     return entry;
   }
-  var HIST_FONT = `'Roboto','Segoe UI',system-ui,-apple-system,Arial,sans-serif`;
   function coerceSnapVal(v) {
     if (v === null || v === void 0) return void 0;
     if (typeof v === 'string') return v;
@@ -28274,35 +28313,34 @@ var __morbis_feature = (() => {
     }
     return out;
   }
-  function centralToResumeEntry(r, fallbackTipe) {
+  function centralToResumeEntry(r2, fallbackTipe) {
     try {
-      if (!r || typeof r !== 'object') return null;
-      const at = r.waktu ? Date.parse(r.waktu) : NaN;
+      if (!r2 || typeof r2 !== 'object') return null;
+      const at = r2.waktu ? Date.parse(r2.waktu) : NaN;
       if (!Number.isFinite(at)) return null;
-      const after = coerceSnap(r.after);
-      const before = coerceSnap(r.before);
-      const tipe = r.tipe === 'rajal' ? 'rajal' : r.tipe === 'ranap' ? 'ranap' : fallbackTipe;
-      const changed = Array.isArray(r.changed)
-        ? r.changed.filter((x) => typeof x === 'string')
+      const after = coerceSnap(r2.after);
+      const before = coerceSnap(r2.before);
+      const tipe = r2.tipe === 'rajal' ? 'rajal' : r2.tipe === 'ranap' ? 'ranap' : fallbackTipe;
+      const changed = Array.isArray(r2.changed)
+        ? r2.changed.filter((x) => typeof x === 'string')
         : diffSnap(before, after);
-      const cid = typeof r.client_id === 'string' && r.client_id ? r.client_id : void 0;
-      const e = {
+      const cid = typeof r2.client_id === 'string' && r2.client_id ? r2.client_id : void 0;
+      return {
         at,
-        aksi: r.aksi === 'buat' ? 'buat' : 'ubah',
-        id_resume: typeof r.id_resume === 'string' ? r.id_resume : '',
-        user: typeof r.user === 'string' && r.user ? r.user : 'petugas',
+        aksi: r2.aksi === 'buat' ? 'buat' : 'ubah',
+        id_resume: typeof r2.id_resume === 'string' ? r2.id_resume : '',
+        user: typeof r2.user === 'string' && r2.user ? r2.user : 'petugas',
         tipe,
         before,
         after,
         changed,
+        ...(cid ? { client_id: cid } : {}),
       };
-      if (cid) e.client_id = cid;
-      return e;
     } catch {
       return null;
     }
   }
-  function centralResumeKey(e) {
+  function centralEntryKey(e) {
     if (e.client_id) return 'cid:' + e.client_id;
     try {
       return 'h:' + e.at + '|' + e.user + '|' + e.aksi + '|' + JSON.stringify(e.after);
@@ -28311,10 +28349,10 @@ var __morbis_feature = (() => {
     }
   }
   function mergeCentralResumeEntries(local, incoming) {
-    const seen = new Set(local.map(centralResumeKey));
+    const seen = new Set(local.map(centralEntryKey));
     const out = local.slice();
     for (const e of incoming) {
-      const k = centralResumeKey(e);
+      const k = centralEntryKey(e);
       if (seen.has(k)) continue;
       seen.add(k);
       out.push(e);
@@ -28322,6 +28360,7 @@ var __morbis_feature = (() => {
     out.sort((a, b) => a.at - b.at);
     return out.slice(-MAX_ENTRIES);
   }
+  var HIST_FONT = `'Roboto','Segoe UI',system-ui,-apple-system,Arial,sans-serif`;
   function openHistoryModal(opts) {
     try {
       document.querySelector('#ext-rv-history-overlay')?.remove();
@@ -28427,47 +28466,29 @@ var __morbis_feature = (() => {
     } catch {}
     if (opts.idVisit) {
       try {
-        void fetch(
-          resolveReportsBase() +
-            '/api/reports/resume-history?id_visit=' +
-            encodeURIComponent(opts.idVisit) +
-            '&tipe=' +
-            opts.tipe,
-          {
-            cache: 'no-store',
-            credentials: 'omit',
-            headers: { Accept: 'application/json' },
-          },
-        )
-          .then((res) => {
-            if (!res.ok) return null;
-            return res.json();
-          })
-          .then((j) => {
+        void fetchResumeCentral(opts.idVisit, opts.tipe).then((central) => {
+          try {
+            if (!central.length || !ov.isConnected) return;
+            const incoming = [];
+            for (const r2 of central) {
+              const e = centralToResumeEntry(r2, opts.tipe);
+              if (e) incoming.push(e);
+            }
+            if (!incoming.length) return;
+            const base = loadHistory(opts.idVisit, opts.tipe, store);
+            const merged = mergeCentralResumeEntries(base, incoming);
+            if (merged.length === base.length) return;
+            saveHistory(merged, opts.idVisit, opts.tipe, store);
+            paint(merged.slice().reverse());
             try {
-              if (!j || j.ok !== true || !Array.isArray(j.data)) return;
-              if (!ov.isConnected) return;
-              const incoming = [];
-              for (const r of j.data) {
-                const e = centralToResumeEntry(r, opts.tipe);
-                if (e) incoming.push(e);
-              }
-              if (!incoming.length) return;
-              const base = loadHistory(opts.idVisit, opts.tipe, store);
-              const merged = mergeCentralResumeEntries(base, incoming);
-              if (merged.length === base.length) return;
-              saveHistory(merged, opts.idVisit, opts.tipe, store);
-              paint(merged.slice().reverse());
-              try {
-                document.dispatchEvent(
-                  new CustomEvent('ext-rv-history-merged', {
-                    detail: { idVisit: opts.idVisit, tipe: opts.tipe, count: merged.length },
-                  }),
-                );
-              } catch {}
+              document.dispatchEvent(
+                new CustomEvent('ext-rv-history-merged', {
+                  detail: { idVisit: opts.idVisit, tipe: opts.tipe, count: merged.length },
+                }),
+              );
             } catch {}
-          })
-          .catch(() => {});
+          } catch {}
+        });
       } catch {}
     }
   }

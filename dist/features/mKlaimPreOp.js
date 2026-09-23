@@ -58,6 +58,19 @@ var __morbis_feature = (() => {
   // src/features/shared/preOpStorage.ts
   var PRE_OP_STORAGE_KEY = 'morbis_preop_markers';
   var PRE_OP_TTL_MS = 30 * 24 * 60 * 60 * 1e3;
+  var PRE_OP_UNMARK_TOMBSTONE_MS = 3e4;
+  function resolvePreOpMarked(
+    localHas,
+    centralHas,
+    unmarkedAt,
+    now = Date.now(),
+    tombstoneMs = PRE_OP_UNMARK_TOMBSTONE_MS,
+  ) {
+    if (localHas) return true;
+    if (unmarkedAt !== void 0 && now - unmarkedAt < tombstoneMs) return false;
+    if (centralHas === null) return false;
+    return centralHas;
+  }
   function defaultStore() {
     try {
       if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
@@ -134,19 +147,6 @@ var __morbis_feature = (() => {
       return true;
     }
   }
-  var PRE_OP_UNMARK_TOMBSTONE_MS = 3e4;
-  function resolvePreOpMarked(
-    localHas,
-    centralHas,
-    unmarkedAt,
-    now = Date.now(),
-    tombstoneMs = PRE_OP_UNMARK_TOMBSTONE_MS,
-  ) {
-    if (localHas) return true;
-    if (unmarkedAt !== void 0 && now - unmarkedAt < tombstoneMs) return false;
-    if (centralHas === null) return false;
-    return centralHas;
-  }
 
   // src/features/shared/casemixApi.ts
   var CASEMIX_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
@@ -213,8 +213,9 @@ var __morbis_feature = (() => {
         .then(() => {})
         .catch(() => {})
         .finally(() => globalThis.clearTimeout(t));
-    } catch {}
-    return Promise.resolve();
+    } catch {
+      return Promise.resolve();
+    }
   }
   function togglePreOpCentral(idVisit, marked, info = {}, fetcher = fetch) {
     if (!idVisit) return Promise.resolve();
@@ -252,6 +253,7 @@ var __morbis_feature = (() => {
   }
   var HIST_PREFIX = 'ext_rv_history_';
   var LEGACY_HIST_PREFIX = HIST_PREFIX;
+  var RV_MIGRATED_PREFIX = 'ext_migrated_rv_';
   var MAX_ENTRIES = 50;
   function getHistoryKey(idVisit, tipe) {
     return `${HIST_PREFIX}${tipe === 'ranap' ? 'ri' : 'rj'}_${idVisit || 'unknown'}`;
@@ -320,7 +322,7 @@ var __morbis_feature = (() => {
 
   // src/features/shared/casemixBackfill.ts
   var MIGRATED_PREOP_KEY = 'ext_migrated_preop_ids';
-  var MIGRATED_RV_PREFIX = 'ext_migrated_rv_';
+  var MIGRATED_RV_PREFIX = RV_MIGRATED_PREFIX;
   var BACKFILL_BATCH = 20;
   function readJson2(store, key) {
     if (!store) return null;
@@ -628,10 +630,10 @@ var __morbis_feature = (() => {
   var _debounceTimer = null;
   var _centralMap = null;
   var _centralAt = 0;
-  var CENTRAL_TTL_MS = 15000;
-  const _pendingToggle = new Set();
-  const _localUnmarkAt = {};
-  const PENDING_FALLBACK_MS = 1e4;
+  var CENTRAL_TTL_MS = 15e3;
+  var _pendingToggle = /* @__PURE__ */ new Set();
+  var _localUnmarkAt = {};
+  var PENDING_FALLBACK_MS = 1e4;
   function effectiveMarked(idVisit, localMap, now = Date.now()) {
     const centralHas = _centralMap ? !!_centralMap[idVisit] : null;
     return resolvePreOpMarked(idVisit in localMap, centralHas, _localUnmarkAt[idVisit], now);
@@ -639,8 +641,8 @@ var __morbis_feature = (() => {
   function paintPending(btn) {
     btn.disabled = true;
     if (!btn.classList.contains('pending')) btn.classList.add('pending');
-    btn.textContent = '⏳ Menyimpan…';
-    btn.title = 'Menyimpan ke server pusat…';
+    btn.textContent = '\u23F3 Menyimpan\u2026';
+    btn.title = 'Menyimpan ke server pusat\u2026';
   }
   function collectVisibleIds() {
     const ids = [];
@@ -666,18 +668,18 @@ var __morbis_feature = (() => {
       if (marks === null) return;
       _centralMap = marks;
       try {
-        const now2 = Date.now();
+        const now22 = Date.now();
         for (const k of Object.keys(_localUnmarkAt)) {
-          if (now2 - _localUnmarkAt[k] >= 6e4) delete _localUnmarkAt[k];
+          if (now22 - _localUnmarkAt[k] >= 6e4) delete _localUnmarkAt[k];
         }
       } catch {}
       const localMap = loadPreOpMap();
-      const now = Date.now();
+      const now2 = Date.now();
       for (const table of document.querySelectorAll('table')) {
         for (const row of table.querySelectorAll('tbody tr')) {
           const id = extractIdVisitFromRow(row);
           if (!id || _pendingToggle.has(id)) continue;
-          const marked = effectiveMarked(id, localMap, now);
+          const marked = effectiveMarked(id, localMap, now2);
           if (row.getAttribute('data-ext-preop-marked') !== String(marked)) {
             if (marked && !localMap[id]) {
               setPreOp(id, extractPatientInfo(row));

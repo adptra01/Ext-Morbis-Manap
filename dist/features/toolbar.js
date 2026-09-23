@@ -125,8 +125,9 @@ var __morbis_feature = (() => {
         .then(() => {})
         .catch(() => {})
         .finally(() => globalThis.clearTimeout(t));
-    } catch {}
-    return Promise.resolve();
+    } catch {
+      return Promise.resolve();
+    }
   }
   function postRevisionCentral(rev, fetcher = fetch) {
     if (!rev.idVisit || !rev.keterangan) return Promise.resolve();
@@ -167,6 +168,7 @@ var __morbis_feature = (() => {
   }
   var HIST_PREFIX = 'ext_rv_history_';
   var LEGACY_HIST_PREFIX = HIST_PREFIX;
+  var RV_MIGRATED_PREFIX = 'ext_migrated_rv_';
   var MAX_ENTRIES = 50;
   function getHistoryKey(idVisit, tipe) {
     return `${HIST_PREFIX}${tipe === 'ranap' ? 'ri' : 'rj'}_${idVisit || 'unknown'}`;
@@ -279,7 +281,7 @@ var __morbis_feature = (() => {
 
   // src/features/shared/casemixBackfill.ts
   var MIGRATED_PREOP_KEY = 'ext_migrated_preop_ids';
-  var MIGRATED_RV_PREFIX = 'ext_migrated_rv_';
+  var MIGRATED_RV_PREFIX = RV_MIGRATED_PREFIX;
   var BACKFILL_BATCH = 20;
   function readJson2(store, key) {
     if (!store) return null;
@@ -875,7 +877,7 @@ var __morbis_feature = (() => {
     persistRevisionHistory();
     renderRevisionHistory();
   }
-  let _revPollId = null;
+  var _revPollId = null;
   function refreshCentralRevisions(idVisit) {
     if (!idVisit) return;
     try {
@@ -913,7 +915,7 @@ var __morbis_feature = (() => {
       try {
         refreshCentralRevisions(idVisit);
       } catch {}
-    }, 30000);
+    }, 3e4);
     window.addEventListener('pagehide', () => {
       try {
         if (_revPollId !== null) {

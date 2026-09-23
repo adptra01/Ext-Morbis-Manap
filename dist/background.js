@@ -243,7 +243,7 @@ var __morbis_bg = (() => {
         allowedRoles: ['casemix', 'dokter'],
         name: 'Riwayat Resume',
         description:
-          'Catat riwayat tiap simpan resume + tombol Riwayat/Salin-ke-Form — tanpa validasi (jalan walau Validator mati)',
+          'Catat riwayat tiap simpan resume + tombol Riwayat/Salin-ke-Form \u2014 tanpa validasi (jalan walau Validator mati)',
       },
       antrianTools: {
         enabled: true,

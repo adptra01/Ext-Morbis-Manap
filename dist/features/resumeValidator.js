@@ -472,9 +472,54 @@ var __morbis_feature = (() => {
     });
   }
 
+  // src/features/shared/preOpStorage.ts
+  var PRE_OP_STORAGE_KEY = 'morbis_preop_markers';
+  var PRE_OP_TTL_MS = 30 * 24 * 60 * 60 * 1e3;
+  function defaultStore() {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+    } catch {}
+    return null;
+  }
+  function purgeExpiredPreOp(map, now = Date.now()) {
+    const result = {};
+    let count = 0;
+    for (const [id, item] of Object.entries(map)) {
+      if (item && item.markedAt && now - item.markedAt <= PRE_OP_TTL_MS) {
+        result[id] = item;
+      } else {
+        count++;
+      }
+    }
+    return { purged: result, count };
+  }
+  function loadPreOpMap(store = defaultStore(), now = Date.now()) {
+    if (!store) return {};
+    try {
+      const raw = store.getItem(PRE_OP_STORAGE_KEY);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw);
+      if (typeof parsed !== 'object' || parsed === null) return {};
+      const { purged, count } = purgeExpiredPreOp(parsed, now);
+      if (count > 0) {
+        savePreOpMap(purged, store);
+      }
+      return purged;
+    } catch {
+      return {};
+    }
+  }
+  function savePreOpMap(map, store = defaultStore()) {
+    if (!store) return;
+    try {
+      store.setItem(PRE_OP_STORAGE_KEY, JSON.stringify(map));
+    } catch {}
+  }
+
   // src/features/shared/casemixApi.ts
   var CASEMIX_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
   var BASE_OVERRIDE_KEY = 'ext-farmasi-app-base';
+  var CENTRAL_TIMEOUT_MS = 25e3;
   var CASEMIX_ALLOWED_HOSTS = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'];
   var CASEMIX_ALLOWED_SUFFIX = '.rsudkotajambi.id';
   function isAllowedCasemixBase(url) {
@@ -495,9 +540,48 @@ var __morbis_feature = (() => {
     } catch {}
     return CASEMIX_BASE_FALLBACK;
   }
+  async function fetchTimeout(url, init, fetcher = fetch) {
+    const ctrl = new AbortController();
+    const t = globalThis.setTimeout(() => ctrl.abort(), CENTRAL_TIMEOUT_MS);
+    try {
+      return await fetcher(url, { ...init, signal: ctrl.signal });
+    } finally {
+      globalThis.clearTimeout(t);
+    }
+  }
+  async function getJson(path, fetcher = fetch) {
+    try {
+      const res = await fetchTimeout(
+        resolveCasemixBase() + path,
+        { cache: 'no-store', credentials: 'omit', headers: { Accept: 'application/json' } },
+        fetcher,
+      );
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+  async function fetchResumeCentral(idVisit, tipe, fetcher = fetch) {
+    if (!idVisit) return [];
+    const q =
+      '/api/reports/resume-history?id_visit=' +
+      encodeURIComponent(idVisit) +
+      (tipe ? '&tipe=' + tipe : '');
+    const j = await getJson(q, fetcher);
+    if (!j?.ok || !Array.isArray(j.data)) return [];
+    return j.data;
+  }
 
   // src/features/shared/resumeHistory.ts
-  function defaultStore() {
+  function newClientId() {
+    try {
+      const c = globalThis.crypto;
+      if (c && typeof c.randomUUID === 'function') return c.randomUUID();
+    } catch {}
+    return `${Date.now().toString(36)}-${Math.floor(Math.random() * 1e9).toString(36)}`;
+  }
+  function defaultStore2() {
     try {
       if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
     } catch {}
@@ -506,6 +590,7 @@ var __morbis_feature = (() => {
   var HIST_PREFIX = 'ext_rv_history_';
   var LEGACY_HIST_PREFIX = HIST_PREFIX;
   var LAST_PREFIX = 'ext_rv_lastform_';
+  var RV_MIGRATED_PREFIX = 'ext_migrated_rv_';
   var MAX_ENTRIES = 50;
   function getHistoryKey(idVisit, tipe) {
     return `${HIST_PREFIX}${tipe === 'ranap' ? 'ri' : 'rj'}_${idVisit || 'unknown'}`;
@@ -542,7 +627,7 @@ var __morbis_feature = (() => {
     const s = v === void 0 ? '-' : JSON.stringify(v);
     return s.length > 60 ? s.slice(0, 60) + '\u2026' : s;
   }
-  function loadHistory(idVisit, tipe, store = defaultStore()) {
+  function loadHistory(idVisit, tipe, store = defaultStore2()) {
     const arr = readJson(store, getHistoryKey(idVisit, tipe));
     const list = Array.isArray(arr) ? arr : [];
     if (tipe === 'ranap') {
@@ -555,16 +640,16 @@ var __morbis_feature = (() => {
     }
     return list;
   }
-  function saveHistory(list, idVisit, tipe, store = defaultStore()) {
+  function saveHistory(list, idVisit, tipe, store = defaultStore2()) {
     writeJson(store, getHistoryKey(idVisit, tipe), list.slice(-MAX_ENTRIES));
   }
-  function loadLast(idVisit, tipe, store = defaultStore()) {
+  function loadLast(idVisit, tipe, store = defaultStore2()) {
     const snap = readJson(store, getLastKey(idVisit, tipe));
     if (snap) return snap;
     if (tipe === 'ranap') return readJson(store, LAST_PREFIX + idVisit);
     return null;
   }
-  function storeLast(snap, idVisit, tipe, store = defaultStore()) {
+  function storeLast(snap, idVisit, tipe, store = defaultStore2()) {
     writeJson(store, getLastKey(idVisit, tipe), snap);
   }
   function readPetugas() {
@@ -600,7 +685,6 @@ var __morbis_feature = (() => {
   function resolveReportsBase() {
     return resolveCasemixBase();
   }
-  var RV_MIGRATED_PREFIX = 'ext_migrated_rv_';
   function getMigratedKey(historyKey) {
     return RV_MIGRATED_PREFIX + historyKey;
   }
@@ -622,18 +706,11 @@ var __morbis_feature = (() => {
       if (at > readMarker(store, key)) writeJson(store, key, at);
     } catch {}
   }
-  function newClientId() {
-    try {
-      const c = globalThis.crypto;
-      if (c && typeof c.randomUUID === 'function') return c.randomUUID();
-    } catch {}
-    return Date.now().toString(36) + '-' + Math.floor(Math.random() * 1e9).toString(36);
-  }
-  async function postToReports(
+  function postToReports(
     entry,
     idVisit,
     fetcher = fetch,
-    store = defaultStore(),
+    store = defaultStore2(),
     tipe = entry.tipe,
   ) {
     const payload = {
@@ -648,19 +725,26 @@ var __morbis_feature = (() => {
       after: entry.after,
       changed: entry.changed,
     };
+    const send = async () => {
+      try {
+        const res = await fetcher(resolveReportsBase() + REPORTS_API_PATH, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(payload),
+          keepalive: true,
+          credentials: 'omit',
+        });
+        if (!res.ok) return false;
+        advanceMigratedMarker(store, idVisit, tipe, entry.at);
+        return true;
+      } catch {
+        return false;
+      }
+    };
     try {
-      const res = await fetcher(resolveReportsBase() + REPORTS_API_PATH, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(payload),
-        keepalive: true,
-        credentials: 'omit',
-      });
-      if (!res.ok) return false;
-      advanceMigratedMarker(store, idVisit, tipe, entry.at);
-      return true;
+      return send();
     } catch {
-      return false;
+      return Promise.resolve(false);
     }
   }
   var _lastLogHash = null;
@@ -668,7 +752,7 @@ var __morbis_feature = (() => {
   function logResumeHistory(opts) {
     if (!opts.idVisit) return null;
     const now = opts.now ?? Date.now();
-    const store = opts.store ?? defaultStore();
+    const store = opts.store ?? defaultStore2();
     storeLast(opts.after, opts.idVisit, opts.tipe, store);
     const hash = JSON.stringify([opts.idVisit, opts.aksi, opts.after]);
     if (_lastLogHash === hash && now - _lastLogAt < 5e3) return null;
@@ -706,7 +790,6 @@ var __morbis_feature = (() => {
       setTimeout(() => t.remove(), 4e3);
     } catch {}
   }
-  var HIST_FONT = `'Roboto','Segoe UI',system-ui,-apple-system,Arial,sans-serif`;
   function coerceSnapVal(v) {
     if (v === null || v === void 0) return void 0;
     if (typeof v === 'string') return v;
@@ -749,7 +832,7 @@ var __morbis_feature = (() => {
         ? r.changed.filter((x) => typeof x === 'string')
         : diffSnap(before, after);
       const cid = typeof r.client_id === 'string' && r.client_id ? r.client_id : void 0;
-      const e = {
+      return {
         at,
         aksi: r.aksi === 'buat' ? 'buat' : 'ubah',
         id_resume: typeof r.id_resume === 'string' ? r.id_resume : '',
@@ -758,14 +841,13 @@ var __morbis_feature = (() => {
         before,
         after,
         changed,
+        ...(cid ? { client_id: cid } : {}),
       };
-      if (cid) e.client_id = cid;
-      return e;
     } catch {
       return null;
     }
   }
-  function centralResumeKey(e) {
+  function centralEntryKey(e) {
     if (e.client_id) return 'cid:' + e.client_id;
     try {
       return 'h:' + e.at + '|' + e.user + '|' + e.aksi + '|' + JSON.stringify(e.after);
@@ -774,10 +856,10 @@ var __morbis_feature = (() => {
     }
   }
   function mergeCentralResumeEntries(local, incoming) {
-    const seen = new Set(local.map(centralResumeKey));
+    const seen = new Set(local.map(centralEntryKey));
     const out = local.slice();
     for (const e of incoming) {
-      const k = centralResumeKey(e);
+      const k = centralEntryKey(e);
       if (seen.has(k)) continue;
       seen.add(k);
       out.push(e);
@@ -785,11 +867,12 @@ var __morbis_feature = (() => {
     out.sort((a, b) => a.at - b.at);
     return out.slice(-MAX_ENTRIES);
   }
+  var HIST_FONT = `'Roboto','Segoe UI',system-ui,-apple-system,Arial,sans-serif`;
   function openHistoryModal(opts) {
     try {
       document.querySelector('#ext-rv-history-overlay')?.remove();
     } catch {}
-    const store = opts.store ?? defaultStore();
+    const store = opts.store ?? defaultStore2();
     let list = loadHistory(opts.idVisit, opts.tipe, store).slice().reverse();
     const z = opts.zIndex ?? 99998;
     const ov = document.createElement('div');
@@ -890,98 +973,36 @@ var __morbis_feature = (() => {
     } catch {}
     if (opts.idVisit) {
       try {
-        void fetch(
-          resolveReportsBase() +
-            '/api/reports/resume-history?id_visit=' +
-            encodeURIComponent(opts.idVisit) +
-            '&tipe=' +
-            opts.tipe,
-          {
-            cache: 'no-store',
-            credentials: 'omit',
-            headers: { Accept: 'application/json' },
-          },
-        )
-          .then((res) => {
-            if (!res.ok) return null;
-            return res.json();
-          })
-          .then((j) => {
+        void fetchResumeCentral(opts.idVisit, opts.tipe).then((central) => {
+          try {
+            if (!central.length || !ov.isConnected) return;
+            const incoming = [];
+            for (const r of central) {
+              const e = centralToResumeEntry(r, opts.tipe);
+              if (e) incoming.push(e);
+            }
+            if (!incoming.length) return;
+            const base = loadHistory(opts.idVisit, opts.tipe, store);
+            const merged = mergeCentralResumeEntries(base, incoming);
+            if (merged.length === base.length) return;
+            saveHistory(merged, opts.idVisit, opts.tipe, store);
+            paint(merged.slice().reverse());
             try {
-              if (!j || j.ok !== true || !Array.isArray(j.data)) return;
-              if (!ov.isConnected) return;
-              const incoming = [];
-              for (const r of j.data) {
-                const e = centralToResumeEntry(r, opts.tipe);
-                if (e) incoming.push(e);
-              }
-              if (!incoming.length) return;
-              const base = loadHistory(opts.idVisit, opts.tipe, store);
-              const merged = mergeCentralResumeEntries(base, incoming);
-              if (merged.length === base.length) return;
-              saveHistory(merged, opts.idVisit, opts.tipe, store);
-              paint(merged.slice().reverse());
-              try {
-                document.dispatchEvent(
-                  new CustomEvent('ext-rv-history-merged', {
-                    detail: { idVisit: opts.idVisit, tipe: opts.tipe, count: merged.length },
-                  }),
-                );
-              } catch {}
+              document.dispatchEvent(
+                new CustomEvent('ext-rv-history-merged', {
+                  detail: { idVisit: opts.idVisit, tipe: opts.tipe, count: merged.length },
+                }),
+              );
             } catch {}
-          })
-          .catch(() => {});
+          } catch {}
+        });
       } catch {}
     }
   }
 
-  // src/features/shared/preOpStorage.ts
-  var PRE_OP_STORAGE_KEY = 'morbis_preop_markers';
-  var PRE_OP_TTL_MS = 30 * 24 * 60 * 60 * 1e3;
-  function defaultStore2() {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
-    } catch {}
-    return null;
-  }
-  function purgeExpiredPreOp(map, now = Date.now()) {
-    const result = {};
-    let count = 0;
-    for (const [id, item] of Object.entries(map)) {
-      if (item && item.markedAt && now - item.markedAt <= PRE_OP_TTL_MS) {
-        result[id] = item;
-      } else {
-        count++;
-      }
-    }
-    return { purged: result, count };
-  }
-  function loadPreOpMap(store = defaultStore2(), now = Date.now()) {
-    if (!store) return {};
-    try {
-      const raw = store.getItem(PRE_OP_STORAGE_KEY);
-      if (!raw) return {};
-      const parsed = JSON.parse(raw);
-      if (typeof parsed !== 'object' || parsed === null) return {};
-      const { purged, count } = purgeExpiredPreOp(parsed, now);
-      if (count > 0) {
-        savePreOpMap(purged, store);
-      }
-      return purged;
-    } catch {
-      return {};
-    }
-  }
-  function savePreOpMap(map, store = defaultStore2()) {
-    if (!store) return;
-    try {
-      store.setItem(PRE_OP_STORAGE_KEY, JSON.stringify(map));
-    } catch {}
-  }
-
   // src/features/shared/casemixBackfill.ts
   var MIGRATED_PREOP_KEY = 'ext_migrated_preop_ids';
-  var MIGRATED_RV_PREFIX = 'ext_migrated_rv_';
+  var MIGRATED_RV_PREFIX = RV_MIGRATED_PREFIX;
   var BACKFILL_BATCH = 20;
   function readJson2(store, key) {
     if (!store) return null;
@@ -2038,9 +2059,9 @@ var __morbis_feature = (() => {
       const el = $(id);
       return el?.value?.trim() || '';
     }
-    function kodeOk(fieldId, check) {
+    function kodeOk(fieldId, check2) {
       const k = val(fieldId);
-      return !!k && !isEmptyish(k) && check(k);
+      return !!k && !isEmptyish(k) && check2(k);
     }
     function radioVal(name) {
       const el = document.querySelector('input[name="' + name + '"]:checked');
