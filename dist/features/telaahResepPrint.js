@@ -193,12 +193,24 @@ var __morbis_feature = (() => {
           return [];
         }
       }
+      function isAllowedBase(url) {
+        try {
+          const u = new URL(url);
+          if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+          const h = u.hostname.toLowerCase();
+          if (['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'].includes(h))
+            return true;
+          return h.endsWith('.rsudkotajambi.id') || h.endsWith('.ddev.site');
+        } catch {
+          return false;
+        }
+      }
       async function fetchAntrianNumber(resepId) {
         try {
           let base = 'http://dev.rsudkotajambi.id/rs';
           try {
             const ov = localStorage.getItem('ext-farmasi-app-base');
-            if (ov && /^https?:\/\//.test(ov)) base = ov.replace(/\/+$/, '');
+            if (ov && isAllowedBase(ov)) base = ov.replace(/\/+$/, '');
           } catch {}
           const resp = await fetch(
             base + '/api/queue/lookup?resep_id=' + encodeURIComponent(resepId),

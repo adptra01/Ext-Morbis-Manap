@@ -572,7 +572,7 @@ var __morbis_feature = (() => {
   var _debounceTimer = null;
   var _centralMap = null;
   var _centralAt = 0;
-  var CENTRAL_TTL_MS = 3e4;
+  var CENTRAL_TTL_MS = 15000;
   function collectVisibleIds() {
     const ids = [];
     for (const table of document.querySelectorAll('table')) {

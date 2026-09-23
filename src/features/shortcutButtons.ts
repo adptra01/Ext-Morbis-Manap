@@ -506,6 +506,73 @@ function onRevisionMutations(): void {
   renderRevisionHistory();
 }
 
+let _revPollId: number | null = null;
+
+/** Ambil riwayat pusat sekali jalan; dipakai saat init + tiap tick polling. */
+function refreshCentralRevisions(idVisit: string): void {
+  if (!idVisit) return;
+  try {
+    if (document.hidden) return; // tab tak terlihat → lewati tick ini
+  } catch {
+    /* ignore */
+  }
+  try {
+    void fetchRevisionsBatch([idVisit]).then((map) => {
+      setSyncHint(map !== null, map?.[idVisit]?.length ?? 0);
+      if (!map) return; // offline — cache lokal tetap tampil
+      const incoming: BpjsRevision[] = [];
+      for (const r of map[idVisit] ?? []) {
+        const rev = centralToBpjsRevision(r, idVisit);
+        if (rev) incoming.push(rev);
+      }
+      // Rekonsiliasi: unggah ulang saved lokal yang belum ada di pusat
+      // (pulih dari mati lampu antara konfirmasi dan POST).
+      try {
+        const user = readPetugas();
+        for (const m of partitionUnsynced(
+          bpjsRevisions.filter((x) => x.idVisit === idVisit),
+          incoming,
+        )) {
+          postRevisionCentral({ ...m, user });
+        }
+      } catch {
+        /* ignore */
+      }
+      if (incoming.length) {
+        bpjsRevisions = mergeCentralRevisions(bpjsRevisions, incoming);
+        persistRevisionHistory();
+        renderRevisionHistory();
+      }
+    });
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Polling pusat tiap 30 dtk agar revisi dari PC/akun lain muncul tanpa
+ *  reload — pola sama seperti refreshCentral pre-op. Sekali jalan per
+ *  halaman; berhenti otomatis saat pagehide. */
+function startCentralRevisionPoll(idVisit: string): void {
+  if (_revPollId !== null || !idVisit) return;
+  _revPollId = window.setInterval(() => {
+    try {
+      refreshCentralRevisions(idVisit);
+    } catch {
+      /* ignore */
+    }
+  }, 30000);
+  window.addEventListener('pagehide', () => {
+    try {
+      if (_revPollId !== null) {
+        window.clearInterval(_revPollId);
+        _revPollId = null;
+      }
+    } catch {
+      /* ignore */
+    }
+  });
+}
+
 export function initBpjsRevisionHistory(anchor: HTMLElement | null): void {
   const restored = readRevisionHistory();
   bpjsRevisions = mergeRevisionHistory(bpjsRevisions, restored);
@@ -516,41 +583,10 @@ export function initBpjsRevisionHistory(anchor: HTMLElement | null): void {
   }
   ensureRevisionPanel(anchor);
   renderRevisionHistory();
-  // Read-through DB pusat: riwayat dari PC lain ikut tampil (diam bila offline).
-  try {
-    const idVisit = idVisitBoot;
-    if (idVisit) {
-      void fetchRevisionsBatch([idVisit]).then((map) => {
-        setSyncHint(map !== null, map?.[idVisit]?.length ?? 0);
-        if (!map) return; // offline — cache lokal tetap tampil
-        const incoming: BpjsRevision[] = [];
-        for (const r of map[idVisit] ?? []) {
-          const rev = centralToBpjsRevision(r, idVisit);
-          if (rev) incoming.push(rev);
-        }
-        // Rekonsiliasi: unggah ulang saved lokal yang belum ada di pusat
-        // (pulih dari mati lampu antara konfirmasi dan POST).
-        try {
-          const user = readPetugas();
-          for (const m of partitionUnsynced(
-            bpjsRevisions.filter((x) => x.idVisit === idVisit),
-            incoming,
-          )) {
-            postRevisionCentral({ ...m, user });
-          }
-        } catch {
-          /* ignore */
-        }
-        if (incoming.length) {
-          bpjsRevisions = mergeCentralRevisions(bpjsRevisions, incoming);
-          persistRevisionHistory();
-          renderRevisionHistory();
-        }
-      });
-    }
-  } catch {
-    /* ignore */
-  }
+  // Read-through DB pusat: riwayat dari PC lain ikut tampil (diam bila
+  // offline) — sekali saat init + polling ulang tiap 30 dtk.
+  refreshCentralRevisions(idVisitBoot);
+  startCentralRevisionPoll(idVisitBoot);
   if (bpjsRevisionListenersInstalled) return;
   document.addEventListener('submit', onRevisionSubmit, true);
   bpjsRevisionObserver = new MutationObserver(scheduleBpjsRevisionCheck);

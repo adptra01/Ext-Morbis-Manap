@@ -75,7 +75,10 @@ let _debounceTimer: number | null = null;
  *  (null = offline/belum ada data → fallback penuh ke localStorage). */
 let _centralMap: Record<string, CentralPreOpMark> | null = null;
 let _centralAt = 0;
-const CENTRAL_TTL_MS = 30000;
+/** Refresh cache pusat maksimal tiap 15 dtk — kompromi: penanda antar-PC
+ *  terasa responsif (rata-rata ~7 dtk, terburuk ~15 dtk) tanpa membanjiri
+ *  server pusat yang kecil. */
+const CENTRAL_TTL_MS = 15000;
 
 /** Ambil semua id_visit yang terlihat di tabel halaman ini. */
 function collectVisibleIds(): string[] {
@@ -90,7 +93,7 @@ function collectVisibleIds(): string[] {
   return ids;
 }
 
-/** Refresh cache pusat maksimal tiap 30 dtk; pusat menang atas lokal. */
+/** Refresh cache pusat maksimal tiap 15 dtk; pusat menang atas lokal. */
 function refreshCentral(): void {
   const now = Date.now();
   if (now - _centralAt < CENTRAL_TTL_MS) return;

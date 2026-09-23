@@ -42,10 +42,23 @@ var __morbis_feature = (() => {
       });
     });
   }
+  var FARMASI_ALLOWED_HOSTS = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'];
+  var FARMASI_ALLOWED_SUFFIXES = ['.rsudkotajambi.id', '.ddev.site'];
+  function isAllowedFarmasiBase(url) {
+    try {
+      const u = new URL(url);
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+      const h = u.hostname.toLowerCase();
+      if (FARMASI_ALLOWED_HOSTS.includes(h)) return true;
+      return FARMASI_ALLOWED_SUFFIXES.some((s) => h.endsWith(s));
+    } catch {
+      return false;
+    }
+  }
   function farmasiAppBase() {
     try {
       const ov = localStorage.getItem('ext-farmasi-app-base');
-      if (ov && /^https?:\/\//.test(ov)) {
+      if (ov && isAllowedFarmasiBase(ov)) {
         const b = ov.replace(/\/+$/, '');
         if (cachedBase !== b) {
           cachedBase = b;
@@ -62,7 +75,7 @@ var __morbis_feature = (() => {
     basePromise = (async () => {
       try {
         const ov = localStorage.getItem('ext-farmasi-app-base');
-        if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
+        if (ov && isAllowedFarmasiBase(ov)) return ov.replace(/\/+$/, '');
       } catch {}
       const stored = await storedBaseCandidates();
       const candidates = [.../* @__PURE__ */ new Set([...stored, ...FALLBACK_CANDIDATES])];

@@ -845,6 +845,54 @@ var __morbis_feature = (() => {
     persistRevisionHistory();
     renderRevisionHistory();
   }
+  let _revPollId = null;
+  function refreshCentralRevisions(idVisit) {
+    if (!idVisit) return;
+    try {
+      if (document.hidden) return;
+    } catch {}
+    try {
+      void fetchRevisionsBatch([idVisit]).then((map) => {
+        setSyncHint(map !== null, map?.[idVisit]?.length ?? 0);
+        if (!map) return;
+        const incoming = [];
+        for (const r of map[idVisit] ?? []) {
+          const rev = centralToBpjsRevision(r, idVisit);
+          if (rev) incoming.push(rev);
+        }
+        try {
+          const user = readPetugas();
+          for (const m of partitionUnsynced(
+            bpjsRevisions.filter((x) => x.idVisit === idVisit),
+            incoming,
+          )) {
+            postRevisionCentral({ ...m, user });
+          }
+        } catch {}
+        if (incoming.length) {
+          bpjsRevisions = mergeCentralRevisions(bpjsRevisions, incoming);
+          persistRevisionHistory();
+          renderRevisionHistory();
+        }
+      });
+    } catch {}
+  }
+  function startCentralRevisionPoll(idVisit) {
+    if (_revPollId !== null || !idVisit) return;
+    _revPollId = window.setInterval(() => {
+      try {
+        refreshCentralRevisions(idVisit);
+      } catch {}
+    }, 30000);
+    window.addEventListener('pagehide', () => {
+      try {
+        if (_revPollId !== null) {
+          window.clearInterval(_revPollId);
+          _revPollId = null;
+        }
+      } catch {}
+    });
+  }
   function initBpjsRevisionHistory(anchor) {
     const restored = readRevisionHistory();
     bpjsRevisions = mergeRevisionHistory(bpjsRevisions, restored);
@@ -854,34 +902,8 @@ var __morbis_feature = (() => {
     }
     ensureRevisionPanel(anchor);
     renderRevisionHistory();
-    try {
-      const idVisit = idVisitBoot;
-      if (idVisit) {
-        void fetchRevisionsBatch([idVisit]).then((map) => {
-          setSyncHint(map !== null, map?.[idVisit]?.length ?? 0);
-          if (!map) return;
-          const incoming = [];
-          for (const r of map[idVisit] ?? []) {
-            const rev = centralToBpjsRevision(r, idVisit);
-            if (rev) incoming.push(rev);
-          }
-          try {
-            const user = readPetugas();
-            for (const m of partitionUnsynced(
-              bpjsRevisions.filter((x) => x.idVisit === idVisit),
-              incoming,
-            )) {
-              postRevisionCentral({ ...m, user });
-            }
-          } catch {}
-          if (incoming.length) {
-            bpjsRevisions = mergeCentralRevisions(bpjsRevisions, incoming);
-            persistRevisionHistory();
-            renderRevisionHistory();
-          }
-        });
-      }
-    } catch {}
+    refreshCentralRevisions(idVisitBoot);
+    startCentralRevisionPoll(idVisitBoot);
     if (bpjsRevisionListenersInstalled) return;
     document.addEventListener('submit', onRevisionSubmit, true);
     bpjsRevisionObserver = new MutationObserver(scheduleBpjsRevisionCheck);
