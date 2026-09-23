@@ -737,7 +737,9 @@ import {
         'Format kode ICD-10 Diagnosa Utama tidak valid (contoh: A00, B20.9)',
         'kode_diagnosa_utama',
       );
-    if (val('diagnosa_utama'))
+    // Nama boleh terisi tanpa id bila pasangannya kode yang valid
+    // (alur isi dari kolom kode — lihat kodeOk).
+    if (val('diagnosa_utama') && !kodeOk('kode_diagnosa_utama', isICD10))
       fail(
         !!val('id_diagnosa_utama'),
         'Diagnosa Utama harus dipilih dari hasil pencarian (autocomplete)',
@@ -754,7 +756,7 @@ import {
           'Format kode ICD-10 Diagnosa Sekunder ' + si + ' tidak valid',
           'kode_diagnosa_sekunder' + si,
         );
-      if (nDS && !isEmptyish(nDS))
+      if (nDS && !isEmptyish(nDS) && !kodeOk('kode_diagnosa_sekunder' + si, isICD10))
         fail(
           !!iDS,
           'Diagnosa Sekunder ' + si + ' harus dipilih dari hasil pencarian',
@@ -772,7 +774,7 @@ import {
           'Format kode ICD-9 Tindakan ' + ti + ' tidak valid (contoh: 45.16)',
           'kode_tindakan' + ti,
         );
-      if (nTK && !isEmptyish(nTK))
+      if (nTK && !isEmptyish(nTK) && !kodeOk('kode_tindakan' + ti, isICD9))
         fail(
           !!iTK,
           'Tindakan ' + ti + ' harus dipilih dari hasil pencarian (autocomplete)',
@@ -940,7 +942,7 @@ import {
             'Format kode ICD-10 baris ' + (i + 1) + ' tidak valid (contoh: A00, B20.9)',
             errId,
           );
-        if ((!isEmptyish(kode) || !isEmptyish(nama)) && !idicd)
+        if ((!isEmptyish(kode) || !isEmptyish(nama)) && !idicd && !isICD10(kode))
           fail(
             false,
             'Diagnosa baris ' + (i + 1) + ' harus dipilih dari hasil pencarian (autocomplete)',
@@ -965,7 +967,7 @@ import {
           'Format kode ICD-9 Tindakan baris ' + (i + 1) + ' tidak valid (contoh: 45.16)',
           errId,
         );
-      if ((!isEmptyish(kode) || !isEmptyish(nama)) && !idicd)
+      if ((!isEmptyish(kode) || !isEmptyish(nama)) && !idicd && !isICD9(kode))
         fail(
           false,
           'Tindakan baris ' + (i + 1) + ' harus dipilih dari hasil pencarian (autocomplete)',
@@ -1056,6 +1058,17 @@ import {
     return el?.value?.trim() || '';
   }
 
+  /**
+   * Alur isi dari kolom KODE: nama terisi otomatis mengikuti kode tanpa
+   * lewat autocomplete nama → hidden id_* kosong. Pasangan (kode valid +
+   * nama) diterima apa adanya; id_* hanya wajib bila kode kosong/tak valid
+   * (backend mengunci via kode).
+   */
+  function kodeOk(fieldId: string, check: (v: string) => boolean): boolean {
+    const k = val(fieldId);
+    return !!k && !isEmptyish(k) && check(k);
+  }
+
   function radioVal(name: string): string {
     const el = document.querySelector<HTMLInputElement>('input[name="' + name + '"]:checked');
     return el?.value || '';
@@ -1074,7 +1087,12 @@ import {
     function attachClear(fieldId: string, targetId: string): void {
       var el = document.getElementById(fieldId);
       if (!el) return;
-      el.addEventListener('input', function () {
+      // Hanya hapus id saat KETIKAN ASLI user (event trusted). Pengisian
+      // programatik — pilihan autocomplete, auto-isi nama mengikuti kode
+      // oleh MORBIS, maupun "Salin ke Form" dari riwayat (dispatchEvent =
+      // untrusted) — TIDAK boleh menghapus id yang sudah terpasang.
+      el.addEventListener('input', function (e: Event) {
+        if (e && e.isTrusted === false) return;
         var idEl = document.getElementById(targetId) as HTMLInputElement | null;
         if (idEl) idEl.value = '';
       });

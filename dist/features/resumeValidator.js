@@ -1338,7 +1338,7 @@ var __morbis_feature = (() => {
           'Format kode ICD-10 Diagnosa Utama tidak valid (contoh: A00, B20.9)',
           'kode_diagnosa_utama',
         );
-      if (val('diagnosa_utama'))
+      if (val('diagnosa_utama') && !kodeOk('kode_diagnosa_utama', isICD10))
         fail(
           !!val('id_diagnosa_utama'),
           'Diagnosa Utama harus dipilih dari hasil pencarian (autocomplete)',
@@ -1354,7 +1354,7 @@ var __morbis_feature = (() => {
             'Format kode ICD-10 Diagnosa Sekunder ' + si + ' tidak valid',
             'kode_diagnosa_sekunder' + si,
           );
-        if (nDS && !isEmptyish(nDS))
+        if (nDS && !isEmptyish(nDS) && !kodeOk('kode_diagnosa_sekunder' + si, isICD10))
           fail(
             !!iDS,
             'Diagnosa Sekunder ' + si + ' harus dipilih dari hasil pencarian',
@@ -1371,7 +1371,7 @@ var __morbis_feature = (() => {
             'Format kode ICD-9 Tindakan ' + ti + ' tidak valid (contoh: 45.16)',
             'kode_tindakan' + ti,
           );
-        if (nTK && !isEmptyish(nTK))
+        if (nTK && !isEmptyish(nTK) && !kodeOk('kode_tindakan' + ti, isICD9))
           fail(
             !!iTK,
             'Tindakan ' + ti + ' harus dipilih dari hasil pencarian (autocomplete)',
@@ -1513,7 +1513,7 @@ var __morbis_feature = (() => {
             'Format kode ICD-10 baris ' + (i + 1) + ' tidak valid (contoh: A00, B20.9)',
             errId,
           );
-        if ((!isEmptyish(kode) || !isEmptyish(nama)) && !idicd)
+        if ((!isEmptyish(kode) || !isEmptyish(nama)) && !idicd && !isICD10(kode))
           fail(
             false,
             'Diagnosa baris ' + (i + 1) + ' harus dipilih dari hasil pencarian (autocomplete)',
@@ -1532,7 +1532,7 @@ var __morbis_feature = (() => {
             'Format kode ICD-9 Tindakan baris ' + (i + 1) + ' tidak valid (contoh: 45.16)',
             errId,
           );
-        if ((!isEmptyish(kode) || !isEmptyish(nama)) && !idicd)
+        if ((!isEmptyish(kode) || !isEmptyish(nama)) && !idicd && !isICD9(kode))
           fail(
             false,
             'Tindakan baris ' + (i + 1) + ' harus dipilih dari hasil pencarian (autocomplete)',
@@ -1608,6 +1608,10 @@ var __morbis_feature = (() => {
       const el = $(id);
       return el?.value?.trim() || '';
     }
+    function kodeOk(fieldId, check) {
+      const k = val(fieldId);
+      return !!k && !isEmptyish(k) && check(k);
+    }
     function radioVal(name) {
       const el = document.querySelector('input[name="' + name + '"]:checked');
       return el?.value || '';
@@ -1623,7 +1627,8 @@ var __morbis_feature = (() => {
       function attachClear(fieldId, targetId) {
         var el = document.getElementById(fieldId);
         if (!el) return;
-        el.addEventListener('input', function () {
+        el.addEventListener('input', function (e) {
+          if (e && e.isTrusted === false) return;
           var idEl = document.getElementById(targetId);
           if (idEl) idEl.value = '';
         });
