@@ -14,14 +14,13 @@ permissions:
 jobs:
   publish:
     # Manual selalu jalan (untuk validasi, termasuk deteksi secrets hilang).
-    # Otomatis: hanya bila deploy sukses DAN secrets Edge sudah dipasang —
-    # tanpa ini tiap update main jadi job merah sebelum Anda pasang secrets.
+    # Otomatis: hanya bila deploy sukses. (Catatan: konteks `secrets` TIDAK
+    # boleh di job-if — parser menolak; cek secrets di step preflight.)
     # (Bandingkan event_name dulu: aman-null bila event tak punya workflow_run.)
     if: >
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'workflow_run' &&
-       github.event.workflow_run.conclusion == 'success' &&
-       secrets.EDGE_API_KEY != '')
+       github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     env:
       EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
@@ -33,7 +32,22 @@ jobs:
           ref: main
           fetch-depth: 1
 
+      # Preflight: tanpa secrets → lewati halus (bukan merah), khusus jalur
+      # otomatis. Jalur manual tanpa secrets lanjut agar galatnya eksplisit.
+      - name: Preflight secrets
+        id: pre
+        env:
+          HAS_SECRETS: ${{ secrets.EDGE_API_KEY != '' }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_run" ] && [ "$HAS_SECRETS" != "true" ]; then
+            echo "SKIP=true" >> $GITHUB_OUTPUT
+            echo "::notice::Secrets Edge (EDGE_CLIENT_ID/API_KEY/PRODUCT_ID) belum dipasang — lewati auto-publish. Pasang lalu dispatch manual."
+          else
+            echo "SKIP=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create extension zip
+        if: steps.pre.outputs.SKIP != 'true'
         run: |
           test -f manifest.json || { echo "::error::bukan bit main (manifest.json hilang)"; exit 1; }
           VERSION=$(jq -r .version manifest.json)
@@ -44,6 +58,7 @@ jobs:
 
       # Gerbang 1 — kebersihan paket (syarat sertifikasi Edge).
       - name: Secret & manifest scan gate
+        if: steps.pre.outputs.SKIP != 'true'
         run: |
           echo "== manifest =="
           jq -e '.manifest_version == 3' manifest.json > /dev/null
@@ -59,6 +74,7 @@ jobs:
       # versi duplikat ditolak; skip = sukses tanpa antre sertifikasi sia-sia).
       - name: Skip if version already submitted
         id: guard
+        if: steps.pre.outputs.SKIP != 'true'
         run: |
           LIST=$(curl -s \
             -H "Authorization: ApiKey $EDGE_API_KEY" \
@@ -74,7 +90,7 @@ jobs:
           fi
 
       - name: Upload package to Edge
-        if: steps.guard.outputs.SKIP != 'true'
+        if: steps.pre.outputs.SKIP != 'true' && steps.guard.outputs.SKIP != 'true'
         id: upload
         run: |
           RESPONSE=$(curl -s -w "\n%{http_code}" \
@@ -101,7 +117,7 @@ jobs:
           echo "Upload accepted, operation: $LOCATION"
 
       - name: Wait for upload processing
-        if: steps.guard.outputs.SKIP != 'true'
+        if: steps.pre.outputs.SKIP != 'true' && steps.guard.outputs.SKIP != 'true'
         run: |
           MAX_RETRIES=30
           RETRY=0
@@ -133,7 +149,7 @@ jobs:
           fi
 
       - name: Publish submission
-        if: steps.guard.outputs.SKIP != 'true'
+        if: steps.pre.outputs.SKIP != 'true' && steps.guard.outputs.SKIP != 'true'
         id: publish
         run: |
           SHA="${{ github.event.workflow_run.head_sha }}"
@@ -162,7 +178,7 @@ jobs:
           echo "Publish accepted, operation: $LOCATION"
 
       - name: Wait for publishing
-        if: steps.guard.outputs.SKIP != 'true'
+        if: steps.pre.outputs.SKIP != 'true' && steps.guard.outputs.SKIP != 'true'
         run: |
           MAX_RETRIES=60
           RETRY=0
