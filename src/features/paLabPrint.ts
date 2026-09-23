@@ -44,8 +44,18 @@
       return s.replace(/<[^>]+>/g, ' ');
     }
 
+    // Server MORBIS kerap merender DEFAULT nama RS (saat field "RS Luar"
+    // kosong) dengan gelar salah: "RSUD KH. Abdul Manap" (KH. = Kiai
+    // Haji). Nama resmi RS = "RSUD H. Abdul Manap" (H. = Haji). Koreksi
+    // di titik ekstraksi agar kop, info pasien, dan export Word selalu
+    // memakai nama benar. Pola dibatasi: "KH" yang langsung diikuti
+    // "Abdul Manap" (nama RS ini) — teks medis tidak tersentuh.
+    function fixRsName(s: string): string {
+      return s.replace(/\bKH\.?\s*(?=ABDUL\s+MANAP)/gi, 'H. ');
+    }
+
     function cleanPhpNoise(s: string): string {
-      return s
+      return fixRsName(s)
         .replace(
           /\b(?:Notice|Warning|Fatal error|Parse error|Deprecated)\s*:[\s\S]*?\.php\s*on\s*line\s*\d+/gi,
           ' ',

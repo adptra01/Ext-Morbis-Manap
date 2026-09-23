@@ -11,8 +11,11 @@ var __morbis_feature = (() => {
       function stripTags(s) {
         return s.replace(/<[^>]+>/g, ' ');
       }
+      function fixRsName(s) {
+        return s.replace(/\bKH\.?\s*(?=ABDUL\s+MANAP)/gi, 'H. ');
+      }
       function cleanPhpNoise(s) {
-        return s
+        return fixRsName(s)
           .replace(
             /\b(?:Notice|Warning|Fatal error|Parse error|Deprecated)\s*:[\s\S]*?\.php\s*on\s*line\s*\d+/gi,
             ' ',
