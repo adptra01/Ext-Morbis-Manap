@@ -12,6 +12,9 @@
  * - Semua fungsi jaringan menerima `fetcher` agar bisa di-unit-test.
  */
 
+// Sengaja HTTP (keputusan tim): server Reports pusat belum melayani
+// HTTPS — migrasi ke https:// saat server sudah siap (belum terjadwal).
+// Asumsi sementara: trafik berjalan di jaringan RS / ke host dev yang sama.
 export const CASEMIX_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
 const BASE_OVERRIDE_KEY = 'ext-farmasi-app-base';
 const BATCH_MAX = 500;
