@@ -108,13 +108,18 @@ function refreshCentral(): void {
   void fetchPreOpBatch(ids).then((marks) => {
     if (marks === null) return; // offline — jangan timpa state lokal
     _centralMap = marks;
-    // Terapkan visual pusat (termasuk mark dari PC lain) tanpa menunggu scan berikut.
+    // Terapkan visual pusat PRIORITASI localStorage marks dulu,
+    // baru turun ke server marks jika lokal belum memiliki entry.
+    // Ini mencegah visual "reset" ketika server POST fire-and-forget
+    // belum menyebar ke seluruh client, dan menghindari user klik2 button.
     const localMap = loadPreOpMap();
     for (const table of document.querySelectorAll<HTMLTableElement>('table')) {
       for (const row of table.querySelectorAll<HTMLTableRowElement>('tbody tr')) {
         const id = extractIdVisitFromRow(row);
         if (!id) continue;
-        const marked = !!marks[id];
+        // Prioritaskan mark dari localStorage (diset saat button diklik),
+        // lalu fallback ke server mark jika lokal tidak punya entry.
+        const marked = id in localMap ? true : marks[id] ? true : false;
         if (row.getAttribute('data-ext-preop-marked') !== String(marked)) {
           if (marked && !localMap[id]) {
             setPreOp(id, extractPatientInfo(row));

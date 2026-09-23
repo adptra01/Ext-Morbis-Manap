@@ -255,6 +255,10 @@ export function logResumeHistory(opts: LogResumeOpts): ResumeHistoryEntry | null
   // id_visit kosong. Tolak diam-diam (submit asli pemanggil tetap jalan).
   if (!opts.idVisit) return null;
   const now = opts.now ?? Date.now();
+  // Simpan terlebih dahulu snapshot "last form" sebelum cek dedup,
+  // agar tetap tersimpan meskipun entri log ini di-dedup.
+  const store = opts.store ?? defaultStore();
+  storeLast(opts.after, opts.idVisit, opts.tipe, store);
   // Dedup dobel-klik per kunjungan: hash menyertakan idVisit + aksi agar
   // save beruntun dua kunjungan berbeda dengan isi sama tidak saling
   // menghapus (kunjungan kedua tetap tercatat).
@@ -273,7 +277,6 @@ export function logResumeHistory(opts: LogResumeOpts): ResumeHistoryEntry | null
     after: opts.after,
     changed: diffSnap(opts.before ?? {}, opts.after),
   };
-  const store = opts.store ?? defaultStore();
   const list = loadHistory(opts.idVisit, opts.tipe, store);
   list.push(entry);
   saveHistory(list, opts.idVisit, opts.tipe, store);
