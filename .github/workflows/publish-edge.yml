@@ -82,6 +82,7 @@ jobs:
             -H "X-ClientID: $EDGE_CLIENT_ID" \
             -X GET \
             "https://api.addons.microsoftedge.microsoft.com/v1/products/$EDGE_PRODUCT_ID/submissions") || LIST=""
+          echo "Daftar submission (ringkas): $(echo "$LIST" | grep -oP '"version"\s*:\s*"[^"]+"[^}]{0,120}' | head -5)"
           if [ -n "$LIST" ] && echo "$LIST" | grep -q "\"version\"[ ]*:[ ]*\"$VERSION\""; then
             echo "SKIP=true" >> $GITHUB_OUTPUT
             echo "::notice::Versi $VERSION sudah ada di Store — lewati submit."
