@@ -94,7 +94,7 @@ jobs:
         if: steps.pre.outputs.SKIP != 'true' && steps.guard.outputs.SKIP != 'true'
         id: upload
         run: |
-          RESPONSE=$(curl -s -w "\n%{http_code}" \
+          RESPONSE=$(curl -s -D /tmp/edge-hdrs.txt -w "\n%{http_code}" \
             -H "Authorization: ApiKey $EDGE_API_KEY" \
             -H "X-ClientID: $EDGE_CLIENT_ID" \
             -H "Content-Type: application/zip" \
@@ -113,8 +113,23 @@ jobs:
             exit 1
           fi
 
-          LOCATION=$(echo "$BODY" | grep -oP '"operationId"\s*:\s*"\K[^"]+')
+          # operationId bisa di body ATAU header Location (bash -e: grep
+          # tanpa hasil = exit 1 diam-diam → tangkap + diagnostik jelas).
+          LOCATION=$(echo "$BODY" | grep -oP '"operationId"\s*:\s*"\K[^"]+' || true)
+          if [ -z "$LOCATION" ]; then
+            LOCATION=$(grep -ai -oP '(?:operation-)?location:\s*\K\S+' /tmp/edge-hdrs.txt | head -1 || true)
+          fi
+          if [ -z "$LOCATION" ]; then
+            echo "::error::Upload 202 tanpa operationId. Body: $(echo "$BODY" | head -c 300)"
+            echo "::error::Headers: $(head -c 300 /tmp/edge-hdrs.txt)"
+            exit 1
+          fi
           echo "operation_id=$LOCATION" >> $GITHUB_OUTPUT
+          case "$LOCATION" in
+            http*) STATUS_URL="$LOCATION" ;;
+            *) STATUS_URL="https://api.addons.microsoftedge.microsoft.com/v1/products/$EDGE_PRODUCT_ID/submissions/draft/package/operations/$LOCATION" ;;
+          esac
+          echo "status_url=$STATUS_URL" >> $GITHUB_OUTPUT
           echo "Upload accepted, operation: $LOCATION"
 
       - name: Wait for upload processing
@@ -132,9 +147,9 @@ jobs:
               -H "Authorization: ApiKey $EDGE_API_KEY" \
               -H "X-ClientID: $EDGE_CLIENT_ID" \
               -X GET \
-              "https://api.addons.microsoftedge.microsoft.com/v1/products/$EDGE_PRODUCT_ID/submissions/draft/package/operations/${{ steps.upload.outputs.operation_id }}")
+              "${{ steps.upload.outputs.status_url }}")
 
-            STATUS=$(echo "$RESPONSE" | grep -oP '"status"\s*:\s*"\K[^"]+')
+            STATUS=$(echo "$RESPONSE" | grep -oP '"status"\s*:\s*"\K[^"]+' || true)
             echo "[$RETRY/$MAX_RETRIES] Status: $STATUS"
 
             if [ "$STATUS" = "Failed" ]; then
@@ -174,9 +189,21 @@ jobs:
             exit 1
           fi
 
-          LOCATION=$(echo "$BODY" | grep -oP '"operationId"\s*:\s*"\K[^"]+')
-          echo "operation_id=$LOCATION" >> $GITHUB_OUTPUT
-          echo "Publish accepted, operation: $LOCATION"
+          LOCATION=$(echo "$BODY" | grep -oP '"operationId"\s*:\s*"\K[^"]+' || true)
+          if [ -z "$LOCATION" ]; then
+            LOCATION=$(grep -ai -oP '(?:operation-)?location:\s*\K\S+' /tmp/edge-hdrs.txt | head -1 || true)
+          fi
+          if [ -z "$LOCATION" ]; then
+            echo "::error::Publish 202 tanpa operationId. Body: $(echo "$BODY" | head -c 300)"
+            exit 1
+          fi
+          # Header Location bisa berupa URL status penuh atau ID saja.
+          case "$LOCATION" in
+            http*) STATUS_URL="$LOCATION" ;;
+            *) STATUS_URL="https://api.addons.microsoftedge.microsoft.com/v1/products/$EDGE_PRODUCT_ID/submissions/operations/$LOCATION" ;;
+          esac
+          echo "status_url=$STATUS_URL" >> $GITHUB_OUTPUT
+          echo "Publish accepted: $STATUS_URL"
 
       - name: Wait for publishing
         if: steps.pre.outputs.SKIP != 'true' && steps.guard.outputs.SKIP != 'true'
@@ -193,9 +220,9 @@ jobs:
               -H "Authorization: ApiKey $EDGE_API_KEY" \
               -H "X-ClientID: $EDGE_CLIENT_ID" \
               -X GET \
-              "https://api.addons.microsoftedge.microsoft.com/v1/products/$EDGE_PRODUCT_ID/submissions/operations/${{ steps.publish.outputs.operation_id }}")
+              "${{ steps.publish.outputs.status_url }}")
 
-            STATUS=$(echo "$RESPONSE" | grep -oP '"status"\s*:\s*"\K[^"]+')
+            STATUS=$(echo "$RESPONSE" | grep -oP '"status"\s*:\s*"\K[^"]+' || true)
             echo "[$RETRY/$MAX_RETRIES] Status: $STATUS"
 
             if [ "$STATUS" = "Failed" ]; then
