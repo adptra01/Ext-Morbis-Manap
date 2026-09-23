@@ -176,6 +176,10 @@ export async function runCasemixBackfill(
   // 2. Resume history per key → pusat
   try {
     for (const { key, idVisit, tipe } of discoverResumeKeys(store)) {
+      // Bucket 'unknown'/kosong = sisa log tanpa id_visit (lihat guard
+      // logResumeHistory) — tidak bisa ditautkan ke kunjungan, jangan
+      // kirim ke pusat.
+      if (!idVisit || idVisit === 'unknown') continue;
       if (res.resumeUploaded >= BACKFILL_BATCH) break;
       const sinceAt = readJson<number>(store, MIGRATED_RV_PREFIX + key) ?? 0;
       const list = loadHistory(idVisit, tipe, store);

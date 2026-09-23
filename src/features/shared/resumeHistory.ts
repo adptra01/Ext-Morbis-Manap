@@ -250,8 +250,15 @@ export interface LogResumeOpts {
 }
 
 export function logResumeHistory(opts: LogResumeOpts): ResumeHistoryEntry | null {
+  // Tanpa id_visit entri tak bisa ditautkan ke kunjungan: riwayat lokal
+  // akan tercampur di bucket 'unknown' dan terkirim ke pusat dengan
+  // id_visit kosong. Tolak diam-diam (submit asli pemanggil tetap jalan).
+  if (!opts.idVisit) return null;
   const now = opts.now ?? Date.now();
-  const hash = JSON.stringify(opts.after);
+  // Dedup dobel-klik per kunjungan: hash menyertakan idVisit + aksi agar
+  // save beruntun dua kunjungan berbeda dengan isi sama tidak saling
+  // menghapus (kunjungan kedua tetap tercatat).
+  const hash = JSON.stringify([opts.idVisit, opts.aksi, opts.after]);
   if (_lastLogHash === hash && now - _lastLogAt < 5000) return null; // dobel-klik
   _lastLogHash = hash;
   _lastLogAt = now;

@@ -475,10 +475,23 @@ var __morbis_feature = (() => {
   // src/features/shared/casemixApi.ts
   var CASEMIX_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
   var BASE_OVERRIDE_KEY = 'ext-farmasi-app-base';
+  var CASEMIX_ALLOWED_HOSTS = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'];
+  var CASEMIX_ALLOWED_SUFFIX = '.rsudkotajambi.id';
+  function isAllowedCasemixBase(url) {
+    try {
+      const u = new URL(url);
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+      const h = u.hostname.toLowerCase();
+      if (CASEMIX_ALLOWED_HOSTS.includes(h)) return true;
+      return h.endsWith(CASEMIX_ALLOWED_SUFFIX);
+    } catch {
+      return false;
+    }
+  }
   function resolveCasemixBase() {
     try {
       const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
-      if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
+      if (ov && isAllowedCasemixBase(ov)) return ov.replace(/\/+$/, '');
     } catch {}
     return CASEMIX_BASE_FALLBACK;
   }
@@ -612,8 +625,9 @@ var __morbis_feature = (() => {
   var _lastLogHash = null;
   var _lastLogAt = 0;
   function logResumeHistory(opts) {
+    if (!opts.idVisit) return null;
     const now = opts.now ?? Date.now();
-    const hash = JSON.stringify(opts.after);
+    const hash = JSON.stringify([opts.idVisit, opts.aksi, opts.after]);
     if (_lastLogHash === hash && now - _lastLogAt < 5e3) return null;
     _lastLogHash = hash;
     _lastLogAt = now;

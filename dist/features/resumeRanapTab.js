@@ -28123,10 +28123,23 @@ var __morbis_feature = (() => {
   }
   var REPORTS_API_PATH = '/api/reports/resume-history';
   var REPORTS_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
+  var REPORTS_ALLOWED_HOSTS = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'];
+  var REPORTS_ALLOWED_SUFFIX = '.rsudkotajambi.id';
+  function isAllowedCasemixBase(url) {
+    try {
+      const u = new URL(url);
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+      const h = u.hostname.toLowerCase();
+      if (REPORTS_ALLOWED_HOSTS.includes(h)) return true;
+      return h.endsWith(REPORTS_ALLOWED_SUFFIX);
+    } catch {
+      return false;
+    }
+  }
   function resolveReportsBase() {
     try {
       const ov = localStorage.getItem('ext-farmasi-app-base');
-      if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
+      if (ov && isAllowedCasemixBase(ov)) return ov.replace(/\/+$/, '');
     } catch {}
     return REPORTS_BASE_FALLBACK;
   }
@@ -28154,8 +28167,9 @@ var __morbis_feature = (() => {
   var _lastLogHash = null;
   var _lastLogAt = 0;
   function logResumeHistory(opts) {
+    if (!opts.idVisit) return null;
     const now = opts.now ?? Date.now();
-    const hash = JSON.stringify(opts.after);
+    const hash = JSON.stringify([opts.idVisit, opts.aksi, opts.after]);
     if (_lastLogHash === hash && now - _lastLogAt < 5e3) return null;
     _lastLogHash = hash;
     _lastLogAt = now;

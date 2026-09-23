@@ -129,10 +129,23 @@ var __morbis_feature = (() => {
   }
   var REPORTS_API_PATH = '/api/reports/resume-history';
   var REPORTS_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
+  var REPORTS_ALLOWED_HOSTS = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'];
+  var REPORTS_ALLOWED_SUFFIX = '.rsudkotajambi.id';
+  function isAllowedCasemixBase(url) {
+    try {
+      const u = new URL(url);
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+      const h = u.hostname.toLowerCase();
+      if (REPORTS_ALLOWED_HOSTS.includes(h)) return true;
+      return h.endsWith(REPORTS_ALLOWED_SUFFIX);
+    } catch {
+      return false;
+    }
+  }
   function resolveReportsBase() {
     try {
       const ov = localStorage.getItem('ext-farmasi-app-base');
-      if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
+      if (ov && isAllowedCasemixBase(ov)) return ov.replace(/\/+$/, '');
     } catch {}
     return REPORTS_BASE_FALLBACK;
   }
@@ -160,8 +173,9 @@ var __morbis_feature = (() => {
   var _lastLogHash = null;
   var _lastLogAt = 0;
   function logResumeHistory(opts) {
+    if (!opts.idVisit) return null;
     const now = opts.now ?? Date.now();
-    const hash = JSON.stringify(opts.after);
+    const hash = JSON.stringify([opts.idVisit, opts.aksi, opts.after]);
     if (_lastLogHash === hash && now - _lastLogAt < 5e3) return null;
     _lastLogHash = hash;
     _lastLogAt = now;
@@ -318,8 +332,18 @@ var __morbis_feature = (() => {
       '\u2705 Berkas diverifikasi \u2014 snapshot resume berhasil dicatat ke riwayat log.',
     );
   }
+  function isNavTab(el) {
+    try {
+      if (el.getAttribute('role') === 'tab') return true;
+      const dt = el.getAttribute('data-toggle') || el.getAttribute('data-bs-toggle');
+      if (dt === 'tab' || dt === 'pill') return true;
+      if (el.closest('[role="tablist"], .nav-tabs, .nav-pills, ul.nav')) return true;
+    } catch {}
+    return false;
+  }
   function isVerifButton(el) {
     if (el.dataset.extVerifBound) return false;
+    if (isNavTab(el)) return false;
     const text = (el.textContent || '').trim().toLowerCase();
     const val = el.value?.trim().toLowerCase() || '';
     const id = el.id.toLowerCase();

@@ -140,10 +140,23 @@ var __morbis_feature = (() => {
   var BASE_OVERRIDE_KEY = 'ext-farmasi-app-base';
   var BATCH_MAX = 500;
   var CENTRAL_TIMEOUT_MS = 25e3;
+  var CASEMIX_ALLOWED_HOSTS = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'];
+  var CASEMIX_ALLOWED_SUFFIX = '.rsudkotajambi.id';
+  function isAllowedCasemixBase(url) {
+    try {
+      const u = new URL(url);
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+      const h = u.hostname.toLowerCase();
+      if (CASEMIX_ALLOWED_HOSTS.includes(h)) return true;
+      return h.endsWith(CASEMIX_ALLOWED_SUFFIX);
+    } catch {
+      return false;
+    }
+  }
   function resolveCasemixBase() {
     try {
       const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
-      if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
+      if (ov && isAllowedCasemixBase(ov)) return ov.replace(/\/+$/, '');
     } catch {}
     return CASEMIX_BASE_FALLBACK;
   }
@@ -399,6 +412,7 @@ var __morbis_feature = (() => {
     }
     try {
       for (const { key, idVisit, tipe } of discoverResumeKeys(store)) {
+        if (!idVisit || idVisit === 'unknown') continue;
         if (res.resumeUploaded >= BACKFILL_BATCH) break;
         const sinceAt = readJson2(store, MIGRATED_RV_PREFIX + key) ?? 0;
         const list = loadHistory(idVisit, tipe, store);

@@ -130,8 +130,25 @@ function handleVerifClick(targetBtn: HTMLElement): void {
   showHistToast('✅ Berkas diverifikasi — snapshot resume berhasil dicatat ke riwayat log.');
 }
 
-function isVerifButton(el: HTMLElement): boolean {
+function isNavTab(el: HTMLElement): boolean {
+  // Tab/navigasi (mis. tab "Hasil Verifikasi") bukan aksi verifikasi:
+  // mengikatnya akan mencatat riwayat palsu + POST ke pusat tiap ganti
+  // tab. Kriteria dibatasi pada penanda tab Bootstrap/ARIA agar tombol
+  // verifikasi asli (id btn-verif, onclick verif()) tetap kena.
+  try {
+    if (el.getAttribute('role') === 'tab') return true;
+    const dt = el.getAttribute('data-toggle') || el.getAttribute('data-bs-toggle');
+    if (dt === 'tab' || dt === 'pill') return true;
+    if (el.closest('[role="tablist"], .nav-tabs, .nav-pills, ul.nav')) return true;
+  } catch {
+    /* ignore */
+  }
+  return false;
+}
+
+export function isVerifButton(el: HTMLElement): boolean {
   if (el.dataset.extVerifBound) return false;
+  if (isNavTab(el)) return false;
 
   const text = (el.textContent || '').trim().toLowerCase();
   const val = (el as HTMLInputElement).value?.trim().toLowerCase() || '';
@@ -219,11 +236,18 @@ if (typeof g.featureModules !== 'undefined') {
   };
 }
 
-// Auto-run if on detail page
-if (window.location.pathname.includes('/v2/m-klaim/detail-v2-refaktor')) {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initMklaimVerifLog);
-  } else {
-    initMklaimVerifLog();
+// Auto-run if on detail page (dilewati di env non-DOM seperti unit test).
+try {
+  if (
+    typeof window !== 'undefined' &&
+    window.location?.pathname?.includes('/v2/m-klaim/detail-v2-refaktor')
+  ) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initMklaimVerifLog);
+    } else {
+      initMklaimVerifLog();
+    }
   }
+} catch {
+  /* non-DOM */
 }

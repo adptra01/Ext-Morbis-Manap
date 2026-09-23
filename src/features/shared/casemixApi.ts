@@ -21,10 +21,34 @@ const BATCH_MAX = 500;
 /** Batas tiap request pusat — sinyal lambat tak menggantung UI selamanya. */
 export const CENTRAL_TIMEOUT_MS = 25000;
 
+/** Host yang diizinkan sebagai DB pusat Reports (allowlist anti
+ *  pembelokan trafik via localStorage oleh skrip asing di origin
+ *  halaman — key override bisa ditulis JS apapun di origin itu).
+ *  Nilai di luar daftar → diabaikan, pakai fallback. Cakupan allowlist
+ *  ini HANYA jalur casemix/resume (resolveCasemixBase); pembaca
+ *  farmasi (farmasiQueueSync, telaahResepPrint) TIDAK diubah agar alur
+ *  farmasi yang sudah berjalan + tes lintas env tidak terganggu. */
+const CASEMIX_ALLOWED_HOSTS = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'];
+const CASEMIX_ALLOWED_SUFFIX = '.rsudkotajambi.id';
+
+export function isAllowedCasemixBase(url: string): boolean {
+  try {
+    const u = new URL(url);
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+    const h = u.hostname.toLowerCase();
+    if (CASEMIX_ALLOWED_HOSTS.includes(h)) return true;
+    // Subdomain milik RS sendiri aman (butuh kontrol DNS): prod/dev baru
+    // di bawah rsudkotajambi.id otomatis lolos tanpa ubah kode.
+    return h.endsWith(CASEMIX_ALLOWED_SUFFIX);
+  } catch {
+    return false;
+  }
+}
+
 export function resolveCasemixBase(): string {
   try {
     const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
-    if (ov && /^https?:\/\//.test(ov)) return ov.replace(/\/+$/, '');
+    if (ov && isAllowedCasemixBase(ov)) return ov.replace(/\/+$/, '');
   } catch {
     /* ignore */
   }
