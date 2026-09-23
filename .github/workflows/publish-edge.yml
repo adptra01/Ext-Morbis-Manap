@@ -53,7 +53,8 @@ jobs:
           VERSION=$(jq -r .version manifest.json)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "Versi paket: $VERSION"
-          zip -r "morbis-ext-v${VERSION}.zip" . -x '.git/*' '.github/*'
+          # Hanya file paket extension: docs/*.bat/*.md tidak ikut ke Store.
+          zip -r "morbis-ext-v${VERSION}.zip" . -x '.git/*' '.github/*' 'docs/*' '*.bat' '*.md' '.gitignore'
           echo "ZIP=morbis-ext-v${VERSION}.zip" >> $GITHUB_ENV
 
       # Gerbang 1 — kebersihan paket (syarat sertifikasi Edge).
