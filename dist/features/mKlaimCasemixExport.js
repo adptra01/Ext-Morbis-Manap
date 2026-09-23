@@ -262,7 +262,7 @@ var __morbis_feature = (() => {
       (centralOk
         ? ''
         : `<p style="color:#b45309"><b>Catatan:</b> DB pusat tak terjangkau saat export (offline/sinyal lambat) \u2014 kolom Pre-op/Revisi dari cache lokal PC ini.</p>`) +
-      `<script>window.onload=function(){window.print()}<\/script></body></html>`
+      `</body></html>`
     );
   }
   function resolveCasemixBaseSafe() {
@@ -353,6 +353,8 @@ var __morbis_feature = (() => {
       }
       w.document.write(html);
       w.document.close();
+      w.focus();
+      w.print();
     } finally {
       hideLoading();
     }

@@ -185,7 +185,10 @@ export function buildExportHtml(
       ? ''
       : `<p style="color:#b45309"><b>Catatan:</b> DB pusat tak terjangkau saat export ` +
         `(offline/sinyal lambat) — kolom Pre-op/Revisi dari cache lokal PC ini.</p>`) +
-    `<script>window.onload=function(){window.print()}</script></body></html>`
+    // TANPA inline <script>: window about:blank mewarisi CSP extension
+    // yang memblokir 'unsafe-inline' → cetak dipicu dari opener
+    // (w.print() di processExport), bukan dari dalam dokumen.
+    `</body></html>`
   );
 }
 
@@ -291,6 +294,10 @@ async function processExport(): Promise<void> {
     }
     w.document.write(html);
     w.document.close();
+    // Cetak dari opener (bukan inline <script> di dokumen baru —
+    // diblokir CSP extension 'script-src' tanpa 'unsafe-inline').
+    w.focus();
+    w.print();
   } finally {
     hideLoading();
   }
