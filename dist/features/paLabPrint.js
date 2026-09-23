@@ -12,7 +12,7 @@ var __morbis_feature = (() => {
         return s.replace(/<[^>]+>/g, ' ');
       }
       function fixRsName(s) {
-        return s.replace(/\bKH\.?\s*(?=ABDUL\s+MANAP)/gi, 'H. ');
+        return s.replace(/\b(?:KH\.?|H\.)\s*(?=ABDUL\s+MANAP)/gi, 'H. ');
       }
       function cleanPhpNoise(s) {
         return fixRsName(s)
