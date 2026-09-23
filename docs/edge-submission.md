@@ -10,8 +10,8 @@ antar-PC melalui server RS. Tanpa iklan, tanpa analitik, tanpa pihak ketiga.
 
 ## Privacy policy URL
 
-`https://adptra01.github.io/Ext-Morbis-Manap/docs/privacy.html`
-_(pastikan GitHub Pages menayangkan folder docs — ikut deploy-to-main)_
+`https://adptra01.github.io/Ext-Morbis-Manap/privacy.html`
+_(tayang dari folder docs/ via deploy Pages; ikut deploy-to-main)_
 
 ## Notes for certification (tempel tiap submit)
 
