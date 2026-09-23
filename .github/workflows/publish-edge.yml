@@ -84,6 +84,9 @@ jobs:
             "https://api.addons.microsoftedge.microsoft.com/v1/products/$EDGE_PRODUCT_ID/submissions") || LIST=""
           echo "Daftar submission (ringkas): $(echo "$LIST" | grep -oP '"version"\s*:\s*"[^"]+"[^}]{0,120}' | head -5)"
           echo "Mentah list (400 char): $(echo "$LIST" | head -c 400)"
+          # Catatan: endpoint list me-return 404 di API ini → guard advisory
+          # saja (fail-open). Proteksi duplikat mengandalkan penolakan versi
+          # dari Microsoft saat upload/publish.
           if [ -n "$LIST" ] && echo "$LIST" | grep -q "\"version\"[ ]*:[ ]*\"$VERSION\""; then
             echo "SKIP=true" >> $GITHUB_OUTPUT
             echo "::notice::Versi $VERSION sudah ada di Store — lewati submit."
@@ -207,17 +210,17 @@ jobs:
           echo "status_url=$STATUS_URL" >> $GITHUB_OUTPUT
           echo "Publish accepted: $STATUS_URL"
 
-      - name: Wait for publishing
+      # Catatan API: tidak ada endpoint status-publish yang valid untuk
+      # dipoll (GET .../submissions -> 404; URL operasi dari header Location
+      # juga 404 persisten). Sertifikasi makan waktu berhari-hari — CI tidak
+      # bisa menunggu itu. Yang diverifikasi CI: paket valid (upload
+      # Succeeded) + publish DITERIMA (202). Cek singkat di bawah hanya
+      # menangkap penolakan cepat; status akhir di Partner Center.
+      - name: Wait for publishing (sanity check)
         if: steps.pre.outputs.SKIP != 'true' && steps.guard.outputs.SKIP != 'true'
         run: |
-          MAX_RETRIES=60
-          RETRY=0
-          STATUS=""
-
-          while [ $RETRY -lt $MAX_RETRIES ] && [ "$STATUS" != "Succeeded" ]; do
+          for i in 1 2 3 4 5 6; do
             sleep 10
-            RETRY=$((RETRY + 1))
-
             RESP=$(curl -s -w "\n%{http_code}" \
               -H "Authorization: ApiKey $EDGE_API_KEY" \
               -H "X-ClientID: $EDGE_CLIENT_ID" \
@@ -225,23 +228,16 @@ jobs:
               "${{ steps.publish.outputs.status_url }}")
             CODE=$(echo "$RESP" | tail -1 | tr -d "[:space:]")
             RESPONSE=$(echo "$RESP" | sed '$d')
-
             STATUS=$(echo "$RESPONSE" | grep -oP '"status"\s*:\s*"\K[^"]+' || true)
-            echo "[$RETRY/$MAX_RETRIES] HTTP=$CODE Status: $STATUS"
-            if [ "$RETRY" -le 3 ]; then
-              echo "Respons poll (500 char): $(echo "$RESPONSE" | head -c 500)"
-            fi
-
+            echo "[$i/6] HTTP=$CODE Status: $STATUS"
             if [ "$STATUS" = "Failed" ]; then
               echo "::error::Publishing failed"
               echo "$RESPONSE" | head -c 1000
               exit 1
             fi
+            if [ "$STATUS" = "Succeeded" ]; then
+              echo "Publish operation selesai."
+              break
+            fi
           done
-
-          if [ "$STATUS" != "Succeeded" ]; then
-            echo "::error::Timeout waiting for publishing"
-            exit 1
-          fi
-
-          echo "Published successfully!"
+          echo "Submission diterima Microsoft (HTTP 202). Status sertifikasi (±7 hari kerja) pantau di Partner Center."
