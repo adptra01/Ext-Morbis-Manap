@@ -36,6 +36,7 @@ jobs:
             git commit -m "chore: bump version to $NEW [skip ci]" || break
             if git push origin HEAD:dev; then
               echo "VERSION=$NEW" >> $GITHUB_ENV
+              VERSION="$NEW"
               break
             fi
             echo "push ditolak (balapan), coba lagi ($i/3)..."

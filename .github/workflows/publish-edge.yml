@@ -16,9 +16,12 @@ jobs:
     # Manual selalu jalan (untuk validasi, termasuk deteksi secrets hilang).
     # Otomatis: hanya bila deploy sukses DAN secrets Edge sudah dipasang —
     # tanpa ini tiap update main jadi job merah sebelum Anda pasang secrets.
+    # (Bandingkan event_name dulu: aman-null bila event tak punya workflow_run.)
     if: >
       github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' && secrets.EDGE_API_KEY != '')
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       secrets.EDGE_API_KEY != '')
     runs-on: ubuntu-latest
     env:
       EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
