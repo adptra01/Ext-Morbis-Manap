@@ -41,6 +41,39 @@ var __morbis_feature = (() => {
     };
   }
 
+  // src/features/shared/casemixApi.ts
+  var CASEMIX_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
+  var BASE_OVERRIDE_KEY = 'ext-farmasi-app-base';
+  var CASEMIX_ALLOWED_HOSTS = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'];
+  var CASEMIX_ALLOWED_SUFFIX = '.rsudkotajambi.id';
+  function isAllowedCasemixBase(url) {
+    try {
+      const u = new URL(url);
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+      const h = u.hostname.toLowerCase();
+      if (CASEMIX_ALLOWED_HOSTS.includes(h)) return true;
+      return h.endsWith(CASEMIX_ALLOWED_SUFFIX);
+    } catch {
+      return false;
+    }
+  }
+  function resolveCasemixBase() {
+    try {
+      const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
+      if (ov && isAllowedCasemixBase(ov)) return ov.replace(/\/+$/, '');
+    } catch {}
+    return CASEMIX_BASE_FALLBACK;
+  }
+  function buildTtsUrl(text, lang = 'id') {
+    return (
+      resolveCasemixBase() +
+      '/api/tts?text=' +
+      encodeURIComponent(text) +
+      '&lang=' +
+      encodeURIComponent(lang)
+    );
+  }
+
   // src/features/shared/farmasiQueueBridge.ts
   var REQ_SOURCE = 'MORBIS-FARMASI';
   var RES_SOURCE = 'MORBIS-FARMASI-BRIDGE';
@@ -956,11 +989,15 @@ var __morbis_feature = (() => {
         }
       });
     }
-    function speakGoogleMp3(text, timeoutMs = 15e3) {
-      const url =
-        'https://morbis-antrian-relay.testingbae66.workers.dev/?text=' +
-        encodeURIComponent(text) +
-        '&lang=id';
+    function isServerVoiceAllowed() {
+      try {
+        return document.documentElement.getAttribute('data-ext-tts-server') !== '0';
+      } catch {
+        return true;
+      }
+    }
+    function speakServerMp3(text, timeoutMs = 15e3) {
+      const url = buildTtsUrl(text);
       return new Promise((resolve) => {
         let settled = false;
         let objUrl = null;
@@ -976,7 +1013,7 @@ var __morbis_feature = (() => {
           }
           if (objUrl) URL.revokeObjectURL(objUrl);
           updateDebugState({ lastTtsEnd: Date.now() });
-          console.info('[AFD] [TTS] google-mp3 ' + (ok ? 'SUCCESS' : 'FAIL'));
+          console.info('[AFD] [TTS] server-mp3 ' + (ok ? 'SUCCESS' : 'FAIL'));
           resolve(ok);
         };
         const timer = window.setTimeout(() => fin(false), timeoutMs);
@@ -1097,8 +1134,9 @@ var __morbis_feature = (() => {
         const ok = await speakSynth(text, idLocal);
         if (ok) return;
       }
+      const serverVoiceOk = isServerVoiceAllowed();
       const idAny = pickVoice('id-any');
-      if (idAny && idAny !== idLocal) {
+      if (idAny && idAny !== idLocal && (serverVoiceOk || idAny.localService)) {
         updateDebugState({ ttsMode: 'speech', ttsEngine: 'speech:' + idAny.name, ttsAttempts: 1 });
         const ok = await speakSynth(text, idAny);
         if (ok) return;
@@ -1109,16 +1147,20 @@ var __morbis_feature = (() => {
         const ok = await speakSynth(text, anyLocal);
         if (ok) return;
       }
-      updateDebugState({ ttsMode: 'mp3', ttsEngine: 'google-translate', ttsAttempts: 3 });
-      const okMp3 = await speakGoogleMp3(text);
-      if (okMp3) return;
+      if (serverVoiceOk) {
+        updateDebugState({ ttsMode: 'mp3', ttsEngine: 'rs-server', ttsAttempts: 3 });
+        const okMp3 = await speakServerMp3(text);
+        if (okMp3) return;
+      }
       updateDebugState({
         ttsMode: 'error',
         ttsEngine: null,
         ttsLastError:
           'all engines failed \u2014 layer0=' +
           ttsFailDetail +
-          ' (speech id-local/id-any/any-local, google-mp3)',
+          ' (speech id-local/id-any/any-local, server-mp3' +
+          (serverVoiceOk ? '' : ' nonaktif') +
+          ')',
         ttsAttempts: 4,
       });
       updateDebugState({ lastTtsEnd: Date.now() });

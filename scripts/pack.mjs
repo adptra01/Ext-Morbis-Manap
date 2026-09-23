@@ -58,43 +58,9 @@ async function packChrome() {
   console.log('[pack] update.xml updated');
 }
 
-async function packFirefox() {
-  console.log('[pack] Packing Firefox extension...');
-  await ensureDir(deployDir);
-
-  const manifest = getManifest();
-  const version = manifest.version;
-  const xpiPath = join(deployDir, `morbis-v${version}.xpi`);
-
-  try {
-    execSync(`cd ${distDir} && zip -r ${xpiPath} .`, { stdio: 'inherit' });
-    console.log(`[pack] Firefox extension packed → ${xpiPath}`);
-  } catch (e) {
-    console.error('[pack] Failed to pack Firefox extension:', e.message);
-  }
-
-  // Update Firefox auto-update manifest
-  const updatesJson = {
-    addons: {
-      'morbis-ext@rsud-manap.com': {
-        updates: [
-          {
-            version: version,
-            update_link: `https://adptra01.github.io/Ext-Morbis-Manap/morbis-v${version}.xpi`,
-          },
-        ],
-      },
-    },
-  };
-
-  writeFileSync(join(deployDir, 'updates.json'), JSON.stringify(updatesJson, null, 2));
-  console.log('[pack] updates.json updated');
-}
-
 async function main() {
   console.log('[pack] Starting pack process...');
   await packChrome();
-  await packFirefox();
   console.log('[pack] Pack complete!');
 }
 

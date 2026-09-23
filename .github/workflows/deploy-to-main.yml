@@ -4,6 +4,11 @@ on:
   push:
     branches: [dev]
 
+# Satu deploy dalam satu waktu (writeback bump versi di bawah tidak balapan).
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
@@ -15,6 +20,30 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Bump patch OTOMATIS tiap deploy (syarat Store: versi harus naik agar
+      # Edge ikut terupdate). Writeback [skip ci] → tidak memicu deploy lagi.
+      - name: Bump patch version
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          for i in 1 2 3; do
+            git fetch origin dev
+            git reset --hard origin/dev
+            OLD=$(jq -r .version manifest.json)
+            NEW=$(node -e "const p=process.argv[1].split('.').map(Number);console.log(p[0]+'.'+p[1]+'.'+(p[2]+1))" "$OLD")
+            jq --arg v "$NEW" '.version=$v' manifest.json > manifest.json.tmp && mv manifest.json.tmp manifest.json
+            git add manifest.json
+            git commit -m "chore: bump version to $NEW [skip ci]" || break
+            if git push origin HEAD:dev; then
+              echo "VERSION=$NEW" >> $GITHUB_ENV
+              break
+            fi
+            echo "push ditolak (balapan), coba lagi ($i/3)..."
+            sleep 5
+          done
+          test -n "${VERSION:-}" || { echo "::error::bump versi gagal"; exit 1; }
+          echo "Versi deploy: $VERSION"
+
       - uses: actions/setup-node@v5
         with:
           node-version: 22
@@ -22,14 +51,9 @@ jobs:
 
       - run: npm ci
 
-      # Kredensial Telegram (bot token + chat ID) TIDAK pernah di-commit —
-      # di-inject dari GitHub Secrets saat CI build. Tanpa keduanya, build
-      # tetap sukses dengan token kosong → logging remote non-aktif.
       - name: Build extension (production)
         env:
           NODE_ENV: production
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: npm run build
 
       - name: Deploy dist + docs → main (orphan-style)
@@ -78,7 +102,7 @@ jobs:
           cd "$ORPHAN"
           git init
           git add -A
-          git commit -m "deploy: $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git commit -m "deploy: v${VERSION:-unknown} ($(date -u +'%Y-%m-%d %H:%M UTC'))"
 
           git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
           git push origin HEAD:main --force

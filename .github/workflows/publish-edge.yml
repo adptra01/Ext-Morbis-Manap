@@ -1,6 +1,11 @@
 name: Publish to Edge Add-ons
 
+# Otomatis tiap "Deploy dist to main" sukses (= tiap update main), plus manual.
+# Bit yang dikirim = bit main (identik dengan yang ditarik .bat unpacked).
 on:
+  workflow_run:
+    workflows: ['Deploy dist to main']
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -8,6 +13,12 @@ permissions:
 
 jobs:
   publish:
+    # Manual selalu jalan (untuk validasi, termasuk deteksi secrets hilang).
+    # Otomatis: hanya bila deploy sukses DAN secrets Edge sudah dipasang —
+    # tanpa ini tiap update main jadi job merah sebelum Anda pasang secrets.
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && secrets.EDGE_API_KEY != '')
     runs-on: ubuntu-latest
     env:
       EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
@@ -15,14 +26,52 @@ jobs:
       EDGE_PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
 
       - name: Create extension zip
         run: |
+          test -f manifest.json || { echo "::error::bukan bit main (manifest.json hilang)"; exit 1; }
           VERSION=$(jq -r .version manifest.json)
-          cd dist && zip -r "../morbis-ext-v${VERSION}.zip" . && cd ..
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Versi paket: $VERSION"
+          zip -r "morbis-ext-v${VERSION}.zip" . -x '.git/*' '.github/*'
           echo "ZIP=morbis-ext-v${VERSION}.zip" >> $GITHUB_ENV
 
+      # Gerbang 1 — kebersihan paket (syarat sertifikasi Edge).
+      - name: Secret & manifest scan gate
+        run: |
+          echo "== manifest =="
+          jq -e '.manifest_version == 3' manifest.json > /dev/null
+          test "$(jq -r '.browser_specific_settings // empty' manifest.json)" = "" \
+            || { echo "::error::blok Firefox bocor ke paket Store"; exit 1; }
+          echo "== string terlarang di zip =="
+          if unzip -p "$ZIP" | grep -a -E -o 'morbis-antrian-relay|translate\.google\.com/translate_tts|api\.telegram\.org|TELEGRAM_BOT_TOKEN' | sort -u | tee /tmp/hits | grep -q .; then
+            echo "::error::string terlarang di paket:"; cat /tmp/hits; exit 1
+          fi
+          echo "Gerbang bersih."
+
+      # Gerbang 2 — lewati bila versi ini sudah pernah disubmit (aturan Edge:
+      # versi duplikat ditolak; skip = sukses tanpa antre sertifikasi sia-sia).
+      - name: Skip if version already submitted
+        id: guard
+        run: |
+          LIST=$(curl -s \
+            -H "Authorization: ApiKey $EDGE_API_KEY" \
+            -H "X-ClientID: $EDGE_CLIENT_ID" \
+            -X GET \
+            "https://api.addons.microsoftedge.microsoft.com/v1/products/$EDGE_PRODUCT_ID/submissions") || LIST=""
+          if [ -n "$LIST" ] && echo "$LIST" | grep -q "\"version\"[ ]*:[ ]*\"$VERSION\""; then
+            echo "SKIP=true" >> $GITHUB_OUTPUT
+            echo "::notice::Versi $VERSION sudah ada di Store — lewati submit."
+          else
+            echo "SKIP=false" >> $GITHUB_OUTPUT
+            echo "Versi $VERSION belum disubmit — lanjut."
+          fi
+
       - name: Upload package to Edge
+        if: steps.guard.outputs.SKIP != 'true'
         id: upload
         run: |
           RESPONSE=$(curl -s -w "\n%{http_code}" \
@@ -49,6 +98,7 @@ jobs:
           echo "Upload accepted, operation: $LOCATION"
 
       - name: Wait for upload processing
+        if: steps.guard.outputs.SKIP != 'true'
         run: |
           MAX_RETRIES=30
           RETRY=0
@@ -80,14 +130,17 @@ jobs:
           fi
 
       - name: Publish submission
+        if: steps.guard.outputs.SKIP != 'true'
         id: publish
         run: |
+          SHA="${{ github.event.workflow_run.head_sha }}"
+          test -n "$SHA" || SHA="${{ github.sha }}"
           RESPONSE=$(curl -s -w "\n%{http_code}" \
             -H "Authorization: ApiKey $EDGE_API_KEY" \
             -H "X-ClientID: $EDGE_CLIENT_ID" \
             -H "Content-Type: application/json" \
             -X POST \
-            -d '{"notes":"Auto-published from CI/CD"}' \
+            -d "{\"notes\":\"Auto-publish v$VERSION dari main @$SHA — Product ID $EDGE_PRODUCT_ID\"}" \
             "https://api.addons.microsoftedge.microsoft.com/v1/products/$EDGE_PRODUCT_ID/submissions")
 
           HTTP_CODE=$(echo "$RESPONSE" | tail -1)
@@ -106,6 +159,7 @@ jobs:
           echo "Publish accepted, operation: $LOCATION"
 
       - name: Wait for publishing
+        if: steps.guard.outputs.SKIP != 'true'
         run: |
           MAX_RETRIES=60
           RETRY=0

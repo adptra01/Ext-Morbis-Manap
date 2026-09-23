@@ -2,62 +2,13 @@ import { MessageTypes } from './shared/messaging';
 import type { ExtensionConfig, CustomUrl } from './shared/types';
 import type { MessagePayload } from './types.js';
 import { createLogger } from './shared/logger';
-import { sanitizeMessage } from './shared/telegramLogger';
+import { buildTtsUrl } from './features/shared/casemixApi.js';
 
 const log = createLogger('Background');
 
-// --- Telegram remote error logging (production only) ---
-// Token & chat ID di-inject via esbuild define saat build --production
-// (dari GitHub Secrets / env CI, bukan repo). Dev build → string kosong → no-op.
-declare const process: { env: Record<string, string | undefined> };
-
-/** Kirim pesan sanitized ke Telegram bot. Rate limit identik: 5/menit. */
-const telegramSent = new Map<string, number>();
-const TELEGRAM_RATE_LIMIT = 5;
-const TELEGRAM_RATE_WINDOW_MS = 60_000;
-
-async function sendTelegramLog(
-  level: 'error' | 'warn',
-  feature: string,
-  message: string,
-): Promise<void> {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
-  if (!token || !chatId) return; // dev build → no-op
-  const clean = sanitizeMessage(message);
-  if (!clean) return;
-
-  // rate limit per (feature:message) — cegah infinite-loop spam ke API Telegram
-  const now = Date.now();
-  const key = feature + ':' + clean;
-  const count = telegramSent.get(key) ?? 0;
-  if (count >= TELEGRAM_RATE_LIMIT) return;
-  telegramSent.set(key, count + 1);
-  if (telegramSent.size > 100) {
-    for (const [k, t] of telegramSent) {
-      if (now - t > TELEGRAM_RATE_WINDOW_MS) telegramSent.delete(k);
-    }
-  }
-
-  const label = level === 'error' ? 'ERROR' : 'WARN';
-  const text =
-    `<b>[MORBIS Ext] ${label} — ${feature}</b>\n` +
-    `<code>${clean.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code>`;
-
-  try {
-    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
-    });
-  } catch (e) {
-    log.log('Telegram log send failed:', String(e).slice(0, 80)); // jangan spam console.error
-  }
-}
-
 // --- TTS cache (per-teks, TTL 12 jam, auto-hapus). Tujuan: panggilan ulang
 // (recall / "Selanjutnya" untuk nomor yang sama) tidak perlu fetch ulang ke
-// local service / worker — balas langsung dari cache → latensi klik→suara
+// local service / server RS — balas langsung dari cache → latensi klik→suara
 // turun drastis. Entri expired dihapus saat get (auto-hapus) + sweep berkala
 // di alarm state-sync. MV3 SW bisa mati kapan saja → persist di storage.local.
 const TTS_CACHE_TTL_MS = 12 * 60 * 60 * 1000; // 12 jam
@@ -255,6 +206,12 @@ const DEFAULT_CONFIG: ExtensionConfig = {
       name: 'Antrian Farmasi Voice',
       description:
         'Display farmasi: fallback polling saat WS mati + TTS panggil pasien (nomor + nama + depo, 2×)',
+    },
+    ttsServer: {
+      enabled: true,
+      allowedRoles: ['apotek', 'admin'],
+      name: 'Suara Server Cadangan',
+      description: 'Dipakai bila suara komputer gagal. Teks panggilan dikirim ke server RS.',
     },
     penerimaanExport: {
       enabled: true,
@@ -699,10 +656,9 @@ chrome.runtime.onMessage.addListener(
         // http://*/* sehingga fetch ke 127.0.0.1:8765 TIDAK kena PNA/CORS halaman
         // (halaman display http://103.x ke localhost diblokir Chrome PNA).
         // HANYA network fetch — audio.play() tetap di content script.
-        // Fallback (tanpa Python di komputer farmasi): Google TTS via Cloudflare
-        // Worker proxy. Worker fetch server-side dgn Referer translate.google.com
-        // (browser TIDAK bisa set Referer = forbidden header) → 200 audio/mpeg.
-        // Proxy balas ACAO:* + host_permissions di bawah → fetch SW bebas CORS.
+        // Fallback (tanpa Python di komputer farmasi): suara via server RS
+        // sendiri (GET /api/tts) — first-party, tanpa pihak ketiga. Bisa
+        // dimatikan user via popup "Suara Server Cadangan" (default nyala).
         (async () => {
           try {
             const { text } = validated as unknown as { text: string };
@@ -718,8 +674,8 @@ chrome.runtime.onMessage.addListener(
             ): Promise<{ mime: string; data: Array<number> }> => {
               // ponytail: AbortSignal.timeout — koneksi ke 127.0.0.1 yang "hang"
               // (port kebuka tapi tak menjawab) bikin sendResponse tak pernah
-              // dipanggil → display timeout 10s. Timeout 5s memastikan fallback
-              // worker jalan. Tingkatkan hanya jika worker perlu waktu lebih.
+              // dipanggil → display timeout 10s. Timeout 5s memastikan suara
+              // server RS jalan. Tingkatkan hanya jika server perlu waktu lebih.
               const res = await fetch(url, {
                 mode: 'cors',
                 signal: AbortSignal.timeout(timeoutMs),
@@ -740,17 +696,18 @@ chrome.runtime.onMessage.addListener(
                 3000,
               );
             } catch {
-              // Layer 0b: Cloudflare Worker proxy (tanpa Python di PC farmasi).
-              const url =
-                'https://morbis-antrian-relay.testingbae66.workers.dev/?text=' +
-                encodeURIComponent(text) +
-                '&lang=id';
-              r = await fetchTts(url);
+              // Layer 0b: suara via server RS — hanya bila user mengizinkan
+              // (popup "Suara Server Cadangan", default nyala; first-party).
+              const cfg = await loadConfig().catch(() => null);
+              if (cfg && cfg.features?.ttsServer && cfg.features.ttsServer.enabled === false) {
+                throw new Error('tts-server-off');
+              }
+              r = await fetchTts(buildTtsUrl(text));
             }
             void ttsCacheSet(text, r.mime, r.data); // best-effort, jangan tunggu
             sendResponse({ ok: true, mime: r.mime, data: r.data });
           } catch (e) {
-            sendResponse({ ok: false, reason: 'worker-fetch ' + String(e).slice(0, 60) });
+            sendResponse({ ok: false, reason: 'tts-fetch ' + String(e).slice(0, 60) });
           }
         })();
         return true;
@@ -778,17 +735,6 @@ chrome.runtime.onMessage.addListener(
       case 'TAB_ACTION_RESULT': {
         // Forward result to all extension pages (side panel listens for this)
         chrome.runtime.sendMessage(validated).catch(() => {});
-        sendResponse({ success: true });
-        return true;
-      }
-
-      case 'LOG_TO_TELEGRAM': {
-        const p = validated as unknown as {
-          level: 'error' | 'warn';
-          feature: string;
-          message: string;
-        };
-        void sendTelegramLog(p.level ?? 'error', p.feature ?? 'unknown', p.message ?? '');
         sendResponse({ success: true });
         return true;
       }

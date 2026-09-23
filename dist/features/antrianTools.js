@@ -12,6 +12,21 @@ var __morbis_feature = (() => {
       s.textContent = rules.join('\n');
       document.head.appendChild(s);
     }
+    function isServerVoiceAllowed() {
+      try {
+        return document.documentElement.getAttribute('data-ext-tts-server') !== '0';
+      } catch {
+        return true;
+      }
+    }
+    function rsTtsUrl(msg) {
+      let base = 'http://dev.rsudkotajambi.id/rs';
+      try {
+        const ov = localStorage.getItem('ext-farmasi-app-base');
+        if (ov && /^https?:\/\//.test(ov)) base = ov.replace(/\/+$/, '');
+      } catch {}
+      return base + '/api/tts?text=' + encodeURIComponent(msg) + '&lang=id';
+    }
     function waitForDom(fn, timeoutMs = 8e3) {
       let done = false;
       const finish = () => {
@@ -169,12 +184,13 @@ var __morbis_feature = (() => {
         speechSynthesis.speak(u);
       } catch {}
     }
-    function speakGoogleMp3(msg) {
+    function speakServerMp3(msg) {
+      if (!isServerVoiceAllowed()) {
+        speakLocal(msg);
+        return;
+      }
       try {
-        const a = new Audio(
-          'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=id&q=' +
-            encodeURIComponent(msg),
-        );
+        const a = new Audio(rsTtsUrl(msg));
         a.onerror = () => speakLocal(msg);
         void a.play().catch(() => speakLocal(msg));
       } catch {
@@ -184,9 +200,11 @@ var __morbis_feature = (() => {
     function speak(msg) {
       if ('speechSynthesis' in window && !_ttsDead) {
         try {
-          const voice = pickVoice();
+          const picked = pickVoice();
+          const voice =
+            picked && !isServerVoiceAllowed() && !picked.localService ? pickLocalVoice() : picked;
           if (!voice) {
-            speakGoogleMp3(msg);
+            speakServerMp3(msg);
             return;
           }
           const u = new SpeechSynthesisUtterance(msg);
@@ -199,7 +217,7 @@ var __morbis_feature = (() => {
             if (!started && !speechSynthesis.speaking) {
               _ttsDead = true;
               speechSynthesis.cancel();
-              speakGoogleMp3(msg);
+              speakServerMp3(msg);
             }
           };
           u.onstart = () => {
@@ -210,10 +228,10 @@ var __morbis_feature = (() => {
           speechSynthesis.cancel();
           speechSynthesis.speak(u);
         } catch {
-          speakGoogleMp3(msg);
+          speakServerMp3(msg);
         }
       } else {
-        speakGoogleMp3(msg);
+        speakServerMp3(msg);
       }
     }
     let _audioCtx = null;

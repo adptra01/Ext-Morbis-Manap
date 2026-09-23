@@ -13,6 +13,29 @@
     document.head.appendChild(s);
   }
 
+  // Suara server RS diizinkan? (popup "Suara Server Cadangan"; hilang = nyala,
+  // kompatibel mundur). File ini IIFE MAIN-world tanpa import — helper lokal.
+  function isServerVoiceAllowed(): boolean {
+    try {
+      return document.documentElement.getAttribute('data-ext-tts-server') !== '0';
+    } catch {
+      return true;
+    }
+  }
+
+  // URL sintesis server RS (GET /api/tts) — pengganti Google langsung:
+  // extension hanya menghubungi server RS sendiri (first-party).
+  function rsTtsUrl(msg: string): string {
+    let base = 'http://dev.rsudkotajambi.id/rs';
+    try {
+      const ov = localStorage.getItem('ext-farmasi-app-base');
+      if (ov && /^https?:\/\//.test(ov)) base = ov.replace(/\/+$/, '');
+    } catch {
+      /* ignore localStorage error */
+    }
+    return base + '/api/tts?text=' + encodeURIComponent(msg) + '&lang=id';
+  }
+
   // Tunggu target DOM muncul (MutationObserver + debounce), panggil fn tiap mutasi
   // sampai return true, lalu disconnect otomatis. Pengganti intervalPoll 500ms×10
   // (yang mati setelah 5 detik — render mesin UI bisa tak pernah jalan): deterministik,
@@ -138,7 +161,9 @@
   // Pilih suara online (Google) lebih dulu — jauh lebih natural daripada espeak offline.
   // Chrome memuat daftar suara async; unlockTts() memicu getVoices() + voiceschanged.
   // espeak (localService) sengaja TIDAK dipakai — robotik; kalau tak ada voice online,
-  // kembalikan null dan speak() langsung beralih ke MP3 Google TTS.
+  // kembalikan null dan speak() langsung beralih ke MP3 server RS.
+  // Bila user mematikan "Suara Server Cadangan" (popup): voice jaringan dilewati,
+  // tak ada teks yang dikirim ke internet — murni suara lokal sistem.
   function pickVoice(): SpeechSynthesisVoice | null {
     try {
       const vs = speechSynthesis.getVoices() || [];
@@ -150,9 +175,7 @@
     }
   }
 
-  // ponytail: fallback MP3 Google TTS — hanya jika speechSynthesis macet/error.
-  // Ceiling: endpoint translate_tts tidak resmi, bisa kena rate-limit; upgrade ke
-  // provider berbayar (ResponsiveVoice dll) jika sering gagal di lapangan.
+  // ponytail: cadangan MP3 via server RS — hanya jika speechSynthesis macet/error.
   let _ttsDead = false;
   // Recovery: voice tersedia ≠ speechSynthesis sehat (utterance bisa nyangkut tanpa
   // pernah start). Probe utterance kosong; onstart/onend terbukti jalan → pulihkan.
@@ -207,13 +230,16 @@
     }
   }
 
-  function speakGoogleMp3(msg: string): void {
+  // Lapis cadangan: MP3 via server RS — hanya bila speechSynthesis macet/error
+  // DAN suara server diizinkan (popup). Kalau tidak → langsung suara lokal.
+  function speakServerMp3(msg: string): void {
+    if (!isServerVoiceAllowed()) {
+      speakLocal(msg);
+      return;
+    }
     try {
-      const a = new Audio(
-        'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=id&q=' +
-          encodeURIComponent(msg),
-      );
-      a.onerror = () => speakLocal(msg); // internet mati / endpoint ditolak → suara lokal
+      const a = new Audio(rsTtsUrl(msg));
+      a.onerror = () => speakLocal(msg); // server tak terjangkau → suara lokal
       void a.play().catch(() => speakLocal(msg)); // gagal mulai (autoplay/network) → suara lokal
     } catch {
       speakLocal(msg);
@@ -223,10 +249,14 @@
   function speak(msg: string): void {
     if ('speechSynthesis' in window && !_ttsDead) {
       try {
-        const voice = pickVoice();
-        // voice online (Google) belum siap → langsung MP3, jangan espeak robotik
+        const picked = pickVoice();
+        // Bila suara server dimatikan user: jangan pakai voice jaringan
+        // (tulisannya dikirim ke internet) — turun ke voice lokal sistem.
+        const voice =
+          picked && !isServerVoiceAllowed() && !picked.localService ? pickLocalVoice() : picked;
+        // voice belum siap → langsung cadangan server/lokal, jangan robotik
         if (!voice) {
-          speakGoogleMp3(msg);
+          speakServerMp3(msg);
           return;
         }
         const u = new SpeechSynthesisUtterance(msg);
@@ -237,23 +267,23 @@
         let started = false;
         const fallback = () => {
           if (!started && !speechSynthesis.speaking) {
-            _ttsDead = true; // sesi ini: speechSynthesis nyangkut, pakai MP3
+            _ttsDead = true; // sesi ini: speechSynthesis nyangkut, pakai cadangan
             speechSynthesis.cancel();
-            speakGoogleMp3(msg);
+            speakServerMp3(msg);
           }
         };
         u.onstart = () => {
           started = true;
         };
         u.onerror = fallback;
-        setTimeout(fallback, 1500); // tak pernah mulai dalam 1.5s → MP3
+        setTimeout(fallback, 1500); // tak pernah mulai dalam 1.5s → cadangan
         speechSynthesis.cancel();
         speechSynthesis.speak(u);
       } catch {
-        speakGoogleMp3(msg);
+        speakServerMp3(msg);
       }
     } else {
-      speakGoogleMp3(msg);
+      speakServerMp3(msg);
     }
   }
 

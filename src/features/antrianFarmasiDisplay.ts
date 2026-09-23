@@ -45,6 +45,7 @@
  * gate data-ext-antrian-farmasi di init.ts.
  */
 import { nextHealth, type HealthState } from './shared/wsHealth';
+import { buildTtsUrl } from './shared/casemixApi.js';
 // Display jalan di world MAIN tanpa chrome.runtime → akses QueueManager via
 // bridge (postMessage ke isolated world) — getQueueState/issuePending bridge.
 import { getQueueState, markCalled, reset } from './shared/farmasiQueueBridge';
@@ -1147,15 +1148,17 @@ declare global {
    * SETIAP layer benar-benar di-tunggu (await onend/play/error/timeout),
    * tidak "fire-and-forget".
    *
-   * Prioritas = LOKAL dulu (internet BUKAN dependency utama), Google
-   * MP3 jadi cadangan terakhir:
+   * Prioritas = LOKAL dulu (server RS BUKAN dependency utama), suara server
+   * jadi cadangan terakhir:
    *
    *   Layer 0 — local service 127.0.0.1:8765 (tts_service.py; MP3 via Audio,
    *             engine di luar browser — bebas CORS & voices kosong)
    *   Layer 1 — speechSynthesis voice BAHASA INDONESIA lokal (localService)
-   *   Layer 2 — speechSynthesis voice id-ID apa pun (termasuk Google online)
+   *   Layer 2 — speechSynthesis voice id-ID apa pun (voice jaringan dilewati
+   *             bila "Suara Server Cadangan" dimatikan user)
    *   Layer 3 — speechSynthesis voice lokal apa pun yang tersedia
-   *   Layer 4 — Google Translate TTS MP3 (fetch→blob→Audio→play→ended)
+   *   Layer 4 — MP3 via server RS sendiri GET /api/tts (hanya bila diizinkan;
+   *             TANPA pihak ketiga — pengganti Cloudflare Worker + Google)
    *   Layer 5 — ERROR eksplisit: ttsMode='error' + ttsLastError
    *
    * Tidak ada mode 'silent' diam-diam: kegagalan semua layer tercatat
@@ -1305,17 +1308,22 @@ declare global {
     });
   }
 
-  // Layer 4 — TTS MP3 via Cloudflare Worker proxy. fetch→blob→objectURL→Audio.
-  // Worker fetch server-side ke translate.google.com (Referer server-side) →
-  // audio/mpeg + ACAO:*. Worker ini juga dipakai SW Layer-0b, jadi jalur ini
-  // tetap hidup walau rantai bridge→SW mati. Sub-fallback: kalau fetch
-  // diblokir CORS, mainkan Audio langsung dari URL (audio element tidak kena
-  // CORS untuk playback).
-  function speakGoogleMp3(text: string, timeoutMs = 15000): Promise<boolean> {
-    const url =
-      'https://morbis-antrian-relay.testingbae66.workers.dev/?text=' +
-      encodeURIComponent(text) +
-      '&lang=id';
+  // Suara server RS diizinkan? (popup "Suara Server Cadangan"; atribut
+  // hilang = nyala, kompatibel mundur dengan instalasi lama).
+  function isServerVoiceAllowed(): boolean {
+    try {
+      return document.documentElement.getAttribute('data-ext-tts-server') !== '0';
+    } catch {
+      return true;
+    }
+  }
+
+  // Layer 4 — MP3 via server RS sendiri (GET /api/tts). fetch→blob→objectURL→Audio.
+  // Pengganti Cloudflare Worker + Google langsung: extension TIDAK menghubungi
+  // pihak ketiga mana pun. Sub-fallback: kalau fetch diblokir CORS, mainkan
+  // Audio langsung dari URL (audio element tidak kena CORS untuk playback).
+  function speakServerMp3(text: string, timeoutMs = 15000): Promise<boolean> {
+    const url = buildTtsUrl(text);
     return new Promise((resolve) => {
       let settled = false;
       let objUrl: string | null = null;
@@ -1331,7 +1339,7 @@ declare global {
         }
         if (objUrl) URL.revokeObjectURL(objUrl);
         updateDebugState({ lastTtsEnd: Date.now() });
-        console.info('[AFD] [TTS] google-mp3 ' + (ok ? 'SUCCESS' : 'FAIL'));
+        console.info('[AFD] [TTS] server-mp3 ' + (ok ? 'SUCCESS' : 'FAIL'));
         resolve(ok);
       };
       const timer = window.setTimeout(() => fin(false), timeoutMs);
@@ -1491,9 +1499,11 @@ declare global {
       if (ok) return;
     }
 
-    // Layer 2: voice id-ID apa pun (termasuk Google online via speechSynthesis)
+    // Layer 2: voice id-ID apa pun. Bila suara server dimatikan user, lewati
+    // voice jaringan (teksnya dikirim ke internet) — pakai voice lokal saja.
+    const serverVoiceOk = isServerVoiceAllowed();
     const idAny = pickVoice('id-any');
-    if (idAny && idAny !== idLocal) {
+    if (idAny && idAny !== idLocal && (serverVoiceOk || idAny.localService)) {
       updateDebugState({ ttsMode: 'speech', ttsEngine: 'speech:' + idAny.name, ttsAttempts: 1 });
       const ok = await speakSynth(text, idAny);
       if (ok) return;
@@ -1507,10 +1517,12 @@ declare global {
       if (ok) return;
     }
 
-    // Layer 4: Google TTS MP3 (cadangan terakhir sebelum error)
-    updateDebugState({ ttsMode: 'mp3', ttsEngine: 'google-translate', ttsAttempts: 3 });
-    const okMp3 = await speakGoogleMp3(text);
-    if (okMp3) return;
+    // Layer 4: MP3 via server RS (cadangan terakhir; hanya bila diizinkan user)
+    if (serverVoiceOk) {
+      updateDebugState({ ttsMode: 'mp3', ttsEngine: 'rs-server', ttsAttempts: 3 });
+      const okMp3 = await speakServerMp3(text);
+      if (okMp3) return;
+    }
 
     // Layer 5: semua gagal → ERROR eksplisit, bukan silent
     updateDebugState({
@@ -1519,7 +1531,9 @@ declare global {
       ttsLastError:
         'all engines failed — layer0=' +
         ttsFailDetail +
-        ' (speech id-local/id-any/any-local, google-mp3)',
+        ' (speech id-local/id-any/any-local, server-mp3' +
+        (serverVoiceOk ? '' : ' nonaktif') +
+        ')',
       ttsAttempts: 4,
     });
     updateDebugState({ lastTtsEnd: Date.now() });

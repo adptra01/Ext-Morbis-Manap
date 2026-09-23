@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kebijakan Privasi — MORBIS Ext Unofficial</title>
+    <style>
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          Roboto,
+          Arial,
+          sans-serif;
+        line-height: 1.7;
+        color: #1c2530;
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 24px 20px 64px;
+      }
+      h1 {
+        font-size: 1.5rem;
+      }
+      h2 {
+        font-size: 1.1rem;
+        margin-top: 1.8em;
+      }
+      p,
+      li {
+        font-size: 0.95rem;
+      }
+      .meta {
+        color: #5b6470;
+        font-size: 0.85rem;
+      }
+      code {
+        background: #f1f5f9;
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 0.85em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Kebijakan Privasi — MORBIS Ext Unofficial</h1>
+    <p class="meta">
+      Penerbit: adi putra · Kontak:
+      <a href="mailto:adi.putra.work1@gmail.com">adi.putra.work1@gmail.com</a><br />
+      Berlaku sejak: 24 September 2026 · Versi ekstensi: 1.5.2+
+    </p>
+
+    <h2>Ringkasan singkat</h2>
+    <p>
+      Ekstensi ini adalah alat bantu kerja untuk SIMRS MORBIS di lingkungan rumah sakit. Data Anda
+      <strong
+        >tidak dijual, tidak dipakai untuk iklan, dan tidak dikirim ke pihak ketiga mana pun</strong
+      >. Semua pengiriman data hanya terjadi antara komputer Anda dan
+      <strong>server milik rumah sakit sendiri</strong> (server MORBIS dan server Reports RS).
+    </p>
+
+    <h2>1. Data yang hanya tersimpan di komputer Anda</h2>
+    <ul>
+      <li>Pengaturan ekstensi (fitur aktif/nonaktif, peran/role, daftar alamat server).</li>
+      <li>
+        Penanda dan riwayat lokal (mis. pasien pre-op, riwayat simpan resume) sebagai cadangan bila
+        server tidak terjangkau.
+      </li>
+    </ul>
+    <p>
+      Data ini tidak pernah keluar dari komputer Anda kecuali untuk sinkronisasi ke server rumah
+      sakit seperti dijelaskan di bawah. Menghapus ekstensi akan menghapus data lokal ini.
+    </p>
+
+    <h2>2. Data yang dikirim ke server rumah sakit</h2>
+    <p>
+      Agar data sama di semua komputer (antar-PC), ekstensi mengirim hal berikut ke server milik
+      rumah sakit (<code>dev.rsudkotajambi.id</code> dan server aplikasi MORBIS):
+    </p>
+    <ul>
+      <li>
+        <strong>Nomor antrean farmasi/loket</strong> — agar layar antrean dan pemanggil sinkron.
+      </li>
+      <li>
+        <strong>Penanda pre-op, revisi klaim BPJS, dan riwayat simpan resume</strong> — beserta nama
+        petugas dan waktu simpan, agar riwayat yang sama terlihat di PC/akun lain.
+      </li>
+      <li>
+        <strong>Teks panggilan suara</strong> (mis. nomor antrean + nama pasien) — hanya bila suara
+        di komputer gagal <em>dan</em> fitur "Suara Server Cadangan" aktif. Server mengubah teks
+        menjadi suara dan mengembalikannya; salinan suara disimpan sementara (±12 jam) agar
+        panggilan ulang tidak perlu diproses lagi.
+      </li>
+    </ul>
+
+    <h2>3. Pihak ketiga</h2>
+    <p>
+      <strong>Tidak ada.</strong> Ekstensi tidak menghubungi, mengirim data ke, atau memakai layanan
+      milik pihak ketiga mana pun (termasuk layanan analitik, iklan, Telegram, Cloudflare, maupun
+      Google). Proses suara yang dulu memakai layanan luar kini dikerjakan oleh server rumah sakit
+      sendiri.
+    </p>
+
+    <h2>4. Kontrol Anda</h2>
+    <ul>
+      <li>Setiap fitur dapat dimatikan lewat popup ekstensi (ikon extension → daftar Fitur).</li>
+      <li>
+        "Suara Server Cadangan" dapat dimatikan — suara tetap bunyi dari komputer sendiri selama
+        fasilitas suara lokal tersedia.
+      </li>
+      <li>Menonaktifkan/menghapus ekstensi menghentikan semua pengiriman data.</li>
+    </ul>
+
+    <h2>5. Keamanan</h2>
+    <p>
+      Komunikasi berjalan di jaringan internal rumah sakit. Ekstensi tidak menyimpan kata sandi dan
+      tidak menanamkan kredensial apa pun di dalam paket.
+    </p>
+
+    <h2>6. Perubahan kebijakan</h2>
+    <p>
+      Perubahan kebijakan ini akan diumumkan lewat pembaruan ekstensi. Pertanyaan:
+      <a href="mailto:adi.putra.work1@gmail.com">adi.putra.work1@gmail.com</a>.
+    </p>
+  </body>
+</html>

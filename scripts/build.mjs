@@ -195,15 +195,9 @@ const commonOptions = {
   format: 'iife',
   platform: 'browser',
   logLevel: 'info',
-  // Telegram logging: token/chat hanya terisi saat build production (dari
-  // GitHub Secrets via env CI — bukan dari repo/.env). Dev build → string
-  // kosong → `if (!token || !chatId) return` → tidak mengirim apa pun.
-  // Selalu di-define agar `process.env.*` tidak bocor ke runtime (SW browser
-  // tidak punya `process` global → ReferenceError tanpa define ini).
-  define: {
-    'process.env.TELEGRAM_BOT_TOKEN': JSON.stringify(process.env.TELEGRAM_BOT_TOKEN ?? ''),
-    'process.env.TELEGRAM_CHAT_ID': JSON.stringify(process.env.TELEGRAM_CHAT_ID ?? ''),
-  },
+  // Tidak ada secret yang di-define ke bundle (syarat Store Edge 1.5.5) —
+  // Telegram logging dihapus total; tak ada process.env.* di kode.
+  define: {},
 };
 
 async function buildWithReact(options) {

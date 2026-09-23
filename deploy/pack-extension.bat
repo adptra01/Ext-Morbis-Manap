@@ -123,8 +123,4 @@ echo     - %CRX_FILE%
 echo     - %PEM_FILE%
 echo  3. Jalankan: deploy-to-github.bat
 echo.
-echo  ATAU untuk Firefox juga:
-echo  1. Lakukan pack Firefox (pack-firefox-xpi.bat)
-echo  2. Lalu jalankan deploy-to-github.bat
-echo.
 pause

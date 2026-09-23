@@ -55,6 +55,19 @@ export function resolveCasemixBase(): string {
   return CASEMIX_BASE_FALLBACK;
 }
 
+/** URL sintesis suara server RS (GET /api/tts) — pengganti Cloudflare
+ *  Worker/Google langsung: extension hanya menghubungi server RS sendiri
+ *  (first-party, ikut allowlist + fallback yang sama). */
+export function buildTtsUrl(text: string, lang: string = 'id'): string {
+  return (
+    resolveCasemixBase() +
+    '/api/tts?text=' +
+    encodeURIComponent(text) +
+    '&lang=' +
+    encodeURIComponent(lang)
+  );
+}
+
 /** Potong daftar id menjadi unik, bersih, maks 500 (batas API). */
 export function normalizeIds(ids: Array<string | number>): string[] {
   return [...new Set(ids.map((s) => String(s).trim()).filter(Boolean))].slice(0, BATCH_MAX);
