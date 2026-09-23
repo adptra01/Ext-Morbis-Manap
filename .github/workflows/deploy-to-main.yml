@@ -11,6 +11,8 @@ concurrency:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
   deploy:
@@ -107,3 +109,31 @@ jobs:
 
           git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
           git push origin HEAD:main --force
+
+  # Pages tayang dari bit main yang BARU di-push di atas (bukan dari dev) —
+  # jadi privacy.html dkk selalu mencerminkan hasil deploy.
+  pages:
+    needs: [deploy]
+    environment:
+      name: github-pages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  # Store Edge: tiap update main (bit identik dengan .bat unpacked).
+  publish-edge:
+    needs: [deploy]
+    uses: ./.github/workflows/publish-edge.yml
+    secrets: inherit

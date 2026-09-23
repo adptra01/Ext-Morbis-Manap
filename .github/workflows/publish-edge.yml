@@ -1,11 +1,10 @@
 name: Publish to Edge Add-ons
 
-# Otomatis tiap "Deploy dist to main" sukses (= tiap update main), plus manual.
-# Bit yang dikirim = bit main (identik dengan yang ditarik .bat unpacked).
+# Dipanggil sebagai reusable workflow dari akhir "Deploy dist to main"
+# (push token tak memicu workflow_run — rantai event antar-workflow mati).
+# Tetap bisa manual (dispatch) untuk validasi/publish ulang.
 on:
-  workflow_run:
-    workflows: ['Deploy dist to main']
-    types: [completed]
+  workflow_call:
   workflow_dispatch:
 
 permissions:
@@ -14,13 +13,12 @@ permissions:
 jobs:
   publish:
     # Manual selalu jalan (untuk validasi, termasuk deteksi secrets hilang).
-    # Otomatis: hanya bila deploy sukses. (Catatan: konteks `secrets` TIDAK
-    # boleh di job-if — parser menolak; cek secrets di step preflight.)
-    # (Bandingkan event_name dulu: aman-null bila event tak punya workflow_run.)
+    # Dipanggil dari deploy-to-main (selalu diizinkan); event lain ditolak
+    # dengan sopan. (Catatan: konteks `secrets` TIDAK boleh di job-if —
+    # parser menolak; cek secrets di step preflight.)
     if: >
       github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'workflow_run' &&
-       github.event.workflow_run.conclusion == 'success')
+      github.event_name == 'workflow_call'
     runs-on: ubuntu-latest
     env:
       EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
@@ -32,16 +30,16 @@ jobs:
           ref: main
           fetch-depth: 1
 
-      # Preflight: tanpa secrets → lewati halus (bukan merah), khusus jalur
-      # otomatis. Jalur manual tanpa secrets lanjut agar galatnya eksplisit.
+      # Preflight: tanpa secrets → lewati halus (bukan merah). Dipanggil
+      # dari deploy-to-main; manual tanpa secrets lanjut agar galat eksplisit.
       - name: Preflight secrets
         id: pre
         env:
           HAS_SECRETS: ${{ secrets.EDGE_API_KEY != '' }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_run" ] && [ "$HAS_SECRETS" != "true" ]; then
+          if [ "$HAS_SECRETS" != "true" ]; then
             echo "SKIP=true" >> $GITHUB_OUTPUT
-            echo "::notice::Secrets Edge (EDGE_CLIENT_ID/API_KEY/PRODUCT_ID) belum dipasang — lewati auto-publish. Pasang lalu dispatch manual."
+            echo "::notice::Secrets Edge (EDGE_CLIENT_ID/API_KEY/PRODUCT_ID) belum dipasang — lewati publish. Pasang lalu dispatch manual."
           else
             echo "SKIP=false" >> $GITHUB_OUTPUT
           fi
