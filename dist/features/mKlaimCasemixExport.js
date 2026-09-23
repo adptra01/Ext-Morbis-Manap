@@ -274,7 +274,9 @@ var __morbis_feature = (() => {
       `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Pre-op &amp; Revisi Klaim</title><style>body{font-family:Arial,sans-serif;font-size:12px;color:#111}h2{margin:0 0 4px}p{margin:0 0 12px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #555;padding:4px 6px;text-align:left;vertical-align:top}th{background:#eee}@media print{.no-print{display:none}}</style></head><body><h2>Laporan Pre-op &amp; Revisi Klaim BPJS</h2><p>${f('Periode', [filter.tanggalAwal, filter.tanggalAkhir].filter(Boolean).join(' s.d. '))}${f('NORM', filter.norm)}${f('Nama', filter.nama)}${f('Reg', filter.reg)}${f('Billing', filter.billing)}${f('Status', filter.status)}${f('Poli', filter.poli || filter.idPoli)}<br>Sumber: DB pusat ${esc(resolveCasemixBaseSafe())} \u2014 ${esc(/* @__PURE__ */ new Date().toLocaleString('id-ID'))}</p><table><thead><tr><th>No</th><th>No RM</th><th>Nama</th><th>No Reg</th><th>Poli</th><th>Pre-op</th><th>Waktu Tandai</th><th>Penanda</th><th>Jml Revisi</th><th>Revisi Terakhir</th></tr></thead><tbody>${trs}</tbody></table>` +
       (centralOk
         ? ''
-        : `<p style="color:#b45309"><b>Catatan:</b> DB pusat tak terjangkau saat export (offline/sinyal lambat) \u2014 kolom Pre-op/Revisi dari cache lokal PC ini.</p>`) +
+        : `<p style="color:#b45309"><b>Catatan:</b> DB pusat tak terjangkau saat export (offline/sinyal lambat) \u2014 kolom Pre-op/Revisi dari cache lokal PC ini.</p>`) + // TANPA inline <script>: window about:blank mewarisi CSP extension
+      // yang memblokir 'unsafe-inline' → cetak dipicu dari opener
+      // (w.print() di processExport), bukan dari dalam dokumen.
       `</body></html>`
     );
   }

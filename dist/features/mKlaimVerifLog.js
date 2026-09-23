@@ -24,11 +24,36 @@ var __morbis_feature = (() => {
   var mKlaimVerifLog_exports = {};
   __export(mKlaimVerifLog_exports, {
     initMklaimVerifLog: () => initMklaimVerifLog,
+    isVerifButton: () => isVerifButton,
   });
 
   // src/features/shared/types.ts
   function getMorbisGlobals() {
     return window;
+  }
+
+  // src/features/shared/casemixApi.ts
+  var CASEMIX_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
+  var BASE_OVERRIDE_KEY = 'ext-farmasi-app-base';
+  var CASEMIX_ALLOWED_HOSTS = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'];
+  var CASEMIX_ALLOWED_SUFFIX = '.rsudkotajambi.id';
+  function isAllowedCasemixBase(url) {
+    try {
+      const u = new URL(url);
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+      const h = u.hostname.toLowerCase();
+      if (CASEMIX_ALLOWED_HOSTS.includes(h)) return true;
+      return h.endsWith(CASEMIX_ALLOWED_SUFFIX);
+    } catch {
+      return false;
+    }
+  }
+  function resolveCasemixBase() {
+    try {
+      const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
+      if (ov && isAllowedCasemixBase(ov)) return ov.replace(/\/+$/, '');
+    } catch {}
+    return CASEMIX_BASE_FALLBACK;
   }
 
   // src/features/shared/resumeHistory.ts
@@ -128,26 +153,8 @@ var __morbis_feature = (() => {
     return 'petugas';
   }
   var REPORTS_API_PATH = '/api/reports/resume-history';
-  var REPORTS_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
-  var REPORTS_ALLOWED_HOSTS = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'];
-  var REPORTS_ALLOWED_SUFFIX = '.rsudkotajambi.id';
-  function isAllowedCasemixBase(url) {
-    try {
-      const u = new URL(url);
-      if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
-      const h = u.hostname.toLowerCase();
-      if (REPORTS_ALLOWED_HOSTS.includes(h)) return true;
-      return h.endsWith(REPORTS_ALLOWED_SUFFIX);
-    } catch {
-      return false;
-    }
-  }
   function resolveReportsBase() {
-    try {
-      const ov = localStorage.getItem('ext-farmasi-app-base');
-      if (ov && isAllowedCasemixBase(ov)) return ov.replace(/\/+$/, '');
-    } catch {}
-    return REPORTS_BASE_FALLBACK;
+    return resolveCasemixBase();
   }
   function postToReports(entry, idVisit, fetcher = fetch) {
     try {
@@ -155,6 +162,7 @@ var __morbis_feature = (() => {
         id_visit: idVisit,
         id_resume: entry.id_resume,
         aksi: entry.aksi,
+        tipe: entry.tipe,
         waktu: new Date(entry.at).toISOString(),
         user: entry.user,
         before: entry.before,
@@ -415,13 +423,18 @@ var __morbis_feature = (() => {
       run: initMklaimVerifLog,
     };
   }
-  if (window.location.pathname.includes('/v2/m-klaim/detail-v2-refaktor')) {
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initMklaimVerifLog);
-    } else {
-      initMklaimVerifLog();
+  try {
+    if (
+      typeof window !== 'undefined' &&
+      window.location?.pathname?.includes('/v2/m-klaim/detail-v2-refaktor')
+    ) {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initMklaimVerifLog);
+      } else {
+        initMklaimVerifLog();
+      }
     }
-  }
+  } catch {}
   return __toCommonJS(mKlaimVerifLog_exports);
 })();
 //# sourceMappingURL=mKlaimVerifLog.js.map

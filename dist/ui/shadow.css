@@ -1632,6 +1632,10 @@ html {
   font-size: 1.25rem;
   line-height: 1.75rem;
 }
+.text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
 .font-bold {
   font-weight: 700;
 }
@@ -2299,6 +2303,10 @@ html {
 }
 .\[\&_svg\]\:pointer-events-none svg {
   pointer-events: none;
+}
+.\[\&_svg\]\:size-3\.5 svg {
+  width: 0.875rem;
+  height: 0.875rem;
 }
 .\[\&_svg\]\:size-5 svg {
   width: 1.25rem;

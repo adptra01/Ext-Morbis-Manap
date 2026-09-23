@@ -27962,6 +27962,30 @@ var __morbis_feature = (() => {
     return s === '' || /^[-–—]+$/.test(s);
   }
 
+  // src/features/shared/casemixApi.ts
+  var CASEMIX_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
+  var BASE_OVERRIDE_KEY = 'ext-farmasi-app-base';
+  var CASEMIX_ALLOWED_HOSTS = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'];
+  var CASEMIX_ALLOWED_SUFFIX = '.rsudkotajambi.id';
+  function isAllowedCasemixBase(url) {
+    try {
+      const u = new URL(url);
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+      const h = u.hostname.toLowerCase();
+      if (CASEMIX_ALLOWED_HOSTS.includes(h)) return true;
+      return h.endsWith(CASEMIX_ALLOWED_SUFFIX);
+    } catch {
+      return false;
+    }
+  }
+  function resolveCasemixBase() {
+    try {
+      const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
+      if (ov && isAllowedCasemixBase(ov)) return ov.replace(/\/+$/, '');
+    } catch {}
+    return CASEMIX_BASE_FALLBACK;
+  }
+
   // src/features/shared/resumeHistory.ts
   function defaultStore() {
     try {
@@ -28063,26 +28087,8 @@ var __morbis_feature = (() => {
     return 'petugas';
   }
   var REPORTS_API_PATH = '/api/reports/resume-history';
-  var REPORTS_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
-  var REPORTS_ALLOWED_HOSTS = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'];
-  var REPORTS_ALLOWED_SUFFIX = '.rsudkotajambi.id';
-  function isAllowedCasemixBase(url) {
-    try {
-      const u = new URL(url);
-      if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
-      const h = u.hostname.toLowerCase();
-      if (REPORTS_ALLOWED_HOSTS.includes(h)) return true;
-      return h.endsWith(REPORTS_ALLOWED_SUFFIX);
-    } catch {
-      return false;
-    }
-  }
   function resolveReportsBase() {
-    try {
-      const ov = localStorage.getItem('ext-farmasi-app-base');
-      if (ov && isAllowedCasemixBase(ov)) return ov.replace(/\/+$/, '');
-    } catch {}
-    return REPORTS_BASE_FALLBACK;
+    return resolveCasemixBase();
   }
   function postToReports(entry, idVisit, fetcher = fetch) {
     try {
@@ -28090,6 +28096,7 @@ var __morbis_feature = (() => {
         id_visit: idVisit,
         id_resume: entry.id_resume,
         aksi: entry.aksi,
+        tipe: entry.tipe,
         waktu: new Date(entry.at).toISOString(),
         user: entry.user,
         before: entry.before,
@@ -33268,6 +33275,8 @@ var __morbis_feature = (() => {
         size: {
           default: 'h-11 px-5 min-w-[90px]',
           sm: 'h-9 px-3.5 min-w-[80px]',
+          // Kompak khusus popup 340px (sidepanel + halaman web tetap pakai sm).
+          xs: 'h-7 px-2.5 min-w-0 gap-1.5 text-xs font-medium [&_svg]:size-3.5',
           lg: 'h-12 px-6 text-base min-w-[100px]',
           xl: 'h-13 px-7 text-lg min-w-[110px]',
           icon: 'h-11 w-11',
@@ -36411,6 +36420,10 @@ video {
   font-size: 1.25rem;
   line-height: 1.75rem;
 }
+.text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
 .font-bold {
   font-weight: 700;
 }
@@ -37039,6 +37052,10 @@ video {
 }
 .\\[\\&_svg\\]\\:pointer-events-none svg {
   pointer-events: none;
+}
+.\\[\\&_svg\\]\\:size-3\\.5 svg {
+  width: 0.875rem;
+  height: 0.875rem;
 }
 .\\[\\&_svg\\]\\:size-5 svg {
   width: 1.25rem;
@@ -38683,6 +38700,10 @@ video {
   font-size: 1.25rem;
   line-height: 1.75rem;
 }
+.text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
 .font-bold {
   font-weight: 700;
 }
@@ -39311,6 +39332,10 @@ video {
 }
 .\\[\\&_svg\\]\\:pointer-events-none svg {
   pointer-events: none;
+}
+.\\[\\&_svg\\]\\:size-3\\.5 svg {
+  width: 0.875rem;
+  height: 0.875rem;
 }
 .\\[\\&_svg\\]\\:size-5 svg {
   width: 1.25rem;
