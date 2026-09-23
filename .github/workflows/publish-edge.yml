@@ -83,6 +83,7 @@ jobs:
             -X GET \
             "https://api.addons.microsoftedge.microsoft.com/v1/products/$EDGE_PRODUCT_ID/submissions") || LIST=""
           echo "Daftar submission (ringkas): $(echo "$LIST" | grep -oP '"version"\s*:\s*"[^"]+"[^}]{0,120}' | head -5)"
+          echo "Mentah list (400 char): $(echo "$LIST" | head -c 400)"
           if [ -n "$LIST" ] && echo "$LIST" | grep -q "\"version\"[ ]*:[ ]*\"$VERSION\""; then
             echo "SKIP=true" >> $GITHUB_OUTPUT
             echo "::notice::Versi $VERSION sudah ada di Store — lewati submit."
@@ -217,18 +218,23 @@ jobs:
             sleep 10
             RETRY=$((RETRY + 1))
 
-            RESPONSE=$(curl -s \
+            RESP=$(curl -s -w "\n%{http_code}" \
               -H "Authorization: ApiKey $EDGE_API_KEY" \
               -H "X-ClientID: $EDGE_CLIENT_ID" \
               -X GET \
               "${{ steps.publish.outputs.status_url }}")
+            CODE=$(echo "$RESP" | tail -1 | tr -d "[:space:]")
+            RESPONSE=$(echo "$RESP" | sed '$d')
 
             STATUS=$(echo "$RESPONSE" | grep -oP '"status"\s*:\s*"\K[^"]+' || true)
-            echo "[$RETRY/$MAX_RETRIES] Status: $STATUS"
+            echo "[$RETRY/$MAX_RETRIES] HTTP=$CODE Status: $STATUS"
+            if [ "$RETRY" -le 3 ]; then
+              echo "Respons poll (500 char): $(echo "$RESPONSE" | head -c 500)"
+            fi
 
             if [ "$STATUS" = "Failed" ]; then
               echo "::error::Publishing failed"
-              echo "$RESPONSE"
+              echo "$RESPONSE" | head -c 1000
               exit 1
             fi
           done
