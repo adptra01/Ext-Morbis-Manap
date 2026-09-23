@@ -20,6 +20,30 @@ export interface KVStore {
 
 export const PRE_OP_STORAGE_KEY = 'morbis_preop_markers';
 export const PRE_OP_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 hari
+/** Unmark lokal menutupi mark pusat yang basi selama ini (2× TTL polling
+ *  pusat 15 dtk) — mencegah visual "balik nyala" saat POST unmark belum
+ *  menyebar ke server. */
+export const PRE_OP_UNMARK_TOMBSTONE_MS = 30000;
+
+/**
+ * Satu-satunya sumber kebenaran status mark (dipakai scan tabel + refresh
+ * pusat — keduanya WAJIB lewat sini agar tak saling timpa):
+ * - lokal ada → true (klik user selalu menang seketika),
+ * - unmark lokal masih segar → false (tutup mark pusat basi),
+ * - selain itu ikut pusat; bila pusat tak ada data (offline) → false.
+ */
+export function resolvePreOpMarked(
+  localHas: boolean,
+  centralHas: boolean | null,
+  unmarkedAt: number | undefined,
+  now: number = Date.now(),
+  tombstoneMs: number = PRE_OP_UNMARK_TOMBSTONE_MS,
+): boolean {
+  if (localHas) return true;
+  if (unmarkedAt !== undefined && now - unmarkedAt < tombstoneMs) return false;
+  if (centralHas === null) return false;
+  return centralHas;
+}
 
 function defaultStore(): KVStore | null {
   try {

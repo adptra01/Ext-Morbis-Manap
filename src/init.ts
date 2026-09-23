@@ -71,10 +71,21 @@ async function initExtension(): Promise<void> {
   }
 
   const rvCfg = cfg?.features?.resumeValidator;
-  if (rvCfg?.enabled && window.ExtensionCore.isFeatureAllowed('resumeValidator')) {
+  const rvOn = !!rvCfg?.enabled && window.ExtensionCore.isFeatureAllowed('resumeValidator');
+  if (rvOn) {
     document.documentElement.setAttribute('data-ext-resume-validator', '1');
   } else {
     document.documentElement.removeAttribute('data-ext-resume-validator');
+  }
+
+  // Riwayat resume jalan sendiri: aktif bila fitur resumeHistory nyala,
+  // ATAU bila validator nyala (kompatibel lama — validator selalu bawa riwayat).
+  const rhCfg = cfg?.features?.resumeHistory;
+  const rhOn = (!!rhCfg?.enabled && window.ExtensionCore.isFeatureAllowed('resumeHistory')) || rvOn;
+  if (rhOn) {
+    document.documentElement.setAttribute('data-ext-resume-history', '1');
+  } else {
+    document.documentElement.removeAttribute('data-ext-resume-history');
   }
 
   const atCfg = cfg?.features?.antrianTools;

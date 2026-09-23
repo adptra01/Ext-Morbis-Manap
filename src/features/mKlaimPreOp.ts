@@ -1,6 +1,6 @@
 import { getMorbisGlobals } from './shared/types.js';
 import { injectCSS } from '../shared/ui/index.js';
-import { togglePreOp, loadPreOpMap, setPreOp } from './shared/preOpStorage.js';
+import { togglePreOp, loadPreOpMap, setPreOp, resolvePreOpMarked } from './shared/preOpStorage.js';
 import { readPetugas } from './shared/resumeHistory.js';
 import { fetchPreOpBatch, togglePreOpCentral, type CentralPreOpMark } from './shared/casemixApi.js';
 import { initCasemixBackfill } from './shared/casemixBackfill.js';
@@ -48,6 +48,19 @@ injectCSS(
     background: #6d28d9 !important;
     border-color: #5b21b6 !important;
   }
+  .ext-preop-btn:disabled {
+    opacity: 0.65;
+    cursor: wait;
+    transform: none;
+  }
+  .ext-preop-btn.pending {
+    border-style: dashed;
+    animation: ext-preop-pulse 1s ease-in-out infinite;
+  }
+  @keyframes ext-preop-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
   tr[data-ext-preop-marked="true"] {
     background-color: rgba(124, 58, 237, 0.07) !important;
   }
@@ -80,6 +93,33 @@ let _centralAt = 0;
  *  server pusat yang kecil. */
 const CENTRAL_TTL_MS = 15000;
 
+/** id_visit yang sedang menunggu konfirmasi POST pusat — barisnya dilewati
+ *  scan/refresh (anti triple-timpa), tombolnya di-disable + spinner agar
+ *  user tahu masih proses simpan/kirim dan tak klik berulang. */
+const _pendingToggle = new Set<string>();
+/** Cap waktu unmark lokal per id_visit (tombstone, lihat resolvePreOpMarked). */
+const _localUnmarkAt: Record<string, number> = {};
+/** Pengaman: bila promise pusat tak kunjung selesai, buka kunci maksimal segini. */
+const PENDING_FALLBACK_MS = 10000;
+
+/** Satu-satunya penentu status mark — dipakai scan tabel DAN refresh pusat. */
+function effectiveMarked(
+  idVisit: string,
+  localMap: Record<string, unknown>,
+  now: number = Date.now(),
+): boolean {
+  const centralHas = _centralMap ? !!_centralMap[idVisit] : null;
+  return resolvePreOpMarked(idVisit in localMap, centralHas, _localUnmarkAt[idVisit], now);
+}
+
+/** Kunci tampilan tombol "sedang menyimpan" (dipakai klik + scan susulan). */
+function paintPending(btn: HTMLButtonElement): void {
+  btn.disabled = true;
+  if (!btn.classList.contains('pending')) btn.classList.add('pending');
+  btn.textContent = '⏳ Menyimpan…';
+  btn.title = 'Menyimpan ke server pusat…';
+}
+
 /** Ambil semua id_visit yang terlihat di tabel halaman ini. */
 function collectVisibleIds(): string[] {
   const ids: string[] = [];
@@ -93,7 +133,8 @@ function collectVisibleIds(): string[] {
   return ids;
 }
 
-/** Refresh cache pusat maksimal tiap 15 dtk; pusat menang atas lokal. */
+/** Refresh cache pusat maksimal tiap 15 dtk; status akhir via effectiveMarked
+ *  (klik lokal + tombstone unmark + pusat — bukan "pusat selalu menang"). */
 function refreshCentral(): void {
   const now = Date.now();
   if (now - _centralAt < CENTRAL_TTL_MS) return;
@@ -108,18 +149,25 @@ function refreshCentral(): void {
   void fetchPreOpBatch(ids).then((marks) => {
     if (marks === null) return; // offline — jangan timpa state lokal
     _centralMap = marks;
-    // Terapkan visual pusat PRIORITASI localStorage marks dulu,
-    // baru turun ke server marks jika lokal belum memiliki entry.
-    // Ini mencegah visual "reset" ketika server POST fire-and-forget
-    // belum menyebar ke seluruh client, dan menghindari user klik2 button.
+    // Pangkas tombstone unmark yang kedaluwarsa (hemat memori jangka panjang).
+    try {
+      const now2 = Date.now();
+      for (const k of Object.keys(_localUnmarkAt)) {
+        if (now2 - _localUnmarkAt[k] >= 60000) delete _localUnmarkAt[k];
+      }
+    } catch {
+      /* ignore */
+    }
+    // Status tunggal via effectiveMarked: klik lokal menang seketika,
+    // unmark lokal menutupi mark pusat basi, mark PC lain ikut tampil.
+    // Baris yang sedang kirim (pending) dilewati — visual spinner milik klik.
     const localMap = loadPreOpMap();
+    const now = Date.now();
     for (const table of document.querySelectorAll<HTMLTableElement>('table')) {
       for (const row of table.querySelectorAll<HTMLTableRowElement>('tbody tr')) {
         const id = extractIdVisitFromRow(row);
-        if (!id) continue;
-        // Prioritaskan mark dari localStorage (diset saat button diklik),
-        // lalu fallback ke server mark jika lokal tidak punya entry.
-        const marked = id in localMap ? true : marks[id] ? true : false;
+        if (!id || _pendingToggle.has(id)) continue;
+        const marked = effectiveMarked(id, localMap, now);
         if (row.getAttribute('data-ext-preop-marked') !== String(marked)) {
           if (marked && !localMap[id]) {
             setPreOp(id, extractPatientInfo(row));
@@ -197,6 +245,9 @@ function updateRowVisual(row: HTMLTableRowElement, idVisit: string, marked: bool
 
   const btn = row.querySelector<HTMLButtonElement>(`button[data-ext-preop-btn="${idVisit}"]`);
   if (btn) {
+    // Ganti penuh status final (non-pending): buka kunci + lepas spinner.
+    btn.disabled = false;
+    btn.classList.remove('pending');
     if (marked) {
       btn.classList.add('active');
       btn.textContent = '✓ Pre-op';
@@ -250,6 +301,7 @@ function scanInner(): void {
 
   // Baca state terkini (otomatis purge yang > 30 hari)
   const preOpMap = loadPreOpMap();
+  const now = Date.now();
 
   tables.forEach((table) => {
     const rows = table.querySelectorAll<HTMLTableRowElement>('tbody tr');
@@ -259,58 +311,94 @@ function scanInner(): void {
       const idVisit = extractIdVisitFromRow(row);
       if (!idVisit) return;
 
-      // Efektif: cache pusat (bila ada) menang atas lokal — mark dari PC lain ikut tampil.
-      const isMarked = _centralMap ? !!_centralMap[idVisit] : !!preOpMap[idVisit];
+      const btn = ensurePreOpButton(row, idVisit);
+      if (!btn) return;
+
+      // Baris sedang kirim ke pusat → kunci tampilan spinner, jangan timpa.
+      if (_pendingToggle.has(idVisit)) {
+        paintPending(btn);
+        return;
+      }
+
+      // Status tunggal (sama dengan refresh pusat) — mark PC lain ikut tampil.
+      const isMarked = effectiveMarked(idVisit, preOpMap, now);
 
       // Jalur cepat: tombol sudah ada & status visual sudah benar → tanpa tulis DOM.
       const done = row.getAttribute('data-ext-preop-marked') === String(isMarked);
-      const hasBtn = !!row.querySelector(`button[data-ext-preop-btn="${idVisit}"]`);
-      if (done && hasBtn) return;
-
-      // Cari cell aksi: cell yang berisi tombol detail/verif atau cell terakhir
-      let actionCell = Array.from(row.querySelectorAll('td')).find((td) => {
-        return td.querySelector('button, a, [onclick*="detail"]') !== null;
-      });
-      if (!actionCell) {
-        actionCell = row.cells[row.cells.length - 1];
-      }
-      if (!actionCell) return;
-
-      // Cek apakah tombol sudah ada
-      let btn = row.querySelector<HTMLButtonElement>(`button[data-ext-preop-btn="${idVisit}"]`);
-      if (!btn) {
-        btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'ext-preop-btn';
-        btn.setAttribute('data-ext-preop-btn', idVisit);
-
-        btn.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-
-          const info = extractPatientInfo(row);
-          const nextState = togglePreOp(idVisit, info);
-          // Tulis paralel ke DB pusat (fire-and-forget; lokal tetap sumber fallback).
-          togglePreOpCentral(idVisit, nextState, {
-            norm: info.norm,
-            nama: info.nama,
-            noReg: info.noReg,
-            user: readPetugas(),
-          });
-          updateRowVisual(row, idVisit, nextState);
-          void logUsage('mKlaimPreOp', nextState ? 'mark_preop' : 'unmark_preop', true, {
-            idVisit,
-            norm: info.norm,
-            nama: info.nama,
-          });
-        });
-
-        actionCell.appendChild(btn);
-      }
+      if (done) return;
 
       updateRowVisual(row, idVisit, isMarked);
     });
   });
+}
+
+/** Pastikan tombol pre-op ada di cell aksi; pasang handler klik sekali saja. */
+function ensurePreOpButton(row: HTMLTableRowElement, idVisit: string): HTMLButtonElement | null {
+  // Cari cell aksi: cell yang berisi tombol detail/verif atau cell terakhir
+  let actionCell = Array.from(row.querySelectorAll('td')).find((td) => {
+    return td.querySelector('button, a, [onclick*="detail"]') !== null;
+  });
+  if (!actionCell) {
+    actionCell = row.cells[row.cells.length - 1];
+  }
+  if (!actionCell) return null;
+
+  let btn = row.querySelector<HTMLButtonElement>(`button[data-ext-preop-btn="${idVisit}"]`);
+  if (btn) return btn;
+
+  btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'ext-preop-btn';
+  btn.setAttribute('data-ext-preop-btn', idVisit);
+
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Cegah klik ganda selama kirim ke pusat (tombol juga di-disable).
+    if (_pendingToggle.has(idVisit) || btn.disabled) return;
+
+    const info = extractPatientInfo(row);
+    const nextState = togglePreOp(idVisit, info);
+    if (nextState) delete _localUnmarkAt[idVisit];
+    else _localUnmarkAt[idVisit] = Date.now();
+
+    // Optimistic UI seketika, lalu kunci tombol + spinner sampai pusat merespons.
+    updateRowVisual(row, idVisit, nextState);
+    _pendingToggle.add(idVisit);
+    paintPending(btn);
+    const settle = () => {
+      _pendingToggle.delete(idVisit);
+      try {
+        updateRowVisual(row, idVisit, effectiveMarked(idVisit, loadPreOpMap()));
+      } catch {
+        /* baris sudah hilang dari DOM (redraw) — scan berikut yang urus */
+      }
+    };
+    try {
+      void Promise.resolve(
+        togglePreOpCentral(idVisit, nextState, {
+          norm: info.norm,
+          nama: info.nama,
+          noReg: info.noReg,
+          user: readPetugas(),
+        }),
+      ).then(settle, settle);
+    } catch {
+      settle();
+    }
+    // Pengaman: server lambat/mati pun kunci dibuka maksimal segini.
+    window.setTimeout(() => {
+      if (_pendingToggle.has(idVisit)) settle();
+    }, PENDING_FALLBACK_MS);
+    void logUsage('mKlaimPreOp', nextState ? 'mark_preop' : 'unmark_preop', true, {
+      idVisit,
+      norm: info.norm,
+      nama: info.nama,
+    });
+  });
+
+  actionCell.appendChild(btn);
+  return btn;
 }
 
 function debouncedScan(): void {

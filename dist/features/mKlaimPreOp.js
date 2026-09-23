@@ -134,6 +134,19 @@ var __morbis_feature = (() => {
       return true;
     }
   }
+  var PRE_OP_UNMARK_TOMBSTONE_MS = 3e4;
+  function resolvePreOpMarked(
+    localHas,
+    centralHas,
+    unmarkedAt,
+    now = Date.now(),
+    tombstoneMs = PRE_OP_UNMARK_TOMBSTONE_MS,
+  ) {
+    if (localHas) return true;
+    if (unmarkedAt !== void 0 && now - unmarkedAt < tombstoneMs) return false;
+    if (centralHas === null) return false;
+    return centralHas;
+  }
 
   // src/features/shared/casemixApi.ts
   var CASEMIX_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
@@ -189,7 +202,7 @@ var __morbis_feature = (() => {
     try {
       const ctrl = new AbortController();
       const t = globalThis.setTimeout(() => ctrl.abort(), CENTRAL_TIMEOUT_MS);
-      fetcher(resolveCasemixBase() + path, {
+      return fetcher(resolveCasemixBase() + path, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(payload),
@@ -197,13 +210,15 @@ var __morbis_feature = (() => {
         credentials: 'omit',
         signal: ctrl.signal,
       })
+        .then(() => {})
         .catch(() => {})
         .finally(() => globalThis.clearTimeout(t));
     } catch {}
+    return Promise.resolve();
   }
   function togglePreOpCentral(idVisit, marked, info = {}, fetcher = fetch) {
-    if (!idVisit) return;
-    postFireForget(
+    if (!idVisit) return Promise.resolve();
+    return postFireForget(
       '/api/casemix/pre-op/toggle',
       {
         id_visit: idVisit,
@@ -406,7 +421,34 @@ var __morbis_feature = (() => {
         migrated.push(id);
         res.preopUploaded++;
       }
-      if (res.preopUploaded) writeJson2(store, MIGRATED_PREOP_KEY, migrated);
+      try {
+        const alive = new Set(Object.keys(map));
+        const kept = [];
+        for (const id of migrated) {
+          if (alive.has(id)) {
+            kept.push(id);
+            continue;
+          }
+          if (res.offline) {
+            kept.push(id);
+            continue;
+          }
+          const ok = await postCentral(
+            '/api/casemix/pre-op/toggle',
+            { id_visit: id, marked: false },
+            fetcher,
+          );
+          if (!ok) {
+            res.offline = true;
+            kept.push(id);
+          } else {
+            res.preopUploaded++;
+          }
+        }
+        if (kept.length !== migrated.length || res.preopUploaded > 0) {
+          writeJson2(store, MIGRATED_PREOP_KEY, kept);
+        }
+      } catch {}
     } catch {
       res.offline = true;
     }
@@ -422,6 +464,7 @@ var __morbis_feature = (() => {
           const ok = await postCentral(
             '/api/reports/resume-history',
             {
+              client_id: e.client_id ?? null,
               id_visit: idVisit,
               id_resume: e.id_resume,
               aksi: e.aksi,
@@ -549,6 +592,19 @@ var __morbis_feature = (() => {
     background: #6d28d9 !important;
     border-color: #5b21b6 !important;
   }
+  .ext-preop-btn:disabled {
+    opacity: 0.65;
+    cursor: wait;
+    transform: none;
+  }
+  .ext-preop-btn.pending {
+    border-style: dashed;
+    animation: ext-preop-pulse 1s ease-in-out infinite;
+  }
+  @keyframes ext-preop-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
   tr[data-ext-preop-marked="true"] {
     background-color: rgba(124, 58, 237, 0.07) !important;
   }
@@ -573,6 +629,19 @@ var __morbis_feature = (() => {
   var _centralMap = null;
   var _centralAt = 0;
   var CENTRAL_TTL_MS = 15000;
+  const _pendingToggle = new Set();
+  const _localUnmarkAt = {};
+  const PENDING_FALLBACK_MS = 1e4;
+  function effectiveMarked(idVisit, localMap, now = Date.now()) {
+    const centralHas = _centralMap ? !!_centralMap[idVisit] : null;
+    return resolvePreOpMarked(idVisit in localMap, centralHas, _localUnmarkAt[idVisit], now);
+  }
+  function paintPending(btn) {
+    btn.disabled = true;
+    if (!btn.classList.contains('pending')) btn.classList.add('pending');
+    btn.textContent = '⏳ Menyimpan…';
+    btn.title = 'Menyimpan ke server pusat…';
+  }
   function collectVisibleIds() {
     const ids = [];
     for (const table of document.querySelectorAll('table')) {
@@ -596,12 +665,19 @@ var __morbis_feature = (() => {
     void fetchPreOpBatch(ids).then((marks) => {
       if (marks === null) return;
       _centralMap = marks;
+      try {
+        const now2 = Date.now();
+        for (const k of Object.keys(_localUnmarkAt)) {
+          if (now2 - _localUnmarkAt[k] >= 6e4) delete _localUnmarkAt[k];
+        }
+      } catch {}
       const localMap = loadPreOpMap();
+      const now = Date.now();
       for (const table of document.querySelectorAll('table')) {
         for (const row of table.querySelectorAll('tbody tr')) {
           const id = extractIdVisitFromRow(row);
-          if (!id) continue;
-          const marked = !!marks[id];
+          if (!id || _pendingToggle.has(id)) continue;
+          const marked = effectiveMarked(id, localMap, now);
           if (row.getAttribute('data-ext-preop-marked') !== String(marked)) {
             if (marked && !localMap[id]) {
               setPreOp(id, extractPatientInfo(row));
@@ -658,6 +734,8 @@ var __morbis_feature = (() => {
     row.setAttribute('data-ext-preop-marked', marked ? 'true' : 'false');
     const btn = row.querySelector(`button[data-ext-preop-btn="${idVisit}"]`);
     if (btn) {
+      btn.disabled = false;
+      btn.classList.remove('pending');
       if (marked) {
         btn.classList.add('active');
         btn.textContent = '\u2713 Pre-op';
@@ -698,52 +776,80 @@ var __morbis_feature = (() => {
     const tables = document.querySelectorAll('table');
     if (tables.length === 0) return;
     const preOpMap = loadPreOpMap();
+    const now = Date.now();
     tables.forEach((table) => {
       const rows = table.querySelectorAll('tbody tr');
       rows.forEach((row) => {
         if (row.classList.contains('dataTables_empty')) return;
         const idVisit = extractIdVisitFromRow(row);
         if (!idVisit) return;
-        const isMarked = _centralMap ? !!_centralMap[idVisit] : !!preOpMap[idVisit];
+        const btn = ensurePreOpButton(row, idVisit);
+        if (!btn) return;
+        if (_pendingToggle.has(idVisit)) {
+          paintPending(btn);
+          return;
+        }
+        const isMarked = effectiveMarked(idVisit, preOpMap, now);
         const done = row.getAttribute('data-ext-preop-marked') === String(isMarked);
-        const hasBtn = !!row.querySelector(`button[data-ext-preop-btn="${idVisit}"]`);
-        if (done && hasBtn) return;
-        let actionCell = Array.from(row.querySelectorAll('td')).find((td) => {
-          return td.querySelector('button, a, [onclick*="detail"]') !== null;
-        });
-        if (!actionCell) {
-          actionCell = row.cells[row.cells.length - 1];
-        }
-        if (!actionCell) return;
-        let btn = row.querySelector(`button[data-ext-preop-btn="${idVisit}"]`);
-        if (!btn) {
-          btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'ext-preop-btn';
-          btn.setAttribute('data-ext-preop-btn', idVisit);
-          btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const info = extractPatientInfo(row);
-            const nextState = togglePreOp(idVisit, info);
-            togglePreOpCentral(idVisit, nextState, {
-              norm: info.norm,
-              nama: info.nama,
-              noReg: info.noReg,
-              user: readPetugas(),
-            });
-            updateRowVisual(row, idVisit, nextState);
-            void logUsage('mKlaimPreOp', nextState ? 'mark_preop' : 'unmark_preop', true, {
-              idVisit,
-              norm: info.norm,
-              nama: info.nama,
-            });
-          });
-          actionCell.appendChild(btn);
-        }
+        if (done) return;
         updateRowVisual(row, idVisit, isMarked);
       });
     });
+  }
+  function ensurePreOpButton(row, idVisit) {
+    let actionCell = Array.from(row.querySelectorAll('td')).find((td) => {
+      return td.querySelector('button, a, [onclick*="detail"]') !== null;
+    });
+    if (!actionCell) {
+      actionCell = row.cells[row.cells.length - 1];
+    }
+    if (!actionCell) return null;
+    let btn = row.querySelector(`button[data-ext-preop-btn="${idVisit}"]`);
+    if (btn) return btn;
+    btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'ext-preop-btn';
+    btn.setAttribute('data-ext-preop-btn', idVisit);
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (_pendingToggle.has(idVisit) || btn.disabled) return;
+      const info = extractPatientInfo(row);
+      const nextState = togglePreOp(idVisit, info);
+      if (nextState) delete _localUnmarkAt[idVisit];
+      else _localUnmarkAt[idVisit] = Date.now();
+      updateRowVisual(row, idVisit, nextState);
+      _pendingToggle.add(idVisit);
+      paintPending(btn);
+      const settle = () => {
+        _pendingToggle.delete(idVisit);
+        try {
+          updateRowVisual(row, idVisit, effectiveMarked(idVisit, loadPreOpMap()));
+        } catch {}
+      };
+      try {
+        void Promise.resolve(
+          togglePreOpCentral(idVisit, nextState, {
+            norm: info.norm,
+            nama: info.nama,
+            noReg: info.noReg,
+            user: readPetugas(),
+          }),
+        ).then(settle, settle);
+      } catch {
+        settle();
+      }
+      window.setTimeout(() => {
+        if (_pendingToggle.has(idVisit)) settle();
+      }, PENDING_FALLBACK_MS);
+      void logUsage('mKlaimPreOp', nextState ? 'mark_preop' : 'unmark_preop', true, {
+        idVisit,
+        norm: info.norm,
+        nama: info.nama,
+      });
+    });
+    actionCell.appendChild(btn);
+    return btn;
   }
   function debouncedScan() {
     if (_debounceTimer !== null) clearTimeout(_debounceTimer);

@@ -28149,33 +28149,76 @@ var __morbis_feature = (() => {
   function resolveReportsBase() {
     return resolveCasemixBase();
   }
-  function postToReports(entry, idVisit, fetcher = fetch) {
+  var RV_MIGRATED_PREFIX = 'ext_migrated_rv_';
+  function getMigratedKey(historyKey) {
+    return RV_MIGRATED_PREFIX + historyKey;
+  }
+  function readMarker(store, key) {
+    if (!store) return 0;
     try {
-      const payload = {
-        id_visit: idVisit,
-        id_resume: entry.id_resume,
-        aksi: entry.aksi,
-        tipe: entry.tipe,
-        waktu: new Date(entry.at).toISOString(),
-        user: entry.user,
-        before: entry.before,
-        after: entry.after,
-        changed: entry.changed,
-      };
-      fetcher(resolveReportsBase() + REPORTS_API_PATH, {
+      const raw = store.getItem(key);
+      if (raw === null) return 0;
+      const n = Number(JSON.parse(raw));
+      return Number.isFinite(n) ? n : 0;
+    } catch {
+      return 0;
+    }
+  }
+  function advanceMigratedMarker(store, idVisit, tipe, at) {
+    if (!store || !idVisit) return;
+    try {
+      const key = getMigratedKey(getHistoryKey(idVisit, tipe));
+      if (at > readMarker(store, key)) writeJson(store, key, at);
+    } catch {}
+  }
+  function newClientId() {
+    try {
+      const c = globalThis.crypto;
+      if (c && typeof c.randomUUID === 'function') return c.randomUUID();
+    } catch {}
+    return Date.now().toString(36) + '-' + Math.floor(Math.random() * 1e9).toString(36);
+  }
+  async function postToReports(
+    entry,
+    idVisit,
+    fetcher = fetch,
+    store = defaultStore(),
+    tipe = entry.tipe,
+  ) {
+    const payload = {
+      client_id: entry.client_id ?? null,
+      id_visit: idVisit,
+      id_resume: entry.id_resume,
+      aksi: entry.aksi,
+      tipe: entry.tipe,
+      waktu: new Date(entry.at).toISOString(),
+      user: entry.user,
+      before: entry.before,
+      after: entry.after,
+      changed: entry.changed,
+    };
+    try {
+      const res = await fetcher(resolveReportsBase() + REPORTS_API_PATH, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(payload),
         keepalive: true,
         credentials: 'omit',
-      }).catch(function () {});
-    } catch {}
+      });
+      if (!res.ok) return false;
+      advanceMigratedMarker(store, idVisit, tipe, entry.at);
+      return true;
+    } catch {
+      return false;
+    }
   }
   var _lastLogHash = null;
   var _lastLogAt = 0;
   function logResumeHistory(opts) {
     if (!opts.idVisit) return null;
     const now = opts.now ?? Date.now();
+    const store = opts.store ?? defaultStore();
+    storeLast(opts.after, opts.idVisit, opts.tipe, store);
     const hash = JSON.stringify([opts.idVisit, opts.aksi, opts.after]);
     if (_lastLogHash === hash && now - _lastLogAt < 5e3) return null;
     _lastLogHash = hash;
@@ -28189,23 +28232,102 @@ var __morbis_feature = (() => {
       before: opts.before ?? {},
       after: opts.after,
       changed: diffSnap(opts.before ?? {}, opts.after),
+      client_id: newClientId(),
     };
-    const store = opts.store ?? defaultStore();
     const list = loadHistory(opts.idVisit, opts.tipe, store);
     list.push(entry);
     saveHistory(list, opts.idVisit, opts.tipe, store);
     storeLast(opts.after, opts.idVisit, opts.tipe, store);
-    postToReports(entry, opts.idVisit, opts.fetcher ?? fetch);
+    try {
+      void postToReports(entry, opts.idVisit, opts.fetcher ?? fetch, store, opts.tipe);
+    } catch {}
     return entry;
   }
   var HIST_FONT = `'Roboto','Segoe UI',system-ui,-apple-system,Arial,sans-serif`;
+  function coerceSnapVal(v) {
+    if (v === null || v === void 0) return void 0;
+    if (typeof v === 'string') return v;
+    if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+    if (Array.isArray(v)) {
+      return v.map((x) => {
+        if (typeof x === 'string') return x;
+        try {
+          return JSON.stringify(x) ?? '';
+        } catch {
+          return '';
+        }
+      });
+    }
+    try {
+      const s = JSON.stringify(v);
+      return s ?? '';
+    } catch {
+      return '';
+    }
+  }
+  function coerceSnap(rec) {
+    const out = {};
+    if (!rec || typeof rec !== 'object' || Array.isArray(rec)) return out;
+    for (const k of Object.keys(rec)) {
+      const c = coerceSnapVal(rec[k]);
+      if (c !== void 0) out[k] = c;
+    }
+    return out;
+  }
+  function centralToResumeEntry(r, fallbackTipe) {
+    try {
+      if (!r || typeof r !== 'object') return null;
+      const at = r.waktu ? Date.parse(r.waktu) : NaN;
+      if (!Number.isFinite(at)) return null;
+      const after = coerceSnap(r.after);
+      const before = coerceSnap(r.before);
+      const tipe = r.tipe === 'rajal' ? 'rajal' : r.tipe === 'ranap' ? 'ranap' : fallbackTipe;
+      const changed = Array.isArray(r.changed)
+        ? r.changed.filter((x) => typeof x === 'string')
+        : diffSnap(before, after);
+      const cid = typeof r.client_id === 'string' && r.client_id ? r.client_id : void 0;
+      const e = {
+        at,
+        aksi: r.aksi === 'buat' ? 'buat' : 'ubah',
+        id_resume: typeof r.id_resume === 'string' ? r.id_resume : '',
+        user: typeof r.user === 'string' && r.user ? r.user : 'petugas',
+        tipe,
+        before,
+        after,
+        changed,
+      };
+      if (cid) e.client_id = cid;
+      return e;
+    } catch {
+      return null;
+    }
+  }
+  function centralResumeKey(e) {
+    if (e.client_id) return 'cid:' + e.client_id;
+    try {
+      return 'h:' + e.at + '|' + e.user + '|' + e.aksi + '|' + JSON.stringify(e.after);
+    } catch {
+      return 'h:' + e.at + '|' + e.user + '|' + e.aksi;
+    }
+  }
+  function mergeCentralResumeEntries(local, incoming) {
+    const seen = new Set(local.map(centralResumeKey));
+    const out = local.slice();
+    for (const e of incoming) {
+      const k = centralResumeKey(e);
+      if (seen.has(k)) continue;
+      seen.add(k);
+      out.push(e);
+    }
+    out.sort((a, b) => a.at - b.at);
+    return out.slice(-MAX_ENTRIES);
+  }
   function openHistoryModal(opts) {
     try {
       document.querySelector('#ext-rv-history-overlay')?.remove();
     } catch {}
-    const list = loadHistory(opts.idVisit, opts.tipe, opts.store ?? defaultStore())
-      .slice()
-      .reverse();
+    const store = opts.store ?? defaultStore();
+    let list = loadHistory(opts.idVisit, opts.tipe, store).slice().reverse();
     const z = opts.zIndex ?? 99998;
     const ov = document.createElement('div');
     ov.id = 'ext-rv-history-overlay';
@@ -28222,7 +28344,9 @@ var __morbis_feature = (() => {
     const head = document.createElement('div');
     head.style.cssText =
       'display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #d0d5dd;font-weight:700;';
-    head.textContent = `${opts.title ?? 'Riwayat Resume'} (${list.length})`;
+    const headTitle = document.createElement('span');
+    headTitle.textContent = `${opts.title ?? 'Riwayat Resume'} (${list.length})`;
+    head.appendChild(headTitle);
     const x = document.createElement('button');
     x.type = 'button';
     x.textContent = '\xD7';
@@ -28236,64 +28360,116 @@ var __morbis_feature = (() => {
     const body = document.createElement('div');
     body.style.cssText = 'padding:14px 18px;overflow-y:auto;';
     box.appendChild(body);
-    if (!list.length) {
-      body.textContent =
-        'Belum ada riwayat untuk kunjungan ini. Riwayat tercatat otomatis setiap kali Simpan ditekan.';
-    }
-    list.forEach(function (entry, idx) {
-      const no = list.length - idx;
-      const row = document.createElement('div');
-      row.style.cssText =
-        'border:1px solid #d0d5dd;border-radius:8px;padding:10px 12px;margin-bottom:10px;';
-      const title = document.createElement('div');
-      title.style.fontWeight = '600';
-      const who = entry.user ? ` \u2014 oleh ${entry.user}` : '';
-      title.textContent = `#${no} \u2014 ${new Date(entry.at).toLocaleString('id-ID')} \u2014 ${entry.aksi === 'buat' ? 'Buat baru' : 'Ubah'}${who} \u2014 ${entry.changed.length} field berubah`;
-      row.appendChild(title);
-      const detail = document.createElement('div');
-      detail.style.cssText =
-        'display:none;margin-top:8px;background:#f8fafc;border-radius:6px;padding:8px 10px;font-size:13px;line-height:1.6;max-height:180px;overflow-y:auto;white-space:pre-wrap;';
-      if (!entry.changed.length) {
-        detail.textContent = 'Tidak ada perbedaan field.';
-      } else {
-        detail.textContent = entry.changed
-          .map(function (k) {
-            return (
-              k + ': ' + shortSnapVal(entry.before[k]) + ' \u2192 ' + shortSnapVal(entry.after[k])
-            );
-          })
-          .join('\n');
+    const paint = (rows) => {
+      list = rows;
+      headTitle.textContent = `${opts.title ?? 'Riwayat Resume'} (${list.length})`;
+      body.replaceChildren();
+      if (!list.length) {
+        body.textContent =
+          'Belum ada riwayat untuk kunjungan ini. Riwayat tercatat otomatis setiap kali Simpan ditekan.';
+        return;
       }
-      row.appendChild(detail);
-      const bar = document.createElement('div');
-      bar.style.cssText = 'margin-top:8px;display:flex;gap:8px;';
-      const btnLihat = document.createElement('button');
-      btnLihat.type = 'button';
-      btnLihat.textContent = 'Lihat';
-      btnLihat.style.cssText =
-        'border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;';
-      btnLihat.onclick = function () {
-        detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
-      };
-      bar.appendChild(btnLihat);
-      const btnSalin = document.createElement('button');
-      btnSalin.type = 'button';
-      btnSalin.textContent = 'Salin ke Form';
-      btnSalin.style.cssText =
-        'background:#00875a;color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;';
-      btnSalin.onclick = function () {
-        try {
-          opts.onApply(entry.after);
-          ov.remove();
-        } catch {}
-      };
-      bar.appendChild(btnSalin);
-      row.appendChild(bar);
-      body.appendChild(row);
-    });
+      list.forEach(function (entry, idx) {
+        const no = list.length - idx;
+        const row = document.createElement('div');
+        row.style.cssText =
+          'border:1px solid #d0d5dd;border-radius:8px;padding:10px 12px;margin-bottom:10px;';
+        const title = document.createElement('div');
+        title.style.fontWeight = '600';
+        const who = entry.user ? ` \u2014 oleh ${entry.user}` : '';
+        title.textContent = `#${no} \u2014 ${new Date(entry.at).toLocaleString('id-ID')} \u2014 ${entry.aksi === 'buat' ? 'Buat baru' : 'Ubah'}${who} \u2014 ${entry.changed.length} field berubah`;
+        row.appendChild(title);
+        const detail = document.createElement('div');
+        detail.style.cssText =
+          'display:none;margin-top:8px;background:#f8fafc;border-radius:6px;padding:8px 10px;font-size:13px;line-height:1.6;max-height:180px;overflow-y:auto;white-space:pre-wrap;';
+        if (!entry.changed.length) {
+          detail.textContent = 'Tidak ada perbedaan field.';
+        } else {
+          detail.textContent = entry.changed
+            .map(function (k) {
+              return (
+                k + ': ' + shortSnapVal(entry.before[k]) + ' \u2192 ' + shortSnapVal(entry.after[k])
+              );
+            })
+            .join('\n');
+        }
+        row.appendChild(detail);
+        const bar = document.createElement('div');
+        bar.style.cssText = 'margin-top:8px;display:flex;gap:8px;';
+        const btnLihat = document.createElement('button');
+        btnLihat.type = 'button';
+        btnLihat.textContent = 'Lihat';
+        btnLihat.style.cssText =
+          'border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;';
+        btnLihat.onclick = function () {
+          detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
+        };
+        bar.appendChild(btnLihat);
+        const btnSalin = document.createElement('button');
+        btnSalin.type = 'button';
+        btnSalin.textContent = 'Salin ke Form';
+        btnSalin.style.cssText =
+          'background:#00875a;color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;';
+        btnSalin.onclick = function () {
+          try {
+            opts.onApply(entry.after);
+            ov.remove();
+          } catch {}
+        };
+        bar.appendChild(btnSalin);
+        row.appendChild(bar);
+        body.appendChild(row);
+      });
+    };
+    paint(list);
     try {
       document.body.appendChild(ov);
     } catch {}
+    if (opts.idVisit) {
+      try {
+        void fetch(
+          resolveReportsBase() +
+            '/api/reports/resume-history?id_visit=' +
+            encodeURIComponent(opts.idVisit) +
+            '&tipe=' +
+            opts.tipe,
+          {
+            cache: 'no-store',
+            credentials: 'omit',
+            headers: { Accept: 'application/json' },
+          },
+        )
+          .then((res) => {
+            if (!res.ok) return null;
+            return res.json();
+          })
+          .then((j) => {
+            try {
+              if (!j || j.ok !== true || !Array.isArray(j.data)) return;
+              if (!ov.isConnected) return;
+              const incoming = [];
+              for (const r of j.data) {
+                const e = centralToResumeEntry(r, opts.tipe);
+                if (e) incoming.push(e);
+              }
+              if (!incoming.length) return;
+              const base = loadHistory(opts.idVisit, opts.tipe, store);
+              const merged = mergeCentralResumeEntries(base, incoming);
+              if (merged.length === base.length) return;
+              saveHistory(merged, opts.idVisit, opts.tipe, store);
+              paint(merged.slice().reverse());
+              try {
+                document.dispatchEvent(
+                  new CustomEvent('ext-rv-history-merged', {
+                    detail: { idVisit: opts.idVisit, tipe: opts.tipe, count: merged.length },
+                  }),
+                );
+              } catch {}
+            } catch {}
+          })
+          .catch(() => {});
+      } catch {}
+    }
   }
 
   // src/features/resumeRanapTab/snap.ts

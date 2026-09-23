@@ -8,6 +8,7 @@ import {
   isEmptyish,
 } from './shared/resumeValidation.js';
 import { confirmExt } from '../ui/web/confirm';
+import { initCasemixBackfill } from './shared/casemixBackfill.js';
 import {
   type FormSnap,
   type TipeResume,
@@ -24,13 +25,20 @@ import {
   const MAX_WAIT = 100;
   let waited = 0;
 
+  // Dua saklar independen (di-set init.ts dari config):
+  // - data-ext-resume-validator=1 → validasi ketat + riwayat.
+  // - data-ext-resume-history=1 → HANYA riwayat (log + tombol Riwayat),
+  //   tetap jalan walau validator mati. Validator nyala selalu bawa riwayat.
   const check = setInterval(function () {
     waited++;
-    const enabled = document.documentElement.getAttribute('data-ext-resume-validator');
-    if (enabled !== null) {
+    const vAttr = document.documentElement.getAttribute('data-ext-resume-validator');
+    const hAttr = document.documentElement.getAttribute('data-ext-resume-history');
+    if (vAttr !== null || hAttr !== null) {
       clearInterval(check);
-      if (enabled !== '1') return;
-      waitForForm();
+      const doValidate = vAttr === '1';
+      const doHistory = hAttr === '1' || doValidate;
+      if (!doValidate && !doHistory) return;
+      waitForForm(doValidate, doHistory);
     } else if (waited >= MAX_WAIT) {
       clearInterval(check);
     }
@@ -44,7 +52,7 @@ import {
     return null;
   }
 
-  function waitForForm(): void {
+  function waitForForm(doValidate: boolean, doHistory: boolean): void {
     const tipe = pageTipe();
     if (!tipe) return;
 
@@ -60,15 +68,38 @@ import {
             );
       if (saveBtn && form) {
         clearInterval(poll);
-        init(form, saveBtn, tipe);
+        init(form, saveBtn, tipe, doValidate, doHistory);
       }
     }, 200);
   }
 
-  function init(form: HTMLFormElement, saveBtn: HTMLElement, tipe: TipeResume): void {
+  function init(
+    form: HTMLFormElement,
+    saveBtn: HTMLElement,
+    tipe: TipeResume,
+    doValidate: boolean,
+    doHistory: boolean,
+  ): void {
     injectStyle();
 
-    setupCekForm(form, tipe);
+    // Outbox di halaman form asli: entri yang gagal terkirim saat Simpan
+    // (offline/pusat mati) diunggah ulang tiap 30 dtk di belakang layar.
+    // Sekali per halaman (guard di initCasemixBackfill); diam bila offline.
+    try {
+      initCasemixBackfill();
+    } catch {
+      /* ignore */
+    }
+
+    // Intersepsi simpan SELALU dipasang bila riwayat aktif (log tiap simpan);
+    // validasinya yang opsional — mode riwayat-saja teruskan apa adanya.
+    if (doHistory) setupCekForm(form, tipe, doValidate);
+    if (!doValidate) {
+      // Mode riwayat-saja: tanpa validasi, tanpa kosmetik validator
+      // (required/auto-format/indikator/autoclear/draft) — murni log + tombol.
+      if (doHistory) setupHistory(form, saveBtn, tipe);
+      return;
+    }
     setupAutoClearHandlers(tipe);
     // Draft/autosave hanya untuk form BARU ranap (Rajal adalah form kerja
     // utama RM — autosave rajal akan menulis localStorage besar tiap ketik).
@@ -112,8 +143,10 @@ import {
    * - Rajal: `window.simpan` (global, dipanggil `onclick="simpan()"` di #save)
    *   → validasi kami jalan duluan, baru native `simpan()` asli.
    * - Keduanya: override `form.submit` + jQuery submit guard.
+   * Bila doValidate=false (mode riwayat-saja): semua jalur diteruskan apa
+   * adanya TANPA validasi, tapi logResumeSave tetap dipanggil tiap simpan.
    */
-  function setupCekForm(form: HTMLFormElement, tipe: TipeResume): void {
+  function setupCekForm(form: HTMLFormElement, tipe: TipeResume, doValidate: boolean): void {
     const w = window as unknown as Record<string, unknown>;
 
     if (tipe === 'rajal') {
@@ -121,7 +154,7 @@ import {
         typeof w.simpan === 'function' ? (w.simpan as (...a: unknown[]) => unknown) : null;
       if (origSimpan && !(origSimpan as unknown as { __extWrapped?: boolean }).__extWrapped) {
         const wrapped = function (this: unknown, ...args: unknown[]): unknown {
-          if (!runValidation(tipe)) return false;
+          if (doValidate && !runValidation(tipe)) return false;
           logResumeSave(form, tipe);
           _dirty = false;
           try {
@@ -134,7 +167,8 @@ import {
         (wrapped as unknown as { __extWrapped: boolean }).__extWrapped = true;
         w.simpan = wrapped;
       }
-    } else {
+    } else if (doValidate) {
+      // Mode riwayat-saja: JANGAN timpa cekForm native — biarkan alur asli.
       w.cekForm = function (): boolean {
         return runValidation(tipe);
       };
@@ -142,11 +176,12 @@ import {
 
     if (form.onsubmit !== null) {
       form.onsubmit = function (e: Event) {
-        const result = runValidation(tipe);
+        const result = doValidate ? runValidation(tipe) : true;
         if (!result && e) {
           e.preventDefault();
         } else {
-          // jalur submit native (mode edit): log history saat validasi lolos.
+          // jalur submit native (mode edit): log history saat validasi lolos
+          // (atau selalu, bila mode riwayat-saja).
           // Duplikat dari jalur lain ditangkap dedup 5s di logResumeHistory.
           logResumeSave(form, tipe);
         }
@@ -158,7 +193,7 @@ import {
       { fn?: { on?: (ev: string, h: (e: Event) => boolean) => void } } | undefined;
     // ponytail: global jQuery may be a shim/not-ready on some MORBIS instances;
     // never let the jQuery binding kill the whole feature.
-    if (typeof $ === 'object' && $ && typeof $.fn?.on === 'function') {
+    if (doValidate && typeof $ === 'object' && $ && typeof $.fn?.on === 'function') {
       ($ as unknown as { fn: { on: (ev: string, h: (e: Event) => boolean) => void } }).fn.on(
         'submit',
         function (e: Event) {
@@ -173,7 +208,7 @@ import {
 
     var origSubmit = form.submit.bind(form);
     form.submit = function () {
-      if (!runValidation(tipe)) return;
+      if (doValidate && !runValidation(tipe)) return;
       logResumeSave(form, tipe);
       _dirty = false;
       // FIX: stop autosave interval saat submit (form akan navigasi away)
@@ -357,6 +392,15 @@ import {
     saveBtn.parentElement.insertBefore(btn, saveBtn.nextSibling);
     _historyBtn = btn;
     refreshHistoryBtn(idVisit, tipe);
+    // Counter ikut mutakhir bila modal menggabung entri dari DB pusat.
+    window.addEventListener('ext-rv-history-merged', function (e: Event) {
+      try {
+        const d = (e as CustomEvent).detail as { idVisit?: string; tipe?: TipeResume } | undefined;
+        if (d && d.idVisit === idVisit && d.tipe === tipe) refreshHistoryBtn(idVisit, tipe);
+      } catch {
+        /* ignore */
+      }
+    });
   }
 
   function refreshHistoryBtn(idVisit: string, tipe: TipeResume): void {

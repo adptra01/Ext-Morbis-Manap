@@ -92,11 +92,11 @@ function postFireForget(
   path: string,
   payload: Record<string, unknown>,
   fetcher: typeof fetch = fetch,
-): void {
+): Promise<void> {
   try {
     const ctrl = new AbortController();
     const t = globalThis.setTimeout(() => ctrl.abort(), CENTRAL_TIMEOUT_MS);
-    fetcher(resolveCasemixBase() + path, {
+    return fetcher(resolveCasemixBase() + path, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(payload),
@@ -104,12 +104,16 @@ function postFireForget(
       credentials: 'omit',
       signal: ctrl.signal,
     })
+      .then(() => {
+        /* terkirim — pemanggil (pending UI) lanjut via finally */
+      })
       .catch(() => {
         /* pusat tak terjangkau — data lokal tetap aman, antrean migrasi mengunggah nanti */
       })
       .finally(() => globalThis.clearTimeout(t));
   } catch {
     /* ignore */
+    return Promise.resolve();
   }
 }
 
@@ -128,9 +132,9 @@ export function togglePreOpCentral(
   marked: boolean,
   info: { norm?: string; nama?: string; noReg?: string; user?: string } = {},
   fetcher: typeof fetch = fetch,
-): void {
-  if (!idVisit) return;
-  postFireForget(
+): Promise<void> {
+  if (!idVisit) return Promise.resolve();
+  return postFireForget(
     '/api/casemix/pre-op/toggle',
     {
       id_visit: idVisit,
@@ -182,9 +186,9 @@ export function postRevisionCentral(
     submittedAt?: number;
   },
   fetcher: typeof fetch = fetch,
-): void {
-  if (!rev.idVisit || !rev.keterangan) return;
-  postFireForget(
+): Promise<void> {
+  if (!rev.idVisit || !rev.keterangan) return Promise.resolve();
+  return postFireForget(
     '/api/casemix/revisions',
     {
       id_visit: rev.idVisit,
@@ -220,6 +224,7 @@ export async function fetchRevisionsBatch(
 
 export interface CentralResumeEntry {
   id?: number;
+  client_id?: string | null;
   id_visit?: string;
   id_resume?: string;
   aksi?: string;

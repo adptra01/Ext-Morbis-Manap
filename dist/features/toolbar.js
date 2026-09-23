@@ -114,7 +114,7 @@ var __morbis_feature = (() => {
     try {
       const ctrl = new AbortController();
       const t = globalThis.setTimeout(() => ctrl.abort(), CENTRAL_TIMEOUT_MS);
-      fetcher(resolveCasemixBase() + path, {
+      return fetcher(resolveCasemixBase() + path, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(payload),
@@ -122,13 +122,15 @@ var __morbis_feature = (() => {
         credentials: 'omit',
         signal: ctrl.signal,
       })
+        .then(() => {})
         .catch(() => {})
         .finally(() => globalThis.clearTimeout(t));
     } catch {}
+    return Promise.resolve();
   }
   function postRevisionCentral(rev, fetcher = fetch) {
-    if (!rev.idVisit || !rev.keterangan) return;
-    postFireForget(
+    if (!rev.idVisit || !rev.keterangan) return Promise.resolve();
+    return postFireForget(
       '/api/casemix/revisions',
       {
         id_visit: rev.idVisit,
@@ -378,7 +380,34 @@ var __morbis_feature = (() => {
         migrated.push(id);
         res.preopUploaded++;
       }
-      if (res.preopUploaded) writeJson2(store, MIGRATED_PREOP_KEY, migrated);
+      try {
+        const alive = new Set(Object.keys(map));
+        const kept = [];
+        for (const id of migrated) {
+          if (alive.has(id)) {
+            kept.push(id);
+            continue;
+          }
+          if (res.offline) {
+            kept.push(id);
+            continue;
+          }
+          const ok = await postCentral(
+            '/api/casemix/pre-op/toggle',
+            { id_visit: id, marked: false },
+            fetcher,
+          );
+          if (!ok) {
+            res.offline = true;
+            kept.push(id);
+          } else {
+            res.preopUploaded++;
+          }
+        }
+        if (kept.length !== migrated.length || res.preopUploaded > 0) {
+          writeJson2(store, MIGRATED_PREOP_KEY, kept);
+        }
+      } catch {}
     } catch {
       res.offline = true;
     }
@@ -394,6 +423,7 @@ var __morbis_feature = (() => {
           const ok = await postCentral(
             '/api/reports/resume-history',
             {
+              client_id: e.client_id ?? null,
               id_visit: idVisit,
               id_resume: e.id_resume,
               aksi: e.aksi,

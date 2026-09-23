@@ -14,7 +14,12 @@
  */
 
 import { loadPreOpMap, type PreOpMap } from './preOpStorage.js';
-import { loadHistory, type ResumeHistoryEntry, type TipeResume } from './resumeHistory.js';
+import {
+  loadHistory,
+  RV_MIGRATED_PREFIX,
+  type ResumeHistoryEntry,
+  type TipeResume,
+} from './resumeHistory.js';
 import { resolveCasemixBase } from './casemixApi.js';
 
 export type KVStore = {
@@ -24,7 +29,10 @@ export type KVStore = {
 };
 
 const MIGRATED_PREOP_KEY = 'ext_migrated_preop_ids';
-const MIGRATED_RV_PREFIX = 'ext_migrated_rv_';
+// Watermark per kunci history — SATU mekanisme dengan postToReports langsung
+// (resumeHistory.ts): siapa pun yang tembus duluan memajukan penanda,
+// yang lain tak kirim ulang. Jangan duplikasi konstanta ini.
+const MIGRATED_RV_PREFIX = RV_MIGRATED_PREFIX;
 export const BACKFILL_BATCH = 20;
 
 function readJson<T>(store: KVStore | null, key: string): T | null {
@@ -168,7 +176,41 @@ export async function runCasemixBackfill(
       migrated.push(id);
       res.preopUploaded++;
     }
-    if (res.preopUploaded) writeJson(store, MIGRATED_PREOP_KEY, migrated);
+    // Sapuan unmark: id yang PERNAH diunggah marked=true tapi kini hilang
+    // dari map lokal (user batalkan saat offline) → kirim marked=false agar
+    // server tak macet di status lama. Daftar migrated dipangkas sekalian.
+    try {
+      const alive = new Set(Object.keys(map));
+      const kept: string[] = [];
+      for (const id of migrated) {
+        if (alive.has(id)) {
+          kept.push(id);
+          continue;
+        }
+        if (res.offline) {
+          kept.push(id); // tunda — coba lagi interval berikut
+          continue;
+        }
+        const ok = await postCentral(
+          '/api/casemix/pre-op/toggle',
+          { id_visit: id, marked: false },
+          fetcher,
+        );
+        if (!ok) {
+          res.offline = true;
+          kept.push(id);
+        } else {
+          res.preopUploaded++;
+        }
+      }
+      if (kept.length !== migrated.length || res.preopUploaded > 0) {
+        writeJson(store, MIGRATED_PREOP_KEY, kept);
+      }
+    } catch {
+      /* ignore */
+    }
+    // (catatan: tulis migrated ditangani sapuan unmark di atas —
+    //  jangan tulis ulang array lama di sini)
   } catch {
     res.offline = true;
   }
@@ -189,6 +231,7 @@ export async function runCasemixBackfill(
         const ok = await postCentral(
           '/api/reports/resume-history',
           {
+            client_id: e.client_id ?? null,
             id_visit: idVisit,
             id_resume: e.id_resume,
             aksi: e.aksi,

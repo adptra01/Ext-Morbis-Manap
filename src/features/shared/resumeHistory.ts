@@ -25,6 +25,20 @@ export interface ResumeHistoryEntry {
   before: FormSnap;
   after: FormSnap;
   changed: string[];
+  /** ID unik per entri (anti-dobel saat kirim ulang outbox).
+   *  Opsional agar data lama + test literal lama tetap valid. */
+  client_id?: string;
+}
+
+/** ID unik klien untuk dedup sisi server bila pengiriman terulang. */
+export function newClientId(): string {
+  try {
+    const c = globalThis.crypto as undefined | { randomUUID?: () => string };
+    if (c && typeof c.randomUUID === 'function') return c.randomUUID();
+  } catch {
+    /* ignore */
+  }
+  return `${Date.now().toString(36)}-${Math.floor(Math.random() * 1e9).toString(36)}`;
 }
 
 /** Storage minimal (localStorage pinggir: Map buat test). */
@@ -42,6 +56,10 @@ function defaultStore(): KVStore | null {
 const HIST_PREFIX = 'ext_rv_history_';
 const LEGACY_HIST_PREFIX = HIST_PREFIX; // `ext_rv_history_<id>` (tanpa tipe, ranap dulu)
 const LAST_PREFIX = 'ext_rv_lastform_';
+/** Watermark outbox per kunci history: `at` terbesar yang SUDAH tembus ke
+ *  pusat. Dipakai backfill (casemixBackfill) + postToReports langsung —
+ *  satu mekanisme, dua penulis, tanpa dobel-kirim. */
+export const RV_MIGRATED_PREFIX = 'ext_migrated_rv_';
 const MAX_ENTRIES = 50;
 
 export function getHistoryKey(idVisit: string, tipe: TipeResume): string {
@@ -190,9 +208,9 @@ export function readPetugas(): string {
   return 'petugas';
 }
 
-/* ── Sinkronisasi Reports SIMRS ── */
+/* ── Sinkronisasi Reports SIMRS (outbox: lokal dulu, kirim belakang) ── */
 
-import { resolveCasemixBase } from './casemixApi.js';
+import { resolveCasemixBase, fetchResumeCentral, type CentralResumeEntry } from './casemixApi.js';
 
 const REPORTS_API_PATH = '/api/reports/resume-history';
 
@@ -200,34 +218,81 @@ export function resolveReportsBase(): string {
   return resolveCasemixBase();
 }
 
+/** Kunci watermark outbox untuk satu kunci history lokal. */
+export function getMigratedKey(historyKey: string): string {
+  return RV_MIGRATED_PREFIX + historyKey;
+}
+
+function readMarker(store: KVStore | null, key: string): number {
+  if (!store) return 0;
+  try {
+    const raw = store.getItem(key);
+    if (raw === null) return 0;
+    const n = Number(JSON.parse(raw));
+    return Number.isFinite(n) ? n : 0;
+  } catch {
+    return 0;
+  }
+}
+
+/** Maju watermark bila entri ini lebih baru dari yang sudah tembus. */
+export function advanceMigratedMarker(
+  store: KVStore | null,
+  idVisit: string,
+  tipe: TipeResume,
+  at: number,
+): void {
+  if (!store || !idVisit) return;
+  try {
+    const key = getMigratedKey(getHistoryKey(idVisit, tipe));
+    if (at > readMarker(store, key)) writeJson(store, key, at);
+  } catch {
+    /* ignore */
+  }
+}
+
 export function postToReports(
   entry: ResumeHistoryEntry,
   idVisit: string,
   fetcher: typeof fetch = fetch,
-): void {
+  store: KVStore | null = defaultStore(),
+  tipe: TipeResume = entry.tipe,
+): Promise<boolean> {
+  const payload = {
+    client_id: entry.client_id ?? null,
+    id_visit: idVisit,
+    id_resume: entry.id_resume,
+    aksi: entry.aksi,
+    tipe: entry.tipe,
+    waktu: new Date(entry.at).toISOString(),
+    user: entry.user,
+    before: entry.before,
+    after: entry.after,
+    changed: entry.changed,
+  };
+  const send = async (): Promise<boolean> => {
+    try {
+      const res = await fetcher(resolveReportsBase() + REPORTS_API_PATH, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true,
+        credentials: 'omit',
+      });
+      if (!res.ok) return false;
+      // Tembus → majukan watermark agar backfill tak kirim ulang.
+      advanceMigratedMarker(store, idVisit, tipe, entry.at);
+      return true;
+    } catch {
+      /* endpoint Reports belum ada / offline — riwayat lokal tetap aman,
+       * backfill 30 dtk akan coba lagi (watermark belum maju) */
+      return false;
+    }
+  };
   try {
-    const payload = {
-      id_visit: idVisit,
-      id_resume: entry.id_resume,
-      aksi: entry.aksi,
-      tipe: entry.tipe,
-      waktu: new Date(entry.at).toISOString(),
-      user: entry.user,
-      before: entry.before,
-      after: entry.after,
-      changed: entry.changed,
-    };
-    fetcher(resolveReportsBase() + REPORTS_API_PATH, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify(payload),
-      keepalive: true,
-      credentials: 'omit',
-    }).catch(function () {
-      /* endpoint Reports belum ada — riwayat lokal tetap aman */
-    });
+    return send();
   } catch {
-    /* ignore */
+    return Promise.resolve(false);
   }
 }
 
@@ -276,12 +341,20 @@ export function logResumeHistory(opts: LogResumeOpts): ResumeHistoryEntry | null
     before: opts.before ?? {},
     after: opts.after,
     changed: diffSnap(opts.before ?? {}, opts.after),
+    client_id: newClientId(),
   };
   const list = loadHistory(opts.idVisit, opts.tipe, store);
   list.push(entry);
   saveHistory(list, opts.idVisit, opts.tipe, store);
   storeLast(opts.after, opts.idVisit, opts.tipe, store);
-  postToReports(entry, opts.idVisit, opts.fetcher ?? fetch);
+  // Outbox: lokal SUDAH tersimpan sinkron di atas; kirim ke pusat di
+  // belakang layar tanpa menahan UI. Gagal → watermark tak maju →
+  // backfill 30 dtk mengulang sampai tembus (client_id cegah dobel).
+  try {
+    void postToReports(entry, opts.idVisit, opts.fetcher ?? fetch, store, opts.tipe);
+  } catch {
+    /* ignore — backfill yang urus */
+  }
   return entry;
 }
 
@@ -302,6 +375,100 @@ export function showHistToast(msg: string): void {
   } catch {
     /* ignore */
   }
+}
+
+/* ── Read-back pusat: riwayat antar-PC/akun ── */
+
+function coerceSnapVal(v: unknown): string | string[] | undefined {
+  if (v === null || v === undefined) return undefined;
+  if (typeof v === 'string') return v;
+  if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+  if (Array.isArray(v)) {
+    return v.map((x) => {
+      if (typeof x === 'string') return x;
+      try {
+        return JSON.stringify(x) ?? '';
+      } catch {
+        return '';
+      }
+    });
+  }
+  try {
+    const s = JSON.stringify(v);
+    return s ?? '';
+  } catch {
+    return '';
+  }
+}
+
+function coerceSnap(rec: Record<string, unknown> | null | undefined): FormSnap {
+  const out: FormSnap = {};
+  if (!rec || typeof rec !== 'object' || Array.isArray(rec)) return out;
+  for (const k of Object.keys(rec)) {
+    const c = coerceSnapVal(rec[k]);
+    if (c !== undefined) out[k] = c;
+  }
+  return out;
+}
+
+/** Baris pusat → entri lokal (null bila tak bisa dipakai). */
+export function centralToResumeEntry(
+  r: CentralResumeEntry,
+  fallbackTipe: TipeResume,
+): ResumeHistoryEntry | null {
+  try {
+    if (!r || typeof r !== 'object') return null;
+    const at = r.waktu ? Date.parse(r.waktu) : NaN;
+    if (!Number.isFinite(at)) return null;
+    const after = coerceSnap(r.after);
+    const before = coerceSnap(r.before);
+    const tipe: TipeResume =
+      r.tipe === 'rajal' ? 'rajal' : r.tipe === 'ranap' ? 'ranap' : fallbackTipe;
+    const changed = Array.isArray(r.changed)
+      ? r.changed.filter((x): x is string => typeof x === 'string')
+      : diffSnap(before, after);
+    const cid = typeof r.client_id === 'string' && r.client_id ? r.client_id : undefined;
+    return {
+      at,
+      aksi: r.aksi === 'buat' ? 'buat' : 'ubah',
+      id_resume: typeof r.id_resume === 'string' ? r.id_resume : '',
+      user: typeof r.user === 'string' && r.user ? r.user : 'petugas',
+      tipe,
+      before,
+      after,
+      changed,
+      ...(cid ? { client_id: cid } : {}),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function centralEntryKey(e: ResumeHistoryEntry): string {
+  if (e.client_id) return 'cid:' + e.client_id;
+  try {
+    return 'h:' + e.at + '|' + e.user + '|' + e.aksi + '|' + JSON.stringify(e.after);
+  } catch {
+    return 'h:' + e.at + '|' + e.user + '|' + e.aksi;
+  }
+}
+
+/** Gabung entri pusat ke daftar lokal: dedup (client_id dulu), urut waktu,
+ *  cap 50. Murni (unit-tested) — tanpa DOM/jaringan. */
+export function mergeCentralResumeEntries(
+  local: ResumeHistoryEntry[],
+  incoming: ResumeHistoryEntry[],
+): ResumeHistoryEntry[] {
+  const seen = new Set(local.map(centralEntryKey));
+  const out = local.slice();
+  for (const e of incoming) {
+    const k = centralEntryKey(e);
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(e);
+  }
+  out.sort((a, b) => a.at - b.at);
+  return out.slice(-MAX_ENTRIES);
 }
 
 /* ── Modal Riwayat (dipakai form native & modal React) ── */
@@ -328,9 +495,10 @@ export function openHistoryModal(opts: OpenHistoryOpts): void {
   } catch {
     /* ignore */
   }
-  const list = loadHistory(opts.idVisit, opts.tipe, opts.store ?? defaultStore())
-    .slice()
-    .reverse();
+  const store = opts.store ?? defaultStore();
+  // Tampil SEGERA dari lokal (instan, offline-proof); entri pusat menyusul
+  // di belakang layar lalu digabung — pola sama seperti revisi BPJS.
+  let list = loadHistory(opts.idVisit, opts.tipe, store).slice().reverse();
   const z = opts.zIndex ?? 99998;
 
   const ov = document.createElement('div');
@@ -355,7 +523,9 @@ export function openHistoryModal(opts: OpenHistoryOpts): void {
   head.style.cssText =
     'display:flex;align-items:center;justify-content:space-between;' +
     'padding:14px 18px;border-bottom:1px solid #d0d5dd;font-weight:700;';
-  head.textContent = `${opts.title ?? 'Riwayat Resume'} (${list.length})`;
+  const headTitle = document.createElement('span');
+  headTitle.textContent = `${opts.title ?? 'Riwayat Resume'} (${list.length})`;
+  head.appendChild(headTitle);
   const x = document.createElement('button');
   x.type = 'button';
   x.textContent = '×';
@@ -372,78 +542,125 @@ export function openHistoryModal(opts: OpenHistoryOpts): void {
   body.style.cssText = 'padding:14px 18px;overflow-y:auto;';
   box.appendChild(body);
 
-  if (!list.length) {
-    body.textContent =
-      'Belum ada riwayat untuk kunjungan ini. Riwayat tercatat otomatis setiap kali Simpan ditekan.';
-  }
-
-  list.forEach(function (entry, idx) {
-    const no = list.length - idx;
-    const row = document.createElement('div');
-    row.style.cssText =
-      'border:1px solid #d0d5dd;border-radius:8px;padding:10px 12px;margin-bottom:10px;';
-
-    const title = document.createElement('div');
-    title.style.fontWeight = '600';
-    const who = entry.user ? ` — oleh ${entry.user}` : '';
-    title.textContent =
-      `#${no} — ${new Date(entry.at).toLocaleString('id-ID')} — ` +
-      `${entry.aksi === 'buat' ? 'Buat baru' : 'Ubah'}${who} — ` +
-      `${entry.changed.length} field berubah`;
-    row.appendChild(title);
-
-    const detail = document.createElement('div');
-    detail.style.cssText =
-      'display:none;margin-top:8px;background:#f8fafc;border-radius:6px;padding:8px 10px;' +
-      'font-size:13px;line-height:1.6;max-height:180px;overflow-y:auto;white-space:pre-wrap;';
-    if (!entry.changed.length) {
-      detail.textContent = 'Tidak ada perbedaan field.';
-    } else {
-      detail.textContent = entry.changed
-        .map(function (k) {
-          return k + ': ' + shortSnapVal(entry.before[k]) + ' → ' + shortSnapVal(entry.after[k]);
-        })
-        .join('\n');
+  // Gambar ulang isi dari daftar (terbaru dulu). Dipanggil sekali untuk
+  // lokal + sekali lagi bila entri pusat tiba menyusul.
+  const paint = (rows: ResumeHistoryEntry[]): void => {
+    list = rows;
+    headTitle.textContent = `${opts.title ?? 'Riwayat Resume'} (${list.length})`;
+    body.replaceChildren();
+    if (!list.length) {
+      body.textContent =
+        'Belum ada riwayat untuk kunjungan ini. Riwayat tercatat otomatis setiap kali Simpan ditekan.';
+      return;
     }
-    row.appendChild(detail);
 
-    const bar = document.createElement('div');
-    bar.style.cssText = 'margin-top:8px;display:flex;gap:8px;';
+    list.forEach(function (entry, idx) {
+      const no = list.length - idx;
+      const row = document.createElement('div');
+      row.style.cssText =
+        'border:1px solid #d0d5dd;border-radius:8px;padding:10px 12px;margin-bottom:10px;';
 
-    const btnLihat = document.createElement('button');
-    btnLihat.type = 'button';
-    btnLihat.textContent = 'Lihat';
-    btnLihat.style.cssText =
-      'border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;' +
-      'font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;';
-    btnLihat.onclick = function () {
-      detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
-    };
-    bar.appendChild(btnLihat);
+      const title = document.createElement('div');
+      title.style.fontWeight = '600';
+      const who = entry.user ? ` — oleh ${entry.user}` : '';
+      title.textContent =
+        `#${no} — ${new Date(entry.at).toLocaleString('id-ID')} — ` +
+        `${entry.aksi === 'buat' ? 'Buat baru' : 'Ubah'}${who} — ` +
+        `${entry.changed.length} field berubah`;
+      row.appendChild(title);
 
-    const btnSalin = document.createElement('button');
-    btnSalin.type = 'button';
-    btnSalin.textContent = 'Salin ke Form';
-    btnSalin.style.cssText =
-      'background:#00875a;color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;' +
-      'font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;';
-    btnSalin.onclick = function () {
-      try {
-        opts.onApply(entry.after);
-        ov.remove();
-      } catch {
-        /* biarkan modal terbuka bila apply gagal */
+      const detail = document.createElement('div');
+      detail.style.cssText =
+        'display:none;margin-top:8px;background:#f8fafc;border-radius:6px;padding:8px 10px;' +
+        'font-size:13px;line-height:1.6;max-height:180px;overflow-y:auto;white-space:pre-wrap;';
+      if (!entry.changed.length) {
+        detail.textContent = 'Tidak ada perbedaan field.';
+      } else {
+        detail.textContent = entry.changed
+          .map(function (k) {
+            return k + ': ' + shortSnapVal(entry.before[k]) + ' → ' + shortSnapVal(entry.after[k]);
+          })
+          .join('\n');
       }
-    };
-    bar.appendChild(btnSalin);
-    row.appendChild(bar);
+      row.appendChild(detail);
 
-    body.appendChild(row);
-  });
+      const bar = document.createElement('div');
+      bar.style.cssText = 'margin-top:8px;display:flex;gap:8px;';
+
+      const btnLihat = document.createElement('button');
+      btnLihat.type = 'button';
+      btnLihat.textContent = 'Lihat';
+      btnLihat.style.cssText =
+        'border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;' +
+        'font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;';
+      btnLihat.onclick = function () {
+        detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
+      };
+      bar.appendChild(btnLihat);
+
+      const btnSalin = document.createElement('button');
+      btnSalin.type = 'button';
+      btnSalin.textContent = 'Salin ke Form';
+      btnSalin.style.cssText =
+        'background:#00875a;color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;' +
+        'font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;';
+      btnSalin.onclick = function () {
+        try {
+          opts.onApply(entry.after);
+          ov.remove();
+        } catch {
+          /* biarkan modal terbuka bila apply gagal */
+        }
+      };
+      bar.appendChild(btnSalin);
+      row.appendChild(bar);
+
+      body.appendChild(row);
+    });
+  };
+
+  paint(list);
 
   try {
     document.body.appendChild(ov);
   } catch {
     /* ignore */
+  }
+
+  // Read-through pusat: riwayat dari PC/akun lain ikut tampil tanpa reload.
+  // Diam bila offline (daftar lokal tetap tampil) atau modal sudah ditutup.
+  if (opts.idVisit) {
+    try {
+      void fetchResumeCentral(opts.idVisit, opts.tipe).then((central) => {
+        try {
+          if (!central.length || !ov.isConnected) return;
+          const incoming: ResumeHistoryEntry[] = [];
+          for (const r of central) {
+            const e = centralToResumeEntry(r, opts.tipe);
+            if (e) incoming.push(e);
+          }
+          if (!incoming.length) return;
+          const base = loadHistory(opts.idVisit, opts.tipe, store);
+          const merged = mergeCentralResumeEntries(base, incoming);
+          if (merged.length === base.length) return; // tak ada yang baru
+          saveHistory(merged, opts.idVisit, opts.tipe, store);
+          paint(merged.slice().reverse());
+          // Kabari tombol Riwayat (validator) agar counter ikut mutakhir.
+          try {
+            document.dispatchEvent(
+              new CustomEvent('ext-rv-history-merged', {
+                detail: { idVisit: opts.idVisit, tipe: opts.tipe, count: merged.length },
+              }),
+            );
+          } catch {
+            /* ignore */
+          }
+        } catch {
+          /* ignore */
+        }
+      });
+    } catch {
+      /* ignore */
+    }
   }
 }

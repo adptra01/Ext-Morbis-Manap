@@ -52,6 +52,12 @@ const FALLBACK_FEATURES: FeatureConfig[] = [
     roles: ['casemix', 'dokter'],
   },
   {
+    key: 'resumeHistory',
+    name: 'Riwayat Resume',
+    desc: 'Log simpan + tombol Riwayat (tanpa validasi)',
+    roles: ['casemix', 'dokter'],
+  },
+  {
     key: 'resumeModal',
     name: 'Resume Rajal',
     desc: 'Edit resume rawat jalan',

@@ -156,33 +156,76 @@ var __morbis_feature = (() => {
   function resolveReportsBase() {
     return resolveCasemixBase();
   }
-  function postToReports(entry, idVisit, fetcher = fetch) {
+  var RV_MIGRATED_PREFIX = 'ext_migrated_rv_';
+  function getMigratedKey(historyKey) {
+    return RV_MIGRATED_PREFIX + historyKey;
+  }
+  function readMarker(store, key) {
+    if (!store) return 0;
     try {
-      const payload = {
-        id_visit: idVisit,
-        id_resume: entry.id_resume,
-        aksi: entry.aksi,
-        tipe: entry.tipe,
-        waktu: new Date(entry.at).toISOString(),
-        user: entry.user,
-        before: entry.before,
-        after: entry.after,
-        changed: entry.changed,
-      };
-      fetcher(resolveReportsBase() + REPORTS_API_PATH, {
+      const raw = store.getItem(key);
+      if (raw === null) return 0;
+      const n = Number(JSON.parse(raw));
+      return Number.isFinite(n) ? n : 0;
+    } catch {
+      return 0;
+    }
+  }
+  function advanceMigratedMarker(store, idVisit, tipe, at) {
+    if (!store || !idVisit) return;
+    try {
+      const key = getMigratedKey(getHistoryKey(idVisit, tipe));
+      if (at > readMarker(store, key)) writeJson(store, key, at);
+    } catch {}
+  }
+  function newClientId() {
+    try {
+      const c = globalThis.crypto;
+      if (c && typeof c.randomUUID === 'function') return c.randomUUID();
+    } catch {}
+    return Date.now().toString(36) + '-' + Math.floor(Math.random() * 1e9).toString(36);
+  }
+  async function postToReports(
+    entry,
+    idVisit,
+    fetcher = fetch,
+    store = defaultStore(),
+    tipe = entry.tipe,
+  ) {
+    const payload = {
+      client_id: entry.client_id ?? null,
+      id_visit: idVisit,
+      id_resume: entry.id_resume,
+      aksi: entry.aksi,
+      tipe: entry.tipe,
+      waktu: new Date(entry.at).toISOString(),
+      user: entry.user,
+      before: entry.before,
+      after: entry.after,
+      changed: entry.changed,
+    };
+    try {
+      const res = await fetcher(resolveReportsBase() + REPORTS_API_PATH, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(payload),
         keepalive: true,
         credentials: 'omit',
-      }).catch(function () {});
-    } catch {}
+      });
+      if (!res.ok) return false;
+      advanceMigratedMarker(store, idVisit, tipe, entry.at);
+      return true;
+    } catch {
+      return false;
+    }
   }
   var _lastLogHash = null;
   var _lastLogAt = 0;
   function logResumeHistory(opts) {
     if (!opts.idVisit) return null;
     const now = opts.now ?? Date.now();
+    const store = opts.store ?? defaultStore();
+    storeLast(opts.after, opts.idVisit, opts.tipe, store);
     const hash = JSON.stringify([opts.idVisit, opts.aksi, opts.after]);
     if (_lastLogHash === hash && now - _lastLogAt < 5e3) return null;
     _lastLogHash = hash;
@@ -196,13 +239,15 @@ var __morbis_feature = (() => {
       before: opts.before ?? {},
       after: opts.after,
       changed: diffSnap(opts.before ?? {}, opts.after),
+      client_id: newClientId(),
     };
-    const store = opts.store ?? defaultStore();
     const list = loadHistory(opts.idVisit, opts.tipe, store);
     list.push(entry);
     saveHistory(list, opts.idVisit, opts.tipe, store);
     storeLast(opts.after, opts.idVisit, opts.tipe, store);
-    postToReports(entry, opts.idVisit, opts.fetcher ?? fetch);
+    try {
+      void postToReports(entry, opts.idVisit, opts.fetcher ?? fetch, store, opts.tipe);
+    } catch {}
     return entry;
   }
   function showHistToast(msg) {

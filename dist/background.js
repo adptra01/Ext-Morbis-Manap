@@ -238,6 +238,13 @@ var __morbis_bg = (() => {
         description:
           'Validasi ketat form resume rawat inap & rawat jalan + riwayat simpan (petugas, before/after)',
       },
+      resumeHistory: {
+        enabled: true,
+        allowedRoles: ['casemix', 'dokter'],
+        name: 'Riwayat Resume',
+        description:
+          'Catat riwayat tiap simpan resume + tombol Riwayat/Salin-ke-Form — tanpa validasi (jalan walau Validator mati)',
+      },
       antrianTools: {
         enabled: true,
         allowedRoles: ['admin', 'pendaftaran'],
