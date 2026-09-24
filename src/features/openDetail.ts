@@ -37,7 +37,24 @@ let _listenersInstalled = false;
 
 // Event yang sudah ditangani — mencegah handler dobel saat terdaftar di window
 // DAN document (window capture selalu jalan lebih dulu).
-const _handledEvents = new WeakSet<Event>();
+// FIX: WeakSet tidak persisten cross-navigation (garbage collected). Gunakan
+// Map dengan timestamp + periodic cleanup, atau Set dengan ID event yang unik.
+const _handledEvents = new Set<number>();
+let _eventIdCounter = 0;
+const MAX_HANDLED_EVENTS = 1000;
+
+function _getEventId(e: Event): number {
+  // Generate unique ID per event instance
+  return ((e as Event & { __extId?: number }).__extId ??= ++_eventIdCounter);
+}
+
+function _cleanupHandledEvents(): void {
+  if (_handledEvents.size > MAX_HANDLED_EVENTS) {
+    // Clear oldest half to prevent memory leak
+    const toRemove = Array.from(_handledEvents).slice(0, MAX_HANDLED_EVENTS / 2);
+    for (const id of toRemove) _handledEvents.delete(id);
+  }
+}
 
 /** Dibaca openDetailWindowOpen.js (MAIN world) lewat atribut di <html>. */
 const MODE_ATTR = 'data-ext-open-detail-mode';
@@ -229,7 +246,8 @@ function findDetailTrigger(target: EventTarget | null): HTMLElement | null {
 }
 
 function handleDetailClick(e: Event): void {
-  if (_handledEvents.has(e)) return;
+  const eventId = _getEventId(e);
+  if (_handledEvents.has(eventId)) return;
 
   // Hormati niat eksplisit user: ctrl/cmd/shift/alt/klik-tengah = tab baru.
   if (e instanceof MouseEvent) {
@@ -249,7 +267,8 @@ function handleDetailClick(e: Event): void {
     return;
   }
 
-  _handledEvents.add(e);
+  _handledEvents.add(eventId);
+  _cleanupHandledEvents();
   e.preventDefault();
   e.stopPropagation();
   e.stopImmediatePropagation();
@@ -275,12 +294,14 @@ function overrideDetailButton(btn: HTMLElement): void {
 
   btn.dataset.detailModified = 'true';
 
-  btn.removeAttribute('onclick');
-  btn.removeAttribute('target');
-
+  // FIX: JANGAN hapus onclick asli — itu menghapus SEMUA handler.
+  // Cukup pasang listener capture yang stopImmediatePropagation.
+  // onclick asli tetap jalan untuk keperluan lain (analytics, dll) TAPI
+  // navigation kita yang menang karena preventDefault di listener capture.
   if (btn.tagName.toLowerCase() === 'a') {
     btn.setAttribute('href', generateUrl(id));
   }
+  // Biarkan target asli — listener capture kita yang akan handle.
 
   btn.addEventListener(
     'click',
@@ -291,7 +312,7 @@ function overrideDetailButton(btn: HTMLElement): void {
       e.stopImmediatePropagation();
       openDetailUrl(id);
     },
-    true,
+    true, // capture phase: jalan SEBELUM onclick inline
   );
 
   if (OPEN_DETAIL_CONFIG.debug) {
@@ -341,22 +362,41 @@ function restoreDetailButtons(): void {
 function overrideButtonsByText(): void {
   if (!isFeatureActive()) return;
 
-  document.querySelectorAll<HTMLElement>('button, a, [onclick]').forEach((btn) => {
-    if (/\bdetail\b/i.test(btn.textContent || '') && !isModifiedEvent(btn)) {
+  // FIX: Lebih ketat — hanya tombol yang benar-benar merupakan action "detail"
+  // BUKAN elemen navigasi umum, toolbar, atau header.
+  const candidateButtons = document.querySelectorAll<HTMLElement>(
+    'button:not([data-action]):not([data-toggle]):not(.btn-toolbar):not(.toolbar), ' +
+      'a[href*="detail"]:not([href*="list"]):not([href*="index"]), ' +
+      '[onclick*="detail" i]:not([data-action]):not([data-toggle])',
+  );
+
+  candidateButtons.forEach((btn) => {
+    if (isModifiedEvent(btn)) return;
+    const text = (btn.textContent || '').trim().toLowerCase();
+    // Hanya cocok teks yang SPESIFIK untuk action detail, bukan kata "detail" di mana saja
+    if (
+      text === 'detail' ||
+      text === 'view' ||
+      text === 'lihat' ||
+      text === 'lihat detail' ||
+      text === 'detail pasien' ||
+      text === 'buka detail'
+    ) {
       overrideDetailButton(btn);
     }
   });
 
+  // Table cells: hanya jika sel berisi tombol/action detail, bukan teks header
   const tableCells = document.querySelectorAll('td');
   tableCells.forEach((cell) => {
-    if ((cell.textContent || '').toLowerCase().includes('detail')) {
-      const elements = cell.querySelectorAll<HTMLElement>('button, a, span, div, [onclick]');
+    // Skip header cells
+    if (cell.tagName.toLowerCase() === 'th') return;
+    const cellText = (cell.textContent || '').trim().toLowerCase();
+    // Hanya jika sel relatif pendek (kemungkinan action cell) DAN mengandung "detail"
+    if (cellText.length <= 30 && /\bdetail\b/i.test(cellText)) {
+      const elements = cell.querySelectorAll<HTMLElement>('button, a, [onclick]');
       elements.forEach((el) => {
-        const text = (el.textContent || '').trim().toLowerCase();
-        if (
-          !isModifiedEvent(el) &&
-          (text === 'detail' || text === 'view' || text === 'lihat' || /\bdetail\b/.test(text))
-        ) {
+        if (!isModifiedEvent(el)) {
           overrideDetailButton(el);
         }
       });
@@ -428,7 +468,8 @@ function runOpenDetailInNewTabFeature(): void {
       _observerTimer = window.setTimeout(() => {
         _observerTimer = null;
         try {
-          if (isEnabled) overrideDetailButtons();
+          // FIX: MutationObserver stale closure — baca isFeatureActive() SAAT callback jalan
+          if (isFeatureActive()) overrideDetailButtons();
         } catch (e) {
           console.warn('[OpenDetail] MutationObserver error:', e);
         }

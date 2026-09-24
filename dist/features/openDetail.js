@@ -1,16 +1,27 @@
 'use strict';
 var __morbis_feature = (() => {
-  function E() {
+  function w() {
     return window;
   }
-  var c = E(),
-    u = null,
-    d = null,
+  var f = w(),
+    c = null,
+    g = null,
     s = null,
     l = null,
-    g = !1,
-    h = new WeakSet(),
-    k = 'data-ext-open-detail-mode',
+    m = !1,
+    d = new Set(),
+    _ = 0,
+    k = 1e3;
+  function F(e) {
+    return e.__extId ?? (e.__extId = ++_);
+  }
+  function O() {
+    if (d.size > k) {
+      let e = Array.from(d).slice(0, k / 2);
+      for (let t of e) d.delete(t);
+    }
+  }
+  var D = 'data-ext-open-detail-mode',
     a = {
       urlPatterns: [
         '/v2/m-klaim/detail-v2-refaktor?id_visit={id}&tanggalAwal={tanggalAwal}&tanggalAkhir={tanggalAkhir}&norm=&nama=&reg=&billing=all&status=all&id_poli_cari=&poli_cari=',
@@ -33,22 +44,22 @@ var __morbis_feature = (() => {
       ],
       debug: !1,
     };
-  function D(t) {
-    if (!t) return null;
-    let e = [
+  function M(e) {
+    if (!e) return null;
+    let t = [
       /detail[^(]*\(\s*['"]?(\d+)/i,
       /id_visit\s*=\s*['"]?(\d+)/i,
       /[?&](?:id_visit|visit|id)\s*=\s*['"]?(\d+)/i,
     ];
-    for (let n of e) {
-      let r = t.match(n);
-      if (r) return r[1];
+    for (let n of t) {
+      let i = e.match(n);
+      if (i) return i[1];
     }
     return null;
   }
-  function M(t) {
-    let n = t.dataset,
-      r = [
+  function A(e) {
+    let n = e.dataset,
+      i = [
         n.idVisit,
         n.idvisit,
         n.idVisitId,
@@ -56,230 +67,241 @@ var __morbis_feature = (() => {
         n.detailId,
         n.detailid,
         n.id,
-        t.getAttribute('data-id'),
-        t.getAttribute('data-id-visit'),
-        t.getAttribute('data-detail-id'),
+        e.getAttribute('data-id'),
+        e.getAttribute('data-id-visit'),
+        e.getAttribute('data-detail-id'),
       ];
-    for (let i of r) if (i && /^\d+$/.test(i)) return i;
+    for (let o of i) if (o && /^\d+$/.test(o)) return o;
     return null;
   }
-  function A(t) {
-    let e = M(t);
-    if (e) return e;
-    let n = t.getAttribute('value');
+  function T(e) {
+    let t = A(e);
+    if (t) return t;
+    let n = e.getAttribute('value');
     if (n && /^\d+$/.test(n)) return n;
-    for (let i of ['onclick', 'href', 'data-onclick', 'data-href', 'data-url']) {
-      let o = D(t.getAttribute(i));
-      if (o) return o;
+    for (let o of ['onclick', 'href', 'data-onclick', 'data-href', 'data-url']) {
+      let r = M(e.getAttribute(o));
+      if (r) return r;
     }
-    let r = t.parentElement;
-    for (let i = 0; i < 5 && r; i++) {
-      let o = M(r);
-      if (o) return o;
-      for (let C of ['onclick', 'href', 'data-id-visit', 'data-detail-id']) {
-        let w = D(r.getAttribute(C));
-        if (w) return w;
+    let i = e.parentElement;
+    for (let o = 0; o < 5 && i; o++) {
+      let r = A(i);
+      if (r) return r;
+      for (let x of ['onclick', 'href', 'data-id-visit', 'data-detail-id']) {
+        let h = M(i.getAttribute(x));
+        if (h) return h;
       }
-      r = r.parentElement;
+      i = i.parentElement;
     }
     return null;
   }
-  function x(t) {
-    let e = String(t.getDate()).padStart(2, '0'),
-      n = String(t.getMonth() + 1).padStart(2, '0'),
-      r = t.getFullYear();
-    return `${e}-${n}-${r}`;
+  function S(e) {
+    let t = String(e.getDate()).padStart(2, '0'),
+      n = String(e.getMonth() + 1).padStart(2, '0'),
+      i = e.getFullYear();
+    return `${t}-${n}-${i}`;
   }
-  function T(t) {
-    let e = window.location.origin + a.urlPatterns[0];
-    if (((e = e.replace('{id}', t)), a.autoDate)) {
-      let r = document.getElementById('tanggalAwal')?.value,
-        i = document.getElementById('tanggalAkhir')?.value;
-      if (r && i)
-        e = e
-          .replace('{tanggalAwal}', encodeURIComponent(r))
-          .replace('{tanggalAkhir}', encodeURIComponent(i));
+  function I(e) {
+    let t = window.location.origin + a.urlPatterns[0];
+    if (((t = t.replace('{id}', e)), a.autoDate)) {
+      let i = document.getElementById('tanggalAwal')?.value,
+        o = document.getElementById('tanggalAkhir')?.value;
+      if (i && o)
+        t = t
+          .replace('{tanggalAwal}', encodeURIComponent(i))
+          .replace('{tanggalAkhir}', encodeURIComponent(o));
       else {
-        let o = x(new Date());
-        e = e.replace('{tanggalAwal}', o).replace('{tanggalAkhir}', o);
+        let r = S(new Date());
+        t = t.replace('{tanggalAwal}', r).replace('{tanggalAkhir}', r);
       }
     }
     let n = new URLSearchParams(window.location.search);
     return (
-      ['norm', 'nama', 'reg', 'billing', 'status', 'id_poli_cari', 'poli_cari'].forEach((r) => {
-        let i = n.get(r);
-        i && (e = e.replace(`{${r}}`, encodeURIComponent(i)));
+      ['norm', 'nama', 'reg', 'billing', 'status', 'id_poli_cari', 'poli_cari'].forEach((i) => {
+        let o = n.get(i);
+        o && (t = t.replace(`{${i}}`, encodeURIComponent(o)));
       }),
-      (e = e.replace(/{\w+}/g, '')),
-      e
+      (t = t.replace(/{\w+}/g, '')),
+      t
     );
   }
-  function v(t) {
-    return t.dataset.detailModified === 'true';
+  function b(e) {
+    return e.dataset.detailModified === 'true';
   }
-  function I() {
-    return c.currentConfig?.features?.openDetailInNewTab;
+  function L() {
+    return f.currentConfig?.features?.openDetailInNewTab;
   }
   function y() {
-    return I()?.mode || 'same-tab';
+    return L()?.mode || 'same-tab';
   }
-  function m() {
-    return I()?.enabled ? c.ExtensionCore.isFeatureAllowed('openDetailInNewTab') : !1;
+  function u() {
+    return L()?.enabled ? f.ExtensionCore.isFeatureAllowed('openDetailInNewTab') : !1;
   }
-  function L(t) {
-    let e = T(t),
+  function C(e) {
+    let t = I(e),
       n = y();
-    (console.log(`[OpenDetail] Buka detail ID: ${t}, mode: ${n}`),
-      n === 'new-tab' ? window.open(e, '_blank', 'noopener') : (window.location.href = e));
+    (console.log(`[OpenDetail] Buka detail ID: ${e}, mode: ${n}`),
+      n === 'new-tab' ? window.open(t, '_blank', 'noopener') : (window.location.href = t));
   }
-  function F(t) {
-    let e = t;
-    if (!e || typeof e.closest != 'function') return null;
-    for (let r of a.buttonSelectors)
+  function R(e) {
+    let t = e;
+    if (!t || typeof t.closest != 'function') return null;
+    for (let i of a.buttonSelectors)
       try {
-        let i = e.closest(r);
-        if (i) return i;
+        let o = t.closest(i);
+        if (o) return o;
       } catch {}
-    let n = e.closest('button,a,[onclick],[role="button"]');
+    let n = t.closest('button,a,[onclick],[role="button"]');
     return n && /\bdetail\b/i.test(n.textContent || '') ? n : null;
   }
-  function f(t) {
+  function v(e) {
+    let t = F(e);
     if (
-      h.has(t) ||
-      (t instanceof MouseEvent &&
-        (t.ctrlKey || t.metaKey || t.shiftKey || t.altKey || t.button !== 0)) ||
-      !m()
+      d.has(t) ||
+      (e instanceof MouseEvent &&
+        (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0)) ||
+      !u()
     )
       return;
-    let e = F(t.target);
-    if (!e) return;
-    let n = A(e);
-    if (!n) {
-      a.debug && console.warn('[OpenDetail] Detail terdeteksi tapi ID gagal diekstrak:', e);
+    let n = R(e.target);
+    if (!n) return;
+    let i = T(n);
+    if (!i) {
+      a.debug && console.warn('[OpenDetail] Detail terdeteksi tapi ID gagal diekstrak:', n);
       return;
     }
-    (h.add(t), t.preventDefault(), t.stopPropagation(), t.stopImmediatePropagation(), L(n));
+    (d.add(t), O(), e.preventDefault(), e.stopPropagation(), e.stopImmediatePropagation(), C(i));
   }
-  function b(t) {
-    if (v(t)) return;
-    let e = A(t);
-    if (!e) {
-      a.debug && console.log('[OpenDetail] Gagal mengekstrak ID dari elemen:', t);
+  function E(e) {
+    if (b(e)) return;
+    let t = T(e);
+    if (!t) {
+      a.debug && console.log('[OpenDetail] Gagal mengekstrak ID dari elemen:', e);
       return;
     }
-    let n = t.getAttribute('onclick'),
-      r = t.getAttribute('target');
-    ((t.dataset.originalOnclick = n || ''),
-      r && (t.dataset.originalTarget = r),
-      (t.dataset.detailModified = 'true'),
-      t.removeAttribute('onclick'),
-      t.removeAttribute('target'),
-      t.tagName.toLowerCase() === 'a' && t.setAttribute('href', T(e)),
-      t.addEventListener(
+    let n = e.getAttribute('onclick'),
+      i = e.getAttribute('target');
+    ((e.dataset.originalOnclick = n || ''),
+      i && (e.dataset.originalTarget = i),
+      (e.dataset.detailModified = 'true'),
+      e.tagName.toLowerCase() === 'a' && e.setAttribute('href', I(t)),
+      e.addEventListener(
         'click',
-        function (i) {
-          (i instanceof MouseEvent && (i.ctrlKey || i.metaKey || i.shiftKey || i.altKey)) ||
-            (i.preventDefault(), i.stopPropagation(), i.stopImmediatePropagation(), L(e));
+        function (o) {
+          (o instanceof MouseEvent && (o.ctrlKey || o.metaKey || o.shiftKey || o.altKey)) ||
+            (o.preventDefault(), o.stopPropagation(), o.stopImmediatePropagation(), C(t));
         },
         !0,
       ),
-      a.debug && console.log(`[OpenDetail] Tombol detail ID: ${e} berhasil di-override`));
+      a.debug && console.log(`[OpenDetail] Tombol detail ID: ${t} berhasil di-override`));
   }
   function p() {
-    if (m())
-      for (let t of a.buttonSelectors)
+    if (u())
+      for (let e of a.buttonSelectors)
         try {
-          document.querySelectorAll(t).forEach((n) => b(n));
+          document.querySelectorAll(e).forEach((n) => E(n));
         } catch {
-          a.debug && console.warn(`[OpenDetail] Invalid selector skipped: ${t}`);
+          a.debug && console.warn(`[OpenDetail] Invalid selector skipped: ${e}`);
         }
   }
-  function O() {
-    document.querySelectorAll('[data-detail-modified="true"]').forEach((e) => {
-      let n = e.dataset.originalOnclick;
-      n && n !== '' && e.setAttribute('onclick', n);
-      let r = e.dataset.originalTarget;
-      (r && e.setAttribute('target', r),
-        delete e.dataset.detailModified,
-        delete e.dataset.originalOnclick,
-        delete e.dataset.originalTarget);
-      let i = e.cloneNode(!0);
-      e.parentNode && e.parentNode.replaceChild(i, e);
+  function B() {
+    document.querySelectorAll('[data-detail-modified="true"]').forEach((t) => {
+      let n = t.dataset.originalOnclick;
+      n && n !== '' && t.setAttribute('onclick', n);
+      let i = t.dataset.originalTarget;
+      (i && t.setAttribute('target', i),
+        delete t.dataset.detailModified,
+        delete t.dataset.originalOnclick,
+        delete t.dataset.originalTarget);
+      let o = t.cloneNode(!0);
+      t.parentNode && t.parentNode.replaceChild(o, t);
     });
   }
-  function S() {
-    if (!m()) return;
-    (document.querySelectorAll('button, a, [onclick]').forEach((e) => {
-      /\bdetail\b/i.test(e.textContent || '') && !v(e) && b(e);
-    }),
-      document.querySelectorAll('td').forEach((e) => {
-        (e.textContent || '').toLowerCase().includes('detail') &&
-          e.querySelectorAll('button, a, span, div, [onclick]').forEach((r) => {
-            let i = (r.textContent || '').trim().toLowerCase();
-            !v(r) &&
-              (i === 'detail' || i === 'view' || i === 'lihat' || /\bdetail\b/.test(i)) &&
-              b(r);
+  function H() {
+    if (!u()) return;
+    (document
+      .querySelectorAll(
+        'button:not([data-action]):not([data-toggle]):not(.btn-toolbar):not(.toolbar), a[href*="detail"]:not([href*="list"]):not([href*="index"]), [onclick*="detail" i]:not([data-action]):not([data-toggle])',
+      )
+      .forEach((n) => {
+        if (b(n)) return;
+        let i = (n.textContent || '').trim().toLowerCase();
+        (i === 'detail' ||
+          i === 'view' ||
+          i === 'lihat' ||
+          i === 'lihat detail' ||
+          i === 'detail pasien' ||
+          i === 'buka detail') &&
+          E(n);
+      }),
+      document.querySelectorAll('td').forEach((n) => {
+        if (n.tagName.toLowerCase() === 'th') return;
+        let i = (n.textContent || '').trim().toLowerCase();
+        i.length <= 30 &&
+          /\bdetail\b/i.test(i) &&
+          n.querySelectorAll('button, a, [onclick]').forEach((r) => {
+            b(r) || E(r);
           });
       }));
   }
-  function _() {
-    g ||
-      (window.addEventListener('click', f, !0),
-      document.addEventListener('click', f, !0),
-      (g = !0));
+  function P() {
+    m ||
+      (window.addEventListener('click', v, !0),
+      document.addEventListener('click', v, !0),
+      (m = !0));
   }
-  function R() {
-    g &&
-      (window.removeEventListener('click', f, !0),
-      document.removeEventListener('click', f, !0),
-      (g = !1));
+  function N() {
+    m &&
+      (window.removeEventListener('click', v, !0),
+      document.removeEventListener('click', v, !0),
+      (m = !1));
   }
-  function B() {
-    (R(),
-      u !== null && (clearInterval(u), (u = null)),
-      d !== null && (clearTimeout(d), (d = null)),
+  function K() {
+    (N(),
+      c !== null && (clearInterval(c), (c = null)),
+      g !== null && (clearTimeout(g), (g = null)),
       l !== null && (clearTimeout(l), (l = null)),
       s && (s.disconnect(), (s = null)));
   }
-  function P() {
-    let t = m();
-    B();
+  function $() {
+    let e = u();
+    K();
     try {
-      if (t) {
-        let e = y();
-        (console.log('[OpenDetail] Feature ENABLED, mode:', e),
-          document.documentElement.setAttribute(k, e),
-          _(),
+      if (e) {
+        let t = y();
+        (console.log('[OpenDetail] Feature ENABLED, mode:', t),
+          document.documentElement.setAttribute(D, t),
+          P(),
           p(),
-          (d = window.setTimeout(() => S(), 500)),
-          (u = window.setInterval(() => p(), 2e3)));
+          (g = window.setTimeout(() => H(), 500)),
+          (c = window.setInterval(() => p(), 2e3)));
       } else
         (console.log('[OpenDetail] Feature DISABLED'),
-          document.documentElement.removeAttribute(k),
-          O());
+          document.documentElement.removeAttribute(D),
+          B());
       ((s = new MutationObserver(() => {
         (l !== null && clearTimeout(l),
           (l = window.setTimeout(() => {
             l = null;
             try {
-              t && p();
-            } catch (e) {
-              console.warn('[OpenDetail] MutationObserver error:', e);
+              u() && p();
+            } catch (t) {
+              console.warn('[OpenDetail] MutationObserver error:', t);
             }
           }, 200)));
       })),
         s.observe(document.body, { childList: !0, subtree: !0 }));
-    } catch (e) {
-      console.error('[OpenDetail] Error running feature:', e);
+    } catch (t) {
+      console.error('[OpenDetail] Error running feature:', t);
     }
   }
-  typeof c.featureModules < 'u'
-    ? (c.featureModules.openDetailInNewTab = {
+  typeof f.featureModules < 'u'
+    ? (f.featureModules.openDetailInNewTab = {
         id: 'openDetailInNewTab',
         name: 'Open Detail Mode',
         description: 'Buka detail di tab yang sama / tab baru sesuai mode (cegat handler bawaan)',
         match: { prefix: '/v2/m-klaim' },
-        run: P,
+        run: $,
       })
     : console.warn('[OpenDetail] featureModules not defined, module registration skipped');
 })();

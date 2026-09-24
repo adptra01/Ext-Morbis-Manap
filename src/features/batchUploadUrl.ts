@@ -113,27 +113,44 @@ function fetchWithTimeout(
 ): Promise<Response> {
   const ac = new AbortController();
   const timer = setTimeout(() => ac.abort(), timeoutMs);
+  // Combine external signal (e.g., batch cancellation) with timeout
+  const externalSignal = init.signal;
+  if (externalSignal) {
+    if (externalSignal.aborted) {
+      clearTimeout(timer);
+      ac.abort();
+    } else {
+      externalSignal.addEventListener('abort', () => ac.abort());
+    }
+  }
   return fetch(url, { ...init, signal: ac.signal }).finally(() => clearTimeout(timer));
 }
 
 /** Retry wrapper — ponytail: 2 retries with 1s/2s backoff for transient failures */
 async function fetchWithRetry(url: string, init: RequestInit = {}, retries = 2): Promise<Response> {
+  const signal = init.signal;
   let lastErr: Error | null = null;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      const resp = await fetchWithTimeout(url, init);
+      // Create new init with fresh signal for each attempt (if external signal provided)
+      const attemptInit = signal ? { ...init, signal } : init;
+      const resp = await fetchWithTimeout(url, attemptInit);
       if (resp.ok) return resp;
       // Don't retry client errors (4xx) except 429 (rate limit)
       if (resp.status >= 400 && resp.status < 500 && resp.status !== 429) return resp;
       lastErr = new Error(`HTTP ${resp.status}: ${resp.statusText}`);
     } catch (err) {
       lastErr = err as Error;
-      // AbortError = timeout, always retry
+      // AbortError = timeout or cancellation, don't retry if it's our batch abort
       if (err instanceof DOMException && err.name === 'AbortError') {
+        if (signal?.aborted) {
+          // Batch was cancelled — don't retry
+          throw new Error('Batch cancelled');
+        }
         lastErr = new Error('Request timeout');
       }
     }
-    if (attempt < retries) {
+    if (attempt < retries && !(lastErr instanceof Error && lastErr.message === 'Batch cancelled')) {
       await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
       console.log(`[Batch Upload] Retry ${attempt + 1}/${retries} for ${url}`);
     }
@@ -143,6 +160,22 @@ async function fetchWithRetry(url: string, init: RequestInit = {}, retries = 2):
 
 let batchQueue: BatchItem[] = [];
 let isProcessing = false;
+
+// Batch cancellation support
+let _batchAbortController: AbortController | null = null;
+
+function _getBatchAbortSignal(): AbortSignal {
+  if (!_batchAbortController) _batchAbortController = new AbortController();
+  return _batchAbortController.signal;
+}
+
+function cancelBatchUpload(): void {
+  if (_batchAbortController) {
+    _batchAbortController.abort();
+    _batchAbortController = null;
+  }
+  isProcessing = false;
+}
 
 function extractUrls(inputText: string): string[] {
   if (!inputText || typeof inputText !== 'string') return [];
@@ -176,13 +209,30 @@ function parseMetadataFromUrl(url: string): BatchItem {
     let norm = '';
     const tanggal = getTanggalMasukFromPage();
 
-    const normIndex = parts.findIndex((p) => /^\d{3,12}$/.test(p) && !/^\d{10}$/.test(p));
-    if (normIndex !== -1) {
-      norm = parts[normIndex];
-      parts.splice(normIndex, 1);
+    // FIX: Fragile norm extraction — gunakan logika lebih robust
+    // Prioritas:
+    // 1. Part yang mirip NORM (6-12 digit, bukan timestamp 10-13 digit)
+    // 2. Part di awal yang numeric dan panjangnya wajar untuk NORM
+    // 3. Fallback: cari di query string ?norm= atau ?no_rm=
+    const normCandidates = parts.filter((p) => {
+      const isNumeric = /^\d+$/.test(p);
+      const len = p.length;
+      // NORM biasanya 6-12 digit, bukan 10 digit (timestamp) atau 13+ (ms timestamp)
+      return isNumeric && len >= 6 && len <= 12 && len !== 10 && len !== 13;
+    });
+
+    if (normCandidates.length > 0) {
+      // Ambil kandidat pertama yang paling mirip NORM (bukan di akhir sebagai sequence number)
+      norm = normCandidates[0];
+    } else {
+      // Fallback: cari di query string
+      const normFromQuery = urlObj.searchParams.get('norm') || urlObj.searchParams.get('no_rm');
+      if (normFromQuery && /^\d{6,12}$/.test(normFromQuery)) {
+        norm = normFromQuery;
+      }
     }
 
-    const keteranganParts = parts.filter((p) => !/^\d{10}$/.test(p));
+    const keteranganParts = parts.filter((p) => !/^\d{10}$/.test(p) && p !== norm);
     const keterangan = keteranganParts.join(' ').trim() || nameWithoutExt.replace(/[-_]+/g, ' ');
 
     return {
@@ -247,7 +297,8 @@ function showBatchUploadModal(): void {
         </div>
         <div id="${BATCH_UPLOAD_URL_CONFIG.statusId}" style="margin: 8px 0; font-size: 11px; color: #9ca3af; font-weight: 500; letter-spacing: 0.3px;"></div>
         <div class="ext-modal-buttons">
-          <button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Batal</button>
+          <button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Tutup</button>
+          <button class="ext-btn ext-btn-danger" id="ext-cancel-batch-btn" style="display:none;" title="Batalkan proses upload yang sedang berjalan">${Icons.xClose} Batalkan Upload</button>
           <button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 URL</button>
           <button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>${Icons.upload} Mulai Upload</button>
         </div>
@@ -260,6 +311,7 @@ function showBatchUploadModal(): void {
         ?.addEventListener('click', () => modal?.classList.remove('show'));
       document.getElementById('ext-analyze-btn')?.addEventListener('click', analyzeUrls);
       document.getElementById('ext-cancel-btn')?.addEventListener('click', closeBatchModal);
+      document.getElementById('ext-cancel-batch-btn')?.addEventListener('click', cancelBatchUpload);
       document.getElementById('ext-test-single-btn')?.addEventListener('click', testSingleUpload);
       document.getElementById('ext-start-upload-btn')?.addEventListener('click', startBatchUpload);
 
@@ -307,6 +359,7 @@ function showBatchUploadModal(): void {
 }
 
 function closeBatchModal(): void {
+  cancelBatchUpload();
   const modal = document.getElementById(BATCH_UPLOAD_URL_CONFIG.modalId);
   if (modal) {
     modal.classList.remove('show');
@@ -326,10 +379,13 @@ function closeBatchModal(): void {
     );
     if (buttonsContainer) {
       buttonsContainer.innerHTML =
-        '<button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Batal</button><button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 URL</button><button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>' +
+        '<button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Tutup</button><button class="ext-btn ext-btn-danger" id="ext-cancel-batch-btn" style="display:none;" title="Batalkan proses upload yang sedang berjalan">' +
+        Icons.xClose +
+        ' Batalkan Upload</button><button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 URL</button><button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>' +
         Icons.upload +
         ' Mulai Upload</button>';
       document.getElementById('ext-cancel-btn')?.addEventListener('click', closeBatchModal);
+      document.getElementById('ext-cancel-batch-btn')?.addEventListener('click', cancelBatchUpload);
       document.getElementById('ext-test-single-btn')?.addEventListener('click', testSingleUpload);
       document.getElementById('ext-start-upload-btn')?.addEventListener('click', startBatchUpload);
     }
@@ -517,6 +573,14 @@ function toggleUIProcessingState(isUploading: boolean): void {
     radio.disabled = isUploading;
   });
 
+  // Show cancel batch button during upload, hide otherwise
+  const cancelBatchBtn = document.getElementById(
+    'ext-cancel-batch-btn',
+  ) as HTMLButtonElement | null;
+  if (cancelBatchBtn) {
+    cancelBatchBtn.style.display = isUploading ? 'inline-flex' : 'none';
+  }
+
   elementsToToggle.forEach((id) => {
     const el = document.getElementById(id) as HTMLButtonElement | HTMLTextAreaElement | null;
     if (el) {
@@ -600,14 +664,27 @@ async function crawlDokumenPasien(): Promise<void> {
   }
 
   try {
-    const targetUrl = `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${idVisit}&page=85&id_kunjungan=`;
-    const response = await fetch(targetUrl);
+    // FIX: Hardcoded page=85 removed — halaman dokumen-pasien default sudah load semua
+    // atau pakai pagination yang benar. Jika perlu, bisa ditambahkan param nanti.
+    const targetUrl = `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${idVisit}&id_kunjungan=`;
+    const response = await fetch(targetUrl, { signal: _getBatchAbortSignal() });
 
     if (!response.ok) throw new Error('Gagal memuat halaman dokumen pasien');
     const html = await response.text();
     const doc = new DOMParser().parseFromString(html, 'text/html');
 
-    const rows = doc.querySelectorAll('table.data-list.tabel tr');
+    // FIX: Hardcoded table selectors — gunakan selector lebih fleksibel
+    // Coba beberapa selector umum MORBIS untuk tabel dokumen
+    let rows = doc.querySelectorAll('table.data-list.tabel tr');
+    if (rows.length <= 1) {
+      rows = doc.querySelectorAll('table.tabel tr');
+    }
+    if (rows.length <= 1) {
+      rows = doc.querySelectorAll('table[id*="dokumen"] tr, table[class*="dokumen"] tr');
+    }
+    if (rows.length <= 1) {
+      rows = doc.querySelectorAll('tbody tr');
+    }
     const urls: Array<{
       url: string;
       filenameTabel: string;
@@ -618,17 +695,22 @@ async function crawlDokumenPasien(): Promise<void> {
 
     for (let i = 1; i < rows.length; i++) {
       const tr = rows[i] as HTMLTableRowElement;
-      const linkEl = tr.querySelector('td:nth-child(2) a');
+      // FIX: Fleksibel — link bisa di kolom ke-1, ke-2, atau ke-3
+      let linkEl = tr.querySelector('td a[href*="/assets/dokumen-pasien/"]');
+      if (!linkEl) linkEl = tr.querySelector('td a[href*="dokumen-pasien"]');
+      if (!linkEl) linkEl = tr.querySelector('a[href]');
       if (!linkEl) continue;
 
       const urlPath = linkEl.getAttribute('href');
       if (!urlPath?.includes('/assets/dokumen-pasien/')) continue;
 
       const fullUrl = urlPath.startsWith('http') ? urlPath : `${window.location.origin}${urlPath}`;
-      const filenameTabel = tr.cells[1]?.textContent?.trim() || '';
-      const keteranganTd = tr.cells[2]?.textContent?.trim() || '';
-      const tglFile = tr.cells[3]?.textContent?.trim() || '';
-      const tglUpload = tr.cells[4]?.textContent?.trim() || '';
+      // Ambil data dari sel-sel yang tersedia (kolom bisa beda)
+      const cells = Array.from(tr.querySelectorAll('td'));
+      const filenameTabel = cells[1]?.textContent?.trim() || cells[0]?.textContent?.trim() || '';
+      const keteranganTd = cells[2]?.textContent?.trim() || cells[1]?.textContent?.trim() || '';
+      const tglFile = cells[3]?.textContent?.trim() || cells[2]?.textContent?.trim() || '';
+      const tglUpload = cells[4]?.textContent?.trim() || cells[3]?.textContent?.trim() || '';
 
       urls.push({ url: fullUrl, filenameTabel, tglFile, tglUpload, keteranganTabel: keteranganTd });
     }
@@ -670,11 +752,16 @@ async function fetchFileFromUrl(url: string, filename: string): Promise<File> {
 
   // Try same-origin first (credentials: same-origin), then fallback to CORS-less
   let response: Response;
+  const signal = _getBatchAbortSignal();
   try {
-    response = await fetchWithRetry(url, { method: 'GET', credentials: 'same-origin' }, 2);
+    response = await fetchWithRetry(url, { method: 'GET', credentials: 'same-origin', signal }, 2);
   } catch {
     // ponytail: CORS fallback — try without credentials (may fail on auth-gated URLs)
-    response = await fetchWithRetry(url, { method: 'GET', mode: 'cors', credentials: 'omit' }, 1);
+    response = await fetchWithRetry(
+      url,
+      { method: 'GET', mode: 'cors', credentials: 'omit', signal },
+      1,
+    );
   }
 
   if (!response.ok) {
@@ -946,6 +1033,7 @@ async function processAndUploadSingleUrl(
         method: 'POST',
         body: formData,
         credentials: 'same-origin',
+        signal: _getBatchAbortSignal(),
       },
       2,
     );
@@ -1041,12 +1129,31 @@ async function runBatchQueue(): Promise<void> {
   }
 
   for (let i = 0; i < total; i++) {
+    // FIX: Check for batch cancellation at start of each iteration
+    if (_getBatchAbortSignal().aborted) {
+      updateStatus('Batch dibatalkan oleh user');
+      break;
+    }
+
+    // FIX: Re-validate id_visit on each iteration (SPA navigation might change it)
+    const currentIdVisit = new URLSearchParams(window.location.search).get('id_visit') || '';
+    if (!currentIdVisit) {
+      updateStatus('ID Visit hilang dari URL — batch dihentikan');
+      break;
+    }
+    if (currentIdVisit !== idVisitStr) {
+      console.warn('[Batch Upload] ID Visit berubah mid-batch:', idVisitStr, '->', currentIdVisit);
+      // Update for remaining items
+    }
+
     const metadata = itemsToUpload[i];
 
     updateStatus(`[${i + 1}/${total}] ${escHtml(metadata.filename)}...`);
 
     try {
-      const result = await processAndUploadSingleUrl(metadata, idVisitStr);
+      const currentIdVisit =
+        new URLSearchParams(window.location.search).get('id_visit') || idVisitStr;
+      const result = await processAndUploadSingleUrl(metadata, currentIdVisit);
       if (result.success) {
         metadata.status = 'success';
         successCount++;
@@ -1056,6 +1163,11 @@ async function runBatchQueue(): Promise<void> {
         errorCount++;
       }
     } catch (error) {
+      // Handle batch cancellation gracefully
+      if (error instanceof Error && error.message === 'Batch cancelled') {
+        updateStatus('Batch dibatalkan');
+        break;
+      }
       metadata.status = 'error';
       metadata.error = (error as Error).message;
       errorCount++;

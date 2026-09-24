@@ -22,6 +22,17 @@ if ((window as unknown as { __extPenerimaanExport?: boolean }).__extPenerimaanEx
 const EXPORT_RE = /export|xls|excel|informasi-resep/i;
 const FILENAME = 'informasi-resep.xls';
 
+/** Fetch with timeout (AbortController) — default 30s, configurable. */
+function fetchWithTimeout(
+  url: string,
+  init: RequestInit = {},
+  timeoutMs = 30000,
+): Promise<Response> {
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), timeoutMs);
+  return fetch(url, { ...init, signal: ac.signal }).finally(() => clearTimeout(timer));
+}
+
 /** 'YYYY-MM-DD HH:mm:ss' → 'DD/MM/YYYY HH:mm:ss' (gaya kolom existing). */
 export function fmtWaktuAntrian(sql: string): string {
   const m = String(sql || '').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}:\d{2}:\d{2})/);
@@ -131,12 +142,15 @@ function buildLiveMap(): Map<string, string> {
     if (idx < 0) continue;
     for (const tr of Array.from(table.querySelectorAll('tbody tr'))) {
       const trId = (tr as HTMLTableRowElement).id?.trim();
+      // FIX: tr.id validation — hanya gunakan id yang valid (numeric, non-empty)
+      // MORBIS kadang render tr.id="", tr.id="0", atau id non-numeric.
+      const validTrId = trId && /^\d+$/.test(trId) ? trId : null;
       const tds = tr.querySelectorAll('td');
       if (idx >= tds.length) continue;
       const no = (tds[idx].textContent || '').trim();
       if (!no) continue;
-      // Prioritas: tr[id] (id_resep MORBIS); fallback: No Resep teks itu sendiri.
-      const resepId = trId || no;
+      // Prioritas: tr[id] yang VALID (id_resep MORBIS); fallback: No Resep teks itu sendiri.
+      const resepId = validTrId || no;
       if (resepId) map.set(no, resepId);
     }
   }
@@ -240,7 +254,7 @@ async function rewriteExport(
 async function processExport(url: string): Promise<void> {
   showLoading('Mengunduh data export dari server…');
   try {
-    const res = await fetch(url, { credentials: 'include', cache: 'no-store' });
+    const res = await fetchWithTimeout(url, { credentials: 'include', cache: 'no-store' }, 30000);
     if (!res.ok) throw new Error('export server HTTP ' + res.status);
     const html = await res.text();
 

@@ -47,6 +47,13 @@ if not "!EXT_ID_LEN!"=="32" (
 echo [OK] EXT_ID valid: 32 karakter.
 echo.
 
+REM Pastikan script dijalankan di 64-bit context kalau OS 64-bit
+if "%PROCESSOR_ARCHITECTURE%"=="x86" if not defined PROCESSOR_ARCHITEW6432 (
+    echo WARNING: OS 32-bit terdeteksi. Policy akan ditulis ke 32-bit view.
+) else if "%PROCESSOR_ARCHITECTURE%"=="x86" (
+    echo INFO: CMD 32-bit di OS 64-bit. /reg:64 akan memaksa tulis ke native view.
+)
+
 echo ===== PENTING SEBELUM INSTAL =====
 echo 1. Hapus dulu ekstensi MORBIS versi LAMA (Load unpacked) di browser:
 echo    chrome://extensions - cari MORBIS Ext Unofficial yang tertulis
@@ -73,15 +80,15 @@ for %%P in (
     "Opera Software\Opera"
     "Chromium"
 ) do (
-    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionInstallForcelist" /f >nul 2>&1
-    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionInstallAllowlist" /f >nul 2>&1
-    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionInstallSources" /f >nul 2>&1
+    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionInstallForcelist" /f /reg:64 >nul 2>&1
+    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionInstallAllowlist" /f /reg:64 >nul 2>&1
+    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionInstallSources" /f /reg:64 >nul 2>&1
     REM Hapus subkey AutoplayAllowed yang salah (dibuat installer lama).
-    reg delete "HKLM\SOFTWARE\Policies\%%~P\AutoplayAllowed" /f >nul 2>&1
+    reg delete "HKLM\SOFTWARE\Policies\%%~P\AutoplayAllowed" /f /reg:64 >nul 2>&1
     REM Hapus ExtensionSettings khusus MORBIS (ID baru + ID lama).
-    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionSettings\beljnjfifmncnfnhdkcmjpeonoigdnbl" /f >nul 2>&1
-    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionSettings\cbkjilfkdgclmpilonabdnicngjjgegd" /f >nul 2>&1
-    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionSettings\xae4a2ltyv2bj7lqyzxi2xeynpiefblg" /f >nul 2>&1
+    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionSettings\beljnjfifmncnfnhdkcmjpeonoigdnbl" /f /reg:64 >nul 2>&1
+    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionSettings\cbkjilfkdgclmpilonabdnicngjjgegd" /f /reg:64 >nul 2>&1
+    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionSettings\xae4a2ltyv2bj7lqyzxi2xeynpiefblg" /f /reg:64 >nul 2>&1
 )
 
 echo [3/6] Menulis policy ke semua browser Chromium...
@@ -96,17 +103,17 @@ for %%P in (
     set "BASE=HKLM\SOFTWARE\Policies\%%~P"
     echo   - %%~P
     REM Forcelist: auto-install + auto-update dari update.xml.
-    reg add "!BASE!\ExtensionInstallForcelist" /v "1" /t REG_SZ /d "!EXT_ID!;!UPDATE_URL!" /f >nul 2>&1
+    reg add "!BASE!\ExtensionInstallForcelist" /v "1" /t REG_SZ /d "!EXT_ID!;!UPDATE_URL!" /f /reg:64 >nul 2>&1
     REM Allowlist: wajib di Chromium yang ketat (terutama Edge).
-    reg add "!BASE!\ExtensionInstallAllowlist" /v "1" /t REG_SZ /d "!EXT_ID!" /f >nul 2>&1
+    reg add "!BASE!\ExtensionInstallAllowlist" /v "1" /t REG_SZ /d "!EXT_ID!" /f /reg:64 >nul 2>&1
     REM Sources: izinkan install CRX dari domain GitHub Pages (non-Store).
-    reg add "!BASE!\ExtensionInstallSources" /v "1" /t REG_SZ /d "!EXT_SOURCE!" /f >nul 2>&1
+    reg add "!BASE!\ExtensionInstallSources" /v "1" /t REG_SZ /d "!EXT_SOURCE!" /f /reg:64 >nul 2>&1
     REM ExtensionSettings: kunci update_url agar tidak balik ke Store.
-    reg add "!BASE!\ExtensionSettings\!EXT_ID!" /v "installation_mode" /t REG_SZ /d "force_installed" /f >nul 2>&1
-    reg add "!BASE!\ExtensionSettings\!EXT_ID!" /v "update_url" /t REG_SZ /d "!UPDATE_URL!" /f >nul 2>&1
-    reg add "!BASE!\ExtensionSettings\!EXT_ID!" /v "override_update_url" /t REG_DWORD /d "1" /f >nul 2>&1
+    reg add "!BASE!\ExtensionSettings\!EXT_ID!" /v "installation_mode" /t REG_SZ /d "force_installed" /f /reg:64 >nul 2>&1
+    reg add "!BASE!\ExtensionSettings\!EXT_ID!" /v "update_url" /t REG_SZ /d "!UPDATE_URL!" /f /reg:64 >nul 2>&1
+    reg add "!BASE!\ExtensionSettings\!EXT_ID!" /v "override_update_url" /t REG_DWORD /d "1" /f /reg:64 >nul 2>&1
     REM Autoplay: izinkan suara TTS antrian tanpa klik (value di root key).
-    reg add "!BASE!" /v "AutoplayAllowed" /t REG_DWORD /d "1" /f >nul 2>&1
+    reg add "!BASE!" /v "AutoplayAllowed" /t REG_DWORD /d "1" /f /reg:64 >nul 2>&1
 )
 
 echo.
@@ -114,7 +121,7 @@ echo [4/6] Verifikasi policy yang tertulis...
 call :VerifyPolicy
 
 echo.
-echo [5/6] Menutup ulang browser (kalau ada yang auto-restart)...
+echo [5/6] Menutup ulang browser (kalau ada yang auto-restart)....
 call :KillBrowsers
 
 echo.
@@ -178,7 +185,7 @@ for %%P in (
     "Opera Software\Opera"
     "Chromium"
 ) do (
-    reg query "HKLM\SOFTWARE\Policies\%%~P\ExtensionInstallForcelist" /v "1" 2>nul | findstr /C:"beljnjfifmncnfnhdkcmjpeonoigdnbl" >nul
+    reg query "HKLM\SOFTWARE\Policies\%%~P\ExtensionInstallForcelist" /v "1" /reg:64 2>nul | findstr /C:"beljnjfifmncnfnhdkcmjpeonoigdnbl" >nul
     if !errorlevel! == 0 (
         echo   [OK]   %%~P
     ) else (
