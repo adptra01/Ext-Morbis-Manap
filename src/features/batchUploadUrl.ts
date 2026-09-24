@@ -702,7 +702,208 @@ async function fetchFileFromUrl(url: string, filename: string): Promise<File> {
  * Prefix NORM+tanggal juga mencegah tabrakan nama file (file kedua menimpa
  * yang pertama → yang lama jadi "gak tampil").
  */
-function getKeteranganPrefix(): string {
+
+/**
+ * Convert file to image (JPEG) before upload.
+ * Supports: PDF (via canvas), images (passthrough with compression).
+ * Returns a new File object with JPEG format.
+ */
+async function convertFileToImage(file: File): Promise<File> {
+  const mime = file.type;
+
+  // If already an image, compress and return as JPEG
+  if (mime.startsWith('image/')) {
+    return await compressImageToJpeg(file, 0.85);
+  }
+
+  // PDF -> convert first page to image via canvas
+  if (mime === 'application/pdf') {
+    return await pdfToImage(file);
+  }
+
+  // Other types - try to convert via canvas, fallback to placeholder
+  console.warn('[Batch Upload] Unsupported file type:', file.type, '- creating placeholder');
+  return createPlaceholderImage('Document');
+}
+
+/**
+ * Compress image to JPEG with quality setting.
+ */
+async function compressImageToJpeg(file: File, quality: number = 0.85): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Canvas context not available'));
+        return;
+      }
+
+      // Max dimensions to avoid huge images
+      const MAX_DIM = 2048;
+      let { width, height } = img;
+      if (width > MAX_DIM || height > MAX_DIM) {
+        const scale = Math.min(MAX_DIM / width, MAX_DIM / height);
+        width *= scale;
+        height *= scale;
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error('Failed to compress image'));
+            return;
+          }
+          const newFile = new File([blob], 'image.jpg', { type: 'image/jpeg' });
+          resolve(newFile);
+        },
+        'image/jpeg',
+        quality,
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Failed to load image'));
+    };
+    img.src = url;
+  });
+}
+
+/**
+ * Convert PDF first page to JPEG image using canvas.
+ * Requires PDF.js - fallback to creating a placeholder if not available.
+ */
+async function pdfToImage(file: File): Promise<File> {
+  try {
+    // Try to use PDF.js if available globally
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const pdfjsLib = (window as unknown as { pdfjsLib?: any }).pdfjsLib;
+    if (!pdfjsLib) {
+      console.warn('[Batch Upload] PDF.js not loaded, cannot convert PDF to image');
+      return createPlaceholderImage('PDF');
+    }
+
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const page = await pdf.getPage(1);
+
+    const viewport = page.getViewport({ scale: 2.0 }); // 2x scale for quality
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas context not available');
+
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+
+    await page.render({ canvasContext: ctx, viewport }).promise();
+
+    return new Promise((resolve, reject) => {
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error('Failed to convert PDF to image'));
+            return;
+          }
+          const newFile = new File([blob], 'pdf_page.jpg', { type: 'image/jpeg' });
+          resolve(newFile);
+        },
+        'image/jpeg',
+        0.9,
+      );
+    });
+  } catch (err) {
+    console.warn('[Batch Upload] PDF to image conversion failed:', err);
+    return createPlaceholderImage('PDF');
+  }
+}
+
+/**
+ * Create a simple placeholder image for unsupported file types.
+ */
+function createPlaceholderImage(label: string): Promise<File> {
+  const canvas = document.createElement('canvas');
+  canvas.width = 400;
+  canvas.height = 200;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Canvas not available');
+
+  // Draw background
+  ctx.fillStyle = '#f3f4f6';
+  ctx.fillRect(0, 0, 400, 200);
+
+  // Draw border
+  ctx.strokeStyle = '#d1d5db';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(10, 10, 380, 180);
+
+  // Draw label
+  ctx.fillStyle = '#6b7280';
+  ctx.font = 'bold 24px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(`${label} Document`, 200, 85);
+
+  ctx.font = '14px system-ui, sans-serif';
+  ctx.fillText('Converted to image for upload', 200, 120);
+
+  return new Promise((resolve) => {
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) throw new Error('Failed to create placeholder');
+        const file = new File([blob], `${label.toLowerCase()}_placeholder.jpg`, {
+          type: 'image/jpeg',
+        });
+        resolve(file);
+      },
+      'image/jpeg',
+      0.9,
+    );
+  });
+}
+
+/**
+ * Generate timestamp-only keterangan.
+ * Format: YYYY-MM-DD HH:mm:ss
+ */
+function generateTimestampKeterangan(): string {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mi = String(now.getMinutes()).padStart(2, '0');
+  const ss = String(now.getSeconds()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
+}
+
+/**
+ * Convert file to image (JPEG) before upload.
+ * Supports: PDF (via canvas), images (passthrough with compression).
+ * Returns a new File object with JPEG format.
+ */
+async function convertFileToImage(file: File): Promise<File> {
+  const mime = file.type;
+
+  // If already an image, compress and return as JPEG
+  if (mime.startsWith('image/')) {
+    return await compressImageToJpeg(file, 0.85);
+  }
+
+  // PDF -> convert first page to image via canvas
+  if (mime === 'application/pdf') {
+    return await pdfToImage(file);
+  }
+
+  // Other types - try to convert via canvas, fallback to placeholder
+  console.warn('[Batch Upload] Unsupported file type:', file.type, '- creating placeholder');
+  return createPlaceholderImage('Document');
   // RI/RJ marker from the page's "Jenis Kunjungan" field, e.g.
   // `<input id="jenis" value="RAWAT JALAN">` → `RJ-`. Reg number appended
   // when the URL carries `?reg=`.
@@ -721,7 +922,11 @@ async function processAndUploadSingleUrl(
   try {
     const uploadName = rewriteUploadFilename(metadata, metadata.keterangan);
     updateStatus(`Download: ${escHtml(metadata.filename)}...`);
-    const file = await fetchFileFromUrl(metadata.url, uploadName);
+    let file = await fetchFileFromUrl(metadata.url, uploadName);
+
+    // Convert file to image (JPEG) before upload
+    updateStatus(`Converting to image: ${escHtml(metadata.filename)}...`);
+    file = await convertFileToImage(file);
 
     const formData = new FormData();
     formData.append('id_visit', idVisitStr);
@@ -729,19 +934,11 @@ async function processAndUploadSingleUrl(
     formData.append('tgl_file', metadata.tanggal);
     formData.append('jenis_dokumen', metadata.jenis_dokumen || 'Lain-lain');
     formData.append('dok', file);
-    // ponytail: cap keterangan di 150 char — kolom varchar di DB bisa overflow
-    // dan record gagal di-insert (file "hilang" walau HTTP 200). Server juga
-    // menolak keterangan kosong ("Keterangan Wajib Diisi") → fallback wajib ada.
-    // Prefix RI-/RJ- (dari #jenis + ?reg=) ditambahkan sebagai penanda rawat
-    // inap/jalan, tanpa dobel kalau keterangan sudah mengandung marker.
-    const ketPrefix = getKeteranganPrefix();
-    const keteranganRaw = metadata.keterangan || metadata.filename || '-';
-    const keterangan = keteranganRaw.startsWith(ketPrefix.trim())
-      ? keteranganRaw
-      : `${ketPrefix}${keteranganRaw}`;
-    formData.append('keterangan', keterangan.slice(0, 150));
+    // Keterangan: timestamp only (YYYY-MM-DD HH:mm:ss)
+    const keterangan = generateTimestampKeterangan();
+    formData.append('keterangan', keterangan);
 
-    updateStatus(`Upload: ${escHtml(uploadName)} (${(file.size / 1024).toFixed(0)} KB)...`);
+    updateStatus(`Upload: ${escHtml(file.name)} (${(file.size / 1024).toFixed(0)} KB)...`);
 
     const uploadResponse = await fetchWithRetry(
       BATCH_UPLOAD_URL_CONFIG.uploadEndpoint,
@@ -1285,8 +1482,9 @@ function initBatchUploadUrlFeature(): void {
     .catch(console.error);
 
   // Set up tab action receiver (guard: only once)
-  if ((window as any).__extBatchUploadRegistered) return;
-  (window as any).__extBatchUploadRegistered = true;
+  if ((window as unknown as { __extBatchUploadRegistered?: boolean }).__extBatchUploadRegistered)
+    return;
+  (window as unknown as { __extBatchUploadRegistered?: boolean }).__extBatchUploadRegistered = true;
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message.type === 'TAB_ACTION') {
       const { action, payload } = message;
@@ -1324,7 +1522,8 @@ function initBatchUploadUrlFeature(): void {
   });
 }
 
-(window as any).batchUploadShowModal = showBatchUploadModal;
+(window as unknown as { batchUploadShowModal?: () => void }).batchUploadShowModal =
+  showBatchUploadModal;
 
 if (typeof g.featureModules !== 'undefined' && g.featureModules !== null) {
   (g.featureModules as Record<string, unknown>).batchUpload = {

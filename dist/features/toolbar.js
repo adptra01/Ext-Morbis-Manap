@@ -1,12 +1,9 @@
 'use strict';
 var __morbis_feature = (() => {
-  // src/features/shared/types.ts
-  function getMorbisGlobals() {
+  function j() {
     return window;
   }
-
-  // src/shared/ui/colors.ts
-  var colors = {
+  var l = {
     background: '#ffffff',
     foreground: '#0a0a0e',
     card: '#ffffff',
@@ -25,7 +22,6 @@ var __morbis_feature = (() => {
     border: '#e2e8f0',
     input: '#e2e8f0',
     ring: '#2469f0',
-    /* semantic shortcuts */
     success: '#1b8a4b',
     successBg: '#eaf6ef',
     warning: '#c47a1a',
@@ -35,22 +31,16 @@ var __morbis_feature = (() => {
     info: '#2469f0',
     infoBg: '#eef3ff',
   };
-
-  // src/shared/ui/index.ts
-  var injectedSheets = /* @__PURE__ */ new Set();
-  function injectCSS(id, css) {
-    if (injectedSheets.has(id)) {
-      const existing = document.getElementById(id);
-      if (existing) return existing;
+  var F = new Set();
+  function R(e, t) {
+    if (F.has(e)) {
+      let r = document.getElementById(e);
+      if (r) return r;
     }
-    const style = document.createElement('style');
-    style.id = id;
-    style.textContent = css;
-    document.head.appendChild(style);
-    injectedSheets.add(id);
-    return style;
+    let n = document.createElement('style');
+    return ((n.id = e), (n.textContent = t), document.head.appendChild(n), F.add(e), n);
   }
-  injectCSS(
+  R(
     'ext-shared-animations',
     `
   @keyframes fadeSlideIn {
@@ -59,942 +49,861 @@ var __morbis_feature = (() => {
   }
 `,
   );
-
-  // src/features/shared/casemixApi.ts
-  var CASEMIX_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
-  var BASE_OVERRIDE_KEY = 'ext-farmasi-app-base';
-  var BATCH_MAX = 500;
-  var CENTRAL_TIMEOUT_MS = 25e3;
-  var CASEMIX_ALLOWED_HOSTS = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'];
-  var CASEMIX_ALLOWED_SUFFIX = '.rsudkotajambi.id';
-  function isAllowedCasemixBase(url) {
+  var Re = 'http://dev.rsudkotajambi.id/rs',
+    Se = 'ext-farmasi-app-base';
+  var Ee = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'],
+    Te = '.rsudkotajambi.id';
+  function _e(e) {
     try {
-      const u = new URL(url);
-      if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
-      const h = u.hostname.toLowerCase();
-      if (CASEMIX_ALLOWED_HOSTS.includes(h)) return true;
-      return h.endsWith(CASEMIX_ALLOWED_SUFFIX);
+      let t = new URL(e);
+      if (t.protocol !== 'http:' && t.protocol !== 'https:') return !1;
+      let n = t.hostname.toLowerCase();
+      return Ee.includes(n) ? !0 : n.endsWith(Te);
     } catch {
-      return false;
+      return !1;
     }
   }
-  function resolveCasemixBase() {
+  function S() {
     try {
-      const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
-      if (ov && isAllowedCasemixBase(ov)) return ov.replace(/\/+$/, '');
+      let e = localStorage.getItem(Se);
+      if (e && _e(e)) return e.replace(/\/+$/, '');
     } catch {}
-    return CASEMIX_BASE_FALLBACK;
+    return Re;
   }
-  function normalizeIds(ids) {
-    return [...new Set(ids.map((s) => String(s).trim()).filter(Boolean))].slice(0, BATCH_MAX);
+  function Ce(e) {
+    return [...new Set(e.map((t) => String(t).trim()).filter(Boolean))].slice(0, 500);
   }
-  async function fetchTimeout(url, init, fetcher = fetch) {
-    const ctrl = new AbortController();
-    const t = globalThis.setTimeout(() => ctrl.abort(), CENTRAL_TIMEOUT_MS);
+  async function je(e, t, n = fetch) {
+    let r = new AbortController(),
+      o = globalThis.setTimeout(() => r.abort(), 25e3);
     try {
-      return await fetcher(url, { ...init, signal: ctrl.signal });
+      return await n(e, { ...t, signal: r.signal });
     } finally {
-      globalThis.clearTimeout(t);
+      globalThis.clearTimeout(o);
     }
   }
-  async function getJson(path, fetcher = fetch) {
+  async function Ie(e, t = fetch) {
     try {
-      const res = await fetchTimeout(
-        resolveCasemixBase() + path,
+      let n = await je(
+        S() + e,
         { cache: 'no-store', credentials: 'omit', headers: { Accept: 'application/json' } },
-        fetcher,
+        t,
       );
-      if (!res.ok) return null;
-      return await res.json();
+      return n.ok ? await n.json() : null;
     } catch {
       return null;
     }
   }
-  function postFireForget(path, payload, fetcher = fetch) {
+  function Me(e, t, n = fetch) {
     try {
-      const ctrl = new AbortController();
-      const t = globalThis.setTimeout(() => ctrl.abort(), CENTRAL_TIMEOUT_MS);
-      return fetcher(resolveCasemixBase() + path, {
+      let r = new AbortController(),
+        o = globalThis.setTimeout(() => r.abort(), 25e3);
+      return n(S() + e, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(payload),
-        keepalive: true,
+        body: JSON.stringify(t),
+        keepalive: !0,
         credentials: 'omit',
-        signal: ctrl.signal,
+        signal: r.signal,
       })
         .then(() => {})
         .catch(() => {})
-        .finally(() => globalThis.clearTimeout(t));
+        .finally(() => globalThis.clearTimeout(o));
     } catch {
       return Promise.resolve();
     }
   }
-  function postRevisionCentral(rev, fetcher = fetch) {
-    if (!rev.idVisit || !rev.keterangan) return Promise.resolve();
-    return postFireForget(
-      '/api/casemix/revisions',
-      {
-        id_visit: rev.idVisit,
-        poli: rev.poli ?? null,
-        id_poli: rev.idPoli ?? null,
-        keterangan: rev.keterangan,
-        status: rev.status ?? 'saved',
-        user: rev.user ?? null,
-        submitted_at: rev.submittedAt
-          ? new Date(rev.submittedAt).toISOString()
-          : /* @__PURE__ */ new Date().toISOString(),
-      },
-      fetcher,
-    );
+  function M(e, t = fetch) {
+    return !e.idVisit || !e.keterangan
+      ? Promise.resolve()
+      : Me(
+          '/api/casemix/revisions',
+          {
+            id_visit: e.idVisit,
+            poli: e.poli ?? null,
+            id_poli: e.idPoli ?? null,
+            keterangan: e.keterangan,
+            status: e.status ?? 'saved',
+            user: e.user ?? null,
+            submitted_at: e.submittedAt
+              ? new Date(e.submittedAt).toISOString()
+              : new Date().toISOString(),
+          },
+          t,
+        );
   }
-  async function fetchRevisionsBatch(ids, fetcher = fetch) {
-    const list = normalizeIds(ids);
-    if (!list.length) return {};
-    const j = await getJson(
-      '/api/casemix/revisions/list?ids=' + encodeURIComponent(list.join(',')),
-      fetcher,
-    );
-    if (j === null) return null;
-    if (!j.ok || !j.revisions) return {};
-    return j.revisions;
+  async function V(e, t = fetch) {
+    let n = Ce(e);
+    if (!n.length) return {};
+    let r = await Ie('/api/casemix/revisions/list?ids=' + encodeURIComponent(n.join(',')), t);
+    return r === null ? null : !r.ok || !r.revisions ? {} : r.revisions;
   }
-
-  // src/features/shared/resumeHistory.ts
-  function defaultStore() {
+  function U() {
     try {
-      if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+      if (typeof window < 'u' && window.localStorage) return window.localStorage;
     } catch {}
     return null;
   }
-  var HIST_PREFIX = 'ext_rv_history_';
-  var LEGACY_HIST_PREFIX = HIST_PREFIX;
-  var RV_MIGRATED_PREFIX = 'ext_migrated_rv_';
-  var MAX_ENTRIES = 50;
-  function getHistoryKey(idVisit, tipe) {
-    return `${HIST_PREFIX}${tipe === 'ranap' ? 'ri' : 'rj'}_${idVisit || 'unknown'}`;
+  var N = 'ext_rv_history_',
+    Pe = N;
+  var K = 'ext_migrated_rv_',
+    Ae = 50;
+  function q(e, t) {
+    return `${N}${t === 'ranap' ? 'ri' : 'rj'}_${e || 'unknown'}`;
   }
-  function readJson(store, key) {
-    if (!store) return null;
+  function D(e, t) {
+    if (!e) return null;
     try {
-      const raw = store.getItem(key);
-      if (!raw) return null;
-      return JSON.parse(raw);
+      let n = e.getItem(t);
+      return n ? JSON.parse(n) : null;
     } catch {
       return null;
     }
   }
-  function writeJson(store, key, value) {
-    if (!store) return;
-    try {
-      store.setItem(key, JSON.stringify(value));
-    } catch {}
+  function Be(e, t, n) {
+    if (e)
+      try {
+        e.setItem(t, JSON.stringify(n));
+      } catch {}
   }
-  function loadHistory(idVisit, tipe, store = defaultStore()) {
-    const arr = readJson(store, getHistoryKey(idVisit, tipe));
-    const list = Array.isArray(arr) ? arr : [];
-    if (tipe === 'ranap') {
-      const legacy = readJson(store, LEGACY_HIST_PREFIX + idVisit);
-      if (Array.isArray(legacy) && legacy.length > 0 && list.length === 0) {
-        const migrated = legacy.map((e) => ({ ...e, tipe: 'ranap' }));
-        saveHistory(migrated, idVisit, 'ranap', store);
-        return migrated;
+  function J(e, t, n = U()) {
+    let r = D(n, q(e, t)),
+      o = Array.isArray(r) ? r : [];
+    if (t === 'ranap') {
+      let i = D(n, Pe + e);
+      if (Array.isArray(i) && i.length > 0 && o.length === 0) {
+        let a = i.map((s) => ({ ...s, tipe: 'ranap' }));
+        return (Le(a, e, 'ranap', n), a);
       }
     }
-    return list;
+    return o;
   }
-  function saveHistory(list, idVisit, tipe, store = defaultStore()) {
-    writeJson(store, getHistoryKey(idVisit, tipe), list.slice(-MAX_ENTRIES));
+  function Le(e, t, n, r = U()) {
+    Be(r, q(t, n), e.slice(-Ae));
   }
-  function readPetugas() {
+  function P() {
     try {
-      const panel = document.getElementById('userpanel');
-      if (panel) {
-        let username = '';
-        let role = '';
-        panel.querySelectorAll('.subgroup').forEach((sg) => {
-          const title = (sg.querySelector('.subtitle')?.textContent || '').trim().toLowerCase();
-          const content = (sg.querySelector('.subcontent')?.textContent || '').trim();
-          if (title === 'username' && content) username = content;
-          if (title === 'role' && content) role = content;
-        });
-        if (username) return `${username}${role ? ` (${role})` : ''}`;
-        const a = panel.querySelector('a');
-        const t2 = (a?.textContent || '').trim();
-        if (t2 && t2 !== 'Petugas Rumah Sakit') return t2;
+      let e = document.getElementById('userpanel');
+      if (e) {
+        let i = '',
+          a = '';
+        if (
+          (e.querySelectorAll('.subgroup').forEach((c) => {
+            let d = (c.querySelector('.subtitle')?.textContent || '').trim().toLowerCase(),
+              g = (c.querySelector('.subcontent')?.textContent || '').trim();
+            (d === 'username' && g && (i = g), d === 'role' && g && (a = g));
+          }),
+          i)
+        )
+          return `${i}${a ? ` (${a})` : ''}`;
+        let u = (e.querySelector('a')?.textContent || '').trim();
+        if (u && u !== 'Petugas Rumah Sakit') return u;
       }
-      const el = document.querySelector('#petugas, .petugas, .username, #username, .user-name');
-      const t = (el?.textContent || '').trim();
-      if (t) return t.slice(0, 80);
-      const dokter = document
+      let n = (
+        document.querySelector('#petugas, .petugas, .username, #username, .user-name')
+          ?.textContent || ''
+      ).trim();
+      if (n) return n.slice(0, 80);
+      let r = document
         .querySelector('input[name="dokter"], #dokter, input[name="nama_dokter"]')
         ?.value?.trim();
-      if (dokter) return dokter.slice(0, 80);
-      const idUser = document.querySelector('input[name="id_user"], #id_user')?.value?.trim();
-      if (idUser) return `User #${idUser}`;
+      if (r) return r.slice(0, 80);
+      let o = document.querySelector('input[name="id_user"], #id_user')?.value?.trim();
+      if (o) return `User #${o}`;
     } catch {}
     return 'petugas';
   }
-
-  // src/features/shared/preOpStorage.ts
-  var PRE_OP_STORAGE_KEY = 'morbis_preop_markers';
-  var PRE_OP_TTL_MS = 30 * 24 * 60 * 60 * 1e3;
-  function defaultStore2() {
+  var z = 'morbis_preop_markers';
+  function Y() {
     try {
-      if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+      if (typeof window < 'u' && window.localStorage) return window.localStorage;
     } catch {}
     return null;
   }
-  function purgeExpiredPreOp(map, now = Date.now()) {
-    const result = {};
-    let count = 0;
-    for (const [id, item] of Object.entries(map)) {
-      if (item && item.markedAt && now - item.markedAt <= PRE_OP_TTL_MS) {
-        result[id] = item;
-      } else {
-        count++;
-      }
-    }
-    return { purged: result, count };
+  function $e(e, t = Date.now()) {
+    let n = {},
+      r = 0;
+    for (let [o, i] of Object.entries(e))
+      i && i.markedAt && t - i.markedAt <= 2592e6 ? (n[o] = i) : r++;
+    return { purged: n, count: r };
   }
-  function loadPreOpMap(store = defaultStore2(), now = Date.now()) {
-    if (!store) return {};
+  function W(e = Y(), t = Date.now()) {
+    if (!e) return {};
     try {
-      const raw = store.getItem(PRE_OP_STORAGE_KEY);
-      if (!raw) return {};
-      const parsed = JSON.parse(raw);
-      if (typeof parsed !== 'object' || parsed === null) return {};
-      const { purged, count } = purgeExpiredPreOp(parsed, now);
-      if (count > 0) {
-        savePreOpMap(purged, store);
-      }
-      return purged;
+      let n = e.getItem(z);
+      if (!n) return {};
+      let r = JSON.parse(n);
+      if (typeof r != 'object' || r === null) return {};
+      let { purged: o, count: i } = $e(r, t);
+      return (i > 0 && Oe(o, e), o);
     } catch {
       return {};
     }
   }
-  function savePreOpMap(map, store = defaultStore2()) {
-    if (!store) return;
-    try {
-      store.setItem(PRE_OP_STORAGE_KEY, JSON.stringify(map));
-    } catch {}
+  function Oe(e, t = Y()) {
+    if (t)
+      try {
+        t.setItem(z, JSON.stringify(e));
+      } catch {}
   }
-
-  // src/features/shared/casemixBackfill.ts
-  var MIGRATED_PREOP_KEY = 'ext_migrated_preop_ids';
-  var MIGRATED_RV_PREFIX = RV_MIGRATED_PREFIX;
-  var BACKFILL_BATCH = 20;
-  function readJson2(store, key) {
-    if (!store) return null;
+  var X = 'ext_migrated_preop_ids',
+    G = K,
+    B = 20;
+  function Q(e, t) {
+    if (!e) return null;
     try {
-      const raw = store.getItem(key);
-      if (!raw) return null;
-      return JSON.parse(raw);
+      let n = e.getItem(t);
+      return n ? JSON.parse(n) : null;
     } catch {
       return null;
     }
   }
-  function writeJson2(store, key, value) {
-    if (!store) return;
-    try {
-      store.setItem(key, JSON.stringify(value));
-    } catch {}
+  function Z(e, t, n) {
+    if (e)
+      try {
+        e.setItem(t, JSON.stringify(n));
+      } catch {}
   }
-  function defaultStore3() {
+  function He() {
     try {
-      if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+      if (typeof window < 'u' && window.localStorage) return window.localStorage;
     } catch {}
     return null;
   }
-  async function postCentral(path, payload, fetcher = fetch) {
+  async function A(e, t, n = fetch) {
     try {
-      const res = await fetcher(resolveCasemixBase() + path, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(payload),
-        credentials: 'omit',
-      });
-      return res.ok;
+      return (
+        await n(S() + e, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(t),
+          credentials: 'omit',
+        })
+      ).ok;
     } catch {
-      return false;
+      return !1;
     }
   }
-  function collectPreOpPending(map, migratedIds) {
-    const done = new Set(migratedIds);
-    return Object.keys(map)
-      .filter((id) => !done.has(id))
-      .slice(0, BACKFILL_BATCH);
+  function Fe(e, t) {
+    let n = new Set(t);
+    return Object.keys(e)
+      .filter((r) => !n.has(r))
+      .slice(0, B);
   }
-  function collectResumePending(list, sinceAt) {
-    return list.filter((e) => e.at > sinceAt).slice(0, BACKFILL_BATCH);
+  function Ve(e, t) {
+    return e.filter((n) => n.at > t).slice(0, B);
   }
-  function discoverResumeKeys(store) {
-    const out = [];
-    if (!store) return out;
+  function De(e) {
+    let t = [];
+    if (!e) return t;
     try {
-      const keys = [];
-      const ls = store;
-      if (typeof ls.length === 'number' && ls.key) {
-        for (let i = 0; i < ls.length; i++) {
-          const k = ls.key(i);
-          if (k) keys.push(k);
+      let n = [],
+        r = e;
+      if (typeof r.length == 'number' && r.key)
+        for (let o = 0; o < r.length; o++) {
+          let i = r.key(o);
+          i && n.push(i);
         }
-      }
-      for (const k of keys) {
-        let m = k.match(/^ext_rv_history_(ri|rj)_(.+)$/);
-        if (m) {
-          out.push({ key: k, idVisit: m[2], tipe: m[1] === 'ri' ? 'ranap' : 'rajal' });
+      for (let o of n) {
+        let i = o.match(/^ext_rv_history_(ri|rj)_(.+)$/);
+        if (i) {
+          t.push({ key: o, idVisit: i[2], tipe: i[1] === 'ri' ? 'ranap' : 'rajal' });
           continue;
         }
-        m = k.match(/^ext_rv_history_(.+)$/);
-        if (m && !m[1].startsWith('ri_') && !m[1].startsWith('rj_')) {
-          out.push({ key: k, idVisit: m[1], tipe: 'ranap' });
-        }
+        ((i = o.match(/^ext_rv_history_(.+)$/)),
+          i &&
+            !i[1].startsWith('ri_') &&
+            !i[1].startsWith('rj_') &&
+            t.push({ key: o, idVisit: i[1], tipe: 'ranap' }));
       }
     } catch {}
-    return out;
+    return t;
   }
-  async function runCasemixBackfill(store = defaultStore3(), fetcher = fetch) {
-    const res = { preopUploaded: 0, resumeUploaded: 0, offline: false };
-    if (!store) return res;
+  async function Ue(e = He(), t = fetch) {
+    let n = { preopUploaded: 0, resumeUploaded: 0, offline: !1 };
+    if (!e) return n;
     try {
-      const map = loadPreOpMap(store);
-      const migrated = readJson2(store, MIGRATED_PREOP_KEY) ?? [];
-      const pending = collectPreOpPending(map, migrated);
-      for (const id of pending) {
-        const item = map[id];
-        if (!item) continue;
-        const ok = await postCentral(
-          '/api/casemix/pre-op/toggle',
-          {
-            id_visit: id,
-            marked: true,
-            norm: item.norm ?? null,
-            nama: item.nama ?? null,
-            no_reg: item.noReg ?? null,
-            user: null,
-          },
-          fetcher,
-        );
-        if (!ok) {
-          res.offline = true;
+      let r = W(e),
+        o = Q(e, X) ?? [],
+        i = Fe(r, o);
+      for (let a of i) {
+        let s = r[a];
+        if (!s) continue;
+        if (
+          !(await A(
+            '/api/casemix/pre-op/toggle',
+            {
+              id_visit: a,
+              marked: !0,
+              norm: s.norm ?? null,
+              nama: s.nama ?? null,
+              no_reg: s.noReg ?? null,
+              user: null,
+            },
+            t,
+          ))
+        ) {
+          n.offline = !0;
           break;
         }
-        migrated.push(id);
-        res.preopUploaded++;
+        (o.push(a), n.preopUploaded++);
       }
       try {
-        const alive = new Set(Object.keys(map));
-        const kept = [];
-        for (const id of migrated) {
-          if (alive.has(id)) {
-            kept.push(id);
+        let a = new Set(Object.keys(r)),
+          s = [];
+        for (let u of o) {
+          if (a.has(u)) {
+            s.push(u);
             continue;
           }
-          if (res.offline) {
-            kept.push(id);
+          if (n.offline) {
+            s.push(u);
             continue;
           }
-          const ok = await postCentral(
-            '/api/casemix/pre-op/toggle',
-            { id_visit: id, marked: false },
-            fetcher,
-          );
-          if (!ok) {
-            res.offline = true;
-            kept.push(id);
-          } else {
-            res.preopUploaded++;
-          }
+          (await A('/api/casemix/pre-op/toggle', { id_visit: u, marked: !1 }, t))
+            ? n.preopUploaded++
+            : ((n.offline = !0), s.push(u));
         }
-        if (kept.length !== migrated.length || res.preopUploaded > 0) {
-          writeJson2(store, MIGRATED_PREOP_KEY, kept);
-        }
+        (s.length !== o.length || n.preopUploaded > 0) && Z(e, X, s);
       } catch {}
     } catch {
-      res.offline = true;
+      n.offline = !0;
     }
     try {
-      for (const { key, idVisit, tipe } of discoverResumeKeys(store)) {
-        if (!idVisit || idVisit === 'unknown') continue;
-        if (res.resumeUploaded >= BACKFILL_BATCH) break;
-        const sinceAt = readJson2(store, MIGRATED_RV_PREFIX + key) ?? 0;
-        const list = loadHistory(idVisit, tipe, store);
-        const pending = collectResumePending(list, sinceAt);
-        let maxAt = sinceAt;
-        for (const e of pending) {
-          const ok = await postCentral(
-            '/api/reports/resume-history',
-            {
-              client_id: e.client_id ?? null,
-              id_visit: idVisit,
-              id_resume: e.id_resume,
-              aksi: e.aksi,
-              tipe: e.tipe ?? tipe,
-              waktu: new Date(e.at).toISOString(),
-              user: e.user,
-              before: e.before,
-              after: e.after,
-              changed: e.changed,
-            },
-            fetcher,
-          );
-          if (!ok) {
-            res.offline = true;
+      for (let { key: r, idVisit: o, tipe: i } of De(e)) {
+        if (!o || o === 'unknown') continue;
+        if (n.resumeUploaded >= B) break;
+        let a = Q(e, G + r) ?? 0,
+          s = J(o, i, e),
+          u = Ve(s, a),
+          c = a;
+        for (let d of u) {
+          if (
+            !(await A(
+              '/api/reports/resume-history',
+              {
+                client_id: d.client_id ?? null,
+                id_visit: o,
+                id_resume: d.id_resume,
+                aksi: d.aksi,
+                tipe: d.tipe ?? i,
+                waktu: new Date(d.at).toISOString(),
+                user: d.user,
+                before: d.before,
+                after: d.after,
+                changed: d.changed,
+              },
+              t,
+            ))
+          ) {
+            n.offline = !0;
             break;
           }
-          maxAt = Math.max(maxAt, e.at);
-          res.resumeUploaded++;
+          ((c = Math.max(c, d.at)), n.resumeUploaded++);
         }
-        if (maxAt > sinceAt) writeJson2(store, MIGRATED_RV_PREFIX + key, maxAt);
-        if (res.offline) break;
+        if ((c > a && Z(e, G + r, c), n.offline)) break;
       }
     } catch {
-      res.offline = true;
+      n.offline = !0;
     }
     try {
-      if (res.preopUploaded || res.resumeUploaded) {
+      (n.preopUploaded || n.resumeUploaded) &&
         window.console.debug(
-          `[casemixBackfill] diunggah: ${res.preopUploaded} pre-op, ${res.resumeUploaded} resume`,
+          `[casemixBackfill] diunggah: ${n.preopUploaded} pre-op, ${n.resumeUploaded} resume`,
         );
-      }
     } catch {}
-    return res;
+    return n;
   }
-  var _backfillTimer = null;
-  function initCasemixBackfill() {
-    if (_backfillTimer !== null) return;
-    const tick = () => {
+  var ee = null;
+  function te() {
+    if (ee !== null) return;
+    let e = () => {
       try {
         if (document.hidden) return;
       } catch {}
-      void runCasemixBackfill().catch(() => {});
+      Ue().catch(() => {});
     };
-    window.setTimeout(tick, 5e3);
-    _backfillTimer = window.setInterval(tick, 3e4);
+    (window.setTimeout(e, 5e3), (ee = window.setInterval(e, 3e4)));
   }
-
-  // src/features/shared/whenIdle.ts
-  function runWhenIdle(cb, timeoutMs = 8e3) {
+  function L(e, t = 8e3) {
     try {
-      const ric = window.requestIdleCallback;
-      if (typeof ric === 'function') {
-        ric.call(window, cb, { timeout: timeoutMs });
+      let n = window.requestIdleCallback;
+      if (typeof n == 'function') {
+        n.call(window, e, { timeout: t });
         return;
       }
     } catch {}
-    window.setTimeout(cb, Math.min(timeoutMs, 1500));
+    window.setTimeout(e, Math.min(t, 1500));
   }
-
-  // src/features/shortcutButtons.ts
-  var g = getMorbisGlobals();
-  var BACK_DETAIL_BTN = { text: 'Kembali ke Detail Klaim', bg: '#6366f1', hover: '#4f46e5' };
-  injectCSS(
+  var I = j(),
+    O = { text: 'Kembali ke Detail Klaim', bg: '#6366f1', hover: '#4f46e5' };
+  R(
     'ext-shortcut-styles',
     `@media print{[data-shortcut-buttons],[data-back-to-detail-klaim],[data-bpjs-revision-history],[data-bpjs-revision-history] textarea,.no-print,.hilang-saat-print{display:none!important;height:0!important;width:0!important;margin:0!important;padding:0!important;overflow:hidden!important;visibility:hidden!important;position:absolute!important;top:-9999px!important;left:-9999px!important;opacity:0!important}[data-shortcut-buttons] a,[data-shortcut-buttons] button,[data-back-to-detail-klaim] a,[data-back-to-detail-klaim] button{display:none!important}}
   [data-bpjs-revision-history] {
     display:flex; flex-direction:column; gap:8px; margin:0 0 12px; padding:12px 16px;
-    background:${colors.card}; border:1px solid ${colors.border}; border-radius:8px;
-    font-size:13px; color:${colors.foreground};
+    background:${l.card}; border:1px solid ${l.border}; border-radius:8px;
+    font-size:13px; color:${l.foreground};
   }
   [data-bpjs-revision-history] .ext-bpjs-revision-head {
     display:flex; align-items:center; justify-content:space-between; gap:8px;
     font-weight:600;
   }
   [data-bpjs-revision-history] .ext-bpjs-revision-count {
-    font-weight:500; color:${colors.mutedForeground}; font-size:12px;
+    font-weight:500; color:${l.mutedForeground}; font-size:12px;
   }
   [data-bpjs-revision-history] textarea {
     width:100%; min-height:84px; resize:vertical; padding:10px 12px;
-    border:1px solid ${colors.input}; border-radius:6px; background:${colors.secondary};
-    color:${colors.foreground}; font:inherit; line-height:1.5;
+    border:1px solid ${l.input}; border-radius:6px; background:${l.secondary};
+    color:${l.foreground}; font:inherit; line-height:1.5;
   }
   [data-bpjs-revision-history] .ext-bpjs-revision-hint {
-    color:${colors.mutedForeground}; font-size:12px;
+    color:${l.mutedForeground}; font-size:12px;
   }
   [data-back-to-detail-klaim] {
     display:inline-flex; align-items:center; padding:10px 14px; margin:12px;
-    background:${colors.secondary}; border:1px solid ${colors.border}; border-radius:8px;
+    background:${l.secondary}; border:1px solid ${l.border}; border-radius:8px;
     position:fixed; top:100px; right:20px; z-index:9999;
   }
   [data-back-to-detail-klaim] a {
     display:inline-flex; align-items:center; justify-content:center;
-    padding:8px 16px; background:${BACK_DETAIL_BTN.bg}; color:#fff; border:none;
+    padding:8px 16px; background:${O.bg}; color:#fff; border:none;
     border-radius:6px; text-decoration:none; font-size:13px; font-weight:600;
     cursor:pointer; transition:all 0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.2);
   }
-  [data-back-to-detail-klaim] a:hover { background:${BACK_DETAIL_BTN.hover}; transform:translateY(-2px); box-shadow:0 4px 8px rgba(0,0,0,0.3); }
+  [data-back-to-detail-klaim] a:hover { background:${O.hover}; transform:translateY(-2px); box-shadow:0 4px 8px rgba(0,0,0,0.3); }
   [data-back-to-detail-klaim] a:active { transform:translateY(0); }
 `,
   );
-  function extractParam(name) {
-    return new URLSearchParams(window.location.search).get(name);
+  function T(e) {
+    return new URLSearchParams(window.location.search).get(e);
   }
-  function isExecutionPage() {
+  function Ne() {
     return (
       window.location.pathname.includes('/admisi/pelaksanaan_pelayanan/') ||
       window.location.pathname.includes('/admisi/detail-rawat-inap/')
     );
   }
-  function formatDate(d) {
+  function ne(e) {
     return [
-      String(d.getDate()).padStart(2, '0'),
-      String(d.getMonth() + 1).padStart(2, '0'),
-      d.getFullYear(),
+      String(e.getDate()).padStart(2, '0'),
+      String(e.getMonth() + 1).padStart(2, '0'),
+      e.getFullYear(),
     ].join('-');
   }
-  function generateDetailUrl(idVisit) {
-    const ta =
-      document.getElementById('tanggalAwal')?.value || formatDate(/* @__PURE__ */ new Date());
-    const tAkhir =
-      document.getElementById('tanggalAkhir')?.value || formatDate(/* @__PURE__ */ new Date());
-    return `${window.location.origin}/v2/m-klaim/detail-v2-refaktor?id_visit=${idVisit}&tanggalAwal=${encodeURIComponent(ta)}&tanggalAkhir=${encodeURIComponent(tAkhir)}&norm=&nama=&reg=&billing=all&status=all&id_poli_cari=&poli_cari=`;
+  function Ke(e) {
+    let t = document.getElementById('tanggalAwal')?.value || ne(new Date()),
+      n = document.getElementById('tanggalAkhir')?.value || ne(new Date());
+    return `${window.location.origin}/v2/m-klaim/detail-v2-refaktor?id_visit=${e}&tanggalAwal=${encodeURIComponent(t)}&tanggalAkhir=${encodeURIComponent(n)}&norm=&nama=&reg=&billing=all&status=all&id_poli_cari=&poli_cari=`;
   }
-  var BPJS_REVISION_PANEL_SELECTOR = '[data-bpjs-revision-history]';
-  var BPJS_REVISION_TEXTAREA_ID = 'ext-bpjs-revision-history';
-  var BPJS_REVISION_COUNT_ID = 'ext-bpjs-revision-count';
-  var BPJS_REVISION_HISTORY_KEY = 'extBpjsRevisions';
-  var BPJS_REVISION_SUBMIT_PATH = '/v2/m-klaim/control/revisi';
-  var BPJS_REVISION_SUCCESS_WINDOW_MS = 18e4;
-  var bpjsRevisions = [];
-  var pendingBpjsRevisions = [];
-  var bpjsRevisionObserver = null;
-  var bpjsRevisionListenersInstalled = false;
-  function bpjsRevisionKey(revision) {
-    return [
-      revision.idVisit,
-      revision.poli,
-      revision.idPoli,
-      revision.keterangan,
-      String(revision.submittedAt),
-    ].join('|');
+  var qe = '[data-bpjs-revision-history]',
+    ae = 'ext-bpjs-revision-history',
+    se = 'ext-bpjs-revision-count',
+    le = 'extBpjsRevisions',
+    Je = '/v2/m-klaim/control/revisi',
+    ze = 18e4,
+    p = [],
+    m = [],
+    re = null,
+    ie = !1;
+  function oe(e) {
+    return [e.idVisit, e.poli, e.idPoli, e.keterangan, String(e.submittedAt)].join('|');
   }
-  function isBpjsRevision(value) {
-    if (!value || typeof value !== 'object') return false;
-    const revision = value;
+  function ue(e) {
+    if (!e || typeof e != 'object') return !1;
+    let t = e;
     return (
-      typeof revision.idVisit === 'string' &&
-      typeof revision.poli === 'string' &&
-      typeof revision.idPoli === 'string' &&
-      typeof revision.keterangan === 'string' &&
-      typeof revision.submittedAt === 'number' &&
-      Number.isFinite(revision.submittedAt) &&
-      (revision.status === 'pending' || revision.status === 'saved')
+      typeof t.idVisit == 'string' &&
+      typeof t.poli == 'string' &&
+      typeof t.idPoli == 'string' &&
+      typeof t.keterangan == 'string' &&
+      typeof t.submittedAt == 'number' &&
+      Number.isFinite(t.submittedAt) &&
+      (t.status === 'pending' || t.status === 'saved')
     );
   }
-  function mergeRevisionHistory(current, incoming) {
-    const seen = new Set(current.map((revision) => bpjsRevisionKey(revision)));
-    const merged = [...current];
-    for (const revision of incoming) {
-      const key = bpjsRevisionKey(revision);
-      if (!seen.has(key)) {
-        seen.add(key);
-        merged.push(revision);
-      }
+  function ce(e, t) {
+    let n = new Set(e.map((o) => oe(o))),
+      r = [...e];
+    for (let o of t) {
+      let i = oe(o);
+      n.has(i) || (n.add(i), r.push(o));
     }
-    return merged;
+    return r;
   }
-  function readRevisionHistoryState(state) {
-    if (!state || typeof state !== 'object' || Array.isArray(state)) return [];
-    const revisions = state[BPJS_REVISION_HISTORY_KEY];
-    if (!Array.isArray(revisions)) return [];
-    return revisions.filter(isBpjsRevision);
+  function Ye(e) {
+    if (!e || typeof e != 'object' || Array.isArray(e)) return [];
+    let t = e[le];
+    return Array.isArray(t) ? t.filter(ue) : [];
   }
-  function withRevisionHistoryState(currentState, revisions) {
-    const base =
-      currentState && typeof currentState === 'object' && !Array.isArray(currentState)
-        ? currentState
-        : {};
+  function We(e, t) {
     return {
-      ...base,
-      [BPJS_REVISION_HISTORY_KEY]: revisions.filter((revision) => revision.status === 'saved'),
+      ...(e && typeof e == 'object' && !Array.isArray(e) ? e : {}),
+      [le]: t.filter((r) => r.status === 'saved'),
     };
   }
-  function centralToBpjsRevision(r, idVisit) {
-    if (!r.keterangan) return null;
-    const ts = r.submitted_at ? Date.parse(r.submitted_at.replace(' ', 'T')) : NaN;
+  function Xe(e, t) {
+    if (!e.keterangan) return null;
+    let n = e.submitted_at ? Date.parse(e.submitted_at.replace(' ', 'T')) : NaN;
     return {
-      idVisit,
-      poli: r.poli ?? '',
-      idPoli: r.id_poli ?? '',
-      keterangan: r.keterangan,
-      submittedAt: Number.isFinite(ts) ? ts : Date.now(),
+      idVisit: t,
+      poli: e.poli ?? '',
+      idPoli: e.id_poli ?? '',
+      keterangan: e.keterangan,
+      submittedAt: Number.isFinite(n) ? n : Date.now(),
       status: 'saved',
     };
   }
-  function revisionContentKey(r) {
-    return [r.idVisit, r.poli, r.idPoli, r.keterangan].join('|');
+  function k(e) {
+    return [e.idVisit, e.poli, e.idPoli, e.keterangan].join('|');
   }
-  function mergeCentralRevisions(current, incoming) {
-    const seen = new Set(current.map((r) => revisionContentKey(r)));
-    const merged = [...current];
-    for (const r of incoming) {
-      const k = revisionContentKey(r);
-      if (!seen.has(k)) {
-        seen.add(k);
-        merged.push(r);
-      }
+  function de(e, t) {
+    let n = new Set(e.map((o) => k(o))),
+      r = [...e];
+    for (let o of t) {
+      let i = k(o);
+      n.has(i) || (n.add(i), r.push(o));
     }
-    return merged;
+    return r;
   }
-  function partitionUnsynced(localSaved, central) {
-    const have = new Set(central.map((r) => revisionContentKey(r)));
-    return localSaved.filter((r) => r.status === 'saved' && !have.has(revisionContentKey(r)));
+  function Ge(e, t) {
+    let n = new Set(t.map((r) => k(r)));
+    return e.filter((r) => r.status === 'saved' && !n.has(k(r)));
   }
-  var LOCAL_REV_KEY = 'extBpjsRevisionsLocal';
-  var MAX_LOCAL_REV_PER_VISIT = 50;
-  function readLocalRevMap() {
+  var pe = 'extBpjsRevisionsLocal',
+    fe = 50;
+  function me() {
     try {
-      const raw = localStorage.getItem(LOCAL_REV_KEY);
-      const map = raw ? JSON.parse(raw) : {};
-      const out = {};
-      for (const [k, v] of Object.entries(map)) {
-        if (Array.isArray(v)) {
-          const valid = v.filter(isBpjsRevision).slice(-MAX_LOCAL_REV_PER_VISIT);
-          if (valid.length) out[k] = valid;
+      let e = localStorage.getItem(pe),
+        t = e ? JSON.parse(e) : {},
+        n = {};
+      for (let [r, o] of Object.entries(t))
+        if (Array.isArray(o)) {
+          let i = o.filter(ue).slice(-fe);
+          i.length && (n[r] = i);
         }
-      }
-      return out;
+      return n;
     } catch {
       return {};
     }
   }
-  function persistLocalRevisions() {
+  function Qe() {
     try {
-      const map = readLocalRevMap();
-      for (const r of bpjsRevisions) {
-        if (r.status !== 'saved' || !r.idVisit) continue;
-        const list = map[r.idVisit] ?? [];
-        if (!list.some((x) => revisionContentKey(x) === revisionContentKey(r))) {
-          list.push(r);
-        }
-        map[r.idVisit] = list.slice(-MAX_LOCAL_REV_PER_VISIT);
+      let e = me();
+      for (let t of p) {
+        if (t.status !== 'saved' || !t.idVisit) continue;
+        let n = e[t.idVisit] ?? [];
+        (n.some((r) => k(r) === k(t)) || n.push(t), (e[t.idVisit] = n.slice(-fe)));
       }
-      localStorage.setItem(LOCAL_REV_KEY, JSON.stringify(map));
+      localStorage.setItem(pe, JSON.stringify(e));
     } catch {}
   }
-  function loadLocalRevisions(idVisit) {
-    if (!idVisit) return [];
-    return readLocalRevMap()[idVisit] ?? [];
+  function Ze(e) {
+    return e ? (me()[e] ?? []) : [];
   }
-  function formatRevisionTimestamp(timestamp) {
-    const date = new Date(timestamp);
-    const pad = (value) => String(value).padStart(2, '0');
-    return `${pad(date.getDate())}-${pad(date.getMonth() + 1)}-${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  function et(e) {
+    let t = new Date(e),
+      n = (r) => String(r).padStart(2, '0');
+    return `${n(t.getDate())}-${n(t.getMonth() + 1)}-${t.getFullYear()} ${n(t.getHours())}:${n(t.getMinutes())}:${n(t.getSeconds())}`;
   }
-  function formatBpjsRevisions(revisions) {
-    return revisions
-      .map((revision, index) => {
-        const state = revision.status === 'saved' ? 'tersimpan' : 'mengirim...';
-        return [
-          `Revisi ${index + 1} \u2014 ${formatRevisionTimestamp(revision.submittedAt)} (${state})`,
-          `ID Visit: ${revision.idVisit || '-'}`,
-          `Poli Tujuan: ${revision.poli || '-'}${revision.idPoli ? ` (ID ${revision.idPoli})` : ''}`,
-          `Keterangan: ${revision.keterangan || '-'}`,
-        ].join('\n');
-      })
-      .join('\n\n---\n\n');
+  function tt(e) {
+    return e.map((t, n) => {
+      let r = t.status === 'saved' ? 'tersimpan' : 'mengirim...';
+      return [
+        `Revisi ${n + 1} \u2014 ${et(t.submittedAt)} (${r})`,
+        `ID Visit: ${t.idVisit || '-'}`,
+        `Poli Tujuan: ${t.poli || '-'}${t.idPoli ? ` (ID ${t.idPoli})` : ''}`,
+        `Keterangan: ${t.keterangan || '-'}`,
+      ].join(`
+`);
+    }).join(`
+
+---
+
+`);
   }
-  function readRevisionHistory() {
+  function nt() {
     try {
-      return readRevisionHistoryState(history.state);
+      return Ye(history.state);
     } catch {
       return [];
     }
   }
-  function persistRevisionHistory() {
+  function ge() {
     try {
-      history.replaceState(withRevisionHistoryState(history.state, bpjsRevisions), '');
+      history.replaceState(We(history.state, p), '');
     } catch {}
-    persistLocalRevisions();
+    Qe();
   }
-  function queryRevisionPanel() {
-    const panel = document.querySelector(BPJS_REVISION_PANEL_SELECTOR);
-    const textarea = panel?.querySelector(`#${BPJS_REVISION_TEXTAREA_ID}`) ?? null;
-    const count = panel?.querySelector(`#${BPJS_REVISION_COUNT_ID}`) ?? null;
-    if (!panel || !textarea || !count) return null;
-    return {
-      panel,
-      textarea,
-      count,
-      hint: panel.querySelector('.ext-bpjs-revision-hint'),
-    };
+  function w() {
+    let e = document.querySelector(qe),
+      t = e?.querySelector(`#${ae}`) ?? null,
+      n = e?.querySelector(`#${se}`) ?? null;
+    return !e || !t || !n
+      ? null
+      : { panel: e, textarea: t, count: n, hint: e.querySelector('.ext-bpjs-revision-hint') };
   }
-  function setSyncHint(online, centralCount) {
+  function rt(e, t) {
     try {
-      const hint = queryRevisionPanel()?.hint;
-      if (!hint) return;
-      if (online) {
-        hint.textContent =
-          `Tersambung ke DB pusat` +
-          (centralCount ? ` (${centralCount} riwayat pusat)` : '') +
-          ` \u2014 Diambil dari poli dan keterangan yang dikirim lewat Revisi.`;
-        hint.style.color = '';
-      } else {
-        hint.textContent =
-          'Pusat tak terjangkau (offline/sinyal lambat) \u2014 menampilkan cache lokal, data aman dan akan tersinkron otomatis.';
-        hint.style.color = '#b45309';
-      }
+      let n = w()?.hint;
+      if (!n) return;
+      e
+        ? ((n.textContent =
+            'Tersambung ke DB pusat' +
+            (t ? ` (${t} riwayat pusat)` : '') +
+            ' \u2014 Diambil dari poli dan keterangan yang dikirim lewat Revisi.'),
+          (n.style.color = ''))
+        : ((n.textContent =
+            'Pusat tak terjangkau (offline/sinyal lambat) \u2014 menampilkan cache lokal, data aman dan akan tersinkron otomatis.'),
+          (n.style.color = '#b45309'));
     } catch {}
   }
-  function ensureRevisionPanel(anchor) {
-    const parent = anchor?.parentElement ?? null;
-    if (anchor && !parent) return null;
-    let found = queryRevisionPanel();
-    if (found) return found.textarea;
-    const panel = document.createElement('div');
-    panel.setAttribute('data-bpjs-revision-history', 'true');
-    const head = document.createElement('div');
-    head.className = 'ext-bpjs-revision-head';
-    const title = document.createElement('span');
-    title.textContent = 'Riwayat Revisi BPJS';
-    const count = document.createElement('span');
-    count.id = BPJS_REVISION_COUNT_ID;
-    count.className = 'ext-bpjs-revision-count';
-    count.textContent = '0 revisi';
-    const textarea = document.createElement('textarea');
-    textarea.id = BPJS_REVISION_TEXTAREA_ID;
-    textarea.readOnly = true;
-    textarea.spellcheck = false;
-    textarea.rows = 3;
-    textarea.setAttribute('aria-label', 'Riwayat revisi BPJS');
-    textarea.placeholder = 'Belum ada revisi BPJS yang dikirim pada tab ini.';
-    const hint = document.createElement('div');
-    hint.className = 'ext-bpjs-revision-hint';
-    hint.textContent = 'Diambil dari poli dan keterangan yang dikirim lewat Revisi.';
-    head.append(title, count);
-    panel.append(head, textarea, hint);
-    if (parent && anchor) {
-      parent.insertBefore(panel, anchor.nextSibling);
-    } else {
-      const host =
+  function be(e) {
+    let t = e?.parentElement ?? null;
+    if (e && !t) return null;
+    let n = w();
+    if (n) return n.textarea;
+    let r = document.createElement('div');
+    r.setAttribute('data-bpjs-revision-history', 'true');
+    let o = document.createElement('div');
+    o.className = 'ext-bpjs-revision-head';
+    let i = document.createElement('span');
+    i.textContent = 'Riwayat Revisi BPJS';
+    let a = document.createElement('span');
+    ((a.id = se), (a.className = 'ext-bpjs-revision-count'), (a.textContent = '0 revisi'));
+    let s = document.createElement('textarea');
+    ((s.id = ae),
+      (s.readOnly = !0),
+      (s.spellcheck = !1),
+      (s.rows = 3),
+      s.setAttribute('aria-label', 'Riwayat revisi BPJS'),
+      (s.placeholder = 'Belum ada revisi BPJS yang dikirim pada tab ini.'));
+    let u = document.createElement('div');
+    if (
+      ((u.className = 'ext-bpjs-revision-hint'),
+      (u.textContent = 'Diambil dari poli dan keterangan yang dikirim lewat Revisi.'),
+      o.append(i, a),
+      r.append(o, s, u),
+      t && e)
+    )
+      t.insertBefore(r, e.nextSibling);
+    else {
+      let c =
         document.querySelector('#form-add')?.parentElement ??
         document.querySelector('form')?.parentElement ??
         document.body;
-      host.insertBefore(panel, host.firstChild);
+      c.insertBefore(r, c.firstChild);
     }
-    found = queryRevisionPanel();
-    return found?.textarea ?? null;
+    return ((n = w()), n?.textarea ?? null);
   }
-  function renderRevisionHistory() {
-    const found = queryRevisionPanel();
-    if (!found) return;
-    const value = formatBpjsRevisions(bpjsRevisions);
-    found.textarea.value = value;
-    found.textarea.rows = value ? Math.min(12, Math.max(5, value.split('\n').length + 1)) : 3;
-    found.count.textContent = `${bpjsRevisions.length} revisi`;
+  function _() {
+    let e = w();
+    if (!e) return;
+    let t = tt(p);
+    ((e.textarea.value = t),
+      (e.textarea.rows = t
+        ? Math.min(
+            12,
+            Math.max(
+              5,
+              t.split(`
+`).length + 1,
+            ),
+          )
+        : 3),
+      (e.count.textContent = `${p.length} revisi`));
   }
-  function isRevisionForm(form) {
-    if (form.id === 'form-add') return true;
-    const action = form.getAttribute('action') || form.action || '';
-    if (action.includes(BPJS_REVISION_SUBMIT_PATH)) return false;
+  function it(e) {
+    if (e.id === 'form-add') return !0;
+    let t = e.getAttribute('action') || e.action || '';
+    if (t.includes(Je)) return !1;
     try {
-      if (new URL(action, window.location.href).searchParams.get('sub') === 'simpan') return true;
+      if (new URL(t, window.location.href).searchParams.get('sub') === 'simpan') return !0;
     } catch {
-      return true;
+      return !0;
     }
-    const hasKet = !!form.querySelector('#keterangan, textarea[name="keterangan"]');
-    const hasPoli = !!form.querySelector(
-      '#poli, input[name="poli"], #id_poli, input[name="id_poli"]',
-    );
-    if (hasKet && hasPoli) {
-      if (/revisi/i.test(action)) return true;
-      const btn = form.querySelector('button, input[type="submit"], input[type="button"]');
-      const t = (btn?.value || btn?.textContent || '').trim();
-      if (/revisi/i.test(t)) return true;
+    let n = !!e.querySelector('#keterangan, textarea[name="keterangan"]'),
+      r = !!e.querySelector('#poli, input[name="poli"], #id_poli, input[name="id_poli"]');
+    if (n && r) {
+      if (/revisi/i.test(t)) return !0;
+      let o = e.querySelector('button, input[type="submit"], input[type="button"]'),
+        i = (o?.value || o?.textContent || '').trim();
+      if (/revisi/i.test(i)) return !0;
     }
-    return false;
+    return !1;
   }
-  function readRevisionFromForm(form) {
-    const poli = form.querySelector('#poli, input[name="poli"]')?.value.trim() ?? '';
-    const idPoli = form.querySelector('#id_poli, input[name="id_poli"]')?.value.trim() ?? '';
-    const keterangan =
-      form.querySelector('#keterangan, textarea[name="keterangan"]')?.value.trim() ?? '';
-    const idVisit =
-      form.querySelector('input[name="id_visit"]')?.value.trim() ?? extractParam('id_visit') ?? '';
-    if (!idPoli || !keterangan) return null;
-    return { idVisit, poli, idPoli, keterangan, submittedAt: Date.now(), status: 'pending' };
+  function ot(e) {
+    let t = e.querySelector('#poli, input[name="poli"]')?.value.trim() ?? '',
+      n = e.querySelector('#id_poli, input[name="id_poli"]')?.value.trim() ?? '',
+      r = e.querySelector('#keterangan, textarea[name="keterangan"]')?.value.trim() ?? '',
+      o = e.querySelector('input[name="id_visit"]')?.value.trim() ?? T('id_visit') ?? '';
+    return !n || !r
+      ? null
+      : {
+          idVisit: o,
+          poli: t,
+          idPoli: n,
+          keterangan: r,
+          submittedAt: Date.now(),
+          status: 'pending',
+        };
   }
-  function onRevisionSubmit(event) {
-    const target = event.target;
-    const form = target?.closest?.('form');
-    if (!(form instanceof HTMLFormElement) || !isRevisionForm(form)) return;
-    const revision = readRevisionFromForm(form);
-    if (!revision) {
-      pendingBpjsRevisions = [];
+  function at(e) {
+    let n = e.target?.closest?.('form');
+    if (!(n instanceof HTMLFormElement) || !it(n)) return;
+    let r = ot(n);
+    if (!r) {
+      m = [];
       return;
     }
-    pendingBpjsRevisions = [revision];
-    bpjsRevisions = mergeRevisionHistory(bpjsRevisions, pendingBpjsRevisions);
-    renderRevisionHistory();
+    ((m = [r]), (p = ce(p, m)), _());
   }
-  var bpjsRevisionObserverTimer = null;
-  function scheduleBpjsRevisionCheck() {
-    if (bpjsRevisionObserverTimer !== null) return;
-    bpjsRevisionObserverTimer = window.setTimeout(() => {
-      bpjsRevisionObserverTimer = null;
-      onRevisionMutations();
-    }, 200);
+  var $ = null;
+  function st() {
+    $ === null &&
+      ($ = window.setTimeout(() => {
+        (($ = null), lt());
+      }, 200));
   }
-  function onRevisionMutations() {
+  function lt() {
     try {
       if (document.hidden) return;
     } catch {}
-    if (pendingBpjsRevisions.length === 0) {
-      if (!queryRevisionPanel()) {
-        ensureRevisionPanel(document.querySelector('[data-toolbar]'));
-      }
+    if (m.length === 0) {
+      w() || be(document.querySelector('[data-toolbar]'));
       return;
     }
-    const now = Date.now();
-    pendingBpjsRevisions = pendingBpjsRevisions.filter(
-      (revision) => now - revision.submittedAt <= BPJS_REVISION_SUCCESS_WINDOW_MS,
-    );
-    if (pendingBpjsRevisions.length === 0) return;
-    const failed = document.querySelector(
-      '.toast-error, .toast-warning, .swal2-error, .alert-danger, .alert-warning',
-    );
-    if (failed) {
-      pendingBpjsRevisions = [];
-      renderRevisionHistory();
+    let e = Date.now();
+    if (((m = m.filter((i) => e - i.submittedAt <= ze)), m.length === 0)) return;
+    if (
+      document.querySelector(
+        '.toast-error, .toast-warning, .swal2-error, .alert-danger, .alert-warning',
+      )
+    ) {
+      ((m = []), _());
       return;
     }
-    const okToast = document.querySelector(
-      '.toast-success, .swal2-success, .alert-success, .toast[data-type="success"]',
-    );
-    const ket = document.querySelector(
-      '#form-add #keterangan, #form-add textarea[name="keterangan"]',
-    );
-    const formReset = !!ket && ket.value.trim() === '';
-    if (!okToast && !formReset) return;
-    for (const revision of pendingBpjsRevisions) revision.status = 'saved';
-    try {
-      const user = readPetugas();
-      for (const revision of pendingBpjsRevisions) {
-        postRevisionCentral({ ...revision, user });
-      }
-    } catch {}
-    pendingBpjsRevisions = [];
-    persistRevisionHistory();
-    renderRevisionHistory();
+    let n = document.querySelector(
+        '.toast-success, .swal2-success, .alert-success, .toast[data-type="success"]',
+      ),
+      r = document.querySelector('#form-add #keterangan, #form-add textarea[name="keterangan"]'),
+      o = !!r && r.value.trim() === '';
+    if (!(!n && !o)) {
+      for (let i of m) i.status = 'saved';
+      try {
+        let i = P();
+        for (let a of m) M({ ...a, user: i });
+      } catch {}
+      ((m = []), ge(), _());
+    }
   }
-  var _revPollId = null;
-  function refreshCentralRevisions(idVisit) {
-    if (!idVisit) return;
-    try {
-      if (document.hidden) return;
-    } catch {}
-    try {
-      void fetchRevisionsBatch([idVisit]).then((map) => {
-        setSyncHint(map !== null, map?.[idVisit]?.length ?? 0);
-        if (!map) return;
-        const incoming = [];
-        for (const r of map[idVisit] ?? []) {
-          const rev = centralToBpjsRevision(r, idVisit);
-          if (rev) incoming.push(rev);
-        }
-        try {
-          const user = readPetugas();
-          for (const m of partitionUnsynced(
-            bpjsRevisions.filter((x) => x.idVisit === idVisit),
-            incoming,
-          )) {
-            postRevisionCentral({ ...m, user });
+  var E = null;
+  function he(e) {
+    if (e) {
+      try {
+        if (document.hidden) return;
+      } catch {}
+      try {
+        V([e]).then((t) => {
+          if ((rt(t !== null, t?.[e]?.length ?? 0), !t)) return;
+          let n = [];
+          for (let r of t[e] ?? []) {
+            let o = Xe(r, e);
+            o && n.push(o);
           }
-        } catch {}
-        if (incoming.length) {
-          bpjsRevisions = mergeCentralRevisions(bpjsRevisions, incoming);
-          persistRevisionHistory();
-          renderRevisionHistory();
-        }
-      });
-    } catch {}
-  }
-  function startCentralRevisionPoll(idVisit) {
-    if (_revPollId !== null || !idVisit) return;
-    _revPollId = window.setInterval(() => {
-      try {
-        refreshCentralRevisions(idVisit);
+          try {
+            let r = P();
+            for (let o of Ge(
+              p.filter((i) => i.idVisit === e),
+              n,
+            ))
+              M({ ...o, user: r });
+          } catch {}
+          n.length && ((p = de(p, n)), ge(), _());
+        });
       } catch {}
-    }, 3e4);
-    window.addEventListener('pagehide', () => {
-      try {
-        if (_revPollId !== null) {
-          window.clearInterval(_revPollId);
-          _revPollId = null;
-        }
-      } catch {}
-    });
-  }
-  function initBpjsRevisionHistory(anchor) {
-    const restored = readRevisionHistory();
-    bpjsRevisions = mergeRevisionHistory(bpjsRevisions, restored);
-    const idVisitBoot = extractParam('id_visit') || extractParam('idVisit') || '';
-    if (idVisitBoot) {
-      bpjsRevisions = mergeCentralRevisions(bpjsRevisions, loadLocalRevisions(idVisitBoot));
     }
-    ensureRevisionPanel(anchor);
-    renderRevisionHistory();
-    refreshCentralRevisions(idVisitBoot);
-    startCentralRevisionPoll(idVisitBoot);
-    if (bpjsRevisionListenersInstalled) return;
-    document.addEventListener('submit', onRevisionSubmit, true);
-    bpjsRevisionObserver = new MutationObserver(scheduleBpjsRevisionCheck);
-    bpjsRevisionObserver.observe(document.body, { childList: true, subtree: true });
-    bpjsRevisionListenersInstalled = true;
   }
-  function autoInitRevisionPanel() {
+  function ut(e) {
+    E !== null ||
+      !e ||
+      ((E = window.setInterval(() => {
+        try {
+          he(e);
+        } catch {}
+      }, 3e4)),
+      window.addEventListener('pagehide', () => {
+        try {
+          E !== null && (window.clearInterval(E), (E = null));
+        } catch {}
+      }));
+  }
+  function H(e) {
+    let t = nt();
+    p = ce(p, t);
+    let n = T('id_visit') || T('idVisit') || '';
+    (n && (p = de(p, Ze(n))),
+      be(e),
+      _(),
+      he(n),
+      ut(n),
+      !ie &&
+        (document.addEventListener('submit', at, !0),
+        (re = new MutationObserver(st)),
+        re.observe(document.body, { childList: !0, subtree: !0 }),
+        (ie = !0)));
+  }
+  function ct() {
     try {
       if (!window.location.href.includes('/v2/m-klaim/detail-v2-refaktor')) return;
-      let tries = 0;
-      const start = () => {
-        const bar = document.querySelector('[data-toolbar]');
-        initBpjsRevisionHistory(bar);
-        initCasemixBackfill();
-        if (!queryRevisionPanel() && ++tries < 15) window.setTimeout(start, 2e3);
-      };
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () =>
-          runWhenIdle(() => window.setTimeout(start, 300)),
-        );
-      } else {
-        runWhenIdle(() => window.setTimeout(start, 300));
-      }
+      let e = 0,
+        t = () => {
+          let n = document.querySelector('[data-toolbar]');
+          (H(n), te(), !w() && ++e < 15 && window.setTimeout(t, 2e3));
+        };
+      document.readyState === 'loading'
+        ? document.addEventListener('DOMContentLoaded', () => L(() => window.setTimeout(t, 300)))
+        : L(() => window.setTimeout(t, 300));
     } catch {}
   }
   try {
-    autoInitRevisionPanel();
+    ct();
   } catch {}
-  function renderBackToDetailButton() {
-    if (!g.currentConfig?.features?.shortcutButtons?.enabled) return;
-    if (!isExecutionPage() || document.querySelector('[data-back-to-detail-klaim]')) return;
-    const idVisit = extractParam('id_visit') || extractParam('idVisit');
-    if (!idVisit) return;
-    const detailUrl = generateDetailUrl(idVisit);
-    const container = document.createElement('div');
-    container.dataset.backToDetailKlaim = 'true';
-    const btn = document.createElement('a');
-    btn.href = detailUrl;
-    btn.textContent = BACK_DETAIL_BTN.text;
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      window.close();
-      setTimeout(() => {
-        window.location.href = detailUrl;
-      }, 300);
-    });
-    container.appendChild(btn);
-    document.body.appendChild(container);
+  function dt() {
+    if (
+      !I.currentConfig?.features?.shortcutButtons?.enabled ||
+      !Ne() ||
+      document.querySelector('[data-back-to-detail-klaim]')
+    )
+      return;
+    let e = T('id_visit') || T('idVisit');
+    if (!e) return;
+    let t = Ke(e),
+      n = document.createElement('div');
+    n.dataset.backToDetailKlaim = 'true';
+    let r = document.createElement('a');
+    ((r.href = t),
+      (r.textContent = O.text),
+      r.addEventListener('click', (o) => {
+        (o.preventDefault(),
+          window.close(),
+          setTimeout(() => {
+            window.location.href = t;
+          }, 300));
+      }),
+      n.appendChild(r),
+      document.body.appendChild(n));
   }
-  function runWithObserver(fn, checkExist) {
-    if (document.readyState === 'complete') setTimeout(fn, 500);
-    else window.addEventListener('load', () => setTimeout(fn, 500));
-    const obs = new MutationObserver(() => {
-      if (g.currentConfig?.features?.shortcutButtons?.enabled !== false && !checkExist()) fn();
-    });
-    obs.observe(document.body, { childList: true, subtree: true });
+  function pt(e, t) {
+    (document.readyState === 'complete'
+      ? setTimeout(e, 500)
+      : window.addEventListener('load', () => setTimeout(e, 500)),
+      new MutationObserver(() => {
+        I.currentConfig?.features?.shortcutButtons?.enabled !== !1 && !t() && e();
+      }).observe(document.body, { childList: !0, subtree: !0 }));
   }
-  if (typeof g.featureModules !== 'undefined') {
-    g.featureModules.shortcutButtons = {
+  typeof I.featureModules < 'u' &&
+    (I.featureModules.shortcutButtons = {
       id: 'shortcutButtons',
       name: 'Kembali ke Detail Klaim',
       description: 'Tombol floating kembali ke halaman detail klaim dari halaman pelaksanaan',
@@ -1005,21 +914,15 @@ var __morbis_feature = (() => {
         ],
       },
       run: () => {
-        runWithObserver(
-          renderBackToDetailButton,
-          () => !!document.querySelector('[data-back-to-detail-klaim]'),
-        );
+        pt(dt, () => !!document.querySelector('[data-back-to-detail-klaim]'));
       },
-    };
-  }
-
-  // src/features/toolbar.ts
-  var g2 = getMorbisGlobals();
-  injectCSS(
+    });
+  var f = j();
+  R(
     'ext-toolbar-styles',
     `@media print{[data-toolbar]{display:none!important}}
-  [data-toolbar] { display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:12px 16px; margin:12px 0; background:${colors.secondary}; border-radius:8px; border:1px solid ${colors.border}; }
-  [data-toolbar] .ext-toolbar-label { color:${colors.mutedForeground}; font-weight:600; font-size:13px; }
+  [data-toolbar] { display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:12px 16px; margin:12px 0; background:${l.secondary}; border-radius:8px; border:1px solid ${l.border}; }
+  [data-toolbar] .ext-toolbar-label { color:${l.mutedForeground}; font-weight:600; font-size:13px; }
   .ext-toolbar-link {
     display:inline-flex; align-items:center; justify-content:center;
     padding:10px 20px; color:#fff !important; border:none; border-radius:6px;
@@ -1042,237 +945,218 @@ var __morbis_feature = (() => {
   .ext-toolbar-upload:hover { background:#1d4ed8; }
 `,
   );
-  var TOOLBAR_URLS = {
-    rajal: '/admisi/pelaksanaan_pelayanan/halaman-utama',
-    ranap: '/admisi/detail-rawat-inap/resume-ri',
-    dokumenPasien: '/admisi/pelaksanaan_pelayanan/dokumen-pasien',
-    editResumeRajal: '/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new',
-    editResumeRanap: '/admisi/detail-rawat-inap/resume-ri',
-    triageIgd: '/admisi/pelaksanaan_pelayanan/triage_terintegrasi',
-    spri: '/admisi/detail-rawat-inap/surat-pengantar-ri',
-    pengkajianIgd: '/admisi/pelaksanaan_pelayanan/pengkajian_awal_rj/igd',
-  };
-  var BTN_STYLES = {
-    rajal: { text: 'Pelayanan Rawat Jalan', bg: colors.primary, hover: colors.primaryHover },
-    ranap: { text: 'Pelayanan Rawat Inap', bg: colors.success, hover: '#16a34a' },
-    dokumenPasien: { text: 'Dokumen Pasien', bg: '#8b5cf6', hover: '#7c3aed' },
-    editResume: { text: 'Edit Resume', bg: colors.warning, hover: '#d97706' },
-    triageIgd: { text: 'Triage IGD', bg: '#ec4899', hover: '#db2777' },
-    spri: { text: 'SPRI', bg: '#0891b2', hover: '#0e7490' },
-    pengkajianIgd: { text: 'Pengkajian Awal IGD', bg: '#d946ef', hover: '#c026d3' },
-    backMklaim: { text: 'Kembali ke M-KLAIM', bg: colors.error, hover: '#dc2626' },
-  };
-  function extractParam2(name) {
-    return new URLSearchParams(window.location.search).get(name);
+  var y = {
+      rajal: '/admisi/pelaksanaan_pelayanan/halaman-utama',
+      ranap: '/admisi/detail-rawat-inap/resume-ri',
+      dokumenPasien: '/admisi/pelaksanaan_pelayanan/dokumen-pasien',
+      editResumeRajal: '/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new',
+      editResumeRanap: '/admisi/detail-rawat-inap/resume-ri',
+      triageIgd: '/admisi/pelaksanaan_pelayanan/triage_terintegrasi',
+      spri: '/admisi/detail-rawat-inap/surat-pengantar-ri',
+      pengkajianIgd: '/admisi/pelaksanaan_pelayanan/pengkajian_awal_rj/igd',
+    },
+    b = {
+      rajal: { text: 'Pelayanan Rawat Jalan', bg: l.primary, hover: l.primaryHover },
+      ranap: { text: 'Pelayanan Rawat Inap', bg: l.success, hover: '#16a34a' },
+      dokumenPasien: { text: 'Dokumen Pasien', bg: '#8b5cf6', hover: '#7c3aed' },
+      editResume: { text: 'Edit Resume', bg: l.warning, hover: '#d97706' },
+      triageIgd: { text: 'Triage IGD', bg: '#ec4899', hover: '#db2777' },
+      spri: { text: 'SPRI', bg: '#0891b2', hover: '#0e7490' },
+      pengkajianIgd: { text: 'Pengkajian Awal IGD', bg: '#d946ef', hover: '#c026d3' },
+      backMklaim: { text: 'Kembali ke M-KLAIM', bg: l.error, hover: '#dc2626' },
+    };
+  function ve(e) {
+    return new URLSearchParams(window.location.search).get(e);
   }
-  function getJenisKunjungan() {
-    const input = document.querySelector('input[name="jenis"]');
-    if (input) return input.value.trim().toUpperCase();
-    const sel = document.querySelector('select[name="jenis"]');
-    if (sel) return sel.value.trim().toUpperCase();
-    return null;
+  function ke() {
+    let e = document.querySelector('input[name="jenis"]');
+    if (e) return e.value.trim().toUpperCase();
+    let t = document.querySelector('select[name="jenis"]');
+    return t ? t.value.trim().toUpperCase() : null;
   }
-  function isRawatJalan() {
-    const j = getJenisKunjungan();
-    return !!j && (j.includes('JALAN') || j === 'RAWAT JALAN');
+  function we() {
+    let e = ke();
+    return !!e && (e.includes('JALAN') || e === 'RAWAT JALAN');
   }
-  function isRawatInap() {
-    const j = getJenisKunjungan();
-    return !!j && (j.includes('INAP') || j === 'RAWAT INAP');
+  function C() {
+    let e = ke();
+    return !!e && (e.includes('INAP') || e === 'RAWAT INAP');
   }
-  function extractIdVisit() {
-    return extractParam2('id_visit');
+  function v() {
+    return ve('id_visit');
   }
-  function extractIdRawatJalan() {
+  function ft() {
     return document.getElementById('id_rawat_jalan')?.value || null;
   }
-  function buildUrl(path, qs) {
-    return `${window.location.origin}${path}?${qs}`;
+  function x(e, t) {
+    return `${window.location.origin}${e}?${t}`;
   }
-  function rajalUrl() {
-    const id = extractIdVisit();
-    return id ? buildUrl(TOOLBAR_URLS.rajal, `id_visit=${id}&page=101&status_periksa=belum`) : null;
+  function mt() {
+    let e = v();
+    return e ? x(y.rajal, `id_visit=${e}&page=101&status_periksa=belum`) : null;
   }
-  function ranapUrl() {
-    const id = extractIdVisit();
-    return id ? buildUrl(TOOLBAR_URLS.ranap, `idVisit=${id}`) : null;
+  function gt() {
+    let e = v();
+    return e ? x(y.ranap, `idVisit=${e}`) : null;
   }
-  function dokumenPasienUrl() {
-    const id = extractIdVisit();
-    return id ? buildUrl(TOOLBAR_URLS.dokumenPasien, `id_visit=${id}&page=85&id_kunjungan=`) : null;
+  function bt() {
+    let e = v();
+    return e ? x(y.dokumenPasien, `id_visit=${e}&page=85&id_kunjungan=`) : null;
   }
-  function editResumeUrl() {
-    const id = extractIdVisit();
-    if (!id) return null;
-    if (isRawatJalan()) {
-      const idRj = extractIdRawatJalan();
-      const qs = idRj ? `id_visit=${id}&id=${idRj}&page=6` : `id_visit=${id}&page=6`;
-      return buildUrl(TOOLBAR_URLS.editResumeRajal, qs);
+  function ht() {
+    let e = v();
+    if (!e) return null;
+    if (we()) {
+      let t = ft(),
+        n = t ? `id_visit=${e}&id=${t}&page=6` : `id_visit=${e}&page=6`;
+      return x(y.editResumeRajal, n);
     }
-    if (isRawatInap()) return buildUrl(TOOLBAR_URLS.editResumeRanap, `idVisit=${id}`);
-    return null;
+    return C() ? x(y.editResumeRanap, `idVisit=${e}`) : null;
   }
-  function triageIgdUrl() {
-    if (!isRawatInap()) return null;
-    const id = extractIdVisit();
-    return id
-      ? buildUrl(TOOLBAR_URLS.triageIgd, `id_visit=${id}&status_periksa=belum&page=51`)
-      : null;
+  function yt() {
+    if (!C()) return null;
+    let e = v();
+    return e ? x(y.triageIgd, `id_visit=${e}&status_periksa=belum&page=51`) : null;
   }
-  function spriUrl() {
-    if (!isRawatInap()) return null;
-    const id = extractIdVisit();
-    return id ? buildUrl(TOOLBAR_URLS.spri, `id_visit=${id}`) : null;
+  function xt() {
+    if (!C()) return null;
+    let e = v();
+    return e ? x(y.spri, `id_visit=${e}`) : null;
   }
-  function pengkajianIgdUrl() {
-    const id = extractIdVisit();
-    return id ? buildUrl(TOOLBAR_URLS.pengkajianIgd, `id_visit=${id}&page=87&jenis=igd`) : null;
+  function vt() {
+    let e = v();
+    return e ? x(y.pengkajianIgd, `id_visit=${e}&page=87&jenis=igd`) : null;
   }
-  function mklaimBaseUrl() {
+  function kt() {
     return `${window.location.origin}/v2/m-klaim`;
   }
-  function isTargetPage() {
-    const url = window.location.href;
-    if (!url.includes('/v2/m-klaim/detail-v2-refaktor')) return false;
-    for (const p of ['id_visit', 'tanggalAwal', 'tanggalAkhir']) {
-      if (!extractParam2(p)) return false;
-    }
-    return true;
+  function wt() {
+    if (!window.location.href.includes('/v2/m-klaim/detail-v2-refaktor')) return !1;
+    for (let t of ['id_visit', 'tanggalAwal', 'tanggalAkhir']) if (!ve(t)) return !1;
+    return !0;
   }
-  function createLink(url, def, sameTab = false) {
-    const a = document.createElement('a');
-    a.href = url;
-    a.textContent = def.text;
-    a.className = 'ext-toolbar-link';
-    a.style.background = def.bg;
-    a.addEventListener('mouseenter', () => {
-      a.style.background = def.hover;
-    });
-    a.addEventListener('mouseleave', () => {
-      a.style.background = def.bg;
-    });
-    a.addEventListener('click', (e) => {
-      e.preventDefault();
-      const mode = g2.currentConfig?.features?.openDetailInNewTab?.mode || 'new-tab';
-      if (sameTab || mode === 'same-tab') {
-        window.location.href = url;
-      } else {
-        window.open(url, '_blank');
-      }
-    });
-    return a;
+  function h(e, t, n = !1) {
+    let r = document.createElement('a');
+    return (
+      (r.href = e),
+      (r.textContent = t.text),
+      (r.className = 'ext-toolbar-link'),
+      (r.style.background = t.bg),
+      r.addEventListener('mouseenter', () => {
+        r.style.background = t.hover;
+      }),
+      r.addEventListener('mouseleave', () => {
+        r.style.background = t.bg;
+      }),
+      r.addEventListener('click', (o) => {
+        o.preventDefault();
+        let i = f.currentConfig?.features?.openDetailInNewTab?.mode || 'new-tab';
+        n || i === 'same-tab' ? (window.location.href = e) : window.open(e, '_blank');
+      }),
+      r
+    );
   }
-  function createBtn(text, bg, hover, onClick, className) {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.textContent = text;
-    btn.className = `ext-toolbar-btn ${className}`;
-    btn.style.background = bg;
-    btn.addEventListener('mouseenter', () => {
-      btn.style.background = hover;
-    });
-    btn.addEventListener('mouseleave', () => {
-      btn.style.background = bg;
-    });
-    btn.addEventListener('click', onClick);
-    return btn;
+  function ye(e, t, n, r, o) {
+    let i = document.createElement('button');
+    return (
+      (i.type = 'button'),
+      (i.textContent = e),
+      (i.className = `ext-toolbar-btn ${o}`),
+      (i.style.background = t),
+      i.addEventListener('mouseenter', () => {
+        i.style.background = n;
+      }),
+      i.addEventListener('mouseleave', () => {
+        i.style.background = t;
+      }),
+      i.addEventListener('click', r),
+      i
+    );
   }
-  function anyFeatureEnabled() {
-    const cfg = g2.currentConfig;
-    if (!cfg?.extensionEnabled) return false;
-    const ok = (key) => cfg.features?.[key]?.enabled && g2.ExtensionCore.isFeatureAllowed(key);
-    return ok('shortcutButtons') || ok('batchDelete') || ok('batchUpload');
+  function Rt() {
+    let e = f.currentConfig;
+    if (!e?.extensionEnabled) return !1;
+    let t = (n) => e.features?.[n]?.enabled && f.ExtensionCore.isFeatureAllowed(n);
+    return t('shortcutButtons') || t('batchDelete') || t('batchUpload');
   }
-  function renderToolbar() {
-    if (!anyFeatureEnabled()) return;
-    if (!isTargetPage() || document.querySelector('[data-toolbar]')) return;
-    if (!extractIdVisit()) return;
-    const loginPaths = ['/login', '/auth', '/signin', '/masuk', '/keluar', '/logout'];
+  function xe() {
     if (
-      loginPaths.some((p) => window.location.pathname.toLowerCase().includes(p)) ||
+      !Rt() ||
+      !wt() ||
+      document.querySelector('[data-toolbar]') ||
+      !v() ||
+      ['/login', '/auth', '/signin', '/masuk', '/keluar', '/logout'].some((a) =>
+        window.location.pathname.toLowerCase().includes(a),
+      ) ||
       document.querySelectorAll('input[type="password"]').length > 0
     )
       return;
-    const bar = document.createElement('div');
-    bar.dataset.toolbar = 'true';
-    const label = document.createElement('span');
-    label.textContent = 'Tools:';
-    label.className = 'ext-toolbar-label';
-    bar.appendChild(label);
-    const shortcutOk =
-      g2.currentConfig?.features?.shortcutButtons?.enabled &&
-      g2.ExtensionCore.isFeatureAllowed('shortcutButtons');
-    if (shortcutOk) {
-      if (g2.currentConfig?.extensionEnabled)
-        bar.appendChild(createLink(mklaimBaseUrl(), BTN_STYLES.backMklaim, true));
-      const eResume = editResumeUrl();
-      if (eResume) bar.appendChild(createLink(eResume, BTN_STYLES.editResume));
-      const dUrl = dokumenPasienUrl();
-      if (dUrl) bar.appendChild(createLink(dUrl, BTN_STYLES.dokumenPasien));
-      if (isRawatJalan() || isRawatInap()) {
-        const rj = rajalUrl();
-        if (rj) bar.appendChild(createLink(rj, BTN_STYLES.rajal));
+    let t = document.createElement('div');
+    t.dataset.toolbar = 'true';
+    let n = document.createElement('span');
+    ((n.textContent = 'Tools:'), (n.className = 'ext-toolbar-label'), t.appendChild(n));
+    let r =
+      f.currentConfig?.features?.shortcutButtons?.enabled &&
+      f.ExtensionCore.isFeatureAllowed('shortcutButtons');
+    if (r) {
+      f.currentConfig?.extensionEnabled && t.appendChild(h(kt(), b.backMklaim, !0));
+      let a = ht();
+      a && t.appendChild(h(a, b.editResume));
+      let s = bt();
+      if ((s && t.appendChild(h(s, b.dokumenPasien)), we() || C())) {
+        let c = mt();
+        c && t.appendChild(h(c, b.rajal));
       }
-      if (isRawatInap()) {
-        const spri = spriUrl();
-        if (spri) bar.appendChild(createLink(spri, BTN_STYLES.spri));
-        const pkIgd = pengkajianIgdUrl();
-        if (pkIgd) bar.appendChild(createLink(pkIgd, BTN_STYLES.pengkajianIgd));
-        const ri = ranapUrl();
-        if (ri) bar.appendChild(createLink(ri, BTN_STYLES.ranap));
+      if (C()) {
+        let c = xt();
+        c && t.appendChild(h(c, b.spri));
+        let d = vt();
+        d && t.appendChild(h(d, b.pengkajianIgd));
+        let g = gt();
+        g && t.appendChild(h(g, b.ranap));
       }
-      const tId = triageIgdUrl();
-      if (tId) bar.appendChild(createLink(tId, BTN_STYLES.triageIgd));
+      let u = yt();
+      u && t.appendChild(h(u, b.triageIgd));
     }
-    if (
-      g2.currentConfig?.features?.batchDelete?.enabled &&
-      g2.ExtensionCore.isFeatureAllowed('batchDelete')
-    ) {
-      bar.appendChild(
-        createBtn(
+    (f.currentConfig?.features?.batchDelete?.enabled &&
+      f.ExtensionCore.isFeatureAllowed('batchDelete') &&
+      t.appendChild(
+        ye(
           'Hapus Dokumen',
           '#ef4444',
           '#dc2626',
-          () => g2.batchDeleteShowModal?.(),
+          () => f.batchDeleteShowModal?.(),
           'ext-toolbar-batch',
         ),
-      );
-    }
-    if (
-      g2.currentConfig?.features?.batchUpload?.enabled &&
-      g2.ExtensionCore.isFeatureAllowed('batchUpload')
-    ) {
-      bar.appendChild(
-        createBtn(
-          'Upload Dokumen Ulang',
-          '#2563eb',
-          '#1d4ed8',
-          () => g2.batchUploadShowModal?.(),
-          'ext-toolbar-upload',
-        ),
-      );
-    }
-    const selectors = [
-      '.form-horizontal',
-      'form',
-      '.container-fluid',
-      '.container',
-      '.content',
-      '.main-content',
-      '#content',
-      '.page-content',
-    ];
-    let target = null;
-    for (const sel of selectors) {
-      target = document.querySelector(sel);
-      if (target) break;
-    }
-    if (!target) target = document.body;
-    if (target.firstChild) target.insertBefore(bar, target.firstChild);
-    else target.appendChild(bar);
-    if (shortcutOk) initBpjsRevisionHistory(bar);
+      ),
+      f.currentConfig?.features?.batchUpload?.enabled &&
+        f.ExtensionCore.isFeatureAllowed('batchUpload') &&
+        t.appendChild(
+          ye(
+            'Upload Dokumen Ulang',
+            '#2563eb',
+            '#1d4ed8',
+            () => f.batchUploadShowModal?.(),
+            'ext-toolbar-upload',
+          ),
+        ));
+    let o = [
+        '.form-horizontal',
+        'form',
+        '.container-fluid',
+        '.container',
+        '.content',
+        '.main-content',
+        '#content',
+        '.page-content',
+      ],
+      i = null;
+    for (let a of o) if (((i = document.querySelector(a)), i)) break;
+    (i || (i = document.body),
+      i.firstChild ? i.insertBefore(t, i.firstChild) : i.appendChild(t),
+      r && H(t));
   }
-  if (document.readyState === 'complete') setTimeout(renderToolbar, 500);
-  else window.addEventListener('load', () => setTimeout(renderToolbar, 500));
+  document.readyState === 'complete'
+    ? setTimeout(xe, 500)
+    : window.addEventListener('load', () => setTimeout(xe, 500));
 })();
-//# sourceMappingURL=toolbar.js.map

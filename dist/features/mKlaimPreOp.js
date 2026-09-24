@@ -1,51 +1,36 @@
 'use strict';
 var __morbis_feature = (() => {
-  var __defProp = Object.defineProperty;
-  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-  var __getOwnPropNames = Object.getOwnPropertyNames;
-  var __hasOwnProp = Object.prototype.hasOwnProperty;
-  var __export = (target, all) => {
-    for (var name in all) __defProp(target, name, { get: all[name], enumerable: true });
-  };
-  var __copyProps = (to, from, except, desc) => {
-    if ((from && typeof from === 'object') || typeof from === 'function') {
-      for (let key of __getOwnPropNames(from))
-        if (!__hasOwnProp.call(to, key) && key !== except)
-          __defProp(to, key, {
-            get: () => from[key],
-            enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable,
-          });
-    }
-    return to;
-  };
-  var __toCommonJS = (mod) => __copyProps(__defProp({}, '__esModule', { value: true }), mod);
-
-  // src/features/mKlaimPreOp.ts
-  var mKlaimPreOp_exports = {};
-  __export(mKlaimPreOp_exports, {
-    initPreOpMarker: () => initPreOpMarker,
-  });
-
-  // src/features/shared/types.ts
-  function getMorbisGlobals() {
+  var S = Object.defineProperty;
+  var le = Object.getOwnPropertyDescriptor;
+  var ce = Object.getOwnPropertyNames;
+  var ue = Object.prototype.hasOwnProperty;
+  var de = (e, n) => {
+      for (var t in n) S(e, t, { get: n[t], enumerable: !0 });
+    },
+    pe = (e, n, t, r) => {
+      if ((n && typeof n == 'object') || typeof n == 'function')
+        for (let o of ce(n))
+          !ue.call(e, o) &&
+            o !== t &&
+            S(e, o, { get: () => n[o], enumerable: !(r = le(n, o)) || r.enumerable });
+      return e;
+    };
+  var fe = (e) => pe(S({}, '__esModule', { value: !0 }), e);
+  var Ke = {};
+  de(Ke, { initPreOpMarker: () => k });
+  function I() {
     return window;
   }
-
-  // src/shared/ui/index.ts
-  var injectedSheets = /* @__PURE__ */ new Set();
-  function injectCSS(id, css) {
-    if (injectedSheets.has(id)) {
-      const existing = document.getElementById(id);
-      if (existing) return existing;
+  var $ = new Set();
+  function v(e, n) {
+    if ($.has(e)) {
+      let r = document.getElementById(e);
+      if (r) return r;
     }
-    const style = document.createElement('style');
-    style.id = id;
-    style.textContent = css;
-    document.head.appendChild(style);
-    injectedSheets.add(id);
-    return style;
+    let t = document.createElement('style');
+    return ((t.id = e), (t.textContent = n), document.head.appendChild(t), $.add(e), t);
   }
-  injectCSS(
+  v(
     'ext-shared-animations',
     `
   @keyframes fadeSlideIn {
@@ -54,508 +39,433 @@ var __morbis_feature = (() => {
   }
 `,
   );
-
-  // src/features/shared/preOpStorage.ts
-  var PRE_OP_STORAGE_KEY = 'morbis_preop_markers';
-  var PRE_OP_TTL_MS = 30 * 24 * 60 * 60 * 1e3;
-  var PRE_OP_UNMARK_TOMBSTONE_MS = 3e4;
-  function resolvePreOpMarked(
-    localHas,
-    centralHas,
-    unmarkedAt,
-    now = Date.now(),
-    tombstoneMs = PRE_OP_UNMARK_TOMBSTONE_MS,
-  ) {
-    if (localHas) return true;
-    if (unmarkedAt !== void 0 && now - unmarkedAt < tombstoneMs) return false;
-    if (centralHas === null) return false;
-    return centralHas;
+  var H = 'morbis_preop_markers';
+  function B(e, n, t, r = Date.now(), o = 3e4) {
+    return e ? !0 : (t !== void 0 && r - t < o) || n === null ? !1 : n;
   }
-  function defaultStore() {
+  function p() {
     try {
-      if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+      if (typeof window < 'u' && window.localStorage) return window.localStorage;
     } catch {}
     return null;
   }
-  function purgeExpiredPreOp(map, now = Date.now()) {
-    const result = {};
-    let count = 0;
-    for (const [id, item] of Object.entries(map)) {
-      if (item && item.markedAt && now - item.markedAt <= PRE_OP_TTL_MS) {
-        result[id] = item;
-      } else {
-        count++;
-      }
-    }
-    return { purged: result, count };
+  function me(e, n = Date.now()) {
+    let t = {},
+      r = 0;
+    for (let [o, i] of Object.entries(e))
+      i && i.markedAt && n - i.markedAt <= 2592e6 ? (t[o] = i) : r++;
+    return { purged: t, count: r };
   }
-  function loadPreOpMap(store = defaultStore(), now = Date.now()) {
-    if (!store) return {};
+  function d(e = p(), n = Date.now()) {
+    if (!e) return {};
     try {
-      const raw = store.getItem(PRE_OP_STORAGE_KEY);
-      if (!raw) return {};
-      const parsed = JSON.parse(raw);
-      if (typeof parsed !== 'object' || parsed === null) return {};
-      const { purged, count } = purgeExpiredPreOp(parsed, now);
-      if (count > 0) {
-        savePreOpMap(purged, store);
-      }
-      return purged;
+      let t = e.getItem(H);
+      if (!t) return {};
+      let r = JSON.parse(t);
+      if (typeof r != 'object' || r === null) return {};
+      let { purged: o, count: i } = me(r, n);
+      return (i > 0 && w(o, e), o);
     } catch {
       return {};
     }
   }
-  function savePreOpMap(map, store = defaultStore()) {
-    if (!store) return;
+  function w(e, n = p()) {
+    if (n)
+      try {
+        n.setItem(H, JSON.stringify(e));
+      } catch {}
+  }
+  function ge(e, n = p(), t = Date.now()) {
+    if (!e) return !1;
+    let o = d(n, t)[e];
+    return o ? t - o.markedAt <= 2592e6 : !1;
+  }
+  function E(e, n = {}, t = p(), r = Date.now()) {
+    if (!e) return;
+    let o = d(t, r);
+    ((o[e] = { idVisit: e, markedAt: r, norm: n.norm, nama: n.nama, noReg: n.noReg }), w(o, t));
+  }
+  function ye(e, n = p()) {
+    if (!e) return;
+    let t = d(n);
+    t[e] && (delete t[e], w(t, n));
+  }
+  function F(e, n = {}, t = p(), r = Date.now()) {
+    return ge(e, t, r) ? (ye(e, t), !1) : (E(e, n, t, r), !0);
+  }
+  var be = 'http://dev.rsudkotajambi.id/rs',
+    he = 'ext-farmasi-app-base';
+  var xe = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'],
+    ke = '.rsudkotajambi.id';
+  function Se(e) {
     try {
-      store.setItem(PRE_OP_STORAGE_KEY, JSON.stringify(map));
-    } catch {}
-  }
-  function isPreOp(idVisit, store = defaultStore(), now = Date.now()) {
-    if (!idVisit) return false;
-    const map = loadPreOpMap(store, now);
-    const item = map[idVisit];
-    if (!item) return false;
-    return now - item.markedAt <= PRE_OP_TTL_MS;
-  }
-  function setPreOp(idVisit, info = {}, store = defaultStore(), now = Date.now()) {
-    if (!idVisit) return;
-    const map = loadPreOpMap(store, now);
-    map[idVisit] = {
-      idVisit,
-      markedAt: now,
-      norm: info.norm,
-      nama: info.nama,
-      noReg: info.noReg,
-    };
-    savePreOpMap(map, store);
-  }
-  function removePreOp(idVisit, store = defaultStore()) {
-    if (!idVisit) return;
-    const map = loadPreOpMap(store);
-    if (map[idVisit]) {
-      delete map[idVisit];
-      savePreOpMap(map, store);
-    }
-  }
-  function togglePreOp(idVisit, info = {}, store = defaultStore(), now = Date.now()) {
-    if (isPreOp(idVisit, store, now)) {
-      removePreOp(idVisit, store);
-      return false;
-    } else {
-      setPreOp(idVisit, info, store, now);
-      return true;
-    }
-  }
-
-  // src/features/shared/casemixApi.ts
-  var CASEMIX_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
-  var BASE_OVERRIDE_KEY = 'ext-farmasi-app-base';
-  var BATCH_MAX = 500;
-  var CENTRAL_TIMEOUT_MS = 25e3;
-  var CASEMIX_ALLOWED_HOSTS = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'];
-  var CASEMIX_ALLOWED_SUFFIX = '.rsudkotajambi.id';
-  function isAllowedCasemixBase(url) {
-    try {
-      const u = new URL(url);
-      if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
-      const h = u.hostname.toLowerCase();
-      if (CASEMIX_ALLOWED_HOSTS.includes(h)) return true;
-      return h.endsWith(CASEMIX_ALLOWED_SUFFIX);
+      let n = new URL(e);
+      if (n.protocol !== 'http:' && n.protocol !== 'https:') return !1;
+      let t = n.hostname.toLowerCase();
+      return xe.includes(t) ? !0 : t.endsWith(ke);
     } catch {
-      return false;
+      return !1;
     }
   }
-  function resolveCasemixBase() {
+  function b() {
     try {
-      const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
-      if (ov && isAllowedCasemixBase(ov)) return ov.replace(/\/+$/, '');
+      let e = localStorage.getItem(he);
+      if (e && Se(e)) return e.replace(/\/+$/, '');
     } catch {}
-    return CASEMIX_BASE_FALLBACK;
+    return be;
   }
-  function normalizeIds(ids) {
-    return [...new Set(ids.map((s) => String(s).trim()).filter(Boolean))].slice(0, BATCH_MAX);
+  function ve(e) {
+    return [...new Set(e.map((n) => String(n).trim()).filter(Boolean))].slice(0, 500);
   }
-  async function fetchTimeout(url, init, fetcher = fetch) {
-    const ctrl = new AbortController();
-    const t = globalThis.setTimeout(() => ctrl.abort(), CENTRAL_TIMEOUT_MS);
+  async function we(e, n, t = fetch) {
+    let r = new AbortController(),
+      o = globalThis.setTimeout(() => r.abort(), 25e3);
     try {
-      return await fetcher(url, { ...init, signal: ctrl.signal });
+      return await t(e, { ...n, signal: r.signal });
     } finally {
-      globalThis.clearTimeout(t);
+      globalThis.clearTimeout(o);
     }
   }
-  async function getJson(path, fetcher = fetch) {
+  async function Ee(e, n = fetch) {
     try {
-      const res = await fetchTimeout(
-        resolveCasemixBase() + path,
+      let t = await we(
+        b() + e,
         { cache: 'no-store', credentials: 'omit', headers: { Accept: 'application/json' } },
-        fetcher,
+        n,
       );
-      if (!res.ok) return null;
-      return await res.json();
+      return t.ok ? await t.json() : null;
     } catch {
       return null;
     }
   }
-  function postFireForget(path, payload, fetcher = fetch) {
+  function Re(e, n, t = fetch) {
     try {
-      const ctrl = new AbortController();
-      const t = globalThis.setTimeout(() => ctrl.abort(), CENTRAL_TIMEOUT_MS);
-      return fetcher(resolveCasemixBase() + path, {
+      let r = new AbortController(),
+        o = globalThis.setTimeout(() => r.abort(), 25e3);
+      return t(b() + e, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(payload),
-        keepalive: true,
+        body: JSON.stringify(n),
+        keepalive: !0,
         credentials: 'omit',
-        signal: ctrl.signal,
+        signal: r.signal,
       })
         .then(() => {})
         .catch(() => {})
-        .finally(() => globalThis.clearTimeout(t));
+        .finally(() => globalThis.clearTimeout(o));
     } catch {
       return Promise.resolve();
     }
   }
-  function togglePreOpCentral(idVisit, marked, info = {}, fetcher = fetch) {
-    if (!idVisit) return Promise.resolve();
-    return postFireForget(
-      '/api/casemix/pre-op/toggle',
-      {
-        id_visit: idVisit,
-        marked,
-        norm: info.norm ?? null,
-        nama: info.nama ?? null,
-        no_reg: info.noReg ?? null,
-        user: info.user ?? null,
-      },
-      fetcher,
-    );
+  function j(e, n, t = {}, r = fetch) {
+    return e
+      ? Re(
+          '/api/casemix/pre-op/toggle',
+          {
+            id_visit: e,
+            marked: n,
+            norm: t.norm ?? null,
+            nama: t.nama ?? null,
+            no_reg: t.noReg ?? null,
+            user: t.user ?? null,
+          },
+          r,
+        )
+      : Promise.resolve();
   }
-  async function fetchPreOpBatch(ids, fetcher = fetch) {
-    const list = normalizeIds(ids);
-    if (!list.length) return {};
-    const j = await getJson(
-      '/api/casemix/pre-op/list?ids=' + encodeURIComponent(list.join(',')),
-      fetcher,
-    );
-    if (j === null) return null;
-    if (!j.ok || !j.marks) return {};
-    return j.marks;
+  async function U(e, n = fetch) {
+    let t = ve(e);
+    if (!t.length) return {};
+    let r = await Ee('/api/casemix/pre-op/list?ids=' + encodeURIComponent(t.join(',')), n);
+    return r === null ? null : !r.ok || !r.marks ? {} : r.marks;
   }
-
-  // src/features/shared/resumeHistory.ts
-  function defaultStore2() {
+  function D() {
     try {
-      if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+      if (typeof window < 'u' && window.localStorage) return window.localStorage;
     } catch {}
     return null;
   }
-  var HIST_PREFIX = 'ext_rv_history_';
-  var LEGACY_HIST_PREFIX = HIST_PREFIX;
-  var RV_MIGRATED_PREFIX = 'ext_migrated_rv_';
-  var MAX_ENTRIES = 50;
-  function getHistoryKey(idVisit, tipe) {
-    return `${HIST_PREFIX}${tipe === 'ranap' ? 'ri' : 'rj'}_${idVisit || 'unknown'}`;
+  var N = 'ext_rv_history_',
+    Te = N;
+  var V = 'ext_migrated_rv_',
+    _e = 50;
+  function z(e, n) {
+    return `${N}${n === 'ranap' ? 'ri' : 'rj'}_${e || 'unknown'}`;
   }
-  function readJson(store, key) {
-    if (!store) return null;
+  function K(e, n) {
+    if (!e) return null;
     try {
-      const raw = store.getItem(key);
-      if (!raw) return null;
-      return JSON.parse(raw);
+      let t = e.getItem(n);
+      return t ? JSON.parse(t) : null;
     } catch {
       return null;
     }
   }
-  function writeJson(store, key, value) {
-    if (!store) return;
-    try {
-      store.setItem(key, JSON.stringify(value));
-    } catch {}
+  function Me(e, n, t) {
+    if (e)
+      try {
+        e.setItem(n, JSON.stringify(t));
+      } catch {}
   }
-  function loadHistory(idVisit, tipe, store = defaultStore2()) {
-    const arr = readJson(store, getHistoryKey(idVisit, tipe));
-    const list = Array.isArray(arr) ? arr : [];
-    if (tipe === 'ranap') {
-      const legacy = readJson(store, LEGACY_HIST_PREFIX + idVisit);
-      if (Array.isArray(legacy) && legacy.length > 0 && list.length === 0) {
-        const migrated = legacy.map((e) => ({ ...e, tipe: 'ranap' }));
-        saveHistory(migrated, idVisit, 'ranap', store);
-        return migrated;
+  function q(e, n, t = D()) {
+    let r = K(t, z(e, n)),
+      o = Array.isArray(r) ? r : [];
+    if (n === 'ranap') {
+      let i = K(t, Te + e);
+      if (Array.isArray(i) && i.length > 0 && o.length === 0) {
+        let a = i.map((s) => ({ ...s, tipe: 'ranap' }));
+        return (Ce(a, e, 'ranap', t), a);
       }
     }
-    return list;
+    return o;
   }
-  function saveHistory(list, idVisit, tipe, store = defaultStore2()) {
-    writeJson(store, getHistoryKey(idVisit, tipe), list.slice(-MAX_ENTRIES));
+  function Ce(e, n, t, r = D()) {
+    Me(r, z(n, t), e.slice(-_e));
   }
-  function readPetugas() {
+  function J() {
     try {
-      const panel = document.getElementById('userpanel');
-      if (panel) {
-        let username = '';
-        let role = '';
-        panel.querySelectorAll('.subgroup').forEach((sg) => {
-          const title = (sg.querySelector('.subtitle')?.textContent || '').trim().toLowerCase();
-          const content = (sg.querySelector('.subcontent')?.textContent || '').trim();
-          if (title === 'username' && content) username = content;
-          if (title === 'role' && content) role = content;
-        });
-        if (username) return `${username}${role ? ` (${role})` : ''}`;
-        const a = panel.querySelector('a');
-        const t2 = (a?.textContent || '').trim();
-        if (t2 && t2 !== 'Petugas Rumah Sakit') return t2;
+      let e = document.getElementById('userpanel');
+      if (e) {
+        let i = '',
+          a = '';
+        if (
+          (e.querySelectorAll('.subgroup').forEach((u) => {
+            let c = (u.querySelector('.subtitle')?.textContent || '').trim().toLowerCase(),
+              y = (u.querySelector('.subcontent')?.textContent || '').trim();
+            (c === 'username' && y && (i = y), c === 'role' && y && (a = y));
+          }),
+          i)
+        )
+          return `${i}${a ? ` (${a})` : ''}`;
+        let l = (e.querySelector('a')?.textContent || '').trim();
+        if (l && l !== 'Petugas Rumah Sakit') return l;
       }
-      const el = document.querySelector('#petugas, .petugas, .username, #username, .user-name');
-      const t = (el?.textContent || '').trim();
+      let t = (
+        document.querySelector('#petugas, .petugas, .username, #username, .user-name')
+          ?.textContent || ''
+      ).trim();
       if (t) return t.slice(0, 80);
-      const dokter = document
+      let r = document
         .querySelector('input[name="dokter"], #dokter, input[name="nama_dokter"]')
         ?.value?.trim();
-      if (dokter) return dokter.slice(0, 80);
-      const idUser = document.querySelector('input[name="id_user"], #id_user')?.value?.trim();
-      if (idUser) return `User #${idUser}`;
+      if (r) return r.slice(0, 80);
+      let o = document.querySelector('input[name="id_user"], #id_user')?.value?.trim();
+      if (o) return `User #${o}`;
     } catch {}
     return 'petugas';
   }
-
-  // src/features/shared/casemixBackfill.ts
-  var MIGRATED_PREOP_KEY = 'ext_migrated_preop_ids';
-  var MIGRATED_RV_PREFIX = RV_MIGRATED_PREFIX;
-  var BACKFILL_BATCH = 20;
-  function readJson2(store, key) {
-    if (!store) return null;
+  var X = 'ext_migrated_preop_ids',
+    G = V,
+    T = 20;
+  function W(e, n) {
+    if (!e) return null;
     try {
-      const raw = store.getItem(key);
-      if (!raw) return null;
-      return JSON.parse(raw);
+      let t = e.getItem(n);
+      return t ? JSON.parse(t) : null;
     } catch {
       return null;
     }
   }
-  function writeJson2(store, key, value) {
-    if (!store) return;
-    try {
-      store.setItem(key, JSON.stringify(value));
-    } catch {}
+  function Y(e, n, t) {
+    if (e)
+      try {
+        e.setItem(n, JSON.stringify(t));
+      } catch {}
   }
-  function defaultStore3() {
+  function Ae() {
     try {
-      if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+      if (typeof window < 'u' && window.localStorage) return window.localStorage;
     } catch {}
     return null;
   }
-  async function postCentral(path, payload, fetcher = fetch) {
+  async function R(e, n, t = fetch) {
     try {
-      const res = await fetcher(resolveCasemixBase() + path, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(payload),
-        credentials: 'omit',
-      });
-      return res.ok;
+      return (
+        await t(b() + e, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(n),
+          credentials: 'omit',
+        })
+      ).ok;
     } catch {
-      return false;
+      return !1;
     }
   }
-  function collectPreOpPending(map, migratedIds) {
-    const done = new Set(migratedIds);
-    return Object.keys(map)
-      .filter((id) => !done.has(id))
-      .slice(0, BACKFILL_BATCH);
+  function Pe(e, n) {
+    let t = new Set(n);
+    return Object.keys(e)
+      .filter((r) => !t.has(r))
+      .slice(0, T);
   }
-  function collectResumePending(list, sinceAt) {
-    return list.filter((e) => e.at > sinceAt).slice(0, BACKFILL_BATCH);
+  function Oe(e, n) {
+    return e.filter((t) => t.at > n).slice(0, T);
   }
-  function discoverResumeKeys(store) {
-    const out = [];
-    if (!store) return out;
+  function Le(e) {
+    let n = [];
+    if (!e) return n;
     try {
-      const keys = [];
-      const ls = store;
-      if (typeof ls.length === 'number' && ls.key) {
-        for (let i = 0; i < ls.length; i++) {
-          const k = ls.key(i);
-          if (k) keys.push(k);
+      let t = [],
+        r = e;
+      if (typeof r.length == 'number' && r.key)
+        for (let o = 0; o < r.length; o++) {
+          let i = r.key(o);
+          i && t.push(i);
         }
-      }
-      for (const k of keys) {
-        let m = k.match(/^ext_rv_history_(ri|rj)_(.+)$/);
-        if (m) {
-          out.push({ key: k, idVisit: m[2], tipe: m[1] === 'ri' ? 'ranap' : 'rajal' });
+      for (let o of t) {
+        let i = o.match(/^ext_rv_history_(ri|rj)_(.+)$/);
+        if (i) {
+          n.push({ key: o, idVisit: i[2], tipe: i[1] === 'ri' ? 'ranap' : 'rajal' });
           continue;
         }
-        m = k.match(/^ext_rv_history_(.+)$/);
-        if (m && !m[1].startsWith('ri_') && !m[1].startsWith('rj_')) {
-          out.push({ key: k, idVisit: m[1], tipe: 'ranap' });
-        }
+        ((i = o.match(/^ext_rv_history_(.+)$/)),
+          i &&
+            !i[1].startsWith('ri_') &&
+            !i[1].startsWith('rj_') &&
+            n.push({ key: o, idVisit: i[1], tipe: 'ranap' }));
       }
     } catch {}
-    return out;
+    return n;
   }
-  async function runCasemixBackfill(store = defaultStore3(), fetcher = fetch) {
-    const res = { preopUploaded: 0, resumeUploaded: 0, offline: false };
-    if (!store) return res;
+  async function Ie(e = Ae(), n = fetch) {
+    let t = { preopUploaded: 0, resumeUploaded: 0, offline: !1 };
+    if (!e) return t;
     try {
-      const map = loadPreOpMap(store);
-      const migrated = readJson2(store, MIGRATED_PREOP_KEY) ?? [];
-      const pending = collectPreOpPending(map, migrated);
-      for (const id of pending) {
-        const item = map[id];
-        if (!item) continue;
-        const ok = await postCentral(
-          '/api/casemix/pre-op/toggle',
-          {
-            id_visit: id,
-            marked: true,
-            norm: item.norm ?? null,
-            nama: item.nama ?? null,
-            no_reg: item.noReg ?? null,
-            user: null,
-          },
-          fetcher,
-        );
-        if (!ok) {
-          res.offline = true;
+      let r = d(e),
+        o = W(e, X) ?? [],
+        i = Pe(r, o);
+      for (let a of i) {
+        let s = r[a];
+        if (!s) continue;
+        if (
+          !(await R(
+            '/api/casemix/pre-op/toggle',
+            {
+              id_visit: a,
+              marked: !0,
+              norm: s.norm ?? null,
+              nama: s.nama ?? null,
+              no_reg: s.noReg ?? null,
+              user: null,
+            },
+            n,
+          ))
+        ) {
+          t.offline = !0;
           break;
         }
-        migrated.push(id);
-        res.preopUploaded++;
+        (o.push(a), t.preopUploaded++);
       }
       try {
-        const alive = new Set(Object.keys(map));
-        const kept = [];
-        for (const id of migrated) {
-          if (alive.has(id)) {
-            kept.push(id);
+        let a = new Set(Object.keys(r)),
+          s = [];
+        for (let l of o) {
+          if (a.has(l)) {
+            s.push(l);
             continue;
           }
-          if (res.offline) {
-            kept.push(id);
+          if (t.offline) {
+            s.push(l);
             continue;
           }
-          const ok = await postCentral(
-            '/api/casemix/pre-op/toggle',
-            { id_visit: id, marked: false },
-            fetcher,
-          );
-          if (!ok) {
-            res.offline = true;
-            kept.push(id);
-          } else {
-            res.preopUploaded++;
-          }
+          (await R('/api/casemix/pre-op/toggle', { id_visit: l, marked: !1 }, n))
+            ? t.preopUploaded++
+            : ((t.offline = !0), s.push(l));
         }
-        if (kept.length !== migrated.length || res.preopUploaded > 0) {
-          writeJson2(store, MIGRATED_PREOP_KEY, kept);
-        }
+        (s.length !== o.length || t.preopUploaded > 0) && Y(e, X, s);
       } catch {}
     } catch {
-      res.offline = true;
+      t.offline = !0;
     }
     try {
-      for (const { key, idVisit, tipe } of discoverResumeKeys(store)) {
-        if (!idVisit || idVisit === 'unknown') continue;
-        if (res.resumeUploaded >= BACKFILL_BATCH) break;
-        const sinceAt = readJson2(store, MIGRATED_RV_PREFIX + key) ?? 0;
-        const list = loadHistory(idVisit, tipe, store);
-        const pending = collectResumePending(list, sinceAt);
-        let maxAt = sinceAt;
-        for (const e of pending) {
-          const ok = await postCentral(
-            '/api/reports/resume-history',
-            {
-              client_id: e.client_id ?? null,
-              id_visit: idVisit,
-              id_resume: e.id_resume,
-              aksi: e.aksi,
-              tipe: e.tipe ?? tipe,
-              waktu: new Date(e.at).toISOString(),
-              user: e.user,
-              before: e.before,
-              after: e.after,
-              changed: e.changed,
-            },
-            fetcher,
-          );
-          if (!ok) {
-            res.offline = true;
+      for (let { key: r, idVisit: o, tipe: i } of Le(e)) {
+        if (!o || o === 'unknown') continue;
+        if (t.resumeUploaded >= T) break;
+        let a = W(e, G + r) ?? 0,
+          s = q(o, i, e),
+          l = Oe(s, a),
+          u = a;
+        for (let c of l) {
+          if (
+            !(await R(
+              '/api/reports/resume-history',
+              {
+                client_id: c.client_id ?? null,
+                id_visit: o,
+                id_resume: c.id_resume,
+                aksi: c.aksi,
+                tipe: c.tipe ?? i,
+                waktu: new Date(c.at).toISOString(),
+                user: c.user,
+                before: c.before,
+                after: c.after,
+                changed: c.changed,
+              },
+              n,
+            ))
+          ) {
+            t.offline = !0;
             break;
           }
-          maxAt = Math.max(maxAt, e.at);
-          res.resumeUploaded++;
+          ((u = Math.max(u, c.at)), t.resumeUploaded++);
         }
-        if (maxAt > sinceAt) writeJson2(store, MIGRATED_RV_PREFIX + key, maxAt);
-        if (res.offline) break;
+        if ((u > a && Y(e, G + r, u), t.offline)) break;
       }
     } catch {
-      res.offline = true;
+      t.offline = !0;
     }
     try {
-      if (res.preopUploaded || res.resumeUploaded) {
+      (t.preopUploaded || t.resumeUploaded) &&
         window.console.debug(
-          `[casemixBackfill] diunggah: ${res.preopUploaded} pre-op, ${res.resumeUploaded} resume`,
+          `[casemixBackfill] diunggah: ${t.preopUploaded} pre-op, ${t.resumeUploaded} resume`,
         );
-      }
     } catch {}
-    return res;
+    return t;
   }
-  var _backfillTimer = null;
-  function initCasemixBackfill() {
-    if (_backfillTimer !== null) return;
-    const tick = () => {
+  var Z = null;
+  function Q() {
+    if (Z !== null) return;
+    let e = () => {
       try {
         if (document.hidden) return;
       } catch {}
-      void runCasemixBackfill().catch(() => {});
+      Ie().catch(() => {});
     };
-    window.setTimeout(tick, 5e3);
-    _backfillTimer = window.setInterval(tick, 3e4);
+    (window.setTimeout(e, 5e3), (Z = window.setInterval(e, 3e4)));
   }
-
-  // src/features/shared/whenIdle.ts
-  function runWhenIdle(cb, timeoutMs = 8e3) {
+  function ee(e, n = 8e3) {
     try {
-      const ric = window.requestIdleCallback;
-      if (typeof ric === 'function') {
-        ric.call(window, cb, { timeout: timeoutMs });
+      let t = window.requestIdleCallback;
+      if (typeof t == 'function') {
+        t.call(window, e, { timeout: n });
         return;
       }
     } catch {}
-    window.setTimeout(cb, Math.min(timeoutMs, 1500));
+    window.setTimeout(e, Math.min(n, 1500));
   }
-
-  // src/features/shared/usageLog.ts
-  var KEY = 'extUsageLog';
-  var MAX_AGE_MS = 7 * 24 * 60 * 60 * 1e3;
-  var MAX_ENTRIES2 = 2e3;
-  async function logUsage(feature, event, ok, detail) {
+  var _ = 'extUsageLog';
+  async function te(e, n, t, r) {
     try {
-      const { [KEY]: existing } = await chrome.storage.local.get(KEY);
-      const now = Date.now();
-      const entry = {
-        ts: now,
-        feature,
-        event,
-        ok,
-        detail:
-          detail instanceof Error
-            ? `${detail.name}: ${detail.message}`
-            : detail !== void 0
-              ? String(detail)
-              : void 0,
-        url: typeof location !== 'undefined' ? location.href : void 0,
-      };
-      const kept = (existing ?? []).filter((e) => now - e.ts < MAX_AGE_MS).concat(entry);
-      const trimmed = kept.slice(-MAX_ENTRIES2);
-      await chrome.storage.local.set({ [KEY]: trimmed });
+      let { [_]: o } = await chrome.storage.local.get(_),
+        i = Date.now(),
+        a = {
+          ts: i,
+          feature: e,
+          event: n,
+          ok: t,
+          detail:
+            r instanceof Error ? `${r.name}: ${r.message}` : r !== void 0 ? String(r) : void 0,
+          url: typeof location < 'u' ? location.href : void 0,
+        },
+        l = (o ?? [])
+          .filter((u) => i - u.ts < 6048e5)
+          .concat(a)
+          .slice(-2e3);
+      await chrome.storage.local.set({ [_]: l });
     } catch {}
   }
-
-  // src/features/mKlaimPreOp.ts
-  var g = getMorbisGlobals();
-  injectCSS(
+  var ne = I();
+  v(
     'ext-preop-styles',
     `@media print { .ext-preop-btn, .ext-preop-badge { display: none !important; } }
   .ext-preop-btn {
@@ -625,271 +535,233 @@ var __morbis_feature = (() => {
   }
 `,
   );
-  var _observer = null;
-  var _scanIntervalId = null;
-  var _debounceTimer = null;
-  var _centralMap = null;
-  var _centralAt = 0;
-  var CENTRAL_TTL_MS = 15e3;
-  var _pendingToggle = /* @__PURE__ */ new Set();
-  var _localUnmarkAt = {};
-  var PENDING_FALLBACK_MS = 1e4;
-  function effectiveMarked(idVisit, localMap, now = Date.now()) {
-    const centralHas = _centralMap ? !!_centralMap[idVisit] : null;
-    return resolvePreOpMarked(idVisit in localMap, centralHas, _localUnmarkAt[idVisit], now);
+  var h = null,
+    f = null,
+    M = null,
+    A = null,
+    re = 0,
+    $e = 15e3,
+    m = new Set(),
+    g = {},
+    He = 1e4;
+  function O(e, n, t = Date.now()) {
+    let r = A ? !!A[e] : null;
+    return B(e in n, r, g[e], t);
   }
-  function paintPending(btn) {
-    btn.disabled = true;
-    if (!btn.classList.contains('pending')) btn.classList.add('pending');
-    btn.textContent = '\u23F3 Menyimpan\u2026';
-    btn.title = 'Menyimpan ke server pusat\u2026';
+  function ie(e) {
+    ((e.disabled = !0),
+      e.classList.contains('pending') || e.classList.add('pending'),
+      (e.textContent = '\u23F3 Menyimpan\u2026'),
+      (e.title = 'Menyimpan ke server pusat\u2026'));
   }
-  function collectVisibleIds() {
-    const ids = [];
-    for (const table of document.querySelectorAll('table')) {
-      for (const row of table.querySelectorAll('tbody tr')) {
-        if (row.classList.contains('dataTables_empty')) continue;
-        const id = extractIdVisitFromRow(row);
-        if (id) ids.push(id);
+  function Be() {
+    let e = [];
+    for (let n of document.querySelectorAll('table'))
+      for (let t of n.querySelectorAll('tbody tr')) {
+        if (t.classList.contains('dataTables_empty')) continue;
+        let r = L(t);
+        r && e.push(r);
       }
-    }
-    return ids;
+    return e;
   }
-  function refreshCentral() {
-    const now = Date.now();
-    if (now - _centralAt < CENTRAL_TTL_MS) return;
-    _centralAt = now;
+  function oe() {
+    let e = Date.now();
+    if (e - re < $e) return;
+    re = e;
     try {
       if (document.hidden) return;
     } catch {}
-    const ids = collectVisibleIds();
-    if (!ids.length) return;
-    void fetchPreOpBatch(ids).then((marks) => {
-      if (marks === null) return;
-      _centralMap = marks;
-      try {
-        const now22 = Date.now();
-        for (const k of Object.keys(_localUnmarkAt)) {
-          if (now22 - _localUnmarkAt[k] >= 6e4) delete _localUnmarkAt[k];
-        }
-      } catch {}
-      const localMap = loadPreOpMap();
-      const now2 = Date.now();
-      for (const table of document.querySelectorAll('table')) {
-        for (const row of table.querySelectorAll('tbody tr')) {
-          const id = extractIdVisitFromRow(row);
-          if (!id || _pendingToggle.has(id)) continue;
-          const marked = effectiveMarked(id, localMap, now2);
-          if (row.getAttribute('data-ext-preop-marked') !== String(marked)) {
-            if (marked && !localMap[id]) {
-              setPreOp(id, extractPatientInfo(row));
-            }
-            updateRowVisual(row, id, marked);
+    let n = Be();
+    n.length &&
+      U(n).then((t) => {
+        if (t === null) return;
+        A = t;
+        try {
+          let i = Date.now();
+          for (let a of Object.keys(g)) i - g[a] >= 6e4 && delete g[a];
+        } catch {}
+        let r = d(),
+          o = Date.now();
+        for (let i of document.querySelectorAll('table'))
+          for (let a of i.querySelectorAll('tbody tr')) {
+            let s = L(a);
+            if (!s || m.has(s)) continue;
+            let l = O(s, r, o);
+            a.getAttribute('data-ext-preop-marked') !== String(l) &&
+              (l && !r[s] && E(s, ae(a)), x(a, s, l));
           }
-        }
-      }
-    });
+      });
   }
-  function extractIdVisitFromRow(row) {
-    const buttons = row.querySelectorAll('button, a, [onclick], [data-id-visit], [data-id]');
-    for (const el of buttons) {
-      const idAttr = el.dataset.idVisit || el.dataset.idvisit || el.dataset.id;
-      if (idAttr && /^\d+$/.test(idAttr)) return idAttr;
-      const oc = el.getAttribute('onclick') || '';
-      const m = oc.match(/detail\(['"]?(\d+)['"]?\)/) || oc.match(/id_visit=(\d+)/);
-      if (m) return m[1];
-      const href = el.getAttribute('href') || '';
-      const mHref = href.match(/id_visit=(\d+)/) || href.match(/detail\(['"]?(\d+)['"]?\)/);
-      if (mHref) return mHref[1];
+  function L(e) {
+    let n = e.querySelectorAll('button, a, [onclick], [data-id-visit], [data-id]');
+    for (let r of n) {
+      let o = r.dataset.idVisit || r.dataset.idvisit || r.dataset.id;
+      if (o && /^\d+$/.test(o)) return o;
+      let i = r.getAttribute('onclick') || '',
+        a = i.match(/detail\(['"]?(\d+)['"]?\)/) || i.match(/id_visit=(\d+)/);
+      if (a) return a[1];
+      let s = r.getAttribute('href') || '',
+        l = s.match(/id_visit=(\d+)/) || s.match(/detail\(['"]?(\d+)['"]?\)/);
+      if (l) return l[1];
     }
-    const anyLink = row.querySelector('a[href*="id_visit="]');
-    if (anyLink) {
-      const m = anyLink.href.match(/id_visit=(\d+)/);
-      if (m) return m[1];
+    let t = e.querySelector('a[href*="id_visit="]');
+    if (t) {
+      let r = t.href.match(/id_visit=(\d+)/);
+      if (r) return r[1];
     }
     return null;
   }
-  function extractPatientInfo(row) {
-    const cells = Array.from(row.querySelectorAll('td'));
-    let norm;
-    let nama;
-    let noReg;
-    cells.forEach((td) => {
-      const t = td.textContent?.trim() || '';
-      if (!norm && /^\d{6}$/.test(t)) {
-        norm = t;
-      }
-      if (!noReg && /^(REG|RJ|RI|IGD|\d{8,})/i.test(t)) {
-        noReg = t;
-      }
-      if (
-        !nama &&
-        /^[A-Z\s.,']{3,}$/i.test(t) &&
-        !/^(RAWAT|JALAN|INAP|BPJS|UMUM|SELESAI|BELUM|VERIF)/i.test(t)
-      ) {
-        nama = t;
-      }
-    });
-    return { norm, nama, noReg };
+  function ae(e) {
+    let n = Array.from(e.querySelectorAll('td')),
+      t,
+      r,
+      o;
+    return (
+      n.forEach((i) => {
+        let a = i.textContent?.trim() || '';
+        (!t && /^\d{6}$/.test(a) && (t = a),
+          !o && /^(REG|RJ|RI|IGD|\d{8,})/i.test(a) && (o = a),
+          !r &&
+            /^[A-Z\s.,']{3,}$/i.test(a) &&
+            !/^(RAWAT|JALAN|INAP|BPJS|UMUM|SELESAI|BELUM|VERIF)/i.test(a) &&
+            (r = a));
+      }),
+      { norm: t, nama: r, noReg: o }
+    );
   }
-  function updateRowVisual(row, idVisit, marked) {
-    row.setAttribute('data-ext-preop-marked', marked ? 'true' : 'false');
-    const btn = row.querySelector(`button[data-ext-preop-btn="${idVisit}"]`);
-    if (btn) {
-      btn.disabled = false;
-      btn.classList.remove('pending');
-      if (marked) {
-        btn.classList.add('active');
-        btn.textContent = '\u2713 Pre-op';
-        btn.title = 'Ditandai sebagai Pre-op (klik untuk batalkan)';
-      } else {
-        btn.classList.remove('active');
-        btn.textContent = 'Pre-op';
-        btn.title = 'Tandai pasien sebagai Pre-op (tersimpan 1 bulan)';
+  function x(e, n, t) {
+    e.setAttribute('data-ext-preop-marked', t ? 'true' : 'false');
+    let r = e.querySelector(`button[data-ext-preop-btn="${n}"]`);
+    r &&
+      ((r.disabled = !1),
+      r.classList.remove('pending'),
+      t
+        ? (r.classList.add('active'),
+          (r.textContent = '\u2713 Pre-op'),
+          (r.title = 'Ditandai sebagai Pre-op (klik untuk batalkan)'))
+        : (r.classList.remove('active'),
+          (r.textContent = 'Pre-op'),
+          (r.title = 'Tandai pasien sebagai Pre-op (tersimpan 1 bulan)')));
+    let o = e.querySelector('.ext-preop-badge');
+    if (t) {
+      if (!o) {
+        ((o = document.createElement('span')),
+          (o.className = 'ext-preop-badge'),
+          (o.textContent = 'PRE-OP'));
+        let i = e.cells[2] || e.cells[1] || e.cells[0];
+        i && i.appendChild(o);
       }
-    }
-    let badge = row.querySelector('.ext-preop-badge');
-    if (marked) {
-      if (!badge) {
-        badge = document.createElement('span');
-        badge.className = 'ext-preop-badge';
-        badge.textContent = 'PRE-OP';
-        const targetCell = row.cells[2] || row.cells[1] || row.cells[0];
-        if (targetCell) targetCell.appendChild(badge);
-      }
-    } else if (badge) {
-      badge.remove();
-    }
+    } else o && o.remove();
   }
-  var _scanning = false;
-  var _booted = false;
-  function scanAndInjectPreOpButtons() {
+  var C = !1,
+    se = !1;
+  function P() {
     try {
-      if (document.hidden || _scanning) return;
+      if (document.hidden || C) return;
     } catch {}
-    _scanning = true;
+    C = !0;
     try {
-      scanInner();
+      Fe();
     } finally {
-      _scanning = false;
+      C = !1;
     }
   }
-  function scanInner() {
-    const tables = document.querySelectorAll('table');
-    if (tables.length === 0) return;
-    const preOpMap = loadPreOpMap();
-    const now = Date.now();
-    tables.forEach((table) => {
-      const rows = table.querySelectorAll('tbody tr');
-      rows.forEach((row) => {
-        if (row.classList.contains('dataTables_empty')) return;
-        const idVisit = extractIdVisitFromRow(row);
-        if (!idVisit) return;
-        const btn = ensurePreOpButton(row, idVisit);
-        if (!btn) return;
-        if (_pendingToggle.has(idVisit)) {
-          paintPending(btn);
+  function Fe() {
+    let e = document.querySelectorAll('table');
+    if (e.length === 0) return;
+    let n = d(),
+      t = Date.now();
+    e.forEach((r) => {
+      r.querySelectorAll('tbody tr').forEach((i) => {
+        if (i.classList.contains('dataTables_empty')) return;
+        let a = L(i);
+        if (!a) return;
+        let s = je(i, a);
+        if (!s) return;
+        if (m.has(a)) {
+          ie(s);
           return;
         }
-        const isMarked = effectiveMarked(idVisit, preOpMap, now);
-        const done = row.getAttribute('data-ext-preop-marked') === String(isMarked);
-        if (done) return;
-        updateRowVisual(row, idVisit, isMarked);
+        let l = O(a, n, t);
+        i.getAttribute('data-ext-preop-marked') !== String(l) && x(i, a, l);
       });
     });
   }
-  function ensurePreOpButton(row, idVisit) {
-    let actionCell = Array.from(row.querySelectorAll('td')).find((td) => {
-      return td.querySelector('button, a, [onclick*="detail"]') !== null;
-    });
-    if (!actionCell) {
-      actionCell = row.cells[row.cells.length - 1];
-    }
-    if (!actionCell) return null;
-    let btn = row.querySelector(`button[data-ext-preop-btn="${idVisit}"]`);
-    if (btn) return btn;
-    btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'ext-preop-btn';
-    btn.setAttribute('data-ext-preop-btn', idVisit);
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (_pendingToggle.has(idVisit) || btn.disabled) return;
-      const info = extractPatientInfo(row);
-      const nextState = togglePreOp(idVisit, info);
-      if (nextState) delete _localUnmarkAt[idVisit];
-      else _localUnmarkAt[idVisit] = Date.now();
-      updateRowVisual(row, idVisit, nextState);
-      _pendingToggle.add(idVisit);
-      paintPending(btn);
-      const settle = () => {
-        _pendingToggle.delete(idVisit);
+  function je(e, n) {
+    let t = Array.from(e.querySelectorAll('td')).find(
+      (o) => o.querySelector('button, a, [onclick*="detail"]') !== null,
+    );
+    if ((t || (t = e.cells[e.cells.length - 1]), !t)) return null;
+    let r = e.querySelector(`button[data-ext-preop-btn="${n}"]`);
+    return (
+      r ||
+      ((r = document.createElement('button')),
+      (r.type = 'button'),
+      (r.className = 'ext-preop-btn'),
+      r.setAttribute('data-ext-preop-btn', n),
+      r.addEventListener('click', (o) => {
+        if ((o.preventDefault(), o.stopPropagation(), m.has(n) || r.disabled)) return;
+        let i = ae(e),
+          a = F(n, i);
+        (a ? delete g[n] : (g[n] = Date.now()), x(e, n, a), m.add(n), ie(r));
+        let s = () => {
+          m.delete(n);
+          try {
+            x(e, n, O(n, d()));
+          } catch {}
+        };
         try {
-          updateRowVisual(row, idVisit, effectiveMarked(idVisit, loadPreOpMap()));
-        } catch {}
-      };
-      try {
-        void Promise.resolve(
-          togglePreOpCentral(idVisit, nextState, {
-            norm: info.norm,
-            nama: info.nama,
-            noReg: info.noReg,
-            user: readPetugas(),
-          }),
-        ).then(settle, settle);
-      } catch {
-        settle();
-      }
-      window.setTimeout(() => {
-        if (_pendingToggle.has(idVisit)) settle();
-      }, PENDING_FALLBACK_MS);
-      void logUsage('mKlaimPreOp', nextState ? 'mark_preop' : 'unmark_preop', true, {
-        idVisit,
-        norm: info.norm,
-        nama: info.nama,
-      });
-    });
-    actionCell.appendChild(btn);
-    return btn;
-  }
-  function debouncedScan() {
-    if (_debounceTimer !== null) clearTimeout(_debounceTimer);
-    _debounceTimer = window.setTimeout(() => {
-      if (!_booted) return;
-      scanAndInjectPreOpButtons();
-    }, 100);
-  }
-  function initPreOpMarker() {
-    if (window.location.pathname.includes('/detail')) return;
-    if (_observer) _observer.disconnect();
-    _observer = new MutationObserver(() => {
-      debouncedScan();
-    });
-    _observer.observe(document.body, { childList: true, subtree: true });
-    runWhenIdle(() => {
-      _booted = true;
-      scanAndInjectPreOpButtons();
-      refreshCentral();
-      initCasemixBackfill();
-      if (_scanIntervalId !== null) clearInterval(_scanIntervalId);
-      _scanIntervalId = window.setInterval(() => {
-        scanAndInjectPreOpButtons();
-        refreshCentral();
-      }, 1500);
-    });
-    window.addEventListener('pagehide', () => {
-      try {
-        _observer?.disconnect();
-        if (_scanIntervalId !== null) {
-          window.clearInterval(_scanIntervalId);
-          _scanIntervalId = null;
+          Promise.resolve(j(n, a, { norm: i.norm, nama: i.nama, noReg: i.noReg, user: J() })).then(
+            s,
+            s,
+          );
+        } catch {
+          s();
         }
-      } catch {}
-    });
+        (window.setTimeout(() => {
+          m.has(n) && s();
+        }, He),
+          te('mKlaimPreOp', a ? 'mark_preop' : 'unmark_preop', !0, {
+            idVisit: n,
+            norm: i.norm,
+            nama: i.nama,
+          }));
+      }),
+      t.appendChild(r),
+      r)
+    );
   }
-  if (typeof g.featureModules !== 'undefined') {
-    g.featureModules.preOpMarker = {
+  function Ue() {
+    (M !== null && clearTimeout(M),
+      (M = window.setTimeout(() => {
+        se && P();
+      }, 100)));
+  }
+  function k() {
+    window.location.pathname.includes('/detail') ||
+      (h && h.disconnect(),
+      (h = new MutationObserver(() => {
+        Ue();
+      })),
+      h.observe(document.body, { childList: !0, subtree: !0 }),
+      ee(() => {
+        ((se = !0),
+          P(),
+          oe(),
+          Q(),
+          f !== null && clearInterval(f),
+          (f = window.setInterval(() => {
+            (P(), oe());
+          }, 1500)));
+      }),
+      window.addEventListener('pagehide', () => {
+        try {
+          (h?.disconnect(), f !== null && (window.clearInterval(f), (f = null)));
+        } catch {}
+      }));
+  }
+  typeof ne.featureModules < 'u' &&
+    (ne.featureModules.preOpMarker = {
       id: 'preOpMarker',
       name: 'Pre-op Marker (M-KLAIM)',
       description: 'Tandai pasien Pre-op pada kolom aksi tabel M-KLAIM (tersimpan 1 bulan)',
@@ -901,19 +773,10 @@ var __morbis_feature = (() => {
         ],
         exclude: [{ prefix: '/v2/m-klaim/detail' }],
       },
-      run: initPreOpMarker,
-    };
-  }
-  if (
-    window.location.pathname.startsWith('/v2/m-klaim') &&
-    !window.location.pathname.includes('/detail')
-  ) {
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initPreOpMarker);
-    } else {
-      initPreOpMarker();
-    }
-  }
-  return __toCommonJS(mKlaimPreOp_exports);
+      run: k,
+    });
+  window.location.pathname.startsWith('/v2/m-klaim') &&
+    !window.location.pathname.includes('/detail') &&
+    (document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', k) : k());
+  return fe(Ke);
 })();
-//# sourceMappingURL=mKlaimPreOp.js.map

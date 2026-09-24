@@ -834,19 +834,24 @@ import {
         val('td_pulang') ? 'td_pulang' : 'tensi',
       );
 
+    // Cek apakah pasien meninggal dunia - jika ya, lewati validasi vital signs pulang
+    var keadaanKeluar = val('keadaan_keluar');
+    var isMeninggal = keadaanKeluar && /meninggal\s*dunia/i.test(keadaanKeluar);
+
     var nadi = val('nadi_pulang');
-    if (nadi && !isEmptyish(nadi))
+    if (!isMeninggal && nadi && !isEmptyish(nadi))
       fail(isValidVital(nadi, 20, 250), 'Nadi pulang harus 20-250', 'nadi_pulang');
 
     var suhu = val('suhu_pulang');
-    if (suhu && !isEmptyish(suhu))
+    if (!isMeninggal && suhu && !isEmptyish(suhu))
       fail(isValidVital(suhu, 30, 45), 'Suhu pulang harus 30-45°C', 'suhu_pulang');
 
     var rr = val('rr_pulang');
-    if (rr && !isEmptyish(rr)) fail(isValidVital(rr, 4, 120), 'RR pulang harus 4-120', 'rr_pulang');
+    if (!isMeninggal && rr && !isEmptyish(rr))
+      fail(isValidVital(rr, 4, 120), 'RR pulang harus 4-120', 'rr_pulang');
 
     var spo2 = val('spo2_pulang');
-    if (spo2 && !isEmptyish(spo2))
+    if (!isMeninggal && spo2 && !isEmptyish(spo2))
       fail(isValidVital(spo2, 50, 100), 'SpO2 pulang harus 50-100%', 'spo2_pulang');
 
     fail(!!val('jenis_kasus'), 'Jenis kasus harus dipilih', 'jenis_kasus');
@@ -854,18 +859,29 @@ import {
     fail(!!val('cara_keluar'), 'Cara keluar harus dipilih', 'cara_keluar');
     fail(!!(val('tgl_keluar2') || val('tgl_keluar')), 'Tanggal keluar harus diisi', 'tgl_keluar2');
     var gcsE = val('gcs_e');
-    if (gcsE && !isEmptyish(gcsE)) fail(isValidVital(gcsE, 1, 4), 'GCS Eye harus 1-4', 'gcs_e');
+    if (!isMeninggal && gcsE && !isEmptyish(gcsE))
+      fail(isValidVital(gcsE, 1, 4), 'GCS Eye harus 1-4', 'gcs_e');
 
     var gcsM = val('gcs_m');
-    if (gcsM && !isEmptyish(gcsM)) fail(isValidVital(gcsM, 1, 6), 'GCS Motor harus 1-6', 'gcs_m');
+    if (!isMeninggal && gcsM && !isEmptyish(gcsM))
+      fail(isValidVital(gcsM, 1, 6), 'GCS Motor harus 1-6', 'gcs_m');
 
     var gcsV = val('gcs_v');
-    if (gcsV && !isEmptyish(gcsV)) fail(isValidVital(gcsV, 1, 5), 'GCS Verbal harus 1-5', 'gcs_v');
+    if (!isMeninggal && gcsV && !isEmptyish(gcsV))
+      fail(isValidVital(gcsV, 1, 5), 'GCS Verbal harus 1-5', 'gcs_v');
 
     // Inti GCS: total E+M+V tidak boleh lebih dari 15.
     var gcsE2 = val('gcs_e');
     var gcsM2 = val('gcs_m');
-    if (gcsE2 && gcsM2 && gcsV && !isEmptyish(gcsE2) && !isEmptyish(gcsM2) && !isEmptyish(gcsV)) {
+    if (
+      !isMeninggal &&
+      gcsE2 &&
+      gcsM2 &&
+      gcsV &&
+      !isEmptyish(gcsE2) &&
+      !isEmptyish(gcsM2) &&
+      !isEmptyish(gcsV)
+    ) {
       var gcsTotal = Number(gcsE2) + Number(gcsM2) + Number(gcsV);
       fail(
         isValidVital(String(gcsTotal), 3, 15),

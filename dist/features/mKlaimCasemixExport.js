@@ -1,429 +1,369 @@
 'use strict';
 var __morbis_feature = (() => {
-  var __defProp = Object.defineProperty;
-  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-  var __getOwnPropNames = Object.getOwnPropertyNames;
-  var __hasOwnProp = Object.prototype.hasOwnProperty;
-  var __export = (target, all) => {
-    for (var name in all) __defProp(target, name, { get: all[name], enumerable: true });
-  };
-  var __copyProps = (to, from, except, desc) => {
-    if ((from && typeof from === 'object') || typeof from === 'function') {
-      for (let key of __getOwnPropNames(from))
-        if (!__hasOwnProp.call(to, key) && key !== except)
-          __defProp(to, key, {
-            get: () => from[key],
-            enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable,
-          });
-    }
-    return to;
-  };
-  var __toCommonJS = (mod) => __copyProps(__defProp({}, '__esModule', { value: true }), mod);
-
-  // src/features/mKlaimCasemixExport.ts
-  var mKlaimCasemixExport_exports = {};
-  __export(mKlaimCasemixExport_exports, {
-    buildExportHtml: () => buildExportHtml,
-    collectKlaimRows: () => collectKlaimRows,
-    initCasemixExport: () => initCasemixExport,
-    readKlaimFilter: () => readKlaimFilter,
+  var y = Object.defineProperty;
+  var D = Object.getOwnPropertyDescriptor;
+  var N = Object.getOwnPropertyNames;
+  var $ = Object.prototype.hasOwnProperty;
+  var j = (e, t) => {
+      for (var n in t) y(e, n, { get: t[n], enumerable: !0 });
+    },
+    q = (e, t, n, r) => {
+      if ((t && typeof t == 'object') || typeof t == 'function')
+        for (let o of N(t))
+          !$.call(e, o) &&
+            o !== n &&
+            y(e, o, { get: () => t[o], enumerable: !(r = D(t, o)) || r.enumerable });
+      return e;
+    };
+  var H = (e) => q(y({}, '__esModule', { value: !0 }), e);
+  var rt = {};
+  j(rt, {
+    buildExportHtml: () => B,
+    collectKlaimRows: () => L,
+    initCasemixExport: () => h,
+    readKlaimFilter: () => I,
   });
-
-  // src/features/shared/types.ts
-  function getMorbisGlobals() {
+  function w() {
     return window;
   }
-
-  // src/features/shared/casemixApi.ts
-  var CASEMIX_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
-  var BASE_OVERRIDE_KEY = 'ext-farmasi-app-base';
-  var BATCH_MAX = 500;
-  var CENTRAL_TIMEOUT_MS = 25e3;
-  var CASEMIX_ALLOWED_HOSTS = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'];
-  var CASEMIX_ALLOWED_SUFFIX = '.rsudkotajambi.id';
-  function isAllowedCasemixBase(url) {
+  var U = 'http://dev.rsudkotajambi.id/rs',
+    V = 'ext-farmasi-app-base';
+  var W = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'],
+    G = '.rsudkotajambi.id';
+  function J(e) {
     try {
-      const u = new URL(url);
-      if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
-      const h = u.hostname.toLowerCase();
-      if (CASEMIX_ALLOWED_HOSTS.includes(h)) return true;
-      return h.endsWith(CASEMIX_ALLOWED_SUFFIX);
+      let t = new URL(e);
+      if (t.protocol !== 'http:' && t.protocol !== 'https:') return !1;
+      let n = t.hostname.toLowerCase();
+      return W.includes(n) ? !0 : n.endsWith(G);
     } catch {
-      return false;
+      return !1;
     }
   }
-  function resolveCasemixBase() {
+  function k() {
     try {
-      const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
-      if (ov && isAllowedCasemixBase(ov)) return ov.replace(/\/+$/, '');
+      let e = localStorage.getItem(V);
+      if (e && J(e)) return e.replace(/\/+$/, '');
     } catch {}
-    return CASEMIX_BASE_FALLBACK;
+    return U;
   }
-  function normalizeIds(ids) {
-    return [...new Set(ids.map((s) => String(s).trim()).filter(Boolean))].slice(0, BATCH_MAX);
+  function R(e) {
+    return [...new Set(e.map((t) => String(t).trim()).filter(Boolean))].slice(0, 500);
   }
-  async function fetchTimeout(url, init, fetcher = fetch) {
-    const ctrl = new AbortController();
-    const t = globalThis.setTimeout(() => ctrl.abort(), CENTRAL_TIMEOUT_MS);
+  async function X(e, t, n = fetch) {
+    let r = new AbortController(),
+      o = globalThis.setTimeout(() => r.abort(), 25e3);
     try {
-      return await fetcher(url, { ...init, signal: ctrl.signal });
+      return await n(e, { ...t, signal: r.signal });
     } finally {
-      globalThis.clearTimeout(t);
+      globalThis.clearTimeout(o);
     }
   }
-  async function getJson(path, fetcher = fetch) {
+  async function P(e, t = fetch) {
     try {
-      const res = await fetchTimeout(
-        resolveCasemixBase() + path,
+      let n = await X(
+        k() + e,
         { cache: 'no-store', credentials: 'omit', headers: { Accept: 'application/json' } },
-        fetcher,
+        t,
       );
-      if (!res.ok) return null;
-      return await res.json();
+      return n.ok ? await n.json() : null;
     } catch {
       return null;
     }
   }
-  async function fetchPreOpBatch(ids, fetcher = fetch) {
-    const list = normalizeIds(ids);
-    if (!list.length) return {};
-    const j = await getJson(
-      '/api/casemix/pre-op/list?ids=' + encodeURIComponent(list.join(',')),
-      fetcher,
-    );
-    if (j === null) return null;
-    if (!j.ok || !j.marks) return {};
-    return j.marks;
+  async function S(e, t = fetch) {
+    let n = R(e);
+    if (!n.length) return {};
+    let r = await P('/api/casemix/pre-op/list?ids=' + encodeURIComponent(n.join(',')), t);
+    return r === null ? null : !r.ok || !r.marks ? {} : r.marks;
   }
-  async function fetchRevisionsBatch(ids, fetcher = fetch) {
-    const list = normalizeIds(ids);
-    if (!list.length) return {};
-    const j = await getJson(
-      '/api/casemix/revisions/list?ids=' + encodeURIComponent(list.join(',')),
-      fetcher,
-    );
-    if (j === null) return null;
-    if (!j.ok || !j.revisions) return {};
-    return j.revisions;
+  async function E(e, t = fetch) {
+    let n = R(e);
+    if (!n.length) return {};
+    let r = await P('/api/casemix/revisions/list?ids=' + encodeURIComponent(n.join(',')), t);
+    return r === null ? null : !r.ok || !r.revisions ? {} : r.revisions;
   }
-
-  // src/features/shared/preOpStorage.ts
-  var PRE_OP_STORAGE_KEY = 'morbis_preop_markers';
-  var PRE_OP_TTL_MS = 30 * 24 * 60 * 60 * 1e3;
-  function defaultStore() {
+  var M = 'morbis_preop_markers';
+  function C() {
     try {
-      if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+      if (typeof window < 'u' && window.localStorage) return window.localStorage;
     } catch {}
     return null;
   }
-  function purgeExpiredPreOp(map, now = Date.now()) {
-    const result = {};
-    let count = 0;
-    for (const [id, item] of Object.entries(map)) {
-      if (item && item.markedAt && now - item.markedAt <= PRE_OP_TTL_MS) {
-        result[id] = item;
-      } else {
-        count++;
-      }
-    }
-    return { purged: result, count };
+  function z(e, t = Date.now()) {
+    let n = {},
+      r = 0;
+    for (let [o, i] of Object.entries(e))
+      i && i.markedAt && t - i.markedAt <= 2592e6 ? (n[o] = i) : r++;
+    return { purged: n, count: r };
   }
-  function loadPreOpMap(store = defaultStore(), now = Date.now()) {
-    if (!store) return {};
+  function A(e = C(), t = Date.now()) {
+    if (!e) return {};
     try {
-      const raw = store.getItem(PRE_OP_STORAGE_KEY);
-      if (!raw) return {};
-      const parsed = JSON.parse(raw);
-      if (typeof parsed !== 'object' || parsed === null) return {};
-      const { purged, count } = purgeExpiredPreOp(parsed, now);
-      if (count > 0) {
-        savePreOpMap(purged, store);
-      }
-      return purged;
+      let n = e.getItem(M);
+      if (!n) return {};
+      let r = JSON.parse(n);
+      if (typeof r != 'object' || r === null) return {};
+      let { purged: o, count: i } = z(r, t);
+      return (i > 0 && Y(o, e), o);
     } catch {
       return {};
     }
   }
-  function savePreOpMap(map, store = defaultStore()) {
-    if (!store) return;
-    try {
-      store.setItem(PRE_OP_STORAGE_KEY, JSON.stringify(map));
-    } catch {}
+  function Y(e, t = C()) {
+    if (t)
+      try {
+        t.setItem(M, JSON.stringify(e));
+      } catch {}
   }
-
-  // src/features/shared/whenIdle.ts
-  function runWhenIdle(cb, timeoutMs = 8e3) {
+  function _(e, t = 8e3) {
     try {
-      const ric = window.requestIdleCallback;
-      if (typeof ric === 'function') {
-        ric.call(window, cb, { timeout: timeoutMs });
+      let n = window.requestIdleCallback;
+      if (typeof n == 'function') {
+        n.call(window, e, { timeout: t });
         return;
       }
     } catch {}
-    window.setTimeout(cb, Math.min(timeoutMs, 1500));
+    window.setTimeout(e, Math.min(t, 1500));
   }
-
-  // src/features/mKlaimCasemixExport.ts
-  var g = getMorbisGlobals();
-  var FILTER_KEYS = [
-    ['tanggalAwal', ['tanggalAwal']],
-    ['tanggalAkhir', ['tanggalAkhir']],
-    ['norm', ['norm']],
-    ['nama', ['nama']],
-    ['reg', ['reg']],
-    ['billing', ['billing']],
-    ['status', ['status']],
-    ['idPoli', ['id_poli_cari', 'idPoli']],
-    ['poli', ['poli_cari', 'poli']],
-  ];
-  function readKlaimFilter(doc = document) {
-    const qs = new URLSearchParams(window.location.search);
-    const out = {};
-    for (const [key, names] of FILTER_KEYS) {
-      let v = '';
-      for (const n of names) {
-        const el = doc.getElementById(n);
-        if (el?.value !== void 0 && el.value !== '') {
-          v = el.value;
+  var T = w(),
+    Q = [
+      ['tanggalAwal', ['tanggalAwal']],
+      ['tanggalAkhir', ['tanggalAkhir']],
+      ['norm', ['norm']],
+      ['nama', ['nama']],
+      ['reg', ['reg']],
+      ['billing', ['billing']],
+      ['status', ['status']],
+      ['idPoli', ['id_poli_cari', 'idPoli']],
+      ['poli', ['poli_cari', 'poli']],
+    ];
+  function I(e = document) {
+    let t = new URLSearchParams(window.location.search),
+      n = {};
+    for (let [r, o] of Q) {
+      let i = '';
+      for (let a of o) {
+        let s = e.getElementById(a);
+        if (s?.value !== void 0 && s.value !== '') {
+          i = s.value;
           break;
         }
-        const byName = doc.querySelector(`[name="${n}"]`);
-        if (byName?.value !== void 0 && byName.value !== '') {
-          v = byName.value;
+        let u = e.querySelector(`[name="${a}"]`);
+        if (u?.value !== void 0 && u.value !== '') {
+          i = u.value;
           break;
         }
       }
-      if (!v) {
-        for (const n of names) {
-          const q = qs.get(n);
-          if (q !== null && q !== '' && q !== 'undefined') {
-            v = q;
+      if (!i)
+        for (let a of o) {
+          let s = t.get(a);
+          if (s !== null && s !== '' && s !== 'undefined') {
+            i = s;
             break;
           }
         }
-      }
-      out[key] = v;
+      n[r] = i;
     }
-    return out;
+    return n;
   }
-  function extractIdVisit(row) {
-    const els = row.querySelectorAll('button, a, [onclick], [data-id-visit], [data-id]');
-    for (const el of els) {
-      const attr = el.dataset.idVisit || el.dataset.idvisit || el.dataset.id;
-      if (attr && /^\d+$/.test(attr)) return attr;
-      const oc = el.getAttribute('onclick') || '';
-      const m = oc.match(/detail\(['"]?(\d+)['"]?\)/) || oc.match(/id_visit=(\d+)/);
-      if (m) return m[1];
-      const href = el.getAttribute('href') || '';
-      const mh = href.match(/id_visit=(\d+)/);
-      if (mh) return mh[1];
+  function Z(e) {
+    let t = e.querySelectorAll('button, a, [onclick], [data-id-visit], [data-id]');
+    for (let n of t) {
+      let r = n.dataset.idVisit || n.dataset.idvisit || n.dataset.id;
+      if (r && /^\d+$/.test(r)) return r;
+      let o = n.getAttribute('onclick') || '',
+        i = o.match(/detail\(['"]?(\d+)['"]?\)/) || o.match(/id_visit=(\d+)/);
+      if (i) return i[1];
+      let s = (n.getAttribute('href') || '').match(/id_visit=(\d+)/);
+      if (s) return s[1];
     }
     return null;
   }
-  function collectKlaimRows(doc = document) {
-    const rows = [];
-    const seen = /* @__PURE__ */ new Set();
-    for (const table of Array.from(doc.querySelectorAll('table'))) {
-      const headCells = Array.from(table.querySelectorAll('thead th')).map((th) =>
-        (th.textContent || '').toLowerCase(),
-      );
-      const hasHead = headCells.length > 0;
-      const colIdx = (re) => headCells.findIndex((h) => re.test(h));
-      const iNorm = hasHead ? colIdx(/no\s*rm|norm/) : 1;
-      const iNama = hasHead ? colIdx(/nama/) : 2;
-      const iReg = hasHead ? colIdx(/no\s*reg|registrasi/) : -1;
-      const iPoli = hasHead ? colIdx(/poli|unit/) : -1;
-      const iStatus = hasHead ? colIdx(/status/) : -1;
-      for (const tr of Array.from(table.querySelectorAll('tbody tr'))) {
-        if (tr.classList.contains('dataTables_empty')) continue;
-        const idVisit = extractIdVisit(tr);
-        if (!idVisit || seen.has(idVisit)) continue;
-        const tds = tr.querySelectorAll('td');
-        if (!tds.length) continue;
-        const cell = (i) => (i >= 0 && i < tds.length ? (tds[i].textContent || '').trim() : '');
-        seen.add(idVisit);
-        rows.push({
-          idVisit,
-          norm: cell(iNorm),
-          nama: cell(iNama),
-          noReg: cell(iReg),
-          poli: cell(iPoli),
-          status: cell(iStatus),
-        });
+  function L(e = document) {
+    let t = [],
+      n = new Set();
+    for (let r of Array.from(e.querySelectorAll('table'))) {
+      let o = Array.from(r.querySelectorAll('thead th')).map((g) =>
+          (g.textContent || '').toLowerCase(),
+        ),
+        i = o.length > 0,
+        a = (g) => o.findIndex((p) => g.test(p)),
+        s = i ? a(/no\s*rm|norm/) : 1,
+        u = i ? a(/nama/) : 2,
+        c = i ? a(/no\s*reg|registrasi/) : -1,
+        l = i ? a(/poli|unit/) : -1,
+        m = i ? a(/status/) : -1;
+      for (let g of Array.from(r.querySelectorAll('tbody tr'))) {
+        if (g.classList.contains('dataTables_empty')) continue;
+        let p = Z(g);
+        if (!p || n.has(p)) continue;
+        let b = g.querySelectorAll('td');
+        if (!b.length) continue;
+        let f = (x) => (x >= 0 && x < b.length ? (b[x].textContent || '').trim() : '');
+        (n.add(p),
+          t.push({ idVisit: p, norm: f(s), nama: f(u), noReg: f(c), poli: f(l), status: f(m) }));
       }
     }
-    return rows;
+    return t;
   }
-  function esc(s) {
-    return String(s ?? '-')
+  function d(e) {
+    return String(e ?? '-')
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
   }
-  function buildExportHtml(filter, rows, marks, revs, centralOk = true) {
-    const trs = rows
-      .map((r, i) => {
-        const m = marks[r.idVisit];
-        const rl = revs[r.idVisit] ?? [];
-        const last = rl[rl.length - 1];
-        return `<tr><td>${i + 1}</td><td>${esc(r.norm)}</td><td>${esc(r.nama)}</td><td>${esc(r.noReg)}</td><td>${esc(r.poli)}</td><td>${m ? 'YA' : '-'}</td><td>${esc(m?.marked_at)}</td><td>${esc(m?.user)}</td><td>${rl.length || '-'}</td><td>${esc(last?.keterangan)}</td></tr>`;
-      })
-      .join('');
-    const f = (l, v) => (v ? `<span style="margin-right:18px"><b>${l}:</b> ${esc(v)}</span>` : '');
+  function B(e, t, n, r, o = !0) {
+    let i = t
+        .map((s, u) => {
+          let c = n[s.idVisit],
+            l = r[s.idVisit] ?? [],
+            m = l[l.length - 1];
+          return `<tr><td>${u + 1}</td><td>${d(s.norm)}</td><td>${d(s.nama)}</td><td>${d(s.noReg)}</td><td>${d(s.poli)}</td><td>${c ? 'YA' : '-'}</td><td>${d(c?.marked_at)}</td><td>${d(c?.user)}</td><td>${l.length || '-'}</td><td>${d(m?.keterangan)}</td></tr>`;
+        })
+        .join(''),
+      a = (s, u) => (u ? `<span style="margin-right:18px"><b>${s}:</b> ${d(u)}</span>` : '');
     return (
-      `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Pre-op &amp; Revisi Klaim</title><style>body{font-family:Arial,sans-serif;font-size:12px;color:#111}h2{margin:0 0 4px}p{margin:0 0 12px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #555;padding:4px 6px;text-align:left;vertical-align:top}th{background:#eee}@media print{.no-print{display:none}}</style></head><body><h2>Laporan Pre-op &amp; Revisi Klaim BPJS</h2><p>${f('Periode', [filter.tanggalAwal, filter.tanggalAkhir].filter(Boolean).join(' s.d. '))}${f('NORM', filter.norm)}${f('Nama', filter.nama)}${f('Reg', filter.reg)}${f('Billing', filter.billing)}${f('Status', filter.status)}${f('Poli', filter.poli || filter.idPoli)}<br>Sumber: DB pusat ${esc(resolveCasemixBaseSafe())} \u2014 ${esc(/* @__PURE__ */ new Date().toLocaleString('id-ID'))}</p><table><thead><tr><th>No</th><th>No RM</th><th>Nama</th><th>No Reg</th><th>Poli</th><th>Pre-op</th><th>Waktu Tandai</th><th>Penanda</th><th>Jml Revisi</th><th>Revisi Terakhir</th></tr></thead><tbody>${trs}</tbody></table>` +
-      (centralOk
+      `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Pre-op &amp; Revisi Klaim</title><style>body{font-family:Arial,sans-serif;font-size:12px;color:#111}h2{margin:0 0 4px}p{margin:0 0 12px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #555;padding:4px 6px;text-align:left;vertical-align:top}th{background:#eee}@media print{.no-print{display:none}}</style></head><body><h2>Laporan Pre-op &amp; Revisi Klaim BPJS</h2><p>${a('Periode', [e.tanggalAwal, e.tanggalAkhir].filter(Boolean).join(' s.d. '))}${a('NORM', e.norm)}${a('Nama', e.nama)}${a('Reg', e.reg)}${a('Billing', e.billing)}${a('Status', e.status)}${a('Poli', e.poli || e.idPoli)}<br>Sumber: DB pusat ${d(tt())} \u2014 ${d(new Date().toLocaleString('id-ID'))}</p><table><thead><tr><th>No</th><th>No RM</th><th>Nama</th><th>No Reg</th><th>Poli</th><th>Pre-op</th><th>Waktu Tandai</th><th>Penanda</th><th>Jml Revisi</th><th>Revisi Terakhir</th></tr></thead><tbody>${i}</tbody></table>` +
+      (o
         ? ''
-        : `<p style="color:#b45309"><b>Catatan:</b> DB pusat tak terjangkau saat export (offline/sinyal lambat) \u2014 kolom Pre-op/Revisi dari cache lokal PC ini.</p>`) + // TANPA inline <script>: window about:blank mewarisi CSP extension
-      // yang memblokir 'unsafe-inline' → cetak dipicu dari opener
-      // (w.print() di processExport), bukan dari dalam dokumen.
-      `</body></html>`
+        : '<p style="color:#b45309"><b>Catatan:</b> DB pusat tak terjangkau saat export (offline/sinyal lambat) \u2014 kolom Pre-op/Revisi dari cache lokal PC ini.</p>') +
+      '</body></html>'
     );
   }
-  function resolveCasemixBaseSafe() {
+  function tt() {
     try {
-      return resolveCasemixBase();
+      return k();
     } catch {
       return '';
     }
   }
-  function setBtnDisabled(disabled) {
-    const btn = document.getElementById('ext-casemix-export-btn');
-    if (!btn) return;
-    if (disabled) {
-      btn.setAttribute('disabled', 'true');
-      btn.style.pointerEvents = 'none';
-      btn.style.opacity = '0.65';
-      btn.style.cursor = 'not-allowed';
-    } else {
-      btn.removeAttribute('disabled');
-      btn.style.pointerEvents = '';
-      btn.style.opacity = '';
-      btn.style.cursor = '';
+  function F(e) {
+    let t = document.getElementById('ext-casemix-export-btn');
+    t &&
+      (e
+        ? (t.setAttribute('disabled', 'true'),
+          (t.style.pointerEvents = 'none'),
+          (t.style.opacity = '0.65'),
+          (t.style.cursor = 'not-allowed'))
+        : (t.removeAttribute('disabled'),
+          (t.style.pointerEvents = ''),
+          (t.style.opacity = ''),
+          (t.style.cursor = '')));
+  }
+  function et(e) {
+    (K(), F(!0));
+    let t = document.createElement('div');
+    if (
+      ((t.id = 'ext-casemix-loading'),
+      (t.style.cssText =
+        'position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);'),
+      (t.innerHTML = `<div style="display:flex;align-items:center;gap:16px;padding:24px 32px;background:#fff;border-radius:12px;font-family:'Roboto','Segoe UI',system-ui,sans-serif"><div style="width:40px;height:40px;border:4px solid #e0e7ff;border-top-color:#175cd3;border-radius:50%;animation:ext-spin .8s linear infinite"></div><span id="ext-casemix-loading-text" style="font-size:16px;font-weight:600;color:#175cd3"></span></div>`),
+      (t.querySelector('#ext-casemix-loading-text').textContent = e),
+      !document.getElementById('ext-export-spinner-style'))
+    ) {
+      let n = document.createElement('style');
+      ((n.id = 'ext-export-spinner-style'),
+        (n.textContent = '@keyframes ext-spin{to{transform:rotate(360deg)}}'),
+        document.head.appendChild(n));
     }
+    document.body.appendChild(t);
   }
-  function showLoading(msg) {
-    hideLoading();
-    setBtnDisabled(true);
-    const ov = document.createElement('div');
-    ov.id = 'ext-casemix-loading';
-    ov.style.cssText =
-      'position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);';
-    ov.innerHTML = `<div style="display:flex;align-items:center;gap:16px;padding:24px 32px;background:#fff;border-radius:12px;font-family:'Roboto','Segoe UI',system-ui,sans-serif"><div style="width:40px;height:40px;border:4px solid #e0e7ff;border-top-color:#175cd3;border-radius:50%;animation:ext-spin .8s linear infinite"></div><span id="ext-casemix-loading-text" style="font-size:16px;font-weight:600;color:#175cd3"></span></div>`;
-    ov.querySelector('#ext-casemix-loading-text').textContent = msg;
-    if (!document.getElementById('ext-export-spinner-style')) {
-      const st = document.createElement('style');
-      st.id = 'ext-export-spinner-style';
-      st.textContent = '@keyframes ext-spin{to{transform:rotate(360deg)}}';
-      document.head.appendChild(st);
-    }
-    document.body.appendChild(ov);
+  function v(e) {
+    let t = document.getElementById('ext-casemix-loading-text');
+    t && (t.textContent = e);
   }
-  function updateLoading(msg) {
-    const el = document.getElementById('ext-casemix-loading-text');
-    if (el) el.textContent = msg;
+  function K() {
+    (F(!1), document.getElementById('ext-casemix-loading')?.remove());
   }
-  function hideLoading() {
-    setBtnDisabled(false);
-    document.getElementById('ext-casemix-loading')?.remove();
-  }
-  async function processExport() {
-    showLoading('Membaca filter & tabel klaim\u2026');
+  async function nt() {
+    et('Membaca filter & tabel klaim\u2026');
     try {
-      const filter = readKlaimFilter();
-      const rows = collectKlaimRows();
-      if (!rows.length) {
+      let e = I(),
+        t = L();
+      if (!t.length) {
         window.alert('Tidak ada baris klaim terbaca di halaman ini.');
         return;
       }
-      updateLoading(`Mengambil data pusat (${rows.length} kunjungan)\u2026`);
-      const ids = rows.map((r) => r.idVisit);
-      const [centralMarks, centralRevs] = await Promise.all([
-        fetchPreOpBatch(ids),
-        fetchRevisionsBatch(ids),
-      ]);
-      const localMap = loadPreOpMap();
-      const marks = {};
-      for (const r of rows) {
-        const c = centralMarks?.[r.idVisit];
-        if (c) {
-          marks[r.idVisit] = { marked_at: c.marked_at ?? null, user: c.user ?? null };
-        } else if (!centralMarks && localMap[r.idVisit]) {
-          marks[r.idVisit] = {
-            marked_at: new Date(localMap[r.idVisit].markedAt).toLocaleString('id-ID'),
-            user: null,
-          };
-        }
+      v(`Mengambil data pusat (${t.length} kunjungan)\u2026`);
+      let n = t.map((l) => l.idVisit),
+        [r, o] = await Promise.all([S(n), E(n)]),
+        i = A(),
+        a = {};
+      for (let l of t) {
+        let m = r?.[l.idVisit];
+        m
+          ? (a[l.idVisit] = { marked_at: m.marked_at ?? null, user: m.user ?? null })
+          : !r &&
+            i[l.idVisit] &&
+            (a[l.idVisit] = {
+              marked_at: new Date(i[l.idVisit].markedAt).toLocaleString('id-ID'),
+              user: null,
+            });
       }
-      updateLoading('Menyusun dokumen cetak\u2026');
-      const centralOk = centralMarks !== null && centralRevs !== null;
-      if (!centralOk) {
-        updateLoading('Pusat offline \u2014 memakai cache lokal\u2026');
-      }
-      const html = buildExportHtml(filter, rows, marks, centralRevs ?? {}, centralOk);
-      const w = window.open('', '_blank');
-      if (!w) {
+      v('Menyusun dokumen cetak\u2026');
+      let s = r !== null && o !== null;
+      s || v('Pusat offline \u2014 memakai cache lokal\u2026');
+      let u = B(e, t, a, o ?? {}, s),
+        c = window.open('', '_blank');
+      if (!c) {
         window.alert('Popup diblokir \u2014 izinkan popup untuk halaman ini lalu ulangi.');
         return;
       }
-      w.document.write(html);
-      w.document.close();
-      w.focus();
-      w.print();
+      (c.document.write(u), c.document.close(), c.focus(), c.print());
     } finally {
-      hideLoading();
+      K();
     }
   }
-  function injectExportButton() {
+  function O() {
     if (document.getElementById('ext-casemix-export-btn')) return;
-    const anchor = Array.from(
-      document.querySelectorAll('button, input[type="button"], input[type="submit"]'),
-    ).find((b) => {
-      const t = (b.value || b.textContent || '').trim().toLowerCase();
-      return /^(cari|tampil|tampilkan|filter|cetak|export)$/.test(t);
-    });
-    const morbisRef = document.querySelector('button[onclick*="loadTableExcel"]') ?? anchor;
-    const btn = document.createElement('button');
-    btn.id = 'ext-casemix-export-btn';
-    btn.type = 'button';
-    btn.className = morbisRef?.className || anchor?.className || 'btn btn-success';
-    const refStyle = morbisRef?.getAttribute('style') || anchor?.getAttribute('style');
-    if (refStyle) btn.setAttribute('style', refStyle);
-    btn.style.display = 'inline-block';
-    btn.style.marginLeft = '8px';
-    const icon = morbisRef?.querySelector('i') || anchor?.querySelector('i');
-    if (icon) {
-      btn.appendChild(icon.cloneNode(true));
-      btn.appendChild(document.createTextNode(' '));
-    }
-    btn.appendChild(document.createTextNode('Export Pre-op & Revisi (PDF)'));
-    btn.title = 'Export semua baris sesuai filter + data pusat Pre-op & Revisi ke PDF';
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      void processExport().catch((err) => {
-        window.console.warn('[mKlaimCasemixExport] gagal:', err);
-      });
-    });
-    if (anchor?.parentNode) {
-      anchor.parentNode.insertBefore(btn, anchor.nextSibling);
-    } else {
-      const table = document.querySelector('table');
-      table?.parentNode?.insertBefore(btn, table);
+    let e = Array.from(
+        document.querySelectorAll('button, input[type="button"], input[type="submit"]'),
+      ).find((i) => {
+        let a = (i.value || i.textContent || '').trim().toLowerCase();
+        return /^(cari|tampil|tampilkan|filter|cetak|export)$/.test(a);
+      }),
+      t = document.querySelector('button[onclick*="loadTableExcel"]') ?? e,
+      n = document.createElement('button');
+    ((n.id = 'ext-casemix-export-btn'),
+      (n.type = 'button'),
+      (n.className = t?.className || e?.className || 'btn btn-success'));
+    let r = t?.getAttribute('style') || e?.getAttribute('style');
+    (r && n.setAttribute('style', r),
+      (n.style.display = 'inline-block'),
+      (n.style.marginLeft = '8px'));
+    let o = t?.querySelector('i') || e?.querySelector('i');
+    if (
+      (o && (n.appendChild(o.cloneNode(!0)), n.appendChild(document.createTextNode(' '))),
+      n.appendChild(document.createTextNode('Export Pre-op & Revisi (PDF)')),
+      (n.title = 'Export semua baris sesuai filter + data pusat Pre-op & Revisi ke PDF'),
+      n.addEventListener('click', (i) => {
+        (i.preventDefault(),
+          i.stopPropagation(),
+          nt().catch((a) => {
+            window.console.warn('[mKlaimCasemixExport] gagal:', a);
+          }));
+      }),
+      e?.parentNode)
+    )
+      e.parentNode.insertBefore(n, e.nextSibling);
+    else {
+      let i = document.querySelector('table');
+      i?.parentNode?.insertBefore(n, i);
     }
   }
-  function initCasemixExport() {
-    if (window.location.pathname.includes('/detail')) return;
-    runWhenIdle(injectExportButton);
-    window.setInterval(() => {
-      try {
-        if (document.hidden) return;
-      } catch {}
-      injectExportButton();
-    }, 3e3);
+  function h() {
+    window.location.pathname.includes('/detail') ||
+      (_(O),
+      window.setInterval(() => {
+        try {
+          if (document.hidden) return;
+        } catch {}
+        O();
+      }, 3e3));
   }
-  if (typeof g.featureModules !== 'undefined') {
-    g.featureModules.casemixExport = {
+  typeof T.featureModules < 'u' &&
+    (T.featureModules.casemixExport = {
       id: 'casemixExport',
       name: 'Export Pre-op & Revisi (M-KLAIM)',
       description: 'Export PDF Pre-op & Revisi mengikuti filter halaman klaim (data DB pusat)',
@@ -435,22 +375,13 @@ var __morbis_feature = (() => {
         ],
         exclude: [{ prefix: '/v2/m-klaim/detail' }],
       },
-      run: initCasemixExport,
-    };
-  }
+      run: h,
+    });
   try {
-    if (
-      typeof window !== 'undefined' &&
+    typeof window < 'u' &&
       window.location?.pathname?.startsWith('/v2/m-klaim') &&
-      !window.location.pathname.includes('/detail')
-    ) {
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initCasemixExport);
-      } else {
-        initCasemixExport();
-      }
-    }
+      !window.location.pathname.includes('/detail') &&
+      (document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', h) : h());
   } catch {}
-  return __toCommonJS(mKlaimCasemixExport_exports);
+  return H(rt);
 })();
-//# sourceMappingURL=mKlaimCasemixExport.js.map
