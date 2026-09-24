@@ -11,60 +11,82 @@ var __morbis_feature = (() => {
   var _textScanTimeoutId = null;
   var _observer = null;
   var _observerTimer = null;
-  var _delegatedInstalled = false;
+  var _listenersInstalled = false;
+  var _handledEvents = /* @__PURE__ */ new WeakSet();
+  var MODE_ATTR = 'data-ext-open-detail-mode';
   var OPEN_DETAIL_CONFIG = {
     urlPatterns: [
       '/v2/m-klaim/detail-v2-refaktor?id_visit={id}&tanggalAwal={tanggalAwal}&tanggalAkhir={tanggalAkhir}&norm=&nama=&reg=&billing=all&status=all&id_poli_cari=&poli_cari=',
     ],
     autoDate: true,
     dateFormat: 'id',
+    /** Selektor CASES-SENSITIVE-safe. ` i` = case-insensitive attribute match. */
     buttonSelectors: [
-      'button[onclick^="detail("]',
-      'a[onclick^="detail("]',
+      'button[onclick*="detail" i]',
+      'a[onclick*="detail" i]',
+      '[onclick*="detail" i]',
+      'button[onclick*="id_visit" i]',
+      'a[onclick*="id_visit" i]',
+      'a[href*="id_visit" i]',
+      '[href*="id_visit" i]',
+      'a[href*="detail-v2-refaktor" i]',
       '[data-action="detail"]',
-      '[data-id-visit]',
-      '.btn-detail',
       '[data-toggle="detail"]',
+      '[data-detail-id]',
+      '[data-id-visit]',
+      '[data-idvisit]',
+      '.btn-detail',
     ],
     debug: false,
   };
-  function extractIdFromOnclick(attrValue) {
+  function extractIdFromAttr(attrValue) {
     if (!attrValue) return null;
-    const patterns = [/detail\((\d+)\)/, /detail\(['"](\d+)['"]\)/, /id_visit=(\d+)/, /id=(\d+)/];
+    const patterns = [
+      /detail[^(]*\(\s*['"]?(\d+)/i,
+      /id_visit\s*=\s*['"]?(\d+)/i,
+      /[?&](?:id_visit|visit|id)\s*=\s*['"]?(\d+)/i,
+    ];
     for (const pattern of patterns) {
       const match = attrValue.match(pattern);
       if (match) return match[1];
     }
     return null;
   }
-  function extractIdFromElement(element) {
-    const el = element;
-    if (el.dataset.idVisit) return el.dataset.idVisit;
-    if (el.dataset.idvisit) return el.dataset.idvisit;
-    if (el.dataset.id) return el.dataset.id;
-    const hrefAttr = element.getAttribute('href');
-    if (hrefAttr) {
-      const id = extractIdFromOnclick(hrefAttr);
-      if (id) return id;
+  function extractIdFromDataset(el) {
+    const el2 = el;
+    const d = el2.dataset;
+    const candidates = [
+      d.idVisit,
+      d.idvisit,
+      d.idVisitId,
+      d.id_visit,
+      d.detailId,
+      d.detailid,
+      d.id,
+      el.getAttribute('data-id'),
+      el.getAttribute('data-id-visit'),
+      el.getAttribute('data-detail-id'),
+    ];
+    for (const v of candidates) {
+      if (v && /^\d+$/.test(v)) return v;
     }
-    const onclickAttr = element.getAttribute('onclick');
-    if (onclickAttr) {
-      const id = extractIdFromOnclick(onclickAttr);
+    return null;
+  }
+  function extractIdFromElement(element) {
+    const fromDataset = extractIdFromDataset(element);
+    if (fromDataset) return fromDataset;
+    const valueAttr = element.getAttribute('value');
+    if (valueAttr && /^\d+$/.test(valueAttr)) return valueAttr;
+    for (const attr of ['onclick', 'href', 'data-onclick', 'data-href', 'data-url']) {
+      const id = extractIdFromAttr(element.getAttribute(attr));
       if (id) return id;
     }
     let parent = element.parentElement;
     for (let i = 0; i < 5 && parent; i++) {
-      const p = parent;
-      if (p.dataset.idVisit) return p.dataset.idVisit;
-      if (p.dataset.idvisit) return p.dataset.idvisit;
-      const parentHref = parent.getAttribute('href');
-      if (parentHref) {
-        const id = extractIdFromOnclick(parentHref);
-        if (id) return id;
-      }
-      const parentOnclick = parent.getAttribute('onclick');
-      if (parentOnclick) {
-        const id = extractIdFromOnclick(parentOnclick);
+      const pDataset = extractIdFromDataset(parent);
+      if (pDataset) return pDataset;
+      for (const attr of ['onclick', 'href', 'data-id-visit', 'data-detail-id']) {
+        const id = extractIdFromAttr(parent.getAttribute(attr));
         if (id) return id;
       }
       parent = parent.parentElement;
@@ -105,20 +127,27 @@ var __morbis_feature = (() => {
   function isModifiedEvent(element) {
     return element.dataset.detailModified === 'true';
   }
+  function getFeatureConfig() {
+    return g.currentConfig?.features?.openDetailInNewTab;
+  }
   function getOpenDetailMode() {
-    return g.currentConfig?.features?.openDetailInNewTab?.mode || 'same-tab';
+    return getFeatureConfig()?.mode || 'same-tab';
+  }
+  function isFeatureActive() {
+    if (!getFeatureConfig()?.enabled) return false;
+    return g.ExtensionCore.isFeatureAllowed('openDetailInNewTab');
   }
   function openDetailUrl(id) {
     const url = generateUrl(id);
     const mode = getOpenDetailMode();
-    console.log(`[OpenDetail] Membuka detail ID: ${id}, mode: ${mode}`);
+    console.log(`[OpenDetail] Buka detail ID: ${id}, mode: ${mode}`);
     if (mode === 'new-tab') {
       window.open(url, '_blank', 'noopener');
     } else {
       window.location.href = url;
     }
   }
-  function findDetailButton(target) {
+  function findDetailTrigger(target) {
     const el = target;
     if (!el || typeof el.closest !== 'function') return null;
     for (const selector of OPEN_DETAIL_CONFIG.buttonSelectors) {
@@ -127,26 +156,28 @@ var __morbis_feature = (() => {
         if (hit) return hit;
       } catch {}
     }
-    const btn = el.closest('button, a');
-    if (btn) {
-      const text = (btn.textContent || '').trim().toLowerCase();
-      if (text === 'detail' || text === 'view' || text === 'lihat') {
-        return btn;
-      }
+    const btn = el.closest('button,a,[onclick],[role="button"]');
+    if (btn && /\bdetail\b/i.test(btn.textContent || '')) {
+      return btn;
     }
     return null;
   }
-  function _delegatedDetailClick(e) {
-    if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return;
-    if (
-      !g.currentConfig?.features?.openDetailInNewTab?.enabled ||
-      !g.ExtensionCore.isFeatureAllowed('openDetailInNewTab')
-    )
+  function handleDetailClick(e) {
+    if (_handledEvents.has(e)) return;
+    if (e instanceof MouseEvent) {
+      if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    }
+    if (!isFeatureActive()) return;
+    const trigger = findDetailTrigger(e.target);
+    if (!trigger) return;
+    const id = extractIdFromElement(trigger);
+    if (!id) {
+      if (OPEN_DETAIL_CONFIG.debug) {
+        console.warn('[OpenDetail] Detail terdeteksi tapi ID gagal diekstrak:', trigger);
+      }
       return;
-    const btn = findDetailButton(e.target);
-    if (!btn) return;
-    const id = extractIdFromElement(btn);
-    if (!id) return;
+    }
+    _handledEvents.add(e);
     e.preventDefault();
     e.stopPropagation();
     e.stopImmediatePropagation();
@@ -169,15 +200,12 @@ var __morbis_feature = (() => {
     btn.removeAttribute('onclick');
     btn.removeAttribute('target');
     if (btn.tagName.toLowerCase() === 'a') {
-      const url = generateUrl(id);
-      btn.setAttribute('href', url);
+      btn.setAttribute('href', generateUrl(id));
     }
     btn.addEventListener(
       'click',
       function (e) {
-        if (e.ctrlKey || e.metaKey) {
-          return;
-        }
+        if (e instanceof MouseEvent && (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey)) return;
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
@@ -185,17 +213,12 @@ var __morbis_feature = (() => {
       },
       true,
     );
-    btn.dataset.detailNewTab = 'true';
     if (OPEN_DETAIL_CONFIG.debug) {
       console.log(`[OpenDetail] Tombol detail ID: ${id} berhasil di-override`);
     }
   }
   function overrideDetailButtons() {
-    if (
-      !g.currentConfig?.features?.openDetailInNewTab?.enabled ||
-      !g.ExtensionCore.isFeatureAllowed('openDetailInNewTab')
-    )
-      return;
+    if (!isFeatureActive()) return;
     for (const selector of OPEN_DETAIL_CONFIG.buttonSelectors) {
       try {
         const buttons = document.querySelectorAll(selector);
@@ -219,7 +242,6 @@ var __morbis_feature = (() => {
         btn.setAttribute('target', originalTarget);
       }
       delete btn.dataset.detailModified;
-      delete btn.dataset.detailNewTab;
       delete btn.dataset.originalOnclick;
       delete btn.dataset.originalTarget;
       const newBtn = btn.cloneNode(true);
@@ -229,31 +251,42 @@ var __morbis_feature = (() => {
     });
   }
   function overrideButtonsByText() {
-    if (!g.currentConfig?.features?.openDetailInNewTab?.enabled) return;
-    const buttons = document.querySelectorAll('button, a');
-    buttons.forEach((btn) => {
-      if (btn.textContent?.trim().toLowerCase() === 'detail' && !isModifiedEvent(btn)) {
+    if (!isFeatureActive()) return;
+    document.querySelectorAll('button, a, [onclick]').forEach((btn) => {
+      if (/\bdetail\b/i.test(btn.textContent || '') && !isModifiedEvent(btn)) {
         overrideDetailButton(btn);
       }
     });
     const tableCells = document.querySelectorAll('td');
     tableCells.forEach((cell) => {
-      if (cell.textContent?.trim().toLowerCase().includes('detail')) {
-        const elements = cell.querySelectorAll('button, a, span, div');
+      if ((cell.textContent || '').toLowerCase().includes('detail')) {
+        const elements = cell.querySelectorAll('button, a, span, div, [onclick]');
         elements.forEach((el) => {
-          const text = el.textContent?.trim().toLowerCase();
-          if (!isModifiedEvent(el) && (text === 'detail' || text === 'view' || text === 'lihat')) {
+          const text = (el.textContent || '').trim().toLowerCase();
+          if (
+            !isModifiedEvent(el) &&
+            (text === 'detail' || text === 'view' || text === 'lihat' || /\bdetail\b/.test(text))
+          ) {
             overrideDetailButton(el);
           }
         });
       }
     });
   }
+  function installListeners() {
+    if (_listenersInstalled) return;
+    window.addEventListener('click', handleDetailClick, true);
+    document.addEventListener('click', handleDetailClick, true);
+    _listenersInstalled = true;
+  }
+  function uninstallListeners() {
+    if (!_listenersInstalled) return;
+    window.removeEventListener('click', handleDetailClick, true);
+    document.removeEventListener('click', handleDetailClick, true);
+    _listenersInstalled = false;
+  }
   function _cleanupOpenDetail() {
-    if (_delegatedInstalled) {
-      document.removeEventListener('click', _delegatedDetailClick, true);
-      _delegatedInstalled = false;
-    }
+    uninstallListeners();
     if (_scanIntervalId !== null) {
       clearInterval(_scanIntervalId);
       _scanIntervalId = null;
@@ -272,20 +305,20 @@ var __morbis_feature = (() => {
     }
   }
   function runOpenDetailInNewTabFeature() {
-    const isEnabled = g.currentConfig?.features?.openDetailInNewTab?.enabled;
+    const isEnabled = isFeatureActive();
     _cleanupOpenDetail();
     try {
       if (isEnabled) {
-        console.log('[OpenDetail] Feature ENABLED, mode:', getOpenDetailMode());
-        if (!_delegatedInstalled) {
-          document.addEventListener('click', _delegatedDetailClick, true);
-          _delegatedInstalled = true;
-        }
+        const mode = getOpenDetailMode();
+        console.log('[OpenDetail] Feature ENABLED, mode:', mode);
+        document.documentElement.setAttribute(MODE_ATTR, mode);
+        installListeners();
         overrideDetailButtons();
         _textScanTimeoutId = window.setTimeout(() => overrideButtonsByText(), 500);
         _scanIntervalId = window.setInterval(() => overrideDetailButtons(), 2e3);
       } else {
         console.log('[OpenDetail] Feature DISABLED');
+        document.documentElement.removeAttribute(MODE_ATTR);
         restoreDetailButtons();
       }
       _observer = new MutationObserver(() => {
@@ -309,7 +342,17 @@ var __morbis_feature = (() => {
       id: 'openDetailInNewTab',
       name: 'Open Detail Mode',
       description: 'Buka detail di tab yang sama / tab baru sesuai mode (cegat handler bawaan)',
-      match: { prefix: '/v2/m-klaim/' },
+      // PENTING: prefix TANPA slash akhir. normalizePath() menghapus slash
+      // akhir, jadi '/v2/m-klaim/' TIDAK akan match '/v2/m-klaim' → fitur
+      // ter-skip dan mode jadi tidak berefek.
+      match: {
+        oneOf: [
+          { prefix: '/v2/m-klaim' },
+          { prefix: '/billing/pembayaran-new' },
+          { prefix: '/inventory/penjualan-bebas' },
+          { prefix: '/inventory/resep/penerimaan' },
+        ],
+      },
       run: runOpenDetailInNewTabFeature,
     };
   } else {

@@ -61,6 +61,7 @@ async function compileFeatureFiles() {
     'batchDeleteFiles.ts',
     'batchUploadUrl.ts',
     'openDetail.ts',
+    'openDetailWindowOpen.ts',
     'toolbar.ts',
     'inputHasilPa.ts',
     'laporanKasirTime.ts',

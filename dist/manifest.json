@@ -30,7 +30,20 @@
       "matches": [
         "http://*/v2/m-klaim*",
         "http://*/billing/pembayaran-new/billing-verifikasi*",
-        "http://*/inventory/penjualan-bebas*"
+        "http://*/inventory/penjualan-bebas*",
+        "http://*/inventory/resep/penerimaan*"
+      ],
+      "js": ["features/openDetailWindowOpen.js"],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "http://*/v2/m-klaim*",
+        "http://*/billing/pembayaran-new/billing-verifikasi*",
+        "http://*/inventory/penjualan-bebas*",
+        "http://*/inventory/resep/penerimaan*"
       ],
       "js": [
         "core.js",

@@ -30,7 +30,20 @@
       "matches": [
         "http://*/v2/m-klaim*",
         "http://*/billing/pembayaran-new/billing-verifikasi*",
-        "http://*/inventory/penjualan-bebas*"
+        "http://*/inventory/penjualan-bebas*",
+        "http://*/inventory/resep/penerimaan*"
+      ],
+      "js": ["features/openDetailWindowOpen.js"],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "http://*/v2/m-klaim*",
+        "http://*/billing/pembayaran-new/billing-verifikasi*",
+        "http://*/inventory/penjualan-bebas*",
+        "http://*/inventory/resep/penerimaan*"
       ],
       "js": [
         "core.js",
@@ -50,9 +63,7 @@
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/billing/pembayaran-new/billing-verifikasi*"
-      ],
+      "matches": ["http://*/billing/pembayaran-new/billing-verifikasi*"],
       "js": [
         "core.js",
         "features/shared/cookieFilterStorage.js",
@@ -63,14 +74,8 @@
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/inventory/penjualan-resep-edit/*"
-      ],
-      "js": [
-        "core.js",
-        "features/penerimaan_resep/main.js",
-        "init.js"
-      ],
+      "matches": ["http://*/inventory/penjualan-resep-edit/*"],
+      "js": ["core.js", "features/penerimaan_resep/main.js", "init.js"],
       "run_at": "document_end",
       "all_frames": false
     },
@@ -96,41 +101,26 @@
         "http://*/admisi/pelaksanaan_pelayanan/edit-operasi*",
         "http://*/admisi/detail-rawat-inap/edit-operasi*"
       ],
-      "js": [
-        "features/pindahOperasi/main.js"
-      ],
+      "js": ["features/pindahOperasi/main.js"],
       "run_at": "document_end",
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/inventory/penjualan-bebas*"
-      ],
-      "js": [
-        "features/fixJasaPelayanan.js"
-      ],
+      "matches": ["http://*/inventory/penjualan-bebas*"],
+      "js": ["features/fixJasaPelayanan.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/admisi/pengajuan_konsultasi/konsultasi*"
-      ],
-      "js": [
-        "core.js",
-        "init.js"
-      ],
+      "matches": ["http://*/admisi/pengajuan_konsultasi/konsultasi*"],
+      "js": ["core.js", "init.js"],
       "run_at": "document_end",
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/admisi/pengajuan_konsultasi/konsultasi*"
-      ],
-      "js": [
-        "features/consultationEnhancer.js"
-      ],
+      "matches": ["http://*/admisi/pengajuan_konsultasi/konsultasi*"],
+      "js": ["features/consultationEnhancer.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
@@ -142,20 +132,14 @@
         "http://*/rekam-medik/rm-rawat-jalan-new*",
         "http://*/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new*"
       ],
-      "js": [
-        "features/resumeValidator.js"
-      ],
+      "js": ["features/resumeValidator.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/admisi/detail-rawat-inap/surat-pengantar-ri*"
-      ],
-      "js": [
-        "features/ttvEditor.js"
-      ],
+      "matches": ["http://*/admisi/detail-rawat-inap/surat-pengantar-ri*"],
+      "js": ["features/ttvEditor.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
@@ -166,10 +150,7 @@
         "http://*/admisi/pelaksanaan_pelayanan/rm-rawat-jalan-new*",
         "http://*/rekam-medik/rm-rawat-jalan-new*"
       ],
-      "js": [
-        "features/resumeTab.js",
-        "features/resumeRanapTab.js"
-      ],
+      "js": ["features/resumeTab.js", "features/resumeRanapTab.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
@@ -180,20 +161,13 @@
         "http://*/public/counter-antrian/view-antrian*",
         "http://*/counter-antrian/counter*"
       ],
-      "js": [
-        "core.js",
-        "init.js"
-      ],
+      "js": ["core.js", "init.js"],
       "run_at": "document_end",
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/public/mesin-antrian*"
-      ],
-      "js": [
-        "features/antrianLoader.js"
-      ],
+      "matches": ["http://*/public/mesin-antrian*"],
+      "js": ["features/antrianLoader.js"],
       "run_at": "document_start",
       "all_frames": false
     },
@@ -203,31 +177,20 @@
         "http://*/public/counter-antrian/view-antrian*",
         "http://*/counter-antrian/counter*"
       ],
-      "js": [
-        "features/antrianTools.js"
-      ],
+      "js": ["features/antrianTools.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/public/antrian-farmasi-v2/view-call-websocet-v2*"
-      ],
-      "js": [
-        "core.js",
-        "init.js"
-      ],
+      "matches": ["http://*/public/antrian-farmasi-v2/view-call-websocet-v2*"],
+      "js": ["core.js", "init.js"],
       "run_at": "document_end",
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/public/antrian-farmasi-v2/view-call-websocet-v2*"
-      ],
-      "js": [
-        "features/antrianFarmasiDisplayApp.js"
-      ],
+      "matches": ["http://*/public/antrian-farmasi-v2/view-call-websocet-v2*"],
+      "js": ["features/antrianFarmasiDisplayApp.js"],
       "run_at": "document_start",
       "world": "MAIN",
       "all_frames": false
@@ -242,211 +205,123 @@
         "http://*/laboratorium/input-hasil/input-hasil-pa*",
         "http://*/laboratorium/input-hasil/view-lab*"
       ],
-      "js": [
-        "core.js",
-        "init.js"
-      ],
+      "js": ["core.js", "init.js"],
       "run_at": "document_end",
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/laboratorium/input-hasil/input-hasil-pa*"
-      ],
-      "js": [
-        "features/inputHasilPa.js"
-      ],
+      "matches": ["http://*/laboratorium/input-hasil/input-hasil-pa*"],
+      "js": ["features/inputHasilPa.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/laboratorium/input-hasil/view-lab*"
-      ],
-      "js": [
-        "features/cancelButton.js"
-      ],
+      "matches": ["http://*/laboratorium/input-hasil/view-lab*"],
+      "js": ["features/cancelButton.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/billing/pembayaran-new/index*"
-      ],
-      "js": [
-        "core.js",
-        "init.js"
-      ],
+      "matches": ["http://*/billing/pembayaran-new/index*"],
+      "js": ["core.js", "init.js"],
       "run_at": "document_end",
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/billing/pembayaran-new/index*"
-      ],
-      "js": [
-        "features/billingAdjustment.js"
-      ],
+      "matches": ["http://*/billing/pembayaran-new/index*"],
+      "js": ["features/billingAdjustment.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/admisi/radiologi/pemeriksaan*"
-      ],
-      "js": [
-        "core.js",
-        "init.js"
-      ],
+      "matches": ["http://*/admisi/radiologi/pemeriksaan*"],
+      "js": ["core.js", "init.js"],
       "run_at": "document_end",
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/admisi/radiologi/pemeriksaan*"
-      ],
-      "js": [
-        "features/cancelButton.js"
-      ],
+      "matches": ["http://*/admisi/radiologi/pemeriksaan*"],
+      "js": ["features/cancelButton.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/inventory/resep/penerimaan/detail*"
-      ],
-      "js": [
-        "core.js",
-        "init.js"
-      ],
+      "matches": ["http://*/inventory/resep/penerimaan/detail*"],
+      "js": ["core.js", "init.js"],
       "run_at": "document_end",
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/inventory/resep/penerimaan/detail*"
-      ],
-      "js": [
-        "features/farmasiAntrolShift.js"
-      ],
+      "matches": ["http://*/inventory/resep/penerimaan/detail*"],
+      "js": ["features/farmasiAntrolShift.js"],
       "run_at": "document_start",
       "world": "MAIN",
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/inventory/penjualan-resep-edit/detail*"
-      ],
-      "js": [
-        "features/penjualanResepAntrian.js"
-      ],
+      "matches": ["http://*/inventory/penjualan-resep-edit/detail*"],
+      "js": ["features/penjualanResepAntrian.js"],
       "run_at": "document_start",
       "world": "MAIN",
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/inventory/resep/penerimaan"
-      ],
-      "js": [
-        "core.js",
-        "init.js"
-      ],
+      "matches": ["http://*/inventory/resep/penerimaan"],
+      "js": ["core.js", "init.js"],
       "run_at": "document_end",
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/inventory/resep/penerimaan*"
-      ],
-      "js": [
-        "features/penerimaanExport.js"
-      ],
+      "matches": ["http://*/inventory/resep/penerimaan*"],
+      "js": ["features/penerimaanExport.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/inventory/resep/penerimaan"
-      ],
-      "js": [
-        "features/penerimaanAntrolCetak.js"
-      ],
+      "matches": ["http://*/inventory/resep/penerimaan"],
+      "js": ["features/penerimaanAntrolCetak.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/inventory/print/telaah-resep-manap*"
-      ],
-      "js": [
-        "core.js",
-        "init.js"
-      ],
+      "matches": ["http://*/inventory/print/telaah-resep-manap*"],
+      "js": ["core.js", "init.js"],
       "run_at": "document_end"
     },
     {
-      "matches": [
-        "http://*/inventory/print/telaah-resep-manap*"
-      ],
-      "js": [
-        "features/telaahResepPrint.js"
-      ],
+      "matches": ["http://*/inventory/print/telaah-resep-manap*"],
+      "js": ["features/telaahResepPrint.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/laboratorium/print/hasil-lab-patologi-manap*"
-      ],
-      "js": [
-        "core.js",
-        "init.js"
-      ],
+      "matches": ["http://*/laboratorium/print/hasil-lab-patologi-manap*"],
+      "js": ["core.js", "init.js"],
       "run_at": "document_end",
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/laboratorium/print/hasil-lab-patologi-manap*"
-      ],
-      "js": [
-        "features/paLabPrint.js"
-      ],
+      "matches": ["http://*/laboratorium/print/hasil-lab-patologi-manap*"],
+      "js": ["features/paLabPrint.js"],
       "run_at": "document_idle",
       "world": "MAIN",
       "all_frames": false
     },
     {
-      "matches": [
-        "http://*/antrian-farmasi/v2*"
-      ],
-      "js": [
-        "core.js",
-        "features/antrianFarmasiOperator.js",
-        "init.js"
-      ],
+      "matches": ["http://*/antrian-farmasi/v2*"],
+      "js": ["core.js", "features/antrianFarmasiOperator.js", "init.js"],
       "run_at": "document_idle"
     }
   ],
-  "permissions": [
-    "activeTab",
-    "alarms",
-    "offscreen",
-    "scripting",
-    "sidePanel",
-    "storage"
-  ],
-  "host_permissions": [
-    "http://*/*"
-  ],
+  "permissions": ["activeTab", "alarms", "offscreen", "scripting", "sidePanel", "storage"],
+  "host_permissions": ["http://*/*"],
   "web_accessible_resources": [
     {
       "resources": [
@@ -455,9 +330,7 @@
         "features/farmasiRecallDeleg.js",
         "features/fetchWatchdog.js"
       ],
-      "matches": [
-        "http://*/*"
-      ]
+      "matches": ["http://*/*"]
     }
   ]
 }

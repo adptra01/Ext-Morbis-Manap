@@ -1,20 +1,46 @@
-/** openDetail.ts — Fixed: interval & MutationObserver lifecycle management
+/** openDetail.ts — Open Detail Mode (tab sama / tab baru sesuai config)
  *
- * CHANGES:
- * - setInterval(overrideDetailButtons, 2000) → disimpan ID nya, clear on feature toggle/disable
- * - MutationObserver → disimpan reference, disconnect on restore
+ * WHY FILE INI PENTING (riwayat bug):
+ *  - `match` lama `{ prefix: '/v2/m-klaim/' }` TIDAK match halaman daftar
+ *    `/v2/m-klaim` (normalizePath() buang slash akhir) → `run()` tak pernah
+ *    dipanggil → mode di popup sama sekali tidak berpengaruh.
+ *  - Ekstraksi ID lama hanya kenal `detail(123)` / `detail('123')` / `id_visit=`.
+ *    Bentuk nyata MORBIS (`detail_pemeriksaan('123')`, `onclick="detail(123,'x')"`,
+ *    `data-id-visit`, `value`) gagal → handler native yang menang → tab baru.
+ *  - Deteksi tombol lama hanya `text === 'detail'` persis; teks
+ *    "Lihat Detail"/"Detail Pasien" lolos.
+ *
+ * LAYER PERTahanan (berturutan, increasingly brute-force):
+ *  1. openDetailWindowOpen.js (MAIN world, document_start): membungkus
+ *     window.open(); kalau mode 'same-tab' + URL detail same-origin →
+ *     diredirect ke location.href. Menutup handler native apa pun bentuknya.
+ *  2. `_onDetailClick` capture di WINDOW + document: mencegat klik SEBELUM
+ *     handler mana pun (inline onclick, jQuery, delegasi) memakai
+ *     preventDefault + stopImmediatePropagation.
+ *  3. `overrideDetailButton`: pasang listener per-tombol + rewrite href/target.
+ *
+ * Invariant: kalau ID tidak bisa diekstrak, JANGAN dicegat — biarkan MORBIS
+ * buka seperti biasa (menavigation yang lebih buruk daripada diam).
  */
 
 import { getMorbisGlobals } from './shared/types.js';
 
 const g = getMorbisGlobals();
 
-// ponytail: module-level timer IDs + observer ref — ini kunci agar bisa cleanup pas fitur disable/navigate
+// ponytail: module-level timer IDs + observer ref — kunci agar bisa cleanup
+// pas fitur disable/navigate/re-init (config reload).
 let _scanIntervalId: number | null = null;
 let _textScanTimeoutId: number | null = null;
 let _observer: MutationObserver | null = null;
 let _observerTimer: number | null = null;
-let _delegatedInstalled = false;
+let _listenersInstalled = false;
+
+// Event yang sudah ditangani — mencegah handler dobel saat terdaftar di window
+// DAN document (window capture selalu jalan lebih dulu).
+const _handledEvents = new WeakSet<Event>();
+
+/** Dibaca openDetailWindowOpen.js (MAIN world) lewat atribut di <html>. */
+const MODE_ATTR = 'data-ext-open-detail-mode';
 
 const OPEN_DETAIL_CONFIG = {
   urlPatterns: [
@@ -22,20 +48,38 @@ const OPEN_DETAIL_CONFIG = {
   ],
   autoDate: true,
   dateFormat: 'id',
+  /** Selektor CASES-SENSITIVE-safe. ` i` = case-insensitive attribute match. */
   buttonSelectors: [
-    'button[onclick^="detail("]',
-    'a[onclick^="detail("]',
+    'button[onclick*="detail" i]',
+    'a[onclick*="detail" i]',
+    '[onclick*="detail" i]',
+    'button[onclick*="id_visit" i]',
+    'a[onclick*="id_visit" i]',
+    'a[href*="id_visit" i]',
+    '[href*="id_visit" i]',
+    'a[href*="detail-v2-refaktor" i]',
     '[data-action="detail"]',
-    '[data-id-visit]',
-    '.btn-detail',
     '[data-toggle="detail"]',
+    '[data-detail-id]',
+    '[data-id-visit]',
+    '[data-idvisit]',
+    '.btn-detail',
   ],
   debug: false,
 };
 
-function extractIdFromOnclick(attrValue: string | null): string | null {
+/* ------------------------------------------------------------------ *
+ * Ekstraksi ID — sengaja longgar: lebih baik terlalu cocok daripada
+ * handler native lolos dan membuka tab baru.
+ * ------------------------------------------------------------------ */
+function extractIdFromAttr(attrValue: string | null | undefined): string | null {
   if (!attrValue) return null;
-  const patterns = [/detail\((\d+)\)/, /detail\(['"](\d+)['"]\)/, /id_visit=(\d+)/, /id=(\d+)/];
+  // detail( / detail_pemeriksaan( / showDetail( / Detail ( —本案 various.
+  const patterns = [
+    /detail[^(]*\(\s*['"]?(\d+)/i,
+    /id_visit\s*=\s*['"]?(\d+)/i,
+    /[?&](?:id_visit|visit|id)\s*=\s*['"]?(\d+)/i,
+  ];
 
   for (const pattern of patterns) {
     const match = attrValue.match(pattern);
@@ -44,39 +88,49 @@ function extractIdFromOnclick(attrValue: string | null): string | null {
   return null;
 }
 
+/** Key dataset yang mungkin Holds id visit. */
+function extractIdFromDataset(el: HTMLElement): string | null {
+  const el2 = el as HTMLElement & { dataset: Record<string, string | undefined> };
+  const d = el2.dataset;
+  const candidates = [
+    d.idVisit,
+    d.idvisit,
+    d.idVisitId,
+    d.id_visit,
+    d.detailId,
+    d.detailid,
+    d.id,
+    el.getAttribute('data-id'),
+    el.getAttribute('data-id-visit'),
+    el.getAttribute('data-detail-id'),
+  ];
+  for (const v of candidates) {
+    if (v && /^\d+$/.test(v)) return v;
+  }
+  return null;
+}
+
 function extractIdFromElement(element: HTMLElement): string | null {
-  const el = element as HTMLElement & { dataset: Record<string, string> };
-  if (el.dataset.idVisit) return el.dataset.idVisit;
-  if (el.dataset.idvisit) return el.dataset.idvisit;
-  if (el.dataset.id) return el.dataset.id;
+  const fromDataset = extractIdFromDataset(element);
+  if (fromDataset) return fromDataset;
 
-  const hrefAttr = element.getAttribute('href');
-  if (hrefAttr) {
-    const id = extractIdFromOnclick(hrefAttr);
+  // <button value="123"> / <input value="123">
+  const valueAttr = element.getAttribute('value');
+  if (valueAttr && /^\d+$/.test(valueAttr)) return valueAttr;
+
+  for (const attr of ['onclick', 'href', 'data-onclick', 'data-href', 'data-url']) {
+    const id = extractIdFromAttr(element.getAttribute(attr));
     if (id) return id;
   }
 
-  const onclickAttr = element.getAttribute('onclick');
-  if (onclickAttr) {
-    const id = extractIdFromOnclick(onclickAttr);
-    if (id) return id;
-  }
-
+  // Naik sampai 5 ancestor: MORBIS sering taruh onclick di <tr>/<td>.
   let parent = element.parentElement;
   for (let i = 0; i < 5 && parent; i++) {
-    const p = parent as HTMLElement & { dataset: Record<string, string> };
-    if (p.dataset.idVisit) return p.dataset.idVisit;
-    if (p.dataset.idvisit) return p.dataset.idvisit;
+    const pDataset = extractIdFromDataset(parent);
+    if (pDataset) return pDataset;
 
-    const parentHref = parent.getAttribute('href');
-    if (parentHref) {
-      const id = extractIdFromOnclick(parentHref);
-      if (id) return id;
-    }
-
-    const parentOnclick = parent.getAttribute('onclick');
-    if (parentOnclick) {
-      const id = extractIdFromOnclick(parentOnclick);
+    for (const attr of ['onclick', 'href', 'data-id-visit', 'data-detail-id']) {
+      const id = extractIdFromAttr(parent.getAttribute(attr));
       if (id) return id;
     }
     parent = parent.parentElement;
@@ -127,14 +181,23 @@ function isModifiedEvent(element: HTMLElement): boolean {
   return element.dataset.detailModified === 'true';
 }
 
+function getFeatureConfig(): { enabled?: boolean; mode?: string } | undefined {
+  return g.currentConfig?.features?.openDetailInNewTab;
+}
+
 function getOpenDetailMode(): string {
-  return g.currentConfig?.features?.openDetailInNewTab?.mode || 'same-tab';
+  return getFeatureConfig()?.mode || 'same-tab';
+}
+
+function isFeatureActive(): boolean {
+  if (!getFeatureConfig()?.enabled) return false;
+  return g.ExtensionCore.isFeatureAllowed('openDetailInNewTab');
 }
 
 function openDetailUrl(id: string): void {
   const url = generateUrl(id);
   const mode = getOpenDetailMode();
-  console.log(`[OpenDetail] Membuka detail ID: ${id}, mode: ${mode}`);
+  console.log(`[OpenDetail] Buka detail ID: ${id}, mode: ${mode}`);
   if (mode === 'new-tab') {
     window.open(url, '_blank', 'noopener');
   } else {
@@ -142,7 +205,8 @@ function openDetailUrl(id: string): void {
   }
 }
 
-function findDetailButton(target: EventTarget | null): HTMLElement | null {
+/** Cari elemen pemicu detail dari target klik (menaik sampai 6 level). */
+function findDetailTrigger(target: EventTarget | null): HTMLElement | null {
   const el = target as Element | null;
   if (!el || typeof el.closest !== 'function') return null;
 
@@ -155,36 +219,36 @@ function findDetailButton(target: EventTarget | null): HTMLElement | null {
     }
   }
 
-  // Fallback teks seperti overrideButtonsByText (Detail/View/Lihat).
-  const btn = el.closest('button, a');
-  if (btn) {
-    const text = (btn.textContent || '').trim().toLowerCase();
-    if (text === 'detail' || text === 'view' || text === 'lihat') {
-      return btn as HTMLElement;
-    }
+  // Fallback: teks memuat kata "detail" (bukan harus persis sama).
+  const btn = el.closest('button,a,[onclick],[role="button"]');
+  if (btn && /\bdetail\b/i.test(btn.textContent || '')) {
+    return btn as HTMLElement;
   }
   return null;
 }
 
-/** Penjaring lapis-1: cegat klik di document (fase capture) SEBELUM handler
- *  apapun — inline onclick, jQuery, maupun delegasi MORBIS. Menutup celah:
- *  (a) tombol diklik sebelum interval 2 detik memindai, (b) handler yang
- *  dipasang via JS sehingga removeAttribute('onclick') tidak mempan dan
- *  kalah urutan eksekusi. Hanya bertindak bila ID detail dikenali. */
-function _delegatedDetailClick(e: MouseEvent): void {
-  // Hormati niat eksplisit user: ctrl/cmd/shift/klik-tengah = tab baru.
-  if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return;
-  if (
-    !g.currentConfig?.features?.openDetailInNewTab?.enabled ||
-    !g.ExtensionCore.isFeatureAllowed('openDetailInNewTab')
-  )
+function handleDetailClick(e: Event): void {
+  if (_handledEvents.has(e)) return;
+
+  // Hormati niat eksplisit user: ctrl/cmd/shift/alt/klik-tengah = tab baru.
+  if (e instanceof MouseEvent) {
+    if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0) return;
+  }
+  if (!isFeatureActive()) return;
+
+  const trigger = findDetailTrigger(e.target);
+  if (!trigger) return;
+
+  const id = extractIdFromElement(trigger);
+  if (!id) {
+    // Invariant: ID tak dikenal → jangan dicegat, biarkan MORBIS buka sendiri.
+    if (OPEN_DETAIL_CONFIG.debug) {
+      console.warn('[OpenDetail] Detail terdeteksi tapi ID gagal diekstrak:', trigger);
+    }
     return;
+  }
 
-  const btn = findDetailButton(e.target);
-  if (!btn) return;
-  const id = extractIdFromElement(btn);
-  if (!id) return;
-
+  _handledEvents.add(e);
   e.preventDefault();
   e.stopPropagation();
   e.stopImmediatePropagation();
@@ -214,27 +278,20 @@ function overrideDetailButton(btn: HTMLElement): void {
   btn.removeAttribute('target');
 
   if (btn.tagName.toLowerCase() === 'a') {
-    const url = generateUrl(id);
-    btn.setAttribute('href', url);
+    btn.setAttribute('href', generateUrl(id));
   }
 
   btn.addEventListener(
     'click',
     function (e) {
-      if (e.ctrlKey || e.metaKey) {
-        return;
-      }
-
+      if (e instanceof MouseEvent && (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey)) return;
       e.preventDefault();
       e.stopPropagation();
       e.stopImmediatePropagation();
-
       openDetailUrl(id);
     },
     true,
   );
-
-  btn.dataset.detailNewTab = 'true';
 
   if (OPEN_DETAIL_CONFIG.debug) {
     console.log(`[OpenDetail] Tombol detail ID: ${id} berhasil di-override`);
@@ -242,11 +299,7 @@ function overrideDetailButton(btn: HTMLElement): void {
 }
 
 function overrideDetailButtons(): void {
-  if (
-    !g.currentConfig?.features?.openDetailInNewTab?.enabled ||
-    !g.ExtensionCore.isFeatureAllowed('openDetailInNewTab')
-  )
-    return;
+  if (!isFeatureActive()) return;
 
   for (const selector of OPEN_DETAIL_CONFIG.buttonSelectors) {
     try {
@@ -274,7 +327,6 @@ function restoreDetailButtons(): void {
     }
 
     delete btn.dataset.detailModified;
-    delete btn.dataset.detailNewTab;
     delete btn.dataset.originalOnclick;
     delete btn.dataset.originalTarget;
 
@@ -286,22 +338,24 @@ function restoreDetailButtons(): void {
 }
 
 function overrideButtonsByText(): void {
-  if (!g.currentConfig?.features?.openDetailInNewTab?.enabled) return;
+  if (!isFeatureActive()) return;
 
-  const buttons = document.querySelectorAll<HTMLElement>('button, a');
-  buttons.forEach((btn) => {
-    if (btn.textContent?.trim().toLowerCase() === 'detail' && !isModifiedEvent(btn)) {
+  document.querySelectorAll<HTMLElement>('button, a, [onclick]').forEach((btn) => {
+    if (/\bdetail\b/i.test(btn.textContent || '') && !isModifiedEvent(btn)) {
       overrideDetailButton(btn);
     }
   });
 
   const tableCells = document.querySelectorAll('td');
   tableCells.forEach((cell) => {
-    if (cell.textContent?.trim().toLowerCase().includes('detail')) {
-      const elements = cell.querySelectorAll<HTMLElement>('button, a, span, div');
+    if ((cell.textContent || '').toLowerCase().includes('detail')) {
+      const elements = cell.querySelectorAll<HTMLElement>('button, a, span, div, [onclick]');
       elements.forEach((el) => {
-        const text = el.textContent?.trim().toLowerCase();
-        if (!isModifiedEvent(el) && (text === 'detail' || text === 'view' || text === 'lihat')) {
+        const text = (el.textContent || '').trim().toLowerCase();
+        if (
+          !isModifiedEvent(el) &&
+          (text === 'detail' || text === 'view' || text === 'lihat' || /\bdetail\b/.test(text))
+        ) {
           overrideDetailButton(el);
         }
       });
@@ -309,19 +363,28 @@ function overrideButtonsByText(): void {
   });
 }
 
+function installListeners(): void {
+  if (_listenersInstalled) return;
+  // window capturedulam document capture → selalu jalan lebih dulu.
+  window.addEventListener('click', handleDetailClick, true);
+  document.addEventListener('click', handleDetailClick, true);
+  _listenersInstalled = true;
+}
+
+function uninstallListeners(): void {
+  if (!_listenersInstalled) return;
+  window.removeEventListener('click', handleDetailClick, true);
+  document.removeEventListener('click', handleDetailClick, true);
+  _listenersInstalled = false;
+}
+
 /** Cleanup semua resources (timer + observer + listeners). */
 function _cleanupOpenDetail(): void {
-  // Lepas penjaring document-level
-  if (_delegatedInstalled) {
-    document.removeEventListener('click', _delegatedDetailClick, true);
-    _delegatedInstalled = false;
-  }
-  // Clear interval
+  uninstallListeners();
   if (_scanIntervalId !== null) {
     clearInterval(_scanIntervalId);
     _scanIntervalId = null;
   }
-  // Clear one-shot timeout
   if (_textScanTimeoutId !== null) {
     clearTimeout(_textScanTimeoutId);
     _textScanTimeoutId = null;
@@ -330,7 +393,6 @@ function _cleanupOpenDetail(): void {
     clearTimeout(_observerTimer);
     _observerTimer = null;
   }
-  // Disconnect observer
   if (_observer) {
     _observer.disconnect();
     _observer = null;
@@ -338,32 +400,30 @@ function _cleanupOpenDetail(): void {
 }
 
 function runOpenDetailInNewTabFeature(): void {
-  const isEnabled = g.currentConfig?.features?.openDetailInNewTab?.enabled;
+  const isEnabled = isFeatureActive();
 
-  // Always cleanup first — mencegah double-init jika config reload
+  // Always cleanup first — mencegah double-init saat config reload.
   _cleanupOpenDetail();
 
   try {
     if (isEnabled) {
-      console.log('[OpenDetail] Feature ENABLED, mode:', getOpenDetailMode());
-      // Lapis-1: penjaring capture di document (tutup celah race/binding-order)
-      if (!_delegatedInstalled) {
-        document.addEventListener('click', _delegatedDetailClick, true);
-        _delegatedInstalled = true;
-      }
+      const mode = getOpenDetailMode();
+      console.log('[OpenDetail] Feature ENABLED, mode:', mode);
+      // Beri tahu jaring MAIN-world (openDetailWindowOpen.js) mode aktif.
+      document.documentElement.setAttribute(MODE_ATTR, mode);
+
+      installListeners();
       overrideDetailButtons();
       _textScanTimeoutId = window.setTimeout(() => overrideButtonsByText(), 500);
-      // FIX: simpan interval ID agar bisa di-clear saat disable
       _scanIntervalId = window.setInterval(() => overrideDetailButtons(), 2000);
     } else {
       console.log('[OpenDetail] Feature DISABLED');
+      document.documentElement.removeAttribute(MODE_ATTR);
       restoreDetailButtons();
     }
 
-    // FIX: simpan observer ref agar bisa disconnect
     _observer = new MutationObserver(() => {
       if (_observerTimer !== null) clearTimeout(_observerTimer);
-      // debounce: partial injection memicu banyak mutasi sekaligus
       _observerTimer = window.setTimeout(() => {
         _observerTimer = null;
         try {
@@ -385,7 +445,17 @@ if (typeof g.featureModules !== 'undefined') {
     id: 'openDetailInNewTab',
     name: 'Open Detail Mode',
     description: 'Buka detail di tab yang sama / tab baru sesuai mode (cegat handler bawaan)',
-    match: { prefix: '/v2/m-klaim/' },
+    // PENTING: prefix TANPA slash akhir. normalizePath() menghapus slash
+    // akhir, jadi '/v2/m-klaim/' TIDAK akan match '/v2/m-klaim' → fitur
+    // ter-skip dan mode jadi tidak berefek.
+    match: {
+      oneOf: [
+        { prefix: '/v2/m-klaim' },
+        { prefix: '/billing/pembayaran-new' },
+        { prefix: '/inventory/penjualan-bebas' },
+        { prefix: '/inventory/resep/penerimaan' },
+      ],
+    },
     run: runOpenDetailInNewTabFeature,
   };
 } else {
