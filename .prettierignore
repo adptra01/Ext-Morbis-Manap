@@ -1,0 +1,3 @@
+# Build output — jangan diformat prettier: dist harus tetap minified
+# (hasil build production), prettier malah mengembang-kannya jadi multi-bar.
+dist/

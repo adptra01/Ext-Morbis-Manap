@@ -6,6 +6,7 @@ import {
   confirmLegacy,
 } from './shared/batchUtils.js';
 import { rewriteUploadFilename } from './shared/uploadName.js';
+import { buildSingleJpegPdf, sniffFileKind } from './shared/pdfWriter.js';
 
 const g = getMorbisGlobals();
 
@@ -772,12 +773,131 @@ async function fetchFileFromUrl(url: string, filename: string): Promise<File> {
   const blob = await response.blob();
   if (blob.size === 0) throw new Error('File kosong (0 bytes) dari server');
 
-  // Preserve original extension from URL or filename
+  // Guard: respon HTML = halaman login/error (sesi kadaluarsa), bukan file.
+  // Jangan upload halaman HTML sebagai dokumen.
+  const sniff = await blob
+    .slice(0, 512)
+    .text()
+    .catch(() => '');
+  if (/^\s*<!doctype html|<html[\s>]/i.test(sniff)) {
+    throw new Error(
+      'Server mengembalikan halaman HTML (sesi login kadaluarsa?) — bukan file dokumen',
+    );
+  }
+
+  // Nama final dihasilkan rewriteUploadFilename (selalu .pdf); tidak perlu
+  // koreksi ekstensi di sini — konversi ke PDF terjadi setelah fetch.
   const ext = filename.includes('.') ? '.' + filename.split('.').pop() : '';
   const safeName = filename.replace(/[<>:"/\\|?*]/g, '_'); // ponytail: sanitize filename
+
   return new File([blob], safeName, {
     type: blob.type || `application/${ext.slice(1) || 'octet-stream'}`,
   });
+}
+
+/**
+ * Dapatkan dimensi gambar (tanpa decode penuh). JPEG yang di-embed langsung
+ * tetap butuh /Width /Height untuk XObject-nya.
+ */
+async function getImageDimensions(blob: Blob): Promise<{ width: number; height: number }> {
+  if (typeof createImageBitmap === 'function') {
+    const bmp = await createImageBitmap(blob);
+    try {
+      return { width: bmp.width, height: bmp.height };
+    } finally {
+      bmp.close?.();
+    }
+  }
+  // Fallback untuk browser tanpa createImageBitmap
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(blob);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve({ width: img.naturalWidth, height: img.naturalHeight });
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Tidak bisa membaca dimensi gambar'));
+    };
+    img.src = url;
+  });
+}
+
+/**
+ * Rasterisasi PNG/GIF/WebP → JPEG (latar putih: PNG transparan jadi putih,
+ * bukan hitam — cocok untuk scan dokumen).
+ */
+async function rasterizeToJpeg(
+  file: File,
+): Promise<{ bytes: Uint8Array; width: number; height: number }> {
+  const canvas = document.createElement('canvas');
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new Error('Gagal memuat gambar untuk konversi ke PDF'));
+      el.src = url;
+    });
+    const width = Math.max(1, img.naturalWidth);
+    const height = Math.max(1, img.naturalHeight);
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas 2D tidak tersedia');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, width, height);
+    ctx.drawImage(img, 0, 0);
+    const jpegBlob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, 'image/jpeg', 0.92),
+    );
+    if (!jpegBlob) throw new Error('Gagal rasterisasi gambar ke JPEG');
+    return {
+      bytes: new Uint8Array(await jpegBlob.arrayBuffer()),
+      width,
+      height,
+    };
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+/**
+ * Konversi "apapun file-nya → PDF" (permintaan user).
+ * - PDF asli → dipakai apa adanya (TANPA parse via pdf.js halaman yang rapuh;
+ *   dulu gagal "Invalid PDF structure" → fallback placeholder teks ikut
+ *   ter-upload sebagai dokumen palsu)
+ * - JPEG → di-embed langsung (DCTDecode, tanpa re-encode → kualitas asli)
+ * - PNG/GIF/WebP → rasterisasi ke JPEG lalu embed
+ * - format lain → GAGAL dengan pesan jelas (jangan upload placeholder)
+ * Sniffing magic bytes: tidak bergantung Content-Type server yang sering keliru.
+ */
+async function convertFileToPdf(file: File): Promise<File> {
+  const head = new Uint8Array(await file.slice(0, 16).arrayBuffer());
+  const kind = sniffFileKind(head);
+  const name = file.name.replace(/\.[a-z0-9]+$/i, '.pdf');
+
+  if (kind === 'pdf') {
+    // Sudah PDF: upload apa adanya (nama .pdf, tipe application/pdf).
+    return new File([file], name, { type: 'application/pdf' });
+  }
+  if (kind === 'jpeg') {
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const { width, height } = await getImageDimensions(file);
+    return new File([buildSingleJpegPdf(bytes, width, height)], name, {
+      type: 'application/pdf',
+    });
+  }
+  if (kind === 'png' || kind === 'gif' || kind === 'webp') {
+    const { bytes, width, height } = await rasterizeToJpeg(file);
+    return new File([buildSingleJpegPdf(bytes, width, height)], name, {
+      type: 'application/pdf',
+    });
+  }
+  throw new Error(
+    `File bukan PDF/gambar yang bisa dikonversi (${file.type || 'tipe tidak diketahui'}) — upload dibatalkan`,
+  );
 }
 
 /**
@@ -786,174 +906,9 @@ async function fetchFileFromUrl(url: string, filename: string): Promise<File> {
  * Jangan pernah upload nama asli mentah: nama ber-spasi/karakter khusus bisa
  * membuat penyimpanan file di server gagal, atau baris dokumen tidak tampil di
  * halaman dokumen-pasien (row di-render server-side dari record file).
- * Prefix NORM+tanggal juga mencegah tabrakan nama file (file kedua menimpa
- * yang pertama → yang lama jadi "gak tampil").
+ * Prefix timestamp+random juga mencegah tabrakan nama file (file kedua
+ * menimpa yang pertama → yang lama jadi "gak tampil").
  */
-
-/**
- * Convert file to image (JPEG) before upload.
- * Supports: PDF (via canvas), images (passthrough with compression).
- * Returns a new File object with JPEG format.
- */
-async function convertFileToImage(file: File): Promise<File> {
-  const mime = file.type;
-
-  // If already an image, compress and return as JPEG
-  if (mime.startsWith('image/')) {
-    return await compressImageToJpeg(file, 0.85);
-  }
-
-  // PDF -> convert first page to image via canvas
-  if (mime === 'application/pdf') {
-    return await pdfToImage(file);
-  }
-
-  // Other types - try to convert via canvas, fallback to placeholder
-  console.warn('[Batch Upload] Unsupported file type:', file.type, '- creating placeholder');
-  return createPlaceholderImage('Document');
-}
-
-/**
- * Compress image to JPEG with quality setting.
- */
-async function compressImageToJpeg(file: File, quality: number = 0.85): Promise<File> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        reject(new Error('Canvas context not available'));
-        return;
-      }
-
-      // Max dimensions to avoid huge images
-      const MAX_DIM = 2048;
-      let { width, height } = img;
-      if (width > MAX_DIM || height > MAX_DIM) {
-        const scale = Math.min(MAX_DIM / width, MAX_DIM / height);
-        width *= scale;
-        height *= scale;
-      }
-
-      canvas.width = width;
-      canvas.height = height;
-      ctx.drawImage(img, 0, 0, width, height);
-
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) {
-            reject(new Error('Failed to compress image'));
-            return;
-          }
-          const newFile = new File([blob], 'image.jpg', { type: 'image/jpeg' });
-          resolve(newFile);
-        },
-        'image/jpeg',
-        quality,
-      );
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error('Failed to load image'));
-    };
-    img.src = url;
-  });
-}
-
-/**
- * Convert PDF first page to JPEG image using canvas.
- * Requires PDF.js - fallback to creating a placeholder if not available.
- */
-async function pdfToImage(file: File): Promise<File> {
-  try {
-    // Try to use PDF.js if available globally
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const pdfjsLib = (window as unknown as { pdfjsLib?: any }).pdfjsLib;
-    if (!pdfjsLib) {
-      console.warn('[Batch Upload] PDF.js not loaded, cannot convert PDF to image');
-      return createPlaceholderImage('PDF');
-    }
-
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    const page = await pdf.getPage(1);
-
-    const viewport = page.getViewport({ scale: 2.0 }); // 2x scale for quality
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('Canvas context not available');
-
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-
-    await page.render({ canvasContext: ctx, viewport }).promise();
-
-    return new Promise((resolve, reject) => {
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) {
-            reject(new Error('Failed to convert PDF to image'));
-            return;
-          }
-          const newFile = new File([blob], 'pdf_page.jpg', { type: 'image/jpeg' });
-          resolve(newFile);
-        },
-        'image/jpeg',
-        0.9,
-      );
-    });
-  } catch (err) {
-    console.warn('[Batch Upload] PDF to image conversion failed:', err);
-    return createPlaceholderImage('PDF');
-  }
-}
-
-/**
- * Create a simple placeholder image for unsupported file types.
- */
-function createPlaceholderImage(label: string): Promise<File> {
-  const canvas = document.createElement('canvas');
-  canvas.width = 400;
-  canvas.height = 200;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('Canvas not available');
-
-  // Draw background
-  ctx.fillStyle = '#f3f4f6';
-  ctx.fillRect(0, 0, 400, 200);
-
-  // Draw border
-  ctx.strokeStyle = '#d1d5db';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(10, 10, 380, 180);
-
-  // Draw label
-  ctx.fillStyle = '#6b7280';
-  ctx.font = 'bold 24px system-ui, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(`${label} Document`, 200, 85);
-
-  ctx.font = '14px system-ui, sans-serif';
-  ctx.fillText('Converted to image for upload', 200, 120);
-
-  return new Promise((resolve) => {
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) throw new Error('Failed to create placeholder');
-        const file = new File([blob], `${label.toLowerCase()}_placeholder.jpg`, {
-          type: 'image/jpeg',
-        });
-        resolve(file);
-      },
-      'image/jpeg',
-      0.9,
-    );
-  });
-}
 
 /**
  * Generate timestamp-only keterangan.
@@ -977,11 +932,12 @@ async function processAndUploadSingleUrl(
   try {
     const uploadName = rewriteUploadFilename(metadata, metadata.keterangan);
     updateStatus(`Download: ${escHtml(metadata.filename)}...`);
+    // Semua dokumen dikonversi ke PDF (permintaan user). Konversi internal
+    // (bukan pdf.js halaman yang rapuh — dulu error 'Invalid PDF structure'
+    // dan fallback-nya meng-upload placeholder teks sebagai dokumen palsu).
     let file = await fetchFileFromUrl(metadata.url, uploadName);
-
-    // Convert file to image (JPEG) before upload
-    updateStatus(`Converting to image: ${escHtml(metadata.filename)}...`);
-    file = await convertFileToImage(file);
+    updateStatus(`Konversi ke PDF: ${escHtml(metadata.filename)}...`);
+    file = await convertFileToPdf(file);
 
     const formData = new FormData();
     formData.append('id_visit', idVisitStr);
@@ -1026,13 +982,52 @@ async function processAndUploadSingleUrl(
     }
 
     const result = await uploadResponse.text();
-    // Check if server response indicates failure (MORBIS sometimes returns 200 with error)
-    if (result.includes('error') || result.includes('gagal')) {
-      const snippet = result
-        .replace(/<[^>]+>/g, '')
-        .trim()
-        .slice(0, 200);
-      return { success: false, error: `Server response: ${snippet}` };
+    // Deteksi sukses/gagal PRESISI: MORBIS kadang balas 200 dengan halaman
+    // error. Dulu pakai includes('error')/includes('gagal') — false positive
+    // karena CSS halaman error mengandung variabel "--error:" sehingga upload
+    // yang SUKSES dianggap gagal (gejala: "Server response: Error - Aplikasi
+    // :root { --primary: ... --error: ... }").
+    const responseType = uploadResponse.headers.get('content-type') || '';
+
+    // JSON response = paling reliable
+    if (/application\/json/i.test(responseType)) {
+      try {
+        const json = JSON.parse(result);
+        if (json.success === false || json.status === 'error' || json.error) {
+          return {
+            success: false,
+            error: json.message || json.error || 'Server rejected',
+          };
+        }
+        return { success: true, result };
+      } catch {
+        // Body JSON rusak/tidak valid — upload dianggap sukses (parse gagal)
+        return { success: true, result };
+      }
+    }
+
+    // HTML response — cek marker error SPESIFIK, bukan string "error"
+    if (/text\/html/i.test(responseType)) {
+      const hasRealError =
+        /class="[^"]*alert-danger[^"]*"/i.test(result) ||
+        /<div[^>]*class="[^"]*error[^"]*"[^>]*>[\s\S]{0,200}<\/div>/i.test(result) ||
+        /"success"\s*:\s*false/i.test(result);
+      if (hasRealError) {
+        const snippet = result
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .slice(0, 200);
+        return { success: false, error: `Server error: ${snippet}` };
+      }
+      // HTML tanpa marker error (mis. redirect sukses) → dianggap sukses
+      return { success: true, result };
+    }
+
+    // Plain text — cek marker di AWAL saja
+    const trimmed = result.trim();
+    if (/^(error|gagal)/i.test(trimmed)) {
+      return { success: false, error: `Server: ${trimmed.slice(0, 200)}` };
     }
     return { success: true, result };
   } catch (error) {

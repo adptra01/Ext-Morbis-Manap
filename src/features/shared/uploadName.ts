@@ -1,7 +1,8 @@
 /**
  * Server-safe filename rewrite for batch upload — random/timestamp based.
- * Generates: `upload_<timestamp>_<random>.ext`
- * Always uses image extensions (jpg/png) since files are converted to images.
+ * Generates: `upload_<timestamp>_<random>.pdf`
+ * Semua dokumen dikonversi ke PDF sebelum upload (permintaan user), sehingga
+ * ekstensi selalu `.pdf`.
  *
  * Pure function, no DOM/chrome deps → unit-testable.
  */
@@ -20,7 +21,9 @@ function generateTimestampName(ext: string): string {
 }
 
 export function rewriteUploadFilename(_item: UploadNameSource, _customBase?: string): string {
-  // Generate timestamp-based random name with .jpg extension
-  // Always convert to JPEG image
-  return generateTimestampName('.jpg');
+  // Random/timestamp prefix: cegah tabrakan nama & tutupi nama asli
+  // (nama ber-spasi/karakter khusus bisa gagal di server, atau baris
+  // dokumen lama tertimpa oleh nama sama). Ekstensi selalu .pdf karena
+  // semua dokumen dikonversi ke PDF sebelum upload.
+  return generateTimestampName('.pdf');
 }
