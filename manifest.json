@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "MORBIS Ext Unofficial",
-  "version": "1.5.19",
+  "version": "1.5.20",
   "minimum_chrome_version": "114",
   "description": "Ekstensi produktivitas untuk SIMRS MORBIS Klaim - buka detail di tab baru, batch upload, dan fitur lainnya",
   "author": "adi putra",
