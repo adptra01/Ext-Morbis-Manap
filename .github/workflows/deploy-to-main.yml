@@ -59,6 +59,17 @@ jobs:
           NODE_ENV: production
         run: npm run build
 
+      # Auto-update enterprise mesin farmasi: CRX3 signed + update.xml.
+      # Key .pem dari secret CRX_SIGNING_KEY (tidak pernah masuk repo).
+      # --require-key → gagal keras kalau secret hilang, agar auto-update
+      # tidak senyap berhenti bekerja.
+      - name: Pack CRX signed + update.xml
+        env:
+          CRX_SIGNING_KEY: ${{ secrets.CRX_SIGNING_KEY }}
+        run: |
+          printf '%s' "$CRX_SIGNING_KEY" > "$RUNNER_TEMP/crx-signing-key.pem"
+          node scripts/pack.mjs --key "$RUNNER_TEMP/crx-signing-key.pem" --require-key
+
       - name: Deploy dist + docs → main (orphan-style)
         run: |
           # Create orphan branch state — dist contents at root + docs for GitHub Pages
@@ -68,6 +79,10 @@ jobs:
           cp -r dist/* "$ORPHAN/"
           cp README.md "$ORPHAN/README.md"
           cp -r docs "$ORPHAN/docs"
+          # Auto-update enterprise → Pages: update.xml + CRX signed di docs/
+          # (docs/ = akar situs Pages sehingga URL persis seperti di .bat).
+          cp deploy/update.xml "$ORPHAN/docs/update.xml"
+          cp "deploy/morbis-v${VERSION}.crx" "$ORPHAN/docs/morbis-v${VERSION}.crx"
           # Script update satu-klik ikut ke main (branch main = dist siap pakai)
           cp scripts/morbis-update-main.bat "$ORPHAN/morbis-update-main.bat"
 
