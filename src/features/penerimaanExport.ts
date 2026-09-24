@@ -304,7 +304,10 @@ function cleanFilterValue(v: unknown): string {
 /** URL export dari nilai filter di halaman (meniru loadTableExcel bawaan:
  *  GET .../penerimaan/cetak/cetak-excel?search[...]&...). MORBIS form filter
  *  utama = #searchTable dengan field: date_start, date_end, unit_tujuan,
- *  status_pasien, norm, pasien, no_registrasi, no_resep, dll. */
+ *  status_pasien, norm, pasien, no_registrasi, no_resep, dll.
+ *
+ *  PERBAIKAN: normalisasi field tanggal (form DD/MM/YYYY → export YYYY-MM-DD),
+ *  mapping nama field fleksibel, log parameter untuk debugging. */
 function buildExportUrl(): string {
   const params = new URLSearchParams();
   const seen = new Set<string>();
@@ -323,14 +326,48 @@ function buildExportUrl(): string {
     ),
   ).filter((el) => {
     const t = (el.type || '').toLowerCase();
-    // Skip tombol/submit/reset/image/hidden
+    // Skip tombol/submit/reset/image
     if (['submit', 'button', 'reset', 'image'].includes(t)) return false;
-    // Hidden field seperti idUnit — skip (bukan filter export)
-    if (t === 'hidden') return false;
+    // Hidden field — JANGAN di-skip kalau namanya mirip tanggal (MORBIS kadang render date sebagai hidden)
+    if (t === 'hidden') {
+      const n = (el.getAttribute('name') || '').toLowerCase();
+      if (!/tgl|tanggal|date|start|end/.test(n)) return false;
+    }
     const name = el.getAttribute('name') || '';
     if (!name) return false;
     return true;
   });
+
+  // Mapping nama field form → nama param export endpoint (standar MORBIS).
+  const DATE_FIELD_MAP: Record<string, string> = {
+    // form → export
+    tanggal_awal: 'date_start',
+    tanggal_akhir: 'date_end',
+    tgl_awal: 'date_start',
+    tgl_akhir: 'date_end',
+    date_start: 'date_start',
+    date_end: 'date_end',
+    tgl_start: 'date_start',
+    tgl_end: 'date_end',
+    start_date: 'date_start',
+    end_date: 'date_end',
+    tgl: 'date_start', // fallback single date
+    tanggal: 'date_start',
+  };
+
+  /** Konversi DD/MM/YYYY atau DD-MM-YYYY → YYYY-MM-DD */
+  const toYmd = (raw: string): string => {
+    const s = String(raw).trim();
+    // Sudah YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+    // DD/MM/YYYY
+    const m1 = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (m1) return `${m1[3]}-${m1[2].padStart(2, '0')}-${m1[1].padStart(2, '0')}`;
+    // DD-MM-YYYY
+    const m2 = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+    if (m2) return `${m2[3]}-${m2[2].padStart(2, '0')}-${m2[1].padStart(2, '0')}`;
+    return s; // fallback: biarkan apa adanya
+  };
 
   for (const el of els) {
     const name = el.getAttribute('name') || '';
@@ -338,15 +375,37 @@ function buildExportUrl(): string {
     const input = el as HTMLInputElement;
     if ((input.type === 'checkbox' || input.type === 'radio') && !input.checked) continue;
     seen.add(name);
+
     const val = cleanFilterValue(input.value);
-    // Hanya kirim param yang tidak kosong (tiru perilaku loadTableExcel)
-    if (val) params.append(name, val);
+    if (!val) continue;
+
+    const lowerName = name.toLowerCase();
+    let outName = name;
+    let outVal = val;
+
+    // Normalisasi field tanggal
+    if (DATE_FIELD_MAP[lowerName]) {
+      outName = DATE_FIELD_MAP[lowerName];
+      outVal = toYmd(val);
+    }
+
+    // Hanya kirim param yang tidak kosong
+    if (outVal) params.append(outName, outVal);
   }
 
   // loadTableExcel tidak butuh filter wajib — export semua bila kosong.
   const base = '/inventory/resep/penerimaan/cetak/cetak-excel';
   const qs = params.toString();
-  return new URL(qs ? base + '?' + qs : base, location.href).href;
+  const url = new URL(qs ? base + '?' + qs : base, location.href).href;
+
+  // Debug: log parameter yang dikirim
+  window.console.info(
+    '[penerimaanExport] buildExportUrl →',
+    url,
+    '| params:',
+    Object.fromEntries(params.entries()),
+  );
+  return url;
 }
 
 /** Bungkus loadTableExcel() bawaan halaman: cegah unduhan asli, proses

@@ -1,15 +1,15 @@
 'use strict';
 var __morbis_feature = (() => {
-  function w() {
+  function E() {
     return window;
   }
-  var c = w(),
+  var c = E(),
     u = null,
     d = null,
     s = null,
     l = null,
     g = !1,
-    E = new WeakSet(),
+    h = new WeakSet(),
     k = 'data-ext-open-detail-mode',
     a = {
       urlPatterns: [
@@ -23,8 +23,6 @@ var __morbis_feature = (() => {
         '[onclick*="detail" i]',
         'button[onclick*="id_visit" i]',
         'a[onclick*="id_visit" i]',
-        'a[href*="id_visit" i]',
-        '[href*="id_visit" i]',
         'a[href*="detail-v2-refaktor" i]',
         '[data-action="detail"]',
         '[data-toggle="detail"]',
@@ -79,8 +77,8 @@ var __morbis_feature = (() => {
       let o = M(r);
       if (o) return o;
       for (let C of ['onclick', 'href', 'data-id-visit', 'data-detail-id']) {
-        let h = D(r.getAttribute(C));
-        if (h) return h;
+        let w = D(r.getAttribute(C));
+        if (w) return w;
       }
       r = r.parentElement;
     }
@@ -116,7 +114,7 @@ var __morbis_feature = (() => {
       e
     );
   }
-  function p(t) {
+  function v(t) {
     return t.dataset.detailModified === 'true';
   }
   function I() {
@@ -147,7 +145,7 @@ var __morbis_feature = (() => {
   }
   function f(t) {
     if (
-      E.has(t) ||
+      h.has(t) ||
       (t instanceof MouseEvent &&
         (t.ctrlKey || t.metaKey || t.shiftKey || t.altKey || t.button !== 0)) ||
       !m()
@@ -160,10 +158,10 @@ var __morbis_feature = (() => {
       a.debug && console.warn('[OpenDetail] Detail terdeteksi tapi ID gagal diekstrak:', e);
       return;
     }
-    (E.add(t), t.preventDefault(), t.stopPropagation(), t.stopImmediatePropagation(), L(n));
+    (h.add(t), t.preventDefault(), t.stopPropagation(), t.stopImmediatePropagation(), L(n));
   }
   function b(t) {
-    if (p(t)) return;
+    if (v(t)) return;
     let e = A(t);
     if (!e) {
       a.debug && console.log('[OpenDetail] Gagal mengekstrak ID dari elemen:', t);
@@ -187,7 +185,7 @@ var __morbis_feature = (() => {
       ),
       a.debug && console.log(`[OpenDetail] Tombol detail ID: ${e} berhasil di-override`));
   }
-  function v() {
+  function p() {
     if (m())
       for (let t of a.buttonSelectors)
         try {
@@ -212,13 +210,13 @@ var __morbis_feature = (() => {
   function S() {
     if (!m()) return;
     (document.querySelectorAll('button, a, [onclick]').forEach((e) => {
-      /\bdetail\b/i.test(e.textContent || '') && !p(e) && b(e);
+      /\bdetail\b/i.test(e.textContent || '') && !v(e) && b(e);
     }),
       document.querySelectorAll('td').forEach((e) => {
         (e.textContent || '').toLowerCase().includes('detail') &&
           e.querySelectorAll('button, a, span, div, [onclick]').forEach((r) => {
             let i = (r.textContent || '').trim().toLowerCase();
-            !p(r) &&
+            !v(r) &&
               (i === 'detail' || i === 'view' || i === 'lihat' || /\bdetail\b/.test(i)) &&
               b(r);
           });
@@ -252,9 +250,9 @@ var __morbis_feature = (() => {
         (console.log('[OpenDetail] Feature ENABLED, mode:', e),
           document.documentElement.setAttribute(k, e),
           _(),
-          v(),
+          p(),
           (d = window.setTimeout(() => S(), 500)),
-          (u = window.setInterval(() => v(), 2e3)));
+          (u = window.setInterval(() => p(), 2e3)));
       } else
         (console.log('[OpenDetail] Feature DISABLED'),
           document.documentElement.removeAttribute(k),
@@ -264,7 +262,7 @@ var __morbis_feature = (() => {
           (l = window.setTimeout(() => {
             l = null;
             try {
-              t && v();
+              t && p();
             } catch (e) {
               console.warn('[OpenDetail] MutationObserver error:', e);
             }

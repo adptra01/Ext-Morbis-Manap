@@ -48,15 +48,16 @@ const OPEN_DETAIL_CONFIG = {
   ],
   autoDate: true,
   dateFormat: 'id',
-  /** Selektor CASES-SENSITIVE-safe. ` i` = case-insensitive attribute match. */
+  /** Selektor CASES-SENSITIVE-safe. ` i` = case-insensitive attribute match.
+   *  HANYA untuk tombol detail asli (bukan link navigasi umum).
+   *  Selector href*="id_visit" DIHAPUS — terlalu luas, nangkap link toolbar.
+   */
   buttonSelectors: [
     'button[onclick*="detail" i]',
     'a[onclick*="detail" i]',
     '[onclick*="detail" i]',
     'button[onclick*="id_visit" i]',
     'a[onclick*="id_visit" i]',
-    'a[href*="id_visit" i]',
-    '[href*="id_visit" i]',
     'a[href*="detail-v2-refaktor" i]',
     '[data-action="detail"]',
     '[data-toggle="detail"]',
