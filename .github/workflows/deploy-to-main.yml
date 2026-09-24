@@ -76,7 +76,7 @@ jobs:
           echo "CRX_EXT_ID=$CRX_EXT_ID" >> $GITHUB_ENV
           grep -q "set EXT_ID=$CRX_EXT_ID" deploy/Install_Morbis_Ext.bat || { echo "::error::EXT_ID di .bat tidak sinkron dengan key signing (pack=$CRX_EXT_ID)"; exit 1; }
           grep -q "appid='$CRX_EXT_ID'" deploy/update.xml || { echo "::error::appid update.xml tidak sinkron dengan key signing"; exit 1; }
-          XML_VER=$(grep -oP "(?<=version=')[0-9.]+" deploy/update.xml | head -1)
+          XML_VER=$(grep -oP "updatecheck codebase='[^']*' version='\K[0-9.]+" deploy/update.xml | head -1)
           test "$XML_VER" = "$VERSION" || { echo "::error::versi update.xml ($XML_VER) != manifest ($VERSION)"; exit 1; }
           echo "Guard OK: EXT_ID=$CRX_EXT_ID, update.xml v$XML_VER"
 
