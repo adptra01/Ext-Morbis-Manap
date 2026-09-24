@@ -15,13 +15,15 @@
  *  morbis-v<version>.crx   — CRX3 signed (bila key tersedia)
  *  update.xml              — manifest auto-update; appid = ID asli dari key
  *
- * CRX3 (sesuai Chromium update_client/crx_file): file = "Cr24" + version 3
- *  + u32(header.length) + header + zip, dengan header = SignedData:
- *  SignedData { sha256_with_rsa = 2: AsymmetricKeyProof { public_key = 1,
- *                                                         signature = 2 } }
- *  signature = RSA-PKCS1v1.5-SHA256(serialisasi SignedData TANPA signature).
- *  (JANGAN memakai skema CRX2 field-10000/signed_header_data untuk versi 3 —
- *  Chrome menolaknya: CRX_SIGNATURE_VERIFICATION_FAILED.)
+ * CRX3 (sesuai components/crx_file/crx3.proto Chromium): file = "Cr24"
+ *  + version 3 + u32(header.length) + header + zip, dengan header =
+ *  CrxFileHeader { sha256_with_rsa = 2: AsymmetricKeyProof { public_key = 1,
+ *                                                            signature = 2 },
+ *                  signed_header_data = 10000: SignedData { crx_id = 1 } }
+ *  SignedData.crx_id = 16 byte mentah sha256(spki)[:16].
+ *  signature = RSA-PKCS1v1.5-SHA256("CRX3 SignedData\0" + u32LE(len(shd))
+ *              + shd + zip). Tanpa konteks ini Chrome menolak:
+ *  CRX_SIGNATURE_VERIFICATION_FAILED / CRX_REQUIRED_PROOF_MISSING.
  */
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
@@ -89,24 +91,30 @@ function crxIdFromSpki(spkiDer) {
 }
 
 function buildCrx3(zipData, spkiDer, privateKey) {
-  void zipData;
-  // Blob yang di-sign = SignedData tanpa field signature (spec CRX3).
-  const proofNoSig = lenDelim(1, spkiDer);
-  const signedData = lenDelim(2, proofNoSig);
-
-  const signer = createSign('RSA-SHA256');
-  signer.update(signedData);
-  signer.end();
-  const signature = signer.sign(privateKey);
-
-  const proof = Buffer.concat([lenDelim(1, spkiDer), lenDelim(2, signature)]);
-  const header = lenDelim(2, proof);
-
   const u32 = (v) => {
     const b = Buffer.alloc(4);
     b.writeUInt32LE(v, 0);
     return b;
   };
+  // SignedData { crx_id = sha256(spki)[:16] } — tepat 16 byte mentah.
+  const crxIdBytes = createHash('sha256').update(spkiDer).digest().subarray(0, 16);
+  const signedHeaderData = lenDelim(1, crxIdBytes);
+
+  // Konteks yang di-sign (spec): "CRX3 SignedData\0" + ukuran + shd + zip.
+  const toSign = Buffer.concat([
+    Buffer.from('CRX3 SignedData\0', 'utf8'),
+    u32(signedHeaderData.length),
+    signedHeaderData,
+    zipData,
+  ]);
+  const signer = createSign('RSA-SHA256');
+  signer.update(toSign);
+  signer.end();
+  const signature = signer.sign(privateKey);
+
+  const proof = Buffer.concat([lenDelim(1, spkiDer), lenDelim(2, signature)]);
+  const header = Buffer.concat([lenDelim(2, proof), lenDelim(10000, signedHeaderData)]);
+
   return Buffer.concat([Buffer.from('Cr24', 'ascii'), u32(3), u32(header.length), header, zipData]);
 }
 
