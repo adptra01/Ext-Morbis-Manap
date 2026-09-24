@@ -1,20 +1,21 @@
 'use strict';
 var __morbis_feature = (() => {
+  // src/features/paLabPrint.ts
   (function () {
     'use strict';
-    async function Y() {
-      let D = 'ext-pa-print-proc';
-      if (document.documentElement.getAttribute(D)) return;
-      document.documentElement.setAttribute(D, '1');
-      let g = (t) => y(t?.textContent || '');
-      function z(t) {
-        return t.replace(/<[^>]+>/g, ' ');
+    async function apply() {
+      const PAGE_GUARD = 'ext-pa-print-proc';
+      if (document.documentElement.getAttribute(PAGE_GUARD)) return;
+      document.documentElement.setAttribute(PAGE_GUARD, '1');
+      const txt = (el) => cleanPhpNoise(el?.textContent || '');
+      function stripTags(s) {
+        return s.replace(/<[^>]+>/g, ' ');
       }
-      function Z(t) {
-        return t.replace(/\b(?:KH\.?|H\.)\s*(?=ABDUL\s+MANAP)/gi, 'H. ');
+      function fixRsName(s) {
+        return s.replace(/\b(?:KH\.?|H\.)\s*(?=ABDUL\s+MANAP)/gi, 'H. ');
       }
-      function y(t) {
-        return Z(t)
+      function cleanPhpNoise(s) {
+        return fixRsName(s)
           .replace(
             /\b(?:Notice|Warning|Fatal error|Parse error|Deprecated)\s*:[\s\S]*?\.php\s*on\s*line\s*\d+/gi,
             ' ',
@@ -23,529 +24,558 @@ var __morbis_feature = (() => {
           .replace(/\s+/g, ' ')
           .trim();
       }
-      function s(t) {
-        return String(t ?? '').replace(
+      function esc(s) {
+        return String(s ?? '').replace(
           /[&<>"']/g,
-          (e) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[e],
+          (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
         );
       }
-      let q =
-          document.querySelector('#logo img')?.getAttribute('src') ||
-          '/assets/images/logo/Kota Jambi.png',
-        v = Array.from(document.querySelectorAll('h1.kop-atas'))
-          .map((t) => g(t))
+      const logoSrc =
+        document.querySelector('#logo img')?.getAttribute('src') ||
+        '/assets/images/logo/Kota Jambi.png';
+      const kopLines = Array.from(document.querySelectorAll('h1.kop-atas'))
+        .map((h) => txt(h))
+        .filter(Boolean);
+      while (kopLines.length < 3) kopLines.push('');
+      let addrLines = [];
+      const headLogo = document.querySelector('#head-cetak-logo center, #head-cetak-logo');
+      if (headLogo) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = headLogo.innerHTML;
+        tmp.querySelectorAll('h1').forEach((h) => h.remove());
+        addrLines = (tmp.innerHTML || '')
+          .split(/<br\s*\/?>/gi)
+          .map((l) => tmp.textContent && l.replace(/<[^>]+>/g, '').trim())
+          .map((l) => String(l || '').trim())
           .filter(Boolean);
-      for (; v.length < 3;) v.push('');
-      let w = [],
-        M = document.querySelector('#head-cetak-logo center, #head-cetak-logo');
-      if (M) {
-        let t = document.createElement('div');
-        ((t.innerHTML = M.innerHTML),
-          t.querySelectorAll('h1').forEach((e) => e.remove()),
-          (w = (t.innerHTML || '')
-            .split(/<br\s*\/?>/gi)
-            .map((e) => t.textContent && e.replace(/<[^>]+>/g, '').trim())
-            .map((e) => String(e || '').trim())
-            .filter(Boolean)));
       }
-      let A = w.join(' '),
-        U = (t) => {
-          let e = A.match(new RegExp(t + '\\s*:([\\d\\s().+-]+)', 'i'));
-          return e ? e[1].trim() : '';
-        },
-        B = U('telp'),
-        N = U('fax'),
-        E = (A.match(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/) || [''])[0],
-        S = (A.match(/https?:\/\/[^\s;,]+/) || [''])[0],
-        h = A.replace(/telp\s*:[\d\s().+-]+/gi, '')
-          .replace(/fax\s*:[\d\s().+-]+/gi, '')
-          .replace(/website\s*:?/gi, '')
-          .replace(/email\s*:?/gi, '');
-      (E && (h = h.split(E).join('')),
-        S && (h = h.split(S).join('')),
-        (h = h
-          .split(/[;]+/)
-          .map((t) => t.replace(/\s+/g, ' ').trim())
-          .filter(Boolean)
-          .join(', ')
-          .replace(/,\s*,+/g, ',')
-          .replace(/^[,;\s]+|[,;\s]+$/g, '')));
-      let tt = ['Alamat: ' + h, B ? 'Telp: ' + B : '', N ? 'Fax: ' + N : '']
-          .filter(Boolean)
-          .join(', '),
-        et = [E ? 'Email: ' + E : '', S ? 'Website: ' + S : ''].filter(Boolean).join(', ');
-      w = [tt, et].filter(Boolean);
-      let R = g(document.querySelector('.head-cetak-instansi')) || 'LAPORAN HASIL PEMERIKSAAN',
-        T = [];
-      document.querySelectorAll('.table-outer tr').forEach((t) => {
-        let e = t.querySelectorAll('td');
-        if (e.length >= 6) {
-          let i = g(e[0]),
-            l = g(e[2]),
-            p = g(e[3]),
-            a = g(e[5]);
-          (i && T.push([i, l]), p && T.push([p, a]));
+      const addrText = addrLines.join(' ');
+      const pickPhone = (label) => {
+        const m = addrText.match(new RegExp(label + '\\s*:([\\d\\s().+-]+)', 'i'));
+        return m ? m[1].trim() : '';
+      };
+      const telp = pickPhone('telp');
+      const fax = pickPhone('fax');
+      const email = (addrText.match(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/) || [''])[0];
+      const website = (addrText.match(/https?:\/\/[^\s;,]+/) || [''])[0];
+      let street = addrText
+        .replace(/telp\s*:[\d\s().+-]+/gi, '')
+        .replace(/fax\s*:[\d\s().+-]+/gi, '')
+        .replace(/website\s*:?/gi, '')
+        .replace(/email\s*:?/gi, '');
+      if (email) street = street.split(email).join('');
+      if (website) street = street.split(website).join('');
+      street = street
+        .split(/[;]+/)
+        .map((s) => s.replace(/\s+/g, ' ').trim())
+        .filter(Boolean)
+        .join(', ')
+        .replace(/,\s*,+/g, ',')
+        .replace(/^[,;\s]+|[,;\s]+$/g, '');
+      const addrLine1 = ['Alamat: ' + street, telp ? 'Telp: ' + telp : '', fax ? 'Fax: ' + fax : '']
+        .filter(Boolean)
+        .join(', ');
+      const addrLine2 = [email ? 'Email: ' + email : '', website ? 'Website: ' + website : '']
+        .filter(Boolean)
+        .join(', ');
+      addrLines = [addrLine1, addrLine2].filter(Boolean);
+      const judul =
+        txt(document.querySelector('.head-cetak-instansi')) || 'LAPORAN HASIL PEMERIKSAAN';
+      const infoItems = [];
+      document.querySelectorAll('.table-outer tr').forEach((tr) => {
+        const tds = tr.querySelectorAll('td');
+        if (tds.length >= 6) {
+          const l1 = txt(tds[0]);
+          const v1 = txt(tds[2]);
+          const l2 = txt(tds[3]);
+          const v2 = txt(tds[5]);
+          if (l1) infoItems.push([l1, v1]);
+          if (l2) infoItems.push([l2, v2]);
         }
       });
-      let b = ['makroskopik', 'mikroskopik', 'kesimpulan', 'icdo', 'catatan', 'saran'],
-        u = (t) =>
-          t
-            .toLowerCase()
-            .replace(/0/g, 'o')
-            .replace(/[^a-z]/g, ''),
-        f = [];
-      document.querySelectorAll('.contentlab td').forEach((t) => {
-        let e = '',
-          i = !1,
-          l = t.querySelector('.section-title');
-        if (l) ((e = g(l)), (i = !0));
-        else {
-          let r = (m) => m.split(':')[0].trim();
-          for (let m of Array.from(t.children).slice(0, 3)) {
-            let d = g(m);
-            if (d && d.length <= 24 && b.includes(u(r(d)))) {
-              e = r(d);
+      const ORDER = ['makroskopik', 'mikroskopik', 'kesimpulan', 'icdo', 'catatan', 'saran'];
+      const normTitle = (t) =>
+        t
+          .toLowerCase()
+          .replace(/0/g, 'o')
+          .replace(/[^a-z]/g, '');
+      const sections = [];
+      document.querySelectorAll('.contentlab td').forEach((td) => {
+        let title = '';
+        let hasSt = false;
+        const st = td.querySelector('.section-title');
+        if (st) {
+          title = txt(st);
+          hasSt = true;
+        } else {
+          const head = (t) => t.split(':')[0].trim();
+          for (const el of Array.from(td.children).slice(0, 3)) {
+            const t = txt(el);
+            if (t && t.length <= 24 && ORDER.includes(normTitle(head(t)))) {
+              title = head(t);
               break;
             }
           }
-          if (!e) {
-            let m =
-              (t.textContent || '')
-                .split(
-                  `
-`,
-                )
-                .map((d) => d.trim())
+          if (!title) {
+            const firstLine =
+              (td.textContent || '')
+                .split('\n')
+                .map((l) => l.trim())
                 .find(Boolean) || '';
-            m && b.includes(u(r(m))) && (e = r(m));
+            if (firstLine && ORDER.includes(normTitle(head(firstLine)))) title = head(firstLine);
           }
-          if (!e) return;
+          if (!title) return;
         }
-        let p = document.createElement('div');
-        ((p.innerHTML = t.innerHTML), p.querySelector('.section-title')?.remove());
-        let a = p.innerHTML
-            .replace(
-              /\r\n?/g,
-              `
-`,
-            )
-            .replace(
-              /<br\s*\/?>[ \t]*\n?/gi,
-              `
-`,
-            )
-            .replace(/\n(?:[ \t]*\n)+/g, '\u2028')
-            .split('\u2028')
-            .map((r) =>
-              r
-                .split(/<br\s*\/?>|\n/)
-                .map((m) => y(m.replace(/<[^>]+>/g, ' ')))
-                .filter(Boolean),
-            )
-            .filter((r) => r.length),
-          c = [],
-          n = [];
-        a.forEach((r, m) => {
-          r.forEach((d, P) => {
-            (m > 0 && P === 0 && c.length && n.push(c.length), c.push(d));
+        const tmp = document.createElement('div');
+        tmp.innerHTML = td.innerHTML;
+        tmp.querySelector('.section-title')?.remove();
+        const paras = tmp.innerHTML
+          .replace(/\r\n?/g, '\n')
+          .replace(/<br\s*\/?>[ \t]*\n?/gi, '\n')
+          .replace(/\n(?:[ \t]*\n)+/g, '\u2028')
+          .split('\u2028')
+          .map((block) =>
+            block
+              .split(/<br\s*\/?>|\n/)
+              .map((l) => cleanPhpNoise(l.replace(/<[^>]+>/g, ' ')))
+              .filter(Boolean),
+          )
+          .filter((b) => b.length);
+        const items = [];
+        const paraIdx = [];
+        paras.forEach((block, bi) => {
+          block.forEach((it, ii) => {
+            if (bi > 0 && ii === 0 && items.length) paraIdx.push(items.length);
+            items.push(it);
           });
         });
-        let o = c;
-        if (!i && o.length && u(o[0]) === u(e)) {
-          o.shift();
-          for (let r = 0; r < n.length; r++) n[r] -= 1;
-          for (; n.length && n[0] <= 0;) n.shift();
+        const finalItems = items;
+        if (!hasSt && finalItems.length && normTitle(finalItems[0]) === normTitle(title)) {
+          finalItems.shift();
+          for (let k = 0; k < paraIdx.length; k++) paraIdx[k] -= 1;
+          while (paraIdx.length && paraIdx[0] <= 0) paraIdx.shift();
         }
-        (o.length > 1 &&
-          !/^[IVXLC]+\.\s/.test(o[0]) &&
-          o.slice(1).some((r) => /^II\.\s/.test(r)) &&
-          (o[0] = 'I. ' + o[0]),
-          e && f.push({ title: e, items: o, para: n }));
-      });
-      let nt = /^catatan\s*:?/i,
-        it = /^icd[\s-]*o\b\s*:?/i,
-        I = [];
-      for (let t of f) {
-        let e = [{ title: t.title, items: [], para: [] }],
-          i = e[0],
-          l = !1,
-          p = (a, c) => {
-            ((i = { title: a, items: [], para: [], bare: c }), e.push(i), (l = !0));
-          };
         if (
-          (t.items.forEach((a, c) => {
-            let n = a.match(nt),
-              o = n ? null : a.match(it);
-            if (n) {
-              u(i.title) !== 'catatan' && p('Catatan');
-              let r = a.slice(n[0].length).trim();
-              r && (t.para.includes(c) && i.para.push(i.items.length), i.items.push(r));
-              return;
+          finalItems.length > 1 &&
+          !/^[IVXLC]+\.\s/.test(finalItems[0]) &&
+          finalItems.slice(1).some((it) => /^II\.\s/.test(it))
+        ) {
+          finalItems[0] = 'I. ' + finalItems[0];
+        }
+        if (title) sections.push({ title, items: finalItems, para: paraIdx });
+      });
+      const MARK_CATATAN = /^catatan\s*:?/i;
+      const MARK_ICDO = /^icd[\s-]*o\b\s*:?/i;
+      const splitSections = [];
+      for (const s of sections) {
+        const parts = [{ title: s.title, items: [], para: [] }];
+        let cur = parts[0];
+        let openedVirtual = false;
+        const open = (t, bare) => {
+          cur = { title: t, items: [], para: [], bare };
+          parts.push(cur);
+          openedVirtual = true;
+        };
+        s.items.forEach((it, i) => {
+          const mCat = it.match(MARK_CATATAN);
+          const mIc = mCat ? null : it.match(MARK_ICDO);
+          if (mCat) {
+            if (normTitle(cur.title) !== 'catatan') open('Catatan');
+            const rest = it.slice(mCat[0].length).trim();
+            if (rest) {
+              if (s.para.includes(i)) cur.para.push(cur.items.length);
+              cur.items.push(rest);
             }
-            if (o) {
-              (u(i.title) !== 'icdo' && p('ICD-0', !0),
-                t.para.includes(c) && i.para.push(i.items.length),
-                i.items.push(a));
-              return;
-            }
-            (t.para.includes(c) && i.para.push(i.items.length), i.items.push(a));
-          }),
-          l)
-        )
-          for (let a of e) a.items.length && I.push(a);
-        else I.push(e[0]);
+            return;
+          }
+          if (mIc) {
+            if (normTitle(cur.title) !== 'icdo') open('ICD-0', true);
+            if (s.para.includes(i)) cur.para.push(cur.items.length);
+            cur.items.push(it);
+            return;
+          }
+          if (s.para.includes(i)) cur.para.push(cur.items.length);
+          cur.items.push(it);
+        });
+        if (openedVirtual) {
+          for (const p of parts) if (p.items.length) splitSections.push(p);
+        } else {
+          splitSections.push(parts[0]);
+        }
       }
-      ((f.length = 0),
-        f.push(...I),
-        f.forEach((t, e) => (t._i = e)),
-        f.sort((t, e) => {
-          let i = t._i ?? 0,
-            l = e._i ?? 0,
-            p = b.indexOf(u(t.title)),
-            a = b.indexOf(u(e.title)),
-            c = p === -1 ? b.length : p,
-            n = a === -1 ? b.length : a;
-          return c !== n ? c - n : i - l;
-        }));
-      function at(t) {
-        let e = '';
-        t instanceof HTMLSelectElement
-          ? (e = (
-              (t.selectedIndex >= 0 ? t.options[t.selectedIndex] : void 0)?.textContent ||
-              t.value ||
-              ''
-            ).trim())
-          : (t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement) &&
-            (e = (t.value || '').trim());
-        let i = (t.getAttribute('name') || '') + ' ' + (t.getAttribute('id') || ''),
-          l = t.getAttribute('placeholder') || '',
-          p = t.closest('tr, .form-group, .form-row, div')?.textContent || '';
-        return { val: e, ctx: (i + ' ' + l + ' ' + p).slice(0, 300) };
+      sections.length = 0;
+      sections.push(...splitSections);
+      sections.forEach((s, i) => (s._i = i));
+      sections.sort((a, b) => {
+        const ai = a._i ?? 0;
+        const bi = b._i ?? 0;
+        const ao = ORDER.indexOf(normTitle(a.title));
+        const bo = ORDER.indexOf(normTitle(b.title));
+        const ra = ao === -1 ? ORDER.length : ao;
+        const rb = bo === -1 ? ORDER.length : bo;
+        return ra !== rb ? ra - rb : ai - bi;
+      });
+      function fieldText(el) {
+        let val = '';
+        if (el instanceof HTMLSelectElement) {
+          const opt = el.selectedIndex >= 0 ? el.options[el.selectedIndex] : void 0;
+          val = (opt?.textContent || el.value || '').trim();
+        } else if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
+          val = (el.value || '').trim();
+        }
+        const ids = (el.getAttribute('name') || '') + ' ' + (el.getAttribute('id') || '');
+        const ph = el.getAttribute('placeholder') || '';
+        const row = el.closest('tr, .form-group, .form-row, div')?.textContent || '';
+        return { val, ctx: (ids + ' ' + ph + ' ' + row).slice(0, 300) };
       }
-      function ot(t, e, i) {
-        let l = e
+      function originalValue(doc2, printVal, ctxRe) {
+        const toks = printVal
           .toLowerCase()
           .split(/[^a-z0-9]+/)
           .filter(
-            (n) =>
-              n.length >= 4 &&
+            (t) =>
+              t.length >= 4 &&
               !/^(dokter|pengirim|rumah|sakit|klinik|tanpa|kelas|rsud|rs|sp|dr|dalam|luar)$/.test(
-                n,
+                t,
               ),
           );
-        if (!l.length) return '';
-        let p = l.sort((n, o) => o.length - n.length)[0],
-          a = '',
-          c = -1;
-        return (
-          t.querySelectorAll('input, textarea, select').forEach((n) => {
-            let { val: o, ctx: r } = at(n);
-            if (!o || o === e || !o.toLowerCase().includes(p)) return;
-            let m = i.test(r) ? 2 : 0;
-            m > c && ((c = m), (a = o));
-          }),
-          a
-        );
+        if (!toks.length) return '';
+        const anchor = toks.sort((a, b) => b.length - a.length)[0];
+        let best = '';
+        let bestScore = -1;
+        doc2.querySelectorAll('input, textarea, select').forEach((el) => {
+          const { val, ctx } = fieldText(el);
+          if (!val || val === printVal) return;
+          if (!val.toLowerCase().includes(anchor)) return;
+          const score = ctxRe.test(ctx) ? 2 : 0;
+          if (score > bestScore) {
+            bestScore = score;
+            best = val;
+          }
+        });
+        return best;
       }
-      function rt(t, e) {
-        return (t.querySelector(e)?.value || '').trim();
+      function inputFieldValue(doc2, sel) {
+        const el = doc2.querySelector(sel);
+        return (el?.value || '').trim();
       }
-      async function st(t) {
-        let e = new URLSearchParams(window.location.search).get('id');
-        if (!e) return;
-        let i = (n) => /ket\w*\s*klinis/i.test(n),
-          l = (n) => /^dokter/i.test(n) || /^rs\b/i.test(n),
-          p = t
-            .map(([n, o], r) => ({ label: n, value: o, idx: r }))
-            .filter((n) => (l(n.label) ? !!n.value : i(n.label)));
-        if (!p.length) return;
-        let a = new AbortController(),
-          c = window.setTimeout(() => a.abort(), 6e3);
+      async function overrideFromInput(info) {
+        const id = new URLSearchParams(window.location.search).get('id');
+        if (!id) return;
+        const isKlinis = (l) => /ket\w*\s*klinis/i.test(l);
+        const isDokRs = (l) => /^dokter/i.test(l) || /^rs\b/i.test(l);
+        const targets = info
+          .map(([l, v], i) => ({ label: l, value: v, idx: i }))
+          .filter((t) => (isDokRs(t.label) ? !!t.value : isKlinis(t.label)));
+        if (!targets.length) return;
+        const ctrl = new AbortController();
+        const timer = window.setTimeout(() => ctrl.abort(), 6e3);
         try {
-          let n = new URL(
-              '/laboratorium/input-hasil/input-hasil-pa?id_lab=' + encodeURIComponent(e),
-              window.location.href,
-            ),
-            o = await fetch(n.toString(), { credentials: 'same-origin', signal: a.signal });
-          if (!o.ok) {
-            window.console.info('[paPrint] override: fetch input status ' + o.status);
+          const url = new URL(
+            '/laboratorium/input-hasil/input-hasil-pa?id_lab=' + encodeURIComponent(id),
+            window.location.href,
+          );
+          const res = await fetch(url.toString(), {
+            credentials: 'same-origin',
+            signal: ctrl.signal,
+          });
+          if (!res.ok) {
+            window.console.info('[paPrint] override: fetch input status ' + res.status);
             return;
           }
-          let r = await o.text(),
-            m = new DOMParser().parseFromString(r, 'text/html');
+          const html = await res.text();
+          const doc2 = new DOMParser().parseFromString(html, 'text/html');
           window.console.info(
             '[paPrint] override: input title="' +
-              (m.title || '').slice(0, 60) +
+              (doc2.title || '').slice(0, 60) +
               '" len=' +
-              r.length +
+              html.length +
               ' fields=' +
-              m.querySelectorAll('input, textarea, select').length,
+              doc2.querySelectorAll('input, textarea, select').length,
           );
-          for (let d of p) {
-            if (i(d.label)) {
-              let ft = rt(
-                  m,
-                  '#keterangan_klinis, textarea[name="keterangan_klinis"], input[name="keterangan_klinis"]',
-                ),
-                j = y(z(ft));
-              (window.console.info(
-                '[paPrint] override: ' + d.label + ' cetak="' + d.value + '" input="' + j + '"',
-              ),
-                j && j !== d.value && (t[d.idx][1] = j));
+          for (const t of targets) {
+            if (isKlinis(t.label)) {
+              const rawK = inputFieldValue(
+                doc2,
+                '#keterangan_klinis, textarea[name="keterangan_klinis"], input[name="keterangan_klinis"]',
+              );
+              const klinis = cleanPhpNoise(stripTags(rawK));
+              window.console.info(
+                '[paPrint] override: ' +
+                  t.label +
+                  ' cetak="' +
+                  t.value +
+                  '" input="' +
+                  klinis +
+                  '"',
+              );
+              if (klinis && klinis !== t.value) info[t.idx][1] = klinis;
               continue;
             }
-            let P = /^dokter/i.test(d.label)
-                ? /dokter|pengirim|luar|dalam|rujuk/i
-                : /rs\b|rumah\s*sakit|faskes|asal/i,
-              ut = ot(m, d.value, P),
-              C = y(z(ut || ''));
-            (window.console.info(
-              '[paPrint] override: ' + d.label + ' cetak="' + d.value + '" input="' + C + '"',
-            ),
-              C && C !== d.value && (t[d.idx][1] = C));
+            const ctxRe = /^dokter/i.test(t.label)
+              ? /dokter|pengirim|luar|dalam|rujuk/i
+              : /rs\b|rumah\s*sakit|faskes|asal/i;
+            const raw = originalValue(doc2, t.value, ctxRe);
+            const orig = cleanPhpNoise(stripTags(raw || ''));
+            window.console.info(
+              '[paPrint] override: ' + t.label + ' cetak="' + t.value + '" input="' + orig + '"',
+            );
+            if (orig && orig !== t.value) info[t.idx][1] = orig;
           }
         } catch {
           window.console.info('[paPrint] override: fetch gagal, pakai nilai server');
         } finally {
-          window.clearTimeout(c);
+          window.clearTimeout(timer);
         }
       }
-      await st(T).catch(() => {});
-      let x = Array.from(document.querySelectorAll('.contentlab ~ div table td'))
-          .map((t) => g(t))
-          .filter(Boolean),
-        _ = x[0] || '',
-        O = x[1] || '',
-        L = document.querySelector('.contentlab ~ div table img')?.getAttribute('src') || '',
-        K = x.find((t) => /^\(.*\)$/.test(t)) || x[2] || '',
-        F = x.find((t) => /^nip\.?/i.test(t)) || x[3] || '',
-        W =
-          document.querySelector('a.tombol[href*="export"]')?.getAttribute('href') ||
-          window.location.href + '&export=word',
-        lt = Array.from(document.body.querySelectorAll('script')),
-        ct = (t) =>
-          t
-            .toLowerCase()
-            .split(/\s+/)
-            .map((e) => e && e.charAt(0).toUpperCase() + e.slice(1))
-            .join(' '),
-        k = T.map(([t, e]) => {
-          if (!/^ruang/i.test(t)) return [t, e];
-          let i = e.replace(/^poli\s+.+?-\s*(?=klinik)/i, '').trim() || e,
-            p = i.replace(/^(\S+)\s+-\s*(?=\1\b)/i, '').trim() || i,
-            a = p.split(/\s+-\s*/);
-          if (a.length >= 3 && /rawat\s+inap/i.test(a[1])) {
-            let c = ct(a[1].trim()),
-              n = a.slice(2).join(' - ').trim(),
-              o = n ? c + ' - ' + n : c;
-            if (o) return [t, o];
-          }
-          return [t, p];
-        }),
-        pt = k
-          .map(
-            ([t, e]) =>
-              '<div class="info-item"><div class="info-label">' +
-              s(t) +
-              '</div><div class="info-colon">:</div><div class="info-value">' +
-              s(e) +
-              '</div></div>',
-          )
-          .join(''),
-        V = (t) => (/^icd-?o\s*:/i.test(t) ? '<strong>' + s(t) + '</strong>' : s(t)),
-        $ = (t) => /^catatan/i.test(t.trim()),
-        G = (t) =>
-          t
-            .replace(/^catatan\s*:?\s*/i, '')
-            .replace(/^[-•–—*]+\s*/, '')
-            .trim(),
-        dt = k.find(([t]) => /^no\.?pa/i.test(t))?.[1].replace(/[^a-zA-Z0-9]+/g, '-') || 'tanpa-no';
-      function Q(t) {
-        if (/^data:/i.test(t)) return Promise.resolve(t);
-        let e = new URL(t, window.location.href).href;
-        return fetch(e)
-          .then((i) => {
-            if (!i.ok) throw new Error('img ' + i.status);
-            return i.blob();
+      await overrideFromInput(infoItems).catch(() => {});
+      const sigTds = Array.from(document.querySelectorAll('.contentlab ~ div table td'));
+      const sigTexts = sigTds.map((td) => txt(td)).filter(Boolean);
+      const thanks = sigTexts[0] || '';
+      const dateLine = sigTexts[1] || '';
+      const qrSrc =
+        document.querySelector('.contentlab ~ div table img')?.getAttribute('src') || '';
+      const docName = sigTexts.find((t) => /^\(.*\)$/.test(t)) || sigTexts[2] || '';
+      const nip = sigTexts.find((t) => /^nip\.?/i.test(t)) || sigTexts[3] || '';
+      const exportHref =
+        document.querySelector('a.tombol[href*="export"]')?.getAttribute('href') ||
+        window.location.href + '&export=word';
+      const bodyScripts = Array.from(document.body.querySelectorAll('script'));
+      const titleCase = (s) =>
+        s
+          .toLowerCase()
+          .split(/\s+/)
+          .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1) : w))
+          .join(' ');
+      const infoClean = infoItems.map(([l, v]) => {
+        if (!/^ruang/i.test(l)) return [l, v];
+        const dedup = v.replace(/^poli\s+.+?-\s*(?=klinik)/i, '').trim() || v;
+        const segDup = dedup.replace(/^(\S+)\s+-\s*(?=\1\b)/i, '').trim();
+        const base = segDup || dedup;
+        const segs = base.split(/\s+-\s*/);
+        if (segs.length >= 3 && /rawat\s+inap/i.test(segs[1])) {
+          const mid = titleCase(segs[1].trim());
+          const rest = segs.slice(2).join(' - ').trim();
+          const out = rest ? mid + ' - ' + rest : mid;
+          if (out) return [l, out];
+        }
+        return [l, base];
+      });
+      const infoHtml = infoClean
+        .map(
+          ([l, v]) =>
+            '<div class="info-item"><div class="info-label">' +
+            esc(l) +
+            '</div><div class="info-colon">:</div><div class="info-value">' +
+            esc(v) +
+            '</div></div>',
+        )
+        .join('');
+      const fmtItem = (it) =>
+        // Baris ICD-O tampil bold seperti prototype (ICD-0: 8210/0 …).
+        /^icd-?o\s*:/i.test(it) ? '<strong>' + esc(it) + '</strong>' : esc(it);
+      const isCatatan = (t) => /^catatan/i.test(t.trim());
+      const stripBullet = (it) =>
+        it
+          .replace(/^catatan\s*:?\s*/i, '')
+          .replace(/^[-•–—*]+\s*/, '')
+          .trim();
+      const noPA =
+        infoClean.find(([l]) => /^no\.?pa/i.test(l))?.[1].replace(/[^a-zA-Z0-9]+/g, '-') ||
+        'tanpa-no';
+      function dataUrl(src) {
+        if (/^data:/i.test(src)) return Promise.resolve(src);
+        const abs = new URL(src, window.location.href).href;
+        return fetch(abs)
+          .then((res) => {
+            if (!res.ok) throw new Error('img ' + res.status);
+            return res.blob();
           })
           .then(
-            (i) =>
-              new Promise((l, p) => {
-                let a = new FileReader();
-                ((a.onload = () => l(String(a.result))),
-                  (a.onerror = () => p(a.error)),
-                  a.readAsDataURL(i));
+            (blob) =>
+              new Promise((resolve, reject) => {
+                const fr = new FileReader();
+                fr.onload = () => resolve(String(fr.result));
+                fr.onerror = () => reject(fr.error);
+                fr.readAsDataURL(blob);
               }),
           )
-          .catch(() => e);
+          .catch(() => abs);
       }
-      async function mt() {
-        let [t, e] = await Promise.all([Q(q), L ? Q(L) : Promise.resolve('')]),
-          i = '';
-        for (let n = 0; n < k.length; n += 2) {
-          let o = k[n],
-            r = k[n + 1];
-          i +=
+      async function exportWord() {
+        const [logo, qr] = await Promise.all([
+          dataUrl(logoSrc),
+          qrSrc ? dataUrl(qrSrc) : Promise.resolve(''),
+        ]);
+        let infoTbl = '';
+        for (let r = 0; r < infoClean.length; r += 2) {
+          const a2 = infoClean[r];
+          const b = infoClean[r + 1];
+          infoTbl +=
             '<tr><td>' +
-            s(o[0]) +
+            esc(a2[0]) +
             '</td><td>:</td><td>' +
-            s(o[1]) +
+            esc(a2[1]) +
             '</td>' +
-            (r
-              ? '<td>' + s(r[0]) + '</td><td>:</td><td>' + s(r[1]) + '</td>'
+            (b
+              ? '<td>' + esc(b[0]) + '</td><td>:</td><td>' + esc(b[1]) + '</td>'
               : '<td></td><td></td><td></td>') +
             '</tr>';
         }
-        let l = '';
-        for (let n of f) {
-          if ($(n.title)) {
-            let o = n.items.length ? n.items : ['Tidak ada'];
-            l +=
+        let hasilDoc = '';
+        for (const s of sections) {
+          if (isCatatan(s.title)) {
+            const rows = s.items.length ? s.items : ['Tidak ada'];
+            hasilDoc +=
               '<table border="0" cellspacing="0" cellpadding="2"><tr><td valign="top"><b><u>CATATAN:</u></b></td><td>' +
-              o.map((r) => '- ' + s(G(r) || 'Tidak ada')).join('<br>') +
+              rows.map((it) => '- ' + esc(stripBullet(it) || 'Tidak ada')).join('<br>') +
               '</td></tr></table>';
             continue;
           }
-          if (n.bare) {
-            n.items.forEach((o, r) => {
-              l +=
+          if (s.bare) {
+            s.items.forEach((it, i) => {
+              hasilDoc +=
                 '<p style="margin:' +
-                (r === 0 ? '12pt' : '0') +
+                (i === 0 ? '12pt' : '0') +
                 ' 0 6pt 0;font-size:11pt;"><b>' +
-                s(o.toUpperCase()) +
+                esc(it.toUpperCase()) +
                 '</b></p>';
             });
             continue;
           }
-          ((l +=
+          hasilDoc +=
             '<p style="margin:12pt 0 0 0;font-size:11pt;"><b><u>' +
-            s(n.title.toUpperCase()) +
-            '</u></b></p>'),
-            n.items.forEach((o, r) => {
-              l +=
-                '<p style="margin:' +
-                (n.para.includes(r) ? '14pt' : '0') +
-                ' 0 6pt 0;text-align:justify;">' +
-                V(o) +
-                '</p>';
-            }));
+            esc(s.title.toUpperCase()) +
+            '</u></b></p>';
+          s.items.forEach((it, i) => {
+            hasilDoc +=
+              '<p style="margin:' +
+              (s.para.includes(i) ? '14pt' : '0') +
+              ' 0 6pt 0;text-align:justify;">' +
+              fmtItem(it) +
+              '</p>';
+          });
         }
-        let p =
-            '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>' +
-            s(R) +
-            '</title></head><body style="font-family:Arial,sans-serif;font-size:11pt;"><table border="0" width="100%" cellspacing="0" cellpadding="4"><tr><td width="110" valign="middle"><img src="' +
-            t +
-            '" width="90"></td><td align="center">' +
-            v
-              .slice(0, 3)
-              .map((n) => '<b style="font-size:16pt;">' + s(n) + '</b>')
-              .join('<br>') +
-            '<br><span style="font-size:9pt;">' +
-            w.map((n) => s(n)).join('<br>') +
-            '</span></td></tr></table><hr><p align="center"><b><u>' +
-            s(R.toUpperCase()) +
-            '</u></b></p><table border="0" cellspacing="0" cellpadding="2">' +
-            i +
-            '</table>' +
-            l +
-            '<table border="0" width="100%" cellspacing="0" cellpadding="0"><tr><td width="60%"></td><td align="center"><p style="margin:0 0 6pt 0;">' +
-            s(_) +
-            '</p><p style="margin:0 0 6pt 0;">' +
-            s(O) +
-            '</p>' +
-            (e
-              ? '<p style="margin:0 0 6pt 0;"><img src="' + e + '" width="80" height="80"></p>'
-              : '') +
-            '<p style="margin:0 0 6pt 0;"><b>' +
-            s(K) +
-            '</b></p><p style="margin:0 0 6pt 0;">' +
-            s(F) +
-            '</p></td></tr></table></body></html>',
-          a = new Blob(['\uFEFF' + p], { type: 'application/msword' }),
-          c = document.createElement('a');
-        ((c.href = URL.createObjectURL(a)),
-          (c.download = 'Hasil-PA-' + dt + '.doc'),
-          document.body.appendChild(c),
-          c.click(),
-          window.setTimeout(() => {
-            (URL.revokeObjectURL(c.href), c.remove());
-          }, 4e3));
+        const doc =
+          '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>' +
+          esc(judul) +
+          '</title></head><body style="font-family:Arial,sans-serif;font-size:11pt;"><table border="0" width="100%" cellspacing="0" cellpadding="4"><tr><td width="110" valign="middle"><img src="' +
+          logo +
+          '" width="90"></td><td align="center">' +
+          kopLines
+            .slice(0, 3)
+            .map((l) => '<b style="font-size:16pt;">' + esc(l) + '</b>')
+            .join('<br>') +
+          '<br><span style="font-size:9pt;">' +
+          addrLines.map((l) => esc(l)).join('<br>') +
+          '</span></td></tr></table><hr><p align="center"><b><u>' +
+          esc(judul.toUpperCase()) +
+          '</u></b></p><table border="0" cellspacing="0" cellpadding="2">' +
+          infoTbl +
+          '</table>' +
+          hasilDoc +
+          '<table border="0" width="100%" cellspacing="0" cellpadding="0"><tr><td width="60%"></td><td align="center"><p style="margin:0 0 6pt 0;">' +
+          esc(thanks) +
+          '</p><p style="margin:0 0 6pt 0;">' +
+          esc(dateLine) +
+          '</p>' +
+          (qr
+            ? '<p style="margin:0 0 6pt 0;"><img src="' + qr + '" width="80" height="80"></p>'
+            : '') +
+          '<p style="margin:0 0 6pt 0;"><b>' +
+          esc(docName) +
+          '</b></p><p style="margin:0 0 6pt 0;">' +
+          esc(nip) +
+          '</p></td></tr></table></body></html>';
+        const blob = new Blob(['\uFEFF' + doc], { type: 'application/msword' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'Hasil-PA-' + noPA + '.doc';
+        document.body.appendChild(a);
+        a.click();
+        window.setTimeout(() => {
+          URL.revokeObjectURL(a.href);
+          a.remove();
+        }, 4e3);
       }
-      let gt = f
-        .map((t) => {
-          if ($(t.title))
+      const hasilHtml = sections
+        .map((s) => {
+          if (isCatatan(s.title)) {
+            const rows = s.items.length ? s.items : ['Tidak ada'];
             return (
               '<div class="section-catatan"><span class="catatan-label">Catatan:</span><div class="catatan-list">' +
-              (t.items.length ? t.items : ['Tidak ada'])
+              rows
                 .map(
-                  (l) =>
+                  (it) =>
                     '<div class="catatan-item"><span class="catatan-dash">-</span><span>' +
-                    s(G(l) || 'Tidak ada') +
+                    esc(stripBullet(it) || 'Tidak ada') +
                     '</span></div>',
                 )
                 .join('') +
               '</div></div>'
             );
-          let e =
+          }
+          const isi =
             '<div class="' +
-            (t.bare ? 'section-isi section-isi-bare' : 'section-isi') +
+            (s.bare ? 'section-isi section-isi-bare' : 'section-isi') +
             '">' +
-            t.items
+            s.items
               .map(
-                (i, l) =>
+                (it, i) =>
                   '<div class="item-list' +
-                  (t.para.includes(l) ? ' item-para' : '') +
+                  (s.para.includes(i) ? ' item-para' : '') +
                   '">' +
-                  V(i) +
+                  fmtItem(it) +
                   '</div>',
               )
               .join('') +
             '</div>';
-          return t.bare ? e : '<div class="section-judul">' + s(t.title) + '</div>' + e;
+          if (s.bare) return isi;
+          return '<div class="section-judul">' + esc(s.title) + '</div>' + isi;
         })
         .join('');
-      ((document.body.innerHTML =
+      document.body.innerHTML =
         '<a href="' +
-        s(W) +
+        esc(exportHref) +
         '" class="btn-back" id="btn-word">Export Word</a><span id="SCETAK"><button onclick="cetak()" class="btn-print">Cetak Dokumen</button></span><div class="page-a4"><div class="head-cetak"><div id="logo"><img src="' +
-        s(q) +
+        esc(logoSrc) +
         '" alt="Logo"></div><div class="kop-text">' +
-        v
+        kopLines
           .slice(0, 3)
-          .map((t) => '<h1 class="kop-atas">' + s(t) + '</h1>')
+          .map((l) => '<h1 class="kop-atas">' + esc(l) + '</h1>')
           .join('') +
         '<div class="kop-alamat">' +
-        w.map((t) => s(t)).join('<br>') +
+        addrLines.map((l) => esc(l)).join('<br>') +
         '</div></div></div><hr class="kop-hr"><div class="head-cetak-instansi">' +
-        s(R) +
+        esc(judul) +
         '</div><div class="patient-info-container">' +
-        pt +
+        infoHtml +
         '</div><div class="hasil-pa">' +
-        gt +
+        hasilHtml +
         '</div><div class="ttd-container clearfix"><div class="ttd-box"><p>' +
-        s(_) +
+        esc(thanks) +
         '</p><p>' +
-        s(O) +
+        esc(dateLine) +
         '</p>' +
-        (L ? '<img src="' + s(L) + '" alt="QR Code TTD">' : '') +
+        (qrSrc ? '<img src="' + esc(qrSrc) + '" alt="QR Code TTD">' : '') +
         '<p style="font-weight: bold; margin-bottom: 0;">' +
-        s(K) +
+        esc(docName) +
         '</p><p style="margin-top: 2px;">' +
-        s(F) +
-        '</p></div></div></div>'),
-        lt.forEach((t) => document.body.appendChild(t)),
-        document.querySelector('#btn-word')?.addEventListener('click', (t) => {
-          (t.preventDefault(),
-            mt().catch(() => {
-              window.location.href = W;
-            }));
-        }),
-        document.head.querySelectorAll('style, link[rel="stylesheet"]').forEach((t) => t.remove()));
-      let J = 'ext-pa-print-style';
-      if (!document.getElementById(J)) {
-        let t = document.createElement('style');
-        ((t.id = J),
-          (t.textContent = `
+        esc(nip) +
+        '</p></div></div></div>';
+      bodyScripts.forEach((s) => document.body.appendChild(s));
+      document.querySelector('#btn-word')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        exportWord().catch(() => {
+          window.location.href = exportHref;
+        });
+      });
+      document.head.querySelectorAll('style, link[rel="stylesheet"]').forEach((el) => el.remove());
+      const STYLE_ID = 'ext-pa-print-style';
+      if (!document.getElementById(STYLE_ID)) {
+        const s = document.createElement('style');
+        s.id = STYLE_ID;
+        s.textContent = `
         @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
         /* Pengaturan Font dan Kertas untuk Cetak */
@@ -908,15 +938,19 @@ var __morbis_feature = (() => {
                 font-size: 13pt;
             }
         }
-      `),
-          document.head.appendChild(t));
+      `;
+        document.head.appendChild(s);
       }
     }
-    let X = Date.now(),
-      H = window.setInterval(() => {
-        document.documentElement.getAttribute('data-ext-pa-print') === '1'
-          ? (window.clearInterval(H), Y().catch(() => {}))
-          : Date.now() - X > 5e3 && window.clearInterval(H);
-      }, 200);
+    const t0 = Date.now();
+    const iv = window.setInterval(() => {
+      if (document.documentElement.getAttribute('data-ext-pa-print') === '1') {
+        window.clearInterval(iv);
+        apply().catch(() => {});
+      } else if (Date.now() - t0 > 5e3) {
+        window.clearInterval(iv);
+      }
+    }, 200);
   })();
 })();
+//# sourceMappingURL=paLabPrint.js.map

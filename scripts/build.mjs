@@ -46,6 +46,8 @@ async function compileFeatureFiles() {
 
   const tsFeaturesDir = join(srcDir, 'features');
 
+  const failed = [];
+
   const tsFiles = [
     'fixJasaPelayanan.ts',
     'shared/types.ts',
@@ -128,15 +130,22 @@ async function compileFeatureFiles() {
       });
       console.log(`[build] Compiled ${relativePath}`);
     } catch (e) {
-      console.warn(`[build] Failed to compile ${relativePath}: ${e.message?.slice(0, 120) || e}`);
+      const msg = e?.message?.slice(0, 120) || e;
+      // JANGAN sembunyikan kegagalan: catat & (di build non-watch) buat exit
+      // non-zero agar CI tidak meng-pack stub ke CRX. Dulu error ini ditelan
+      // (exit 0 + "Build complete") sehingga fitur rusak ikut ship ke update.xml
+      // tanpa disadari (batchUploadUrl.js jadi stub di v1.5.30–v1.5.32).
+      console.warn(`[build] Failed to compile ${relativePath}: ${msg}`);
+      failed.push(`${relativePath}: ${msg}`);
       // Write empty stub so manifest entry doesn't break extension load
       writeFileSync(jsOutputPath, '// compile failed — stub');
     }
   }
+  return failed;
 }
 
 async function copyFeatureFiles() {
-  await compileFeatureFiles();
+  return await compileFeatureFiles();
 }
 
 function findTsFiles(dir) {
@@ -258,8 +267,20 @@ async function build() {
   // Build handled by vite.config.ts
 
   await copyStaticFiles();
-  await copyFeatureFiles();
+  const failedFeatures = await copyFeatureFiles();
   generateManifest();
+
+  if (failedFeatures.length > 0) {
+    console.error(
+      `[build] Build FAILED — ${failedFeatures.length} feature(s) gagal compile:\n  - ` +
+        failedFeatures.join('\n  - '),
+    );
+    if (!isWatch) {
+      process.exitCode = 1;
+      return;
+    }
+  }
+
   console.log('[build] Build complete → dist/');
 }
 

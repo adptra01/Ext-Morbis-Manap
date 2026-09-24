@@ -1,69 +1,85 @@
 'use strict';
 var __morbis_feature = (() => {
+  // src/features/fetchWatchdog.ts
   (() => {
     if (!window.location.pathname.includes('/detail-v2-refaktor')) return;
-    let d = '.sweet-overlay, .sweet-alert, .swal2-container',
-      r = 15e3,
-      n = { active: 0, seen: !1 };
-    function o() {
-      let t = document.querySelector(d);
-      if (!t || !/mohon tunggu|menyiapkan data|sedang memuat/i.test(t.textContent || '')) return !1;
-      let e = window.getComputedStyle(t);
-      return !(e.display === 'none' || e.visibility === 'hidden' || Number(e.opacity) === 0);
+    const MODAL_SEL = '.sweet-overlay, .sweet-alert, .swal2-container';
+    const REQUEST_TIMEOUT_MS = 15e3;
+    const state = { active: 0, seen: false };
+    function modalVisible() {
+      const modal = document.querySelector(MODAL_SEL);
+      if (!modal) return false;
+      if (!/mohon tunggu|menyiapkan data|sedang memuat/i.test(modal.textContent || ''))
+        return false;
+      const cs = window.getComputedStyle(modal);
+      if (cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) === 0) {
+        return false;
+      }
+      return true;
     }
-    function a(t) {
-      return t ? (t.startsWith('/') ? !0 : t.startsWith(window.location.origin)) : !1;
+    function isSameOriginRequest(url) {
+      if (!url) return false;
+      if (url.startsWith('/')) return true;
+      return url.startsWith(window.location.origin);
     }
-    function c() {
-      n.active > 0 ||
-        !n.seen ||
-        ((n.seen = !1), o() && window.postMessage({ __extPartialSettled: !0 }, '*'));
+    function maybeSettle() {
+      if (state.active > 0 || !state.seen) return;
+      state.seen = false;
+      if (modalVisible()) window.postMessage({ __extPartialSettled: true }, '*');
     }
-    let l = window.fetch;
-    window.fetch = function (t, e) {
-      let s = typeof t == 'string' ? t : t instanceof URL ? t.toString() : t.url;
-      if (
-        !(
-          ((e?.method ?? (t instanceof Request ? t.method : '')) || 'GET').toUpperCase() === 'GET'
-        ) ||
-        !a(s) ||
-        !o()
-      )
-        return l.call(this, t, e);
-      ((n.active += 1), (n.seen = !0));
-      let i = new AbortController(),
-        h = window.setTimeout(() => i.abort(), r),
-        g =
-          e?.signal && typeof AbortSignal.any == 'function'
-            ? AbortSignal.any([i.signal, e.signal])
-            : i.signal,
-        p = { ...(e ?? {}), signal: g };
-      return l.call(this, t, p).finally(() => {
-        (window.clearTimeout(h), (n.active -= 1), c());
+    const origFetch = window.fetch;
+    window.fetch = function (input, init) {
+      const url =
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+      const method = (init?.method ?? (input instanceof Request ? input.method : '')) || 'GET';
+      const isGet = method.toUpperCase() === 'GET';
+      if (!isGet || !isSameOriginRequest(url) || !modalVisible()) {
+        return origFetch.call(this, input, init);
+      }
+      state.active += 1;
+      state.seen = true;
+      const ctrl = new AbortController();
+      const timer = window.setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
+      const signal =
+        init?.signal && typeof AbortSignal.any === 'function'
+          ? AbortSignal.any([ctrl.signal, init.signal])
+          : ctrl.signal;
+      const finalInit = { ...(init ?? {}), signal };
+      return origFetch.call(this, input, finalInit).finally(() => {
+        window.clearTimeout(timer);
+        state.active -= 1;
+        maybeSettle();
       });
     };
-    let u = XMLHttpRequest.prototype.open,
-      f = XMLHttpRequest.prototype.send;
-    ((XMLHttpRequest.prototype.open = function (t, e, ...s) {
-      return (
-        (this.__extMethod = (t || 'GET').toUpperCase()),
-        (this.__extUrl = e instanceof URL ? e.toString() : String(e)),
-        u.apply(this, [t, e, ...s])
-      );
-    }),
-      (XMLHttpRequest.prototype.send = function (...t) {
-        if (this.__extMethod === 'GET' && this.__extUrl && a(this.__extUrl) && o()) {
-          ((n.active += 1), (n.seen = !0));
-          let e = window.setTimeout(() => {
-            try {
-              this.abort();
-            } catch {}
-          }, r);
-          this.addEventListener('loadend', () => {
-            (window.clearTimeout(e), (n.active -= 1), c());
-          });
-        }
-        return f.apply(this, t);
-      }));
+    const origOpen = XMLHttpRequest.prototype.open;
+    const origSend = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.open = function (method, url, ...rest) {
+      this.__extMethod = (method || 'GET').toUpperCase();
+      this.__extUrl = url instanceof URL ? url.toString() : String(url);
+      return origOpen.apply(this, [method, url, ...rest]);
+    };
+    XMLHttpRequest.prototype.send = function (...args) {
+      if (
+        this.__extMethod === 'GET' &&
+        this.__extUrl &&
+        isSameOriginRequest(this.__extUrl) &&
+        modalVisible()
+      ) {
+        state.active += 1;
+        state.seen = true;
+        const timer = window.setTimeout(() => {
+          try {
+            this.abort();
+          } catch {}
+        }, REQUEST_TIMEOUT_MS);
+        this.addEventListener('loadend', () => {
+          window.clearTimeout(timer);
+          state.active -= 1;
+          maybeSettle();
+        });
+      }
+      return origSend.apply(this, args);
+    };
   })();
 })();
+//# sourceMappingURL=fetchWatchdog.js.map
