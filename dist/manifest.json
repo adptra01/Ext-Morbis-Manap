@@ -27,12 +27,7 @@
   },
   "content_scripts": [
     {
-      "matches": [
-        "http://*/v2/m-klaim*",
-        "http://*/billing/pembayaran-new/billing-verifikasi*",
-        "http://*/inventory/penjualan-bebas*",
-        "http://*/inventory/resep/penerimaan*"
-      ],
+      "matches": ["http://*/v2/m-klaim*"],
       "js": ["features/openDetailWindowOpen.js"],
       "run_at": "document_start",
       "world": "MAIN",
@@ -42,8 +37,7 @@
       "matches": [
         "http://*/v2/m-klaim*",
         "http://*/billing/pembayaran-new/billing-verifikasi*",
-        "http://*/inventory/penjualan-bebas*",
-        "http://*/inventory/resep/penerimaan*"
+        "http://*/inventory/penjualan-bebas*"
       ],
       "js": [
         "core.js",

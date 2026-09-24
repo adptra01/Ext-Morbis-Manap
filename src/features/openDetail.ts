@@ -74,7 +74,7 @@ const OPEN_DETAIL_CONFIG = {
  * ------------------------------------------------------------------ */
 function extractIdFromAttr(attrValue: string | null | undefined): string | null {
   if (!attrValue) return null;
-  // detail( / detail_pemeriksaan( / showDetail( / Detail ( —本案 various.
+  // detail( / detail_pemeriksaan( / showDetail( — berbagai variasi nama.
   const patterns = [
     /detail[^(]*\(\s*['"]?(\d+)/i,
     /id_visit\s*=\s*['"]?(\d+)/i,
@@ -88,7 +88,7 @@ function extractIdFromAttr(attrValue: string | null | undefined): string | null 
   return null;
 }
 
-/** Key dataset yang mungkin Holds id visit. */
+/** Key dataset yang mungkin memuat id visit. */
 function extractIdFromDataset(el: HTMLElement): string | null {
   const el2 = el as HTMLElement & { dataset: Record<string, string | undefined> };
   const d = el2.dataset;
@@ -365,7 +365,7 @@ function overrideButtonsByText(): void {
 
 function installListeners(): void {
   if (_listenersInstalled) return;
-  // window capturedulam document capture → selalu jalan lebih dulu.
+  // window capture di- document capture → selalu jalan lebih dulu.
   window.addEventListener('click', handleDetailClick, true);
   document.addEventListener('click', handleDetailClick, true);
   _listenersInstalled = true;
@@ -445,17 +445,10 @@ if (typeof g.featureModules !== 'undefined') {
     id: 'openDetailInNewTab',
     name: 'Open Detail Mode',
     description: 'Buka detail di tab yang sama / tab baru sesuai mode (cegat handler bawaan)',
-    // PENTING: prefix TANPA slash akhir. normalizePath() menghapus slash
-    // akhir, jadi '/v2/m-klaim/' TIDAK akan match '/v2/m-klaim' → fitur
-    // ter-skip dan mode jadi tidak berefek.
-    match: {
-      oneOf: [
-        { prefix: '/v2/m-klaim' },
-        { prefix: '/billing/pembayaran-new' },
-        { prefix: '/inventory/penjualan-bebas' },
-        { prefix: '/inventory/resep/penerimaan' },
-      ],
-    },
+    // Hanya halaman m-klaim. Prefix TANPA slash akhir: normalizePath()
+    // membuang slash akhir, jadi '/v2/m-klaim/' TIDAK akan match '/v2/m-klaim'
+    // → fitur ter-skip dan mode jadi tidak berefek.
+    match: { prefix: '/v2/m-klaim' },
     run: runOpenDetailInNewTabFeature,
   };
 } else {

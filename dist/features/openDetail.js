@@ -1,9 +1,9 @@
 'use strict';
 var __morbis_feature = (() => {
-  function h() {
+  function w() {
     return window;
   }
-  var c = h(),
+  var c = w(),
     u = null,
     d = null,
     s = null,
@@ -79,8 +79,8 @@ var __morbis_feature = (() => {
       let o = M(r);
       if (o) return o;
       for (let C of ['onclick', 'href', 'data-id-visit', 'data-detail-id']) {
-        let w = D(r.getAttribute(C));
-        if (w) return w;
+        let h = D(r.getAttribute(C));
+        if (h) return h;
       }
       r = r.parentElement;
     }
@@ -116,25 +116,25 @@ var __morbis_feature = (() => {
       e
     );
   }
-  function v(t) {
+  function p(t) {
     return t.dataset.detailModified === 'true';
   }
-  function y() {
+  function I() {
     return c.currentConfig?.features?.openDetailInNewTab;
   }
-  function I() {
-    return y()?.mode || 'same-tab';
+  function y() {
+    return I()?.mode || 'same-tab';
   }
   function m() {
-    return y()?.enabled ? c.ExtensionCore.isFeatureAllowed('openDetailInNewTab') : !1;
+    return I()?.enabled ? c.ExtensionCore.isFeatureAllowed('openDetailInNewTab') : !1;
   }
   function L(t) {
     let e = T(t),
-      n = I();
+      n = y();
     (console.log(`[OpenDetail] Buka detail ID: ${t}, mode: ${n}`),
       n === 'new-tab' ? window.open(e, '_blank', 'noopener') : (window.location.href = e));
   }
-  function O(t) {
+  function F(t) {
     let e = t;
     if (!e || typeof e.closest != 'function') return null;
     for (let r of a.buttonSelectors)
@@ -153,7 +153,7 @@ var __morbis_feature = (() => {
       !m()
     )
       return;
-    let e = O(t.target);
+    let e = F(t.target);
     if (!e) return;
     let n = A(e);
     if (!n) {
@@ -163,7 +163,7 @@ var __morbis_feature = (() => {
     (E.add(t), t.preventDefault(), t.stopPropagation(), t.stopImmediatePropagation(), L(n));
   }
   function b(t) {
-    if (v(t)) return;
+    if (p(t)) return;
     let e = A(t);
     if (!e) {
       a.debug && console.log('[OpenDetail] Gagal mengekstrak ID dari elemen:', t);
@@ -187,7 +187,7 @@ var __morbis_feature = (() => {
       ),
       a.debug && console.log(`[OpenDetail] Tombol detail ID: ${e} berhasil di-override`));
   }
-  function p() {
+  function v() {
     if (m())
       for (let t of a.buttonSelectors)
         try {
@@ -196,7 +196,7 @@ var __morbis_feature = (() => {
           a.debug && console.warn(`[OpenDetail] Invalid selector skipped: ${t}`);
         }
   }
-  function F() {
+  function O() {
     document.querySelectorAll('[data-detail-modified="true"]').forEach((e) => {
       let n = e.dataset.originalOnclick;
       n && n !== '' && e.setAttribute('onclick', n);
@@ -212,13 +212,13 @@ var __morbis_feature = (() => {
   function S() {
     if (!m()) return;
     (document.querySelectorAll('button, a, [onclick]').forEach((e) => {
-      /\bdetail\b/i.test(e.textContent || '') && !v(e) && b(e);
+      /\bdetail\b/i.test(e.textContent || '') && !p(e) && b(e);
     }),
       document.querySelectorAll('td').forEach((e) => {
         (e.textContent || '').toLowerCase().includes('detail') &&
           e.querySelectorAll('button, a, span, div, [onclick]').forEach((r) => {
             let i = (r.textContent || '').trim().toLowerCase();
-            !v(r) &&
+            !p(r) &&
               (i === 'detail' || i === 'view' || i === 'lihat' || /\bdetail\b/.test(i)) &&
               b(r);
           });
@@ -248,23 +248,23 @@ var __morbis_feature = (() => {
     B();
     try {
       if (t) {
-        let e = I();
+        let e = y();
         (console.log('[OpenDetail] Feature ENABLED, mode:', e),
           document.documentElement.setAttribute(k, e),
           _(),
-          p(),
+          v(),
           (d = window.setTimeout(() => S(), 500)),
-          (u = window.setInterval(() => p(), 2e3)));
+          (u = window.setInterval(() => v(), 2e3)));
       } else
         (console.log('[OpenDetail] Feature DISABLED'),
           document.documentElement.removeAttribute(k),
-          F());
+          O());
       ((s = new MutationObserver(() => {
         (l !== null && clearTimeout(l),
           (l = window.setTimeout(() => {
             l = null;
             try {
-              t && p();
+              t && v();
             } catch (e) {
               console.warn('[OpenDetail] MutationObserver error:', e);
             }
@@ -280,14 +280,7 @@ var __morbis_feature = (() => {
         id: 'openDetailInNewTab',
         name: 'Open Detail Mode',
         description: 'Buka detail di tab yang sama / tab baru sesuai mode (cegat handler bawaan)',
-        match: {
-          oneOf: [
-            { prefix: '/v2/m-klaim' },
-            { prefix: '/billing/pembayaran-new' },
-            { prefix: '/inventory/penjualan-bebas' },
-            { prefix: '/inventory/resep/penerimaan' },
-          ],
-        },
+        match: { prefix: '/v2/m-klaim' },
         run: P,
       })
     : console.warn('[OpenDetail] featureModules not defined, module registration skipped');
