@@ -1,225 +1,169 @@
 // MORBIS Ext Unofficial - init.js (Built with esbuild)
 'use strict';
 var __morbis_init = (() => {
-  // src/features/shared/featureMatch.ts
-  function normalizePath(path) {
-    const normalized = path.replace(/\/+/g, '/').replace(/\/+$/, '');
-    if (normalized === '') return '/';
-    return normalized.startsWith('/') ? normalized : '/' + normalized;
+  function C(e) {
+    let t = e.replace(/\/+/g, '/').replace(/\/+$/, '');
+    return t === '' ? '/' : t.startsWith('/') ? t : '/' + t;
   }
-  var EVALUATORS = [
-    (m, c) =>
-      m.pathname !== void 0 && c.pathname !== m.pathname
-        ? { matched: false, reason: `expected pathname "${m.pathname}"` }
+  var F = [
+    (e, t) =>
+      e.pathname !== void 0 && t.pathname !== e.pathname
+        ? { matched: !1, reason: `expected pathname "${e.pathname}"` }
         : null,
-    (m, c) =>
-      m.prefix !== void 0 && !c.pathname.startsWith(m.prefix)
-        ? { matched: false, reason: `expected prefix "${m.prefix}"` }
+    (e, t) =>
+      e.prefix !== void 0 && !t.pathname.startsWith(e.prefix)
+        ? { matched: !1, reason: `expected prefix "${e.prefix}"` }
         : null,
-    (m, c) =>
-      m.regex !== void 0 && !m.regex.test(c.pathname)
-        ? { matched: false, reason: `regex ${m.regex} failed` }
+    (e, t) =>
+      e.regex !== void 0 && !e.regex.test(t.pathname)
+        ? { matched: !1, reason: `regex ${e.regex} failed` }
         : null,
-    (m, c) =>
-      m.oneOf !== void 0 && !m.oneOf.some((e) => evaluate(e, c).matched)
-        ? { matched: false, reason: 'no oneOf matched' }
+    (e, t) =>
+      e.oneOf !== void 0 && !e.oneOf.some((n) => m(n, t).matched)
+        ? { matched: !1, reason: 'no oneOf matched' }
         : null,
-    (m, c) =>
-      m.exclude?.some((e) => evaluate(e, c).matched)
-        ? { matched: false, reason: 'excluded' }
-        : null,
-    (m, c) =>
-      m.requiredSelectors?.some((sel) => !c.document.querySelector(sel))
-        ? { matched: false, reason: 'missing required element' }
+    (e, t) =>
+      e.exclude?.some((n) => m(n, t).matched) ? { matched: !1, reason: 'excluded' } : null,
+    (e, t) =>
+      e.requiredSelectors?.some((n) => !t.document.querySelector(n))
+        ? { matched: !1, reason: 'missing required element' }
         : null,
   ];
-  function evaluate(match, ctx) {
-    for (const fn of EVALUATORS) {
-      const result = fn(match, ctx);
-      if (result) return result;
+  function m(e, t) {
+    for (let n of F) {
+      let r = n(e, t);
+      if (r) return r;
     }
-    return { matched: true };
+    return { matched: !0 };
   }
-  function matchPage(match, ctx) {
-    if (!match) return false;
-    return evaluate(match, ctx).matched;
+  function A(e, t) {
+    return e ? m(e, t).matched : !1;
   }
-
-  // src/features/shared/usageLog.ts
-  var KEY = 'extUsageLog';
-  var MAX_AGE_MS = 7 * 24 * 60 * 60 * 1e3;
-  var MAX_ENTRIES = 2e3;
-  async function logUsage(feature, event, ok, detail) {
+  var f = 'extUsageLog';
+  async function i(e, t, n, r) {
     try {
-      const { [KEY]: existing } = await chrome.storage.local.get(KEY);
-      const now = Date.now();
-      const entry = {
-        ts: now,
-        feature,
-        event,
-        ok,
-        detail:
-          detail instanceof Error
-            ? `${detail.name}: ${detail.message}`
-            : detail !== void 0
-              ? String(detail)
-              : void 0,
-        url: typeof location !== 'undefined' ? location.href : void 0,
-      };
-      const kept = (existing ?? []).filter((e) => now - e.ts < MAX_AGE_MS).concat(entry);
-      const trimmed = kept.slice(-MAX_ENTRIES);
-      await chrome.storage.local.set({ [KEY]: trimmed });
+      let { [f]: s } = await chrome.storage.local.get(f),
+        l = Date.now(),
+        o = {
+          ts: l,
+          feature: e,
+          event: t,
+          ok: n,
+          detail:
+            r instanceof Error ? `${r.name}: ${r.message}` : r !== void 0 ? String(r) : void 0,
+          url: typeof location < 'u' ? location.href : void 0,
+        },
+        w = (s ?? [])
+          .filter((p) => l - p.ts < 6048e5)
+          .concat(o)
+          .slice(-2e3);
+      await chrome.storage.local.set({ [f]: w });
     } catch {}
   }
-
-  // src/init.ts
-  async function initExtension() {
-    window.log('Menginisialisasi Open Detail Extension (Modular)');
-    await window.loadConfig();
-    const customUrls = await window.loadCustomUrls();
+  async function g() {
+    (window.log('Menginisialisasi Open Detail Extension (Modular)'), await window.loadConfig());
+    let e = await window.loadCustomUrls();
     if (!window.isExtensionEnabled) {
       window.log('Extension disabled globally, skipping all features');
       return;
     }
-    const currentHost = window.location.origin;
-    const isAllowedUrl = customUrls.some((url) => url.enabled && currentHost.startsWith(url.url));
-    if (!isAllowedUrl) {
+    let t = window.location.origin;
+    if (!e.some((a) => a.enabled && t.startsWith(a.url))) {
       window.log('URL tidak ada dalam daftar diizinkan, skip semua fitur');
       return;
     }
-    const path = window.location.pathname.toLowerCase();
-    const loginPaths = ['/login', '/auth', '/signin', '/masuk', '/keluar', '/logout'];
-    const hasPwField = document.querySelectorAll('input[type="password"]').length > 0;
-    if (loginPaths.some((p) => path.includes(p)) || hasPwField) {
+    let r = window.location.pathname.toLowerCase(),
+      s = ['/login', '/auth', '/signin', '/masuk', '/keluar', '/logout'],
+      l = document.querySelectorAll('input[type="password"]').length > 0;
+    if (s.some((a) => r.includes(a)) || l) {
       window.log('Halaman login terdeteksi, skip semua fitur');
       return;
     }
-    const cfg = window.currentConfig;
-    const fixJasaCfg = cfg?.features?.fixJasaPelayanan;
-    if (fixJasaCfg?.enabled && window.ExtensionCore.isFeatureAllowed('fixJasaPelayanan')) {
-      document.documentElement.setAttribute('data-ext-fix-jasa', '1');
-    } else {
-      document.documentElement.removeAttribute('data-ext-fix-jasa');
-    }
-    const consulCfg = cfg?.features?.consultationEnhancer;
-    if (consulCfg?.enabled && window.ExtensionCore.isFeatureAllowed('consultationEnhancer')) {
-      document.documentElement.setAttribute('data-ext-consul-enhancer', '1');
-      document.documentElement.setAttribute('data-ext-base-url', chrome.runtime.getURL('/'));
-    } else {
-      document.documentElement.removeAttribute('data-ext-consul-enhancer');
-      document.documentElement.removeAttribute('data-ext-base-url');
-    }
-    const rvCfg = cfg?.features?.resumeValidator;
-    const rvOn = !!rvCfg?.enabled && window.ExtensionCore.isFeatureAllowed('resumeValidator');
-    if (rvOn) {
-      document.documentElement.setAttribute('data-ext-resume-validator', '1');
-    } else {
-      document.documentElement.removeAttribute('data-ext-resume-validator');
-    }
-    const rhCfg = cfg?.features?.resumeHistory;
-    const rhOn =
-      (!!rhCfg?.enabled && window.ExtensionCore.isFeatureAllowed('resumeHistory')) || rvOn;
-    if (rhOn) {
-      document.documentElement.setAttribute('data-ext-resume-history', '1');
-    } else {
-      document.documentElement.removeAttribute('data-ext-resume-history');
-    }
-    const atCfg = cfg?.features?.antrianTools;
-    if (atCfg?.enabled && window.ExtensionCore.isFeatureAllowed('antrianTools')) {
-      document.documentElement.setAttribute('data-ext-antrian-tools', '1');
-    } else {
-      document.documentElement.removeAttribute('data-ext-antrian-tools');
-    }
-    const afCfg = cfg?.features?.antrianFarmasi;
-    if (afCfg?.enabled && window.ExtensionCore.isFeatureAllowed('antrianFarmasi')) {
-      document.documentElement.setAttribute('data-ext-antrian-farmasi', '1');
-    } else {
-      document.documentElement.removeAttribute('data-ext-antrian-farmasi');
-    }
-    const tsCfg = cfg?.features?.ttsServer;
-    if (!tsCfg || tsCfg.enabled) {
-      document.documentElement.setAttribute('data-ext-tts-server', '1');
-    } else {
-      document.documentElement.setAttribute('data-ext-tts-server', '0');
-    }
-    const peCfg = cfg?.features?.penerimaanExport;
-    if (peCfg?.enabled && window.ExtensionCore.isFeatureAllowed('penerimaanExport')) {
-      document.documentElement.setAttribute('data-ext-penerimaan-export', '1');
-    } else {
-      document.documentElement.removeAttribute('data-ext-penerimaan-export');
-    }
-    const ttvCfg = cfg?.features?.ttvEditor;
-    if (ttvCfg?.enabled && window.ExtensionCore.isFeatureAllowed('ttvEditor')) {
-      document.documentElement.setAttribute('data-ext-ttv-editor', '1');
-    } else {
-      document.documentElement.removeAttribute('data-ext-ttv-editor');
-    }
-    const rmCfg = cfg?.features?.resumeModal;
-    if (rmCfg?.enabled && window.ExtensionCore.isFeatureAllowed('resumeModal')) {
-      document.documentElement.setAttribute('data-ext-resume-modal', '1');
-    } else {
-      document.documentElement.removeAttribute('data-ext-resume-modal');
-    }
-    const rrCfg = cfg?.features?.resumeRanap;
-    if (rrCfg?.enabled && window.ExtensionCore.isFeatureAllowed('resumeRanap')) {
-      document.documentElement.setAttribute('data-ext-resume-ranap', '1');
-    } else {
-      document.documentElement.removeAttribute('data-ext-resume-ranap');
-    }
-    const lhCfg = cfg?.features?.labHistory;
-    if (lhCfg?.enabled && window.ExtensionCore.isFeatureAllowed('labHistory')) {
-      document.documentElement.setAttribute('data-ext-lab-history', '1');
-    } else {
-      document.documentElement.removeAttribute('data-ext-lab-history');
-    }
-    const lkCfg = cfg?.features?.laporanKasirTime;
-    if (lkCfg?.enabled && window.ExtensionCore.isFeatureAllowed('laporanKasirTime')) {
-      document.documentElement.setAttribute('data-ext-laporan-kasir-time', '1');
-    } else {
-      document.documentElement.removeAttribute('data-ext-laporan-kasir-time');
-    }
-    const cbCfg = cfg?.features?.cancelBatal;
-    console.log('[CancelBatal] init check - cfg?.features?.cancelBatal:', cbCfg);
-    if (cbCfg?.enabled && window.ExtensionCore.isFeatureAllowed('cancelBatal')) {
-      document.documentElement.setAttribute('data-ext-cancel-batal', '1');
-      console.log('[CancelBatal] ENABLED - attribute set to 1');
-    } else {
-      document.documentElement.removeAttribute('data-ext-cancel-batal');
-      console.log(
-        '[CancelBatal] DISABLED or not allowed - attribute removed, enabled:',
-        cbCfg?.enabled,
-        'isFeatureAllowed:',
-        window.ExtensionCore?.isFeatureAllowed('cancelBatal'),
-      );
-    }
-    const trCfg = cfg?.features?.telaahResep;
-    if (trCfg?.enabled && window.ExtensionCore.isFeatureAllowed('telaahResep')) {
-      document.documentElement.setAttribute('data-ext-telaah', '1');
-    } else {
-      document.documentElement.removeAttribute('data-ext-telaah');
-    }
-    const baCfg = cfg?.features?.billingAdjustment;
-    if (baCfg?.enabled && window.ExtensionCore.isFeatureAllowed('billingAdjustment')) {
-      document.documentElement.setAttribute('data-ext-billing-adj', '1');
-    } else {
-      document.documentElement.removeAttribute('data-ext-billing-adj');
-    }
-    const paCfg = cfg?.features?.paLabPrint;
-    if (paCfg?.enabled && window.ExtensionCore.isFeatureAllowed('paLabPrint')) {
-      document.documentElement.setAttribute('data-ext-pa-print', '1');
-    } else {
-      document.documentElement.removeAttribute('data-ext-pa-print');
-    }
-    const ctx = {
-      pathname: normalizePath(window.location.pathname),
+    let o = window.currentConfig;
+    (o?.features?.fixJasaPelayanan?.enabled &&
+    window.ExtensionCore.isFeatureAllowed('fixJasaPelayanan')
+      ? document.documentElement.setAttribute('data-ext-fix-jasa', '1')
+      : document.documentElement.removeAttribute('data-ext-fix-jasa'),
+      o?.features?.consultationEnhancer?.enabled &&
+      window.ExtensionCore.isFeatureAllowed('consultationEnhancer')
+        ? (document.documentElement.setAttribute('data-ext-consul-enhancer', '1'),
+          document.documentElement.setAttribute('data-ext-base-url', chrome.runtime.getURL('/')))
+        : (document.documentElement.removeAttribute('data-ext-consul-enhancer'),
+          document.documentElement.removeAttribute('data-ext-base-url')));
+    let E =
+      !!o?.features?.resumeValidator?.enabled &&
+      window.ExtensionCore.isFeatureAllowed('resumeValidator');
+    (E
+      ? document.documentElement.setAttribute('data-ext-resume-validator', '1')
+      : document.documentElement.removeAttribute('data-ext-resume-validator'),
+      (!!o?.features?.resumeHistory?.enabled &&
+        window.ExtensionCore.isFeatureAllowed('resumeHistory')) ||
+      E
+        ? document.documentElement.setAttribute('data-ext-resume-history', '1')
+        : document.documentElement.removeAttribute('data-ext-resume-history'),
+      o?.features?.antrianTools?.enabled && window.ExtensionCore.isFeatureAllowed('antrianTools')
+        ? document.documentElement.setAttribute('data-ext-antrian-tools', '1')
+        : document.documentElement.removeAttribute('data-ext-antrian-tools'),
+      o?.features?.antrianFarmasi?.enabled &&
+      window.ExtensionCore.isFeatureAllowed('antrianFarmasi')
+        ? document.documentElement.setAttribute('data-ext-antrian-farmasi', '1')
+        : document.documentElement.removeAttribute('data-ext-antrian-farmasi'));
+    let x = o?.features?.ttsServer;
+    (!x || x.enabled
+      ? document.documentElement.setAttribute('data-ext-tts-server', '1')
+      : document.documentElement.setAttribute('data-ext-tts-server', '0'),
+      o?.features?.penerimaanExport?.enabled &&
+      window.ExtensionCore.isFeatureAllowed('penerimaanExport')
+        ? document.documentElement.setAttribute('data-ext-penerimaan-export', '1')
+        : document.documentElement.removeAttribute('data-ext-penerimaan-export'),
+      o?.features?.ttvEditor?.enabled && window.ExtensionCore.isFeatureAllowed('ttvEditor')
+        ? document.documentElement.setAttribute('data-ext-ttv-editor', '1')
+        : document.documentElement.removeAttribute('data-ext-ttv-editor'),
+      o?.features?.resumeModal?.enabled && window.ExtensionCore.isFeatureAllowed('resumeModal')
+        ? document.documentElement.setAttribute('data-ext-resume-modal', '1')
+        : document.documentElement.removeAttribute('data-ext-resume-modal'),
+      o?.features?.resumeRanap?.enabled && window.ExtensionCore.isFeatureAllowed('resumeRanap')
+        ? document.documentElement.setAttribute('data-ext-resume-ranap', '1')
+        : document.documentElement.removeAttribute('data-ext-resume-ranap'),
+      o?.features?.labHistory?.enabled && window.ExtensionCore.isFeatureAllowed('labHistory')
+        ? document.documentElement.setAttribute('data-ext-lab-history', '1')
+        : document.documentElement.removeAttribute('data-ext-lab-history'),
+      o?.features?.laporanKasirTime?.enabled &&
+      window.ExtensionCore.isFeatureAllowed('laporanKasirTime')
+        ? document.documentElement.setAttribute('data-ext-laporan-kasir-time', '1')
+        : document.documentElement.removeAttribute('data-ext-laporan-kasir-time'));
+    let c = o?.features?.cancelBatal;
+    (console.log('[CancelBatal] init check - cfg?.features?.cancelBatal:', c),
+      c?.enabled && window.ExtensionCore.isFeatureAllowed('cancelBatal')
+        ? (document.documentElement.setAttribute('data-ext-cancel-batal', '1'),
+          console.log('[CancelBatal] ENABLED - attribute set to 1'))
+        : (document.documentElement.removeAttribute('data-ext-cancel-batal'),
+          console.log(
+            '[CancelBatal] DISABLED or not allowed - attribute removed, enabled:',
+            c?.enabled,
+            'isFeatureAllowed:',
+            window.ExtensionCore?.isFeatureAllowed('cancelBatal'),
+          )),
+      o?.features?.telaahResep?.enabled && window.ExtensionCore.isFeatureAllowed('telaahResep')
+        ? document.documentElement.setAttribute('data-ext-telaah', '1')
+        : document.documentElement.removeAttribute('data-ext-telaah'),
+      o?.features?.billingAdjustment?.enabled &&
+      window.ExtensionCore.isFeatureAllowed('billingAdjustment')
+        ? document.documentElement.setAttribute('data-ext-billing-adj', '1')
+        : document.documentElement.removeAttribute('data-ext-billing-adj'),
+      o?.features?.paLabPrint?.enabled && window.ExtensionCore.isFeatureAllowed('paLabPrint')
+        ? document.documentElement.setAttribute('data-ext-pa-print', '1')
+        : document.documentElement.removeAttribute('data-ext-pa-print'));
+    let h = {
+      pathname: C(window.location.pathname),
       url: new URL(window.location.href),
       document: window.document,
       window,
     };
     {
-      const s = document.createElement('style');
-      s.id = 'ext-print-css';
-      s.textContent = `@media print{
+      let a = document.createElement('style');
+      ((a.id = 'ext-print-css'),
+        (a.textContent = `@media print{
 #color_picker,#weStylesheet,aside,.color_ctx_menu,
 [data-toolbar],[data-shortcut-buttons],[data-back-to-detail-klaim],
 .no-print,.hilang-saat-print,.ext-btn,.ext-badge,
@@ -236,168 +180,151 @@ var __morbis_init = (() => {
 #data-modal.in input, #data-modal.in textarea, #data-modal.in select {
   pointer-events: auto !important;
 }
-}`;
-      document.head.appendChild(s);
+}`),
+        document.head.appendChild(a));
     }
-    for (const [key, module] of Object.entries(window.featureModules)) {
-      const featureConfig = cfg?.features?.[key];
-      if (
-        featureConfig === void 0 ||
-        !featureConfig.enabled ||
-        !window.ExtensionCore.isFeatureAllowed(key)
-      ) {
-        logUsage(
-          key,
+    for (let [a, d] of Object.entries(window.featureModules)) {
+      let b = o?.features?.[a];
+      if (b === void 0 || !b.enabled || !window.ExtensionCore.isFeatureAllowed(a)) {
+        (i(
+          a,
           'skip',
-          true,
+          !0,
           'disabled or not allowed for role ' + window.ExtensionCore.getCurrentRole(),
-        );
-        window.log(
-          `Feature ${key} skipped: disabled or not allowed for role ${window.ExtensionCore.getCurrentRole()}`,
-        );
+        ),
+          window.log(
+            `Feature ${a} skipped: disabled or not allowed for role ${window.ExtensionCore.getCurrentRole()}`,
+          ));
         continue;
       }
-      if (!matchPage(module.match, ctx)) {
-        logUsage(key, 'skip', true, 'URL mismatch');
-        window.log(`Feature ${key} skipped: URL mismatch`);
+      if (!A(d.match, h)) {
+        (i(a, 'skip', !0, 'URL mismatch'), window.log(`Feature ${a} skipped: URL mismatch`));
         continue;
       }
-      if (module.enabledWhen && !module.enabledWhen(ctx)) {
-        logUsage(key, 'skip', true, 'enabledWhen returned false');
-        window.log(`Feature ${key} skipped: enabledWhen returned false`);
+      if (d.enabledWhen && !d.enabledWhen(h)) {
+        (i(a, 'skip', !0, 'enabledWhen returned false'),
+          window.log(`Feature ${a} skipped: enabledWhen returned false`));
         continue;
       }
-      window.log(`Running feature: ${module.name}`);
-      logUsage(key, 'run', true, module.name);
+      (window.log(`Running feature: ${d.name}`), i(a, 'run', !0, d.name));
       try {
-        module.run();
-      } catch (error) {
-        console.error(`[OpenDetail Extension] Error running feature ${key}:`, error);
-        logUsage(key, 'run', false, error instanceof Error ? error : String(error));
+        d.run();
+      } catch (u) {
+        (console.error(`[OpenDetail Extension] Error running feature ${a}:`, u),
+          i(a, 'run', !1, u instanceof Error ? u : String(u)));
       }
     }
-    window.log('Extension initialized successfully');
-    watchStuckLoadingModal();
-    injectFetchWatchdogToMainWorld();
-    watchDataModalUnblock();
+    (window.log('Extension initialized successfully'), L(), S(), R());
   }
-  function watchStuckLoadingModal() {
-    const STUCK_MS = 2e4;
-    const SELECTOR = '.sweet-overlay, .sweet-alert, .swal-overlay, .swal2-container';
-    let firstSeenTs = 0;
-    const timer = window.setInterval(() => {
-      const modal = document.querySelector(SELECTOR);
-      if (!modal) {
-        firstSeenTs = 0;
-        return;
-      }
-      const text = modal.textContent || '';
-      if (!/mohon tunggu|menyiapkan data|sedang memuat/i.test(text)) {
-        firstSeenTs = 0;
-        return;
-      }
-      const now = Date.now();
-      if (!firstSeenTs) firstSeenTs = now;
-      if (now - firstSeenTs < STUCK_MS) return;
-      clearInterval(timer);
-      hideStuckLoadingModal();
-    }, 2e3);
-  }
-  function hideStuckLoadingModal() {
-    const SELECTOR = '.sweet-overlay, .sweet-alert, .swal-overlay, .swal2-container';
-    document.querySelectorAll(SELECTOR).forEach((el) => {
-      el.remove();
-    });
-    const loadingModal = document.getElementById('loading-baru');
-    if (loadingModal) loadingModal.style.display = 'none';
-    document.body.style.overflow = '';
-  }
-  function watchDataModalUnblock() {
-    if (!window.location.pathname.includes('/detail-v2-refaktor')) return;
-    const LOADING_RE = /mohon tunggu|menyiapkan data|sedang memuat/i;
-    window.setInterval(() => {
-      const modal = document.getElementById('data-modal');
-      if (!modal || !modal.classList.contains('in')) return;
-      if (modal.getAttribute('aria-hidden') === 'true') modal.removeAttribute('aria-hidden');
-      modal.querySelectorAll('input, textarea, select').forEach((el) => {
-        if (getComputedStyle(el).pointerEvents === 'none') {
-          el.style.setProperty('pointer-events', 'auto', 'important');
+  function L() {
+    let t = '.sweet-overlay, .sweet-alert, .swal-overlay, .swal2-container',
+      n = 0,
+      r = window.setInterval(() => {
+        let s = document.querySelector(t);
+        if (!s) {
+          n = 0;
+          return;
         }
+        let l = s.textContent || '';
+        if (!/mohon tunggu|menyiapkan data|sedang memuat/i.test(l)) {
+          n = 0;
+          return;
+        }
+        let o = Date.now();
+        (n || (n = o), !(o - n < 2e4) && (clearInterval(r), y()));
+      }, 2e3);
+  }
+  function y() {
+    document
+      .querySelectorAll('.sweet-overlay, .sweet-alert, .swal-overlay, .swal2-container')
+      .forEach((n) => {
+        n.remove();
       });
-      document.querySelectorAll('.sweet-overlay, .swal-overlay, .swal2-container').forEach((el) => {
-        if (LOADING_RE.test(el.textContent || '')) el.remove();
-      });
+    let t = document.getElementById('loading-baru');
+    (t && (t.style.display = 'none'), (document.body.style.overflow = ''));
+  }
+  function R() {
+    if (!window.location.pathname.includes('/detail-v2-refaktor')) return;
+    let e = /mohon tunggu|menyiapkan data|sedang memuat/i;
+    window.setInterval(() => {
+      let t = document.getElementById('data-modal');
+      !t ||
+        !t.classList.contains('in') ||
+        (t.getAttribute('aria-hidden') === 'true' && t.removeAttribute('aria-hidden'),
+        t.querySelectorAll('input, textarea, select').forEach((n) => {
+          getComputedStyle(n).pointerEvents === 'none' &&
+            n.style.setProperty('pointer-events', 'auto', 'important');
+        }),
+        document
+          .querySelectorAll('.sweet-overlay, .swal-overlay, .swal2-container')
+          .forEach((n) => {
+            e.test(n.textContent || '') && n.remove();
+          }));
     }, 500);
   }
-  function injectFetchWatchdogToMainWorld() {
+  function S() {
     if (!window.location.pathname.includes('/detail-v2-refaktor')) return;
-    const script = document.createElement('script');
-    script.src = chrome.runtime.getURL('features/fetchWatchdog.js');
-    script.onload = () => {
-      console.log('[init] fetchWatchdog.js injected to MAIN world');
-    };
-    script.onerror = (err) => {
-      console.error('[init] fetchWatchdog.js injection failed:', err);
-    };
-    (document.head || document.documentElement).appendChild(script);
+    let e = document.createElement('script');
+    ((e.src = chrome.runtime.getURL('features/fetchWatchdog.js')),
+      (e.onload = () => {
+        console.log('[init] fetchWatchdog.js injected to MAIN world');
+      }),
+      (e.onerror = (t) => {
+        console.error('[init] fetchWatchdog.js injection failed:', t);
+      }),
+      (document.head || document.documentElement).appendChild(e));
   }
-  window.addEventListener('message', (event) => {
-    const data = event.data;
-    if (data?.__extPartialSettled) {
-      hideStuckLoadingModal();
+  window.addEventListener('message', (e) => {
+    let t = e.data;
+    if (t?.__extPartialSettled) {
+      y();
       return;
     }
-    const entry = data?.__extUsageLog;
-    if (!entry || !entry.feature) return;
-    logUsage(entry.feature, entry.event ?? 'event', entry.ok ?? true, entry.detail);
+    let n = t?.__extUsageLog;
+    !n || !n.feature || i(n.feature, n.event ?? 'event', n.ok ?? !0, n.detail);
   });
-  window.addEventListener('error', (event) => {
-    logUsage('global', 'error', false, `${event.message} @ ${event.filename}:${event.lineno}`);
+  window.addEventListener('error', (e) => {
+    i('global', 'error', !1, `${e.message} @ ${e.filename}:${e.lineno}`);
   });
-  window.addEventListener('unhandledrejection', (event) => {
-    const reason = event.reason;
-    logUsage(
+  window.addEventListener('unhandledrejection', (e) => {
+    let t = e.reason;
+    i(
       'global',
       'unhandledrejection',
-      false,
-      reason instanceof Error ? `${reason.name}: ${reason.message}` : String(reason ?? 'unknown'),
+      !1,
+      t instanceof Error ? `${t.name}: ${t.message}` : String(t ?? 'unknown'),
     );
   });
-  function injectAntrianToolsToMainWorld() {
-    const path = window.location.pathname;
-    const needsAntrianTools =
-      path.includes('/mesin-antrian') ||
-      path.includes('/counter-antrian/view-antrian') ||
-      path.includes('/counter-antrian/counter');
-    if (!needsAntrianTools) return;
-    const script = document.createElement('script');
-    script.src = chrome.runtime.getURL('features/antrianTools.js');
-    script.onload = () => {
-      console.log('[init] antrianTools.js injected to MAIN world');
-    };
-    script.onerror = (err) => {
-      console.error('[init] antrianTools.js injection failed:', err);
-      logUsage('init', 'antrian_tools_inject_failed', false, { error: String(err) });
-    };
-    (document.head || document.documentElement).appendChild(script);
+  function v() {
+    let e = window.location.pathname;
+    if (!(
+      e.includes('/mesin-antrian') ||
+      e.includes('/counter-antrian/view-antrian') ||
+      e.includes('/counter-antrian/counter')
+    ))
+      return;
+    let n = document.createElement('script');
+    ((n.src = chrome.runtime.getURL('features/antrianTools.js')),
+      (n.onload = () => {
+        console.log('[init] antrianTools.js injected to MAIN world');
+      }),
+      (n.onerror = (r) => {
+        (console.error('[init] antrianTools.js injection failed:', r),
+          i('init', 'antrian_tools_inject_failed', !1, { error: String(r) }));
+      }),
+      (document.head || document.documentElement).appendChild(n));
   }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      initExtension();
-      injectAntrianToolsToMainWorld();
-    });
-  } else {
-    initExtension();
-    injectAntrianToolsToMainWorld();
-  }
+  document.readyState === 'loading'
+    ? document.addEventListener('DOMContentLoaded', () => {
+        (g(), v());
+      })
+    : (g(), v());
   window.OpenDetailExtension = {
     getConfig: () => window.currentConfig,
     getFeatures: () => window.featureModules,
     isEnabled: () => window.isExtensionEnabled,
     refresh: async () => {
-      await window.loadConfig();
-      initExtension();
+      (await window.loadConfig(), g());
     },
   };
 })();
-//# sourceMappingURL=init.js.map

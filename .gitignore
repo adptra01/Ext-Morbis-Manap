@@ -3,6 +3,10 @@ node_modules/
 
 # Build output
 # dist/
+# Sourcemap hanya hasil build non-produksi. Kalau ikut ter-commit, ikut
+# ter-zip ke dalam CRX (pack.mjs zip semua isi dist/) = membengkak +
+# kode sumber ikut tersebar ke artifact yang dibagikan.
+dist/**/*.map
 *.crx
 *.xpi
 *.zip
