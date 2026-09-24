@@ -1,616 +1,595 @@
 'use strict';
 var __morbis_feature = (() => {
-  var __defProp = Object.defineProperty;
-  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-  var __getOwnPropNames = Object.getOwnPropertyNames;
-  var __hasOwnProp = Object.prototype.hasOwnProperty;
-  var __export = (target, all) => {
-    for (var name in all) __defProp(target, name, { get: all[name], enumerable: true });
-  };
-  var __copyProps = (to, from, except, desc) => {
-    if ((from && typeof from === 'object') || typeof from === 'function') {
-      for (let key of __getOwnPropNames(from))
-        if (!__hasOwnProp.call(to, key) && key !== except)
-          __defProp(to, key, {
-            get: () => from[key],
-            enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable,
-          });
-    }
-    return to;
-  };
-  var __toCommonJS = (mod) => __copyProps(__defProp({}, '__esModule', { value: true }), mod);
-
-  // src/features/penerimaanExport.ts
-  var penerimaanExport_exports = {};
-  __export(penerimaanExport_exports, {
-    fmtWaktuAntrian: () => fmtWaktuAntrian,
-  });
-
-  // src/shared/messaging.ts
-  function sendMessage(message) {
-    return new Promise((resolve, reject) => {
-      chrome.runtime.sendMessage(message, (response) => {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
-        } else {
-          resolve(response);
-        }
+  var k = Object.defineProperty;
+  var $ = Object.getOwnPropertyDescriptor;
+  var z = Object.getOwnPropertyNames;
+  var Q = Object.prototype.hasOwnProperty;
+  var X = (n, e) => {
+      for (var t in e) k(n, t, { get: e[t], enumerable: !0 });
+    },
+    W = (n, e, t, o) => {
+      if ((e && typeof e == 'object') || typeof e == 'function')
+        for (let r of z(e))
+          !Q.call(n, r) &&
+            r !== t &&
+            k(n, r, { get: () => e[r], enumerable: !(o = $(e, r)) || o.enumerable });
+      return n;
+    };
+  var K = (n) => W(k({}, '__esModule', { value: !0 }), n);
+  var ue = {};
+  X(ue, { fmtWaktuAntrian: () => _ });
+  function S(n) {
+    return new Promise((e, t) => {
+      chrome.runtime.sendMessage(n, (o) => {
+        chrome.runtime.lastError ? t(chrome.runtime.lastError) : e(o);
       });
     });
   }
-
-  // src/features/shared/farmasiQueueSync.ts
-  var FARMASI_APP_BASE = 'http://dev.rsudkotajambi.id/rs';
-  var cachedBase = null;
-  var basePromise = null;
-  async function storedBaseCandidates() {
+  var Y = 'http://dev.rsudkotajambi.id/rs',
+    I = null,
+    E = null;
+  async function P() {
     try {
-      const result = await chrome.storage.sync.get('extensionCustomUrls');
-      const urls = (result.extensionCustomUrls ?? []).filter((u) => u.url && u.enabled !== false);
-      return urls.map((u) => u.url.replace(/\/+$/, '') + '/rs');
+      return ((await chrome.storage.sync.get('extensionCustomUrls')).extensionCustomUrls ?? [])
+        .filter((t) => t.url && t.enabled !== !1)
+        .map((t) => t.url.replace(/\/+$/, '') + '/rs');
     } catch {
       return [];
     }
   }
-  var FALLBACK_CANDIDATES = ['http://dev.rsudkotajambi.id/rs', 'http://103.147.236.138/rs'];
-  var FARMASI_ALLOWED_HOSTS = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'];
-  var FARMASI_ALLOWED_SUFFIXES = ['.rsudkotajambi.id', '.ddev.site'];
-  function isAllowedFarmasiBase(url) {
+  var O = ['http://dev.rsudkotajambi.id/rs', 'http://103.147.236.138/rs'],
+    V = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'],
+    J = ['.rsudkotajambi.id', '.ddev.site'];
+  function Z(n) {
     try {
-      const u = new URL(url);
-      if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
-      const h = u.hostname.toLowerCase();
-      if (FARMASI_ALLOWED_HOSTS.includes(h)) return true;
-      return FARMASI_ALLOWED_SUFFIXES.some((s) => h.endsWith(s));
+      let e = new URL(n);
+      if (e.protocol !== 'http:' && e.protocol !== 'https:') return !1;
+      let t = e.hostname.toLowerCase();
+      return V.includes(t) ? !0 : J.some((o) => t.endsWith(o));
     } catch {
-      return false;
+      return !1;
     }
   }
-  async function queueApiFetch(url, method, body) {
-    return sendMessage({ type: 'QUEUE_API', url, method, body });
+  async function N(n, e, t) {
+    return S({ type: 'QUEUE_API', url: n, method: e, body: t });
   }
-  function withTimeout(p, ms) {
-    return new Promise((resolve, reject) => {
-      const tid = setTimeout(() => reject(new Error('timeout')), ms);
-      p.then((v) => {
-        clearTimeout(tid);
-        resolve(v);
-      }).catch((e) => {
-        clearTimeout(tid);
-        reject(e);
+  function U(n, e) {
+    return new Promise((t, o) => {
+      let r = setTimeout(() => o(new Error('timeout')), e);
+      n.then((i) => {
+        (clearTimeout(r), t(i));
+      }).catch((i) => {
+        (clearTimeout(r), o(i));
       });
     });
   }
-  function probeFarmasiAppBase() {
-    if (basePromise) return basePromise;
-    basePromise = (async () => {
-      try {
-        const ov = localStorage.getItem('ext-farmasi-app-base');
-        if (ov && isAllowedFarmasiBase(ov)) return ov.replace(/\/+$/, '');
-      } catch {}
-      const stored = await storedBaseCandidates();
-      const candidates = [.../* @__PURE__ */ new Set([...stored, ...FALLBACK_CANDIDATES])];
-      for (const base of candidates) {
+  function T() {
+    return (
+      E ||
+      ((E = (async () => {
         try {
-          const r = await withTimeout(
-            queueApiFetch(base + '/api/queue/lookup?resep_id=probe', 'GET'),
-            2500,
-          );
-          const ct = r.contentType || '';
-          if ((r.status === 200 || r.status === 422) && ct.includes('application/json')) {
-            cachedBase = base;
-            return base;
-          }
+          let t = localStorage.getItem('ext-farmasi-app-base');
+          if (t && Z(t)) return t.replace(/\/+$/, '');
         } catch {}
-      }
-      return FARMASI_APP_BASE;
-    })();
-    return basePromise;
+        let n = await P(),
+          e = [...new Set([...n, ...O])];
+        for (let t of e)
+          try {
+            let o = await U(N(t + '/api/queue/lookup?resep_id=probe', 'GET'), 2500),
+              r = o.contentType || '';
+            if ((o.status === 200 || o.status === 422) && r.includes('application/json'))
+              return ((I = t), t);
+          } catch {}
+        return Y;
+      })()),
+      E)
+    );
   }
-  var RETRY_KEY = 'ext-queue-retry-queue';
-  async function getRetryQueue() {
+  async function v() {
+    if (I) return !0;
     try {
-      return (await chrome.storage.local.get(RETRY_KEY))[RETRY_KEY] ?? [];
+      let n = await P(),
+        e = [...new Set([...n, ...O])];
+      for (let t of e)
+        try {
+          let o = await U(N(t + '/api/queue/lookup?resep_id=probe', 'GET'), 2500),
+            r = o.contentType || '';
+          if ((o.status === 200 || o.status === 422) && r.includes('application/json')) return !0;
+        } catch {}
+    } catch {}
+    return !1;
+  }
+  var b = 'ext-queue-retry-queue';
+  async function ee() {
+    try {
+      return (await chrome.storage.local.get(b))[b] ?? [];
     } catch {
       return [];
     }
   }
-  async function removeFromRetryQueue(eventId) {
+  async function R(n) {
     try {
-      const existing = (await chrome.storage.local.get(RETRY_KEY))[RETRY_KEY] ?? [];
-      const filtered = existing.filter((item) => item.event_id !== eventId);
-      await chrome.storage.local.set({ [RETRY_KEY]: filtered });
+      let t = ((await chrome.storage.local.get(b))[b] ?? []).filter((o) => o.event_id !== n);
+      await chrome.storage.local.set({ [b]: t });
     } catch {}
   }
-  async function flushRetryQueue() {
-    const pending = await getRetryQueue();
-    if (!pending.length) return;
-    for (const item of [...pending]) {
-      try {
-        const result = await pushQueueEventDirect(item);
-        if (result.ok) {
-          await removeFromRetryQueue(item.event_id);
-          console.log('[MORBIS Ext] retry queue sukses:', item.event, item.queue_number ?? '');
+  async function te() {
+    let n = await ee();
+    if (n.length)
+      for (let e of [...n])
+        try {
+          (await ne(e)).ok &&
+            (await R(e.event_id),
+            console.log('[MORBIS Ext] retry queue sukses:', e.event, e.queue_number ?? ''));
+        } catch (t) {
+          let o = t.message ?? '';
+          (o.includes('HTTP 404') || o.includes('HTTP 422')) &&
+            (await R(e.event_id),
+            console.log(
+              '[MORBIS Ext] retry queue buang (stale):',
+              e.event,
+              e.queue_number ?? '',
+              o,
+            ));
         }
-      } catch (e) {
-        const msg = e.message ?? '';
-        if (msg.includes('HTTP 404') || msg.includes('HTTP 422')) {
-          await removeFromRetryQueue(item.event_id);
-          console.log(
-            '[MORBIS Ext] retry queue buang (stale):',
-            item.event,
-            item.queue_number ?? '',
-            msg,
-          );
-        }
-      }
-    }
   }
-  async function pushQueueEventDirect(p) {
-    const body = { ...p };
-    if (p.event === 'ENQUEUE') delete body.queue_number;
-    const base = await probeFarmasiAppBase();
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 8e3);
-    const res = await fetch(base + '/api/queue/events', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-      cache: 'no-store',
-      credentials: 'omit',
-      signal: ctrl.signal,
-    });
-    clearTimeout(t);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const j = await res.json();
-    return { ok: !!j.ok, queue_number: j.queue?.queue_number };
+  async function ne(n) {
+    let e = { ...n };
+    n.event === 'ENQUEUE' && delete e.queue_number;
+    let t = await T(),
+      o = new AbortController(),
+      r = setTimeout(() => o.abort(), 8e3),
+      i = await fetch(t + '/api/queue/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(e),
+        cache: 'no-store',
+        credentials: 'omit',
+        signal: o.signal,
+      });
+    if ((clearTimeout(r), !i.ok)) throw new Error('HTTP ' + i.status);
+    let a = await i.json();
+    return { ok: !!a.ok, queue_number: a.queue?.queue_number };
   }
-  setInterval(() => void flushRetryQueue(), 1e4);
-
-  // src/features/shared/antrianActions.ts
-  async function lookupAntrianBatch(resepIds) {
-    const ids = [...new Set(resepIds.map((s) => String(s).trim()).filter(Boolean))].slice(0, 500);
-    if (!ids.length) return {};
+  setInterval(() => {
+    te();
+  }, 1e4);
+  async function G(n) {
+    let e = [...new Set(n.map((t) => String(t).trim()).filter(Boolean))].slice(0, 500);
+    if (!e.length) return {};
     try {
-      const res = await fetch(
-        (await probeFarmasiAppBase()) +
-          '/api/queue/lookup-batch?resep_ids=' +
-          encodeURIComponent(ids.join(',')),
+      let t = await fetch(
+        (await T()) + '/api/queue/lookup-batch?resep_ids=' + encodeURIComponent(e.join(',')),
         { cache: 'no-store', credentials: 'omit' },
       );
-      if (!res.ok) return {};
-      const j = await res.json();
-      if (!j.ok || !j.queues) return {};
-      return j.queues;
+      if (!t.ok) return {};
+      let o = await t.json();
+      return !o.ok || !o.queues ? {} : o.queues;
     } catch {
       return {};
     }
   }
-
-  // src/features/penerimaanExport.ts
-  if (window.__extPenerimaanExport) {
-    throw new Error('skip double inject penerimaanExport');
+  if (window.__extPenerimaanExport) throw new Error('skip double inject penerimaanExport');
+  window.__extPenerimaanExport = !0;
+  var y = /export|xls|excel|informasi-resep/i,
+    oe = 'informasi-resep.xls';
+  function _(n) {
+    let e = String(n || '').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}:\d{2}:\d{2})/);
+    return e ? `${e[3]}/${e[2]}/${e[1]} ${e[4]}` : String(n || '');
   }
-  window.__extPenerimaanExport = true;
-  var EXPORT_RE = /export|xls|excel|informasi-resep/i;
-  var FILENAME = 'informasi-resep.xls';
-  function fmtWaktuAntrian(sql) {
-    const m = String(sql || '').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}:\d{2}:\d{2})/);
-    return m ? `${m[3]}/${m[2]}/${m[1]} ${m[4]}` : String(sql || '');
-  }
-  function toast(msg, ms = 4e3) {
+  function m(n, e = 4e3) {
     try {
       let t = document.getElementById('ext-export-toast');
-      if (!t) {
-        t = document.createElement('div');
-        t.id = 'ext-export-toast';
-        t.style.cssText =
-          "position:fixed;top:20px;right:20px;z-index:2147483647;padding:14px 18px;border-radius:8px;background:#e8f0fd;color:#175cd3;border-left:5px solid #175cd3;font-weight:600;font-size:16px;line-height:1.6;box-shadow:0 4px 16px rgba(0,0,0,.15);font-family:'Roboto','Segoe UI',system-ui,sans-serif;max-width:420px;";
-        document.body.appendChild(t);
-      }
-      t.textContent = msg;
-      window.clearTimeout(toast._t);
-      toast._t = window.setTimeout(() => t?.remove(), ms);
+      (t ||
+        ((t = document.createElement('div')),
+        (t.id = 'ext-export-toast'),
+        (t.style.cssText =
+          "position:fixed;top:20px;right:20px;z-index:2147483647;padding:14px 18px;border-radius:8px;background:#e8f0fd;color:#175cd3;border-left:5px solid #175cd3;font-weight:600;font-size:16px;line-height:1.6;box-shadow:0 4px 16px rgba(0,0,0,.15);font-family:'Roboto','Segoe UI',system-ui,sans-serif;max-width:420px;"),
+        document.body.appendChild(t)),
+        (t.textContent = n),
+        window.clearTimeout(m._t),
+        (m._t = window.setTimeout(() => t?.remove(), e)));
     } catch {}
   }
-  function setExportButtonsDisabled(disabled) {
-    const btns = document.querySelectorAll(
-      '#ext-export-custom-btn, button[onclick*="loadTableExcel"]',
-    );
-    btns.forEach((btn) => {
-      if (disabled) {
-        btn.setAttribute('disabled', 'true');
-        btn.style.pointerEvents = 'none';
-        btn.style.opacity = '0.65';
-        btn.style.cursor = 'not-allowed';
-      } else {
-        btn.removeAttribute('disabled');
-        btn.style.pointerEvents = '';
-        btn.style.opacity = '';
-        btn.style.cursor = '';
-      }
-    });
+  function j(n) {
+    document
+      .querySelectorAll('#ext-export-custom-btn, button[onclick*="loadTableExcel"]')
+      .forEach((t) => {
+        n
+          ? (t.setAttribute('disabled', 'true'),
+            (t.style.pointerEvents = 'none'),
+            (t.style.opacity = '0.65'),
+            (t.style.cursor = 'not-allowed'))
+          : (t.removeAttribute('disabled'),
+            (t.style.pointerEvents = ''),
+            (t.style.opacity = ''),
+            (t.style.cursor = ''));
+      });
   }
-  function showLoading(msg) {
-    setExportButtonsDisabled(true);
-    hideLoading();
-    const overlay = document.createElement('div');
-    overlay.id = 'ext-export-loading';
-    overlay.style.cssText =
-      'position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);';
-    const card = document.createElement('div');
-    card.style.cssText =
+  function re(n) {
+    (j(!0), F());
+    let e = document.createElement('div');
+    ((e.id = 'ext-export-loading'),
+      (e.style.cssText =
+        'position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);'));
+    let t = document.createElement('div');
+    t.style.cssText =
       "display:flex;align-items:center;gap:16px;padding:24px 32px;background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.2);font-family:'Roboto','Segoe UI',system-ui,sans-serif;";
-    const spinner = document.createElement('div');
-    spinner.id = 'ext-export-spinner';
-    spinner.style.cssText =
-      'width:40px;height:40px;border:4px solid #e0e7ff;border-top-color:#175cd3;border-radius:50%;animation:ext-spin 0.8s linear infinite;';
-    const text = document.createElement('span');
-    text.id = 'ext-export-loading-text';
-    text.style.cssText = 'font-size:16px;font-weight:600;color:#175cd3;';
-    text.textContent = msg;
-    card.appendChild(spinner);
-    card.appendChild(text);
-    overlay.appendChild(card);
-    if (!document.getElementById('ext-export-spinner-style')) {
-      const style = document.createElement('style');
-      style.id = 'ext-export-spinner-style';
-      style.textContent = '@keyframes ext-spin{to{transform:rotate(360deg)}}';
-      document.head.appendChild(style);
+    let o = document.createElement('div');
+    ((o.id = 'ext-export-spinner'),
+      (o.style.cssText =
+        'width:40px;height:40px;border:4px solid #e0e7ff;border-top-color:#175cd3;border-radius:50%;animation:ext-spin 0.8s linear infinite;'));
+    let r = document.createElement('span');
+    if (
+      ((r.id = 'ext-export-loading-text'),
+      (r.style.cssText = 'font-size:16px;font-weight:600;color:#175cd3;'),
+      (r.textContent = n),
+      t.appendChild(o),
+      t.appendChild(r),
+      e.appendChild(t),
+      !document.getElementById('ext-export-spinner-style'))
+    ) {
+      let i = document.createElement('style');
+      ((i.id = 'ext-export-spinner-style'),
+        (i.textContent = '@keyframes ext-spin{to{transform:rotate(360deg)}}'),
+        document.head.appendChild(i));
     }
-    document.body.appendChild(overlay);
+    document.body.appendChild(e);
   }
-  function updateLoading(msg) {
-    const el = document.getElementById('ext-export-loading-text');
-    if (el) el.textContent = msg;
+  function B(n) {
+    let e = document.getElementById('ext-export-loading-text');
+    e && (e.textContent = n);
   }
-  function hideLoading() {
-    setExportButtonsDisabled(false);
-    document.getElementById('ext-export-loading')?.remove();
+  function F() {
+    (j(!1), document.getElementById('ext-export-loading')?.remove());
   }
-  function buildLiveMap() {
-    const map = /* @__PURE__ */ new Map();
-    for (const table of Array.from(document.querySelectorAll('table'))) {
-      const ths = Array.from(table.querySelectorAll('thead th'));
-      const head = ths.length ? ths : Array.from(table.querySelectorAll('tr:first-child th'));
-      const idx = head.findIndex((th) => /no\s*resep/i.test(th.textContent || ''));
-      if (idx < 0) continue;
-      for (const tr of Array.from(table.querySelectorAll('tbody tr'))) {
-        const trId = tr.id?.trim();
-        const tds = tr.querySelectorAll('td');
-        if (idx >= tds.length) continue;
-        const no = (tds[idx].textContent || '').trim();
-        if (!no) continue;
-        const resepId = trId || no;
-        if (resepId) map.set(no, resepId);
-      }
-    }
-    return map;
-  }
-  async function rewriteExport(html, liveMap) {
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    let target = null;
-    let wpIdx = -1;
-    let noIdx = -1;
-    for (const t of Array.from(doc.querySelectorAll('table'))) {
-      const ths = Array.from(t.querySelectorAll('th'));
-      const w = ths.findIndex((h) => /waktu\s*penjualan/i.test(h.textContent || ''));
-      if (w < 0) continue;
-      target = t;
-      wpIdx = w;
-      noIdx = ths.findIndex((h) => /no\s*resep/i.test(h.textContent || ''));
-      break;
-    }
-    if (!target || wpIdx < 0) throw new Error('kolom Waktu Penjualan tidak ketemu di file export');
-    const rows = [];
-    const ids = [];
-    for (const tr of Array.from(target.querySelectorAll('tr'))) {
-      if (tr.querySelector('th')) continue;
-      const tds = tr.querySelectorAll('td');
-      if (Math.max(wpIdx, noIdx) >= tds.length) continue;
-      const no = noIdx >= 0 ? (tds[noIdx].textContent || '').trim() : '';
-      if (!no) continue;
-      const id = liveMap.get(no) || no;
-      rows.push({ tds, id });
-      ids.push(id);
-    }
-    const times = await lookupAntrianBatch(ids);
-    const wth = target.querySelectorAll('th')[wpIdx];
-    const th1 = doc.createElement('th');
-    th1.textContent = 'Waktu Verif/Antrikan';
-    const th2 = doc.createElement('th');
-    th2.textContent = 'Waktu Klik Selesai';
-    wth.replaceWith(th1, th2);
-    for (const r of rows) {
-      const q = r.id ? times[r.id] : void 0;
-      const orig = r.tds[wpIdx];
-      const tdV = orig.cloneNode(false);
-      const tdS = orig.cloneNode(false);
-      tdV.textContent = q?.created_at ? fmtWaktuAntrian(q.created_at) : '';
-      tdS.textContent = q?.done_at ? fmtWaktuAntrian(q.done_at) : '';
-      orig.replaceWith(tdV, tdS);
-    }
-    return doc.documentElement.outerHTML;
-  }
-  async function processExport(url) {
-    showLoading('Mengunduh data export dari server\u2026');
-    try {
-      const res = await fetch(url, { credentials: 'include', cache: 'no-store' });
-      if (!res.ok) throw new Error('export server HTTP ' + res.status);
-      const html = await res.text();
-      updateLoading('Menggabungkan data waktu antrian\u2026');
-      const out = await rewriteExport(html, buildLiveMap());
-      updateLoading('Menyiapkan file unduhan\u2026');
-      const blob = new Blob([out], { type: 'application/vnd.ms-excel' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = FILENAME;
-      document.body.appendChild(a);
-      a.click();
-      window.setTimeout(() => {
-        URL.revokeObjectURL(a.href);
-        a.remove();
-      }, 4e3);
-      toast('Export selesai \u2014 kolom Waktu Verif/Antrikan + Waktu Klik Selesai terisi.');
-    } finally {
-      hideLoading();
-    }
-  }
-  function cleanFilterValue(v) {
-    const t = String(v ?? '').trim();
-    if (t === 'undefined' || t === 'null' || t === 'NaN') return '';
-    return t;
-  }
-  function buildExportUrl() {
-    const params = new URLSearchParams();
-    const seen = /* @__PURE__ */ new Set();
-    const form = document.querySelector(
-      'form#searchTable, form#filter, form#search, form#form_filter',
-    );
-    const container = form || document;
-    const els = Array.from(container.querySelectorAll('input, select, textarea')).filter((el) => {
-      const t = (el.type || '').toLowerCase();
-      if (['submit', 'button', 'reset', 'image'].includes(t)) return false;
-      if (t === 'hidden') return false;
-      const name = el.getAttribute('name') || '';
-      if (!name) return false;
-      return true;
-    });
-    for (const el of els) {
-      const name = el.getAttribute('name') || '';
-      if (!name || seen.has(name)) continue;
-      const input = el;
-      if ((input.type === 'checkbox' || input.type === 'radio') && !input.checked) continue;
-      seen.add(name);
-      const val = cleanFilterValue(input.value);
-      if (val) params.append(name, val);
-    }
-    const base = '/inventory/resep/penerimaan/cetak/cetak-excel';
-    const qs = params.toString();
-    return new URL(qs ? base + '?' + qs : base, location.href).href;
-  }
-  var WRAP_FLAG = '__extPenerimaanWrapped';
-  function makeLoadWrapper(orig) {
-    const wrapper = function (...args) {
-      let url;
-      try {
-        url = buildExportUrl();
-      } catch (e) {
-        window.console.warn('[penerimaanExport] buildExportUrl error, fallback:', e);
-        return orig.apply(this, args);
-      }
-      window.console.info('[penerimaanExport] loadTableExcel \u2192 ' + url);
-      void processExport(url).catch((err) => {
-        window.console.warn('[penerimaanExport] rewrite gagal, fallback:', err);
-        toast('Export server (tanpa kolom waktu antrian).', 6e3);
-        try {
-          orig.apply(this, args);
-        } catch {}
-      });
-      return false;
-    };
-    wrapper[WRAP_FLAG] = true;
-    return wrapper;
-  }
-  function trapLoadTableExcel() {
-    const w = window;
-    const isWrapped = (fn) => typeof fn === 'function' && fn[WRAP_FLAG] === true;
-    const arm = () => {
-      let current = w.loadTableExcel;
-      const setter = (newFn) => {
-        if (typeof newFn !== 'function' || isWrapped(newFn)) {
-          current = newFn;
-          return;
-        }
-        current = makeLoadWrapper(newFn);
-        window.console.info('[penerimaanExport] loadTableExcel dibungkus (trap)');
-      };
-      try {
-        Object.defineProperty(w, 'loadTableExcel', {
-          configurable: true,
-          enumerable: true,
-          get() {
-            return current;
-          },
-          set: setter,
-        });
-        w.__extTrapSetter = setter;
-        w.__extLoadTrap = true;
-      } catch {
-        if (!w.__extTrapFailed) {
-          w.__extTrapFailed = true;
-          window.console.warn('[penerimaanExport] trap ditolak, hanya polling');
-        }
-        return;
-      }
-      if (typeof current === 'function' && !isWrapped(current)) {
-        current = makeLoadWrapper(current);
-        window.console.info('[penerimaanExport] loadTableExcel dibungkus');
-      }
-    };
-    arm();
-    window.setInterval(() => {
-      try {
-        const d = Object.getOwnPropertyDescriptor(w, 'loadTableExcel');
-        if (d && d.set === w.__extTrapSetter) return;
-        w.__extLoadTrap = false;
-        arm();
-      } catch {}
-    }, 5e3);
-  }
-  function wrapLoadTableExcel() {
-    trapLoadTableExcel();
-  }
-  function injectCustomButton() {
-    if (document.getElementById('ext-export-custom-btn')) return;
-    const morbisBtn =
-      document.querySelector('button[onclick*="loadTableExcel"]') ||
-      Array.from(document.querySelectorAll('button[onclick], a[href]')).find((b) => {
-        const oc = b.getAttribute('onclick') || '';
-        const tx = (b.textContent || '').trim();
-        return /loadTableExcel/i.test(oc) || /export\s*resep/i.test(tx);
-      });
-    const extExportBtn = document.createElement('button');
-    extExportBtn.id = 'ext-export-custom-btn';
-    extExportBtn.type = 'button';
-    extExportBtn.className = morbisBtn?.className || 'btn btn-success';
-    if (morbisBtn?.getAttribute('style')) {
-      extExportBtn.setAttribute('style', morbisBtn.getAttribute('style') || '');
-    }
-    extExportBtn.style.display = 'inline-block';
-    const origIcon = morbisBtn?.querySelector('i');
-    if (origIcon) {
-      extExportBtn.appendChild(origIcon.cloneNode(true));
-      extExportBtn.appendChild(document.createTextNode(' '));
-    } else {
-      const icon = document.createElement('i');
-      icon.className = 'fa fa-print';
-      extExportBtn.appendChild(icon);
-      extExportBtn.appendChild(document.createTextNode(' '));
-    }
-    const textSpan = document.createElement('span');
-    textSpan.textContent = morbisBtn?.textContent?.trim() || 'Export resep sudah diterima';
-    extExportBtn.appendChild(textSpan);
-    extExportBtn.title = 'Export resep dengan kolom Waktu Verif/Antrikan + Waktu Klik Selesai';
-    if (morbisBtn && morbisBtn.parentNode) {
-      morbisBtn.parentNode.insertBefore(extExportBtn, morbisBtn.nextSibling);
-      morbisBtn.style.display = 'none';
-    } else {
-      const table = document.querySelector('table');
-      if (table && table.parentNode) {
-        table.parentNode.insertBefore(extExportBtn, table);
-      }
-    }
-    extExportBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const url = buildExportUrl();
-      window.console.info('[penerimaanExport] custom btn \u2192 ' + url);
-      void processExport(url).catch((err) => {
-        window.console.warn('[penerimaanExport] rewrite gagal, fallback:', err);
-        toast('Export server (tanpa kolom waktu antrian).', 6e3);
-        window.open(url, '_blank');
-      });
-    });
-  }
-  function init() {
-    if (location.pathname.includes('/detail')) return;
-    if (!isEnabled()) return;
-    injectCustomButton();
-    window.setInterval(injectCustomButton, 3e3);
-    wrapLoadTableExcel();
-    document.addEventListener(
-      'click',
-      (e) => {
-        const el = e.target;
-        const clickable = el.closest?.(
-          'a[href], button, input[type="button"], input[type="submit"], [onclick]',
+  function ie() {
+    let n = new Map();
+    for (let e of Array.from(document.querySelectorAll('table'))) {
+      let t = Array.from(e.querySelectorAll('thead th')),
+        r = (t.length ? t : Array.from(e.querySelectorAll('tr:first-child th'))).findIndex((i) =>
+          /no\s*resep/i.test(i.textContent || ''),
         );
-        if (!clickable) return;
-        let href = clickable.getAttribute?.('href') || '';
-        if (!href) {
-          const oc = clickable.getAttribute?.('onclick') || '';
-          const m = oc.match(/['"]([^'"]*(?:export|xls|excel|informasi-resep)[^'"]*)['"]/i);
-          if (m) href = m[1];
+      if (!(r < 0))
+        for (let i of Array.from(e.querySelectorAll('tbody tr'))) {
+          let a = i.id?.trim(),
+            s = i.querySelectorAll('td');
+          if (r >= s.length) continue;
+          let l = (s[r].textContent || '').trim();
+          if (!l) continue;
+          let d = a || l;
+          d && n.set(l, d);
         }
-        if (!href && !EXPORT_RE.test(clickable.textContent || '')) return;
-        if (href && !EXPORT_RE.test(href) && !EXPORT_RE.test(clickable.textContent || '')) return;
-        if (!href) {
-          const oc = clickable.getAttribute?.('onclick') || '';
-          if (!/loadTableExcel|exportExcel|excel|export/i.test(oc)) return;
-          e.preventDefault();
-          e.stopPropagation();
-          e.stopImmediatePropagation();
-          const url2 = buildExportUrl();
-          window.console.info('[penerimaanExport] intercept onclick \u2192 ' + url2);
-          void processExport(url2).catch((err) => {
-            window.console.warn('[penerimaanExport] rewrite gagal, fallback:', err);
-            toast('Export server (tanpa kolom waktu antrian).', 6e3);
-            const fn = window.loadTableExcel;
-            if (typeof fn === 'function') {
-              fn.call(window);
+    }
+    return n;
+  }
+  async function ae(n, e) {
+    let t = new DOMParser().parseFromString(n, 'text/html'),
+      o = null,
+      r = -1,
+      i = -1;
+    for (let u of Array.from(t.querySelectorAll('table'))) {
+      let c = Array.from(u.querySelectorAll('th')),
+        p = c.findIndex((f) => /waktu\s*penjualan/i.test(f.textContent || ''));
+      if (!(p < 0)) {
+        ((o = u), (r = p), (i = c.findIndex((f) => /no\s*resep/i.test(f.textContent || ''))));
+        break;
+      }
+    }
+    if (!o || r < 0) throw new Error('kolom Waktu Penjualan tidak ketemu di file export');
+    let a = [],
+      s = [];
+    for (let u of Array.from(o.querySelectorAll('tr'))) {
+      if (u.querySelector('th')) continue;
+      let c = u.querySelectorAll('td');
+      if (Math.max(r, i) >= c.length) continue;
+      let p = i >= 0 ? (c[i].textContent || '').trim() : '';
+      if (!p) continue;
+      let f = e.get(p) || p;
+      (a.push({ tds: c, id: f }), s.push(f));
+    }
+    let l = await G(s),
+      d = o.querySelectorAll('th')[r],
+      x = t.createElement('th');
+    x.textContent = 'Waktu Verif/Antrikan';
+    let C = t.createElement('th');
+    ((C.textContent = 'Waktu Klik Selesai'), d.replaceWith(x, C));
+    let g = { total: a.length, matched: 0, adaSelesai: 0, contohTidakDitemukan: [] };
+    for (let u of a) {
+      let c = u.id ? l[u.id] : void 0,
+        p = u.tds[r],
+        f = p.cloneNode(!1),
+        w = p.cloneNode(!1);
+      (c
+        ? (g.matched++,
+          (f.textContent = c.created_at ? _(c.created_at) : '\u2014'),
+          c.done_at ? (g.adaSelesai++, (w.textContent = _(c.done_at))) : (w.textContent = '\u2014'))
+        : ((f.textContent = '\u2014'),
+          (w.textContent = '\u2014'),
+          g.contohTidakDitemukan.length < 10 && g.contohTidakDitemukan.push(`${u.id}`)),
+        p.replaceWith(f, w));
+    }
+    return { html: t.documentElement.outerHTML, stats: g };
+  }
+  async function h(n) {
+    re('Mengunduh data export dari server\u2026');
+    try {
+      let e = await fetch(n, { credentials: 'include', cache: 'no-store' });
+      if (!e.ok) throw new Error('export server HTTP ' + e.status);
+      let t = await e.text();
+      B('Menggabungkan data waktu antrian\u2026');
+      let { html: o, stats: r } = await ae(t, ie()),
+        i = await v();
+      (window.console.info(
+        `[penerimaanExport] baris=${r.total} cocok=${r.matched} selesai=${r.adaSelesai} appAntrian=${i ? 'REACHABLE' : 'TIDAK TERJANGKAU'}` +
+          (r.contohTidakDitemukan.length
+            ? ` idTanpaAntrian=[${r.contohTidakDitemukan.join(', ')}]`
+            : ''),
+      ),
+        B('Menyiapkan file unduhan\u2026'));
+      let a = new Blob([o], { type: 'application/vnd.ms-excel' }),
+        s = document.createElement('a');
+      ((s.href = URL.createObjectURL(a)),
+        (s.download = oe),
+        document.body.appendChild(s),
+        s.click(),
+        window.setTimeout(() => {
+          (URL.revokeObjectURL(s.href), s.remove());
+        }, 4e3),
+        r.total > 0 && r.matched === 0
+          ? m(
+              i
+                ? 'Export selesai, TAPI tidak ada baris yang punya data antrian \u2014 resep di file ini belum pernah di-Antrikan (atau bukan antrian hari ini).'
+                : 'Export selesai, TAPI App Antrian tidak terjangkau dari PC ini \u2014 kolom waktu kosong semua. Cek koneksi ke dev.rsudkotajambi.id.',
+              9e3,
+            )
+          : r.matched < r.total || r.adaSelesai < r.matched
+            ? m(
+                `Export selesai \u2014 ${r.matched}/${r.total} baris ter-antri, ${r.adaSelesai} sudah "Selesai". Sisanya "\u2014" (belum antri / belum selesai).`,
+                8e3,
+              )
+            : m('Export selesai \u2014 kolom Waktu Verif/Antrikan + Waktu Klik Selesai terisi.'));
+    } finally {
+      F();
+    }
+  }
+  function se(n) {
+    let e = String(n ?? '').trim();
+    return e === 'undefined' || e === 'null' || e === 'NaN' ? '' : e;
+  }
+  function L() {
+    let n = new URLSearchParams(),
+      e = new Set(),
+      o =
+        document.querySelector('form#searchTable, form#filter, form#search, form#form_filter') ||
+        document,
+      r = Array.from(o.querySelectorAll('input, select, textarea')).filter((s) => {
+        let l = (s.type || '').toLowerCase();
+        return !(
+          ['submit', 'button', 'reset', 'image'].includes(l) ||
+          l === 'hidden' ||
+          !(s.getAttribute('name') || '')
+        );
+      });
+    for (let s of r) {
+      let l = s.getAttribute('name') || '';
+      if (!l || e.has(l)) continue;
+      let d = s;
+      if ((d.type === 'checkbox' || d.type === 'radio') && !d.checked) continue;
+      e.add(l);
+      let x = se(d.value);
+      x && n.append(l, x);
+    }
+    let i = '/inventory/resep/penerimaan/cetak/cetak-excel',
+      a = n.toString();
+    return new URL(a ? i + '?' + a : i, location.href).href;
+  }
+  var H = '__extPenerimaanWrapped';
+  function M(n) {
+    let e = function (...t) {
+      let o;
+      try {
+        o = L();
+      } catch (r) {
+        return (
+          window.console.warn('[penerimaanExport] buildExportUrl error, fallback:', r),
+          n.apply(this, t)
+        );
+      }
+      return (
+        window.console.info('[penerimaanExport] loadTableExcel \u2192 ' + o),
+        h(o).catch((r) => {
+          (window.console.warn('[penerimaanExport] rewrite gagal, fallback:', r),
+            m('Export server (tanpa kolom waktu antrian).', 6e3));
+          try {
+            n.apply(this, t);
+          } catch {}
+        }),
+        !1
+      );
+    };
+    return ((e[H] = !0), e);
+  }
+  function le() {
+    let n = window,
+      e = (o) => typeof o == 'function' && o[H] === !0,
+      t = () => {
+        let o = n.loadTableExcel,
+          r = (i) => {
+            if (typeof i != 'function' || e(i)) {
+              o = i;
+              return;
             }
-          });
+            ((o = M(i)), window.console.info('[penerimaanExport] loadTableExcel dibungkus (trap)'));
+          };
+        try {
+          (Object.defineProperty(n, 'loadTableExcel', {
+            configurable: !0,
+            enumerable: !0,
+            get() {
+              return o;
+            },
+            set: r,
+          }),
+            (n.__extTrapSetter = r),
+            (n.__extLoadTrap = !0));
+        } catch {
+          n.__extTrapFailed ||
+            ((n.__extTrapFailed = !0),
+            window.console.warn('[penerimaanExport] trap ditolak, hanya polling'));
           return;
         }
-        e.preventDefault();
-        e.stopPropagation();
-        const url = new URL(href, location.href).href;
-        window.console.info('[penerimaanExport] intercept:', url);
-        void processExport(url).catch((err) => {
-          window.console.warn('[penerimaanExport] fallback export asli:', err);
-          window.open(url, '_blank');
-        });
-      },
-      true,
-    );
-    document.addEventListener('submit', (e) => {
-      const f = e.target;
-      const action = f?.action || '';
-      if (!EXPORT_RE.test(action)) return;
-      e.preventDefault();
-      e.stopPropagation();
-      const fd = new FormData(f);
-      const params = new URLSearchParams();
-      fd.forEach((v, k) => params.append(k, String(v)));
-      const url = action + (action.includes('?') ? '&' : '?') + params.toString();
-      window.console.info('[penerimaanExport] intercept form:', url);
-      void processExport(url).catch((err) => {
-        window.console.warn('[penerimaanExport] fallback export asli:', err);
-        window.open(url, '_blank');
-      });
+        typeof o == 'function' &&
+          !e(o) &&
+          ((o = M(o)), window.console.info('[penerimaanExport] loadTableExcel dibungkus'));
+      };
+    (t(),
+      window.setInterval(() => {
+        try {
+          let o = Object.getOwnPropertyDescriptor(n, 'loadTableExcel');
+          if (o && o.set === n.__extTrapSetter) return;
+          ((n.__extLoadTrap = !1), t());
+        } catch {}
+      }, 5e3));
+  }
+  function ce() {
+    le();
+  }
+  function q() {
+    if (document.getElementById('ext-export-custom-btn')) return;
+    let n =
+        document.querySelector('button[onclick*="loadTableExcel"]') ||
+        Array.from(document.querySelectorAll('button[onclick], a[href]')).find((r) => {
+          let i = r.getAttribute('onclick') || '',
+            a = (r.textContent || '').trim();
+          return /loadTableExcel/i.test(i) || /export\s*resep/i.test(a);
+        }),
+      e = document.createElement('button');
+    ((e.id = 'ext-export-custom-btn'),
+      (e.type = 'button'),
+      (e.className = n?.className || 'btn btn-success'),
+      n?.getAttribute('style') && e.setAttribute('style', n.getAttribute('style') || ''),
+      (e.style.display = 'inline-block'));
+    let t = n?.querySelector('i');
+    if (t) (e.appendChild(t.cloneNode(!0)), e.appendChild(document.createTextNode(' ')));
+    else {
+      let r = document.createElement('i');
+      ((r.className = 'fa fa-print'),
+        e.appendChild(r),
+        e.appendChild(document.createTextNode(' ')));
+    }
+    let o = document.createElement('span');
+    if (
+      ((o.textContent = n?.textContent?.trim() || 'Export resep sudah diterima'),
+      e.appendChild(o),
+      (e.title = 'Export resep dengan kolom Waktu Verif/Antrikan + Waktu Klik Selesai'),
+      n && n.parentNode)
+    )
+      (n.parentNode.insertBefore(e, n.nextSibling), (n.style.display = 'none'));
+    else {
+      let r = document.querySelector('table');
+      r && r.parentNode && r.parentNode.insertBefore(e, r);
+    }
+    e.addEventListener('click', (r) => {
+      (r.preventDefault(), r.stopPropagation());
+      let i = L();
+      (window.console.info('[penerimaanExport] custom btn \u2192 ' + i),
+        h(i).catch((a) => {
+          (window.console.warn('[penerimaanExport] rewrite gagal, fallback:', a),
+            m('Export server (tanpa kolom waktu antrian).', 6e3),
+            window.open(i, '_blank'));
+        }));
     });
   }
-  function isEnabled() {
+  function D() {
+    location.pathname.includes('/detail') ||
+      (A() &&
+        (q(),
+        window.setInterval(q, 3e3),
+        ce(),
+        document.addEventListener(
+          'click',
+          (n) => {
+            let t = n.target.closest?.(
+              'a[href], button, input[type="button"], input[type="submit"], [onclick]',
+            );
+            if (!t) return;
+            let o = t.getAttribute?.('href') || '';
+            if (!o) {
+              let a = (t.getAttribute?.('onclick') || '').match(
+                /['"]([^'"]*(?:export|xls|excel|informasi-resep)[^'"]*)['"]/i,
+              );
+              a && (o = a[1]);
+            }
+            if (
+              (!o && !y.test(t.textContent || '')) ||
+              (o && !y.test(o) && !y.test(t.textContent || ''))
+            )
+              return;
+            if (!o) {
+              let i = t.getAttribute?.('onclick') || '';
+              if (!/loadTableExcel|exportExcel|excel|export/i.test(i)) return;
+              (n.preventDefault(), n.stopPropagation(), n.stopImmediatePropagation());
+              let a = L();
+              (window.console.info('[penerimaanExport] intercept onclick \u2192 ' + a),
+                h(a).catch((s) => {
+                  (window.console.warn('[penerimaanExport] rewrite gagal, fallback:', s),
+                    m('Export server (tanpa kolom waktu antrian).', 6e3));
+                  let l = window.loadTableExcel;
+                  typeof l == 'function' && l.call(window);
+                }));
+              return;
+            }
+            (n.preventDefault(), n.stopPropagation());
+            let r = new URL(o, location.href).href;
+            (window.console.info('[penerimaanExport] intercept:', r),
+              h(r).catch((i) => {
+                (window.console.warn('[penerimaanExport] fallback export asli:', i),
+                  window.open(r, '_blank'));
+              }));
+          },
+          !0,
+        ),
+        document.addEventListener('submit', (n) => {
+          let e = n.target,
+            t = e?.action || '';
+          if (!y.test(t)) return;
+          (n.preventDefault(), n.stopPropagation());
+          let o = new FormData(e),
+            r = new URLSearchParams();
+          o.forEach((a, s) => r.append(s, String(a)));
+          let i = t + (t.includes('?') ? '&' : '?') + r.toString();
+          (window.console.info('[penerimaanExport] intercept form:', i),
+            h(i).catch((a) => {
+              (window.console.warn('[penerimaanExport] fallback export asli:', a),
+                window.open(i, '_blank'));
+            }));
+        })));
+  }
+  function A() {
     return document.documentElement.getAttribute('data-ext-penerimaan-export') === '1';
   }
-  function waitForFeature(timeoutMs = 5e3) {
-    if (isEnabled()) return Promise.resolve(true);
-    return new Promise((resolve) => {
-      const t0 = Date.now();
-      const iv = window.setInterval(() => {
-        if (isEnabled()) {
-          window.clearInterval(iv);
-          resolve(true);
-        } else if (Date.now() - t0 > timeoutMs) {
-          window.clearInterval(iv);
-          resolve(false);
-        }
-      }, 200);
-    });
+  function de(n = 5e3) {
+    return A()
+      ? Promise.resolve(!0)
+      : new Promise((e) => {
+          let t = Date.now(),
+            o = window.setInterval(() => {
+              A()
+                ? (window.clearInterval(o), e(!0))
+                : Date.now() - t > n && (window.clearInterval(o), e(!1));
+            }, 200);
+        });
   }
-  void waitForFeature().then((ok) => {
-    window.console.info(
+  de().then((n) => {
+    (window.console.info(
       '[penerimaanExport] gate=' +
-        (ok ? 'AKTIF' : document.documentElement.getAttribute('data-ext-penerimaan-export')),
-    );
-    if (!ok) return;
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init, { once: true });
-    } else {
-      init();
-    }
+        (n ? 'AKTIF' : document.documentElement.getAttribute('data-ext-penerimaan-export')),
+    ),
+      n &&
+        (document.readyState === 'loading'
+          ? document.addEventListener('DOMContentLoaded', D, { once: !0 })
+          : D()));
   });
-  return __toCommonJS(penerimaanExport_exports);
+  return K(ue);
 })();
-//# sourceMappingURL=penerimaanExport.js.map

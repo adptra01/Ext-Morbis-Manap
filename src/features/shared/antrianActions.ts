@@ -11,8 +11,11 @@ import {
   pushQueueEvent,
   queueEventId,
   probeFarmasiAppBase,
+  isFarmasiAppReachable,
   type QueueEventPayload,
 } from './farmasiQueueSync';
+
+export { isFarmasiAppReachable };
 import { printKartuAntrian } from './printKartu';
 
 export const ANTRL_URL = '/v2/antrol/search';

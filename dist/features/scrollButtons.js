@@ -1,12 +1,9 @@
 'use strict';
 var __morbis_feature = (() => {
-  // src/features/shared/types.ts
-  function getMorbisGlobals() {
+  function f() {
     return window;
   }
-
-  // src/shared/ui/colors.ts
-  var colors = {
+  var l = {
     background: '#ffffff',
     foreground: '#0a0a0e',
     card: '#ffffff',
@@ -25,7 +22,6 @@ var __morbis_feature = (() => {
     border: '#e2e8f0',
     input: '#e2e8f0',
     ring: '#2469f0',
-    /* semantic shortcuts */
     success: '#1b8a4b',
     successBg: '#eaf6ef',
     warning: '#c47a1a',
@@ -35,22 +31,16 @@ var __morbis_feature = (() => {
     info: '#2469f0',
     infoBg: '#eef3ff',
   };
-
-  // src/shared/ui/index.ts
-  var injectedSheets = /* @__PURE__ */ new Set();
-  function injectCSS(id, css) {
-    if (injectedSheets.has(id)) {
-      const existing = document.getElementById(id);
-      if (existing) return existing;
+  var m = new Set();
+  function g(e, o) {
+    if (m.has(e)) {
+      let r = document.getElementById(e);
+      if (r) return r;
     }
-    const style = document.createElement('style');
-    style.id = id;
-    style.textContent = css;
-    document.head.appendChild(style);
-    injectedSheets.add(id);
-    return style;
+    let n = document.createElement('style');
+    return ((n.id = e), (n.textContent = o), document.head.appendChild(n), m.add(e), n);
   }
-  injectCSS(
+  g(
     'ext-shared-animations',
     `
   @keyframes fadeSlideIn {
@@ -59,15 +49,13 @@ var __morbis_feature = (() => {
   }
 `,
   );
-
-  // src/features/scrollButtons.ts
-  var g = getMorbisGlobals();
-  var SCROLL_CONFIG = {
-    scrollDuration: 800,
-    showScrollThreshold: 200,
-    buttonPosition: { bottom: '20px', right: '20px' },
-  };
-  injectCSS(
+  var d = f(),
+    c = {
+      scrollDuration: 800,
+      showScrollThreshold: 200,
+      buttonPosition: { bottom: '20px', right: '20px' },
+    };
+  g(
     'ext-scroll-btn-anim',
     `
   @keyframes extScrollFadeIn {
@@ -76,29 +64,28 @@ var __morbis_feature = (() => {
   }
 `,
   );
-  function scrollButtonsExist() {
+  function x() {
     return document.querySelector('[data-scroll-buttons]') !== null;
   }
-  function easeInOutCubic(t) {
-    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  function y(e) {
+    return e < 0.5 ? 4 * e * e * e : 1 - Math.pow(-2 * e + 2, 3) / 2;
   }
-  function smoothScrollTo(targetY, duration = SCROLL_CONFIG.scrollDuration) {
-    const startY = window.pageYOffset || document.documentElement.scrollTop;
-    const distance = targetY - startY;
-    const startTime = performance.now();
-    const animation = (currentTime) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      window.scrollTo(0, startY + distance * easeInOutCubic(progress));
-      if (progress < 1) requestAnimationFrame(animation);
-    };
-    requestAnimationFrame(animation);
+  function h(e, o = c.scrollDuration) {
+    let n = window.pageYOffset || document.documentElement.scrollTop,
+      r = e - n,
+      i = performance.now(),
+      s = (a) => {
+        let t = a - i,
+          u = Math.min(t / o, 1);
+        (window.scrollTo(0, n + r * y(u)), u < 1 && requestAnimationFrame(s));
+      };
+    requestAnimationFrame(s);
   }
-  function scrollToTop() {
-    smoothScrollTo(0);
+  function w() {
+    h(0);
   }
-  function scrollToBottom() {
-    const scrollHeight = Math.max(
+  function v() {
+    let e = Math.max(
       document.body.scrollHeight,
       document.documentElement.scrollHeight,
       document.body.offsetHeight,
@@ -106,111 +93,96 @@ var __morbis_feature = (() => {
       document.body.clientHeight,
       document.documentElement.clientHeight,
     );
-    smoothScrollTo(scrollHeight - window.innerHeight);
+    h(e - window.innerHeight);
   }
-  function updateButtonVisibility(container) {
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const upBtn = container.querySelector('[data-scroll-up]');
-    const downBtn = container.querySelector('[data-scroll-down]');
-    if (!upBtn || !downBtn) return;
-    const show = (el, visible) => {
-      el.style.opacity = visible ? '1' : '0';
-      el.style.transform = visible ? 'scale(1)' : 'scale(0.8)';
-      el.style.pointerEvents = visible ? 'auto' : 'none';
+  function p(e) {
+    let o = window.pageYOffset || document.documentElement.scrollTop,
+      n = e.querySelector('[data-scroll-up]'),
+      r = e.querySelector('[data-scroll-down]');
+    if (!n || !r) return;
+    let i = (a, t) => {
+      ((a.style.opacity = t ? '1' : '0'),
+        (a.style.transform = t ? 'scale(1)' : 'scale(0.8)'),
+        (a.style.pointerEvents = t ? 'auto' : 'none'));
     };
-    show(upBtn, scrollTop > SCROLL_CONFIG.showScrollThreshold);
-    const scrollHeight = Math.max(
-      document.body.scrollHeight,
-      document.documentElement.scrollHeight,
-    );
-    show(
-      downBtn,
-      scrollHeight - (scrollTop + window.innerHeight) > SCROLL_CONFIG.showScrollThreshold,
-    );
+    i(n, o > c.showScrollThreshold);
+    let s = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+    i(r, s - (o + window.innerHeight) > c.showScrollThreshold);
   }
-  function renderScrollButtons() {
-    if (scrollButtonsExist()) return;
-    const container = document.createElement('div');
-    container.dataset.scrollButtons = 'true';
-    Object.assign(container.style, {
-      position: 'fixed',
-      bottom: SCROLL_CONFIG.buttonPosition.bottom,
-      right: SCROLL_CONFIG.buttonPosition.right,
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '8px',
-      zIndex: '9999',
-    });
-    const makeBtn = (type, onClick) => {
-      const btn = document.createElement('button');
-      btn.dataset[type === 'up' ? 'scrollUp' : 'scrollDown'] = 'true';
-      btn.innerHTML = type === 'up' ? '&#9650;' : '&#9660;';
-      Object.assign(btn.style, {
-        width: '44px',
-        height: '44px',
+  function b() {
+    if (x()) return;
+    let e = document.createElement('div');
+    ((e.dataset.scrollButtons = 'true'),
+      Object.assign(e.style, {
+        position: 'fixed',
+        bottom: c.buttonPosition.bottom,
+        right: c.buttonPosition.right,
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: colors.primary,
-        color: '#fff',
-        border: 'none',
-        borderRadius: '50%',
-        fontSize: '16px',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
-        animation: 'extScrollFadeIn 0.2s ease-out',
-      });
-      btn.addEventListener('mouseenter', () => {
-        btn.style.background = colors.primaryHover;
-        btn.style.transform = 'scale(1.1)';
-      });
-      btn.addEventListener('mouseleave', () => {
-        btn.style.background = colors.primary;
-        btn.style.transform = 'scale(1)';
-      });
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        onClick();
-      });
-      return btn;
-    };
-    const upBtn = makeBtn('up', scrollToTop);
-    const downBtn = makeBtn('down', scrollToBottom);
-    container.append(upBtn, downBtn);
-    document.body.appendChild(container);
-    let debounce;
-    window.addEventListener('scroll', () => {
-      clearTimeout(debounce);
-      debounce = setTimeout(() => updateButtonVisibility(container), 50);
-    });
-    updateButtonVisibility(container);
+        flexDirection: 'column',
+        gap: '8px',
+        zIndex: '9999',
+      }));
+    let o = (s, a) => {
+        let t = document.createElement('button');
+        return (
+          (t.dataset[s === 'up' ? 'scrollUp' : 'scrollDown'] = 'true'),
+          (t.innerHTML = s === 'up' ? '&#9650;' : '&#9660;'),
+          Object.assign(t.style, {
+            width: '44px',
+            height: '44px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: l.primary,
+            color: '#fff',
+            border: 'none',
+            borderRadius: '50%',
+            fontSize: '16px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
+            animation: 'extScrollFadeIn 0.2s ease-out',
+          }),
+          t.addEventListener('mouseenter', () => {
+            ((t.style.background = l.primaryHover), (t.style.transform = 'scale(1.1)'));
+          }),
+          t.addEventListener('mouseleave', () => {
+            ((t.style.background = l.primary), (t.style.transform = 'scale(1)'));
+          }),
+          t.addEventListener('click', (u) => {
+            (u.preventDefault(), a());
+          }),
+          t
+        );
+      },
+      n = o('up', w),
+      r = o('down', v);
+    (e.append(n, r), document.body.appendChild(e));
+    let i;
+    (window.addEventListener('scroll', () => {
+      (clearTimeout(i), (i = setTimeout(() => p(e), 50)));
+    }),
+      p(e));
   }
-  function runScrollButtonsFeature() {
+  function E() {
     if (!(
-      g.currentConfig?.features?.scrollButtons?.enabled &&
-      g.ExtensionCore.isFeatureAllowed('scrollButtons')
+      d.currentConfig?.features?.scrollButtons?.enabled &&
+      d.ExtensionCore.isFeatureAllowed('scrollButtons')
     ))
       return;
-    window.scrollTo(0, 0);
-    setTimeout(renderScrollButtons, 500);
-    const observer = new MutationObserver(() => {
-      if (g.currentConfig?.features?.scrollButtons?.enabled !== false && !scrollButtonsExist()) {
-        renderScrollButtons();
-      }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+    (window.scrollTo(0, 0),
+      setTimeout(b, 500),
+      new MutationObserver(() => {
+        d.currentConfig?.features?.scrollButtons?.enabled !== !1 && !x() && b();
+      }).observe(document.body, { childList: !0, subtree: !0 }));
   }
-  if (typeof g.featureModules !== 'undefined') {
-    g.featureModules.scrollButtons = {
-      id: 'scrollButtons',
-      name: 'Scroll Buttons (Top/Bottom)',
-      description: 'Tombol scroll otomatis ke atas dan bawah halaman detail',
-      match: { pathname: '/v2/m-klaim/detail-v2-refaktor' },
-      run: runScrollButtonsFeature,
-    };
-  } else {
-    console.warn('[Scroll Buttons] featureModules not defined, module registration skipped');
-  }
+  typeof d.featureModules < 'u'
+    ? (d.featureModules.scrollButtons = {
+        id: 'scrollButtons',
+        name: 'Scroll Buttons (Top/Bottom)',
+        description: 'Tombol scroll otomatis ke atas dan bawah halaman detail',
+        match: { pathname: '/v2/m-klaim/detail-v2-refaktor' },
+        run: E,
+      })
+    : console.warn('[Scroll Buttons] featureModules not defined, module registration skipped');
 })();
-//# sourceMappingURL=scrollButtons.js.map

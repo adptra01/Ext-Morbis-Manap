@@ -163,6 +163,33 @@ export function probeFarmasiAppBase(): Promise<string> {
 // ponytail: dedup repeated warn — "Failed to fetch" floods console when farmasi app is down.
 let lastWarnMsg = '';
 
+/** True bila ada base App Antrian yang benar-benar hidup (JSON 200/422).
+ *  Berbeda dari probeFarmasiAppBase(): fungsi itu SELALU mengembalikan base
+ *  (fallback terakhir walau mati), sehingga tidak bisa dipakai untuk
+ *  membedakan "app mati" vs "resep memang tidak pernah di-antri". */
+export async function isFarmasiAppReachable(): Promise<boolean> {
+  if (cachedBase) return true;
+  try {
+    const stored = await storedBaseCandidates();
+    const candidates = [...new Set([...stored, ...FALLBACK_CANDIDATES])];
+    for (const base of candidates) {
+      try {
+        const r = await withTimeout(
+          queueApiFetch(base + '/api/queue/lookup?resep_id=probe', 'GET'),
+          2500,
+        );
+        const ct = r.contentType || '';
+        if ((r.status === 200 || r.status === 422) && ct.includes('application/json')) return true;
+      } catch {
+        /* coba kandidat berikutnya */
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+  return false;
+}
+
 /** POST event ke app antrian. Idempoten (event_id unik) — aman dipanggil ganda.
  *  ENQUEUE: JANGAN kirim queue_number — app yang assign (T-XX/R-XX per jenis);
  *  nomor hasil ada di return.queue_number (dipakai cetak kartu). */

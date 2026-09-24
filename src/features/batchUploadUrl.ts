@@ -47,16 +47,51 @@ function getTodayFormatted(): string {
   return formatDateYMD(new Date());
 }
 
+/** Ambil tanggal masuk klaim dari berbagai sumber, sesuai format YYYY-MM-DD.
+ *
+ * Halaman detail (/v2/m-klaim/detail-v2-refaktor) TIDAK punya input #tgl —
+ * tanggal ada di query string `tanggalAwal=DD-MM-YYYY` (format Indonesia).
+ * Rantai fallback: input #tgl → input tanggal lain → query string →
+ * hari ini. Dulu hanya #tgl, jadi halaman detail selalu jatuh ke "hari ini"
+ * dan menghasilkan peringatan хотя tanggal klaimnya tersedia. */
 function getTanggalMasukFromPage(): string {
-  const tglInput = document.getElementById('tgl') as HTMLInputElement | null;
-  if (tglInput && tglInput.value) {
-    const parts = tglInput.value.split('/');
-    if (parts.length === 3) {
-      const [dd, mm, yyyy] = parts;
-      return `${yyyy}-${mm}-${dd}`;
+  const toYmd = (raw: string | null | undefined): string | null => {
+    if (!raw) return null;
+    const s = String(raw).trim();
+    // YYYY-MM-DD (sudah benar)
+    const iso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (iso) return `${iso[1]}-${iso[2].padStart(2, '0')}-${iso[3].padStart(2, '0')}`;
+    // DD/MM/YYYY ( Indonesia )
+    const idSlash = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (idSlash) {
+      return `${idSlash[3]}-${idSlash[2].padStart(2, '0')}-${idSlash[1].padStart(2, '0')}`;
     }
+    // DD-MM-YYYY (format tanggalAwal/tanggalAkhir di URL MORBIS)
+    const idDash = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})/);
+    if (idDash) {
+      return `${idDash[3]}-${idDash[2].padStart(2, '0')}-${idDash[1].padStart(2, '0')}`;
+    }
+    return null;
+  };
+
+  // 1) Input di DOM (bisa #tgl di halaman list, atau input tanggal lain).
+  const inputSelectors = ['#tgl', '#tanggal', '#tanggal_masuk', 'input[name="tanggal"]'];
+  for (const sel of inputSelectors) {
+    const el = document.querySelector<HTMLInputElement>(sel);
+    const ymd = toYmd(el?.value);
+    if (ymd) return ymd;
   }
-  console.warn('[Batch Upload] Input #tgl tidak ditemukan, pakai tanggal hari ini');
+
+  // 2) Query string halaman detail: tanggalAwal / tanggalAkhir (DD-MM-YYYY).
+  const params = new URLSearchParams(window.location.search);
+  for (const key of ['tanggalAwal', 'tanggalAkhir', 'tanggal', 'tgl']) {
+    const ymd = toYmd(params.get(key));
+    if (ymd) return ymd;
+  }
+
+  console.warn(
+    '[Batch Upload] Tanggal klaim tidak ditemukan (input #tgl & URL), pakai tanggal hari ini',
+  );
   return getTodayFormatted();
 }
 

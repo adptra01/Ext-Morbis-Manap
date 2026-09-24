@@ -1,259 +1,221 @@
 'use strict';
 var __morbis_feature = (() => {
-  // src/shared/messaging.ts
-  function sendMessage(message) {
-    return new Promise((resolve, reject) => {
-      chrome.runtime.sendMessage(message, (response) => {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError);
-        } else {
-          resolve(response);
-        }
+  function m(n) {
+    return new Promise((e, t) => {
+      chrome.runtime.sendMessage(n, (s) => {
+        chrome.runtime.lastError ? t(chrome.runtime.lastError) : e(s);
       });
     });
   }
-
-  // src/features/shared/farmasiQueueSync.ts
-  var FARMASI_APP_BASE = 'http://dev.rsudkotajambi.id/rs';
-  var cachedBase = null;
-  var basePromise = null;
-  async function storedBaseCandidates() {
+  var A = 'http://dev.rsudkotajambi.id/rs',
+    c = null,
+    l = null;
+  async function O() {
     try {
-      const result = await chrome.storage.sync.get('extensionCustomUrls');
-      const urls = (result.extensionCustomUrls ?? []).filter((u) => u.url && u.enabled !== false);
-      return urls.map((u) => u.url.replace(/\/+$/, '') + '/rs');
+      return ((await chrome.storage.sync.get('extensionCustomUrls')).extensionCustomUrls ?? [])
+        .filter((t) => t.url && t.enabled !== !1)
+        .map((t) => t.url.replace(/\/+$/, '') + '/rs');
     } catch {
       return [];
     }
   }
-  var FALLBACK_CANDIDATES = ['http://dev.rsudkotajambi.id/rs', 'http://103.147.236.138/rs'];
-  var FARMASI_ALLOWED_HOSTS = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'];
-  var FARMASI_ALLOWED_SUFFIXES = ['.rsudkotajambi.id', '.ddev.site'];
-  function isAllowedFarmasiBase(url) {
+  var L = ['http://dev.rsudkotajambi.id/rs', 'http://103.147.236.138/rs'],
+    C = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'],
+    b = ['.rsudkotajambi.id', '.ddev.site'];
+  function y(n) {
     try {
-      const u = new URL(url);
-      if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
-      const h = u.hostname.toLowerCase();
-      if (FARMASI_ALLOWED_HOSTS.includes(h)) return true;
-      return FARMASI_ALLOWED_SUFFIXES.some((s) => h.endsWith(s));
+      let e = new URL(n);
+      if (e.protocol !== 'http:' && e.protocol !== 'https:') return !1;
+      let t = e.hostname.toLowerCase();
+      return C.includes(t) ? !0 : b.some((s) => t.endsWith(s));
     } catch {
-      return false;
+      return !1;
     }
   }
-  async function queueApiFetch(url, method, body) {
-    return sendMessage({ type: 'QUEUE_API', url, method, body });
+  async function G(n, e, t) {
+    return m({ type: 'QUEUE_API', url: n, method: e, body: t });
   }
-  function withTimeout(p, ms) {
-    return new Promise((resolve, reject) => {
-      const tid = setTimeout(() => reject(new Error('timeout')), ms);
-      p.then((v) => {
-        clearTimeout(tid);
-        resolve(v);
-      }).catch((e) => {
-        clearTimeout(tid);
-        reject(e);
+  function R(n, e) {
+    return new Promise((t, s) => {
+      let o = setTimeout(() => s(new Error('timeout')), e);
+      n.then((i) => {
+        (clearTimeout(o), t(i));
+      }).catch((i) => {
+        (clearTimeout(o), s(i));
       });
     });
   }
-  function farmasiAppBase() {
+  function p() {
     try {
-      const ov = localStorage.getItem('ext-farmasi-app-base');
-      if (ov && isAllowedFarmasiBase(ov)) {
-        const b = ov.replace(/\/+$/, '');
-        if (cachedBase !== b) {
-          cachedBase = b;
-          basePromise = null;
-        }
-        return b;
+      let n = localStorage.getItem('ext-farmasi-app-base');
+      if (n && y(n)) {
+        let e = n.replace(/\/+$/, '');
+        return (c !== e && ((c = e), (l = null)), e);
       }
     } catch {}
-    if (cachedBase) return cachedBase;
-    return FARMASI_APP_BASE;
+    return c || A;
   }
-  function probeFarmasiAppBase() {
-    if (basePromise) return basePromise;
-    basePromise = (async () => {
-      try {
-        const ov = localStorage.getItem('ext-farmasi-app-base');
-        if (ov && isAllowedFarmasiBase(ov)) return ov.replace(/\/+$/, '');
-      } catch {}
-      const stored = await storedBaseCandidates();
-      const candidates = [.../* @__PURE__ */ new Set([...stored, ...FALLBACK_CANDIDATES])];
-      for (const base of candidates) {
+  function N() {
+    return (
+      l ||
+      ((l = (async () => {
         try {
-          const r = await withTimeout(
-            queueApiFetch(base + '/api/queue/lookup?resep_id=probe', 'GET'),
-            2500,
-          );
-          const ct = r.contentType || '';
-          if ((r.status === 200 || r.status === 422) && ct.includes('application/json')) {
-            cachedBase = base;
-            return base;
-          }
+          let t = localStorage.getItem('ext-farmasi-app-base');
+          if (t && y(t)) return t.replace(/\/+$/, '');
         } catch {}
-      }
-      return FARMASI_APP_BASE;
-    })();
-    return basePromise;
+        let n = await O(),
+          e = [...new Set([...n, ...L])];
+        for (let t of e)
+          try {
+            let s = await R(G(t + '/api/queue/lookup?resep_id=probe', 'GET'), 2500),
+              o = s.contentType || '';
+            if ((s.status === 200 || s.status === 422) && o.includes('application/json'))
+              return ((c = t), t);
+          } catch {}
+        return A;
+      })()),
+      l)
+    );
   }
-  var RETRY_KEY = 'ext-queue-retry-queue';
-  async function getRetryQueue() {
+  var E = 'ext-queue-retry-queue';
+  async function h() {
     try {
-      return (await chrome.storage.local.get(RETRY_KEY))[RETRY_KEY] ?? [];
+      return (await chrome.storage.local.get(E))[E] ?? [];
     } catch {
       return [];
     }
   }
-  async function removeFromRetryQueue(eventId) {
+  async function g(n) {
     try {
-      const existing = (await chrome.storage.local.get(RETRY_KEY))[RETRY_KEY] ?? [];
-      const filtered = existing.filter((item) => item.event_id !== eventId);
-      await chrome.storage.local.set({ [RETRY_KEY]: filtered });
+      let t = ((await chrome.storage.local.get(E))[E] ?? []).filter((s) => s.event_id !== n);
+      await chrome.storage.local.set({ [E]: t });
     } catch {}
   }
-  async function flushRetryQueue() {
-    const pending = await getRetryQueue();
-    if (!pending.length) return;
-    for (const item of [...pending]) {
-      try {
-        const result = await pushQueueEventDirect(item);
-        if (result.ok) {
-          await removeFromRetryQueue(item.event_id);
-          console.log('[MORBIS Ext] retry queue sukses:', item.event, item.queue_number ?? '');
+  async function w() {
+    let n = await h();
+    if (n.length)
+      for (let e of [...n])
+        try {
+          (await I(e)).ok &&
+            (await g(e.event_id),
+            console.log('[MORBIS Ext] retry queue sukses:', e.event, e.queue_number ?? ''));
+        } catch (t) {
+          let s = t.message ?? '';
+          (s.includes('HTTP 404') || s.includes('HTTP 422')) &&
+            (await g(e.event_id),
+            console.log(
+              '[MORBIS Ext] retry queue buang (stale):',
+              e.event,
+              e.queue_number ?? '',
+              s,
+            ));
         }
-      } catch (e) {
-        const msg = e.message ?? '';
-        if (msg.includes('HTTP 404') || msg.includes('HTTP 422')) {
-          await removeFromRetryQueue(item.event_id);
-          console.log(
-            '[MORBIS Ext] retry queue buang (stale):',
-            item.event,
-            item.queue_number ?? '',
-            msg,
-          );
-        }
-      }
-    }
   }
-  async function pushQueueEventDirect(p) {
-    const body = { ...p };
-    if (p.event === 'ENQUEUE') delete body.queue_number;
-    const base = await probeFarmasiAppBase();
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 8e3);
-    const res = await fetch(base + '/api/queue/events', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-      cache: 'no-store',
-      credentials: 'omit',
-      signal: ctrl.signal,
-    });
-    clearTimeout(t);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const j = await res.json();
-    return { ok: !!j.ok, queue_number: j.queue?.queue_number };
+  async function I(n) {
+    let e = { ...n };
+    n.event === 'ENQUEUE' && delete e.queue_number;
+    let t = await N(),
+      s = new AbortController(),
+      o = setTimeout(() => s.abort(), 8e3),
+      i = await fetch(t + '/api/queue/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(e),
+        cache: 'no-store',
+        credentials: 'omit',
+        signal: s.signal,
+      });
+    if ((clearTimeout(o), !i.ok)) throw new Error('HTTP ' + i.status);
+    let d = await i.json();
+    return { ok: !!d.ok, queue_number: d.queue?.queue_number };
   }
-  setInterval(() => void flushRetryQueue(), 1e4);
-  function whenAntrianFarmasiActive(cb, timeoutMs = 5e3) {
-    const el = document.documentElement;
-    const t0 = Date.now();
-    const iv = window.setInterval(() => {
-      if (el.getAttribute('data-ext-antrian-farmasi') === '1') {
-        window.clearInterval(iv);
-        cb();
-      } else if (Date.now() - t0 > timeoutMs) {
-        window.clearInterval(iv);
-        showFeatureGateNotif();
-      }
-    }, 200);
+  setInterval(() => {
+    w();
+  }, 1e4);
+  function f(n, e = 5e3) {
+    let t = document.documentElement,
+      s = Date.now(),
+      o = window.setInterval(() => {
+        t.getAttribute('data-ext-antrian-farmasi') === '1'
+          ? (window.clearInterval(o), n())
+          : Date.now() - s > e && (window.clearInterval(o), P());
+      }, 200);
   }
-  function showFeatureGateNotif() {
-    if (!document.body) return;
-    if (document.getElementById('ext-feature-gate-notif')) return;
-    const banner = document.createElement('div');
-    banner.id = 'ext-feature-gate-notif';
-    banner.textContent = '\u26A0\uFE0F Fitur antrian tidak aktif \u2014 muat ulang halaman (F5)';
-    banner.style.cssText =
-      'position:fixed;top:8px;right:8px;z-index:999999;background:#dc3545;color:#fff;padding:8px 16px;border-radius:6px;font:13px system-ui,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.2);';
-    document.body.appendChild(banner);
-    setTimeout(() => banner.remove(), 1e4);
+  function P() {
+    if (!document.body || document.getElementById('ext-feature-gate-notif')) return;
+    let n = document.createElement('div');
+    ((n.id = 'ext-feature-gate-notif'),
+      (n.textContent = '\u26A0\uFE0F Fitur antrian tidak aktif \u2014 muat ulang halaman (F5)'),
+      (n.style.cssText =
+        'position:fixed;top:8px;right:8px;z-index:999999;background:#dc3545;color:#fff;padding:8px 16px;border-radius:6px;font:13px system-ui,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.2);'),
+      document.body.appendChild(n),
+      setTimeout(() => n.remove(), 1e4));
   }
-
-  // src/features/antrianFarmasiDisplayApp.ts
-  var TARGETS = {
-    calls: { url: farmasiAppBase() + '/antrian-farmasi', label: 'panggilan aktif' },
-    waiting: { url: farmasiAppBase() + '/antrian-farmasi-menunggu', label: 'antrian menunggu' },
+  var _ = {
+    calls: { url: p() + '/antrian-farmasi', label: 'panggilan aktif' },
+    waiting: { url: p() + '/antrian-farmasi-menunggu', label: 'antrian menunggu' },
   };
   (function () {
-    let currentMode = 'calls';
-    let iframe = null;
-    let corner = null;
-    function blockNativeAudio() {
+    let n = 'calls',
+      e = null,
+      t = null;
+    function s() {
       try {
-        const origPlay = HTMLMediaElement.prototype.play;
+        let a = HTMLMediaElement.prototype.play;
         HTMLMediaElement.prototype.play = function () {
           return Promise.resolve();
         };
-        const muteAll = () => {
-          document.querySelectorAll('audio, video').forEach((el) => {
-            const m = el;
-            m.muted = true;
-            m.pause();
-            void origPlay;
+        let r = () => {
+          document.querySelectorAll('audio, video').forEach((T) => {
+            let u = T;
+            ((u.muted = !0), u.pause());
           });
         };
-        muteAll();
-        new MutationObserver(muteAll).observe(document.documentElement, {
-          childList: true,
-          subtree: true,
-        });
+        (r(),
+          new MutationObserver(r).observe(document.documentElement, {
+            childList: !0,
+            subtree: !0,
+          }));
       } catch {}
     }
-    function setMode(mode) {
-      if (!mode || !TARGETS[mode]) return;
-      if (mode === currentMode) return;
-      currentMode = mode;
-      const t = TARGETS[mode];
-      if (iframe) iframe.src = t.url;
-      if (corner) corner.textContent = 'display: ' + t.label + ' (' + t.url + ')';
+    function o(a) {
+      if (!a || !_[a] || a === n) return;
+      n = a;
+      let r = _[a];
+      (e && (e.src = r.url), t && (t.textContent = 'display: ' + r.label + ' (' + r.url + ')'));
     }
-    function takeOver() {
+    function i() {
       if (document.getElementById('ext-farmasi-display-app')) return;
-      const t = TARGETS[currentMode];
-      const app = document.createElement('div');
-      app.id = 'ext-farmasi-display-app';
-      app.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#fff;';
-      iframe = document.createElement('iframe');
-      iframe.src = t.url;
-      iframe.style.cssText = 'width:100%;height:100%;border:0;';
-      iframe.title = 'Display Antrian Farmasi';
-      iframe.setAttribute('allow', 'autoplay');
-      iframe.setAttribute('allowfullscreen', '');
-      app.appendChild(iframe);
-      corner = document.createElement('div');
-      corner.style.cssText =
-        'position:fixed;bottom:8px;right:12px;font:11px/1.4 system-ui,sans-serif;color:#adb5cd;z-index:1;background:rgba(255,255,255,.7);padding:2px 8px;border-radius:6px;';
-      corner.textContent = 'display: ' + t.label + ' (' + t.url + ')';
-      app.appendChild(corner);
-      (document.body || document.documentElement).appendChild(app);
-      document.body.style.overflow = 'hidden';
+      let a = _[n],
+        r = document.createElement('div');
+      ((r.id = 'ext-farmasi-display-app'),
+        (r.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#fff;'),
+        (e = document.createElement('iframe')),
+        (e.src = a.url),
+        (e.style.cssText = 'width:100%;height:100%;border:0;'),
+        (e.title = 'Display Antrian Farmasi'),
+        e.setAttribute('allow', 'autoplay'),
+        e.setAttribute('allowfullscreen', ''),
+        r.appendChild(e),
+        (t = document.createElement('div')),
+        (t.style.cssText =
+          'position:fixed;bottom:8px;right:12px;font:11px/1.4 system-ui,sans-serif;color:#adb5cd;z-index:1;background:rgba(255,255,255,.7);padding:2px 8px;border-radius:6px;'),
+        (t.textContent = 'display: ' + a.label + ' (' + a.url + ')'),
+        r.appendChild(t),
+        (document.body || document.documentElement).appendChild(r),
+        (document.body.style.overflow = 'hidden'));
       try {
-        const ch = new BroadcastChannel('morbis-antrian-display');
-        ch.onmessage = (ev) => {
-          if (ev.data?.type === 'setDisplay') setMode(ev.data.mode);
+        let T = new BroadcastChannel('morbis-antrian-display');
+        T.onmessage = (u) => {
+          u.data?.type === 'setDisplay' && o(u.data.mode);
         };
       } catch {}
     }
-    blockNativeAudio();
-    const start = () => {
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', takeOver, { once: true });
-      } else {
-        takeOver();
-      }
-    };
-    whenAntrianFarmasiActive(start);
+    (s(),
+      f(() => {
+        document.readyState === 'loading'
+          ? document.addEventListener('DOMContentLoaded', i, { once: !0 })
+          : i();
+      }));
   })();
 })();
-//# sourceMappingURL=antrianFarmasiDisplayApp.js.map

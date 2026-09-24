@@ -11,7 +11,7 @@
  * tulis ulang kolom → unduh file jadi. Server tidak disentuh; gagal →
  * fallback buka export asli di tab baru.
  */
-import { lookupAntrianBatch } from './shared/antrianActions';
+import { lookupAntrianBatch, isFarmasiAppReachable } from './shared/antrianActions';
 
 // Guard anti double-inject (SPA MORBIS bisa inject content script >1×).
 if ((window as unknown as { __extPenerimaanExport?: boolean }).__extPenerimaanExport) {
@@ -143,11 +143,28 @@ function buildLiveMap(): Map<string, string> {
   return map;
 }
 
+/** Statistik hasil join export ↔ App Antrian. */
+interface ExportStats {
+  total: number;
+  matched: number;
+  adaSelesai: number;
+  contohTidakDitemukan: string[];
+}
+
 /** Tulis ulang HTML xls: ganti kolom Waktu Penjualan → 2 kolom waktu antrian.
  *  No Resep dari export HTML dijoin ke liveMap → resep_id → lookupAntrianBatch
  *  → created_at (Waktu Verif/Antrikan) + done_at (Waktu Klik Selesai).
- *  Bila liveMap kosong, fallback: No Resep teks = resep_id langsung. */
-async function rewriteExport(html: string, liveMap: Map<string, string>): Promise<string> {
+ *  Bila liveMap kosong, fallback: No Resep teks = resep_id langsung.
+ *
+ *  Kolom kosong itu Meaningful: nilai HANYA ada kalau status antrian di App
+ *  sudah lewat tahap itu (created_at saat ENQUEUE/Antrikan, done_at saat
+ *  DONE/Selesai). Resep yang belum di-antri atau belum "Selesai" memang
+ *  kosong — karena itu selisihnya dikembalikan sebagai stats + console log
+ *  supaya bisa dibedakan dari "App Antrian mati". */
+async function rewriteExport(
+  html: string,
+  liveMap: Map<string, string>,
+): Promise<{ html: string; stats: ExportStats }> {
   const doc = new DOMParser().parseFromString(html, 'text/html');
   let target: HTMLTableElement | null = null;
   let wpIdx = -1;
@@ -189,16 +206,35 @@ async function rewriteExport(html: string, liveMap: Map<string, string>): Promis
   th2.textContent = 'Waktu Klik Selesai';
   wth.replaceWith(th1, th2);
 
+  const stats: ExportStats = {
+    total: rows.length,
+    matched: 0,
+    adaSelesai: 0,
+    contohTidakDitemukan: [],
+  };
   for (const r of rows) {
     const q = r.id ? times[r.id] : undefined;
     const orig = r.tds[wpIdx];
     const tdV = orig.cloneNode(false) as HTMLTableCellElement;
     const tdS = orig.cloneNode(false) as HTMLTableCellElement;
-    tdV.textContent = q?.created_at ? fmtWaktuAntrian(q.created_at) : '';
-    tdS.textContent = q?.done_at ? fmtWaktuAntrian(q.done_at) : '';
+    if (q) {
+      stats.matched++;
+      tdV.textContent = q.created_at ? fmtWaktuAntrian(q.created_at) : '—';
+      if (q.done_at) {
+        stats.adaSelesai++;
+        tdS.textContent = fmtWaktuAntrian(q.done_at);
+      } else {
+        tdS.textContent = '—';
+      }
+    } else {
+      // Tidak ada record antrian sama sekali (belum di-antri / bukan hari ini).
+      tdV.textContent = '—';
+      tdS.textContent = '—';
+      if (stats.contohTidakDitemukan.length < 10) stats.contohTidakDitemukan.push(`${r.id}`);
+    }
     orig.replaceWith(tdV, tdS);
   }
-  return doc.documentElement.outerHTML;
+  return { html: doc.documentElement.outerHTML, stats };
 }
 
 async function processExport(url: string): Promise<void> {
@@ -209,7 +245,18 @@ async function processExport(url: string): Promise<void> {
     const html = await res.text();
 
     updateLoading('Menggabungkan data waktu antrian…');
-    const out = await rewriteExport(html, buildLiveMap());
+    const { html: out, stats } = await rewriteExport(html, buildLiveMap());
+
+    // Bedakan 2 kegagalan yang tadinya sama-sama "kolom kosong":
+    // (a) App Antrian tidak terjangkau dari PC ini, (b) record memang tidak ada.
+    const reachable = await isFarmasiAppReachable();
+    window.console.info(
+      `[penerimaanExport] baris=${stats.total} cocok=${stats.matched} selesai=${stats.adaSelesai} ` +
+        `appAntrian=${reachable ? 'REACHABLE' : 'TIDAK TERJANGKAU'}` +
+        (stats.contohTidakDitemukan.length
+          ? ` idTanpaAntrian=[${stats.contohTidakDitemukan.join(', ')}]`
+          : ''),
+    );
 
     updateLoading('Menyiapkan file unduhan…');
     const blob = new Blob([out], { type: 'application/vnd.ms-excel' });
@@ -222,7 +269,25 @@ async function processExport(url: string): Promise<void> {
       URL.revokeObjectURL(a.href);
       a.remove();
     }, 4000);
-    toast('Export selesai — kolom Waktu Verif/Antrikan + Waktu Klik Selesai terisi.');
+
+    if (stats.total > 0 && stats.matched === 0) {
+      toast(
+        reachable
+          ? 'Export selesai, TAPI tidak ada baris yang punya data antrian — ' +
+              'resep di file ini belum pernah di-Antrikan (atau bukan antrian hari ini).'
+          : 'Export selesai, TAPI App Antrian tidak terjangkau dari PC ini — ' +
+              'kolom waktu kosong semua. Cek koneksi ke dev.rsudkotajambi.id.',
+        9000,
+      );
+    } else if (stats.matched < stats.total || stats.adaSelesai < stats.matched) {
+      toast(
+        `Export selesai — ${stats.matched}/${stats.total} baris ter-antri, ` +
+          `${stats.adaSelesai} sudah "Selesai". Sisanya "—" (belum antri / belum selesai).`,
+        8000,
+      );
+    } else {
+      toast('Export selesai — kolom Waktu Verif/Antrikan + Waktu Klik Selesai terisi.');
+    }
   } finally {
     hideLoading();
   }
