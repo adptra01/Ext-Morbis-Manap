@@ -140,7 +140,7 @@ var __morbis_init = (() => {
     if (!tsCfg || tsCfg.enabled) {
       document.documentElement.setAttribute('data-ext-tts-server', '1');
     } else {
-      document.documentElement.removeAttribute('data-ext-tts-server');
+      document.documentElement.setAttribute('data-ext-tts-server', '0');
     }
     const peCfg = cfg?.features?.penerimaanExport;
     if (peCfg?.enabled && window.ExtensionCore.isFeatureAllowed('penerimaanExport')) {

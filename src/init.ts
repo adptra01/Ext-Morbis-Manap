@@ -102,14 +102,15 @@ async function initExtension(): Promise<void> {
     document.documentElement.removeAttribute('data-ext-antrian-farmasi');
   }
 
-  // Suara server cadangan (display farmasi + loket): ON bila key belum ada
-  // (instalasi lama) atau eksplisit enabled — first-party server RS, bukan
-  // pihak ketiga. Dibaca skrip MAIN-world via atribut (tanpa chrome.*).
+  // Suara server cadangan (display farmasi + loket): '1' nyala, '0' mati.
+  // SELALU tulis eksplisit (jangan removeAttribute): pembaca MAIN-world
+  // membedakan mati lewat nilai '0'; atribut hilang = nyala (kompatibel
+  // mundur). First-party server RS, bukan pihak ketiga.
   const tsCfg = cfg?.features?.ttsServer;
   if (!tsCfg || tsCfg.enabled) {
     document.documentElement.setAttribute('data-ext-tts-server', '1');
   } else {
-    document.documentElement.removeAttribute('data-ext-tts-server');
+    document.documentElement.setAttribute('data-ext-tts-server', '0');
   }
 
   const peCfg = cfg?.features?.penerimaanExport;
