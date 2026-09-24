@@ -189,12 +189,5 @@
   "187": "ExtTabs",
   "188": "class-variance-authority",
   "189": "clsx",
-  "190": "esbuild",
-  "191": "@eslint/js",
-  "192": "lint-staged",
-  "193": "@radix-ui/react-select",
-  "194": "@radix-ui/react-switch",
-  "195": "rimraf",
-  "196": "tailwindcss",
-  "197": "@types/chrome"
+  "193": "@radix-ui/react-select"
 }
