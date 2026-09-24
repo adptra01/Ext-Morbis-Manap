@@ -970,38 +970,6 @@ function generateTimestampKeterangan(): string {
   return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
 }
 
-/**
- * Convert file to image (JPEG) before upload.
- * Supports: PDF (via canvas), images (passthrough with compression).
- * Returns a new File object with JPEG format.
- */
-async function convertFileToImage(file: File): Promise<File> {
-  const mime = file.type;
-
-  // If already an image, compress and return as JPEG
-  if (mime.startsWith('image/')) {
-    return await compressImageToJpeg(file, 0.85);
-  }
-
-  // PDF -> convert first page to image via canvas
-  if (mime === 'application/pdf') {
-    return await pdfToImage(file);
-  }
-
-  // Other types - try to convert via canvas, fallback to placeholder
-  console.warn('[Batch Upload] Unsupported file type:', file.type, '- creating placeholder');
-  return createPlaceholderImage('Document');
-  // RI/RJ marker from the page's "Jenis Kunjungan" field, e.g.
-  // `<input id="jenis" value="RAWAT JALAN">` → `RJ-`. Reg number appended
-  // when the URL carries `?reg=`.
-  const jenisEl = document.getElementById('jenis') as HTMLInputElement | null;
-  const jenis = (jenisEl?.value || '').toUpperCase();
-  const marker = jenis.includes('INAP') ? 'RI' : jenis.includes('JALAN') ? 'RJ' : '';
-  if (!marker) return '';
-  const reg = new URLSearchParams(window.location.search).get('reg') || '';
-  return reg ? `${marker}-${reg} ` : `${marker}- `;
-}
-
 async function processAndUploadSingleUrl(
   metadata: BatchItem,
   idVisitStr: string,
