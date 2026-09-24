@@ -14,6 +14,7 @@ let _scanIntervalId: number | null = null;
 let _textScanTimeoutId: number | null = null;
 let _observer: MutationObserver | null = null;
 let _observerTimer: number | null = null;
+let _delegatedInstalled = false;
 
 const OPEN_DETAIL_CONFIG = {
   urlPatterns: [
@@ -126,6 +127,70 @@ function isModifiedEvent(element: HTMLElement): boolean {
   return element.dataset.detailModified === 'true';
 }
 
+function getOpenDetailMode(): string {
+  return g.currentConfig?.features?.openDetailInNewTab?.mode || 'same-tab';
+}
+
+function openDetailUrl(id: string): void {
+  const url = generateUrl(id);
+  const mode = getOpenDetailMode();
+  console.log(`[OpenDetail] Membuka detail ID: ${id}, mode: ${mode}`);
+  if (mode === 'new-tab') {
+    window.open(url, '_blank', 'noopener');
+  } else {
+    window.location.href = url;
+  }
+}
+
+function findDetailButton(target: EventTarget | null): HTMLElement | null {
+  const el = target as Element | null;
+  if (!el || typeof el.closest !== 'function') return null;
+
+  for (const selector of OPEN_DETAIL_CONFIG.buttonSelectors) {
+    try {
+      const hit = el.closest(selector);
+      if (hit) return hit as HTMLElement;
+    } catch {
+      // selector tidak valid di browser ini — lewati
+    }
+  }
+
+  // Fallback teks seperti overrideButtonsByText (Detail/View/Lihat).
+  const btn = el.closest('button, a');
+  if (btn) {
+    const text = (btn.textContent || '').trim().toLowerCase();
+    if (text === 'detail' || text === 'view' || text === 'lihat') {
+      return btn as HTMLElement;
+    }
+  }
+  return null;
+}
+
+/** Penjaring lapis-1: cegat klik di document (fase capture) SEBELUM handler
+ *  apapun — inline onclick, jQuery, maupun delegasi MORBIS. Menutup celah:
+ *  (a) tombol diklik sebelum interval 2 detik memindai, (b) handler yang
+ *  dipasang via JS sehingga removeAttribute('onclick') tidak mempan dan
+ *  kalah urutan eksekusi. Hanya bertindak bila ID detail dikenali. */
+function _delegatedDetailClick(e: MouseEvent): void {
+  // Hormati niat eksplisit user: ctrl/cmd/shift/klik-tengah = tab baru.
+  if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return;
+  if (
+    !g.currentConfig?.features?.openDetailInNewTab?.enabled ||
+    !g.ExtensionCore.isFeatureAllowed('openDetailInNewTab')
+  )
+    return;
+
+  const btn = findDetailButton(e.target);
+  if (!btn) return;
+  const id = extractIdFromElement(btn);
+  if (!id) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+  e.stopImmediatePropagation();
+  openDetailUrl(id);
+}
+
 function overrideDetailButton(btn: HTMLElement): void {
   if (isModifiedEvent(btn)) return;
 
@@ -164,9 +229,7 @@ function overrideDetailButton(btn: HTMLElement): void {
       e.stopPropagation();
       e.stopImmediatePropagation();
 
-      const url = generateUrl(id);
-      console.log(`[OpenDetail] Membuka detail ID: ${id}, URL: ${url}`);
-      window.location.href = url;
+      openDetailUrl(id);
     },
     true,
   );
@@ -248,6 +311,11 @@ function overrideButtonsByText(): void {
 
 /** Cleanup semua resources (timer + observer + listeners). */
 function _cleanupOpenDetail(): void {
+  // Lepas penjaring document-level
+  if (_delegatedInstalled) {
+    document.removeEventListener('click', _delegatedDetailClick, true);
+    _delegatedInstalled = false;
+  }
   // Clear interval
   if (_scanIntervalId !== null) {
     clearInterval(_scanIntervalId);
@@ -277,7 +345,12 @@ function runOpenDetailInNewTabFeature(): void {
 
   try {
     if (isEnabled) {
-      console.log('[OpenDetail] Feature ENABLED');
+      console.log('[OpenDetail] Feature ENABLED, mode:', getOpenDetailMode());
+      // Lapis-1: penjaring capture di document (tutup celah race/binding-order)
+      if (!_delegatedInstalled) {
+        document.addEventListener('click', _delegatedDetailClick, true);
+        _delegatedInstalled = true;
+      }
       overrideDetailButtons();
       _textScanTimeoutId = window.setTimeout(() => overrideButtonsByText(), 500);
       // FIX: simpan interval ID agar bisa di-clear saat disable
@@ -310,8 +383,8 @@ function runOpenDetailInNewTabFeature(): void {
 if (typeof g.featureModules !== 'undefined') {
   g.featureModules.openDetailInNewTab = {
     id: 'openDetailInNewTab',
-    name: 'Do Not Open Detail in New Tab',
-    description: 'Override tombol detail agar buka di tab yang sama (mencegah new tab)',
+    name: 'Open Detail Mode',
+    description: 'Buka detail di tab yang sama / tab baru sesuai mode (cegat handler bawaan)',
     match: { prefix: '/v2/m-klaim/' },
     run: runOpenDetailInNewTabFeature,
   };

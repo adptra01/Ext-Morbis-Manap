@@ -11,6 +11,7 @@ var __morbis_feature = (() => {
   var _textScanTimeoutId = null;
   var _observer = null;
   var _observerTimer = null;
+  var _delegatedInstalled = false;
   var OPEN_DETAIL_CONFIG = {
     urlPatterns: [
       '/v2/m-klaim/detail-v2-refaktor?id_visit={id}&tanggalAwal={tanggalAwal}&tanggalAkhir={tanggalAkhir}&norm=&nama=&reg=&billing=all&status=all&id_poli_cari=&poli_cari=',
@@ -104,6 +105,53 @@ var __morbis_feature = (() => {
   function isModifiedEvent(element) {
     return element.dataset.detailModified === 'true';
   }
+  function getOpenDetailMode() {
+    return g.currentConfig?.features?.openDetailInNewTab?.mode || 'same-tab';
+  }
+  function openDetailUrl(id) {
+    const url = generateUrl(id);
+    const mode = getOpenDetailMode();
+    console.log(`[OpenDetail] Membuka detail ID: ${id}, mode: ${mode}`);
+    if (mode === 'new-tab') {
+      window.open(url, '_blank', 'noopener');
+    } else {
+      window.location.href = url;
+    }
+  }
+  function findDetailButton(target) {
+    const el = target;
+    if (!el || typeof el.closest !== 'function') return null;
+    for (const selector of OPEN_DETAIL_CONFIG.buttonSelectors) {
+      try {
+        const hit = el.closest(selector);
+        if (hit) return hit;
+      } catch {}
+    }
+    const btn = el.closest('button, a');
+    if (btn) {
+      const text = (btn.textContent || '').trim().toLowerCase();
+      if (text === 'detail' || text === 'view' || text === 'lihat') {
+        return btn;
+      }
+    }
+    return null;
+  }
+  function _delegatedDetailClick(e) {
+    if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return;
+    if (
+      !g.currentConfig?.features?.openDetailInNewTab?.enabled ||
+      !g.ExtensionCore.isFeatureAllowed('openDetailInNewTab')
+    )
+      return;
+    const btn = findDetailButton(e.target);
+    if (!btn) return;
+    const id = extractIdFromElement(btn);
+    if (!id) return;
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    openDetailUrl(id);
+  }
   function overrideDetailButton(btn) {
     if (isModifiedEvent(btn)) return;
     const id = extractIdFromElement(btn);
@@ -133,9 +181,7 @@ var __morbis_feature = (() => {
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
-        const url = generateUrl(id);
-        console.log(`[OpenDetail] Membuka detail ID: ${id}, URL: ${url}`);
-        window.location.href = url;
+        openDetailUrl(id);
       },
       true,
     );
@@ -204,6 +250,10 @@ var __morbis_feature = (() => {
     });
   }
   function _cleanupOpenDetail() {
+    if (_delegatedInstalled) {
+      document.removeEventListener('click', _delegatedDetailClick, true);
+      _delegatedInstalled = false;
+    }
     if (_scanIntervalId !== null) {
       clearInterval(_scanIntervalId);
       _scanIntervalId = null;
@@ -226,7 +276,11 @@ var __morbis_feature = (() => {
     _cleanupOpenDetail();
     try {
       if (isEnabled) {
-        console.log('[OpenDetail] Feature ENABLED');
+        console.log('[OpenDetail] Feature ENABLED, mode:', getOpenDetailMode());
+        if (!_delegatedInstalled) {
+          document.addEventListener('click', _delegatedDetailClick, true);
+          _delegatedInstalled = true;
+        }
         overrideDetailButtons();
         _textScanTimeoutId = window.setTimeout(() => overrideButtonsByText(), 500);
         _scanIntervalId = window.setInterval(() => overrideDetailButtons(), 2e3);
@@ -253,8 +307,8 @@ var __morbis_feature = (() => {
   if (typeof g.featureModules !== 'undefined') {
     g.featureModules.openDetailInNewTab = {
       id: 'openDetailInNewTab',
-      name: 'Do Not Open Detail in New Tab',
-      description: 'Override tombol detail agar buka di tab yang sama (mencegah new tab)',
+      name: 'Open Detail Mode',
+      description: 'Buka detail di tab yang sama / tab baru sesuai mode (cegat handler bawaan)',
       match: { prefix: '/v2/m-klaim/' },
       run: runOpenDetailInNewTabFeature,
     };
