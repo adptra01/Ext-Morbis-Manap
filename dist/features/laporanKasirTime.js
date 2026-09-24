@@ -1,153 +1,163 @@
 'use strict';
 var __morbis_feature = (() => {
+  // src/features/laporanKasirTime.ts
   (function () {
     if (!window.location.pathname.includes('laporan-kasir')) return;
-    (function () {
-      document.documentElement.getAttribute('data-ext-laporan-kasir-time') === '1' && E();
+    (function pollFlag() {
+      const flag = document.documentElement.getAttribute('data-ext-laporan-kasir-time');
+      if (flag !== '1') return;
+      run();
     })();
-    function E() {
-      let f = (t) => (t < 10 ? '0' : '') + t,
-        p = (t) => f(t.getDate()) + '/' + f(t.getMonth() + 1) + '/' + t.getFullYear(),
-        w = new Date(),
-        h = p(w),
-        m = new Date(w);
-      m.setDate(m.getDate() - 1);
-      let k = p(m),
-        s = '12:00:00';
-      function l() {
-        let t = document.getElementById('awal'),
-          n = document.getElementById('akhir');
-        (t && (t.value = k + ' ' + s), n && (n.value = h + ' ' + s));
+    function run() {
+      const pad = (n) => (n < 10 ? '0' : '') + n;
+      const f = (d) => pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear();
+      const now = /* @__PURE__ */ new Date();
+      const today = f(now);
+      const yst = new Date(now);
+      yst.setDate(yst.getDate() - 1);
+      const yesterday = f(yst);
+      const noon = '12:00:00';
+      function setTime() {
+        const a = document.getElementById('awal');
+        const b = document.getElementById('akhir');
+        if (a) a.value = yesterday + ' ' + noon;
+        if (b) b.value = today + ' ' + noon;
       }
-      l();
-      function g(t) {
-        let n = window;
-        if (typeof n[t] != 'function') return !1;
-        let e = n[t];
-        return (
-          (n[t] = function (...i) {
-            return (l(), e.apply(this, i));
-          }),
-          !0
-        );
+      setTime();
+      function patchFn(name) {
+        const w = window;
+        if (typeof w[name] !== 'function') return false;
+        const orig = w[name];
+        w[name] = function (...args) {
+          setTime();
+          return orig.apply(this, args);
+        };
+        return true;
       }
-      if (
-        (['loadTabelRiwayat', 'CariData', 'cari'].forEach(function (t) {
-          if (!g(t)) {
-            let n = 0,
-              e = setInterval(function () {
-                (n++, (g(t) || n >= 40) && clearInterval(e));
-              }, 300);
-          }
-        }),
-        typeof window.contentloader == 'function')
-      ) {
-        let t = window.contentloader;
-        window.contentloader = function (...n) {
-          return (l(), t.apply(this, n));
+      ['loadTabelRiwayat', 'CariData', 'cari'].forEach(function (name) {
+        if (!patchFn(name)) {
+          let n = 0;
+          const h = setInterval(function () {
+            n++;
+            if (patchFn(name) || n >= 40) clearInterval(h);
+          }, 300);
+        }
+      });
+      if (typeof window.contentloader === 'function') {
+        const orig = window.contentloader;
+        window.contentloader = function (...args) {
+          setTime();
+          return orig.apply(this, args);
         };
       } else {
-        let t = 0,
-          n = setInterval(function () {
-            if ((t++, typeof window.contentloader == 'function')) {
-              clearInterval(n);
-              let e = window.contentloader;
-              window.contentloader = function (...i) {
-                return (l(), e.apply(this, i));
-              };
-            }
-            t >= 40 && clearInterval(n);
-          }, 300);
+        let n = 0;
+        const h = setInterval(function () {
+          n++;
+          if (typeof window.contentloader === 'function') {
+            clearInterval(h);
+            const orig = window.contentloader;
+            window.contentloader = function (...args) {
+              setTime();
+              return orig.apply(this, args);
+            };
+          }
+          if (n >= 40) clearInterval(h);
+        }, 300);
       }
-      let D = document.getElementById('content-riwayat') || document.body;
-      new MutationObserver(function () {
-        (setTimeout(b, 500), setTimeout(b, 2e3));
-      }).observe(D, { childList: !0, subtree: !0 });
-      function b() {
-        document
-          .querySelectorAll(
-            '#laporan-pembayaran-tunai,#laporan-pembayaran-non-tunai,#laporan-pembayaran-bri,#laporan-pembayaran-edc',
-          )
-          .forEach(function (n) {
-            if (n.dataset.extDone) return;
-            n.dataset.extDone = '1';
-            let e = n.querySelector('thead tr');
-            if (!e) return;
-            let i = e.querySelectorAll('th,td'),
-              u = -1;
-            (i.forEach(function (r, a) {
-              let c = (r.textContent || '').toLowerCase().trim();
-              (c === 'shift' || c === 'pagi/sore') && (u = a);
-            }),
-              u !== -1 &&
-                n.querySelectorAll('tbody tr').forEach(function (r) {
-                  let a = r.cells[u];
-                  if (!a || a.dataset.extDone) return;
-                  a.dataset.extDone = '1';
-                  let c = (a.textContent || '').trim();
-                  for (let o = 0; o < r.cells.length; o++) {
-                    if (o === u) continue;
-                    let v = (r.cells[o].textContent || '').trim();
-                    if (/^\d{2}:\d{2}(:\d{2})?$/.test(v)) {
-                      a.textContent = c + ' ' + v;
-                      return;
-                    }
-                  }
-                  let d = r.querySelector('[data-jam],[data-time],[data-waktu]');
-                  if (d) {
-                    let o =
-                      d.getAttribute('data-jam') ||
-                      d.getAttribute('data-time') ||
-                      d.getAttribute('data-waktu') ||
-                      '';
-                    o && (a.textContent = c + ' ' + o);
-                  }
-                }));
+      const target = document.getElementById('content-riwayat') || document.body;
+      const obs = new MutationObserver(function () {
+        setTimeout(fixTables, 500);
+        setTimeout(fixTables, 2e3);
+      });
+      obs.observe(target, { childList: true, subtree: true });
+      function fixTables() {
+        const sel =
+          '#laporan-pembayaran-tunai,#laporan-pembayaran-non-tunai,#laporan-pembayaran-bri,#laporan-pembayaran-edc';
+        document.querySelectorAll(sel).forEach(function (t) {
+          if (t.dataset.extDone) return;
+          t.dataset.extDone = '1';
+          const hd = t.querySelector('thead tr');
+          if (!hd) return;
+          const hcs = hd.querySelectorAll('th,td');
+          let si = -1;
+          hcs.forEach(function (c, i) {
+            const tx = (c.textContent || '').toLowerCase().trim();
+            if (tx === 'shift' || tx === 'pagi/sore') si = i;
           });
+          if (si === -1) return;
+          t.querySelectorAll('tbody tr').forEach(function (r) {
+            const sc = r.cells[si];
+            if (!sc || sc.dataset.extDone) return;
+            sc.dataset.extDone = '1';
+            const shift = (sc.textContent || '').trim();
+            for (let i = 0; i < r.cells.length; i++) {
+              if (i === si) continue;
+              const v = (r.cells[i].textContent || '').trim();
+              if (/^\d{2}:\d{2}(:\d{2})?$/.test(v)) {
+                sc.textContent = shift + ' ' + v;
+                return;
+              }
+            }
+            const h = r.querySelector('[data-jam],[data-time],[data-waktu]');
+            if (h) {
+              const tv =
+                h.getAttribute('data-jam') ||
+                h.getAttribute('data-time') ||
+                h.getAttribute('data-waktu') ||
+                '';
+              if (tv) sc.textContent = shift + ' ' + tv;
+            }
+          });
+        });
       }
-      function x(t) {
+      function loadFlatpickr(cb) {
         if (window.flatpickr) {
-          t();
+          cb();
           return;
         }
-        let n = document.createElement('link');
-        ((n.rel = 'stylesheet'),
-          (n.href = 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css'),
-          document.head.appendChild(n));
-        let e = document.createElement('script');
-        ((e.src = 'https://cdn.jsdelivr.net/npm/flatpickr'),
-          (e.onload = t),
-          document.head.appendChild(e));
+        const l = document.createElement('link');
+        l.rel = 'stylesheet';
+        l.href = 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css';
+        document.head.appendChild(l);
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/flatpickr';
+        s.onload = cb;
+        document.head.appendChild(s);
       }
-      function I() {
-        let t = window.$;
-        if (t && t.fn && t.fn.datepicker)
+      function destroyLegacy() {
+        const $ = window.$;
+        if ($ && $.fn && $.fn.datepicker) {
           try {
-            t('#awal, #akhir').datepicker('destroy');
+            $('#awal, #akhir').datepicker('destroy');
           } catch {}
+        }
       }
-      function T() {
-        ['awal', 'akhir'].forEach(function (t) {
-          let n = document.getElementById(t);
-          if (n) {
-            n.classList.contains('hasDatepicker') && n.classList.remove('hasDatepicker');
-            try {
-              window.flatpickr('#' + t, {
-                enableTime: !0,
-                dateFormat: 'd/m/Y H:i:S',
-                time_24hr: !0,
-                defaultDate: n.value || (t === 'awal' ? k + ' ' + s : h + ' ' + s),
-              });
-            } catch (e) {
-              console.warn('[LaporanKasirTime] flatpickr err', t, e);
-            }
+      function initFlatpickr() {
+        ['awal', 'akhir'].forEach(function (id) {
+          const el = document.getElementById(id);
+          if (!el) return;
+          if (el.classList.contains('hasDatepicker')) el.classList.remove('hasDatepicker');
+          try {
+            window.flatpickr('#' + id, {
+              enableTime: true,
+              dateFormat: 'd/m/Y H:i:S',
+              time_24hr: true,
+              defaultDate:
+                el.value || (id === 'awal' ? yesterday + ' ' + noon : today + ' ' + noon),
+            });
+          } catch (e) {
+            console.warn('[LaporanKasirTime] flatpickr err', id, e);
           }
         });
       }
-      function y() {
-        (I(), x(T));
+      function applyPicker() {
+        destroyLegacy();
+        loadFlatpickr(initFlatpickr);
       }
-      (y(), setTimeout(y, 2e3), setTimeout(y, 5e3));
+      applyPicker();
+      setTimeout(applyPicker, 2e3);
+      setTimeout(applyPicker, 5e3);
     }
   })();
 })();
+//# sourceMappingURL=laporanKasirTime.js.map
