@@ -68,7 +68,17 @@ jobs:
           CRX_SIGNING_KEY: ${{ secrets.CRX_SIGNING_KEY }}
         run: |
           printf '%s' "$CRX_SIGNING_KEY" > "$RUNNER_TEMP/crx-signing-key.pem"
-          node scripts/pack.mjs --key "$RUNNER_TEMP/crx-signing-key.pem" --require-key
+          node scripts/pack.mjs --key "$RUNNER_TEMP/crx-signing-key.pem" --require-key | tee "$RUNNER_TEMP/pack.log"
+          # Guard: EXT_ID di .bat + appid update.xml + versi harus sinkron
+          # dengan ID yang dihitung dari key signing (sumber tunggal).
+          CRX_EXT_ID=$(grep -oP '(?<=\[pack\] EXT_ID: )[a-p]{32}' "$RUNNER_TEMP/pack.log" | head -1)
+          test -n "$CRX_EXT_ID" || { echo "::error::gagal membaca EXT_ID dari pack.mjs"; exit 1; }
+          echo "CRX_EXT_ID=$CRX_EXT_ID" >> $GITHUB_ENV
+          grep -q "set EXT_ID=$CRX_EXT_ID" deploy/Install_Morbis_Ext.bat || { echo "::error::EXT_ID di .bat tidak sinkron dengan key signing (pack=$CRX_EXT_ID)"; exit 1; }
+          grep -q "appid='$CRX_EXT_ID'" deploy/update.xml || { echo "::error::appid update.xml tidak sinkron dengan key signing"; exit 1; }
+          XML_VER=$(grep -oP "(?<=version=')[0-9.]+" deploy/update.xml | head -1)
+          test "$XML_VER" = "$VERSION" || { echo "::error::versi update.xml ($XML_VER) != manifest ($VERSION)"; exit 1; }
+          echo "Guard OK: EXT_ID=$CRX_EXT_ID, update.xml v$XML_VER"
 
       - name: Deploy dist + docs → main (orphan-style)
         run: |
@@ -83,6 +93,9 @@ jobs:
           # (docs/ = akar situs Pages sehingga URL persis seperti di .bat).
           cp deploy/update.xml "$ORPHAN/docs/update.xml"
           cp "deploy/morbis-v${VERSION}.crx" "$ORPHAN/docs/morbis-v${VERSION}.crx"
+          # Installer siap pakai ikut ke main (1 domain Pages) — sinkron
+          # EXT_ID sudah dijaga step Pack di atas, tanpa inject/sed.
+          cp deploy/Install_Morbis_Ext.bat deploy/Setup_Update_Terjadwal.bat deploy/Uninstall_Morbis_Ext.bat "$ORPHAN/docs/"
           # Script update satu-klik ikut ke main (branch main = dist siap pakai)
           cp scripts/morbis-update-main.bat "$ORPHAN/morbis-update-main.bat"
 

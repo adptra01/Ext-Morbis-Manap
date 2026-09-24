@@ -1,6 +1,9 @@
 @echo off
 REM ================================================================
 REM MORBIS Ext Unofficial - Deploy ke GitHub Script
+REM DEPRECATED: deploy manual sudah digantikan CI (.github/workflows/
+REM deploy-to-main.yml). File ini dipertahankan sebagai arsip - JANGAN
+REM dijalankan (referensi Install_Morbis_Ext.reg sudah dihapus).
 REM ================================================================
 
 setlocal

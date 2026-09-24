@@ -1,4 +1,5 @@
 @echo off
+setlocal EnableDelayedExpansion
 title Installer Ekstensi SIMRS Morbis
 color 0A
 
@@ -19,62 +20,169 @@ echo     RSUD H. ABDUL MANAP
 echo ===================================================
 echo.
 echo Sedang mengonfigurasi browser Anda...
-
-set EXT_ID=beljnjifmncnfnhdkcmjpeonoigdnbl
-set UPDATE_URL=https://adptra01.github.io/Ext-Morbis-Manap/update.xml
-
 echo.
+
+REM ============================================================
+REM  KONFIGURASI - sumber tunggal identitas produksi.
+REM  EXT_ID = hash SHA256 public key dist.pem (wajib 32 char a-p).
+REM  JANGAN ketik ulang manual - copy-paste dari update.xml live.
+REM  Sinkronisasi dijaga otomatis oleh CI (guard di deploy-to-main.yml).
+REM ============================================================
+set EXT_ID=beljnjfifmncnfnhdkcmjpeonoigdnbl
+set UPDATE_URL=https://adptra01.github.io/Ext-Morbis-Manap/update.xml
+set EXT_SOURCE=https://adptra01.github.io/*
+
+REM Validasi EXT_ID harus tepat 32 karakter (a-p).
+call :StrLen
+if not "!EXT_ID_LEN!"=="32" (
+    echo.
+    echo ==========================================
+    echo  ERROR: EXT_ID panjang !EXT_ID_LEN! karakter.
+    echo  Harus tepat 32 karakter (a-p).
+    echo  Installer dihentikan - screenshot dan kirim ke admin.
+    echo ==========================================
+    pause
+    exit /B 1
+)
+echo [OK] EXT_ID valid: 32 karakter.
+echo.
+
 echo ===== PENTING SEBELUM INSTAL =====
 echo 1. Hapus dulu ekstensi MORBIS versi LAMA (Load unpacked) di browser:
 echo    chrome://extensions - cari MORBIS Ext Unofficial yang tertulis
 echo    "Dimuat sebagai unpacked" - klik Hapus.
 echo    Kalau tidak, ekstensi baru terpasang DUPLIKAT (dobel suara TTS).
-echo 2. Tutup SEMUA jendela browser setelah installer selesai.
+echo 2. Installer akan MENUTUP semua jendela browser - simpan dulu
+echo    pekerjaan Anda (mis. tab SIMRS) sebelum lanjut.
 echo.
-echo [1/5] Membersihkan policy MORBIS lama (ID lama / update.xml yang 404)...
-REM Key policy di bawah dikelola installer MORBIS ini - dihapus dulu agar
-REM ID lama tidak tersisa, lalu ditulis ulang dengan ID baru.
-reg delete "HKLM\SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallForcelist" /f >nul 2>&1
-reg delete "HKLM\SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallAllowlist" /f >nul 2>&1
-reg delete "HKLM\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist" /f >nul 2>&1
-reg delete "HKLM\SOFTWARE\Policies\Google\Chrome\ExtensionInstallAllowlist" /f >nul 2>&1
-reg delete "HKLM\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist" /f >nul 2>&1
-reg delete "HKLM\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallAllowlist" /f >nul 2>&1
-
-echo [2/5] Menyiapkan Microsoft Edge...
-reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallForcelist" /v "1" /t REG_SZ /d "%EXT_ID%;%UPDATE_URL%" /f >nul 2>&1
-reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallAllowlist" /v "1" /t REG_SZ /d "%EXT_ID%" /f >nul 2>&1
-
-echo [3/5] Menyiapkan Google Chrome...
-reg add "HKLM\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist" /v "1" /t REG_SZ /d "%EXT_ID%;%UPDATE_URL%" /f >nul 2>&1
-reg add "HKLM\SOFTWARE\Policies\Google\Chrome\ExtensionInstallAllowlist" /v "1" /t REG_SZ /d "%EXT_ID%" /f >nul 2>&1
-
-echo [4/5] Menyiapkan Brave Browser...
-reg add "HKLM\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist" /v "1" /t REG_SZ /d "%EXT_ID%;%UPDATE_URL%" /f >nul 2>&1
-reg add "HKLM\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallAllowlist" /v "1" /t REG_SZ /d "%EXT_ID%" /f >nul 2>&1
+pause
 
 echo.
-echo [5/5] Menyiapkan Autoplay untuk Suara TTS Antrian...
-REM TTS antrian (Google voice / MP3 / chime) diblokir Chrome tanpa user gesture.
-REM Policy AutoplayAllowed=1 = izinkan autoplay semua situs (setara
-REM --autoplay-policy=no-user-gesture-required) agar display antrian
-REM berbunyi tanpa perlu diklik terlebih dahulu.
-reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge\AutoplayAllowed" /v "1" /t REG_DWORD /d "1" /f >nul 2>&1
-reg add "HKLM\SOFTWARE\Policies\Google\Chrome\AutoplayAllowed" /v "1" /t REG_DWORD /d "1" /f >nul 2>&1
-reg add "HKLM\SOFTWARE\Policies\BraveSoftware\Brave\AutoplayAllowed" /v "1" /t REG_DWORD /d "1" /f >nul 2>&1
+echo [1/6] Menutup semua browser Chromium...
+call :KillBrowsers
+timeout /t 2 /nobreak >nul
 
+echo [2/6] Membersihkan policy MORBIS lama...
+REM Key Forcelist/Allowlist/Sources di bawah dikelola installer ini -
+REM dihapus dulu agar ID lama tidak tersisa, lalu ditulis ulang.
+for %%P in (
+    "Google\Chrome"
+    "Microsoft\Edge"
+    "BraveSoftware\Brave"
+    "Vivaldi"
+    "Opera Software\Opera"
+    "Chromium"
+) do (
+    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionInstallForcelist" /f >nul 2>&1
+    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionInstallAllowlist" /f >nul 2>&1
+    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionInstallSources" /f >nul 2>&1
+    REM Hapus subkey AutoplayAllowed yang salah (dibuat installer lama).
+    reg delete "HKLM\SOFTWARE\Policies\%%~P\AutoplayAllowed" /f >nul 2>&1
+    REM Hapus ExtensionSettings khusus MORBIS (ID baru + ID lama).
+    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionSettings\beljnjfifmncnfnhdkcmjpeonoigdnbl" /f >nul 2>&1
+    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionSettings\cbkjilfkdgclmpilonabdnicngjjgegd" /f >nul 2>&1
+    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionSettings\xae4a2ltyv2bj7lqyzxi2xeynpiefblg" /f >nul 2>&1
+)
+
+echo [3/6] Menulis policy ke semua browser Chromium...
+for %%P in (
+    "Google\Chrome"
+    "Microsoft\Edge"
+    "BraveSoftware\Brave"
+    "Vivaldi"
+    "Opera Software\Opera"
+    "Chromium"
+) do (
+    set "BASE=HKLM\SOFTWARE\Policies\%%~P"
+    echo   - %%~P
+    REM Forcelist: auto-install + auto-update dari update.xml.
+    reg add "!BASE!\ExtensionInstallForcelist" /v "1" /t REG_SZ /d "!EXT_ID!;!UPDATE_URL!" /f >nul 2>&1
+    REM Allowlist: wajib di Chromium yang ketat (terutama Edge).
+    reg add "!BASE!\ExtensionInstallAllowlist" /v "1" /t REG_SZ /d "!EXT_ID!" /f >nul 2>&1
+    REM Sources: izinkan install CRX dari domain GitHub Pages (non-Store).
+    reg add "!BASE!\ExtensionInstallSources" /v "1" /t REG_SZ /d "!EXT_SOURCE!" /f >nul 2>&1
+    REM ExtensionSettings: kunci update_url agar tidak balik ke Store.
+    reg add "!BASE!\ExtensionSettings\!EXT_ID!" /v "installation_mode" /t REG_SZ /d "force_installed" /f >nul 2>&1
+    reg add "!BASE!\ExtensionSettings\!EXT_ID!" /v "update_url" /t REG_SZ /d "!UPDATE_URL!" /f >nul 2>&1
+    reg add "!BASE!\ExtensionSettings\!EXT_ID!" /v "override_update_url" /t REG_DWORD /d "1" /f >nul 2>&1
+    REM Autoplay: izinkan suara TTS antrian tanpa klik (value di root key).
+    reg add "!BASE!" /v "AutoplayAllowed" /t REG_DWORD /d "1" /f >nul 2>&1
+)
+
+echo.
+echo [4/6] Verifikasi policy yang tertulis...
+call :VerifyPolicy
+
+echo.
+echo [5/6] Menutup ulang browser (kalau ada yang auto-restart)...
+call :KillBrowsers
+
+echo.
+echo [6/6] Selesai.
 echo.
 echo ===================================================
 echo  INSTALASI SELESAI DAN SUKSES!
 echo ===================================================
-echo Silakan TUTUP semua jendela browser yang sedang terbuka.
-echo Saat Anda membuka browser kembali, ekstensi MORBIS akan
-echo terinstal OTOMATIS via policy (ID: beljnjifmncnfnhdkcmjpeonoigdnbl).
+echo Silakan BUKA KEMBALI browser Anda. Ekstensi MORBIS akan
+echo terinstal OTOMATIS via policy (ID: beljnjfifmncnfnhdkcmjpeonoigdnbl).
 echo.
 echo ===== VERIFIKASI =====
 echo - chrome://extensions : kartu MORBIS TANPA label "unpacked"
-echo - chrome://policy     : ExtensionInstallForcelist memuat ID baru
+echo - chrome://policy     : ExtensionInstallForcelist status OK, ID 32 char
+echo - edge://policy       : idem untuk Edge
+echo - brave://policy      : idem untuk Brave
 echo - Update berikutnya OTOMATIS (update.xml di GitHub Pages),
 echo   tanpa perlu klik refresh / menjalankan apa pun lagi.
 echo.
 pause
+exit /B 0
+
+REM ============================================================
+REM  SUBROUTINE: hitung panjang EXT_ID -^> EXT_ID_LEN
+REM ============================================================
+:StrLen
+set "EXT_ID_LEN=0"
+set "_tmp=!EXT_ID!"
+:StrLen_Loop
+if not "!_tmp!"=="" (
+    set "_tmp=!_tmp:~1!"
+    set /a "EXT_ID_LEN+=1"
+    goto :StrLen_Loop
+)
+set "_tmp="
+exit /B
+
+REM ============================================================
+REM  SUBROUTINE: tutup semua proses browser Chromium
+REM ============================================================
+:KillBrowsers
+taskkill /IM msedge.exe /F >nul 2>&1
+taskkill /IM msedgewebview2.exe /F >nul 2>&1
+taskkill /IM chrome.exe /F >nul 2>&1
+taskkill /IM brave.exe /F >nul 2>&1
+taskkill /IM vivaldi.exe /F >nul 2>&1
+taskkill /IM opera.exe /F >nul 2>&1
+taskkill /IM launcher.exe /F >nul 2>&1
+taskkill /IM chromium.exe /F >nul 2>&1
+exit /B
+
+REM ============================================================
+REM  SUBROUTINE: verifikasi Forcelist tertulis per browser
+REM ============================================================
+:VerifyPolicy
+for %%P in (
+    "Google\Chrome"
+    "Microsoft\Edge"
+    "BraveSoftware\Brave"
+    "Vivaldi"
+    "Opera Software\Opera"
+    "Chromium"
+) do (
+    reg query "HKLM\SOFTWARE\Policies\%%~P\ExtensionInstallForcelist" /v "1" 2>nul | findstr /C:"beljnjfifmncnfnhdkcmjpeonoigdnbl" >nul
+    if !errorlevel! == 0 (
+        echo   [OK]   %%~P
+    ) else (
+        echo   [FAIL] %%~P - policy tidak tertulis, ulangi sebagai Administrator.
+    )
+)
+exit /B

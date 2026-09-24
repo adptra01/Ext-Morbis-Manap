@@ -27,63 +27,59 @@ Solusi: Gunakan **tombol Browse** yang disediakan browser - jangan ketik manual!
 
 Ekstensi ini mendukung **semua browser modern**:
 
-| Browser             | Format | Update System  | Registry Key                |
-| ------------------- | ------ | -------------- | --------------------------- |
-| **Mozilla Firefox** | `.xpi` | `updates.json` | `ExtensionSettings`         |
-| **Google Chrome**   | `.crx` | `update.xml`   | `ExtensionInstallForcelist` |
-| **Microsoft Edge**  | `.crx` | `update.xml`   | `ExtensionInstallForcelist` |
-| **Brave**           | `.crx` | `update.xml`   | `ExtensionInstallForcelist` |
+| Browser                        | Format | Update System | Registry Key                                     |
+| ------------------------------ | ------ | ------------- | ------------------------------------------------ |
+| **Google Chrome**              | `.crx` | `update.xml`  | `ExtensionInstallForcelist`                      |
+| **Microsoft Edge**             | `.crx` | `update.xml`  | `ExtensionInstallForcelist`                      |
+| **Brave**                      | `.crx` | `update.xml`  | `ExtensionInstallForcelist`                      |
+| **Vivaldi / Opera / Chromium** | `.crx` | `update.xml`  | `ExtensionInstallForcelist` (path masing-masing) |
+
+> Firefox (`.xpi`/`updates.json`) **tidak lagi didukung** — file `deploy/updates.json`
+> sudah dihapus (menunjuk ke `.xpi` v1.2.0 yang tidak ada). Fokus: Chromium via CRX policy.
 
 ---
 
 ## 📁 File yang Telah Dibuat
 
-### 1. manifest.json (Update URLs)
+### 1. manifest.json (identitas versi)
 
-```json
-{
-  "manifest_version": 3,
-  "name": "MORBIS Ext Unofficial",
-  "version": "1.2.0",
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "morbis-ext@rsud-manap.com",
-      "update_url": "https://adptra01.github.io/Ext-Morbis-Manap/updates.json"
-    }
-  },
-  "update_url": "https://adptra01.github.io/Ext-Morbis-Manap/update.xml",
-  ...
-}
-```
+Versi dibaca CI dari `manifest.json` (auto-bump tiap push `dev`), lalu dipakai
+untuk nama CRX + `update.xml`. Manifest **tidak** memakai field `key`,
+`update_url`, maupun `browser_specific_settings.gecko` — ID ekstensi murni
+berasal dari key signing `dist.pem` (di GitHub secret `CRX_SIGNING_KEY`).
 
 ### 2. update.xml (Chromium Browsers)
 
-File auto-update untuk Chrome/Edge/Brave:
+File auto-update untuk Chrome/Edge/Brave/Vivaldi/Opera/Chromium, **dibuat
+otomatis oleh CI** (`scripts/pack.mjs`) pada tiap push `dev` — jangan edit manual:
 
-- Lokasi: `deploy/update.xml`
-- Extension ID: `cbkjilfkdgclmpilonabdnicngjjgegd`
-- Versi: `1.2.0`
-- Codebase: `https://adptra01.github.io/Ext-Morbis-Manap/morbis-v1.2.0.crx`
+- Lokasi sumber: `deploy/update.xml` (gitignored, hasil generate)
+- Lokasi tayang: `https://adptra01.github.io/Ext-Morbis-Manap/update.xml`
+- Extension ID: `beljnjfifmncnfnhdkcmjpeonoigdnbl` (32 char, dari `dist.pem`)
+- Versi: = versi `manifest.json` saat itu (CI yang menaikkan tiap build)
+- Codebase: `https://adptra01.github.io/Ext-Morbis-Manap/morbis-v<versi>.crx`
 
-### 3. updates.json (Firefox)
+### 3. updates.json (Firefox) — DIHAPUS
 
-File auto-update untuk Firefox:
+Dukungan Firefox (`.xpi`) dihentikan; file `deploy/updates.json` sudah dihapus
+dari repo. Jangan memakai `updates.json` sebagai `UPDATE_URL` untuk Chrome/Edge.
 
-- Lokasi: `deploy/updates.json`
-- Extension ID: `morbis-ext@rsud-manap.com`
-- Versi: `1.2.0`
-- Update Link: `https://adptra01.github.io/Ext-Morbis-Manap/morbis-v1.2.0.xpi`
+### 4. Install_Morbis_Ext.reg — DIHAPUS
 
-### 4. Install_Morbis_Ext.reg
-
-File Registry untuk Force-Install:
-
-- Lokasi: `deploy/Install_Morbis_Ext.reg`
-- Support: Firefox, Chrome, Edge & Brave (HKLM & HKCU)
+File registry lama sudah dihapus (berisi ID lama + referensi `.xpi` mati).
+Satu-satunya installer resmi: **`deploy/Install_Morbis_Ext.bat`** (Jalur B),
+uninstaller: **`deploy/Uninstall_Morbis_Ext.bat**`.
 
 ---
 
 ## 🚀 Panduan Deployment
+
+> **DEPRECATED — alur manual di bawah sudah digantikan CI.**
+> Tiap push `dev` otomatis: bump versi → build → pack CRX3 signed
+> (`scripts/pack.mjs`, key dari secret `CRX_SIGNING_KEY`) → publish ke `main`
+>
+> - GitHub Pages. **JANGAN pack manual** (risiko ID berubah kalau `.pem` beda).
+>   Bagian manual di bawah dipertahankan hanya sebagai arsip.
 
 ### Langkah 1: Pack Ekstensi (Hanya Developer/IT)
 
@@ -132,7 +128,13 @@ pack-extension.bat
 
 8. Copy file `.crx` dan `.pem` ke folder `deploy/`
 
-#### Untuk Firefox
+#### Untuk Firefox — DIHENTIKAN
+
+Alur XPI manual di bawah **arsip saja** (dukungan Firefox dihentikan,
+`deploy/updates.json` dihapus). Jangan dijalankan.
+
+<details>
+<summary>Arsip instruksi lama (jangan dipakai)</summary>
 
 Jalankan script:
 
@@ -173,6 +175,8 @@ pack-firefox-xpi.bat
 
 **Catatan:** Firefox TIDAK memerlukan file `.pem` seperti Chromium
 
+</details>
+
 ### Langkah 2: Push ke GitHub
 
 Jalankan script:
@@ -190,45 +194,29 @@ git commit -m "deploy: release v1.2.0 - universal browser support"
 git push origin gh-pages
 ```
 
-**Struktur GitHub Pages yang Diharapkan:**
+**Struktur GitHub Pages saat ini (dibuat otomatis oleh CI):**
 
 ```
 https://adptra01.github.io/Ext-Morbis-Manap/
-├── update.xml              # Chromium (Chrome, Edge, Brave)
-├── updates.json            # Firefox
-├── morbis-v1.2.0.crx      # File untuk browser Chromium
-├── morbis-v1.2.0.xpi      # File untuk Firefox
-└── manifest.json            # (opsional, untuk referensi)
+├── update.xml              # Chromium (Chrome, Edge, Brave, Vivaldi, Opera)
+├── morbis-v<versi>.crx     # File CRX signed untuk browser Chromium
+├── Install_Morbis_Ext.bat  # Installer siap pakai (1 domain, tanpa unpacked)
+├── Setup_Update_Terjadwal.bat
+└── Uninstall_Morbis_Ext.bat
 ```
 
 ### Langkah 3: Install di Komputer User (End User)
 
-**Cara 1: Klik ganda (User sendiri)**
+**Cara resmi (Jalur B — CRX policy, nol klik setelahnya):**
 
-1. Klik ganda file `Install_Morbis_Ext.reg`
-2. Konfirmasi semua prompt Windows
-3. Restart semua browser
+1. Download `Install_Morbis_Ext.bat` dari GitHub Pages di atas
+2. Jalankan sekali sebagai Administrator
+3. Tutup semua browser, buka lagi → ekstensi terpasang otomatis via policy
+4. Verifikasi: `chrome://policy` (Forcelist status OK, ID 32 char) +
+   `chrome://extensions` (kartu MORBIS tanpa label "unpacked")
 
-**Cara 2: Command Line (Admin/IT)**
-
-```cmd
-regedit /s "Install_Morbis_Ext.reg"
-```
-
-**Cara 3: Via GPO/Group Policy (Enterprise)**
-
-1. Buka `gpedit.msc` atau Group Policy Management
-2. Import file `.reg` ke policy
-3. Apply ke computer/user target
-
-**Cara 4: Manual Install (User biasa)**
-
-1. Buka halaman extensions:
-   - Chrome: `chrome://extensions/`
-   - Edge: `edge://extensions/`
-   - Brave: `brave://extensions/`
-   - Firefox: `about:addons` → Gear → Debug Add-ons
-2. Drag-and-drop file `.crx` atau `.xpi` ke halaman tersebut
+**Cara lama via `.reg` / GPO-import / drag-and-drop CRX sudah tidak dipakai**
+(file `.reg` dihapus; drag-and-drop CRX tidak memberi auto-update).
 
 ---
 
@@ -249,10 +237,11 @@ suara (speechSynthesis, chime, MP3) karena Autoplay Policy. Bukan bug ekstensi �
 request TTS tetap dikirim (cek Network → `translate_tts`) tapi diblokir browser.
 
 **Fix:** `Install_Morbis_Ext.bat` sudah menyetel policy `AutoplayAllowed=1`
-untuk Edge/Chrome/Brave (setara `--autoplay-policy=no-user-gesture-required`).
+untuk Chrome/Edge/Brave/Vivaldi/Opera/Chromium (setara `--autoplay-policy=no-user-gesture-required`).
+Ditulis sebagai **value** di root key policy (bukan subkey):
 
 ```cmd
-reg add "HKLM\SOFTWARE\Policies\Google\Chrome\AutoplayAllowed" /v "1" /t REG_DWORD /d "1" /f
+reg add "HKLM\SOFTWARE\Policies\Google\Chrome" /v "AutoplayAllowed" /t REG_DWORD /d "1" /f
 ```
 
 Setelah set policy, **restart browser** (tutup semua jendela, buka lagi).
@@ -304,9 +293,18 @@ diterapkan di PC mesin.
 
 ## 🔍 Verifikasi Instalasi
 
+### Cara cek instalasi benar (Jalur B — CRX policy):
+
+1. Buka `chrome://policy` (Edge: `edge://policy`, Brave: `brave://policy`) →
+   cari `ExtensionInstallForcelist` → value harus ID **32 karakter**
+   (`beljnjfifmncnfnhdkcmjpeonoigdnbl`) + URL `update.xml`, status **OK**.
+2. Buka `chrome://extensions` → kartu MORBIS muncul **TANPA** label "unpacked"
+   (artinya terinstall via policy, bukan load manual).
+3. Buka detail MORBIS → ada tombol **Update** (artinya browser tahu sumber
+   update-nya). Klik → versi mengikuti `update.xml` terbaru.
+
 ### Cek di Browser:
 
-- **Firefox**: Buka `about:addons`
 - **Chrome**: Buka `chrome://extensions/`
 - **Edge**: Buka `edge://extensions/`
 - **Brave**: Buka `brave://extensions/`
@@ -316,16 +314,15 @@ diterapkan di PC mesin.
 ### Cek Registry:
 
 ```cmd
-rem Firefox
-reg query "HKLM\SOFTWARE\Policies\Mozilla\Firefox\ExtensionSettings"
-
 rem Chrome
 reg query "HKLM\SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist"
 reg query "HKLM\SOFTWARE\Policies\Google\Chrome\ExtensionInstallAllowlist"
+reg query "HKLM\SOFTWARE\Policies\Google\Chrome\ExtensionInstallSources"
 
 rem Edge
 reg query "HKLM\SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallForcelist"
 reg query "HKLM\SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallAllowlist"
+reg query "HKLM\SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallSources"
 
 rem Brave
 reg query "HKLM\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist"
@@ -336,23 +333,18 @@ reg query "HKLM\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallAllowlist"
 
 ## 📝 Update untuk Versi Berikutnya
 
-### Ketika Update ke v1.3.0:
+**Otomatis via CI — tidak ada langkah manual.** Tiap push `dev`: versi naik
+(+patch) → CRX baru + `update.xml` baru di Pages → PC farmasi ter-update
+sendiri (interval cek browser ±5 jam; paksa via tombol Update di detail ekstensi).
 
-#### Chromium Browsers (Chrome, Edge, Brave)
+Aturan yang dijaga CI: versi `update.xml` **=** versi `manifest.json`
+(force-install memasang persis versi itu; push berikutnya = update berikutnya).
+**Jangan** membuat `update.xml` = manifest + 1 (codebase CRX tidak akan ada → 404).
 
-1. Update `manifest.json`: `"version": "1.3.0"`
-2. Pack CRX baru:
-   - Gunakan file `.pem` yang SAMA dari sebelumnya
-   - JANGAN buat .pem baru!
-   - Jika .pem hilang, ID ekstensi akan berubah
-3. Update `update.xml`:
-   ```xml
-   <updatecheck codebase='https://adptra01.github.io/Ext-Morbis-Manap/morbis-v1.3.0.crx' version='1.3.0' />
-   ```
-4. Push ke GitHub
-5. Browser akan auto-update (24-48 jam)
+#### Firefox — DIHENTIKAN (arsip di bawah, jangan dipakai)
 
-#### Firefox
+<details>
+<summary>Arsip instruksi Firefox lama</summary>
 
 1. Update `manifest.json`: `"version": "1.3.0"`
 2. Pack XPI baru (ZIP → rename ke `.xpi`)
@@ -374,45 +366,36 @@ reg query "HKLM\SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallAllowlist"
 4. Push ke GitHub
 5. Firefox akan auto-update
 
+</details>
+
 ---
 
 ## 🔐 Keamanan & Best Practices
 
-| Tips                         | Keterangan                                              |
-| ---------------------------- | ------------------------------------------------------- |
-| **Simpan .pem dengan aman**  | File private key ini identitas ekstensi Chromium Anda   |
-| **Jangan share .pem**        | Jika hilang, tidak bisa update ekstensi yang sama       |
-| **Backup .pem**              | Simpan di lokasi aman, offline (berbagai tempat)        |
-| **Firefox tidak butuh .pem** | Firefox menggunakan ZIP → XPI tanpa signing private key |
-| **Gunakan Browse button**    | Jangan ketik path manual, gunakan tombol Browse browser |
-| **Test dulu**                | Install manual sebelum force-install ke banyak user     |
-| **Use HTTPS**                | GitHub Pages sudah HTTPS, wajib untuk update_url        |
+| Tips                        | Keterangan                                                          |
+| --------------------------- | ------------------------------------------------------------------- |
+| **Simpan .pem dengan aman** | File private key ini identitas ekstensi Chromium Anda               |
+| **Jangan share .pem**       | Jika hilang, tidak bisa update ekstensi yang sama                   |
+| **Backup .pem**             | Simpan di lokasi aman, offline (berbagai tempat)                    |
+| **Jangan pack manual**      | CI yang pack via secret `CRX_SIGNING_KEY`; `.pem` beda = ID berubah |
+| **Test dulu**               | Install di 1 PC dulu sebelum ke semua PC                            |
+| **Use HTTPS**               | GitHub Pages sudah HTTPS, wajib untuk update_url                    |
 
 ---
 
 ## 🐛 Troubleshooting
 
-### Chromium Browsers (Chrome, Edge, Brave)
+### Chromium Browsers (Chrome, Edge, Brave, Vivaldi, Opera)
 
-| Masalah                   | Solusi                                                 |
-| ------------------------- | ------------------------------------------------------ |
-| Ekstensi tidak terinstall | Cek ID di registry vs manifest ID                      |
-| Peringatan masih muncul   | Cek `ExtensionInstallAllowlist` sudah ada di registry  |
-| Ekstensi disabled         | Allowlist mungkin salah, reinstall registry            |
-| Update tidak berjalan     | Cek URL update.xml di manifest.json                    |
-| Error CRX invalid         | Pack ulang dengan file .pem yang SAMA                  |
-| ID ekstensi berubah       | File .pem tidak sama saat pack, gunakan .pem yang sama |
-| User tidak bisa uninstall | Hapus key di `ExtensionInstallForcelist`               |
-
-### Browser Firefox
-
-| Masalah                   | Solusi                                           |
-| ------------------------- | ------------------------------------------------ |
-| Ekstensi tidak terinstall | Cek `ExtensionSettings` di registry              |
-| Update tidak berjalan     | Cek URL updates.json                             |
-| Error XPI invalid         | Pack ulang ZIP → XPI                             |
-| Signature warning         | Signing diperlukan untuk distribusi publik (AMO) |
-| Version mismatch          | Cek version di manifest.json vs updates.json     |
+| Masalah                   | Solusi                                                                                |
+| ------------------------- | ------------------------------------------------------------------------------------- |
+| Ekstensi tidak terinstall | Cek ID di registry = 32 char `beljnjfifmn...`; lihat `chrome://policy` status         |
+| Peringatan masih muncul   | Cek `ExtensionInstallAllowlist` + `ExtensionInstallSources` ada di registry           |
+| Ekstensi disabled         | Allowlist mungkin salah, jalankan ulang installer                                     |
+| Update tidak berjalan     | Cek versi `update.xml` live ≥ versi terinstall; klik tombol Update di detail ekstensi |
+| Error CRX invalid         | CRX harus dari CI (signed `dist.pem`); jangan pack manual                             |
+| ID ekstensi berubah       | File .pem tidak sama saat pack — kembalikan `dist.pem` + secret CI                    |
+| User tidak bisa uninstall | Jalankan `Uninstall_Morbis_Ext.bat`, lalu hapus kartu manual                          |
 
 ### File .pem Hilang?
 
@@ -420,8 +403,8 @@ Jika file `.pem` hilang:
 
 1. ID ekstensi akan BERUBAH saat pack baru
 2. Update semua file yang mengandung ID ekstensi:
-   - `update.xml` (ganti `appid`)
-   - `Install_Morbis_Ext.reg` (ganti semua ID Chromium)
+   - `update.xml` (ganti `appid` — dibuat otomatis CI, pastikan secret benar)
+   - `Install_Morbis_Ext.bat` (ganti `EXT_ID` — guard CI akan menolak bila beda)
 3. Hapus ekstensi lama di semua user
 4. Install ulang dengan ID baru
 
@@ -429,14 +412,13 @@ Jika file `.pem` hilang:
 
 ## 📊 Ringkasan File
 
-| File                     | Browser             | Deskripsi                  | Penting                |
-| ------------------------ | ------------------- | -------------------------- | ---------------------- |
-| `morbis-v1.2.0.crx`      | Chrome, Edge, Brave | Package Chromium           | **.pem wajib dijaga!** |
-| `morbis-v1.2.0.xpi`      | Firefox             | Package Firefox            | Tidak butuh .pem       |
-| `update.xml`             | Chrome, Edge, Brave | Auto-update Chromium       | -                      |
-| `updates.json`           | Firefox             | Auto-update Firefox        | -                      |
-| `Install_Morbis_Ext.reg` | Semua               | Force-install via Registry | -                      |
-| `morbis-v1.2.0.pem`      | Chrome, Edge, Brave | Private Key                | **JAGA DENGAN AMAN!**  |
+| File                       | Browser                   | Deskripsi                 | Penting                |
+| -------------------------- | ------------------------- | ------------------------- | ---------------------- |
+| `morbis-v<versi>.crx`      | Chrome, Edge, Brave, dll. | Package Chromium (CI)     | **.pem wajib dijaga!** |
+| `update.xml`               | Chrome, Edge, Brave, dll. | Auto-update Chromium (CI) | -                      |
+| `Install_Morbis_Ext.bat`   | Semua Chromium            | Force-install via policy  | Jalankan sekali/admin  |
+| `Uninstall_Morbis_Ext.bat` | Semua Chromium            | Hapus policy MORBIS       | -                      |
+| `dist.pem` (lokal+secret)  | —                         | Private Key signing       | **JAGA DENGAN AMAN!**  |
 
 ---
 
@@ -444,19 +426,17 @@ Jika file `.pem` hilang:
 
 ### Extension IDs
 
-- **Chromium (Chrome, Edge, Brave)**: `cbkjilfkdgclmpilonabdnicngjjgegd`
-- **Firefox**: `morbis-ext@rsud-manap.com`
+- **Chromium (Chrome, Edge, Brave, Vivaldi, Opera)**: `beljnjfifmncnfnhdkcmjpeonoigdnbl`
 
 ### URLs
 
 - **GitHub Pages**: `https://adptra01.github.io/Ext-Morbis-Manap/`
 - **Update Chromium**: `https://adptra01.github.io/Ext-Morbis-Manap/update.xml`
-- **Update Firefox**: `https://adptra01.github.io/Ext-Morbis-Manap/updates.json`
+- **Installer**: `https://adptra01.github.io/Ext-Morbis-Manap/Install_Morbis_Ext.bat`
 
 ### Files
 
-- **CRX**: `morbis-v1.2.0.crx`
-- **XPI**: `morbis-v1.2.0.xpi`
+- **CRX**: `morbis-v<versi>.crx` (dibuat CI tiap push `dev`)
 - **Manifest Version**: 3
 
 ---
@@ -526,7 +506,7 @@ Mulai v1.5.17+, rantai CI otomatis menghasilkan **CRX3 signed** (`morbis-v<versi
 
 ### Identitas produksi
 
-- **EXT_ID**: `beljnjifmncnfnhdkcmjpeonoigdnbl` (dari key `dist.pem` — JANGAN pernah di-commit; ada di GitHub secret `CRX_SIGNING_KEY`)
+- **EXT_ID**: `beljnjfifmncnfnhdkcmjpeonoigdnbl` (32 char, dari key `dist.pem` — JANGAN pernah di-commit; ada di GitHub secret `CRX_SIGNING_KEY`; sinkronisasi `.bat` dijaga otomatis oleh guard CI)
 - **update.xml**: `https://adptra01.github.io/Ext-Morbis-Manap/update.xml`
 - Key lama (`cbk...`, `liaj...`) otomatis dibersihkan oleh installer.
 
