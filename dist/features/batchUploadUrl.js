@@ -1,17 +1,14 @@
 'use strict';
 var __morbis_feature = (() => {
-  // src/features/shared/types.ts
-  function getMorbisGlobals() {
+  function N() {
     return window;
   }
-
-  // src/features/shared/batchUtils.ts
-  var BATCH_UTILS_STYLE_ID = 'ext-batch-shared-style';
-  function injectSharedCSS() {
-    if (document.getElementById(BATCH_UTILS_STYLE_ID)) return;
-    const style = document.createElement('style');
-    style.id = BATCH_UTILS_STYLE_ID;
-    style.textContent = `
+  var G = 'ext-batch-shared-style';
+  function _() {
+    if (document.getElementById(G)) return;
+    let e = document.createElement('style');
+    ((e.id = G),
+      (e.textContent = `
     .ext-modal-content {
       background: #ffffff; border-radius: 16px; padding: 28px 32px;
       max-width: 860px; width: 95%; max-height: 85vh; overflow-y: auto;
@@ -166,103 +163,102 @@ var __morbis_feature = (() => {
     .ext-preview-item.success { color: #059669; }
     .ext-preview-item.error { color: #dc2626; }
     .ext-preview-item.pending { color: #64748b; }
-  `;
-    document.head.appendChild(style);
+  `),
+      document.head.appendChild(e));
   }
-  var Icons = {
-    search: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>`,
-    trash: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`,
-    xClose: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`,
-    warning: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 00-3.48 0l-8 14A2 2 0 004 21h16a2 2 0 001.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
-    eye: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
-    refresh: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>`,
-    upload: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`,
-    file: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
-    check: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
-    arrowRight: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`,
+  var y = {
+    search:
+      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
+    trash:
+      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>',
+    xClose:
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',
+    warning:
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 00-3.48 0l-8 14A2 2 0 004 21h16a2 2 0 001.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    eye: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+    refresh:
+      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>',
+    upload:
+      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+    file: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+    check:
+      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+    arrowRight:
+      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>',
   };
-  async function showInlinePreviewSafe(url, filename) {
+  async function M(e, o) {
     try {
-      const response = await fetch(url, { method: 'GET', mode: 'cors', credentials: 'omit' });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      showInlinePreview(blobUrl, filename, url, () => URL.revokeObjectURL(blobUrl));
+      let n = await fetch(e, { method: 'GET', mode: 'cors', credentials: 'omit' });
+      if (!n.ok) throw new Error(`HTTP ${n.status}`);
+      let t = await n.blob(),
+        a = URL.createObjectURL(t);
+      K(a, o, e, () => URL.revokeObjectURL(a));
     } catch {
-      showInlinePreview(url, filename, url);
+      K(e, o, e);
     }
   }
-  function showInlinePreview(previewUrl, filename, originalUrl, onCleanup) {
-    const existing = document.getElementById('ext-inline-preview-modal');
-    if (existing) existing.remove();
-    const ext = filename.toLowerCase().split('.').pop() || '';
-    const isPdf = ext === 'pdf';
-    const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
-    const modal = document.createElement('div');
-    modal.id = 'ext-inline-preview-modal';
-    modal.style.cssText =
-      'position:fixed !important;top:0 !important;left:0 !important;width:100vw !important;height:100vh !important;background:rgba(15,23,42,0.88) !important;z-index:10001 !important;display:flex !important;align-items:center !important;justify-content:center !important;flex-direction:column !important;padding:20px !important;box-sizing:border-box !important;backdrop-filter:blur(8px) !important;-webkit-backdrop-filter:blur(8px) !important;';
-    let contentHtml =
+  function K(e, o, n, t) {
+    let a = document.getElementById('ext-inline-preview-modal');
+    a && a.remove();
+    let s = o.toLowerCase().split('.').pop() || '',
+      i = s === 'pdf',
+      l = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(s),
+      d = document.createElement('div');
+    ((d.id = 'ext-inline-preview-modal'),
+      (d.style.cssText =
+        'position:fixed !important;top:0 !important;left:0 !important;width:100vw !important;height:100vh !important;background:rgba(15,23,42,0.88) !important;z-index:10001 !important;display:flex !important;align-items:center !important;justify-content:center !important;flex-direction:column !important;padding:20px !important;box-sizing:border-box !important;backdrop-filter:blur(8px) !important;-webkit-backdrop-filter:blur(8px) !important;'));
+    let r =
       '<div class="ext-inline-preview-loading" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:#fff;"><div class="ext-inline-preview-spinner"></div><div style="font-size:14px;">Loading preview...</div></div>';
-    if (isPdf)
-      contentHtml = `<iframe id="ext-inline-preview-iframe" src="${previewUrl}" style="width:100%;height:100%;border:none;display:block;border-radius:12px;"></iframe>`;
-    else if (isImage)
-      contentHtml = `<img id="ext-inline-preview-img" src="${previewUrl}" alt="Image Preview" style="width:100%;height:100%;border:none;display:block;object-fit:contain;border-radius:12px;">`;
-    else
-      contentHtml = `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:15px;color:#64748b;background:#f8fafc;flex-direction:column;gap:16px;border-radius:12px;">${Icons.file}<div>Preview not available for this format</div></div>`;
-    const safeFilename = filename.replace(/"/g, '&quot;').replace(/</g, '&lt;');
-    modal.innerHTML = `
+    i
+      ? (r = `<iframe id="ext-inline-preview-iframe" src="${e}" style="width:100%;height:100%;border:none;display:block;border-radius:12px;"></iframe>`)
+      : l
+        ? (r = `<img id="ext-inline-preview-img" src="${e}" alt="Image Preview" style="width:100%;height:100%;border:none;display:block;object-fit:contain;border-radius:12px;">`)
+        : (r = `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:15px;color:#64748b;background:#f8fafc;flex-direction:column;gap:16px;border-radius:12px;">${y.file}<div>Preview not available for this format</div></div>`);
+    let u = o.replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    if (
+      ((d.innerHTML = `
     <div style="position:absolute;top:20px;right:20px;display:flex;gap:10px;align-items:center;background:rgba(15,23,42,0.8);padding:10px 16px;border-radius:12px;backdrop-filter:blur(12px);z-index:10002;border:1px solid rgba(255,255,255,0.1);">
-      <span style="color:#e2e8f0;font-size:13px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">${safeFilename}</span>
-      <button id="ext-preview-newtab" style="padding:7px 14px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:background 0.15s ease;display:inline-flex;align-items:center;gap:6px;">${Icons.arrowRight} Open Tab</button>
-      <button id="ext-preview-close" style="padding:7px 12px;background:rgba(255,255,255,0.1);color:#e2e8f0;border:1px solid rgba(255,255,255,0.15);border-radius:8px;cursor:pointer;font-size:16px;font-weight:500;transition:all 0.15s ease;line-height:1;">${Icons.xClose}</button>
+      <span style="color:#e2e8f0;font-size:13px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">${u}</span>
+      <button id="ext-preview-newtab" style="padding:7px 14px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:background 0.15s ease;display:inline-flex;align-items:center;gap:6px;">${y.arrowRight} Open Tab</button>
+      <button id="ext-preview-close" style="padding:7px 12px;background:rgba(255,255,255,0.1);color:#e2e8f0;border:1px solid rgba(255,255,255,0.15);border-radius:8px;cursor:pointer;font-size:16px;font-weight:500;transition:all 0.15s ease;line-height:1;">${y.xClose}</button>
     </div>
-    <div style="width:clamp(400px,90vw,1200px);height:clamp(300px,90vh,800px);background:white;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,0.4);overflow:hidden;position:relative;">${contentHtml}</div>
-  `;
-    document.body.appendChild(modal);
-    document.getElementById('ext-preview-close')?.addEventListener('click', () => {
-      if (onCleanup) onCleanup();
-      modal.remove();
-    });
-    document.getElementById('ext-preview-newtab')?.addEventListener('click', () => {
-      window.open(originalUrl || previewUrl, '_blank');
-      if (onCleanup) onCleanup();
-      modal.remove();
-    });
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        if (onCleanup) onCleanup();
-        modal.remove();
-      }
-    });
-    document.addEventListener('keydown', function handler(ev) {
-      if (ev.key === 'Escape') {
-        if (onCleanup) onCleanup();
-        modal.remove();
-        document.removeEventListener('keydown', handler);
-      }
-    });
-    if (isPdf || isImage) {
-      const loadCheck = setInterval(() => {
-        const loaded = isPdf
-          ? document.getElementById('ext-inline-preview-iframe')?.getAttribute('src')
-          : document.getElementById('ext-inline-preview-img')?.complete;
-        if (loaded) {
-          const container = modal.querySelector('.ext-inline-preview-loading');
-          if (container) container.remove();
-          clearInterval(loadCheck);
+    <div style="width:clamp(400px,90vw,1200px);height:clamp(300px,90vh,800px);background:white;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,0.4);overflow:hidden;position:relative;">${r}</div>
+  `),
+      document.body.appendChild(d),
+      document.getElementById('ext-preview-close')?.addEventListener('click', () => {
+        (t && t(), d.remove());
+      }),
+      document.getElementById('ext-preview-newtab')?.addEventListener('click', () => {
+        (window.open(n || e, '_blank'), t && t(), d.remove());
+      }),
+      d.addEventListener('click', (c) => {
+        c.target === d && (t && t(), d.remove());
+      }),
+      document.addEventListener('keydown', function c(f) {
+        f.key === 'Escape' && (t && t(), d.remove(), document.removeEventListener('keydown', c));
+      }),
+      i || l)
+    ) {
+      let c = setInterval(() => {
+        if (
+          i
+            ? document.getElementById('ext-inline-preview-iframe')?.getAttribute('src')
+            : document.getElementById('ext-inline-preview-img')?.complete
+        ) {
+          let x = d.querySelector('.ext-inline-preview-loading');
+          (x && x.remove(), clearInterval(c));
         }
       }, 500);
     }
   }
-  function confirmLegacy(opts) {
-    return new Promise((resolve) => {
-      injectSharedCSS();
-      const variantClass = opts.variant === 'danger' ? 'ext-btn-danger' : 'ext-btn-primary';
-      const overlay = document.createElement('div');
-      overlay.style.cssText =
-        'position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.55);backdrop-filter:blur(2px);';
-      overlay.innerHTML = `
+  function k(e) {
+    return new Promise((o) => {
+      _();
+      let n = e.variant === 'danger' ? 'ext-btn-danger' : 'ext-btn-primary',
+        t = document.createElement('div');
+      ((t.style.cssText =
+        'position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.55);backdrop-filter:blur(2px);'),
+        (t.innerHTML = `
       <div class="ext-modal-content" style="max-width:480px;">
         <div class="ext-modal-header">
           <h3></h3>
@@ -270,245 +266,225 @@ var __morbis_feature = (() => {
         </div>
         <div class="ext-confirm-body" style="font-size:14px;color:#334155;line-height:1.6;"></div>
         <div class="ext-modal-buttons">
-          ${opts.hideCancel ? '' : `<button class="ext-btn ext-btn-secondary" data-ext-cancel>${opts.cancelLabel ?? 'Batal'}</button>`}
-          <button class="ext-btn ${variantClass}" data-ext-ok>${opts.okLabel ?? 'Lanjut'}</button>
+          ${e.hideCancel ? '' : `<button class="ext-btn ext-btn-secondary" data-ext-cancel>${e.cancelLabel ?? 'Batal'}</button>`}
+          <button class="ext-btn ${n}" data-ext-ok>${e.okLabel ?? 'Lanjut'}</button>
         </div>
-      </div>`;
-      overlay.querySelector('h3').textContent = opts.title;
-      const body = overlay.querySelector('.ext-confirm-body');
-      if (opts.message) {
-        opts.message.split('\n').forEach((line, i) => {
-          if (i > 0) body.appendChild(document.createElement('br'));
-          body.appendChild(document.createTextNode(line));
-        });
-      }
-      const done = (result) => {
-        overlay.remove();
-        document.removeEventListener('keydown', onKey);
-        resolve(result);
-      };
-      const onKey = (e) => {
-        if (e.key === 'Escape') done(false);
-      };
-      overlay.querySelector('.ext-modal-close').addEventListener('click', () => done(false));
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) done(false);
-      });
-      overlay.querySelector('[data-ext-ok]').addEventListener('click', () => done(true));
-      const cancelBtn = overlay.querySelector('[data-ext-cancel]');
-      if (cancelBtn) cancelBtn.addEventListener('click', () => done(false));
-      document.addEventListener('keydown', onKey);
-      document.body.appendChild(overlay);
+      </div>`),
+        (t.querySelector('h3').textContent = e.title));
+      let a = t.querySelector('.ext-confirm-body');
+      e.message &&
+        e.message
+          .split(
+            `
+`,
+          )
+          .forEach((d, r) => {
+            (r > 0 && a.appendChild(document.createElement('br')),
+              a.appendChild(document.createTextNode(d)));
+          });
+      let s = (d) => {
+          (t.remove(), document.removeEventListener('keydown', i), o(d));
+        },
+        i = (d) => {
+          d.key === 'Escape' && s(!1);
+        };
+      (t.querySelector('.ext-modal-close').addEventListener('click', () => s(!1)),
+        t.addEventListener('click', (d) => {
+          d.target === t && s(!1);
+        }),
+        t.querySelector('[data-ext-ok]').addEventListener('click', () => s(!0)));
+      let l = t.querySelector('[data-ext-cancel]');
+      (l && l.addEventListener('click', () => s(!1)),
+        document.addEventListener('keydown', i),
+        document.body.appendChild(t));
     });
   }
-
-  // src/features/shared/uploadName.ts
-  function generateTimestampName(ext) {
-    const now = /* @__PURE__ */ new Date();
-    const timestamp = now.getTime();
-    const random = Math.random().toString(36).substring(2, 8);
-    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
-    return `upload_${dateStr}_${timestamp}_${random}${ext}`;
+  function ne(e) {
+    let o = new Date(),
+      n = o.getTime(),
+      t = Math.random().toString(36).substring(2, 8);
+    return `upload_${o.toISOString().slice(0, 10).replace(/-/g, '')}_${n}_${t}${e}`;
   }
-  function rewriteUploadFilename(_item, _customBase) {
-    return generateTimestampName('.jpg');
+  function V(e, o) {
+    return ne('.jpg');
   }
-
-  // src/features/batchUploadUrl.ts
-  var g = getMorbisGlobals();
-  var BATCH_UPLOAD_URL_CONFIG = {
-    targetUrl: '/v2/m-klaim/detail-v2-refaktor',
-    uploadEndpoint: '/v2/m-klaim/uploda-dokumen/control?sub=simpan',
-    maxConcurrent: 3,
-    maxBatchSize: 50,
-    supportedExtensions: ['.pdf', '.jpg', '.jpeg', '.png', '.gif'],
-    modalId: 'ext-batch-url-modal',
-    textareaId: 'ext-url-input',
-    previewId: 'ext-preview-list',
-    progressId: 'ext-progress-bar',
-    statusId: 'ext-status-text',
-  };
-  function formatDateYMD(date) {
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const dd = String(date.getDate()).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd}`;
-  }
-  function getTodayFormatted() {
-    return formatDateYMD(/* @__PURE__ */ new Date());
-  }
-  function getTanggalMasukFromPage() {
-    const toYmd = (raw) => {
-      if (!raw) return null;
-      const s = String(raw).trim();
-      const iso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-      if (iso) return `${iso[1]}-${iso[2].padStart(2, '0')}-${iso[3].padStart(2, '0')}`;
-      const idSlash = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-      if (idSlash) {
-        return `${idSlash[3]}-${idSlash[2].padStart(2, '0')}-${idSlash[1].padStart(2, '0')}`;
-      }
-      const idDash = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})/);
-      if (idDash) {
-        return `${idDash[3]}-${idDash[2].padStart(2, '0')}-${idDash[1].padStart(2, '0')}`;
-      }
-      return null;
+  var U = N(),
+    g = {
+      targetUrl: '/v2/m-klaim/detail-v2-refaktor',
+      uploadEndpoint: '/v2/m-klaim/uploda-dokumen/control?sub=simpan',
+      maxConcurrent: 3,
+      maxBatchSize: 50,
+      supportedExtensions: ['.pdf', '.jpg', '.jpeg', '.png', '.gif'],
+      modalId: 'ext-batch-url-modal',
+      textareaId: 'ext-url-input',
+      previewId: 'ext-preview-list',
+      progressId: 'ext-progress-bar',
+      statusId: 'ext-status-text',
     };
-    const inputSelectors = ['#tgl', '#tanggal', '#tanggal_masuk', 'input[name="tanggal"]'];
-    for (const sel of inputSelectors) {
-      const el = document.querySelector(sel);
-      const ymd = toYmd(el?.value);
-      if (ymd) return ymd;
-    }
-    const params = new URLSearchParams(window.location.search);
-    for (const key of ['tanggalAwal', 'tanggalAkhir', 'tanggal', 'tgl']) {
-      const ymd = toYmd(params.get(key));
-      if (ymd) return ymd;
-    }
-    console.warn(
-      '[Batch Upload] Tanggal klaim tidak ditemukan (input #tgl & URL), pakai tanggal hari ini',
-    );
-    return getTodayFormatted();
+  function ae(e) {
+    let o = e.getFullYear(),
+      n = String(e.getMonth() + 1).padStart(2, '0'),
+      t = String(e.getDate()).padStart(2, '0');
+    return `${o}-${n}-${t}`;
   }
-  function escHtml(s) {
-    return s
+  function oe() {
+    return ae(new Date());
+  }
+  function A() {
+    let e = (t) => {
+        if (!t) return null;
+        let a = String(t).trim(),
+          s = a.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+        if (s) return `${s[1]}-${s[2].padStart(2, '0')}-${s[3].padStart(2, '0')}`;
+        let i = a.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+        if (i) return `${i[3]}-${i[2].padStart(2, '0')}-${i[1].padStart(2, '0')}`;
+        let l = a.match(/^(\d{1,2})-(\d{1,2})-(\d{4})/);
+        return l ? `${l[3]}-${l[2].padStart(2, '0')}-${l[1].padStart(2, '0')}` : null;
+      },
+      o = ['#tgl', '#tanggal', '#tanggal_masuk', 'input[name="tanggal"]'];
+    for (let t of o) {
+      let a = document.querySelector(t),
+        s = e(a?.value);
+      if (s) return s;
+    }
+    let n = new URLSearchParams(window.location.search);
+    for (let t of ['tanggalAwal', 'tanggalAkhir', 'tanggal', 'tgl']) {
+      let a = e(n.get(t));
+      if (a) return a;
+    }
+    return (
+      console.warn(
+        '[Batch Upload] Tanggal klaim tidak ditemukan (input #tgl & URL), pakai tanggal hari ini',
+      ),
+      oe()
+    );
+  }
+  function v(e) {
+    return e
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
   }
-  function fetchWithTimeout(url, init = {}, timeoutMs = 3e4) {
-    const ac = new AbortController();
-    const timer = setTimeout(() => ac.abort(), timeoutMs);
-    const externalSignal = init.signal;
-    if (externalSignal) {
-      if (externalSignal.aborted) {
-        clearTimeout(timer);
-        ac.abort();
-      } else {
-        externalSignal.addEventListener('abort', () => ac.abort());
-      }
-    }
-    return fetch(url, { ...init, signal: ac.signal }).finally(() => clearTimeout(timer));
+  function re(e, o = {}, n = 3e4) {
+    let t = new AbortController(),
+      a = setTimeout(() => t.abort(), n),
+      s = o.signal;
+    return (
+      s &&
+        (s.aborted ? (clearTimeout(a), t.abort()) : s.addEventListener('abort', () => t.abort())),
+      fetch(e, { ...o, signal: t.signal }).finally(() => clearTimeout(a))
+    );
   }
-  async function fetchWithRetry(url, init = {}, retries = 2) {
-    const signal = init.signal;
-    let lastErr = null;
-    for (let attempt = 0; attempt <= retries; attempt++) {
+  async function F(e, o = {}, n = 2) {
+    let t = o.signal,
+      a = null;
+    for (let s = 0; s <= n; s++) {
       try {
-        const attemptInit = signal ? { ...init, signal } : init;
-        const resp = await fetchWithTimeout(url, attemptInit);
-        if (resp.ok) return resp;
-        if (resp.status >= 400 && resp.status < 500 && resp.status !== 429) return resp;
-        lastErr = new Error(`HTTP ${resp.status}: ${resp.statusText}`);
-      } catch (err) {
-        lastErr = err;
-        if (err instanceof DOMException && err.name === 'AbortError') {
-          if (signal?.aborted) {
-            throw new Error('Batch cancelled');
-          }
-          lastErr = new Error('Request timeout');
+        let i = t ? { ...o, signal: t } : o,
+          l = await re(e, i);
+        if (l.ok || (l.status >= 400 && l.status < 500 && l.status !== 429)) return l;
+        a = new Error(`HTTP ${l.status}: ${l.statusText}`);
+      } catch (i) {
+        if (((a = i), i instanceof DOMException && i.name === 'AbortError')) {
+          if (t?.aborted) throw new Error('Batch cancelled');
+          a = new Error('Request timeout');
         }
       }
-      if (
-        attempt < retries &&
-        !(lastErr instanceof Error && lastErr.message === 'Batch cancelled')
-      ) {
-        await new Promise((r) => setTimeout(r, 1e3 * (attempt + 1)));
-        console.log(`[Batch Upload] Retry ${attempt + 1}/${retries} for ${url}`);
-      }
+      s < n &&
+        !(a instanceof Error && a.message === 'Batch cancelled') &&
+        (await new Promise((i) => setTimeout(i, 1e3 * (s + 1))),
+        console.log(`[Batch Upload] Retry ${s + 1}/${n} for ${e}`));
     }
-    throw lastErr || new Error('Fetch failed after retries');
+    throw a || new Error('Fetch failed after retries');
   }
-  var batchQueue = [];
-  var isProcessing = false;
-  var _batchAbortController = null;
-  function _getBatchAbortSignal() {
-    if (!_batchAbortController) _batchAbortController = new AbortController();
-    return _batchAbortController.signal;
+  var p = [],
+    b = !1,
+    T = null;
+  function $() {
+    return (T || (T = new AbortController()), T.signal);
   }
-  function cancelBatchUpload() {
-    if (_batchAbortController) {
-      _batchAbortController.abort();
-      _batchAbortController = null;
-    }
-    isProcessing = false;
+  function O() {
+    (T && (T.abort(), (T = null)), (b = !1));
   }
-  function extractUrls(inputText) {
-    if (!inputText || typeof inputText !== 'string') return [];
-    const lines = inputText
-      .split('\n')
-      .map((l) => l.trim())
-      .filter((l) => l.length > 0);
-    return lines
-      .map((url) => url.replace(/ /g, '%20'))
-      .filter((url) => {
-        try {
-          new URL(url);
-          const pathname = url.split(/[?#]/)[0].toLowerCase();
-          return BATCH_UPLOAD_URL_CONFIG.supportedExtensions.some((ext) => pathname.endsWith(ext));
-        } catch {
-          return false;
-        }
-      });
+  function Y(e) {
+    return !e || typeof e != 'string'
+      ? []
+      : e
+          .split(
+            `
+`,
+          )
+          .map((n) => n.trim())
+          .filter((n) => n.length > 0)
+          .map((n) => n.replace(/ /g, '%20'))
+          .filter((n) => {
+            try {
+              new URL(n);
+              let t = n.split(/[?#]/)[0].toLowerCase();
+              return g.supportedExtensions.some((a) => t.endsWith(a));
+            } catch {
+              return !1;
+            }
+          });
   }
-  function parseMetadataFromUrl(url) {
+  function R(e) {
     try {
-      const urlObj = new URL(url);
-      const pathname = decodeURIComponent(urlObj.pathname);
-      const filename = pathname.split('/').pop() || 'unknown';
-      const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
-      const parts = nameWithoutExt.split(/[-_\s]+/);
-      let norm = '';
-      const tanggal = getTanggalMasukFromPage();
-      const normCandidates = parts.filter((p) => {
-        const isNumeric = /^\d+$/.test(p);
-        const len = p.length;
-        return isNumeric && len >= 6 && len <= 12 && len !== 10 && len !== 13;
-      });
-      if (normCandidates.length > 0) {
-        norm = normCandidates[0];
-      } else {
-        const normFromQuery = urlObj.searchParams.get('norm') || urlObj.searchParams.get('no_rm');
-        if (normFromQuery && /^\d{6,12}$/.test(normFromQuery)) {
-          norm = normFromQuery;
-        }
+      let o = new URL(e),
+        t = decodeURIComponent(o.pathname).split('/').pop() || 'unknown',
+        a = t.replace(/\.[^/.]+$/, ''),
+        s = a.split(/[-_\s]+/),
+        i = '',
+        l = A(),
+        d = s.filter((c) => {
+          let f = /^\d+$/.test(c),
+            x = c.length;
+          return f && x >= 6 && x <= 12 && x !== 10 && x !== 13;
+        });
+      if (d.length > 0) i = d[0];
+      else {
+        let c = o.searchParams.get('norm') || o.searchParams.get('no_rm');
+        c && /^\d{6,12}$/.test(c) && (i = c);
       }
-      const keteranganParts = parts.filter((p) => !/^\d{10}$/.test(p) && p !== norm);
-      const keterangan = keteranganParts.join(' ').trim() || nameWithoutExt.replace(/[-_]+/g, ' ');
+      let u =
+        s
+          .filter((c) => !/^\d{10}$/.test(c) && c !== i)
+          .join(' ')
+          .trim() || a.replace(/[-_]+/g, ' ');
       return {
-        filename,
-        norm,
-        tanggal,
+        filename: t,
+        norm: i,
+        tanggal: l,
         jenis_dokumen: 'Lain-lain',
-        keterangan,
-        url,
+        keterangan: u,
+        url: e,
         status: 'pending',
       };
     } catch {
       return {
         filename: 'error',
         norm: '',
-        tanggal: getTanggalMasukFromPage(),
+        tanggal: A(),
         jenis_dokumen: 'Lain-lain',
         keterangan: 'URL tidak valid',
-        url,
+        url: e,
         status: 'error',
         error: 'Invalid URL format',
       };
     }
   }
-  function showBatchUploadModal() {
-    let modal = document.getElementById(BATCH_UPLOAD_URL_CONFIG.modalId);
-    if (!modal) {
-      modal = document.createElement('div');
-      modal.id = BATCH_UPLOAD_URL_CONFIG.modalId;
-      modal.className = 'ext-batch-delete-modal';
-      modal.innerHTML = `
+  function ie() {
+    let e = document.getElementById(g.modalId);
+    (e ||
+      ((e = document.createElement('div')),
+      (e.id = g.modalId),
+      (e.className = 'ext-batch-delete-modal'),
+      (e.innerHTML = `
       <div class="ext-modal-content">
         <div class="ext-modal-header">
           <h3 style="margin: 0; font-size: 18px; color: #0f172a; font-weight: 700; letter-spacing: -0.3px;">Upload Dokumen Ulang</h3>
-          <button class="ext-modal-close" id="ext-modal-close-btn">${Icons.xClose}</button>
+          <button class="ext-modal-close" id="ext-modal-close-btn">${y.xClose}</button>
         </div>
         <div class="ext-mode-radio">
           <label><input type="radio" name="ext-upload-mode" value="manual" checked> Mode Manual (Paste URL)</label>
@@ -516,834 +492,701 @@ var __morbis_feature = (() => {
         </div>
         <div id="ext-manual-section">
           <label class="ext-input-label">Paste URL Dokumen (satu per baris):</label>
-          <textarea id="${BATCH_UPLOAD_URL_CONFIG.textareaId}" placeholder="https://example.com/dokumen1.pdf&#10;https://example.com/dokumen2.jpg&#10;..."></textarea>
+          <textarea id="${g.textareaId}" placeholder="https://example.com/dokumen1.pdf&#10;https://example.com/dokumen2.jpg&#10;..."></textarea>
           <div style="margin-top: 12px; display: flex; gap: 10px;">
-            <button class="ext-btn ext-btn-purple" id="ext-analyze-btn">${Icons.search} Analisis URL</button>
+            <button class="ext-btn ext-btn-purple" id="ext-analyze-btn">${y.search} Analisis URL</button>
           </div>
         </div>
         <div id="ext-auto-section" style="display: none;">
           <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">Mendeteksi dokumen otomatis dari halaman Rekam Medis pasien ini.</p>
           <div style="margin-bottom: 12px; display: flex; gap: 10px;">
-            <button class="ext-btn ext-btn-purple" id="ext-crawl-btn">${Icons.search} Cari Dokumen Pasien Otomatis</button>
+            <button class="ext-btn ext-btn-purple" id="ext-crawl-btn">${y.search} Cari Dokumen Pasien Otomatis</button>
           </div>
           <div id="ext-upload-search-wrap" class="ext-upload-search-wrap" style="display: none;">
             <input type="text" id="ext-upload-search-input" class="ext-search-input" placeholder="Cari dokumen...">
           </div>
         </div>
-        <div id="${BATCH_UPLOAD_URL_CONFIG.previewId}" style="display: none; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden;"></div>
-        <div id="${BATCH_UPLOAD_URL_CONFIG.progressId}" style="display: none; height: 4px; background: #374151; margin: 12px 0; border-radius: 2px; overflow: hidden;">
+        <div id="${g.previewId}" style="display: none; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden;"></div>
+        <div id="${g.progressId}" style="display: none; height: 4px; background: #374151; margin: 12px 0; border-radius: 2px; overflow: hidden;">
           <div class="progress-fill"></div>
         </div>
-        <div id="${BATCH_UPLOAD_URL_CONFIG.statusId}" style="margin: 8px 0; font-size: 11px; color: #9ca3af; font-weight: 500; letter-spacing: 0.3px;"></div>
+        <div id="${g.statusId}" style="margin: 8px 0; font-size: 11px; color: #9ca3af; font-weight: 500; letter-spacing: 0.3px;"></div>
         <div class="ext-modal-buttons">
           <button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Tutup</button>
-          <button class="ext-btn ext-btn-danger" id="ext-cancel-batch-btn" style="display:none;" title="Batalkan proses upload yang sedang berjalan">${Icons.xClose} Batalkan Upload</button>
+          <button class="ext-btn ext-btn-danger" id="ext-cancel-batch-btn" style="display:none;" title="Batalkan proses upload yang sedang berjalan">${y.xClose} Batalkan Upload</button>
           <button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 URL</button>
-          <button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>${Icons.upload} Mulai Upload</button>
+          <button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>${y.upload} Mulai Upload</button>
         </div>
       </div>
-    `;
+    `),
       setTimeout(() => {
-        document
+        (document
           .getElementById('ext-modal-close-btn')
-          ?.addEventListener('click', () => modal?.classList.remove('show'));
-        document.getElementById('ext-analyze-btn')?.addEventListener('click', analyzeUrls);
-        document.getElementById('ext-cancel-btn')?.addEventListener('click', closeBatchModal);
-        document
-          .getElementById('ext-cancel-batch-btn')
-          ?.addEventListener('click', cancelBatchUpload);
-        document.getElementById('ext-test-single-btn')?.addEventListener('click', testSingleUpload);
-        document
-          .getElementById('ext-start-upload-btn')
-          ?.addEventListener('click', startBatchUpload);
-        document.querySelectorAll('input[name="ext-upload-mode"]').forEach((radio) => {
-          radio.addEventListener('change', (e) => {
-            const target = e.target;
-            const manual = document.getElementById('ext-manual-section');
-            const auto = document.getElementById('ext-auto-section');
-            if (target.value === 'manual') {
-              if (manual) manual.style.display = 'block';
-              if (auto) auto.style.display = 'none';
-            } else {
-              if (manual) manual.style.display = 'none';
-              if (auto) auto.style.display = 'block';
-            }
-            batchQueue = [];
-            updatePreview([]);
-            updateStatus('');
-          });
-        });
-        document.getElementById('ext-crawl-btn')?.addEventListener('click', crawlDokumenPasien);
-        document
-          .getElementById('ext-upload-search-input')
-          ?.addEventListener('input', () => updatePreview(batchQueue));
-        modal?.addEventListener('click', function (e) {
-          if (e.target === modal) closeBatchModal();
-        });
-      }, 0);
-      document.body.appendChild(modal);
-    }
-    document.querySelectorAll('.ext-batch-delete-modal.show').forEach((m) => {
-      if (m !== modal) m.classList.remove('show');
-    });
-    modal.classList.add('show');
-    const textarea = document.getElementById(BATCH_UPLOAD_URL_CONFIG.textareaId);
-    textarea?.focus();
+          ?.addEventListener('click', () => e?.classList.remove('show')),
+          document.getElementById('ext-analyze-btn')?.addEventListener('click', se),
+          document.getElementById('ext-cancel-btn')?.addEventListener('click', D),
+          document.getElementById('ext-cancel-batch-btn')?.addEventListener('click', O),
+          document.getElementById('ext-test-single-btn')?.addEventListener('click', X),
+          document.getElementById('ext-start-upload-btn')?.addEventListener('click', J),
+          document.querySelectorAll('input[name="ext-upload-mode"]').forEach((n) => {
+            n.addEventListener('change', (t) => {
+              let a = t.target,
+                s = document.getElementById('ext-manual-section'),
+                i = document.getElementById('ext-auto-section');
+              (a.value === 'manual'
+                ? (s && (s.style.display = 'block'), i && (i.style.display = 'none'))
+                : (s && (s.style.display = 'none'), i && (i.style.display = 'block')),
+                (p = []),
+                E([]),
+                m(''));
+            });
+          }),
+          document.getElementById('ext-crawl-btn')?.addEventListener('click', le),
+          document.getElementById('ext-upload-search-input')?.addEventListener('input', () => E(p)),
+          e?.addEventListener('click', function (n) {
+            n.target === e && D();
+          }));
+      }, 0),
+      document.body.appendChild(e)),
+      document.querySelectorAll('.ext-batch-delete-modal.show').forEach((n) => {
+        n !== e && n.classList.remove('show');
+      }),
+      e.classList.add('show'),
+      document.getElementById(g.textareaId)?.focus());
   }
-  function closeBatchModal() {
-    cancelBatchUpload();
-    const modal = document.getElementById(BATCH_UPLOAD_URL_CONFIG.modalId);
-    if (modal) {
-      modal.classList.remove('show');
-      batchQueue = [];
-      isProcessing = false;
-      updatePreview([]);
-      updateProgress(0);
-      updateStatus('');
-      const searchInput = document.getElementById('ext-upload-search-input');
-      if (searchInput) searchInput.value = '';
-      const searchWrap = document.getElementById('ext-upload-search-wrap');
-      if (searchWrap) searchWrap.style.display = 'none';
-      const buttonsContainer = document.querySelector(
-        '#' + BATCH_UPLOAD_URL_CONFIG.modalId + ' .ext-modal-buttons',
-      );
-      if (buttonsContainer) {
-        buttonsContainer.innerHTML =
+  function D() {
+    O();
+    let e = document.getElementById(g.modalId);
+    if (e) {
+      (e.classList.remove('show'), (p = []), (b = !1), E([]), Q(0), m(''));
+      let o = document.getElementById('ext-upload-search-input');
+      o && (o.value = '');
+      let n = document.getElementById('ext-upload-search-wrap');
+      n && (n.style.display = 'none');
+      let t = document.querySelector('#' + g.modalId + ' .ext-modal-buttons');
+      t &&
+        ((t.innerHTML =
           '<button class="ext-btn ext-btn-secondary" id="ext-cancel-btn">Tutup</button><button class="ext-btn ext-btn-danger" id="ext-cancel-batch-btn" style="display:none;" title="Batalkan proses upload yang sedang berjalan">' +
-          Icons.xClose +
+          y.xClose +
           ' Batalkan Upload</button><button id="ext-test-single-btn" class="ext-btn ext-btn-secondary" style="background: #fef3c7; color: #92400e; border-color: #fde68a;">Test 1 URL</button><button id="ext-start-upload-btn" class="ext-btn ext-btn-primary" disabled>' +
-          Icons.upload +
-          ' Mulai Upload</button>';
-        document.getElementById('ext-cancel-btn')?.addEventListener('click', closeBatchModal);
-        document
-          .getElementById('ext-cancel-batch-btn')
-          ?.addEventListener('click', cancelBatchUpload);
-        document.getElementById('ext-test-single-btn')?.addEventListener('click', testSingleUpload);
-        document
-          .getElementById('ext-start-upload-btn')
-          ?.addEventListener('click', startBatchUpload);
-      }
+          y.upload +
+          ' Mulai Upload</button>'),
+        document.getElementById('ext-cancel-btn')?.addEventListener('click', D),
+        document.getElementById('ext-cancel-batch-btn')?.addEventListener('click', O),
+        document.getElementById('ext-test-single-btn')?.addEventListener('click', X),
+        document.getElementById('ext-start-upload-btn')?.addEventListener('click', J));
     }
   }
-  function updatePreview(items) {
-    const previewEl = document.getElementById(BATCH_UPLOAD_URL_CONFIG.previewId);
-    const startBtn = document.getElementById('ext-start-upload-btn');
-    const searchWrap = document.getElementById('ext-upload-search-wrap');
-    const searchInput = document.getElementById('ext-upload-search-input');
-    const isAutoMode = document.getElementById('ext-auto-section')?.style.display !== 'none';
-    const query = (searchInput?.value || '').toLowerCase();
-    if (!items || items.length === 0) {
-      if (previewEl) previewEl.style.display = 'none';
-      if (startBtn) startBtn.disabled = true;
-      if (searchWrap) searchWrap.style.display = 'none';
-      if (searchInput) searchInput.value = '';
+  function E(e) {
+    let o = document.getElementById(g.previewId),
+      n = document.getElementById('ext-start-upload-btn'),
+      t = document.getElementById('ext-upload-search-wrap'),
+      a = document.getElementById('ext-upload-search-input'),
+      s = document.getElementById('ext-auto-section')?.style.display !== 'none',
+      i = (a?.value || '').toLowerCase();
+    if (!e || e.length === 0) {
+      (o && (o.style.display = 'none'),
+        n && (n.disabled = !0),
+        t && (t.style.display = 'none'),
+        a && (a.value = ''));
       return;
     }
-    if (searchWrap && isAutoMode) searchWrap.style.display = 'block';
-    const filtered = items
-      .map((item, i) => ({ item, i }))
+    t && s && (t.style.display = 'block');
+    let l = e
+      .map((r, u) => ({ item: r, i: u }))
       .filter(
-        ({ item }) =>
-          !query ||
-          item.filename.toLowerCase().includes(query) ||
-          item.keterangan.toLowerCase().includes(query) ||
-          item.norm.toLowerCase().includes(query),
+        ({ item: r }) =>
+          !i ||
+          r.filename.toLowerCase().includes(i) ||
+          r.keterangan.toLowerCase().includes(i) ||
+          r.norm.toLowerCase().includes(i),
       );
-    if (previewEl) previewEl.style.display = 'block';
-    const headerDiv = document.createElement('div');
-    headerDiv.style.marginBottom = '10px';
-    headerDiv.innerHTML = `<strong class="preview-header-text">Preview (${filtered.length} dari ${items.length} dokumen, ${items.filter((i) => i.selected !== false).length} dipilih):</strong>`;
-    if (previewEl) {
-      previewEl.innerHTML = '';
-      previewEl.appendChild(headerDiv);
+    o && (o.style.display = 'block');
+    let d = document.createElement('div');
+    if (
+      ((d.style.marginBottom = '10px'),
+      (d.innerHTML = `<strong class="preview-header-text">Preview (${l.length} dari ${e.length} dokumen, ${e.filter((r) => r.selected !== !1).length} dipilih):</strong>`),
+      o && ((o.innerHTML = ''), o.appendChild(d)),
+      l.length === 0)
+    ) {
+      let r = document.createElement('div');
+      ((r.style.cssText = 'padding:24px;text-align:center;font-size:13px;color:#9ca3af;'),
+        (r.textContent = 'Tidak ada dokumen yang cocok dengan pencarian.'),
+        o?.appendChild(r));
     }
-    if (filtered.length === 0) {
-      const empty = document.createElement('div');
-      empty.style.cssText = 'padding:24px;text-align:center;font-size:13px;color:#9ca3af;';
-      empty.textContent = 'Tidak ada dokumen yang cocok dengan pencarian.';
-      previewEl?.appendChild(empty);
-    }
-    filtered.forEach(({ item, i }) => {
-      let modeText = '';
-      if (item.tglFileTabel) {
-        modeText = `<div style="font-size:11px;color:#4b5563;margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
-        <span>Dibuat: <strong style="color:#111827;">${escHtml(item.tglFileTabel || '')}</strong></span>
+    (l.forEach(({ item: r, i: u }) => {
+      let c = '';
+      r.tglFileTabel
+        ? (c = `<div style="font-size:11px;color:#4b5563;margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
+        <span>Dibuat: <strong style="color:#111827;">${v(r.tglFileTabel || '')}</strong></span>
         <span style="color:#d1d5db;">|</span>
-        <span>Diunggah: <strong style="color:#111827;">${escHtml(item.tglUploadTabel || '')}</strong></span>
-      </div>`;
-      } else {
-        modeText = `<div style="font-size:11px;color:#4b5563;margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
-        <span>NORM: <strong style="color:#111827;">${escHtml(item.norm || '-')}</strong></span>
+        <span>Diunggah: <strong style="color:#111827;">${v(r.tglUploadTabel || '')}</strong></span>
+      </div>`)
+        : (c = `<div style="font-size:11px;color:#4b5563;margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;">
+        <span>NORM: <strong style="color:#111827;">${v(r.norm || '-')}</strong></span>
         <span style="color:#d1d5db;">|</span>
-        <span>Tgl Klaim: <strong style="color:#111827;">${escHtml(item.tanggal)}</strong></span>
-      </div>`;
-      }
-      const ext = (item.filename.split('.').pop() || '').toLowerCase();
-      const extColors = {
-        pdf: 'bg-red-100 text-red-700',
-        jpg: 'bg-blue-100 text-blue-700',
-        jpeg: 'bg-blue-100 text-blue-700',
-        png: 'bg-green-100 text-green-700',
-      };
-      const extClass = extColors[ext] || 'bg-gray-100 text-gray-700';
-      const extBadge = ext
-        ? `<span class="${extClass}" style="font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600;text-transform:uppercase;margin-left:6px;">${ext}</span>`
-        : '';
-      const itemEl = document.createElement('div');
-      itemEl.className = 'ext-delete-preview-item';
-      if (item.selected) itemEl.classList.add('selected');
-      itemEl.innerHTML = `
+        <span>Tgl Klaim: <strong style="color:#111827;">${v(r.tanggal)}</strong></span>
+      </div>`);
+      let f = (r.filename.split('.').pop() || '').toLowerCase(),
+        h =
+          {
+            pdf: 'bg-red-100 text-red-700',
+            jpg: 'bg-blue-100 text-blue-700',
+            jpeg: 'bg-blue-100 text-blue-700',
+            png: 'bg-green-100 text-green-700',
+          }[f] || 'bg-gray-100 text-gray-700',
+        L = f
+          ? `<span class="${h}" style="font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600;text-transform:uppercase;margin-left:6px;">${f}</span>`
+          : '',
+        w = document.createElement('div');
+      ((w.className = 'ext-delete-preview-item'),
+        r.selected && w.classList.add('selected'),
+        (w.innerHTML = `
       <label class="ext-checkbox-label" style="flex:1;min-width:0;">
-        <input type="checkbox" class="ext-checkbox" data-index="${i}" ${item.selected !== false ? 'checked' : ''} ${isProcessing ? 'disabled' : ''}>
+        <input type="checkbox" class="ext-checkbox" data-index="${u}" ${r.selected !== !1 ? 'checked' : ''} ${b ? 'disabled' : ''}>
         <div style="flex: 1; min-width: 0;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-            <strong style="font-size: 13px; color: #000000; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${i + 1}. ${escHtml(item.filename)}${extBadge}</strong>
-            ${item.status !== 'pending' ? `<span class="ext-status-badge" data-status="${item.status === 'success' ? 'success' : item.status === 'error' ? 'error' : 'deleting'}">${item.status === 'success' ? 'Sukses' : item.status === 'error' ? 'Gagal' : 'Memproses'}</span>` : ''}
+            <strong style="font-size: 13px; color: #000000; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${u + 1}. ${v(r.filename)}${L}</strong>
+            ${r.status !== 'pending' ? `<span class="ext-status-badge" data-status="${r.status === 'success' ? 'success' : r.status === 'error' ? 'error' : 'deleting'}">${r.status === 'success' ? 'Sukses' : r.status === 'error' ? 'Gagal' : 'Memproses'}</span>` : ''}
           </div>
-          ${modeText}
-          <input type="text" class="ext-keterangan-input" data-index="${i}" value="${escHtml(item.keterangan || '')}" placeholder="Keterangan dokumen..." ${isProcessing ? 'disabled' : ''}>
-          ${item.error ? `<div style="font-size: 11px; color: #dc2626; margin-top: 4px;"><strong>Error:</strong> ${escHtml(item.error)}</div>` : ''}
+          ${c}
+          <input type="text" class="ext-keterangan-input" data-index="${u}" value="${v(r.keterangan || '')}" placeholder="Keterangan dokumen..." ${b ? 'disabled' : ''}>
+          ${r.error ? `<div style="font-size: 11px; color: #dc2626; margin-top: 4px;"><strong>Error:</strong> ${v(r.error)}</div>` : ''}
         </div>
       </label>
-      <button data-index="${i}" class="ext-delete-preview-btn" ${isProcessing ? 'disabled' : ''}>${Icons.eye} Preview</button>
-      <button data-index="${i}" class="ext-delete-single-btn" title="Buang dari Antrian" ${isProcessing ? 'disabled' : ''}>${Icons.xClose}</button>
-    `;
-      const checkbox = itemEl.querySelector('.ext-checkbox');
-      const previewBtn = itemEl.querySelector('.ext-delete-preview-btn');
-      const buangBtn = itemEl.querySelector('.ext-delete-single-btn');
-      const updateSelection = (isSelected) => {
-        if (isProcessing) return;
-        item.selected = isSelected;
-        if (checkbox) checkbox.checked = isSelected;
-        if (isSelected) {
-          itemEl.classList.add('selected');
-        } else {
-          itemEl.classList.remove('selected');
-        }
-        const currentSelected = items.filter((i2) => i2.selected !== false).length;
-        headerDiv.innerHTML = `<strong class="preview-header-text">Preview (${currentSelected} Dokumen Dipilih):</strong>`;
-        if (startBtn) startBtn.disabled = currentSelected === 0;
-      };
-      checkbox?.addEventListener('change', (e) => updateSelection(e.target.checked));
-      buangBtn?.addEventListener('click', () => updateSelection(false));
-      const ketInput = itemEl.querySelector('.ext-keterangan-input');
-      ketInput?.addEventListener('input', function () {
-        batchQueue[i].keterangan = ketInput.value;
-      });
-      if (previewBtn) {
-        previewBtn.addEventListener('click', async () => {
-          try {
-            await showInlinePreviewSafe(batchQueue[i].url, batchQueue[i].filename);
-          } catch {
-            window.open(batchQueue[i].url, '_blank');
-          }
-        });
-        if (isProcessing) previewBtn.disabled = true;
-      }
-      previewEl?.appendChild(itemEl);
-    });
-    if (startBtn) {
-      startBtn.disabled = items.filter((i) => i.selected !== false).length === 0;
-    }
+      <button data-index="${u}" class="ext-delete-preview-btn" ${b ? 'disabled' : ''}>${y.eye} Preview</button>
+      <button data-index="${u}" class="ext-delete-single-btn" title="Buang dari Antrian" ${b ? 'disabled' : ''}>${y.xClose}</button>
+    `));
+      let C = w.querySelector('.ext-checkbox'),
+        B = w.querySelector('.ext-delete-preview-btn'),
+        ee = w.querySelector('.ext-delete-single-btn'),
+        j = (S) => {
+          if (b) return;
+          ((r.selected = S),
+            C && (C.checked = S),
+            S ? w.classList.add('selected') : w.classList.remove('selected'));
+          let q = e.filter((te) => te.selected !== !1).length;
+          ((d.innerHTML = `<strong class="preview-header-text">Preview (${q} Dokumen Dipilih):</strong>`),
+            n && (n.disabled = q === 0));
+        };
+      (C?.addEventListener('change', (S) => j(S.target.checked)),
+        ee?.addEventListener('click', () => j(!1)));
+      let z = w.querySelector('.ext-keterangan-input');
+      (z?.addEventListener('input', function () {
+        p[u].keterangan = z.value;
+      }),
+        B &&
+          (B.addEventListener('click', async () => {
+            try {
+              await M(p[u].url, p[u].filename);
+            } catch {
+              window.open(p[u].url, '_blank');
+            }
+          }),
+          b && (B.disabled = !0)),
+        o?.appendChild(w));
+    }),
+      n && (n.disabled = e.filter((r) => r.selected !== !1).length === 0));
   }
-  function updateProgress(percent) {
-    const progressEl = document.getElementById(BATCH_UPLOAD_URL_CONFIG.progressId);
-    if (!progressEl) return;
-    const fillEl = progressEl.querySelector('.progress-fill');
-    if (percent > 0) {
-      progressEl.style.display = 'block';
-      if (fillEl) fillEl.style.width = `${percent}%`;
-    } else {
-      progressEl.style.display = 'none';
-    }
+  function Q(e) {
+    let o = document.getElementById(g.progressId);
+    if (!o) return;
+    let n = o.querySelector('.progress-fill');
+    e > 0
+      ? ((o.style.display = 'block'), n && (n.style.width = `${e}%`))
+      : (o.style.display = 'none');
   }
-  function updateStatus(text) {
-    const statusEl = document.getElementById(BATCH_UPLOAD_URL_CONFIG.statusId);
-    if (statusEl) statusEl.textContent = text;
+  function m(e) {
+    let o = document.getElementById(g.statusId);
+    o && (o.textContent = e);
   }
-  function toggleUIProcessingState(isUploading) {
-    const elementsToToggle = [
+  function I(e) {
+    let o = [
       'ext-analyze-btn',
       'ext-cancel-btn',
       'ext-test-single-btn',
       'ext-start-upload-btn',
       'ext-modal-close-btn',
       'ext-crawl-btn',
-      BATCH_UPLOAD_URL_CONFIG.textareaId,
+      g.textareaId,
     ];
-    document.querySelectorAll('input[name="ext-upload-mode"]').forEach((radio) => {
-      radio.disabled = isUploading;
+    document.querySelectorAll('input[name="ext-upload-mode"]').forEach((t) => {
+      t.disabled = e;
     });
-    const cancelBatchBtn = document.getElementById('ext-cancel-batch-btn');
-    if (cancelBatchBtn) {
-      cancelBatchBtn.style.display = isUploading ? 'inline-flex' : 'none';
-    }
-    elementsToToggle.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.disabled = isUploading;
-        if (id === 'ext-modal-close-btn' || id === BATCH_UPLOAD_URL_CONFIG.textareaId) {
-          el.style.opacity = isUploading ? '0.5' : '1';
-          el.style.cursor = isUploading
-            ? 'not-allowed'
-            : id === BATCH_UPLOAD_URL_CONFIG.textareaId
-              ? 'text'
-              : 'pointer';
-        }
-      }
-    });
+    let n = document.getElementById('ext-cancel-batch-btn');
+    (n && (n.style.display = e ? 'inline-flex' : 'none'),
+      o.forEach((t) => {
+        let a = document.getElementById(t);
+        a &&
+          ((a.disabled = e),
+          (t === 'ext-modal-close-btn' || t === g.textareaId) &&
+            ((a.style.opacity = e ? '0.5' : '1'),
+            (a.style.cursor = e ? 'not-allowed' : t === g.textareaId ? 'text' : 'pointer')));
+      }));
   }
-  function analyzeUrls() {
-    const textarea = document.getElementById(BATCH_UPLOAD_URL_CONFIG.textareaId);
-    const inputText = textarea?.value.trim() || '';
-    if (!inputText) {
-      void confirmLegacy({
+  function se() {
+    let o = document.getElementById(g.textareaId)?.value.trim() || '';
+    if (!o) {
+      k({
         title: 'Tidak ada URL',
         message: 'Silakan paste URL terlebih dahulu.',
         variant: 'warning',
         okLabel: 'OK',
-        hideCancel: true,
+        hideCancel: !0,
       });
       return;
     }
-    const urls = extractUrls(inputText);
-    if (urls.length === 0) {
-      void confirmLegacy({
+    let n = Y(o);
+    if (n.length === 0) {
+      k({
         title: 'Tidak ada URL valid',
         message: 'Pastikan URL mengandung ekstensi file yang didukung.',
         variant: 'warning',
         okLabel: 'OK',
-        hideCancel: true,
+        hideCancel: !0,
       });
       return;
     }
-    if (urls.length > BATCH_UPLOAD_URL_CONFIG.maxBatchSize) {
-      void confirmLegacy({
+    if (n.length > g.maxBatchSize) {
+      k({
         title: 'Terlalu banyak URL',
-        message: `Maksimal ${BATCH_UPLOAD_URL_CONFIG.maxBatchSize} URL per batch.`,
+        message: `Maksimal ${g.maxBatchSize} URL per batch.`,
         variant: 'warning',
         okLabel: 'OK',
-        hideCancel: true,
+        hideCancel: !0,
       });
       return;
     }
-    batchQueue = urls.map((url) => parseMetadataFromUrl(url));
-    updatePreview(batchQueue);
-    updateStatus(`${urls.length} URL siap diproses`);
+    ((p = n.map((t) => R(t))), E(p), m(`${n.length} URL siap diproses`));
   }
-  async function crawlDokumenPasien() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const idVisit = urlParams.get('id_visit');
-    if (!idVisit) {
-      void confirmLegacy({
+  async function le() {
+    let o = new URLSearchParams(window.location.search).get('id_visit');
+    if (!o) {
+      k({
         title: 'Parameter id_visit tidak ditemukan',
         message: 'Pastikan buka dari halaman detail pasien.',
         variant: 'warning',
         okLabel: 'OK',
-        hideCancel: true,
+        hideCancel: !0,
       });
       return;
     }
-    updateStatus('Sedang mencari dokumen di rekam medis...');
-    const crawlBtn = document.getElementById('ext-crawl-btn');
-    if (crawlBtn) {
-      crawlBtn.disabled = true;
-      crawlBtn.textContent = 'Mencari...';
-    }
+    m('Sedang mencari dokumen di rekam medis...');
+    let n = document.getElementById('ext-crawl-btn');
+    n && ((n.disabled = !0), (n.textContent = 'Mencari...'));
     try {
-      const targetUrl = `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${idVisit}&id_kunjungan=`;
-      const response = await fetch(targetUrl, { signal: _getBatchAbortSignal() });
-      if (!response.ok) throw new Error('Gagal memuat halaman dokumen pasien');
-      const html = await response.text();
-      const doc = new DOMParser().parseFromString(html, 'text/html');
-      let rows = doc.querySelectorAll('table.data-list.tabel tr');
-      if (rows.length <= 1) {
-        rows = doc.querySelectorAll('table.tabel tr');
+      let t = `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${o}&id_kunjungan=`,
+        a = await fetch(t, { signal: $() });
+      if (!a.ok) throw new Error('Gagal memuat halaman dokumen pasien');
+      let s = await a.text(),
+        i = new DOMParser().parseFromString(s, 'text/html'),
+        l = i.querySelectorAll('table.data-list.tabel tr');
+      (l.length <= 1 && (l = i.querySelectorAll('table.tabel tr')),
+        l.length <= 1 &&
+          (l = i.querySelectorAll('table[id*="dokumen"] tr, table[class*="dokumen"] tr')),
+        l.length <= 1 && (l = i.querySelectorAll('tbody tr')));
+      let d = [];
+      for (let r = 1; r < l.length; r++) {
+        let u = l[r],
+          c = u.querySelector('td a[href*="/assets/dokumen-pasien/"]');
+        if (
+          (c || (c = u.querySelector('td a[href*="dokumen-pasien"]')),
+          c || (c = u.querySelector('a[href]')),
+          !c)
+        )
+          continue;
+        let f = c.getAttribute('href');
+        if (!f?.includes('/assets/dokumen-pasien/')) continue;
+        let x = f.startsWith('http') ? f : `${window.location.origin}${f}`,
+          h = Array.from(u.querySelectorAll('td')),
+          L = h[1]?.textContent?.trim() || h[0]?.textContent?.trim() || '',
+          w = h[2]?.textContent?.trim() || h[1]?.textContent?.trim() || '',
+          C = h[3]?.textContent?.trim() || h[2]?.textContent?.trim() || '',
+          B = h[4]?.textContent?.trim() || h[3]?.textContent?.trim() || '';
+        d.push({ url: x, filenameTabel: L, tglFile: C, tglUpload: B, keteranganTabel: w });
       }
-      if (rows.length <= 1) {
-        rows = doc.querySelectorAll('table[id*="dokumen"] tr, table[class*="dokumen"] tr');
-      }
-      if (rows.length <= 1) {
-        rows = doc.querySelectorAll('tbody tr');
-      }
-      const urls = [];
-      for (let i = 1; i < rows.length; i++) {
-        const tr = rows[i];
-        let linkEl = tr.querySelector('td a[href*="/assets/dokumen-pasien/"]');
-        if (!linkEl) linkEl = tr.querySelector('td a[href*="dokumen-pasien"]');
-        if (!linkEl) linkEl = tr.querySelector('a[href]');
-        if (!linkEl) continue;
-        const urlPath = linkEl.getAttribute('href');
-        if (!urlPath?.includes('/assets/dokumen-pasien/')) continue;
-        const fullUrl = urlPath.startsWith('http')
-          ? urlPath
-          : `${window.location.origin}${urlPath}`;
-        const cells = Array.from(tr.querySelectorAll('td'));
-        const filenameTabel = cells[1]?.textContent?.trim() || cells[0]?.textContent?.trim() || '';
-        const keteranganTd = cells[2]?.textContent?.trim() || cells[1]?.textContent?.trim() || '';
-        const tglFile = cells[3]?.textContent?.trim() || cells[2]?.textContent?.trim() || '';
-        const tglUpload = cells[4]?.textContent?.trim() || cells[3]?.textContent?.trim() || '';
-        urls.push({
-          url: fullUrl,
-          filenameTabel,
-          tglFile,
-          tglUpload,
-          keteranganTabel: keteranganTd,
-        });
-      }
-      if (urls.length === 0) {
-        updateStatus('Tidak ada dokumen ditemukan di rekam medis.');
-        if (crawlBtn) {
-          crawlBtn.disabled = false;
-          crawlBtn.textContent = 'Cari Dokumen Pasien Otomatis';
-        }
+      if (d.length === 0) {
+        (m('Tidak ada dokumen ditemukan di rekam medis.'),
+          n && ((n.disabled = !1), (n.textContent = 'Cari Dokumen Pasien Otomatis')));
         return;
       }
-      batchQueue = urls.map((item) => {
-        const metadata = parseMetadataFromUrl(item.url);
-        metadata.tglFileTabel = item.tglFile;
-        metadata.tglUploadTabel = item.tglUpload;
-        metadata.filename = item.filenameTabel || metadata.filename;
-        metadata.keterangan = item.keteranganTabel || metadata.filename || '-';
-        metadata.selected = false;
-        return metadata;
-      });
-      updatePreview(batchQueue);
-      updateStatus(`${batchQueue.length} dokumen berhasil ditemukan!`);
-    } catch (err) {
-      updateStatus('Error: ' + err.message);
+      ((p = d.map((r) => {
+        let u = R(r.url);
+        return (
+          (u.tglFileTabel = r.tglFile),
+          (u.tglUploadTabel = r.tglUpload),
+          (u.filename = r.filenameTabel || u.filename),
+          (u.keterangan = r.keteranganTabel || u.filename || '-'),
+          (u.selected = !1),
+          u
+        );
+      })),
+        E(p),
+        m(`${p.length} dokumen berhasil ditemukan!`));
+    } catch (t) {
+      m('Error: ' + t.message);
     } finally {
-      if (crawlBtn) {
-        crawlBtn.disabled = false;
-        crawlBtn.textContent = 'Cari Dokumen Pasien Otomatis';
-      }
+      n && ((n.disabled = !1), (n.textContent = 'Cari Dokumen Pasien Otomatis'));
     }
   }
-  async function fetchFileFromUrl(url, filename) {
-    updateStatus(`Mengunduh: ${escHtml(filename)}...`);
-    console.log('[Batch Upload] Fetching URL:', url);
-    let response;
-    const signal = _getBatchAbortSignal();
+  async function de(e, o) {
+    (m(`Mengunduh: ${v(o)}...`), console.log('[Batch Upload] Fetching URL:', e));
+    let n,
+      t = $();
     try {
-      response = await fetchWithRetry(
-        url,
-        { method: 'GET', credentials: 'same-origin', signal },
-        2,
-      );
+      n = await F(e, { method: 'GET', credentials: 'same-origin', signal: t }, 2);
     } catch {
-      response = await fetchWithRetry(
-        url,
-        { method: 'GET', mode: 'cors', credentials: 'omit', signal },
-        1,
-      );
+      n = await F(e, { method: 'GET', mode: 'cors', credentials: 'omit', signal: t }, 1);
     }
-    if (!response.ok) {
-      const errText = await response.text().catch(() => '');
-      throw new Error(
-        `HTTP ${response.status} \u2014 ${response.statusText || errText.slice(0, 120)}`,
-      );
+    if (!n.ok) {
+      let l = await n.text().catch(() => '');
+      throw new Error(`HTTP ${n.status} \u2014 ${n.statusText || l.slice(0, 120)}`);
     }
-    const blob = await response.blob();
-    if (blob.size === 0) throw new Error('File kosong (0 bytes) dari server');
-    const ext = filename.includes('.') ? '.' + filename.split('.').pop() : '';
-    const safeName = filename.replace(/[<>:"/\\|?*]/g, '_');
-    return new File([blob], safeName, {
-      type: blob.type || `application/${ext.slice(1) || 'octet-stream'}`,
-    });
+    let a = await n.blob();
+    if (a.size === 0) throw new Error('File kosong (0 bytes) dari server');
+    let s = o.includes('.') ? '.' + o.split('.').pop() : '',
+      i = o.replace(/[<>:"/\\|?*]/g, '_');
+    return new File([a], i, { type: a.type || `application/${s.slice(1) || 'octet-stream'}` });
   }
-  async function convertFileToImage(file) {
-    const mime = file.type;
-    if (mime.startsWith('image/')) {
-      return await compressImageToJpeg(file, 0.85);
-    }
-    if (mime === 'application/pdf') {
-      return await pdfToImage(file);
-    }
-    console.warn('[Batch Upload] Unsupported file type:', file.type, '- creating placeholder');
-    return createPlaceholderImage('Document');
+  async function ce(e) {
+    let o = e.type;
+    return o.startsWith('image/')
+      ? await ue(e, 0.85)
+      : o === 'application/pdf'
+        ? await pe(e)
+        : (console.warn('[Batch Upload] Unsupported file type:', e.type, '- creating placeholder'),
+          H('Document'));
   }
-  async function compressImageToJpeg(file, quality = 0.85) {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      const url = URL.createObjectURL(file);
-      img.onload = () => {
-        URL.revokeObjectURL(url);
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          reject(new Error('Canvas context not available'));
+  async function ue(e, o = 0.85) {
+    return new Promise((n, t) => {
+      let a = new Image(),
+        s = URL.createObjectURL(e);
+      ((a.onload = () => {
+        URL.revokeObjectURL(s);
+        let i = document.createElement('canvas'),
+          l = i.getContext('2d');
+        if (!l) {
+          t(new Error('Canvas context not available'));
           return;
         }
-        const MAX_DIM = 2048;
-        let { width, height } = img;
-        if (width > MAX_DIM || height > MAX_DIM) {
-          const scale = Math.min(MAX_DIM / width, MAX_DIM / height);
-          width *= scale;
-          height *= scale;
+        let d = 2048,
+          { width: r, height: u } = a;
+        if (r > d || u > d) {
+          let c = Math.min(d / r, d / u);
+          ((r *= c), (u *= c));
         }
-        canvas.width = width;
-        canvas.height = height;
-        ctx.drawImage(img, 0, 0, width, height);
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) {
-              reject(new Error('Failed to compress image'));
-              return;
-            }
-            const newFile = new File([blob], 'image.jpg', { type: 'image/jpeg' });
-            resolve(newFile);
-          },
-          'image/jpeg',
-          quality,
-        );
-      };
-      img.onerror = () => {
-        URL.revokeObjectURL(url);
-        reject(new Error('Failed to load image'));
-      };
-      img.src = url;
+        ((i.width = r),
+          (i.height = u),
+          l.drawImage(a, 0, 0, r, u),
+          i.toBlob(
+            (c) => {
+              if (!c) {
+                t(new Error('Failed to compress image'));
+                return;
+              }
+              let f = new File([c], 'image.jpg', { type: 'image/jpeg' });
+              n(f);
+            },
+            'image/jpeg',
+            o,
+          ));
+      }),
+        (a.onerror = () => {
+          (URL.revokeObjectURL(s), t(new Error('Failed to load image')));
+        }),
+        (a.src = s));
     });
   }
-  async function pdfToImage(file) {
+  async function pe(e) {
     try {
-      const pdfjsLib = window.pdfjsLib;
-      if (!pdfjsLib) {
-        console.warn('[Batch Upload] PDF.js not loaded, cannot convert PDF to image');
-        return createPlaceholderImage('PDF');
-      }
-      const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      const page = await pdf.getPage(1);
-      const viewport = page.getViewport({ scale: 2 });
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('Canvas context not available');
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
-      await page.render({ canvasContext: ctx, viewport }).promise();
-      return new Promise((resolve, reject) => {
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) {
-              reject(new Error('Failed to convert PDF to image'));
-              return;
-            }
-            const newFile = new File([blob], 'pdf_page.jpg', { type: 'image/jpeg' });
-            resolve(newFile);
+      let o = window.pdfjsLib;
+      if (!o)
+        return (
+          console.warn('[Batch Upload] PDF.js not loaded, cannot convert PDF to image'),
+          H('PDF')
+        );
+      let n = await e.arrayBuffer(),
+        a = await (await o.getDocument({ data: n }).promise).getPage(1),
+        s = a.getViewport({ scale: 2 }),
+        i = document.createElement('canvas'),
+        l = i.getContext('2d');
+      if (!l) throw new Error('Canvas context not available');
+      return (
+        (i.width = s.width),
+        (i.height = s.height),
+        await a.render({ canvasContext: l, viewport: s }).promise(),
+        new Promise((d, r) => {
+          i.toBlob(
+            (u) => {
+              if (!u) {
+                r(new Error('Failed to convert PDF to image'));
+                return;
+              }
+              let c = new File([u], 'pdf_page.jpg', { type: 'image/jpeg' });
+              d(c);
+            },
+            'image/jpeg',
+            0.9,
+          );
+        })
+      );
+    } catch (o) {
+      return (console.warn('[Batch Upload] PDF to image conversion failed:', o), H('PDF'));
+    }
+  }
+  function H(e) {
+    let o = document.createElement('canvas');
+    ((o.width = 400), (o.height = 200));
+    let n = o.getContext('2d');
+    if (!n) throw new Error('Canvas not available');
+    return (
+      (n.fillStyle = '#f3f4f6'),
+      n.fillRect(0, 0, 400, 200),
+      (n.strokeStyle = '#d1d5db'),
+      (n.lineWidth = 2),
+      n.strokeRect(10, 10, 380, 180),
+      (n.fillStyle = '#6b7280'),
+      (n.font = 'bold 24px system-ui, sans-serif'),
+      (n.textAlign = 'center'),
+      (n.textBaseline = 'middle'),
+      n.fillText(`${e} Document`, 200, 85),
+      (n.font = '14px system-ui, sans-serif'),
+      n.fillText('Converted to image for upload', 200, 120),
+      new Promise((t) => {
+        o.toBlob(
+          (a) => {
+            if (!a) throw new Error('Failed to create placeholder');
+            let s = new File([a], `${e.toLowerCase()}_placeholder.jpg`, { type: 'image/jpeg' });
+            t(s);
           },
           'image/jpeg',
           0.9,
         );
-      });
-    } catch (err) {
-      console.warn('[Batch Upload] PDF to image conversion failed:', err);
-      return createPlaceholderImage('PDF');
-    }
+      })
+    );
   }
-  function createPlaceholderImage(label) {
-    const canvas = document.createElement('canvas');
-    canvas.width = 400;
-    canvas.height = 200;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('Canvas not available');
-    ctx.fillStyle = '#f3f4f6';
-    ctx.fillRect(0, 0, 400, 200);
-    ctx.strokeStyle = '#d1d5db';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(10, 10, 380, 180);
-    ctx.fillStyle = '#6b7280';
-    ctx.font = 'bold 24px system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(`${label} Document`, 200, 85);
-    ctx.font = '14px system-ui, sans-serif';
-    ctx.fillText('Converted to image for upload', 200, 120);
-    return new Promise((resolve) => {
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) throw new Error('Failed to create placeholder');
-          const file = new File([blob], `${label.toLowerCase()}_placeholder.jpg`, {
-            type: 'image/jpeg',
-          });
-          resolve(file);
-        },
-        'image/jpeg',
-        0.9,
-      );
-    });
+  function ge() {
+    let e = new Date(),
+      o = e.getFullYear(),
+      n = String(e.getMonth() + 1).padStart(2, '0'),
+      t = String(e.getDate()).padStart(2, '0'),
+      a = String(e.getHours()).padStart(2, '0'),
+      s = String(e.getMinutes()).padStart(2, '0'),
+      i = String(e.getSeconds()).padStart(2, '0');
+    return `${o}-${n}-${t} ${a}:${s}:${i}`;
   }
-  function generateTimestampKeterangan() {
-    const now = /* @__PURE__ */ new Date();
-    const yyyy = now.getFullYear();
-    const mm = String(now.getMonth() + 1).padStart(2, '0');
-    const dd = String(now.getDate()).padStart(2, '0');
-    const hh = String(now.getHours()).padStart(2, '0');
-    const mi = String(now.getMinutes()).padStart(2, '0');
-    const ss = String(now.getSeconds()).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
-  }
-  async function processAndUploadSingleUrl(metadata, idVisitStr) {
+  async function P(e, o) {
     try {
-      const uploadName = rewriteUploadFilename(metadata, metadata.keterangan);
-      updateStatus(`Download: ${escHtml(metadata.filename)}...`);
-      let file = await fetchFileFromUrl(metadata.url, uploadName);
-      updateStatus(`Converting to image: ${escHtml(metadata.filename)}...`);
-      file = await convertFileToImage(file);
-      const formData = new FormData();
-      formData.append('id_visit', idVisitStr);
-      formData.append('norm', metadata.norm);
-      formData.append('tgl_file', metadata.tanggal);
-      formData.append('jenis_dokumen', metadata.jenis_dokumen || 'Lain-lain');
-      formData.append('dok', file);
-      const keterangan = generateTimestampKeterangan();
-      formData.append('keterangan', keterangan);
-      updateStatus(`Upload: ${escHtml(file.name)} (${(file.size / 1024).toFixed(0)} KB)...`);
-      const uploadResponse = await fetchWithRetry(
-        BATCH_UPLOAD_URL_CONFIG.uploadEndpoint,
-        {
-          method: 'POST',
-          body: formData,
-          credentials: 'same-origin',
-          signal: _getBatchAbortSignal(),
-        },
+      let n = V(e, e.keterangan);
+      m(`Download: ${v(e.filename)}...`);
+      let t = await de(e.url, n);
+      (m(`Converting to image: ${v(e.filename)}...`), (t = await ce(t)));
+      let a = new FormData();
+      (a.append('id_visit', o),
+        a.append('norm', e.norm),
+        a.append('tgl_file', e.tanggal),
+        a.append('jenis_dokumen', e.jenis_dokumen || 'Lain-lain'),
+        a.append('dok', t));
+      let s = ge();
+      (a.append('keterangan', s), m(`Upload: ${v(t.name)} (${(t.size / 1024).toFixed(0)} KB)...`));
+      let i = await F(
+        g.uploadEndpoint,
+        { method: 'POST', body: a, credentials: 'same-origin', signal: $() },
         2,
       );
-      if (!uploadResponse.ok) {
-        if (uploadResponse.redirected) {
+      if (!i.ok) {
+        if (i.redirected)
           throw new Error('Sesi login kadaluarsa \u2014 login ulang di tab ini lalu coba lagi');
-        }
-        const errorText = await uploadResponse.text().catch(() => '');
-        const snippet = errorText
-          .replace(/<[^>]+>/g, '')
-          .trim()
-          .slice(0, 200);
-        const jsonMsg = errorText.match(/"message"\s*:\s*"([^"]+)"/);
-        const throwMsg = jsonMsg
-          ? `Server ${uploadResponse.status}: ${jsonMsg[1]}`
-          : `Server ${uploadResponse.status}: ${snippet || uploadResponse.statusText}`;
-        throw new Error(throwMsg);
+        let d = await i.text().catch(() => ''),
+          r = d
+            .replace(/<[^>]+>/g, '')
+            .trim()
+            .slice(0, 200),
+          u = d.match(/"message"\s*:\s*"([^"]+)"/),
+          c = u ? `Server ${i.status}: ${u[1]}` : `Server ${i.status}: ${r || i.statusText}`;
+        throw new Error(c);
       }
-      const result = await uploadResponse.text();
-      if (result.includes('error') || result.includes('gagal')) {
-        const snippet = result
-          .replace(/<[^>]+>/g, '')
-          .trim()
-          .slice(0, 200);
-        return { success: false, error: `Server response: ${snippet}` };
-      }
-      return { success: true, result };
-    } catch (error) {
-      const msg = error.message;
-      let friendly = msg;
-      if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
-        friendly = 'Network error \u2014 cek koneksi atau CORS';
-      } else if (msg.includes('timeout') || msg.includes('AbortError')) {
-        friendly = 'Timeout \u2014 server tidak merespon dalam 30 detik';
-      } else if (msg.includes('0 bytes')) {
-        friendly = 'File kosong dari server';
-      }
-      return { success: false, error: friendly };
+      let l = await i.text();
+      return l.includes('error') || l.includes('gagal')
+        ? {
+            success: !1,
+            error: `Server response: ${l
+              .replace(/<[^>]+>/g, '')
+              .trim()
+              .slice(0, 200)}`,
+          }
+        : { success: !0, result: l };
+    } catch (n) {
+      let t = n.message,
+        a = t;
+      return (
+        t.includes('Failed to fetch') || t.includes('NetworkError')
+          ? (a = 'Network error \u2014 cek koneksi atau CORS')
+          : t.includes('timeout') || t.includes('AbortError')
+            ? (a = 'Timeout \u2014 server tidak merespon dalam 30 detik')
+            : t.includes('0 bytes') && (a = 'File kosong dari server'),
+        { success: !1, error: a }
+      );
     }
   }
-  async function runBatchQueue() {
-    if (isProcessing) return;
-    isProcessing = true;
-    toggleUIProcessingState(true);
-    const startBtn = document.getElementById('ext-start-upload-btn');
-    if (startBtn) startBtn.textContent = 'Memproses...';
-    const urlParams = new URLSearchParams(window.location.search);
-    const idVisitStr = urlParams.get('id_visit') || '';
-    if (!idVisitStr) {
-      void confirmLegacy({
+  async function Z() {
+    if (b) return;
+    ((b = !0), I(!0));
+    let e = document.getElementById('ext-start-upload-btn');
+    e && (e.textContent = 'Memproses...');
+    let n = new URLSearchParams(window.location.search).get('id_visit') || '';
+    if (!n) {
+      (k({
         title: 'ID Visit tidak ditemukan',
         message: 'Pastikan buka dari halaman detail pasien.',
         variant: 'warning',
         okLabel: 'OK',
-        hideCancel: true,
-      });
-      toggleUIProcessingState(false);
-      isProcessing = false;
-      if (startBtn) startBtn.textContent = 'Mulai Upload';
+        hideCancel: !0,
+      }),
+        I(!1),
+        (b = !1),
+        e && (e.textContent = 'Mulai Upload'));
       return;
     }
-    let successCount = 0;
-    let errorCount = 0;
-    const itemsToUpload = batchQueue.filter((item) => item.selected !== false);
-    const total = itemsToUpload.length;
-    if (total === 0) {
-      void confirmLegacy({
+    let t = 0,
+      a = 0,
+      s = p.filter((r) => r.selected !== !1),
+      i = s.length;
+    if (i === 0) {
+      (k({
         title: 'Tidak ada dokumen dipilih',
         message: 'Tidak ada dokumen yang dipilih untuk diupload.',
         variant: 'warning',
         okLabel: 'OK',
-        hideCancel: true,
-      });
-      toggleUIProcessingState(false);
-      isProcessing = false;
-      updateStatus('');
-      if (startBtn) startBtn.textContent = 'Mulai Upload';
+        hideCancel: !0,
+      }),
+        I(!1),
+        (b = !1),
+        m(''),
+        e && (e.textContent = 'Mulai Upload'));
       return;
     }
-    for (let i = 0; i < total; i++) {
-      if (_getBatchAbortSignal().aborted) {
-        updateStatus('Batch dibatalkan oleh user');
+    for (let r = 0; r < i; r++) {
+      if ($().aborted) {
+        m('Batch dibatalkan oleh user');
         break;
       }
-      const currentIdVisit = new URLSearchParams(window.location.search).get('id_visit') || '';
-      if (!currentIdVisit) {
-        updateStatus('ID Visit hilang dari URL \u2014 batch dihentikan');
+      let u = new URLSearchParams(window.location.search).get('id_visit') || '';
+      if (!u) {
+        m('ID Visit hilang dari URL \u2014 batch dihentikan');
         break;
       }
-      if (currentIdVisit !== idVisitStr) {
-        console.warn(
-          '[Batch Upload] ID Visit berubah mid-batch:',
-          idVisitStr,
-          '->',
-          currentIdVisit,
-        );
-      }
-      const metadata = itemsToUpload[i];
-      updateStatus(`[${i + 1}/${total}] ${escHtml(metadata.filename)}...`);
+      u !== n && console.warn('[Batch Upload] ID Visit berubah mid-batch:', n, '->', u);
+      let c = s[r];
+      m(`[${r + 1}/${i}] ${v(c.filename)}...`);
       try {
-        const currentIdVisit2 =
-          new URLSearchParams(window.location.search).get('id_visit') || idVisitStr;
-        const result = await processAndUploadSingleUrl(metadata, currentIdVisit2);
-        if (result.success) {
-          metadata.status = 'success';
-          successCount++;
-        } else {
-          metadata.status = 'error';
-          metadata.error = result.error;
-          errorCount++;
-        }
-      } catch (error) {
-        if (error instanceof Error && error.message === 'Batch cancelled') {
-          updateStatus('Batch dibatalkan');
+        let x = new URLSearchParams(window.location.search).get('id_visit') || n,
+          h = await P(c, x);
+        h.success
+          ? ((c.status = 'success'), t++)
+          : ((c.status = 'error'), (c.error = h.error), a++);
+      } catch (x) {
+        if (x instanceof Error && x.message === 'Batch cancelled') {
+          m('Batch dibatalkan');
           break;
         }
-        metadata.status = 'error';
-        metadata.error = error.message;
-        errorCount++;
+        ((c.status = 'error'), (c.error = x.message), a++);
       }
-      const progress = ((i + 1) / total) * 100;
-      updateProgress(progress);
-      updatePreview(batchQueue);
+      let f = ((r + 1) / i) * 100;
+      (Q(f), E(p));
     }
-    const summaryParts = [`Selesai ${total} dokumen:`, `${successCount} sukses`];
-    if (errorCount > 0) summaryParts.push(`${errorCount} gagal`);
-    updateStatus(summaryParts.join(' '));
-    if (errorCount > 0) {
-      console.warn(
-        '[Batch Upload] Failed:',
-        batchQueue
-          .filter((item) => item.status === 'error')
-          .map((item) => `${item.filename}: ${item.error}`),
-      );
+    let l = [`Selesai ${i} dokumen:`, `${t} sukses`];
+    (a > 0 && l.push(`${a} gagal`),
+      m(l.join(' ')),
+      a > 0 &&
+        console.warn(
+          '[Batch Upload] Failed:',
+          p.filter((r) => r.status === 'error').map((r) => `${r.filename}: ${r.error}`),
+        ));
+    let d = document.querySelector('#' + g.modalId + ' .ext-modal-buttons');
+    if (d) {
+      let r = `<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">${y.refresh} Reload Halaman</span></button>`,
+        u =
+          a > 0
+            ? '<button class="ext-btn ext-btn-secondary" id="ext-retry-failed-btn" style="border-color:#fbbf24;color:#92400e;">Ulangi yang Gagal</button>'
+            : '';
+      ((d.innerHTML = `<div style="display:flex;gap:8px;justify-content:flex-end;">${u}${r}</div>`),
+        document
+          .getElementById('ext-reload-btn')
+          ?.addEventListener('click', () => window.location.reload()),
+        a > 0 &&
+          document.getElementById('ext-retry-failed-btn')?.addEventListener('click', () => {
+            (p.forEach((c) => {
+              c.status === 'error' && ((c.status = 'pending'), (c.error = void 0));
+            }),
+              E(p),
+              Z());
+          }));
     }
-    const buttonsContainer = document.querySelector(
-      '#' + BATCH_UPLOAD_URL_CONFIG.modalId + ' .ext-modal-buttons',
-    );
-    if (buttonsContainer) {
-      const reloadBtn = `<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">${Icons.refresh} Reload Halaman</span></button>`;
-      const retryBtn =
-        errorCount > 0
-          ? `<button class="ext-btn ext-btn-secondary" id="ext-retry-failed-btn" style="border-color:#fbbf24;color:#92400e;">Ulangi yang Gagal</button>`
-          : '';
-      buttonsContainer.innerHTML = `<div style="display:flex;gap:8px;justify-content:flex-end;">${retryBtn}${reloadBtn}</div>`;
-      document
-        .getElementById('ext-reload-btn')
-        ?.addEventListener('click', () => window.location.reload());
-      if (errorCount > 0) {
-        document.getElementById('ext-retry-failed-btn')?.addEventListener('click', () => {
-          batchQueue.forEach((item) => {
-            if (item.status === 'error') {
-              item.status = 'pending';
-              item.error = void 0;
-            }
-          });
-          updatePreview(batchQueue);
-          void runBatchQueue();
-        });
-      }
-    }
-    isProcessing = false;
+    b = !1;
   }
-  async function testSingleUpload() {
-    if (batchQueue.length === 0) {
-      void confirmLegacy({
+  async function X() {
+    if (p.length === 0) {
+      k({
         title: 'Tidak ada URL',
         message: 'Tidak ada URL untuk ditest.',
         variant: 'warning',
         okLabel: 'OK',
-        hideCancel: true,
+        hideCancel: !0,
       });
       return;
     }
-    if (isProcessing) return;
-    isProcessing = true;
-    toggleUIProcessingState(true);
-    const firstItem = batchQueue[0];
-    updateStatus('Testing single upload...');
-    const urlParams = new URLSearchParams(window.location.search);
-    const idVisitStr = urlParams.get('id_visit') || '';
+    if (b) return;
+    ((b = !0), I(!0));
+    let e = p[0];
+    m('Testing single upload...');
+    let n = new URLSearchParams(window.location.search).get('id_visit') || '';
     try {
-      const result = await processAndUploadSingleUrl(firstItem, idVisitStr);
-      if (result.success) {
-        firstItem.status = 'success';
-        updateStatus('Test sukses! Detail di console.');
-      } else {
-        firstItem.status = 'error';
-        firstItem.error = result.error;
-        updateStatus('Test gagal! Detail di console.');
-      }
-    } catch (error) {
-      firstItem.status = 'error';
-      firstItem.error = error.message;
-      updateStatus('Test error! Detail di console.');
+      let t = await P(e, n);
+      t.success
+        ? ((e.status = 'success'), m('Test sukses! Detail di console.'))
+        : ((e.status = 'error'), (e.error = t.error), m('Test gagal! Detail di console.'));
+    } catch (t) {
+      ((e.status = 'error'), (e.error = t.message), m('Test error! Detail di console.'));
     }
-    updatePreview(batchQueue);
-    toggleUIProcessingState(false);
-    isProcessing = false;
+    (E(p), I(!1), (b = !1));
   }
-  function startBatchUpload() {
-    if (batchQueue.length === 0) {
-      void confirmLegacy({
+  function J() {
+    if (p.length === 0) {
+      k({
         title: 'Tidak ada URL',
         message: 'Tidak ada URL untuk diproses.',
         variant: 'warning',
         okLabel: 'OK',
-        hideCancel: true,
+        hideCancel: !0,
       });
       return;
     }
-    const selectedCount = batchQueue.filter((i) => i.selected !== false).length;
-    if (selectedCount === 0) {
-      void confirmLegacy({
+    let e = p.filter((o) => o.selected !== !1).length;
+    if (e === 0) {
+      k({
         title: 'Tidak ada dokumen dipilih',
         message: 'Centang dokumen yang ingin diupload.',
         variant: 'warning',
         okLabel: 'OK',
-        hideCancel: true,
+        hideCancel: !0,
       });
       return;
     }
-    void (async () => {
-      const yes = await confirmLegacy({
-        title: `Upload ${selectedCount} dokumen?`,
+    (async () =>
+      (await k({
+        title: `Upload ${e} dokumen?`,
         message: 'Proses ini tidak dapat dibatalkan.',
         variant: 'warning',
         okLabel: 'Ya, Upload',
-      });
-      if (yes) runBatchQueue();
-    })();
+      })) && Z())();
   }
-  function hasIdVisitParam() {
+  function me() {
     return !!new URLSearchParams(window.location.search).get('id_visit');
   }
-  async function crawlDokumenPasienToSidepanel() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const idVisit = urlParams.get('id_visit');
-    if (!idVisit) {
+  async function fe() {
+    let o = new URLSearchParams(window.location.search).get('id_visit');
+    if (!o) {
       chrome.runtime
         .sendMessage({
           type: 'TAB_ACTION_RESULT',
@@ -1354,35 +1197,28 @@ var __morbis_feature = (() => {
       return;
     }
     try {
-      const targetUrl = `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${idVisit}&page=85&id_kunjungan=`;
-      const response = await fetch(targetUrl);
-      if (!response.ok) throw new Error('Gagal memuat halaman dokumen pasien');
-      const html = await response.text();
-      const doc = new DOMParser().parseFromString(html, 'text/html');
-      const rows = doc.querySelectorAll('table.data-list.tabel tr');
-      const urls = [];
-      for (let i = 1; i < rows.length; i++) {
-        const tr = rows[i];
-        const linkEl = tr.querySelector('td:nth-child(2) a');
-        if (!linkEl) continue;
-        const urlPath = linkEl.getAttribute('href');
-        if (!urlPath?.includes('/assets/dokumen-pasien/')) continue;
-        const fullUrl = urlPath.startsWith('http')
-          ? urlPath
-          : `${window.location.origin}${urlPath}`;
-        const filenameTabel = tr.cells[1]?.textContent?.trim() || '';
-        const keteranganTd = tr.cells[2]?.textContent?.trim() || '';
-        const tglFile = tr.cells[3]?.textContent?.trim() || '';
-        const tglUpload = tr.cells[4]?.textContent?.trim() || '';
-        urls.push({
-          url: fullUrl,
-          filenameTabel,
-          tglFile,
-          tglUpload,
-          keteranganTabel: keteranganTd,
-        });
+      let n = `${window.location.origin}/admisi/pelaksanaan_pelayanan/dokumen-pasien?id_visit=${o}&page=85&id_kunjungan=`,
+        t = await fetch(n);
+      if (!t.ok) throw new Error('Gagal memuat halaman dokumen pasien');
+      let a = await t.text(),
+        i = new DOMParser()
+          .parseFromString(a, 'text/html')
+          .querySelectorAll('table.data-list.tabel tr'),
+        l = [];
+      for (let d = 1; d < i.length; d++) {
+        let r = i[d],
+          u = r.querySelector('td:nth-child(2) a');
+        if (!u) continue;
+        let c = u.getAttribute('href');
+        if (!c?.includes('/assets/dokumen-pasien/')) continue;
+        let f = c.startsWith('http') ? c : `${window.location.origin}${c}`,
+          x = r.cells[1]?.textContent?.trim() || '',
+          h = r.cells[2]?.textContent?.trim() || '',
+          L = r.cells[3]?.textContent?.trim() || '',
+          w = r.cells[4]?.textContent?.trim() || '';
+        l.push({ url: f, filenameTabel: x, tglFile: L, tglUpload: w, keteranganTabel: h });
       }
-      if (urls.length === 0) {
+      if (l.length === 0) {
         chrome.runtime
           .sendMessage({
             type: 'TAB_ACTION_RESULT',
@@ -1392,37 +1228,38 @@ var __morbis_feature = (() => {
           .catch(console.error);
         return;
       }
-      batchQueue = urls.map((item) => {
-        const metadata = parseMetadataFromUrl(item.url);
-        metadata.tglFileTabel = item.tglFile;
-        metadata.tglUploadTabel = item.tglUpload;
-        metadata.filename = item.filenameTabel || metadata.filename;
-        metadata.keterangan = item.keteranganTabel || metadata.filename || '-';
-        metadata.selected = false;
-        return metadata;
-      });
-      chrome.runtime
-        .sendMessage({
-          type: 'TAB_ACTION_RESULT',
-          action: 'BATCH_UPLOAD_CRAWL_RESULT',
-          data: { items: batchQueue },
-        })
-        .catch(console.error);
-    } catch (err) {
+      ((p = l.map((d) => {
+        let r = R(d.url);
+        return (
+          (r.tglFileTabel = d.tglFile),
+          (r.tglUploadTabel = d.tglUpload),
+          (r.filename = d.filenameTabel || r.filename),
+          (r.keterangan = d.keteranganTabel || r.filename || '-'),
+          (r.selected = !1),
+          r
+        );
+      })),
+        chrome.runtime
+          .sendMessage({
+            type: 'TAB_ACTION_RESULT',
+            action: 'BATCH_UPLOAD_CRAWL_RESULT',
+            data: { items: p },
+          })
+          .catch(console.error));
+    } catch (n) {
       chrome.runtime
         .sendMessage({
           type: 'TAB_ACTION_RESULT',
           action: 'BATCH_UPLOAD_ERROR',
-          data: { error: err.message },
+          data: { error: n.message },
         })
         .catch(console.error);
     }
   }
-  async function runBatchQueueToSidepanel() {
+  async function xe() {
     try {
-      const urlParams = new URLSearchParams(window.location.search);
-      const idVisitStr = urlParams.get('id_visit') || '';
-      if (!idVisitStr) {
+      let o = new URLSearchParams(window.location.search).get('id_visit') || '';
+      if (!o) {
         chrome.runtime
           .sendMessage({
             type: 'TAB_ACTION_RESULT',
@@ -1432,11 +1269,11 @@ var __morbis_feature = (() => {
           .catch(console.error);
         return;
       }
-      let successCount = 0;
-      let errorCount = 0;
-      const itemsToUpload = batchQueue.filter((item) => item.selected !== false);
-      const total = itemsToUpload.length;
-      if (total === 0) {
+      let n = 0,
+        t = 0,
+        a = p.filter((i) => i.selected !== !1),
+        s = a.length;
+      if (s === 0) {
         chrome.runtime
           .sendMessage({
             type: 'TAB_ACTION_RESULT',
@@ -1446,80 +1283,65 @@ var __morbis_feature = (() => {
           .catch(console.error);
         return;
       }
-      for (let i = 0; i < total; i++) {
-        const metadata = itemsToUpload[i];
-        metadata.status = 'uploading';
-        sendProgress(i, total, successCount, errorCount, batchQueue);
+      for (let i = 0; i < s; i++) {
+        let l = a[i];
+        ((l.status = 'uploading'), W(i, s, n, t, p));
         try {
-          const result = await processAndUploadSingleUrl(metadata, idVisitStr);
-          if (result.success) {
-            metadata.status = 'success';
-            successCount++;
-          } else {
-            metadata.status = 'error';
-            metadata.error = result.error;
-            errorCount++;
-          }
-        } catch (error) {
-          metadata.status = 'error';
-          metadata.error = error.message;
-          errorCount++;
+          let d = await P(l, o);
+          d.success
+            ? ((l.status = 'success'), n++)
+            : ((l.status = 'error'), (l.error = d.error), t++);
+        } catch (d) {
+          ((l.status = 'error'), (l.error = d.message), t++);
         }
-        sendProgress(i + 1, total, successCount, errorCount, batchQueue);
+        W(i + 1, s, n, t, p);
       }
-    } catch (err) {
+    } catch (e) {
       chrome.runtime
         .sendMessage({
           type: 'TAB_ACTION_RESULT',
           action: 'BATCH_UPLOAD_ERROR',
-          data: { error: err.message },
+          data: { error: e.message },
         })
         .catch(console.error);
     }
   }
-  function sendProgress(current, total, success, fail, items) {
+  function W(e, o, n, t, a) {
     chrome.runtime
       .sendMessage({
         type: 'TAB_ACTION_RESULT',
         action: 'BATCH_UPLOAD_PROGRESS',
         data: {
-          percent: (current / total) * 100,
-          status: `Diproses: ${current}/${total} - Sukses: ${success}, Gagal: ${fail}`,
-          items,
-          finished: current >= total,
+          percent: (e / o) * 100,
+          status: `Diproses: ${e}/${o} - Sukses: ${n}, Gagal: ${t}`,
+          items: a,
+          finished: e >= o,
         },
       })
       .catch(console.error);
   }
-  async function testSingleUploadToSidepanel() {
-    if (batchQueue.length === 0) return;
-    const firstItem = batchQueue[0];
-    const urlParams = new URLSearchParams(window.location.search);
-    const idVisitStr = urlParams.get('id_visit') || '';
-    firstItem.status = 'uploading';
-    chrome.runtime
-      .sendMessage({
-        type: 'TAB_ACTION_RESULT',
-        action: 'BATCH_UPLOAD_PROGRESS',
-        data: {
-          percent: 50,
-          status: `Testing single upload: ${firstItem.filename}...`,
-          items: batchQueue,
-          finished: false,
-        },
-      })
-      .catch(console.error);
+  async function be() {
+    if (p.length === 0) return;
+    let e = p[0],
+      n = new URLSearchParams(window.location.search).get('id_visit') || '';
+    ((e.status = 'uploading'),
+      chrome.runtime
+        .sendMessage({
+          type: 'TAB_ACTION_RESULT',
+          action: 'BATCH_UPLOAD_PROGRESS',
+          data: {
+            percent: 50,
+            status: `Testing single upload: ${e.filename}...`,
+            items: p,
+            finished: !1,
+          },
+        })
+        .catch(console.error));
     try {
-      const result = await processAndUploadSingleUrl(firstItem, idVisitStr);
-      if (result.success) {
-        firstItem.status = 'success';
-      } else {
-        firstItem.status = 'error';
-        firstItem.error = result.error;
-      }
-    } catch (error) {
-      firstItem.status = 'error';
-      firstItem.error = error.message;
+      let t = await P(e, n);
+      t.success ? (e.status = 'success') : ((e.status = 'error'), (e.error = t.error));
+    } catch (t) {
+      ((e.status = 'error'), (e.error = t.message));
     }
     chrome.runtime
       .sendMessage({
@@ -1527,33 +1349,33 @@ var __morbis_feature = (() => {
         action: 'BATCH_UPLOAD_PROGRESS',
         data: {
           percent: 100,
-          status: firstItem.status === 'success' ? 'Test upload sukses!' : 'Test upload gagal!',
-          items: batchQueue,
-          finished: true,
+          status: e.status === 'success' ? 'Test upload sukses!' : 'Test upload gagal!',
+          items: p,
+          finished: !0,
         },
       })
       .catch(console.error);
   }
-  function injectBatchUploadCSS() {
+  function he() {
     if (document.getElementById('ext-batch-url-style')) return;
-    const style = document.createElement('style');
-    style.id = 'ext-batch-url-style';
-    style.textContent = `
-    #${BATCH_UPLOAD_URL_CONFIG.textareaId} {
+    let e = document.createElement('style');
+    ((e.id = 'ext-batch-url-style'),
+      (e.textContent = `
+    #${g.textareaId} {
       width:100%;height:150px;padding:12px;border:1px solid #e2e8f0;
       border-radius:10px;font-size:12px;resize:vertical;
       background:#f8fafc;color:#1e293b;
       transition:border-color .15s ease;box-sizing:border-box;
     }
-    #${BATCH_UPLOAD_URL_CONFIG.textareaId}:focus {
+    #${g.textareaId}:focus {
       border-color:#94a3b8;box-shadow:0 0 0 3px rgba(148,163,184,.1);
       background:#fff;outline:none;
     }
-    #${BATCH_UPLOAD_URL_CONFIG.previewId} {
+    #${g.previewId} {
       margin-top:15px;max-height:none;overflow-y:visible;
       border:1px solid #f1f5f9;border-radius:10px;padding:12px;
     }
-    #${BATCH_UPLOAD_URL_CONFIG.progressId} .progress-fill {
+    #${g.progressId} .progress-fill {
       height:100%;background:#2563eb;border-radius:3px;
       width:0%;transition:width .3s cubic-bezier(.16,1,.3,1);
     }
@@ -1573,74 +1395,63 @@ var __morbis_feature = (() => {
       border-top:4px solid #fff;border-radius:50%;animation:ext-spin .8s linear infinite
     }
     @keyframes ext-spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-  `;
-    document.head.appendChild(style);
-    injectSharedCSS();
+  `),
+      document.head.appendChild(e),
+      _());
   }
-  function initBatchUploadUrlFeature() {
-    if (
-      !g.currentConfig?.features?.batchUpload?.enabled ||
-      !g.ExtensionCore.isFeatureAllowed('batchUpload')
-    )
-      return;
-    if (!hasIdVisitParam()) return;
-    injectBatchUploadCSS();
-    chrome.runtime
-      .sendMessage({
-        type: 'PAGE_CONTEXT',
-        feature: 'mKlaimDetail',
-        data: {
-          idVisit: new URLSearchParams(window.location.search).get('id_visit'),
-          tanggalMasuk: getTanggalMasukFromPage(),
-        },
+  function we() {
+    !U.currentConfig?.features?.batchUpload?.enabled ||
+      !U.ExtensionCore.isFeatureAllowed('batchUpload') ||
+      (me() &&
+        (he(),
+        chrome.runtime
+          .sendMessage({
+            type: 'PAGE_CONTEXT',
+            feature: 'mKlaimDetail',
+            data: {
+              idVisit: new URLSearchParams(window.location.search).get('id_visit'),
+              tanggalMasuk: A(),
+            },
+          })
+          .catch(console.error),
+        !window.__extBatchUploadRegistered &&
+          ((window.__extBatchUploadRegistered = !0),
+          chrome.runtime.onMessage.addListener((e, o, n) => {
+            if (e.type === 'TAB_ACTION') {
+              let { action: t, payload: a } = e;
+              (t === 'BATCH_UPLOAD_ANALYZE'
+                ? ((p = Y(a.inputText).map((i) => R(i))),
+                  chrome.runtime
+                    .sendMessage({
+                      type: 'TAB_ACTION_RESULT',
+                      action: 'BATCH_UPLOAD_ANALYZE_RESULT',
+                      data: { items: p },
+                    })
+                    .catch(console.error))
+                : t === 'BATCH_UPLOAD_CRAWL'
+                  ? fe()
+                  : t === 'BATCH_UPLOAD_UPDATE_ITEMS'
+                    ? (p = a.items)
+                    : t === 'BATCH_UPLOAD_PREVIEW'
+                      ? M(a.url, a.filename).catch(() => {
+                          window.open(a.url, '_blank');
+                        })
+                      : t === 'BATCH_UPLOAD_START'
+                        ? xe()
+                        : t === 'BATCH_UPLOAD_TEST_SINGLE' && be(),
+                n({ success: !0 }));
+            } else e.type === 'BATCH_UPLOAD_ACTION' && n({ success: !0 });
+            return !0;
+          }))));
+  }
+  window.batchUploadShowModal = ie;
+  typeof U.featureModules < 'u' && U.featureModules !== null
+    ? (U.featureModules.batchUpload = {
+        id: 'batchUpload',
+        name: 'Upload Dokumen Ulang',
+        description: 'Upload Dokumen Ulang via paste URL dengan metadata extraction otomatis',
+        match: { regex: /^\/v2\/m-klaim\/detail-v2-refaktor\/?$/ },
+        run: we,
       })
-      .catch(console.error);
-    if (window.__extBatchUploadRegistered) return;
-    window.__extBatchUploadRegistered = true;
-    chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-      if (message.type === 'TAB_ACTION') {
-        const { action, payload } = message;
-        if (action === 'BATCH_UPLOAD_ANALYZE') {
-          const urls = extractUrls(payload.inputText);
-          batchQueue = urls.map((url) => parseMetadataFromUrl(url));
-          chrome.runtime
-            .sendMessage({
-              type: 'TAB_ACTION_RESULT',
-              action: 'BATCH_UPLOAD_ANALYZE_RESULT',
-              data: { items: batchQueue },
-            })
-            .catch(console.error);
-        } else if (action === 'BATCH_UPLOAD_CRAWL') {
-          crawlDokumenPasienToSidepanel();
-        } else if (action === 'BATCH_UPLOAD_UPDATE_ITEMS') {
-          batchQueue = payload.items;
-        } else if (action === 'BATCH_UPLOAD_PREVIEW') {
-          showInlinePreviewSafe(payload.url, payload.filename).catch(() => {
-            window.open(payload.url, '_blank');
-          });
-        } else if (action === 'BATCH_UPLOAD_START') {
-          runBatchQueueToSidepanel();
-        } else if (action === 'BATCH_UPLOAD_TEST_SINGLE') {
-          testSingleUploadToSidepanel();
-        }
-        sendResponse({ success: true });
-      } else if (message.type === 'BATCH_UPLOAD_ACTION') {
-        sendResponse({ success: true });
-      }
-      return true;
-    });
-  }
-  window.batchUploadShowModal = showBatchUploadModal;
-  if (typeof g.featureModules !== 'undefined' && g.featureModules !== null) {
-    g.featureModules.batchUpload = {
-      id: 'batchUpload',
-      name: 'Upload Dokumen Ulang',
-      description: 'Upload Dokumen Ulang via paste URL dengan metadata extraction otomatis',
-      match: { regex: /^\/v2\/m-klaim\/detail-v2-refaktor\/?$/ },
-      run: initBatchUploadUrlFeature,
-    };
-  } else {
-    console.warn('[Batch Upload] featureModules not defined, module registration skipped');
-  }
+    : console.warn('[Batch Upload] featureModules not defined, module registration skipped');
 })();
-//# sourceMappingURL=batchUploadUrl.js.map

@@ -1,12 +1,9 @@
 'use strict';
 var __morbis_feature = (() => {
-  // src/features/shared/types.ts
-  function getMorbisGlobals() {
+  function v() {
     return window;
   }
-
-  // src/shared/ui/colors.ts
-  var colors = {
+  var r = {
     background: '#ffffff',
     foreground: '#0a0a0e',
     card: '#ffffff',
@@ -25,7 +22,6 @@ var __morbis_feature = (() => {
     border: '#e2e8f0',
     input: '#e2e8f0',
     ring: '#2469f0',
-    /* semantic shortcuts */
     success: '#1b8a4b',
     successBg: '#eaf6ef',
     warning: '#c47a1a',
@@ -35,22 +31,16 @@ var __morbis_feature = (() => {
     info: '#2469f0',
     infoBg: '#eef3ff',
   };
-
-  // src/shared/ui/index.ts
-  var injectedSheets = /* @__PURE__ */ new Set();
-  function injectCSS(id, css) {
-    if (injectedSheets.has(id)) {
-      const existing = document.getElementById(id);
-      if (existing) return existing;
+  var y = new Set();
+  function c(e, t) {
+    if (y.has(e)) {
+      let o = document.getElementById(e);
+      if (o) return o;
     }
-    const style = document.createElement('style');
-    style.id = id;
-    style.textContent = css;
-    document.head.appendChild(style);
-    injectedSheets.add(id);
-    return style;
+    let n = document.createElement('style');
+    return ((n.id = e), (n.textContent = t), document.head.appendChild(n), y.add(e), n);
   }
-  injectCSS(
+  c(
     'ext-shared-animations',
     `
   @keyframes fadeSlideIn {
@@ -59,323 +49,287 @@ var __morbis_feature = (() => {
   }
 `,
   );
-
-  // src/features/penerimaan_resep/main.ts
-  var g = getMorbisGlobals();
-  var RESEP_CONFIG = {
-    styleId: 'ext-resep-tools-style',
-    aturanPakaiSelector: '.aturan_pakai_manual',
-    validRegex: /^\d+\s*[xX]\s*\d+/,
-    massBasedTypes: ['mg', 'ml', 'gram', 'iu', 'persen'],
-    dirtyCheckSelector: 'input, select, textarea',
-    excludeSelector: '[type="hidden"], [name*="id_detail"]',
-    overrideIntervalMs: 100,
-    maxOverrideAttempts: 50,
-  };
-  var _resepState = { isDirty: false };
-  function log(...args) {
-    console.log('[MORBIS Ext]', ...args);
+  var l = v(),
+    a = {
+      styleId: 'ext-resep-tools-style',
+      aturanPakaiSelector: '.aturan_pakai_manual',
+      validRegex: /^\d+\s*[xX]\s*\d+/,
+      massBasedTypes: ['mg', 'ml', 'gram', 'iu', 'persen'],
+      dirtyCheckSelector: 'input, select, textarea',
+      excludeSelector: '[type="hidden"], [name*="id_detail"]',
+      overrideIntervalMs: 100,
+      maxOverrideAttempts: 50,
+    },
+    p = { isDirty: !1 };
+  function d(...e) {
+    console.log('[MORBIS Ext]', ...e);
   }
-  injectCSS(
-    RESEP_CONFIG.styleId,
+  c(
+    a.styleId,
     `
-  .ext-aturan-warning { background: ${colors.errorBg} !important; border: 2px solid ${colors.error} !important; box-shadow: 0 0 0 3px rgba(239,68,68,0.15) !important; }
-  .ext-aturan-valid { background: ${colors.successBg} !important; border: 2px solid ${colors.success} !important; }
+  .ext-aturan-warning { background: ${r.errorBg} !important; border: 2px solid ${r.error} !important; box-shadow: 0 0 0 3px rgba(239,68,68,0.15) !important; }
+  .ext-aturan-valid { background: ${r.successBg} !important; border: 2px solid ${r.success} !important; }
   .ext-aturan-tooltip { position: absolute; background: #991b1b; color: white; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; white-space: nowrap; z-index: 10001; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.2); margin-top: 4px; }
   .ext-aturan-tooltip::before { content: ''; position: absolute; top: -6px; left: 12px; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 6px solid #991b1b; }
-  .ext-dosis-disabled { opacity: 0.35 !important; pointer-events: none !important; background: ${colors.muted} !important; }
+  .ext-dosis-disabled { opacity: 0.35 !important; pointer-events: none !important; background: ${r.muted} !important; }
 `,
   );
-  function validateAturanPakai(input) {
-    const val = input.value.trim();
-    if (!val) {
-      input.classList.remove('ext-aturan-warning', 'ext-aturan-valid');
-      return true;
-    }
-    return RESEP_CONFIG.validRegex.test(val);
+  function I(e) {
+    let t = e.value.trim();
+    return t
+      ? a.validRegex.test(t)
+      : (e.classList.remove('ext-aturan-warning', 'ext-aturan-valid'), !0);
   }
-  function showTooltip(input, message) {
-    document.querySelectorAll('.ext-aturan-tooltip').forEach((el) => el.remove());
-    const tooltip = document.createElement('div');
-    tooltip.className = 'ext-aturan-tooltip';
-    tooltip.textContent = message;
-    const rect = input.getBoundingClientRect();
-    tooltip.style.left = rect.left + 'px';
-    tooltip.style.top = rect.bottom + window.scrollY + 'px';
-    document.body.appendChild(tooltip);
+  function S(e, t) {
+    document.querySelectorAll('.ext-aturan-tooltip').forEach((i) => i.remove());
+    let n = document.createElement('div');
+    ((n.className = 'ext-aturan-tooltip'), (n.textContent = t));
+    let o = e.getBoundingClientRect();
+    ((n.style.left = o.left + 'px'),
+      (n.style.top = o.bottom + window.scrollY + 'px'),
+      document.body.appendChild(n));
   }
-  function handleAturanInput(e) {
-    const input = e.target;
-    const valid = validateAturanPakai(input);
-    input.classList.remove('ext-aturan-warning', 'ext-aturan-valid');
-    document.querySelectorAll('.ext-aturan-tooltip').forEach((el) => el.remove());
-    if (!input.value.trim()) return;
-    if (valid) {
-      input.classList.add('ext-aturan-valid');
-    } else {
-      input.classList.add('ext-aturan-warning');
-      showTooltip(input, 'Format tidak dikenal. Gunakan: 3x1, 2x1, 3 x 1');
-    }
+  function B(e) {
+    let t = e.target,
+      n = I(t);
+    (t.classList.remove('ext-aturan-warning', 'ext-aturan-valid'),
+      document.querySelectorAll('.ext-aturan-tooltip').forEach((o) => o.remove()),
+      t.value.trim() &&
+        (n
+          ? t.classList.add('ext-aturan-valid')
+          : (t.classList.add('ext-aturan-warning'),
+            S(t, 'Format tidak dikenal. Gunakan: 3x1, 2x1, 3 x 1'))));
   }
-  function handleAturanBlur() {
-    document.querySelectorAll('.ext-aturan-tooltip').forEach((el) => el.remove());
+  function $() {
+    document.querySelectorAll('.ext-aturan-tooltip').forEach((e) => e.remove());
   }
-  function hasInvalidInputs() {
-    const inputs = document.querySelectorAll(RESEP_CONFIG.aturanPakaiSelector);
-    for (let i = 0; i < inputs.length; i++) {
-      if (inputs[i].value.trim() && !validateAturanPakai(inputs[i])) return true;
-    }
-    return false;
+  function R() {
+    let e = document.querySelectorAll(a.aturanPakaiSelector);
+    for (let t = 0; t < e.length; t++) if (e[t].value.trim() && !I(e[t])) return !0;
+    return !1;
   }
-  function attachAturanValidators() {
-    const inputs = document.querySelectorAll(RESEP_CONFIG.aturanPakaiSelector);
-    for (let i = 0; i < inputs.length; i++) {
-      if (!inputs[i].dataset.extValBound) {
-        inputs[i].dataset.extValBound = '1';
-        inputs[i].addEventListener('input', handleAturanInput);
-        inputs[i].addEventListener('blur', handleAturanBlur);
-      }
-    }
+  function h() {
+    let e = document.querySelectorAll(a.aturanPakaiSelector);
+    for (let t = 0; t < e.length; t++)
+      e[t].dataset.extValBound ||
+        ((e[t].dataset.extValBound = '1'),
+        e[t].addEventListener('input', B),
+        e[t].addEventListener('blur', $));
   }
-  function interceptSubmit() {
+  function _() {
     window.addEventListener(
       'submit',
       function (e) {
-        if (hasInvalidInputs()) {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-          const bad = document.querySelectorAll('.ext-aturan-warning');
-          if (bad.length > 0) {
-            bad[0].focus();
-            bad[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-          alert(
-            'Terdapat format aturan pakai yang tidak valid.\n\nFormat yang benar:\n  3x1, 2x1, 3 x 1\n\nMohon perbaiki sebelum menyimpan.',
-          );
+        if (R()) {
+          (e.preventDefault(), e.stopImmediatePropagation());
+          let t = document.querySelectorAll('.ext-aturan-warning');
+          (t.length > 0 &&
+            (t[0].focus(), t[0].scrollIntoView({ behavior: 'smooth', block: 'center' })),
+            alert(`Terdapat format aturan pakai yang tidak valid.
+
+Format yang benar:
+  3x1, 2x1, 3 x 1
+
+Mohon perbaiki sebelum menyimpan.`));
         }
       },
-      true,
+      !0,
     );
   }
-  function isMassBasedType(tipeDosis) {
-    if (!tipeDosis) return false;
-    return RESEP_CONFIG.massBasedTypes.indexOf(tipeDosis.toLowerCase().trim()) !== -1;
+  function H(e) {
+    return e ? a.massBasedTypes.indexOf(e.toLowerCase().trim()) !== -1 : !1;
   }
-  function updateDosisFieldsForRow(idx) {
-    const tipe = document.getElementById('tipe_dosis' + idx);
-    if (!tipe) return;
-    const mass = isMassBasedType(tipe.value);
-    const dg = document.getElementById('dosis_gram' + idx);
-    const dm = document.getElementById('dosis_m' + idx);
-    const dp = document.getElementById('dosis_p' + idx);
-    if (mass) {
-      if (dg) dg.classList.remove('ext-dosis-disabled');
-      if (dm) dm.classList.add('ext-dosis-disabled');
-      if (dp) dp.classList.add('ext-dosis-disabled');
-    } else {
-      if (dg) dg.classList.add('ext-dosis-disabled');
-      if (dm) dm.classList.remove('ext-dosis-disabled');
-      if (dp) dp.classList.remove('ext-dosis-disabled');
+  function M(e) {
+    let t = document.getElementById('tipe_dosis' + e);
+    if (!t) return;
+    let n = H(t.value),
+      o = document.getElementById('dosis_gram' + e),
+      i = document.getElementById('dosis_m' + e),
+      s = document.getElementById('dosis_p' + e);
+    n
+      ? (o && o.classList.remove('ext-dosis-disabled'),
+        i && i.classList.add('ext-dosis-disabled'),
+        s && s.classList.add('ext-dosis-disabled'))
+      : (o && o.classList.add('ext-dosis-disabled'),
+        i && i.classList.remove('ext-dosis-disabled'),
+        s && s.classList.remove('ext-dosis-disabled'));
+  }
+  function F() {
+    let e = document.querySelectorAll('[id^="tipe_dosis"]'),
+      t = [];
+    for (let n = 0; n < e.length; n++) {
+      let o = e[n].id.match(/tipe_dosis(\d+)/);
+      o && t.push(parseInt(o[1], 10));
     }
+    return t;
   }
-  function getAllTipeDosisIndices() {
-    const sels = document.querySelectorAll('[id^="tipe_dosis"]');
-    const idx = [];
-    for (let i = 0; i < sels.length; i++) {
-      const m = sels[i].id.match(/tipe_dosis(\d+)/);
-      if (m) idx.push(parseInt(m[1], 10));
-    }
-    return idx;
+  function w() {
+    let e = F();
+    for (let t = 0; t < e.length; t++) M(e[t]);
   }
-  function updateAllDosisFields() {
-    const rows = getAllTipeDosisIndices();
-    for (let i = 0; i < rows.length; i++) {
-      updateDosisFieldsForRow(rows[i]);
-    }
+  function k() {
+    let e = document.querySelectorAll('[id^="tipe_dosis"]');
+    for (let t = 0; t < e.length; t++)
+      e[t].dataset.extDosBound ||
+        ((e[t].dataset.extDosBound = '1'),
+        e[t].addEventListener('change', function () {
+          let n = this.id.match(/tipe_dosis(\d+)/);
+          n && M(parseInt(n[1], 10));
+        }));
   }
-  function attachDosisListeners() {
-    const sels = document.querySelectorAll('[id^="tipe_dosis"]');
-    for (let i = 0; i < sels.length; i++) {
-      if (!sels[i].dataset.extDosBound) {
-        sels[i].dataset.extDosBound = '1';
-        sels[i].addEventListener('change', function () {
-          const m = this.id.match(/tipe_dosis(\d+)/);
-          if (m) updateDosisFieldsForRow(parseInt(m[1], 10));
-        });
-      }
-    }
+  function E(e) {
+    let t = document.querySelector('.ext-print-safety-toast');
+    t && t.remove();
+    let n = document.createElement('div');
+    ((n.className = 'ext-print-safety-toast'),
+      Object.assign(n.style, {
+        position: 'fixed',
+        top: '20px',
+        right: '20px',
+        zIndex: '100001',
+        background: r.errorBg,
+        borderLeft: `4px solid ${r.error}`,
+        color: '#991b1b',
+        padding: '14px 18px',
+        borderRadius: '8px',
+        fontSize: '13px',
+        fontWeight: '500',
+        maxWidth: '400px',
+        boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+        animation: 'extSlideIn 0.3s ease',
+      }),
+      (n.innerHTML = e));
+    let o = document.createElement('button');
+    ((o.textContent = 'Tutup'),
+      Object.assign(o.style, {
+        marginTop: '8px',
+        padding: '6px 14px',
+        background: r.error,
+        color: '#fff',
+        border: 'none',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        fontWeight: '600',
+        fontSize: '12px',
+      }),
+      (o.onmouseenter = () => {
+        o.style.background = '#dc2626';
+      }),
+      (o.onmouseleave = () => {
+        o.style.background = r.error;
+      }),
+      (o.onclick = () => n.remove()),
+      n.appendChild(o),
+      document.body.appendChild(n),
+      setTimeout(() => n.remove(), 6e3));
   }
-  function showPrintToast(message) {
-    const existing = document.querySelector('.ext-print-safety-toast');
-    if (existing) existing.remove();
-    const toast = document.createElement('div');
-    toast.className = 'ext-print-safety-toast';
-    Object.assign(toast.style, {
-      position: 'fixed',
-      top: '20px',
-      right: '20px',
-      zIndex: '100001',
-      background: colors.errorBg,
-      borderLeft: `4px solid ${colors.error}`,
-      color: '#991b1b',
-      padding: '14px 18px',
-      borderRadius: '8px',
-      fontSize: '13px',
-      fontWeight: '500',
-      maxWidth: '400px',
-      boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
-      animation: 'extSlideIn 0.3s ease',
-    });
-    toast.innerHTML = message;
-    const closeBtn = document.createElement('button');
-    closeBtn.textContent = 'Tutup';
-    Object.assign(closeBtn.style, {
-      marginTop: '8px',
-      padding: '6px 14px',
-      background: colors.error,
-      color: '#fff',
-      border: 'none',
-      borderRadius: '6px',
-      cursor: 'pointer',
-      fontWeight: '600',
-      fontSize: '12px',
-    });
-    closeBtn.onmouseenter = () => {
-      closeBtn.style.background = '#dc2626';
-    };
-    closeBtn.onmouseleave = () => {
-      closeBtn.style.background = colors.error;
-    };
-    closeBtn.onclick = () => toast.remove();
-    toast.appendChild(closeBtn);
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 6e3);
+  function T() {
+    let e = document.querySelectorAll(a.dirtyCheckSelector);
+    for (let t = 0; t < e.length; t++)
+      e[t].matches(a.excludeSelector) ||
+        e[t].dataset.extDirty ||
+        ((e[t].dataset.extDirty = '1'),
+        e[t].addEventListener('input', function () {
+          p.isDirty = !0;
+        }));
   }
-  function trackDirtyState() {
-    const els = document.querySelectorAll(RESEP_CONFIG.dirtyCheckSelector);
-    for (let i = 0; i < els.length; i++) {
-      if (els[i].matches(RESEP_CONFIG.excludeSelector)) continue;
-      if (!els[i].dataset.extDirty) {
-        els[i].dataset.extDirty = '1';
-        els[i].addEventListener('input', function () {
-          _resepState.isDirty = true;
-        });
-      }
-    }
-  }
-  function interceptSimpanwae() {
-    const w = window;
-    if (typeof w.simpanwae !== 'function') return;
-    const orig = w.simpanwae;
-    w.simpanwae = function (...args) {
-      const result = orig.apply(this, args);
-      setTimeout(function () {
-        _resepState.isDirty = false;
-      }, 1e3);
-      return result;
-    };
-    log('Resep Tools: simpanwae intercepted');
-  }
-  function overrideCetakEtiket() {
-    const w = window;
-    if (typeof w.cetak_etiket !== 'function' || w._extCetakOverridden) return;
-    w._extCetakOverridden = true;
-    w.cetak_etiket = function (counter) {
-      log('Resep Tools: cetak_etiket(' + counter + ') intercepted');
-      if (_resepState.isDirty) {
-        showPrintToast(
-          '<strong>Data belum disimpan!</strong><br>Mohon simpan data terlebih dahulu sebelum mencetak etiket.',
-        );
-        return;
-      }
-      const ta = document.getElementById('text_aturan_pakai' + counter);
-      const ma = document.getElementById('aturan_pakai_manual' + counter);
-      if (ta && ma && ta.value.trim() && ma.value.trim()) {
-        showPrintToast(
-          '<strong>Peringatan:</strong> Dua aturan pakai terisi. Hanya satu yang akan dicetak.',
-        );
-      }
-      const nObat = document.getElementById('nama_barang' + counter);
-      const edEl = document.getElementById('ed' + counter);
-      const jmlT = document.getElementById('jml_tebus' + counter);
-      const tLahir = document.getElementById('tgl_lahir');
-      const nPasien = document.getElementById('nama');
-      const normEl = document.getElementById('norm');
-      const noResep = 178686;
-      let daftar = '';
-      if (ta && ta.value.trim())
-        daftar += '&daftar_aturan[]=' + encodeURIComponent(ta.value.trim());
-      if (ma && ma.value.trim())
-        daftar += '&daftar_aturan[]=' + encodeURIComponent(ma.value.trim());
-      const url =
-        '/inventory/print/cetak-etiket-satuan?no_resep=' +
-        encodeURIComponent(noResep) +
-        '&tgl_lahir=' +
-        encodeURIComponent(tLahir ? tLahir.value : '') +
-        '&nama_pasien=' +
-        encodeURIComponent(nPasien ? nPasien.value : '') +
-        '&nama_obat=' +
-        encodeURIComponent(nObat ? nObat.value : '') +
-        '&ed=' +
-        encodeURIComponent(edEl ? edEl.value : '') +
-        '&norm=' +
-        encodeURIComponent(normEl ? normEl.value : '') +
-        '&jumlah_tebus=' +
-        encodeURIComponent(jmlT ? jmlT.value : '') +
-        daftar;
-      const win = window.open(
-        url,
-        'mywindow',
-        'location=0,status=1,scrollbars=1,width=400px,height=400px',
+  function A() {
+    let e = window;
+    if (typeof e.simpanwae != 'function') return;
+    let t = e.simpanwae;
+    ((e.simpanwae = function (...n) {
+      let o = t.apply(this, n);
+      return (
+        setTimeout(function () {
+          p.isDirty = !1;
+        }, 1e3),
+        o
       );
-      if (win) win.focus();
-    };
-    log('Resep Tools: cetak_etiket overridden');
+    }),
+      d('Resep Tools: simpanwae intercepted'));
   }
-  function runResepTools() {
+  function D() {
+    let e = window;
+    typeof e.cetak_etiket != 'function' ||
+      e._extCetakOverridden ||
+      ((e._extCetakOverridden = !0),
+      (e.cetak_etiket = function (t) {
+        if ((d('Resep Tools: cetak_etiket(' + t + ') intercepted'), p.isDirty)) {
+          E(
+            '<strong>Data belum disimpan!</strong><br>Mohon simpan data terlebih dahulu sebelum mencetak etiket.',
+          );
+          return;
+        }
+        let n = document.getElementById('text_aturan_pakai' + t),
+          o = document.getElementById('aturan_pakai_manual' + t);
+        n &&
+          o &&
+          n.value.trim() &&
+          o.value.trim() &&
+          E('<strong>Peringatan:</strong> Dua aturan pakai terisi. Hanya satu yang akan dicetak.');
+        let i = document.getElementById('nama_barang' + t),
+          s = document.getElementById('ed' + t),
+          f = document.getElementById('jml_tebus' + t),
+          m = document.getElementById('tgl_lahir'),
+          g = document.getElementById('nama'),
+          x = document.getElementById('norm'),
+          L = 178686,
+          u = '';
+        (n && n.value.trim() && (u += '&daftar_aturan[]=' + encodeURIComponent(n.value.trim())),
+          o && o.value.trim() && (u += '&daftar_aturan[]=' + encodeURIComponent(o.value.trim())));
+        let C =
+            '/inventory/print/cetak-etiket-satuan?no_resep=' +
+            encodeURIComponent(L) +
+            '&tgl_lahir=' +
+            encodeURIComponent(m ? m.value : '') +
+            '&nama_pasien=' +
+            encodeURIComponent(g ? g.value : '') +
+            '&nama_obat=' +
+            encodeURIComponent(i ? i.value : '') +
+            '&ed=' +
+            encodeURIComponent(s ? s.value : '') +
+            '&norm=' +
+            encodeURIComponent(x ? x.value : '') +
+            '&jumlah_tebus=' +
+            encodeURIComponent(f ? f.value : '') +
+            u,
+          b = window.open(
+            C,
+            'mywindow',
+            'location=0,status=1,scrollbars=1,width=400px,height=400px',
+          );
+        b && b.focus();
+      }),
+      d('Resep Tools: cetak_etiket overridden'));
+  }
+  function z() {
     if (
-      !g.currentConfig?.features?.resepTools?.enabled ||
-      !g.ExtensionCore.isFeatureAllowed('resepTools')
+      !l.currentConfig?.features?.resepTools?.enabled ||
+      !l.ExtensionCore.isFeatureAllowed('resepTools')
     )
       return;
-    log('Resep Tools: starting all sub-features');
-    attachAturanValidators();
-    interceptSubmit();
-    updateAllDosisFields();
-    attachDosisListeners();
-    trackDirtyState();
-    interceptSimpanwae();
-    let retryCount = 0;
-    const retry = setInterval(function () {
-      retryCount++;
-      const w = window;
-      if (typeof w.cetak_etiket === 'function') {
-        overrideCetakEtiket();
-        clearInterval(retry);
-      } else if (retryCount >= RESEP_CONFIG.maxOverrideAttempts) {
-        log('Resep Tools: cetak_etiket not found after ' + retryCount + ' attempts');
-        clearInterval(retry);
-      }
-    }, RESEP_CONFIG.overrideIntervalMs);
-    const obs = new MutationObserver(function () {
-      attachAturanValidators();
-      updateAllDosisFields();
-      attachDosisListeners();
-      trackDirtyState();
-    });
-    obs.observe(document.body, { childList: true, subtree: true });
-    log('Resep Tools: all sub-features initialized');
+    (d('Resep Tools: starting all sub-features'), h(), _(), w(), k(), T(), A());
+    let e = 0,
+      t = setInterval(function () {
+        (e++,
+          typeof window.cetak_etiket == 'function'
+            ? (D(), clearInterval(t))
+            : e >= a.maxOverrideAttempts &&
+              (d('Resep Tools: cetak_etiket not found after ' + e + ' attempts'),
+              clearInterval(t)));
+      }, a.overrideIntervalMs);
+    (new MutationObserver(function () {
+      (h(), w(), k(), T());
+    }).observe(document.body, { childList: !0, subtree: !0 }),
+      d('Resep Tools: all sub-features initialized'));
   }
-  if (typeof g.featureModules !== 'undefined') {
-    g.featureModules.resepTools = {
-      id: 'resepTools',
-      name: 'Resep Tools',
-      description: 'Validasi aturan pakai, UI dosis kondisional, print safety lock',
-      match: { prefix: '/admisi/pelaksanaan_pelayanan/resep' },
-      run: runResepTools,
-    };
-  } else {
-    console.warn('[Resep Tools] featureModules not defined');
-  }
+  typeof l.featureModules < 'u'
+    ? (l.featureModules.resepTools = {
+        id: 'resepTools',
+        name: 'Resep Tools',
+        description: 'Validasi aturan pakai, UI dosis kondisional, print safety lock',
+        match: { prefix: '/admisi/pelaksanaan_pelayanan/resep' },
+        run: z,
+      })
+    : console.warn('[Resep Tools] featureModules not defined');
 })();
-//# sourceMappingURL=main.js.map
