@@ -111,6 +111,7 @@ import {
     }
     optimizeVitalInputs();
     optimizeBloodPressure();
+    setupMeninggalListener();
     addRequiredAttributes(tipe);
     preventEnterSubmit();
     autoExpandTextareas();
@@ -619,6 +620,82 @@ import {
         el.style.height = el.scrollHeight + 'px';
       });
     });
+  }
+
+  // ===================== MENINGGAL DUNIA: disable vital signs =====================
+  /** Field vital signs yang harus di-disable/clear saat pasien meninggal */
+  const VITAL_SIGNS_FIELDS = [
+    'td_pulang',
+    'tensi',
+    'nadi_pulang',
+    'suhu_pulang',
+    'rr_pulang',
+    'spo2_pulang',
+    'gcs_e',
+    'gcs_m',
+    'gcs_v',
+  ] as const;
+
+  /** Cek apakah nilai keadaan_keluar atau cara_keluar mengandung "Meninggal" */
+  function isMeninggal(): boolean {
+    const keadaanKeluar =
+      (document.getElementById('keadaan_keluar') as HTMLSelectElement | null)?.value || '';
+    const caraKeluar =
+      (document.getElementById('cara_keluar') as HTMLSelectElement | null)?.value || '';
+    const texts = [
+      keadaanKeluar,
+      caraKeluar,
+      // Ambil text opsi terpilih untuk matching yang lebih akurat
+      (document.getElementById('keadaan_keluar') as HTMLSelectElement | null)?.options[
+        (document.getElementById('keadaan_keluar') as HTMLSelectElement | null)?.selectedIndex ?? 0
+      ]?.text || '',
+      (document.getElementById('cara_keluar') as HTMLSelectElement | null)?.options[
+        (document.getElementById('cara_keluar') as HTMLSelectElement | null)?.selectedIndex ?? 0
+      ]?.text || '',
+    ];
+    return texts.some((t) => /meninggal/i.test(t));
+  }
+
+  /** Disable dan clear vital signs field saat pasien meninggal */
+  function handleMeninggal(): void {
+    const meninggal = isMeninggal();
+
+    VITAL_SIGNS_FIELDS.forEach(function (id) {
+      var el = document.getElementById(id) as HTMLInputElement | HTMLSelectElement | null;
+      if (!el) return;
+
+      if (meninggal) {
+        if (el.value && !el.dataset.originalValue) {
+          el.dataset.originalValue = el.value;
+        }
+        el.value = '';
+        el.disabled = true;
+        el.style.backgroundColor = '#f5f5f5';
+        el.style.color = '#999';
+        el.title = 'Otomatis kosong: pasien meninggal dunia';
+      } else {
+        if (el.dataset.originalValue) {
+          el.value = el.dataset.originalValue;
+          delete el.dataset.originalValue;
+        }
+        el.disabled = false;
+        el.style.backgroundColor = '';
+        el.style.color = '';
+        el.title = '';
+      }
+    });
+  }
+
+  /** Setup listener untuk perubahan keadaan_keluar & cara_keluar */
+  function setupMeninggalListener(): void {
+    const select1 = document.getElementById('keadaan_keluar') as HTMLSelectElement | null;
+    const select2 = document.getElementById('cara_keluar') as HTMLSelectElement | null;
+
+    // Initial check
+    handleMeninggal();
+
+    if (select1) select1.addEventListener('change', handleMeninggal);
+    if (select2) select2.addEventListener('change', handleMeninggal);
   }
 
   // ===================== COLOR INDICATORS =====================
