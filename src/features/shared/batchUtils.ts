@@ -232,14 +232,20 @@ export async function showInlinePreviewSafe(url: string, filename: string): Prom
   }
 }
 
+/** Merujuk ke `close()` modal preview yang sedang terbuka (jika ada) — dipakai
+ *  saat modal lama diganti supaya onCleanup (revoke blob URL) + Escape listener
+ *  ikut dibersihkan, bukan hanya `.remove()`. */
+let activePreviewClose: (() => void) | null = null;
+
 function showInlinePreview(
   previewUrl: string,
   filename: string,
   originalUrl: string,
   onCleanup?: () => void,
 ): void {
-  const existing = document.getElementById('ext-inline-preview-modal');
-  if (existing) existing.remove();
+  // Tutup modal lama lewat jalur close() yang SAMA (onCleanup + hapus Escape
+  // listener + remove) — blob URL tidak bocor, listener keydown tidak menumpuk.
+  if (activePreviewClose) activePreviewClose();
 
   const ext = filename.toLowerCase().split('.').pop() || '';
   const isPdf = ext === 'pdf';
@@ -272,31 +278,38 @@ function showInlinePreview(
 
   document.body.appendChild(modal);
 
-  document.getElementById('ext-preview-close')?.addEventListener('click', () => {
+  // SATU jalur close untuk SEMUA cara menutup (tombol ×, Open Tab, backdrop,
+  // Escape, dan saat modal diganti modal baru): (a) onCleanup, (b) lepas
+  // Escape listener + interval loadCheck, (c) remove element. Idempoten —
+  // hanya menjalankan sekali.
+  let closed = false;
+  let loadCheck: number | undefined;
+  const keyHandler = (ev: KeyboardEvent): void => {
+    if (ev.key === 'Escape') close();
+  };
+  const close = (): void => {
+    if (closed) return;
+    closed = true;
+    if (activePreviewClose === close) activePreviewClose = null;
     if (onCleanup) onCleanup();
+    document.removeEventListener('keydown', keyHandler);
+    if (loadCheck !== undefined) clearInterval(loadCheck);
     modal.remove();
-  });
+  };
+  activePreviewClose = close;
+
+  document.getElementById('ext-preview-close')?.addEventListener('click', close);
   document.getElementById('ext-preview-newtab')?.addEventListener('click', () => {
     window.open(originalUrl || previewUrl, '_blank');
-    if (onCleanup) onCleanup();
-    modal.remove();
+    close();
   });
   modal.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      if (onCleanup) onCleanup();
-      modal.remove();
-    }
+    if (e.target === modal) close();
   });
-  document.addEventListener('keydown', function handler(ev) {
-    if (ev.key === 'Escape') {
-      if (onCleanup) onCleanup();
-      modal.remove();
-      document.removeEventListener('keydown', handler);
-    }
-  });
+  document.addEventListener('keydown', keyHandler);
 
   if (isPdf || isImage) {
-    const loadCheck = setInterval(() => {
+    loadCheck = window.setInterval(() => {
       const loaded = isPdf
         ? document.getElementById('ext-inline-preview-iframe')?.getAttribute('src')
         : (document.getElementById('ext-inline-preview-img') as HTMLImageElement | null)?.complete;

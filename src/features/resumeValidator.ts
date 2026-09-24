@@ -228,6 +228,11 @@ import {
   const DRAFT_PREFIX = 'ext_draft_resume_';
   var _autosaveIntervalId: number | null = null;
 
+  // FIX: TTL draft autosave — isi form medis SENSITIF. Tanpa expiry, draft
+  // persist selamanya di localStorage browser bila clerk tidak pernah submit.
+  // Draft > 72 jam dianggap kedaluwarsa → dibersihkan saat read/load.
+  var DRAFT_TTL_MS = 72 * 60 * 60 * 1000;
+
   function getDraftKey(): string {
     const visitId = val('id_visit');
     return DRAFT_PREFIX + (visitId || 'unknown');
@@ -275,8 +280,9 @@ import {
       obj[name] = value.toString();
     });
     obj._saved_at = Date.now().toString();
+    // FIX: simpan { savedAt, data } — TTL dibaca ulang saat restore/purge.
     try {
-      localStorage.setItem(key, JSON.stringify(obj));
+      localStorage.setItem(key, JSON.stringify({ savedAt: Date.now(), data: obj }));
     } catch (_e) {
       /* storage full */
     }
@@ -292,12 +298,30 @@ import {
     }
     if (!raw) return;
 
-    let draft: Record<string, string>;
+    let stored: { savedAt?: unknown; data?: unknown };
     try {
-      draft = JSON.parse(raw);
+      stored = JSON.parse(raw);
     } catch (_e) {
       return;
     }
+
+    // FIX: TTL — draft > 72 jam (atau format lama flat-object tanpa savedAt)
+    // dianggap kedaluwarsa: purge dari localStorage, jangan restore isi sensitif.
+    const expired =
+      typeof stored.savedAt !== 'number' ||
+      typeof stored.data !== 'object' ||
+      stored.data === null ||
+      Date.now() - (stored.savedAt as number) >= DRAFT_TTL_MS;
+    if (expired) {
+      try {
+        localStorage.removeItem(key);
+      } catch (_e) {
+        /* ignore */
+      }
+      return;
+    }
+
+    const draft = stored.data as Record<string, string>;
 
     const ok = function () {
       for (const name in draft) {

@@ -1,11 +1,4 @@
-'use strict';
-var __morbis_feature = (() => {
-  var c = 'ext-batch-shared-style';
-  function u() {
-    if (document.getElementById(c)) return;
-    let e = document.createElement('style');
-    ((e.id = c),
-      (e.textContent = `
+"use strict";var __morbis_feature=(()=>{var c="ext-batch-shared-style";function u(){if(document.getElementById(c))return;let e=document.createElement("style");e.id=c,e.textContent=`
     .ext-modal-content {
       background: #ffffff; border-radius: 16px; padding: 28px 32px;
       max-width: 860px; width: 95%; max-height: 85vh; overflow-y: auto;
@@ -160,17 +153,7 @@ var __morbis_feature = (() => {
     .ext-preview-item.success { color: #059669; }
     .ext-preview-item.error { color: #dc2626; }
     .ext-preview-item.pending { color: #64748b; }
-  `),
-      document.head.appendChild(e));
-  }
-  function d(e) {
-    return new Promise((t) => {
-      u();
-      let n = e.variant === 'danger' ? 'ext-btn-danger' : 'ext-btn-primary',
-        o = document.createElement('div');
-      ((o.style.cssText =
-        'position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.55);backdrop-filter:blur(2px);'),
-        (o.innerHTML = `
+  `,document.head.appendChild(e)}function d(e){return new Promise(t=>{u();let n=e.variant==="danger"?"ext-btn-danger":"ext-btn-primary",o=document.createElement("div");o.style.cssText="position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.55);backdrop-filter:blur(2px);",o.innerHTML=`
       <div class="ext-modal-content" style="max-width:480px;">
         <div class="ext-modal-header">
           <h3></h3>
@@ -178,137 +161,8 @@ var __morbis_feature = (() => {
         </div>
         <div class="ext-confirm-body" style="font-size:14px;color:#334155;line-height:1.6;"></div>
         <div class="ext-modal-buttons">
-          ${e.hideCancel ? '' : `<button class="ext-btn ext-btn-secondary" data-ext-cancel>${e.cancelLabel ?? 'Batal'}</button>`}
-          <button class="ext-btn ${n}" data-ext-ok>${e.okLabel ?? 'Lanjut'}</button>
+          ${e.hideCancel?"":`<button class="ext-btn ext-btn-secondary" data-ext-cancel>${e.cancelLabel??"Batal"}</button>`}
+          <button class="ext-btn ${n}" data-ext-ok>${e.okLabel??"Lanjut"}</button>
         </div>
-      </div>`),
-        (o.querySelector('h3').textContent = e.title));
-      let a = o.querySelector('.ext-confirm-body');
-      e.message &&
-        e.message
-          .split(
-            `
-`,
-          )
-          .forEach((s, f) => {
-            (f > 0 && a.appendChild(document.createElement('br')),
-              a.appendChild(document.createTextNode(s)));
-          });
-      let i = (s) => {
-          (o.remove(), document.removeEventListener('keydown', r), t(s));
-        },
-        r = (s) => {
-          s.key === 'Escape' && i(!1);
-        };
-      (o.querySelector('.ext-modal-close').addEventListener('click', () => i(!1)),
-        o.addEventListener('click', (s) => {
-          s.target === o && i(!1);
-        }),
-        o.querySelector('[data-ext-ok]').addEventListener('click', () => i(!0)));
-      let l = o.querySelector('[data-ext-cancel]');
-      (l && l.addEventListener('click', () => i(!1)),
-        document.addEventListener('keydown', r),
-        document.body.appendChild(o));
-    });
-  }
-  function b() {
-    let e = document.querySelector('#form-data');
-    if (!e) {
-      d({
-        title: 'Error',
-        message: 'Form #form-data tidak ditemukan',
-        variant: 'warning',
-        okLabel: 'OK',
-        hideCancel: !0,
-      });
-      return;
-    }
-    let t = prompt('Masukkan ID Visit tujuan:');
-    if (!t || !/^\d+$/.test(t)) return;
-    let n = prompt('Masukkan ID Kunjungan tujuan (opsional):') || '',
-      o = new FormData(e),
-      a = new URLSearchParams();
-    for (let [r, l] of Array.from(o.entries())) r !== 'id_pengajuan' && a.append(r, l);
-    (a.set('id_visit', t), n && a.set('id_kunjungan', n));
-    let i = document.querySelector('#simpan-pindah');
-    (i && ((i.disabled = !0), (i.value = 'Memproses...')),
-      fetch('/admisi/pelaksanaan_pelayanan/control/pengajuan-operasi?opsi=simpan', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        body: a.toString(),
-      })
-        .then((r) => r.json())
-        .then((r) => {
-          r.status === '200' || r.status === 200
-            ? (d({
-                title: 'Berhasil',
-                message: 'Operasi dipindahkan ke Visit ' + t,
-                variant: 'success',
-                okLabel: 'OK',
-                hideCancel: !0,
-              }),
-              location.reload())
-            : d({
-                title: 'Gagal',
-                message: r.message || 'Respon tidak dikenal',
-                variant: 'danger',
-                okLabel: 'OK',
-                hideCancel: !0,
-              });
-        })
-        .catch((r) => {
-          d({
-            title: 'Error',
-            message: r.message,
-            variant: 'danger',
-            okLabel: 'OK',
-            hideCancel: !0,
-          });
-        })
-        .finally(() => {
-          i && ((i.disabled = !1), (i.value = 'Pindahkan Operasi'));
-        }));
-  }
-  async function p() {
-    try {
-      let t = (await chrome.storage.sync.get('extensionConfig')).extensionConfig;
-      if (!t || t.extensionEnabled !== !0) return !1;
-      let n = t.currentRole ?? 'admin';
-      return (t.features?.pindahOperasi?.allowedRoles ?? ['admin']).includes(n);
-    } catch {
-      return !1;
-    }
-  }
-  function x() {
-    if (
-      ['/login', '/auth', '/signin', '/masuk', '/keluar', '/logout'].some((o) =>
-        location.pathname.toLowerCase().includes(o),
-      ) ||
-      document.querySelectorAll('input[type="password"]').length > 0 ||
-      document.getElementById('simpan-pindah')
-    )
-      return;
-    let t = document.querySelector('#simpan, #save, input[type="submit"], button[type="submit"]');
-    if (!t || !t.parentNode) return;
-    let n = document.createElement('input');
-    ((n.type = 'button'),
-      (n.className = 'btn btn-warning'),
-      (n.id = 'simpan-pindah'),
-      (n.value = 'Pindahkan Operasi'),
-      (n.onclick = b),
-      t.parentNode.insertBefore(n, t.nextSibling),
-      console.log('[PindahOperasi] Button added'));
-  }
-  document.readyState === 'loading'
-    ? document.addEventListener('DOMContentLoaded', () => {
-        p().then((e) => {
-          e && x();
-        });
-      })
-    : p().then((e) => {
-        e && x();
-      });
-})();
+      </div>`,o.querySelector("h3").textContent=e.title;let a=o.querySelector(".ext-confirm-body");e.message&&e.message.split(`
+`).forEach((s,f)=>{f>0&&a.appendChild(document.createElement("br")),a.appendChild(document.createTextNode(s))});let i=s=>{o.remove(),document.removeEventListener("keydown",r),t(s)},r=s=>{s.key==="Escape"&&i(!1)};o.querySelector(".ext-modal-close").addEventListener("click",()=>i(!1)),o.addEventListener("click",s=>{s.target===o&&i(!1)}),o.querySelector("[data-ext-ok]").addEventListener("click",()=>i(!0));let l=o.querySelector("[data-ext-cancel]");l&&l.addEventListener("click",()=>i(!1)),document.addEventListener("keydown",r),document.body.appendChild(o)})}function b(){let e=document.querySelector("#form-data");if(!e){d({title:"Error",message:"Form #form-data tidak ditemukan",variant:"warning",okLabel:"OK",hideCancel:!0});return}let t=prompt("Masukkan ID Visit tujuan:");if(!t||!/^\d+$/.test(t))return;let n=prompt("Masukkan ID Kunjungan tujuan (opsional):")||"",o=new FormData(e),a=new URLSearchParams;for(let[r,l]of Array.from(o.entries()))r!=="id_pengajuan"&&a.append(r,l);a.set("id_visit",t),n&&a.set("id_kunjungan",n);let i=document.querySelector("#simpan-pindah");i&&(i.disabled=!0,i.value="Memproses..."),fetch("/admisi/pelaksanaan_pelayanan/control/pengajuan-operasi?opsi=simpan",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded","X-Requested-With":"XMLHttpRequest"},body:a.toString()}).then(r=>r.json()).then(r=>{r.status==="200"||r.status===200?(d({title:"Berhasil",message:"Operasi dipindahkan ke Visit "+t,variant:"success",okLabel:"OK",hideCancel:!0}),location.reload()):d({title:"Gagal",message:r.message||"Respon tidak dikenal",variant:"danger",okLabel:"OK",hideCancel:!0})}).catch(r=>{d({title:"Error",message:r.message,variant:"danger",okLabel:"OK",hideCancel:!0})}).finally(()=>{i&&(i.disabled=!1,i.value="Pindahkan Operasi")})}async function p(){try{let t=(await chrome.storage.sync.get("extensionConfig")).extensionConfig;if(!t||t.extensionEnabled!==!0)return!1;let n=t.currentRole??"admin";return(t.features?.pindahOperasi?.allowedRoles??["admin"]).includes(n)}catch{return!1}}function x(){if(["/login","/auth","/signin","/masuk","/keluar","/logout"].some(o=>location.pathname.toLowerCase().includes(o))||document.querySelectorAll('input[type="password"]').length>0||document.getElementById("simpan-pindah"))return;let t=document.querySelector('#simpan, #save, input[type="submit"], button[type="submit"]');if(!t||!t.parentNode)return;let n=document.createElement("input");n.type="button",n.className="btn btn-warning",n.id="simpan-pindah",n.value="Pindahkan Operasi",n.onclick=b,t.parentNode.insertBefore(n,t.nextSibling),console.log("[PindahOperasi] Button added")}document.readyState==="loading"?document.addEventListener("DOMContentLoaded",()=>{p().then(e=>{e&&x()})}):p().then(e=>{e&&x()});})();

@@ -1,53 +1,9 @@
-'use strict';
-var __morbis_feature = (() => {
-  var l = {
-    background: '#ffffff',
-    foreground: '#0a0a0e',
-    card: '#ffffff',
-    cardForeground: '#0a0a0e',
-    primary: '#2469f0',
-    primaryForeground: '#f8fafc',
-    primaryHover: '#1d58cc',
-    secondary: '#f1f5f9',
-    secondaryForeground: '#1e293b',
-    muted: '#f1f5f9',
-    mutedForeground: '#64748b',
-    accent: '#f1f5f9',
-    accentForeground: '#1e293b',
-    destructive: '#ef4444',
-    destructiveForeground: '#f8fafc',
-    border: '#e2e8f0',
-    input: '#e2e8f0',
-    ring: '#2469f0',
-    success: '#1b8a4b',
-    successBg: '#eaf6ef',
-    warning: '#c47a1a',
-    warningBg: '#fef4e4',
-    error: '#ef4444',
-    errorBg: '#fef2f2',
-    info: '#2469f0',
-    infoBg: '#eef3ff',
-  };
-  var E = new Set();
-  function y(r, t) {
-    if (E.has(r)) {
-      let c = document.getElementById(r);
-      if (c) return c;
-    }
-    let a = document.createElement('style');
-    return ((a.id = r), (a.textContent = t), document.head.appendChild(a), E.add(r), a);
-  }
-  y(
-    'ext-shared-animations',
-    `
+"use strict";var __morbis_feature=(()=>{var l={background:"#ffffff",foreground:"#0a0a0e",card:"#ffffff",cardForeground:"#0a0a0e",primary:"#2469f0",primaryForeground:"#f8fafc",primaryHover:"#1d58cc",secondary:"#f1f5f9",secondaryForeground:"#1e293b",muted:"#f1f5f9",mutedForeground:"#64748b",accent:"#f1f5f9",accentForeground:"#1e293b",destructive:"#ef4444",destructiveForeground:"#f8fafc",border:"#e2e8f0",input:"#e2e8f0",ring:"#2469f0",success:"#1b8a4b",successBg:"#eaf6ef",warning:"#c47a1a",warningBg:"#fef4e4",error:"#ef4444",errorBg:"#fef2f2",info:"#2469f0",infoBg:"#eef3ff"};var E=new Set;function y(r,t){if(E.has(r)){let c=document.getElementById(r);if(c)return c}let a=document.createElement("style");return a.id=r,a.textContent=t,document.head.appendChild(a),E.add(r),a}y("ext-shared-animations",`
   @keyframes fadeSlideIn {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
   }
-`,
-  );
-  var C = '"Plus Jakarta Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif',
-    M = `
+`);var C='"Plus Jakarta Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif',M=`
   :host {
     /* Brand */
     --ext-primary: #00875a;
@@ -113,27 +69,7 @@ var __morbis_feature = (() => {
     --ext-duration-fast: 140ms;
     --ext-duration-normal: 220ms;
   }
-`,
-    p = null;
-  function S() {
-    return (p || ((p = new CSSStyleSheet()), p.replaceSync(M)), p);
-  }
-  var w = !1;
-  function T() {
-    if (w || document.getElementById('ext-pjs-font')) return;
-    w = !0;
-    let r = document.createElement('link');
-    ((r.id = 'ext-pjs-font'),
-      (r.rel = 'stylesheet'),
-      (r.href =
-        'http://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'),
-      document.head.appendChild(r));
-  }
-  function x(r, t = 'open') {
-    let a = r.attachShadow({ mode: t });
-    return ((a.adoptedStyleSheets = [S()]), T(), a);
-  }
-  var A = `
+`,p=null;function S(){return p||(p=new CSSStyleSheet,p.replaceSync(M)),p}var w=!1;function T(){if(w||document.getElementById("ext-pjs-font"))return;w=!0;let r=document.createElement("link");r.id="ext-pjs-font",r.rel="stylesheet",r.href="http://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",document.head.appendChild(r)}function x(r,t="open"){let a=r.attachShadow({mode:t});return a.adoptedStyleSheets=[S()],T(),a}var A=`
   :host { display: inline-block; }
   button {
     display: inline-flex;
@@ -189,41 +125,13 @@ var __morbis_feature = (() => {
   :host([loading]) .spinner { display: inline-block; }
   :host([loading]) button { pointer-events: none; opacity: 0.8; }
   @keyframes ext-spin { to { transform: rotate(360deg); } }
-`,
-    m = class extends HTMLElement {
-      constructor() {
-        super();
-        let t = x(this);
-        ((t.innerHTML = `
+`,m=class extends HTMLElement{constructor(){super();let t=x(this);t.innerHTML=`
       <style>${A}</style>
       <button type="button">
         <span class="spinner" aria-hidden="true"></span>
         <span class="label"><slot></slot></span>
       </button>
-    `),
-          (this.btn = t.querySelector('button')));
-      }
-      connectedCallback() {
-        ((this.btn.disabled = this.hasAttribute('disabled') || this.hasAttribute('loading')),
-          this.btn.setAttribute('aria-busy', this.hasAttribute('loading') ? 'true' : 'false'),
-          this.btn.addEventListener('click', (t) => {
-            if (this.hasAttribute('loading') || this.hasAttribute('disabled')) {
-              (t.stopPropagation(), t.preventDefault());
-              return;
-            }
-          }));
-      }
-      static get observedAttributes() {
-        return ['disabled', 'loading'];
-      }
-      attributeChangedCallback(t) {
-        (t === 'disabled' || t === 'loading') &&
-          ((this.btn.disabled = this.hasAttribute('disabled') || this.hasAttribute('loading')),
-          this.btn.setAttribute('aria-busy', this.hasAttribute('loading') ? 'true' : 'false'));
-      }
-    };
-  customElements.get('ext-btn') || customElements.define('ext-btn', m);
-  var H = `
+    `,this.btn=t.querySelector("button")}connectedCallback(){this.btn.disabled=this.hasAttribute("disabled")||this.hasAttribute("loading"),this.btn.setAttribute("aria-busy",this.hasAttribute("loading")?"true":"false"),this.btn.addEventListener("click",t=>{if(this.hasAttribute("loading")||this.hasAttribute("disabled")){t.stopPropagation(),t.preventDefault();return}})}static get observedAttributes(){return["disabled","loading"]}attributeChangedCallback(t){(t==="disabled"||t==="loading")&&(this.btn.disabled=this.hasAttribute("disabled")||this.hasAttribute("loading"),this.btn.setAttribute("aria-busy",this.hasAttribute("loading")?"true":"false"))}};customElements.get("ext-btn")||customElements.define("ext-btn",m);var H=`
   :host {
     display: inline-flex;
     align-items: center;
@@ -244,16 +152,7 @@ var __morbis_feature = (() => {
   :host([variant='info']) { background: var(--ext-info-soft); color: var(--ext-info); border-color: #c3d6f5; }
   :host([variant='neutral']) { background: var(--ext-surface-2); color: var(--ext-text-secondary); border-color: var(--ext-border); }
   :host([variant='primary']) { background: var(--ext-primary-soft); color: var(--ext-primary); border-color: #b8ddcd; }
-`,
-    b = class extends HTMLElement {
-      constructor() {
-        super();
-        let t = x(this);
-        t.innerHTML = `<style>${H}</style><slot></slot>`;
-      }
-    };
-  customElements.get('ext-badge') || customElements.define('ext-badge', b);
-  var z = `
+`,b=class extends HTMLElement{constructor(){super();let t=x(this);t.innerHTML=`<style>${H}</style><slot></slot>`}};customElements.get("ext-badge")||customElements.define("ext-badge",b);var z=`
   :host {
     display: flex;
     flex-direction: column;
@@ -292,44 +191,11 @@ var __morbis_feature = (() => {
   .panels { padding: var(--ext-space-5); }
   ::slotted([slot='panel']) { display: none; }
   ::slotted([slot='panel'][data-active]) { display: block; }
-`,
-    v = class extends HTMLElement {
-      constructor() {
-        (super(), this.attachShadowWithTokens());
-      }
-      attachShadowWithTokens() {
-        let t = x(this);
-        t.innerHTML = `
+`,v=class extends HTMLElement{constructor(){super(),this.attachShadowWithTokens()}attachShadowWithTokens(){let t=x(this);t.innerHTML=`
       <style>${z}</style>
       <div class="tablist"><slot name="tab"></slot></div>
       <div class="panels"><slot name="panel"></slot></div>
-    `;
-      }
-      connectedCallback() {
-        this.addEventListener('click', (a) => {
-          let c = a.target.closest('[slot="tab"]');
-          !c || !this.contains(c) || this.activate(c.getAttribute('data-tab') || '');
-        });
-        let t = this.querySelector('[slot="tab"][data-active]');
-        t && this.activate(t.getAttribute('data-tab') || '');
-      }
-      activate(t) {
-        t &&
-          (this.querySelectorAll('[slot="tab"]').forEach((a) => {
-            a.getAttribute('data-tab') === t
-              ? a.setAttribute('data-active', '')
-              : a.removeAttribute('data-active');
-          }),
-          this.querySelectorAll('[slot="panel"]').forEach((a) => {
-            a.getAttribute('data-panel') === t
-              ? a.setAttribute('data-active', '')
-              : a.removeAttribute('data-active');
-          }),
-          this.dispatchEvent(new CustomEvent('ext-tab-change', { detail: { tab: t } })));
-      }
-    };
-  customElements.get('ext-tabs') || customElements.define('ext-tabs', v);
-  var B = `
+    `}connectedCallback(){this.addEventListener("click",a=>{let c=a.target.closest('[slot="tab"]');!c||!this.contains(c)||this.activate(c.getAttribute("data-tab")||"")});let t=this.querySelector('[slot="tab"][data-active]');t&&this.activate(t.getAttribute("data-tab")||"")}activate(t){t&&(this.querySelectorAll('[slot="tab"]').forEach(a=>{a.getAttribute("data-tab")===t?a.setAttribute("data-active",""):a.removeAttribute("data-active")}),this.querySelectorAll('[slot="panel"]').forEach(a=>{a.getAttribute("data-panel")===t?a.setAttribute("data-active",""):a.removeAttribute("data-active")}),this.dispatchEvent(new CustomEvent("ext-tab-change",{detail:{tab:t}})))}};customElements.get("ext-tabs")||customElements.define("ext-tabs",v);var B=`
   :host { display: none; }
   :host([open]) { display: block; }
   .overlay {
@@ -413,15 +279,7 @@ var __morbis_feature = (() => {
   @keyframes ext-slide-up {
     from { opacity: 0; transform: translateY(18px) scale(0.98); }
   }
-`,
-    g = class extends HTMLElement {
-      constructor() {
-        super();
-        this.handleKey = (a) => {
-          a.key === 'Escape' && this.hasAttribute('open') && this.cancel();
-        };
-        ((this.root = x(this)),
-          (this.root.innerHTML = `
+`,g=class extends HTMLElement{constructor(){super();this.handleKey=a=>{a.key==="Escape"&&this.hasAttribute("open")&&this.cancel()};this.root=x(this),this.root.innerHTML=`
       <style>${B}</style>
       <div class="overlay">
         <div class="modal" role="dialog" aria-modal="true">
@@ -435,54 +293,7 @@ var __morbis_feature = (() => {
           </div>
         </div>
       </div>
-    `));
-      }
-      connectedCallback() {
-        let a = this.root.querySelector('.overlay');
-        (this.root.querySelector('.close').addEventListener('click', () => this.cancel()),
-          a.addEventListener('click', (h) => {
-            h.target === a && this.cancel();
-          }),
-          document.addEventListener('keydown', this.handleKey));
-      }
-      disconnectedCallback() {
-        document.removeEventListener('keydown', this.handleKey);
-      }
-      get titleSlot() {
-        return this.querySelector('[slot="title"]');
-      }
-      get footerSlot() {
-        return this.querySelector('[slot="footer"]');
-      }
-      open() {
-        this.setAttribute('open', '');
-      }
-      close() {
-        this.removeAttribute('open');
-      }
-      cancel() {
-        (this.dispatchEvent(new CustomEvent('ext-cancel')), this.close());
-      }
-      ok() {
-        this.dispatchEvent(new CustomEvent('ext-ok'));
-      }
-    };
-  customElements.get('ext-modal') || customElements.define('ext-modal', g);
-  (function () {
-    let t = 0,
-      a = [
-        { index: 0, name: 'gcs', min: 1, max: 15, step: 1, unit: '', label: 'GCS' },
-        { index: 1, name: 'sistol', min: 50, max: 250, step: 1, unit: 'mmHg', label: 'Sistol' },
-        { index: 2, name: 'diastol', min: 20, max: 160, step: 1, unit: 'mmHg', label: 'Diastol' },
-        { index: 3, name: 'nadi', min: 20, max: 250, step: 1, unit: 'x/menit', label: 'Nadi' },
-        { index: 4, name: 'rr', min: 4, max: 80, step: 1, unit: 'x/menit', label: 'RR' },
-        { index: 5, name: 'suhu', min: 30, max: 45, step: 0.1, unit: '\xB0C', label: 'Suhu' },
-        { index: 6, name: 'berat_badan', min: 0.5, max: 500, step: 0.1, unit: 'kg', label: 'BB' },
-        { index: 7, name: 'tinggi_badan', min: 20, max: 300, step: 0.1, unit: 'cm', label: 'TB' },
-      ];
-    y(
-      'ext-ttv-css',
-      `
+    `}connectedCallback(){let a=this.root.querySelector(".overlay");this.root.querySelector(".close").addEventListener("click",()=>this.cancel()),a.addEventListener("click",h=>{h.target===a&&this.cancel()}),document.addEventListener("keydown",this.handleKey)}disconnectedCallback(){document.removeEventListener("keydown",this.handleKey)}get titleSlot(){return this.querySelector('[slot="title"]')}get footerSlot(){return this.querySelector('[slot="footer"]')}open(){this.setAttribute("open","")}close(){this.removeAttribute("open")}cancel(){this.dispatchEvent(new CustomEvent("ext-cancel")),this.close()}ok(){this.dispatchEvent(new CustomEvent("ext-ok"))}};customElements.get("ext-modal")||customElements.define("ext-modal",g);(function(){let t=0,a=[{index:0,name:"gcs",min:1,max:15,step:1,unit:"",label:"GCS"},{index:1,name:"sistol",min:50,max:250,step:1,unit:"mmHg",label:"Sistol"},{index:2,name:"diastol",min:20,max:160,step:1,unit:"mmHg",label:"Diastol"},{index:3,name:"nadi",min:20,max:250,step:1,unit:"x/menit",label:"Nadi"},{index:4,name:"rr",min:4,max:80,step:1,unit:"x/menit",label:"RR"},{index:5,name:"suhu",min:30,max:45,step:.1,unit:"\xB0C",label:"Suhu"},{index:6,name:"berat_badan",min:.5,max:500,step:.1,unit:"kg",label:"BB"},{index:7,name:"tinggi_badan",min:20,max:300,step:.1,unit:"cm",label:"TB"}];y("ext-ttv-css",`
     .ext-ttv-editable {
       pointer-events: auto !important;
       background: ${l.background} !important;
@@ -536,105 +347,4 @@ var __morbis_feature = (() => {
     .ext-ttv-status.ext-ttv-status-locked {
       color: var(--ext-text-secondary, ${l.mutedForeground});
     }
-  `,
-    );
-    let c = setInterval(function () {
-      t++;
-      let e = document.documentElement.getAttribute('data-ext-ttv-editor');
-      e !== null ? (clearInterval(c), e === '1' && h()) : t >= 100 && clearInterval(c);
-    }, 50);
-    function h() {
-      if (!window.location.pathname.includes('/surat-pengantar-ri')) return;
-      let e = setInterval(function () {
-        let n = document.getElementById('formDataRujukan'),
-          s = document.querySelectorAll('input.hanya_baca');
-        n && s.length > 0 && (clearInterval(e), L(s));
-      }, 200);
-    }
-    function L(e) {
-      let n = [];
-      (e.forEach(function (s, i) {
-        let o = s,
-          d = a.find(function (u) {
-            return u.index === i;
-          });
-        d &&
-          (o.removeAttribute('readonly'),
-          o.classList.remove('hanya_baca'),
-          o.classList.add('ext-ttv-editable'),
-          o.setAttribute('name', d.name),
-          o.setAttribute('data-ext-ttv', d.name),
-          o.setAttribute('placeholder', d.min + '-' + d.max),
-          (o.type = 'number'),
-          (o.min = String(d.min)),
-          (o.max = String(d.max)),
-          (o.step = String(d.step)),
-          o.addEventListener('input', function () {
-            k(o, d);
-          }),
-          o.addEventListener('blur', function () {
-            k(o, d);
-          }),
-          n.push(o));
-      }),
-        $(n));
-    }
-    function k(e, n) {
-      let s = parseFloat(e.value);
-      if ((e.classList.remove('ext-ttv-valid', 'ext-ttv-invalid'), e.value !== '')) {
-        if (
-          (isNaN(s) || s < n.min || s > n.max
-            ? (e.classList.add('ext-ttv-invalid'),
-              (e.title = n.label + ' harus antara ' + n.min + '-' + n.max + ' ' + n.unit))
-            : (e.classList.add('ext-ttv-valid'), (e.title = '')),
-          n.name === 'sistol')
-        ) {
-          let i = document.querySelector('input[data-ext-ttv="diastol"]');
-          i &&
-            i.value &&
-            e.value &&
-            parseFloat(e.value) <= parseFloat(i.value) &&
-            (e.classList.remove('ext-ttv-valid'),
-            e.classList.add('ext-ttv-invalid'),
-            (e.title = 'Sistol harus lebih besar dari Diastol'));
-        }
-        if (n.name === 'diastol') {
-          let i = document.querySelector('input[data-ext-ttv="sistol"]');
-          i &&
-            i.value &&
-            e.value &&
-            parseFloat(e.value) >= parseFloat(i.value) &&
-            (e.classList.remove('ext-ttv-valid'),
-            e.classList.add('ext-ttv-invalid'),
-            (e.title = 'Diastol harus lebih kecil dari Sistol'));
-        }
-      }
-    }
-    function $(e) {
-      let n = document.getElementById('formDataRujukan');
-      if (!n || n.querySelector('.ext-ttv-bar')) return;
-      let s = document.createElement('span');
-      ((s.className = 'ext-ttv-status'), (s.textContent = 'Editable'));
-      let i = document.createElement('ext-btn');
-      (i.setAttribute('variant', 'secondary'),
-        i.setAttribute('size', 'sm'),
-        (i.textContent = 'Kunci TTV'));
-      let o = document.createElement('ext-badge');
-      (o.setAttribute('variant', 'info'), (o.textContent = 'TTV Editor'));
-      let d = document.createElement('div');
-      ((d.className = 'ext-ttv-bar'), d.append(o, s, i), n.insertBefore(d, n.firstChild));
-      let u = !1;
-      i.addEventListener('click', function () {
-        ((u = !u),
-          e.forEach(function (f) {
-            u
-              ? (f.classList.add('ext-ttv-locked'), (f.readOnly = !0))
-              : (f.classList.remove('ext-ttv-locked'), (f.readOnly = !1));
-          }),
-          (s.textContent = u ? 'Locked' : 'Editable'),
-          s.classList.toggle('ext-ttv-status-locked', u),
-          (i.textContent = u ? 'Buka TTV' : 'Kunci TTV'));
-      });
-    }
-  })();
-})();
+  `);let c=setInterval(function(){t++;let e=document.documentElement.getAttribute("data-ext-ttv-editor");e!==null?(clearInterval(c),e==="1"&&h()):t>=100&&clearInterval(c)},50);function h(){if(!window.location.pathname.includes("/surat-pengantar-ri"))return;let e=setInterval(function(){let n=document.getElementById("formDataRujukan"),s=document.querySelectorAll("input.hanya_baca");n&&s.length>0&&(clearInterval(e),L(s))},200)}function L(e){let n=[];e.forEach(function(s,i){let o=s,d=a.find(function(u){return u.index===i});d&&(o.removeAttribute("readonly"),o.classList.remove("hanya_baca"),o.classList.add("ext-ttv-editable"),o.setAttribute("name",d.name),o.setAttribute("data-ext-ttv",d.name),o.setAttribute("placeholder",d.min+"-"+d.max),o.type="number",o.min=String(d.min),o.max=String(d.max),o.step=String(d.step),o.addEventListener("input",function(){k(o,d)}),o.addEventListener("blur",function(){k(o,d)}),n.push(o))}),$(n)}function k(e,n){let s=parseFloat(e.value);if(e.classList.remove("ext-ttv-valid","ext-ttv-invalid"),e.value!==""){if(isNaN(s)||s<n.min||s>n.max?(e.classList.add("ext-ttv-invalid"),e.title=n.label+" harus antara "+n.min+"-"+n.max+" "+n.unit):(e.classList.add("ext-ttv-valid"),e.title=""),n.name==="sistol"){let i=document.querySelector('input[data-ext-ttv="diastol"]');i&&i.value&&e.value&&parseFloat(e.value)<=parseFloat(i.value)&&(e.classList.remove("ext-ttv-valid"),e.classList.add("ext-ttv-invalid"),e.title="Sistol harus lebih besar dari Diastol")}if(n.name==="diastol"){let i=document.querySelector('input[data-ext-ttv="sistol"]');i&&i.value&&e.value&&parseFloat(e.value)>=parseFloat(i.value)&&(e.classList.remove("ext-ttv-valid"),e.classList.add("ext-ttv-invalid"),e.title="Diastol harus lebih kecil dari Sistol")}}}function $(e){let n=document.getElementById("formDataRujukan");if(!n||n.querySelector(".ext-ttv-bar"))return;let s=document.createElement("span");s.className="ext-ttv-status",s.textContent="Editable";let i=document.createElement("ext-btn");i.setAttribute("variant","secondary"),i.setAttribute("size","sm"),i.textContent="Kunci TTV";let o=document.createElement("ext-badge");o.setAttribute("variant","info"),o.textContent="TTV Editor";let d=document.createElement("div");d.className="ext-ttv-bar",d.append(o,s,i),n.insertBefore(d,n.firstChild);let u=!1;i.addEventListener("click",function(){u=!u,e.forEach(function(f){u?(f.classList.add("ext-ttv-locked"),f.readOnly=!0):(f.classList.remove("ext-ttv-locked"),f.readOnly=!1)}),s.textContent=u?"Locked":"Editable",s.classList.toggle("ext-ttv-status-locked",u),i.textContent=u?"Buka TTV":"Kunci TTV"})}})();})();

@@ -366,6 +366,11 @@ function injectFetchWatchdogToMainWorld(): void {
 // script world:"MAIN" (yang TIDAK punya akses chrome.storage, mis. antrianTools).
 // MAIN world kirim window.postMessage({__extUsageLog: {...}}) -> diteruskan ke logUsage.
 window.addEventListener('message', (event: MessageEvent) => {
+  // Hanya proses pesan dari konteks halaman itu sendiri (MAIN world: antrianTools,
+  // fetchWatchdog). Cek origin + source → skrip asing (iframe/popup/domain lain)
+  // tidak bisa memalsukan entry usage-log ke storage extension / menutup modal.
+  if (event.origin !== window.location.origin) return;
+  if (event.source !== window) return;
   const data = event.data as {
     __extUsageLog?: { feature?: string; event?: string; ok?: boolean; detail?: unknown };
     __extPartialSettled?: boolean;
@@ -399,6 +404,9 @@ window.addEventListener('unhandledrejection', (event: PromiseRejectionEvent) => 
 // mesin-antrian/view-antrian/counter. Chrome kadang gagal auto-inject MAIN world
 // content_script (document_idle) di beberapa environment — inject manual dari ISOLATED
 // world (init.ts) yang sudah pasti jalan lebih reliable.
+// Aman berjalan berdampingan dgn entry manifest content_scripts: IIFE antrianTools
+// punya guard global __extAntrianToolsLoaded → script kedua langsung batal, jadi
+// UI/polling/TTS tetap satu instance (tanpa double init).
 function injectAntrianToolsToMainWorld(): void {
   const path = window.location.pathname;
   const needsAntrianTools =

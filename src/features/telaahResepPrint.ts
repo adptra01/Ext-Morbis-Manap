@@ -27,6 +27,11 @@
       );
     }
 
+    // Format nomor antrian header: "T-12" → "T-\n12" (baris kedua besar).
+    // "-" dipakai sebagai placeholder saat nilai belum ter-fetch / tidak ada.
+    const formatAntrian = (v: string): string =>
+      v ? esc(v.replace(/^(.*?)(\d+)$/, '$1\n$2')) : '-';
+
     /** --- ekstraksi --- */
     // Header: logo + nama RS (<b>) + baris alamat/kontak (<br>).
     const logoImg = page.querySelector('#logo img');
@@ -103,7 +108,7 @@
     let diagKunjungan = '';
     let diagnosisUtama: string[] = [];
     let diagnosisSekunder: string[] = [];
-    let antrianNumber = '';
+    const antrianNumber = '';
     let noSep = '';
 
     async function fetchRacikanDetails(): Promise<void> {
@@ -114,74 +119,69 @@
 
       // Diagnosa dari halaman detail. Halaman edit butuh norm/visit/penjualan
       // lengkap; varian id-only mengembalikan error aplikasi, jadi jangan dipakai.
-      const detailUrls = ['/inventory/resep/penerimaan/detail?id=' + resepId];
+      const detailUrl = '/inventory/resep/penerimaan/detail?id=' + resepId;
+      try {
+        const resp = await fetch(detailUrl, { credentials: 'include' });
+        if (!resp.ok) return;
+        const html = await resp.text();
+        const doc = new DOMParser().parseFromString(html, 'text/html');
 
-      for (const url of detailUrls) {
-        try {
-          const resp = await fetch(url, { credentials: 'include' });
-          if (!resp.ok) continue;
-          const html = await resp.text();
-          const doc = new DOMParser().parseFromString(html, 'text/html');
+        // Tangkap id_visit / id_kunjungan dari hidden input
+        const inVal = (name: string): string => {
+          const el =
+            doc.querySelector<HTMLInputElement>('#' + name) ||
+            doc.querySelector<HTMLInputElement>('input[name="' + name + '"]') ||
+            doc.querySelector<HTMLInputElement>('input[id*="' + name + '"]');
+          return el?.value?.trim() || '';
+        };
+        diagVisit = inVal('id_visit') || params.get('visit') || diagVisit;
+        diagKunjungan = inVal('id_kunjungan') || diagKunjungan;
+        noSep = inVal('no_sep') || noSep;
 
-          // Tangkap id_visit / id_kunjungan dari hidden input
-          const inVal = (name: string): string => {
-            const el =
-              doc.querySelector<HTMLInputElement>('#' + name) ||
-              doc.querySelector<HTMLInputElement>('input[name="' + name + '"]') ||
-              doc.querySelector<HTMLInputElement>('input[id*="' + name + '"]');
-            return el?.value?.trim() || '';
-          };
-          diagVisit = inVal('id_visit') || params.get('visit') || diagVisit;
-          diagKunjungan = inVal('id_kunjungan') || diagKunjungan;
-          noSep = inVal('no_sep') || noSep;
+        // Ambil diagnosa dari fieldset#perhatian yg punya legend "Riwayat Diagnosa Pasien"
+        const fieldsets = Array.from(doc.querySelectorAll('fieldset#perhatian'));
+        const fs = fieldsets.find((f) => {
+          const leg = f.querySelector('legend');
+          return leg && /riwayat\s*diagnosa\s*pasien/i.test(txt(leg));
+        });
+        if (fs) {
+          const allLis = Array.from(fs.querySelectorAll('li'))
+            .map((li) => txt(li))
+            .filter(Boolean);
 
-          // Ambil diagnosa dari fieldset#perhatian yg punya legend "Riwayat Diagnosa Pasien"
-          const fieldsets = Array.from(doc.querySelectorAll('fieldset#perhatian'));
-          const fs = fieldsets.find((f) => {
-            const leg = f.querySelector('legend');
-            return leg && /riwayat\s*diagnosa\s*pasien/i.test(txt(leg));
-          });
-          if (fs) {
-            const allLis = Array.from(fs.querySelectorAll('li'))
-              .map((li) => txt(li))
-              .filter(Boolean);
-
-            let sekunderStartIdx = -1;
-            const strongs = Array.from(fs.querySelectorAll('strong, b'));
-            for (const s of strongs) {
-              if (/diagnosa\s*sekunder/i.test(txt(s))) {
-                const parentLi = s.closest('li');
-                if (parentLi) {
-                  const idx = Array.from(fs.querySelectorAll('li')).indexOf(parentLi);
-                  if (idx >= 0) sekunderStartIdx = idx;
-                } else {
-                  const nextOl = s.nextElementSibling;
-                  if (nextOl && nextOl.tagName === 'OL') {
-                    const firstSekunderLi = nextOl.querySelector('li');
-                    if (firstSekunderLi) {
-                      const idx = Array.from(fs.querySelectorAll('li')).indexOf(firstSekunderLi);
-                      if (idx >= 0) sekunderStartIdx = idx;
-                    }
+          let sekunderStartIdx = -1;
+          const strongs = Array.from(fs.querySelectorAll('strong, b'));
+          for (const s of strongs) {
+            if (/diagnosa\s*sekunder/i.test(txt(s))) {
+              const parentLi = s.closest('li');
+              if (parentLi) {
+                const idx = Array.from(fs.querySelectorAll('li')).indexOf(parentLi);
+                if (idx >= 0) sekunderStartIdx = idx;
+              } else {
+                const nextOl = s.nextElementSibling;
+                if (nextOl && nextOl.tagName === 'OL') {
+                  const firstSekunderLi = nextOl.querySelector('li');
+                  if (firstSekunderLi) {
+                    const idx = Array.from(fs.querySelectorAll('li')).indexOf(firstSekunderLi);
+                    if (idx >= 0) sekunderStartIdx = idx;
                   }
                 }
-                break;
               }
-            }
-
-            if (sekunderStartIdx >= 0 && sekunderStartIdx < allLis.length) {
-              diagnosisUtama = allLis.slice(0, sekunderStartIdx);
-              diagnosisSekunder = allLis
-                .slice(sekunderStartIdx)
-                .filter((v) => v && !/tidak ada/i.test(v));
-            } else if (allLis.length) {
-              diagnosisUtama = allLis;
+              break;
             }
           }
 
-          if (diagnosisUtama.length) break;
-        } catch {
-          /* coba url berikutnya */
+          if (sekunderStartIdx >= 0 && sekunderStartIdx < allLis.length) {
+            diagnosisUtama = allLis.slice(0, sekunderStartIdx);
+            diagnosisSekunder = allLis
+              .slice(sekunderStartIdx)
+              .filter((v) => v && !/tidak ada/i.test(v));
+          } else if (allLis.length) {
+            diagnosisUtama = allLis;
+          }
         }
+      } catch {
+        /* detail page tidak terjangkau — biarkan fallback diagnosa server */
       }
     }
 
@@ -223,7 +223,7 @@
     async function fetchEditItems(penjualanId: string): Promise<ResepItem[]> {
       try {
         const resp = await fetch(
-          '/inventory/search?opsi=tabel_penjualan_lama&&id_penjualan=' +
+          '/inventory/search?opsi=tabel_penjualan_lama&id_penjualan=' +
             encodeURIComponent(penjualanId),
           { credentials: 'include', cache: 'no-store' },
         );
@@ -293,6 +293,7 @@
           {
             cache: 'no-store',
             credentials: 'omit',
+            signal: AbortSignal.timeout(8000), // app antrian lambat → jangan bikin halaman hang
           },
         );
         if (!resp.ok) return '';
@@ -308,11 +309,11 @@
       return '';
     }
 
-    // Fetch nomor antrian dari App Antrian (Reports SIMRS) via resep_id
+    // Nomor antrian di-fetch NON-BLOCKING setelah render (timeout 8s di
+    // fetchAntrianNumber) — app antrian lambat tidak boleh menahan cetak.
     const params = new URLSearchParams(window.location.search);
     const resepIdForQueue =
       params.get('id_resep') || params.get('id') || params.get('penjualan') || '';
-    antrianNumber = resepIdForQueue ? await fetchAntrianNumber(resepIdForQueue) : '';
 
     await fetchRacikanDetails(); // fetch diagnosa from detail page
 
@@ -622,11 +623,9 @@
       '</h1>' +
       (headBody[0] ? '<div class="t-hsub">' + esc(headBody[0]) + '</div>' : '') +
       '</div>' +
-      (antrianNumber
-        ? '<div class="t-antrian">' +
-          esc(antrianNumber.replace(/^(.*?)(\d+)$/, '$1\n$2')) +
-          '</div>'
-        : '') +
+      '<div class="t-antrian">' +
+      formatAntrian(antrianNumber) +
+      '</div>' +
       '</header>' +
       // METADATA + MAIN (2 kolom, metadata nyambung ke isi kolom masing-masing)
       '<main class="t-main">' +
@@ -653,6 +652,18 @@
       '</div>';
 
     page.innerHTML = html;
+
+    // Isi nomor antrian NON-BLOCKING: render duluan (placeholder "-"), lalu
+    // perbarui setelah fetch selesai. textContent (bukan innerHTML) karena
+    // nilai berasal dari API luar.
+    if (resepIdForQueue) {
+      const antrianEl = page.querySelector<HTMLElement>('.t-antrian');
+      void fetchAntrianNumber(resepIdForQueue).then((n) => {
+        if (n && antrianEl && antrianEl.isConnected) {
+          antrianEl.textContent = n.replace(/^(.*?)(\d+)$/, '$1\n$2');
+        }
+      });
+    }
 
     // === ADAPTIVE DENSITY:ukur tinggi DOM, pilih kelas yang sesuai ===
     // Target: 241mm = 912px (pada 96dpi). Beri buffer 5% utk sub-pixel.

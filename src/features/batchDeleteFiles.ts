@@ -142,6 +142,9 @@ async function deleteDokumen(dokumenId: string): Promise<boolean> {
       method: 'POST',
       body: formData,
       credentials: 'same-origin',
+      // FIX: timeout 30s — koneksi jelek jangan bikin "Menghapus…" menggantung;
+      // timeout jatuh ke catch di bawah → item ditandai gagal, batch lanjut.
+      signal: AbortSignal.timeout(30000),
     });
 
     return res.ok;
@@ -292,7 +295,9 @@ async function crawlDokumenPasienDelete(): Promise<void> {
 
   try {
     const targetUrl = `${window.location.origin}${BATCH_DELETE_CONFIG.fetchListUrl}?id_visit=${idVisit}&page=85&id_kunjungan=`;
-    const response = await fetch(targetUrl);
+    // FIX: timeout 30s — "Mencari…" jangan menggantung; timeout jatuh ke catch
+    // (status error ditampilkan) lalu tombol diaktifkan lagi di finally.
+    const response = await fetch(targetUrl, { signal: AbortSignal.timeout(30000) });
 
     if (!response.ok) throw new Error('Gagal memuat halaman dokumen pasien');
     const html = await response.text();
@@ -634,7 +639,9 @@ async function crawlDokumenPasienDeleteToSidepanel(): Promise<void> {
 
   try {
     const targetUrl = `${window.location.origin}${BATCH_DELETE_CONFIG.fetchListUrl}?id_visit=${idVisit}&page=85&id_kunjungan=`;
-    const response = await fetch(targetUrl);
+    // FIX: timeout 30s — "Mencari…" jangan menggantung; timeout jatuh ke catch
+    // (status error ditampilkan) lalu tombol diaktifkan lagi di finally.
+    const response = await fetch(targetUrl, { signal: AbortSignal.timeout(30000) });
 
     if (!response.ok) throw new Error('Gagal memuat halaman dokumen pasien');
     const html = await response.text();

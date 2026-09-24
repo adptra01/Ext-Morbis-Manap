@@ -189,20 +189,5 @@
   "187": "ExtTabs",
   "188": "class-variance-authority",
   "189": "clsx",
-  "190": "cancelButton.ts",
-  "191": "scrollButtons.ts",
-  "192": "pdfWriter.ts",
-  "193": "@radix-ui/react-select",
-  "194": "ExtModal",
-  "195": "farmasiQueueBridge.ts",
-  "196": "injectCSS",
-  "197": "farmasiRenumber.ts",
-  "198": "storage.ts",
-  "199": "ConsDetailModal.tsx",
-  "200": "wsHealth.ts",
-  "201": "ExtBtn",
-  "202": "ExtTabs",
-  "203": "uploadName.ts",
-  "204": "husky",
-  "205": "@types/react-dom"
+  "193": "@radix-ui/react-select"
 }

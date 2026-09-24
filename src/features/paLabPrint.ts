@@ -533,7 +533,9 @@
     function dataUrl(src: string): Promise<string> {
       if (/^data:/i.test(src)) return Promise.resolve(src);
       const abs = new URL(src, window.location.href).href;
-      return fetch(abs)
+      // FIX: timeout 8s (fetch hang bikin tombol Export Word spin selamanya)
+      // + credentials same-origin (halaman session-protected → tanpa ini 401).
+      return fetch(abs, { signal: AbortSignal.timeout(8000), credentials: 'same-origin' })
         .then((res) => {
           if (!res.ok) throw new Error('img ' + res.status);
           return res.blob();

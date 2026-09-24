@@ -1,6 +1,12 @@
 /**
  * preOpStorage.ts — Penyimpanan & manajemen state Pre-op untuk tabel M-KLAIM.
  * Data disimpan di localStorage dengan TTL 30 hari (1 bulan).
+ *
+ * Privasi: hanya idVisit + markedAt yang ditulis ke localStorage (PC bersama,
+ * terbaca skrip halaman). Identitas pasien (norm/nama/noReg) TIDAK disimpan —
+ * konsumen membaca ulang dari baris tabel (mKlaimPreOp.extractPatientInfo);
+ * ekspor (mKlaimCasemixExport) hanya memakai markedAt. Entry lama yang masih
+ * membawa PII di-scrub otomatis saat dibaca (loadPreOpMap).
  */
 
 export interface PreOpItem {
@@ -75,6 +81,9 @@ export function purgeExpiredPreOp(
 
 /**
  * Baca seluruh PreOpMap dari storage, otomatis purge data > 30 hari.
+ * Sekaligus scrub PII lama (norm/nama/noReg) — localStorage di PC bersama
+ * bisa dibaca skrip halaman; konsumen (mKlaimPreOp / mKlaimCasemixExport)
+ * membaca ulang identitas pasien dari baris tabel — hanya markedAt dipakai.
  */
 export function loadPreOpMap(
   store: KVStore | null = defaultStore(),
@@ -88,13 +97,32 @@ export function loadPreOpMap(
     if (typeof parsed !== 'object' || parsed === null) return {};
 
     const { purged, count } = purgeExpiredPreOp(parsed, now);
-    if (count > 0) {
+    // Scrub PII: buang norm/nama/noReg dari entry yang masih hidup, lalu
+    // simpan balik agar localStorage lama ikut dibersihkan (sekali jalan).
+    let scrubbedCount = 0;
+    for (const id of Object.keys(purged)) {
+      const item = purged[id];
+      if (!item) continue;
+      if (item.norm !== undefined || item.nama !== undefined || item.noReg !== undefined) {
+        scrubbedCount++;
+      }
+      purged[id] = minimalPreOpItem(item);
+    }
+    if (count > 0 || scrubbedCount > 0) {
       savePreOpMap(purged, store);
     }
     return purged;
   } catch {
     return {};
   }
+}
+
+/** Bentuk entry yang boleh disimpan: PII sengaja TIDAK ditulis ke
+ *  localStorage (PC bersama, terbaca skrip halaman). Field norm/nama/noReg
+ *  dipertahankan di interface hanya agar data lama + type backfill tetap
+ *  kompatibel — pada runtime selalu di-strip lewat fungsi ini. */
+function minimalPreOpItem(raw: PreOpItem): PreOpItem {
+  return { idVisit: raw.idVisit, markedAt: raw.markedAt };
 }
 
 /**
@@ -125,23 +153,19 @@ export function isPreOp(
 }
 
 /**
- * Tandai visit sebagai Pre-op.
+ * Tandai visit sebagai Pre-op. `info` (norm/nama/noReg) diterima demi
+ * kompatibilitas pemanggil (mKlaimPreOp), tapi TIDAK disimpan: konsumen
+ * membaca ulang identitas pasien dari baris tabel saat dibutuhkan.
  */
 export function setPreOp(
   idVisit: string,
-  info: { norm?: string; nama?: string; noReg?: string } = {},
+  _info: { norm?: string; nama?: string; noReg?: string } = {},
   store: KVStore | null = defaultStore(),
   now: number = Date.now(),
 ): void {
   if (!idVisit) return;
   const map = loadPreOpMap(store, now);
-  map[idVisit] = {
-    idVisit,
-    markedAt: now,
-    norm: info.norm,
-    nama: info.nama,
-    noReg: info.noReg,
-  };
+  map[idVisit] = { idVisit, markedAt: now };
   savePreOpMap(map, store);
 }
 

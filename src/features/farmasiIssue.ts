@@ -15,6 +15,16 @@ import { HOSPITAL_NAME } from './shared/config';
 
 const LIST_URL = '/public/antrian-farmasi-v2/list-antrian-v2';
 
+/** Escape HTML special chars utk interpolasi aman ke innerHTML (server data). */
+function esc(s: unknown): string {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 async function fetchRows(): Promise<Array<Record<string, unknown>>> {
   // Kontrak endpoint (verifikasi live 2026-08-15): GET ?type=data_call →
   // PHP "Undefined index: id_unit" (HTML, bukan JSON) & POST data_call → [].
@@ -156,10 +166,10 @@ async function renderRows(rows: Array<Record<string, unknown>>): Promise<void> {
         return (
           '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;padding:4px 6px;">' +
           '<b style="color:#0f5132;min-width:52px;">' +
-          t.code +
+          esc(t.code) +
           '</b>' +
           '<span style="flex:1;color:#495057;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
-          (name.get(id) || '') +
+          esc(name.get(id) || '') +
           '</span>' +
           '<button class="ext-issue-call" data-idx="' +
           idx +
@@ -246,13 +256,13 @@ function openPrint(rows: Array<Record<string, unknown>>): void {
             '</div>' +
             '<div style="font-size:9px;margin-bottom:4px;">Antrian Farmasi</div>' +
             '<div style="font-size:30px;font-weight:700;letter-spacing:1px;">' +
-            k +
+            esc(k) +
             '</div>' +
             '<div style="font-size:11px;margin-top:3px;">' +
-            (name.get(id) || '') +
+            esc(name.get(id) || '') +
             '</div>' +
             '<div style="font-size:9px;color:#333;">' +
-            (unit.get(id) || '') +
+            esc(unit.get(id) || '') +
             '</div>' +
             '</div>'
           );
@@ -310,13 +320,13 @@ function openPrintOne(rows: Array<Record<string, unknown>>, idx: number): void {
         '</div>' +
         '<div style="font-size:10px;">Antrian Farmasi</div>' +
         '<div style="font-size:34px;font-weight:700;letter-spacing:1px;margin:6px 0;">' +
-        (nomorKe || '') +
+        esc(nomorKe) +
         '</div>' +
         '<div style="font-size:13px;">' +
-        nama +
+        esc(nama) +
         '</div>' +
         '<div style="font-size:10px;color:#333;">' +
-        (jenis + (unit ? ' · ' + unit : '')) +
+        esc(jenis + (unit ? ' · ' + unit : '')) +
         '</div>' +
         '<div style="font-size:9px;color:#555;margin-top:6px;">Silakan menunggu panggilan</div>' +
         '</div>';

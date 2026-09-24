@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { sanitizeHtml } from '../shared/sanitizeHtml.js';
 
 interface Props {
   data: Record<string, string>;
@@ -60,7 +61,7 @@ export function ConsultationInfoPanel({ data }: Props) {
       setContents((prev) => ({
         ...prev,
         [tabId]: res?.success
-          ? res.html
+          ? sanitizeHtml(res.html)
           : `<div style="color:red;padding:20px;">Gagal memuat</div>`,
       }));
     } catch {

@@ -2,14 +2,14 @@
 setlocal
 
 REM =====================================================================
-REM  MORBIS Ext — UPDATE MAIN SATU KLIK (Windows)
+REM  MORBIS Ext -- UPDATE MAIN SATU KLIK (Windows)
 REM  Untuk PC pemakai (branch main = dist siap pakai, tanpa build/Node):
 REM   - Install Git kalau PC belum punya (via winget, otomatis)
 REM   - Clone branch main ke %USERPROFILE%\morbis-ext kalau belum ada
-REM   - RESET PAKSA ke main terbaru (tanpa merge — server rewrite history
+REM   - RESET PAKSA ke main terbaru (tanpa merge -- server rewrite history
 REM     tiap deploy, jadi "git pull" biasa macet/conflict & file setengah lama)
 REM   - Tampilkan versi terpasang untuk verifikasi
-REM   - Buka chrome://extensions → WAJIB klik tombol refresh + hard-reload
+REM   - Buka chrome://extensions -> WAJIB klik tombol refresh + hard-reload
 REM =====================================================================
 
 set "REPO_DIR=%USERPROFILE%\morbis-ext"
@@ -18,9 +18,12 @@ set "REPO_URL=https://github.com/adptra01/Ext-Morbis-Manap.git"
 REM ---------- 1/3 Tool: Git ----------
 git --version >nul 2>&1
 if errorlevel 1 (
-    echo [1/3] Git belum ada — install via winget...
+    echo [1/3] Git belum ada -- install via winget...
     winget install -e --id Git.Git --accept-package-agreements --accept-source-agreements
     if errorlevel 1 goto :fail
+    REM winget tidak menyegarkan PATH sesi cmd ini - tambahkan manual lalu verifikasi.
+    set "PATH=%ProgramFiles%\Git\cmd;%LOCALAPPDATA%\Programs\Git\cmd;%ProgramFiles(x86)%\Git\cmd;%PATH%"
+    where git >nul 2>&1 || goto :fail
 ) else (
     echo [1/3] Git sudah ada
 )
@@ -65,5 +68,5 @@ goto :eof
 :fail
 echo.
 echo [GAGAL] Screenshot jendela ini dan kirim ke admin.
-pause
+timeout /t 15 >nul
 exit /b 1

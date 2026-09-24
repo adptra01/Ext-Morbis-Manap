@@ -40,6 +40,15 @@ function log(...args: unknown[]): void {
   console.log('[MORBIS Ext] penerimaanAntrolCetak:', ...args);
 }
 
+/** Escape HTML special chars utk interpolasi aman ke innerHTML (server data). */
+function esc(s: unknown): string {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 /** Fetch data resep → ID_VISIT, ID_PASIEN, WAKTU_PENGAJUAN (butuh sesi MORBIS). */
 async function fetchDataResep(nomorResep: string): Promise<Record<string, unknown>> {
   const res = await fetch(
@@ -203,7 +212,7 @@ async function handleNoAntrian(idResep: string): Promise<void> {
       const btnInCell = antrianCell.querySelector('button');
       const btnHtml = btnInCell ? btnInCell.outerHTML : '';
       antrianCell.innerHTML =
-        `${publicNumber}<br>Shift : ${shift || '-'}` + (btnHtml ? '<br>' + btnHtml : '');
+        `${esc(publicNumber)}<br>Shift : ${esc(shift || '-')}` + (btnHtml ? '<br>' + btnHtml : '');
       antrianCell.setAttribute('data-ext-code', publicNumber);
       antrianCell.setAttribute('data-ext-resep', idResep);
       markCetakUlang(antrianCell, publicNumber, idResep);

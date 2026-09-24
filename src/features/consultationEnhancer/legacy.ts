@@ -1,3 +1,5 @@
+import { sanitizeHtml } from '../shared/sanitizeHtml.js';
+
 const PATIENT_INFO_TABS = [
   {
     id: 'resep',
@@ -882,14 +884,16 @@ export function loadTabContent(
     dataType: 'html',
     data: ajaxData,
     success: (response: string) => {
-      target.innerHTML = response;
+      target.innerHTML = sanitizeHtml(response);
       target.querySelectorAll('[style*="margin-top"]').forEach((el) => {
         el.style.marginTop = '0';
       });
     },
     error: (_xhr: unknown, _status: string, error: string) => {
       target.innerHTML =
-        '<div style="text-align:center;padding:40px;color:red;">Gagal memuat: ' + error + '</div>';
+        '<div style="text-align:center;padding:40px;color:red;">Gagal memuat: ' +
+        esc(error) +
+        '</div>';
     },
   });
 }
@@ -957,7 +961,9 @@ function filterTableCols(html: string, keepHeaders: string[]): string {
       if (cells[i]) (cells[i] as HTMLElement).style.display = 'none';
     });
   });
-  return d.innerHTML;
+  // Sanitasi sebelum dikembalikan: HTML server dilempar ke pemanggil yang
+  // memasangnya via innerHTML — buang script/on* agar tak jadi XSS di modal.
+  return sanitizeHtml(d.innerHTML);
 }
 
 const CPPT_WAKTU_KW = ['waktu', 'masuk', 'tanggal'];
@@ -994,7 +1000,9 @@ function toCpptCards(html: string): string {
     const fields: string[] = [];
     labels.forEach((label, i) => {
       if (i >= cells.length || skipIdx.has(i)) return;
-      const val = cells[i].innerHTML.trim();
+      // Isi cell adalah HTML server mentah — sanitasi agar on*/script tak
+      // ikut masuk ke string kartu yang nantinya di-render via innerHTML.
+      const val = sanitizeHtml(cells[i].innerHTML.trim());
       fields.push(
         `<div class="cons-cppt-row"><span class="cons-cppt-label">${esc(label)}</span><div class="cons-cppt-value">${val}</div></div>`,
       );

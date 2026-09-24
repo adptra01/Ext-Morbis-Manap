@@ -1,0 +1,143 @@
+{
+  "nodes": [
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_md",
+      "label": "PANDUAN_DEPLOYMENT.md",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment_operasional_morbis_ext_unofficial",
+      "label": "Panduan Deployment & Operasional \u2014 MORBIS Ext Unofficial",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_1_prasyarat_alur_deploy",
+      "label": "1. Prasyarat & Alur Deploy",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L15"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_2_install_di_pc_rs_jalur_b_policy_crx",
+      "label": "2. Install di PC RS (Jalur B \u2014 policy CRX)",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L41"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_3_auto_update_mekanisme",
+      "label": "3. Auto-update \u2014 Mekanisme",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L73"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_4_uninstall",
+      "label": "4. Uninstall",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L92"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_5_keamanan_baca_sebelum_mengaktifkan_fitur_casemix_phi",
+      "label": "5. KEAMANAN \u2014 BACA SEBELUM MENGAKTIFKAN FITUR CASEMIX/PHI",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L113"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_6_troubleshooting_singkat",
+      "label": "6. Troubleshooting Singkat",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L126"
+    },
+    {
+      "id": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_referensi_cepat",
+      "label": "Referensi cepat",
+      "file_type": "document",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L139"
+    }
+  ],
+  "edges": [
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_md",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment_operasional_morbis_ext_unofficial",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment_operasional_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_1_prasyarat_alur_deploy",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment_operasional_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_2_install_di_pc_rs_jalur_b_policy_crx",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L41",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment_operasional_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_3_auto_update_mekanisme",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L73",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment_operasional_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_4_uninstall",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L92",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment_operasional_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_5_keamanan_baca_sebelum_mengaktifkan_fitur_casemix_phi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L113",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment_operasional_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_6_troubleshooting_singkat",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L126",
+      "weight": 1.0
+    },
+    {
+      "source": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_panduan_deployment_operasional_morbis_ext_unofficial",
+      "target": "mnt_diskd_projects_ext_morbis_manap_deploy_panduan_deployment_referensi_cepat",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "deploy/PANDUAN_DEPLOYMENT.md",
+      "source_location": "L139",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

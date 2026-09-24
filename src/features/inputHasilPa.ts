@@ -83,6 +83,8 @@ import '../ui/web/ext-btn';
    */
   const KEEP_FIELDS = ['dok_luar', 'nama_rs'];
   const keepBest: Record<string, string> = {};
+  /** FIX: ID interval poller keep-case — di-clear saat pagehide. */
+  let _keepCaseIntervalId: number | null = null;
 
   function camelWords(s: string): string {
     return s
@@ -230,7 +232,8 @@ import '../ui/web/ext-btn';
     document.addEventListener('focusout', () => snapEvent(), true);
     document.addEventListener('submit', () => snapEvent(), true);
     patchXhrKeepCase();
-    window.setInterval(pollKeep, 300);
+    // FIX: simpan ID interval agar bisa di-clear saat pagehide
+    _keepCaseIntervalId = window.setInterval(pollKeep, 300);
     window.console.info('[paKeepCase] aktif di input-hasil-pa');
   }
 
@@ -414,4 +417,13 @@ import '../ui/web/ext-btn';
     setTimeout(injectUi, 100);
   };
   window.addEventListener('popstate', () => setTimeout(injectUi, 100));
+
+  // FIX: hentikan interval poller keep-case saat halaman benar-benar
+  // ditinggalkan (pagehide) agar tidak menggantung di tab/background.
+  window.addEventListener('pagehide', () => {
+    if (_keepCaseIntervalId !== null) {
+      clearInterval(_keepCaseIntervalId);
+      _keepCaseIntervalId = null;
+    }
+  });
 })();

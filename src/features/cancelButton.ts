@@ -181,6 +181,9 @@ import { confirmExt } from '../ui/web';
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: 'idRadiologi=' + encodeURIComponent(id),
+            // FIX: timeout 15s — server lambat jangan bikin konfirmasi hang
+            // selamanya; catch di bawah menampilkan error ramah.
+            signal: AbortSignal.timeout(15000),
           })
             .then((r) => r.json())
             .then((data) => {

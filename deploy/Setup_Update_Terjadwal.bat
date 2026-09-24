@@ -1,6 +1,6 @@
 @echo off
 REM ============================================================
-REM  MORBIS Ext — UPDATE TERJADWAL (JALUR CADANGAN A)
+REM  MORBIS Ext -- UPDATE TERJADWAL (JALUR CADANGAN A)
 REM  Membuat tugas Windows: jalankan morbis-update-main.bat tiap
 REM  hari pukul 05:00 agar file ekstensi di PC selalu mengikuti
 REM  branch main terbaru.
@@ -20,6 +20,17 @@ REM ============================================================
 
 schtasks /Create /F /TN "Morbis Ext Update" /TR "\"%USERPROFILE%\morbis-ext\morbis-update-main.bat\"" /SC DAILY /ST 05:00
 
+REM ------------------------------------------------------------------
+REM  OPSI (hanya dokumentasi - flag schtasks di atas sengaja TIDAK diubah):
+REM  Task di atas berjalan HANYA saat user LOGGED ON. Kalau PC mati atau
+REM  menyala lewat pukul 05:00, update terlewat (task tidak dijalankan ulang
+REM  otomatis). Agar task tetap jalan walau user TIDAK login, buat dengan
+REM  akun ADMIN berpassword memakai /RU SYSTEM (atau akun service), contoh:
+REM    schtasks /Create /F /TN "Morbis Ext Update" /TR "\"...\morbis-update-main.bat\"" /SC DAILY /ST 05:00 /RU SYSTEM /RL HIGHEST
+REM  Catatan: /RU SYSTEM berjalan non-interaktif - pakai hanya karena
+REM  morbis-update-main.bat murni otomatis (tidak perlu klik apa pun).
+REM ------------------------------------------------------------------
+
 if %errorLevel% == 0 (
     echo.
     echo ===== SUKSES =====
@@ -33,4 +44,5 @@ if %errorLevel% == 0 (
     echo Jalankan script ini sebagai Administrator.
 )
 echo.
-pause
+echo Jendela ditutup otomatis dalam 15 detik...
+timeout /t 15 >nul

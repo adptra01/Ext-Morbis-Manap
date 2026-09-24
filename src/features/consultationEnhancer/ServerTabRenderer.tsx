@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { sanitizeHtml } from '../shared/sanitizeHtml.js';
 
 interface Props {
   html: string;
@@ -20,5 +21,11 @@ export default function ServerTabRenderer({ html }: Props) {
     return () => el.removeEventListener('click', handler);
   }, [html]);
 
-  return <div ref={ref} className="cons-raw-html" dangerouslySetInnerHTML={{ __html: html }} />;
+  return (
+    <div
+      ref={ref}
+      className="cons-raw-html"
+      dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }}
+    />
+  );
 }

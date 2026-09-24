@@ -1,11 +1,17 @@
 (function () {
   if (!window.location.pathname.includes('laporan-kasir')) return;
 
-  (function pollFlag() {
+  // Gate: atribut data-ext-laporan-kasir-time di-set init.ts (document_end,
+  // SETELAH loadConfig async) — content script MAIN bisa jalan lebih dulu.
+  // Polling singkat 500ms × 20 (max 10s) — pola sama spt whenAntrianFarmasiActive.
+  (function pollFlag(attempt: number) {
     const flag = document.documentElement.getAttribute('data-ext-laporan-kasir-time');
-    if (flag !== '1') return; // gate ketat: extension disabled / role tak sesuai → tidak jalan
-    run();
-  })();
+    if (flag === '1') {
+      run();
+      return;
+    }
+    if (attempt < 20) window.setTimeout(() => pollFlag(attempt + 1), 500);
+  })(0);
 
   function run() {
     const pad = (n: number) => (n < 10 ? '0' : '') + n;
@@ -117,19 +123,41 @@
       });
     }
 
-    // Flatpickr
+    // Flatpickr (CDN). Duplicate-guard: applyPicker() dipanggil 3× (sekali +
+    // timeout 2s/5s). Tanpa guard, <link>/<script> CDN ditambah DOBEL (ganggu
+    // offline: script tag kedua ikut gagal) dan flatpickr di-apply 2× ke input
+    // yang sama → dua instance picker menumpuk.
+    let _fpLoaded = false; // flatpickr sudah tersedia (native / CDN sukses)
+    let _fpLoading = false; // script CDN sedang dimuat — jangan tambah tag lagi
+    let _fpQueue: Array<() => void> = []; // callback menunggu onload selesai
     function loadFlatpickr(cb: () => void) {
       if ((window as any).flatpickr) {
         cb();
         return;
       }
+      if (_fpLoaded) return; // muat sebelumnya gagal — jangan spam CDN
+      _fpQueue.push(cb);
+      if (_fpLoading) return; // tag CDN sudah ada — callback antri di onload
+      _fpLoading = true;
       const l = document.createElement('link');
+      l.id = 'ext-flatpickr-css';
       l.rel = 'stylesheet';
       l.href = 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css';
       document.head.appendChild(l);
       const s = document.createElement('script');
+      s.id = 'ext-flatpickr-js';
       s.src = 'https://cdn.jsdelivr.net/npm/flatpickr';
-      s.onload = cb;
+      s.onload = () => {
+        _fpLoading = false;
+        _fpLoaded = true;
+        const q = _fpQueue;
+        _fpQueue = [];
+        q.forEach((fn) => fn());
+      };
+      s.onerror = () => {
+        _fpLoading = false;
+        _fpQueue = [];
+      };
       document.head.appendChild(s);
     }
 
@@ -148,6 +176,9 @@
       ['awal', 'akhir'].forEach(function (id) {
         const el = document.getElementById(id) as HTMLInputElement | null;
         if (!el) return;
+        // flatpickr menyimpan instance di el._flatpickr — sudah ter-apply →
+        // skip (applyPicker dipanggil beberapa kali; tanpa guard picker dobel).
+        if ((el as any)._flatpickr) return;
         if (el.classList.contains('hasDatepicker')) el.classList.remove('hasDatepicker');
         try {
           (window as any).flatpickr('#' + id, {

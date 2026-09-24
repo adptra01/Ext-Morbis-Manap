@@ -30,7 +30,6 @@ REM  Sinkronisasi dijaga otomatis oleh CI (guard di deploy-to-main.yml).
 REM ============================================================
 set EXT_ID=beljnjfifmncnfnhdkcmjpeonoigdnbl
 set UPDATE_URL=https://adptra01.github.io/Ext-Morbis-Manap/update.xml
-set EXT_SOURCE=https://adptra01.github.io/*
 
 REM Validasi EXT_ID harus tepat 32 karakter (a-p).
 call :StrLen
@@ -70,8 +69,10 @@ call :KillBrowsers
 timeout /t 2 /nobreak >nul
 
 echo [2/6] Membersihkan policy MORBIS lama...
-REM Key Forcelist/Allowlist/Sources di bawah dikelola installer ini -
-REM dihapus dulu agar ID lama tidak tersisa, lalu ditulis ulang.
+REM HANYA nilai MORBIS di Forcelist yang dihapus (value "1" yang ditulis
+REM installer ini) - key Forcelist/Allowlist/Sources TIDAK pernah dihapus
+REM seluruhnya agar ekstensi lain yang dikelola IT tetap utuh.
+REM Backup registry per browser dulu (path dicetak di bawah).
 for %%P in (
     "Google\Chrome"
     "Microsoft\Edge"
@@ -80,9 +81,9 @@ for %%P in (
     "Opera Software\Opera"
     "Chromium"
 ) do (
-    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionInstallForcelist" /f /reg:64 >nul 2>&1
-    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionInstallAllowlist" /f /reg:64 >nul 2>&1
-    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionInstallSources" /f /reg:64 >nul 2>&1
+    reg export "HKLM\SOFTWARE\Policies\%%~P" "%TEMP%\morbis-ext-backup-%%~nxP.reg" /y >nul 2>&1
+    echo    backup policy %%~P -^> %TEMP%\morbis-ext-backup-%%~nxP.reg
+    reg delete "HKLM\SOFTWARE\Policies\%%~P\ExtensionInstallForcelist" /v "1" /f /reg:64 >nul 2>&1
     REM Hapus subkey AutoplayAllowed yang salah (dibuat installer lama).
     reg delete "HKLM\SOFTWARE\Policies\%%~P\AutoplayAllowed" /f /reg:64 >nul 2>&1
     REM Hapus ExtensionSettings khusus MORBIS (ID baru + ID lama).
@@ -104,10 +105,6 @@ for %%P in (
     echo   - %%~P
     REM Forcelist: auto-install + auto-update dari update.xml.
     reg add "!BASE!\ExtensionInstallForcelist" /v "1" /t REG_SZ /d "!EXT_ID!;!UPDATE_URL!" /f /reg:64 >nul 2>&1
-    REM Allowlist: wajib di Chromium yang ketat (terutama Edge).
-    reg add "!BASE!\ExtensionInstallAllowlist" /v "1" /t REG_SZ /d "!EXT_ID!" /f /reg:64 >nul 2>&1
-    REM Sources: izinkan install CRX dari domain GitHub Pages (non-Store).
-    reg add "!BASE!\ExtensionInstallSources" /v "1" /t REG_SZ /d "!EXT_SOURCE!" /f /reg:64 >nul 2>&1
     REM ExtensionSettings: kunci update_url agar tidak balik ke Store.
     reg add "!BASE!\ExtensionSettings\!EXT_ID!" /v "installation_mode" /t REG_SZ /d "force_installed" /f /reg:64 >nul 2>&1
     reg add "!BASE!\ExtensionSettings\!EXT_ID!" /v "update_url" /t REG_SZ /d "!UPDATE_URL!" /f /reg:64 >nul 2>&1

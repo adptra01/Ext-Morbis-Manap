@@ -59,6 +59,11 @@ jobs:
           NODE_ENV: production
         run: npm run build
 
+      # Feature audit: pastikan registrasi fitur (id/match/run) sinkron dengan
+      # matrix regresi - gagalkan job bila meleset (scripts/audit-features.mjs).
+      - name: Audit features
+        run: npm run audit
+
       # Auto-update enterprise mesin farmasi: CRX3 signed + update.xml.
       # Key .pem dari secret CRX_SIGNING_KEY (tidak pernah masuk repo).
       # --require-key → gagal keras kalau secret hilang, agar auto-update
@@ -79,6 +84,14 @@ jobs:
           XML_VER=$(grep -oP "updatecheck codebase='[^']*' version='\K[0-9.]+" deploy/update.xml | head -1)
           test "$XML_VER" = "$VERSION" || { echo "::error::versi update.xml ($XML_VER) != manifest ($VERSION)"; exit 1; }
           echo "Guard OK: EXT_ID=$CRX_EXT_ID, update.xml v$XML_VER"
+
+      # Guard ke-4 (sebelum commit deploy): jangan pernah menyebarkan private
+      # key (.pem) ke main/Pages - CRX sudah ditandatangani CI pakai secret.
+      # (nilai name di-quote: colon+spasi di compact mapping membuat
+      # prettier/yaml gagal parse → pre-commit lint-staged menolak.)
+      - name: 'Guard: no .pem in deploy payload'
+        run: |
+          find deploy dist -name '*.pem' | grep -q . && { echo "::error::Private key would be deployed"; exit 1; } || true
 
       - name: Deploy dist + docs → main (orphan-style)
         run: |

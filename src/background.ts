@@ -2,7 +2,7 @@ import { MessageTypes } from './shared/messaging';
 import type { ExtensionConfig, CustomUrl } from './shared/types';
 import type { MessagePayload } from './types.js';
 import { createLogger } from './shared/logger';
-import { buildTtsUrl } from './features/shared/casemixApi.js';
+import { buildTtsUrl, sanitizeTtsText } from './features/shared/casemixApi.js';
 
 const log = createLogger('Background');
 
@@ -97,6 +97,33 @@ const DEFAULT_CUSTOM_URLS: CustomUrl[] = [
   { id: 'default-1', url: 'http://192.168.8.4', enabled: true, isDefault: true },
   { id: 'default-2', url: 'http://103.147.236.140', enabled: true, isDefault: true },
 ];
+
+// --- Allowlist host untuk PROXY_FETCH / QUEUE_API (guard SSRF) ---
+// Service worker mem-fetch URL atas nama halaman/side panel; hanya host
+// milik RS yang boleh: server Reports (suffix .rsudkotajambi.id +
+// 103.147.236.138 — set sama dengan CASEMIX/FARMASI allowlist), host MORBIS
+// asli (192.168.8.4, 103.147.236.140 — lihat DEFAULT_CUSTOM_URLS) dan
+// localhost untuk dev. Di luar daftar → ditolak, tanpa fetch.
+const PROXY_ALLOWED_HOSTS = [
+  '192.168.8.4',
+  '103.147.236.140',
+  '103.147.236.138',
+  'localhost',
+  '127.0.0.1',
+];
+const PROXY_ALLOWED_SUFFIX = '.rsudkotajambi.id';
+
+function isAllowedProxyUrl(raw: string): boolean {
+  try {
+    const u = new URL(raw);
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+    const h = u.hostname.toLowerCase();
+    if (PROXY_ALLOWED_HOSTS.includes(h)) return true;
+    return h.endsWith(PROXY_ALLOWED_SUFFIX);
+  } catch {
+    return false;
+  }
+}
 
 const DEFAULT_CONFIG: ExtensionConfig = {
   extensionEnabled: true,
@@ -583,8 +610,17 @@ chrome.runtime.onMessage.addListener(
       case 'PROXY_FETCH': {
         (async () => {
           try {
+            // SSRF guard: hanya pesan dari ekstensi sendiri + URL ber-allowlist.
+            if (_sender?.id !== chrome.runtime.id) {
+              sendResponse({ success: false, error: 'forbidden sender' });
+              return;
+            }
             const { url, method = 'GET', data } = validated as unknown as Record<string, unknown>;
-            let fetchUrl = url as string;
+            if (typeof url !== 'string' || !isAllowedProxyUrl(url)) {
+              sendResponse({ success: false, error: 'URL di luar allowlist host RS' });
+              return;
+            }
+            let fetchUrl = url;
             const opts: RequestInit = {
               method: method as string,
               credentials: 'include' as RequestCredentials,
@@ -625,6 +661,16 @@ chrome.runtime.onMessage.addListener(
               method?: string;
               body?: unknown;
             };
+            // SSRF guard: sama seperti PROXY_FETCH — hanya pesan ekstensi
+            // sendiri + host allowlist RS.
+            if (_sender?.id !== chrome.runtime.id) {
+              sendResponse({ ok: false, error: 'forbidden sender' });
+              return;
+            }
+            if (typeof url !== 'string' || !isAllowedProxyUrl(url)) {
+              sendResponse({ ok: false, error: 'URL di luar allowlist host RS' });
+              return;
+            }
             const opts: RequestInit = { method: method as string, cache: 'no-store' };
             if (body !== undefined && body !== null) {
               opts.body = JSON.stringify(body);
@@ -702,7 +748,9 @@ chrome.runtime.onMessage.addListener(
               if (cfg && cfg.features?.ttsServer && cfg.features.ttsServer.enabled === false) {
                 throw new Error('tts-server-off');
               }
-              r = await fetchTts(buildTtsUrl(text));
+              // PHI guard TTS: nama pasien tidak boleh masuk URL (GET /api/tts
+              // tercatat di log server) → teks dibersihkan dulu.
+              r = await fetchTts(buildTtsUrl(sanitizeTtsText(text)));
             }
             void ttsCacheSet(text, r.mime, r.data); // best-effort, jangan tunggu
             sendResponse({ ok: true, mime: r.mime, data: r.data });
@@ -801,6 +849,15 @@ function validateMessage(msg: unknown): MessagePayload | null {
   if (!msg || typeof msg !== 'object') return null;
   const m = msg as Record<string, unknown>;
   if (typeof m.type !== 'string' || !VALID_ACTIONS.includes(m.type as never)) return null;
+  // Validasi bentuk payload minimal per-tipe (anti payload korup/asing).
+  // Field URL diharuskan string (bentuk/shape saja; host di-allowlist di
+  // handler PROXY_FETCH/QUEUE_API), field wajib lain dicek seperlunya.
+  if (m.type === 'PROXY_FETCH' || m.type === 'QUEUE_API') {
+    if (typeof m.url !== 'string') return null;
+  }
+  if (m.type === 'TTS_LOCAL') {
+    if (typeof m.text !== 'string') return null;
+  }
   return m as unknown as MessagePayload;
 }
 

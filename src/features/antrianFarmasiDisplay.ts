@@ -45,7 +45,7 @@
  * gate data-ext-antrian-farmasi di init.ts.
  */
 import { nextHealth, type HealthState } from './shared/wsHealth';
-import { buildTtsUrl } from './shared/casemixApi.js';
+import { buildTtsUrl, sanitizeTtsText } from './shared/casemixApi.js';
 // Display jalan di world MAIN tanpa chrome.runtime → akses QueueManager via
 // bridge (postMessage ke isolated world) — getQueueState/issuePending bridge.
 import { getQueueState, markCalled, reset } from './shared/farmasiQueueBridge';
@@ -1323,7 +1323,12 @@ declare global {
   // pihak ketiga mana pun. Sub-fallback: kalau fetch diblokir CORS, mainkan
   // Audio langsung dari URL (audio element tidak kena CORS untuk playback).
   function speakServerMp3(text: string, timeoutMs = 15000): Promise<boolean> {
-    const url = buildTtsUrl(text);
+    // PHI guard: teks dikirim sebagai query-string GET /api/tts (tercatat di
+    // log server). Nama pasien dari producer (announce: "atas nama <nama>")
+    // dibuang sebelum keluar mesin — konsisten dgn background.fetchTts &
+    // farmasiBridge. Suara lokal (layer 0–3) tetap menyebut nama via mesin
+    // audio lokal (tidak meninggalkan kiosk). Lihat sanitizeTtsText.
+    const url = buildTtsUrl(sanitizeTtsText(text));
     return new Promise((resolve) => {
       let settled = false;
       let objUrl: string | null = null;

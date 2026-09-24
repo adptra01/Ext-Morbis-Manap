@@ -1,3 +1,10 @@
+// ============================================================================
+// DEPRECATED: deploy satu-klik manual ke branch gh-pages (subtree dist, legacy).
+// Sudah digantikan CI (.github/workflows/deploy-to-main.yml): tiap push dev ->
+// bump versi -> build -> pack CRX3 signed -> orphan deploy ke main + Pages.
+// File ini dipertahankan sebagai arsip - JANGAN dijalankan.
+// Perilaku sengaja TIDAK diubah.
+// ============================================================================
 import { execSync } from 'child_process';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';

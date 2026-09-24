@@ -31,6 +31,38 @@ export const CENTRAL_TIMEOUT_MS = 25000;
 const CASEMIX_ALLOWED_HOSTS = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'];
 const CASEMIX_ALLOWED_SUFFIX = '.rsudkotajambi.id';
 
+/* ── Kill switch PHI (keamanan client-side) ──
+ *
+ * SEMUA endpoint yang membawa data kesehatan pasien (pre-op, revisi BPJS,
+ * resume-history) HANYA boleh berjalan lewat https:. Sampai server Reports
+ * migrasi HTTPS (tugas ops, server-side), nilai fallback masih http: sehingga
+ * gerbang tunggal di bawah memblokir setiap panggilan PHI — fail fast, TANPA
+ * mengirim apa pun — dan memberi pesan ramah ke konsol/pemanggil.
+ * Atur false HANYA bila tim menerima risiko plaintext (tidak disarankan). */
+export const CASEMIX_HTTPS_REQUIRED = true;
+
+/** Pesan ramah yang dipakai saat transport non-HTTPS memblokir panggilan PHI. */
+export const CASEMIX_HTTPS_LOCK_REASON = 'Fitur nonaktif: server Reports belum HTTPS';
+
+/**
+ * Gerbang tunggal kill-switch: kembalikan alasan blokir bila base efektif
+ * masih http: (PHI tidak boleh lewat plaintext), null bila aman (https:).
+ * Satu-satunya jalur keluar-masuk endpoint PHI di modul ini adalah
+ * getJson/postFireForget — keduanya memanggil gerbang ini sebelum fetch —
+ * plus pemanggil eksternal (resumeHistory.postToReports) yang ikut pakai.
+ * Allowlist host tidak diubah: tetap dipakai resolution (resolveCasemixBase),
+ * di sini kita hanya menegakkan protokol transport.
+ */
+export function casemixTransportBlockReason(baseUrl?: string): string | null {
+  if (!CASEMIX_HTTPS_REQUIRED) return null;
+  try {
+    const u = new URL(baseUrl ?? resolveCasemixBase());
+    return u.protocol === 'https:' ? null : CASEMIX_HTTPS_LOCK_REASON;
+  } catch {
+    return CASEMIX_HTTPS_LOCK_REASON;
+  }
+}
+
 export function isAllowedCasemixBase(url: string): boolean {
   try {
     const u = new URL(url);
@@ -68,6 +100,31 @@ export function buildTtsUrl(text: string, lang: string = 'id'): string {
   );
 }
 
+/** Buang nama pasien dari teks TTS sebelum dikirim ke server — teks TTS
+ *  dikirim sebagai query-string URL (GET /api/tts) yang tercatat di log
+ *  server; nama pasien (PHI) tidak boleh lewat. Teks produksi display
+ *  farmasi: "Antrian resep obat, atas nama <NAMA>. Silakan ke loket
+ *  farmasi." → disederhanakan ke sapaan generik. Dipakai background
+ *  (TTS_LOCAL) dan farmasiBridge (forward ke SW). */
+export function sanitizeTtsText(text: string): string {
+  const t = String(text ?? '').trim();
+  if (!t) return t;
+  // Template display farmasi (antrianFarmasiDisplay.announce): klausul nama
+  // satu-satunya sumber PHI → sapaan generik (producer memang tidak menyebut
+  // nomor antrian di teks, lihat komentar announce()).
+  if (/^antrian\s+resep\s+obat/i.test(t) && /atas\s+nama/i.test(t)) {
+    return 'Antrian resep obat. Silakan ke loket farmasi.';
+  }
+  // Fallback umum: buang klausul "atas nama <...>" sampai akhir kalimat
+  // (mis. "Nomor antrian A-001, ke loket ..., atas nama <nama>.").
+  return t
+    .replace(/[,;]?\s*atas\s+nama\s+[^.!?]*[.!?]?\s*/gi, '')
+    .replace(/,\s*,/g, ',')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/[,\s]+([.!?])/g, '$1')
+    .trim();
+}
+
 /** Potong daftar id menjadi unik, bersih, maks 500 (batas API). */
 export function normalizeIds(ids: Array<string | number>): string[] {
   return [...new Set(ids.map((s) => String(s).trim()).filter(Boolean))].slice(0, BATCH_MAX);
@@ -89,8 +146,15 @@ async function fetchTimeout(
 
 async function getJson<T>(path: string, fetcher: typeof fetch = fetch): Promise<T | null> {
   try {
+    const base = resolveCasemixBase();
+    const locked = casemixTransportBlockReason(base);
+    if (locked) {
+      // Kill switch PHI: fail fast TANPA mengirim apa pun ke server http:.
+      console.warn('[casemixApi]', locked, '— baca pusat dilewati:', path);
+      return null;
+    }
     const res = await fetchTimeout(
-      resolveCasemixBase() + path,
+      base + path,
       { cache: 'no-store', credentials: 'omit', headers: { Accept: 'application/json' } },
       fetcher,
     );
@@ -107,9 +171,16 @@ function postFireForget(
   fetcher: typeof fetch = fetch,
 ): Promise<void> {
   try {
+    const base = resolveCasemixBase();
+    const locked = casemixTransportBlockReason(base);
+    if (locked) {
+      // Kill switch PHI: fail fast TANPA mengirim apa pun ke server http:.
+      console.warn('[casemixApi]', locked, '— kirim pusat dilewati:', path);
+      return Promise.resolve();
+    }
     const ctrl = new AbortController();
     const t = globalThis.setTimeout(() => ctrl.abort(), CENTRAL_TIMEOUT_MS);
-    return fetcher(resolveCasemixBase() + path, {
+    return fetcher(base + path, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(payload),
@@ -152,10 +223,13 @@ export function togglePreOpCentral(
     {
       id_visit: idVisit,
       marked,
+      // PII diminimalkan: nama & no_reg TIDAK dikirim — konsumen klien
+      // (mKlaimCasemixExport) hanya memakai marked_at/user, dan identitas
+      // pasien dibaca ulang dari baris tabel (mKlaimPreOp.extractPatientInfo).
       norm: info.norm ?? null,
-      nama: info.nama ?? null,
-      no_reg: info.noReg ?? null,
       user: info.user ?? null,
+      // TODO(server): remove PII from payload — norm & user masih penciri
+      // pasien/petugas; hapus setelah kontrak server mengizinkan.
     },
     fetcher,
   );

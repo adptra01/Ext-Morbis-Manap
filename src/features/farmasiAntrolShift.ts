@@ -108,17 +108,27 @@ function getField(id: string, fallbackName?: string): string {
   );
 }
 
+/** Escape HTML entities sebelum dimasukkan ke innerHTML — nomor antrian berasal
+ *  dari API eksternal lintas-server (lookupAntrianAny) → cegah stored XSS. */
+function escHtml(s: string | number | null | undefined): string {
+  return String(s ?? '').replace(
+    /[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string,
+  );
+}
+
 /** Render bar tombol aksi sesuai state: ready | issued (code). */
 function renderActionBar(state: 'ready' | 'issued', code?: string): void {
   const bar = document.querySelector<HTMLElement>('#ext-antrian-bar');
   if (!bar) return;
   const nomorResep = getField('nomor_resep', 'id_resep');
   if (state === 'issued' && code) {
+    const safeCode = escHtml(code);
     bar.innerHTML =
       '<div style="display: flex; flex-direction: column; align-items: flex-start; width: 100%; gap: 6px;">' +
       '<span style="font-size:18px;font-weight:800;color:#198754;line-height:1.3;">' +
       '✓ Sudah antri — ' +
-      code +
+      safeCode +
       '</span>' +
       '<div style="display: flex; gap: 6px;">' +
       '<button id="ext-antrian-cetak" class="btn" style="margin:0;background:#6c757d;color:#fff;border-color:#6c757d;" title="Cetak ulang kartu tanpa mengantrikan lagi">Cetak Kembali</button>' +

@@ -157,20 +157,33 @@ export function isVerifButton(el: HTMLElement): boolean {
   const onclick = el.getAttribute('onclick')?.toLowerCase() || '';
   const dataAction = el.getAttribute('data-action')?.toLowerCase() || '';
 
-  const isMatch =
+  // Selector presisi untuk tombol verif asli halaman detail M-KLAIM.
+  // Temuan (dari komentar isNavTab di atas + id terpakai di logUsage):
+  // tombol asli punya `id="btn-verif"` dan `onclick="verif(...)"`.
+  // `id.includes('verif')` dan `cls.includes('verifikasi')` yang dulu
+  // terlalu luas dihapus — keduanya bisa kena elemen tak terkait
+  // (id/class "verifikasi*") dan memicu snapshot PHI palsu.
+  const precise =
+    el.dataset.extVerif !== undefined ||
+    id === 'btn-verif' ||
+    id.startsWith('btn-verif') ||
+    cls.includes('btn-verif') ||
+    /(^|[;,\s])verif\s*\(/.test(onclick) ||
+    dataAction.includes('verif');
+
+  // Heuristik teks: HANYA diterima bila kelas juga menandai aksi verifikasi
+  // (harus cocok BERSAMAAN) — mencegah teks "verifikasi" saja (mis. tombol
+  // "Lihat Verifikasi"/nav) mencatat riwayat + POST PHI ke pusat.
+  const textMatches =
     text === 'verif' ||
     text === 'verifikasi' ||
     text.includes('verifikasi berkas') ||
     text.includes('simpan verif') ||
     val === 'verif' ||
-    val === 'verifikasi' ||
-    id.includes('verif') ||
-    cls.includes('btn-verif') ||
-    cls.includes('verifikasi') ||
-    onclick.includes('verif') ||
-    dataAction.includes('verif');
+    val === 'verifikasi';
+  const clsStrong = cls.includes('btn-verif') || cls.includes('verifikasi');
 
-  return isMatch;
+  return precise || (textMatches && clsStrong);
 }
 
 function attachVerifListeners(): void {

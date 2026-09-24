@@ -1,14 +1,4 @@
-'use strict';
-var __morbis_feature = (() => {
-  function H() {
-    return window;
-  }
-  var R = 'ext-batch-shared-style';
-  function S() {
-    if (document.getElementById(R)) return;
-    let e = document.createElement('style');
-    ((e.id = R),
-      (e.textContent = `
+"use strict";var __morbis_feature=(()=>{function A(){return window}var P="ext-batch-shared-style";function M(){if(document.getElementById(P))return;let e=document.createElement("style");e.id=P,e.textContent=`
     .ext-modal-content {
       background: #ffffff; border-radius: 16px; padding: 28px 32px;
       max-width: 860px; width: 95%; max-height: 85vh; overflow-y: auto;
@@ -163,106 +153,14 @@ var __morbis_feature = (() => {
     .ext-preview-item.success { color: #059669; }
     .ext-preview-item.error { color: #dc2626; }
     .ext-preview-item.pending { color: #64748b; }
-  `),
-      document.head.appendChild(e));
-  }
-  var f = {
-    search:
-      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
-    trash:
-      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>',
-    xClose:
-      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',
-    warning:
-      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 00-3.48 0l-8 14A2 2 0 004 21h16a2 2 0 001.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
-    eye: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
-    refresh:
-      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>',
-    upload:
-      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
-    file: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
-    check:
-      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
-    arrowRight:
-      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>',
-  };
-  function P(e, o) {
-    let r = o || 18;
-    return `<span style="display:inline-flex;align-items:center;justify-content:center;width:${r}px;height:${r}px;flex-shrink:0;">${e}</span>`;
-  }
-  async function M(e, o) {
-    try {
-      let r = await fetch(e, { method: 'GET', mode: 'cors', credentials: 'omit' });
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      let t = await r.blob(),
-        i = URL.createObjectURL(t);
-      A(i, o, e, () => URL.revokeObjectURL(i));
-    } catch {
-      A(e, o, e);
-    }
-  }
-  function A(e, o, r, t) {
-    let i = document.getElementById('ext-inline-preview-modal');
-    i && i.remove();
-    let u = o.toLowerCase().split('.').pop() || '',
-      d = u === 'pdf',
-      p = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(u),
-      n = document.createElement('div');
-    ((n.id = 'ext-inline-preview-modal'),
-      (n.style.cssText =
-        'position:fixed !important;top:0 !important;left:0 !important;width:100vw !important;height:100vh !important;background:rgba(15,23,42,0.88) !important;z-index:10001 !important;display:flex !important;align-items:center !important;justify-content:center !important;flex-direction:column !important;padding:20px !important;box-sizing:border-box !important;backdrop-filter:blur(8px) !important;-webkit-backdrop-filter:blur(8px) !important;'));
-    let a =
-      '<div class="ext-inline-preview-loading" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:#fff;"><div class="ext-inline-preview-spinner"></div><div style="font-size:14px;">Loading preview...</div></div>';
-    d
-      ? (a = `<iframe id="ext-inline-preview-iframe" src="${e}" style="width:100%;height:100%;border:none;display:block;border-radius:12px;"></iframe>`)
-      : p
-        ? (a = `<img id="ext-inline-preview-img" src="${e}" alt="Image Preview" style="width:100%;height:100%;border:none;display:block;object-fit:contain;border-radius:12px;">`)
-        : (a = `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:15px;color:#64748b;background:#f8fafc;flex-direction:column;gap:16px;border-radius:12px;">${f.file}<div>Preview not available for this format</div></div>`);
-    let c = o.replace(/"/g, '&quot;').replace(/</g, '&lt;');
-    if (
-      ((n.innerHTML = `
+  `,document.head.appendChild(e)}var m={search:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',trash:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>',xClose:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',warning:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 00-3.48 0l-8 14A2 2 0 004 21h16a2 2 0 001.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',eye:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',refresh:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>',upload:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',file:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',check:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',arrowRight:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>'};function z(e,n){let r=n||18;return`<span style="display:inline-flex;align-items:center;justify-content:center;width:${r}px;height:${r}px;flex-shrink:0;">${e}</span>`}async function D(e,n){try{let r=await fetch(e,{method:"GET",mode:"cors",credentials:"omit"});if(!r.ok)throw new Error(`HTTP ${r.status}`);let t=await r.blob(),i=URL.createObjectURL(t);R(i,n,e,()=>URL.revokeObjectURL(i))}catch{R(e,n,e)}}var E=null;function R(e,n,r,t){E&&E();let i=n.toLowerCase().split(".").pop()||"",p=i==="pdf",c=["jpg","jpeg","png","gif","webp"].includes(i),d=document.createElement("div");d.id="ext-inline-preview-modal",d.style.cssText="position:fixed !important;top:0 !important;left:0 !important;width:100vw !important;height:100vh !important;background:rgba(15,23,42,0.88) !important;z-index:10001 !important;display:flex !important;align-items:center !important;justify-content:center !important;flex-direction:column !important;padding:20px !important;box-sizing:border-box !important;backdrop-filter:blur(8px) !important;-webkit-backdrop-filter:blur(8px) !important;";let o='<div class="ext-inline-preview-loading" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;color:#fff;"><div class="ext-inline-preview-spinner"></div><div style="font-size:14px;">Loading preview...</div></div>';p?o=`<iframe id="ext-inline-preview-iframe" src="${e}" style="width:100%;height:100%;border:none;display:block;border-radius:12px;"></iframe>`:c?o=`<img id="ext-inline-preview-img" src="${e}" alt="Image Preview" style="width:100%;height:100%;border:none;display:block;object-fit:contain;border-radius:12px;">`:o=`<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:15px;color:#64748b;background:#f8fafc;flex-direction:column;gap:16px;border-radius:12px;">${m.file}<div>Preview not available for this format</div></div>`;let a=n.replace(/"/g,"&quot;").replace(/</g,"&lt;");d.innerHTML=`
     <div style="position:absolute;top:20px;right:20px;display:flex;gap:10px;align-items:center;background:rgba(15,23,42,0.8);padding:10px 16px;border-radius:12px;backdrop-filter:blur(12px);z-index:10002;border:1px solid rgba(255,255,255,0.1);">
-      <span style="color:#e2e8f0;font-size:13px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">${c}</span>
-      <button id="ext-preview-newtab" style="padding:7px 14px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:background 0.15s ease;display:inline-flex;align-items:center;gap:6px;">${f.arrowRight} Open Tab</button>
-      <button id="ext-preview-close" style="padding:7px 12px;background:rgba(255,255,255,0.1);color:#e2e8f0;border:1px solid rgba(255,255,255,0.15);border-radius:8px;cursor:pointer;font-size:16px;font-weight:500;transition:all 0.15s ease;line-height:1;">${f.xClose}</button>
+      <span style="color:#e2e8f0;font-size:13px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">${a}</span>
+      <button id="ext-preview-newtab" style="padding:7px 14px;background:#3b82f6;color:white;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:background 0.15s ease;display:inline-flex;align-items:center;gap:6px;">${m.arrowRight} Open Tab</button>
+      <button id="ext-preview-close" style="padding:7px 12px;background:rgba(255,255,255,0.1);color:#e2e8f0;border:1px solid rgba(255,255,255,0.15);border-radius:8px;cursor:pointer;font-size:16px;font-weight:500;transition:all 0.15s ease;line-height:1;">${m.xClose}</button>
     </div>
-    <div style="width:clamp(400px,90vw,1200px);height:clamp(300px,90vh,800px);background:white;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,0.4);overflow:hidden;position:relative;">${a}</div>
-  `),
-      document.body.appendChild(n),
-      document.getElementById('ext-preview-close')?.addEventListener('click', () => {
-        (t && t(), n.remove());
-      }),
-      document.getElementById('ext-preview-newtab')?.addEventListener('click', () => {
-        (window.open(r || e, '_blank'), t && t(), n.remove());
-      }),
-      n.addEventListener('click', (g) => {
-        g.target === n && (t && t(), n.remove());
-      }),
-      document.addEventListener('keydown', function g(m) {
-        m.key === 'Escape' && (t && t(), n.remove(), document.removeEventListener('keydown', g));
-      }),
-      d || p)
-    ) {
-      let g = setInterval(() => {
-        if (
-          d
-            ? document.getElementById('ext-inline-preview-iframe')?.getAttribute('src')
-            : document.getElementById('ext-inline-preview-img')?.complete
-        ) {
-          let x = n.querySelector('.ext-inline-preview-loading');
-          (x && x.remove(), clearInterval(g));
-        }
-      }, 500);
-    }
-  }
-  function y(e) {
-    return new Promise((o) => {
-      S();
-      let r = e.variant === 'danger' ? 'ext-btn-danger' : 'ext-btn-primary',
-        t = document.createElement('div');
-      ((t.style.cssText =
-        'position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.55);backdrop-filter:blur(2px);'),
-        (t.innerHTML = `
+    <div style="width:clamp(400px,90vw,1200px);height:clamp(300px,90vh,800px);background:white;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,0.4);overflow:hidden;position:relative;">${o}</div>
+  `,document.body.appendChild(d);let u=!1,g,x=b=>{b.key==="Escape"&&f()},f=()=>{u||(u=!0,E===f&&(E=null),t&&t(),document.removeEventListener("keydown",x),g!==void 0&&clearInterval(g),d.remove())};E=f,document.getElementById("ext-preview-close")?.addEventListener("click",f),document.getElementById("ext-preview-newtab")?.addEventListener("click",()=>{window.open(r||e,"_blank"),f()}),d.addEventListener("click",b=>{b.target===d&&f()}),document.addEventListener("keydown",x),(p||c)&&(g=window.setInterval(()=>{if(p?document.getElementById("ext-inline-preview-iframe")?.getAttribute("src"):document.getElementById("ext-inline-preview-img")?.complete){let y=d.querySelector(".ext-inline-preview-loading");y&&y.remove(),clearInterval(g)}},500))}function v(e){return new Promise(n=>{M();let r=e.variant==="danger"?"ext-btn-danger":"ext-btn-primary",t=document.createElement("div");t.style.cssText="position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.55);backdrop-filter:blur(2px);",t.innerHTML=`
       <div class="ext-modal-content" style="max-width:480px;">
         <div class="ext-modal-header">
           <h3></h3>
@@ -270,58 +168,11 @@ var __morbis_feature = (() => {
         </div>
         <div class="ext-confirm-body" style="font-size:14px;color:#334155;line-height:1.6;"></div>
         <div class="ext-modal-buttons">
-          ${e.hideCancel ? '' : `<button class="ext-btn ext-btn-secondary" data-ext-cancel>${e.cancelLabel ?? 'Batal'}</button>`}
-          <button class="ext-btn ${r}" data-ext-ok>${e.okLabel ?? 'Lanjut'}</button>
+          ${e.hideCancel?"":`<button class="ext-btn ext-btn-secondary" data-ext-cancel>${e.cancelLabel??"Batal"}</button>`}
+          <button class="ext-btn ${r}" data-ext-ok>${e.okLabel??"Lanjut"}</button>
         </div>
-      </div>`),
-        (t.querySelector('h3').textContent = e.title));
-      let i = t.querySelector('.ext-confirm-body');
-      e.message &&
-        e.message
-          .split(
-            `
-`,
-          )
-          .forEach((n, a) => {
-            (a > 0 && i.appendChild(document.createElement('br')),
-              i.appendChild(document.createTextNode(n)));
-          });
-      let u = (n) => {
-          (t.remove(), document.removeEventListener('keydown', d), o(n));
-        },
-        d = (n) => {
-          n.key === 'Escape' && u(!1);
-        };
-      (t.querySelector('.ext-modal-close').addEventListener('click', () => u(!1)),
-        t.addEventListener('click', (n) => {
-          n.target === t && u(!1);
-        }),
-        t.querySelector('[data-ext-ok]').addEventListener('click', () => u(!0)));
-      let p = t.querySelector('[data-ext-cancel]');
-      (p && p.addEventListener('click', () => u(!1)),
-        document.addEventListener('keydown', d),
-        document.body.appendChild(t));
-    });
-  }
-  var I = H(),
-    l = {
-      deleteEndpoint: '/admisi/pelaksanaan_pelayanan/dokumen-pasien/control?sub=hapus',
-      fetchListUrl: '/admisi/pelaksanaan_pelayanan/dokumen-pasien',
-      maxConcurrent: 1,
-      maxBatchSize: 10,
-      delayBetweenDelete: 500,
-      modalId: 'ext-batch-delete-modal',
-      previewId: 'ext-delete-preview-list',
-      progressId: 'ext-delete-progress-bar',
-      statusId: 'ext-delete-status-text',
-    },
-    s = [],
-    h = !1;
-  function U() {
-    if (document.getElementById('ext-batch-delete-style')) return;
-    let e = document.createElement('style');
-    ((e.id = 'ext-batch-delete-style'),
-      (e.textContent = `
+      </div>`,t.querySelector("h3").textContent=e.title;let i=t.querySelector(".ext-confirm-body");e.message&&e.message.split(`
+`).forEach((o,a)=>{a>0&&i.appendChild(document.createElement("br")),i.appendChild(document.createTextNode(o))});let p=o=>{t.remove(),document.removeEventListener("keydown",c),n(o)},c=o=>{o.key==="Escape"&&p(!1)};t.querySelector(".ext-modal-close").addEventListener("click",()=>p(!1)),t.addEventListener("click",o=>{o.target===t&&p(!1)}),t.querySelector("[data-ext-ok]").addEventListener("click",()=>p(!0));let d=t.querySelector("[data-ext-cancel]");d&&d.addEventListener("click",()=>p(!1)),document.addEventListener("keydown",c),document.body.appendChild(t)})}var I=A(),l={deleteEndpoint:"/admisi/pelaksanaan_pelayanan/dokumen-pasien/control?sub=hapus",fetchListUrl:"/admisi/pelaksanaan_pelayanan/dokumen-pasien",maxConcurrent:1,maxBatchSize:10,delayBetweenDelete:500,modalId:"ext-batch-delete-modal",previewId:"ext-delete-preview-list",progressId:"ext-delete-progress-bar",statusId:"ext-delete-status-text"},s=[],h=!1;function F(){if(document.getElementById("ext-batch-delete-style"))return;let e=document.createElement("style");e.id="ext-batch-delete-style",e.textContent=`
     #ext-batch-delete-btn {
       display: inline-flex; align-items: center; gap: 8px;
       background: #ef4444; color: white; border: none; border-radius: 10px; cursor: pointer;
@@ -334,82 +185,19 @@ var __morbis_feature = (() => {
       transform: translateY(-1px);
     }
     #ext-batch-delete-btn:active { transform: translateY(0); }
-  `),
-      document.head.appendChild(e),
-      S());
-  }
-  function F(e) {
-    (document.querySelectorAll('button:not(#ext-batch-delete-btn):not([disabled])').forEach((t) => {
-      e
-        ? ((t.disabled = !0), (t.dataset.extWasEnabled = 'true'))
-        : t.dataset.extWasEnabled === 'true' && ((t.disabled = !1), delete t.dataset.extWasEnabled);
-    }),
-      document.querySelectorAll('form input, form button, form a').forEach((t) => {
-        e
-          ? ((t.disabled = !0), (t.dataset.extWasEnabled = 'true'))
-          : t.dataset.extWasEnabled === 'true' &&
-            ((t.disabled = !1), delete t.dataset.extWasEnabled);
-      }));
-  }
-  function _(e) {
-    ([
-      'ext-delete-close-btn',
-      'ext-delete-cancel-btn',
-      'ext-fetch-files-btn',
-      'ext-start-delete-btn',
-    ].forEach((r) => {
-      let t = document.getElementById(r);
-      t &&
-        ((t.disabled = e),
-        (t.style.opacity = e ? '0.5' : '1'),
-        (t.style.cursor = e ? 'not-allowed' : 'pointer'));
-    }),
-      document
-        .querySelectorAll('#' + l.previewId + ' input, #' + l.previewId + ' button')
-        .forEach((r) => (r.disabled = e)),
-      F(e));
-  }
-  function j() {
-    let e = document.querySelector('#' + l.modalId + ' .ext-modal-buttons');
-    e &&
-      ((e.innerHTML =
-        '<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">' +
-        f.refresh +
-        ' Reload Halaman</span></button>'),
-      document.getElementById('ext-reload-btn')?.addEventListener('click', () => {
-        window.location.reload();
-      }));
-  }
-  async function C(e) {
-    try {
-      let o = new FormData();
-      return (
-        o.append('id', e),
-        (await fetch(l.deleteEndpoint, { method: 'POST', body: o, credentials: 'same-origin' })).ok
-      );
-    } catch (o) {
-      return (console.error('[Delete Dokumen] Error:', o), !1);
-    }
-  }
-  function O() {
-    let e = document.getElementById(l.modalId);
-    (e ||
-      ((e = document.createElement('div')),
-      (e.id = l.modalId),
-      (e.className = 'ext-batch-delete-modal'),
-      (e.innerHTML = `
+  `,document.head.appendChild(e),M()}function j(e){document.querySelectorAll("button:not(#ext-batch-delete-btn):not([disabled])").forEach(t=>{e?(t.disabled=!0,t.dataset.extWasEnabled="true"):t.dataset.extWasEnabled==="true"&&(t.disabled=!1,delete t.dataset.extWasEnabled)}),document.querySelectorAll("form input, form button, form a").forEach(t=>{e?(t.disabled=!0,t.dataset.extWasEnabled="true"):t.dataset.extWasEnabled==="true"&&(t.disabled=!1,delete t.dataset.extWasEnabled)})}function $(e){["ext-delete-close-btn","ext-delete-cancel-btn","ext-fetch-files-btn","ext-start-delete-btn"].forEach(r=>{let t=document.getElementById(r);t&&(t.disabled=e,t.style.opacity=e?"0.5":"1",t.style.cursor=e?"not-allowed":"pointer")}),document.querySelectorAll("#"+l.previewId+" input, #"+l.previewId+" button").forEach(r=>r.disabled=e),j(e)}function O(){let e=document.querySelector("#"+l.modalId+" .ext-modal-buttons");e&&(e.innerHTML='<button class="ext-btn ext-btn-purple" id="ext-reload-btn"><span style="display:inline-flex;align-items:center;gap:7px;">'+m.refresh+" Reload Halaman</span></button>",document.getElementById("ext-reload-btn")?.addEventListener("click",()=>{window.location.reload()}))}async function S(e){try{let n=new FormData;return n.append("id",e),(await fetch(l.deleteEndpoint,{method:"POST",body:n,credentials:"same-origin",signal:AbortSignal.timeout(3e4)})).ok}catch(n){return console.error("[Delete Dokumen] Error:",n),!1}}function q(){let e=document.getElementById(l.modalId);e||(e=document.createElement("div"),e.id=l.modalId,e.className="ext-batch-delete-modal",e.innerHTML=`
       <div class="ext-modal-content">
         <div class="ext-modal-header">
           <h3 style="margin: 0; font-size: 18px; color: #0f172a; font-weight: 700; letter-spacing: -0.3px;">Hapus Dokumen</h3>
-          <button class="ext-modal-close" id="ext-delete-close-btn">${f.xClose}</button>
+          <button class="ext-modal-close" id="ext-delete-close-btn">${m.xClose}</button>
         </div>
         <div class="ext-warning-box">
-          <strong style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase;">${P(f.warning, 18)} PERHATIAN!</strong>
+          <strong style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase;">${z(m.warning,18)} PERHATIAN!</strong>
           <span style="font-size: 12px; opacity: 0.85; line-height: 1.5;">File yang dihapus <strong style="color: #7c2d12;">tidak dapat dikembalikan</strong>. Tindakan ini bersifat permanen.</span>
         </div>
         <div style="margin-bottom: 20px; display: flex; gap: 10px;">
           <button id="ext-fetch-files-btn" class="ext-btn ext-btn-purple">
-            <span style="display: inline-flex; align-items: center; gap: 7px;">${f.search} Cari Dokumen Pasien</span>
+            <span style="display: inline-flex; align-items: center; gap: 7px;">${m.search} Cari Dokumen Pasien</span>
           </button>
         </div>
         <div id="ext-delete-search-wrap" style="display: none; margin-bottom: 12px;">
@@ -422,491 +210,30 @@ var __morbis_feature = (() => {
         <div id="${l.statusId}" style="margin: 8px 0; font-size: 11px; color: #9ca3af; font-weight: 500; letter-spacing: 0.3px;"></div>
         <div class="ext-modal-buttons">
           <button id="ext-delete-cancel-btn" class="ext-btn ext-btn-secondary">Batal</button>
-          <button id="ext-start-delete-btn" class="ext-btn ext-btn-danger" disabled><span style="display:inline-flex;align-items:center;gap:6px;">${f.trash}</span> Hapus Terpilih</button>
+          <button id="ext-start-delete-btn" class="ext-btn ext-btn-danger" disabled><span style="display:inline-flex;align-items:center;gap:6px;">${m.trash}</span> Hapus Terpilih</button>
         </div>
       </div>
-    `),
-      document.body.appendChild(e),
-      setTimeout(() => {
-        (document.getElementById('ext-delete-close-btn')?.addEventListener('click', B),
-          document.getElementById('ext-delete-cancel-btn')?.addEventListener('click', B),
-          document.getElementById('ext-fetch-files-btn')?.addEventListener('click', q),
-          document.getElementById('ext-start-delete-btn')?.addEventListener('click', z),
-          document.getElementById('ext-delete-search-input')?.addEventListener('input', E),
-          e?.addEventListener('click', function (o) {
-            o.target === e && B();
-          }));
-      }, 50)),
-      document.querySelectorAll('.ext-batch-delete-modal.show').forEach((o) => {
-        o !== e && o.classList.remove('show');
-      }),
-      e.classList.add('show'));
-  }
-  function D(e) {
-    let o = document.getElementById('ext-start-delete-btn');
-    o && ((o.disabled = e === 0 || h), (o.textContent = `Hapus ${e} Dokumen`));
-  }
-  function B() {
-    let e = document.getElementById(l.modalId);
-    (e && e.classList.remove('show'), (s = []), (h = !1));
-    let o = document.getElementById(l.previewId),
-      r = document.getElementById(l.progressId),
-      t = document.getElementById(l.statusId);
-    (o && ((o.style.display = 'none'), (o.innerHTML = '')),
-      r && (r.style.display = 'none'),
-      t && (t.textContent = ''));
-    let i = document.querySelector('#' + l.modalId + ' .ext-modal-buttons');
-    (i &&
-      ((i.innerHTML =
-        '<button id="ext-delete-cancel-btn" class="ext-btn ext-btn-secondary">Batal</button><button id="ext-start-delete-btn" class="ext-btn ext-btn-danger" disabled><span style="display:inline-flex;align-items:center;gap:6px;">' +
-        f.trash +
-        '</span> Hapus Terpilih</button>'),
-      document.getElementById('ext-delete-cancel-btn')?.addEventListener('click', B),
-      document.getElementById('ext-start-delete-btn')?.addEventListener('click', z)),
-      _(!1));
-  }
-  async function q() {
-    let o = new URLSearchParams(window.location.search).get('id_visit');
-    if (
-      (console.log('[BatchDelete] Current URL:', window.location.href),
-      console.log('[BatchDelete] id_visit found:', o),
-      !o)
-    ) {
-      (console.error('[BatchDelete] id_visit not found in URL!'),
-        y({
-          title: 'Parameter id_visit tidak ditemukan',
-          message: 'Pastikan buka dari halaman detail pasien.',
-          variant: 'warning',
-          okLabel: 'OK',
-          hideCancel: !0,
-        }));
-      return;
-    }
-    let r = document.getElementById('ext-fetch-files-btn');
-    r && ((r.disabled = !0), (r.textContent = 'Mencari...'));
-    try {
-      let t = `${window.location.origin}${l.fetchListUrl}?id_visit=${o}&page=85&id_kunjungan=`,
-        i = await fetch(t);
-      if (!i.ok) throw new Error('Gagal memuat halaman dokumen pasien');
-      let u = await i.text(),
-        p = new DOMParser()
-          .parseFromString(u, 'text/html')
-          .querySelectorAll('table.data-list.tabel tr');
-      (console.log('[BatchDelete] Total rows found:', p.length), (s = []));
-      for (let a = 1; a < p.length; a++) {
-        let c = p[a],
-          g = c.querySelector('button[onclick*="hapus"]'),
-          m = null;
-        if ((console.log(`[BatchDelete] Row ${a}: deleteBtn found:`, !!g), g)) {
-          let $ = g.getAttribute('onclick')?.match(/hapus\(([^)]+)\)/);
-          $ && (m = $[1].replace(/['"]/g, '').trim());
-        }
-        if (!m) continue;
-        let x = c.querySelector('td:nth-child(2) a'),
-          w = c.cells[1]?.textContent?.trim() || 'unknown',
-          v = c.cells[2]?.textContent?.trim() || '-',
-          b = c.cells[3]?.textContent?.trim() || '-',
-          k = c.cells[4]?.textContent?.trim() || '-',
-          T = x?.getAttribute('href') || '',
-          L = T.startsWith('http') ? T : `${window.location.origin}${T}`;
-        s.push({
-          id_dokumen: m,
-          filename: w,
-          keterangan: v,
-          tglFile: b,
-          tglUpload: k,
-          url: L,
-          selected: !1,
-          status: 'pending',
-        });
-      }
-      if (s.length === 0) {
-        console.error('[BatchDelete] No documents found in queue!');
-        let a = document.getElementById(l.statusId);
-        a && (a.textContent = 'Tidak ada dokumen ditemukan.');
-        return;
-      }
-      (console.log('[BatchDelete] Queue populated with', s.length, 'documents'), E());
-      let n = document.getElementById(l.statusId);
-      n && (n.textContent = `${s.length} dokumen siap dihapus!`);
-    } catch (t) {
-      console.error('[Batch Delete] Crawl error:', t);
-      let i = document.getElementById(l.statusId);
-      i && (i.textContent = 'Error: ' + t.message);
-    } finally {
-      r && ((r.disabled = !1), (r.textContent = 'Cari Dokumen Pasien'));
-    }
-  }
-  async function G(e) {
-    try {
-      if (h) return;
-      let o = s[e];
-      if (
-        !o ||
-        !(await y({
-          title: 'Hapus dokumen ini?',
-          message: `${o.filename}
-ID: ${o.id_dokumen}
+    `,document.body.appendChild(e),setTimeout(()=>{document.getElementById("ext-delete-close-btn")?.addEventListener("click",C),document.getElementById("ext-delete-cancel-btn")?.addEventListener("click",C),document.getElementById("ext-fetch-files-btn")?.addEventListener("click",G),document.getElementById("ext-start-delete-btn")?.addEventListener("click",U),document.getElementById("ext-delete-search-input")?.addEventListener("input",T),e?.addEventListener("click",function(n){n.target===e&&C()})},50)),document.querySelectorAll(".ext-batch-delete-modal.show").forEach(n=>{n!==e&&n.classList.remove("show")}),e.classList.add("show")}function _(e){let n=document.getElementById("ext-start-delete-btn");n&&(n.disabled=e===0||h,n.textContent=`Hapus ${e} Dokumen`)}function C(){let e=document.getElementById(l.modalId);e&&e.classList.remove("show"),s=[],h=!1;let n=document.getElementById(l.previewId),r=document.getElementById(l.progressId),t=document.getElementById(l.statusId);n&&(n.style.display="none",n.innerHTML=""),r&&(r.style.display="none"),t&&(t.textContent="");let i=document.querySelector("#"+l.modalId+" .ext-modal-buttons");i&&(i.innerHTML='<button id="ext-delete-cancel-btn" class="ext-btn ext-btn-secondary">Batal</button><button id="ext-start-delete-btn" class="ext-btn ext-btn-danger" disabled><span style="display:inline-flex;align-items:center;gap:6px;">'+m.trash+"</span> Hapus Terpilih</button>",document.getElementById("ext-delete-cancel-btn")?.addEventListener("click",C),document.getElementById("ext-start-delete-btn")?.addEventListener("click",U)),$(!1)}async function G(){let n=new URLSearchParams(window.location.search).get("id_visit");if(console.log("[BatchDelete] Current URL:",window.location.href),console.log("[BatchDelete] id_visit found:",n),!n){console.error("[BatchDelete] id_visit not found in URL!"),v({title:"Parameter id_visit tidak ditemukan",message:"Pastikan buka dari halaman detail pasien.",variant:"warning",okLabel:"OK",hideCancel:!0});return}let r=document.getElementById("ext-fetch-files-btn");r&&(r.disabled=!0,r.textContent="Mencari...");try{let t=`${window.location.origin}${l.fetchListUrl}?id_visit=${n}&page=85&id_kunjungan=`,i=await fetch(t,{signal:AbortSignal.timeout(3e4)});if(!i.ok)throw new Error("Gagal memuat halaman dokumen pasien");let p=await i.text(),d=new DOMParser().parseFromString(p,"text/html").querySelectorAll("table.data-list.tabel tr");console.log("[BatchDelete] Total rows found:",d.length),s=[];for(let a=1;a<d.length;a++){let u=d[a],g=u.querySelector('button[onclick*="hapus"]'),x=null;if(console.log(`[BatchDelete] Row ${a}: deleteBtn found:`,!!g),g){let H=g.getAttribute("onclick")?.match(/hapus\(([^)]+)\)/);H&&(x=H[1].replace(/['"]/g,"").trim())}if(!x)continue;let f=u.querySelector("td:nth-child(2) a"),b=u.cells[1]?.textContent?.trim()||"unknown",y=u.cells[2]?.textContent?.trim()||"-",w=u.cells[3]?.textContent?.trim()||"-",k=u.cells[4]?.textContent?.trim()||"-",L=f?.getAttribute("href")||"",B=L.startsWith("http")?L:`${window.location.origin}${L}`;s.push({id_dokumen:x,filename:b,keterangan:y,tglFile:w,tglUpload:k,url:B,selected:!1,status:"pending"})}if(s.length===0){console.error("[BatchDelete] No documents found in queue!");let a=document.getElementById(l.statusId);a&&(a.textContent="Tidak ada dokumen ditemukan.");return}console.log("[BatchDelete] Queue populated with",s.length,"documents"),T();let o=document.getElementById(l.statusId);o&&(o.textContent=`${s.length} dokumen siap dihapus!`)}catch(t){console.error("[Batch Delete] Crawl error:",t);let i=document.getElementById(l.statusId);i&&(i.textContent="Error: "+t.message)}finally{r&&(r.disabled=!1,r.textContent="Cari Dokumen Pasien")}}async function N(e){try{if(h)return;let n=s[e];if(!n||!await v({title:"Hapus dokumen ini?",message:`${n.filename}
+ID: ${n.id_dokumen}
 
-Tindakan ini tidak bisa di-undo.`,
-          variant: 'danger',
-          okLabel: 'Ya, Hapus',
-        }))
-      )
-        return;
-      let t = document.getElementById(l.statusId);
-      ((o.status = 'deleting'),
-        E(),
-        t && (t.textContent = `Menghapus 1 dokumen: ${o.filename}...`),
-        (await C(o.id_dokumen))
-          ? (s.splice(e, 1), t && (t.textContent = `Sukses menghapus: ${o.filename}`))
-          : ((o.status = 'error'), t && (t.textContent = `Gagal menghapus: ${o.filename}`)),
-        E());
-    } catch (o) {
-      console.error('[BatchDelete] deleteSingleFromQueue error:', o);
-    }
-  }
-  function E() {
-    let e = document.getElementById(l.previewId),
-      o = document.getElementById(l.statusId),
-      r = document.getElementById('ext-delete-search-wrap'),
-      t = document.getElementById('ext-delete-search-input'),
-      i = (t?.value || '').toLowerCase();
-    if (!s || s.length === 0) {
-      (e && ((e.style.display = 'none'), (e.innerHTML = '')),
-        r && (r.style.display = 'none'),
-        t && (t.value = ''),
-        D(0),
-        o && ((o.textContent = ''), (o.style.color = '#4b5563')));
-      return;
-    }
-    r && (r.style.display = 'block');
-    let u = s
-      .map((n, a) => ({ item: n, idx: a }))
-      .filter(
-        ({ item: n }) =>
-          !i ||
-          n.filename.toLowerCase().includes(i) ||
-          n.keterangan.toLowerCase().includes(i) ||
-          n.id_dokumen.toLowerCase().includes(i),
-      );
-    if (e) ((e.style.display = 'block'), (e.style.borderRadius = '6px'));
-    else return;
-    let d = document.createElement('div');
-    d.style.cssText =
-      'padding:10px 16px;background:#f8fafc;border-bottom:1px solid #f1f5f9;font-size:11px;font-weight:700;color:#1e293b;text-transform:uppercase;letter-spacing:0.5px;';
-    let p = () => {
-      d.innerHTML =
-        'Dokumen Pasien <span style="color:#64748b;font-weight:400;">(' +
-        s.length +
-        ' dokumen, <span style="color:#dc2626;">' +
-        s.filter((n) => n.selected).length +
-        '</span> dipilih)</span>';
-    };
-    if ((p(), (e.innerHTML = ''), e.appendChild(d), u.length === 0)) {
-      let n = document.createElement('div');
-      ((n.style.cssText = 'padding:32px;text-align:center;font-size:13px;color:#94a3b8;'),
-        (n.textContent = 'Tidak ada dokumen yang cocok dengan pencarian.'),
-        e?.appendChild(n));
-    }
-    (u.forEach(({ item: n, idx: a }) => {
-      let c = document.createElement('div');
-      ((c.className = 'ext-delete-preview-item'), n.selected && c.classList.add('selected'));
-      let g = h;
-      c.innerHTML = `
+Tindakan ini tidak bisa di-undo.`,variant:"danger",okLabel:"Ya, Hapus"}))return;let t=document.getElementById(l.statusId);n.status="deleting",T(),t&&(t.textContent=`Menghapus 1 dokumen: ${n.filename}...`),await S(n.id_dokumen)?(s.splice(e,1),t&&(t.textContent=`Sukses menghapus: ${n.filename}`)):(n.status="error",t&&(t.textContent=`Gagal menghapus: ${n.filename}`)),T()}catch(n){console.error("[BatchDelete] deleteSingleFromQueue error:",n)}}function T(){let e=document.getElementById(l.previewId),n=document.getElementById(l.statusId),r=document.getElementById("ext-delete-search-wrap"),t=document.getElementById("ext-delete-search-input"),i=(t?.value||"").toLowerCase();if(!s||s.length===0){e&&(e.style.display="none",e.innerHTML=""),r&&(r.style.display="none"),t&&(t.value=""),_(0),n&&(n.textContent="",n.style.color="#4b5563");return}r&&(r.style.display="block");let p=s.map((o,a)=>({item:o,idx:a})).filter(({item:o})=>!i||o.filename.toLowerCase().includes(i)||o.keterangan.toLowerCase().includes(i)||o.id_dokumen.toLowerCase().includes(i));if(e)e.style.display="block",e.style.borderRadius="6px";else return;let c=document.createElement("div");c.style.cssText="padding:10px 16px;background:#f8fafc;border-bottom:1px solid #f1f5f9;font-size:11px;font-weight:700;color:#1e293b;text-transform:uppercase;letter-spacing:0.5px;";let d=()=>{c.innerHTML='Dokumen Pasien <span style="color:#64748b;font-weight:400;">('+s.length+' dokumen, <span style="color:#dc2626;">'+s.filter(o=>o.selected).length+"</span> dipilih)</span>"};if(d(),e.innerHTML="",e.appendChild(c),p.length===0){let o=document.createElement("div");o.style.cssText="padding:32px;text-align:center;font-size:13px;color:#94a3b8;",o.textContent="Tidak ada dokumen yang cocok dengan pencarian.",e?.appendChild(o)}p.forEach(({item:o,idx:a})=>{let u=document.createElement("div");u.className="ext-delete-preview-item",o.selected&&u.classList.add("selected");let g=h;u.innerHTML=`
       <label class="ext-checkbox-label" style="flex:1;min-width:0;">
-        <input type="checkbox" data-index="${a}" class="ext-checkbox" ${n.selected ? 'checked' : ''} ${g ? 'disabled' : ''}>
+        <input type="checkbox" data-index="${a}" class="ext-checkbox" ${o.selected?"checked":""} ${g?"disabled":""}>
         <div style="flex: 1; min-width: 0;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-            <strong style="font-size: 13px; color: #000000; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${a + 1}. ${n.filename}</strong>
-            ${n.status !== 'pending' ? `<span class="ext-status-badge" data-status="${n.status === 'success' ? 'success' : n.status === 'error' ? 'error' : 'deleting'}">${n.status === 'success' ? 'Selesai' : n.status === 'error' ? 'Gagal' : 'Memproses'}</span>` : ''}
+            <strong style="font-size: 13px; color: #000000; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${a+1}. ${o.filename}</strong>
+            ${o.status!=="pending"?`<span class="ext-status-badge" data-status="${o.status==="success"?"success":o.status==="error"?"error":"deleting"}">${o.status==="success"?"Selesai":o.status==="error"?"Gagal":"Memproses"}</span>`:""}
           </div>
           <div style="font-size: 11px; color: #4b5563; margin-top: 6px; display: flex; gap: 8px; flex-wrap: wrap;">
-            <span>ID: <strong style="color: #111827;">${n.id_dokumen}</strong></span>
+            <span>ID: <strong style="color: #111827;">${o.id_dokumen}</strong></span>
             <span style="color: #d1d5db;">|</span>
-            <span>${n.tglFile}</span>
+            <span>${o.tglFile}</span>
             <span style="color: #d1d5db;">|</span>
-            <span>${n.tglUpload}</span>
+            <span>${o.tglUpload}</span>
           </div>
-          <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">${n.keterangan}</div>
+          <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">${o.keterangan}</div>
         </div>
       </label>
-      <button data-index="${a}" class="ext-delete-preview-btn" ${g ? 'disabled' : ''}>${f.eye} Preview</button>
-      <button data-index="${a}" class="ext-delete-single-btn" title="Hapus Dokumen Ini" ${g ? 'disabled' : ''}>${f.trash}</button>
-    `;
-      let m = c.querySelector('input[type="checkbox"]');
-      !h &&
-        m &&
-        m.addEventListener('change', (b) => {
-          ((s[a].selected = b.target.checked),
-            c.classList.toggle('selected', s[a].selected),
-            p(),
-            D(s.filter((k) => k.selected).length));
-        });
-      let x = c.querySelectorAll('button'),
-        w = x.length > 0 ? x[0] : null,
-        v = x.length > 1 ? x[1] : null;
-      (h ||
-        (w?.addEventListener('click', () => {
-          M(s[a].url, s[a].filename);
-        }),
-        v?.addEventListener('click', () => {
-          G(a);
-        })),
-        e?.appendChild(c));
-    }),
-      D(s.filter((n) => n.selected).length));
-  }
-  async function z() {
-    try {
-      if (h) return;
-      let e = s.filter((n) => n.selected);
-      if (e.length === 0) {
-        y({
-          title: 'Tidak ada dokumen dipilih',
-          message: 'Centang dokumen yang ingin dihapus terlebih dahulu.',
-          variant: 'warning',
-          okLabel: 'OK',
-          hideCancel: !0,
-        });
-        return;
-      }
-      if (
-        !(await y({
-          title: `Hapus ${e.length} dokumen?`,
-          message: 'TIDAK BISA DIUNDO!',
-          variant: 'danger',
-          okLabel: 'Ya, Hapus',
-        }))
-      )
-        return;
-      ((h = !0), _(!0));
-      let r = 0,
-        t = 0,
-        i = document.getElementById(l.progressId),
-        u = i?.querySelector('.progress-fill'),
-        d = document.getElementById(l.statusId);
-      (i && (i.style.display = 'block'),
-        u && (u.style.width = '0%'),
-        d && (d.style.color = '#fcd34d'));
-      for (let n = 0; n < e.length; n++) {
-        let a = e[n];
-        if (
-          ((a.status = 'deleting'),
-          (await C(a.id_dokumen)) ? ((a.status = 'success'), r++) : ((a.status = 'error'), t++),
-          E(),
-          u && d)
-        ) {
-          let g = ((n + 1) / e.length) * 100;
-          ((u.style.width = g + '%'),
-            (d.textContent = `Diproses ${n + 1}/${e.length} - Sukses: ${r}, Gagal: ${t}`));
-        }
-        await new Promise((g) => setTimeout(g, l.delayBetweenDelete));
-      }
-      let p = `Selesai! Sukses: ${r}, Gagal: ${t}`;
-      (d && ((d.textContent = p), (d.style.color = t > 0 ? '#000000' : '#6ee7b7')),
-        t > 0 &&
-          console.log(
-            'Failed deletes:',
-            s.filter((n) => n.status === 'error'),
-          ),
-        y({
-          title: 'Proses selesai',
-          message: p,
-          variant: t > 0 ? 'warning' : 'success',
-          okLabel: 'OK',
-          hideCancel: !0,
-        }),
-        j(),
-        (h = !1));
-    } catch (e) {
-      (console.error('[BatchDelete] startBatchDelete error:', e), (h = !1), _(!1));
-    }
-  }
-  function N() {
-    return !!new URLSearchParams(window.location.search).get('id_visit');
-  }
-  async function W() {
-    let o = new URLSearchParams(window.location.search).get('id_visit');
-    if (!o) {
-      chrome.runtime
-        .sendMessage({
-          type: 'TAB_ACTION_RESULT',
-          action: 'BATCH_DELETE_ERROR',
-          data: { error: 'Parameter id_visit tidak ditemukan di URL.' },
-        })
-        .catch(console.error);
-      return;
-    }
-    try {
-      let r = `${window.location.origin}${l.fetchListUrl}?id_visit=${o}&page=85&id_kunjungan=`,
-        t = await fetch(r);
-      if (!t.ok) throw new Error('Gagal memuat halaman dokumen pasien');
-      let i = await t.text(),
-        d = new DOMParser()
-          .parseFromString(i, 'text/html')
-          .querySelectorAll('table.data-list.tabel tr');
-      s = [];
-      for (let p = 1; p < d.length; p++) {
-        let n = d[p],
-          a = n.querySelector('button[onclick*="hapus"]'),
-          c = null;
-        if (a) {
-          let L = a.getAttribute('onclick')?.match(/hapus\(([^)]+)\)/);
-          L && (c = L[1].replace(/['"]/g, '').trim());
-        }
-        if (!c) continue;
-        let g = n.querySelector('td:nth-child(2) a'),
-          m = n.cells[1]?.textContent?.trim() || 'unknown',
-          x = n.cells[2]?.textContent?.trim() || '-',
-          w = n.cells[3]?.textContent?.trim() || '-',
-          v = n.cells[4]?.textContent?.trim() || '-',
-          b = g?.getAttribute('href') || '',
-          k = b.startsWith('http') ? b : `${window.location.origin}${b}`;
-        s.push({
-          id_dokumen: c,
-          filename: m,
-          keterangan: x,
-          tglFile: w,
-          tglUpload: v,
-          url: k,
-          selected: !1,
-          status: 'pending',
-        });
-      }
-      chrome.runtime
-        .sendMessage({
-          type: 'TAB_ACTION_RESULT',
-          action: 'BATCH_DELETE_CRAWL_RESULT',
-          data: { items: s },
-        })
-        .catch(console.error);
-    } catch (r) {
-      chrome.runtime
-        .sendMessage({
-          type: 'TAB_ACTION_RESULT',
-          action: 'BATCH_DELETE_ERROR',
-          data: { error: r.message },
-        })
-        .catch(console.error);
-    }
-  }
-  async function K(e, o) {
-    if (!s[e]) return;
-    let t = await C(o);
-    chrome.runtime
-      .sendMessage({
-        type: 'TAB_ACTION_RESULT',
-        action: 'BATCH_DELETE_SINGLE_RESULT',
-        data: {
-          index: e,
-          success: t,
-          error: t ? void 0 : 'Gagal memproses penghapusan di server.',
-        },
-      })
-      .catch(console.error);
-  }
-  async function V() {
-    try {
-      let e = s.filter((t) => t.selected);
-      if (e.length === 0) return;
-      let o = 0,
-        r = 0;
-      for (let t = 0; t < e.length; t++) {
-        let i = e[t];
-        ((i.status = 'deleting'),
-          chrome.runtime
-            .sendMessage({
-              type: 'TAB_ACTION_RESULT',
-              action: 'BATCH_DELETE_PROGRESS',
-              data: {
-                percent: (t / e.length) * 100,
-                status: `Menghapus: ${i.filename} (${t + 1}/${e.length})...`,
-                items: s,
-                finished: !1,
-              },
-            })
-            .catch(console.error),
-          (await C(i.id_dokumen)) ? ((i.status = 'success'), o++) : ((i.status = 'error'), r++),
-          Q(t + 1, e.length, o, r, s),
-          await new Promise((d) => setTimeout(d, l.delayBetweenDelete)));
-      }
-    } catch (e) {
-      (console.error('[BatchDelete] startBatchDeleteToSidepanel error:', e),
-        chrome.runtime
-          .sendMessage({
-            type: 'TAB_ACTION_RESULT',
-            action: 'BATCH_DELETE_ERROR',
-            data: { error: e.message },
-          })
-          .catch(console.error));
-    }
-  }
-  function Q(e, o, r, t, i) {
-    chrome.runtime
-      .sendMessage({
-        type: 'TAB_ACTION_RESULT',
-        action: 'BATCH_DELETE_PROGRESS',
-        data: {
-          percent: (e / o) * 100,
-          status: `Diproses ${e}/${o} - Sukses: ${r}, Gagal: ${t}`,
-          items: i,
-          finished: e >= o,
-        },
-      })
-      .catch(console.error);
-  }
-  function Y() {
-    if (
-      N() &&
-      I.currentConfig?.features?.batchDelete?.enabled &&
-      I.ExtensionCore.isFeatureAllowed('batchDelete')
-    )
-      try {
-        if (
-          (console.log('[BatchDelete] Init starting...'),
-          U(),
-          chrome.runtime
-            .sendMessage({
-              type: 'PAGE_CONTEXT',
-              feature: 'mKlaimDetail',
-              data: { idVisit: new URLSearchParams(window.location.search).get('id_visit') },
-            })
-            .catch(console.error),
-          window.__extBatchDeleteRegistered)
-        )
-          return;
-        ((window.__extBatchDeleteRegistered = !0),
-          chrome.runtime.onMessage.addListener((e, o, r) => {
-            if (e.type === 'TAB_ACTION') {
-              let { action: t, payload: i } = e;
-              (t === 'BATCH_DELETE_CRAWL'
-                ? W()
-                : t === 'BATCH_DELETE_UPDATE_ITEMS'
-                  ? (s = i.items)
-                  : t === 'BATCH_DELETE_PREVIEW'
-                    ? M(i.url, i.filename).catch(() => {
-                        window.open(i.url, '_blank');
-                      })
-                    : t === 'BATCH_DELETE_SINGLE'
-                      ? K(i.index, i.id_dokumen)
-                      : t === 'BATCH_DELETE_START' && V(),
-                r({ success: !0 }));
-            } else e.type === 'BATCH_DELETE_ACTION' && r({ success: !0 });
-            return !0;
-          }),
-          console.log('[BatchDelete] Init complete'));
-      } catch (e) {
-        console.error('[BatchDelete] Init error:', e);
-      }
-  }
-  window.batchDeleteShowModal = O;
-  typeof I.featureModules < 'u' &&
-    (I.featureModules.batchDelete = {
-      id: 'batchDelete',
-      name: 'Batch Delete Dokumen',
-      description: 'Hapus multiple dokumen sekaligus',
-      match: { regex: /^\/v2\/m-klaim\/detail-v2-refaktor\/?$/ },
-      run: Y,
-    });
-})();
+      <button data-index="${a}" class="ext-delete-preview-btn" ${g?"disabled":""}>${m.eye} Preview</button>
+      <button data-index="${a}" class="ext-delete-single-btn" title="Hapus Dokumen Ini" ${g?"disabled":""}>${m.trash}</button>
+    `;let x=u.querySelector('input[type="checkbox"]');!h&&x&&x.addEventListener("change",w=>{s[a].selected=w.target.checked,u.classList.toggle("selected",s[a].selected),d(),_(s.filter(k=>k.selected).length)});let f=u.querySelectorAll("button"),b=f.length>0?f[0]:null,y=f.length>1?f[1]:null;h||(b?.addEventListener("click",()=>{D(s[a].url,s[a].filename)}),y?.addEventListener("click",()=>{N(a)})),e?.appendChild(u)}),_(s.filter(o=>o.selected).length)}async function U(){try{if(h)return;let e=s.filter(o=>o.selected);if(e.length===0){v({title:"Tidak ada dokumen dipilih",message:"Centang dokumen yang ingin dihapus terlebih dahulu.",variant:"warning",okLabel:"OK",hideCancel:!0});return}if(!await v({title:`Hapus ${e.length} dokumen?`,message:"TIDAK BISA DIUNDO!",variant:"danger",okLabel:"Ya, Hapus"}))return;h=!0,$(!0);let r=0,t=0,i=document.getElementById(l.progressId),p=i?.querySelector(".progress-fill"),c=document.getElementById(l.statusId);i&&(i.style.display="block"),p&&(p.style.width="0%"),c&&(c.style.color="#fcd34d");for(let o=0;o<e.length;o++){let a=e[o];if(a.status="deleting",await S(a.id_dokumen)?(a.status="success",r++):(a.status="error",t++),T(),p&&c){let g=(o+1)/e.length*100;p.style.width=g+"%",c.textContent=`Diproses ${o+1}/${e.length} - Sukses: ${r}, Gagal: ${t}`}await new Promise(g=>setTimeout(g,l.delayBetweenDelete))}let d=`Selesai! Sukses: ${r}, Gagal: ${t}`;c&&(c.textContent=d,c.style.color=t>0?"#000000":"#6ee7b7"),t>0&&console.log("Failed deletes:",s.filter(o=>o.status==="error")),v({title:"Proses selesai",message:d,variant:t>0?"warning":"success",okLabel:"OK",hideCancel:!0}),O(),h=!1}catch(e){console.error("[BatchDelete] startBatchDelete error:",e),h=!1,$(!1)}}function W(){return!!new URLSearchParams(window.location.search).get("id_visit")}async function K(){let n=new URLSearchParams(window.location.search).get("id_visit");if(!n){chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_DELETE_ERROR",data:{error:"Parameter id_visit tidak ditemukan di URL."}}).catch(console.error);return}try{let r=`${window.location.origin}${l.fetchListUrl}?id_visit=${n}&page=85&id_kunjungan=`,t=await fetch(r,{signal:AbortSignal.timeout(3e4)});if(!t.ok)throw new Error("Gagal memuat halaman dokumen pasien");let i=await t.text(),c=new DOMParser().parseFromString(i,"text/html").querySelectorAll("table.data-list.tabel tr");s=[];for(let d=1;d<c.length;d++){let o=c[d],a=o.querySelector('button[onclick*="hapus"]'),u=null;if(a){let B=a.getAttribute("onclick")?.match(/hapus\(([^)]+)\)/);B&&(u=B[1].replace(/['"]/g,"").trim())}if(!u)continue;let g=o.querySelector("td:nth-child(2) a"),x=o.cells[1]?.textContent?.trim()||"unknown",f=o.cells[2]?.textContent?.trim()||"-",b=o.cells[3]?.textContent?.trim()||"-",y=o.cells[4]?.textContent?.trim()||"-",w=g?.getAttribute("href")||"",k=w.startsWith("http")?w:`${window.location.origin}${w}`;s.push({id_dokumen:u,filename:x,keterangan:f,tglFile:b,tglUpload:y,url:k,selected:!1,status:"pending"})}chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_DELETE_CRAWL_RESULT",data:{items:s}}).catch(console.error)}catch(r){chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_DELETE_ERROR",data:{error:r.message}}).catch(console.error)}}async function V(e,n){if(!s[e])return;let t=await S(n);chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_DELETE_SINGLE_RESULT",data:{index:e,success:t,error:t?void 0:"Gagal memproses penghapusan di server."}}).catch(console.error)}async function Q(){try{let e=s.filter(t=>t.selected);if(e.length===0)return;let n=0,r=0;for(let t=0;t<e.length;t++){let i=e[t];i.status="deleting",chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_DELETE_PROGRESS",data:{percent:t/e.length*100,status:`Menghapus: ${i.filename} (${t+1}/${e.length})...`,items:s,finished:!1}}).catch(console.error),await S(i.id_dokumen)?(i.status="success",n++):(i.status="error",r++),Y(t+1,e.length,n,r,s),await new Promise(c=>setTimeout(c,l.delayBetweenDelete))}}catch(e){console.error("[BatchDelete] startBatchDeleteToSidepanel error:",e),chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_DELETE_ERROR",data:{error:e.message}}).catch(console.error)}}function Y(e,n,r,t,i){chrome.runtime.sendMessage({type:"TAB_ACTION_RESULT",action:"BATCH_DELETE_PROGRESS",data:{percent:e/n*100,status:`Diproses ${e}/${n} - Sukses: ${r}, Gagal: ${t}`,items:i,finished:e>=n}}).catch(console.error)}function X(){if(W()&&I.currentConfig?.features?.batchDelete?.enabled&&I.ExtensionCore.isFeatureAllowed("batchDelete"))try{if(console.log("[BatchDelete] Init starting..."),F(),chrome.runtime.sendMessage({type:"PAGE_CONTEXT",feature:"mKlaimDetail",data:{idVisit:new URLSearchParams(window.location.search).get("id_visit")}}).catch(console.error),window.__extBatchDeleteRegistered)return;window.__extBatchDeleteRegistered=!0,chrome.runtime.onMessage.addListener((e,n,r)=>{if(e.type==="TAB_ACTION"){let{action:t,payload:i}=e;t==="BATCH_DELETE_CRAWL"?K():t==="BATCH_DELETE_UPDATE_ITEMS"?s=i.items:t==="BATCH_DELETE_PREVIEW"?D(i.url,i.filename).catch(()=>{window.open(i.url,"_blank")}):t==="BATCH_DELETE_SINGLE"?V(i.index,i.id_dokumen):t==="BATCH_DELETE_START"&&Q(),r({success:!0})}else e.type==="BATCH_DELETE_ACTION"&&r({success:!0});return!0}),console.log("[BatchDelete] Init complete")}catch(e){console.error("[BatchDelete] Init error:",e)}}window.batchDeleteShowModal=q;typeof I.featureModules<"u"&&(I.featureModules.batchDelete={id:"batchDelete",name:"Batch Delete Dokumen",description:"Hapus multiple dokumen sekaligus",match:{regex:/^\/v2\/m-klaim\/detail-v2-refaktor\/?$/},run:X});})();

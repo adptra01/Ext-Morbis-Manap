@@ -97,7 +97,16 @@ async function compileFeatureFiles() {
 
   for (const relativePath of tsFiles) {
     const tsFile = join(tsFeaturesDir, relativePath);
-    if (!existsSync(tsFile)) continue;
+    if (!existsSync(tsFile)) {
+      // Sumber fitur yang direfer TIDAK ada: dulu di-skip senyap sehingga dist
+      // bisa merujuk file yang tidak pernah di-build. Sekarang HARD error:
+      // catat ke `failed` agar fail-fast di bawah menaikkan exit code (CI
+      // menolak pack kalau fitur hilang - jangan ship stub diam-diam).
+      const msg = `source not found: ${tsFile}`;
+      console.error(`[build] Missing feature source: ${relativePath}`);
+      failed.push(`${relativePath}: ${msg}`);
+      continue;
+    }
 
     // Map subdirectory entries to flat output names
     const outputName = relativePath.replace('/mount.tsx', '.ts').replace('.tsx', '.ts');

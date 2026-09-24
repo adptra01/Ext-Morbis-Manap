@@ -1,5 +1,12 @@
 /* AntrianTools – rewrite sederhana (build 2026‑08‑10) */
 (function () {
+  // Guard anti double-inject: file ini terdaftar di manifest content_scripts
+  // (world MAIN) DAN di-inject manual oleh init.ts via chrome.runtime.getURL —
+  // tanpa guard, UI/polling/TTS jalan dobel di ruang tunggu. Pola sama dengan
+  // __extPrintHooked / __extTtsHooked di file ini & __extPenerimaanAntrol di lain.
+  if ((window as any).__extAntrianToolsLoaded) return;
+  (window as any).__extAntrianToolsLoaded = true;
+
   /* ---- UTILS ---- */
   function onlyDigits(s: unknown): string {
     return String(s || '').replace(/\D/g, '');
@@ -737,6 +744,9 @@
         '  <button class="ext-c-fs" title="Fullscreen / Fit Screen Device"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>' +
         '  <button class="ext-c-test" title="Uji lokal: nomor + bel + suara"><span class="ext-test-title">TEST PANGGILAN</span><span class="ext-test-status">cek status\u2026</span></button>' +
         '</div>';
+      // anti-duplikat defensif: UI display lama (double-inject masa lalu atau
+      // navigasi parsial) dibuang dulu — overlay tidak pernah menumpuk.
+      document.getElementById('ext-display-ui')?.remove();
       document.body.appendChild(ui);
 
       // logo: pakai dari halaman server bila ada, fallback teks "LOGO RSUD"

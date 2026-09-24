@@ -41,7 +41,14 @@
 
   function parseCurrency(str: string | undefined): number {
     if (!str) return 0;
-    return parseFloat(String(str).replace(/\./g, '').replace(',', '.')) || 0;
+    // Invariant: parseCurrency(formatCurrency(x)) === x (untuk desimal + ribuan).
+    // Buang HANYA separator RIBUAN (titik/koma diikuti tepat 3 digit lalu
+    // `.` `,` atau akhir string) — benar untuk "1.234,5" (id-ID) maupun
+    // "1,234.5" (en-US); separator DESIMAL terakhir dinormalisasi ke ".".
+    // Contoh: "1.234,5" → 1234.5, "1,234.5" → 1234.5, "1.234" → 1234.
+    const noThousands = String(str).replace(/[.,](?=\d{3}(?:[.,]|$))/g, '');
+    const normalized = noThousands.replace(/[.,](?=\d{1,2}$)/, '.');
+    return parseFloat(normalized) || 0;
   }
 
   function formatCurrency(num: number): string {
@@ -485,7 +492,7 @@
     addRegenerateButton();
     addKeyboardShortcuts();
     calculateTotal();
-     
+
     console.log('[BillingAdj] initialized');
   }
 

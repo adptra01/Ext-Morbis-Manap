@@ -145,12 +145,10 @@ function renderScrollButtons(): void {
 }
 
 function runScrollButtonsFeature(): void {
-  if (
-    !(
-      g.currentConfig?.features?.scrollButtons?.enabled &&
-      g.ExtensionCore.isFeatureAllowed('scrollButtons')
-    )
-  )
+  if (!(
+    g.currentConfig?.features?.scrollButtons?.enabled &&
+    g.ExtensionCore.isFeatureAllowed('scrollButtons')
+  ))
     return;
 
   window.scrollTo(0, 0);
@@ -162,6 +160,9 @@ function runScrollButtonsFeature(): void {
     }
   });
   observer.observe(document.body, { childList: true, subtree: true });
+
+  // FIX: lepas observer full-subtree saat halaman ditinggalkan agar tidak bocor
+  window.addEventListener('pagehide', () => observer.disconnect());
 }
 
 if (typeof g.featureModules !== 'undefined') {

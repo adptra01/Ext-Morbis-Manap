@@ -35,7 +35,8 @@ const ENABLED_WHEN_PATHNAME_RE =
   /(?:pathname|location|window\.location|\.includes\(|\.startsWith\()/;
 
 function extractBlock(src, startIdx) {
-  let depth = 1, i = startIdx;
+  let depth = 1,
+    i = startIdx;
   while (i < src.length && depth > 0) {
     if (src[i] === '{') depth++;
     else if (src[i] === '}') depth--;
@@ -47,14 +48,22 @@ function extractBlock(src, startIdx) {
 function evaluateMatchConfig(matchBlock, path) {
   const om = matchBlock.match(/oneOf:\s*\[([\s\S]*?)\]/);
   if (om) {
-    const items = om[1].split('},').map(s => s.replace(/[{}]/g, '').trim()).filter(Boolean);
-    return items.some(item => {
+    const items = om[1]
+      .split('},')
+      .map((s) => s.replace(/[{}]/g, '').trim())
+      .filter(Boolean);
+    return items.some((item) => {
       const ip = item.match(/pathname:\s*['"]([^'"]+)['"]/);
       if (ip) return path === ip[1];
       const ipf = item.match(/prefix:\s*['"]([^'"]+)['"]/);
       if (ipf) return path.startsWith(ipf[1]);
       const ir = item.match(/regex:\s*\/([^/]+)\//);
-      if (ir) try { return new RegExp(ir[1]).test(path); } catch { return false; }
+      if (ir)
+        try {
+          return new RegExp(ir[1]).test(path);
+        } catch {
+          return false;
+        }
       return false;
     });
   }
@@ -64,7 +73,12 @@ function evaluateMatchConfig(matchBlock, path) {
   const pfm = matchBlock.match(/prefix:\s*['"]([^'"]+)['"]/);
   if (pfm) return path.startsWith(pfm[1]);
   const rm = matchBlock.match(/regex:\s*\/((?:[^\/\\]|\\.)+)\/([gimusy]*)/);
-  if (rm) try { return new RegExp(rm[1], rm[2] || '').test(path); } catch { return false; }
+  if (rm)
+    try {
+      return new RegExp(rm[1], rm[2] || '').test(path);
+    } catch {
+      return false;
+    }
 
   return false;
 }
@@ -107,7 +121,8 @@ function scanBodyForGates(bodyText, functionName, fileName) {
           /chrome\.runtime\.getURL/.test(trimmed) ||
           /chrome\.tabs\.create/.test(trimmed) ||
           /location\.pathname\s*\+\s*['"]/.test(trimmed)
-        ) continue;
+        )
+          continue;
         gates.push({
           file: fileName,
           function: functionName,
@@ -132,9 +147,11 @@ function findFunctionBodies(src, fileName) {
     for (const prop of node.properties) {
       if (!ts.isPropertyAssignment(prop)) continue;
       const name = prop.name;
-      const nameText = ts.isIdentifier(name) ? name.text
-        : ts.isStringLiteral(name) ? name.text
-        : null;
+      const nameText = ts.isIdentifier(name)
+        ? name.text
+        : ts.isStringLiteral(name)
+          ? name.text
+          : null;
       if (nameText !== propName) continue;
 
       const init = prop.initializer;
@@ -187,14 +204,17 @@ function findFunctionBodies(src, fileName) {
   function visit(node) {
     if (ts.isExpressionStatement(node) && ts.isBinaryExpression(node.expression)) {
       const bin = node.expression;
-      if (bin.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
-          ts.isPropertyAccessExpression(bin.left)) {
+      if (
+        bin.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+        ts.isPropertyAccessExpression(bin.left)
+      ) {
         const left = bin.left;
-        if (ts.isPropertyAccessExpression(left.expression) &&
-            ts.isIdentifier(left.expression.expression) &&
-            left.expression.expression.text === 'g' &&
-            left.expression.name.text === 'featureModules') {
-
+        if (
+          ts.isPropertyAccessExpression(left.expression) &&
+          ts.isIdentifier(left.expression.expression) &&
+          left.expression.expression.text === 'g' &&
+          left.expression.name.text === 'featureModules'
+        ) {
           const rhs = bin.right;
           if (ts.isObjectLiteralExpression(rhs)) {
             const runProp = findPropertyInObjectLiteral(rhs, 'run');
@@ -221,25 +241,84 @@ function findFunctionBodies(src, fileName) {
 
   if (results.enabledWhen && results.enabledWhen.type === 'ref') {
     const body = findFunctionDeclaration(results.enabledWhen.name);
-    results.enabledWhen = { type: 'body', text: getBodyText(body), funcName: results.enabledWhen.name };
+    results.enabledWhen = {
+      type: 'body',
+      text: getBodyText(body),
+      funcName: results.enabledWhen.name,
+    };
   } else if (results.enabledWhen && results.enabledWhen.type === 'inline') {
-    results.enabledWhen = { type: 'body', text: getBodyText(results.enabledWhen.body), funcName: '(inline)' };
+    results.enabledWhen = {
+      type: 'body',
+      text: getBodyText(results.enabledWhen.body),
+      funcName: '(inline)',
+    };
   }
 
   return results;
 }
 
 const EXPECTED_MATRIX = [
-  { url: '/v2/m-klaim', run: ['filterPersistence'], skip: ['scrollButtons', 'batchUpload', 'batchDelete', 'openDetailInNewTab', 'doctorFilterPersistence', 'shortcutButtons'] },
-  { url: '/v2/m-klaim/detail-v2-refaktor', run: ['scrollButtons', 'batchUpload', 'batchDelete', 'openDetailInNewTab'], skip: ['filterPersistence'] },
-  { url: '/admisi/pelaksanaan_pelayanan', run: ['doctorFilterPersistence'], skip: ['scrollButtons', 'filterPersistence', 'cpptSearchFilter', 'resepTools'] },
-  { url: '/admisi/pelaksanaan_pelayanan/cppt', run: ['shortcutButtons', 'cpptSearchFilter'], skip: ['resepTools', 'doctorFilterPersistence'] },
-  { url: '/admisi/pelaksanaan_pelayanan/resep', run: ['shortcutButtons', 'resepTools'], skip: ['cpptSearchFilter', 'doctorFilterPersistence'] },
-  { url: '/admisi/detail-rawat-inap', run: ['doctorFilterPersistence'], skip: ['shortcutButtons', 'filterPersistence'] },
-  { url: '/admisi/detail-rawat-inap/cppt', run: ['shortcutButtons', 'cpptSearchFilter'], skip: ['doctorFilterPersistence'] },
-  { url: '/admisi/pelaksanaan-operasi', run: ['doctorFilterPersistence'], skip: ['shortcutButtons', 'filterPersistence'] },
-  { url: '/admisi/pengajuan_konsultasi/konsultasi', run: ['consultationEnhancer'], skip: ['shortcutButtons'] },
-  { url: '/billing/pembayaran-new/billing-verifikasi', run: ['billingFilterPersistence'], skip: ['filterPersistence', 'doctorFilterPersistence'] },
+  // openDetailInNewTab: RUN di halaman daftar /v2/m-klaim — fix 843db75
+  // sengaja menghapus slash akhir dari match ('/v2/m-klaim' bukan
+  // '/v2/m-klaim/') karena normalizePath() membuang slash, jadi match lama
+  // membuat run() tak pernah dipanggil di halaman daftar (mode popup tidak
+  // berpengaruh). Matrix ini mencerminkan perilaku yang DIINGINKAN itu.
+  {
+    url: '/v2/m-klaim',
+    run: ['filterPersistence', 'openDetailInNewTab'],
+    skip: [
+      'scrollButtons',
+      'batchUpload',
+      'batchDelete',
+      'doctorFilterPersistence',
+      'shortcutButtons',
+    ],
+  },
+  {
+    url: '/v2/m-klaim/detail-v2-refaktor',
+    run: ['scrollButtons', 'batchUpload', 'batchDelete', 'openDetailInNewTab'],
+    skip: ['filterPersistence'],
+  },
+  {
+    url: '/admisi/pelaksanaan_pelayanan',
+    run: ['doctorFilterPersistence'],
+    skip: ['scrollButtons', 'filterPersistence', 'cpptSearchFilter', 'resepTools'],
+  },
+  {
+    url: '/admisi/pelaksanaan_pelayanan/cppt',
+    run: ['shortcutButtons', 'cpptSearchFilter'],
+    skip: ['resepTools', 'doctorFilterPersistence'],
+  },
+  {
+    url: '/admisi/pelaksanaan_pelayanan/resep',
+    run: ['shortcutButtons', 'resepTools'],
+    skip: ['cpptSearchFilter', 'doctorFilterPersistence'],
+  },
+  {
+    url: '/admisi/detail-rawat-inap',
+    run: ['doctorFilterPersistence'],
+    skip: ['shortcutButtons', 'filterPersistence'],
+  },
+  {
+    url: '/admisi/detail-rawat-inap/cppt',
+    run: ['shortcutButtons', 'cpptSearchFilter'],
+    skip: ['doctorFilterPersistence'],
+  },
+  {
+    url: '/admisi/pelaksanaan-operasi',
+    run: ['doctorFilterPersistence'],
+    skip: ['shortcutButtons', 'filterPersistence'],
+  },
+  {
+    url: '/admisi/pengajuan_konsultasi/konsultasi',
+    run: ['consultationEnhancer'],
+    skip: ['shortcutButtons'],
+  },
+  {
+    url: '/billing/pembayaran-new/billing-verifikasi',
+    run: ['billingFilterPersistence'],
+    skip: ['filterPersistence', 'doctorFilterPersistence'],
+  },
 ];
 
 async function main() {
@@ -285,19 +364,21 @@ async function main() {
         const after = src.slice(fmStart);
         const objStart = after.indexOf('{');
         if (objStart !== -1) {
-          let depth = 1, i = objStart + 1;
+          let depth = 1,
+            i = objStart + 1;
           while (i < after.length && depth > 0) {
             if (after[i] === '{') depth++;
             else if (after[i] === '}') depth--;
             i++;
           }
           const objBody = after.slice(objStart + 1, i - 2);
-          const keys = [...objBody.matchAll(/(\w+):\s*\{/g)].map(m => m[1]);
+          const keys = [...objBody.matchAll(/(\w+):\s*\{/g)].map((m) => m[1]);
           for (const dk of keys) {
-            if (!features.find(fx => fx.id === dk)) {
+            if (!features.find((fx) => fx.id === dk)) {
               const valStart = objBody.search(new RegExp(dk + ':\\s*\\{'));
               if (valStart !== -1) {
-                let vdepth = 1, vi = objBody.indexOf('{', valStart) + 1;
+                let vdepth = 1,
+                  vi = objBody.indexOf('{', valStart) + 1;
                 while (vi < objBody.length && vdepth > 0) {
                   if (objBody[vi] === '{') vdepth++;
                   else if (objBody[vi] === '}') vdepth--;
@@ -306,7 +387,16 @@ async function main() {
                 const blockText = objBody.slice(objBody.indexOf('{', valStart), vi);
                 if (!seenIds.has(dk)) {
                   seenIds.add(dk);
-                  features.push({ key: dk, id: dk, name: dk, file: f, block: blockText, hasMatch: true, hasRun: true, hasId: true });
+                  features.push({
+                    key: dk,
+                    id: dk,
+                    name: dk,
+                    file: f,
+                    block: blockText,
+                    hasMatch: true,
+                    hasRun: true,
+                    hasId: true,
+                  });
                 }
               }
             }
@@ -334,10 +424,7 @@ async function main() {
         if (ENABLED_WHEN_PATHNAME_RE.test(ewLines[i])) {
           const trimmed = ewLines[i].trim();
           // Skip legitimate non-gating uses
-          if (
-            /new\s+URL\s*\(/.test(trimmed) ||
-            /chrome\.runtime/.test(trimmed)
-          ) continue;
+          if (/new\s+URL\s*\(/.test(trimmed) || /chrome\.runtime/.test(trimmed)) continue;
           enabledWhenViolations.push({
             file: f,
             line: i + 1,
@@ -356,16 +443,26 @@ async function main() {
       const expected = scenario.run.includes(feat.id);
       const status = actual === expected ? 'PASS' : 'FAIL';
       if (status === 'FAIL') {
-        errors.push(`REG: ${scenario.url} | ${feat.id} | expected ${expected ? 'RUN' : 'SKIP'} | actual ${actual ? 'RUN' : 'SKIP'}`);
+        errors.push(
+          `REG: ${scenario.url} | ${feat.id} | expected ${expected ? 'RUN' : 'SKIP'} | actual ${actual ? 'RUN' : 'SKIP'}`,
+        );
       }
-      if (!matrix.find(r => r.url === scenario.url && r.feature === feat.id)) {
-        matrix.push({ url: scenario.url, feature: feat.id, expected: expected ? 'RUN' : 'SKIP', actual: actual ? 'RUN' : 'SKIP', status });
+      if (!matrix.find((r) => r.url === scenario.url && r.feature === feat.id)) {
+        matrix.push({
+          url: scenario.url,
+          feature: feat.id,
+          expected: expected ? 'RUN' : 'SKIP',
+          actual: actual ? 'RUN' : 'SKIP',
+          status,
+        });
       }
     }
   }
 
   // Dead feature detection: features in FEATURE_FILES but never match any URL
-  const matchedIds = new Set(matrix.filter(r => r.status === 'PASS' && r.expected === 'RUN').map(r => r.feature));
+  const matchedIds = new Set(
+    matrix.filter((r) => r.status === 'PASS' && r.expected === 'RUN').map((r) => r.feature),
+  );
   for (const feat of features) {
     if (!matchedIds.has(feat.id)) {
       deadFeatures.push(feat);
@@ -374,23 +471,29 @@ async function main() {
 
   // Report
   const totalErrors =
-    features.filter(f => !f.hasId).length +
-    features.filter(f => !f.hasMatch).length +
-    features.filter(f => !f.hasRun).length +
-    errors.filter(e => e.startsWith('DUPLICATE')).length +
-    errors.filter(e => e.startsWith('REG')).length +
+    features.filter((f) => !f.hasId).length +
+    features.filter((f) => !f.hasMatch).length +
+    features.filter((f) => !f.hasRun).length +
+    errors.filter((e) => e.startsWith('DUPLICATE')).length +
+    errors.filter((e) => e.startsWith('REG')).length +
     enabledWhenViolations.length;
 
   console.log('\n=== Feature Audit Report ===\n');
   console.log(`Total features          : ${features.length}`);
-  console.log(`Missing id              : ${features.filter(f => !f.hasId).length}`);
-  console.log(`Missing match           : ${features.filter(f => !f.hasMatch).length}`);
-  console.log(`Missing run             : ${features.filter(f => !f.hasRun).length}`);
-  console.log(`Duplicate id            : ${errors.filter(e => e.startsWith('DUPLICATE')).length}`);
+  console.log(`Missing id              : ${features.filter((f) => !f.hasId).length}`);
+  console.log(`Missing match           : ${features.filter((f) => !f.hasMatch).length}`);
+  console.log(`Missing run             : ${features.filter((f) => !f.hasRun).length}`);
+  console.log(
+    `Duplicate id            : ${errors.filter((e) => e.startsWith('DUPLICATE')).length}`,
+  );
   console.log(`Legacy URL gates        : ${legacyGates.length} (in run/enabledWhen bodies)`);
-  console.log(`enabledWhen violations  : ${enabledWhenViolations.length} (pathname/location in enabledWhen)`);
+  console.log(
+    `enabledWhen violations  : ${enabledWhenViolations.length} (pathname/location in enabledWhen)`,
+  );
   console.log(`Dead features           : ${deadFeatures.length} (never match in regression)`);
-  console.log(`Regression PASS         : ${matrix.filter(r => r.status === 'PASS').length}/${matrix.length}\n`);
+  console.log(
+    `Regression PASS         : ${matrix.filter((r) => r.status === 'PASS').length}/${matrix.length}\n`,
+  );
 
   for (const feat of features) {
     const ok = feat.hasId && feat.hasMatch && feat.hasRun;
@@ -439,11 +542,13 @@ async function main() {
   console.log(header);
   console.log('='.repeat(header.length));
   for (const r of matrix) {
-    console.log(`${r.url.padEnd(42)} ${r.feature.padEnd(26)} ${r.expected.padEnd(8)} ${r.actual.padEnd(8)} ${r.status === 'PASS' ? '✔' : '✘'}`);
+    console.log(
+      `${r.url.padEnd(42)} ${r.feature.padEnd(26)} ${r.expected.padEnd(8)} ${r.actual.padEnd(8)} ${r.status === 'PASS' ? '✔' : '✘'}`,
+    );
   }
 
-  const covered = new Set(matrix.map(r => r.feature));
-  const uncovered = features.filter(f => !covered.has(f.id));
+  const covered = new Set(matrix.map((r) => r.feature));
+  const uncovered = features.filter((f) => !covered.has(f.id));
   if (uncovered.length > 0) {
     console.log('\n--- Uncovered Features ---');
     for (const f of uncovered) console.log(`  ${f.id} (${f.file})`);
@@ -453,4 +558,7 @@ async function main() {
   console.log('✅ Audit complete\n');
 }
 
-main().catch(e => { console.error('Audit error:', e); process.exit(1); });
+main().catch((e) => {
+  console.error('Audit error:', e);
+  process.exit(1);
+});

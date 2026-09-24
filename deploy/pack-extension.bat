@@ -2,6 +2,24 @@
 REM ================================================================
 REM MORBIS Ext Unofficial - Pack Chromium Extension Script
 REM ================================================================
+REM
+REM !!! DEPRECATED - JANGAN DIPAKAI UNTUK RILIS PRODUKSI !!!
+REM ================================================================
+REM  Packing manual SUDAH DIGANTIKAN oleh CI:
+REM    .github/workflows/deploy-to-main.yml (tiap push branch dev)
+REM    -> bump versi -> build -> pack CRX3 signed -> publish ke main/Pages.
+REM
+REM  PERINGATAN PENTING (BACA DULU):
+REM   - JANGAN PERNAH membiarkan kolom "Private key" KOSONG untuk rilis
+REM     produksi! Browser akan membuat file .pem BARU -> EXT_ID BERUBAH ->
+REM     seluruh rantai policy / update.xml / ekstensi yang terpasang rusak.
+REM   - CRX produksi DITANDATANGANI OLEH CI memakai key yang SAMA
+REM     (secret CRX_SIGNING_KEY di GitHub). Key itu identitas ekstensi.
+REM   - Untuk rilis, pakai alur GitHub: push ke branch dev, biarkan CI
+REM     mengerjakan build + sign + deploy. JANGAN menimpa .pem / .crx
+REM     produksi di folder deploy/ dengan hasil packing lokal.
+REM   - Script ini dipertahankan sebagai arsip / eksperimen lokal saja.
+REM ================================================================
 
 setlocal
 

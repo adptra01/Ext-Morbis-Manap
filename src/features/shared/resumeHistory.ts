@@ -210,7 +210,12 @@ export function readPetugas(): string {
 
 /* ── Sinkronisasi Reports SIMRS (outbox: lokal dulu, kirim belakang) ── */
 
-import { resolveCasemixBase, fetchResumeCentral, type CentralResumeEntry } from './casemixApi.js';
+import {
+  resolveCasemixBase,
+  fetchResumeCentral,
+  casemixTransportBlockReason,
+  type CentralResumeEntry,
+} from './casemixApi.js';
 
 const REPORTS_API_PATH = '/api/reports/resume-history';
 
@@ -272,7 +277,15 @@ export function postToReports(
   };
   const send = async (): Promise<boolean> => {
     try {
-      const res = await fetcher(resolveReportsBase() + REPORTS_API_PATH, {
+      const base = resolveReportsBase();
+      // Kill switch PHI (lihat casemixApi): base http: → fail fast TANPA
+      // mengirim snapshot resume (anamnesa/diagnosa/terapi) lewat plaintext.
+      const locked = casemixTransportBlockReason(base);
+      if (locked) {
+        console.warn('[resumeHistory]', locked, '— kirim resume dilewati:', idVisit);
+        return false;
+      }
+      const res = await fetcher(base + REPORTS_API_PATH, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(payload),
@@ -630,37 +643,53 @@ export function openHistoryModal(opts: OpenHistoryOpts): void {
   // Read-through pusat: riwayat dari PC/akun lain ikut tampil tanpa reload.
   // Diam bila offline (daftar lokal tetap tampil) atau modal sudah ditutup.
   if (opts.idVisit) {
-    try {
-      void fetchResumeCentral(opts.idVisit, opts.tipe).then((central) => {
-        try {
-          if (!central.length || !ov.isConnected) return;
-          const incoming: ResumeHistoryEntry[] = [];
-          for (const r of central) {
-            const e = centralToResumeEntry(r, opts.tipe);
-            if (e) incoming.push(e);
-          }
-          if (!incoming.length) return;
-          const base = loadHistory(opts.idVisit, opts.tipe, store);
-          const merged = mergeCentralResumeEntries(base, incoming);
-          if (merged.length === base.length) return; // tak ada yang baru
-          saveHistory(merged, opts.idVisit, opts.tipe, store);
-          paint(merged.slice().reverse());
-          // Kabari tombol Riwayat (validator) agar counter ikut mutakhir.
+    // Kill switch PHI (lihat casemixApi): base http: → tidak fetch riwayat
+    // pusat sama sekali; tampilkan catatan ramah di modal, riwayat lokal tetap.
+    const locked = casemixTransportBlockReason();
+    if (locked) {
+      try {
+        const note = document.createElement('div');
+        note.textContent = locked + ' — riwayat hanya dari PC ini.';
+        note.style.cssText =
+          'margin-top:10px;padding:8px 10px;background:#fef3c7;color:#92400e;' +
+          'border-radius:6px;font-size:13px;line-height:1.5;';
+        body.appendChild(note);
+      } catch {
+        /* ignore */
+      }
+    } else {
+      try {
+        void fetchResumeCentral(opts.idVisit, opts.tipe).then((central) => {
           try {
-            document.dispatchEvent(
-              new CustomEvent('ext-rv-history-merged', {
-                detail: { idVisit: opts.idVisit, tipe: opts.tipe, count: merged.length },
-              }),
-            );
+            if (!central.length || !ov.isConnected) return;
+            const incoming: ResumeHistoryEntry[] = [];
+            for (const r of central) {
+              const e = centralToResumeEntry(r, opts.tipe);
+              if (e) incoming.push(e);
+            }
+            if (!incoming.length) return;
+            const base = loadHistory(opts.idVisit, opts.tipe, store);
+            const merged = mergeCentralResumeEntries(base, incoming);
+            if (merged.length === base.length) return; // tak ada yang baru
+            saveHistory(merged, opts.idVisit, opts.tipe, store);
+            paint(merged.slice().reverse());
+            // Kabari tombol Riwayat (validator) agar counter ikut mutakhir.
+            try {
+              document.dispatchEvent(
+                new CustomEvent('ext-rv-history-merged', {
+                  detail: { idVisit: opts.idVisit, tipe: opts.tipe, count: merged.length },
+                }),
+              );
+            } catch {
+              /* ignore */
+            }
           } catch {
             /* ignore */
           }
-        } catch {
-          /* ignore */
-        }
-      });
-    } catch {
-      /* ignore */
+        });
+      } catch {
+        /* ignore */
+      }
     }
   }
 }

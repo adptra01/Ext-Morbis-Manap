@@ -116,15 +116,21 @@ function fetchWithTimeout(
   const timer = setTimeout(() => ac.abort(), timeoutMs);
   // Combine external signal (e.g., batch cancellation) with timeout
   const externalSignal = init.signal;
+  const onExternalAbort = () => ac.abort();
   if (externalSignal) {
     if (externalSignal.aborted) {
       clearTimeout(timer);
       ac.abort();
     } else {
-      externalSignal.addEventListener('abort', () => ac.abort());
+      // once + explicit removal in finally: the batch controller is long-lived
+      // and reused across runs — without cleanup listeners would accumulate.
+      externalSignal.addEventListener('abort', onExternalAbort, { once: true });
     }
   }
-  return fetch(url, { ...init, signal: ac.signal }).finally(() => clearTimeout(timer));
+  return fetch(url, { ...init, signal: ac.signal }).finally(() => {
+    clearTimeout(timer);
+    if (externalSignal) externalSignal.removeEventListener('abort', onExternalAbort);
+  });
 }
 
 /** Retry wrapper — ponytail: 2 retries with 1s/2s backoff for transient failures */
@@ -173,7 +179,6 @@ function _getBatchAbortSignal(): AbortSignal {
 function cancelBatchUpload(): void {
   if (_batchAbortController) {
     _batchAbortController.abort();
-    _batchAbortController = null;
   }
   isProcessing = false;
 }
@@ -1032,6 +1037,9 @@ async function processAndUploadSingleUrl(
     return { success: true, result };
   } catch (error) {
     const msg = (error as Error).message;
+    // Batch cancellation must propagate to the caller so the outer loop can
+    // stop the batch — do not map it to a generic per-item failure.
+    if (msg === 'Batch cancelled') throw error;
     // ponytail: friendly error for common failure modes
     let friendly = msg;
     if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
@@ -1047,6 +1055,10 @@ async function processAndUploadSingleUrl(
 
 async function runBatchQueue(): Promise<void> {
   if (isProcessing) return;
+
+  // New batch run — reset the shared cancellation signal so a batch started
+  // after a cancel does not begin already-aborted.
+  _batchAbortController = new AbortController();
 
   isProcessing = true;
   toggleUIProcessingState(true);
@@ -1073,6 +1085,7 @@ async function runBatchQueue(): Promise<void> {
 
   let successCount = 0;
   let errorCount = 0;
+  let cancelled = false;
   const itemsToUpload = batchQueue.filter((item) => item.selected !== false);
   const total = itemsToUpload.length;
 
@@ -1094,6 +1107,7 @@ async function runBatchQueue(): Promise<void> {
   for (let i = 0; i < total; i++) {
     // FIX: Check for batch cancellation at start of each iteration
     if (_getBatchAbortSignal().aborted) {
+      cancelled = true;
       updateStatus('Batch dibatalkan oleh user');
       break;
     }
@@ -1126,8 +1140,11 @@ async function runBatchQueue(): Promise<void> {
         errorCount++;
       }
     } catch (error) {
-      // Handle batch cancellation gracefully
+      // Handle batch cancellation gracefully. LIVE branch: cancelBatchUpload()
+      // aborts the shared controller and processAndUploadSingleUrl rethrows
+      // 'Batch cancelled', so reaching here stops the whole batch.
       if (error instanceof Error && error.message === 'Batch cancelled') {
+        cancelled = true;
         updateStatus('Batch dibatalkan');
         break;
       }
@@ -1142,7 +1159,9 @@ async function runBatchQueue(): Promise<void> {
   }
 
   // Final status with summary
-  const summaryParts = [`Selesai ${total} dokumen:`, `${successCount} sukses`];
+  const summaryParts = cancelled
+    ? ['Batch dibatalkan:', `${successCount} sukses`]
+    : [`Selesai ${total} dokumen:`, `${successCount} sukses`];
   if (errorCount > 0) summaryParts.push(`${errorCount} gagal`);
   updateStatus(summaryParts.join(' '));
 
@@ -1356,6 +1375,9 @@ async function crawlDokumenPasienToSidepanel(): Promise<void> {
 }
 
 async function runBatchQueueToSidepanel(): Promise<void> {
+  // New batch run — reset the shared cancellation signal (mirrors runBatchQueue)
+  // so a sidepanel batch never inherits a stale aborted controller.
+  _batchAbortController = new AbortController();
   try {
     const urlParams = new URLSearchParams(window.location.search);
     const idVisitStr = urlParams.get('id_visit') || '';

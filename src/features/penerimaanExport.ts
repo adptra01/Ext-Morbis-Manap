@@ -165,6 +165,21 @@ interface ExportStats {
   contohTidakDitemukan: string[];
 }
 
+/** Netralkan sel yang bisa dievaluasi Excel sebagai formula (CWE-1236):
+ *  sel TEKS yang diawali `=` `+` `-` `@` diberi apostrof depan agar dibaca
+ *  sebagai teks murni. Sel numerik (mis. "-123", "+1.234,5") TIDAK disentuh. */
+function neutralizeFormulaCells(doc: Document): void {
+  for (const cell of Array.from(doc.querySelectorAll('td, th'))) {
+    const text = cell.textContent || '';
+    if (!text) continue;
+    const c = text[0];
+    if (c !== '=' && c !== '+' && c !== '-' && c !== '@') continue;
+    // Angka negatif/positif aman — biarkan utuh (bukan formula).
+    if ((c === '+' || c === '-') && /^[+-]?[\d.,]+$/.test(text.trim())) continue;
+    cell.prepend(doc.createTextNode("'"));
+  }
+}
+
 /** Tulis ulang HTML xls: ganti kolom Waktu Penjualan → 2 kolom waktu antrian.
  *  No Resep dari export HTML dijoin ke liveMap → resep_id → lookupAntrianBatch
  *  → created_at (Waktu Verif/Antrikan) + done_at (Waktu Klik Selesai).
@@ -248,6 +263,8 @@ async function rewriteExport(
     }
     orig.replaceWith(tdV, tdS);
   }
+  // CWE-1236: netralkan sel (kolom lain dari server) sebelum diserialisasi ke .xls.
+  neutralizeFormulaCells(doc);
   return { html: doc.documentElement.outerHTML, stats };
 }
 
@@ -273,7 +290,9 @@ async function processExport(url: string): Promise<void> {
     );
 
     updateLoading('Menyiapkan file unduhan…');
-    const blob = new Blob([out], { type: 'application/vnd.ms-excel' });
+    // BOM (U+FEFF) agar Excel tidak salah baca karakter non-ASCII
+    // (nama pasien, em-dash) — pola sama dengan paLabPrint.ts.
+    const blob = new Blob(['\uFEFF' + out], { type: 'application/vnd.ms-excel' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = FILENAME;
@@ -429,6 +448,41 @@ function buildExportUrl(): string {
  *  pengaman bila trap digusur paksa. */
 const WRAP_FLAG = '__extPenerimaanWrapped';
 
+/** Handle timer & listener aktif — dibersihkan saat keluar halaman list. */
+let rearmTimer: number | null = null;
+let injectTimer: number | null = null;
+let onClickExport: ((e: MouseEvent) => void) | null = null;
+let onSubmitExport: ((e: SubmitEvent) => void) | null = null;
+
+/** Masih di halaman list penerimaan? (bukan /detail, bukan route lain). */
+function isListPage(): boolean {
+  return (
+    /\/inventory\/resep\/penerimaan/.test(location.pathname) &&
+    !location.pathname.includes('/detail')
+  );
+}
+
+/** Cleanup: hentikan interval + lepas listener document saat SPA pindah
+ *  halaman (atau pagehide/beforeunload) — jangan biarkan aktif di halaman lain. */
+function cleanup(): void {
+  if (rearmTimer !== null) {
+    window.clearInterval(rearmTimer);
+    rearmTimer = null;
+  }
+  if (injectTimer !== null) {
+    window.clearInterval(injectTimer);
+    injectTimer = null;
+  }
+  if (onClickExport) {
+    document.removeEventListener('click', onClickExport, true);
+    onClickExport = null;
+  }
+  if (onSubmitExport) {
+    document.removeEventListener('submit', onSubmitExport, true);
+    onSubmitExport = null;
+  }
+}
+
 function makeLoadWrapper(orig: (...a: unknown[]) => unknown): (...a: unknown[]) => unknown {
   const wrapper = function (this: unknown, ...args: unknown[]): unknown {
     let url: string;
@@ -497,7 +551,12 @@ function trapLoadTableExcel(): void {
   };
   arm();
   // Jaring pengaman: pasang ulang trap bila digusur paksa.
-  window.setInterval(() => {
+  rearmTimer = window.setInterval(() => {
+    if (!isListPage()) {
+      // Pindah halaman — berhenti total, jangan aktif di route lain.
+      cleanup();
+      return;
+    }
     try {
       const d = Object.getOwnPropertyDescriptor(w, 'loadTableExcel');
       if (d && d.set === w.__extTrapSetter) return;
@@ -589,60 +648,65 @@ function init(): void {
 
   // Inject tombol kustom (re-inject bila SPA render ulang)
   injectCustomButton();
-  window.setInterval(injectCustomButton, 3000);
+  injectTimer = window.setInterval(() => {
+    if (!isListPage()) {
+      window.console.info('[penerimaanExport] bukan halaman list — cleanup interval/listener');
+      cleanup();
+      return;
+    }
+    injectCustomButton();
+  }, 3000);
 
   wrapLoadTableExcel();
-  document.addEventListener(
-    'click',
-    (e) => {
-      const el = e.target as HTMLElement;
-      const clickable = el.closest?.(
-        'a[href], button, input[type="button"], input[type="submit"], [onclick]',
-      ) as HTMLElement | null;
-      if (!clickable) return;
-      let href = (clickable as HTMLAnchorElement).getAttribute?.('href') || '';
-      // Tombol JS: gali URL export dari atribut onclick.
-      if (!href) {
-        const oc = clickable.getAttribute?.('onclick') || '';
-        const m = oc.match(/['"]([^'"]*(?:export|xls|excel|informasi-resep)[^'"]*)['"]/i);
-        if (m) href = m[1];
-      }
-      if (!href && !EXPORT_RE.test(clickable.textContent || '')) return;
-      if (href && !EXPORT_RE.test(href) && !EXPORT_RE.test(clickable.textContent || '')) return;
-      if (!href) {
-        // --- Tombol JS: onclick="loadTableExcel()" / "exportExcel()" dst ---
-        const oc = clickable.getAttribute?.('onclick') || '';
-        // Deteksi panggilan fungsi JS yang terkait export
-        if (!/loadTableExcel|exportExcel|excel|export/i.test(oc)) return;
+  onClickExport = (e: MouseEvent): void => {
+    const el = e.target as HTMLElement;
+    const clickable = el.closest?.(
+      'a[href], button, input[type="button"], input[type="submit"], [onclick]',
+    ) as HTMLElement | null;
+    if (!clickable) return;
+    let href = (clickable as HTMLAnchorElement).getAttribute?.('href') || '';
+    // Tombol JS: gali URL export dari atribut onclick.
+    if (!href) {
+      const oc = clickable.getAttribute?.('onclick') || '';
+      const m = oc.match(/['"]([^'"]*(?:export|xls|excel|informasi-resep)[^'"]*)['"]/i);
+      if (m) href = m[1];
+    }
+    if (!href && !EXPORT_RE.test(clickable.textContent || '')) return;
+    if (href && !EXPORT_RE.test(href) && !EXPORT_RE.test(clickable.textContent || '')) return;
+    if (!href) {
+      // --- Tombol JS: onclick="loadTableExcel()" / "exportExcel()" dst ---
+      const oc = clickable.getAttribute?.('onclick') || '';
+      // Deteksi panggilan fungsi JS yang terkait export
+      if (!/loadTableExcel|exportExcel|excel|export/i.test(oc)) return;
 
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation(); // hapus tangan inline onclick
-
-        const url = buildExportUrl();
-        window.console.info('[penerimaanExport] intercept onclick → ' + url);
-        void processExport(url).catch((err) => {
-          window.console.warn('[penerimaanExport] rewrite gagal, fallback:', err);
-          toast('Export server (tanpa kolom waktu antrian).', 6000);
-          const fn = (window as unknown as Record<string, unknown>).loadTableExcel;
-          if (typeof fn === 'function') {
-            (fn as (...a: unknown[]) => unknown).call(window);
-          }
-        });
-        return;
-      }
       e.preventDefault();
       e.stopPropagation();
-      const url = new URL(href, location.href).href;
-      window.console.info('[penerimaanExport] intercept:', url);
+      e.stopImmediatePropagation(); // hapus tangan inline onclick
+
+      const url = buildExportUrl();
+      window.console.info('[penerimaanExport] intercept onclick → ' + url);
       void processExport(url).catch((err) => {
-        window.console.warn('[penerimaanExport] fallback export asli:', err);
-        window.open(url, '_blank');
+        window.console.warn('[penerimaanExport] rewrite gagal, fallback:', err);
+        toast('Export server (tanpa kolom waktu antrian).', 6000);
+        const fn = (window as unknown as Record<string, unknown>).loadTableExcel;
+        if (typeof fn === 'function') {
+          (fn as (...a: unknown[]) => unknown).call(window);
+        }
       });
-    },
-    true,
-  );
-  document.addEventListener('submit', (e) => {
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    const url = new URL(href, location.href).href;
+    window.console.info('[penerimaanExport] intercept:', url);
+    void processExport(url).catch((err) => {
+      window.console.warn('[penerimaanExport] fallback export asli:', err);
+      window.open(url, '_blank');
+    });
+  };
+  document.addEventListener('click', onClickExport, true);
+
+  onSubmitExport = (e: SubmitEvent): void => {
     const f = e.target as HTMLFormElement;
     const action = f?.action || '';
     if (!EXPORT_RE.test(action)) return;
@@ -657,7 +721,12 @@ function init(): void {
       window.console.warn('[penerimaanExport] fallback export asli:', err);
       window.open(url, '_blank');
     });
-  });
+  };
+  document.addEventListener('submit', onSubmitExport, true);
+
+  // Full navigation / tutup tab → bersihkan semua timer & listener.
+  window.addEventListener('pagehide', cleanup);
+  window.addEventListener('beforeunload', cleanup);
 }
 
 // Gate: flag khusus penerimaanExport (admin + apotek) — pola yang sama

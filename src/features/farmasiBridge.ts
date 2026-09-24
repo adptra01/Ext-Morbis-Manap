@@ -24,6 +24,7 @@ import {
   markCompleted,
   reset,
 } from './shared/farmasiQueue';
+import { sanitizeTtsText } from './shared/casemixApi.js';
 
 (function () {
   const REQ_SOURCE = 'MORBIS-FARMASI';
@@ -45,10 +46,15 @@ import {
         reply('TTS_RESULT', { ok: false, reason: 'message-error extension context invalidated' });
         return;
       }
+      // PHI guard TTS: teks yang diteruskan ke SW dipakai membangun URL
+      // GET /api/tts (tercatat di log server) — buang nama pasien dulu
+      // (lihat sanitizeTtsText di casemixApi.ts). Nomor antrian (bila ada
+      // dalam teks) dipertahankan.
+      const text = sanitizeTtsText(data.text);
       // Callback-style (bukan promise): di MV3 content script, promise
       // sendMessage bisa resolve undefined walau SW menjawab — callback +
       // chrome.runtime.lastError memberi alasan eksplisit.
-      chrome.runtime.sendMessage({ type: 'TTS_LOCAL', text: data.text }, (r) => {
+      chrome.runtime.sendMessage({ type: 'TTS_LOCAL', text }, (r) => {
         const err = chrome.runtime.lastError
           ? 'message-error ' + String(chrome.runtime.lastError.message).slice(0, 60)
           : undefined;

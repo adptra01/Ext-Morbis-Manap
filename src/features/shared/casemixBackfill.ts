@@ -20,7 +20,7 @@ import {
   type ResumeHistoryEntry,
   type TipeResume,
 } from './resumeHistory.js';
-import { resolveCasemixBase } from './casemixApi.js';
+import { resolveCasemixBase, casemixTransportBlockReason } from './casemixApi.js';
 
 export type KVStore = {
   getItem(k: string): string | null;
@@ -69,8 +69,16 @@ async function postCentral(
   payload: Record<string, unknown>,
   fetcher: typeof fetch = fetch,
 ): Promise<boolean> {
+  const base = resolveCasemixBase();
+  const locked = casemixTransportBlockReason(base);
+  if (locked) {
+    // Kill-switch PHI (konsisten dgn casemixApi.postFireForget): jangan
+    // cukupkan payload biasa lewat HTTP ke pusat — resep/pre-op ditahan lokal.
+    console.warn('[casemixBackfill]', locked, '— backfill dilewati:', path);
+    return false;
+  }
   try {
-    const res = await fetcher(resolveCasemixBase() + path, {
+    const res = await fetcher(base + path, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(payload),
