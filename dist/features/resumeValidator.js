@@ -1,6 +1,7 @@
 'use strict';
 var __morbis_feature = (() => {
-  var R = {
+  // src/shared/ui/colors.ts
+  var colors = {
     background: '#ffffff',
     foreground: '#0a0a0e',
     card: '#ffffff',
@@ -19,6 +20,7 @@ var __morbis_feature = (() => {
     border: '#e2e8f0',
     input: '#e2e8f0',
     ring: '#2469f0',
+    /* semantic shortcuts */
     success: '#1b8a4b',
     successBg: '#eaf6ef',
     warning: '#c47a1a',
@@ -28,16 +30,22 @@ var __morbis_feature = (() => {
     info: '#2469f0',
     infoBg: '#eef3ff',
   };
-  var Ie = new Set();
-  function ce(e, r) {
-    if (Ie.has(e)) {
-      let u = document.getElementById(e);
-      if (u) return u;
+
+  // src/shared/ui/index.ts
+  var injectedSheets = /* @__PURE__ */ new Set();
+  function injectCSS(id, css) {
+    if (injectedSheets.has(id)) {
+      const existing = document.getElementById(id);
+      if (existing) return existing;
     }
-    let n = document.createElement('style');
-    return ((n.id = e), (n.textContent = r), document.head.appendChild(n), Ie.add(e), n);
+    const style = document.createElement('style');
+    style.id = id;
+    style.textContent = css;
+    document.head.appendChild(style);
+    injectedSheets.add(id);
+    return style;
   }
-  ce(
+  injectCSS(
     'ext-shared-animations',
     `
   @keyframes fadeSlideIn {
@@ -46,39 +54,43 @@ var __morbis_feature = (() => {
   }
 `,
   );
-  var Tt = /^[A-Z][0-9][0-9](\.[0-9]{1,2})?$/,
-    St = /^[0-9]{2}(\.[0-9]{1,2})?$/,
-    wt = /^(\d{1,3})\/(\d{1,3})$/,
-    Lt = /^\d+(\.\d+)?$/;
-  function h(e) {
-    let r = e.trim();
-    return r === '' || /^[-–—]+$/.test(r);
+
+  // src/features/shared/resumeValidation.ts
+  var ICD10_RE = /^[A-Z][0-9][0-9](\.[0-9]{1,2})?$/;
+  var ICD9_RE = /^[0-9]{2}(\.[0-9]{1,2})?$/;
+  var BP_RE = /^(\d{1,3})\/(\d{1,3})$/;
+  var NUM_RE = /^\d+(\.\d+)?$/;
+  function isEmptyish(v) {
+    const s = v.trim();
+    return s === '' || /^[-–—]+$/.test(s);
   }
-  function z(e) {
-    return Tt.test(e.trim().toUpperCase());
+  function isICD10(v) {
+    return ICD10_RE.test(v.trim().toUpperCase());
   }
-  function Y(e) {
-    return St.test(e.trim());
+  function isICD9(v) {
+    return ICD9_RE.test(v.trim());
   }
-  function de(e) {
-    let r = e.trim().replace(/\s+/g, ''),
-      n = wt.exec(r);
-    if (!n) return !1;
-    let u = parseInt(n[1], 10),
-      c = parseInt(n[2], 10);
-    return u >= 50 && u <= 250 && c >= 20 && c <= 160;
+  function isNormalBP(v) {
+    const s = v.trim().replace(/\s+/g, '');
+    const m = BP_RE.exec(s);
+    if (!m) return false;
+    const sys = parseInt(m[1], 10);
+    const dia = parseInt(m[2], 10);
+    return sys >= 50 && sys <= 250 && dia >= 20 && dia <= 160;
   }
-  function L(e, r, n) {
-    let u = e.trim().replace(',', '.');
-    if (!Lt.test(u)) return !1;
-    let c = parseFloat(u);
-    return !isNaN(c) && c >= r && c <= n;
+  function isValidVital(v, min, max) {
+    const s = v.trim().replace(',', '.');
+    if (!NUM_RE.test(s)) return false;
+    const n = parseFloat(s);
+    return !isNaN(n) && n >= min && n <= max;
   }
-  function pe(e) {
-    return /[\p{L}\p{N}]/u.test(e);
+  function isUsableText(v) {
+    return /[\p{L}\p{N}]/u.test(v);
   }
-  var Rt = '"Plus Jakarta Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif',
-    Ct = `
+
+  // src/ui/web/tokens.ts
+  var FONT_STACK = '"Plus Jakarta Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+  var TOKENS_CSS = `
   :host {
     /* Brand */
     --ext-primary: #00875a;
@@ -109,7 +121,7 @@ var __morbis_feature = (() => {
     --ext-text-on-primary: #ffffff;
 
     /* Typography \u2014 lebih besar dari default, untuk mudah dibaca */
-    --ext-font-family: ${Rt};
+    --ext-font-family: ${FONT_STACK};
     --ext-font-size-xs: 12px;
     --ext-font-size-sm: 13px;
     --ext-font-size-md: 15px;
@@ -144,27 +156,35 @@ var __morbis_feature = (() => {
     --ext-duration-fast: 140ms;
     --ext-duration-normal: 220ms;
   }
-`,
-    ee = null;
-  function It() {
-    return (ee || ((ee = new CSSStyleSheet()), ee.replaceSync(Ct)), ee);
+`;
+  var sharedSheet = null;
+  function getTokenSheet() {
+    if (!sharedSheet) {
+      sharedSheet = new CSSStyleSheet();
+      sharedSheet.replaceSync(TOKENS_CSS);
+    }
+    return sharedSheet;
   }
-  var Me = !1;
-  function Mt() {
-    if (Me || document.getElementById('ext-pjs-font')) return;
-    Me = !0;
-    let e = document.createElement('link');
-    ((e.id = 'ext-pjs-font'),
-      (e.rel = 'stylesheet'),
-      (e.href =
-        'http://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'),
-      document.head.appendChild(e));
+  var fontInjected = false;
+  function ensureFont() {
+    if (fontInjected || document.getElementById('ext-pjs-font')) return;
+    fontInjected = true;
+    const link = document.createElement('link');
+    link.id = 'ext-pjs-font';
+    link.rel = 'stylesheet';
+    link.href =
+      'http://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap';
+    document.head.appendChild(link);
   }
-  function te(e, r = 'open') {
-    let n = e.attachShadow({ mode: r });
-    return ((n.adoptedStyleSheets = [It()]), Mt(), n);
+  function attachShadowWithTokens(el, mode = 'open') {
+    const root = el.attachShadow({ mode });
+    root.adoptedStyleSheets = [getTokenSheet()];
+    ensureFont();
+    return root;
   }
-  var At = `
+
+  // src/ui/web/ext-modal.ts
+  var STYLE = `
   :host { display: none; }
   :host([open]) { display: block; }
   .overlay {
@@ -248,16 +268,16 @@ var __morbis_feature = (() => {
   @keyframes ext-slide-up {
     from { opacity: 0; transform: translateY(18px) scale(0.98); }
   }
-`,
-    me = class extends HTMLElement {
-      constructor() {
-        super();
-        this.handleKey = (n) => {
-          n.key === 'Escape' && this.hasAttribute('open') && this.cancel();
-        };
-        ((this.root = te(this)),
-          (this.root.innerHTML = `
-      <style>${At}</style>
+`;
+  var ExtModal = class extends HTMLElement {
+    constructor() {
+      super();
+      this.handleKey = (e) => {
+        if (e.key === 'Escape' && this.hasAttribute('open')) this.cancel();
+      };
+      this.root = attachShadowWithTokens(this);
+      this.root.innerHTML = `
+      <style>${STYLE}</style>
       <div class="overlay">
         <div class="modal" role="dialog" aria-modal="true">
           <div class="header">
@@ -270,40 +290,44 @@ var __morbis_feature = (() => {
           </div>
         </div>
       </div>
-    `));
-      }
-      connectedCallback() {
-        let n = this.root.querySelector('.overlay');
-        (this.root.querySelector('.close').addEventListener('click', () => this.cancel()),
-          n.addEventListener('click', (c) => {
-            c.target === n && this.cancel();
-          }),
-          document.addEventListener('keydown', this.handleKey));
-      }
-      disconnectedCallback() {
-        document.removeEventListener('keydown', this.handleKey);
-      }
-      get titleSlot() {
-        return this.querySelector('[slot="title"]');
-      }
-      get footerSlot() {
-        return this.querySelector('[slot="footer"]');
-      }
-      open() {
-        this.setAttribute('open', '');
-      }
-      close() {
-        this.removeAttribute('open');
-      }
-      cancel() {
-        (this.dispatchEvent(new CustomEvent('ext-cancel')), this.close());
-      }
-      ok() {
-        this.dispatchEvent(new CustomEvent('ext-ok'));
-      }
-    };
-  customElements.get('ext-modal') || customElements.define('ext-modal', me);
-  var Ht = `
+    `;
+    }
+    connectedCallback() {
+      const overlay = this.root.querySelector('.overlay');
+      const closeBtn = this.root.querySelector('.close');
+      closeBtn.addEventListener('click', () => this.cancel());
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) this.cancel();
+      });
+      document.addEventListener('keydown', this.handleKey);
+    }
+    disconnectedCallback() {
+      document.removeEventListener('keydown', this.handleKey);
+    }
+    get titleSlot() {
+      return this.querySelector('[slot="title"]');
+    }
+    get footerSlot() {
+      return this.querySelector('[slot="footer"]');
+    }
+    open() {
+      this.setAttribute('open', '');
+    }
+    close() {
+      this.removeAttribute('open');
+    }
+    cancel() {
+      this.dispatchEvent(new CustomEvent('ext-cancel'));
+      this.close();
+    }
+    ok() {
+      this.dispatchEvent(new CustomEvent('ext-ok'));
+    }
+  };
+  if (!customElements.get('ext-modal')) customElements.define('ext-modal', ExtModal);
+
+  // src/ui/web/ext-btn.ts
+  var STYLE2 = `
   :host { display: inline-block; }
   button {
     display: inline-flex;
@@ -359,432 +383,471 @@ var __morbis_feature = (() => {
   :host([loading]) .spinner { display: inline-block; }
   :host([loading]) button { pointer-events: none; opacity: 0.8; }
   @keyframes ext-spin { to { transform: rotate(360deg); } }
-`,
-    fe = class extends HTMLElement {
-      constructor() {
-        super();
-        let r = te(this);
-        ((r.innerHTML = `
-      <style>${Ht}</style>
+`;
+  var ExtBtn = class extends HTMLElement {
+    constructor() {
+      super();
+      const root = attachShadowWithTokens(this);
+      root.innerHTML = `
+      <style>${STYLE2}</style>
       <button type="button">
         <span class="spinner" aria-hidden="true"></span>
         <span class="label"><slot></slot></span>
       </button>
-    `),
-          (this.btn = r.querySelector('button')));
+    `;
+      this.btn = root.querySelector('button');
+    }
+    connectedCallback() {
+      this.btn.disabled = this.hasAttribute('disabled') || this.hasAttribute('loading');
+      this.btn.setAttribute('aria-busy', this.hasAttribute('loading') ? 'true' : 'false');
+      this.btn.addEventListener('click', (e) => {
+        if (this.hasAttribute('loading') || this.hasAttribute('disabled')) {
+          e.stopPropagation();
+          e.preventDefault();
+          return;
+        }
+      });
+    }
+    static get observedAttributes() {
+      return ['disabled', 'loading'];
+    }
+    attributeChangedCallback(name) {
+      if (name === 'disabled' || name === 'loading') {
+        this.btn.disabled = this.hasAttribute('disabled') || this.hasAttribute('loading');
+        this.btn.setAttribute('aria-busy', this.hasAttribute('loading') ? 'true' : 'false');
       }
-      connectedCallback() {
-        ((this.btn.disabled = this.hasAttribute('disabled') || this.hasAttribute('loading')),
-          this.btn.setAttribute('aria-busy', this.hasAttribute('loading') ? 'true' : 'false'),
-          this.btn.addEventListener('click', (r) => {
-            if (this.hasAttribute('loading') || this.hasAttribute('disabled')) {
-              (r.stopPropagation(), r.preventDefault());
-              return;
-            }
-          }));
-      }
-      static get observedAttributes() {
-        return ['disabled', 'loading'];
-      }
-      attributeChangedCallback(r) {
-        (r === 'disabled' || r === 'loading') &&
-          ((this.btn.disabled = this.hasAttribute('disabled') || this.hasAttribute('loading')),
-          this.btn.setAttribute('aria-busy', this.hasAttribute('loading') ? 'true' : 'false'));
-      }
-    };
-  customElements.get('ext-btn') || customElements.define('ext-btn', fe);
-  function ge(e) {
-    return new Promise((r) => {
-      let n = document.createElement('ext-modal');
-      (n.setAttribute('variant', e.variant ?? 'warning'),
-        e.okLabel && n.setAttribute('ok-label', e.okLabel),
-        e.cancelLabel && n.setAttribute('cancel-label', e.cancelLabel),
-        e.hideCancel && n.setAttribute('hide-cancel', ''),
-        (n.innerHTML = `<h3 slot="title"></h3><div class="ext-confirm-body"></div><div slot="footer">
+    }
+  };
+  if (!customElements.get('ext-btn')) customElements.define('ext-btn', ExtBtn);
+
+  // src/ui/web/confirm.ts
+  function confirmExt(opts) {
+    return new Promise((resolve) => {
+      const modal = document.createElement('ext-modal');
+      modal.setAttribute('variant', opts.variant ?? 'warning');
+      if (opts.okLabel) modal.setAttribute('ok-label', opts.okLabel);
+      if (opts.cancelLabel) modal.setAttribute('cancel-label', opts.cancelLabel);
+      if (opts.hideCancel) modal.setAttribute('hide-cancel', '');
+      modal.innerHTML = `<h3 slot="title"></h3><div class="ext-confirm-body"></div><div slot="footer">
          <ext-btn data-ext-confirm-cancel variant="secondary"></ext-btn>
          <ext-btn data-ext-confirm-ok></ext-btn>
-       </div>`));
-      let u = n.querySelector('[slot="title"]');
-      u.textContent = e.title;
-      let c = n.querySelector('.ext-confirm-body');
-      if (e.icon) {
-        let g = document.createElement('div');
-        ((g.className = 'ext-confirm-icon'), (g.textContent = e.icon), c.appendChild(g));
+       </div>`;
+      const title = modal.querySelector('[slot="title"]');
+      title.textContent = opts.title;
+      const body = modal.querySelector('.ext-confirm-body');
+      if (opts.icon) {
+        const icon = document.createElement('div');
+        icon.className = 'ext-confirm-icon';
+        icon.textContent = opts.icon;
+        body.appendChild(icon);
       }
-      (e.message &&
-        e.message
-          .split(
-            `
-`,
-          )
-          .forEach((v, y) => {
-            (y > 0 && c.appendChild(document.createElement('br')),
-              c.appendChild(document.createTextNode(v)));
-          }),
-        (n.querySelector('[data-ext-confirm-ok]').textContent = e.okLabel ?? 'Lanjut'));
-      let m = n.querySelector('[data-ext-confirm-ok]');
-      (m.setAttribute('variant', e.variant === 'danger' ? 'danger' : 'primary'),
-        e.hideCancel
-          ? n.querySelector('[data-ext-confirm-cancel]')?.remove()
-          : (n.querySelector('[data-ext-confirm-cancel]').textContent = e.cancelLabel ?? 'Batal'),
-        m.addEventListener('click', () => n.ok()),
-        e.hideCancel ||
-          n.querySelector('[data-ext-confirm-cancel]').addEventListener('click', () => n.cancel()));
-      let x = (g) => {
-        (n.remove(), r(g));
+      if (opts.message) {
+        const lines = opts.message.split('\n');
+        lines.forEach((line, i) => {
+          if (i > 0) body.appendChild(document.createElement('br'));
+          body.appendChild(document.createTextNode(line));
+        });
+      }
+      modal.querySelector('[data-ext-confirm-ok]').textContent = opts.okLabel ?? 'Lanjut';
+      const okBtn = modal.querySelector('[data-ext-confirm-ok]');
+      okBtn.setAttribute('variant', opts.variant === 'danger' ? 'danger' : 'primary');
+      if (opts.hideCancel) {
+        modal.querySelector('[data-ext-confirm-cancel]')?.remove();
+      } else {
+        modal.querySelector('[data-ext-confirm-cancel]').textContent = opts.cancelLabel ?? 'Batal';
+      }
+      okBtn.addEventListener('click', () => modal.ok());
+      if (!opts.hideCancel) {
+        const cancelBtn = modal.querySelector('[data-ext-confirm-cancel]');
+        cancelBtn.addEventListener('click', () => modal.cancel());
+      }
+      const done = (result) => {
+        modal.remove();
+        resolve(result);
       };
-      (n.addEventListener('ext-ok', () => x(!0)),
-        n.addEventListener('ext-cancel', () => x(!1)),
-        document.body.appendChild(n),
-        n.open());
+      modal.addEventListener('ext-ok', () => done(true));
+      modal.addEventListener('ext-cancel', () => done(false));
+      document.body.appendChild(modal);
+      modal.open();
     });
   }
-  var Ae = 'morbis_preop_markers';
-  function He() {
+
+  // src/features/shared/preOpStorage.ts
+  var PRE_OP_STORAGE_KEY = 'morbis_preop_markers';
+  var PRE_OP_TTL_MS = 30 * 24 * 60 * 60 * 1e3;
+  function defaultStore() {
     try {
-      if (typeof window < 'u' && window.localStorage) return window.localStorage;
+      if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
     } catch {}
     return null;
   }
-  function jt(e, r = Date.now()) {
-    let n = {},
-      u = 0;
-    for (let [c, m] of Object.entries(e))
-      m && m.markedAt && r - m.markedAt <= 2592e6 ? (n[c] = m) : u++;
-    return { purged: n, count: u };
+  function purgeExpiredPreOp(map, now = Date.now()) {
+    const result = {};
+    let count = 0;
+    for (const [id, item] of Object.entries(map)) {
+      if (item && item.markedAt && now - item.markedAt <= PRE_OP_TTL_MS) {
+        result[id] = item;
+      } else {
+        count++;
+      }
+    }
+    return { purged: result, count };
   }
-  function je(e = He(), r = Date.now()) {
-    if (!e) return {};
+  function loadPreOpMap(store = defaultStore(), now = Date.now()) {
+    if (!store) return {};
     try {
-      let n = e.getItem(Ae);
-      if (!n) return {};
-      let u = JSON.parse(n);
-      if (typeof u != 'object' || u === null) return {};
-      let { purged: c, count: m } = jt(u, r);
-      return (m > 0 && Ot(c, e), c);
+      const raw = store.getItem(PRE_OP_STORAGE_KEY);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw);
+      if (typeof parsed !== 'object' || parsed === null) return {};
+      const { purged, count } = purgeExpiredPreOp(parsed, now);
+      if (count > 0) {
+        savePreOpMap(purged, store);
+      }
+      return purged;
     } catch {
       return {};
     }
   }
-  function Ot(e, r = He()) {
-    if (r)
-      try {
-        r.setItem(Ae, JSON.stringify(e));
-      } catch {}
-  }
-  var $t = 'http://dev.rsudkotajambi.id/rs',
-    Bt = 'ext-farmasi-app-base';
-  var Pt = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'],
-    Ft = '.rsudkotajambi.id';
-  function Dt(e) {
+  function savePreOpMap(map, store = defaultStore()) {
+    if (!store) return;
     try {
-      let r = new URL(e);
-      if (r.protocol !== 'http:' && r.protocol !== 'https:') return !1;
-      let n = r.hostname.toLowerCase();
-      return Pt.includes(n) ? !0 : n.endsWith(Ft);
-    } catch {
-      return !1;
-    }
-  }
-  function Q() {
-    try {
-      let e = localStorage.getItem(Bt);
-      if (e && Dt(e)) return e.replace(/\/+$/, '');
+      store.setItem(PRE_OP_STORAGE_KEY, JSON.stringify(map));
     } catch {}
-    return $t;
   }
-  async function Vt(e, r, n = fetch) {
-    let u = new AbortController(),
-      c = globalThis.setTimeout(() => u.abort(), 25e3);
+
+  // src/features/shared/casemixApi.ts
+  var CASEMIX_BASE_FALLBACK = 'http://dev.rsudkotajambi.id/rs';
+  var BASE_OVERRIDE_KEY = 'ext-farmasi-app-base';
+  var CENTRAL_TIMEOUT_MS = 25e3;
+  var CASEMIX_ALLOWED_HOSTS = ['dev.rsudkotajambi.id', '103.147.236.138', 'localhost', '127.0.0.1'];
+  var CASEMIX_ALLOWED_SUFFIX = '.rsudkotajambi.id';
+  function isAllowedCasemixBase(url) {
     try {
-      return await n(e, { ...r, signal: u.signal });
-    } finally {
-      globalThis.clearTimeout(c);
+      const u = new URL(url);
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+      const h = u.hostname.toLowerCase();
+      if (CASEMIX_ALLOWED_HOSTS.includes(h)) return true;
+      return h.endsWith(CASEMIX_ALLOWED_SUFFIX);
+    } catch {
+      return false;
     }
   }
-  async function Nt(e, r = fetch) {
+  function resolveCasemixBase() {
     try {
-      let n = await Vt(
-        Q() + e,
+      const ov = localStorage.getItem(BASE_OVERRIDE_KEY);
+      if (ov && isAllowedCasemixBase(ov)) return ov.replace(/\/+$/, '');
+    } catch {}
+    return CASEMIX_BASE_FALLBACK;
+  }
+  async function fetchTimeout(url, init, fetcher = fetch) {
+    const ctrl = new AbortController();
+    const t = globalThis.setTimeout(() => ctrl.abort(), CENTRAL_TIMEOUT_MS);
+    try {
+      return await fetcher(url, { ...init, signal: ctrl.signal });
+    } finally {
+      globalThis.clearTimeout(t);
+    }
+  }
+  async function getJson(path, fetcher = fetch) {
+    try {
+      const res = await fetchTimeout(
+        resolveCasemixBase() + path,
         { cache: 'no-store', credentials: 'omit', headers: { Accept: 'application/json' } },
-        r,
+        fetcher,
       );
-      return n.ok ? await n.json() : null;
+      if (!res.ok) return null;
+      return await res.json();
     } catch {
       return null;
     }
   }
-  async function Oe(e, r, n = fetch) {
-    if (!e) return [];
-    let u =
-        '/api/reports/resume-history?id_visit=' + encodeURIComponent(e) + (r ? '&tipe=' + r : ''),
-      c = await Nt(u, n);
-    return !c?.ok || !Array.isArray(c.data) ? [] : c.data;
+  async function fetchResumeCentral(idVisit, tipe, fetcher = fetch) {
+    if (!idVisit) return [];
+    const q =
+      '/api/reports/resume-history?id_visit=' +
+      encodeURIComponent(idVisit) +
+      (tipe ? '&tipe=' + tipe : '');
+    const j = await getJson(q, fetcher);
+    if (!j?.ok || !Array.isArray(j.data)) return [];
+    return j.data;
   }
-  function zt() {
+
+  // src/features/shared/resumeHistory.ts
+  function newClientId() {
     try {
-      let e = globalThis.crypto;
-      if (e && typeof e.randomUUID == 'function') return e.randomUUID();
+      const c = globalThis.crypto;
+      if (c && typeof c.randomUUID === 'function') return c.randomUUID();
     } catch {}
     return `${Date.now().toString(36)}-${Math.floor(Math.random() * 1e9).toString(36)}`;
   }
-  function U() {
+  function defaultStore2() {
     try {
-      if (typeof window < 'u' && window.localStorage) return window.localStorage;
+      if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
     } catch {}
     return null;
   }
-  var Ve = 'ext_rv_history_',
-    Kt = Ve,
-    Ne = 'ext_rv_lastform_',
-    he = 'ext_migrated_rv_',
-    ze = 50;
-  function xe(e, r) {
-    return `${Ve}${r === 'ranap' ? 'ri' : 'rj'}_${e || 'unknown'}`;
+  var HIST_PREFIX = 'ext_rv_history_';
+  var LEGACY_HIST_PREFIX = HIST_PREFIX;
+  var LAST_PREFIX = 'ext_rv_lastform_';
+  var RV_MIGRATED_PREFIX = 'ext_migrated_rv_';
+  var MAX_ENTRIES = 50;
+  function getHistoryKey(idVisit, tipe) {
+    return `${HIST_PREFIX}${tipe === 'ranap' ? 'ri' : 'rj'}_${idVisit || 'unknown'}`;
   }
-  function Ke(e, r) {
-    return `${Ne}${r === 'ranap' ? 'ri' : 'rj'}_${e || 'unknown'}`;
+  function getLastKey(idVisit, tipe) {
+    return `${LAST_PREFIX}${tipe === 'ranap' ? 'ri' : 'rj'}_${idVisit || 'unknown'}`;
   }
-  function ne(e, r) {
-    if (!e) return null;
+  function readJson(store, key) {
+    if (!store) return null;
     try {
-      let n = e.getItem(r);
-      return n ? JSON.parse(n) : null;
+      const raw = store.getItem(key);
+      if (!raw) return null;
+      return JSON.parse(raw);
     } catch {
       return null;
     }
   }
-  function be(e, r, n) {
-    if (e)
-      try {
-        e.setItem(r, JSON.stringify(n));
-      } catch {}
+  function writeJson(store, key, value) {
+    if (!store) return;
+    try {
+      store.setItem(key, JSON.stringify(value));
+    } catch {}
   }
-  function Ut(e, r) {
-    return JSON.stringify(e ?? null) === JSON.stringify(r ?? null);
+  function sameSnapVal(a, b) {
+    return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
   }
-  function Ue(e, r) {
-    let n = {};
-    return (
-      Object.keys(e).forEach((u) => (n[u] = !0)),
-      Object.keys(r).forEach((u) => (n[u] = !0)),
-      Object.keys(n).filter((u) => !Ut(e[u], r[u]))
-    );
+  function diffSnap(before, after) {
+    const keys = {};
+    Object.keys(before).forEach((k) => (keys[k] = true));
+    Object.keys(after).forEach((k) => (keys[k] = true));
+    return Object.keys(keys).filter((k) => !sameSnapVal(before[k], after[k]));
   }
-  function $e(e) {
-    let r = e === void 0 ? '-' : JSON.stringify(e);
-    return r.length > 60 ? r.slice(0, 60) + '\u2026' : r;
+  function shortSnapVal(v) {
+    const s = v === void 0 ? '-' : JSON.stringify(v);
+    return s.length > 60 ? s.slice(0, 60) + '\u2026' : s;
   }
-  function K(e, r, n = U()) {
-    let u = ne(n, xe(e, r)),
-      c = Array.isArray(u) ? u : [];
-    if (r === 'ranap') {
-      let m = ne(n, Kt + e);
-      if (Array.isArray(m) && m.length > 0 && c.length === 0) {
-        let x = m.map((g) => ({ ...g, tipe: 'ranap' }));
-        return (ve(x, e, 'ranap', n), x);
+  function loadHistory(idVisit, tipe, store = defaultStore2()) {
+    const arr = readJson(store, getHistoryKey(idVisit, tipe));
+    const list = Array.isArray(arr) ? arr : [];
+    if (tipe === 'ranap') {
+      const legacy = readJson(store, LEGACY_HIST_PREFIX + idVisit);
+      if (Array.isArray(legacy) && legacy.length > 0 && list.length === 0) {
+        const migrated = legacy.map((e) => ({ ...e, tipe: 'ranap' }));
+        saveHistory(migrated, idVisit, 'ranap', store);
+        return migrated;
       }
     }
-    return c;
+    return list;
   }
-  function ve(e, r, n, u = U()) {
-    be(u, xe(r, n), e.slice(-ze));
+  function saveHistory(list, idVisit, tipe, store = defaultStore2()) {
+    writeJson(store, getHistoryKey(idVisit, tipe), list.slice(-MAX_ENTRIES));
   }
-  function qe(e, r, n = U()) {
-    let u = ne(n, Ke(e, r));
-    return u || (r === 'ranap' ? ne(n, Ne + e) : null);
+  function loadLast(idVisit, tipe, store = defaultStore2()) {
+    const snap = readJson(store, getLastKey(idVisit, tipe));
+    if (snap) return snap;
+    if (tipe === 'ranap') return readJson(store, LAST_PREFIX + idVisit);
+    return null;
   }
-  function re(e, r, n, u = U()) {
-    be(u, Ke(r, n), e);
+  function storeLast(snap, idVisit, tipe, store = defaultStore2()) {
+    writeJson(store, getLastKey(idVisit, tipe), snap);
   }
-  function qt() {
+  function readPetugas() {
     try {
-      let e = document.getElementById('userpanel');
-      if (e) {
-        let m = '',
-          x = '';
-        if (
-          (e.querySelectorAll('.subgroup').forEach((y) => {
-            let k = (y.querySelector('.subtitle')?.textContent || '').trim().toLowerCase(),
-              S = (y.querySelector('.subcontent')?.textContent || '').trim();
-            (k === 'username' && S && (m = S), k === 'role' && S && (x = S));
-          }),
-          m)
-        )
-          return `${m}${x ? ` (${x})` : ''}`;
-        let v = (e.querySelector('a')?.textContent || '').trim();
-        if (v && v !== 'Petugas Rumah Sakit') return v;
+      const panel = document.getElementById('userpanel');
+      if (panel) {
+        let username = '';
+        let role = '';
+        panel.querySelectorAll('.subgroup').forEach((sg) => {
+          const title = (sg.querySelector('.subtitle')?.textContent || '').trim().toLowerCase();
+          const content = (sg.querySelector('.subcontent')?.textContent || '').trim();
+          if (title === 'username' && content) username = content;
+          if (title === 'role' && content) role = content;
+        });
+        if (username) return `${username}${role ? ` (${role})` : ''}`;
+        const a = panel.querySelector('a');
+        const t2 = (a?.textContent || '').trim();
+        if (t2 && t2 !== 'Petugas Rumah Sakit') return t2;
       }
-      let n = (
-        document.querySelector('#petugas, .petugas, .username, #username, .user-name')
-          ?.textContent || ''
-      ).trim();
-      if (n) return n.slice(0, 80);
-      let u = document
+      const el = document.querySelector('#petugas, .petugas, .username, #username, .user-name');
+      const t = (el?.textContent || '').trim();
+      if (t) return t.slice(0, 80);
+      const dokter = document
         .querySelector('input[name="dokter"], #dokter, input[name="nama_dokter"]')
         ?.value?.trim();
-      if (u) return u.slice(0, 80);
-      let c = document.querySelector('input[name="id_user"], #id_user')?.value?.trim();
-      if (c) return `User #${c}`;
+      if (dokter) return dokter.slice(0, 80);
+      const idUser = document.querySelector('input[name="id_user"], #id_user')?.value?.trim();
+      if (idUser) return `User #${idUser}`;
     } catch {}
     return 'petugas';
   }
-  var Jt = '/api/reports/resume-history';
-  function Wt() {
-    return Q();
+  var REPORTS_API_PATH = '/api/reports/resume-history';
+  function resolveReportsBase() {
+    return resolveCasemixBase();
   }
-  function Xt(e) {
-    return he + e;
+  function getMigratedKey(historyKey) {
+    return RV_MIGRATED_PREFIX + historyKey;
   }
-  function Gt(e, r) {
-    if (!e) return 0;
+  function readMarker(store, key) {
+    if (!store) return 0;
     try {
-      let n = e.getItem(r);
-      if (n === null) return 0;
-      let u = Number(JSON.parse(n));
-      return Number.isFinite(u) ? u : 0;
+      const raw = store.getItem(key);
+      if (raw === null) return 0;
+      const n = Number(JSON.parse(raw));
+      return Number.isFinite(n) ? n : 0;
     } catch {
       return 0;
     }
   }
-  function Yt(e, r, n, u) {
-    if (!(!e || !r))
+  function advanceMigratedMarker(store, idVisit, tipe, at) {
+    if (!store || !idVisit) return;
+    try {
+      const key = getMigratedKey(getHistoryKey(idVisit, tipe));
+      if (at > readMarker(store, key)) writeJson(store, key, at);
+    } catch {}
+  }
+  function postToReports(
+    entry,
+    idVisit,
+    fetcher = fetch,
+    store = defaultStore2(),
+    tipe = entry.tipe,
+  ) {
+    const payload = {
+      client_id: entry.client_id ?? null,
+      id_visit: idVisit,
+      id_resume: entry.id_resume,
+      aksi: entry.aksi,
+      tipe: entry.tipe,
+      waktu: new Date(entry.at).toISOString(),
+      user: entry.user,
+      before: entry.before,
+      after: entry.after,
+      changed: entry.changed,
+    };
+    const send = async () => {
       try {
-        let c = Xt(xe(r, n));
-        u > Gt(e, c) && be(e, c, u);
-      } catch {}
-  }
-  function Qt(e, r, n = fetch, u = U(), c = e.tipe) {
-    let m = {
-        client_id: e.client_id ?? null,
-        id_visit: r,
-        id_resume: e.id_resume,
-        aksi: e.aksi,
-        tipe: e.tipe,
-        waktu: new Date(e.at).toISOString(),
-        user: e.user,
-        before: e.before,
-        after: e.after,
-        changed: e.changed,
-      },
-      x = async () => {
-        try {
-          return (
-            await n(Wt() + Jt, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-              body: JSON.stringify(m),
-              keepalive: !0,
-              credentials: 'omit',
-            })
-          ).ok
-            ? (Yt(u, r, c, e.at), !0)
-            : !1;
-        } catch {
-          return !1;
-        }
-      };
-    try {
-      return x();
-    } catch {
-      return Promise.resolve(!1);
-    }
-  }
-  var Be = null,
-    Pe = 0;
-  function Je(e) {
-    if (!e.idVisit) return null;
-    let r = e.now ?? Date.now(),
-      n = e.store ?? U();
-    re(e.after, e.idVisit, e.tipe, n);
-    let u = JSON.stringify([e.idVisit, e.aksi, e.after]);
-    if (Be === u && r - Pe < 5e3) return null;
-    ((Be = u), (Pe = r));
-    let c = {
-        at: r,
-        aksi: e.aksi,
-        id_resume: e.idResume ?? '',
-        user: e.user ?? qt(),
-        tipe: e.tipe,
-        before: e.before ?? {},
-        after: e.after,
-        changed: Ue(e.before ?? {}, e.after),
-        client_id: zt(),
-      },
-      m = K(e.idVisit, e.tipe, n);
-    (m.push(c), ve(m, e.idVisit, e.tipe, n), re(e.after, e.idVisit, e.tipe, n));
-    try {
-      Qt(c, e.idVisit, e.fetcher ?? fetch, n, e.tipe);
-    } catch {}
-    return c;
-  }
-  function We(e) {
-    try {
-      let r = document.createElement('div');
-      ((r.textContent = e),
-        (r.style.cssText =
-          'position:fixed;top:20px;right:20px;z-index:2147483647;padding:14px 18px;border-radius:8px;background:#dcfce7;color:#065f46;border-left:5px solid #16a34a;font-weight:600;font-size:16px!important;line-height:1.6!important;font-family:' +
-          Xe +
-          '!important;box-shadow:0 4px 16px rgba(0,0,0,.15);max-width:420px;'),
-        document.body.appendChild(r),
-        setTimeout(() => r.remove(), 4e3));
-    } catch {}
-  }
-  function Zt(e) {
-    if (e != null) {
-      if (typeof e == 'string') return e;
-      if (typeof e == 'number' || typeof e == 'boolean') return String(e);
-      if (Array.isArray(e))
-        return e.map((r) => {
-          if (typeof r == 'string') return r;
-          try {
-            return JSON.stringify(r) ?? '';
-          } catch {
-            return '';
-          }
+        const res = await fetcher(resolveReportsBase() + REPORTS_API_PATH, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(payload),
+          keepalive: true,
+          credentials: 'omit',
         });
-      try {
-        return JSON.stringify(e) ?? '';
+        if (!res.ok) return false;
+        advanceMigratedMarker(store, idVisit, tipe, entry.at);
+        return true;
       } catch {
-        return '';
+        return false;
       }
-    }
-  }
-  function Fe(e) {
-    let r = {};
-    if (!e || typeof e != 'object' || Array.isArray(e)) return r;
-    for (let n of Object.keys(e)) {
-      let u = Zt(e[n]);
-      u !== void 0 && (r[n] = u);
-    }
-    return r;
-  }
-  function en(e, r) {
+    };
     try {
-      if (!e || typeof e != 'object') return null;
-      let n = e.waktu ? Date.parse(e.waktu) : NaN;
-      if (!Number.isFinite(n)) return null;
-      let u = Fe(e.after),
-        c = Fe(e.before),
-        m = e.tipe === 'rajal' ? 'rajal' : e.tipe === 'ranap' ? 'ranap' : r,
-        x = Array.isArray(e.changed) ? e.changed.filter((v) => typeof v == 'string') : Ue(c, u),
-        g = typeof e.client_id == 'string' && e.client_id ? e.client_id : void 0;
+      return send();
+    } catch {
+      return Promise.resolve(false);
+    }
+  }
+  var _lastLogHash = null;
+  var _lastLogAt = 0;
+  function logResumeHistory(opts) {
+    if (!opts.idVisit) return null;
+    const now = opts.now ?? Date.now();
+    const store = opts.store ?? defaultStore2();
+    storeLast(opts.after, opts.idVisit, opts.tipe, store);
+    const hash = JSON.stringify([opts.idVisit, opts.aksi, opts.after]);
+    if (_lastLogHash === hash && now - _lastLogAt < 5e3) return null;
+    _lastLogHash = hash;
+    _lastLogAt = now;
+    const entry = {
+      at: now,
+      aksi: opts.aksi,
+      id_resume: opts.idResume ?? '',
+      user: opts.user ?? readPetugas(),
+      tipe: opts.tipe,
+      before: opts.before ?? {},
+      after: opts.after,
+      changed: diffSnap(opts.before ?? {}, opts.after),
+      client_id: newClientId(),
+    };
+    const list = loadHistory(opts.idVisit, opts.tipe, store);
+    list.push(entry);
+    saveHistory(list, opts.idVisit, opts.tipe, store);
+    storeLast(opts.after, opts.idVisit, opts.tipe, store);
+    try {
+      void postToReports(entry, opts.idVisit, opts.fetcher ?? fetch, store, opts.tipe);
+    } catch {}
+    return entry;
+  }
+  function showHistToast(msg) {
+    try {
+      const t = document.createElement('div');
+      t.textContent = msg;
+      t.style.cssText =
+        'position:fixed;top:20px;right:20px;z-index:2147483647;padding:14px 18px;border-radius:8px;background:#dcfce7;color:#065f46;border-left:5px solid #16a34a;font-weight:600;font-size:16px!important;line-height:1.6!important;font-family:' +
+        HIST_FONT +
+        '!important;box-shadow:0 4px 16px rgba(0,0,0,.15);max-width:420px;';
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 4e3);
+    } catch {}
+  }
+  function coerceSnapVal(v) {
+    if (v === null || v === void 0) return void 0;
+    if (typeof v === 'string') return v;
+    if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+    if (Array.isArray(v)) {
+      return v.map((x) => {
+        if (typeof x === 'string') return x;
+        try {
+          return JSON.stringify(x) ?? '';
+        } catch {
+          return '';
+        }
+      });
+    }
+    try {
+      const s = JSON.stringify(v);
+      return s ?? '';
+    } catch {
+      return '';
+    }
+  }
+  function coerceSnap(rec) {
+    const out = {};
+    if (!rec || typeof rec !== 'object' || Array.isArray(rec)) return out;
+    for (const k of Object.keys(rec)) {
+      const c = coerceSnapVal(rec[k]);
+      if (c !== void 0) out[k] = c;
+    }
+    return out;
+  }
+  function centralToResumeEntry(r, fallbackTipe) {
+    try {
+      if (!r || typeof r !== 'object') return null;
+      const at = r.waktu ? Date.parse(r.waktu) : NaN;
+      if (!Number.isFinite(at)) return null;
+      const after = coerceSnap(r.after);
+      const before = coerceSnap(r.before);
+      const tipe = r.tipe === 'rajal' ? 'rajal' : r.tipe === 'ranap' ? 'ranap' : fallbackTipe;
+      const changed = Array.isArray(r.changed)
+        ? r.changed.filter((x) => typeof x === 'string')
+        : diffSnap(before, after);
+      const cid = typeof r.client_id === 'string' && r.client_id ? r.client_id : void 0;
       return {
-        at: n,
-        aksi: e.aksi === 'buat' ? 'buat' : 'ubah',
-        id_resume: typeof e.id_resume == 'string' ? e.id_resume : '',
-        user: typeof e.user == 'string' && e.user ? e.user : 'petugas',
-        tipe: m,
-        before: c,
-        after: u,
-        changed: x,
-        ...(g ? { client_id: g } : {}),
+        at,
+        aksi: r.aksi === 'buat' ? 'buat' : 'ubah',
+        id_resume: typeof r.id_resume === 'string' ? r.id_resume : '',
+        user: typeof r.user === 'string' && r.user ? r.user : 'petugas',
+        tipe,
+        before,
+        after,
+        changed,
+        ...(cid ? { client_id: cid } : {}),
       };
     } catch {
       return null;
     }
   }
-  function De(e) {
+  function centralEntryKey(e) {
     if (e.client_id) return 'cid:' + e.client_id;
     try {
       return 'h:' + e.at + '|' + e.user + '|' + e.aksi + '|' + JSON.stringify(e.after);
@@ -792,662 +855,724 @@ var __morbis_feature = (() => {
       return 'h:' + e.at + '|' + e.user + '|' + e.aksi;
     }
   }
-  function tn(e, r) {
-    let n = new Set(e.map(De)),
-      u = e.slice();
-    for (let c of r) {
-      let m = De(c);
-      n.has(m) || (n.add(m), u.push(c));
+  function mergeCentralResumeEntries(local, incoming) {
+    const seen = new Set(local.map(centralEntryKey));
+    const out = local.slice();
+    for (const e of incoming) {
+      const k = centralEntryKey(e);
+      if (seen.has(k)) continue;
+      seen.add(k);
+      out.push(e);
     }
-    return (u.sort((c, m) => c.at - m.at), u.slice(-ze));
+    out.sort((a, b) => a.at - b.at);
+    return out.slice(-MAX_ENTRIES);
   }
-  var Xe = "'Roboto','Segoe UI',system-ui,-apple-system,Arial,sans-serif";
-  function Ge(e) {
+  var HIST_FONT = `'Roboto','Segoe UI',system-ui,-apple-system,Arial,sans-serif`;
+  function openHistoryModal(opts) {
     try {
       document.querySelector('#ext-rv-history-overlay')?.remove();
     } catch {}
-    let r = e.store ?? U(),
-      n = K(e.idVisit, e.tipe, r).slice().reverse(),
-      u = e.zIndex ?? 99998,
-      c = document.createElement('div');
-    ((c.id = 'ext-rv-history-overlay'),
-      (c.style.cssText = `position:fixed;inset:0;z-index:${u};background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:24px;`),
-      c.addEventListener('click', function (S) {
-        S.target === c && c.remove();
-      }));
-    let m = document.createElement('div');
-    ((m.style.cssText =
+    const store = opts.store ?? defaultStore2();
+    let list = loadHistory(opts.idVisit, opts.tipe, store).slice().reverse();
+    const z = opts.zIndex ?? 99998;
+    const ov = document.createElement('div');
+    ov.id = 'ext-rv-history-overlay';
+    ov.style.cssText = `position:fixed;inset:0;z-index:${z};background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:24px;`;
+    ov.addEventListener('click', function (e) {
+      if (e.target === ov) ov.remove();
+    });
+    const box = document.createElement('div');
+    box.style.cssText =
       'background:#fff;border-radius:12px;max-width:680px;width:100%;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;font-size:16px!important;line-height:1.6!important;color:#1c2530;font-family:' +
-      Xe +
-      '!important;'),
-      c.appendChild(m));
-    let x = document.createElement('div');
-    x.style.cssText =
+      HIST_FONT +
+      '!important;';
+    ov.appendChild(box);
+    const head = document.createElement('div');
+    head.style.cssText =
       'display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #d0d5dd;font-weight:700;';
-    let g = document.createElement('span');
-    ((g.textContent = `${e.title ?? 'Riwayat Resume'} (${n.length})`), x.appendChild(g));
-    let v = document.createElement('button');
-    ((v.type = 'button'),
-      (v.textContent = '\xD7'),
-      (v.style.cssText =
-        'border:none;background:#f8fafc;width:32px;height:32px;border-radius:50%;font-family:inherit!important;font-size:16px!important;line-height:1!important;cursor:pointer;'),
-      (v.onclick = function () {
-        c.remove();
-      }),
-      x.appendChild(v),
-      m.appendChild(x));
-    let y = document.createElement('div');
-    ((y.style.cssText = 'padding:14px 18px;overflow-y:auto;'), m.appendChild(y));
-    let k = (S) => {
-      if (
-        ((n = S),
-        (g.textContent = `${e.title ?? 'Riwayat Resume'} (${n.length})`),
-        y.replaceChildren(),
-        !n.length)
-      ) {
-        y.textContent =
+    const headTitle = document.createElement('span');
+    headTitle.textContent = `${opts.title ?? 'Riwayat Resume'} (${list.length})`;
+    head.appendChild(headTitle);
+    const x = document.createElement('button');
+    x.type = 'button';
+    x.textContent = '\xD7';
+    x.style.cssText =
+      'border:none;background:#f8fafc;width:32px;height:32px;border-radius:50%;font-family:inherit!important;font-size:16px!important;line-height:1!important;cursor:pointer;';
+    x.onclick = function () {
+      ov.remove();
+    };
+    head.appendChild(x);
+    box.appendChild(head);
+    const body = document.createElement('div');
+    body.style.cssText = 'padding:14px 18px;overflow-y:auto;';
+    box.appendChild(body);
+    const paint = (rows) => {
+      list = rows;
+      headTitle.textContent = `${opts.title ?? 'Riwayat Resume'} (${list.length})`;
+      body.replaceChildren();
+      if (!list.length) {
+        body.textContent =
           'Belum ada riwayat untuk kunjungan ini. Riwayat tercatat otomatis setiap kali Simpan ditekan.';
         return;
       }
-      n.forEach(function (T, F) {
-        let $ = n.length - F,
-          I = document.createElement('div');
-        I.style.cssText =
+      list.forEach(function (entry, idx) {
+        const no = list.length - idx;
+        const row = document.createElement('div');
+        row.style.cssText =
           'border:1px solid #d0d5dd;border-radius:8px;padding:10px 12px;margin-bottom:10px;';
-        let B = document.createElement('div');
-        B.style.fontWeight = '600';
-        let ie = T.user ? ` \u2014 oleh ${T.user}` : '';
-        ((B.textContent = `#${$} \u2014 ${new Date(T.at).toLocaleString('id-ID')} \u2014 ${T.aksi === 'buat' ? 'Buat baru' : 'Ubah'}${ie} \u2014 ${T.changed.length} field berubah`),
-          I.appendChild(B));
-        let M = document.createElement('div');
-        ((M.style.cssText =
-          'display:none;margin-top:8px;background:#f8fafc;border-radius:6px;padding:8px 10px;font-size:13px;line-height:1.6;max-height:180px;overflow-y:auto;white-space:pre-wrap;'),
-          T.changed.length
-            ? (M.textContent = T.changed.map(function (q) {
-                return q + ': ' + $e(T.before[q]) + ' \u2192 ' + $e(T.after[q]);
-              }).join(`
-`))
-            : (M.textContent = 'Tidak ada perbedaan field.'),
-          I.appendChild(M));
-        let A = document.createElement('div');
-        A.style.cssText = 'margin-top:8px;display:flex;gap:8px;';
-        let P = document.createElement('button');
-        ((P.type = 'button'),
-          (P.textContent = 'Lihat'),
-          (P.style.cssText =
-            'border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;'),
-          (P.onclick = function () {
-            M.style.display = M.style.display === 'none' ? 'block' : 'none';
-          }),
-          A.appendChild(P));
-        let H = document.createElement('button');
-        ((H.type = 'button'),
-          (H.textContent = 'Salin ke Form'),
-          (H.style.cssText =
-            'background:#00875a;color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;'),
-          (H.onclick = function () {
-            try {
-              (e.onApply(T.after), c.remove());
-            } catch {}
-          }),
-          A.appendChild(H),
-          I.appendChild(A),
-          y.appendChild(I));
+        const title = document.createElement('div');
+        title.style.fontWeight = '600';
+        const who = entry.user ? ` \u2014 oleh ${entry.user}` : '';
+        title.textContent = `#${no} \u2014 ${new Date(entry.at).toLocaleString('id-ID')} \u2014 ${entry.aksi === 'buat' ? 'Buat baru' : 'Ubah'}${who} \u2014 ${entry.changed.length} field berubah`;
+        row.appendChild(title);
+        const detail = document.createElement('div');
+        detail.style.cssText =
+          'display:none;margin-top:8px;background:#f8fafc;border-radius:6px;padding:8px 10px;font-size:13px;line-height:1.6;max-height:180px;overflow-y:auto;white-space:pre-wrap;';
+        if (!entry.changed.length) {
+          detail.textContent = 'Tidak ada perbedaan field.';
+        } else {
+          detail.textContent = entry.changed
+            .map(function (k) {
+              return (
+                k + ': ' + shortSnapVal(entry.before[k]) + ' \u2192 ' + shortSnapVal(entry.after[k])
+              );
+            })
+            .join('\n');
+        }
+        row.appendChild(detail);
+        const bar = document.createElement('div');
+        bar.style.cssText = 'margin-top:8px;display:flex;gap:8px;';
+        const btnLihat = document.createElement('button');
+        btnLihat.type = 'button';
+        btnLihat.textContent = 'Lihat';
+        btnLihat.style.cssText =
+          'border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;';
+        btnLihat.onclick = function () {
+          detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
+        };
+        bar.appendChild(btnLihat);
+        const btnSalin = document.createElement('button');
+        btnSalin.type = 'button';
+        btnSalin.textContent = 'Salin ke Form';
+        btnSalin.style.cssText =
+          'background:#00875a;color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;';
+        btnSalin.onclick = function () {
+          try {
+            opts.onApply(entry.after);
+            ov.remove();
+          } catch {}
+        };
+        bar.appendChild(btnSalin);
+        row.appendChild(bar);
+        body.appendChild(row);
       });
     };
-    k(n);
+    paint(list);
     try {
-      document.body.appendChild(c);
+      document.body.appendChild(ov);
     } catch {}
-    if (e.idVisit)
+    if (opts.idVisit) {
       try {
-        Oe(e.idVisit, e.tipe).then((S) => {
+        void fetchResumeCentral(opts.idVisit, opts.tipe).then((central) => {
           try {
-            if (!S.length || !c.isConnected) return;
-            let T = [];
-            for (let I of S) {
-              let B = en(I, e.tipe);
-              B && T.push(B);
+            if (!central.length || !ov.isConnected) return;
+            const incoming = [];
+            for (const r of central) {
+              const e = centralToResumeEntry(r, opts.tipe);
+              if (e) incoming.push(e);
             }
-            if (!T.length) return;
-            let F = K(e.idVisit, e.tipe, r),
-              $ = tn(F, T);
-            if ($.length === F.length) return;
-            (ve($, e.idVisit, e.tipe, r), k($.slice().reverse()));
+            if (!incoming.length) return;
+            const base = loadHistory(opts.idVisit, opts.tipe, store);
+            const merged = mergeCentralResumeEntries(base, incoming);
+            if (merged.length === base.length) return;
+            saveHistory(merged, opts.idVisit, opts.tipe, store);
+            paint(merged.slice().reverse());
             try {
               document.dispatchEvent(
                 new CustomEvent('ext-rv-history-merged', {
-                  detail: { idVisit: e.idVisit, tipe: e.tipe, count: $.length },
+                  detail: { idVisit: opts.idVisit, tipe: opts.tipe, count: merged.length },
                 }),
               );
             } catch {}
           } catch {}
         });
       } catch {}
+    }
   }
-  var Ye = 'ext_migrated_preop_ids',
-    Qe = he,
-    ke = 20;
-  function Ze(e, r) {
-    if (!e) return null;
+
+  // src/features/shared/casemixBackfill.ts
+  var MIGRATED_PREOP_KEY = 'ext_migrated_preop_ids';
+  var MIGRATED_RV_PREFIX = RV_MIGRATED_PREFIX;
+  var BACKFILL_BATCH = 20;
+  function readJson2(store, key) {
+    if (!store) return null;
     try {
-      let n = e.getItem(r);
-      return n ? JSON.parse(n) : null;
+      const raw = store.getItem(key);
+      if (!raw) return null;
+      return JSON.parse(raw);
     } catch {
       return null;
     }
   }
-  function et(e, r, n) {
-    if (e)
-      try {
-        e.setItem(r, JSON.stringify(n));
-      } catch {}
-  }
-  function nn() {
+  function writeJson2(store, key, value) {
+    if (!store) return;
     try {
-      if (typeof window < 'u' && window.localStorage) return window.localStorage;
+      store.setItem(key, JSON.stringify(value));
+    } catch {}
+  }
+  function defaultStore3() {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
     } catch {}
     return null;
   }
-  async function ye(e, r, n = fetch) {
+  async function postCentral(path, payload, fetcher = fetch) {
     try {
-      return (
-        await n(Q() + e, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify(r),
-          credentials: 'omit',
-        })
-      ).ok;
+      const res = await fetcher(resolveCasemixBase() + path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload),
+        credentials: 'omit',
+      });
+      return res.ok;
     } catch {
-      return !1;
+      return false;
     }
   }
-  function rn(e, r) {
-    let n = new Set(r);
-    return Object.keys(e)
-      .filter((u) => !n.has(u))
-      .slice(0, ke);
+  function collectPreOpPending(map, migratedIds) {
+    const done = new Set(migratedIds);
+    return Object.keys(map)
+      .filter((id) => !done.has(id))
+      .slice(0, BACKFILL_BATCH);
   }
-  function an(e, r) {
-    return e.filter((n) => n.at > r).slice(0, ke);
+  function collectResumePending(list, sinceAt) {
+    return list.filter((e) => e.at > sinceAt).slice(0, BACKFILL_BATCH);
   }
-  function on(e) {
-    let r = [];
-    if (!e) return r;
+  function discoverResumeKeys(store) {
+    const out = [];
+    if (!store) return out;
     try {
-      let n = [],
-        u = e;
-      if (typeof u.length == 'number' && u.key)
-        for (let c = 0; c < u.length; c++) {
-          let m = u.key(c);
-          m && n.push(m);
+      const keys = [];
+      const ls = store;
+      if (typeof ls.length === 'number' && ls.key) {
+        for (let i = 0; i < ls.length; i++) {
+          const k = ls.key(i);
+          if (k) keys.push(k);
         }
-      for (let c of n) {
-        let m = c.match(/^ext_rv_history_(ri|rj)_(.+)$/);
+      }
+      for (const k of keys) {
+        let m = k.match(/^ext_rv_history_(ri|rj)_(.+)$/);
         if (m) {
-          r.push({ key: c, idVisit: m[2], tipe: m[1] === 'ri' ? 'ranap' : 'rajal' });
+          out.push({ key: k, idVisit: m[2], tipe: m[1] === 'ri' ? 'ranap' : 'rajal' });
           continue;
         }
-        ((m = c.match(/^ext_rv_history_(.+)$/)),
-          m &&
-            !m[1].startsWith('ri_') &&
-            !m[1].startsWith('rj_') &&
-            r.push({ key: c, idVisit: m[1], tipe: 'ranap' }));
+        m = k.match(/^ext_rv_history_(.+)$/);
+        if (m && !m[1].startsWith('ri_') && !m[1].startsWith('rj_')) {
+          out.push({ key: k, idVisit: m[1], tipe: 'ranap' });
+        }
       }
     } catch {}
-    return r;
+    return out;
   }
-  async function sn(e = nn(), r = fetch) {
-    let n = { preopUploaded: 0, resumeUploaded: 0, offline: !1 };
-    if (!e) return n;
+  async function runCasemixBackfill(store = defaultStore3(), fetcher = fetch) {
+    const res = { preopUploaded: 0, resumeUploaded: 0, offline: false };
+    if (!store) return res;
     try {
-      let u = je(e),
-        c = Ze(e, Ye) ?? [],
-        m = rn(u, c);
-      for (let x of m) {
-        let g = u[x];
-        if (!g) continue;
-        if (
-          !(await ye(
-            '/api/casemix/pre-op/toggle',
-            {
-              id_visit: x,
-              marked: !0,
-              norm: g.norm ?? null,
-              nama: g.nama ?? null,
-              no_reg: g.noReg ?? null,
-              user: null,
-            },
-            r,
-          ))
-        ) {
-          n.offline = !0;
+      const map = loadPreOpMap(store);
+      const migrated = readJson2(store, MIGRATED_PREOP_KEY) ?? [];
+      const pending = collectPreOpPending(map, migrated);
+      for (const id of pending) {
+        const item = map[id];
+        if (!item) continue;
+        const ok = await postCentral(
+          '/api/casemix/pre-op/toggle',
+          {
+            id_visit: id,
+            marked: true,
+            norm: item.norm ?? null,
+            nama: item.nama ?? null,
+            no_reg: item.noReg ?? null,
+            user: null,
+          },
+          fetcher,
+        );
+        if (!ok) {
+          res.offline = true;
           break;
         }
-        (c.push(x), n.preopUploaded++);
+        migrated.push(id);
+        res.preopUploaded++;
       }
       try {
-        let x = new Set(Object.keys(u)),
-          g = [];
-        for (let v of c) {
-          if (x.has(v)) {
-            g.push(v);
+        const alive = new Set(Object.keys(map));
+        const kept = [];
+        for (const id of migrated) {
+          if (alive.has(id)) {
+            kept.push(id);
             continue;
           }
-          if (n.offline) {
-            g.push(v);
+          if (res.offline) {
+            kept.push(id);
             continue;
           }
-          (await ye('/api/casemix/pre-op/toggle', { id_visit: v, marked: !1 }, r))
-            ? n.preopUploaded++
-            : ((n.offline = !0), g.push(v));
+          const ok = await postCentral(
+            '/api/casemix/pre-op/toggle',
+            { id_visit: id, marked: false },
+            fetcher,
+          );
+          if (!ok) {
+            res.offline = true;
+            kept.push(id);
+          } else {
+            res.preopUploaded++;
+          }
         }
-        (g.length !== c.length || n.preopUploaded > 0) && et(e, Ye, g);
+        if (kept.length !== migrated.length || res.preopUploaded > 0) {
+          writeJson2(store, MIGRATED_PREOP_KEY, kept);
+        }
       } catch {}
     } catch {
-      n.offline = !0;
+      res.offline = true;
     }
     try {
-      for (let { key: u, idVisit: c, tipe: m } of on(e)) {
-        if (!c || c === 'unknown') continue;
-        if (n.resumeUploaded >= ke) break;
-        let x = Ze(e, Qe + u) ?? 0,
-          g = K(c, m, e),
-          v = an(g, x),
-          y = x;
-        for (let k of v) {
-          if (
-            !(await ye(
-              '/api/reports/resume-history',
-              {
-                client_id: k.client_id ?? null,
-                id_visit: c,
-                id_resume: k.id_resume,
-                aksi: k.aksi,
-                tipe: k.tipe ?? m,
-                waktu: new Date(k.at).toISOString(),
-                user: k.user,
-                before: k.before,
-                after: k.after,
-                changed: k.changed,
-              },
-              r,
-            ))
-          ) {
-            n.offline = !0;
+      for (const { key, idVisit, tipe } of discoverResumeKeys(store)) {
+        if (!idVisit || idVisit === 'unknown') continue;
+        if (res.resumeUploaded >= BACKFILL_BATCH) break;
+        const sinceAt = readJson2(store, MIGRATED_RV_PREFIX + key) ?? 0;
+        const list = loadHistory(idVisit, tipe, store);
+        const pending = collectResumePending(list, sinceAt);
+        let maxAt = sinceAt;
+        for (const e of pending) {
+          const ok = await postCentral(
+            '/api/reports/resume-history',
+            {
+              client_id: e.client_id ?? null,
+              id_visit: idVisit,
+              id_resume: e.id_resume,
+              aksi: e.aksi,
+              tipe: e.tipe ?? tipe,
+              waktu: new Date(e.at).toISOString(),
+              user: e.user,
+              before: e.before,
+              after: e.after,
+              changed: e.changed,
+            },
+            fetcher,
+          );
+          if (!ok) {
+            res.offline = true;
             break;
           }
-          ((y = Math.max(y, k.at)), n.resumeUploaded++);
+          maxAt = Math.max(maxAt, e.at);
+          res.resumeUploaded++;
         }
-        if ((y > x && et(e, Qe + u, y), n.offline)) break;
+        if (maxAt > sinceAt) writeJson2(store, MIGRATED_RV_PREFIX + key, maxAt);
+        if (res.offline) break;
       }
     } catch {
-      n.offline = !0;
+      res.offline = true;
     }
     try {
-      (n.preopUploaded || n.resumeUploaded) &&
+      if (res.preopUploaded || res.resumeUploaded) {
         window.console.debug(
-          `[casemixBackfill] diunggah: ${n.preopUploaded} pre-op, ${n.resumeUploaded} resume`,
+          `[casemixBackfill] diunggah: ${res.preopUploaded} pre-op, ${res.resumeUploaded} resume`,
         );
+      }
     } catch {}
-    return n;
+    return res;
   }
-  var tt = null;
-  function nt() {
-    if (tt !== null) return;
-    let e = () => {
+  var _backfillTimer = null;
+  function initCasemixBackfill() {
+    if (_backfillTimer !== null) return;
+    const tick = () => {
       try {
         if (document.hidden) return;
       } catch {}
-      sn().catch(() => {});
+      void runCasemixBackfill().catch(() => {});
     };
-    (window.setTimeout(e, 5e3), (tt = window.setInterval(e, 3e4)));
+    window.setTimeout(tick, 5e3);
+    _backfillTimer = window.setInterval(tick, 3e4);
   }
+
+  // src/features/resumeValidator.ts
   (function () {
-    let r = 0,
-      n = setInterval(function () {
-        r++;
-        let t = document.documentElement.getAttribute('data-ext-resume-validator'),
-          a = document.documentElement.getAttribute('data-ext-resume-history');
-        if (t !== null || a !== null) {
-          clearInterval(n);
-          let i = t === '1',
-            l = a === '1' || i;
-          if (!i && !l) return;
-          c(i, l);
-        } else r >= 100 && clearInterval(n);
-      }, 50);
-    function u() {
-      let t = window.location.pathname;
-      return t.includes('/tambah-resume-ri') || t.includes('/edit-resume-ri')
-        ? 'ranap'
-        : t.includes('/rm-rawat-jalan-new')
-          ? 'rajal'
-          : null;
+    const MAX_WAIT = 100;
+    let waited = 0;
+    const check = setInterval(function () {
+      waited++;
+      const vAttr = document.documentElement.getAttribute('data-ext-resume-validator');
+      const hAttr = document.documentElement.getAttribute('data-ext-resume-history');
+      if (vAttr !== null || hAttr !== null) {
+        clearInterval(check);
+        const doValidate = vAttr === '1';
+        const doHistory = hAttr === '1' || doValidate;
+        if (!doValidate && !doHistory) return;
+        waitForForm(doValidate, doHistory);
+      } else if (waited >= MAX_WAIT) {
+        clearInterval(check);
+      }
+    }, 50);
+    function pageTipe() {
+      const p = window.location.pathname;
+      if (p.includes('/tambah-resume-ri') || p.includes('/edit-resume-ri')) return 'ranap';
+      if (p.includes('/rm-rawat-jalan-new')) return 'rajal';
+      return null;
     }
-    function c(t, a) {
-      let i = u();
-      if (!i) return;
-      let l = setInterval(function () {
-        let o = document.getElementById('save'),
-          s =
-            i === 'ranap'
-              ? document.querySelector(
-                  'form[action*="rawat-inap-resume"], form[action*="edit-resume-rawat-inap"]',
-                )
-              : document.querySelector('form#formdata, form[action*="rm-rawat-jalan"]');
-        o && s && (clearInterval(l), m(s, o, i, t, a));
+    function waitForForm(doValidate, doHistory) {
+      const tipe = pageTipe();
+      if (!tipe) return;
+      const poll = setInterval(function () {
+        const saveBtn = document.getElementById('save');
+        const form =
+          tipe === 'ranap'
+            ? document.querySelector(
+                'form[action*="rawat-inap-resume"], form[action*="edit-resume-rawat-inap"]',
+              )
+            : document.querySelector('form#formdata, form[action*="rm-rawat-jalan"]');
+        if (saveBtn && form) {
+          clearInterval(poll);
+          init(form, saveBtn, tipe, doValidate, doHistory);
+        }
       }, 200);
     }
-    function m(t, a, i, l, o) {
-      x();
+    function init(form, saveBtn, tipe, doValidate, doHistory) {
+      injectStyle();
       try {
-        nt();
+        initCasemixBackfill();
       } catch {}
-      if ((o && g(t, i, l), !l)) {
-        o && q(t, a, i);
+      if (doHistory) setupCekForm(form, tipe, doValidate);
+      if (!doValidate) {
+        if (doHistory) setupHistory(form, saveBtn, tipe);
         return;
       }
-      (bt(i),
-        i === 'ranap' && (M('ranap') || (ie(), $(t))),
-        at(),
-        ot(),
-        st(i),
-        ut(),
-        lt(),
-        ct(i),
-        dt(i),
-        it(t),
-        q(t, a, i));
+      setupAutoClearHandlers(tipe);
+      if (tipe === 'ranap') {
+        if (!hasIdResume('ranap')) {
+          restoreDraft();
+          setupAutosave(form);
+        }
+      }
+      optimizeVitalInputs();
+      optimizeBloodPressure();
+      addRequiredAttributes(tipe);
+      preventEnterSubmit();
+      autoExpandTextareas();
+      setupColorIndicators(tipe);
+      setupAutoFormatICD(tipe);
+      setupUnsavedWarning(form);
+      setupHistory(form, saveBtn, tipe);
     }
-    function x() {
-      ce(
+    function injectStyle() {
+      injectCSS(
         'ext-rv-css',
         [
-          `.ext-rv-error { border: 2px solid ${R.error} !important; background: ${R.errorBg} !important; transition: all 0.2s; }`,
-          '.ext-rv-toast { position: fixed; top: 20px; right: 20px; z-index: 99999; padding: 16px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,0.15); max-width: 420px; line-height: 1.5; }',
-          `.ext-rv-toast-error { background: ${R.errorBg}; color: #991b1b; border-left: 5px solid ${R.error}; }`,
-          `.ext-rv-toast-success { background: ${R.successBg}; color: #065f46; border-left: 5px solid ${R.success}; }`,
-          `.ext-rv-icd-valid { border: 2px solid ${R.success} !important; background: ${R.successBg} !important; }`,
-          `.ext-rv-icd-invalid { border: 2px solid ${R.error} !important; background: ${R.errorBg} !important; }`,
-        ].join(`
-`),
+          `.ext-rv-error { border: 2px solid ${colors.error} !important; background: ${colors.errorBg} !important; transition: all 0.2s; }`,
+          `.ext-rv-toast { position: fixed; top: 20px; right: 20px; z-index: 99999; padding: 16px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,0.15); max-width: 420px; line-height: 1.5; }`,
+          `.ext-rv-toast-error { background: ${colors.errorBg}; color: #991b1b; border-left: 5px solid ${colors.error}; }`,
+          `.ext-rv-toast-success { background: ${colors.successBg}; color: #065f46; border-left: 5px solid ${colors.success}; }`,
+          `.ext-rv-icd-valid { border: 2px solid ${colors.success} !important; background: ${colors.successBg} !important; }`,
+          `.ext-rv-icd-invalid { border: 2px solid ${colors.error} !important; background: ${colors.errorBg} !important; }`,
+        ].join('\n'),
       );
     }
-    function g(t, a, i) {
-      let l = window;
-      if (a === 'rajal') {
-        let d = typeof l.simpan == 'function' ? l.simpan : null;
-        if (d && !d.__extWrapped) {
-          let b = function (...f) {
-            if (i && !X(a)) return !1;
-            (H(t, a), (J = !1));
+    function setupCekForm(form, tipe, doValidate) {
+      const w = window;
+      if (tipe === 'rajal') {
+        const origSimpan = typeof w.simpan === 'function' ? w.simpan : null;
+        if (origSimpan && !origSimpan.__extWrapped) {
+          const wrapped = function (...args) {
+            if (doValidate && !runValidation(tipe)) return false;
+            logResumeSave(form, tipe);
+            _dirty = false;
             try {
-              localStorage.removeItem(k());
-            } catch {}
-            return d.apply(this, f);
+              localStorage.removeItem(getDraftKey());
+            } catch (_e) {}
+            return origSimpan.apply(this, args);
           };
-          ((b.__extWrapped = !0), (l.simpan = b));
+          wrapped.__extWrapped = true;
+          w.simpan = wrapped;
         }
-      } else
-        i &&
-          (l.cekForm = function () {
-            return X(a);
-          });
-      t.onsubmit !== null &&
-        (t.onsubmit = function (d) {
-          let b = i ? X(a) : !0;
-          return (!b && d ? d.preventDefault() : H(t, a), b);
+      } else if (doValidate) {
+        w.cekForm = function () {
+          return runValidation(tipe);
+        };
+      }
+      if (form.onsubmit !== null) {
+        form.onsubmit = function (e) {
+          const result = doValidate ? runValidation(tipe) : true;
+          if (!result && e) {
+            e.preventDefault();
+          } else {
+            logResumeSave(form, tipe);
+          }
+          return result;
+        };
+      }
+      const $2 = w.jQuery;
+      if (doValidate && typeof $2 === 'object' && $2 && typeof $2.fn?.on === 'function') {
+        $2.fn.on('submit', function (e) {
+          if (!runValidation(tipe)) {
+            e.preventDefault();
+            return false;
+          }
+          return true;
         });
-      let o = l.jQuery;
-      i &&
-        typeof o == 'object' &&
-        o &&
-        typeof o.fn?.on == 'function' &&
-        o.fn.on('submit', function (d) {
-          return X(a) ? !0 : (d.preventDefault(), !1);
-        });
-      var s = t.submit.bind(t);
-      t.submit = function () {
-        if (!(i && !X(a))) {
-          (H(t, a), (J = !1), I());
-          try {
-            localStorage.removeItem(k());
-          } catch {}
-          s();
-        }
+      }
+      var origSubmit = form.submit.bind(form);
+      form.submit = function () {
+        if (doValidate && !runValidation(tipe)) return;
+        logResumeSave(form, tipe);
+        _dirty = false;
+        clearAutosave();
+        try {
+          localStorage.removeItem(getDraftKey());
+        } catch (_e) {}
+        origSubmit();
       };
     }
-    let v = 'ext_draft_resume_';
-    var y = null;
-    function k() {
-      let t = p('id_visit');
-      return v + (t || 'unknown');
+    const DRAFT_PREFIX = 'ext_draft_resume_';
+    var _autosaveIntervalId = null;
+    function getDraftKey() {
+      const visitId = val('id_visit');
+      return DRAFT_PREFIX + (visitId || 'unknown');
     }
-    var S = null,
-      T = 2e3;
-    function F(t, a) {
+    var _debounceTimer = null;
+    var DEBOUNCE_MS = 2e3;
+    function debounce(fn, delay) {
       return function () {
-        (S && clearTimeout(S), (S = setTimeout(t, a)));
+        if (_debounceTimer) clearTimeout(_debounceTimer);
+        _debounceTimer = setTimeout(fn, delay);
       };
     }
-    function $(t) {
-      var a = function () {
-          B(t);
-        },
-        i = t.querySelectorAll('input, textarea, select');
-      (i.forEach(function (l) {
-        (l.addEventListener('change', F(a, T)), l.addEventListener('input', F(a, T)));
-      }),
-        (y = setInterval(a, 3e4)));
+    function setupAutosave(form) {
+      var doSave = function () {
+        saveDraft(form);
+      };
+      var inputs = form.querySelectorAll('input, textarea, select');
+      inputs.forEach(function (el) {
+        el.addEventListener('change', debounce(doSave, DEBOUNCE_MS));
+        el.addEventListener('input', debounce(doSave, DEBOUNCE_MS));
+      });
+      _autosaveIntervalId = setInterval(doSave, 3e4);
     }
-    function I() {
-      y !== null && (clearInterval(y), (y = null));
+    function clearAutosave() {
+      if (_autosaveIntervalId !== null) {
+        clearInterval(_autosaveIntervalId);
+        _autosaveIntervalId = null;
+      }
     }
-    function B(t) {
-      let a = k(),
-        i = new FormData(t),
-        l = {};
-      (i.forEach(function (o, s) {
-        l[s] = o.toString();
-      }),
-        (l._saved_at = Date.now().toString()));
+    function saveDraft(form) {
+      const key = getDraftKey();
+      const data = new FormData(form);
+      const obj = {};
+      data.forEach(function (value, name) {
+        obj[name] = value.toString();
+      });
+      obj._saved_at = Date.now().toString();
       try {
-        localStorage.setItem(a, JSON.stringify(l));
-      } catch {}
+        localStorage.setItem(key, JSON.stringify(obj));
+      } catch (_e) {}
     }
-    async function ie() {
-      let t = k(),
-        a = null;
+    async function restoreDraft() {
+      const key = getDraftKey();
+      let raw = null;
       try {
-        a = localStorage.getItem(t);
-      } catch {
+        raw = localStorage.getItem(key);
+      } catch (_e) {
         return;
       }
-      if (!a) return;
-      let i;
+      if (!raw) return;
+      let draft;
       try {
-        i = JSON.parse(a);
-      } catch {
+        draft = JSON.parse(raw);
+      } catch (_e) {
         return;
       }
-      let l = function () {
-        for (let s in i) {
-          if (s === '_saved_at') continue;
-          let d = document.querySelector('[name="' + s + '"]');
-          d && !d.value && (d.value = i[s]);
+      const ok = function () {
+        for (const name in draft) {
+          if (name === '_saved_at') continue;
+          const el = document.querySelector('[name="' + name + '"]');
+          if (el && !el.value) {
+            el.value = draft[name];
+          }
         }
         try {
-          localStorage.removeItem(t);
-        } catch {}
+          localStorage.removeItem(key);
+        } catch (_e) {}
       };
-      if (
-        await ge({
-          title: 'Draft Ditemukan',
-          message: 'Data draft sebelumnya ditemukan. Pulihkan?',
-          variant: 'info',
-          okLabel: 'Pulihkan',
-          cancelLabel: 'Hapus',
-        })
-      )
-        l();
-      else
+      const restore = await confirmExt({
+        title: 'Draft Ditemukan',
+        message: 'Data draft sebelumnya ditemukan. Pulihkan?',
+        variant: 'info',
+        okLabel: 'Pulihkan',
+        cancelLabel: 'Hapus',
+      });
+      if (restore) ok();
+      else {
         try {
-          localStorage.removeItem(t);
+          localStorage.removeItem(key);
+        } catch (_e) {}
+      }
+    }
+    function hasIdResume(tipe) {
+      const id = tipe === 'rajal' ? 'id_rawat_jalan' : 'id_resume_inap';
+      const el = document.getElementById(id);
+      return !!el && !!el.value;
+    }
+    var _historyBtn = null;
+    function getVisitId() {
+      return val('id_visit');
+    }
+    function logResumeSave(form, tipe) {
+      const after = takeSnapshot(form);
+      const idVisit = getVisitId();
+      const idResume = tipe === 'rajal' ? val('id_rawat_jalan') : val('id_resume_inap');
+      const aksi = hasIdResume(tipe) ? 'ubah' : 'buat';
+      const before = loadLast(idVisit, tipe) || {};
+      logResumeHistory({
+        idVisit,
+        idResume,
+        tipe,
+        aksi,
+        before,
+        after,
+      });
+      refreshHistoryBtn(idVisit, tipe);
+    }
+    function setupHistory(form, saveBtn, tipe) {
+      const idVisit = getVisitId();
+      storeLast(takeSnapshot(form), idVisit, tipe);
+      refreshHistoryBtn(idVisit, tipe);
+      if (_historyBtn || !saveBtn.parentElement) return;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.id = 'ext-rv-history-btn';
+      btn.textContent = 'Riwayat';
+      btn.style.cssText =
+        'margin-left:8px;border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px;';
+      btn.onclick = function () {
+        openHistoryModal({
+          idVisit,
+          tipe,
+          title: tipe === 'rajal' ? 'Riwayat Resume Rajal' : 'Riwayat Resume Rawat Inap',
+          zIndex: 99998,
+          onApply: function (snap) {
+            applySnapshot(form, snap);
+          },
+        });
+      };
+      saveBtn.parentElement.insertBefore(btn, saveBtn.nextSibling);
+      _historyBtn = btn;
+      refreshHistoryBtn(idVisit, tipe);
+      window.addEventListener('ext-rv-history-merged', function (e) {
+        try {
+          const d = e.detail;
+          if (d && d.idVisit === idVisit && d.tipe === tipe) refreshHistoryBtn(idVisit, tipe);
         } catch {}
+      });
     }
-    function M(t) {
-      let a = t === 'rajal' ? 'id_rawat_jalan' : 'id_resume_inap',
-        i = document.getElementById(a);
-      return !!i && !!i.value;
+    function refreshHistoryBtn(idVisit, tipe) {
+      if (!_historyBtn) return;
+      const n = loadHistory(idVisit, tipe).length;
+      _historyBtn.textContent = n > 0 ? 'Riwayat (' + n + ')' : 'Riwayat';
     }
-    var A = null;
-    function P() {
-      return p('id_visit');
-    }
-    function H(t, a) {
-      let i = _e(t),
-        l = P(),
-        o = p(a === 'rajal' ? 'id_rawat_jalan' : 'id_resume_inap'),
-        s = M(a) ? 'ubah' : 'buat',
-        d = qe(l, a) || {};
-      (Je({ idVisit: l, idResume: o, tipe: a, aksi: s, before: d, after: i }), Z(l, a));
-    }
-    function q(t, a, i) {
-      let l = P();
-      if ((re(_e(t), l, i), Z(l, i), A || !a.parentElement)) return;
-      let o = document.createElement('button');
-      ((o.type = 'button'),
-        (o.id = 'ext-rv-history-btn'),
-        (o.textContent = 'Riwayat'),
-        (o.style.cssText =
-          'margin-left:8px;border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px;'),
-        (o.onclick = function () {
-          Ge({
-            idVisit: l,
-            tipe: i,
-            title: i === 'rajal' ? 'Riwayat Resume Rajal' : 'Riwayat Resume Rawat Inap',
-            zIndex: 99998,
-            onApply: function (s) {
-              rt(t, s);
-            },
-          });
-        }),
-        a.parentElement.insertBefore(o, a.nextSibling),
-        (A = o),
-        Z(l, i),
-        window.addEventListener('ext-rv-history-merged', function (s) {
-          try {
-            let d = s.detail;
-            d && d.idVisit === l && d.tipe === i && Z(l, i);
-          } catch {}
-        }));
-    }
-    function Z(t, a) {
-      if (!A) return;
-      let i = K(t, a).length;
-      A.textContent = i > 0 ? 'Riwayat (' + i + ')' : 'Riwayat';
-    }
-    function _e(t) {
-      let a = {},
-        i = /^(kode_|diagnosa_|tindakan\d+$|nosokomial\d+$|kode\d+$|kode9\d+$)/;
-      return (
-        t
-          .querySelectorAll(
-            'input[name], textarea[name], select[name], input[id]:not([name]):not([type=button]):not([type=submit]), textarea[id]:not([name]), select[id]:not([name])',
-          )
-          .forEach(function (o) {
-            let d = o.getAttribute('name') || (i.test(o.id) ? o.id : '');
-            if (!d || d === '_saved_at' || d === 'save') return;
-            if (o instanceof HTMLInputElement && (o.type === 'checkbox' || o.type === 'radio')) {
-              if (!o.checked) return;
-              let f = a[d];
-              f === void 0
-                ? (a[d] = o.value)
-                : Array.isArray(f)
-                  ? f.push(o.value)
-                  : (a[d] = [f, o.value]);
-              return;
-            }
-            if (o instanceof HTMLSelectElement && o.multiple) {
-              a[d] = Array.from(o.selectedOptions).map(function (f) {
-                return f.value;
-              });
-              return;
-            }
-            let b = a[d];
-            b !== void 0 && !Array.isArray(b)
-              ? (a[d] = [b, o.value])
-              : Array.isArray(b)
-                ? b.push(o.value)
-                : (a[d] = o.value);
-          }),
-        a
+    function takeSnapshot(form) {
+      const snap = {};
+      const ICD_ID_RE = /^(kode_|diagnosa_|tindakan\d+$|nosokomial\d+$|kode\d+$|kode9\d+$)/;
+      const els = form.querySelectorAll(
+        'input[name], textarea[name], select[name], input[id]:not([name]):not([type=button]):not([type=submit]), textarea[id]:not([name]), select[id]:not([name])',
       );
-    }
-    function rt(t, a) {
-      let i = 0,
-        l = 0;
-      (Object.keys(a).forEach(function (o) {
-        let s = a[o],
-          d = Array.from(t.querySelectorAll('[name="' + o + '"]'));
-        if (!d.length) {
-          let f = t.querySelector('#' + CSS.escape(o));
-          d = f ? [f] : [];
-        }
-        if (!d.length) {
-          l++;
+      els.forEach(function (el) {
+        const name = el.getAttribute('name');
+        const key = name || (ICD_ID_RE.test(el.id) ? el.id : '');
+        if (!key || key === '_saved_at' || key === 'save') return;
+        if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')) {
+          if (!el.checked) return;
+          const cur2 = snap[key];
+          if (cur2 === void 0) snap[key] = el.value;
+          else if (Array.isArray(cur2)) cur2.push(el.value);
+          else snap[key] = [cur2, el.value];
           return;
         }
-        let b = Array.isArray(s) ? s : [s];
-        d.forEach(function (f, C) {
-          if (f instanceof HTMLInputElement && (f.type === 'checkbox' || f.type === 'radio'))
-            f.checked = Array.isArray(s) ? s.indexOf(f.value) >= 0 : f.value === s;
-          else if (f instanceof HTMLSelectElement && f.multiple) {
-            let _ = Array.isArray(s) ? s : [s];
-            Array.from(f.options).forEach(function (E) {
-              E.selected = _.indexOf(E.value) >= 0;
+        if (el instanceof HTMLSelectElement && el.multiple) {
+          snap[key] = Array.from(el.selectedOptions).map(function (o) {
+            return o.value;
+          });
+          return;
+        }
+        const cur = snap[key];
+        if (cur !== void 0 && !Array.isArray(cur)) {
+          snap[key] = [cur, el.value];
+        } else if (Array.isArray(cur)) {
+          cur.push(el.value);
+        } else {
+          snap[key] = el.value;
+        }
+      });
+      return snap;
+    }
+    function applySnapshot(form, snap) {
+      let filled = 0;
+      let missing = 0;
+      Object.keys(snap).forEach(function (name) {
+        const v = snap[name];
+        let els = Array.from(form.querySelectorAll('[name="' + name + '"]'));
+        if (!els.length) {
+          const byId = form.querySelector('#' + CSS.escape(name));
+          els = byId ? [byId] : [];
+        }
+        if (!els.length) {
+          missing++;
+          return;
+        }
+        const arrVal = Array.isArray(v) ? v : [v];
+        els.forEach(function (el, idx) {
+          if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')) {
+            el.checked = Array.isArray(v) ? v.indexOf(el.value) >= 0 : el.value === v;
+          } else if (el instanceof HTMLSelectElement && el.multiple) {
+            const arr = Array.isArray(v) ? v : [v];
+            Array.from(el.options).forEach(function (o) {
+              o.selected = arr.indexOf(o.value) >= 0;
             });
-          } else f.value = b[C] ?? '';
-          (f.dispatchEvent(new Event('input', { bubbles: !0 })),
-            f.dispatchEvent(new Event('change', { bubbles: !0 })),
-            i++);
+          } else {
+            el.value = arrVal[idx] ?? '';
+          }
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+          filled++;
         });
-      }),
-        We(
-          'Disalin ' +
-            i +
-            ' field' +
-            (l > 0 ? ', ' + l + ' nama tak ditemukan' : '') +
-            '. Periksa lalu klik Simpan.',
-        ));
+      });
+      showHistToast(
+        'Disalin ' +
+          filled +
+          ' field' +
+          (missing > 0 ? ', ' + missing + ' nama tak ditemukan' : '') +
+          '. Periksa lalu klik Simpan.',
+      );
     }
-    let J = !1;
-    function it(t) {
-      var a = t.querySelectorAll('input, textarea, select');
-      (a.forEach(function (i) {
-        (i.addEventListener('change', function () {
-          J = !0;
-        }),
-          i.addEventListener('input', function () {
-            J = !0;
-          }));
-      }),
-        t.addEventListener('submit', function () {
-          J = !1;
-        }),
-        window.addEventListener('beforeunload', function (i) {
-          if (J)
-            return (
-              i.preventDefault(),
-              (i.returnValue = 'Data yang belum disimpan akan hilang.'),
-              i.returnValue
-            );
-        }));
+    let _dirty = false;
+    function setupUnsavedWarning(form) {
+      var inputs = form.querySelectorAll('input, textarea, select');
+      inputs.forEach(function (el) {
+        el.addEventListener('change', function () {
+          _dirty = true;
+        });
+        el.addEventListener('input', function () {
+          _dirty = true;
+        });
+      });
+      form.addEventListener('submit', function () {
+        _dirty = false;
+      });
+      window.addEventListener('beforeunload', function (e) {
+        if (!_dirty) return;
+        e.preventDefault();
+        e.returnValue = 'Data yang belum disimpan akan hilang.';
+        return e.returnValue;
+      });
     }
-    function at() {
-      [
+    function optimizeVitalInputs() {
+      const fields = [
         { id: 'suhu_pulang', min: 30, max: 45, step: 0.1 },
         { id: 'suhu', min: 30, max: 45, step: 0.1 },
         { id: 'nadi_pulang', min: 20, max: 250, step: 1 },
@@ -1461,29 +1586,32 @@ var __morbis_feature = (() => {
         { id: 'gcs_v', min: 1, max: 5, step: 1 },
         { id: 'tinggi', min: 30, max: 250, step: 1 },
         { id: 'berat', min: 1, max: 500, step: 0.1 },
-      ].forEach(function (a) {
-        var i = document.getElementById(a.id);
-        i &&
-          ((i.type = 'number'),
-          (i.min = String(a.min)),
-          (i.max = String(a.max)),
-          (i.step = String(a.step)),
-          i.placeholder || (i.placeholder = a.min + '-' + a.max));
+      ];
+      fields.forEach(function (f) {
+        var el = document.getElementById(f.id);
+        if (!el) return;
+        el.type = 'number';
+        el.min = String(f.min);
+        el.max = String(f.max);
+        el.step = String(f.step);
+        if (!el.placeholder) {
+          el.placeholder = f.min + '-' + f.max;
+        }
       });
     }
-    function ot() {
-      var t = ['td_pulang', 'td', 'tensi', 'tensi_pulang'];
-      t.forEach(function (a) {
-        var i = document.getElementById(a);
-        i &&
-          ((i.placeholder = '120/80'),
-          (i.pattern = '[0-9]{2,3}/[0-9]{2,3}'),
-          (i.title = 'Format: angka/angka (Contoh: 120/80)'));
+    function optimizeBloodPressure() {
+      var ids = ['td_pulang', 'td', 'tensi', 'tensi_pulang'];
+      ids.forEach(function (id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.placeholder = '120/80';
+        el.pattern = '[0-9]{2,3}/[0-9]{2,3}';
+        el.title = 'Format: angka/angka (Contoh: 120/80)';
       });
     }
-    function st(t) {
-      var a =
-        t === 'rajal'
+    function addRequiredAttributes(tipe) {
+      var ids =
+        tipe === 'rajal'
           ? ['anamnesa', 'catatan', 'terapi_pengobatan', 'jenis_kasus', 'tindak_lanjut']
           : [
               'alasan_rawat',
@@ -1495,439 +1623,480 @@ var __morbis_feature = (() => {
               'cara_keluar',
               'tgl_keluar2',
             ];
-      a.forEach(function (i) {
-        var l = document.getElementById(i);
-        l && (l.required = !0);
+      ids.forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.required = true;
       });
     }
-    function ut() {
+    function preventEnterSubmit() {
       document
         .querySelectorAll('input:not([type="submit"]):not([type="button"])')
-        .forEach(function (t) {
-          t.addEventListener('keydown', function (a) {
-            a.key === 'Enter' && a.preventDefault();
+        .forEach(function (el) {
+          el.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+            }
           });
         });
     }
-    function lt() {
-      document.querySelectorAll('textarea').forEach(function (t) {
-        ((t.style.overflow = 'hidden'),
-          (t.style.resize = 'vertical'),
-          t.addEventListener('input', function () {
-            ((t.style.height = 'auto'), (t.style.height = t.scrollHeight + 'px'));
-          }));
+    function autoExpandTextareas() {
+      document.querySelectorAll('textarea').forEach(function (el) {
+        el.style.overflow = 'hidden';
+        el.style.resize = 'vertical';
+        el.addEventListener('input', function () {
+          el.style.height = 'auto';
+          el.style.height = el.scrollHeight + 'px';
+        });
       });
     }
-    function ct(t) {
-      var a = Ee(t),
-        i = Te(t);
-      (a.forEach(function (l) {
-        let o = document.getElementById(l);
-        o &&
-          o.addEventListener('input', function () {
-            var s = o.value.trim();
-            (o.classList.remove('ext-rv-icd-valid', 'ext-rv-icd-invalid'),
-              s !== '' &&
-                (/^[A-Z][0-9][0-9](\.[0-9]{1,2})?$/i.test(s)
-                  ? o.classList.add('ext-rv-icd-valid')
-                  : o.classList.add('ext-rv-icd-invalid')));
-          });
-      }),
-        i.forEach(function (l) {
-          let o = document.getElementById(l);
-          o &&
-            o.addEventListener('input', function () {
-              var s = o.value.trim();
-              (o.classList.remove('ext-rv-icd-valid', 'ext-rv-icd-invalid'),
-                s !== '' &&
-                  (/^[0-9]{2}(\.[0-9]{1,2})?$/.test(s)
-                    ? o.classList.add('ext-rv-icd-valid')
-                    : o.classList.add('ext-rv-icd-invalid')));
-            });
-        }));
-    }
-    function dt(t) {
-      var a = Ee(t);
-      a.forEach(function (l) {
-        let o = document.getElementById(l);
-        o &&
-          o.addEventListener('blur', function () {
-            var s = o.value.trim().toUpperCase();
-            s &&
-              ((s = s.replace('.', '')),
-              s.length > 3 && (s = s.substring(0, 3) + '.' + s.substring(3)),
-              (o.value = s),
-              o.dispatchEvent(new Event('input')));
-          });
+    function setupColorIndicators(tipe) {
+      var icd10Fields = buildICD10Fields(tipe);
+      var icd9Fields = buildICD9Fields(tipe);
+      icd10Fields.forEach(function (id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', function () {
+          var v = el.value.trim();
+          el.classList.remove('ext-rv-icd-valid', 'ext-rv-icd-invalid');
+          if (v === '') return;
+          if (/^[A-Z][0-9][0-9](\.[0-9]{1,2})?$/i.test(v)) {
+            el.classList.add('ext-rv-icd-valid');
+          } else {
+            el.classList.add('ext-rv-icd-invalid');
+          }
+        });
       });
-      var i = Te(t);
-      i.forEach(function (l) {
-        let o = document.getElementById(l);
-        o &&
-          o.addEventListener('blur', function () {
-            var s = o.value.trim();
-            s &&
-              ((s = s.replace('.', '')),
-              s.length > 2 && (s = s.substring(0, 2) + '.' + s.substring(2)),
-              (o.value = s),
-              o.dispatchEvent(new Event('input')));
-          });
+      icd9Fields.forEach(function (id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', function () {
+          var v = el.value.trim();
+          el.classList.remove('ext-rv-icd-valid', 'ext-rv-icd-invalid');
+          if (v === '') return;
+          if (/^[0-9]{2}(\.[0-9]{1,2})?$/.test(v)) {
+            el.classList.add('ext-rv-icd-valid');
+          } else {
+            el.classList.add('ext-rv-icd-invalid');
+          }
+        });
       });
     }
-    function Ee(t) {
-      if (t === 'rajal') {
-        let l = [];
-        if (
-          (document.querySelectorAll('input[name="kode10[]"]').forEach(function (s) {
-            s.id && l.push(s.id);
-          }),
-          l.length)
-        )
-          return l;
-        let o = [];
-        for (let s = 1; s <= 20; s++) o.push('kode' + s);
-        return o;
-      }
-      for (var a = ['kode_diagnosa_utama'], i = 1; i <= 10; i++)
-        a.push('kode_diagnosa_sekunder' + i);
-      return a;
+    function setupAutoFormatICD(tipe) {
+      var icd10Fields = buildICD10Fields(tipe);
+      icd10Fields.forEach(function (id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('blur', function () {
+          var v = el.value.trim().toUpperCase();
+          if (!v) return;
+          v = v.replace('.', '');
+          if (v.length > 3) {
+            v = v.substring(0, 3) + '.' + v.substring(3);
+          }
+          el.value = v;
+          el.dispatchEvent(new Event('input'));
+        });
+      });
+      var icd9Fields = buildICD9Fields(tipe);
+      icd9Fields.forEach(function (id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('blur', function () {
+          var v = el.value.trim();
+          if (!v) return;
+          v = v.replace('.', '');
+          if (v.length > 2) {
+            v = v.substring(0, 2) + '.' + v.substring(2);
+          }
+          el.value = v;
+          el.dispatchEvent(new Event('input'));
+        });
+      });
     }
-    function Te(t) {
-      if (t === 'rajal') {
-        let l = [];
-        if (
-          (document.querySelectorAll('input[name="kode9[]"]').forEach(function (s) {
-            s.id && l.push(s.id);
-          }),
-          l.length)
-        )
-          return l;
-        let o = [];
-        for (let s = 1; s <= 20; s++) o.push('kode9' + s);
-        return o;
+    function buildICD10Fields(tipe) {
+      if (tipe === 'rajal') {
+        const ids = [];
+        document.querySelectorAll('input[name="kode10[]"]').forEach(function (el) {
+          if (el.id) ids.push(el.id);
+        });
+        if (ids.length) return ids;
+        const numbered = [];
+        for (let i2 = 1; i2 <= 20; i2++) numbered.push('kode' + i2);
+        return numbered;
       }
-      for (var a = [], i = 1; i <= 10; i++) a.push('kode_tindakan' + i);
-      return a;
-    }
-    function X(t) {
-      ft();
-      var a = [];
-      function i(o, s, d) {
-        o || a.push({ msg: s, id: d });
-      }
-      function l(o, s) {
-        let d = p(o);
-        h(d) || pe(d) || i(!1, s + ' tidak boleh hanya berisi simbol atau karakter khusus', o);
-      }
-      return (t === 'rajal' ? mt(i, l) : pt(i, l), a.length > 0 ? (gt(a), !1) : !0);
-    }
-    function pt(t, a) {
-      (t(!!p('norm'), 'No. RM harus diisi', 'norm'),
-        t(!!p('pasien'), 'Nama pasien harus diisi', 'pasien'),
-        t(!!p('id_visit'), 'Data kunjungan tidak valid', 'pasien'),
-        a('alasan_rawat', 'Alasan rawat'),
-        a('anamnesa', 'Anamnesa'),
-        a('diagnosa_primary', 'Diagnosa primary'),
-        a('terapi_pengobatan', 'Terapi/pengobatan'),
-        t(
-          !!p('kode_diagnosa_utama'),
-          'Kode ICD-10 Diagnosa Utama harus diisi',
-          'kode_diagnosa_utama',
-        ),
-        p('kode_diagnosa_utama') &&
-          !h(p('kode_diagnosa_utama')) &&
-          t(
-            z(p('kode_diagnosa_utama')),
-            'Format kode ICD-10 Diagnosa Utama tidak valid (contoh: A00, B20.9)',
-            'kode_diagnosa_utama',
-          ),
-        p('diagnosa_utama') &&
-          !ae('kode_diagnosa_utama', z) &&
-          t(
-            !!p('id_diagnosa_utama'),
-            'Diagnosa Utama harus dipilih dari hasil pencarian (autocomplete)',
-            'diagnosa_utama',
-          ));
+      var result = ['kode_diagnosa_utama'];
       for (var i = 1; i <= 10; i++) {
-        var l = p('kode_diagnosa_sekunder' + i),
-          o = p('diagnosa_sekunder' + i),
-          s = p('id_diagnosa_sekunder' + i);
-        (l &&
-          !h(l) &&
-          t(
-            z(l),
-            'Format kode ICD-10 Diagnosa Sekunder ' + i + ' tidak valid',
-            'kode_diagnosa_sekunder' + i,
-          ),
-          o &&
-            !h(o) &&
-            !ae('kode_diagnosa_sekunder' + i, z) &&
-            t(
-              !!s,
-              'Diagnosa Sekunder ' + i + ' harus dipilih dari hasil pencarian',
-              'diagnosa_sekunder' + i,
-            ));
+        result.push('kode_diagnosa_sekunder' + i);
       }
-      for (var d = 1; d <= 10; d++) {
-        var b = p('kode_tindakan' + d),
-          f = p('tindakan' + d),
-          C = p('id_tindakan' + d);
-        (b &&
-          !h(b) &&
-          t(
-            Y(b),
-            'Format kode ICD-9 Tindakan ' + d + ' tidak valid (contoh: 45.16)',
-            'kode_tindakan' + d,
-          ),
-          f &&
-            !h(f) &&
-            !ae('kode_tindakan' + d, Y) &&
-            t(
-              !!C,
-              'Tindakan ' + d + ' harus dipilih dari hasil pencarian (autocomplete)',
-              'tindakan' + d,
-            ));
+      return result;
+    }
+    function buildICD9Fields(tipe) {
+      if (tipe === 'rajal') {
+        const ids = [];
+        document.querySelectorAll('input[name="kode9[]"]').forEach(function (el) {
+          if (el.id) ids.push(el.id);
+        });
+        if (ids.length) return ids;
+        const numbered = [];
+        for (let i2 = 1; i2 <= 20; i2++) numbered.push('kode9' + i2);
+        return numbered;
       }
-      var _ = p('td_pulang') || p('tensi');
-      _ &&
-        !h(_) &&
-        t(
-          de(_),
-          'Tekanan darah pulang tidak valid (contoh: 120/80)',
-          p('td_pulang') ? 'td_pulang' : 'tensi',
+      var result = [];
+      for (var i = 1; i <= 10; i++) {
+        result.push('kode_tindakan' + i);
+      }
+      return result;
+    }
+    function runValidation(tipe) {
+      clearErrors();
+      var errs = [];
+      function fail(ok, msg, id) {
+        if (!ok) errs.push({ msg, id });
+      }
+      function failText(id, label) {
+        const v = val(id);
+        if (isEmptyish(v)) return;
+        if (!isUsableText(v))
+          fail(false, label + ' tidak boleh hanya berisi simbol atau karakter khusus', id);
+      }
+      if (tipe === 'rajal') {
+        runRajalValidation(fail, failText);
+      } else {
+        runRanapValidation(fail, failText);
+      }
+      if (errs.length > 0) {
+        warnAll(errs);
+        return false;
+      }
+      return true;
+    }
+    function runRanapValidation(fail, failText) {
+      fail(!!val('norm'), 'No. RM harus diisi', 'norm');
+      fail(!!val('pasien'), 'Nama pasien harus diisi', 'pasien');
+      fail(!!val('id_visit'), 'Data kunjungan tidak valid', 'pasien');
+      failText('alasan_rawat', 'Alasan rawat');
+      failText('anamnesa', 'Anamnesa');
+      failText('diagnosa_primary', 'Diagnosa primary');
+      failText('terapi_pengobatan', 'Terapi/pengobatan');
+      fail(
+        !!val('kode_diagnosa_utama'),
+        'Kode ICD-10 Diagnosa Utama harus diisi',
+        'kode_diagnosa_utama',
+      );
+      if (val('kode_diagnosa_utama') && !isEmptyish(val('kode_diagnosa_utama')))
+        fail(
+          isICD10(val('kode_diagnosa_utama')),
+          'Format kode ICD-10 Diagnosa Utama tidak valid (contoh: A00, B20.9)',
+          'kode_diagnosa_utama',
         );
-      var E = p('nadi_pulang');
-      E && !h(E) && t(L(E, 20, 250), 'Nadi pulang harus 20-250', 'nadi_pulang');
-      var w = p('suhu_pulang');
-      w && !h(w) && t(L(w, 30, 45), 'Suhu pulang harus 30-45\xB0C', 'suhu_pulang');
-      var j = p('rr_pulang');
-      j && !h(j) && t(L(j, 4, 120), 'RR pulang harus 4-120', 'rr_pulang');
-      var D = p('spo2_pulang');
-      (D && !h(D) && t(L(D, 50, 100), 'SpO2 pulang harus 50-100%', 'spo2_pulang'),
-        t(!!p('jenis_kasus'), 'Jenis kasus harus dipilih', 'jenis_kasus'),
-        t(!!p('keadaan_keluar'), 'Keadaan keluar harus dipilih', 'keadaan_keluar'),
-        t(!!p('cara_keluar'), 'Cara keluar harus dipilih', 'cara_keluar'),
-        t(!!(p('tgl_keluar2') || p('tgl_keluar')), 'Tanggal keluar harus diisi', 'tgl_keluar2'));
-      var V = p('gcs_e');
-      V && !h(V) && t(L(V, 1, 4), 'GCS Eye harus 1-4', 'gcs_e');
-      var O = p('gcs_m');
-      O && !h(O) && t(L(O, 1, 6), 'GCS Motor harus 1-6', 'gcs_m');
-      var W = p('gcs_v');
-      W && !h(W) && t(L(W, 1, 5), 'GCS Verbal harus 1-5', 'gcs_v');
-      var se = p('gcs_e'),
-        ue = p('gcs_m');
-      if (se && ue && W && !h(se) && !h(ue) && !h(W)) {
-        var Se = Number(se) + Number(ue) + Number(W);
-        t(L(String(Se), 3, 15), 'Total GCS (E+M+V) harus 3-15, saat ini ' + Se, 'gcs_v');
+      if (val('diagnosa_utama') && !kodeOk('kode_diagnosa_utama', isICD10))
+        fail(
+          !!val('id_diagnosa_utama'),
+          'Diagnosa Utama harus dipilih dari hasil pencarian (autocomplete)',
+          'diagnosa_utama',
+        );
+      for (var si = 1; si <= 10; si++) {
+        var kDS = val('kode_diagnosa_sekunder' + si);
+        var nDS = val('diagnosa_sekunder' + si);
+        var iDS = val('id_diagnosa_sekunder' + si);
+        if (kDS && !isEmptyish(kDS))
+          fail(
+            isICD10(kDS),
+            'Format kode ICD-10 Diagnosa Sekunder ' + si + ' tidak valid',
+            'kode_diagnosa_sekunder' + si,
+          );
+        if (nDS && !isEmptyish(nDS) && !kodeOk('kode_diagnosa_sekunder' + si, isICD10))
+          fail(
+            !!iDS,
+            'Diagnosa Sekunder ' + si + ' harus dipilih dari hasil pencarian',
+            'diagnosa_sekunder' + si,
+          );
       }
-      var vt = G('pasien_rujuk_masuk_opsi').toLowerCase();
-      vt === 'ya' &&
-        t(
-          oe('pasien_rujuk_masuk'),
+      for (var ti = 1; ti <= 10; ti++) {
+        var kTK = val('kode_tindakan' + ti);
+        var nTK = val('tindakan' + ti);
+        var iTK = val('id_tindakan' + ti);
+        if (kTK && !isEmptyish(kTK))
+          fail(
+            isICD9(kTK),
+            'Format kode ICD-9 Tindakan ' + ti + ' tidak valid (contoh: 45.16)',
+            'kode_tindakan' + ti,
+          );
+        if (nTK && !isEmptyish(nTK) && !kodeOk('kode_tindakan' + ti, isICD9))
+          fail(
+            !!iTK,
+            'Tindakan ' + ti + ' harus dipilih dari hasil pencarian (autocomplete)',
+            'tindakan' + ti,
+          );
+      }
+      var td = val('td_pulang') || val('tensi');
+      if (td && !isEmptyish(td))
+        fail(
+          isNormalBP(td),
+          'Tekanan darah pulang tidak valid (contoh: 120/80)',
+          val('td_pulang') ? 'td_pulang' : 'tensi',
+        );
+      var nadi = val('nadi_pulang');
+      if (nadi && !isEmptyish(nadi))
+        fail(isValidVital(nadi, 20, 250), 'Nadi pulang harus 20-250', 'nadi_pulang');
+      var suhu = val('suhu_pulang');
+      if (suhu && !isEmptyish(suhu))
+        fail(isValidVital(suhu, 30, 45), 'Suhu pulang harus 30-45\xB0C', 'suhu_pulang');
+      var rr = val('rr_pulang');
+      if (rr && !isEmptyish(rr))
+        fail(isValidVital(rr, 4, 120), 'RR pulang harus 4-120', 'rr_pulang');
+      var spo2 = val('spo2_pulang');
+      if (spo2 && !isEmptyish(spo2))
+        fail(isValidVital(spo2, 50, 100), 'SpO2 pulang harus 50-100%', 'spo2_pulang');
+      fail(!!val('jenis_kasus'), 'Jenis kasus harus dipilih', 'jenis_kasus');
+      fail(!!val('keadaan_keluar'), 'Keadaan keluar harus dipilih', 'keadaan_keluar');
+      fail(!!val('cara_keluar'), 'Cara keluar harus dipilih', 'cara_keluar');
+      fail(
+        !!(val('tgl_keluar2') || val('tgl_keluar')),
+        'Tanggal keluar harus diisi',
+        'tgl_keluar2',
+      );
+      var gcsE = val('gcs_e');
+      if (gcsE && !isEmptyish(gcsE)) fail(isValidVital(gcsE, 1, 4), 'GCS Eye harus 1-4', 'gcs_e');
+      var gcsM = val('gcs_m');
+      if (gcsM && !isEmptyish(gcsM)) fail(isValidVital(gcsM, 1, 6), 'GCS Motor harus 1-6', 'gcs_m');
+      var gcsV = val('gcs_v');
+      if (gcsV && !isEmptyish(gcsV))
+        fail(isValidVital(gcsV, 1, 5), 'GCS Verbal harus 1-5', 'gcs_v');
+      var gcsE2 = val('gcs_e');
+      var gcsM2 = val('gcs_m');
+      if (gcsE2 && gcsM2 && gcsV && !isEmptyish(gcsE2) && !isEmptyish(gcsM2) && !isEmptyish(gcsV)) {
+        var gcsTotal = Number(gcsE2) + Number(gcsM2) + Number(gcsV);
+        fail(
+          isValidVital(String(gcsTotal), 3, 15),
+          'Total GCS (E+M+V) harus 3-15, saat ini ' + gcsTotal,
+          'gcs_v',
+        );
+      }
+      var opsiA = radioVal('pasien_rujuk_masuk_opsi').toLowerCase();
+      if (opsiA === 'ya')
+        fail(
+          hasRadio('pasien_rujuk_masuk'),
           'Alasan Datang poin A: pilih asal rujukan masuk',
           'pasien_rujuk_masuk_opsi-ya',
         );
-      var yt = G('pasien_rujuk_dikembalikan_opsi').toLowerCase();
-      yt === 'ya' &&
-        t(
-          oe('pasien_rujuk_dikembalikan'),
+      var opsiB = radioVal('pasien_rujuk_dikembalikan_opsi').toLowerCase();
+      if (opsiB === 'ya')
+        fail(
+          hasRadio('pasien_rujuk_dikembalikan'),
           'Alasan Datang poin B: pilih asal rujukan dikembalikan',
           'pasien_rujuk_dikembalikan_opsi-ya',
         );
-      var kt = G('pasien_dirujuk_keluar_opsi').toLowerCase();
-      kt === 'ya' &&
-        t(
-          oe('pasien_rujuk_keluar'),
+      var opsiC = radioVal('pasien_dirujuk_keluar_opsi').toLowerCase();
+      if (opsiC === 'ya')
+        fail(
+          hasRadio('pasien_rujuk_keluar'),
           'Alasan Datang poin C: pilih rujukan keluar',
           'pasien_dirujuk_keluar_opsi-ya',
         );
-      var _t = G('menggunakan_kb_opsi').toLowerCase();
-      _t === 'ya' &&
-        (t(!!p('jenis_kb'), 'Pelayanan KB: jenis KB harus dipilih', 'jenis_kb'),
-        t(!!p('waktu_kb'), 'Pelayanan KB: waktu KB harus dipilih', 'waktu_kb'),
-        t(
-          xt('.monitoring_kb'),
+      var kb = radioVal('menggunakan_kb_opsi').toLowerCase();
+      if (kb === 'ya') {
+        fail(!!val('jenis_kb'), 'Pelayanan KB: jenis KB harus dipilih', 'jenis_kb');
+        fail(!!val('waktu_kb'), 'Pelayanan KB: waktu KB harus dipilih', 'waktu_kb');
+        fail(
+          hasChecked('.monitoring_kb'),
           'Pelayanan KB: pilih minimal satu monitoring KB',
           'monitoring_kb-komplikasi_kb',
-        ));
-      var Et = G('cek_status_covid').toLowerCase();
-      Et === '1' && t(!!p('status_covid'), 'Status COVID: pilih jenis COVID', 'status_covid');
-      var we = p('tgl_masuk') || p('tgl_masuk2'),
-        Le = p('tgl_keluar2') || p('tgl_keluar');
-      if (we && Le) {
-        let le = function (Re) {
-          let N = Re.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})(?:\s+(\d{1,2}):(\d{2}):(\d{2}))?/);
-          if (N)
+        );
+      }
+      var covid = radioVal('cek_status_covid').toLowerCase();
+      if (covid === '1')
+        fail(!!val('status_covid'), 'Status COVID: pilih jenis COVID', 'status_covid');
+      var tglMasuk = val('tgl_masuk') || val('tgl_masuk2');
+      var tglKeluar = val('tgl_keluar2') || val('tgl_keluar');
+      if (tglMasuk && tglKeluar) {
+        let parseDMY2 = function (s) {
+          const m = s.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})(?:\s+(\d{1,2}):(\d{2}):(\d{2}))?/);
+          if (m)
             return new Date(
-              +N[3],
-              +N[2] - 1,
-              +N[1],
-              +(N[4] || 0),
-              +(N[5] || 0),
-              +(N[6] || 0),
+              +m[3],
+              +m[2] - 1,
+              +m[1],
+              +(m[4] || 0),
+              +(m[5] || 0),
+              +(m[6] || 0),
             ).getTime();
-          let Ce = Date.parse(Re);
-          return isNaN(Ce) ? 0 : Ce;
+          const t = Date.parse(s);
+          return isNaN(t) ? 0 : t;
         };
-        var un = le;
-        t(le(Le) >= le(we), 'Tanggal keluar tidak boleh sebelum tanggal masuk', 'tgl_keluar2');
+        var parseDMY = parseDMY2;
+        fail(
+          parseDMY2(tglKeluar) >= parseDMY2(tglMasuk),
+          'Tanggal keluar tidak boleh sebelum tanggal masuk',
+          'tgl_keluar2',
+        );
       }
     }
-    function mt(t, a) {
-      (t(!!p('id_visit'), 'Data kunjungan tidak valid', 'id_visit'),
-        t(!!p('nama_pasien'), 'Nama pasien harus diisi', 'nama_pasien'),
-        a('anamnesa', 'Anamnesa'),
-        a('catatan', 'Catatan diagnosa'),
-        a('terapi_pengobatan', 'Terapi/pengobatan'),
-        ['pemeriksaan_fisik', 'tindakan', 'planning'].forEach(function (_) {
-          let E = p(_);
-          E &&
-            !h(E) &&
-            !pe(E) &&
-            t(
-              !1,
-              (_ === 'pemeriksaan_fisik'
-                ? 'Pemeriksaan fisik'
-                : _ === 'planning'
-                  ? 'Planning'
-                  : 'Tindakan') + ' tidak boleh hanya berisi simbol atau karakter khusus',
-              _,
-            );
-        }),
-        document.querySelectorAll('input[name="kode10[]"]').forEach(function (_, E) {
-          let w = (_.value || '').trim(),
-            j = _.closest('tr'),
-            D = (j?.querySelector('input[name="idicd[]"]')?.value || '').trim(),
-            V = (j?.querySelector('input[name="nama[]"]')?.value || '').trim(),
-            O = _.id || `kode10-${E}`;
-          (w &&
-            !h(w) &&
-            !z(w) &&
-            t(!1, 'Format kode ICD-10 baris ' + (E + 1) + ' tidak valid (contoh: A00, B20.9)', O),
-            (!h(w) || !h(V)) &&
-              !D &&
-              !z(w) &&
-              t(
-                !1,
-                'Diagnosa baris ' + (E + 1) + ' harus dipilih dari hasil pencarian (autocomplete)',
-                O,
-              ));
-        }),
-        document.querySelectorAll('input[name="kode9[]"]').forEach(function (_, E) {
-          let w = (_.value || '').trim(),
-            j = _.closest('tr'),
-            D = (j?.querySelector('input[name="idicdTindakan[]"]')?.value || '').trim(),
-            V = (j?.querySelector('input[name="namaTindakan[]"]')?.value || '').trim(),
-            O = _.id || `kode9-${E}`;
-          (w &&
-            !h(w) &&
-            !Y(w) &&
-            t(
-              !1,
-              'Format kode ICD-9 Tindakan baris ' + (E + 1) + ' tidak valid (contoh: 45.16)',
-              O,
-            ),
-            (!h(w) || !h(V)) &&
-              !D &&
-              !Y(w) &&
-              t(
-                !1,
-                'Tindakan baris ' + (E + 1) + ' harus dipilih dari hasil pencarian (autocomplete)',
-                O,
-              ));
-        }));
-      let l = p('tensi');
-      l && !h(l) && t(de(l), 'Tekanan darah tidak valid (contoh: 120/80)', 'tensi');
-      let o = p('nadi');
-      o && !h(o) && t(L(o, 20, 250), 'Nadi harus 20-250', 'nadi');
-      let s = p('suhu');
-      s && !h(s) && t(L(s, 30, 45), 'Suhu harus 30-45\xB0C', 'suhu');
-      let d = p('nafas');
-      d && !h(d) && t(L(d, 4, 80), 'Nafas harus 4-80', 'nafas');
-      let b = p('spo2');
-      b && !h(b) && t(L(b, 50, 100), 'SpO2 harus 50-100%', 'spo2');
-      let f = p('tinggi');
-      f && !h(f) && t(L(f, 30, 250), 'Tinggi badan harus 30-250 cm', 'tinggi');
-      let C = p('berat');
-      (C && !h(C) && t(L(C, 1, 500), 'Berat badan harus 1-500 kg', 'berat'),
-        t(!!p('jenis_kasus'), 'Jenis kasus harus dipilih', 'jenis_kasus'),
-        t(!!p('tindak_lanjut'), 'Tindak lanjut harus dipilih', 'tindak_lanjut'));
+    function runRajalValidation(fail, failText) {
+      fail(!!val('id_visit'), 'Data kunjungan tidak valid', 'id_visit');
+      fail(!!val('nama_pasien'), 'Nama pasien harus diisi', 'nama_pasien');
+      failText('anamnesa', 'Anamnesa');
+      failText('catatan', 'Catatan diagnosa');
+      failText('terapi_pengobatan', 'Terapi/pengobatan');
+      const optText = ['pemeriksaan_fisik', 'tindakan', 'planning'];
+      optText.forEach(function (id) {
+        const v = val(id);
+        if (v && !isEmptyish(v) && !isUsableText(v))
+          fail(
+            false,
+            (id === 'pemeriksaan_fisik'
+              ? 'Pemeriksaan fisik'
+              : id === 'planning'
+                ? 'Planning'
+                : 'Tindakan') + ' tidak boleh hanya berisi simbol atau karakter khusus',
+            id,
+          );
+      });
+      document.querySelectorAll('input[name="kode10[]"]').forEach(function (inp, i) {
+        const kode = (inp.value || '').trim();
+        const row = inp.closest('tr');
+        const idicd = (row?.querySelector('input[name="idicd[]"]')?.value || '').trim();
+        const nama = (row?.querySelector('input[name="nama[]"]')?.value || '').trim();
+        const errId = inp.id || `kode10-${i}`;
+        if (kode && !isEmptyish(kode) && !isICD10(kode))
+          fail(
+            false,
+            'Format kode ICD-10 baris ' + (i + 1) + ' tidak valid (contoh: A00, B20.9)',
+            errId,
+          );
+        if ((!isEmptyish(kode) || !isEmptyish(nama)) && !idicd && !isICD10(kode))
+          fail(
+            false,
+            'Diagnosa baris ' + (i + 1) + ' harus dipilih dari hasil pencarian (autocomplete)',
+            errId,
+          );
+      });
+      document.querySelectorAll('input[name="kode9[]"]').forEach(function (inp, i) {
+        const kode = (inp.value || '').trim();
+        const row = inp.closest('tr');
+        const idicd = (row?.querySelector('input[name="idicdTindakan[]"]')?.value || '').trim();
+        const nama = (row?.querySelector('input[name="namaTindakan[]"]')?.value || '').trim();
+        const errId = inp.id || `kode9-${i}`;
+        if (kode && !isEmptyish(kode) && !isICD9(kode))
+          fail(
+            false,
+            'Format kode ICD-9 Tindakan baris ' + (i + 1) + ' tidak valid (contoh: 45.16)',
+            errId,
+          );
+        if ((!isEmptyish(kode) || !isEmptyish(nama)) && !idicd && !isICD9(kode))
+          fail(
+            false,
+            'Tindakan baris ' + (i + 1) + ' harus dipilih dari hasil pencarian (autocomplete)',
+            errId,
+          );
+      });
+      const tensi = val('tensi');
+      if (tensi && !isEmptyish(tensi))
+        fail(isNormalBP(tensi), 'Tekanan darah tidak valid (contoh: 120/80)', 'tensi');
+      const nadi = val('nadi');
+      if (nadi && !isEmptyish(nadi)) fail(isValidVital(nadi, 20, 250), 'Nadi harus 20-250', 'nadi');
+      const suhu = val('suhu');
+      if (suhu && !isEmptyish(suhu))
+        fail(isValidVital(suhu, 30, 45), 'Suhu harus 30-45\xB0C', 'suhu');
+      const nafas = val('nafas');
+      if (nafas && !isEmptyish(nafas))
+        fail(isValidVital(nafas, 4, 80), 'Nafas harus 4-80', 'nafas');
+      const spo2 = val('spo2');
+      if (spo2 && !isEmptyish(spo2))
+        fail(isValidVital(spo2, 50, 100), 'SpO2 harus 50-100%', 'spo2');
+      const tinggi = val('tinggi');
+      if (tinggi && !isEmptyish(tinggi))
+        fail(isValidVital(tinggi, 30, 250), 'Tinggi badan harus 30-250 cm', 'tinggi');
+      const berat = val('berat');
+      if (berat && !isEmptyish(berat))
+        fail(isValidVital(berat, 1, 500), 'Berat badan harus 1-500 kg', 'berat');
+      fail(!!val('jenis_kasus'), 'Jenis kasus harus dipilih', 'jenis_kasus');
+      fail(!!val('tindak_lanjut'), 'Tindak lanjut harus dipilih', 'tindak_lanjut');
     }
-    function ft() {
-      document.querySelectorAll('.ext-rv-error').forEach(function (t) {
-        t.classList.remove('ext-rv-error');
+    function clearErrors() {
+      document.querySelectorAll('.ext-rv-error').forEach(function (el) {
+        el.classList.remove('ext-rv-error');
       });
     }
-    function gt(t) {
-      var a = t[0];
-      let i = document.getElementById(a.id);
-      i &&
-        (i.focus(),
-        i.classList.add('ext-rv-error'),
+    function warnAll(errs) {
+      var first = errs[0];
+      const firstEl = document.getElementById(first.id);
+      if (firstEl) {
+        firstEl.focus();
+        firstEl.classList.add('ext-rv-error');
         setTimeout(function () {
-          i.classList.remove('ext-rv-error');
-        }, 3e3));
-      for (var l = 1; l < t.length; l++) {
-        var o = document.getElementById(t[l].id);
-        o &&
-          (o.classList.add('ext-rv-error'),
-          (function (b) {
-            setTimeout(function () {
-              b.classList.remove('ext-rv-error');
-            }, 3e3);
-          })(o));
+          firstEl.classList.remove('ext-rv-error');
+        }, 3e3);
       }
-      for (var s = [], l = 0; l < t.length; l++) s.push('\u2022 ' + t[l].msg);
-      var d = s.join(`
-`);
-      ge({
-        title: 'Validasi Gagal (' + t.length + ' masalah)',
-        message: d,
+      for (var i = 1; i < errs.length; i++) {
+        var f = document.getElementById(errs[i].id);
+        if (f) {
+          f.classList.add('ext-rv-error');
+          (function (el) {
+            setTimeout(function () {
+              el.classList.remove('ext-rv-error');
+            }, 3e3);
+          })(f);
+        }
+      }
+      var lines = [];
+      for (var i = 0; i < errs.length; i++) {
+        lines.push('\u2022 ' + errs[i].msg);
+      }
+      var bulletList = lines.join('\n');
+      confirmExt({
+        title: 'Validasi Gagal (' + errs.length + ' masalah)',
+        message: bulletList,
         variant: 'warning',
         okLabel: 'OK',
-        hideCancel: !0,
+        hideCancel: true,
       });
     }
-    function ht(t) {
-      return document.getElementById(t);
+    function $(id) {
+      return document.getElementById(id);
     }
-    function p(t) {
-      return ht(t)?.value?.trim() || '';
+    function val(id) {
+      const el = $(id);
+      return el?.value?.trim() || '';
     }
-    function ae(t, a) {
-      let i = p(t);
-      return !!i && !h(i) && a(i);
+    function kodeOk(fieldId, check2) {
+      const k = val(fieldId);
+      return !!k && !isEmptyish(k) && check2(k);
     }
-    function G(t) {
-      return document.querySelector('input[name="' + t + '"]:checked')?.value || '';
+    function radioVal(name) {
+      const el = document.querySelector('input[name="' + name + '"]:checked');
+      return el?.value || '';
     }
-    function oe(t) {
-      return document.querySelector('input[name="' + t + '"]:checked') !== null;
+    function hasRadio(name) {
+      return document.querySelector('input[name="' + name + '"]:checked') !== null;
     }
-    function xt(t) {
-      return document.querySelector(t + ':checked') !== null;
+    function hasChecked(sel) {
+      return document.querySelector(sel + ':checked') !== null;
     }
-    function bt(t) {
-      if (t === 'rajal') return;
-      function a(d, b) {
-        var f = document.getElementById(d);
-        f &&
-          f.addEventListener('input', function (C) {
-            if (!(C && C.isTrusted === !1)) {
-              var _ = document.getElementById(b);
-              _ && (_.value = '');
-            }
-          });
+    function setupAutoClearHandlers(tipe) {
+      if (tipe === 'rajal') return;
+      function attachClear(fieldId, targetId) {
+        var el = document.getElementById(fieldId);
+        if (!el) return;
+        el.addEventListener('input', function (e) {
+          if (e && e.isTrusted === false) return;
+          var idEl = document.getElementById(targetId);
+          if (idEl) idEl.value = '';
+        });
       }
-      (a('kode_diagnosa_utama', 'id_diagnosa_utama'), a('diagnosa_utama', 'id_diagnosa_utama'));
+      attachClear('kode_diagnosa_utama', 'id_diagnosa_utama');
+      attachClear('diagnosa_utama', 'id_diagnosa_utama');
       for (var i = 1; i <= 10; i++) {
-        var l = 'id_diagnosa_sekunder' + i;
-        (a('kode_diagnosa_sekunder' + i, l), a('diagnosa_sekunder' + i, l));
+        var tgtS = 'id_diagnosa_sekunder' + i;
+        attachClear('kode_diagnosa_sekunder' + i, tgtS);
+        attachClear('diagnosa_sekunder' + i, tgtS);
       }
-      for (var o = 1; o <= 10; o++) {
-        var s = 'id_tindakan' + o;
-        (a('kode_tindakan' + o, s), a('tindakan' + o, s));
+      for (var j = 1; j <= 10; j++) {
+        var tgtT = 'id_tindakan' + j;
+        attachClear('kode_tindakan' + j, tgtT);
+        attachClear('tindakan' + j, tgtT);
       }
     }
   })();
 })();
+//# sourceMappingURL=resumeValidator.js.map
