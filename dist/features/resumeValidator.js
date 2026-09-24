@@ -65,14 +65,14 @@ var __morbis_feature = (() => {
       n = Rt.exec(r);
     if (!n) return !1;
     let u = parseInt(n[1], 10),
-      d = parseInt(n[2], 10);
-    return u >= 50 && u <= 250 && d >= 20 && d <= 160;
+      c = parseInt(n[2], 10);
+    return u >= 50 && u <= 250 && c >= 20 && c <= 160;
   }
   function L(e, r, n) {
     let u = e.trim().replace(',', '.');
     if (!Ct.test(u)) return !1;
-    let d = parseFloat(u);
-    return !isNaN(d) && d >= r && d <= n;
+    let c = parseFloat(u);
+    return !isNaN(c) && c >= r && c <= n;
   }
   function fe(e) {
     return /[\p{L}\p{N}]/u.test(e);
@@ -275,8 +275,8 @@ var __morbis_feature = (() => {
       connectedCallback() {
         let n = this.root.querySelector('.overlay');
         (this.root.querySelector('.close').addEventListener('click', () => this.cancel()),
-          n.addEventListener('click', (d) => {
-            d.target === n && this.cancel();
+          n.addEventListener('click', (c) => {
+            c.target === n && this.cancel();
           }),
           document.addEventListener('keydown', this.handleKey));
       }
@@ -406,10 +406,10 @@ var __morbis_feature = (() => {
        </div>`));
       let u = n.querySelector('[slot="title"]');
       u.textContent = e.title;
-      let d = n.querySelector('.ext-confirm-body');
+      let c = n.querySelector('.ext-confirm-body');
       if (e.icon) {
         let g = document.createElement('div');
-        ((g.className = 'ext-confirm-icon'), (g.textContent = e.icon), d.appendChild(g));
+        ((g.className = 'ext-confirm-icon'), (g.textContent = e.icon), c.appendChild(g));
       }
       (e.message &&
         e.message
@@ -418,8 +418,8 @@ var __morbis_feature = (() => {
 `,
           )
           .forEach((v, y) => {
-            (y > 0 && d.appendChild(document.createElement('br')),
-              d.appendChild(document.createTextNode(v)));
+            (y > 0 && c.appendChild(document.createElement('br')),
+              c.appendChild(document.createTextNode(v)));
           }),
         (n.querySelector('[data-ext-confirm-ok]').textContent = e.okLabel ?? 'Lanjut'));
       let m = n.querySelector('[data-ext-confirm-ok]');
@@ -449,8 +449,8 @@ var __morbis_feature = (() => {
   function $t(e, r = Date.now()) {
     let n = {},
       u = 0;
-    for (let [d, m] of Object.entries(e))
-      m && m.markedAt && r - m.markedAt <= 2592e6 ? (n[d] = m) : u++;
+    for (let [c, m] of Object.entries(e))
+      m && m.markedAt && r - m.markedAt <= 2592e6 ? (n[c] = m) : u++;
     return { purged: n, count: u };
   }
   function $e(e = Oe(), r = Date.now()) {
@@ -460,8 +460,8 @@ var __morbis_feature = (() => {
       if (!n) return {};
       let u = JSON.parse(n);
       if (typeof u != 'object' || u === null) return {};
-      let { purged: d, count: m } = $t(u, r);
-      return (m > 0 && Bt(d, e), d);
+      let { purged: c, count: m } = $t(u, r);
+      return (m > 0 && Bt(c, e), c);
     } catch {
       return {};
     }
@@ -495,11 +495,11 @@ var __morbis_feature = (() => {
   }
   async function zt(e, r, n = fetch) {
     let u = new AbortController(),
-      d = globalThis.setTimeout(() => u.abort(), 25e3);
+      c = globalThis.setTimeout(() => u.abort(), 25e3);
     try {
       return await n(e, { ...r, signal: u.signal });
     } finally {
-      globalThis.clearTimeout(d);
+      globalThis.clearTimeout(c);
     }
   }
   async function Kt(e, r = fetch) {
@@ -518,8 +518,8 @@ var __morbis_feature = (() => {
     if (!e) return [];
     let u =
         '/api/reports/resume-history?id_visit=' + encodeURIComponent(e) + (r ? '&tipe=' + r : ''),
-      d = await Kt(u, n);
-    return !d?.ok || !Array.isArray(d.data) ? [] : d.data;
+      c = await Kt(u, n);
+    return !c?.ok || !Array.isArray(c.data) ? [] : c.data;
   }
   function Ut() {
     try {
@@ -577,15 +577,15 @@ var __morbis_feature = (() => {
   }
   function K(e, r, n = U()) {
     let u = ne(n, ve(e, r)),
-      d = Array.isArray(u) ? u : [];
+      c = Array.isArray(u) ? u : [];
     if (r === 'ranap') {
       let m = ne(n, qt + e);
-      if (Array.isArray(m) && m.length > 0 && d.length === 0) {
+      if (Array.isArray(m) && m.length > 0 && c.length === 0) {
         let x = m.map((g) => ({ ...g, tipe: 'ranap' }));
         return (ke(x, e, 'ranap', n), x);
       }
     }
-    return d;
+    return c;
   }
   function ke(e, r, n, u = U()) {
     ye(u, ve(r, n), e.slice(-Ue));
@@ -624,8 +624,8 @@ var __morbis_feature = (() => {
         .querySelector('input[name="dokter"], #dokter, input[name="nama_dokter"]')
         ?.value?.trim();
       if (u) return u.slice(0, 80);
-      let d = document.querySelector('input[name="id_user"], #id_user')?.value?.trim();
-      if (d) return `User #${d}`;
+      let c = document.querySelector('input[name="id_user"], #id_user')?.value?.trim();
+      if (c) return `User #${c}`;
     } catch {}
     return 'petugas';
   }
@@ -650,11 +650,11 @@ var __morbis_feature = (() => {
   function Zt(e, r, n, u) {
     if (!(!e || !r))
       try {
-        let d = Yt(ve(r, n));
-        u > Qt(e, d) && ye(e, d, u);
+        let c = Yt(ve(r, n));
+        u > Qt(e, c) && ye(e, c, u);
       } catch {}
   }
-  function en(e, r, n = fetch, u = U(), d = e.tipe) {
+  function en(e, r, n = fetch, u = U(), c = e.tipe) {
     let m = {
         client_id: e.client_id ?? null,
         id_visit: r,
@@ -678,7 +678,7 @@ var __morbis_feature = (() => {
               credentials: 'omit',
             })
           ).ok
-            ? (Zt(u, r, d, e.at), !0)
+            ? (Zt(u, r, c, e.at), !0)
             : !1;
         } catch {
           return !1;
@@ -700,7 +700,7 @@ var __morbis_feature = (() => {
     let u = JSON.stringify([e.idVisit, e.aksi, e.after]);
     if (Fe === u && r - De < 5e3) return null;
     ((Fe = u), (De = r));
-    let d = {
+    let c = {
         at: r,
         aksi: e.aksi,
         id_resume: e.idResume ?? '',
@@ -712,11 +712,11 @@ var __morbis_feature = (() => {
         client_id: Ut(),
       },
       m = K(e.idVisit, e.tipe, n);
-    (m.push(d), ke(m, e.idVisit, e.tipe, n), re(e.after, e.idVisit, e.tipe, n));
+    (m.push(c), ke(m, e.idVisit, e.tipe, n), re(e.after, e.idVisit, e.tipe, n));
     try {
-      en(d, e.idVisit, e.fetcher ?? fetch, n, e.tipe);
+      en(c, e.idVisit, e.fetcher ?? fetch, n, e.tipe);
     } catch {}
-    return d;
+    return c;
   }
   function Ge(e) {
     try {
@@ -765,9 +765,9 @@ var __morbis_feature = (() => {
       let n = e.waktu ? Date.parse(e.waktu) : NaN;
       if (!Number.isFinite(n)) return null;
       let u = Ve(e.after),
-        d = Ve(e.before),
+        c = Ve(e.before),
         m = e.tipe === 'rajal' ? 'rajal' : e.tipe === 'ranap' ? 'ranap' : r,
-        x = Array.isArray(e.changed) ? e.changed.filter((v) => typeof v == 'string') : Je(d, u),
+        x = Array.isArray(e.changed) ? e.changed.filter((v) => typeof v == 'string') : Je(c, u),
         g = typeof e.client_id == 'string' && e.client_id ? e.client_id : void 0;
       return {
         at: n,
@@ -775,7 +775,7 @@ var __morbis_feature = (() => {
         id_resume: typeof e.id_resume == 'string' ? e.id_resume : '',
         user: typeof e.user == 'string' && e.user ? e.user : 'petugas',
         tipe: m,
-        before: d,
+        before: c,
         after: u,
         changed: x,
         ...(g ? { client_id: g } : {}),
@@ -795,11 +795,11 @@ var __morbis_feature = (() => {
   function rn(e, r) {
     let n = new Set(e.map(Ne)),
       u = e.slice();
-    for (let d of r) {
-      let m = Ne(d);
-      n.has(m) || (n.add(m), u.push(d));
+    for (let c of r) {
+      let m = Ne(c);
+      n.has(m) || (n.add(m), u.push(c));
     }
-    return (u.sort((d, m) => d.at - m.at), u.slice(-Ue));
+    return (u.sort((c, m) => c.at - m.at), u.slice(-Ue));
   }
   var Ye = "'Roboto','Segoe UI',system-ui,-apple-system,Arial,sans-serif";
   function Qe(e) {
@@ -809,18 +809,18 @@ var __morbis_feature = (() => {
     let r = e.store ?? U(),
       n = K(e.idVisit, e.tipe, r).slice().reverse(),
       u = e.zIndex ?? 99998,
-      d = document.createElement('div');
-    ((d.id = 'ext-rv-history-overlay'),
-      (d.style.cssText = `position:fixed;inset:0;z-index:${u};background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:24px;`),
-      d.addEventListener('click', function (w) {
-        w.target === d && d.remove();
+      c = document.createElement('div');
+    ((c.id = 'ext-rv-history-overlay'),
+      (c.style.cssText = `position:fixed;inset:0;z-index:${u};background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:24px;`),
+      c.addEventListener('click', function (w) {
+        w.target === c && c.remove();
       }));
     let m = document.createElement('div');
     ((m.style.cssText =
       'background:#fff;border-radius:12px;max-width:680px;width:100%;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;font-size:16px!important;line-height:1.6!important;color:#1c2530;font-family:' +
       Ye +
       '!important;'),
-      d.appendChild(m));
+      c.appendChild(m));
     let x = document.createElement('div');
     x.style.cssText =
       'display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #d0d5dd;font-weight:700;';
@@ -832,7 +832,7 @@ var __morbis_feature = (() => {
       (v.style.cssText =
         'border:none;background:#f8fafc;width:32px;height:32px;border-radius:50%;font-family:inherit!important;font-size:16px!important;line-height:1!important;cursor:pointer;'),
       (v.onclick = function () {
-        d.remove();
+        c.remove();
       }),
       x.appendChild(v),
       m.appendChild(x));
@@ -887,7 +887,7 @@ var __morbis_feature = (() => {
             'background:#00875a;color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:inherit!important;font-size:inherit!important;line-height:inherit!important;'),
           (H.onclick = function () {
             try {
-              (e.onApply(T.after), d.remove());
+              (e.onApply(T.after), c.remove());
             } catch {}
           }),
           A.appendChild(H),
@@ -897,13 +897,13 @@ var __morbis_feature = (() => {
     };
     k(n);
     try {
-      document.body.appendChild(d);
+      document.body.appendChild(c);
     } catch {}
     if (e.idVisit)
       try {
         Be(e.idVisit, e.tipe).then((w) => {
           try {
-            if (!w.length || !d.isConnected) return;
+            if (!w.length || !c.isConnected) return;
             let T = [];
             for (let I of w) {
               let B = nn(I, e.tipe);
@@ -979,21 +979,21 @@ var __morbis_feature = (() => {
       let n = [],
         u = e;
       if (typeof u.length == 'number' && u.key)
-        for (let d = 0; d < u.length; d++) {
-          let m = u.key(d);
+        for (let c = 0; c < u.length; c++) {
+          let m = u.key(c);
           m && n.push(m);
         }
-      for (let d of n) {
-        let m = d.match(/^ext_rv_history_(ri|rj)_(.+)$/);
+      for (let c of n) {
+        let m = c.match(/^ext_rv_history_(ri|rj)_(.+)$/);
         if (m) {
-          r.push({ key: d, idVisit: m[2], tipe: m[1] === 'ri' ? 'ranap' : 'rajal' });
+          r.push({ key: c, idVisit: m[2], tipe: m[1] === 'ri' ? 'ranap' : 'rajal' });
           continue;
         }
-        ((m = d.match(/^ext_rv_history_(.+)$/)),
+        ((m = c.match(/^ext_rv_history_(.+)$/)),
           m &&
             !m[1].startsWith('ri_') &&
             !m[1].startsWith('rj_') &&
-            r.push({ key: d, idVisit: m[1], tipe: 'ranap' }));
+            r.push({ key: c, idVisit: m[1], tipe: 'ranap' }));
       }
     } catch {}
     return r;
@@ -1003,8 +1003,8 @@ var __morbis_feature = (() => {
     if (!e) return n;
     try {
       let u = $e(e),
-        d = tt(e, Ze) ?? [],
-        m = on(u, d);
+        c = tt(e, Ze) ?? [],
+        m = on(u, c);
       for (let x of m) {
         let g = u[x];
         if (!g) continue;
@@ -1025,12 +1025,12 @@ var __morbis_feature = (() => {
           n.offline = !0;
           break;
         }
-        (d.push(x), n.preopUploaded++);
+        (c.push(x), n.preopUploaded++);
       }
       try {
         let x = new Set(Object.keys(u)),
           g = [];
-        for (let v of d) {
+        for (let v of c) {
           if (x.has(v)) {
             g.push(v);
             continue;
@@ -1043,17 +1043,17 @@ var __morbis_feature = (() => {
             ? n.preopUploaded++
             : ((n.offline = !0), g.push(v));
         }
-        (g.length !== d.length || n.preopUploaded > 0) && nt(e, Ze, g);
+        (g.length !== c.length || n.preopUploaded > 0) && nt(e, Ze, g);
       } catch {}
     } catch {
       n.offline = !0;
     }
     try {
-      for (let { key: u, idVisit: d, tipe: m } of un(e)) {
-        if (!d || d === 'unknown') continue;
+      for (let { key: u, idVisit: c, tipe: m } of un(e)) {
+        if (!c || c === 'unknown') continue;
         if (n.resumeUploaded >= Ee) break;
         let x = tt(e, et + u) ?? 0,
-          g = K(d, m, e),
+          g = K(c, m, e),
           v = sn(g, x),
           y = x;
         for (let k of v) {
@@ -1062,7 +1062,7 @@ var __morbis_feature = (() => {
               '/api/reports/resume-history',
               {
                 client_id: k.client_id ?? null,
-                id_visit: d,
+                id_visit: c,
                 id_resume: k.id_resume,
                 aksi: k.aksi,
                 tipe: k.tipe ?? m,
@@ -1115,7 +1115,7 @@ var __morbis_feature = (() => {
           let a = t === '1',
             l = i === '1' || a;
           if (!a && !l) return;
-          d(a, l);
+          c(a, l);
         } else r >= 100 && clearInterval(n);
       }, 50);
     function u() {
@@ -1126,7 +1126,7 @@ var __morbis_feature = (() => {
           ? 'rajal'
           : null;
     }
-    function d(t, i) {
+    function c(t, i) {
       let a = u();
       if (!a) return;
       let l = setInterval(function () {
@@ -1154,8 +1154,8 @@ var __morbis_feature = (() => {
         st(),
         ut(),
         lt(a),
-        dt(),
         ct(),
+        dt(),
         pt(a),
         mt(a),
         ot(t),
@@ -1178,15 +1178,15 @@ var __morbis_feature = (() => {
     function g(t, i, a) {
       let l = window;
       if (i === 'rajal') {
-        let c = typeof l.simpan == 'function' ? l.simpan : null;
-        if (c && !c.__extWrapped) {
+        let d = typeof l.simpan == 'function' ? l.simpan : null;
+        if (d && !d.__extWrapped) {
           let b = function (...f) {
             if (a && !X(i)) return !1;
             (H(t, i), (J = !1));
             try {
               localStorage.removeItem(k());
             } catch {}
-            return c.apply(this, f);
+            return d.apply(this, f);
           };
           ((b.__extWrapped = !0), (l.simpan = b));
         }
@@ -1196,17 +1196,17 @@ var __morbis_feature = (() => {
             return X(i);
           });
       t.onsubmit !== null &&
-        (t.onsubmit = function (c) {
+        (t.onsubmit = function (d) {
           let b = a ? X(i) : !0;
-          return (!b && c ? c.preventDefault() : H(t, i), b);
+          return (!b && d ? d.preventDefault() : H(t, i), b);
         });
       let o = l.jQuery;
       a &&
         typeof o == 'object' &&
         o &&
         typeof o.fn?.on == 'function' &&
-        o.fn.on('submit', function (c) {
-          return X(i) ? !0 : (c.preventDefault(), !1);
+        o.fn.on('submit', function (d) {
+          return X(i) ? !0 : (d.preventDefault(), !1);
         });
       var s = t.submit.bind(t);
       t.submit = function () {
@@ -1275,8 +1275,8 @@ var __morbis_feature = (() => {
       let l = function () {
         for (let s in a) {
           if (s === '_saved_at') continue;
-          let c = document.querySelector('[name="' + s + '"]');
-          c && !c.value && (c.value = a[s]);
+          let d = document.querySelector('[name="' + s + '"]');
+          d && !d.value && (d.value = a[s]);
         }
         try {
           localStorage.removeItem(t);
@@ -1311,8 +1311,8 @@ var __morbis_feature = (() => {
         l = P(),
         o = p(i === 'rajal' ? 'id_rawat_jalan' : 'id_resume_inap'),
         s = M(i) ? 'ubah' : 'buat',
-        c = We(l, i) || {};
-      (Xe({ idVisit: l, idResume: o, tipe: i, aksi: s, before: c, after: a }), Z(l, i));
+        d = We(l, i) || {};
+      (Xe({ idVisit: l, idResume: o, tipe: i, aksi: s, before: d, after: a }), Z(l, i));
     }
     function q(t, i, a) {
       let l = P();
@@ -1339,8 +1339,8 @@ var __morbis_feature = (() => {
         Z(l, a),
         window.addEventListener('ext-rv-history-merged', function (s) {
           try {
-            let c = s.detail;
-            c && c.idVisit === l && c.tipe === a && Z(l, a);
+            let d = s.detail;
+            d && d.idVisit === l && d.tipe === a && Z(l, a);
           } catch {}
         }));
     }
@@ -1358,30 +1358,30 @@ var __morbis_feature = (() => {
             'input[name], textarea[name], select[name], input[id]:not([name]):not([type=button]):not([type=submit]), textarea[id]:not([name]), select[id]:not([name])',
           )
           .forEach(function (o) {
-            let c = o.getAttribute('name') || (a.test(o.id) ? o.id : '');
-            if (!c || c === '_saved_at' || c === 'save') return;
+            let d = o.getAttribute('name') || (a.test(o.id) ? o.id : '');
+            if (!d || d === '_saved_at' || d === 'save') return;
             if (o instanceof HTMLInputElement && (o.type === 'checkbox' || o.type === 'radio')) {
               if (!o.checked) return;
-              let f = i[c];
+              let f = i[d];
               f === void 0
-                ? (i[c] = o.value)
+                ? (i[d] = o.value)
                 : Array.isArray(f)
                   ? f.push(o.value)
-                  : (i[c] = [f, o.value]);
+                  : (i[d] = [f, o.value]);
               return;
             }
             if (o instanceof HTMLSelectElement && o.multiple) {
-              i[c] = Array.from(o.selectedOptions).map(function (f) {
+              i[d] = Array.from(o.selectedOptions).map(function (f) {
                 return f.value;
               });
               return;
             }
-            let b = i[c];
+            let b = i[d];
             b !== void 0 && !Array.isArray(b)
-              ? (i[c] = [b, o.value])
+              ? (i[d] = [b, o.value])
               : Array.isArray(b)
                 ? b.push(o.value)
-                : (i[c] = o.value);
+                : (i[d] = o.value);
           }),
         i
       );
@@ -1391,17 +1391,17 @@ var __morbis_feature = (() => {
         l = 0;
       (Object.keys(i).forEach(function (o) {
         let s = i[o],
-          c = Array.from(t.querySelectorAll('[name="' + o + '"]'));
-        if (!c.length) {
+          d = Array.from(t.querySelectorAll('[name="' + o + '"]'));
+        if (!d.length) {
           let f = t.querySelector('#' + CSS.escape(o));
-          c = f ? [f] : [];
+          d = f ? [f] : [];
         }
-        if (!c.length) {
+        if (!d.length) {
           l++;
           return;
         }
         let b = Array.isArray(s) ? s : [s];
-        c.forEach(function (f, C) {
+        d.forEach(function (f, C) {
           if (f instanceof HTMLInputElement && (f.type === 'checkbox' || f.type === 'radio'))
             f.checked = Array.isArray(s) ? s.indexOf(f.value) >= 0 : f.value === s;
           else if (f instanceof HTMLSelectElement && f.multiple) {
@@ -1463,12 +1463,15 @@ var __morbis_feature = (() => {
         { id: 'berat', min: 1, max: 500, step: 0.1 },
       ].forEach(function (i) {
         var a = document.getElementById(i.id);
-        a &&
-          ((a.type = 'number'),
-          (a.min = String(i.min)),
-          (a.max = String(i.max)),
-          (a.step = String(i.step)),
-          a.placeholder || (a.placeholder = i.min + '-' + i.max));
+        if (a) {
+          var l = a.value.trim();
+          ((l === '-' || l === '' || isNaN(Number(l))) && (a.value = ''),
+            (a.type = 'number'),
+            (a.min = String(i.min)),
+            (a.max = String(i.max)),
+            (a.step = String(i.step)),
+            a.placeholder || (a.placeholder = i.min + '-' + i.max));
+        }
       });
     }
     function ut() {
@@ -1500,7 +1503,7 @@ var __morbis_feature = (() => {
         l && (l.required = !0);
       });
     }
-    function dt() {
+    function ct() {
       document
         .querySelectorAll('input:not([type="submit"]):not([type="button"])')
         .forEach(function (t) {
@@ -1509,7 +1512,7 @@ var __morbis_feature = (() => {
           });
         });
     }
-    function ct() {
+    function dt() {
       document.querySelectorAll('textarea').forEach(function (t) {
         ((t.style.overflow = 'hidden'),
           (t.style.resize = 'vertical'),
@@ -1612,12 +1615,12 @@ var __morbis_feature = (() => {
     function X(t) {
       ht();
       var i = [];
-      function a(o, s, c) {
-        o || i.push({ msg: s, id: c });
+      function a(o, s, d) {
+        o || i.push({ msg: s, id: d });
       }
       function l(o, s) {
-        let c = p(o);
-        h(c) || fe(c) || a(!1, s + ' tidak boleh hanya berisi simbol atau karakter khusus', o);
+        let d = p(o);
+        h(d) || fe(d) || a(!1, s + ' tidak boleh hanya berisi simbol atau karakter khusus', o);
       }
       return (t === 'rajal' ? gt(a, l) : ft(a, l), i.length > 0 ? (xt(i), !1) : !0);
     }
@@ -1668,24 +1671,24 @@ var __morbis_feature = (() => {
               'diagnosa_sekunder' + a,
             ));
       }
-      for (var c = 1; c <= 10; c++) {
-        var b = p('kode_tindakan' + c),
-          f = p('tindakan' + c),
-          C = p('id_tindakan' + c);
+      for (var d = 1; d <= 10; d++) {
+        var b = p('kode_tindakan' + d),
+          f = p('tindakan' + d),
+          C = p('id_tindakan' + d);
         (b &&
           !h(b) &&
           t(
             Y(b),
-            'Format kode ICD-9 Tindakan ' + c + ' tidak valid (contoh: 45.16)',
-            'kode_tindakan' + c,
+            'Format kode ICD-9 Tindakan ' + d + ' tidak valid (contoh: 45.16)',
+            'kode_tindakan' + d,
           ),
           f &&
             !h(f) &&
-            !ie('kode_tindakan' + c, Y) &&
+            !ie('kode_tindakan' + d, Y) &&
             t(
               !!C,
-              'Tindakan ' + c + ' harus dipilih dari hasil pencarian (autocomplete)',
-              'tindakan' + c,
+              'Tindakan ' + d + ' harus dipilih dari hasil pencarian (autocomplete)',
+              'tindakan' + d,
             ));
       }
       var _ = p('td_pulang') || p('tensi');
@@ -1717,9 +1720,9 @@ var __morbis_feature = (() => {
       var W = p('gcs_v');
       !E && W && !h(W) && t(L(W, 1, 5), 'GCS Verbal harus 1-5', 'gcs_v');
       var le = p('gcs_e'),
-        de = p('gcs_m');
-      if (!E && le && de && W && !h(le) && !h(de) && !h(W)) {
-        var Le = Number(le) + Number(de) + Number(W);
+        ce = p('gcs_m');
+      if (!E && le && ce && W && !h(le) && !h(ce) && !h(W)) {
+        var Le = Number(le) + Number(ce) + Number(W);
         t(L(String(Le), 3, 15), 'Total GCS (E+M+V) harus 3-15, saat ini ' + Le, 'gcs_v');
       }
       var kt = G('pasien_rujuk_masuk_opsi').toLowerCase();
@@ -1757,7 +1760,7 @@ var __morbis_feature = (() => {
       var Re = p('tgl_masuk') || p('tgl_masuk2'),
         Ce = p('tgl_keluar2') || p('tgl_keluar');
       if (Re && Ce) {
-        let ce = function (Ie) {
+        let de = function (Ie) {
           let N = Ie.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})(?:\s+(\d{1,2}):(\d{2}):(\d{2}))?/);
           if (N)
             return new Date(
@@ -1771,8 +1774,8 @@ var __morbis_feature = (() => {
           let Me = Date.parse(Ie);
           return isNaN(Me) ? 0 : Me;
         };
-        var dn = ce;
-        t(ce(Ce) >= ce(Re), 'Tanggal keluar tidak boleh sebelum tanggal masuk', 'tgl_keluar2');
+        var cn = de;
+        t(de(Ce) >= de(Re), 'Tanggal keluar tidak boleh sebelum tanggal masuk', 'tgl_keluar2');
       }
     }
     function gt(t, i) {
@@ -1844,8 +1847,8 @@ var __morbis_feature = (() => {
       o && !h(o) && t(L(o, 20, 250), 'Nadi harus 20-250', 'nadi');
       let s = p('suhu');
       s && !h(s) && t(L(s, 30, 45), 'Suhu harus 30-45\xB0C', 'suhu');
-      let c = p('nafas');
-      c && !h(c) && t(L(c, 4, 80), 'Nafas harus 4-80', 'nafas');
+      let d = p('nafas');
+      d && !h(d) && t(L(d, 4, 80), 'Nafas harus 4-80', 'nafas');
       let b = p('spo2');
       b && !h(b) && t(L(b, 50, 100), 'SpO2 harus 50-100%', 'spo2');
       let f = p('tinggi');
@@ -1880,11 +1883,11 @@ var __morbis_feature = (() => {
           })(o));
       }
       for (var s = [], l = 0; l < t.length; l++) s.push('\u2022 ' + t[l].msg);
-      var c = s.join(`
+      var d = s.join(`
 `);
       xe({
         title: 'Validasi Gagal (' + t.length + ' masalah)',
-        message: c,
+        message: d,
         variant: 'warning',
         okLabel: 'OK',
         hideCancel: !0,
@@ -1911,8 +1914,8 @@ var __morbis_feature = (() => {
     }
     function yt(t) {
       if (t === 'rajal') return;
-      function i(c, b) {
-        var f = document.getElementById(c);
+      function i(d, b) {
+        var f = document.getElementById(d);
         f &&
           f.addEventListener('input', function (C) {
             if (!(C && C.isTrusted === !1)) {

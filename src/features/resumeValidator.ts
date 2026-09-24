@@ -550,6 +550,12 @@ import {
     fields.forEach(function (f) {
       var el = document.getElementById(f.id) as HTMLInputElement | null;
       if (!el) return;
+      // FIX: bersihkan nilai "-" (dash dari EMR) sebelum ubah type=number
+      // browser error: "The specified value '-' cannot be parsed, or is out of range"
+      var currentVal = el.value.trim();
+      if (currentVal === '-' || currentVal === '' || isNaN(Number(currentVal))) {
+        el.value = '';
+      }
       el.type = 'number';
       el.min = String(f.min);
       el.max = String(f.max);
