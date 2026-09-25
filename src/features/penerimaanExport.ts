@@ -1,17 +1,25 @@
 /**
- * penerimaanExport — Export "resep sudah diterima" dengan kolom waktu antrian.
+ * penerimaanExport — tombol "Export resep sudah diterima" → BUKA REKAP
+ * Penerimaan Resep + Waktu Antrian di Reports SIMRS (halaman public).
  *
- * Halaman /inventory/resep/penerimaan (list) punya Export server (.xls tabel
- * HTML) dengan kolom "Waktu Penjualan". User ingin kolom itu diganti:
- *   "Waktu Verif/Antrikan" (= queues.created_at — klik Antrikan extension)
- *   "Waktu Klik Selesai"   (= queues.done_at — klik SELESAI display operator)
+ * KONSEP BARU (2026-09-25, pengganti pipeline rewrite .xls):
+ *  - Data + filter + export XLSX/CSV sekarang milik halaman public Reports
+ *    SIMRS `/rs/penerimaan-resep-antrian` (query Oracle SIMRS, tanpa login,
+ *    audit tercatat). Extension tidak lagi mengunduh/menulis file apa pun:
+ *    tidak ada fetch server, tidak ada rewrite kolom, tidak ada
+ *    `lookupAntrianBatch` (antrian diambil server dari tabel `queues`).
+ *  - Klik tombol (custom / loadTableExcel / link export) → `window.open` ke
+ *    halaman tersebut di TAB BARU dengan filter form MORBIS yang di-prefill.
+ *    Halaman list MORBIS TETAP di tempat — TIDAK PERNAH `location.href`
+ *    (keluhan lama: "halaman langsung redirect").
  *
- * Cara kerja: intercept klik/form Export → unduh xls server → parse →
- * join No Resep ↔ tr[id] tabel live → lookup-batch ke App Antrian →
- * tulis ulang kolom → unduh file jadi. Server tidak disentuh; gagal →
- * fallback buka export asli di tab baru.
+ * Param form MORBIS → query string halaman rekap (flat, tanpa `search[...]`):
+ *  date_start→tanggal_mulai, date_end→tanggal_selesai,
+ *  date_start_kj→tanggal_mulai_kj, date_end_kj→tanggal_selesai_kj,
+ *  id_unit_tujuan/unit_tujuan→depo_id, no_rm/norm→norm, sisanya sama.
+ *  Tanggal DD/MM/YYYY (format tampilan form) → YYYY-MM-DD.
  */
-import { lookupAntrianBatch, isFarmasiAppReachable } from './shared/antrianActions';
+import { farmasiAppBase } from './shared/farmasiQueueSync';
 
 // Guard anti double-inject (SPA MORBIS bisa inject content script >1×).
 if ((window as unknown as { __extPenerimaanExport?: boolean }).__extPenerimaanExport) {
@@ -19,50 +27,26 @@ if ((window as unknown as { __extPenerimaanExport?: boolean }).__extPenerimaanEx
 }
 (window as unknown as { __extPenerimaanExport?: boolean }).__extPenerimaanExport = true;
 
-const EXPORT_RE = /export|xls|excel|informasi-resep/i;
-const FILENAME = 'informasi-resep.xls';
+/** Rute lokal (pathname) yang considered halaman rekap — untuk pesan log. */
+const REPORT_PATH = '/penerimaan-resep-antrian';
 
-/** Fetch with timeout (AbortController) — default 30s, configurable. */
-function fetchWithTimeout(
-  url: string,
-  init: RequestInit = {},
-  timeoutMs = 30000,
-): Promise<Response> {
-  const ac = new AbortController();
-  const timer = setTimeout(() => ac.abort(), timeoutMs);
-  return fetch(url, { ...init, signal: ac.signal }).finally(() => clearTimeout(timer));
-}
-
-/**
- * Diagnostik respons export utk log: status, content-type, judul halaman,
- * jumlah tabel, header kolom 3 tabel pertama, dan cuplikan body — biar
- * kegagalan rewrite bisa dibedakan (login page / layout beda / error HTML)
- * langsung dari log, tanpa perlu membuka file hasil.
- */
-function responseDiag(html: string, res: Response): string {
-  const norm = (s: string): string => s.replace(/\s+/g, ' ').trim().slice(0, 200);
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  const title = doc.querySelector('title')?.textContent || '';
-  const headers: string[] = [];
-  for (const t of Array.from(doc.querySelectorAll('table')).slice(0, 3)) {
-    const ths = Array.from(t.querySelectorAll('thead th, tr:first-child th'))
-      .map((h) => (h.textContent || '').trim())
-      .filter(Boolean);
-    if (ths.length) headers.push(ths.join(' | '));
-  }
-  return (
-    `status=${res.status} ct=${res.headers.get('content-type') ?? '?'} ` +
-    `title=${norm(title)} loginPage=${/login/i.test(title)} ` +
-    `tables=${doc.querySelectorAll('table').length} ` +
-    `headers=[${headers.join(' ;; ')}] body=${norm(html).slice(0, 120)}`
-  );
-}
-
-/** 'YYYY-MM-DD HH:mm:ss' → 'DD/MM/YYYY HH:mm:ss' (gaya kolom existing). */
-export function fmtWaktuAntrian(sql: string): string {
-  const m = String(sql || '').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}:\d{2}:\d{2})/);
-  return m ? `${m[3]}/${m[2]}/${m[1]} ${m[4]}` : String(sql || '');
-}
+/** Nama field form MORBIS (tanpa `search[...]`, lowercase) → param halaman rekap. */
+const PARAM_MAP: Record<string, string> = {
+  date_start: 'tanggal_mulai',
+  date_end: 'tanggal_selesai',
+  date_start_kj: 'tanggal_mulai_kj',
+  date_end_kj: 'tanggal_selesai_kj',
+  unit_tujuan: 'depo_id',
+  id_unit_tujuan: 'depo_id',
+  norm: 'norm',
+  no_rm: 'norm',
+  status_pasien: 'status_pasien',
+  pasien: 'pasien',
+  no_registrasi: 'no_registrasi',
+  no_resep: 'no_resep',
+  // Field lain (unit_asal, kategori_resep, dll) TIDAK ada filter-nya di
+  // halaman rekap → dibuang diam-diam (halaman punya form filter sendiri).
+};
 
 function toast(msg: string, ms = 4000): void {
   try {
@@ -78,365 +62,10 @@ function toast(msg: string, ms = 4000): void {
       document.body.appendChild(t);
     }
     t.textContent = msg;
-    window.clearTimeout((toast as unknown as { _t?: number })._t);
-    (toast as unknown as { _t?: number })._t = window.setTimeout(() => t?.remove(), ms);
+    window.clearTimeout((t as unknown as { _t?: number })._t);
+    (t as unknown as { _t?: number })._t = window.setTimeout(() => t?.remove(), ms);
   } catch {
     /* ignore */
-  }
-}
-
-/** Nonaktifkan / aktifkan tombol export agar tidak bisa diklik berulang kali. */
-function setExportButtonsDisabled(disabled: boolean): void {
-  const btns = document.querySelectorAll<HTMLButtonElement | HTMLAnchorElement>(
-    '#ext-export-custom-btn, button[onclick*="loadTableExcel"]',
-  );
-  btns.forEach((btn) => {
-    if (disabled) {
-      btn.setAttribute('disabled', 'true');
-      btn.style.pointerEvents = 'none';
-      btn.style.opacity = '0.65';
-      btn.style.cursor = 'not-allowed';
-    } else {
-      btn.removeAttribute('disabled');
-      btn.style.pointerEvents = '';
-      btn.style.opacity = '';
-      btn.style.cursor = '';
-    }
-  });
-}
-
-/** Tampilkan overlay loading dengan spinner lingkaran selama proses export.
- *  Muat: pesan + spinner CSS animation. Hilangkan via hideLoading(). */
-function showLoading(msg: string): void {
-  setExportButtonsDisabled(true);
-  hideLoading(); // bersihkan overlay sebelumnya
-  const overlay = document.createElement('div');
-  overlay.id = 'ext-export-loading';
-  overlay.style.cssText =
-    'position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;' +
-    'justify-content:center;background:rgba(0,0,0,0.35);';
-  const card = document.createElement('div');
-  card.style.cssText =
-    'display:flex;align-items:center;gap:16px;padding:24px 32px;' +
-    'background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.2);' +
-    "font-family:'Roboto','Segoe UI',system-ui,sans-serif;";
-  // Spinner lingkaran via CSS animation
-  const spinner = document.createElement('div');
-  spinner.id = 'ext-export-spinner';
-  spinner.style.cssText =
-    'width:40px;height:40px;border:4px solid #e0e7ff;border-top-color:#175cd3;' +
-    'border-radius:50%;animation:ext-spin 0.8s linear infinite;';
-  const text = document.createElement('span');
-  text.id = 'ext-export-loading-text';
-  text.style.cssText = 'font-size:16px;font-weight:600;color:#175cd3;';
-  text.textContent = msg;
-  card.appendChild(spinner);
-  card.appendChild(text);
-  overlay.appendChild(card);
-  // Inject keyframes sekali
-  if (!document.getElementById('ext-export-spinner-style')) {
-    const style = document.createElement('style');
-    style.id = 'ext-export-spinner-style';
-    style.textContent = '@keyframes ext-spin{to{transform:rotate(360deg)}}';
-    document.head.appendChild(style);
-  }
-  document.body.appendChild(overlay);
-}
-
-/** Perbarui teks loading (spinner tetap berputar). */
-function updateLoading(msg: string): void {
-  const el = document.getElementById('ext-export-loading-text');
-  if (el) el.textContent = msg;
-}
-
-/** Hilangkan overlay loading dan aktifkan kembali tombol export. */
-function hideLoading(): void {
-  setExportButtonsDisabled(false);
-  document.getElementById('ext-export-loading')?.remove();
-}
-
-/** Peta No Resep (teks) → id resep dari tabel live halaman ini.
- *  tr[id] = id_resep MORBIS (dipakai lookupAntrianBatch). Bila tr tidak
- *  punya id, fallback: No Resep teks = id_resep (banyak kasus MORBIS). */
-function buildLiveMap(): Map<string, string> {
-  const map = new Map<string, string>();
-  for (const table of Array.from(document.querySelectorAll('table'))) {
-    const ths = Array.from(table.querySelectorAll('thead th'));
-    const head = ths.length ? ths : Array.from(table.querySelectorAll('tr:first-child th'));
-    const idx = head.findIndex((th) => /no\s*resep/i.test(th.textContent || ''));
-    if (idx < 0) continue;
-    for (const tr of Array.from(table.querySelectorAll('tbody tr'))) {
-      const trId = (tr as HTMLTableRowElement).id?.trim();
-      // FIX: tr.id validation — hanya gunakan id yang valid (numeric, non-empty)
-      // MORBIS kadang render tr.id="", tr.id="0", atau id non-numeric.
-      const validTrId = trId && /^\d+$/.test(trId) ? trId : null;
-      const tds = tr.querySelectorAll('td');
-      if (idx >= tds.length) continue;
-      const no = (tds[idx].textContent || '').trim();
-      if (!no) continue;
-      // Prioritas: tr[id] yang VALID (id_resep MORBIS); fallback: No Resep teks itu sendiri.
-      const resepId = validTrId || no;
-      if (resepId) map.set(no, resepId);
-    }
-  }
-  return map;
-}
-
-/** Statistik hasil join export ↔ App Antrian. */
-interface ExportStats {
-  total: number;
-  matched: number;
-  adaSelesai: number;
-  /** Baris yang TIDAK punya id_resep numerik (tr[id]) → sengaja tidak
-   *  di-lookup: teks No Resep sebagai kunci ambbigu (nomor resep MORBIS
-   *  dipakai ulang antar hari) dan bisa menampilkan data record BASAI. */
-  tanpaKunci: number;
-  contohTidakDitemukan: string[];
-}
-
-/** Netralkan sel yang bisa dievaluasi Excel sebagai formula (CWE-1236):
- *  sel TEKS yang diawali `=` `+` `-` `@` diberi apostrof depan agar dibaca
- *  sebagai teks murni. Sel numerik (mis. "-123", "+1.234,5") TIDAK disentuh. */
-function neutralizeFormulaCells(doc: Document): void {
-  for (const cell of Array.from(doc.querySelectorAll('td, th'))) {
-    const text = cell.textContent || '';
-    if (!text) continue;
-    const c = text[0];
-    if (c !== '=' && c !== '+' && c !== '-' && c !== '@') continue;
-    // Angka negatif/positif aman — biarkan utuh (bukan formula).
-    if ((c === '+' || c === '-') && /^[+-]?[\d.,]+$/.test(text.trim())) continue;
-    cell.prepend(doc.createTextNode("'"));
-  }
-}
-
-/** Tulis ulang HTML xls: ganti kolom Waktu Penjualan → 2 kolom waktu antrian.
- *  No Resep dari export HTML dijoin ke liveMap → resep_id → lookupAntrianBatch
- *  → created_at (Waktu Verif/Antrikan) + done_at (Waktu Klik Selesai).
- *  Bila liveMap kosong, fallback: No Resep teks = resep_id langsung.
- *
- *  Kolom kosong itu Meaningful: nilai HANYA ada kalau status antrian di App
- *  sudah lewat tahap itu (created_at saat ENQUEUE/Antrikan, done_at saat
- *  DONE/Selesai). Resep yang belum di-antri atau belum "Selesai" memang
- *  kosong — karena itu selisihnya dikembalikan sebagai stats + console log
- *  supaya bisa dibedakan dari "App Antrian mati". */
-async function rewriteExport(
-  html: string,
-  liveMap: Map<string, string>,
-): Promise<{ html: string; stats: ExportStats }> {
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  let target: HTMLTableElement | null = null;
-  let headerCells: HTMLTableCellElement[] = [];
-  let headerTr: HTMLTableRowElement | null = null;
-  let wpIdx = -1;
-  let noIdx = -1;
-  for (const t of Array.from(doc.querySelectorAll('table'))) {
-    // Header: prefer <th>; fallback baris pertama ber-<td> — gaya export HTML
-    // lama memakai <td> utk header, tanpa ini file salah ditolak
-    // ("kolom Waktu Penjualan tidak ketemu") padahal kolomnya ada.
-    const ths = Array.from(t.querySelectorAll('th'));
-    const cells: HTMLTableCellElement[] = ths.length
-      ? ths
-      : Array.from(t.querySelector('tr')?.querySelectorAll('td') ?? []);
-    const w = cells.findIndex((h) => /waktu\s*penjualan/i.test(h.textContent || ''));
-    if (w < 0) continue;
-    target = t as HTMLTableElement;
-    headerCells = cells;
-    headerTr = ths.length ? null : ((cells[0]?.parentElement as HTMLTableRowElement) ?? null);
-    wpIdx = w;
-    noIdx = cells.findIndex((h) => /no\s*resep/i.test(h.textContent || ''));
-    break;
-  }
-  if (!target || wpIdx < 0) throw new Error('kolom Waktu Penjualan tidak ketemu di file export');
-
-  // Kumpulkan id resep per baris (lewati baris header/kop).
-  const rows: Array<{ tds: NodeListOf<HTMLTableCellElement>; id: string }> = [];
-  const ids: string[] = [];
-  const tanpaKunciContoh: string[] = [];
-  for (const tr of Array.from(target.querySelectorAll('tr'))) {
-    if (tr.querySelector('th') || (headerTr && tr === headerTr)) continue;
-    const tds = tr.querySelectorAll('td');
-    if (Math.max(wpIdx, noIdx) >= tds.length) continue;
-    const no = noIdx >= 0 ? (tds[noIdx].textContent || '').trim() : '';
-    // Baris tanpa No Resep (mis. subtotal) dilewati — jangan rusak.
-    if (!no) continue;
-    // HANYA id_resep numerik (tr[id] valid dari halaman live) dipakai
-    // sebagai kunci lookup — TIDAK fallback ke teks No Resep: nomor resep
-    // MORBIS dipakai ulang tiap hari (bukti: R2609-0001 ×23 di export
-    // seluruh DB) → teks sebagai kunci = record BASAI milik resep berbeda
-    // yang bernomor sama (kasus nyata: export 24/09 menampilkan jam 15/09).
-    const id = liveMap.get(no) || '';
-    rows.push({ tds, id });
-    if (id) {
-      ids.push(id);
-    } else {
-      if (tanpaKunciContoh.length < 10) tanpaKunciContoh.push(no);
-    }
-  }
-
-  const times = await lookupAntrianBatch(ids);
-
-  // Header: 1 th → 2 th.
-  const wth = headerCells[wpIdx];
-  const th1 = doc.createElement('th');
-  th1.textContent = 'Waktu Verif/Antrikan';
-  const th2 = doc.createElement('th');
-  th2.textContent = 'Waktu Klik Selesai';
-  wth.replaceWith(th1, th2);
-
-  const stats: ExportStats = {
-    total: rows.length,
-    matched: 0,
-    adaSelesai: 0,
-    tanpaKunci: tanpaKunciContoh.length,
-    contohTidakDitemukan: [],
-  };
-  // Baris tanpa id_resep numerik — tampilkan di log supaya terlihat jelas
-  // (bukannya diam-diam fallback ke kunci teks yang ambigu).
-  for (const no of tanpaKunciContoh) {
-    if (stats.contohTidakDitemukan.length >= 10) break;
-    stats.contohTidakDitemukan.push(`(tanpa-id) ${no}`);
-  }
-  for (const r of rows) {
-    const q = r.id ? times[r.id] : undefined;
-    const orig = r.tds[wpIdx];
-    const tdV = orig.cloneNode(false) as HTMLTableCellElement;
-    const tdS = orig.cloneNode(false) as HTMLTableCellElement;
-    if (q) {
-      stats.matched++;
-      tdV.textContent = q.created_at ? fmtWaktuAntrian(q.created_at) : '—';
-      if (q.done_at) {
-        stats.adaSelesai++;
-        tdS.textContent = fmtWaktuAntrian(q.done_at);
-      } else {
-        tdS.textContent = '—';
-      }
-    } else {
-      // Tidak ada record antrian sama sekali (belum di-antri / bukan hari ini).
-      tdV.textContent = '—';
-      tdS.textContent = '—';
-      if (stats.contohTidakDitemukan.length < 10) stats.contohTidakDitemukan.push(`${r.id}`);
-    }
-    orig.replaceWith(tdV, tdS);
-  }
-  // CWE-1236: netralkan sel (kolom lain dari server) sebelum diserialisasi ke .xls.
-  neutralizeFormulaCells(doc);
-  return { html: doc.documentElement.outerHTML, stats };
-}
-
-/** Unduh string (HTML export / hasil rewrite) sebagai .xls via blob — TANPA
- *  membuka tab baru / navigasi; halaman list tetap dan user tak terganggu. */
-function downloadBlob(content: string): void {
-  const blob = new Blob(['\uFEFF' + content], { type: 'application/vnd.ms-excel' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = FILENAME;
-  document.body.appendChild(a);
-  a.click();
-  window.setTimeout(() => {
-    URL.revokeObjectURL(a.href);
-    a.remove();
-  }, 4000);
-}
-
-async function processExport(url: string): Promise<void> {
-  showLoading('Mengunduh data export dari server…');
-  try {
-    const res = await fetchWithTimeout(url, { credentials: 'include', cache: 'no-store' }, 30000);
-    if (!res.ok) {
-      // Jangan navigasi ke endpoint — cukup kabari user (sesi expired / error).
-      window.console.warn('[penerimaanExport] fetch gagal HTTP ' + res.status);
-      toast(
-        `Export gagal — server balas HTTP ${res.status}. Muat ulang halaman atau login ulang MORBIS, lalu coba lagi.`,
-        9000,
-      );
-      return;
-    }
-    const html = await res.text();
-
-    updateLoading('Menggabungkan data waktu antrian…');
-    let out: string;
-    let stats: ExportStats | null = null;
-    try {
-      const r = await rewriteExport(html, buildLiveMap());
-      out = r.html;
-      stats = r.stats;
-    } catch (err) {
-      // Diagnostik: jelaskan bentuk respons server (login page? layout beda?
-      // error HTML?) supaya bisa dibedakan dari log saja.
-      const diag = responseDiag(html, res);
-      window.console.warn(
-        '[penerimaanExport] rewrite gagal — ' + diag,
-        String((err as Error)?.message ?? err),
-      );
-      // TETAP unduh file asli server (tanpa kolom antrian) secara senyap —
-      // TANPA window.open/navigasi: user tidak dilempar keluar halaman.
-      downloadBlob(html);
-      toast(
-        'Kolom waktu antrian tidak bisa digabung (layout file export berubah) — ' +
-          'file asli server tetap terunduh. Salin log console "[penerimaanExport] rewrite gagal" ke developer.',
-        10000,
-      );
-      return;
-    }
-
-    // Bedakan 2 kegagalan yang tadinya sama-sama "kolom kosong":
-    // (a) App Antrian tidak terjangkau dari PC ini, (b) record memang tidak ada.
-    const reachable = await isFarmasiAppReachable();
-    window.console.info(
-      `[penerimaanExport] baris=${stats.total} cocok=${stats.matched} selesai=${stats.adaSelesai} ` +
-        `tanpaKunci=${stats.tanpaKunci} ` +
-        `appAntrian=${reachable ? 'REACHABLE' : 'TIDAK TERJANGKAU'}` +
-        (stats.contohTidakDitemukan.length
-          ? ` idTanpaAntrian=[${stats.contohTidakDitemukan.join(', ')}]`
-          : ''),
-    );
-
-    updateLoading('Menyiapkan file unduhan…');
-    // Jaring pengaman: bila server mengabaikan filter tanggal (param search[]
-    // tidak dikenal versi server), file berisi SELURUH DB — beri tahu user
-    // alih-alih diam memberinya file raksasa. Batas 5000 baris ≫ volume
-    // harian penerimaan resep RS, jadi false-positive praktis tidak mungkin.
-    if (stats.total > 5000 && /date_start|date_end/i.test(url)) {
-      toast(
-        'PERINGATAN: server mengabaikan filter tanggal — file berisi seluruh DB ' +
-          `(${stats.total} baris). Laporkan ke admin MORBIS (endpoint cetak-excel).`,
-        10000,
-      );
-    }
-    // BOM (U+FEFF) agar Excel tidak salah baca karakter non-ASCII
-    // (nama pasien, em-dash) — pola sama dengan paLabPrint.ts.
-    downloadBlob(out);
-
-    if (stats.total > 0 && stats.matched === 0) {
-      toast(
-        reachable
-          ? 'Export selesai, TAPI tidak ada baris yang punya data antrian — ' +
-              'resep di file ini belum pernah di-Antrikan (atau bukan antrian hari ini).' +
-              (stats.tanpaKunci
-                ? ` ${stats.tanpaKunci} baris tanpa id_resep (tidak dicocokkan).`
-                : '')
-          : 'Export selesai, TAPI App Antrian tidak terjangkau dari PC ini — ' +
-              'kolom waktu kosong semua. Cek koneksi ke dev.rsudkotajambi.id.',
-        9000,
-      );
-    } else if (stats.matched < stats.total || stats.adaSelesai < stats.matched) {
-      toast(
-        `Export selesai — ${stats.matched}/${stats.total} baris ter-antri, ` +
-          `${stats.adaSelesai} sudah "Selesai". Sisanya "—" (belum antri / belum selesai).`,
-        8000,
-      );
-    } else {
-      toast('Export selesai — kolom Waktu Verif/Antrikan + Waktu Klik Selesai terisi.');
-    }
-  } catch (err) {
-    // Tak terduga (network error dll.) — jangan pernah navigasi ke endpoint.
-    window.console.warn('[penerimaanExport] proses export gagal:', err);
-    toast(
-      'Export gagal — tidak ada file terunduh. Cek koneksi / login MORBIS, lalu coba lagi.',
-      9000,
-    );
-  } finally {
-    hideLoading();
   }
 }
 
@@ -448,53 +77,33 @@ function cleanFilterValue(v: unknown): string {
   return t;
 }
 
-/** Mapping nama field form → param export (`search[...]`) — DISALIN dari
- *  `loadTableExcel()` bawaan MORBIS (server live 103.147.236.140, sumber
- *  halaman penerimaan):
- *  - tanggal dikirim APA ADANYA (format tampilan DD/MM/YYYY) — konversi ke
- *    YYYY-MM-DD membuat query Oracle gagal → server balas halaman
- *    "Error - Aplikasi" (bukan file export!).
- *  - nama param beda dari nama field: depo tujuan = `id_unit_tujuan`
- *    (BUKAN `unit_tujuan`), RM = `no_rm` (BUKAN `norm`), dll. Salah nama →
- *    filter diabaikan server → export berisi seluruh DB/hari.
- *  Server HANYA membaca bentuk `search[...]`; bentuk flat diabaikan. */
-const EXPORT_FIELD_MAP: Record<string, string> = {
-  // tanggal (passthrough; nilai tetap format form)
-  date_start: 'date_start',
-  date_end: 'date_end',
-  tanggal_awal: 'date_start',
-  tanggal_akhir: 'date_end',
-  tgl_awal: 'date_start',
-  tgl_akhir: 'date_end',
-  tgl_start: 'date_start',
-  tgl_end: 'date_end',
-  start_date: 'date_start',
-  end_date: 'date_end',
-  tgl: 'date_start',
-  tanggal: 'date_start',
-  date_start_kj: 'date_start_kj',
-  date_end_kj: 'date_end_kj',
-  // unit/depo & pasien
-  unit_tujuan: 'id_unit_tujuan',
-  id_unit_tujuan: 'id_unit_tujuan',
-  unit_asal: 'id_unit_asal',
-  idUnit: 'id_unit_asal',
-  id_unit_asal: 'id_unit_asal',
-  norm: 'no_rm',
-  no_rm: 'no_rm',
-  status_pasien: 'status_pasien',
-  pasien: 'pasien',
-  no_registrasi: 'no_registrasi',
-  no_resep: 'no_resep',
-  jenis_kategori_pengajuan_resep: 'kategori_resep',
-  kategori_resep: 'kategori_resep',
-};
+/** Ambil nama field dari atribut name — buang bentuk `search[...]` MORBIS. */
+function fieldName(raw: string): string {
+  const m = /^search\[([^\]]+)\]$/.exec(raw.trim());
+  return (m ? m[1] : raw.trim()).toLowerCase();
+}
 
-/** URL export dari nilai filter di halaman — MENIRU `loadTableExcel()`
- *  bawaan MORBIS: GET .../penerimaan/cetak/cetak-excel?search[field]=... */
-function buildExportUrl(): string {
+/** Tanggal → YYYY-MM-DD. Terima DD/MM/YYYY (format form MORBIS) atau
+ *  YYYY-MM-DD (sudah baku). Tanggal kalender tidak valid (mis. 31/02) → ''. */
+function toIsoDate(v: string): string {
+  const dmy = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(v);
+  if (dmy) {
+    const d = Number(dmy[1]);
+    const m = Number(dmy[2]);
+    const y = Number(dmy[3]);
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    const valid = dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
+    if (!valid) return '';
+    return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+  return '';
+}
+
+/** Bangun URL halaman rekap dari filter form MORBIS. Tanpa `search[...]`:
+ *  halaman public rekap membaca param flat (tanggal_mulai, depo_id, ...). */
+function buildPageUrl(): string {
   const params = new URLSearchParams();
-  const seen = new Set<string>();
 
   // Form filter MORBIS = #searchTable (lihat halaman penerimaan resep).
   // Fallback: form pertama di halaman bila tidak ada #searchTable.
@@ -510,48 +119,46 @@ function buildExportUrl(): string {
     ),
   ).filter((el) => {
     const t = (el.type || '').toLowerCase();
-    // Skip tombol/submit/reset/image
     if (['submit', 'button', 'reset', 'image'].includes(t)) return false;
-    // Hidden field — JANGAN di-skip kalau namanya mirip tanggal (MORBIS kadang render date sebagai hidden)
+    // Hidden field — JANGAN di-skip kalau namanya mirip tanggal (MORBIS
+    // kadang render date sebagai hidden).
     if (t === 'hidden') {
       const n = (el.getAttribute('name') || '').toLowerCase();
       if (!/tgl|tanggal|date|start|end/.test(n)) return false;
     }
-    const name = el.getAttribute('name') || '';
-    if (!name) return false;
-    return true;
+    return Boolean(el.getAttribute('name'));
   });
 
+  const seen = new Set<string>();
   for (const el of els) {
-    const rawName = el.getAttribute('name') || '';
-    if (!rawName || seen.has(rawName)) continue;
-    const input = el as HTMLInputElement;
-    if ((input.type === 'checkbox' || input.type === 'radio') && !input.checked) continue;
-    seen.add(rawName);
+    const raw = el.getAttribute('name') || '';
+    if (!raw || seen.has(raw)) continue;
+    seen.add(raw);
 
-    const val = cleanFilterValue(input.value);
+    if ((el.type === 'checkbox' || el.type === 'radio') && !(el as HTMLInputElement).checked) {
+      continue;
+    }
+
+    const target = PARAM_MAP[fieldName(raw)];
+    if (!target) continue; // filter tanpa padanan → dibuang (bukan error)
+
+    const val = cleanFilterValue((el as HTMLInputElement).value);
     if (!val) continue;
 
-    // Nama param: pas lewat bila sudah `search[...]`; selain itu alias
-    // nama field form → nama param export (EXPORT_FIELD_MAP).
-    const lowerName = rawName.toLowerCase();
-    if (/^search\[/i.test(lowerName)) {
-      params.append(rawName, val);
+    if (target.startsWith('tanggal_')) {
+      const iso = toIsoDate(val);
+      if (!iso) continue; // tanggal rusak/locale lain → biarkan halaman rekap
+      params.set(target, iso); // pertahankan (klik ulang tak duplikat param)
     } else {
-      const outName = EXPORT_FIELD_MAP[lowerName] || rawName;
-      params.append(`search[${outName}]`, val);
+      params.set(target, val);
     }
   }
 
-  // Hanya bentuk search[...] — sama persis dengan loadTableExcel bawaan;
-  // param flat diabaikan server (dan membingungkan saat debug).
-  const base = '/inventory/resep/penerimaan/cetak/cetak-excel';
+  const base = farmasiAppBase() + REPORT_PATH;
   const qs = params.toString();
-  const url = new URL(qs ? base + '?' + qs : base, location.href).href;
-
-  // Debug: log parameter yang dikirim
+  const url = qs ? base + '?' + qs : base;
   window.console.info(
-    '[penerimaanExport] buildExportUrl →',
+    '[penerimaanExport] buka rekap →',
     url,
     '| params:',
     Object.fromEntries(params.entries()),
@@ -559,11 +166,20 @@ function buildExportUrl(): string {
   return url;
 }
 
-/** Bungkus loadTableExcel() bawaan halaman: cegah unduhan asli, proses
- *  via rewrite; gagal → toast + fallback panggil fungsi asli.
- *  Mekanisme utama = TRAP defineProperty (setiap assignment ulang halaman
- *  dibungkus sinkron, tanpa window rentan); polling 5 detik hanya jaring
- *  pengaman bila trap digusur paksa. */
+/** Buka halaman rekap di tab baru. Halaman list TIDAK dinavigasi (tujuan
+ *  konsep baru: ganti file export .xls dengan halaman laporan live). */
+function openRekapPage(): void {
+  let url: string;
+  try {
+    url = buildPageUrl();
+  } catch (e) {
+    window.console.warn('[penerimaanExport] buildPageUrl error:', e);
+    toast('Gagal membuka Rekap Penerimaan Resep — muat ulang halaman lalu coba lagi.', 6000);
+    return;
+  }
+  window.open(url, '_blank', 'noopener');
+}
+
 const WRAP_FLAG = '__extPenerimaanWrapped';
 
 /** Handle timer & listener aktif — dibersihkan saat keluar halaman list. */
@@ -574,10 +190,7 @@ let onSubmitExport: ((e: SubmitEvent) => void) | null = null;
 
 /** Masih di halaman list penerimaan? (bukan /detail, bukan route lain). */
 function isListPage(): boolean {
-  return (
-    /\/inventory\/resep\/penerimaan/.test(location.pathname) &&
-    !location.pathname.includes('/detail')
-  );
+  return /\/inventory\/resep\/penerimaan/.test(location.pathname);
 }
 
 /** Cleanup: hentikan interval + lepas listener document saat SPA pindah
@@ -601,30 +214,15 @@ function cleanup(): void {
   }
 }
 
+/** Bungkus loadTableExcel() bawaan halaman: cegah navigasi ke endpoint
+ *  cetak-excel MORBIS, arahkan user ke halaman rekap. Fungsi asli
+ *  SENGAJA TIDAK dipanggil (memanggilnya = window.location.href navigasi
+ *  penuh keluar halaman list — keluhan user). void → param tetap "terpakai"
+ *  secara semantik + dokumentasi niat. */
 function makeLoadWrapper(orig: (...a: unknown[]) => unknown): (...a: unknown[]) => unknown {
-  // Catatan: `orig` (loadTableExcel asli) sengaja TIDAK dipanggil di mana pun —
-  // memanggilnya = eksekusi `window.location.href = cetak-excel...` (navigasi
-  // penuh keluar halaman list, keluhan user). void → param tetap "terpakai"
-  // secara semantik + dokumentasi niat.
   void orig;
   const wrapper = function (this: unknown, ..._args: unknown[]): unknown {
-    let url: string;
-    try {
-      url = buildExportUrl();
-    } catch (e) {
-      window.console.warn('[penerimaanExport] buildExportUrl error:', e);
-      toast('Export gagal — muat ulang halaman lalu coba lagi.', 6000);
-      return false;
-    }
-    window.console.info('[penerimaanExport] loadTableExcel → ' + url);
-    // processExport menangani semua kegagalan internal (toast + unduhan file
-    // asli server) — TANPA fallback ke fungsi asli: `orig.apply` memicu
-    // window.location.navigation ke endpoint cetak-excel (keluhan user —
-    // "halaman langsung redirect"). Halaman list harus tetap di tempat.
-    void processExport(url).catch((err) => {
-      window.console.warn('[penerimaanExport] proses export error:', err);
-      toast('Export gagal — coba lagi. Lihat console.', 6000);
-    });
+    openRekapPage();
     return false;
   };
   (wrapper as unknown as Record<string, unknown>)[WRAP_FLAG] = true;
@@ -691,10 +289,6 @@ function trapLoadTableExcel(): void {
   }, 5000);
 }
 
-function wrapLoadTableExcel(): void {
-  trapLoadTableExcel();
-}
-
 function injectCustomButton(): void {
   // Anti double-inject
   if (document.getElementById('ext-export-custom-btn')) return;
@@ -711,7 +305,7 @@ function injectCustomButton(): void {
   extExportBtn.id = 'ext-export-custom-btn';
   extExportBtn.type = 'button';
 
-  // Salin class & style tombol asli agar tampilan 100% persis dengan tema MORBIS (mis. "btn btn-success")
+  // Salin class & style tombol asli agar tampilan 100% persis dengan tema MORBIS
   extExportBtn.className = morbisBtn?.className || 'btn btn-success';
   if (morbisBtn?.getAttribute('style')) {
     extExportBtn.setAttribute('style', morbisBtn.getAttribute('style') || '');
@@ -735,7 +329,7 @@ function injectCustomButton(): void {
   textSpan.textContent = morbisBtn?.textContent?.trim() || 'Export resep sudah diterima';
   extExportBtn.appendChild(textSpan);
 
-  extExportBtn.title = 'Export resep dengan kolom Waktu Verif/Antrikan + Waktu Klik Selesai';
+  extExportBtn.title = 'Buka Rekap Penerimaan Resep + Waktu Antrian (Reports SIMRS)';
 
   if (morbisBtn && morbisBtn.parentNode) {
     morbisBtn.parentNode.insertBefore(extExportBtn, morbisBtn.nextSibling);
@@ -748,16 +342,10 @@ function injectCustomButton(): void {
     }
   }
 
-  // Event handler untuk tombol kustom export
   extExportBtn.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const url = buildExportUrl();
-    window.console.info('[penerimaanExport] custom btn → ' + url);
-    void processExport(url).catch((err) => {
-      window.console.warn('[penerimaanExport] proses export error:', err);
-      toast('Export gagal — coba lagi. Lihat console.', 6000);
-    });
+    openRekapPage();
   });
 }
 
@@ -779,13 +367,14 @@ function init(): void {
     injectCustomButton();
   }, 3000);
 
-  wrapLoadTableExcel();
+  trapLoadTableExcel();
   onClickExport = (e: MouseEvent): void => {
     const el = e.target as HTMLElement;
     const clickable = el.closest?.(
       'a[href], button, input[type="button"], input[type="submit"], [onclick]',
     ) as HTMLElement | null;
     if (!clickable) return;
+    if (clickable.id === 'ext-export-custom-btn') return; // tombol custom sudah punya listener
     let href = (clickable as HTMLAnchorElement).getAttribute?.('href') || '';
     // Tombol JS: gali URL export dari atribut onclick.
     if (!href) {
@@ -793,52 +382,37 @@ function init(): void {
       const m = oc.match(/['"]([^'"]*(?:export|xls|excel|informasi-resep)[^'"]*)['"]/i);
       if (m) href = m[1];
     }
-    if (!href && !EXPORT_RE.test(clickable.textContent || '')) return;
-    if (href && !EXPORT_RE.test(href) && !EXPORT_RE.test(clickable.textContent || '')) return;
+    if (!href && !/export|xls|excel|informasi-resep/i.test(clickable.textContent || '')) return;
+    if (
+      href &&
+      !/export|xls|excel|informasi-resep/i.test(href) &&
+      !/export|xls|excel|informasi-resep/i.test(clickable.textContent || '')
+    )
+      return;
     if (!href) {
       // --- Tombol JS: onclick="loadTableExcel()" / "exportExcel()" dst ---
       const oc = clickable.getAttribute?.('onclick') || '';
-      // Deteksi panggilan fungsi JS yang terkait export
       if (!/loadTableExcel|exportExcel|excel|export/i.test(oc)) return;
 
       e.preventDefault();
       e.stopPropagation();
       e.stopImmediatePropagation(); // hapus tangan inline onclick
-
-      const url = buildExportUrl();
-      window.console.info('[penerimaanExport] intercept onclick → ' + url);
-      void processExport(url).catch((err) => {
-        window.console.warn('[penerimaanExport] proses export error:', err);
-        toast('Export gagal — coba lagi. Lihat console.', 6000);
-      });
+      openRekapPage();
       return;
     }
     e.preventDefault();
     e.stopPropagation();
-    const url = new URL(href, location.href).href;
-    window.console.info('[penerimaanExport] intercept:', url);
-    void processExport(url).catch((err) => {
-      window.console.warn('[penerimaanExport] proses export error:', err);
-      toast('Export gagal — coba lagi. Lihat console.', 6000);
-    });
+    openRekapPage();
   };
   document.addEventListener('click', onClickExport, true);
 
   onSubmitExport = (e: SubmitEvent): void => {
     const f = e.target as HTMLFormElement;
     const action = f?.action || '';
-    if (!EXPORT_RE.test(action)) return;
+    if (!/export|xls|excel|informasi-resep/i.test(action)) return;
     e.preventDefault();
     e.stopPropagation();
-    const fd = new FormData(f);
-    const params = new URLSearchParams();
-    fd.forEach((v, k) => params.append(k, String(v)));
-    const url = action + (action.includes('?') ? '&' : '?') + params.toString();
-    window.console.info('[penerimaanExport] intercept form:', url);
-    void processExport(url).catch((err) => {
-      window.console.warn('[penerimaanExport] proses export error:', err);
-      toast('Export gagal — coba lagi. Lihat console.', 6000);
-    });
+    openRekapPage();
   };
   document.addEventListener('submit', onSubmitExport, true);
 

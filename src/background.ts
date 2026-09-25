@@ -243,9 +243,9 @@ const DEFAULT_CONFIG: ExtensionConfig = {
     penerimaanExport: {
       enabled: true,
       allowedRoles: ['admin', 'apotek'],
-      name: 'Export Penerimaan + Waktu Antrian',
+      name: 'Rekap Penerimaan Resep (Reports SIMRS)',
       description:
-        'Export xls penerimaan: kolom Waktu Penjualan diganti Waktu Verif/Antrikan + Waktu Klik Selesai',
+        'Tombol export penerimaan membuka halaman Rekap Penerimaan Resep + Waktu Antrian di Reports SIMRS (filter ter-prefill, export XLSX/CSV di sana)',
     },
     ttvEditor: {
       enabled: true,

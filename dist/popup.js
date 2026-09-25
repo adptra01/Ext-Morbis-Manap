@@ -1,4 +1,4 @@
-import { _ as MessageTypes, a as SelectItem, b as require_react, c as X, d as Plus, g as require_jsx_runtime, h as ErrorBoundary, i as SelectContent, l as RotateCcw, n as Input, o as SelectTrigger, p as Switch, r as Select, s as SelectValue, t as Button, u as RefreshCw, v as sendMessage, x as __toESM, y as require_client } from "./chunks/button-CuRYTKYN.js";
+import { _ as MessageTypes, a as SelectItem, b as require_react, c as X, d as Plus, g as require_jsx_runtime, h as ErrorBoundary, i as SelectContent, l as RotateCcw, n as Input, o as SelectTrigger, p as Switch, r as Select, s as SelectValue, t as Button, u as RefreshCw, v as sendMessage, x as __toESM, y as require_client } from "./chunks/button-CSy-Nqdc.js";
 //#region src/popup/StatusCard.tsx
 var import_react = /* @__PURE__ */ __toESM(require_react(), 1);
 var import_client = require_client();

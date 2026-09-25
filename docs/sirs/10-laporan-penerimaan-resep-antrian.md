@@ -453,12 +453,29 @@ perintah utk DBeaver).
 **AC 🔒**: halaman public berfungsi penuh di `dev.rsudkotajambi.id/rs`
 (87 baris 24/09 DEPO RAJAL; export xlsx+csv; audit tercatat; tanpa auth).
 
-### Fase 2 — Extension
+### Fase 2 — Extension ✅ SELESAI (2026-09-25)
 
-Per §5 + build + release + verifikasi live di main.
+1. `src/features/penerimaanExport.ts` — **pipeline .xls DIHAPUS** (fetch
+   `cetak-excel` → rewrite kolom → `lookupAntrianBatch` → blob unduhan).
+   Sekarang: tombol (custom / `loadTableExcel` / link export) →
+   `window.open(farmasiAppBase() + '/penerimaan-resep-antrian?' + params,
+'_blank', 'noopener')`. Halaman list MORBIS tetap (TIDAK `location.href`).
+2. Pemetaan param (form MORBIS → halaman rekap, flat tanpa `search[...]`):
+   `date_start/date_end → tanggal_mulai/tanggal_selesai`,
+   `date_start_kj/date_end_kj → tanggal_mulai_kj/tanggal_selesai_kj`,
+   `id_unit_tujuan/unit_tujuan → depo_id`, `no_rm/norm → norm`,
+   `status_pasien`, `pasien`, `no_resep`, `no_registrasi` sama.
+   Tanggal `DD/MM/YYYY` → `YYYY-MM-DD` (tanggal tidak valid dibuang, halaman
+   tetap terbuka tanpa auto-cari). Filter tanpa padanan (unit_asal,
+   kategori_resep, dst) dibuang diam-diam.
+3. `tests/unit/penerimaan-export.check.mjs` ditulis ulang utk konsep baru
+   (7 skenario: URL+param, loadTableExcel dicegah, inline onclick & href,
+   re-arm trap, tanggal buruk/kosong, halaman tak ternavigasi).
+4. QA: typecheck ✓, lint 0 error, vitest 400 ✓, build:prod + audit 9/9 ✓,
+   E2E check PASS. Deskripsi fitur `background.ts` diperbarui.
 
-**AC**: tombol membuka halaman public (bukan file); param prefill sesuai;
-harness E2E hijau.
+**AC 🔒**: tombol membuka halaman public (bukan file); param prefill sesuai;
+harness E2E hijau. Deploy ke `main` (Pages/Edge) via Actions saat push `dev`.
 
 ### Fase 3 — UAT & dokumentasi
 
