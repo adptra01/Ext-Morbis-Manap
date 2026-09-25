@@ -427,17 +427,31 @@ perintah utk DBeaver).
 
 **AC Fase 0 ✅**: daftar kolom final + query final terverifikasi (§3.4).
 
-### Fase 1 — Reports SIMRS (halaman public)
+### Fase 1 — Reports SIMRS (halaman public) ✅ SELESAI (2026-09-25)
 
-1. Service + controller + view + rute public.
-2. `ref_depo` + prefill query-string + audit sistem.
-3. Pest tests + QA (lint/test/build).
-4. Deploy dev → uji: buka `/penerimaan-resep-antrian` tanpa login; filter;
-   **tabel 24/09 DEPO RAJAL = 87 baris** (hitungan Oracle terverifikasi §8.4.3 —
-   pengganti bukti lama 106 yang bocor); export XLSX ≥ semua baris; spot-check
-   3 baris pertama cocok dgn halaman MORBIS (SUBAGIO/00052320/dr. NORMA JUNITA).
+1. Service + controller + view + rute public — commit `d0a8c1b` (repo
+   `adptra01/reports-app`, branch `main`, auto-deploy GitHub Actions ke
+   mini_pacs@103.147.236.138, `reports-app` up-to-date).
+2. `ref_depo` (cache `ref_units` MySQL, kriteria `NAMA LIKE '%DEPO%'` — 6 unit,
+   id cocok dgn `UNIT` Oracle: 4324=DEPO RAJAL dst.) + prefill query-string +
+   audit `activity_log` (event `search`/`export`, causer `NULL`, subject
+   `penerimaan-resep-antrian`) — diverifikasi live di DB server.
+3. Pest tests 13 baru (fake Oracle, total suite 205 tuntas) + Pint 188 files
+   PASS — gate CI hijau sebelum deploy.
+4. Uji live di `dev.rsudkotajambi.id/rs` (tanpa login):
+   - `/penerimaan-resep-antrian` → 200, form + tabel ter-render.
+   - `/data?tanggal_mulai=2026-09-24&tanggal_selesai=2026-09-24&depo_id=4324`
+     → **total 87** ✅ (AC). Catatan: `+status_pasien=1` → 86 (1 baris
+     `JENIS_KUNJUNGAN=2`/RI di DEPO RAJAL — angka 87 berlaku TANPA filter
+     status pasien; live count Oracle terverifikasi: 4324 → 87 = 86 RJ + 1 RI).
+   - Format `DD/MM/YYYY` (redirect MORBIS) diterima → 87 ✅.
+   - Export CSV (BOM, 88 baris = header + 87) & XLSX (valid, 11 parts) ✅.
+   - Spot-check baris: MARLIYUS / `R2609-0224` / `00052393` / 67 th /
+     dr. Gita Mayani, Sp.M / BPJS Kesehatan `(0082R0030926V002840)` /
+     antrian `T-43` DONE lengkap waktu antri→panggil→selesai ✅.
 
-**AC**: halaman public berfungsi penuh di `dev.rsudkotajambi.id/rs`.
+**AC 🔒**: halaman public berfungsi penuh di `dev.rsudkotajambi.id/rs`
+(87 baris 24/09 DEPO RAJAL; export xlsx+csv; audit tercatat; tanpa auth).
 
 ### Fase 2 — Extension
 
