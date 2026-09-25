@@ -233,20 +233,28 @@ function trapLoadTableExcel(): void {
   const w = window as unknown as Record<string, unknown> & {
     __extLoadTrap?: boolean;
     __extTrapSetter?: (v: unknown) => void;
+    __extWrappedFn?: unknown;
     __extTrapFailed?: boolean;
   };
   const isWrapped = (fn: unknown): boolean =>
     typeof fn === 'function' && (fn as unknown as Record<string, unknown>)[WRAP_FLAG] === true;
-  const arm = (): void => {
+
+  // returns true bila loadTableExcel ter-kontrol penuh (trap atau assignment)
+  const arm = (): boolean => {
     let current: unknown = w.loadTableExcel;
     const setter = (newFn: unknown): void => {
+      // NB: tulis ke closure `current`, bukan w.loadTableExcel — assignment ke
+      // properti itu sendiri akan memanggil setter ini lagi (rekursi).
       if (typeof newFn !== 'function' || isWrapped(newFn)) {
         current = newFn;
+        w.__extWrappedFn = undefined;
         return;
       }
       current = makeLoadWrapper(newFn as (...a: unknown[]) => unknown);
-      window.console.info('[penerimaanExport] loadTableExcel dibungkus (trap)');
+      w.__extWrappedFn = current;
+      window.console.info('[penerimaanExport] loadTableExcel dibungkus ulang (assignment)');
     };
+    // Jaring 1: accessor trap (intercept assignment loadTableExcel berikutnya).
     try {
       Object.defineProperty(w, 'loadTableExcel', {
         configurable: true,
@@ -258,20 +266,44 @@ function trapLoadTableExcel(): void {
       });
       w.__extTrapSetter = setter;
       w.__extLoadTrap = true;
-    } catch {
-      if (!w.__extTrapFailed) {
-        w.__extTrapFailed = true;
-        window.console.warn('[penerimaanExport] trap ditolak, hanya polling');
+      if (typeof current === 'function' && !isWrapped(current)) {
+        current = makeLoadWrapper(current as (...a: unknown[]) => unknown);
+        w.__extWrappedFn = current;
+        window.console.info('[penerimaanExport] loadTableExcel dibungkus (trap)');
+      } else if (typeof current !== 'function') {
+        w.__extWrappedFn = undefined;
       }
-      return;
-    }
-    if (typeof current === 'function' && !isWrapped(current)) {
-      current = makeLoadWrapper(current as (...a: unknown[]) => unknown);
-      window.console.info('[penerimaanExport] loadTableExcel dibungkus');
+      return true;
+    } catch {
+      // Jaring 2: assignment langsung (properti non-configurable tapi writable).
+      try {
+        if (typeof current === 'function' && !isWrapped(current)) {
+          w.__extWrappedFn = makeLoadWrapper(current as (...a: unknown[]) => unknown);
+          w.loadTableExcel = w.__extWrappedFn;
+          window.console.info('[penerimaanExport] loadTableExcel dibungkus (assignment)');
+        } else if (isWrapped(current)) {
+          w.__extWrappedFn = current;
+        }
+        w.__extLoadTrap = false;
+        return true;
+      } catch {
+        // Jaring 3: properti terkunci penuh (non-configurable + non-writable).
+        // Fungsi loadTableExcel tidak bisa dibungkus; jaring pengaman tetap
+        // aktif: tombol kustom + intercept klik/submit (document capture).
+        if (!w.__extTrapFailed) {
+          w.__extTrapFailed = true;
+          window.console.info(
+            '[penerimaanExport] loadTableExcel tidak bisa dibungkus (properti terkunci) — ' +
+              'fallback: tombol kustom + intercept klik + re-check berkala. Fungsi tetap bekerja.',
+          );
+        }
+        return false;
+      }
     }
   };
   arm();
-  // Jaring pengaman: pasang ulang trap bila digusur paksa.
+  // Jaring pengaman: pasang ulang pembungkus bila halaman menimpa
+  // loadTableExcel setelahnya (assign ulang dari script halaman).
   rearmTimer = window.setInterval(() => {
     if (!isListPage()) {
       // Pindah halaman — berhenti total, jangan aktif di route lain.
@@ -280,8 +312,19 @@ function trapLoadTableExcel(): void {
     }
     try {
       const d = Object.getOwnPropertyDescriptor(w, 'loadTableExcel');
-      if (d && d.set === w.__extTrapSetter) return;
+      if (w.__extLoadTrap) {
+        // Mode trap: descriptor ours utuh → tak perlu apa-apa.
+        if (d && d.set === w.__extTrapSetter) return;
+      } else {
+        // Mode assignment/fallback: cek apakah loadTableExcel masih wrapper kita.
+        if (w.__extWrappedFn && w.loadTableExcel === w.__extWrappedFn) return;
+        if (!w.__extWrappedFn) {
+          // Tidak pernah ter-bungkus (terkunci) — jangan putar sia-sia tiap 5 detik.
+          if (w.__extTrapFailed) return;
+        }
+      }
       w.__extLoadTrap = false;
+      w.__extWrappedFn = undefined;
       arm();
     } catch {
       /* ignore */
