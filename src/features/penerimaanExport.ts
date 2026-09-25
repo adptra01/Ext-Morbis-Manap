@@ -187,6 +187,10 @@ interface ExportStats {
   total: number;
   matched: number;
   adaSelesai: number;
+  /** Baris yang TIDAK punya id_resep numerik (tr[id]) → sengaja tidak
+   *  di-lookup: teks No Resep sebagai kunci ambbigu (nomor resep MORBIS
+   *  dipakai ulang antar hari) dan bisa menampilkan data record BASAI. */
+  tanpaKunci: number;
   contohTidakDitemukan: string[];
 }
 
@@ -247,6 +251,7 @@ async function rewriteExport(
   // Kumpulkan id resep per baris (lewati baris header/kop).
   const rows: Array<{ tds: NodeListOf<HTMLTableCellElement>; id: string }> = [];
   const ids: string[] = [];
+  const tanpaKunciContoh: string[] = [];
   for (const tr of Array.from(target.querySelectorAll('tr'))) {
     if (tr.querySelector('th') || (headerTr && tr === headerTr)) continue;
     const tds = tr.querySelectorAll('td');
@@ -254,10 +259,18 @@ async function rewriteExport(
     const no = noIdx >= 0 ? (tds[noIdx].textContent || '').trim() : '';
     // Baris tanpa No Resep (mis. subtotal) dilewati — jangan rusak.
     if (!no) continue;
-    // Prioritas: liveMap (tr[id] = id_resep); fallback: No Resep teks = resep_id.
-    const id = liveMap.get(no) || no;
+    // HANYA id_resep numerik (tr[id] valid dari halaman live) dipakai
+    // sebagai kunci lookup — TIDAK fallback ke teks No Resep: nomor resep
+    // MORBIS dipakai ulang tiap hari (bukti: R2609-0001 ×23 di export
+    // seluruh DB) → teks sebagai kunci = record BASAI milik resep berbeda
+    // yang bernomor sama (kasus nyata: export 24/09 menampilkan jam 15/09).
+    const id = liveMap.get(no) || '';
     rows.push({ tds, id });
-    ids.push(id);
+    if (id) {
+      ids.push(id);
+    } else {
+      if (tanpaKunciContoh.length < 10) tanpaKunciContoh.push(no);
+    }
   }
 
   const times = await lookupAntrianBatch(ids);
@@ -274,8 +287,15 @@ async function rewriteExport(
     total: rows.length,
     matched: 0,
     adaSelesai: 0,
+    tanpaKunci: tanpaKunciContoh.length,
     contohTidakDitemukan: [],
   };
+  // Baris tanpa id_resep numerik — tampilkan di log supaya terlihat jelas
+  // (bukannya diam-diam fallback ke kunci teks yang ambigu).
+  for (const no of tanpaKunciContoh) {
+    if (stats.contohTidakDitemukan.length >= 10) break;
+    stats.contohTidakDitemukan.push(`(tanpa-id) ${no}`);
+  }
   for (const r of rows) {
     const q = r.id ? times[r.id] : undefined;
     const orig = r.tds[wpIdx];
@@ -364,6 +384,7 @@ async function processExport(url: string): Promise<void> {
     const reachable = await isFarmasiAppReachable();
     window.console.info(
       `[penerimaanExport] baris=${stats.total} cocok=${stats.matched} selesai=${stats.adaSelesai} ` +
+        `tanpaKunci=${stats.tanpaKunci} ` +
         `appAntrian=${reachable ? 'REACHABLE' : 'TIDAK TERJANGKAU'}` +
         (stats.contohTidakDitemukan.length
           ? ` idTanpaAntrian=[${stats.contohTidakDitemukan.join(', ')}]`
@@ -390,7 +411,10 @@ async function processExport(url: string): Promise<void> {
       toast(
         reachable
           ? 'Export selesai, TAPI tidak ada baris yang punya data antrian — ' +
-              'resep di file ini belum pernah di-Antrikan (atau bukan antrian hari ini).'
+              'resep di file ini belum pernah di-Antrikan (atau bukan antrian hari ini).' +
+              (stats.tanpaKunci
+                ? ` ${stats.tanpaKunci} baris tanpa id_resep (tidak dicocokkan).`
+                : '')
           : 'Export selesai, TAPI App Antrian tidak terjangkau dari PC ini — ' +
               'kolom waktu kosong semua. Cek koneksi ke dev.rsudkotajambi.id.',
         9000,
