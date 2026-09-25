@@ -502,6 +502,15 @@ riwayat fitur & bukti tetap di dokumen kanonik ini.
 Opsional setelah UAT: backfill `queues.resep_id` record lama ber-aksi
 (tabel `queues` di Reports SIMRS) agar baris historis ikut ter-join.
 
+**✅ Backfill legacy `queues.resep_id` — SELESAI (2026-09-25)**: 16 record
+bertahun (15–24/09) masih memakai No Resep teks (`R2609-xxxx`). Resolve ke
+Oracle `RESEP.ID` via `NOMOR_RESEP + TRUNC(TANGGAL_RESEP)` → **16/16 UNIK**
+(0 ambigu, 0 hilang) → di-UPDATE ke ID numerik (transaksi + `AND resep_id=<lama>`
+sebagai lock; backup CSV `/home/mini_pacs/backups/reports-simrs/
+queues-legacy-backup-20260925-043040.csv`). Verifikasi live: 21/09 naik dari
+hanya record numerik → **108/328 baris ter-enrich** (T-71 DONE, T-63 DEFERRED,
+R-01 DONE — semuanya yang tadinya "—").
+
 ---
 
 ## 9. Pertanyaan terbuka (status per 2026-09-25 — SEMUA TERJAWAB)
