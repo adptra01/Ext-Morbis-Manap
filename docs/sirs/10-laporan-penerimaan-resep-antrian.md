@@ -477,11 +477,30 @@ perintah utk DBeaver).
 **AC 🔒**: tombol membuka halaman public (bukan file); param prefill sesuai;
 harness E2E hijau. Deploy ke `main` (Pages/Edge) via Actions saat push `dev`.
 
-### Fase 3 — UAT & dokumentasi
+### Fase 3 — UAT & dokumentasi ⏳ MENUNGGU UAT OPERATOR
 
-- Uji alur lengkap dengan operator.
-- Update `docs/sirs/07-fitur-antrian-farmasi.md` + changelog.
-- Opsional: backfill `queues.resep_id` record lama ber-aksi.
+Dokumentasi teknis sudah final di dokumen ini (§1–§10 + §8a Fase 0/1/2).
+Catatan: `docs/sirs/07-fitur-antrian-farmasi.md` tidak ada di repo ini —
+riwayat fitur & bukti tetap di dokumen kanonik ini.
+
+**Checklist UAT (operator, di PCfarmasi — extension v1.5.49+):**
+
+1. Login MORBIS → `/inventory/resep/penerimaan` → set filter (mis. 24/09,
+   DEPO RAJAL) → klik **"Export resep sudah diterima"**.
+2. ✅ Expect: tab baru terbuka ke `dev.rsudkotajambi.id/rs/penerimaan-resep-antrian`
+   dengan filter ter-prefill + tabel auto terisi (tidak perlu klik "Cari").
+3. ✅ Expect: halaman list MORBIS TETAP ter buka (tidak redirect).
+4. Cek kolom: No. → Total Penjualan (19 kolom), No Antrian/Status Antrian/
+   Waktu Di-Antrikan/Dipanggil/Selesai terisi untuk resep yang di-antri.
+5. Klik **Export XLSX** & **Export CSV** → file terunduh
+   (`rekap-penerimaan-resep-<tanggal>-<Jam>.xlsx|csv`), isi cocok tabel.
+6. Uji filter tambahan: Ganti tanggal, Status Pasien, Nama Pasien/No RM,
+   Status Antrian (filter app). Reset tombol.
+7. Edge: tanggal tidak diisi manual di form → klik Cari setelah pilih tanggal;
+   Oracle down → pesan "gagal memuat data" (bukan halaman kosong).
+
+Opsional setelah UAT: backfill `queues.resep_id` record lama ber-aksi
+(tabel `queues` di Reports SIMRS) agar baris historis ikut ter-join.
 
 ---
 
