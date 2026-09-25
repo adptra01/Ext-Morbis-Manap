@@ -303,23 +303,61 @@ async function rewriteExport(
   return { html: doc.documentElement.outerHTML, stats };
 }
 
+/** Unduh string (HTML export / hasil rewrite) sebagai .xls via blob — TANPA
+ *  membuka tab baru / navigasi; halaman list tetap dan user tak terganggu. */
+function downloadBlob(content: string): void {
+  const blob = new Blob(['\uFEFF' + content], { type: 'application/vnd.ms-excel' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = FILENAME;
+  document.body.appendChild(a);
+  a.click();
+  window.setTimeout(() => {
+    URL.revokeObjectURL(a.href);
+    a.remove();
+  }, 4000);
+}
+
 async function processExport(url: string): Promise<void> {
   showLoading('Mengunduh data export dari server…');
   try {
     const res = await fetchWithTimeout(url, { credentials: 'include', cache: 'no-store' }, 30000);
-    if (!res.ok) throw new Error('export server HTTP ' + res.status);
+    if (!res.ok) {
+      // Jangan navigasi ke endpoint — cukup kabari user (sesi expired / error).
+      window.console.warn('[penerimaanExport] fetch gagal HTTP ' + res.status);
+      toast(
+        `Export gagal — server balas HTTP ${res.status}. Muat ulang halaman atau login ulang MORBIS, lalu coba lagi.`,
+        9000,
+      );
+      return;
+    }
     const html = await res.text();
 
     updateLoading('Menggabungkan data waktu antrian…');
-    const { html: out, stats } = await rewriteExport(html, buildLiveMap()).catch((err) => {
-      // Diagnostik: jelaskan bentuk respons server agar kegagalan rewrite
-      // (login page? layout beda? error?) bisa dibedakan dari log saja.
+    let out: string;
+    let stats: ExportStats | null = null;
+    try {
+      const r = await rewriteExport(html, buildLiveMap());
+      out = r.html;
+      stats = r.stats;
+    } catch (err) {
+      // Diagnostik: jelaskan bentuk respons server (login page? layout beda?
+      // error HTML?) supaya bisa dibedakan dari log saja.
+      const diag = responseDiag(html, res);
       window.console.warn(
-        '[penerimaanExport] rewrite gagal — ' + responseDiag(html, res),
+        '[penerimaanExport] rewrite gagal — ' + diag,
         String((err as Error)?.message ?? err),
       );
-      throw err;
-    });
+      // TETAP unduh file asli server (tanpa kolom antrian) secara senyap —
+      // TANPA window.open/navigasi: user tidak dilempar keluar halaman.
+      downloadBlob(html);
+      toast(
+        'Kolom waktu antrian tidak bisa digabung (layout file export berubah) — ' +
+          'file asli server tetap terunduh. Salin log console "[penerimaanExport] rewrite gagal" ke developer.',
+        10000,
+      );
+      return;
+    }
 
     // Bedakan 2 kegagalan yang tadinya sama-sama "kolom kosong":
     // (a) App Antrian tidak terjangkau dari PC ini, (b) record memang tidak ada.
@@ -346,16 +384,7 @@ async function processExport(url: string): Promise<void> {
     }
     // BOM (U+FEFF) agar Excel tidak salah baca karakter non-ASCII
     // (nama pasien, em-dash) — pola sama dengan paLabPrint.ts.
-    const blob = new Blob(['\uFEFF' + out], { type: 'application/vnd.ms-excel' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = FILENAME;
-    document.body.appendChild(a);
-    a.click();
-    window.setTimeout(() => {
-      URL.revokeObjectURL(a.href);
-      a.remove();
-    }, 4000);
+    downloadBlob(out);
 
     if (stats.total > 0 && stats.matched === 0) {
       toast(
@@ -375,6 +404,13 @@ async function processExport(url: string): Promise<void> {
     } else {
       toast('Export selesai — kolom Waktu Verif/Antrikan + Waktu Klik Selesai terisi.');
     }
+  } catch (err) {
+    // Tak terduga (network error dll.) — jangan pernah navigasi ke endpoint.
+    window.console.warn('[penerimaanExport] proses export gagal:', err);
+    toast(
+      'Export gagal — tidak ada file terunduh. Cek koneksi / login MORBIS, lalu coba lagi.',
+      9000,
+    );
   } finally {
     hideLoading();
   }
@@ -388,17 +424,50 @@ function cleanFilterValue(v: unknown): string {
   return t;
 }
 
-/** URL export dari nilai filter di halaman (meniru loadTableExcel bawaan:
- *  GET .../penerimaan/cetak/cetak-excel?search[...]&...). MORBIS form filter
- *  utama = #searchTable dengan field: date_start, date_end, unit_tujuan,
- *  status_pasien, norm, pasien, no_registrasi, no_resep, dll.
- *
- *  PERBAIKAN: normalisasi field tanggal (form DD/MM/YYYY → export YYYY-MM-DD),
- *  mapping nama field fleksibel, log parameter untuk debugging, dan — kritis —
- *  setiap param dikirim ganda: flat (`date_start=`) + array CodeIgniter
- *  (`search[date_start]=`). Server MORBIS HANYA memfilter bentuk `search[...]`;
- *  bentuk flat diabaikan → endpoint mengembalikan seluruh DB (bug produksi
- *  "export semua data dari awal sampai akhir"). */
+/** Mapping nama field form → param export (`search[...]`) — DISALIN dari
+ *  `loadTableExcel()` bawaan MORBIS (server live 103.147.236.140, sumber
+ *  halaman penerimaan):
+ *  - tanggal dikirim APA ADANYA (format tampilan DD/MM/YYYY) — konversi ke
+ *    YYYY-MM-DD membuat query Oracle gagal → server balas halaman
+ *    "Error - Aplikasi" (bukan file export!).
+ *  - nama param beda dari nama field: depo tujuan = `id_unit_tujuan`
+ *    (BUKAN `unit_tujuan`), RM = `no_rm` (BUKAN `norm`), dll. Salah nama →
+ *    filter diabaikan server → export berisi seluruh DB/hari.
+ *  Server HANYA membaca bentuk `search[...]`; bentuk flat diabaikan. */
+const EXPORT_FIELD_MAP: Record<string, string> = {
+  // tanggal (passthrough; nilai tetap format form)
+  date_start: 'date_start',
+  date_end: 'date_end',
+  tanggal_awal: 'date_start',
+  tanggal_akhir: 'date_end',
+  tgl_awal: 'date_start',
+  tgl_akhir: 'date_end',
+  tgl_start: 'date_start',
+  tgl_end: 'date_end',
+  start_date: 'date_start',
+  end_date: 'date_end',
+  tgl: 'date_start',
+  tanggal: 'date_start',
+  date_start_kj: 'date_start_kj',
+  date_end_kj: 'date_end_kj',
+  // unit/depo & pasien
+  unit_tujuan: 'id_unit_tujuan',
+  id_unit_tujuan: 'id_unit_tujuan',
+  unit_asal: 'id_unit_asal',
+  idUnit: 'id_unit_asal',
+  id_unit_asal: 'id_unit_asal',
+  norm: 'no_rm',
+  no_rm: 'no_rm',
+  status_pasien: 'status_pasien',
+  pasien: 'pasien',
+  no_registrasi: 'no_registrasi',
+  no_resep: 'no_resep',
+  jenis_kategori_pengajuan_resep: 'kategori_resep',
+  kategori_resep: 'kategori_resep',
+};
+
+/** URL export dari nilai filter di halaman — MENIRU `loadTableExcel()`
+ *  bawaan MORBIS: GET .../penerimaan/cetak/cetak-excel?search[field]=... */
 function buildExportUrl(): string {
   const params = new URLSearchParams();
   const seen = new Set<string>();
@@ -429,73 +498,29 @@ function buildExportUrl(): string {
     return true;
   });
 
-  // Mapping nama field form → nama param export endpoint (standar MORBIS).
-  const DATE_FIELD_MAP: Record<string, string> = {
-    // form → export
-    tanggal_awal: 'date_start',
-    tanggal_akhir: 'date_end',
-    tgl_awal: 'date_start',
-    tgl_akhir: 'date_end',
-    date_start: 'date_start',
-    date_end: 'date_end',
-    tgl_start: 'date_start',
-    tgl_end: 'date_end',
-    start_date: 'date_start',
-    end_date: 'date_end',
-    tgl: 'date_start', // fallback single date
-    tanggal: 'date_start',
-  };
-
-  /** Konversi DD/MM/YYYY atau DD-MM-YYYY → YYYY-MM-DD */
-  const toYmd = (raw: string): string => {
-    const s = String(raw).trim();
-    // Sudah YYYY-MM-DD
-    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-    // DD/MM/YYYY
-    const m1 = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-    if (m1) return `${m1[3]}-${m1[2].padStart(2, '0')}-${m1[1].padStart(2, '0')}`;
-    // DD-MM-YYYY
-    const m2 = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
-    if (m2) return `${m2[3]}-${m2[2].padStart(2, '0')}-${m2[1].padStart(2, '0')}`;
-    return s; // fallback: biarkan apa adanya
-  };
-
   for (const el of els) {
-    const name = el.getAttribute('name') || '';
-    if (!name || seen.has(name)) continue;
+    const rawName = el.getAttribute('name') || '';
+    if (!rawName || seen.has(rawName)) continue;
     const input = el as HTMLInputElement;
     if ((input.type === 'checkbox' || input.type === 'radio') && !input.checked) continue;
-    seen.add(name);
+    seen.add(rawName);
 
     const val = cleanFilterValue(input.value);
     if (!val) continue;
 
-    const lowerName = name.toLowerCase();
-    let outName = name;
-    let outVal = val;
-
-    // Normalisasi field tanggal
-    if (DATE_FIELD_MAP[lowerName]) {
-      outName = DATE_FIELD_MAP[lowerName];
-      outVal = toYmd(val);
-    }
-
-    // Hanya kirim param yang tidak kosong
-    if (outVal) {
-      params.append(outName, outVal);
-      // MORBIS server membaca filter sebagai ARRAY CodeIgniter `search[field]`
-      // (riwayat: buildExportUrl lama — commit 6d305a0 — memilih
-      // `input[name^="search"]` dan inilah bentuk yang benar-benar difilter
-      // server; param flat diabaikan → server mengembalikan SELURUH DB).
-      // Kirim duplikat `search[...]` agar filter tanggal dipatuhi server;
-      // param flat tetap dikirim untuk endpoint yang membacanya langsung.
-      if (!/^search\[/i.test(lowerName)) {
-        params.append(`search[${outName}]`, outVal);
-      }
+    // Nama param: pas lewat bila sudah `search[...]`; selain itu alias
+    // nama field form → nama param export (EXPORT_FIELD_MAP).
+    const lowerName = rawName.toLowerCase();
+    if (/^search\[/i.test(lowerName)) {
+      params.append(rawName, val);
+    } else {
+      const outName = EXPORT_FIELD_MAP[lowerName] || rawName;
+      params.append(`search[${outName}]`, val);
     }
   }
 
-  // loadTableExcel tidak butuh filter wajib — export semua bila kosong.
+  // Hanya bentuk search[...] — sama persis dengan loadTableExcel bawaan;
+  // param flat diabaikan server (dan membingungkan saat debug).
   const base = '/inventory/resep/penerimaan/cetak/cetak-excel';
   const qs = params.toString();
   const url = new URL(qs ? base + '?' + qs : base, location.href).href;
@@ -553,23 +578,28 @@ function cleanup(): void {
 }
 
 function makeLoadWrapper(orig: (...a: unknown[]) => unknown): (...a: unknown[]) => unknown {
-  const wrapper = function (this: unknown, ...args: unknown[]): unknown {
+  // Catatan: `orig` (loadTableExcel asli) sengaja TIDAK dipanggil di mana pun —
+  // memanggilnya = eksekusi `window.location.href = cetak-excel...` (navigasi
+  // penuh keluar halaman list, keluhan user). void → param tetap "terpakai"
+  // secara semantik + dokumentasi niat.
+  void orig;
+  const wrapper = function (this: unknown, ..._args: unknown[]): unknown {
     let url: string;
     try {
       url = buildExportUrl();
     } catch (e) {
-      window.console.warn('[penerimaanExport] buildExportUrl error, fallback:', e);
-      return orig.apply(this, args);
+      window.console.warn('[penerimaanExport] buildExportUrl error:', e);
+      toast('Export gagal — muat ulang halaman lalu coba lagi.', 6000);
+      return false;
     }
     window.console.info('[penerimaanExport] loadTableExcel → ' + url);
+    // processExport menangani semua kegagalan internal (toast + unduhan file
+    // asli server) — TANPA fallback ke fungsi asli: `orig.apply` memicu
+    // window.location.navigation ke endpoint cetak-excel (keluhan user —
+    // "halaman langsung redirect"). Halaman list harus tetap di tempat.
     void processExport(url).catch((err) => {
-      window.console.warn('[penerimaanExport] rewrite gagal, fallback:', err);
-      toast('Export server (tanpa kolom waktu antrian).', 6000);
-      try {
-        orig.apply(this, args);
-      } catch {
-        /* ignore */
-      }
+      window.console.warn('[penerimaanExport] proses export error:', err);
+      toast('Export gagal — coba lagi. Lihat console.', 6000);
     });
     return false;
   };
@@ -701,9 +731,8 @@ function injectCustomButton(): void {
     const url = buildExportUrl();
     window.console.info('[penerimaanExport] custom btn → ' + url);
     void processExport(url).catch((err) => {
-      window.console.warn('[penerimaanExport] rewrite gagal, fallback:', err);
-      toast('Export server (tanpa kolom waktu antrian).', 6000);
-      window.open(url, '_blank');
+      window.console.warn('[penerimaanExport] proses export error:', err);
+      toast('Export gagal — coba lagi. Lihat console.', 6000);
     });
   });
 }
@@ -755,12 +784,8 @@ function init(): void {
       const url = buildExportUrl();
       window.console.info('[penerimaanExport] intercept onclick → ' + url);
       void processExport(url).catch((err) => {
-        window.console.warn('[penerimaanExport] rewrite gagal, fallback:', err);
-        toast('Export server (tanpa kolom waktu antrian).', 6000);
-        const fn = (window as unknown as Record<string, unknown>).loadTableExcel;
-        if (typeof fn === 'function') {
-          (fn as (...a: unknown[]) => unknown).call(window);
-        }
+        window.console.warn('[penerimaanExport] proses export error:', err);
+        toast('Export gagal — coba lagi. Lihat console.', 6000);
       });
       return;
     }
@@ -769,8 +794,8 @@ function init(): void {
     const url = new URL(href, location.href).href;
     window.console.info('[penerimaanExport] intercept:', url);
     void processExport(url).catch((err) => {
-      window.console.warn('[penerimaanExport] fallback export asli:', err);
-      window.open(url, '_blank');
+      window.console.warn('[penerimaanExport] proses export error:', err);
+      toast('Export gagal — coba lagi. Lihat console.', 6000);
     });
   };
   document.addEventListener('click', onClickExport, true);
@@ -787,8 +812,8 @@ function init(): void {
     const url = action + (action.includes('?') ? '&' : '?') + params.toString();
     window.console.info('[penerimaanExport] intercept form:', url);
     void processExport(url).catch((err) => {
-      window.console.warn('[penerimaanExport] fallback export asli:', err);
-      window.open(url, '_blank');
+      window.console.warn('[penerimaanExport] proses export error:', err);
+      toast('Export gagal — coba lagi. Lihat console.', 6000);
     });
   };
   document.addEventListener('submit', onSubmitExport, true);
