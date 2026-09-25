@@ -290,6 +290,17 @@ async function processExport(url: string): Promise<void> {
     );
 
     updateLoading('Menyiapkan file unduhan…');
+    // Jaring pengaman: bila server mengabaikan filter tanggal (param search[]
+    // tidak dikenal versi server), file berisi SELURUH DB — beri tahu user
+    // alih-alih diam memberinya file raksasa. Batas 5000 baris ≫ volume
+    // harian penerimaan resep RS, jadi false-positive praktis tidak mungkin.
+    if (stats.total > 5000 && /date_start|date_end/i.test(url)) {
+      toast(
+        'PERINGATAN: server mengabaikan filter tanggal — file berisi seluruh DB ' +
+          `(${stats.total} baris). Laporkan ke admin MORBIS (endpoint cetak-excel).`,
+        10000,
+      );
+    }
     // BOM (U+FEFF) agar Excel tidak salah baca karakter non-ASCII
     // (nama pasien, em-dash) — pola sama dengan paLabPrint.ts.
     const blob = new Blob(['\uFEFF' + out], { type: 'application/vnd.ms-excel' });
@@ -340,7 +351,11 @@ function cleanFilterValue(v: unknown): string {
  *  status_pasien, norm, pasien, no_registrasi, no_resep, dll.
  *
  *  PERBAIKAN: normalisasi field tanggal (form DD/MM/YYYY → export YYYY-MM-DD),
- *  mapping nama field fleksibel, log parameter untuk debugging. */
+ *  mapping nama field fleksibel, log parameter untuk debugging, dan — kritis —
+ *  setiap param dikirim ganda: flat (`date_start=`) + array CodeIgniter
+ *  (`search[date_start]=`). Server MORBIS HANYA memfilter bentuk `search[...]`;
+ *  bentuk flat diabaikan → endpoint mengembalikan seluruh DB (bug produksi
+ *  "export semua data dari awal sampai akhir"). */
 function buildExportUrl(): string {
   const params = new URLSearchParams();
   const seen = new Set<string>();
@@ -423,7 +438,18 @@ function buildExportUrl(): string {
     }
 
     // Hanya kirim param yang tidak kosong
-    if (outVal) params.append(outName, outVal);
+    if (outVal) {
+      params.append(outName, outVal);
+      // MORBIS server membaca filter sebagai ARRAY CodeIgniter `search[field]`
+      // (riwayat: buildExportUrl lama — commit 6d305a0 — memilih
+      // `input[name^="search"]` dan inilah bentuk yang benar-benar difilter
+      // server; param flat diabaikan → server mengembalikan SELURUH DB).
+      // Kirim duplikat `search[...]` agar filter tanggal dipatuhi server;
+      // param flat tetap dikirim untuk endpoint yang membacanya langsung.
+      if (!/^search\[/i.test(lowerName)) {
+        params.append(`search[${outName}]`, outVal);
+      }
+    }
   }
 
   // loadTableExcel tidak butuh filter wajib — export semua bila kosong.
