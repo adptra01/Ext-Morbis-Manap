@@ -33,6 +33,31 @@ function fetchWithTimeout(
   return fetch(url, { ...init, signal: ac.signal }).finally(() => clearTimeout(timer));
 }
 
+/**
+ * Diagnostik respons export utk log: status, content-type, judul halaman,
+ * jumlah tabel, header kolom 3 tabel pertama, dan cuplikan body — biar
+ * kegagalan rewrite bisa dibedakan (login page / layout beda / error HTML)
+ * langsung dari log, tanpa perlu membuka file hasil.
+ */
+function responseDiag(html: string, res: Response): string {
+  const norm = (s: string): string => s.replace(/\s+/g, ' ').trim().slice(0, 200);
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const title = doc.querySelector('title')?.textContent || '';
+  const headers: string[] = [];
+  for (const t of Array.from(doc.querySelectorAll('table')).slice(0, 3)) {
+    const ths = Array.from(t.querySelectorAll('thead th, tr:first-child th'))
+      .map((h) => (h.textContent || '').trim())
+      .filter(Boolean);
+    if (ths.length) headers.push(ths.join(' | '));
+  }
+  return (
+    `status=${res.status} ct=${res.headers.get('content-type') ?? '?'} ` +
+    `title=${norm(title)} loginPage=${/login/i.test(title)} ` +
+    `tables=${doc.querySelectorAll('table').length} ` +
+    `headers=[${headers.join(' ;; ')}] body=${norm(html).slice(0, 120)}`
+  );
+}
+
 /** 'YYYY-MM-DD HH:mm:ss' → 'DD/MM/YYYY HH:mm:ss' (gaya kolom existing). */
 export function fmtWaktuAntrian(sql: string): string {
   const m = String(sql || '').match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}:\d{2}:\d{2})/);
@@ -196,15 +221,25 @@ async function rewriteExport(
 ): Promise<{ html: string; stats: ExportStats }> {
   const doc = new DOMParser().parseFromString(html, 'text/html');
   let target: HTMLTableElement | null = null;
+  let headerCells: HTMLTableCellElement[] = [];
+  let headerTr: HTMLTableRowElement | null = null;
   let wpIdx = -1;
   let noIdx = -1;
   for (const t of Array.from(doc.querySelectorAll('table'))) {
+    // Header: prefer <th>; fallback baris pertama ber-<td> — gaya export HTML
+    // lama memakai <td> utk header, tanpa ini file salah ditolak
+    // ("kolom Waktu Penjualan tidak ketemu") padahal kolomnya ada.
     const ths = Array.from(t.querySelectorAll('th'));
-    const w = ths.findIndex((h) => /waktu\s*penjualan/i.test(h.textContent || ''));
+    const cells: HTMLTableCellElement[] = ths.length
+      ? ths
+      : Array.from(t.querySelector('tr')?.querySelectorAll('td') ?? []);
+    const w = cells.findIndex((h) => /waktu\s*penjualan/i.test(h.textContent || ''));
     if (w < 0) continue;
     target = t as HTMLTableElement;
+    headerCells = cells;
+    headerTr = ths.length ? null : ((cells[0]?.parentElement as HTMLTableRowElement) ?? null);
     wpIdx = w;
-    noIdx = ths.findIndex((h) => /no\s*resep/i.test(h.textContent || ''));
+    noIdx = cells.findIndex((h) => /no\s*resep/i.test(h.textContent || ''));
     break;
   }
   if (!target || wpIdx < 0) throw new Error('kolom Waktu Penjualan tidak ketemu di file export');
@@ -213,7 +248,7 @@ async function rewriteExport(
   const rows: Array<{ tds: NodeListOf<HTMLTableCellElement>; id: string }> = [];
   const ids: string[] = [];
   for (const tr of Array.from(target.querySelectorAll('tr'))) {
-    if (tr.querySelector('th')) continue;
+    if (tr.querySelector('th') || (headerTr && tr === headerTr)) continue;
     const tds = tr.querySelectorAll('td');
     if (Math.max(wpIdx, noIdx) >= tds.length) continue;
     const no = noIdx >= 0 ? (tds[noIdx].textContent || '').trim() : '';
@@ -228,7 +263,7 @@ async function rewriteExport(
   const times = await lookupAntrianBatch(ids);
 
   // Header: 1 th → 2 th.
-  const wth = target.querySelectorAll('th')[wpIdx];
+  const wth = headerCells[wpIdx];
   const th1 = doc.createElement('th');
   th1.textContent = 'Waktu Verif/Antrikan';
   const th2 = doc.createElement('th');
@@ -276,7 +311,15 @@ async function processExport(url: string): Promise<void> {
     const html = await res.text();
 
     updateLoading('Menggabungkan data waktu antrian…');
-    const { html: out, stats } = await rewriteExport(html, buildLiveMap());
+    const { html: out, stats } = await rewriteExport(html, buildLiveMap()).catch((err) => {
+      // Diagnostik: jelaskan bentuk respons server agar kegagalan rewrite
+      // (login page? layout beda? error?) bisa dibedakan dari log saja.
+      window.console.warn(
+        '[penerimaanExport] rewrite gagal — ' + responseDiag(html, res),
+        String((err as Error)?.message ?? err),
+      );
+      throw err;
+    });
 
     // Bedakan 2 kegagalan yang tadinya sama-sama "kolom kosong":
     // (a) App Antrian tidak terjangkau dari PC ini, (b) record memang tidak ada.
