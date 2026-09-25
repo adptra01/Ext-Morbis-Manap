@@ -2,10 +2,9 @@
 node_modules/
 
 # Build output
-# dist/
-# Sourcemap hanya hasil build non-produksi. Kalau ikut ter-commit, ikut
-# ter-zip ke dalam CRX (pack.mjs zip semua isi dist/) = membengkak +
-# kode sumber ikut tersebar ke artifact yang dibagikan.
+# dist/ SENGAJA tracked (konvensi proyek: CI & enterprise CRX memakai isi
+# repo; jangan di-ignore). Yang TIDAK ikut: sourcemap (membengkak + kode
+# sumber tersebar ke artifact), paket,& private key.
 dist/**/*.map
 *.crx
 *.xpi
@@ -13,8 +12,14 @@ dist/**/*.map
 *.pem
 deploy/update.xml
 
+# Dokumentasi desain internal (rujukan lokal developer, tidak dikirim repo).
+# examples/ & *.md yang dipakai user (Pages) tetap tracked.
+docs/sirs/
+docs/evidence/*
+
 # Logs
 *.log
+npm-debug.log*
 
 # OS files
 .DS_Store
@@ -25,29 +30,34 @@ Thumbs.db
 .opencode/
 opencode.json
 
-# Test artifacts
+# Test artifacts (test suite-nya sendiri — tests/unit, tests/e2e — tetap
+# tracked; yang di-ignore hanya artefak & scratch one-off)
 test-results/
+playwright-report/
 coverage/
+screenshots/
+pages/
+.playwright-mcp/
 debug-*.png
 *.screenshot.png
+# Scratch di tests/: screenshot & one-off debug/login
+tests/**/*.png
+tests/**/debug-*.cjs
+tests/**/debug-*.mjs
+# Junk root yang pernah ter-track
+backup-*.png
+/--no-sandbox
 
 # Project-specific
 example_code/
 code_views/
-screenshots/
-.playwright-mcp/
-tool/
-tests/
-pages/
+tts_cache/*
 
 # Environment files
 .env
 .env.local
 .env.*.local
-.env
 
 # agent-browser local browser profile (state/data)
 .agent-browser-profile/
 .agent-notes/
-tts_cache/*
-docs/evidence/*
