@@ -58,6 +58,11 @@ tts_cache/*
 .env.local
 .env.*.local
 
+# Python (dev/ tools: tts_service.py, mcp-servers)
+venv/
+__pycache__/
+*.py[cod]
+
 # agent-browser local browser profile (state/data)
 .agent-browser-profile/
 .agent-notes/

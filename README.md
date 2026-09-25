@@ -4,6 +4,32 @@ Ekstensi produktivitas untuk sistem SIMRS MORBIS. Cukup satu kali klik — langs
 
 ---
 
+## Struktur Folder (untuk contributor)
+
+```
+manifest.json          Sumber manifest (versi di-bump CI otomatis)
+sidepanel.html         Sumber (input vite build)
+popup/                 Sumber UI popup (React, input vite build)
+src/                   KODE SUMBER fitur (144 file)  → build → dist/
+dist/                  HASIL BUILD produksi (di-commit; dipakai CI & CRX)
+icons/ rules/          Statis; rules/rules.json disalin build ke dist/
+scripts/ build.mjs     Build (esbuild+vite), pack.mjs (CRX), deploy.mjs
+tests/                 Test suite: unit (vitest, 400 test) + e2e (playwright) + fixtures
+deploy/                Installer Windows (.reg/.bat) + update.xml (auto-update)
+docs/                  GitHub Pages: index.html, privacy.html, SOP, dokumentasi
+dev/                   Perkakas dev NON-extension: mcp-servers/, tool/, tts_service.py
+graphify-out/          Knowledge graph codebase (dihasilkan graphify)
+.ai/ .agents/ .commandcode/ skills/ hooks/   Konfigurasi tooling AI (konvensi root)
+```
+
+**Aturan root:** hanya `manifest.json`, `sidepanel.html`, `popup/`, `icons/`,
+`rules/` yang WAJIB di root (dipakai build/vite). Build output TIDAK ada di
+root — muat extension dev dari **`dist/`** (`npm run build:prod` → Load
+unpacked → pilih `dist/`). Branch `main` yang punya file extension di root
+(hasil deploy `dist/*`).
+
+---
+
 ## Cara Pasang
 
 ### Method 1: Download ZIP (Recommended)

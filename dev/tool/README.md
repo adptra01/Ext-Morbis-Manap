@@ -5,6 +5,7 @@ Website tool untuk membantu menyesuaikan fitur extension dengan sistem M-KLAIM t
 ## 📋 Daftar Fitur
 
 ### 1. URL Builder
+
 Generate URL yang benar untuk navigasi antara halaman M-KLAIM dengan filter yang terjaga.
 
 **Fitur:**
@@ -16,27 +17,32 @@ Generate URL yang benar untuk navigasi antara halaman M-KLAIM dengan filter yang
 Scrape data dari sistem Morbis HIS secara otomatis menggunakan Scrapling.
 
 **Setup:**
+
 ```bash
 source /tmp/scrapling-venv/bin/activate
 ```
 
 **Login:**
+
 ```bash
 python morbis_scraper.py login USERNAME PASSWORD
 ```
 
 **Scrape surat pengantar rawat inap:**
+
 ```bash
 python morbis_scraper.py surat-pengantar 169420 --page 1 --status belum
 ```
 
 **Scrape halaman custom:**
+
 ```bash
 python morbis_scraper.py scrape "http://103.147.236.140/admisi/..." \
   --selector "table" --output data.json
 ```
 
 **Fitur:**
+
 - ✅ Session management (login sekali, scrape berkali-kali)
 - ✅ Auto-save/load cookies
 - ✅ CSS selector extraction
@@ -44,33 +50,40 @@ python morbis_scraper.py scrape "http://103.147.236.140/admisi/..." \
 - ✅ Support pagination
 
 ---
+
 - Input semua parameter filter (tanggal, norm, nama, reg, unit, billing, status)
 - Generate URL untuk halaman List dan Detail
 - Copy URL ke clipboard dengan 1 klik
 - Buka URL langsung di tab baru
 
 ### 2. Bookmarklet Fix
+
 Bookmarklet yang dapat di-drag ke bookmarks bar dan dijalankan di halaman M-KLAIM untuk memperbaiki fungsi navigasi.
 
 **Fitur yang Diperbaiki:**
+
 - ✅ Fungsi tombol Kembali - Menjaga filter pencarian
 - ✅ Redirect setelah Verifikasi - Filter tetap terjaga
 - ✅ ID Visit dinamis - Tidak hardcoded lagi
 - ✅ URL parameters handling - Semua parameter terjaga
 
 ### 3. Testing
+
 Cek status fitur extension dan test fungsionalitasnya.
 
 **Fitur:**
+
 - Check status semua 6 fitur extension
 - Display hasil test dalam format JSON
 - Copy hasil test untuk pelaporan
 - Reset status untuk re-testing
 
 ### 4. Panduan
+
 Dokumentasi lengkap cara penggunaan tool.
 
 **Topik:**
+
 - Persiapan Awal
 - Cara Menggunakan URL Builder
 - Cara Menggunakan Bookmarklet
@@ -120,12 +133,14 @@ tool/
 ## 🔧 Teknis
 
 ### Stack yang Digunakan
+
 - HTML5
 - CSS3 (Bootstrap 5.3 + Custom)
 - JavaScript (Vanilla)
 - Bootstrap Icons
 
 ### Browser Support
+
 - ✅ Chrome/Edge (Rekomendasi)
 - ✅ Firefox
 - ✅ Safari
@@ -138,6 +153,7 @@ tool/
 **Masalah:** Setelah membuka detail pasien dan klik tombol Kembali, filter pencarian hilang.
 
 **Solusi:**
+
 1. Buka halaman M-KLAIM
 2. Klik bookmarklet "Fix M-KLAIM"
 3. Buka detail pasien
@@ -149,6 +165,7 @@ tool/
 **Masalah:** Perlu membuat URL dengan filter tertentu untuk share ke tim lain.
 
 **Solusi:**
+
 1. Buka tool → tab URL Builder
 2. Isi semua parameter filter yang diinginkan
 3. Klik Generate URL
@@ -160,6 +177,7 @@ tool/
 **Masalah:** Tidak yakin extension berfungsi atau tidak.
 
 **Solusi:**
+
 1. Buka tool → tab Testing
 2. Klik Jalankan Testing
 3. Lihat status semua fitur
@@ -168,13 +186,16 @@ tool/
 ## 🔒 Security Notes
 
 ### Bookmarklet Security
+
 Bookmarklet ini adalah JavaScript yang aman dan:
+
 - Tidak mengirim data ke server eksternal
 - Tidak menyimpan data pribadi
 - Hanya memodifikasi fungsi di halaman browser
 - Dapat direview source code-nya
 
 ### Best Practice
+
 - Hanya jalankan bookmarklet di halaman M-KLAIM resmi
 - Pastikan URL website sebelum menjalankan bookmarklet
 - Review source code bookmarklet jika ragu
@@ -184,6 +205,7 @@ Bookmarklet ini adalah JavaScript yang aman dan:
 ### Bookmarklet Tidak Bisa Didrag
 
 **Solusi:**
+
 1. Copy kode bookmarklet dari sumber HTML
 2. Buat bookmark manual:
    - Klik kanan bookmarks bar → Add Page
@@ -194,6 +216,7 @@ Bookmarklet ini adalah JavaScript yang aman dan:
 ### Extension Tidak Terdeteksi
 
 **Solusi:**
+
 1. Pastikan extension terinstall
 2. Refresh halaman M-KLAIM
 3. Jalankan bookmarklet
@@ -202,6 +225,7 @@ Bookmarklet ini adalah JavaScript yang aman dan:
 ### URL Error Setelah Generate
 
 **Solusi:**
+
 1. Pastikan Base URL benar
 2. Cek format tanggal (dd-mm-yyyy)
 3. Pastikan ID Visit terisi (untuk URL Detail)
@@ -209,6 +233,7 @@ Bookmarklet ini adalah JavaScript yang aman dan:
 ## 📝 Changelog
 
 ### Version 1.0.0 (2026-04-06)
+
 - Initial release
 - URL Builder feature
 - Bookmarklet Fix feature
@@ -218,6 +243,7 @@ Bookmarklet ini adalah JavaScript yang aman dan:
 ## 🤝 Kontribusi
 
 Jika ingin berkontribusi:
+
 1. Fork repository
 2. Buat branch feature
 3. Commit perubahan
@@ -231,6 +257,7 @@ MIT License - Silakan gunakan dan modifikasi sesuai kebutuhan.
 ## 📞 Support
 
 Untuk pertanyaan atau isu:
+
 - Buka issue di repository
 - Hubungi tim pengembang
 

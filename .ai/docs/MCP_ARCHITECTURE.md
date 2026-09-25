@@ -830,7 +830,7 @@ Ext-Morbis-Manap/
 │   │   ├── specs/
 │   │   └── global-setup.ts
 │   └── playwright.config.ts
-├── mcp-servers/
+├── dev/mcp-servers/
 │   └── morbis-devtools/
 │       ├── server.py
 │       └── requirements.txt
@@ -874,7 +874,7 @@ Ext-Morbis-Manap/
 **Python (MCP servers):**
 
 ```txt
-# mcp-servers/morbis-devtools/requirements.txt
+# dev/mcp-servers/morbis-devtools/requirements.txt
 mcp>=1.0.0
 scrapling[all]>=0.4.2
 playwright>=1.45.0
@@ -1255,7 +1255,7 @@ async function withRetry<T>(
 
 ### 6.3 MCP Server & Testing — DONE
 
-**MCP server (`mcp-servers/morbis-devtools/server.py`):**
+**MCP server (`dev/mcp-servers/morbis-devtools/server.py`):**
 
 - [x] `scrape_morbis_page` — scrape Morbis HIS with session management
 - [x] `diff_dom` — compare two HTML versions
@@ -1349,7 +1349,7 @@ npm run test:e2e     # Run Playwright build validity tests
 
 ```bash
 # Start MCP server with 6 tools
-python -m mcp run mcp-servers/morbis-devtools/server.py
+python -m mcp run dev/mcp-servers/morbis-devtools/server.py
 
 # Available tools: scrape_morbis_page, diff_dom, analyze_feature,
 #                  read_config, get_feature_source, validate_build

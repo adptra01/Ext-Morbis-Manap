@@ -19,7 +19,7 @@ Engine:
 Cache: MP3 per hash teks di ./tts_cache (persisten). Kalimat berulang
 ("Nomor antrian satu, atas nama...") tidak pernah menyentuh network lagi.
 
-Jalankan:  python3 tts_service.py   (port 8765, bind 127.0.0.1 saja)
+Jalankan:  cd dev && python3 tts_service.py   (port 8765, bind 127.0.0.1 saja)
 """
 import hashlib
 import json
